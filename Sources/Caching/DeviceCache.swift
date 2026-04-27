@@ -15,6 +15,41 @@
 import Foundation
 
 // swiftlint:disable file_length type_body_length
+
+/// Caches data in `UserDefaults` and in-memory caches.
+///
+/// ## Thread Safety
+///
+/// `UserDefaults` is thread-safe for individual read and write operations according to Apple's documentation.
+/// This means simple get/set operations on single keys are safe without additional synchronization.
+///
+/// However, **read-modify-write (RMW) operations are NOT atomic** and can have race conditions when
+/// accessed from multiple threads simultaneously. This class uses two different `UserDefaults` wrappers:
+///
+/// ### Lock-free wrapper (`userDefaults`)
+/// Used for simple read/write operations that don't require atomicity. This avoids deadlocks that can occur
+/// when the main thread waits for a lock while a background thread holds it and writes to UserDefaults
+/// (which posts `didChangeNotification` to main queue).
+///
+/// ### Locking wrapper (`lockingUserDefaults`)
+/// Used for **subscriber attribute write operations** which require atomic read-modify-write:
+/// - `store(subscriberAttributesByKey:)`, `deleteAttributesIfSynced()`, `copySubscriberAttributes()`,
+///   `cleanupSubscriberAttributes()`, `clearCaches()`
+///
+/// Read-only subscriber attribute operations (`subscriberAttribute()`, `unsyncedAttributesByKey()`,
+/// `unsyncedAttributesForAllUsers()`) use the lock-free wrapper since they don't modify data.
+///
+/// The locking wrapper has a potential deadlock risk if called from the main thread while a background thread
+/// holds the lock. This will be addressed in a future PR by refactoring subscriber attributes to use
+/// individual keys, eliminating the need for RMW operations.
+///
+/// ### SK2 Observer Mode Transaction IDs
+/// `registerNewSyncedSK2ObserverModeTransactionIDs()` performs RMW using a dedicated lock
+/// (`cachedSyncedSK2ObserverModeTransactionIDsLock`) that is separate from the subscriber attributes lock.
+///
+/// - SeeAlso: https://github.com/RevenueCat/purchases-ios/issues/4137
+/// - SeeAlso: https://github.com/RevenueCat/purchases-ios/issues/5729
+///
 class DeviceCache {
     private static let defaultBasePath = "device-cache"
     private static let oldDefaultBasePath = "RevenueCat"
@@ -25,6 +60,7 @@ class DeviceCache {
 
     private let systemInfo: SystemInfo
     private let userDefaults: SynchronizedUserDefaults
+    private let lockingUserDefaults: LockingSynchronizedUserDefaults
     private let largeItemCache: SynchronizedLargeItemCache
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
     private let fileManager: FileManager
@@ -32,9 +68,7 @@ class DeviceCache {
     private let _cachedAppUserID: Atomic<String?>
     private let _cachedLegacyAppUserID: Atomic<String?>
 
-    private var userDefaultsObserver: NSObjectProtocol?
-
-    private var offeringsCachePreferredLocales: [String] = []
+    private let offeringsCachePreferredLocales: Atomic<[String]> = .init([])
 
     private let migrationLock = Lock(.nonRecursive)
 
@@ -46,6 +80,7 @@ class DeviceCache {
         self.offeringsCachedObject = offeringsCachedObject
         self.systemInfo = systemInfo
         self.userDefaults = .init(userDefaults: userDefaults)
+        self.lockingUserDefaults = .init(userDefaults: userDefaults)
         self._cachedAppUserID = .init(userDefaults.string(forKey: CacheKeys.appUserDefaults))
         self._cachedLegacyAppUserID = .init(userDefaults.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults))
         self.largeItemCache = .init(
@@ -89,7 +124,7 @@ class DeviceCache {
     }
 
     func clearCaches(oldAppUserID: String, andSaveWithNewUserID newUserID: String) {
-        self.userDefaults.write { userDefaults in
+        self.lockingUserDefaults.write { userDefaults in
             userDefaults.removeObject(forKey: CacheKeys.legacyGeneratedAppUserDefaults)
             userDefaults.removeObject(
                 forKey: CacheKey.customerInfo(oldAppUserID)
@@ -188,7 +223,7 @@ class DeviceCache {
         // during the get offerings request, before this cache method gets called.
         // For the cache we need the preferred locales that were used in the request.
         self.cacheInMemory(offerings: offerings)
-        self.offeringsCachePreferredLocales = preferredLocales
+        self.offeringsCachePreferredLocales.value = preferredLocales
 
         let key = CacheKey.offerings(appUserID).rawValue
         if self.largeItemCache.set(codable: offerings.contents, forKey: key) {
@@ -202,9 +237,13 @@ class DeviceCache {
         self.offeringsCachedObject.cache(instance: offerings)
     }
 
+    func clearInMemoryOfferingsCache() {
+        self.offeringsCachedObject.clearCache()
+    }
+
     func clearOfferingsCache(appUserID: String) {
         self.offeringsCachedObject.clearCache()
-        self.offeringsCachePreferredLocales = []
+        self.offeringsCachePreferredLocales.value = []
         self.largeItemCache.removeObject(forKey: CacheKey.offerings(appUserID).rawValue)
 
         // Delete old offerings file from documents directory if it exists
@@ -218,12 +257,12 @@ class DeviceCache {
                                                            isSandbox: self.systemInfo.isSandbox)
         ) ||
         // Locale-based staleness
-        self.offeringsCachePreferredLocales != self.systemInfo.preferredLocales
+        self.offeringsCachePreferredLocales.value != self.systemInfo.preferredLocales
     }
 
     func forceOfferingsCacheStale() {
         self.offeringsCachedObject.clearCacheTimestamp()
-        self.offeringsCachePreferredLocales = []
+        self.offeringsCachePreferredLocales.value = []
     }
 
     func offeringsCacheStatus(isAppBackgrounded: Bool) -> CacheStatus {
@@ -237,6 +276,10 @@ class DeviceCache {
     }
 
     // MARK: - subscriber attributes
+    // Write operations use `lockingUserDefaults` to ensure atomic read-modify-write.
+    // Read operations use the lock-free `userDefaults` since they don't modify data.
+    // This will be addressed in a future PR by refactoring subscriber attributes to use
+    // individual keys, eliminating the need for RMW operations.
 
     func store(subscriberAttribute: SubscriberAttribute, appUserID: String) {
         store(subscriberAttributesByKey: [subscriberAttribute.key: subscriberAttribute], appUserID: appUserID)
@@ -247,7 +290,7 @@ class DeviceCache {
             return
         }
 
-        self.userDefaults.write {
+        self.lockingUserDefaults.write {
             Self.store($0, subscriberAttributesByKey: subscriberAttributesByKey, appUserID: appUserID)
         }
     }
@@ -269,7 +312,7 @@ class DeviceCache {
     }
 
     func cleanupSubscriberAttributes() {
-        self.userDefaults.write {
+        self.lockingUserDefaults.write {
             Self.migrateSubscriberAttributes($0)
             Self.deleteSyncedSubscriberAttributesForOtherUsers($0)
         }
@@ -296,7 +339,7 @@ class DeviceCache {
     }
 
     func deleteAttributesIfSynced(appUserID: String) {
-        self.userDefaults.write {
+        self.lockingUserDefaults.write {
             guard Self.unsyncedAttributesByKey($0, appUserID: appUserID).isEmpty else {
                 return
             }
@@ -305,7 +348,7 @@ class DeviceCache {
     }
 
     func copySubscriberAttributes(oldAppUserID: String, newAppUserID: String) {
-        self.userDefaults.write {
+        self.lockingUserDefaults.write {
             let unsyncedAttributesToCopy = Self.unsyncedAttributesByKey($0, appUserID: oldAppUserID)
             guard !unsyncedAttributesToCopy.isEmpty else {
                 return

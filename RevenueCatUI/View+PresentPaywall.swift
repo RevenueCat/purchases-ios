@@ -461,6 +461,7 @@ extension View {
 private struct PresentingPaywallModifier: ViewModifier {
 
     @Environment(\.scenePhase) var scenePhase
+    @Environment(\.customPaywallVariables) private var customPaywallVariables
 
     private struct Data: Identifiable {
         var customerInfo: CustomerInfo
@@ -516,13 +517,24 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.fontProvider = fontProvider
         self.customerInfoFetcher = customerInfoFetcher
         self.introEligibility = introEligibility
-        self._purchaseHandler = .init(wrappedValue: purchaseHandler ??
-                                      PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
-                                                              performRestore: myAppPurchaseLogic?.performRestore))
+        let handler = purchaseHandler ??
+            PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
+                                    performRestore: myAppPurchaseLogic?.performRestore)
+        self._purchaseHandler = .init(wrappedValue: handler)
+        self._promoOfferCacheOwner = .init(wrappedValue:
+            PromoOfferCacheOwner(
+                cache: PaywallPromoOfferCache(
+                    subscriptionHistoryTracker: handler.subscriptionHistoryTracker
+                )
+            )
+        )
     }
 
     @StateObject
     private var purchaseHandler: PurchaseHandler
+
+    @StateObject
+    private var promoOfferCacheOwner: PromoOfferCacheOwner
 
     @State
     private var data: Data?
@@ -624,7 +636,8 @@ private struct PresentingPaywallModifier: ViewModifier {
                 fonts: self.fontProvider,
                 displayCloseButton: true,
                 introEligibility: self.introEligibility,
-                purchaseHandler: self.purchaseHandler
+                purchaseHandler: self.purchaseHandler,
+                promoOfferCache: self.promoOfferCacheOwner.cache
             )
         )
         .onPurchaseStarted {
@@ -660,7 +673,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
         .task {
-            guard let offering = await self.content.resolveOffering() else { return }
+            guard let offering = await self.purchaseHandler.resolveOffering(for: self.content) else { return }
             self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
         }
     }
@@ -733,9 +746,11 @@ private struct PresentingPaywallModifier: ViewModifier {
                 fonts: self.fontProvider,
                 displayCloseButton: true,
                 introEligibility: self.introEligibility,
-                purchaseHandler: self.purchaseHandler
+                purchaseHandler: self.purchaseHandler,
+                promoOfferCache: self.promoOfferCacheOwner.cache
             )
         )
+        .customPaywallVariables(self.customPaywallVariables)
         .onPurchaseStarted {
             self.purchaseStarted?($0)
         }
@@ -788,6 +803,8 @@ private struct PresentingPaywallModifier: ViewModifier {
 @available(tvOS, unavailable)
 private struct PresentingPaywallBindingModifier: ViewModifier {
 
+    @Environment(\.customPaywallVariables) private var customPaywallVariables
+
     @Binding var offering: Offering?
 
     var presentationMode: PaywallPresentationMode
@@ -816,6 +833,9 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
     @StateObject
     private var purchaseHandler: PurchaseHandler
 
+    @State
+    private var promoOfferCacheOwner: PromoOfferCacheOwner
+
     init(
         offering: Binding<Offering?>,
         myAppPurchaseLogic: MyAppPurchaseLogic?,
@@ -841,9 +861,16 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         self.purchaseFailure = purchaseFailure
         self.restoreFailure = restoreFailure
         self.onDismiss = onDismiss
-        self._purchaseHandler = .init(wrappedValue:
-            PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
-                                    performRestore: myAppPurchaseLogic?.performRestore))
+        let handler = PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
+                                              performRestore: myAppPurchaseLogic?.performRestore)
+        self._purchaseHandler = .init(wrappedValue: handler)
+        self._promoOfferCacheOwner = .init(wrappedValue:
+            PromoOfferCacheOwner(
+                cache: PaywallPromoOfferCache(
+                    subscriptionHistoryTracker: handler.subscriptionHistoryTracker
+                )
+            )
+        )
     }
 
     func body(content: Content) -> some View {
@@ -886,7 +913,8 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 content: .offering(offering),
                 fonts: self.fontProvider,
                 displayCloseButton: true,
-                purchaseHandler: self.purchaseHandler
+                purchaseHandler: self.purchaseHandler,
+                promoOfferCache: self.promoOfferCacheOwner.cache
             )
         )
         .onPurchaseStarted {
@@ -929,9 +957,11 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 content: .offering(offering),
                 fonts: self.fontProvider,
                 displayCloseButton: true,
-                purchaseHandler: self.purchaseHandler
+                purchaseHandler: self.purchaseHandler,
+                promoOfferCache: self.promoOfferCacheOwner.cache
             )
         )
+        .customPaywallVariables(self.customPaywallVariables)
         .onPurchaseStarted {
             self.purchaseStarted?($0)
         }
@@ -1009,6 +1039,18 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         self.onDismiss?()
     }
 
+}
+
+/// A stateful wrapper around the offer cache that has no published properties
+/// so that we can initialize the offer cache once as a StateObject
+/// without notifying the PresentPaywallViewModifier — therefore preventing an entire paywall redraw.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
+private final class PromoOfferCacheOwner: ObservableObject {
+    let cache: PaywallPromoOfferCache
+    init(cache: PaywallPromoOfferCache) {
+        self.cache = cache
+    }
 }
 
 #endif

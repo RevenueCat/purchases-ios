@@ -13,7 +13,7 @@
 // swiftlint:disable file_length
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -39,6 +39,13 @@ struct CarouselComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
+
     let viewModel: CarouselComponentViewModel
     let onDismiss: () -> Void
 
@@ -54,6 +61,8 @@ struct CarouselComponentView: View {
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
             ),
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
             colorScheme: colorScheme
         ) { style in
             if style.visible {
@@ -74,7 +83,14 @@ struct CarouselComponentView: View {
                         pageControl: style.pageControl,
                         msTimePerSlide: style.autoAdvance?.msTimePerPage,
                         msTransitionTime: style.autoAdvance?.msTransitionTime,
-                        autoAdvanceTransitionType: style.autoAdvance?.transitionType
+                        autoAdvanceTransitionType: style.autoAdvance?.transitionType,
+                        onUserInitiatedPageIndexChange: { originPageIndex, destinationPageIndex in
+                            self.trackCarouselComponentInteraction(
+                                originPageIndex: originPageIndex,
+                                destinationPageIndex: destinationPageIndex,
+                                defaultPageIndex: style.initialPageIndex
+                            )
+                        }
                     ).clipped()
                 }
                 // Need to set height since geometry reader has no intrinsic height
@@ -82,6 +98,15 @@ struct CarouselComponentView: View {
                 .onPreferenceChange(HeightPreferenceKey.self) { newHeight in
                     self.carouselHeight = newHeight
                 }
+                #if DEBUG
+                .onAppear {
+                    self.viewModel.onViewAppear?()
+                }
+                #endif
+                // Recreate CarouselView (resetting its @State) when the ViewModel instance changes,
+                // e.g. on a tab switch. Scoped here so only the carousel is torn down, not the
+                // entire tab subtree.
+                .id(ObjectIdentifier(self.viewModel))
                 // Style the carousel
                 .size(style.size)
                 .padding(style.padding.extend(by: style.border?.width ?? 0))
@@ -93,6 +118,25 @@ struct CarouselComponentView: View {
                 .padding(style.margin)
             }
         }
+    }
+
+    private func trackCarouselComponentInteraction(
+        originPageIndex: Int,
+        destinationPageIndex: Int,
+        defaultPageIndex: Int
+    ) {
+        let destinationContextName = self.viewModel.pageContextName(at: destinationPageIndex)
+
+        _ = self.componentInteractionLogger(.paywallCarouselPageChange(
+            componentName: self.viewModel.componentName,
+            destinationPageIndex: destinationPageIndex,
+            context: .init(
+                originPageIndex: originPageIndex,
+                defaultPageIndex: defaultPageIndex,
+                originContextName: self.viewModel.pageContextName(at: originPageIndex),
+                destinationContextName: destinationContextName
+            )
+        ))
     }
 
 }
@@ -124,6 +168,8 @@ private struct CarouselView<Content: View>: View {
 
     private let pageControl: DisplayablePageControl?
 
+    private let onUserInitiatedPageIndexChange: ((Int, Int) -> Void)?
+
     /// Optional auto-play timings (in milliseconds).
     private let msTimePerSlide: Int?
     private let msTransitionTime: Int?
@@ -139,8 +185,12 @@ private struct CarouselView<Content: View>: View {
     /// The current index (in `data`) of the "active" page.
     @State private var index: Int = 0
 
-    /// Real-time drag offset from the user’s finger.
+    /// Real-time drag offset from the user's finger.
+    #if canImport(UIKit) && !os(watchOS) && !os(tvOS)
+    @State private var translation: CGFloat = 0
+    #else
     @GestureState private var translation: CGFloat = 0
+    #endif
 
     /// A timer for auto-play, if enabled.
     @State private var autoTimer: Timer?
@@ -169,7 +219,8 @@ private struct CarouselView<Content: View>: View {
         /// If either of these is nil, auto‐play is off.
         msTimePerSlide: Int?,
         msTransitionTime: Int?,
-        autoAdvanceTransitionType: PaywallComponent.CarouselComponent.AutoAdvanceTransitionType?
+        autoAdvanceTransitionType: PaywallComponent.CarouselComponent.AutoAdvanceTransitionType?,
+        onUserInitiatedPageIndexChange: ((Int, Int) -> Void)? = nil
     ) {
         self.width = width
         self.pageAlignment = pageAlignment
@@ -179,6 +230,7 @@ private struct CarouselView<Content: View>: View {
         self.spacing = spacing
         self.cardWidth = cardWidth
         self.pageControl = pageControl
+        self.onUserInitiatedPageIndexChange = onUserInitiatedPageIndexChange
         self.msTimePerSlide = msTimePerSlide
         self.msTransitionTime = msTransitionTime
         self.autoAdvanceTransitionType = autoAdvanceTransitionType
@@ -217,16 +269,20 @@ private struct CarouselView<Content: View>: View {
             // Main horizontal "strip" of pages:
             HStack(alignment: self.pageAlignment, spacing: spacing) {
                 ForEach(Array(data.enumerated()), id: \.element.id) { pageIndex, item in
+                    let isNextInEitherDirection = abs(index - pageIndex) <= 2
                     item.view
-                        .environment(
-                            \.carouselState,
-                            CarouselState(
-                                activeIndex: index,
-                                pageIndex: pageIndex,
-                                originalCount: originalCount
-                            )
-                        )
+                        .environment(\.carouselState, CarouselState(
+                            activeIndex: index,
+                            pageIndex: pageIndex,
+                            originalCount: originalCount
+                        ))
+                        // ensure rendering doesn't need to wait on size calculations as the item
+                        // attempts to enter the view
+                        .environment(\.requestSizeCalculation, !isNextInEitherDirection)
                         .frame(width: cardWidth)
+                        // Clip each page so tall/scrollable stack content cannot paint outside the
+                        // card width (avoids transient gray overlays from neighbor compositing).
+                        .clipped()
                 }
             }
             .frame(width: self.width, alignment: .leading)
@@ -236,9 +292,29 @@ private struct CarouselView<Content: View>: View {
                 // Animate only final snaps (or auto transitions), not real-time dragging
                 view.animation(.easeInOut(duration: self.transitionTime), value: index)
             })
-            .gesture(
-                DragGesture()
+            #if canImport(UIKit) && !os(watchOS) && !os(tvOS)
+            .background(
+                ScrollViewGestureCoordinator(
+                    translation: $translation,
+                    onDragEnded: { translationX in
+                        guard abs(translationX) > 0 else {
+                            self.translation = 0
+                            return
+                        }
 
+                        self.dragOffset = translationX
+                        handleDragEnd(translation: translationX)
+                        self.translation = 0
+                    },
+                    onDragStarted: {
+                        pauseAutoPlay(for: 10)
+                    }
+                )
+                .allowsHitTesting(false)
+            )
+            #else
+            .simultaneousGesture(
+                DragGesture()
                     .onChanged({ _ in
                         pauseAutoPlay(for: 10)
                     })
@@ -246,11 +322,11 @@ private struct CarouselView<Content: View>: View {
                         state = value.translation.width
                     }
                     .onEnded { value in
-                        // Store drag offset to apply nice snap animation when done
                         self.dragOffset = value.translation.width
                         handleDragEnd(translation: value.translation.width)
                     }
             )
+            #endif
             .simultaneousGesture(
                 TapGesture()
                     .onEnded {
@@ -404,6 +480,9 @@ private struct CarouselView<Content: View>: View {
 
     private func handleDragEnd(translation: CGFloat) {
         let threshold = cardWidth * 0.2
+        let originalPageIndexBefore: Int? = self.originalCount > 0
+            ? (self.loop ? self.index % self.originalCount : self.index)
+            : nil
 
         withAnimation(.easeInOut(duration: 0.25)) {
             self.dragOffset = 0
@@ -427,6 +506,19 @@ private struct CarouselView<Content: View>: View {
 
         // Pause auto-play for 10 seconds
         pauseAutoPlay(for: 10)
+
+        // `onUserInitiatedPageIndexChange` is only invoked from here so timer-driven auto-advance does not emit
+        // paywall_component_interacted events (see `startAutoPlayIfNeeded`).
+        guard self.isInitialized,
+              let originalPageIndexBefore,
+              self.originalCount > 0 else { return }
+
+        let originalPageIndexAfter = self.loop
+            ? self.index % self.originalCount
+            : self.index
+        guard originalPageIndexAfter != originalPageIndexBefore else { return }
+
+        self.onUserInitiatedPageIndexChange?(originalPageIndexBefore, originalPageIndexAfter)
     }
 
     private var autoPlayEnabled: Bool {
@@ -807,6 +899,7 @@ struct CarouselComponentView_Previews: PreviewProvider {
         }
         .padding(.vertical)
         .previewRequiredPaywallsV2Properties()
+        .environmentObject(PurchaseHandler.default())
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Examples")
     }

@@ -15,6 +15,12 @@ import SwiftUI
 
 struct CustomVariablesEditorView: View {
 
+    enum VariableType: String, CaseIterable {
+        case string = "String"
+        case number = "Number"
+        case bool = "Bool"
+    }
+
     @Binding var variables: [String: CustomVariableValue]
     @Environment(\.dismiss) private var dismiss
 
@@ -23,21 +29,15 @@ struct CustomVariablesEditorView: View {
 
     @State private var isAddingVariable = false
     @State private var newVariableName = ""
-    @State private var newVariableType: VariableType = .string
     @State private var newVariableStringValue = ""
     @State private var newVariableNumberValue = ""
     @State private var newVariableBoolValue = false
+    @State private var newVariableType: VariableType = .string
 
     struct VariableItem: Identifiable {
         let id = UUID()
         var key: String
         var value: CustomVariableValue
-    }
-
-    enum VariableType: String, CaseIterable {
-        case string = "String"
-        case number = "Number"
-        case bool = "Boolean"
     }
 
     var body: some View {
@@ -113,7 +113,7 @@ struct CustomVariablesEditorView: View {
     private var addVariableSection: some View {
         Section {
             TextField("Variable name", text: $newVariableName)
-                #if !os(watchOS)
+                #if os(iOS) || os(tvOS) || os(visionOS)
                 .textInputAutocapitalization(.never)
                 #endif
                 .autocorrectionDisabled()
@@ -123,8 +123,27 @@ struct CustomVariablesEditorView: View {
                     Text(type.rawValue).tag(type)
                 }
             }
+            #if os(watchOS)
+            .pickerStyle(.wheel)
+            #else
+            .pickerStyle(.segmented)
+            #endif
 
-            valueInput
+            switch newVariableType {
+            case .string:
+                TextField("Value", text: $newVariableStringValue)
+                    #if os(iOS) || os(tvOS) || os(visionOS)
+                    .textInputAutocapitalization(.never)
+                    #endif
+                    .autocorrectionDisabled()
+            case .number:
+                TextField("Value", text: $newVariableNumberValue)
+                    #if os(iOS) || os(visionOS)
+                    .keyboardType(.decimalPad)
+                    #endif
+            case .bool:
+                Toggle("Value", isOn: $newVariableBoolValue)
+            }
 
             HStack {
                 Button("Cancel", role: .destructive) {
@@ -138,11 +157,22 @@ struct CustomVariablesEditorView: View {
                     addVariable()
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(newVariableName.isEmpty || !isValidValue)
+                .disabled(newVariableName.isEmpty || !isNewValueValid)
             }
             .padding(.vertical, 4)
         } header: {
             Text("New Variable")
+        }
+    }
+
+    private var isNewValueValid: Bool {
+        switch newVariableType {
+        case .string:
+            return true
+        case .number:
+            return Double(newVariableNumberValue) != nil
+        case .bool:
+            return true
         }
     }
 
@@ -160,48 +190,22 @@ struct CustomVariablesEditorView: View {
             Text(typeLabel(for: value))
                 .font(.caption)
                 .foregroundColor(.secondary)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.secondary.opacity(0.2))
-                .cornerRadius(4)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(
+                    Capsule()
+                        .fill(Color.secondary.opacity(0.15))
+                )
         }
     }
 
     private func typeLabel(for value: CustomVariableValue) -> String {
-        // Determine type by checking the string representation
-        if value.boolValue && (value.stringValue == "true" || value.stringValue == "false") {
-            return "Bool"
-        } else if Double(value.stringValue) != nil && !value.stringValue.isEmpty {
-            return "Number"
-        } else {
-            return "String"
-        }
-    }
-
-    @ViewBuilder
-    private var valueInput: some View {
-        switch newVariableType {
-        case .string:
-            TextField("Value", text: $newVariableStringValue)
-        case .number:
-            TextField("Value", text: $newVariableNumberValue)
-                #if !os(watchOS)
-                .keyboardType(.decimalPad)
-                #endif
-        case .bool:
-            Toggle("Value", isOn: $newVariableBoolValue)
-        }
-    }
-
-    private var isValidValue: Bool {
-        switch newVariableType {
-        case .string:
-            return true
-        case .number:
-            return newVariableNumberValue.isEmpty || Double(newVariableNumberValue) != nil
-        case .bool:
-            return true
-        }
+        #if DEBUG
+        if value.isString { return "String" }
+        if value.isNumber { return "Number" }
+        if value.isBool { return "Bool" }
+        #endif
+        return ""
     }
 
     private func addVariable() {
@@ -217,14 +221,11 @@ struct CustomVariablesEditorView: View {
             value = .bool(newVariableBoolValue)
         }
 
-        // Add to local list
         let newItem = VariableItem(key: newVariableName, value: value)
         variablesList.append(newItem)
         variablesList.sort { $0.key < $1.key }
 
-        // Also sync to binding immediately
         syncToBinding()
-
         cancelAddVariable()
     }
 
@@ -233,10 +234,10 @@ struct CustomVariablesEditorView: View {
             isAddingVariable = false
         }
         newVariableName = ""
-        newVariableType = .string
         newVariableStringValue = ""
         newVariableNumberValue = ""
         newVariableBoolValue = false
+        newVariableType = .string
     }
 
     private func deleteVariables(at offsets: IndexSet) {

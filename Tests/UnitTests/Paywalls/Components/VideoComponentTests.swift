@@ -12,7 +12,7 @@
 //  Created by Jacob Zivan Rakidzich on 8/15/25.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 class VideoComponentTests: TestCase {

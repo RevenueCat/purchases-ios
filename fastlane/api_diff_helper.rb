@@ -2,6 +2,8 @@
 # Used by generate_swiftinterface and check_api_changes lanes
 
 module ApiDiffHelper
+  MODULES = ["RevenueCat", "RevenueCatUI"].freeze
+
   PLATFORMS = [
     {
       sdk: "iphonesimulator",
@@ -72,42 +74,63 @@ module ApiDiffHelper
   ].freeze
 
   PR_SWIFTINTERFACE_DIR = "/tmp/pr-swiftinterface".freeze
-  API_DIFFS_DIR = "/tmp/api-diffs".freeze
 
   module_function
 
-  def swiftinterface_pattern_for_sdk(sdk)
+  def api_file_prefix(scheme)
+    scheme.downcase
+  end
+
+  def swiftinterface_pattern_for_sdk(sdk, module_name)
     case sdk
     when "iphonesimulator"
-      "**/Release-iphonesimulator/**/Objects-normal/**/RevenueCat.swiftinterface"
+      "**/Release-iphonesimulator/**/Objects-normal/**/#{module_name}.swiftinterface"
     when "iphoneos"
-      "**/Release-iphoneos/**/Objects-normal/**/RevenueCat.swiftinterface"
+      "**/Release-iphoneos/**/Objects-normal/**/#{module_name}.swiftinterface"
     when "macosx"
-      "**/Release/**/Objects-normal/**/RevenueCat.swiftinterface"
+      "**/Release/**/Objects-normal/**/#{module_name}.swiftinterface"
     when "watchsimulator"
-      "**/Release-watchsimulator/**/Objects-normal/**/RevenueCat.swiftinterface"
+      "**/Release-watchsimulator/**/Objects-normal/**/#{module_name}.swiftinterface"
     when "watchos"
-      "**/Release-watchos/**/Objects-normal/**/RevenueCat.swiftinterface"
+      "**/Release-watchos/**/Objects-normal/**/#{module_name}.swiftinterface"
     when "appletvsimulator"
-      "**/Release-appletvsimulator/**/Objects-normal/**/RevenueCat.swiftinterface"
+      "**/Release-appletvsimulator/**/Objects-normal/**/#{module_name}.swiftinterface"
     when "appletvos"
-      "**/Release-appletvos/**/Objects-normal/**/RevenueCat.swiftinterface"
+      "**/Release-appletvos/**/Objects-normal/**/#{module_name}.swiftinterface"
     when "xrsimulator"
-      "**/Release-xrsimulator/**/Objects-normal/**/RevenueCat.swiftinterface"
+      "**/Release-xrsimulator/**/Objects-normal/**/#{module_name}.swiftinterface"
     when "xros"
-      "**/Release-xros/**/Objects-normal/**/RevenueCat.swiftinterface"
+      "**/Release-xros/**/Objects-normal/**/#{module_name}.swiftinterface"
     else
-      "**/RevenueCat.swiftinterface"
+      "**/#{module_name}.swiftinterface"
     end
   end
 
-  def find_swiftinterface_file(derived_data_dir, sdk)
-    pattern = swiftinterface_pattern_for_sdk(sdk)
+  def find_swiftinterface_file(derived_data_dir, sdk, module_name)
+    pattern = swiftinterface_pattern_for_sdk(sdk, module_name)
     Dir.glob("#{derived_data_dir}/#{pattern}")
        .reject { |path| path.include?("private") }
   end
 
-  def run_api_diff(api_diff_tool, old_file, new_file, platform_name)
+  def copy_generated_swiftinterface_files(destination_dir, schemes = MODULES)
+    Array(schemes).each do |scheme|
+      prefix = api_file_prefix(scheme)
+
+      PLATFORM_CHECKS.each do |platform|
+        src = "#{PR_SWIFTINTERFACE_DIR}/#{scheme}#{platform[:suffix]}.swiftinterface"
+        dst = File.join(destination_dir, "#{prefix}-api#{platform[:suffix]}.swiftinterface")
+
+        if File.exist?(src)
+          FileUtils.cp(src, dst)
+          Fastlane::UI.success("Updated #{dst}")
+        else
+          Fastlane::UI.error("Missing generated file: #{src}")
+        end
+      end
+    end
+  end
+
+  def run_api_diff(old_file, new_file, platform_name)
     result = {
       platform: platform_name,
       success: false,
@@ -126,28 +149,12 @@ module ApiDiffHelper
       return result
     end
 
-    begin
-      output = Fastlane::Actions.sh(api_diff_tool, "swift-interface", "--old", old_file, "--new", new_file)
-      no_changes = output.include?("# ✅ No changes detected") || output.empty?
-
-      if no_changes
-        Fastlane::UI.success("✅ No API changes for #{platform_name}")
-        result[:success] = true
-      else
-        Fastlane::UI.error("❌ API changes detected for #{platform_name}")
-        result[:diff] = output
-      end
-    rescue => e
-      Fastlane::UI.error("❌ Breaking API changes detected for #{platform_name}")
-      begin
-        result[:diff] = Fastlane::Actions.sh(
-          api_diff_tool, "swift-interface", "--old", old_file, "--new", new_file,
-          error_callback: ->(r) { r }
-        )
-      rescue => diff_e
-        result[:diff] = diff_e.message
-      end
-      result[:diff] = result[:diff].encode('UTF-8', invalid: :replace, undef: :replace) if result[:diff]
+    if FileUtils.identical?(old_file, new_file)
+      Fastlane::UI.success("✅ No API changes for #{platform_name}")
+      result[:success] = true
+    else
+      Fastlane::UI.error("❌ API changes detected for #{platform_name}")
+      result[:diff] = `diff -u "#{old_file}" "#{new_file}"`.encode('UTF-8', invalid: :replace, undef: :replace)
     end
 
     result
@@ -171,8 +178,8 @@ module ApiDiffHelper
 
     Fastlane::UI.error("=" * 60)
     Fastlane::UI.error("To fix: Update the baseline files if these changes are intentional.")
-    Fastlane::UI.error("Run: bundle exec fastlane ios generate_swiftinterface")
-    Fastlane::UI.error("Then copy files from /tmp/pr-swiftinterface/ to the api/ directory.")
+    Fastlane::UI.error("Run: bundle exec fastlane ios update_swiftinterface_baselines")
+    Fastlane::UI.error("Optional: add scheme:RevenueCat or scheme:RevenueCatUI")
     Fastlane::UI.error("=" * 60)
   end
 end

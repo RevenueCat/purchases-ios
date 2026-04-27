@@ -174,7 +174,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let receivedOfferings = try await self.purchases.offerings()
 
         expect(receivedOfferings.all).toNot(beEmpty())
-        assertSnapshot(matching: receivedOfferings.response, as: .formattedJson)
+        assertSnapshot(of: receivedOfferings.response, as: .formattedJson)
 
         self.logger.verifyMessageWasLogged(Strings.offering.vending_offerings_cache_from_memory,
                                            level: .debug)
@@ -220,12 +220,13 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testPurchasingPackageWithPresentedOfferingContext() async throws {
         let package = try await self.monthlyPackage
 
-        try self.purchases.cachePresentedOfferingContext(
-            PresentedOfferingContext(
+        try self.purchases.cachePurchaseData(
+            presentedOfferingContext: PresentedOfferingContext(
                 offeringIdentifier: package.offeringIdentifier,
                 placementIdentifier: "a_placement",
                 targetingContext: nil
             ),
+            paywallEvent: nil,
             productIdentifier: package.storeProduct.productIdentifier
         )
 

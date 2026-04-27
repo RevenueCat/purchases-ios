@@ -33,23 +33,37 @@ class FeatureEventStoreTests: TestCase {
 
     // - MARK: -
 
-    func testCreateDefaultDoesNotThrow() throws {
-        _ = try FeatureEventStore.createDefault(applicationSupportDirectory: nil)
+    func testCreateDefaultReturnsNonNil() throws {
+        #if os(tvOS)
+        // On tvOS, `DirectoryHelper.defaultPersistenceBaseUrl` resolves to `Library/Caches/`.
+        // On some CI runs, creating the fixed `revenuecat/` subdirectory under `Library/Caches/`
+        // fails with EIO (POSIX code 5). We haven't been able to reproduce this locally.
+        // This is not tvOS-specific — the same error reproduces on iOS simulators when forced
+        // to use `Library/Caches/` — but tvOS is the only platform that uses it in production.
+        // Using a UUID-based subdirectory under `Library/Caches/` sidesteps the issue
+        // while still exercising the same caches filesystem and code path.
+        let store = FeatureEventStore.createDefault(
+            persistenceDirectory: Self.uniqueCachesDirectory()
+        )
+        #else
+        let store = FeatureEventStore.createDefault(persistenceDirectory: nil)
+        #endif
+        expect(store).toNot(beNil())
     }
 
     func testPersistsEventsAcrossInitialization() async throws {
         let container = Self.temporaryFolder()
 
-        var store = try FeatureEventStore.createDefault(
-            applicationSupportDirectory: container
-        )
+        var store = try XCTUnwrap(FeatureEventStore.createDefault(
+            persistenceDirectory: container
+        ))
 
         await store.store(.randomImpressionEvent())
         await self.verifyEventsInStore(store, expectedCount: 1)
 
-        store = try FeatureEventStore.createDefault(
-            applicationSupportDirectory: container
-        )
+        store = try XCTUnwrap(FeatureEventStore.createDefault(
+            persistenceDirectory: container
+        ))
         await self.verifyEventsInStore(store, expectedCount: 1)
     }
 
@@ -58,21 +72,21 @@ class FeatureEventStoreTests: TestCase {
         let documents = Self.temporaryFolder()
 
         // 1. Initialize store with documents directory:
-        var store = try FeatureEventStore.createDefault(applicationSupportDirectory: documents)
+        var store = try XCTUnwrap(FeatureEventStore.createDefault(persistenceDirectory: documents))
 
         // 2. Store event
         await store.store(.randomImpressionEvent())
         await self.verifyEventsInStore(store, expectedCount: 1)
 
         // 3. Initialize store with new directories
-        store = try FeatureEventStore.createDefault(
-            applicationSupportDirectory: applicationSupport,
+        store = try XCTUnwrap(FeatureEventStore.createDefault(
+            persistenceDirectory: applicationSupport,
             documentsDirectory: documents
-        )
+        ))
         await self.verifyEventsInStore(store, expectedCount: 0)
 
         // 4. Verify events were removed
-        store = try FeatureEventStore.createDefault(applicationSupportDirectory: documents)
+        store = try XCTUnwrap(FeatureEventStore.createDefault(persistenceDirectory: documents))
         await self.verifyEventsInStore(store, expectedCount: 0)
     }
 
@@ -356,7 +370,8 @@ extension PaywallEvent.Data {
             sessionID: .init(),
             displayMode: PaywallViewMode.allCases.randomElement()!,
             localeIdentifier: "es_ES",
-            darkMode: Bool.random()
+            darkMode: Bool.random(),
+            source: nil
         )
     }
 

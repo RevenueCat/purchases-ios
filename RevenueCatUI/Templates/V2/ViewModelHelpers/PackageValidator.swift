@@ -12,14 +12,19 @@
 //  Created by Josh Holtz on 10/25/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageValidator {
 
-    typealias PackageInfo = (package: Package, isSelectedByDefault: Bool, promotionalOfferProductCode: String?)
+    typealias PackageInfo = (
+        package: Package,
+        isSelectedByDefault: Bool,
+        isStaticallyVisible: Bool,
+        promotionalOfferProductCode: String?
+    )
 
     private(set) var packageInfos: [PackageInfo] = []
 
@@ -36,7 +41,9 @@ class PackageValidator {
     }
 
     var defaultSelectedPackage: Package? {
-        let defaultSelectedPackage = packageInfos.first(where: { pkg in
+        let visiblePackageInfos = self.packageInfos.filter { $0.isStaticallyVisible }
+
+        let defaultSelectedPackage = visiblePackageInfos.first(where: { pkg in
             return pkg.isSelectedByDefault
         })
 
@@ -45,8 +52,13 @@ class PackageValidator {
             return defaultSelectedPackage.package
         }
 
+        guard !visiblePackageInfos.isEmpty else {
+            Logger.warning(Strings.paywall_could_not_find_any_packages)
+            return nil
+        }
+
         Logger.warning(Strings.paywall_could_not_find_default_package)
-        return packageInfos.first?.package
+        return visiblePackageInfos.first?.package
     }
 
 }

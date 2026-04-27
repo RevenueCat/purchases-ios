@@ -45,33 +45,44 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testPurchasingPackageWithPurchaseInitiatedPaywall() async throws {
-        try await self.purchases.track(paywallEvent: .purchaseInitiated(.init(), self.eventData))
+        let paywallEvent = PaywallEvent.purchaseInitiated(.init(), self.eventData)
 
-        let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: package).transaction)
+        let transaction = try await XCTAsyncUnwrap(
+            try await self.purchases.purchase(
+                package: package, promotionalOffer: nil, paywallEvent: paywallEvent
+            ).transaction
+        )
 
         self.verifyTransactionHandled(with: transaction, sessionID: self.eventData.sessionIdentifier)
     }
 
-    func testPurchasingPackageAfterCancelClearsPurchaseInitiatedPaywall() async throws {
-        try await self.purchases.track(paywallEvent: .purchaseInitiated(.init(), self.eventData))
-        try await self.purchases.track(paywallEvent: .cancel(.init(), self.eventData))
+    func testPurchasingPackageWithCachedPurchaseData() async throws {
+        let productId = self.package.storeProduct.productIdentifier
+        try self.purchases.cachePurchaseData(
+            presentedOfferingContext: self.package.presentedOfferingContext,
+            paywallEvent: .purchaseInitiated(.init(), self.eventData),
+            productIdentifier: productId
+        )
 
-        let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: self.package).transaction)
+        let transaction = try await XCTAsyncUnwrap(
+            try await self.purchases.purchase(package: self.package).transaction
+        )
 
-        self.verifyTransactionHandled(with: transaction, sessionID: nil)
+        self.verifyTransactionHandled(with: transaction, sessionID: self.eventData.sessionIdentifier)
     }
 
-    func testPurchasingPackageAfterPurchaseErrorClearsPurchaseInitiatedPaywall() async throws {
-        let errorData = self.eventData.withPurchaseInfo(
-            packageId: self.package.identifier,
-            productId: self.package.storeProduct.productIdentifier,
-            errorCode: 123,
-            errorMessage: "Test error"
+    func testPurchasingPackageAfterClearingCachedPurchaseData() async throws {
+        let productId = self.package.storeProduct.productIdentifier
+        try self.purchases.cachePurchaseData(
+            presentedOfferingContext: self.package.presentedOfferingContext,
+            paywallEvent: .purchaseInitiated(.init(), self.eventData),
+            productIdentifier: productId
         )
-        try await self.purchases.track(paywallEvent: .purchaseInitiated(.init(), self.eventData))
-        try await self.purchases.track(paywallEvent: .purchaseError(.init(), errorData))
+        try self.purchases.clearCachedPurchaseData(productIdentifier: productId)
 
-        let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: self.package).transaction)
+        let transaction = try await XCTAsyncUnwrap(
+            try await self.purchases.purchase(package: self.package).transaction
+        )
 
         self.verifyTransactionHandled(with: transaction, sessionID: nil)
     }
@@ -79,8 +90,7 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
     // MARK: - Events that do NOT cache paywall data
 
     func testImpressionAloneDoesNotIncludePaywallData() async throws {
-        // Only tracking impression should NOT include paywall data
-        // (paywall data is only cached on purchaseInitiated)
+        // Only tracking impression sends analytics but does NOT cache paywall data
         try await self.purchases.track(paywallEvent: .impression(.init(), self.eventData))
 
         let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: self.package).transaction)
@@ -88,54 +98,61 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
         self.verifyTransactionHandled(with: transaction, sessionID: nil)
     }
 
-    // MARK: - Events that do NOT clear the cache
+    // MARK: - Cached data persists through unrelated events
 
-    func testCloseDoesNotClearPurchaseInitiatedPaywall() async throws {
-        // close event should NOT clear the purchaseInitiated cache
-        try await self.purchases.track(paywallEvent: .purchaseInitiated(.init(), self.eventData))
+    func testCachedPurchaseDataSurvivesCloseEvent() async throws {
+        let productId = self.package.storeProduct.productIdentifier
+        try self.purchases.cachePurchaseData(
+            presentedOfferingContext: self.package.presentedOfferingContext,
+            paywallEvent: .purchaseInitiated(.init(), self.eventData),
+            productIdentifier: productId
+        )
+        // close event (analytics only) should NOT affect the cached data
         try await self.purchases.track(paywallEvent: .close(.init(), self.eventData))
 
         let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: self.package).transaction)
 
-        // Paywall data should still be included because close doesn't clear the cache
         self.verifyTransactionHandled(with: transaction, sessionID: self.eventData.sessionIdentifier)
     }
 
-    func testExitOfferDoesNotClearPurchaseInitiatedPaywall() async throws {
-        // exitOffer event should NOT clear the purchaseInitiated cache
+    func testCachedPurchaseDataSurvivesExitOfferEvent() async throws {
+        let productId = self.package.storeProduct.productIdentifier
         let exitOfferData = PaywallEvent.ExitOfferData(
             exitOfferType: .dismiss,
             exitOfferingIdentifier: "exit_offer_id"
         )
-        try await self.purchases.track(paywallEvent: .purchaseInitiated(.init(), self.eventData))
+        try self.purchases.cachePurchaseData(
+            presentedOfferingContext: self.package.presentedOfferingContext,
+            paywallEvent: .purchaseInitiated(.init(), self.eventData),
+            productIdentifier: productId
+        )
+        // exitOffer event (analytics only) should NOT affect the cached data
         try await self.purchases.track(paywallEvent: .exitOffer(.init(), self.eventData, exitOfferData))
 
         let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: self.package).transaction)
 
-        // Paywall data should still be included because exitOffer doesn't clear the cache
         self.verifyTransactionHandled(with: transaction, sessionID: self.eventData.sessionIdentifier)
     }
 
     @available(iOS 17.0, *)
-    func testPurchasingAfterAFailureAndPurchaseErrorEventClearsPaywallData() async throws {
+    func testPurchasingAfterFailureAndClearingCachedDataHasNoPaywallData() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
 
         try await self.testSession.setSimulatedError(.generic(.networkError(URLError(.unknown))), forAPI: .purchase)
 
-        try await self.purchases.track(paywallEvent: .purchaseInitiated(.init(), self.eventData))
+        let productId = self.package.storeProduct.productIdentifier
+        try self.purchases.cachePurchaseData(
+            presentedOfferingContext: self.package.presentedOfferingContext,
+            paywallEvent: .purchaseInitiated(.init(), self.eventData),
+            productIdentifier: productId
+        )
 
         do {
             _ = try await self.purchases.purchase(package: self.package)
             fail("Expected error")
         } catch {
-            // Expected error - track purchaseError to clear the cache (as PurchaseHandler would do)
-            let errorData = self.eventData.withPurchaseInfo(
-                packageId: self.package.identifier,
-                productId: self.package.storeProduct.productIdentifier,
-                errorCode: (error as NSError).code,
-                errorMessage: error.localizedDescription
-            )
-            try await self.purchases.track(paywallEvent: .purchaseError(.init(), errorData))
+            // Simulate PurchaseHandler clearing the cache on error
+            try self.purchases.clearCachedPurchaseData(productIdentifier: productId)
         }
 
         self.logger.clearMessages()
@@ -147,7 +164,7 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
 
         let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: self.package).transaction)
 
-        self.verifyTransactionHandled(with: transaction, sessionID: nil) // No paywall session id included
+        self.verifyTransactionHandled(with: transaction, sessionID: nil)
     }
 
     func testFlushingEmptyEvents() async throws {
@@ -156,7 +173,7 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testFlushingEvents() async throws {
-        try await self.purchases.track(paywallEvent: .impression(.init(), self.eventData))
+        try await self.purchases.track(paywallEvent: .cancel(.init(), self.eventData))
         try await self.purchases.track(paywallEvent: .cancel(.init(), self.eventData))
         try await self.purchases.track(paywallEvent: .close(.init(), self.eventData))
 
@@ -165,7 +182,7 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testFlushingEventsClearsThem() async throws {
-        try await self.purchases.track(paywallEvent: .impression(.init(), self.eventData))
+        try await self.purchases.track(paywallEvent: .cancel(.init(), self.eventData))
         try await self.purchases.track(paywallEvent: .cancel(.init(), self.eventData))
         try await self.purchases.track(paywallEvent: .close(.init(), self.eventData))
 
@@ -174,8 +191,22 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
         expect(result) == 0
     }
 
+    func testFlushingPaywallComponentInteractionEvents() async throws {
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .button,
+            componentName: nil,
+            componentValue: "restore_purchases"
+        )
+        try await self.purchases.track(
+            paywallEvent: .componentInteraction(.init(), self.eventData, interaction)
+        )
+
+        let result = try await self.purchases.flushPaywallEvents(count: 1)
+        expect(result) == 1
+    }
+
     func testRemembersEventsWhenReopeningApp() async throws {
-        try await self.purchases.track(paywallEvent: .impression(.init(), self.eventData))
+        try await self.purchases.track(paywallEvent: .cancel(.init(), self.eventData))
         try await self.purchases.track(paywallEvent: .close(.init(), self.eventData))
 
         await self.resetSingleton()

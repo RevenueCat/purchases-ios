@@ -5,7 +5,7 @@
 //  Created by Nacho Soto on 7/27/23.
 //
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 #if DEBUG
 @testable import RevenueCatUI
 #else
@@ -54,7 +54,7 @@ struct APIKeyDashboardList: View {
     private var isShowingVariablesEditor = false
 
     @State
-    private var searchText = ""
+    private var searchText = Constants.sandboxPaywallSearch
 
     var body: some View {
         ZStack {
@@ -141,7 +141,13 @@ struct APIKeyDashboardList: View {
 
             self.offerings = .success(
                 .init(
-                    sections: Array(offeringsBySection.keys).sorted { $0.description < $1.description },
+                    sections: Array(offeringsBySection.keys).sorted {
+                        switch ($0.name, $1.name) {
+                        case (nil, _): return false
+                        case (_, nil): return true
+                        default: return $0.description < $1.description
+                        }
+                    },
                     offeringsBySection: offeringsBySection
                 )
             )
@@ -172,10 +178,6 @@ struct APIKeyDashboardList: View {
         }
     }
 
-    private func offeringHasComponents(_ offering: Offering) -> Bool {
-        offering.paywallComponents != nil
-    }
-
     private func filteredOfferings(for template: Template, in data: Data) -> [Offering] {
         let offerings = data.offeringsBySection[template] ?? []
         guard !searchText.isEmpty else { return offerings }
@@ -185,6 +187,7 @@ struct APIKeyDashboardList: View {
         }
     }
 
+
     @ViewBuilder
     private func list(with data: Data) -> some View {
         List {
@@ -193,7 +196,7 @@ struct APIKeyDashboardList: View {
                 if !offerings.isEmpty {
                     Section {
                         ForEach(offerings, id: \.id) { offering in
-                            if offering.paywall != nil || offeringHasComponents(offering) {
+                            if offering.hasPaywall {
                                 #if targetEnvironment(macCatalyst)
                                 NavigationLink(
                                     destination: PaywallPresenter(offering: offering,
@@ -212,7 +215,7 @@ struct APIKeyDashboardList: View {
                                 #else
                                 OfferButton(offering: offering) {
                                     self.isLoadingPaywall = true
-                                    self.presentedPaywall = .init(offering: offering, mode: .default)
+                                    self.presentPaywallOffering = offering
                                 }
                                     #if !os(watchOS)
                                     .contextMenu {
@@ -221,12 +224,22 @@ struct APIKeyDashboardList: View {
                                     #endif
                                 #endif
                             } else {
+                                #if !os(watchOS)
+                                OfferButton(offering: offering) {
+                                    self.isLoadingPaywall = true
+                                    self.presentedPaywall = .init(offering: offering, mode: .workflow)
+                                }
+                                .contextMenu {
+                                    self.button(for: .workflow, offering: offering)
+                                }
+                                #else
                                 VStack(alignment: .leading) {
                                     Text(offering.id)
                                     Text(offering.serverDescription)
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
+                                #endif
                             }
                         }
                     } header: {
@@ -266,6 +279,7 @@ struct APIKeyDashboardList: View {
         #endif
                 .presentPaywallIfNeededModifier(offering: $offeringToPresent)
                 .presentPaywall(offering: $presentPaywallOffering, onDismiss: { })
+                .customPaywallVariables(self.customVariables)
                 .onChange(of: offeringToPresent) { offering in
                     if offering != nil {
                         self.isLoadingPaywall = false
@@ -294,12 +308,18 @@ struct APIKeyDashboardList: View {
             switch selectedMode {
             case .fullScreen:
                 self.presentedPaywallCover = .init(offering: offering, mode: selectedMode)
-            case .sheet, .footer, .condensedFooter:
+            case .sheet:
                 self.presentedPaywall = .init(offering: offering, mode: selectedMode)
+            #if !os(watchOS) && !os(macOS)
+            case .footer, .condensedFooter:
+                self.presentedPaywall = .init(offering: offering, mode: selectedMode)
+            #endif
             case .presentIfNeeded:
                 self.offeringToPresent = offering
             case .presentPaywall:
                 self.presentPaywallOffering = offering
+            case .workflow:
+                self.presentedPaywall = .init(offering: offering, mode: selectedMode)
             }
         } label: {
             Text(selectedMode.name)

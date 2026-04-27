@@ -30,10 +30,21 @@ protocol PaywallPurchasesType: Sendable {
     var subscriptionHistoryTracker: SubscriptionHistoryTracker { get }
 
     @Sendable
-    func purchase(package: Package) async throws -> PurchaseResultData
+    func offerings() async throws -> Offerings
+
+    var cachedOfferings: Offerings? { get }
+
+#if !os(tvOS)
+    @Sendable
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult
+#endif
 
     @Sendable
-    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData
+    func purchase(
+        package: Package,
+        promotionalOffer: PromotionalOffer?,
+        paywallEvent: PaywallEvent?
+    ) async throws -> PurchaseResultData
 
     @Sendable
     func restorePurchases() async throws -> CustomerInfo
@@ -45,7 +56,14 @@ protocol PaywallPurchasesType: Sendable {
     func track(paywallEvent: PaywallEvent) async
 
     @Sendable
-    func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String)
+    func cachePurchaseData(
+        presentedOfferingContext: PresentedOfferingContext,
+        paywallEvent: PaywallEvent?,
+        productIdentifier: String
+    )
+
+    @Sendable
+    func clearCachedPurchaseData(productIdentifier: String)
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache()

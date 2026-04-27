@@ -70,6 +70,7 @@ let schemes: [Scheme] = [
         runAction: .runAction(
             configuration: "Debug",
             executable: "PaywallsTester",
+            arguments: .appendingTuistLaunchArguments(),
             options: .options(
                 storeKitConfigurationPath: storeKitConfigPath
             )
@@ -122,6 +123,7 @@ if hasCustomStoreKit {
 let project = Project(
     name: "PaywallsTester",
     organizationName: .revenueCatOrgName,
+    packages: .projectPackages,
     settings: .appProject,
     targets: [
         .target(
@@ -142,7 +144,7 @@ let project = Project(
                 .revenueCatUI,
                 .storeKit
             ],
-            settings: .appTarget
+            settings: .appTarget(including: ([:] as SettingsDictionary).appendingTuistSwiftConditions())
         )
     ],
     schemes: schemes,

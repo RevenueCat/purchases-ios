@@ -13,7 +13,7 @@
 
 import Foundation
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import SnapshotTesting
 import XCTest
 
@@ -31,7 +31,7 @@ class PaywallFeatureEventsRequestTests: TestCase {
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
         let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
+        assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
     func testCancelEvent() throws {
@@ -39,7 +39,7 @@ class PaywallFeatureEventsRequestTests: TestCase {
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
         let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
+        assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
     func testCloseEvent() throws {
@@ -47,7 +47,127 @@ class PaywallFeatureEventsRequestTests: TestCase {
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
         let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
+    func testcomponentInteractionEvent() throws {
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .button,
+            componentName: "named",
+            componentValue: "restore_purchases",
+            originIndex: 0,
+            destinationIndex: 1,
+            originContextName: "monthly",
+            destinationContextName: "annual",
+            defaultIndex: 0
+        )
+        let event = PaywallEvent.componentInteraction(Self.eventCreationData, Self.eventData, interaction)
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        expect(requestEvent.type) == .componentInteraction
+        expect(requestEvent.componentType) == .button
+        expect(requestEvent.componentName) == "named"
+        expect(requestEvent.componentValue) == "restore_purchases"
+        expect(requestEvent.originIndex) == 0
+        expect(requestEvent.destinationIndex) == 1
+        expect(requestEvent.originContextName) == "monthly"
+        expect(requestEvent.destinationContextName) == "annual"
+        expect(requestEvent.defaultIndex) == 0
+        expect(requestEvent.originPackageIdentifier).to(beNil())
+        expect(requestEvent.destinationPackageIdentifier).to(beNil())
+        expect(requestEvent.defaultPackageIdentifier).to(beNil())
+        expect(requestEvent.originProductIdentifier).to(beNil())
+        expect(requestEvent.destinationProductIdentifier).to(beNil())
+        expect(requestEvent.defaultProductIdentifier).to(beNil())
+        expect(requestEvent.offeringID) == Self.eventData.offeringIdentifier
+        expect(requestEvent.sessionID) == Self.eventData.sessionIdentifier.uuidString
+    }
+
+    func testcomponentInteractionEvent_IncludesPlanSelectionIdentifiers() throws {
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .package,
+            componentName: "annual_package",
+            componentValue: "annual",
+            originPackageIdentifier: "monthly",
+            destinationPackageIdentifier: "annual",
+            defaultPackageIdentifier: "annual",
+            originProductIdentifier: "com.app.monthly",
+            destinationProductIdentifier: "com.app.annual",
+            defaultProductIdentifier: "com.app.annual"
+        )
+        let event = PaywallEvent.componentInteraction(Self.eventCreationData, Self.eventData, interaction)
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        expect(requestEvent.componentType) == .package
+        expect(requestEvent.originPackageIdentifier) == "monthly"
+        expect(requestEvent.destinationPackageIdentifier) == "annual"
+        expect(requestEvent.defaultPackageIdentifier) == "annual"
+        expect(requestEvent.originProductIdentifier) == "com.app.monthly"
+        expect(requestEvent.destinationProductIdentifier) == "com.app.annual"
+        expect(requestEvent.defaultProductIdentifier) == "com.app.annual"
+    }
+
+    func testcomponentInteractionEventCodableRoundTrip() throws {
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .tab,
+            componentName: "analytics_name",
+            componentValue: "tab-a",
+            originIndex: 0,
+            destinationIndex: 1,
+            originContextName: "monthly",
+            destinationContextName: "annual",
+            defaultIndex: 0
+        )
+        let event = PaywallEvent.componentInteraction(Self.eventCreationData, Self.eventData, interaction)
+        let data = try JSONEncoder.default.encode(event)
+        let decoded = try JSONDecoder.default.decode(PaywallEvent.self, from: data)
+        expect(decoded) == event
+    }
+
+    func testcomponentInteractionEventCodableRoundTrip_IncludesPlanSelectionFields() throws {
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .package,
+            componentName: "annual_package",
+            componentValue: "annual",
+            originPackageIdentifier: "monthly",
+            destinationPackageIdentifier: "annual",
+            defaultPackageIdentifier: "annual",
+            originProductIdentifier: "p1",
+            destinationProductIdentifier: "p2",
+            defaultProductIdentifier: "p2"
+        )
+        let event = PaywallEvent.componentInteraction(Self.eventCreationData, Self.eventData, interaction)
+        let data = try JSONEncoder.default.encode(event)
+        let decoded = try JSONDecoder.default.decode(PaywallEvent.self, from: data)
+        expect(decoded) == event
+    }
+
+    func testcomponentInteractionEventCodableRoundTrip_IncludesPackageSelectionSheetLifecycleFields() throws {
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .packageSelectionSheet,
+            componentName: "all_plans_sheet",
+            componentValue: "close",
+            currentPackageIdentifier: "monthly_standard",
+            resultingPackageIdentifier: "annual_premium",
+            currentProductIdentifier: "com.example.sub.monthly",
+            resultingProductIdentifier: "com.example.sub.annual"
+        )
+        let event = PaywallEvent.componentInteraction(Self.eventCreationData, Self.eventData, interaction)
+        let data = try JSONEncoder.default.encode(event)
+        let decoded = try JSONDecoder.default.decode(PaywallEvent.self, from: data)
+        expect(decoded) == event
+
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+        expect(requestEvent.componentType) == .packageSelectionSheet
+        expect(requestEvent.componentName) == "all_plans_sheet"
+        expect(requestEvent.componentValue) == "close"
+        expect(requestEvent.currentPackageIdentifier) == "monthly_standard"
+        expect(requestEvent.currentProductIdentifier) == "com.example.sub.monthly"
+        expect(requestEvent.resultingPackageIdentifier) == "annual_premium"
+        expect(requestEvent.resultingProductIdentifier) == "com.example.sub.annual"
     }
 
     func testCanInitFromDeserializedEvent() throws {
@@ -63,7 +183,8 @@ class PaywallFeatureEventsRequestTests: TestCase {
             sessionID: .init(uuidString: "73616D70-6C65-2073-7472-696E67000000")!,
             displayMode: .fullScreen,
             localeIdentifier: "en_US",
-            darkMode: true
+            darkMode: true,
+            source: nil
         )
         let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
 
@@ -79,7 +200,193 @@ class PaywallFeatureEventsRequestTests: TestCase {
 
         let requestEvent = try XCTUnwrap(FeatureEventsRequest.PaywallEvent(storedEvent: deserializedEvent))
 
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
+    func testImpressionEventWithSource() throws {
+        let event = PaywallEvent.impression(Self.eventCreationData, Self.eventDataWithSource)
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
+    func testWithPurchaseInfoPreservesSource() {
+        let data = Self.eventDataWithSource
+
+        let result = data.withPurchaseInfo(
+            packageId: "test_package",
+            productId: "test_product",
+            errorCode: nil,
+            errorMessage: nil
+        )
+
+        expect(result.source) == .customerCenter
+    }
+
+    func testWithPurchaseInfoPreservesNilSource() {
+        let data = Self.eventData
+
+        let result = data.withPurchaseInfo(
+            packageId: "test_package",
+            productId: "test_product",
+            errorCode: nil,
+            errorMessage: nil
+        )
+
+        expect(result.source).to(beNil())
+    }
+
+    func testPaywallEventWithoutMillisecondPrecisionIsParsed() throws {
+        let event = PaywallEvent.impression(Self.eventCreationData, Self.eventData)
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let legacySerialized = serialized.replacingOccurrences(of: ".000Z", with: "Z")
+        let deserialized = try StoredFeatureEventSerializer.decode(legacySerialized)
+
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.PaywallEvent(storedEvent: deserialized))
+        let expectedTimestamp: UInt64 = 1_694_029_328_000
+
+        expect(requestEvent.timestamp).to(equal(expectedTimestamp))
+    }
+
+    func testPaywallRequestTimestampPreservesMilliseconds() throws {
+        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.234)
+        let creationData = PaywallEvent.CreationData(
+            id: UUID(),
+            date: dateWithMilliseconds
+        )
+        let event = PaywallEvent.impression(creationData, Self.eventData)
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: "test-user",
+                feature: .paywalls,
+                appSessionID: UUID(),
+                eventDiscriminator: nil
+            )
+        )
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserialized = try StoredFeatureEventSerializer.decode(serialized)
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.PaywallEvent(storedEvent: deserialized))
+
+        expect(requestEvent.timestamp).to(equal(1_694_029_328_234))
+    }
+
+    // MARK: - Milliseconds Precision Tests
+
+    func testPaywallEventImpressionPreservesMillisecondsInCreationDate() throws {
+        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.234)
+        let creationData = PaywallEvent.CreationData(
+            id: UUID(),
+            date: dateWithMilliseconds
+        )
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: "test_paywall",
+            offeringIdentifier: "offering_1",
+            paywallRevision: 5,
+            sessionID: UUID(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
+        )
+        let event = PaywallEvent.impression(creationData, eventData)
+
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: "test-user",
+                feature: .paywalls,
+                appSessionID: UUID(),
+                eventDiscriminator: nil
+            )
+        )
+
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserialized = try StoredFeatureEventSerializer.decode(serialized)
+
+        let jsonData = try XCTUnwrap(deserialized.encodedEvent.data(using: .utf8))
+        let decodedEvent = try JSONDecoder.default.decode(PaywallEvent.self, from: jsonData)
+
+        expect(decodedEvent.creationData.date.timeIntervalSince1970)
+            .to(equal(dateWithMilliseconds.timeIntervalSince1970))
+    }
+
+    func testPaywallEventClosePreservesMillisecondsInCreationDate() throws {
+        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.567)
+        let creationData = PaywallEvent.CreationData(
+            id: UUID(),
+            date: dateWithMilliseconds
+        )
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: "test_paywall",
+            offeringIdentifier: "offering_1",
+            paywallRevision: 5,
+            sessionID: UUID(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
+        )
+        let event = PaywallEvent.close(creationData, eventData)
+
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: "test-user",
+                feature: .paywalls,
+                appSessionID: UUID(),
+                eventDiscriminator: nil
+            )
+        )
+
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserialized = try StoredFeatureEventSerializer.decode(serialized)
+
+        let jsonData = try XCTUnwrap(deserialized.encodedEvent.data(using: .utf8))
+        let decodedEvent = try JSONDecoder.default.decode(PaywallEvent.self, from: jsonData)
+
+        expect(decodedEvent.creationData.date.timeIntervalSince1970)
+            .to(equal(dateWithMilliseconds.timeIntervalSince1970))
+    }
+
+    func testPaywallEventCancelPreservesMillisecondsInCreationDate() throws {
+        let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.891)
+        let creationData = PaywallEvent.CreationData(
+            id: UUID(),
+            date: dateWithMilliseconds
+        )
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: "test_paywall",
+            offeringIdentifier: "offering_1",
+            paywallRevision: 5,
+            sessionID: UUID(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
+        )
+        let event = PaywallEvent.cancel(creationData, eventData)
+
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: "test-user",
+                feature: .paywalls,
+                appSessionID: UUID(),
+                eventDiscriminator: nil
+            )
+        )
+
+        let serialized = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserialized = try StoredFeatureEventSerializer.decode(serialized)
+
+        let jsonData = try XCTUnwrap(deserialized.encodedEvent.data(using: .utf8))
+        let decodedEvent = try JSONDecoder.default.decode(PaywallEvent.self, from: jsonData)
+
+        expect(decodedEvent.creationData.date.timeIntervalSince1970)
+            .to(equal(dateWithMilliseconds.timeIntervalSince1970))
     }
 
     // MARK: -
@@ -109,7 +416,19 @@ private extension PaywallFeatureEventsRequestTests {
         sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
         displayMode: .fullScreen,
         localeIdentifier: "es_ES",
-        darkMode: true
+        darkMode: true,
+        source: nil
+    )
+
+    static let eventDataWithSource: PaywallEvent.Data = .init(
+        paywallIdentifier: "test_paywall_id",
+        offeringIdentifier: "offering",
+        paywallRevision: 0,
+        sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
+        displayMode: .fullScreen,
+        localeIdentifier: "es_ES",
+        darkMode: true,
+        source: .customerCenter
     )
 
     static let userID = "Jack Shepard"

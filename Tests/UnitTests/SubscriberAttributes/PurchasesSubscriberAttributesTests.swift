@@ -68,13 +68,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
     var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
+    var userDefaultsSuiteName: String!
 
     var purchases: Purchases!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.userDefaults = UserDefaults(suiteName: "TestDefaults")
+        self.userDefaultsSuiteName = "PurchasesSubscriberAttributesTests.\(self.name).\(UUID().uuidString)"
+        self.userDefaults = UserDefaults(suiteName: self.userDefaultsSuiteName)
+        self.userDefaults.removePersistentDomain(forName: self.userDefaultsSuiteName)
         self.clock = TestClock()
         self.systemInfo = MockSystemInfo(finishTransactions: true, clock: self.clock)
 
@@ -173,7 +176,10 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
         self.purchases?.delegate = nil
         self.purchases = nil
-        UserDefaults().removePersistentDomain(forName: "TestDefaults")
+        if let suiteName = self.userDefaultsSuiteName {
+            self.userDefaults?.removePersistentDomain(forName: suiteName)
+            self.userDefaults?.removeSuite(named: suiteName)
+        }
 
         super.tearDown()
     }
@@ -1014,6 +1020,25 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
         expect(self.mockBackend.invokedPostReceiptData).to(beTrue())
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributes) == false
+    }
+
+    // MARK: - ATT consent status
+
+    func testUnsyncedAttributesByKeyDoesNotSetATTConsentStatus() {
+        let appUserID = mockIdentityManager.currentAppUserID
+
+        _ = self.attribution.unsyncedAttributesByKey(appUserID: appUserID)
+
+        expect(self.mockSubscriberAttributesManager.invokedSetATTConsentStatus) == false
+    }
+
+    func testSetATTConsentStatusForwardsToSubscriberAttributesManager() {
+        let appUserID = mockIdentityManager.currentAppUserID
+
+        self.attribution.setATTConsentStatus(forAppUserID: appUserID)
+
+        expect(self.mockSubscriberAttributesManager.invokedSetATTConsentStatus) == true
+        expect(self.mockSubscriberAttributesManager.invokedSetATTConsentStatusParameters?.appUserID) == appUserID
     }
 
 }

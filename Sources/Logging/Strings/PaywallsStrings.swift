@@ -45,7 +45,6 @@ enum PaywallsStrings {
 
     case event_manager_initialized
     case event_manager_not_initialized_not_available
-    case event_manager_failed_to_initialize(Error)
 
     case event_flush_already_in_progress
     case event_flush_with_empty_store
@@ -61,6 +60,11 @@ enum PaywallsStrings {
     case background_task_expired(String)
     case background_task_failed(String)
     case background_task_unavailable
+
+    // MARK: - Conditions
+
+    case unrecognized_condition_type(String)
+    case malformed_condition(String, Error)
 
 }
 
@@ -132,10 +136,6 @@ extension PaywallsStrings: LogMessage {
         case .event_manager_not_initialized_not_available:
             return "Won't initialize EventsManager: not available on current device."
 
-        case let .event_manager_failed_to_initialize(error):
-            return "EventsManager won't be initialized, event store failed to create " +
-            "with error: \((error as NSError).localizedDescription)"
-
         case .event_flush_already_in_progress:
             return "Paywall event flushing already in progress. Skipping."
 
@@ -173,6 +173,14 @@ extension PaywallsStrings: LogMessage {
             return "Background task failed to start: \(taskName)"
         case .background_task_unavailable:
             return "Background tasks unavailable (app extension or no UIApplication access)"
+
+        case let .unrecognized_condition_type(conditionType):
+            return "Paywall contains unrecognized condition type '\(conditionType)'. " +
+            "Please update to the latest SDK version."
+
+        case let .malformed_condition(conditionType, error):
+            return "Paywall contains malformed condition of type '\(conditionType)': \(error). " +
+            "Please update to the latest SDK version."
 
         }
     }

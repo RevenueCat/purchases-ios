@@ -12,7 +12,7 @@
 //  Created by Jay Shortway on 02/10/2024.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -21,6 +21,8 @@ import SwiftUI
 struct ButtonComponentView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.openSheet) private var openSheet
+    @Environment(\.restoreInitiatedAction)
+    private var restoreInitiatedAction: RestoreInitiatedAction?
     @Environment(\.offerCodeRedemptionInitiatedAction)
     private var offerCodeRedemptionInitiatedAction: OfferCodeRedemptionInitiatedAction?
     @State private var inAppBrowserURL: URL?
@@ -30,6 +32,9 @@ struct ButtonComponentView: View {
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
+
+    @Environment(\.componentInteractionLogger) var componentInteractionLogger
+    @Environment(\.workflowTriggerAction) private var workflowTriggerAction
 
     private let viewModel: ButtonComponentViewModel
     private let onDismiss: () -> Void
@@ -72,11 +77,8 @@ struct ButtonComponentView: View {
                 )
             }
             .withTransition(viewModel.component.transition)
-            .applyIf(self.shouldBeDisabled, apply: { view in
-                view
-                    .disabled(true)
-                    .opacity(0.35)
-            })
+            .disabled(self.shouldBeDisabled)
+            .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
             #if canImport(SafariServices) && canImport(UIKit)
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
                 SafariView(url: self.inAppBrowserURL!)
@@ -91,6 +93,17 @@ struct ButtonComponentView: View {
     }
 
     private func performAction() async throws {
+        if let id = viewModel.id,
+           let triggerWorkflow = workflowTriggerAction,
+           triggerWorkflow(id) {
+            trackButtonComponentInteraction()
+            return
+        }
+
+        // Intentionally track before branching so unknown actions are surfaced as diagnostic telemetry.
+        // These should be excluded from product funnel analytics by filtering componentValue == "unknown".
+        self.trackButtonComponentInteraction()
+
         switch viewModel.action {
         case .restorePurchases:
             try await restorePurchases()
@@ -98,8 +111,15 @@ struct ButtonComponentView: View {
             navigateTo(destination: destination)
         case .navigateBack:
             onDismiss()
-        case .unknown:
+        case .workflowTrigger:
             break
+        case .unknown:
+            Logger.warning(
+                Strings.paywall_unknown_button_action_tracked_for_diagnostics(
+                    componentName: self.viewModel.component.name,
+                    actionValue: self.viewModel.action.paywallComponentInteractionValue
+                )
+            )
         case .sheet(let sheet):
             if let sheetStackViewModel = self.viewModel.sheetStackViewModel {
                 let sheetViewModel = SheetViewModel(
@@ -111,8 +131,29 @@ struct ButtonComponentView: View {
         }
     }
 
+    private func trackButtonComponentInteraction() {
+        self.componentInteractionLogger(.paywallNonPurchaseButtonAction(
+            componentName: self.viewModel.component.name,
+            componentValue: self.viewModel.action.paywallComponentInteractionValue,
+            componentURL: self.viewModel.action.paywallComponentInteractionURL
+        ))
+    }
+
     private func restorePurchases() async throws {
         guard !self.purchaseHandler.actionInProgress else { return }
+
+        if let interceptor = self.restoreInitiatedAction {
+            Logger.debug(Strings.restore_purchases_gate_start)
+            let result = await self.purchaseHandler.withPendingPurchaseContinuation {
+                await withCheckedContinuation { continuation in
+                    interceptor(resume: ResumeAction { shouldProceed in
+                        Logger.debug(Strings.restore_purchases_gate_finish(with: shouldProceed))
+                        continuation.resume(returning: shouldProceed)
+                    })
+                }
+            }
+            guard result else { return }
+        }
 
         Logger.debug(Strings.restoring_purchases)
 
@@ -231,6 +272,7 @@ struct ButtonComponentView_Previews: PreviewProvider {
             )
         }
         .previewRequiredPaywallsV2Properties()
+        .environmentObject(PurchaseHandler.default())
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Default")
     }
@@ -249,7 +291,6 @@ fileprivate extension ButtonComponentViewModel {
         let stackViewModel = try factory.toStackViewModel(
             component: component.stack,
             packageValidator: factory.packageValidator,
-            firstItemIgnoresSafeAreaInfo: nil,
             purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),

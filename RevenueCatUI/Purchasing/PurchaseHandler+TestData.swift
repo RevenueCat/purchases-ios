@@ -17,6 +17,14 @@ import Foundation
 
 #if DEBUG
 
+/// Uses `Task { }` so paywall events reach `MockPurchases.track` promptly. The production
+/// ``PaywallEventTracker/dispatcher()`` uses `Task.detached(priority: .background)`, which can delay
+/// delivery enough that XCTest expectations time out.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private let paywallEventMockDispatcher: PaywallEventTracker.EventDispatcher = { work in
+    Task { await work() }
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
 
@@ -36,9 +44,10 @@ extension PurchaseHandler {
         .dropFirst()
         .eraseToAnyPublisher()
     ) -> Self {
-        return self.init(
-            purchases: MockPurchases(purchasesAreCompletedBy: purchasesAreCompletedBy,
-                                     preferredLocaleOverride: preferredLocaleOverride) { _ in
+        let purchases = MockPurchases(
+            purchasesAreCompletedBy: purchasesAreCompletedBy,
+            preferredLocaleOverride: preferredLocaleOverride
+        ) { _, _, _ in
                 return (
                     // No current way to create a mock transaction with RevenueCat's public methods.
                     transaction: nil,
@@ -51,17 +60,30 @@ extension PurchaseHandler {
                 Logger.debug("Tracking event: \(event)")
             } customerInfo: {
                 return customerInfo
-            },
+            }
+        return self.init(
+            purchases: purchases,
             performPurchase: performPurchase,
             performRestore: performRestore,
-            purchaseResultPublisher: purchaseResultPublisher
+            purchaseResultPublisher: purchaseResultPublisher,
+            eventTracker: .init(purchases: purchases, eventDispatcher: paywallEventMockDispatcher)
         )
     }
 
-    static func cancelling(purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat) -> Self {
+    /// Creates a mock `PurchaseHandler` that is already in the purchasing state.
+    static func purchasing(package: Package = TestData.annualPackage) -> Self {
+        let handler = Self.mock()
+        handler.actionTypeInProgress = .purchase
+        handler.packageBeingPurchased = package
+        return handler
+    }
+
+    static func cancelling(
+        purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat
+    ) -> Self {
         return .mock(purchasesAreCompletedBy: purchasesAreCompletedBy)
-            .map { block in {
-                    var result = try await block($0)
+            .map { block in { package, offer, event in
+                    var result = try await block(package, offer, event)
                     result.userCancelled = true
                     return result
                 }
@@ -70,25 +92,27 @@ extension PurchaseHandler {
 
     /// - Returns: `PurchaseHandler` that throws `error` for purchases and restores.
     static func failing(_ error: Error) -> Self {
+        let purchases = MockPurchases { _, _, _ in
+            throw error
+        } restorePurchases: {
+            throw error
+        } trackEvent: { event in
+            Logger.debug("Tracking event: \(event)")
+        } customerInfo: {
+            throw error
+        }
         return self.init(
-            purchases: MockPurchases { _ in
-                throw error
-            } restorePurchases: {
-                throw error
-            } trackEvent: { event in
-                Logger.debug("Tracking event: \(event)")
-            } customerInfo: {
-                throw error
-            }
+            purchases: purchases,
+            eventTracker: .init(purchases: purchases, eventDispatcher: paywallEventMockDispatcher)
         )
     }
 
     /// Creates a copy of this `PurchaseHandler` with a delay.
     func with(delay seconds: TimeInterval) -> Self {
-        return self.map { purchaseBlock in {
+        return self.map { purchaseBlock in { package, offer, event in
             await Task.sleep(seconds: seconds)
 
-            return try await purchaseBlock($0)
+            return try await purchaseBlock(package, offer, event)
         }
         } restore: { restoreBlock in {
             await Task.sleep(seconds: seconds)

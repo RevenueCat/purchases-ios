@@ -13,7 +13,7 @@
 // swiftlint:disable file_length
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -26,16 +26,36 @@ class TabControlContext: ObservableObject {
 
     let controlStackViewModel: StackComponentViewModel
     let tabIds: [String]
+    let name: String?
+    let initialTabId: String
+    let tabContextNamesById: [String: String]
 
     init(controlStackViewModel: StackComponentViewModel,
          tabIds: [String],
-         defaultTabId: String?) {
+         defaultTabId: String?,
+         name: String?,
+         tabContextNamesById: [String: String] = [:]) {
         self.controlStackViewModel = controlStackViewModel
         self.tabIds = tabIds
+        self.name = name
+        self.tabContextNamesById = tabContextNamesById
 
         let calculatedDefaultTabId = defaultTabId ?? tabIds.first ?? ""
+        self.initialTabId = calculatedDefaultTabId
 
         self._selectedTabId = .init(initialValue: calculatedDefaultTabId)
+    }
+
+    var defaultTabIndex: Int? {
+        return self.index(for: self.initialTabId)
+    }
+
+    func index(for tabId: String) -> Int? {
+        return self.tabIds.firstIndex(of: tabId)
+    }
+
+    func contextName(for tabId: String) -> String? {
+        return self.tabContextNamesById[tabId]
     }
 
 }
@@ -72,11 +92,22 @@ struct LoadedTabsComponentView: View {
     @EnvironmentObject
     private var packageContext: PackageContext
 
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
+
     @Environment(\.componentViewState)
     private var componentViewState
 
     @Environment(\.screenCondition)
     private var screenCondition
+
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
 
     private let viewModel: TabsComponentViewModel
     private let onDismiss: () -> Void
@@ -129,16 +160,21 @@ struct LoadedTabsComponentView: View {
         }
     }
 
+    /// `tabControlContext` is nil in production (the view owns its context); tests may pass
+    /// an external instance to drive tab switches programmatically without UI interaction.
     init(viewModel: TabsComponentViewModel,
          parentPackageContext: PackageContext,
-         onDismiss: @escaping () -> Void) {
+         onDismiss: @escaping () -> Void,
+         tabControlContext: TabControlContext? = nil) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
 
-        self._tabControlContext = .init(wrappedValue: TabControlContext(
+        self._tabControlContext = .init(wrappedValue: tabControlContext ?? TabControlContext(
             controlStackViewModel: viewModel.controlStackViewModel,
             tabIds: viewModel.tabIds,
-            defaultTabId: viewModel.defaultTabId
+            defaultTabId: viewModel.defaultTabId,
+            name: viewModel.name,
+            tabContextNamesById: viewModel.tabContextNamesById
         ))
 
         // Store the parent's initial selection for restoration when switching to package-less tabs
@@ -184,10 +220,27 @@ struct LoadedTabsComponentView: View {
     }
 
     var body: some View {
-        if let activeTabViewModel,
+        let style = viewModel.styles(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
+            ),
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
+            colorScheme: self.colorScheme
+        )
+
+        if style.visible,
+            let activeTabViewModel,
             let tierPackageContext = self.tierPackageContexts[self.tabControlContext.selectedTabId] {
             LoadedTabComponentView(
                 stackViewModel: activeTabViewModel.stackViewModel,
+                parentPackageContext: self.packageContext,
+                tabPackageIdentifiers: Set(activeTabViewModel.packages.map(\.identifier)),
                 onChange: { context in
                     self.packageContext.update(
                         package: context.package,
@@ -198,6 +251,7 @@ struct LoadedTabsComponentView: View {
             )
             .environmentObject(self.tabControlContext)
             .environmentObject(tierPackageContext)
+            .environment(\.planSelectionDefaultPackage, activeTabViewModel.defaultSelectedPackage)
             .onAppear {
                 if !wasConfigured {
                     self.wasConfigured = true
@@ -290,9 +344,14 @@ struct LoadedTabsComponentView: View {
                         package: newPackage,
                         variableContext: self.packageContext.variableContext
                     )
+                } else if !tabHasNoPackages {
+                    // Root-only selection: clear tab highlight. Parent is not updated here;
+                    // `LoadedTabComponentView` suppresses propagating this nil to the parent.
+                    tierPackageContext.update(
+                        package: nil,
+                        variableContext: tierPackageContext.variableContext
+                    )
                 }
-                // If package is NOT in tab's packages, we still track it as parentOwnedPackage
-                // but we don't update the tab (it can't display this package)
             }
         }
     }
@@ -306,13 +365,21 @@ struct LoadedTabComponentView: View {
     private var tabPackageContext: PackageContext
 
     private let stackViewModel: StackComponentViewModel
+    private let parentPackageContext: PackageContext
+    private let tabPackageIdentifiers: Set<String>
     private let onChange: (PackageContext) -> Void
     private let onDismiss: () -> Void
 
-    init(stackViewModel: StackComponentViewModel,
-         onChange: @escaping (PackageContext) -> Void,
-         onDismiss: @escaping () -> Void) {
+    init(
+        stackViewModel: StackComponentViewModel,
+        parentPackageContext: PackageContext,
+        tabPackageIdentifiers: Set<String>,
+        onChange: @escaping (PackageContext) -> Void,
+        onDismiss: @escaping () -> Void
+    ) {
         self.stackViewModel = stackViewModel
+        self.parentPackageContext = parentPackageContext
+        self.tabPackageIdentifiers = tabPackageIdentifiers
         self.onChange = onChange
         self.onDismiss = onDismiss
     }
@@ -325,9 +392,35 @@ struct LoadedTabComponentView: View {
         .environmentObject(self.tabPackageContext)
         // Comparing on tabPackageContext.package but sending tabPackageContext to parent
         .onChangeOf(self.tabPackageContext.package) { _ in
+            if TabPackageParentPropagation.shouldSuppressNotifyingParent(
+                tabPackage: self.tabPackageContext.package,
+                tabPackageIdentifiers: self.tabPackageIdentifiers,
+                parentPackage: self.parentPackageContext.package
+            ) {
+                return
+            }
             self.onChange(self.tabPackageContext)
         }
     }
+
+}
+
+/// Decides when a tab `PackageContext` change should not overwrite the paywall (parent) selection.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+enum TabPackageParentPropagation {
+
+	/// When the tab clears local selection to `nil` while the parent holds a root-only package,
+	/// do not notify the parent (avoids clearing the purchase selection).
+	static func shouldSuppressNotifyingParent(
+		tabPackage: Package?,
+		tabPackageIdentifiers: Set<String>,
+		parentPackage: Package?
+	) -> Bool {
+		guard tabPackage == nil else { return false }
+		guard !tabPackageIdentifiers.isEmpty else { return false }
+		guard let parentId = parentPackage?.identifier else { return false }
+		return !tabPackageIdentifiers.contains(parentId)
+	}
 
 }
 

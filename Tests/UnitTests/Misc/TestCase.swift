@@ -38,8 +38,6 @@ class TestCase: XCTestCase {
     @MainActor
     override class func setUp() {
         XCTestObservationCenter.shared.addTestObserver(CurrentTestCaseTracker.shared)
-
-        SnapshotTests.updateSnapshotsIfNeeded()
     }
 
     @MainActor
@@ -54,6 +52,18 @@ class TestCase: XCTestCase {
         self.initializeLogger()
     }
 
+    override func invokeTest() {
+        if SnapshotTests.shouldRecordSnapshots {
+            withSnapshotTesting(record: .all) {
+                super.invokeTest()
+            }
+        } else {
+            withSnapshotTesting(record: .never) {
+                super.invokeTest()
+            }
+        }
+    }
+
     @MainActor
     override func tearDown() {
         self.logger = nil
@@ -65,18 +75,26 @@ class TestCase: XCTestCase {
 
 }
 
-private enum SnapshotTests {
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension TestCase {
 
-    private static var environmentVariableChecked = false
-
-    static func updateSnapshotsIfNeeded() {
-        guard !Self.environmentVariableChecked else { return }
-
-        if ProcessInfo.processInfo.environment["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "1" {
-            isRecording = true
+    static func uniqueCachesDirectory() -> URL {
+        let caches: URL
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            caches = URL.cachesDirectory
+        } else {
+            // swiftlint:disable:next force_unwrapping
+            caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
         }
+        return caches.appendingPathComponent(UUID().uuidString, isDirectory: true)
     }
 
+}
+
+private enum SnapshotTests {
+    static var shouldRecordSnapshots: Bool {
+        return ProcessInfo.processInfo.environment["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "1"
+    }
 }
 
 extension ForceServerErrorStrategy {

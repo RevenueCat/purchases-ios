@@ -18,12 +18,17 @@ import StoreKit
 /// Use the value and the unit together to determine the subscription period.
 /// For example, if the unit is  `.month`, and the value is `3`, the subscription period is three months.
 @objc(RCSubscriptionPeriod)
-public final class SubscriptionPeriod: NSObject {
+public final class SubscriptionPeriod: NSObject, Codable {
 
     /// The number of period units.
     @objc public let value: Int
     /// The increment of time that a subscription period is specified in.
     @objc public let unit: Unit
+
+    enum CodingKeys: String, CodingKey {
+        case value
+        case unit
+    }
 
     /// Creates a new ``SubscriptionPeriod`` with the given value and unit.
     public init(value: Int, unit: Unit) {
@@ -98,6 +103,22 @@ public final class SubscriptionPeriod: NSObject {
         hasher.combine(self.unit)
 
         return hasher.finalize()
+    }
+
+    /// Creates a `SubscriptionPeriod` from the given decoder.
+    public convenience init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            value: try container.decode(Int.self, forKey: .value),
+            unit: try container.decode(Unit.self, forKey: .unit)
+        )
+    }
+
+    /// Encodes this `SubscriptionPeriod` into the given encoder.
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.value, forKey: .value)
+        try container.encode(self.unit, forKey: .unit)
     }
 
 }
@@ -269,7 +290,6 @@ fileprivate extension SubscriptionPeriod.Unit {
 
 }
 
-// MARK: - Encodable
+// MARK: - Codable
 
 extension SubscriptionPeriod.Unit: Codable { }
-extension SubscriptionPeriod: Codable { }

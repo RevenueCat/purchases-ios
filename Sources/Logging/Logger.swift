@@ -36,8 +36,8 @@ internal typealias InternalLogHandler = (_ level: LogLevel,
 
 // This is a `struct` instead of `enum` so that
 // we can use `Logger()` as a `LoggerType`.
-// swiftlint:disable:next convenience_type
-struct Logger {
+// swiftlint:disable:next convenience_type missing_docs
+@_spi(Internal) public struct Logger {
 
     static var logLevel: LogLevel = Self.defaultLogLevel
     static var internalLogHandler: InternalLogHandler = Self.defaultLogHandler
@@ -126,34 +126,38 @@ extension Logger: LoggerType {
 
 extension Logger {
 
-    static func verbose(_ message: LogMessage,
-                        fileName: String? = #fileID,
-                        functionName: String? = #function,
-                        line: UInt = #line) {
+    /// Logs a verbose-level message through the shared logger pipeline.
+    @_spi(Internal) public static func verbose(_ message: LogMessage,
+                                               fileName: String? = #fileID,
+                                               functionName: String? = #function,
+                                               line: UInt = #line) {
         Self.log(level: .verbose, intent: .verbose, message: message,
                  fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func debug(_ message: LogMessage,
-                      fileName: String? = #fileID,
-                      functionName: String? = #function,
-                      line: UInt = #line) {
+    /// Logs a debug-level message through the shared logger pipeline.
+    @_spi(Internal) public static func debug(_ message: LogMessage,
+                                             fileName: String? = #fileID,
+                                             functionName: String? = #function,
+                                             line: UInt = #line) {
         Self.log(level: .debug, intent: .info, message: message,
                  fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func info(_ message: LogMessage,
-                     fileName: String? = #fileID,
-                     functionName: String? = #function,
-                     line: UInt = #line) {
+    /// Logs an info-level message through the shared logger pipeline.
+    @_spi(Internal) public static func info(_ message: LogMessage,
+                                            fileName: String? = #fileID,
+                                            functionName: String? = #function,
+                                            line: UInt = #line) {
         Self.log(level: .info, intent: .info, message: message,
                  fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func warn(_ message: LogMessage,
-                     fileName: String? = #fileID,
-                     functionName: String? = #function,
-                     line: UInt = #line) {
+    /// Logs a warning-level message through the shared logger pipeline.
+    @_spi(Internal) public static func warn(_ message: LogMessage,
+                                            fileName: String? = #fileID,
+                                            functionName: String? = #function,
+                                            line: UInt = #line) {
         Self.log(level: .warn, intent: .warning, message: message,
                  fileName: fileName, functionName: functionName, line: line)
     }
@@ -170,10 +174,11 @@ extension Logger {
         )
     }
 
-    static func error(_ message: LogMessage,
-                      fileName: String = #fileID,
-                      functionName: String = #function,
-                      line: UInt = #line) {
+    /// Logs an error-level message through the shared logger pipeline.
+    @_spi(Internal) public static func error(_ message: LogMessage,
+                                             fileName: String = #fileID,
+                                             functionName: String = #function,
+                                             line: UInt = #line) {
         Self.log(level: .error, intent: .rcError, message: message,
                  fileName: fileName, functionName: functionName, line: line)
     }

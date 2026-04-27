@@ -18,3 +18,4 @@
 "Continue" = "Continua";
 "Default_offer_details_with_intro_offer" = "Inizia la tua prova di {{ sub_offer_duration }}, poi {{ total_price_and_per_month }}.";
 "Something went wrong" = "Qualcosa è andato storto";
+"Purchase" = "Acquista";

@@ -63,6 +63,18 @@ final class UIConfigProvider {
         }
     }
 
+    /// Creates a `ConditionContext` by merging developer-provided custom variables with dashboard defaults.
+    func conditionContext(
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue]
+    ) -> ConditionContext {
+        ConditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            defaultCustomVariables: self.defaultCustomVariables
+        )
+    }
+
     func getColor(for name: String) -> PaywallComponent.ColorScheme? {
         return self.uiConfig.app.colors[name]
     }

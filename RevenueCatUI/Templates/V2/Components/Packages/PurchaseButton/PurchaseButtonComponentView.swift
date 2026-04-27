@@ -35,6 +35,9 @@ struct PurchaseButtonComponentView: View {
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
+
     @State private var inAppBrowserURL: URL?
 
     private let viewModel: PurchaseButtonComponentViewModel
@@ -75,10 +78,8 @@ struct PurchaseButtonComponentView: View {
                 showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
             )
         }
-        .applyIf(self.shouldBeDisabled) {
-            $0.disabled(true)
-                .opacity(0.35)
-        }
+        .disabled(self.shouldBeDisabled)
+        .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
         #if canImport(SafariServices) && canImport(UIKit)
         .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
             SafariView(url: self.inAppBrowserURL!)
@@ -112,6 +113,8 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
+        self.logPurchaseButtonInteractionForInApp(selectedPackage: selectedPackage)
+
         // Check if there's a purchase interceptor
         if let interceptor = self.purchaseInitiatedAction {
             let result = await self.purchaseHandler.withPendingPurchaseContinuation {
@@ -137,6 +140,8 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
+        self.logPurchaseButtonInteractionForWeb(launchWebCheckout: launchWebCheckout)
+
         self.logIfInPreview("Web Product: \(launchWebCheckout)")
 
         guard !self.isInPreview else {
@@ -144,6 +149,35 @@ struct PurchaseButtonComponentView: View {
         }
 
         self.openWebPaywallLink(launchWebCheckout: launchWebCheckout)
+    }
+
+    private func logPurchaseButtonInteractionForInApp(selectedPackage: Package) {
+        let componentValue: String
+        if let method = self.viewModel.method {
+            componentValue = method.description
+        } else {
+            componentValue = PaywallComponent.PurchaseButtonComponent.Method.inAppCheckout.description
+        }
+
+        self.componentInteractionLogger(.paywallPurchaseButtonAction(
+            componentName: self.viewModel.componentName,
+            componentValue: componentValue,
+            componentURL: nil,
+            currentPackageIdentifier: selectedPackage.identifier,
+            currentProductIdentifier: selectedPackage.storeProduct.productIdentifier
+        ))
+    }
+
+    private func logPurchaseButtonInteractionForWeb(
+        launchWebCheckout: PurchaseButtonComponentViewModel.LaunchWebCheckout
+    ) {
+        self.componentInteractionLogger(.paywallPurchaseButtonAction(
+            componentName: self.viewModel.componentName,
+            componentValue: self.viewModel.method?.description ?? "",
+            componentURL: launchWebCheckout.url,
+            currentPackageIdentifier: self.packageContext.package?.identifier,
+            currentProductIdentifier: self.packageContext.package?.storeProduct.productIdentifier
+        ))
     }
 
     private func openWebPaywallLink(launchWebCheckout: PurchaseButtonComponentViewModel.LaunchWebCheckout) {
@@ -218,7 +252,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                         ))
                     ]),
                     action: .inAppCheckout,
-                    method: .inAppCheckout
+                    method: .inAppCheckout,
+                    name: nil
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,
@@ -267,7 +302,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                                                 bottomTrailing: 8))
                     ),
                     action: .inAppCheckout,
-                    method: .inAppCheckout
+                    method: .inAppCheckout,
+                    name: nil
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,
@@ -306,7 +342,6 @@ fileprivate extension PurchaseButtonComponentViewModel {
         let stackViewModel = try factory.toStackViewModel(
             component: component.stack,
             packageValidator: factory.packageValidator,
-            firstItemIgnoresSafeAreaInfo: nil,
             purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),

@@ -13,7 +13,7 @@
 // swiftlint:disable file_length
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -304,7 +304,8 @@ private enum FamilySharingTogglePreview {
                                     bottomTrailing: 16))
         ),
         action: .inAppCheckout,
-        method: .inAppCheckout
+        method: .inAppCheckout,
+        name: nil
     )
 
     static let purchaseButtonStack = PaywallComponent.StackComponent(
@@ -397,7 +398,6 @@ struct FamilySharingTogglePreview_Previews: PreviewProvider {
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
             failedToLoadFont: { _ in },
             colorScheme: .light
         )

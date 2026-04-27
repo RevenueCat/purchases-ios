@@ -4,20 +4,23 @@ import ProjectDescriptionHelpers
 let project = Project(
     name: "RCTTester",
     organizationName: .revenueCatOrgName,
+    packages: .projectPackages,
     settings: .appProject,
     targets: [
         .target(
             name: "RCTTester",
-            destinations: .iOS,
+            destinations: [.iPhone, .iPad, .appleTv],
             product: .app,
             bundleId: "com.revenuecat.rcttester",
-            deploymentTargets: .iOS("15.0"),
+            deploymentTargets: .multiplatform(iOS: "15.0", tvOS: "17.0"),
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchScreen": [
                         "UIColorName": "",
                         "UIImageName": "",
                     ],
+                    "CFBundleIconName": "AppIcon",
+                    "ITSAppUsesNonExemptEncryption": false,
                     "REVENUECAT_API_KEY": "$(REVENUECAT_API_KEY)",
                 ]
             ),
@@ -27,12 +30,16 @@ let project = Project(
             resources: [
                 "../../Tests/TestingApps/RCTTester/RCTTester/**/*.xcassets",
                 "../../Tests/TestingApps/RCTTester/RCTTester/**/*.storekit",
+                "../../Tests/TestingApps/RCTTester/RCTTester/**/*.icon",
             ],
             dependencies: [
                 .revenueCat,
                 .revenueCatUI,
             ],
-            settings: .appTarget
+            settings: .appTarget(including: [
+                "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
+                "PROVISIONING_PROFILE_SPECIFIER": "$(RCT_PROVISIONING_PROFILE)",
+            ])
         )
     ],
     schemes: [

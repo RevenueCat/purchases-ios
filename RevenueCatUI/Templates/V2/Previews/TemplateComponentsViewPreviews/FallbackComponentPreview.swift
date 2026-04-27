@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 12/29/24.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 // swiftlint:disable force_try
@@ -121,7 +121,6 @@ struct FallbackComponentPreview_Previews: PreviewProvider {
         return try! factory.toViewModel(
             component: component,
             packageValidator: packageValidator,
-            firstItemIgnoresSafeAreaInfo: nil,
             offering: offering,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),

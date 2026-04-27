@@ -35,8 +35,6 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
     // Something very specific on purpose to make sure we can differentiate it in tests from adjusted timeouts
     let defaultRequestTimeout: TimeInterval = 3.21
 
-    fileprivate let apiKey = "MockAPIKey"
-
     override func setUpWithError() throws {
         try super.setUpWithError()
 
@@ -75,8 +73,7 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
         _ systemInfo: SystemInfo,
         operationDispatcher: OperationDispatcher = MockOperationDispatcher()
     ) -> HTTPClient {
-        return HTTPClient(apiKey: self.apiKey,
-                          systemInfo: systemInfo,
+        return HTTPClient(systemInfo: systemInfo,
                           eTagManager: self.eTagManager,
                           signing: self.signing,
                           diagnosticsTracker: self.diagnosticsTracker,
@@ -1123,8 +1120,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         XCTAssertEqual(
             timeoutManager.timeout(
-                for: request.path,
-                isFallback: false
+                isFallback: false,
+                fallbackAvailable: true
             ),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
@@ -1143,8 +1140,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         XCTAssertEqual(
             timeoutManager.timeout(
-                for: request.path,
-                isFallback: false
+                isFallback: false,
+                fallbackAvailable: true
             ),
             HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
         )
@@ -1195,12 +1192,11 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
 
         // Make sure it uses the default timeout because it doesn't support fallback requests
-        XCTAssertEqual(timeoutManager.timeout(for: request.path, isFallback: false), self.defaultRequestTimeout)
+        XCTAssertEqual(timeoutManager.timeout(isFallback: false, fallbackAvailable: false), self.defaultRequestTimeout)
 
         // Make sure it uses the default timeout for backend requests suppoting fallback
-        let requestSupportingFallback = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
         XCTAssertEqual(
-            timeoutManager.timeout(for: requestSupportingFallback.path, isFallback: false),
+            timeoutManager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
         )
     }
@@ -1227,7 +1223,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         // Still reduced timeout because error was not a timeout
         XCTAssertEqual(
-            timeoutManager.timeout(for: request.path, isFallback: false),
+            timeoutManager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
     }
@@ -1260,7 +1256,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         // Timeout should remain at mainBackendRequestSupportingFallback because .other doesn't change the timeout state
         XCTAssertEqual(
-            timeoutManager.timeout(for: request.path, isFallback: false),
+            timeoutManager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
         )
     }
@@ -1303,7 +1299,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // The initial request to the main backend should use the value for a request
         // to the main backend that supports fallback
         XCTAssertEqual(
-            self.timeoutManager.timeout(for: firstRequest.path, isFallback: false),
+            self.timeoutManager.timeout(isFallback: false, fallbackAvailable: true),
             HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
         )
 
@@ -1344,7 +1340,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                 // A new request that supports fallback to the main backend
                 // should use the default timeout since previously a timeout was received
                 XCTAssertEqual(
-                    self.timeoutManager.timeout(for: secondRequest.path, isFallback: false),
+                    self.timeoutManager.timeout(isFallback: false, fallbackAvailable: true),
                     HTTPRequestTimeoutManager.Timeout.reduced.rawValue
                 )
 
@@ -1357,6 +1353,68 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         XCTAssertTrue(fallbackCalled)
         XCTAssertTrue(secondRequestCalled)
+    }
+
+    // MARK: - Proxy URL timeout tests
+
+    /// When a proxy URL is set, fallback URLs are disabled. Since there's no fallback safety net,
+    /// the timeout manager should use the default timeout for fallback-supporting endpoints
+    /// instead of the aggressive short timeout.
+    func testUsesDefaultTimeoutForFallbackSupportingEndpointWhenProxyURLIsSet() throws {
+        let proxyURL = try XCTUnwrap(URL(string: "https://proxy.revenuecat.com"))
+        SystemInfo.proxyURL = proxyURL
+
+        defer {
+            SystemInfo.proxyURL = nil
+        }
+
+        // Recreate client so it picks up the proxy URL
+        self.client = self.createClient()
+
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
+
+        stub(condition: isHost("proxy.revenuecat.com")) { request in
+            // With a proxy URL, the request should use the default timeout
+            // because fallback URLs are disabled and the short timeout is only
+            // useful when fallback can catch a timeout.
+            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+    }
+
+    /// When a proxy URL is set and a previous timeout occurred, the timeout manager should NOT
+    /// use the reduced (2s) timeout. Since fallback is disabled with a proxy, using a reduced
+    /// timeout would make requests very likely to fail with no recovery path.
+    func testDoesNotUseReducedTimeoutAfterTimeoutWhenProxyURLIsSet() throws {
+        let proxyURL = try XCTUnwrap(URL(string: "https://proxy.revenuecat.com"))
+        SystemInfo.proxyURL = proxyURL
+
+        defer {
+            SystemInfo.proxyURL = nil
+        }
+
+        // Recreate client so it picks up the proxy URL
+        self.client = self.createClient()
+
+        // Simulate a previous timeout on the main backend
+        timeoutManager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
+
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
+
+        stub(condition: isHost("proxy.revenuecat.com")) { request in
+            // Even after a previous timeout, with a proxy URL set the request
+            // should use the default timeout, not the reduced 2s timeout.
+            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
     }
 
     #if os(macOS) || targetEnvironment(macCatalyst)
@@ -1437,6 +1495,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "3.2.1")
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: true,
+                                    apiKey: "api_key",
                                     preferredLocalesProvider: .mock())
 
         self.client = self.createClient(systemInfo)
@@ -1477,8 +1536,27 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "1.2.3")
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: true,
+                                    apiKey: "api_key",
                                     preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        expect(headerPresent.value) == true
+    }
+
+    func testPassesInstallationMethodHeader() {
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        let headerPresent: Atomic<Bool> = false
+
+        stub(condition: hasHeaderNamed("X-Installation-Method",
+                                       value: SystemInfo.installationMethod)) { _ in
+            headerPresent.value = true
+            return .emptySuccessResponse()
+        }
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }
@@ -1498,6 +1576,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
         self.client = self.createClient(SystemInfo(platformInfo: nil,
                                                    finishTransactions: true,
+                                                   apiKey: "api_key",
                                                    preferredLocalesProvider: .mock()))
 
         waitUntil { completion in
@@ -1511,6 +1590,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let headerName = "X-UI-Preview-Mode"
         let systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: true,
+                                    apiKey: "api_key",
                                     dangerousSettings: .init(uiPreviewMode: true),
                                     preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
@@ -1535,6 +1615,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let headerName = "X-UI-Preview-Mode"
         let systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: true,
+                                    apiKey: "api_key",
                                     dangerousSettings: .init(uiPreviewMode: false),
                                     preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
@@ -1607,6 +1688,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
         self.client = self.createClient(SystemInfo(platformInfo: nil,
                                                    finishTransactions: false,
+                                                   apiKey: "api_key",
                                                    preferredLocalesProvider: .mock()))
 
         waitUntil { completion in
@@ -2111,6 +2193,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .init(
                 platformInfo: nil,
                 finishTransactions: false,
+                apiKey: "api_key",
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: .allServersDown)
@@ -2152,6 +2235,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .init(
                 platformInfo: nil,
                 finishTransactions: false,
+                apiKey: "api_key",
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: nil)
@@ -2189,6 +2273,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .init(
                 platformInfo: nil,
                 finishTransactions: false,
+                apiKey: "api_key",
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: .init { _ in

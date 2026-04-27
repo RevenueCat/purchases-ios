@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if canImport(UIKit)
@@ -33,14 +33,18 @@ class TextComponentViewModel {
     init(
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
-        component: PaywallComponent.TextComponent
+        component: PaywallComponent.TextComponent,
+        discardRules: Bool = false
     ) throws {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
-        self.text = try localizationProvider.localizedStrings.string(key: component.text)
+        self.text = (try? localizationProvider.localizedStrings.string(key: component.text)) ?? {
+            Logger.warning("Missing localization for text_lid '\(component.text)', using empty string.")
+            return ""
+        }()
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides {
+        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) {
             try LocalizedTextPartial.create(from: $0, using: localizationProvider.localizedStrings)
         }
 
@@ -52,6 +56,7 @@ class TextComponentViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        selectedPackageId: String?,
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer?,
@@ -60,31 +65,38 @@ class TextComponentViewModel {
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let isEligibleForPromoOffer = promoOffer != nil
+        let conditionContext = uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables
+        )
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial
         let text = localizedPartial?.text ?? self.text
 
+        let config = TextProcessingConfig(
+            packageContext: packageContext,
+            variableConfig: uiConfigProvider.variableConfig,
+            locale: self.localizationProvider.locale,
+            localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale),
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer,
+            countdownTime: countdownTime,
+            customVariables: customVariables,
+            defaultCustomVariables: uiConfigProvider.defaultCustomVariables
+        )
+
         let style = TextComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
             visible: partial?.visible ?? self.component.visible ?? true,
-            text: Self.processText(
-                text,
-                packageContext: packageContext,
-                variableConfig: uiConfigProvider.variableConfig,
-                locale: self.localizationProvider.locale,
-                localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale),
-                isEligibleForIntroOffer: isEligibleForIntroOffer,
-                promoOffer: promoOffer,
-                countdownTime: countdownTime,
-                customVariables: customVariables,
-                defaultCustomVariables: uiConfigProvider.defaultCustomVariables
-            ),
+            name: partial?.name ?? self.component.name,
+            text: Self.processText(text, config: config),
             fontName: partial?.fontName ?? self.component.fontName,
             fontWeight: partial?.fontWeightResolved ?? self.component.fontWeightResolved,
             color: partial?.color ?? self.component.color,
@@ -99,81 +111,57 @@ class TextComponentViewModel {
         apply(style)
     }
 
-    // swiftlint:disable:next function_parameter_count
-    private static func processText(
-        _ text: String,
-        packageContext: PackageContext,
-        variableConfig: UIConfig.VariableConfig,
-        locale: Locale,
-        localizations: [String: String],
-        isEligibleForIntroOffer: Bool,
-        promoOffer: PromotionalOffer? = nil,
-        countdownTime: CountdownTime? = nil,
-        customVariables: [String: CustomVariableValue] = [:],
-        defaultCustomVariables: [String: CustomVariableValue] = [:]
-    ) -> String {
-        let processedWithV2 = Self.processTextV2(
-            text,
-            packageContext: packageContext,
-            variableConfig: variableConfig,
-            locale: locale,
-            localizations: localizations,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            promoOffer: promoOffer,
-            countdownTime: countdownTime,
-            customVariables: customVariables,
-            defaultCustomVariables: defaultCustomVariables
-        )
+    private struct TextProcessingConfig {
+        let packageContext: PackageContext
+        let variableConfig: UIConfig.VariableConfig
+        let locale: Locale
+        let localizations: [String: String]
+        let isEligibleForIntroOffer: Bool
+        let promoOffer: PromotionalOffer?
+        let countdownTime: CountdownTime?
+        let customVariables: [String: CustomVariableValue]
+        let defaultCustomVariables: [String: CustomVariableValue]
+    }
 
-        // Note: This is temporary while in closed beta and shortly after
+    private static func processText(_ text: String, config: TextProcessingConfig) -> String {
+        let processedWithV2 = Self.processTextV2(text, config: config)
+
         let processedWithV2AndV1 = Self.processTextV1(
             processedWithV2,
-            packageContext: packageContext,
-            locale: locale
+            packageContext: config.packageContext,
+            locale: config.locale
         )
 
         return processedWithV2AndV1
     }
 
-    // swiftlint:disable:next function_parameter_count
-    private static func processTextV2(
-        _ text: String,
-        packageContext: PackageContext,
-        variableConfig: UIConfig.VariableConfig,
-        locale: Locale,
-        localizations: [String: String],
-        isEligibleForIntroOffer: Bool,
-        promoOffer: PromotionalOffer? = nil,
-        countdownTime: CountdownTime? = nil,
-        customVariables: [String: CustomVariableValue] = [:],
-        defaultCustomVariables: [String: CustomVariableValue] = [:]
-    ) -> String {
-        let pkg = packageContext.package
+    private static func processTextV2(_ text: String, config: TextProcessingConfig) -> String {
+        let pkg = config.packageContext.package
 
         let discount = pkg.flatMap { package in
             Self.discount(
                 from: package.storeProduct.pricePerMonth?.doubleValue,
-                relativeTo: packageContext.variableContext.mostExpensivePricePerMonth
+                relativeTo: config.packageContext.variableContext.mostExpensivePricePerMonth
             )
         }
 
         let handler = VariableHandlerV2(
-            variableCompatibilityMap: variableConfig.variableCompatibilityMap,
-            functionCompatibilityMap: variableConfig.functionCompatibilityMap,
+            variableCompatibilityMap: config.variableConfig.variableCompatibilityMap,
+            functionCompatibilityMap: config.variableConfig.functionCompatibilityMap,
             discountRelativeToMostExpensivePerMonth: discount,
-            showZeroDecimalPlacePrices: packageContext.variableContext.showZeroDecimalPlacePrices,
-            customVariables: customVariables,
-            defaultCustomVariables: defaultCustomVariables
+            showZeroDecimalPlacePrices: config.packageContext.variableContext.showZeroDecimalPlacePrices,
+            customVariables: config.customVariables,
+            defaultCustomVariables: config.defaultCustomVariables
         )
 
         return handler.processVariables(
             in: text,
             with: pkg,
-            locale: locale,
-            localizations: localizations,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            promoOffer: promoOffer,
-            countdownTime: countdownTime
+            locale: config.locale,
+            localizations: config.localizations,
+            isEligibleForIntroOffer: config.isEligibleForIntroOffer,
+            promoOffer: config.promoOffer,
+            countdownTime: config.countdownTime
         )
     }
 
@@ -226,6 +214,7 @@ struct LocalizedTextPartial: PresentedPartial {
             text: other?.text ?? base?.text,
             partial: PaywallComponent.PartialTextComponent(
                 visible: otherPartial?.visible ?? basePartial?.visible,
+                name: otherPartial?.name ?? basePartial?.name,
                 text: otherPartial?.text ?? basePartial?.text,
                 fontName: otherPartial?.fontName ?? basePartial?.fontName,
                 fontWeight: otherPartial?.fontWeightResolved ?? basePartial?.fontWeightResolved,
@@ -262,6 +251,7 @@ extension LocalizedTextPartial {
 struct TextComponentStyle {
 
     let visible: Bool
+    let name: String?
     let text: String
     let fontWeight: Font.Weight
     let color: DisplayableColorScheme
@@ -276,6 +266,7 @@ struct TextComponentStyle {
     init(
         uiConfigProvider: UIConfigProvider,
         visible: Bool,
+        name: String?,
         text: String,
         fontName: String?,
         fontWeight: PaywallComponent.FontWeight,
@@ -288,6 +279,7 @@ struct TextComponentStyle {
         horizontalAlignment: PaywallComponent.HorizontalAlignment
     ) {
         self.visible = visible
+        self.name = name
         self.text = text
         self.fontWeight = fontWeight.fontWeight
         self.color = color.asDisplayable(uiConfigProvider: uiConfigProvider)

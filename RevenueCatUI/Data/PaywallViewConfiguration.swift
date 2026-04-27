@@ -7,7 +7,7 @@
 
 import Foundation
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 /// Parameters needed to configure a ``PaywallView``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -17,10 +17,15 @@ struct PaywallViewConfiguration {
     var customerInfo: CustomerInfo?
     var mode: PaywallViewMode
     var fonts: PaywallFontProvider
+
+    /// This is a configuration value that is for V1 paywalls and the fallback paywall. V2 paywalls
+    /// can have their own close buttons configured via the dashboard, so it's not used by the
+    /// PaywallsV2View success path.
     var displayCloseButton: Bool
     let useDraftPaywall: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler
+    var promoOfferCache: PaywallPromoOfferCache?
 
     init(
         content: Content,
@@ -30,7 +35,8 @@ struct PaywallViewConfiguration {
         displayCloseButton: Bool = false,
         useDraftPaywall: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler
+        purchaseHandler: PurchaseHandler,
+        promoOfferCache: PaywallPromoOfferCache? = nil
     ) {
         self.content = content
         self.customerInfo = customerInfo
@@ -40,6 +46,7 @@ struct PaywallViewConfiguration {
         self.useDraftPaywall = useDraftPaywall
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
+        self.promoOfferCache = promoOfferCache
     }
 
 }
@@ -71,7 +78,8 @@ extension PaywallViewConfiguration {
         displayCloseButton: Bool = false,
         useDraftPaywall: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler = PurchaseHandler.default()
+        purchaseHandler: PurchaseHandler = PurchaseHandler.default(),
+        promoOfferCache: PaywallPromoOfferCache? = nil
     ) {
         let handler = purchaseHandler
 
@@ -83,7 +91,8 @@ extension PaywallViewConfiguration {
             displayCloseButton: displayCloseButton,
             useDraftPaywall: useDraftPaywall,
             introEligibility: introEligibility,
-            purchaseHandler: handler
+            purchaseHandler: handler,
+            promoOfferCache: promoOfferCache
         )
     }
 
@@ -95,31 +104,6 @@ extension PaywallViewConfiguration.Content {
     /// - Returns: `Content.offering` or `Content.defaultOffering` if `nil`.
     static func optionalOffering(_ offering: Offering?) -> Self {
         return offering.map(Self.offering) ?? .defaultOffering
-    }
-
-    /// Resolves the content to an `Offering` by fetching from the backend if needed.
-    /// - Returns: The resolved `Offering`, or `nil` if it couldn't be fetched.
-    func resolveOffering() async -> Offering? {
-        switch self {
-        case let .offering(offering):
-            return offering
-        case .defaultOffering, .offeringIdentifier:
-            guard Purchases.isConfigured else { return nil }
-
-            do {
-                switch self {
-                case .defaultOffering:
-                    return try await Purchases.shared.offerings().current
-                case let .offeringIdentifier(identifier, _):
-                    return try await Purchases.shared.offerings().offering(identifier: identifier)
-                case .offering:
-                    fatalError("Already handled above")
-                }
-            } catch {
-                Logger.error(Strings.errorFetchingOfferings(error))
-                return nil
-            }
-        }
     }
 
 }

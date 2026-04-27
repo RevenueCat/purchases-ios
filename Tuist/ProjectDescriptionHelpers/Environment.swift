@@ -1,20 +1,53 @@
 import Foundation
 import ProjectDescription
 
+public enum DependencyMode {
+    /// The dependency is a local Swift Package Manager package.
+    case localSwiftPackage
+
+    /// The dependency is a local Xcode project. Tuist's default behavior.
+    case localXcodeProject
+
+    /// The dependency is a remote Swift Package Manager package.
+    case remoteSwiftPackage
+
+    /// The dependency is a remote Xcode project.
+    case remoteXcodeProject
+}
+
 extension Environment {
-    /// Returns whether the current environment is local.
-    /// This is determined by the `rcLocal` environment variable, defaulting to `true` if not set.
+    /// Returns the dependency mode for RevenueCat/RevenueCatUI.
     ///
     /// Example usage:
     /// ```bash
-    /// # Generate project with local environment (default)
+    /// # Generate project with local Swift Package dependency (default)
     /// tuist generate
     ///
-    /// # Generate project with non-local environment
-    /// TUIST_RC_LOCAL=false tuist generate
+    /// # Generate project with Xcode project dependency (instead of Swift Package)
+    /// TUIST_RC_XCODE_PROJECT=true tuist generate
+    ///
+    /// # Generate project with remote dependency (instead of local dependency)
+    /// TUIST_RC_REMOTE=true tuist generate
     /// ```
-    public static var local: Bool {
-        Environment.rcLocal.getBoolean(default: true)
+    public static var dependencyMode: DependencyMode {
+        // Note: Environment variable names are prefixed with TUIST_ automatically, therefore:
+        // rcRemote reads TUIST_RC_REMOTE
+        // rcXcodeProject reads TUIST_RC_XCODE_PROJECT
+        let remote = Environment.rcRemote.getBoolean(default: false)
+        let xcodeProject = Environment.rcXcodeProject.getBoolean(default: false)
+        if remote {
+            return xcodeProject ? .remoteXcodeProject : .remoteSwiftPackage
+        } else {
+            return xcodeProject ? .localXcodeProject : .localSwiftPackage
+        }
+    }
+
+    /// Returns whether to include external test/dev dependencies (Nimble, SnapshotTesting, OHHTTPStubs, GoogleMobileAds, etc.)
+    /// and the projects that depend on them (RevenueCatTests, RevenueCatAdMob, AdMobIntegrationSample).
+    /// Defaults to `true`. Set `TUIST_INCLUDE_TEST_DEPENDENCIES=false` to skip them and speed up `tuist install` on CI.
+    public static var includeTestDependencies: Bool {
+        let envValue = ProcessInfo.processInfo.environment["TUIST_INCLUDE_TEST_DEPENDENCIES"] ?? "true"
+        return envValue.lowercased() != "false"
     }
 
     /// Returns whether to include the XCFrameworkInstallationTests project in the workspace.
@@ -57,5 +90,35 @@ extension Environment {
     public static var rcApiKey: String? {
         let value = ProcessInfo.processInfo.environment["TUIST_RC_API_KEY"] ?? ""
         return value.isEmpty ? nil : value
+    }
+
+    /// Returns extra launch arguments to inject into scheme run actions, enabled by default.
+    ///
+    /// Example usage:
+    /// ```bash
+    /// # Single argument
+    /// TUIST_LAUNCH_ARGUMENTS="-EnableWorkflowsEndpoint" tuist generate PaywallsTester
+    ///
+    /// # Multiple arguments
+    /// TUIST_LAUNCH_ARGUMENTS="-EnableWorkflowsEndpoint -MyOtherFlag" tuist generate
+    /// ```
+    public static var extraLaunchArguments: [String] {
+        let value = ProcessInfo.processInfo.environment["TUIST_LAUNCH_ARGUMENTS"] ?? ""
+        return value.split(separator: " ").map(String.init).filter { !$0.isEmpty }
+    }
+
+    /// Returns extra Swift compilation conditions to inject into all targets.
+    ///
+    /// Example usage:
+    /// ```bash
+    /// # Single flag
+    /// TUIST_SWIFT_CONDITIONS="ENABLE_WORKFLOWS_ENDPOINT" tuist generate PaywallsTester
+    ///
+    /// # Multiple flags
+    /// TUIST_SWIFT_CONDITIONS="ENABLE_WORKFLOWS_ENDPOINT MY_OTHER_FLAG" tuist generate
+    /// ```
+    public static var extraSwiftConditions: [String] {
+        let value = ProcessInfo.processInfo.environment["TUIST_SWIFT_CONDITIONS"] ?? ""
+        return value.split(separator: " ").map(String.init).filter { !$0.isEmpty }
     }
 }

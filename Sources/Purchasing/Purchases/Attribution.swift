@@ -37,6 +37,8 @@ import Foundation
 
     weak var delegate: AttributionDelegate?
 
+    var syncAttributesAndOfferingsIfNeededHandler: ((@escaping (Offerings?, PublicError?) -> Void) -> Void)?
+
     init(subscriberAttributesManager: SubscriberAttributesManager,
          currentUserProvider: CurrentUserProvider,
          attributionPoster: AttributionPoster,
@@ -507,6 +509,59 @@ public extension Attribution {
         self.subscriberAttributesManager.setAppsFlyerConversionData(data, appUserID: appUserID)
     }
 
+    /**
+     * Sets attribution data from Appstack's attribution params, then syncs attributes and fetches
+     * offerings so that Appstack-based targeting is applied before the callback returns.
+     *
+     * Note: Offering fetching is rate limited, so the offerings being returned might be cached if the 
+     * limit is hit.
+     *
+     * Pass the dictionary received from `AppstackAttributionSdk.shared.getAttributionParams()` directly.
+     * The SDK extracts relevant attribution info and sets the appropriate subscriber attributes. Note
+     * that this method will never unset any attributes, even if passed `nil`. To unset an attribute,
+     * call the individual setter with a `nil` value.
+     *
+     * - Parameter data: The attribution params from `AppstackAttributionSdk.shared.getAttributionParams()`.
+     * - Parameter completion: Called with the ``Offerings`` (targeted with Appstack data, or the cached 
+     * ones if rate limited) or an error.
+     */
+    @objc func setAppstackAttributionParams(
+        _ data: [String: Any]?,
+        completion: @escaping (Offerings?, PublicError?) -> Void
+    ) {
+        self.subscriberAttributesManager.setAppstackAttributionParams(data, appUserID: appUserID)
+        guard let handler = self.syncAttributesAndOfferingsIfNeededHandler else {
+            completion(nil, nil)
+            return
+        }
+        handler(completion)
+    }
+
+    /**
+     * Sets attribution data from Appstack's attribution params, then syncs attributes and fetches
+     * offerings so that Appstack-based targeting is applied before this method returns.
+     * 
+     * Note: Offering fetching is rate limited, so the offerings being returned might be cached if the 
+     * limit is hit.
+     *
+     * - Parameter data: The attribution params from `AppstackAttributionSdk.shared.getAttributionParams()`.
+     * - Returns: ``Offerings`` targeted with the Appstack attribution data (or the cached ones), or `nil` 
+     * if none are configured.
+     * - Throws: A ``PublicError`` if the sync or offerings fetch fails.
+     */
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func setAppstackAttributionParams(_ data: [String: Any]?) async throws -> Offerings? {
+        return try await withCheckedThrowingContinuation { continuation in
+            self.setAppstackAttributionParams(data) { offerings, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: offerings)
+                }
+            }
+        }
+    }
+
 }
 
 #endif
@@ -540,6 +595,13 @@ extension Attribution {
         return self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: self.appUserID,
                                                                           syncedAttribute: syncedAttribute,
                                                                           completion: completion)
+    }
+
+    /// Caches the current ATT consent status as a subscriber attribute.
+    /// Called from `PurchasesOrchestrator.refreshATTStatusAndGetUnsyncedAttributes` (receipt posts)
+    /// and from `SubscriberAttributesManager.syncAttributesForAllUsers` (foreground/background/login/logout).
+    func setATTConsentStatus(forAppUserID appUserID: String) {
+        self.subscriberAttributesManager.setATTConsentStatus(forAppUserID: appUserID)
     }
 
     func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttribute.Dictionary {

@@ -46,6 +46,9 @@ struct Template4View: TemplateViewType {
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
+
     init(_ configuration: TemplateViewConfiguration) {
         self.configuration = configuration
 
@@ -139,6 +142,17 @@ struct Template4View: TemplateViewType {
                 let isSelected = self.selectedPackage.content === package.content
 
                 Button {
+                    let origin = self.selectedPackage.content
+                    let destination = package.content
+                    if origin.identifier != destination.identifier {
+                        self.componentInteractionLogger(
+                            .paywallPackageRowSelection(
+                                destination: destination,
+                                origin: origin,
+                                defaultPackage: self.configuration.packages.default.content
+                            )
+                        )
+                    }
                     self.selectedPackage = package
                 } label: {
                     PackageButton(configuration: self.configuration,

@@ -35,6 +35,10 @@ class SystemInfo {
     }
 
     let storeKitVersion: StoreKitVersion
+
+    /// The public API key used to configure the SDK.
+    let apiKey: String
+
     private var _apiKeyValidationResult: Configuration.APIKeyValidationResult
     var apiKeyValidationResult: Configuration.APIKeyValidationResult {
         get { return self._apiKeyValidationResult }
@@ -102,7 +106,19 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.60.0-SNAPSHOT"
+        return "5.70.0-SNAPSHOT"
+    }
+
+    static var installationMethod: String {
+        #if SWIFT_PACKAGE
+        return "spm"
+        #elseif COCOAPODS
+        return "cocoapods"
+        #elseif RC_XCFRAMEWORK
+        return "xcframework"
+        #else
+        return "unknown"
+        #endif
     }
 
     static var systemVersion: String {
@@ -191,6 +207,7 @@ class SystemInfo {
          sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
          storefrontProvider: StorefrontProviderType = DefaultStorefrontProvider(),
          storeKitVersion: StoreKitVersion = .default,
+         apiKey: String,
          apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
@@ -205,6 +222,7 @@ class SystemInfo {
         self._isAppBackgroundedState = .init(isAppBackgrounded ?? false)
         self.operationDispatcher = operationDispatcher
         self.storeKitVersion = storeKitVersion
+        self.apiKey = apiKey
         self._apiKeyValidationResult = apiKeyValidationResult
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.storefrontProvider = storefrontProvider

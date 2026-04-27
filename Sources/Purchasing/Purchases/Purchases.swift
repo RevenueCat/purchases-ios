@@ -116,6 +116,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     }
 
     private weak var privateDelegate: PurchasesDelegate?
+
+    /// Listener for receiving tracked feature events as dictionaries.
+    /// Set this to monitor events tracked by RevenueCatUI features (paywalls, customer center).
+    @_spi(Internal) public var eventsListener: EventsListener? {
+        get { self.eventsManager?.eventsListener }
+        set { self.eventsManager?.eventsListener = newValue }
+    }
+
     private let operationDispatcher: OperationDispatcher
 
     /**
@@ -343,6 +351,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             finishTransactions: !observerMode,
             operationDispatcher: operationDispatcher,
             storeKitVersion: storeKitVersion,
+            apiKey: apiKey,
             apiKeyValidationResult: apiKeyValidationResult,
             responseVerificationMode: responseVerificationMode,
             dangerousSettings: dangerousSettings,
@@ -382,7 +391,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let transactionFetcher = StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
 
         let backend = Backend(
-            apiKey: apiKey,
             systemInfo: systemInfo,
             httpClientTimeout: networkTimeout,
             eTagManager: eTagManager,
@@ -392,7 +400,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 with: purchasedProductsFetcher,
                 productEntitlementMappingFetcher: deviceCache,
                 tracker: diagnosticsTracker,
-                observerMode: observerMode
+                observerMode: observerMode,
+                customEntitlementComputation: systemInfo.dangerousSettings.customEntitlementComputation
             ),
             diagnosticsTracker: diagnosticsTracker
         )
@@ -478,27 +487,22 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         )
 
         let eventsManager: EventsManagerType?
-        do {
-            if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-                let adEventStore: AdEventStoreType? = try? AdEventStore.createDefault(
-                    applicationSupportDirectory: applicationSupportDirectory
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
+           let featureEventStore = FeatureEventStore.createDefault(
+            persistenceDirectory: applicationSupportDirectory
+           ) {
+            eventsManager = EventsManager(
+                internalAPI: backend.internalAPI,
+                userProvider: identityManager,
+                store: featureEventStore,
+                systemInfo: systemInfo,
+                adEventStore: AdEventStore.createDefault(
+                    persistenceDirectory: applicationSupportDirectory
                 )
-                eventsManager = EventsManager(
-                    internalAPI: backend.internalAPI,
-                    userProvider: identityManager,
-                    store: try FeatureEventStore.createDefault(
-                        applicationSupportDirectory: applicationSupportDirectory
-                    ),
-                    systemInfo: systemInfo,
-                    adEventStore: adEventStore
-                )
-                Logger.verbose(Strings.paywalls.event_manager_initialized)
-            } else {
-                Logger.verbose(Strings.paywalls.event_manager_not_initialized_not_available)
-                eventsManager = nil
-            }
-        } catch {
-            Logger.verbose(Strings.paywalls.event_manager_failed_to_initialize(error))
+            )
+            Logger.verbose(Strings.paywalls.event_manager_initialized)
+        } else {
+            Logger.verbose(Strings.paywalls.event_manager_not_initialized_not_available)
             eventsManager = nil
         }
 
@@ -801,6 +805,19 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         #endif
 
         self.purchasesOrchestrator.delegate = self
+        #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        self.attribution.syncAttributesAndOfferingsIfNeededHandler = { completion in
+            completion(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
+        }
+        #else
+        self.attribution.syncAttributesAndOfferingsIfNeededHandler = { [weak self] completion in
+            guard let self else {
+                completion(nil, nil)
+                return
+            }
+            self.syncAttributesAndOfferingsIfNeeded(completion: completion)
+        }
+        #endif
 
         // Don't update caches or run health checks in the background to avoid too many users
         // hitting the backend concurrently when launched through a notification at the same time.
@@ -923,6 +940,19 @@ public extension Purchases {
 
     var cachedOfferings: Offerings? {
         return self.offeringsManager.cachedOfferings
+    }
+
+    @_spi(Internal)
+    // The backend uses the offering identifier as the workflow lookup key.
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
+        return try await Async.call { completion in
+            self.backend.workflowsAPI.getWorkflow(
+                appUserID: self.appUserID,
+                workflowId: offeringID,
+                isAppBackgrounded: false,
+                completion: completion
+            )
+        }
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
@@ -1498,7 +1528,6 @@ public extension Purchases {
 
     /// Used by `RevenueCatUI` to keep track of ``PaywallEvent``s.
     func track(paywallEvent: PaywallEvent) async {
-        self.purchasesOrchestrator.track(paywallEvent: paywallEvent)
         await self.eventsManager?.track(featureEvent: paywallEvent)
     }
 
@@ -1553,6 +1582,41 @@ public extension Purchases {
 
 }
 
+// MARK: - Reward Verification (Internal SPI)
+
+extension Purchases {
+
+    /// Polls the backend once for reward verification status using `client_transaction_id`.
+    ///
+    /// Internal API for RC ad adapters.
+    ///
+    /// Cancelling the calling `Task` does not cancel the in-flight HTTP request.
+    @_spi(Internal) public func pollRewardVerificationStatus(
+        clientTransactionID: String
+    ) async throws -> RewardVerificationPollStatus {
+        let response = try await Async.call { completion in
+            self.backend.adsAPI.getRewardVerificationStatus(
+                appUserID: self.appUserID,
+                clientTransactionID: clientTransactionID
+            ) { result in
+                completion(result.mapError(\.asPublicError))
+            }
+        }
+
+        switch response.status {
+        case let .verified(reward):
+            return .verified(reward)
+        case .pending:
+            return .pending
+        case .failed:
+            return .failed
+        case .unknown:
+            return .unknown
+        }
+    }
+
+}
+
 // MARK: - Preferred locale
 
 extension Purchases {
@@ -1571,9 +1635,15 @@ extension Purchases {
 
         if self.overridePreferredUILocaleRateLimiter.shouldProceed() {
             // Refetches new offerings with preferred locale
-            self.getOfferings(fetchPolicy: .default, fetchCurrent: true) { _, _ in
+            self.offeringsManager.clearInMemoryOfferingsCache()
+            self.getOfferings(fetchPolicy: .default) { _, _ in
                 // No-op
             }
+        } else {
+            Logger.debug(Strings.offering.override_preferred_locale_rate_limited(
+                maxCalls: self.overridePreferredUILocaleRateLimiter.maxCalls,
+                periodSeconds: Int(self.overridePreferredUILocaleRateLimiter.period)
+            ))
         }
     }
 }
@@ -2051,18 +2121,56 @@ extension Purchases: @unchecked Sendable {}
 
 extension Purchases {
 
-    /// Used when purchasing through `SwiftUI` paywalls.
-    @_spi(Internal) public func cachePresentedOfferingContext(_ context: PresentedOfferingContext,
-                                                              productIdentifier: String) {
-        Logger.debug(Strings.purchase.caching_presented_offering_identifier(
-            offeringID: context.offeringIdentifier,
-            productID: productIdentifier
-        ))
-
-        self.purchasesOrchestrator.cachePresentedOfferingContext(
-            context,
+    /// Caches the `PresentedOfferingContext` and an optional `PaywallEvent` for a product.
+    /// Used by `RevenueCatUI` for StoreView integration and when `purchasesAreCompletedBy` is `.myApp`
+    /// so that `Transaction.updates` can attribute the purchase to the paywall/offering.
+    @_spi(Internal) public func cachePurchaseData(
+        presentedOfferingContext: PresentedOfferingContext,
+        paywallEvent: PaywallEvent?,
+        productIdentifier: String
+    ) {
+        self.purchasesOrchestrator.cachePurchaseData(
+            presentedOfferingContext: presentedOfferingContext,
+            paywallEvent: paywallEvent,
             productIdentifier: productIdentifier
         )
+    }
+
+    /// Clears cached purchase data for a product.
+    /// Used by `RevenueCatUI` when `purchasesAreCompletedBy` is `.myApp`
+    /// and the purchase is cancelled or fails.
+    @_spi(Internal) public func clearCachedPurchaseData(productIdentifier: String) {
+        self.purchasesOrchestrator.clearCachedPurchaseData(productIdentifier: productIdentifier)
+    }
+
+    /// Purchases a package, optionally with a promotional offer and/or paywall event.
+    /// The paywall event is passed through the purchase call tree so the SK2 path
+    /// can attribute the purchase deterministically.
+    @_spi(Internal) public func purchase(
+        package: Package,
+        promotionalOffer: PromotionalOffer?,
+        paywallEvent: PaywallEvent?
+    ) async throws -> PurchaseResultData {
+        return try await withUnsafeThrowingContinuation { continuation in
+            self.purchasesOrchestrator.purchase(
+                product: package.storeProduct,
+                package: package,
+                promotionalOffer: promotionalOffer?.signedData,
+                metadata: nil,
+                paywallEvent: paywallEvent,
+                trackDiagnostics: true
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(
+                    with: Result(customerInfo, error)
+                        .map { PurchaseResultData(transaction, $0, userCancelled) }
+                )
+            }
+        }
+    }
+
+    /// Exposed so adapter modules (e.g., RevenueCatAdMob) can read the configured key.
+    @_spi(Internal) public var apiKey: String {
+        return self.systemInfo.apiKey
     }
 
     // swiftlint:disable missing_docs
@@ -2075,6 +2183,11 @@ extension Purchases {
     // swiftlint:disable missing_docs
     @_spi(Internal) public var preferredLocaleOverride: String? {
         return self.systemInfo.preferredLocaleOverride
+    }
+
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public static var installationMethod: String {
+        return SystemInfo.installationMethod
     }
 }
 
@@ -2113,6 +2226,45 @@ extension Purchases: InternalPurchasesType {
 
 /// Necessary because `ErrorUtils` inside of `Purchases` finds the obsoleted type.
 private typealias NewErrorUtils = ErrorUtils
+
+// MARK: - Custom Paywall Impressions
+
+extension Purchases {
+
+    /// Tracks an impression for a custom paywall.
+    ///
+    /// Call this method when your custom (non-RevenueCat) paywall is displayed to a user.
+    /// This enables RevenueCat to track paywall impressions for analytics.
+    ///
+    /// - Important: Each call creates a separate impression event. Call this once per paywall presentation,
+    ///   not in SwiftUI's `onAppear` or similar callbacks that may fire multiple times for the same display.
+    ///
+    /// - Parameter params: Parameters for the custom paywall impression.
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @objc public func trackCustomPaywallImpression(_ params: CustomPaywallImpressionParams) {
+        let offeringId = params.offeringId ?? self.offeringsManager.cachedOfferings?.current?.identifier
+        Task {
+            let event = CustomPaywallEvent.impression(
+                .init(),
+                .init(paywallId: params.paywallId, offeringId: offeringId)
+            )
+            await self.eventsManager?.track(featureEvent: event)
+        }
+    }
+
+    /// Tracks an impression for a custom paywall with no additional parameters.
+    ///
+    /// Call this method when your custom (non-RevenueCat) paywall is displayed to a user.
+    /// This enables RevenueCat to track paywall impressions for analytics.
+    ///
+    /// - Important: Each call creates a separate impression event. Call this once per paywall presentation,
+    ///   not in SwiftUI's `onAppear` or similar callbacks that may fire multiple times for the same display.
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @objc public func trackCustomPaywallImpression() {
+        trackCustomPaywallImpression(CustomPaywallImpressionParams())
+    }
+
+}
 
 internal extension Purchases {
 

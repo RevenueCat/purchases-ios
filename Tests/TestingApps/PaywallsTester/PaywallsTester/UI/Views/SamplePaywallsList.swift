@@ -7,7 +7,7 @@
 
 
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 #if DEBUG
 @_spi(Internal) @testable import RevenueCatUI
 #else
@@ -56,6 +56,9 @@ struct SamplePaywallsList: View {
                 fatalError()
 
             case .presentPaywall:
+                fatalError()
+
+            case .workflow:
                 fatalError()
 
             #if !os(watchOS) && !os(macOS)
@@ -118,9 +121,7 @@ struct SamplePaywallsList: View {
             EmptyView()
 
         case .uiKitCustomerCenter:
-            CustomerCenterUIKitView(
-                customerCenterActionHandler: self.handleCustomerCenterAction
-            )
+            CustomerCenterUIKitView()
         #else
         default:
             EmptyView()
@@ -191,6 +192,15 @@ struct SamplePaywallsList: View {
                             usesExistingNavigation: true,
                             shouldShowCloseButton: false
                         ))
+                    .onCustomerCenterPromotionalOfferSucceeded { customerInfo, transaction, offerId in
+                        print("CustomerCenter: promotionalOfferSucceeded. " +
+                              "OfferId: \(offerId), " +
+                              "TransactionId: \(transaction.transactionIdentifier), " +
+                              "Entitlements: \(customerInfo.entitlements.active.keys.joined(separator: ", "))")
+                    }
+                    .onCustomerCenterPromotionalOfferSuccess {
+                        print("CustomerCenter: promotionalOfferSuccess (deprecated)")
+                    }
                 } label: {
                     Text("Pushed in NavigationView")
                 }

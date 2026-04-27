@@ -23,6 +23,7 @@ enum Strings {
     case unrecognized_variable_name(variableName: String)
 
     case product_already_subscribed
+    case purchase_failed(Error)
 
     case determining_whether_to_display_paywall
     case displaying_paywall
@@ -31,14 +32,18 @@ enum Strings {
     case tier_has_no_available_products_for_paywall(String)
 
     case attempted_to_track_event_with_missing_data
+    case paywall_unknown_button_action_tracked_for_diagnostics(componentName: String?, actionValue: String)
 
     case image_starting_request(URL)
     case image_result(Result<(), ImageLoader.Error>)
     case image_failed_to_load(URL, Error)
 
+    case restore_purchases_gate_start
+    case restore_purchases_gate_finish(with: Bool)
     case restoring_purchases
     case restored_purchases
     case restore_purchases_with_empty_result
+    case restore_purchases_failed(Error)
     case setting_restored_customer_info
 
     case executing_purchase_logic
@@ -79,6 +84,7 @@ enum Strings {
     case promo_offer_purchase_cancelled(String, String)
     case promo_offer_purchase_succeeded(String, String, String)
     case promo_offer_purchase_failed(String, String, Error)
+    case promo_offer_nil_transaction(String, String)
     case could_not_determine_type_of_custom_url
     case active_product_is_not_apple_loading_without_product_information(Store)
     case could_not_find_product_loading_without_product_information(String)
@@ -101,6 +107,7 @@ enum Strings {
 
     // Video
     case video_failed_to_set_audio_session_category(Error)
+    case video_failed_to_cache(URL, Error)
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -109,6 +116,10 @@ enum Strings {
     case prefetchedExitOffer(String)
     case presentingExitOffer(String)
     case errorLoadingExitOffer(Error)
+
+    // Conditional Configurability
+    case paywall_contains_unsupported_condition
+
 }
 
 extension Strings: CustomStringConvertible {
@@ -146,6 +157,10 @@ extension Strings: CustomStringConvertible {
 
         case .attempted_to_track_event_with_missing_data:
             return "Attempted to track event with missing data"
+
+        case let .paywall_unknown_button_action_tracked_for_diagnostics(componentName, actionValue):
+            return "Tracked unknown paywall button action for diagnostics. " +
+            "componentName=\(componentName ?? "nil"), actionValue=\(actionValue)"
 
         case let .image_starting_request(url):
             return "Starting request for image: '\(url)'"
@@ -258,6 +273,10 @@ extension Strings: CustomStringConvertible {
         case let .promo_offer_purchase_failed(productId, offerId, error):
             return "Promotional offer purchase failed for product '\(productId)' with offer '\(offerId)': \(error)"
 
+        case let .promo_offer_nil_transaction(productId, offerId):
+            return "Promotional offer purchase for product '\(productId)' with offer '\(offerId)' succeeded " +
+            "but no transaction was returned by StoreKit."
+
         case .could_not_offer_for_any_active_subscriptions:
             return "Could not find offer with id for any active subscription"
 
@@ -337,6 +356,8 @@ extension Strings: CustomStringConvertible {
 
         case .video_failed_to_set_audio_session_category(let error):
             return "Failed to set audio session category: \(error)"
+        case .video_failed_to_cache(let url, let error):
+            return "Failed to cache video at \(url): \(error)"
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
@@ -350,6 +371,18 @@ extension Strings: CustomStringConvertible {
             return "Presenting exit offer paywall for offering '\(offeringId)'"
         case .errorLoadingExitOffer(let error):
             return "Error loading exit offer: \(error)"
+        case .restore_purchases_gate_start:
+            return "Restore Purchases Initiated… waiting for resumable callback to proceed."
+        case .restore_purchases_gate_finish(with: let proceed):
+            // swiftlint:disable:next line_length
+            return "Restore Purchases gate complete. The SDK **\(proceed ? "will" : "will not")** attempt to restore purchases."
+        case .restore_purchases_failed(let error):
+            return "Restore failed with error: \(error)"
+        case .purchase_failed(let error):
+            return "Purchase failed with error: \(error)"
+        case .paywall_contains_unsupported_condition:
+            return "Unsupported paywall rule encountered. " +
+            "Rendering paywall without conditional configurability rules."
         }
     }
 

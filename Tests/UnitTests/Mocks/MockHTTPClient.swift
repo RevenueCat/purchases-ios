@@ -59,8 +59,7 @@ class MockHTTPClient: HTTPClient {
     var calls: [Call] = []
     private var shouldAssertSnapshot: Bool = true
 
-    init(apiKey: String,
-         systemInfo: SystemInfo,
+    init(systemInfo: SystemInfo,
          eTagManager: ETagManager,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
@@ -68,8 +67,7 @@ class MockHTTPClient: HTTPClient {
          sourceTestFile: StaticString = #file) {
         self.sourceTestFile = sourceTestFile
 
-        super.init(apiKey: apiKey,
-                   systemInfo: systemInfo,
+        super.init(systemInfo: systemInfo,
                    eTagManager: eTagManager,
                    signing: FakeSigning.default,
                    diagnosticsTracker: diagnosticsTracker,
@@ -106,7 +104,7 @@ class MockHTTPClient: HTTPClient {
             self.calls.append(call)
 
             if self.shouldAssertSnapshot {
-                assertSnapshot(matching: call,
+                assertSnapshot(of: call,
                                as: .formattedJson,
                                file: self.sourceTestFile,
                                testName: CurrentTestCaseTracker.osVersionAndTestName)
