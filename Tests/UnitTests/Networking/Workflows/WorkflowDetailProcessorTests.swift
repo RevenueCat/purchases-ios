@@ -171,8 +171,7 @@ class WorkflowDetailProcessorTests: TestCase {
             let step = value.workflow.steps["step_1"]
             expect(step).notTo(beNil())
             let action = step?.triggerActions["btn_wagcLsIVjN"]
-            expect(action).notTo(beNil())
-            expect(action?.stepId) == "step_2"
+            expect(action) == .step(stepId: "step_2")
         })
     }
 

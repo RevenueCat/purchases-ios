@@ -133,7 +133,13 @@ struct WorkflowPaywallView: View {
         .padding(.horizontal, 16)
         .padding(.top, 4)
         .padding(.bottom, 8)
-        .background(.ultraThinMaterial)
+        .background {
+            if #available(watchOS 10.0, *) {
+                Rectangle().fill(.ultraThinMaterial)
+            } else {
+                Rectangle().fill(Color.primary.opacity(0.05))
+            }
+        }
         .overlay(alignment: .bottom) {
             Divider()
         }
