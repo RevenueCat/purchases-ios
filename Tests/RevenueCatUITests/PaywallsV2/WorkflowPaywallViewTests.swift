@@ -45,6 +45,15 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(action) == .dismissWorkflow
     }
 
+    func testDismissalActionDismissesWorkflowAtRootStepAfterPurchase() {
+        let action = WorkflowPaywallView.dismissalAction(
+            canNavigateBack: false,
+            hasPurchasedInSession: true
+        )
+
+        expect(action) == .dismissWorkflow
+    }
+
 }
 
 #endif
