@@ -24,23 +24,30 @@ struct WorkflowPaywallView: View {
         case navigateBack
     }
 
+    private enum Constants {
+        static let navBarHeight: CGFloat = 44
+        static let navBarSideItemMaxWidth: CGFloat = 128
+        static let transitionDuration: Double = 0.25
+    }
+
     private let context: WorkflowContext
     private let purchaseHandler: PurchaseHandler
     private let introEligibilityChecker: TrialOrIntroEligibilityChecker
     private let showZeroDecimalPlacePrices: Bool
-    private let displayCloseButton: Bool
     private let promoOfferCache: PaywallPromoOfferCache?
     private let onDismiss: () -> Void
 
     @StateObject private var navigator: WorkflowNavigator
     @State private var hasLoggedInvalidState = false
+    @State private var transitionIsForward: Bool = true
+    @State private var leadingItemWidth: CGFloat = 0
+    @State private var trailingItemWidth: CGFloat = 0
 
     init(
         context: WorkflowContext,
         purchaseHandler: PurchaseHandler,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
-        displayCloseButton: Bool,
         promoOfferCache: PaywallPromoOfferCache?,
         onDismiss: @escaping () -> Void
     ) {
@@ -48,43 +55,130 @@ struct WorkflowPaywallView: View {
         self.purchaseHandler = purchaseHandler
         self.introEligibilityChecker = introEligibilityChecker
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
-        self.displayCloseButton = displayCloseButton
         self.promoOfferCache = promoOfferCache
         self.onDismiss = onDismiss
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
     }
 
     var body: some View {
-        if let stepContent = self.currentStepContent {
-            PaywallsV2View(
-                paywallComponents: stepContent.paywallComponents,
-                offering: stepContent.offering,
-                purchaseHandler: self.purchaseHandler,
-                introEligibilityChecker: self.introEligibilityChecker,
-                showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
-                displayCloseButton: self.shouldDisplayCloseButton,
-                onDismiss: self.handleDismiss,
-                failedToLoadFont: { fontConfig in
-                    if Purchases.isConfigured {
-                        Purchases.shared.failedToLoadFontWithConfig(fontConfig)
-                    }
-                },
-                colorScheme: self.colorScheme,
-                promoOfferCache: self.promoOfferCache
-            )
-            .id(navigator.currentStepId)
-            .environment(\.workflowTriggerAction, { componentId in
-                self.navigator.triggerAction(componentId: componentId, triggerType: .onPress) != nil
-            })
-        } else {
-            Color.clear
-                .frame(width: 0, height: 0)
-                .accessibilityHidden(true)
-                .onAppear {
-                    self.logInvalidWorkflowStateIfNeeded()
+        VStack(spacing: 0) {
+            self.navigationBar
+
+            ZStack {
+                if let stepContent = self.currentStepContent {
+                    PaywallsV2View(
+                        paywallComponents: stepContent.paywallComponents,
+                        offering: stepContent.offering,
+                        purchaseHandler: self.purchaseHandler,
+                        introEligibilityChecker: self.introEligibilityChecker,
+                        showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
+                        displayCloseButton: false,
+                        onDismiss: self.handleDismiss,
+                        failedToLoadFont: { fontConfig in
+                            if Purchases.isConfigured {
+                                Purchases.shared.failedToLoadFontWithConfig(fontConfig)
+                            }
+                        },
+                        colorScheme: self.colorScheme,
+                        promoOfferCache: self.promoOfferCache
+                    )
+                    .id(navigator.currentStepId)
+                    .transition(self.pageTransition)
+                    .environment(\.workflowTriggerAction, { componentId in
+                        self.transitionIsForward = true
+                        return self.navigator.triggerAction(componentId: componentId) != nil
+                    })
+                } else {
+                    Color.clear
+                        .frame(width: 0, height: 0)
+                        .accessibilityHidden(true)
+                        .onAppear {
+                            self.logInvalidWorkflowStateIfNeeded()
+                        }
                 }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
+            .animation(.easeInOut(duration: Constants.transitionDuration), value: navigator.currentStepId)
         }
     }
+
+    // MARK: - Nav bar
+
+    private var navigationBar: some View {
+        ZStack {
+            HStack(spacing: 12) {
+                self.leadingNavigationItem
+                    .fixedSize(horizontal: true, vertical: false)
+                    .frame(maxWidth: Constants.navBarSideItemMaxWidth, alignment: .leading)
+                    .onWidthChange { self.leadingItemWidth = $0 }
+
+                Spacer(minLength: 0)
+
+                self.trailingNavigationItem
+                    .fixedSize(horizontal: true, vertical: false)
+                    .frame(maxWidth: Constants.navBarSideItemMaxWidth, alignment: .trailing)
+                    .onWidthChange { self.trailingItemWidth = $0 }
+            }
+
+            if let title = self.currentScreenName {
+                Text(title)
+                    .font(.system(size: 17, weight: .semibold))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .padding(.horizontal, max(self.leadingItemWidth, self.trailingItemWidth) + 12)
+            }
+        }
+        .frame(height: Constants.navBarHeight)
+        .padding(.horizontal, 16)
+        .padding(.top, 4)
+        .padding(.bottom, 8)
+        .background(.ultraThinMaterial)
+        .overlay(alignment: .bottom) {
+            Divider()
+        }
+    }
+
+    @ViewBuilder
+    private var leadingNavigationItem: some View {
+        if navigator.canNavigateBack {
+            Button {
+                self.transitionIsForward = false
+                self.navigator.navigateBack()
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 17, weight: .semibold))
+                    if let previousTitle = self.previousScreenName {
+                        Text(previousTitle)
+                            .font(.system(size: 17))
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    }
+                }
+                .foregroundStyle(.blue)
+            }
+            .buttonStyle(.plain)
+        } else {
+            Button("Close") {
+                self.onDismiss()
+            }
+            .font(.system(size: 17))
+            .foregroundStyle(.blue)
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var trailingNavigationItem: some View {
+        Button("Close") {
+            self.onDismiss()
+        }
+        .font(.system(size: 17))
+        .foregroundStyle(.blue)
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Helpers
 
     private func handleDismiss() {
         switch Self.dismissalAction(
@@ -94,7 +188,8 @@ struct WorkflowPaywallView: View {
         case .dismissWorkflow:
             onDismiss()
         case .navigateBack:
-            navigator.navigateBack()
+            self.transitionIsForward = false
+            self.navigator.navigateBack()
         }
     }
 
@@ -112,8 +207,23 @@ struct WorkflowPaywallView: View {
         return .navigateBack
     }
 
-    private var shouldDisplayCloseButton: Bool {
-        return !self.navigator.canNavigateBack && self.displayCloseButton
+    private var pageTransition: AnyTransition {
+        .asymmetric(
+            insertion: .move(edge: transitionIsForward ? .trailing : .leading).combined(with: .opacity),
+            removal: .move(edge: transitionIsForward ? .leading : .trailing).combined(with: .opacity)
+        )
+    }
+
+    private var currentScreenName: String? {
+        guard let step = navigator.currentStep,
+              let screenId = step.screenId else { return nil }
+        return context.workflow.screens[screenId]?.name
+    }
+
+    private var previousScreenName: String? {
+        guard let previousStep = navigator.previousStep,
+              let screenId = previousStep.screenId else { return nil }
+        return context.workflow.screens[screenId]?.name
     }
 
     private var currentStepContent: CurrentStepContent? {
