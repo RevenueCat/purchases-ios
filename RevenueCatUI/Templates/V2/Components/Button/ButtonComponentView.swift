@@ -111,6 +111,10 @@ struct ButtonComponentView: View {
             navigateTo(destination: destination)
         case .navigateBack:
             onDismiss()
+        case .workflowTrigger:
+            Logger.warning(
+                Strings.paywall_workflow_trigger_not_handled(componentName: self.viewModel.component.name)
+            )
         case .unknown:
             Logger.warning(
                 Strings.paywall_unknown_button_action_tracked_for_diagnostics(

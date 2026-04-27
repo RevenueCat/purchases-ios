@@ -20,6 +20,26 @@ struct WorkflowContext {
     let initialOffering: Offering
     /// Preserved so every subsequent step's offering can carry the same placement/targeting metadata.
     let presentedOfferingContext: PresentedOfferingContext?
+
+    func offering(for offeringIdentifier: String?) -> Offering? {
+        guard let offeringIdentifier else {
+            return self.initialOffering
+        }
+
+        if self.initialOffering.identifier == offeringIdentifier {
+            return self.initialOffering
+        }
+
+        guard let offering = self.allOfferings.all[offeringIdentifier] else {
+            return nil
+        }
+
+        guard let presentedOfferingContext else {
+            return offering
+        }
+
+        return offering.withPresentedOfferingContext(presentedOfferingContext)
+    }
 }
 
 #endif

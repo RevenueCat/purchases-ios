@@ -49,6 +49,9 @@ public struct PaywallView: View {
     private var offering: Offering?
 
     @State
+    private var workflowContext: WorkflowContext?
+
+    @State
     private var customerInfo: CustomerInfo?
     @State
     private var error: NSError?
@@ -228,6 +231,7 @@ public struct PaywallView: View {
             } else if self.introEligibility.isConfigured, self.purchaseHandler.isConfigured {
                 if let offering = self.offering, let customerInfo = self.customerInfo {
                     self.paywallView(for: offering,
+                                     workflowContext: self.workflowContext,
                                      useDraftPaywall: self.useDraftPaywall,
                                      activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,
                                      fonts: self.fonts,
@@ -252,7 +256,9 @@ public struct PaywallView: View {
                                 }
 
                                 if self.offering == nil {
-                                    self.offering = try await self.loadOffering()
+                                    let paywallData = try await self.loadPaywallData()
+                                    self.offering = paywallData.offering
+                                    self.workflowContext = paywallData.workflowContext
                                 }
 
                                 if self.customerInfo == nil {
@@ -289,6 +295,7 @@ public struct PaywallView: View {
     // swiftlint:disable:next function_body_length function_parameter_count
     private func paywallView(
         for offering: Offering,
+        workflowContext: WorkflowContext?,
         useDraftPaywall: Bool,
         activelySubscribedProductIdentifiers: Set<String>,
         fonts: PaywallFontProvider,
@@ -329,29 +336,30 @@ public struct PaywallView: View {
             #endif
             // Show the actually V2 paywall for full screen
             case .fullScreen:
-
-                PaywallsV2View(
-                    paywallComponents: paywallComponents,
-                    offering: offering,
-                    purchaseHandler: purchaseHandler,
-                    introEligibilityChecker: checker,
-                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
-                    displayCloseButton: self.displayCloseButton,
-                    onDismiss: {
-                        guard let onRequestedDismissal = self.onRequestedDismissal else {
-                            self.dismiss()
-                            return
-                        }
-                        onRequestedDismissal()
-                    },
-                    failedToLoadFont: { fontConfig in
-                        if Purchases.isConfigured {
-                            Purchases.shared.failedToLoadFontWithConfig(fontConfig)
-                        }
-                    },
-                    colorScheme: colorScheme,
-                    promoOfferCache: self.promoOfferCache
-                )
+                if let workflowContext {
+                    WorkflowPaywallView(
+                        context: workflowContext,
+                        purchaseHandler: purchaseHandler,
+                        introEligibilityChecker: checker,
+                        showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                        displayCloseButton: self.displayCloseButton,
+                        promoOfferCache: self.promoOfferCache,
+                        onDismiss: self.dismissRequested
+                    )
+                } else {
+                    PaywallsV2View(
+                        paywallComponents: paywallComponents,
+                        offering: offering,
+                        purchaseHandler: purchaseHandler,
+                        introEligibilityChecker: checker,
+                        showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                        displayCloseButton: self.displayCloseButton,
+                        onDismiss: self.dismissRequested,
+                        failedToLoadFont: self.failedToLoadFont,
+                        colorScheme: colorScheme,
+                        promoOfferCache: self.promoOfferCache
+                    )
+                }
             }
         } else {
             let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
@@ -397,8 +405,22 @@ private extension PaywallView {
         }
     }
 
-    func loadOffering() async throws -> Offering {
-        return try await self.purchaseHandler.resolveOfferingOrThrow(for: self.contentToDisplay)
+    func loadPaywallData() async throws -> PurchaseHandler.ResolvedPaywallViewData {
+        return try await self.purchaseHandler.resolvePaywallViewData(for: self.contentToDisplay)
+    }
+
+    func dismissRequested() {
+        guard let onRequestedDismissal = self.onRequestedDismissal else {
+            self.dismiss()
+            return
+        }
+        onRequestedDismissal()
+    }
+
+    func failedToLoadFont(_ fontConfig: UIConfig.FontsConfig) {
+        if Purchases.isConfigured {
+            Purchases.shared.failedToLoadFontWithConfig(fontConfig)
+        }
     }
 
 }
