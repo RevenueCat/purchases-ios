@@ -342,7 +342,6 @@ public struct PaywallView: View {
                         purchaseHandler: purchaseHandler,
                         introEligibilityChecker: checker,
                         showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
-                        displayCloseButton: self.displayCloseButton,
                         promoOfferCache: self.promoOfferCache,
                         onDismiss: self.dismissRequested
                     )

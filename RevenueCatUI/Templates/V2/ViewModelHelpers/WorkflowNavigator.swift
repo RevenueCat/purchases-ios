@@ -34,6 +34,11 @@ final class WorkflowNavigator: ObservableObject {
         return !backStack.isEmpty
     }
 
+    var previousStep: WorkflowStep? {
+        guard let previousStepId = backStack.last else { return nil }
+        return workflow.steps[previousStepId]
+    }
+
     @discardableResult
     func triggerAction(componentId: String, triggerType: WorkflowTriggerType = .onPress) -> WorkflowStep? {
         guard let step = currentStep,

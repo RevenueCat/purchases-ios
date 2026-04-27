@@ -76,7 +76,7 @@ import Foundation
 
 @_spi(Internal) public struct WorkflowScreen {
 
-    let name: String?
+    public let name: String?
     public let templateName: String
     @DefaultDecodable.Zero
     // swiftlint:disable:next identifier_name
