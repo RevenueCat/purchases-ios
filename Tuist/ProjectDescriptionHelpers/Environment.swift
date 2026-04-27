@@ -66,6 +66,14 @@ extension Environment {
         return envValue.lowercased() == "true"
     }
 
+    /// Returns whether to include the XCFrameworkExport project in the workspace.
+    /// This project is used for building xcframeworks with proper dynamic linking.
+    /// Set `TUIST_INCLUDE_XCFRAMEWORK_EXPORT=true` to include it.
+    public static var includeXCFrameworkExport: Bool {
+        let envValue = ProcessInfo.processInfo.environment["TUIST_INCLUDE_XCFRAMEWORK_EXPORT"] ?? "false"
+        return envValue.lowercased() == "true"
+    }
+
     /// Returns the custom StoreKit configuration file path for PaywallsTester, if set.
     /// When set, the "PaywallsTester - SK Config" scheme will use this path instead of the default.
     ///

@@ -41,6 +41,12 @@ case .localSwiftPackage, .remoteSwiftPackage, .remoteXcodeProject:
 if Environment.includeXCFrameworkInstallationTests {
     projects.append("./Projects/XCFrameworkInstallationTests")
 }
+if Environment.includeXCFrameworkExport {
+    projects.append("./Projects/XCFrameworkExport")
+}
+if Environment.includeXCFrameworkInstallationTests {
+    projects.append("./Tests/SPMXCFrameworkTest")
+}
 
 var additionalFiles: [FileElement] = [
     .glob(pattern: "Global.xcconfig"),
