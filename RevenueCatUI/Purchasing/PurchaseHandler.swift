@@ -252,6 +252,13 @@ extension PurchaseHandler {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
 
+#if !os(tvOS)
+    struct ResolvedPaywallViewData {
+        let offering: Offering
+        let workflowContext: WorkflowContext?
+    }
+#endif
+
     func cachedInitialOffering(for content: PaywallViewConfiguration.Content) -> Offering? {
         switch content {
         case let .offering(offering):
@@ -288,6 +295,9 @@ extension PurchaseHandler {
     }
 
     func resolveOfferingOrThrow(for content: PaywallViewConfiguration.Content) async throws -> Offering {
+#if !os(tvOS)
+        return try await self.resolvePaywallViewData(for: content).offering
+#else
         switch content {
         case let .offering(offering):
             return offering
@@ -299,20 +309,13 @@ extension PurchaseHandler {
                 presentedOfferingContext: presentedOfferingContext
             )
         }
+#endif
     }
 
     private func resolveOfferingIdentifier(
         identifier: String,
         presentedOfferingContext: PresentedOfferingContext?
     ) async throws -> Offering {
-        #if !os(tvOS)
-        if ProcessInfo.processInfo.workflowsEndpointEnabled {
-            return try await self.resolveWorkflowOfferingIdentifier(
-                identifier: identifier,
-                presentedOfferingContext: presentedOfferingContext
-            )
-        }
-        #endif
         let offering = try await self.purchases.offerings()
             .offering(identifier: identifier)
             .orThrow(PaywallError.offeringNotFound(identifier: identifier))
@@ -324,22 +327,71 @@ extension PurchaseHandler {
         return offering
     }
 
-    #if !os(tvOS)
-    private func resolveWorkflowOfferingIdentifier(
+#if !os(tvOS)
+    func resolvePaywallViewData(
+        for content: PaywallViewConfiguration.Content
+    ) async throws -> ResolvedPaywallViewData {
+        return try await self.resolvePaywallViewData(
+            for: content,
+            workflowsEndpointEnabled: ProcessInfo.processInfo.workflowsEndpointEnabled
+        )
+    }
+
+    func resolvePaywallViewData(
+        for content: PaywallViewConfiguration.Content,
+        workflowsEndpointEnabled: Bool
+    ) async throws -> ResolvedPaywallViewData {
+        switch content {
+        case let .offering(offering):
+            return .init(offering: offering, workflowContext: nil)
+        case .defaultOffering:
+            let offering = try await self.purchases.offerings().current.orThrow(PaywallError.noCurrentOffering)
+            return .init(offering: offering, workflowContext: nil)
+        case let .offeringIdentifier(identifier, presentedOfferingContext):
+            return try await self.resolveOfferingIdentifier(
+                identifier: identifier,
+                presentedOfferingContext: presentedOfferingContext,
+                workflowsEndpointEnabled: workflowsEndpointEnabled
+            )
+        }
+    }
+#endif
+
+#if !os(tvOS)
+    private func resolveOfferingIdentifier(
         identifier: String,
-        presentedOfferingContext: PresentedOfferingContext?
-    ) async throws -> Offering {
-        return try await resolveWorkflowContext(
-            identifier: identifier,
-            presentedOfferingContext: presentedOfferingContext
-        ).offering
+        presentedOfferingContext: PresentedOfferingContext?,
+        workflowsEndpointEnabled: Bool
+    ) async throws -> ResolvedPaywallViewData {
+        if workflowsEndpointEnabled {
+            let (context, offering) = try await self.resolveWorkflowContext(
+                identifier: identifier,
+                presentedOfferingContext: presentedOfferingContext,
+                workflowsEndpointEnabled: workflowsEndpointEnabled
+            )
+            return .init(offering: offering, workflowContext: context)
+        }
+
+        let offering = try await self.purchases.offerings()
+            .offering(identifier: identifier)
+            .orThrow(PaywallError.offeringNotFound(identifier: identifier))
+
+        let resolvedOffering: Offering
+        if let presentedOfferingContext {
+            resolvedOffering = offering.withPresentedOfferingContext(presentedOfferingContext)
+        } else {
+            resolvedOffering = offering
+        }
+
+        return .init(offering: resolvedOffering, workflowContext: nil)
     }
 
     func resolveWorkflowContext(
         identifier: String,
-        presentedOfferingContext: PresentedOfferingContext?
+        presentedOfferingContext: PresentedOfferingContext?,
+        workflowsEndpointEnabled: Bool = ProcessInfo.processInfo.workflowsEndpointEnabled
     ) async throws -> (context: WorkflowContext, offering: Offering) {
-        guard ProcessInfo.processInfo.workflowsEndpointEnabled else {
+        guard workflowsEndpointEnabled else {
             throw PaywallError.offeringNotFound(identifier: identifier)
         }
 
