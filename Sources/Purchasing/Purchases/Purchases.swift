@@ -2247,7 +2247,13 @@ extension Purchases {
         Task {
             let event = CustomPaywallEvent.impression(
                 .init(),
-                .init(paywallId: params.paywallId, offeringId: offeringId)
+                .init(
+                    paywallId: params.paywallId,
+                    offeringId: offeringId,
+                    placementIdentifier: params.placementIdentifier,
+                    targetingRevision: params.targetingRevisionValue,
+                    targetingRuleId: params.targetingRuleId
+                )
             )
             await self.eventsManager?.track(featureEvent: event)
         }
