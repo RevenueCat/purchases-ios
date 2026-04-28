@@ -11,6 +11,20 @@ import GoogleMobileAds
 @_spi(Experimental) import RevenueCat
 
 @available(iOS 15.0, *)
+internal extension Tracking {
+
+    /// Per-banner state attached to a `BannerView` via an associated object.
+    ///
+    /// Presence of this object signals "we have already wrapped this banner", which is what
+    /// allows us to distinguish a never-wrapped banner from one wrapped with a nil user handler.
+    final class BannerTrackingState {
+        var delegate: BannerViewDelegate?
+        var originalPaidHandler: ((GoogleMobileAds.AdValue) -> Void)?
+    }
+
+}
+
+@available(iOS 15.0, *)
 internal extension GoogleMobileAds.BannerView {
 
     func loadAndTrack(
@@ -28,13 +42,26 @@ internal extension GoogleMobileAds.BannerView {
             delegate: effectiveDelegate,
             placement: placement
         )
-        adapter.bannerDelegateStore.retain(trackingDelegate, for: self)
+
+        let isFirstWrap: Bool
+        let state: Tracking.BannerTrackingState
+        if let existing = adapter.bannerStateStore.retrieve(for: self) {
+            state = existing
+            isFirstWrap = false
+        } else {
+            state = Tracking.BannerTrackingState()
+            adapter.bannerStateStore.retain(state, for: self)
+            isFirstWrap = true
+        }
+        state.delegate = trackingDelegate
         self.delegate = trackingDelegate
 
         installPaidEventHandlerWrapper(
             paidEventHandler: paidEventHandler,
             placement: placement,
-            adapter: adapter
+            adapter: adapter,
+            state: state,
+            isFirstWrap: isFirstWrap
         )
 
         self.load(request)
@@ -43,15 +70,14 @@ internal extension GoogleMobileAds.BannerView {
     private func installPaidEventHandlerWrapper(
         paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?,
         placement: String?,
-        adapter: Tracking.Adapter
+        adapter: Tracking.Adapter,
+        state: Tracking.BannerTrackingState,
+        isFirstWrap: Bool
     ) {
-        let storedPaidHandler = adapter.bannerOriginalPaidHandlerStore.retrieve(for: self)
-        let didInstallWrapper = adapter.bannerDidInstallWrapperStore.retrieve(for: self)?.boolValue ?? false
-        let previousPaidHandler = didInstallWrapper ? storedPaidHandler : (storedPaidHandler ?? self.paidEventHandler)
+        let previousPaidHandler = isFirstWrap ? self.paidEventHandler : state.originalPaidHandler
         let effectivePaidHandler = paidEventHandler ?? previousPaidHandler
-        adapter.bannerOriginalPaidHandlerStore.retain(effectivePaidHandler, for: self)
+        state.originalPaidHandler = effectivePaidHandler
 
-        let capturedUserHandler = effectivePaidHandler
         self.paidEventHandler = { [weak self] adValue in
             if let self {
                 let responseInfo: GoogleMobileAds.ResponseInfo? = self.responseInfo
@@ -62,14 +88,9 @@ internal extension GoogleMobileAds.BannerView {
                     responseInfo: responseInfo,
                     adValue: adValue
                 )
-                let storedPaidHandler = adapter.bannerOriginalPaidHandlerStore.retrieve(for: self)
-                storedPaidHandler?(adValue)
-            } else {
-                // Banner was deallocated; still invoke user's handler (e.g. ad SDK invoked callback after view gone).
-                capturedUserHandler?(adValue)
             }
+            state.originalPaidHandler?(adValue)
         }
-        adapter.bannerDidInstallWrapperStore.retain(NSNumber(value: true), for: self)
     }
 
 }

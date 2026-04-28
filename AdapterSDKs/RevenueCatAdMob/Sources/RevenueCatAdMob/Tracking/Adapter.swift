@@ -25,11 +25,7 @@ internal extension Tracking {
         let tracker: Tracker
 
         let fullScreenDelegateStore = FullScreenDelegateStore()
-        let bannerDelegateStore = BannerDelegateStore()
-        let bannerOriginalPaidHandlerStore = AssociatedObjectStore<((GoogleMobileAds.AdValue) -> Void)>(
-            associationPolicy: .OBJC_ASSOCIATION_COPY_NONATOMIC
-        )
-        let bannerDidInstallWrapperStore = AssociatedObjectStore<NSNumber>()
+        let bannerStateStore = BannerStateStore()
         let nativeDelegateStore = NativeDelegateStore()
         let nativeAdLoaderProxyStore = NativeAdLoaderProxyStore()
 
