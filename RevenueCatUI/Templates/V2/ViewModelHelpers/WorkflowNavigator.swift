@@ -35,13 +35,14 @@ final class WorkflowNavigator: ObservableObject {
     }
 
     @discardableResult
-    func triggerAction(componentId: String) -> WorkflowStep? {
+    func triggerAction(componentId: String, triggerType: WorkflowTriggerType = .onPress) -> WorkflowStep? {
         guard let step = currentStep,
-              let trigger = step.stepTriggers.first(where: { $0.componentId == componentId }),
+              let trigger = step.stepTriggers.first(where: {
+                  $0.componentId == componentId && $0.type == triggerType
+              }),
               let actionId = trigger.actionId,
               let triggerAction = step.stepTriggerActions[actionId],
-              triggerAction.type == "step",
-              let stepId = triggerAction.stepId,
+              case .step(let stepId) = triggerAction,
               let nextStep = workflow.steps[stepId] else {
             return nil
         }

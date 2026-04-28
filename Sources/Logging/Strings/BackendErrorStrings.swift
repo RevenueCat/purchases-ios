@@ -28,6 +28,8 @@ enum BackendErrorStrings {
     case unsupported_reward_verification_reward_type(type: String)
     case malformed_reward_verification_reward_payload(type: String)
     case unexpected_reward_verification_reward_value
+    case unknown_workflow_trigger_type(type: String)
+    case unknown_workflow_trigger_action_type(type: String)
 
 }
 
@@ -53,6 +55,10 @@ extension BackendErrorStrings: LogMessage {
             return "Received malformed reward verification reward payload for type: \(type)"
         case .unexpected_reward_verification_reward_value:
             return "Received unexpected reward verification reward value: expected a JSON object"
+        case let .unknown_workflow_trigger_type(type):
+            return "Received unknown workflow trigger type: \(type)"
+        case let .unknown_workflow_trigger_action_type(type):
+            return "Received unknown workflow trigger action type: \(type)"
         }
     }
 
