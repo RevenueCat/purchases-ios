@@ -16,14 +16,11 @@ internal extension Tracking {
     ///
     /// The value lives exactly as long as the owner. Each store instance allocates its own key,
     /// so two stores of the same value type never collide.
-    final class AssociatedObjectStore<Value> {
+    final class AssociatedObjectStore<Value: AnyObject> {
 
         private let key = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
-        private let associationPolicy: objc_AssociationPolicy
 
-        init(associationPolicy: objc_AssociationPolicy = .OBJC_ASSOCIATION_RETAIN_NONATOMIC) {
-            self.associationPolicy = associationPolicy
-        }
+        init() {}
 
         deinit {
             self.key.deallocate()
@@ -38,7 +35,7 @@ internal extension Tracking {
                 object,
                 self.key,
                 value,
-                self.associationPolicy
+                .OBJC_ASSOCIATION_RETAIN_NONATOMIC
             )
         }
 
