@@ -12,6 +12,7 @@
 //
 //  Created by Cesar de la Vega on 27/5/24.
 //
+// swiftlint:disable file_length
 
 import Combine
 import Foundation
