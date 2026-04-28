@@ -17,7 +17,7 @@ import SwiftUI
 
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 import UIKit
 
