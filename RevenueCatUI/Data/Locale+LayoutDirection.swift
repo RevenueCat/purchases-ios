@@ -17,14 +17,17 @@ import SwiftUI
 extension Locale {
 
     var rcLayoutDirection: LayoutDirection {
+        #if swift(>=5.9) && os(visionOS)
+        return self.language.characterDirection.rcLayoutDirection
+        #else
         #if swift(>=5.9)
         if #available(macOS 13, iOS 16, tvOS 16, watchOS 9, visionOS 1.0, *) {
             return self.language.characterDirection.rcLayoutDirection
         }
         #endif
 
-        let languageIdentifier = self.languageCode ?? self.identifier
-        return Locale.characterDirection(forLanguage: languageIdentifier).rcLayoutDirection
+        return Locale.characterDirection(forLanguage: self.identifier).rcLayoutDirection
+        #endif
     }
 
 }
