@@ -31,14 +31,30 @@ func checkCustomPaywallImpressionAPI() {
             paywallId: "my-paywall",
             offeringId: nil
         )
+        let offering: Offering = Offering(
+            identifier: "my-offering",
+            serverDescription: "",
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+        let paramsWithOfferingObject: CustomPaywallImpressionParams = CustomPaywallImpressionParams(
+            paywallId: "my-paywall",
+            offering: offering
+        )
+        let paramsOfferingObjectOnly: CustomPaywallImpressionParams = CustomPaywallImpressionParams(offering: offering)
 
         // CustomPaywallImpressionParams properties
         let paywallId: String? = paramsWithId.paywallId
         let offeringId: String? = paramsWithOffering.offeringId
+        let placementIdentifier: String? = paramsWithOfferingObject.placementIdentifier
+        let targetingRevision: NSNumber? = paramsWithOfferingObject.targetingRevision
+        let targetingRuleId: String? = paramsWithOfferingObject.targetingRuleId
 
         // trackCustomPaywallImpression API
         purchases.trackCustomPaywallImpression(paramsDefault)
         purchases.trackCustomPaywallImpression(paramsWithId)
+        purchases.trackCustomPaywallImpression(paramsWithOfferingObject)
+        purchases.trackCustomPaywallImpression(paramsOfferingObjectOnly)
         purchases.trackCustomPaywallImpression()
     }
 }
