@@ -61,45 +61,44 @@ struct WorkflowPaywallView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            self.navigationBar
-
-            ZStack {
-                if let stepContent = self.currentStepContent {
-                    PaywallsV2View(
-                        paywallComponents: stepContent.paywallComponents,
-                        offering: stepContent.offering,
-                        purchaseHandler: self.purchaseHandler,
-                        introEligibilityChecker: self.introEligibilityChecker,
-                        showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
-                        displayCloseButton: false,
-                        onDismiss: self.handleDismiss,
-                        failedToLoadFont: { fontConfig in
-                            if Purchases.isConfigured {
-                                Purchases.shared.failedToLoadFontWithConfig(fontConfig)
-                            }
-                        },
-                        colorScheme: self.colorScheme,
-                        promoOfferCache: self.promoOfferCache
-                    )
-                    .id(navigator.currentStepId)
-                    .transition(self.pageTransition)
-                    .environment(\.workflowTriggerAction, { componentId in
-                        self.transitionIsForward = true
-                        return self.navigator.triggerAction(componentId: componentId) != nil
-                    })
-                } else {
-                    Color.clear
-                        .frame(width: 0, height: 0)
-                        .accessibilityHidden(true)
-                        .onAppear {
-                            self.logInvalidWorkflowStateIfNeeded()
+        ZStack {
+            if let stepContent = self.currentStepContent {
+                PaywallsV2View(
+                    paywallComponents: stepContent.paywallComponents,
+                    offering: stepContent.offering,
+                    purchaseHandler: self.purchaseHandler,
+                    introEligibilityChecker: self.introEligibilityChecker,
+                    showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
+                    displayCloseButton: false,
+                    onDismiss: self.handleDismiss,
+                    failedToLoadFont: { fontConfig in
+                        if Purchases.isConfigured {
+                            Purchases.shared.failedToLoadFontWithConfig(fontConfig)
                         }
-                }
+                    },
+                    colorScheme: self.colorScheme,
+                    promoOfferCache: self.promoOfferCache
+                )
+                .id(navigator.currentStepId)
+                .transition(self.pageTransition)
+                .environment(\.workflowTriggerAction, { componentId in
+                    self.transitionIsForward = true
+                    return self.navigator.triggerAction(componentId: componentId) != nil
+                })
+            } else {
+                Color.clear
+                    .frame(width: 0, height: 0)
+                    .accessibilityHidden(true)
+                    .onAppear {
+                        self.logInvalidWorkflowStateIfNeeded()
+                    }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .clipped()
-            .animation(.easeInOut(duration: Constants.transitionDuration), value: navigator.currentStepId)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .clipped()
+        .animation(.easeInOut(duration: Constants.transitionDuration), value: navigator.currentStepId)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            self.navigationBar
         }
     }
 
