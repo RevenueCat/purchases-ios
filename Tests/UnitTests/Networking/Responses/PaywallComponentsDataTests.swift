@@ -83,7 +83,22 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
             "components_config": {
                 "base": {
                     "layout_direction": "future_value",
-                    "stack": { "type": "stack", "components": [] },
+                    "stack": {
+                        "type": "stack",
+                        "components": [],
+                        "margin": {},
+                        "padding": {},
+                        "size": {
+                            "width": { "type": "fill" },
+                            "height": { "type": "fill" }
+                        },
+                        "dimension": {
+                            "type": "vertical",
+                            "alignment": "center",
+                            "distribution": "center"
+                        },
+                        "spacing": 16
+                    },
                     "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#ffffff" } } }
                 }
             },
