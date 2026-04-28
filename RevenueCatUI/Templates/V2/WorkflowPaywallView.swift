@@ -164,13 +164,15 @@ struct WorkflowPaywallView: View {
                 .foregroundStyle(.blue)
             }
             .buttonStyle(.plain)
+            .disabled(!self.navigationActionsEnabled)
         } else {
             Button("Close") {
-                self.onDismiss()
+                self.handleClose()
             }
             .font(.system(size: 17))
             .foregroundStyle(.blue)
             .buttonStyle(.plain)
+            .disabled(!self.navigationActionsEnabled)
         }
     }
 
@@ -178,17 +180,27 @@ struct WorkflowPaywallView: View {
     private var trailingNavigationItem: some View {
         if navigator.canNavigateBack {
             Button("Close") {
-                self.onDismiss()
+                self.handleClose()
             }
             .font(.system(size: 17))
             .foregroundStyle(.blue)
             .buttonStyle(.plain)
+            .disabled(!self.navigationActionsEnabled)
         }
     }
 
     // MARK: - Helpers
 
+    private var navigationActionsEnabled: Bool {
+        Self.navigationActionsEnabled(actionInProgress: self.purchaseHandler.actionInProgress)
+    }
+
+    static func navigationActionsEnabled(actionInProgress: Bool) -> Bool {
+        return !actionInProgress
+    }
+
     private func handleDismiss() {
+        guard self.navigationActionsEnabled else { return }
         switch Self.dismissalAction(
             canNavigateBack: self.navigator.canNavigateBack,
             hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession
@@ -199,6 +211,11 @@ struct WorkflowPaywallView: View {
             self.transitionIsForward = false
             self.navigator.navigateBack()
         }
+    }
+
+    private func handleClose() {
+        guard self.navigationActionsEnabled else { return }
+        self.onDismiss()
     }
 
     static func dismissalAction(

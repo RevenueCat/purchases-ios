@@ -54,6 +54,16 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(action) == .dismissWorkflow
     }
 
+    // MARK: - navigationActionsEnabled
+
+    func testNavigationActionsDisabledWhenActionInProgress() {
+        expect(WorkflowPaywallView.navigationActionsEnabled(actionInProgress: true)) == false
+    }
+
+    func testNavigationActionsEnabledWhenNoActionInProgress() {
+        expect(WorkflowPaywallView.navigationActionsEnabled(actionInProgress: false)) == true
+    }
+
 }
 
 #endif
