@@ -28,6 +28,7 @@ extension FeatureEventsRequest {
         var timestamp: UInt64
         var paywallId: String?
         var offeringId: String?
+        var presentedOfferingContext: FeatureEventsRequest.PaywallEvent.PresentedOfferingContextData?
 
     }
 
@@ -53,7 +54,12 @@ extension FeatureEventsRequest.CustomPaywallEvent {
                 appSessionID: storedEvent.appSessionID?.uuidString,
                 timestamp: event.creationData.date.millisecondsSince1970,
                 paywallId: event.data.paywallId,
-                offeringId: event.data.offeringId
+                offeringId: event.data.offeringId,
+                presentedOfferingContext: FeatureEventsRequest.PaywallEvent.PresentedOfferingContextData(
+                    placementIdentifier: event.data.placementIdentifier,
+                    targetingRevision: event.data.targetingRevision,
+                    targetingRuleId: event.data.targetingRuleId
+                )
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -80,6 +86,7 @@ extension FeatureEventsRequest.CustomPaywallEvent: Encodable {
         case timestamp
         case paywallId
         case offeringId
+        case presentedOfferingContext
 
     }
 
@@ -93,6 +100,7 @@ extension FeatureEventsRequest.CustomPaywallEvent: Encodable {
         try container.encode(timestamp, forKey: .timestamp)
         try container.encodeIfPresent(paywallId, forKey: .paywallId)
         try container.encodeIfPresent(offeringId, forKey: .offeringId)
+        try container.encodeIfPresent(presentedOfferingContext, forKey: .presentedOfferingContext)
     }
 
 }

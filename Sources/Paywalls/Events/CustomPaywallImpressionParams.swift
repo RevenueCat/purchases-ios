@@ -24,6 +24,24 @@ public final class CustomPaywallImpressionParams: NSObject, Sendable {
     /// If not provided, the SDK will use the current offering identifier from the cache.
     @objc public let offeringId: String?
 
+    /// The placement identifier this paywall was obtained from, if any.
+    @objc public let placementIdentifier: String?
+
+    private let targetingRevisionRawValue: Int?
+
+    /// The revision of the targeting rule used to obtain this paywall, if any.
+    @objc public var targetingRevision: NSNumber? {
+        return self.targetingRevisionRawValue.map(NSNumber.init(value:))
+    }
+
+    /// The revision of the targeting rule used to obtain this paywall, if any.
+    public var targetingRevisionValue: Int? {
+        return self.targetingRevisionRawValue
+    }
+
+    /// The id of the targeting rule used to obtain this paywall, if any.
+    @objc public let targetingRuleId: String?
+
     /// Creates parameters for a custom paywall impression.
     /// - Parameters:
     ///   - paywallId: An optional identifier for the custom paywall being shown.
@@ -32,12 +50,33 @@ public final class CustomPaywallImpressionParams: NSObject, Sendable {
     @objc public init(paywallId: String? = nil, offeringId: String?) {
         self.paywallId = paywallId
         self.offeringId = offeringId
+        self.placementIdentifier = nil
+        self.targetingRevisionRawValue = nil
+        self.targetingRuleId = nil
     }
 
     /// Creates parameters with only a paywall identifier.
     /// - Parameter paywallId: An optional identifier for the custom paywall being shown.
     @objc public convenience init(paywallId: String? = nil) {
         self.init(paywallId: paywallId, offeringId: nil)
+    }
+
+    /// Creates parameters for a custom paywall impression from the offering it was obtained from.
+    ///
+    /// This automatically populates the offering identifier and the placement and targeting
+    /// information from the offering's first available package's ``PresentedOfferingContext``.
+    ///
+    /// - Parameters:
+    ///   - paywallId: An optional identifier for the custom paywall being shown.
+    ///   - offering: The offering associated with the custom paywall.
+    @objc public init(paywallId: String? = nil, offering: Offering) {
+        self.paywallId = paywallId
+        self.offeringId = offering.identifier
+
+        let presentedOfferingContext = offering.availablePackages.first?.presentedOfferingContext
+        self.placementIdentifier = presentedOfferingContext?.placementIdentifier
+        self.targetingRevisionRawValue = presentedOfferingContext?.targetingContext?.revision
+        self.targetingRuleId = presentedOfferingContext?.targetingContext?.ruleId
     }
 
 }
