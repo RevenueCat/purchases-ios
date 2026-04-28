@@ -56,10 +56,10 @@ struct SamplePaywallsList: View {
                     introEligibility: Self.introEligibility
                 ))
             case .presentIfNeeded:
-                fatalError()
+                EmptyView()
 
             case .presentPaywall:
-                fatalError()
+                EmptyView()
 
             case .workflow:
                 EmptyView()
@@ -193,7 +193,7 @@ struct SamplePaywallsList: View {
             Section("Workflows") {
                 TextField("Offering identifier", text: self.$workflowOfferingIdentifier)
                     .autocorrectionDisabled()
-                    .autocapitalization(.none)
+                    .textInputAutocapitalization(.never)
 
                 Button {
                     self.display = .workflowPaywall(self.workflowOfferingIdentifier)
