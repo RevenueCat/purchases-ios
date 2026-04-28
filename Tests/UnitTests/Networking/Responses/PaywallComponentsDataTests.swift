@@ -75,6 +75,30 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         expect(draftComponents.componentsConfig.base.stack.components).to(haveCount(1))
     }
 
+    func testUnknownLayoutDirectionFallsBackToSystem() throws {
+        let data = try XCTUnwrap("""
+        {
+            "template_name": "componentsTEST",
+            "asset_base_url": "https://assets.revenuecat.com",
+            "components_config": {
+                "base": {
+                    "layout_direction": "future_value",
+                    "stack": { "type": "stack", "components": [] },
+                    "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#ffffff" } } }
+                }
+            },
+            "components_localizations": {},
+            "default_locale": "en_US",
+            "revision": 1
+        }
+        """.data(using: .utf8))
+
+        let components = try JSONDecoder.default.decode(PaywallComponentsData.self, from: data)
+
+        expect(components.componentsConfig.base.layoutDirection) == .system
+        expect(components.errorInfo).to(beNil())
+    }
+
     func testDecodesPaywallComponentsWithOnlyDraftPaywallComponents() throws {
         let offering = try XCTUnwrap(self.response.offerings[safe: 2])
 

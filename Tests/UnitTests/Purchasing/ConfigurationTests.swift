@@ -88,6 +88,25 @@ class ConfigurationTests: TestCase {
         expect(configuration.diagnosticsEnabled) == true
     }
 
+    func testPreferredUILocaleOverrideDefaultsLayoutDirectionFlagToFalse() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(preferredUILocaleOverride: "he")
+            .build()
+
+        expect(configuration.preferredLocale) == "he"
+        expect(configuration.preferredLocaleHonorsLayoutDirection) == false
+    }
+
+    func testPreferredUILocaleOverrideWithLocaleOnlyPreservesLayoutDirectionFlag() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(preferredUILocaleOverride: "he", honorLayoutDirection: true)
+            .with(preferredUILocaleOverride: "ar_SA")
+            .build()
+
+        expect(configuration.preferredLocale) == "ar_SA"
+        expect(configuration.preferredLocaleHonorsLayoutDirection) == true
+    }
+
     func testStoreKitVersionUsesStoreKit1ByDefault() {
         let configuration = Configuration.Builder(withAPIKey: "test")
             .build()

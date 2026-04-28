@@ -1634,7 +1634,7 @@ extension Purchases {
     /// - Important: This method only takes effect after `Purchases` has been configured.
     @objc(overridePreferredUILocale:)
     public func overridePreferredUILocale(_ locale: String?) {
-        self.overridePreferredUILocale(locale, honorLayoutDirection: false)
+        self.overridePreferredUILocale(locale, honorLayoutDirection: self.preferredLocaleHonorsLayoutDirection)
     }
 
     /// Overrides the preferred locale for RevenueCatUI components.

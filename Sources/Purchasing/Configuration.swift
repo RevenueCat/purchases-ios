@@ -352,7 +352,10 @@ import Foundation
         ///
         /// Defaults to `nil`, which means using the default user locale for RevenueCatUI components.
         public func with(preferredUILocaleOverride: String?) -> Builder {
-            return self.with(preferredUILocaleOverride: preferredUILocaleOverride, honorLayoutDirection: false)
+            return self.with(
+                preferredUILocaleOverride: preferredUILocaleOverride,
+                honorLayoutDirection: self.preferredLocaleHonorsLayoutDirection
+            )
         }
 
         /// Overrides the preferred locale for RevenueCatUI components.

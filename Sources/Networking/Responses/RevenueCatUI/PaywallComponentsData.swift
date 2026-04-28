@@ -29,10 +29,30 @@ import Foundation
     public struct PaywallComponentsConfig: Codable, Equatable, Sendable {
 
         public enum LayoutDirection: String, Codable, Equatable, Sendable {
+
             case system
             case locale
             case rtl
             case ltr
+
+            public init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                let rawValue = try container.decode(String.self)
+
+                guard let value = Self(rawValue: rawValue) else {
+                    Logger.warn(Strings.codable.unexpectedValueError(type: Self.self, value: rawValue))
+                    self = .system
+                    return
+                }
+
+                self = value
+            }
+
+            public func encode(to encoder: Encoder) throws {
+                var container = encoder.singleValueContainer()
+                try container.encode(self.rawValue)
+            }
+
         }
 
         public var stack: PaywallComponent.StackComponent

@@ -216,10 +216,18 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
     func testOverridePreferredUILocaleDefaultsLayoutDirectionFlagToFalse() {
         self.setupPurchases()
 
-        self.purchases.overridePreferredUILocale("he", honorLayoutDirection: true)
         self.purchases.overridePreferredUILocale("he")
 
         expect(self.purchases.preferredLocaleOverrideHonorsLayoutDirection) == false
+    }
+
+    func testOverridePreferredUILocaleWithLocaleOnlyPreservesLayoutDirectionFlag() {
+        self.setupPurchases()
+
+        self.purchases.overridePreferredUILocale("he", honorLayoutDirection: true)
+        self.purchases.overridePreferredUILocale("ar_SA")
+
+        expect(self.purchases.preferredLocaleOverrideHonorsLayoutDirection) == true
     }
 
     func testOverridePreferredUILocaleDoesNotInvalidateOrFetchWhenRateLimited() {
