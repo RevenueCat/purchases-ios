@@ -29,7 +29,7 @@ import Foundation
     public struct PaywallComponentsConfig: Codable, Equatable, Sendable {
 
         // swiftlint:disable:next nesting
-        public enum LayoutDirection: String, Codable, Equatable, Sendable {
+        @_spi(Internal) public enum LayoutDirection: String, Codable, Equatable, Sendable {
 
             case system
             case locale
