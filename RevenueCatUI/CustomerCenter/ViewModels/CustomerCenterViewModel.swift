@@ -158,18 +158,16 @@ import Foundation
         self.purchasesProvider = purchasesProvider
         self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities
         self.customerInfo = nil
-        self.preferredLocaleOverride = purchasesProvider.preferredLocaleOverride.map(Locale.init)
-        self.preferredLocaleOverrideHonorsLayoutDirection =
-            purchasesProvider.preferredLocaleOverrideHonorsLayoutDirection
+        self.preferredLocaleOverride = nil
+        self.preferredLocaleOverrideHonorsLayoutDirection = false
+        self.updatePreferredLocaleOverride()
 
         NotificationCenter.default
             .preferredUILocaleOverrideChangedPublisher()
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self else { return }
-                self.preferredLocaleOverride = self.purchasesProvider.preferredLocaleOverride.map(Locale.init)
-                self.preferredLocaleOverrideHonorsLayoutDirection =
-                    self.purchasesProvider.preferredLocaleOverrideHonorsLayoutDirection
+                self.updatePreferredLocaleOverride()
             }
             .store(in: &cancellables)
     }
@@ -396,6 +394,18 @@ private extension CustomerCenterViewModel {
         }
 
         return configuration
+    }
+
+    private func updatePreferredLocaleOverride() {
+        guard self.purchasesProvider.isConfigured else {
+            self.preferredLocaleOverride = nil
+            self.preferredLocaleOverrideHonorsLayoutDirection = false
+            return
+        }
+
+        self.preferredLocaleOverride = self.purchasesProvider.preferredLocaleOverride.map(Locale.init)
+        self.preferredLocaleOverrideHonorsLayoutDirection =
+            self.purchasesProvider.preferredLocaleOverrideHonorsLayoutDirection
     }
 }
 
