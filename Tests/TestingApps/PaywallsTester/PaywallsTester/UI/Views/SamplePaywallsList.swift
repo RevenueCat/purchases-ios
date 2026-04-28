@@ -27,6 +27,9 @@ struct SamplePaywallsList: View {
     @State
     private var presentingCustomerCenterFullScreen: Bool = false
 
+    @State
+    private var workflowOfferingIdentifier: String = ""
+
     var body: some View {
         NavigationView {
             self.list
@@ -59,7 +62,7 @@ struct SamplePaywallsList: View {
                 fatalError()
 
             case .workflow:
-                fatalError()
+                EmptyView()
 
             #if !os(watchOS) && !os(macOS)
             case .footer, .condensedFooter:
@@ -111,6 +114,12 @@ struct SamplePaywallsList: View {
                 customerInfo: Self.loader.customerInfo,
                 displayCloseButton: Self.displayCloseButton,
                 introEligibility: Self.introEligibility
+            ))
+
+        case .workflowPaywall(let identifier):
+            PaywallView(configuration: .init(
+                content: .offeringIdentifier(identifier, presentedOfferingContext: nil),
+                purchaseHandler: .default()
             ))
         #endif
         #if canImport(UIKit) && os(iOS)
@@ -179,6 +188,20 @@ struct SamplePaywallsList: View {
                 } label: {
                     TemplateLabel(name: "Unrecognized paywall", icon: "exclamationmark.triangle")
                 }
+            }
+
+            Section("Workflows") {
+                TextField("Offering identifier", text: self.$workflowOfferingIdentifier)
+                    .autocorrectionDisabled()
+                    .autocapitalization(.none)
+
+                Button {
+                    self.display = .workflowPaywall(self.workflowOfferingIdentifier)
+                } label: {
+                    TemplateLabel(name: "Open workflow paywall",
+                                  icon: PaywallTesterViewMode.workflow.icon)
+                }
+                .disabled(self.workflowOfferingIdentifier.isEmpty)
             }
             #endif
 
@@ -342,6 +365,7 @@ private extension SamplePaywallsList {
         case missingPaywall
         case unrecognizedPaywall
         case componentPaywall(PaywallComponentsData)
+        case workflowPaywall(String)
         #endif
 
         @available(watchOS, unavailable)
@@ -378,6 +402,9 @@ extension SamplePaywallsList.Display: Identifiable {
 
         case .componentPaywall:
             return "component-paywall"
+
+        case .workflowPaywall(let identifier):
+            return "workflow-paywall-\(identifier)"
 
         #endif
         case .customerCenterSheet:
