@@ -55,7 +55,7 @@ public struct PaywallData {
 
     /// When set, controls whether paywall text respects Dynamic Type / font scaling for Paywalls V2.
     /// If `nil`, the default scaling behavior applies.
-    public var allowFontScaling: Bool?
+    public var automaticallyScaleFontSize: Bool?
 
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
@@ -641,7 +641,7 @@ extension PaywallData {
         revision: Int = 0,
         zeroDecimalPlaceCountries: [String] = [],
         exitOffers: ExitOffers? = nil,
-        allowFontScaling: Bool? = nil
+        automaticallyScaleFontSize: Bool? = nil
     ) {
         self.id = id
         self.templateName = templateName
@@ -652,7 +652,7 @@ extension PaywallData {
         self.revision = revision
         self._zeroDecimalPlaceCountries = .init(apple: zeroDecimalPlaceCountries)
         self.exitOffers = exitOffers
-        self.allowFontScaling = allowFontScaling
+        self.automaticallyScaleFontSize = automaticallyScaleFontSize
     }
 
     /// Creates a test ``PaywallData`` with one localization.
@@ -665,7 +665,7 @@ extension PaywallData {
         revision: Int = 0,
         locale: Locale = .current,
         zeroDecimalPlaceCountries: [String] = [],
-        allowFontScaling: Bool? = nil
+        automaticallyScaleFontSize: Bool? = nil
     ) {
         self.init(
             id: id,
@@ -676,7 +676,7 @@ extension PaywallData {
             assetBaseURL: assetBaseURL,
             revision: revision,
             zeroDecimalPlaceCountries: zeroDecimalPlaceCountries,
-            allowFontScaling: allowFontScaling
+            automaticallyScaleFontSize: automaticallyScaleFontSize
         )
     }
 
@@ -690,7 +690,7 @@ extension PaywallData {
         revision: Int = 0,
         locale: Locale = .current,
         zeroDecimalPlaceCountries: [String] = [],
-        allowFontScaling: Bool? = nil
+        automaticallyScaleFontSize: Bool? = nil
     ) {
         self.init(
             id: id,
@@ -701,7 +701,7 @@ extension PaywallData {
             assetBaseURL: assetBaseURL,
             revision: revision,
             zeroDecimalPlaceCountries: zeroDecimalPlaceCountries,
-            allowFontScaling: allowFontScaling
+            automaticallyScaleFontSize: automaticallyScaleFontSize
         )
     }
 
@@ -806,7 +806,7 @@ extension PaywallData: Codable {
         case _zeroDecimalPlaceCountries = "zeroDecimalPlaceCountries"
         case defaultLocale = "defaultLocale"
         case exitOffers
-        case allowFontScaling
+        case automaticallyScaleFontSize
     }
 
 }

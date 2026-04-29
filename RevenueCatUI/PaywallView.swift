@@ -345,7 +345,7 @@ public struct PaywallView: View {
                         displayCloseButton: self.displayCloseButton,
                         promoOfferCache: self.promoOfferCache,
                         onDismiss: self.dismissRequested,
-                        allowFontScaling: offering.paywall?.allowFontScaling
+                        automaticallyScaleFontSize: offering.paywall?.automaticallyScaleFontSize
                     )
                 } else {
                     PaywallsV2View(
@@ -359,7 +359,7 @@ public struct PaywallView: View {
                         failedToLoadFont: self.failedToLoadFont,
                         colorScheme: colorScheme,
                         promoOfferCache: self.promoOfferCache,
-                        allowFontScaling: offering.paywall?.allowFontScaling
+                        automaticallyScaleFontSize: offering.paywall?.automaticallyScaleFontSize
                     )
                 }
             }
