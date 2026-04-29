@@ -50,7 +50,7 @@ internal extension GoogleMobileAds.BannerView {
             isFirstWrap = false
         } else {
             state = Tracking.BannerTrackingState()
-            adapter.bannerStateStore.retain(state, for: self)
+            adapter.bannerStateStore.set(state, for: self)
             isFirstWrap = true
         }
         state.delegate = trackingDelegate

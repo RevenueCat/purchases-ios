@@ -23,7 +23,7 @@ final class NativeDelegateStoreTests: AdapterTestCase {
                 return
             }
 
-            Tracking.Adapter.shared.nativeDelegateStore.retain(strongDelegate, for: owner)
+            Tracking.Adapter.shared.nativeDelegateStore.set(strongDelegate, for: owner)
             delegate = nil
 
             XCTAssertNotNil(weakDelegate)

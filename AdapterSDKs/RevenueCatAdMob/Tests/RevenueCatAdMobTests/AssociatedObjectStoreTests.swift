@@ -11,7 +11,7 @@ final class AssociatedObjectStoreTests: AdapterTestCase {
         let owner = NSObject()
         let value = NSObject()
 
-        store.retain(value, for: owner)
+        store.set(value, for: owner)
 
         XCTAssertIdentical(store.retrieve(for: owner), value)
     }
@@ -30,8 +30,8 @@ final class AssociatedObjectStoreTests: AdapterTestCase {
         let valueA = NSObject()
         let valueB = NSObject()
 
-        storeA.retain(valueA, for: owner)
-        storeB.retain(valueB, for: owner)
+        storeA.set(valueA, for: owner)
+        storeB.set(valueB, for: owner)
 
         XCTAssertIdentical(storeA.retrieve(for: owner), valueA)
         XCTAssertIdentical(storeB.retrieve(for: owner), valueB)
@@ -41,8 +41,8 @@ final class AssociatedObjectStoreTests: AdapterTestCase {
         let store = Tracking.AssociatedObjectStore<NSObject>()
         let owner = NSObject()
 
-        store.retain(NSObject(), for: owner)
-        store.retain(nil, for: owner)
+        store.set(NSObject(), for: owner)
+        store.set(nil, for: owner)
 
         XCTAssertNil(store.retrieve(for: owner))
     }

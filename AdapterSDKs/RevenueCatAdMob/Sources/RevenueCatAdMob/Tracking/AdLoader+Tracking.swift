@@ -29,7 +29,7 @@ internal extension GoogleMobileAds.AdLoader {
             delegate: previousDelegate,
             nativeAdDelegate: nativeAdDelegate
         )
-        adapter.nativeAdLoaderProxyStore.retain(proxy, for: self)
+        adapter.nativeAdLoaderProxyStore.set(proxy, for: self)
         self.delegate = proxy
         self.load(request)
     }
@@ -115,7 +115,7 @@ internal extension Tracking {
                 placement: self.placement,
                 adUnitID: self.adUnitID
             )
-            self.adapter.nativeDelegateStore.retain(trackingDelegate, for: nativeAd)
+            self.adapter.nativeDelegateStore.set(trackingDelegate, for: nativeAd)
             nativeAd.delegate = trackingDelegate
 
             let adapter = self.adapter

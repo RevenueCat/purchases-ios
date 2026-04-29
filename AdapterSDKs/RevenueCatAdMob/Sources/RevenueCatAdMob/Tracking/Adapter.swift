@@ -206,7 +206,7 @@ internal extension Tracking {
                     adFormat: adFormat,
                     responseInfoProvider: { responseInfo }
                 )
-                self.fullScreenDelegateStore.retain(trackingDelegate, for: loadedAd)
+                self.fullScreenDelegateStore.set(trackingDelegate, for: loadedAd)
                 loadedAd.fullScreenContentDelegate = trackingDelegate
                 loadedAd.paidEventHandler = { [weak self, weak trackingDelegate] adValue in
                     self?.trackRevenue(

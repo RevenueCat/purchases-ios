@@ -27,7 +27,7 @@ final class FullScreenDelegateStoreTests: AdapterTestCase {
                 return
             }
 
-            Tracking.Adapter.shared.fullScreenDelegateStore.retain(strongDelegate, for: owner)
+            Tracking.Adapter.shared.fullScreenDelegateStore.set(strongDelegate, for: owner)
             delegate = nil
 
             XCTAssertNotNil(weakDelegate)

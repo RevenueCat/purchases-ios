@@ -12,7 +12,7 @@ import ObjectiveC.runtime
 @available(iOS 15.0, *)
 internal extension Tracking {
 
-    /// Retains and retrieves a strongly-typed value on an owner via Obj-C associated objects.
+    /// Stores and retrieves a strongly-typed value on an owner via Obj-C associated objects.
     ///
     /// The value lives exactly as long as the owner. Each store instance allocates its own key,
     /// so two stores of the same value type never collide.
@@ -28,7 +28,7 @@ internal extension Tracking {
             objc_getAssociatedObject(object, self.key) as? Value
         }
 
-        func retain(_ value: Value?, for object: AnyObject) {
+        func set(_ value: Value?, for object: AnyObject) {
             objc_setAssociatedObject(
                 object,
                 self.key,
