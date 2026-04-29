@@ -106,7 +106,7 @@ final class WorkflowNavigatorTests: TestCase {
     }
 
     func testTriggerActionWithWrongTypedActionReturnsNil() throws {
-        // triggerAction.type is "other", not "step"
+        // trigger action type is "other", which decodes to .unknown — not .step
         let workflow = try Self.makeWorkflow(
             steps: [
                 makeStep(
@@ -145,6 +145,23 @@ final class WorkflowNavigatorTests: TestCase {
 
         expect(result).to(beNil())
         expect(navigator.currentStepId) == "step_1"
+    }
+
+    func testTriggerActionWithMismatchedTriggerTypeReturnsNil() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "step_2")]),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        let result = navigator.triggerAction(componentId: "btn_abc", triggerType: .unknown)
+
+        expect(result).to(beNil())
+        expect(navigator.currentStepId) == "step_1"
+        expect(navigator.canNavigateBack) == false
     }
 
     func testTriggerActionWithConditionsTypeReturnsNil() throws {

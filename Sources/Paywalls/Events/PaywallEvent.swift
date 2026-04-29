@@ -148,6 +148,9 @@ extension PaywallEvent {
         public var localeIdentifier: String
         public var darkMode: Bool
         @_spi(Internal) public var source: PaywallSource?
+        var placementIdentifier: String?
+        var targetingRevision: Int?
+        var targetingRuleId: String?
         var packageId: String?
         var productId: String?
         var errorCode: Int?
@@ -172,7 +175,8 @@ extension PaywallEvent {
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
                 darkMode: darkMode,
-                source: nil
+                source: nil,
+                presentedOfferingContext: offering.availablePackages.first?.presentedOfferingContext
             )
         }
 
@@ -194,7 +198,8 @@ extension PaywallEvent {
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
                 darkMode: darkMode,
-                source: source
+                source: source,
+                presentedOfferingContext: offering.availablePackages.first?.presentedOfferingContext
             )
         }
         #endif
@@ -217,7 +222,8 @@ extension PaywallEvent {
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
                 darkMode: darkMode,
-                source: nil
+                source: nil,
+                presentedOfferingContext: offering.availablePackages.first?.presentedOfferingContext
             )
         }
 
@@ -239,7 +245,8 @@ extension PaywallEvent {
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
                 darkMode: darkMode,
-                source: source
+                source: source,
+                presentedOfferingContext: offering.availablePackages.first?.presentedOfferingContext
             )
         }
         // swiftlint:enable missing_docs
@@ -252,7 +259,8 @@ extension PaywallEvent {
             displayMode: PaywallViewMode,
             localeIdentifier: String,
             darkMode: Bool,
-            source: PaywallSource?,
+            source: PaywallSource? = nil,
+            presentedOfferingContext: PresentedOfferingContext? = nil,
             packageId: String? = nil,
             productId: String? = nil,
             errorCode: Int? = nil,
@@ -266,6 +274,9 @@ extension PaywallEvent {
             self.localeIdentifier = localeIdentifier
             self.darkMode = darkMode
             self.source = source
+            self.placementIdentifier = presentedOfferingContext?.placementIdentifier
+            self.targetingRevision = presentedOfferingContext?.targetingContext?.revision
+            self.targetingRuleId = presentedOfferingContext?.targetingContext?.ruleId
             self.packageId = packageId
             self.productId = productId
             self.errorCode = errorCode
@@ -451,20 +462,12 @@ extension PaywallEvent.Data {
         errorCode: Int?,
         errorMessage: String?
     ) -> PaywallEvent.Data {
-        return PaywallEvent.Data(
-            paywallIdentifier: self.paywallIdentifier,
-            offeringIdentifier: self.offeringIdentifier,
-            paywallRevision: self.paywallRevision,
-            sessionID: self.sessionIdentifier,
-            displayMode: self.displayMode,
-            localeIdentifier: self.localeIdentifier,
-            darkMode: self.darkMode,
-            source: self.source,
-            packageId: packageId,
-            productId: productId,
-            errorCode: errorCode,
-            errorMessage: errorMessage
-        )
+        var copy = self
+        copy.packageId = packageId
+        copy.productId = productId
+        copy.errorCode = errorCode
+        copy.errorMessage = errorMessage
+        return copy
     }
 
 }
