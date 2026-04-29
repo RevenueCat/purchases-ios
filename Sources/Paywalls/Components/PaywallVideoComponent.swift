@@ -19,6 +19,7 @@ import Foundation
 
     public final class VideoComponent: PaywallComponentBase {
 
+        public let id: String?
         let type: ComponentType
         public let source: ThemeVideoUrls
         public let fallbackSource: ThemeImageUrls?
@@ -39,6 +40,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialVideoComponent>?
 
         public init(
+            id: String? = nil,
             visible: Bool? = nil,
             source: ThemeVideoUrls,
             fallbackSource: ThemeImageUrls? = nil,
@@ -56,6 +58,7 @@ import Foundation
             shadow: Shadow? = nil,
             overrides: ComponentOverrides<PartialVideoComponent>? = nil
         ) {
+            self.id = id
             self.type = .video
             self.source = source
             self.fallbackSource = fallbackSource

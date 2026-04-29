@@ -76,6 +76,7 @@ import Foundation
             }
         }
 
+        public let id: String?
         let type: ComponentType
         public let visible: Bool?
         public let baseUrl: String
@@ -90,6 +91,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialIconComponent>?
 
         public init(
+            id: String? = nil,
             visible: Bool? = nil,
             baseUrl: String,
             iconName: String,
@@ -101,6 +103,7 @@ import Foundation
             iconBackground: IconBackground?,
             overrides: ComponentOverrides<PartialIconComponent>? = nil
         ) {
+            self.id = id
             self.type = .image
             self.visible = visible
             self.baseUrl = baseUrl

@@ -51,19 +51,28 @@ struct StackComponentView: View {
     /// area when displayed as a sticky footer.
     private let additionalPadding: EdgeInsets
     private let showActivityIndicatorOverContent: Bool
+    private let accessibilityLabelOverride: String?
+    private let accessibilityIdentifierOverride: String?
+    private let isInsideButtonLabel: Bool
 
     init(
         viewModel: StackComponentViewModel,
         isScrollableByDefault: Bool = false,
         onDismiss: @escaping () -> Void,
         additionalPadding: EdgeInsets? = nil,
-        showActivityIndicatorOverContent: Bool = false
+        showActivityIndicatorOverContent: Bool = false,
+        accessibilityLabel: String? = nil,
+        accessibilityIdentifier: String? = nil,
+        isInsideButtonLabel: Bool = false
     ) {
         self.viewModel = viewModel
         self.isScrollableByDefault = isScrollableByDefault
         self.onDismiss = onDismiss
         self.additionalPadding = additionalPadding ?? EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         self.showActivityIndicatorOverContent = showActivityIndicatorOverContent
+        self.accessibilityLabelOverride = accessibilityLabel
+        self.accessibilityIdentifierOverride = accessibilityIdentifier
+        self.isInsideButtonLabel = isInsideButtonLabel
     }
 
     var body: some View {
@@ -99,7 +108,8 @@ struct StackComponentView: View {
                     horizontalAlignment: horizontalAlignment,
                     distribution: distribution,
                     viewModels: self.viewModel.viewModels,
-                    onDismiss: self.onDismiss
+                    onDismiss: self.onDismiss,
+                    isInsideButtonLabel: self.isInsideButtonLabel
                 )
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
@@ -111,7 +121,8 @@ struct StackComponentView: View {
                     verticalAlignment: verticalAlignment,
                     distribution: distribution,
                     viewModels: self.viewModel.viewModels,
-                    onDismiss: self.onDismiss
+                    onDismiss: self.onDismiss,
+                    isInsideButtonLabel: self.isInsideButtonLabel
                 )
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
@@ -123,7 +134,8 @@ struct StackComponentView: View {
                     ComponentsView(
                         componentViewModels: self.viewModel.viewModels,
                         pushNonFirstChildrenBelowSafeArea: self.viewModel.firstChildIsFullWidthMedia,
-                        onDismiss: self.onDismiss
+                        onDismiss: self.onDismiss,
+                        isInsideButtonLabel: self.isInsideButtonLabel
                     )
                 }
                 // These alignments define the position of inner components inside the ZStack
@@ -149,6 +161,12 @@ struct StackComponentView: View {
                uiConfigProvider: self.viewModel.uiConfigProvider)
         .apply(badge: style.badge, border: style.border, shadow: style.shadow, shape: style.shape)
         .padding(style.margin)
+        // Accessibility applied last (outermost) so style modifiers don't bury the attributes.
+        .applyIf(accessibilityLabelOverride != nil || accessibilityIdentifierOverride != nil) { view in
+            view
+                .accessibilityLabel(accessibilityLabelOverride ?? "")
+                .accessibilityIdentifier(accessibilityIdentifierOverride ?? "")
+        }
     }
 
 }
@@ -247,6 +265,7 @@ struct VerticalStack: View {
 
     let viewModels: [PaywallComponentViewModel]
     let onDismiss: () -> Void
+    let isInsideButtonLabel: Bool
 
     var body: some View {
         // This is NOT a final implementation of this
@@ -263,7 +282,8 @@ struct VerticalStack: View {
             ) {
                 ComponentsView(
                     componentViewModels: self.viewModels,
-                    onDismiss: self.onDismiss
+                    onDismiss: self.onDismiss,
+                    isInsideButtonLabel: self.isInsideButtonLabel
                 )
             }
         case .flex:
@@ -272,7 +292,8 @@ struct VerticalStack: View {
                 spacing: style.spacing,
                 justifyContent: distribution.justifyContent,
                 componentViewModels: self.viewModels,
-                onDismiss: self.onDismiss
+                onDismiss: self.onDismiss,
+                isInsideButtonLabel: self.isInsideButtonLabel
             )
         }
     }
@@ -288,6 +309,7 @@ struct HorizontalStack: View {
 
     let viewModels: [PaywallComponentViewModel]
     let onDismiss: () -> Void
+    let isInsideButtonLabel: Bool
 
     var body: some View {
         switch style.hstackStrategy {
@@ -299,7 +321,8 @@ struct HorizontalStack: View {
             ) {
                 ComponentsView(
                     componentViewModels: self.viewModels,
-                    onDismiss: self.onDismiss
+                    onDismiss: self.onDismiss,
+                    isInsideButtonLabel: self.isInsideButtonLabel
                 )
             }
         case .flex:
@@ -308,7 +331,8 @@ struct HorizontalStack: View {
                 spacing: style.spacing,
                 justifyContent: distribution.justifyContent,
                 componentViewModels: self.viewModels,
-                onDismiss: self.onDismiss
+                onDismiss: self.onDismiss,
+                isInsideButtonLabel: self.isInsideButtonLabel
             )
         }
     }

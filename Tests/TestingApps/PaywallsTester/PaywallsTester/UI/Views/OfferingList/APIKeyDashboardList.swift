@@ -151,6 +151,14 @@ struct APIKeyDashboardList: View {
                     offeringsBySection: offeringsBySection
                 )
             )
+
+            // UITest hook: auto-open a specific offering when OFFERING_ID is injected
+            // via the test's launchEnvironment so the test doesn't need to navigate the list.
+            if let targetId = ProcessInfo.processInfo.environment["OFFERING_ID"],
+               let match = offerings.first(where: { $0.id == targetId }) {
+                self.isLoadingPaywall = true
+                self.presentedPaywall = .init(offering: match, mode: .sheet)
+            }
         } catch let error as NSError {
             self.offerings = .failure(error)
         }

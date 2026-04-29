@@ -290,6 +290,7 @@ struct PaywallsV2View: View {
 
                 self.dismissAfterPurchaseCompletionCallbacks()
             }
+            .accessibilityIdentifier("paywall")
 
     }
 

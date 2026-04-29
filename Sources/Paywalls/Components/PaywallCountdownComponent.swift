@@ -19,6 +19,7 @@ import Foundation
 
     final class CountdownComponent: PaywallComponentBase {
 
+        public let id: String?
         let type: ComponentType
         public let name: String?
         public let style: CountdownStyle
@@ -38,6 +39,7 @@ import Foundation
             fallback: PaywallComponent.StackComponent? = nil,
             overrides: ComponentOverrides<PartialCountdownComponent>? = nil
         ) {
+            self.id = id
             self.type = .countdown
             self.name = name
             self.style = style
@@ -49,6 +51,7 @@ import Foundation
         }
 
         private enum CodingKeys: String, CodingKey {
+            case id
             case type
             case name
             case style
@@ -61,6 +64,7 @@ import Foundation
 
         required public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.id = try container.decodeIfPresent(String.self, forKey: .id)
             self.type = try container.decode(ComponentType.self, forKey: .type)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
             self.style = try container.decode(CountdownStyle.self, forKey: .style)
@@ -76,6 +80,7 @@ import Foundation
 
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encodeIfPresent(id, forKey: .id)
             try container.encode(type, forKey: .type)
             try container.encodeIfPresent(name, forKey: .name)
             try container.encode(style, forKey: .style)

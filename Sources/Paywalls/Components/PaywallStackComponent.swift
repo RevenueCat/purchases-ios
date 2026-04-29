@@ -30,6 +30,7 @@ import Foundation
         }
 
         let type: ComponentType
+        public let id: String?
         public let name: String?
         public let visible: Bool?
         public let components: [PaywallComponent]
@@ -49,6 +50,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialStackComponent>?
 
         public init(
+            id: String? = nil,
             name: String? = nil,
             visible: Bool? = nil,
             components: [PaywallComponent],
@@ -66,6 +68,7 @@ import Foundation
             overflow: Overflow? = nil,
             overrides: ComponentOverrides<PartialStackComponent>? = nil
         ) {
+            self.id = id
             self.name = name
             self.visible = visible
             self.components = components

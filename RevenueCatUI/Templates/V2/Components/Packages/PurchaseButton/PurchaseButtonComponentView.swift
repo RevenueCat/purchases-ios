@@ -75,9 +75,14 @@ struct PurchaseButtonComponentView: View {
             StackComponentView(
                 viewModel: viewModel.stackViewModel,
                 onDismiss: {},
-                showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
+                showActivityIndicatorOverContent: self.showActivityIndicatorOverContent,
+                isInsideButtonLabel: true
             )
         }
+        .accessibilityLabel(
+            viewModel.componentName.flatMap { $0.isEmpty ? nil : $0 } ?? "purchase_button"
+        )
+        .accessibilityIdentifier(viewModel.componentId ?? "purchase_button")
         .disabled(self.shouldBeDisabled)
         .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
         #if canImport(SafariServices) && canImport(UIKit)

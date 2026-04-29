@@ -23,19 +23,22 @@ struct FlexHStack: View {
     let spacing: CGFloat?
     let componentViewModels: [PaywallComponentViewModel]
     let onDismiss: () -> Void
+    let isInsideButtonLabel: Bool
 
     init(
         alignment: VerticalAlignment,
         spacing: CGFloat?,
         justifyContent: JustifyContent,
         componentViewModels: [PaywallComponentViewModel],
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        isInsideButtonLabel: Bool = false
     ) {
         self.alignment = alignment
         self.spacing = spacing
         self.justifyContent = justifyContent
         self.componentViewModels = componentViewModels
         self.onDismiss = onDismiss
+        self.isInsideButtonLabel = isInsideButtonLabel
     }
 
     var body: some View {
@@ -45,7 +48,8 @@ struct FlexHStack: View {
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
-                        onDismiss: self.onDismiss
+                        onDismiss: self.onDismiss,
+                        isInsideButtonLabel: self.isInsideButtonLabel
                     )
                     if index < self.componentViewModels.count - 1 {
                         if let spacing = self.spacing {
@@ -60,7 +64,8 @@ struct FlexHStack: View {
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
-                        onDismiss: self.onDismiss
+                        onDismiss: self.onDismiss,
+                        isInsideButtonLabel: self.isInsideButtonLabel
                     )
                     if index < self.componentViewModels.count - 1 {
                         if let spacing = self.spacing {
@@ -75,7 +80,8 @@ struct FlexHStack: View {
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
-                        onDismiss: self.onDismiss
+                        onDismiss: self.onDismiss,
+                        isInsideButtonLabel: self.isInsideButtonLabel
                     )
                     if index < self.componentViewModels.count - 1 {
                         if let spacing = self.spacing {
@@ -88,7 +94,8 @@ struct FlexHStack: View {
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
-                        onDismiss: self.onDismiss
+                        onDismiss: self.onDismiss,
+                        isInsideButtonLabel: self.isInsideButtonLabel
                     )
                     if index < self.componentViewModels.count - 1 {
                         if let spacing = self.spacing {
@@ -105,7 +112,8 @@ struct FlexHStack: View {
                     }
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
-                        onDismiss: self.onDismiss
+                        onDismiss: self.onDismiss,
+                        isInsideButtonLabel: self.isInsideButtonLabel
                     )
                     if index < self.componentViewModels.count - 1 {
                         if let spacing = self.spacing {
@@ -122,7 +130,8 @@ struct FlexHStack: View {
                     FlexSpacer(weight: 1)
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
-                        onDismiss: self.onDismiss
+                        onDismiss: self.onDismiss,
+                        isInsideButtonLabel: self.isInsideButtonLabel
                     )
                     if index < self.componentViewModels.count - 1 {
                         if let spacing = self.spacing {

@@ -18,12 +18,14 @@ import Foundation
 
     final class TabControlButtonComponent: Codable, Sendable, Hashable, Equatable {
 
+        public let id: String?
         let type: ComponentType
         public let tabId: String
         public let name: String?
         public let stack: StackComponent
 
-        public init(tabId: String, stack: StackComponent, name: String? = nil) {
+        public init(id: String? = nil, tabId: String, stack: StackComponent, name: String? = nil) {
+            self.id = id
             self.type = .tabControlButton
             self.tabId = tabId
             self.name = name
@@ -47,6 +49,7 @@ import Foundation
 
     final class TabControlToggleComponent: Codable, Sendable, Hashable, Equatable {
 
+        public let id: String?
         let type: ComponentType
         public let name: String?
         public let thumbColorOn: ColorScheme
@@ -54,12 +57,14 @@ import Foundation
         public let trackColorOn: ColorScheme
         public let trackColorOff: ColorScheme
 
-        public init(defaultValue: Bool,
+        public init(id: String? = nil,
+                    defaultValue: Bool,
                     name: String? = nil,
                     thumbColorOn: ColorScheme,
                     thumbColorOff: ColorScheme,
                     trackColorOn: ColorScheme,
                     trackColorOff: ColorScheme) {
+            self.id = id
             self.type = .tabControlToggle
             self.name = name
             self.thumbColorOn = thumbColorOn
@@ -89,9 +94,11 @@ import Foundation
 
     final class TabControlComponent: Codable, Sendable, Hashable, Equatable {
 
+        public let id: String?
         let type: ComponentType
 
-        public init() {
+        public init(id: String? = nil) {
+            self.id = id
             self.type = .tabControl
         }
 
@@ -157,6 +164,7 @@ import Foundation
             }
         }
 
+        public let id: String?
         let type: ComponentType
         public let name: String?
         public let visible: Bool?
@@ -175,6 +183,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialTabsComponent>?
 
         public init(
+            id: String? = nil,
             name: String? = nil,
             visible: Bool? = nil,
             size: Size = .init(width: .fill, height: .fit),
@@ -191,6 +200,7 @@ import Foundation
 
             overrides: ComponentOverrides<PartialTabsComponent>? = nil
         ) {
+            self.id = id
             self.type = .stack
             self.name = name
             self.visible = visible

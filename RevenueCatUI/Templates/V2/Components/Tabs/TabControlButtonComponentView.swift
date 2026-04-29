@@ -64,6 +64,7 @@ struct TabControlButtonComponentView: View {
             )
             .environment(\.componentViewState, self.selectedState)
         }
+        .accessibilityIdentifier(self.viewModel.component.id ?? self.viewModel.component.tabId)
 
     }
 

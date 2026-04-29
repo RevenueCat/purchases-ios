@@ -19,6 +19,7 @@ import Foundation
 
     final class PackageComponent: PaywallComponentBase {
 
+        public let id: String?
         let type: ComponentType
         public let packageID: String
         public let isSelectedByDefault: Bool
@@ -30,6 +31,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialPackageComponent>?
 
         public init(
+            id: String? = nil,
             packageID: String,
             isSelectedByDefault: Bool,
             visible: Bool? = nil,
@@ -38,6 +40,7 @@ import Foundation
             name: String? = nil,
             overrides: ComponentOverrides<PartialPackageComponent>? = nil
         ) {
+            self.id = id
             self.type = .package
             self.packageID = packageID
             self.isSelectedByDefault = isSelectedByDefault
@@ -93,6 +96,7 @@ import Foundation
 extension PaywallComponent.PackageComponent {
 
     enum CodingKeys: String, CodingKey {
+        case id
         case type
         case packageID = "packageId"
         case isSelectedByDefault

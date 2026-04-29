@@ -41,6 +41,9 @@ class IconComponentViewModel {
         self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
+    var componentId: String? { component.id }
+    var componentName: String { component.iconName }
+
     var expectedSize: CGSize {
         let fixedWidth: CGFloat?
         let fixedHeight: CGFloat?

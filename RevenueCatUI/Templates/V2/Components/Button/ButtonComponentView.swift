@@ -73,10 +73,15 @@ struct ButtonComponentView: View {
                 StackComponentView(
                     viewModel: self.viewModel.stackViewModel,
                     onDismiss: self.onDismiss,
-                    showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
+                    showActivityIndicatorOverContent: self.showActivityIndicatorOverContent,
+                    isInsideButtonLabel: true
                 )
             }
+            .accessibilityLabel(
+                viewModel.component.name.flatMap { $0.isEmpty ? nil : $0 } ?? "button"
+            )
             .withTransition(viewModel.component.transition)
+            .accessibilityIdentifier(viewModel.component.id ?? viewModel.id ?? "button")
             .disabled(self.shouldBeDisabled)
             .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
             #if canImport(SafariServices) && canImport(UIKit)

@@ -30,6 +30,7 @@ class TabsComponentViewModel {
     let tabIds: [String]
     let tabContextNamesById: [String: String]
     let defaultTabId: String?
+    let componentId: String?
     let name: String?
 
     init(
@@ -51,6 +52,7 @@ class TabsComponentViewModel {
             }
         )
         self.defaultTabId = component.defaultTabId
+        self.componentId = component.id
         self.name = component.name
         self.uiConfigProvider = uiConfigProvider
 

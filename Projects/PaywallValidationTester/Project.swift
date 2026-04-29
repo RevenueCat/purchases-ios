@@ -18,6 +18,15 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
     visionOS: "2.5"
 )
 
+let uiTestDestinations: Destinations = [
+    .iPhone,
+    .iPad
+]
+
+let uiTestDeploymentTargets: DeploymentTargets = .multiplatform(
+    iOS: "18.5"
+)
+
 let project = Project(
     name: "PaywallValidationTester",
     organizationName: .revenueCatOrgName,
@@ -32,7 +41,10 @@ let project = Project(
             deploymentTargets: allDeploymentTargets,
             infoPlist: "../../Tests/TestingApps/PaywallValidationTester/Info.plist",
             sources: [
-                "../../Tests/TestingApps/PaywallValidationTester/**/*.swift",
+                .glob(
+                    "../../Tests/TestingApps/PaywallValidationTester/**/*.swift",
+                    excluding: ["../../Tests/TestingApps/PaywallValidationTester/UITests/**"]
+                ),
                 "../../Tests/RevenueCatUITests/PaywallsV2/PaywallPreviewResourcesLoader.swift"
             ],
             resources: [
@@ -44,6 +56,20 @@ let project = Project(
                 .revenueCat,
                 .revenueCatUI
             ]
+        ),
+        .target(
+            name: "PaywallValidationTesterUITests",
+            destinations: uiTestDestinations,
+            product: .uiTests,
+            bundleId: "com.revenuecat.PaywallValidationTesterUITests",
+            deploymentTargets: uiTestDeploymentTargets,
+            infoPlist: .default,
+            sources: [
+                "../../Tests/TestingApps/PaywallValidationTester/UITests/**/*.swift"
+            ],
+            dependencies: [
+                .target(name: "PaywallValidationTester")
+            ]
         )
     ],
     schemes: [
@@ -51,6 +77,24 @@ let project = Project(
             name: "PaywallValidationTester",
             shared: true,
             buildAction: .buildAction(targets: ["PaywallValidationTester"]),
+            runAction: .runAction(
+                configuration: "Debug",
+                executable: "PaywallValidationTester"
+            )
+        ),
+        .scheme(
+            name: "PaywallValidationTesterUITests",
+            shared: true,
+            buildAction: .buildAction(targets: ["PaywallValidationTester", "PaywallValidationTesterUITests"]),
+            testAction: .targets(
+                [.testableTarget(target: .init(stringLiteral: "PaywallValidationTesterUITests"))],
+                configuration: "Debug",
+                options: .options(
+                    language: nil,
+                    region: nil,
+                    preferredScreenCaptureFormat: .screenshots
+                )
+            ),
             runAction: .runAction(
                 configuration: "Debug",
                 executable: "PaywallValidationTester"

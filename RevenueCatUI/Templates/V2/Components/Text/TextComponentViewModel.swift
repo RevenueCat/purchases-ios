@@ -30,6 +30,9 @@ class TextComponentViewModel {
     private let text: String
     private let presentedOverrides: PresentedOverrides<LocalizedTextPartial>?
 
+    var componentId: String? { component.id }
+    var componentName: String? { component.name }
+
     init(
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,

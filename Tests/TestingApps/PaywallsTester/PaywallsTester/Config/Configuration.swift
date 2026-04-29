@@ -23,8 +23,11 @@ enum Configuration {
         Purchases.logLevel = .verbose
         Purchases.proxyURL = Constants.proxyURL.flatMap { URL(string: $0) }
 
+        let apiKey = ProcessInfo.processInfo.environment["REVENUECAT_API_KEY"]
+            .flatMap { $0.isEmpty ? nil : $0 } ?? Constants.apiKey
+
         Purchases.configure(
-            with: .init(withAPIKey: Constants.apiKey)
+            with: .init(withAPIKey: apiKey)
                 .with(entitlementVerificationMode: .informational)
                 .with(diagnosticsEnabled: true)
                 .with(purchasesAreCompletedBy: .revenueCat, storeKitVersion: .storeKit2)

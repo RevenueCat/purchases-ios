@@ -18,6 +18,7 @@ import Foundation
 
     final class TimelineComponent: PaywallComponentBase {
 
+        public let id: String?
         let type: ComponentType
         public let visible: Bool?
         public let iconAlignment: IconAlignment?
@@ -32,6 +33,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialTimelineComponent>?
 
         public init(
+            id: String? = nil,
             visible: Bool? = nil,
             iconAlignment: IconAlignment?,
             itemSpacing: CGFloat?,
@@ -43,6 +45,7 @@ import Foundation
             items: [Item],
             overrides: ComponentOverrides<PartialTimelineComponent>?
         ) {
+            self.id = id
             self.type = .timeline
             self.visible = visible
             self.iconAlignment = iconAlignment

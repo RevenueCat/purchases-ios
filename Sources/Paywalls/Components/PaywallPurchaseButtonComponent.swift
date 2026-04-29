@@ -12,6 +12,7 @@ import Foundation
 
     final class PurchaseButtonComponent: PaywallComponentBase {
 
+        public let id: String?
         public let name: String?
         let type: ComponentType
         public let stack: PaywallComponent.StackComponent
@@ -147,11 +148,13 @@ import Foundation
         }
 
         public init(
+            id: String? = nil,
             stack: PaywallComponent.StackComponent,
             action: Action?,
             method: Method?,
             name: String?
         ) {
+            self.id = id
             self.type = .purchaseButton
             self.stack = stack
             self.action = action

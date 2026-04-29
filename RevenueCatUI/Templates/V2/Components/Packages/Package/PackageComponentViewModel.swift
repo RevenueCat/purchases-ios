@@ -23,6 +23,7 @@ class PackageComponentViewModel {
 
     let isSelectedByDefault: Bool
     let promotionalOfferProductCode: String?
+    let componentId: String?
     let componentName: String?
     let package: Package?
     let stackViewModel: StackComponentViewModel
@@ -44,6 +45,7 @@ class PackageComponentViewModel {
         self.uiConfigProvider = uiConfigProvider
         self.isSelectedByDefault = component.isSelectedByDefault
         self.promotionalOfferProductCode = component.applePromoOfferProductCode
+        self.componentId = component.id
         self.componentName = component.name
 
         self.package = offering.package(identifier: component.packageID)

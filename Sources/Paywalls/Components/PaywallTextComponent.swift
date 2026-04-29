@@ -12,6 +12,7 @@ import Foundation
 
     final class TextComponent: PaywallComponentBase {
 
+        public let id: String?
         let type: ComponentType
         public let visible: Bool?
         public let name: String?
@@ -34,6 +35,7 @@ import Foundation
         }
 
         public init(
+            id: String? = nil,
             visible: Bool? = nil,
             name: String? = nil,
             text: String,
@@ -49,6 +51,7 @@ import Foundation
             overrides: ComponentOverrides<PartialTextComponent>? = nil,
             fontWeightInt: Int? = nil
         ) {
+            self.id = id
             self.type = .text
             self.visible = visible
             self.name = name
@@ -67,6 +70,7 @@ import Foundation
         }
 
         private enum CodingKeys: String, CodingKey {
+            case id
             case type
             case visible
             case name
@@ -87,6 +91,7 @@ import Foundation
         required public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
 
+            self.id = try container.decodeIfPresent(String.self, forKey: .id)
             self.type = try container.decode(ComponentType.self, forKey: .type)
             self.visible = try container.decodeIfPresent(Bool.self, forKey: .visible)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
@@ -119,6 +124,7 @@ import Foundation
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
 
+            try container.encodeIfPresent(id, forKey: .id)
             try container.encode(type, forKey: .type)
             try container.encodeIfPresent(visible, forKey: .visible)
             try container.encodeIfPresent(name, forKey: .name)

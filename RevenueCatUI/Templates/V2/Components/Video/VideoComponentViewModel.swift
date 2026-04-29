@@ -24,6 +24,8 @@ class VideoComponentViewModel {
     let uiConfigProvider: UIConfigProvider
     private let component: PaywallComponent.VideoComponent
 
+    var componentId: String? { component.id }
+    var componentName: String? { nil }
     var imageSource: PaywallComponent.ThemeImageUrls? { component.fallbackSource }
 
     private let presentedOverrides: PresentedOverrides<LocalizedVideoPartial>?

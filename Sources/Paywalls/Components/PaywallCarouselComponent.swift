@@ -112,6 +112,7 @@ import Foundation
 
         }
 
+        public let id: String?
         let type: ComponentType
 
         public let name: String?
@@ -137,6 +138,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialCarouselComponent>?
 
         public init(
+            id: String? = nil,
             name: String? = nil,
             visible: Bool? = nil,
             size: PaywallComponent.Size? = nil,
@@ -156,6 +158,7 @@ import Foundation
             pageControl: PageControl? = nil,
             overrides: ComponentOverrides<PartialCarouselComponent>? = nil
         ) {
+            self.id = id
             self.type = .carousel
 
             self.name = name

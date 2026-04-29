@@ -22,16 +22,19 @@ struct AsyncButton<Label>: View where Label: View {
 
     private let action: Action
     private let label: Label
+    private let accessibilityLabelString: String?
 
     @State
     private var error: NSError?
 
     init(
+        accessibilityLabel: String? = nil,
         action: @escaping Action,
         @ViewBuilder label: () -> Label
     ) {
         self.action = action
         self.label = label()
+        self.accessibilityLabelString = accessibilityLabel
     }
 
     var body: some View {
@@ -45,6 +48,10 @@ struct AsyncButton<Label>: View where Label: View {
             }
         } label: {
             self.label
+        }
+        .applyIf(accessibilityLabelString != nil) { button in
+            // swiftlint:disable:next force_unwrapping
+            button.accessibilityLabel(accessibilityLabelString!)
         }
         .displayError(self.$error)
     }

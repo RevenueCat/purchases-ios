@@ -46,6 +46,7 @@ class CarouselComponentViewModel {
         self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
+    var componentId: String? { self.component.id }
     var componentName: String? {
         self.component.name
     }
