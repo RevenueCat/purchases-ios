@@ -79,9 +79,18 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         // Let SwiftUI layout settle
         Thread.sleep(forTimeInterval: 2)
 
-        // Capture the full accessibility snapshot, then root at the paywall element
+        // Take the full app snapshot for metadata (viewport).
         let appSnapshot = try app.snapshot()
-        let paywallSnapshot = findPaywallRoot(appSnapshot) ?? appSnapshot
+
+        // Resolve the paywall root.
+        // Identifier-based lookup is unreliable: SwiftUI transparent containers propagate
+        // `.accessibilityIdentifier` to their first leaf child, and paywall component JSON
+        // IDs can collide with the "paywall" identifier anyway.
+        //
+        // Instead, walk down the tree by always following the child with the most descendants.
+        // When the path reaches a node with more than 2 direct children, we've arrived at
+        // the actual paywall content (app chrome and wrapper containers each have 1–2 children).
+        let paywallSnapshot: any XCUIElementSnapshot = findPaywallRoot(in: appSnapshot)
 
         // Build structured tree
         let root = buildNode(paywallSnapshot)
@@ -237,14 +246,37 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
 
     // MARK: - Paywall root search
 
-    /// Searches the snapshot depth-first for the element with identifier "paywall".
-    /// Returns nil if not found (caller falls back to the full snapshot).
-    private func findPaywallRoot(_ node: any XCUIElementSnapshot) -> (any XCUIElementSnapshot)? {
-        if node.identifier == "paywall" { return node }
-        for child in node.children {
-            if let found = findPaywallRoot(child) { return found }
+    /// Counts the total number of nodes in a snapshot subtree.
+    private func subtreeSize(_ node: any XCUIElementSnapshot) -> Int {
+        node.children.reduce(1) { $0 + subtreeSize($1) }
+    }
+
+    /// Walks the accessibility tree to find the paywall content root.
+    ///
+    /// The strategy: descend greedily by always following the child with the most descendants.
+    /// Stop and return the current node when it has more than 2 direct children — that signals
+    /// we've left the single-child wrapper chain (app shell, navigation containers) and reached
+    /// the actual multi-element paywall content.
+    ///
+    /// Falls back to the full application snapshot when no multi-child node is found
+    /// (e.g. a very simple paywall with only 1–2 top-level components).
+    private func findPaywallRoot(in node: any XCUIElementSnapshot) -> any XCUIElementSnapshot {
+        var current = node
+        // Limit iterations to avoid infinite loops on degenerate trees.
+        for _ in 0..<50 {
+            let children = current.children
+            if children.count > 2 {
+                // Found the first "content" node — this is the paywall root.
+                return current
+            } else if children.count == 0 {
+                // Leaf node with no siblings — fall back to the input.
+                return node
+            } else {
+                // 1 or 2 children: keep descending via the richest branch.
+                current = children.max(by: { subtreeSize($0) < subtreeSize($1) }) ?? children[0]
+            }
         }
-        return nil
+        return node
     }
 
     // MARK: - JSON tree builder
@@ -253,7 +285,7 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         let nativeTypeName = elementTypeName(snapshot.elementType)
         let semanticTypeName = semanticType(snapshot.elementType)
 
-        let identifier: String? = snapshot.identifier.isEmpty ? nil : snapshot.identifier
+        let componentId: String? = snapshot.identifier.isEmpty ? nil : snapshot.identifier
         let label: String? = snapshot.label.isEmpty ? nil : snapshot.label
 
         let value: String?
@@ -280,7 +312,7 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         return PaywallLayoutTree.Node(
             type: semanticTypeName,
             nativeType: nativeTypeName,
-            identifier: identifier,
+            componentId: componentId,
             label: label,
             value: value,
             frame: frame,
@@ -429,7 +461,9 @@ private struct PaywallLayoutTree: Encodable {
     struct Node: Encodable {
         let type: String
         let nativeType: String
-        let identifier: String?
+        /// The component ID from the paywall JSON definition, surfaced via
+        /// `accessibilityIdentifier` on the rendered element.
+        let componentId: String?
         let label: String?
         let value: String?
         let frame: Frame
