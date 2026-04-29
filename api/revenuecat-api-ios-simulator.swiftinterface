@@ -1316,6 +1316,7 @@ public struct PaywallData {
   }
   public var defaultLocale: Swift.String?
   public var exitOffers: RevenueCat.ExitOffers?
+  public var allowFontScaling: Swift.Bool?
 }
 public protocol PaywallLocalizedConfiguration {
   var title: Swift.String { get }
