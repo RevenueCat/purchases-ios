@@ -49,17 +49,16 @@ final class AssociatedObjectStoreTests: AdapterTestCase {
 
     func testValueIsReleasedWhenOwnerDeallocates() {
         let store = Tracking.AssociatedObjectStore<NSObject>()
-        var owner: NSObject? = NSObject()
         weak var weakValue: NSObject?
 
         autoreleasepool {
+            let owner = NSObject()
             let value = NSObject()
             weakValue = value
-            store.set(value, for: owner!)
+            store.set(value, for: owner)
+            XCTAssertNotNil(weakValue)
         }
 
-        XCTAssertNotNil(weakValue)
-        owner = nil
         XCTAssertNil(weakValue)
     }
 
