@@ -97,7 +97,7 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
             viewport: PaywallLayoutTree.Metadata.Viewport(
                 width: Double(appFrame.width),
                 height: Double(appFrame.height),
-                scale: Double(XCUIScreen.main.scale)
+                scale: screenScale()
             ),
             offeringId: paywallId,
             locale: Locale.current.identifier,
@@ -138,7 +138,7 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         // Always attach to the .xcresult bundle — extractable via `xcrun xcresulttool`
         let attachment = XCTAttachment(data: jsonData, uniformTypeIdentifier: "public.json")
         attachment.name = filename
-        attachment.lifetime = .keepAlways
+        attachment.lifetime = XCTAttachment.Lifetime.keepAlways
         add(attachment)
 
         print("────────────────────────────────────────")
@@ -222,6 +222,19 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         Thread.sleep(forTimeInterval: 2)
     }
 
+    // MARK: - Screen scale
+
+    /// Returns the physical pixel scale of the main screen.
+    /// `XCUIScreen.main.scale` is unavailable on some SDK versions; falls back to UIScreen when
+    /// available, and 2.0 otherwise (safe default for modern simulators).
+    private func screenScale() -> Double {
+        #if canImport(UIKit)
+        return Double(UIScreen.main.scale)
+        #else
+        return 2.0
+        #endif
+    }
+
     // MARK: - Paywall root search
 
     /// Searches the snapshot depth-first for the element with identifier "paywall".
@@ -291,7 +304,7 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         case .switch, .toggle, .checkBox:                       return "toggle"
         case .textField, .secureTextField, .searchField:        return "input"
         case .icon:                                             return "icon"
-        case .separator:                                        return "divider"
+        // .separator is not available in this SDK version; falls through to "container"
         default:                                                return "container"
         }
     }
@@ -382,6 +395,7 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         case .tab:                 return "Tab"
         case .touchBar:            return "TouchBar"
         case .statusItem:          return "StatusItem"
+        case .any:                 return "Any"
         @unknown default:          return "Unknown(\(type.rawValue))"
         }
     }
