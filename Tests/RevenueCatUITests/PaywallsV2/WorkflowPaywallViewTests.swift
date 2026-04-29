@@ -54,6 +54,76 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(action) == .dismissWorkflow
     }
 
+    func testTransitionStateStartsWithoutOutgoingPage() {
+        let state = WorkflowPageTransitionState(currentPage: "step_1")
+
+        expect(state.currentPage) == "step_1"
+        expect(state.outgoingPage).to(beNil())
+        expect(state.isTransitioning) == false
+        expect(state.progress) == 1
+    }
+
+    func testForwardTransitionMovesIncomingPageFromTheRight() {
+        var state = WorkflowPageTransitionState(currentPage: "step_1")
+
+        state.beginTransition(to: "step_2", direction: .forward)
+
+        expect(state.currentPage) == "step_2"
+        expect(state.outgoingPage) == "step_1"
+        expect(state.progress) == 0
+        expect(state.offset(for: .current, width: 320)) == 320
+        expect(state.offset(for: .outgoing, width: 320)) == 0
+        expect(state.zIndex(for: .current)) == 1
+        expect(state.zIndex(for: .outgoing)) == 0
+
+        state.advanceAnimation()
+
+        expect(state.offset(for: .current, width: 320)) == 0
+        expect(state.offset(for: .outgoing, width: 320)) == -320
+    }
+
+    func testBackTransitionKeepsOutgoingPageOnTopWhileItSlidesRight() {
+        var state = WorkflowPageTransitionState(currentPage: "step_2")
+
+        state.beginTransition(to: "step_1", direction: .back)
+
+        expect(state.currentPage) == "step_1"
+        expect(state.outgoingPage) == "step_2"
+        expect(state.offset(for: .current, width: 320)) == -320
+        expect(state.offset(for: .outgoing, width: 320)) == 0
+        expect(state.zIndex(for: .current)) == 0
+        expect(state.zIndex(for: .outgoing)) == 1
+
+        state.advanceAnimation()
+
+        expect(state.offset(for: .current, width: 320)) == 0
+        expect(state.offset(for: .outgoing, width: 320)) == 320
+    }
+
+    func testCompletingTransitionDropsOutgoingPage() {
+        var state = WorkflowPageTransitionState(currentPage: "step_1")
+
+        state.beginTransition(to: "step_2", direction: .forward)
+        state.advanceAnimation()
+        state.completeTransition()
+
+        expect(state.currentPage) == "step_2"
+        expect(state.outgoingPage).to(beNil())
+        expect(state.isTransitioning) == false
+        expect(state.progress) == 1
+    }
+
+    func testInvalidTargetSkipsAnimationAndClearsTheCurrentPage() {
+        var state = WorkflowPageTransitionState(currentPage: "step_1")
+
+        state.beginTransition(to: nil, direction: .forward)
+
+        expect(state.currentPage).to(beNil())
+        expect(state.outgoingPage).to(beNil())
+        expect(state.isTransitioning) == false
+        expect(state.progress) == 1
+    }
+
 }
 
 #endif
