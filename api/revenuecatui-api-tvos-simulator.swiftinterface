@@ -1,7 +1,7 @@
 // swift-interface-format-version: 1.0
-// swift-compiler-version: Apple Swift version 6.2.4 effective-5.10 (swiftlang-6.2.4.1.4 clang-1700.6.4.2)
-// swift-module-flags: -target arm64-apple-tvos13.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -module-name RevenueCatUI -package-name purchases_ios
-// swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2.4
+// swift-compiler-version: Apple Swift version 6.3.1 effective-5.10 (swiftlang-6.3.1.1.2 clang-2100.0.123.102)
+// swift-module-flags: -target arm64-apple-tvos13.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -O -enable-experimental-feature DebugDescriptionMacro -module-name RevenueCatUI -package-name purchases_ios
+// swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.3.1
 import AVKit
 import Combine
 import DeveloperToolsSupport
@@ -23,9 +23,7 @@ import _SwiftConcurrencyShims
 public struct CustomActionData {
   public let actionIdentifier: Swift.String
   public let purchaseIdentifier: Swift.String?
-  #if compiler(>=5.3) && $NonescapableTypes
   public init(actionIdentifier: Swift.String, purchaseIdentifier: Swift.String?)
-  #endif
 }
 extension RevenueCatUI.CustomActionData : Swift.Equatable {
   public static func == (lhs: RevenueCatUI.CustomActionData, rhs: RevenueCatUI.CustomActionData) -> Swift.Bool
@@ -69,9 +67,7 @@ public enum CustomerCenterManagementOption {
   public struct CustomAction : RevenueCatUI.CustomerCenterActionable {
     public let actionIdentifier: Swift.String
     public let purchaseIdentifier: Swift.String?
-    #if compiler(>=5.3) && $NonescapableTypes
     public init(actionIdentifier: Swift.String, purchaseIdentifier: Swift.String?)
-    #endif
   }
 }
 public struct CustomerCenterNavigationOptions {
@@ -79,9 +75,7 @@ public struct CustomerCenterNavigationOptions {
   public let usesExistingNavigation: Swift.Bool
   public let shouldShowCloseButton: Swift.Bool
   public let onCloseHandler: (() -> Swift.Void)?
-  #if compiler(>=5.3) && $NonescapableTypes
   public init(usesNavigationStack: Swift.Bool = true, usesExistingNavigation: Swift.Bool = false, shouldShowCloseButton: Swift.Bool = true, onCloseHandler: (() -> Swift.Void)? = nil)
-  #endif
 }
 extension RevenueCatUI.CustomerCenterNavigationOptions {
   public static let `default`: RevenueCatUI.CustomerCenterNavigationOptions
