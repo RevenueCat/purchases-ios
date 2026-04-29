@@ -20,8 +20,6 @@ internal extension Tracking {
 
         private let key = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
 
-        init() {}
-
         deinit {
             self.key.deallocate()
         }
