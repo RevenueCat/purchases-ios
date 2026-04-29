@@ -1,0 +1,19 @@
+{
+  "app_user_id" : "test-user",
+  "dark_mode" : true,
+  "display_mode" : "full_screen",
+  "id" : "72164C05-2BDC-4807-8918-A4105F727DEB",
+  "locale" : "en_US",
+  "offering_id" : "offering_1",
+  "paywall_id" : "test_paywall_id_1",
+  "paywall_revision" : 5,
+  "presented_offering_context" : {
+    "placement_identifier" : "home_banner",
+    "targeting_revision" : 3,
+    "targeting_rule_id" : "rule_abc123"
+  },
+  "session_id" : "73616D70-6C65-2073-7472-696E67000000",
+  "timestamp" : 1694029328000,
+  "type" : "paywall_impression",
+  "version" : 1
+}

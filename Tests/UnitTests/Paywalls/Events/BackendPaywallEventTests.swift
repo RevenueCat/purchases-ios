@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class BackendPaywallEventTests: BaseBackendTests {
@@ -41,6 +41,31 @@ class BackendPaywallEventTests: BaseBackendTests {
 
     func testPostPaywallEventsWithOneEvent() throws {
         let event = PaywallEvent.impression(Self.eventCreation1, Self.eventData1)
+        let storedEvent: StoredFeatureEvent = try Self.createStoredFeatureEvent(from: event)
+
+        let error = waitUntilValue { completion in
+            self.internalAPI.postFeatureEvents(events: [storedEvent], completion: completion)
+        }
+
+        expect(error).to(beNil())
+    }
+
+    func testPostPaywallEventsWithPlacementAndTargeting() throws {
+        let eventData: PaywallEvent.Data = .init(
+            paywallIdentifier: "test_paywall_id_1",
+            offeringIdentifier: "offering_1",
+            paywallRevision: 5,
+            sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
+            displayMode: .fullScreen,
+            localeIdentifier: "es_ES",
+            darkMode: true,
+            presentedOfferingContext: .init(
+                offeringIdentifier: "offering_1",
+                placementIdentifier: "home_banner",
+                targetingContext: .init(revision: 3, ruleId: "rule_abc123")
+            )
+        )
+        let event = PaywallEvent.impression(Self.eventCreation1, eventData)
         let storedEvent: StoredFeatureEvent = try Self.createStoredFeatureEvent(from: event)
 
         let error = waitUntilValue { completion in
