@@ -23,11 +23,19 @@ final class UIConfigProvider {
 
     private let uiConfig: UIConfig
     private let failedToLoadFont: FailedToLoadFont?
+    /// When non-nil, overrides Dynamic Type for fonts resolved through this provider.
+    private let automaticallyScaleFontSizeOverride: Bool?
     private var loggedMessages: Set<LogMessage> = []
 
-    init(uiConfig: UIConfig, failedToLoadFont: FailedToLoadFont? = nil) {
+    init(uiConfig: UIConfig, failedToLoadFont: FailedToLoadFont? = nil, automaticallyScaleFontSize: Bool? = nil) {
         self.uiConfig = uiConfig
         self.failedToLoadFont = failedToLoadFont
+        self.automaticallyScaleFontSizeOverride = automaticallyScaleFontSize
+    }
+
+    /// Effective Dynamic Type behavior for fonts; dashboard default when `automaticallyScaleFontSize` is absent from paywall data.
+    func useDynamicType(defaultValue: Bool = true) -> Bool {
+        return self.automaticallyScaleFontSizeOverride ?? defaultValue
     }
 
     var variableConfig: UIConfig.VariableConfig {
@@ -92,8 +100,10 @@ final class UIConfigProvider {
     func resolveFont(
         size fontSize: CGFloat,
         name: String,
-        useDynamicType: Bool = true
+        useDynamicType: Bool? = nil
     ) -> Font? {
+
+        let useDynamicType = useDynamicType ?? self.useDynamicType()
 
         guard let fontsConfig = self.uiConfig.app.fonts[name] else {
             self.logMessageIfNeeded(.fontMappingNotFound(name: name))

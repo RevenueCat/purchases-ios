@@ -23,6 +23,7 @@ func checkPaywallData(_ data: PaywallData) {
     let assetBaseURL: URL = data.assetBaseURL
     let revision: Int = data.revision
     let _: [String] = data.zeroDecimalPlaceCountries
+    let _: Bool? = data.automaticallyScaleFontSize
 
     let _: PaywallData = .init(templateName: templateName,
                                config: config,

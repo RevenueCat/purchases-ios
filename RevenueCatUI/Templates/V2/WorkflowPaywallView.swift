@@ -140,6 +140,7 @@ struct WorkflowPaywallView: View {
     private let displayCloseButton: Bool
     private let promoOfferCache: PaywallPromoOfferCache?
     private let onDismiss: () -> Void
+    private let automaticallyScaleFontSize: Bool?
 
     @StateObject private var navigator: WorkflowNavigator
     @State private var hasLoggedInvalidState = false
@@ -153,7 +154,8 @@ struct WorkflowPaywallView: View {
         showZeroDecimalPlacePrices: Bool,
         displayCloseButton: Bool,
         promoOfferCache: PaywallPromoOfferCache?,
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        automaticallyScaleFontSize: Bool? = nil
     ) {
         self.context = context
         self.purchaseHandler = purchaseHandler
@@ -162,6 +164,7 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.promoOfferCache = promoOfferCache
         self.onDismiss = onDismiss
+        self.automaticallyScaleFontSize = automaticallyScaleFontSize
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
         self._transitionState = .init(
             wrappedValue: .init(
@@ -230,7 +233,8 @@ struct WorkflowPaywallView: View {
                 }
             },
             colorScheme: self.colorScheme,
-            promoOfferCache: self.promoOfferCache
+            promoOfferCache: self.promoOfferCache,
+            automaticallyScaleFontSize: self.automaticallyScaleFontSize
         )
         .environment(\.workflowTriggerAction, { componentId in
             return self.handleTriggeredNavigation(componentId: componentId)
