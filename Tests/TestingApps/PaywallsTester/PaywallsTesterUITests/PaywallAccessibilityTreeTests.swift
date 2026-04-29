@@ -1,8 +1,11 @@
 /*
  PaywallAccessibilityTreeTests
  ==============================
- Captures the raw XCUITest accessibility tree of a rendered paywall and writes it
- to a human-readable text file on the host Desktop.
+ Captures the XCUITest accessibility tree of a rendered paywall and exports it
+ as a structured JSON file conforming to the PaywallLayoutTree schema.
+
+ The JSON root is the paywall ScrollView element (identifier == "paywall").
+ If no such element is found the full application snapshot is used as the root.
 
  This test target is attached to the PaywallsTester app. It can navigate via two paths:
 
@@ -35,12 +38,11 @@
 
  OUTPUT
  ------
- File is written to the host Desktop:
-   ~/Desktop/paywall-tree-<offering-id>-<timestamp>.txt
+ JSON file written to /tmp/ (and ~/Desktop/ when the host home directory is discoverable):
+   paywall-tree-<offering-id>-<timestamp>.json
 
- The dump is intentionally raw — no normalization, no schema mapping — so the
- completeness of the XCUITest accessibility tree can be evaluated before
- investing in a data model.
+ The JSON conforms to the PaywallLayoutTree schema at:
+   https://revenuecat.com/schemas/paywall-layout-tree.json
 */
 
 import XCTest
@@ -50,6 +52,12 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
     private static let appLaunchTimeout: TimeInterval = 20
     private static let paywallLoadTimeout: TimeInterval = 15
     private static let offeringsLoadTimeout: TimeInterval = 30
+
+    // MARK: - Schema version
+
+    private static let extractorVersion = "1.0.0"
+
+    // MARK: - Test
 
     func testCaptureAccessibilityTree() throws {
         let paywallId = ProcessInfo.processInfo.environment["OFFERING_ID"] ?? "examples-first"
@@ -71,35 +79,50 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         // Let SwiftUI layout settle
         Thread.sleep(forTimeInterval: 2)
 
-        // Capture the full accessibility snapshot
-        let snapshot = try app.snapshot()
-        let dump = buildDump(snapshot, depth: 0)
+        // Capture the full accessibility snapshot, then root at the paywall element
+        let appSnapshot = try app.snapshot()
+        let paywallSnapshot = findPaywallRoot(appSnapshot) ?? appSnapshot
 
-        // Write header + tree to Desktop on the host machine
-        let header = """
-        PaywallAccessibilityTreeDump
-        OfferingId : \(paywallId)
-        CapturedAt : \(ISO8601DateFormatter().string(from: Date()))
-        ────────────────────────────────────────────────────────────────────────────
+        // Build structured tree
+        let root = buildNode(paywallSnapshot)
 
-        """
+        // Build metadata
+        let osVersion = ProcessInfo.processInfo.operatingSystemVersion
+        let platformVersion = "\(osVersion.majorVersion).\(osVersion.minorVersion).\(osVersion.patchVersion)"
+        let appFrame = appSnapshot.frame
 
-        let output = header + dump
+        let metadata = PaywallLayoutTree.Metadata(
+            platform: "ios",
+            platformVersion: platformVersion,
+            viewport: PaywallLayoutTree.Metadata.Viewport(
+                width: Double(appFrame.width),
+                height: Double(appFrame.height),
+                scale: Double(XCUIScreen.main.scale)
+            ),
+            offeringId: paywallId,
+            locale: Locale.current.identifier,
+            extractorVersion: Self.extractorVersion,
+            timestamp: ISO8601DateFormatter().string(from: Date())
+        )
 
+        let tree = PaywallLayoutTree(metadata: metadata, root: root)
+
+        // Encode to JSON
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        let jsonData = try encoder.encode(tree)
+
+        // Build filename
         let safe = paywallId
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: " ", with: "_")
         let timestamp = ISO8601DateFormatter().string(from: Date())
             .replacingOccurrences(of: ":", with: "-")
-        let filename = "paywall-tree-\(safe)-\(timestamp).txt"
+        let filename = "paywall-tree-\(safe)-\(timestamp).json"
 
-        // In Xcode 26 UITests the runner process executes inside the iOS simulator,
-        // so NSHomeDirectory() returns the app container, not the host Desktop.
-        // We write to /tmp/ which is accessible from both the simulator and the host.
-        // If SIMULATOR_HOST_HOME is set (injected by the test environment) we also
-        // write a copy to ~/Desktop/ on the host.
+        // Write to /tmp/ (accessible from both simulator and host)
         let tmpURL = URL(fileURLWithPath: "/tmp").appendingPathComponent(filename)
-        try output.write(to: tmpURL, atomically: true, encoding: .utf8)
+        try jsonData.write(to: tmpURL)
 
         // Attempt host Desktop copy when the host home is discoverable
         let hostHomeEnv = ProcessInfo.processInfo.environment["SIMULATOR_HOST_HOME"]
@@ -108,12 +131,12 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
             let desktopURL = URL(fileURLWithPath: hostHome)
                 .appendingPathComponent("Desktop")
                 .appendingPathComponent(filename)
-            try? output.write(to: desktopURL, atomically: true, encoding: .utf8)
+            try? jsonData.write(to: desktopURL)
             print("  Desktop copy: \(desktopURL.path)")
         }
 
         // Always attach to the .xcresult bundle — extractable via `xcrun xcresulttool`
-        let attachment = XCTAttachment(string: output)
+        let attachment = XCTAttachment(data: jsonData, uniformTypeIdentifier: "public.json")
         attachment.name = filename
         attachment.lifetime = .keepAlways
         add(attachment)
@@ -199,52 +222,81 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         Thread.sleep(forTimeInterval: 2)
     }
 
-    // MARK: - Tree walker
+    // MARK: - Paywall root search
 
-    private func buildDump(_ node: any XCUIElementSnapshot, depth: Int) -> String {
-        let indent = String(repeating: "  ", count: depth)
-        var parts: [String] = []
-
-        let typeStr = elementTypeName(node.elementType)
-        parts.append(typeStr)
-
-        let id = node.identifier
-        parts.append("id=\(id.isEmpty ? "(none)" : "\"\(id)\"")")
-
-        let label = node.label
-        parts.append("label=\(label.isEmpty ? "(none)" : "\"\(label)\"")")
-
-        if let value = node.value {
-            let valueStr = "\(value)"
-            parts.append("value=\(valueStr.isEmpty ? "(empty)" : "\"\(valueStr)\"")")
-        }
-
-        let title = node.title
-        if !title.isEmpty {
-            parts.append("title=\"\(title)\"")
-        }
-
-        let frame = node.frame
-        parts.append(String(
-            format: "frame={{%.0f,%.0f},{%.0f,%.0f}}",
-            frame.origin.x, frame.origin.y,
-            frame.size.width, frame.size.height
-        ))
-
-        var flags: [String] = []
-        if !node.isEnabled { flags.append("disabled") }
-        if node.isSelected { flags.append("selected") }
-        if !flags.isEmpty { parts.append("[\(flags.joined(separator: ","))]") }
-
-        var lines = [indent + parts.joined(separator: "  ")]
+    /// Searches the snapshot depth-first for the element with identifier "paywall".
+    /// Returns nil if not found (caller falls back to the full snapshot).
+    private func findPaywallRoot(_ node: any XCUIElementSnapshot) -> (any XCUIElementSnapshot)? {
+        if node.identifier == "paywall" { return node }
         for child in node.children {
-            lines.append(buildDump(child, depth: depth + 1))
+            if let found = findPaywallRoot(child) { return found }
         }
-        return lines.joined(separator: "\n")
+        return nil
     }
 
-    // MARK: - Element type name
+    // MARK: - JSON tree builder
 
+    private func buildNode(_ snapshot: any XCUIElementSnapshot) -> PaywallLayoutTree.Node {
+        let nativeTypeName = elementTypeName(snapshot.elementType)
+        let semanticTypeName = semanticType(snapshot.elementType)
+
+        let identifier: String? = snapshot.identifier.isEmpty ? nil : snapshot.identifier
+        let label: String? = snapshot.label.isEmpty ? nil : snapshot.label
+
+        let value: String?
+        if let rawValue = snapshot.value {
+            let str = "\(rawValue)"
+            value = str.isEmpty ? nil : str
+        } else {
+            value = nil
+        }
+
+        let cgFrame = snapshot.frame
+        let frame = PaywallLayoutTree.Node.Frame(
+            x: Double(cgFrame.origin.x),
+            y: Double(cgFrame.origin.y),
+            width: Double(cgFrame.size.width),
+            height: Double(cgFrame.size.height)
+        )
+
+        let state = PaywallLayoutTree.Node.State(
+            enabled: snapshot.isEnabled,
+            selected: snapshot.isSelected
+        )
+
+        return PaywallLayoutTree.Node(
+            type: semanticTypeName,
+            nativeType: nativeTypeName,
+            identifier: identifier,
+            label: label,
+            value: value,
+            frame: frame,
+            state: state,
+            children: snapshot.children.map { buildNode($0) }
+        )
+    }
+
+    // MARK: - Type mapping
+
+    /// Maps a raw XCUITest element type to the normalized semantic type used in the schema.
+    // swiftlint:disable:next cyclomatic_complexity
+    private func semanticType(_ type: XCUIElement.ElementType) -> String {
+        switch type {
+        case .application:                                      return "application"
+        case .window:                                           return "window"
+        case .scrollView:                                       return "scroll"
+        case .staticText, .textView:                            return "text"
+        case .image:                                            return "image"
+        case .button, .radioButton:                             return "button"
+        case .switch, .toggle, .checkBox:                       return "toggle"
+        case .textField, .secureTextField, .searchField:        return "input"
+        case .icon:                                             return "icon"
+        case .separator:                                        return "divider"
+        default:                                                return "container"
+        }
+    }
+
+    /// Returns the raw XCUITest element type name string (stored as `nativeType` in the JSON).
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     private func elementTypeName(_ type: XCUIElement.ElementType) -> String {
         switch type {
@@ -331,6 +383,57 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         case .touchBar:            return "TouchBar"
         case .statusItem:          return "StatusItem"
         @unknown default:          return "Unknown(\(type.rawValue))"
+        }
+    }
+}
+
+// MARK: - PaywallLayoutTree schema types
+
+/// Root container for the PaywallLayoutTree JSON output.
+/// Conforms to https://revenuecat.com/schemas/paywall-layout-tree.json
+private struct PaywallLayoutTree: Encodable {
+
+    let metadata: Metadata
+    let root: Node
+
+    struct Metadata: Encodable {
+        let platform: String
+        let platformVersion: String
+        let viewport: Viewport
+        let offeringId: String
+        let locale: String
+        let extractorVersion: String
+        let timestamp: String
+
+        struct Viewport: Encodable {
+            let width: Double
+            let height: Double
+            let scale: Double
+        }
+    }
+
+    struct Node: Encodable {
+        let type: String
+        let nativeType: String
+        let identifier: String?
+        let label: String?
+        let value: String?
+        let frame: Frame
+        let state: State
+        let children: [Node]
+
+        struct Frame: Encodable {
+            let x: Double
+            let y: Double
+            let width: Double
+            let height: Double
+        }
+
+        /// Interaction-state flags as reported by XCUITest.
+        /// `enabled` defaults to true; `selected` defaults to false.
+        struct State: Encodable {
+            let enabled: Bool
+            let selected: Bool
         }
     }
 }
