@@ -2379,15 +2379,16 @@ workflows:
           <<: *release-tags
       - docs-deploy:
           <<: *release-tags
-      - deploy-purchase-tester:
-          dry_run: false
-          <<: *release-tags
       - make-release:
           requires:
             - push-revenuecatui-pod
             - deploy-to-spm
             - docs-deploy
-            - deploy-purchase-tester
+          <<: *release-tags
+      - deploy-purchase-tester:
+          dry_run: false
+          requires:
+            - make-release
           <<: *release-tags
       - deploy-rct-tester:
           dry_run: false
@@ -2402,8 +2403,10 @@ workflows:
           repo_name: purchases-ios
           requires:
             - make-release
+            - deploy-purchase-tester
             - deploy-rct-tester
             - bump-sdk-in-rc-mobile-app
+            - make-admob-release
           <<: *release-tags
 
   snapshot-bump:
