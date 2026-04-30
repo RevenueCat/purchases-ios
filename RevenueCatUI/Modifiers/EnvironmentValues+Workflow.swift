@@ -14,8 +14,28 @@ import SwiftUI
 #if !os(tvOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WorkflowPageTransitionContext {
+
+    let pageOffset: CGFloat
+    let headerButtonOpacity: CGFloat
+
+    static let identity = Self(pageOffset: 0, headerButtonOpacity: 1)
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct WorkflowTriggerActionKey: EnvironmentKey {
     static let defaultValue: ((String) -> Bool)? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct WorkflowPageTransitionContextKey: EnvironmentKey {
+    static let defaultValue = WorkflowPageTransitionContext.identity
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct IsWorkflowHeaderKey: EnvironmentKey {
+    static let defaultValue = false
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -26,6 +46,16 @@ extension EnvironmentValues {
     var workflowTriggerAction: ((String) -> Bool)? {
         get { self[WorkflowTriggerActionKey.self] }
         set { self[WorkflowTriggerActionKey.self] = newValue }
+    }
+
+    var workflowPageTransitionContext: WorkflowPageTransitionContext {
+        get { self[WorkflowPageTransitionContextKey.self] }
+        set { self[WorkflowPageTransitionContextKey.self] = newValue }
+    }
+
+    var isWorkflowHeader: Bool {
+        get { self[IsWorkflowHeaderKey.self] }
+        set { self[IsWorkflowHeaderKey.self] = newValue }
     }
 }
 
