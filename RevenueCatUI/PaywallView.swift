@@ -544,6 +544,8 @@ struct LoadedOfferingPaywallView: View {
             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices
         )
         let view = paywallView(withConfig: configuration)
+            .environment(\.locale, self.locale)
+            .environment(\.layoutDirection, self.locale.swiftUILayoutDirection)
             .environmentObject(self.introEligibility)
             .environment(
                 \.componentInteractionLogger,

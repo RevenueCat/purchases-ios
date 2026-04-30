@@ -14,6 +14,8 @@ import SwiftUI
 #if !os(watchOS) && !os(macOS)
 
 private let spanishLocale = "es_ES"
+private let hebrewLocale  = "he-IL"
+private let arabicLocale  = "ar"
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PaywallViewLocalizationTests: BaseSnapshotTest {
@@ -22,7 +24,18 @@ class PaywallViewLocalizationTests: BaseSnapshotTest {
         Self.test(spanishLocale)
     }
 
- }
+    // Regression tests for RTL layout direction.
+    // When overridePreferredUILocale is set to an RTL locale while the system locale is LTR,
+    // the paywall must render with RTL layout (not just RTL strings).
+    func testHebrew() {
+        Self.test(hebrewLocale)
+    }
+
+    func testArabic() {
+        Self.test(arabicLocale)
+    }
+
+}
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallViewLocalizationTests {

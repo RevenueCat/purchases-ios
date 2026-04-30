@@ -525,3 +525,56 @@ private extension String {
     private static let rtlMarker: CharacterSet = .init(charactersIn: "\u{200f}")
 
 }
+
+// MARK: - Locale.swiftUILayoutDirection
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class LocaleLayoutDirectionTests: TestCase {
+
+    // RTL languages
+    func testHebrewIsRTL() {
+        expect(Locale(identifier: "he").swiftUILayoutDirection) == .rightToLeft
+    }
+
+    func testHebrewRegionIsRTL() {
+        expect(Locale(identifier: "he-IL").swiftUILayoutDirection) == .rightToLeft
+    }
+
+    func testArabicIsRTL() {
+        expect(Locale(identifier: "ar").swiftUILayoutDirection) == .rightToLeft
+    }
+
+    func testArabicRegionIsRTL() {
+        expect(Locale(identifier: "ar_AE").swiftUILayoutDirection) == .rightToLeft
+    }
+
+    func testFarsiIsRTL() {
+        expect(Locale(identifier: "fa").swiftUILayoutDirection) == .rightToLeft
+    }
+
+    func testUrduIsRTL() {
+        expect(Locale(identifier: "ur").swiftUILayoutDirection) == .rightToLeft
+    }
+
+    // LTR languages
+    func testEnglishIsLTR() {
+        expect(Locale(identifier: "en").swiftUILayoutDirection) == .leftToRight
+    }
+
+    func testEnglishRegionIsLTR() {
+        expect(Locale(identifier: "en_US").swiftUILayoutDirection) == .leftToRight
+    }
+
+    func testFrenchIsLTR() {
+        expect(Locale(identifier: "fr-FR").swiftUILayoutDirection) == .leftToRight
+    }
+
+    func testJapaneseIsLTR() {
+        expect(Locale(identifier: "ja").swiftUILayoutDirection) == .leftToRight
+    }
+
+    func testUnknownLocaleDefaultsToLTR() {
+        expect(Locale(identifier: "").swiftUILayoutDirection) == .leftToRight
+    }
+
+}

@@ -165,13 +165,16 @@ struct PaywallsV2View: View {
     }
 
     private func loadedPaywallView(paywallState: PaywallState) -> some View {
-        LoadedPaywallsV2View(
+        let resolvedLocale = self.purchaseHandler.preferredLocaleOverride ?? .current
+        return LoadedPaywallsV2View(
             introOfferEligibilityContext: introOfferEligibilityContext,
             paywallState: paywallState,
             uiConfigProvider: self.uiConfigProvider,
             selectedPackageContext: self.selectedPackageContext,
             onDismiss: self.onDismiss
         )
+        .environment(\.locale, resolvedLocale)
+        .environment(\.layoutDirection, resolvedLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
