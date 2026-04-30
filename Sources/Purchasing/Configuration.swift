@@ -469,7 +469,12 @@ extension Configuration {
 extension Configuration.APIKeyValidationResult {
 
     func checkForSimulatedStoreAPIKeyInRelease(systemInfo: SystemInfo, apiKey: String) {
-        #if !DEBUG
+        // The `BYPASS_SIMULATED_STORE_RELEASE_CHECK` compilation flag opts out of the Release-build
+        // safeguard. It exists for SDK consumers (e.g. purchases-kmp) that ship the SDK as a
+        // pre-compiled binary always built in Release configuration, where this check would
+        // otherwise crash apps that use a Test Store API key during development. Setting this flag
+        // means apps shipped to production with a Test Store API key won't be caught at runtime.
+        #if !DEBUG && !BYPASS_SIMULATED_STORE_RELEASE_CHECK
         guard self == .simulatedStore, !systemInfo.dangerousSettings.uiPreviewMode else {
             return
         }
