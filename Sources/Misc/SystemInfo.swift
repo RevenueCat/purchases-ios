@@ -106,7 +106,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.70.0-SNAPSHOT"
+        return "5.70.0"
     }
 
     static var installationMethod: String {

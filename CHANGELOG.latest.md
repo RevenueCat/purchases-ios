@@ -1,45 +1,41 @@
 ## RevenueCat SDK
 ### ✨ New Features
-* Add workflows network layer for multipage paywalls (#6557) via Cesar de la Vega (@vegaro)
+* Add placement and targeting rule to paywall events (#6476) via Dan Pannasch (@dpannasch)
+* Move paywall analytics APIs to Internal SPI (#6700) via Monika Mateska (@MonikaMateska)
 ### 🐞 Bugfixes
-* Resolve the issue around tab control context identity (PWENG-31) (#6634) via Alexander Repty (@alexrepty)
-* Fall back to getCustomerInfo when posting unfinished receipt fails (#6650) via Rick (@rickvdl)
-* fix(RevenueCatUI): legacy paywall `component_name` parity with Android (#6662) via Monika Mateska (@MonikaMateska)
-* Clip carousel pages to card width to fix transient overlay artifact (#6657) via Monika Mateska (@MonikaMateska)
-* Fix SPM 'unhandled file' warning for RevenueCatUIDev.xctestplan (#6625) via Rick (@rickvdl)
+* Replace print with Logger.debug in ISODurationFormatter (#6691) via Facundo Menzella (@facumenzella)
 
 ## RevenueCatUI SDK
 ### 🐞 Bugfixes
-* Defer paywall dismissal after purchase callbacks (#6621) via Jacob Rakidzich (@JZDesign)
+* FIX: Optimize time to load paywalls (#6694) via Jacob Rakidzich (@JZDesign)
 ### Paywallsv2
+#### ✨ New Features
+* Add explicit directional step transitions to WorkflowPaywallView (#6703) via Facundo Menzella (@facumenzella)
+* Add WorkflowPaywallView for multipage workflow step rendering (#6692) via Facundo Menzella (@facumenzella)
+* Add workflowTrigger to ButtonComponent.Action (#6693) via Facundo Menzella (@facumenzella)
 #### 🐞 Bugfixes
-* Replace fatalError with assertionFailure + throw for fallbackHeader (#6636) via Facundo Menzella (@facumenzella)
+* Fix WorkflowTriggerAction.stepId to be optional (String?) (#6687) via Facundo Menzella (@facumenzella)
+* Fix product.currency_symbol for mismatched formatter locales (#6572) via Facundo Menzella (@facumenzella)
+### Customer Center
+#### ✨ New Features
+* Add workflow-based paywall resolution for multipage paywalls (#6640) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* Fix Customer Center showing wrong management options for expired subscribers (#6674) via Facundo Menzella (@facumenzella)
+### Paywallv2
+#### ✨ New Features
+* Add workflow-based paywall resolution (#6675) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* fix: fallback_pr_lookup boolean check in Fastfile (#6672) via Antonio Pallares (@ajpallares)
-* Add opt-in bump_with_fallback_pr_lookup CircleCI parameter (#6669) via Antonio Pallares (@ajpallares)
-* Bump fastlane-plugin-revenuecat_internal from `b822f01` to `d24ab26` (#6670) via dependabot[bot] (@dependabot[bot])
-* AdMob SSV: add `@_spi(Internal)` poll endpoint on `Purchases` (#6641) via Pol Miro (@polmiro)
-* Skip CI on auto-generated snapshot branches (#6633) via Rick (@rickvdl)
-* Add TUIST_LAUNCH_ARGUMENTS env var for injecting launch arguments at generation time (#6664) via Facundo Menzella (@facumenzella)
-* Add workflow to re-run Danger on PR label change (#6660) via Rick (@rickvdl)
-* Fix rcgitbot_please_test token permissions for PR comments (#6655) via Antonio Pallares (@ajpallares)
-* Add pr:other label to auto-generated snapshot PRs (#6631) via Rick (@rickvdl)
-* Add TUIST_SWIFT_CONDITIONS for injecting compiler flags at project generation time (#6661) via Facundo Menzella (@facumenzella)
-* Skip SPM Release Build steps during snapshot-generation pipelines (#6659) via Antonio Pallares (@ajpallares)
-* Fix iOS 15 snapshot-generation job hanging indefinitely (#6658) via Antonio Pallares (@ajpallares)
-* Bump fastlane-plugin-revenuecat_internal from `e348913` to `b822f01` (#6651) via dependabot[bot] (@dependabot[bot])
-* Use env-var interpolation in rcgitbot_please_test workflow (#6649) via Antonio Pallares (@ajpallares)
-* Expose `apiKey` on `Purchases` via `@_spi(Internal)` (#6635) via Pol Miro (@polmiro)
-* Bump fastlane from 2.232.2 to 2.233.0 (#6639) via dependabot[bot] (@dependabot[bot])
-* Bump fastlane-plugin-revenuecat_internal from `a1eed48` to `e348913` (#6638) via dependabot[bot] (@dependabot[bot])
-* Add @RCGitBot please test <job-name> on-demand job trigger (#6607) via Antonio Pallares (@ajpallares)
-* Migrate CircleCI to dynamic configuration (#6605) via Antonio Pallares (@ajpallares)
-* Bump fastlane from 2.229.1 to 2.232.2 and fix Mac Catalyst archive export (#6370) via dependabot[bot] (@dependabot[bot])
-* Add automated GitHub releases for purchases-ios-admob (#6537) via Pol Miro (@polmiro)
-* Add missing source files to RevenueCat.xcodeproj (#6624) via Rick (@rickvdl)
-* UI events for paywall component interactions (#6523) via Monika Mateska (@MonikaMateska)
-* Run paywalls V1 snapshot recording on main and release branches (#6620) via Rick (@rickvdl)
-* fix(ads): remove mistake masking behavior (#6613) via Peter Porfy (@peterporfy)
-* Use shared run_maestro_e2e_tests action from fastlane plugin (#6616) via Antonio Pallares (@ajpallares)
-* Bump fastlane-plugin-revenuecat_internal from `20911d1` to `a1eed48` (#6618) via dependabot[bot] (@dependabot[bot])
+* Bump nokogiri from 1.19.2 to 1.19.3 (#6705) via dependabot[bot] (@dependabot[bot])
+* Align workflow trigger matching with Android: typed enums + sealed WorkflowTriggerAction (#6698) via Facundo Menzella (@facumenzella)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#6272) via RevenueCat Git Bot (@RCGitBot)
+* Expose Logger to internal consumers (#6690) via Pol Miro (@polmiro)
+* Delete claude.yml workflow (#6688) via Cesar de la Vega (@vegaro)
+* Decode reward payload in RewardVerification poll response (#6678) via Pol Miro (@polmiro)
+* Document Tuist environment variables in AGENTS.md (#6689) via Facundo Menzella (@facumenzella)
+* Add WorkflowContext to surface full workflow state from PurchaseHandler (#6685) via Facundo Menzella (@facumenzella)
+* Add workflowTriggerAction environment hook for button workflow triggers (#6684) via Facundo Menzella (@facumenzella)
+* Add swiftinterface API diff tracking for RevenueCatUI (#6450) via Facundo Menzella (@facumenzella)
+* Add WorkflowNavigator for multipage workflow step navigation (#6680) via Facundo Menzella (@facumenzella)
+* Add id to PaywallButtonComponent (#6679) via Facundo Menzella (@facumenzella)
+* Rename internal SSV symbols, URL and metric to RewardVerification (#6667) via Pol Miro (@polmiro)
