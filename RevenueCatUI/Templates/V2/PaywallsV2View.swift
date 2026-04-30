@@ -85,13 +85,12 @@ struct PaywallsV2View: View {
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
         colorScheme: ColorScheme,
         promoOfferCache: PaywallPromoOfferCache? = nil,
-        introEligibilityContext: IntroOfferEligibilityContext? = nil,
-        automaticallyScaleFontSize: Bool? = nil
+        introEligibilityContext: IntroOfferEligibilityContext? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
             failedToLoadFont: failedToLoadFont,
-            automaticallyScaleFontSize: automaticallyScaleFontSize
+            automaticallyScaleFontSize: paywallComponents.data.automaticallyScaleFontSize
         )
 
         self.paywallComponentsData = paywallComponents.data

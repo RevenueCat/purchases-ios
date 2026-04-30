@@ -21,7 +21,11 @@ import SwiftUI
 extension PaywallComponent.FontSize {
 
     func makeFont(familyName: String?, automaticallyScaleFontSize: Bool? = nil) -> Font {
-        return Font(self.makePlatformFont(familyName: familyName, automaticallyScaleFontSize: automaticallyScaleFontSize))
+        let platformFont = self.makePlatformFont(
+            familyName: familyName,
+            automaticallyScaleFontSize: automaticallyScaleFontSize
+        )
+        return Font(platformFont)
     }
 
     private var textStyle: PlatformFont.TextStyle {
@@ -67,9 +71,9 @@ extension PaywallComponent.FontSize {
             baseFont = PlatformFont.systemFont(ofSize: fontSize, weight: .regular)
         }
 
-        // Apply dynamic type scaling when enabled (default: enabled when unspecified)
+        // Apply dynamic type scaling only when the dashboard enables accessibility font scaling
         #if canImport(UIKit)
-        let shouldScale = automaticallyScaleFontSize ?? true
+        let shouldScale = automaticallyScaleFontSize == true
         if shouldScale {
             return UIFontMetrics(forTextStyle: self.textStyle).scaledFont(for: baseFont)
         }
