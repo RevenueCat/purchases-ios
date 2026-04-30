@@ -312,19 +312,14 @@ class CustomPaywallEventTests: TestCase {
         expect(params.offeringId).to(beNil())
     }
 
-    func testParamsDefaultPlacementAndTargetingFieldsAreNil() {
+    func testParamsDefaultOfferingIsNil() {
         let params = CustomPaywallImpressionParams()
-        expect(params.placementIdentifier).to(beNil())
-        expect(params.targetingRevision).to(beNil())
-        expect(params.targetingRevisionValue).to(beNil())
-        expect(params.targetingRuleId).to(beNil())
+        expect(params.offering).to(beNil())
     }
 
-    func testParamsWithOfferingIdInitDoesNotPopulatePlacementAndTargeting() {
+    func testParamsWithOfferingIdInitDoesNotStoreOffering() {
         let params = CustomPaywallImpressionParams(paywallId: "pw", offeringId: "my_offering")
-        expect(params.placementIdentifier).to(beNil())
-        expect(params.targetingRevision).to(beNil())
-        expect(params.targetingRuleId).to(beNil())
+        expect(params.offering).to(beNil())
     }
 
     // MARK: - Params: Offering-based init
@@ -336,48 +331,10 @@ class CustomPaywallEventTests: TestCase {
         expect(params.offeringId) == "my_offering"
     }
 
-    func testParamsWithOfferingPopulatesPlacementAndTargeting() {
-        let context = PresentedOfferingContext(
-            offeringIdentifier: "offering_1",
-            placementIdentifier: "home_banner",
-            targetingContext: .init(revision: 3, ruleId: "rule_abc123")
-        )
-        let offering = Self.makeOffering(identifier: "offering_1", presentedOfferingContext: context)
-
+    func testParamsWithOfferingStoresOffering() {
+        let offering = Self.makeOffering(identifier: "my_offering")
         let params = CustomPaywallImpressionParams(paywallId: "pw", offering: offering)
-
-        expect(params.placementIdentifier) == "home_banner"
-        expect(params.targetingRevision) == NSNumber(value: 3)
-        expect(params.targetingRevisionValue) == 3
-        expect(params.targetingRuleId) == "rule_abc123"
-    }
-
-    func testParamsWithOfferingNoPlacementOrTargeting() {
-        let context = PresentedOfferingContext(offeringIdentifier: "offering_1")
-        let offering = Self.makeOffering(identifier: "offering_1", presentedOfferingContext: context)
-
-        let params = CustomPaywallImpressionParams(paywallId: "pw", offering: offering)
-
-        expect(params.placementIdentifier).to(beNil())
-        expect(params.targetingRevision).to(beNil())
-        expect(params.targetingRevisionValue).to(beNil())
-        expect(params.targetingRuleId).to(beNil())
-    }
-
-    func testParamsWithOfferingThatHasNoPackages() {
-        let offering = Offering(
-            identifier: "offering_1",
-            serverDescription: "",
-            availablePackages: [],
-            webCheckoutUrl: nil
-        )
-
-        let params = CustomPaywallImpressionParams(paywallId: "pw", offering: offering)
-
-        expect(params.offeringId) == "offering_1"
-        expect(params.placementIdentifier).to(beNil())
-        expect(params.targetingRevision).to(beNil())
-        expect(params.targetingRuleId).to(beNil())
+        expect(params.offering) === offering
     }
 
     func testParamsWithOfferingDefaultPaywallIdIsNil() {
@@ -385,6 +342,7 @@ class CustomPaywallEventTests: TestCase {
         let params = CustomPaywallImpressionParams(offering: offering)
         expect(params.paywallId).to(beNil())
         expect(params.offeringId) == "offering_1"
+        expect(params.offering) === offering
     }
 
     // MARK: - Data: Codable round-trip
@@ -393,9 +351,11 @@ class CustomPaywallEventTests: TestCase {
         let data = CustomPaywallEvent.Data(
             paywallId: "pw",
             offeringId: "off",
-            placementIdentifier: "home_banner",
-            targetingRevision: 3,
-            targetingRuleId: "rule_abc123"
+            presentedOfferingContext: PresentedOfferingContext(
+                offeringIdentifier: "off",
+                placementIdentifier: "home_banner",
+                targetingContext: .init(revision: 3, ruleId: "rule_abc123")
+            )
         )
 
         let encoded = try JSONEncoder.default.encode(data)
@@ -437,9 +397,11 @@ class CustomPaywallEventTests: TestCase {
             .init(
                 paywallId: "pw",
                 offeringId: "off",
-                placementIdentifier: "home_banner",
-                targetingRevision: 3,
-                targetingRuleId: "rule_abc123"
+                presentedOfferingContext: PresentedOfferingContext(
+                    offeringIdentifier: "off",
+                    placementIdentifier: "home_banner",
+                    targetingContext: .init(revision: 3, ruleId: "rule_abc123")
+                )
             )
         )
         let storedEvent = try XCTUnwrap(
@@ -468,9 +430,11 @@ class CustomPaywallEventTests: TestCase {
             .init(
                 paywallId: "pw",
                 offeringId: "off",
-                placementIdentifier: "home_banner",
-                targetingRevision: nil,
-                targetingRuleId: nil
+                presentedOfferingContext: PresentedOfferingContext(
+                    offeringIdentifier: "off",
+                    placementIdentifier: "home_banner",
+                    targetingContext: nil
+                )
             )
         )
         let storedEvent = try XCTUnwrap(

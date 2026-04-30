@@ -75,15 +75,13 @@ extension CustomPaywallEvent {
         init(
             paywallId: String?,
             offeringId: String? = nil,
-            placementIdentifier: String? = nil,
-            targetingRevision: Int? = nil,
-            targetingRuleId: String? = nil
+            presentedOfferingContext: PresentedOfferingContext? = nil
         ) {
             self.paywallId = paywallId
             self.offeringId = offeringId
-            self.placementIdentifier = placementIdentifier
-            self.targetingRevision = targetingRevision
-            self.targetingRuleId = targetingRuleId
+            self.placementIdentifier = presentedOfferingContext?.placementIdentifier
+            self.targetingRevision = presentedOfferingContext?.targetingContext?.revision
+            self.targetingRuleId = presentedOfferingContext?.targetingContext?.ruleId
         }
 
     }
