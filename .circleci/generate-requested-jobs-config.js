@@ -43,6 +43,7 @@ const JOBS = {
   "spm-revenuecat-ui-ios-15": ["slack-secrets"],
   "spm-revenuecat-ui-ios-16": ["slack-secrets"],
   "spm-revenuecat-ui-watchos": ["slack-secrets"],
+  "xcframework-build-smoke": ["slack-secrets"],
 };
 
 const requestedJobs = (process.env.REQUESTED_JOBS || "").trim().split(/\s+/).filter(Boolean);
