@@ -21,18 +21,18 @@ private let arabicLocale  = "ar"
 class PaywallViewLocalizationTests: BaseSnapshotTest {
 
     func testSpanish() {
-        Self.test(spanishLocale)
+        Self.test(spanishLocale, offering: Self.spanishOffering)
     }
 
     // Regression tests for RTL layout direction.
     // When overridePreferredUILocale is set to an RTL locale while the system locale is LTR,
     // the paywall must render with RTL layout (not just RTL strings).
     func testHebrew() {
-        Self.test(hebrewLocale)
+        Self.test(hebrewLocale, offering: Self.hebrewOffering)
     }
 
     func testArabic() {
-        Self.test(arabicLocale)
+        Self.test(arabicLocale, offering: Self.arabicOffering)
     }
 
 }
@@ -40,67 +40,74 @@ class PaywallViewLocalizationTests: BaseSnapshotTest {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallViewLocalizationTests {
 
-    static func test(_ locale: String) {
-        Self.createView(locale: locale)
-            .recordSnapshot(size: Self.fullScreenSize)
+    static func test(_ locale: String, offering: Offering) {
+        Self.createView(offering: offering, locale: locale)
+            .snapshot(size: Self.fullScreenSize, record: Self.shouldRecordSnapshots, separateOSVersions: false)
     }
 
-    private static func createView(locale: String) -> some View {
+    private static func createView(offering: Offering, locale: String) -> some View {
         return Self.createPaywall(
-            offering: Self.offering.withLocalImages,
-            introEligibility: .init(checker: { packages in
-                return Dictionary(
-                    uniqueKeysWithValues: Set(packages)
-                        .map { package in
-                            let result: IntroEligibilityStatus = package.storeProduct.subscriptionPeriod?.unit == .month
-                                ? .eligible
-                                : .ineligible
-
-                            return (package, result)
-                        }
-                )
-            }),
+            offering: offering.withLocalImages,
             localeOverride: locale
         )
     }
 
-     private static let offering = Offering(
-        identifier: "offering",
-        serverDescription: "Offering",
-        metadata: [:],
-        paywall: .init(
-            templateName: PaywallTemplate.template2.rawValue,
-            config: .init(
-                packages: [PackageType.weekly.identifier,
-                           PackageType.annual.identifier,
-                           PackageType.monthly.identifier],
-                images: TestData.images,
-                colors: .init(
-                    light: TestData.lightColors,
-                    dark: TestData.lightColors
+    static func makeOffering(localization: PaywallData.LocalizedConfiguration,
+                             locale: String) -> Offering {
+        return Offering(
+            identifier: "offering",
+            serverDescription: "Offering",
+            metadata: [:],
+            paywall: .init(
+                templateName: PaywallTemplate.template2.rawValue,
+                config: .init(
+                    packages: [PackageType.weekly.identifier,
+                               PackageType.annual.identifier,
+                               PackageType.monthly.identifier],
+                    images: TestData.images,
+                    colors: .init(
+                        light: TestData.lightColors,
+                        dark: TestData.lightColors
+                    ),
+                    termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
+                    privacyURL: URL(string: "https://revenuecat.com/tos")!
                 ),
-                termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
-                privacyURL: URL(string: "https://revenuecat.com/tos")!
+                localization: localization,
+                assetBaseURL: TestData.paywallAssetBaseURL,
+                locale: Locale(identifier: locale)
             ),
-            localization: localization,
-            assetBaseURL: TestData.paywallAssetBaseURL,
-            locale: Locale(identifier: spanishLocale)
-        ),
-        availablePackages: [TestData.weeklyPackage,
-                            TestData.monthlyPackage,
-                            TestData.annualPackage],
-        webCheckoutUrl: nil
-    )
+            availablePackages: [TestData.weeklyPackage,
+                                TestData.monthlyPackage,
+                                TestData.annualPackage],
+            webCheckoutUrl: nil
+        )
+    }
 
-    private static let localization: PaywallData.LocalizedConfiguration = .init(
+    // MARK: - Offerings
+
+    static let spanishOffering = makeOffering(localization: .init(
         title: "Despierta la curiosidad de tu hijo",
         subtitle: "Accede a todo nuestro contenido educativo, confiado por miles de padres.",
         callToAction: "Comprar",
-        offerDetails: "{{ total_price_and_per_month }}",
-        offerDetailsWithIntroOffer: "Comienza tu prueba de {{ sub_offer_duration }}, " +
-        "después {{ sub_price_per_month }} cada mes",
+        offerDetails: "€9,99 al mes",
         features: []
-    )
+    ), locale: spanishLocale)
+
+    static let hebrewOffering = makeOffering(localization: .init(
+        title: "עוררו את הסקרנות של ילדכם",
+        subtitle: "גישה לכל התוכן החינוכי שלנו, בו בוטחים אלפי הורים.",
+        callToAction: "לרכישה",
+        offerDetails: "₪39.99 לחודש",
+        features: []
+    ), locale: hebrewLocale)
+
+    static let arabicOffering = makeOffering(localization: .init(
+        title: "أيقظ فضول طفلك",
+        subtitle: "استمتع بجميع محتوياتنا التعليمية، التي يثق بها آلاف الآباء.",
+        callToAction: "اشترِ الآن",
+        offerDetails: "9.99 $ شهريًا",
+        features: []
+    ), locale: arabicLocale)
 
 }
 
