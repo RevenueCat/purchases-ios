@@ -61,6 +61,21 @@ jobs:
     resource_class: small
     steps:
       - checkout
+      # Compute pipeline parameters that are derived from the triggering
+      # commit and forward them to the continued pipeline. Currently this
+      # is just `version_file_changed`, used to gate the `snapshot-bump`
+      # workflow so it only runs on commits that actually modified `.version`.
+      - run:
+          name: Compute continuation parameters
+          command: |
+            if git rev-parse --verify HEAD^ >/dev/null 2>&1 \
+              && git diff --name-only HEAD^ HEAD -- .version | grep -qx "\.version"; then
+              VERSION_FILE_CHANGED=true
+            else
+              VERSION_FILE_CHANGED=false
+            fi
+            echo "version_file_changed=$VERSION_FILE_CHANGED"
+            echo "{\"version_file_changed\": $VERSION_FILE_CHANGED}" > /tmp/continuation-parameters.json
       - when:
           condition: << pipeline.parameters.requested_jobs >>
           steps:
@@ -71,11 +86,13 @@ jobs:
                 command: node .circleci/generate-requested-jobs-config.js
             - continuation/continue:
                 configuration_path: /tmp/requested-jobs-config.yml
+                parameters: /tmp/continuation-parameters.json
       - unless:
           condition: << pipeline.parameters.requested_jobs >>
           steps:
             - continuation/continue:
                 configuration_path: .circleci/default_config.yml
+                parameters: /tmp/continuation-parameters.json
 
 workflows:
   setup:

@@ -24,6 +24,15 @@ parameters:
   bump_with_fallback_pr_lookup:
     type: boolean
     default: false
+  # Forwarded by the setup pipeline (see .circleci/config.yml). True when the
+  # triggering commit actually modified the `.version` file. Used to gate the
+  # `snapshot-bump` workflow so we don't open duplicate "prepare next version"
+  # PRs from unrelated commits that land on `main` while a bump PR is in
+  # flight (the lane already no-ops on SNAPSHOT versions, but until the bump
+  # PR merges, every other commit on `main` would otherwise re-trigger it).
+  version_file_changed:
+    type: boolean
+    default: false
   requested_jobs:
     type: string
     default: ""
@@ -2413,6 +2422,10 @@ workflows:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
             equal: [bump, << pipeline.parameters.action >>]
+        # Only run on commits that actually changed `.version` so we don't
+        # generate duplicate bump PRs from commits landing while a previous
+        # bump PR is in flight. See `version_file_changed` parameter above.
+        - equal: [true, << pipeline.parameters.version_file_changed >>]
     jobs:
       - prepare-next-version:
           <<: *only-main-branch
