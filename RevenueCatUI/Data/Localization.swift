@@ -13,6 +13,7 @@
 
 import Foundation
 import RevenueCat
+import SwiftUI
 
 enum Localization {
 
@@ -296,6 +297,19 @@ private extension Locale {
         } else {
             return self.languageCode
         }
+    }
+
+}
+
+extension Locale {
+
+    /// The SwiftUI `LayoutDirection` that matches this locale's character direction.
+    /// Used to propagate RTL layout when a locale override is in effect but the system locale is LTR.
+    var swiftUILayoutDirection: LayoutDirection {
+        let code = self.languageCodeIdentifier ?? ""
+        return Locale.characterDirection(forLanguage: code) == .rightToLeft
+            ? .rightToLeft
+            : .leftToRight
     }
 
 }
