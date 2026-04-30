@@ -61,9 +61,6 @@ jobs:
     resource_class: small
     steps:
       - checkout
-      # Compute pipeline parameters that are derived from the triggering
-      # commit and forward them to the continued pipeline (e.g. whether
-      # `.version` changed, used to gate the `snapshot-bump` workflow).
       - run:
           name: Generate continuation parameters
           command: node .circleci/generate-continuation-parameters.js
