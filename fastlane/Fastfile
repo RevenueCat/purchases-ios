@@ -835,6 +835,28 @@ platform :ios do
     build_release(platform: 'visionOS', scheme: 'RevenueCatUI')
   end
 
+  # Compile-only smoke build that mirrors the configuration used by
+  # `create_xcframework`/`release_checks`: the xcodeproj-driven `RevenueCatUIDev`
+  # scheme, distribution mode, with the `RC_XCFRAMEWORK` compilation condition.
+  #
+  # Catches problems that only surface in the xcframework build (e.g. files
+  # added to SPM/Tuist sources but not registered in `RevenueCat.xcodeproj`,
+  # or symbols guarded by `RC_XCFRAMEWORK`) without paying the cost of the full
+  # `release_checks` lane.
+  desc "Smoke build of the xcframework code path (RevenueCatUIDev, iOS, distribution)"
+  lane :build_xcframework_smoke do |options|
+    load_spm_dependencies
+    xcodebuild(
+      workspace: 'RevenueCat.xcworkspace',
+      scheme: 'RevenueCatUIDev',
+      destination: 'generic/platform=iOS',
+      configuration: 'release',
+      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES " \
+              "BUILD_LIBRARY_FOR_DISTRIBUTION=YES " \
+              "SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) RC_XCFRAMEWORK'"
+    )
+  end
+
   desc "macOS build"
   lane :build_mac do |options|
     load_spm_dependencies
