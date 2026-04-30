@@ -2289,9 +2289,12 @@ extension Purchases {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @objc public func trackCustomPaywallImpression(_ params: CustomPaywallImpressionParams) {
         let cachedOfferings = self.offeringsManager.cachedOfferings
-        let resolvedOffering = params.offering
-            ?? params.offeringId.flatMap { cachedOfferings?[$0] }
-            ?? (params.offeringId == nil ? cachedOfferings?.current : nil)
+        let resolvedOffering = params.offering ?? {
+            if let offeringId = params.offeringId {
+                return cachedOfferings?[offeringId]
+            }
+            return cachedOfferings?.current
+        }()
         let presentedOfferingContext = resolvedOffering?.availablePackages.first?.presentedOfferingContext
         let offeringId = params.offeringId ?? resolvedOffering?.identifier
 
