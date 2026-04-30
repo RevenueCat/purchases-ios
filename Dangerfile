@@ -86,7 +86,7 @@ def check_swift_files_in_project
 
   message += "\nTo fix: open `RevenueCat.xcodeproj` in Xcode, add/remove the files above in the appropriate target. "
   message += "Check where similar files in the same directory are assigned if you're unsure which target to use."
-  warn(message)
+  fail(message)
 end
 
 check_swift_files_in_project
