@@ -9,7 +9,9 @@ const OUTPUT = "/tmp/requested-jobs-config.yml";
 // Allowlist of jobs that can be triggered on-demand, mapped to the CircleCI contexts
 // each job needs. Contexts must match what the job is declared with in default_config.yml,
 // so the on-demand run has access to the same secrets as the regular run.
-// Release/deployment jobs are intentionally excluded.
+// Release/deployment jobs are intentionally excluded — `make-admob-release` is a
+// temporary exception added on `ad-mob-release/5.70.0` to re-run the failed admob
+// GitHub-release step from the 5.70.0 release pipeline. Drop it again before merging.
 const JOBS = {
   "api-tests": ["slack-secrets"],
   "backend-integration-tests-SK1": ["slack-secrets"],
@@ -28,6 +30,7 @@ const JOBS = {
   "installation-tests-carthage": ["slack-secrets"],
   "integration-tests-all": ["slack-secrets"],
   "lint": [],
+  "make-admob-release": [],
   "pod-lib-lint": ["slack-secrets"],
   "revenuecat-admob-tests": ["slack-secrets"],
   "run-all-maestro-e2e-tests": ["e2e-tests", "slack-secrets"],

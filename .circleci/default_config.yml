@@ -2054,7 +2054,16 @@ jobs:
       - install-rubydocker-dependencies
       - run:
           name: Create GitHub release for purchases-ios-admob
-          command: bundle exec fastlane admob_github_release version:"${CIRCLE_TAG}"
+          # Temporary workaround for the 5.70.0 admob re-release on the
+          # `ad-mob-release/5.70.0` branch:
+          #   * version is hardcoded because this branch run has no CIRCLE_TAG.
+          #   * CIRCLE_BRANCH=main is forced inline so the lane's GitHub PR
+          #     search uses `base:main` instead of `base:ad-mob-release/5.70.0`,
+          #     working around the upstream multi-result bug fixed in
+          #     https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal/pull/133.
+          # Revert this back to `bundle exec fastlane admob_github_release version:"${CIRCLE_TAG}"`
+          # before merging this branch.
+          command: CIRCLE_BRANCH=main bundle exec fastlane admob_github_release version:"5.70.0"
 
   bump-sdk-in-rc-mobile-app:
     docker:
