@@ -249,6 +249,8 @@ struct LoadedTabsComponentView: View {
                 },
                 onDismiss: self.onDismiss
             )
+            // Force SwiftUI to recreate tab content when the selected tab changes.
+            .id(self.tabControlContext.selectedTabId)
             .environmentObject(self.tabControlContext)
             .environmentObject(tierPackageContext)
             .environment(\.planSelectionDefaultPackage, activeTabViewModel.defaultSelectedPackage)
