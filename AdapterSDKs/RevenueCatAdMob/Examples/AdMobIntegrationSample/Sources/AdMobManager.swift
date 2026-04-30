@@ -11,6 +11,7 @@ class AdMobManager: NSObject, ObservableObject {
     var interstitialAd: InterstitialAd?
     var appOpenAd: AppOpenAd?
     var rewardedAd: RewardedAd?
+    var rewardedSSVAd: RewardedInterstitialAd?
     var rewardedInterstitialAd: RewardedInterstitialAd?
     var nativeAdLoader: AdLoader?
     var nativeVideoAdLoader: AdLoader?
@@ -21,6 +22,8 @@ class AdMobManager: NSObject, ObservableObject {
     @Published var interstitialStatus = "Not Loaded"
     @Published var appOpenStatus = "Not Loaded"
     @Published var rewardedStatus = "Not Loaded"
+    @Published var rewardedSSVStatus = "Not Loaded"
+    @Published var rewardedSSVResult: String? = nil
     @Published var rewardedInterstitialStatus = "Not Loaded"
     @Published var nativeAdStatus = "Not Loaded"
     @Published var nativeVideoAdStatus = "Not Loaded"
@@ -144,6 +147,60 @@ class AdMobManager: NSObject, ObservableObject {
         })
     }
 
+    // MARK: - Rewarded Ad (SSV)
+
+    func loadRewardedSSVAd() {
+        rewardedSSVStatus = "Loading..."
+        rewardedSSVResult = nil
+
+        RewardedInterstitialAd.loadAndTrack(
+            withAdUnitID: Constants.AdMob.rewardedSSVAdUnitID,
+            request: Request(),
+            placement: "rewarded_ssv",
+            fullScreenContentDelegate: self
+        ) { [weak self] ad, error in
+            guard let self = self else { return }
+
+            if let error = error {
+                print("❌ Rewarded SSV failed: \(error.localizedDescription)")
+                self.rewardedSSVStatus = "Failed"
+                return
+            }
+
+            guard let ad = ad else { return }
+
+            print("✅ Rewarded SSV loaded")
+            ad.enableRewardVerification()
+            self.rewardedSSVAd = ad
+            self.rewardedSSVStatus = "Ready"
+        }
+    }
+
+    @MainActor
+    func showRewardedSSVAd(from viewController: UIViewController) {
+        guard let ad = rewardedSSVAd else {
+            print("⚠️ Rewarded SSV not ready")
+            return
+        }
+        rewardedSSVResult = "Verifying..."
+        ad.present(
+            from: viewController,
+            rewardVerificationStarted: {
+                print("🔄 SSV polling started")
+            },
+            rewardVerificationResult: { [weak self] result in
+                guard let self = self else { return }
+                if result.isVerified {
+                    print("✅ SSV verified: \(String(describing: result.verifiedReward))")
+                    self.rewardedSSVResult = "✅ Verified: \(String(describing: result.verifiedReward))"
+                } else {
+                    print("❌ SSV failed")
+                    self.rewardedSSVResult = "❌ Failed"
+                }
+            }
+        )
+    }
+
     // MARK: - Rewarded Interstitial Ad
 
     func loadRewardedInterstitialAd() {
@@ -237,9 +294,12 @@ extension AdMobManager: FullScreenContentDelegate {
         } else if ad is AppOpenAd {
             appOpenAd = nil
             appOpenStatus = "Not Loaded"
-        } else if ad is RewardedAd {
+        } else if ad === rewardedAd {
             rewardedAd = nil
             rewardedStatus = "Not Loaded"
+        } else if ad === rewardedSSVAd {
+            rewardedSSVAd = nil
+            rewardedSSVStatus = "Not Loaded"
         } else if ad is RewardedInterstitialAd {
             rewardedInterstitialAd = nil
             rewardedInterstitialStatus = "Not Loaded"

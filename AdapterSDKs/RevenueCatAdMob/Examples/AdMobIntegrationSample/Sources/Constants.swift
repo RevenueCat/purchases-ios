@@ -28,6 +28,12 @@ enum Constants {
         /// Always successfully loads and displays a test rewarded ad.
         static let rewardedAdUnitID = "ca-app-pub-3940256099942544/1712485313"
 
+        /// Rewarded Interstitial Ad Unit ID for SSV testing.
+        /// Must be a real ad unit with SSV enabled in AdMob, with the callback URL set to:
+        /// https://api.revenuecat.com/v1/incoming-webhooks/admob-ssv-rewarded
+        /// Google test ad unit IDs do not fire real SSV callbacks.
+        static let rewardedSSVAdUnitID = "YOUR_SSV_REWARDED_INTERSTITIAL_AD_UNIT_ID"
+
         /// Rewarded Interstitial Ad Test Unit ID
         /// Always successfully loads and displays a test rewarded interstitial ad.
         static let rewardedInterstitialAdUnitID = "ca-app-pub-3940256099942544/6978759866"

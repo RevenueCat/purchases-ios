@@ -49,6 +49,7 @@ private enum AdFormat: String, CaseIterable, Identifiable {
     case interstitial
     case appOpen
     case rewarded
+    case rewardedSSV
     case rewardedInterstitial
     case native
     case nativeVideo
@@ -62,6 +63,7 @@ private enum AdFormat: String, CaseIterable, Identifiable {
         case .interstitial: return "Interstitial Ad"
         case .appOpen: return "App Open Ad"
         case .rewarded: return "Rewarded Ad"
+        case .rewardedSSV: return "Rewarded Ad (SSV)"
         case .rewardedInterstitial: return "Rewarded Interstitial Ad"
         case .native: return "Native Ad"
         case .nativeVideo: return "Native Video Ad"
@@ -75,6 +77,7 @@ private enum AdFormat: String, CaseIterable, Identifiable {
         case .interstitial: return "Full-screen ad"
         case .appOpen: return "App launch/resume ad"
         case .rewarded: return "Rewards users after viewing"
+        case .rewardedSSV: return "Rewarded with server-side verification"
         case .rewardedInterstitial: return "Interstitial that rewards users"
         case .native: return "Text + images integrated into UI"
         case .nativeVideo: return "Video content integrated into UI"
@@ -135,6 +138,23 @@ private struct AdFormatDetailView: View {
                         },
                         canShow: adManager.rewardedStatus == "Ready"
                     )
+
+                case .rewardedSSV:
+                    self.statusAndButtons(
+                        status: adManager.rewardedSSVStatus,
+                        onLoad: { adManager.loadRewardedSSVAd() },
+                        onShow: {
+                            if let rootVC = Self.rootViewController {
+                                adManager.showRewardedSSVAd(from: rootVC)
+                            }
+                        },
+                        canShow: adManager.rewardedSSVStatus == "Ready"
+                    )
+                    if let result = adManager.rewardedSSVResult {
+                        Text("SSV result: \(result)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
 
                 case .rewardedInterstitial:
                     self.statusAndButtons(
@@ -205,6 +225,8 @@ private struct AdFormatDetailView: View {
             return "App launch/resume ad. Tracks Loaded, Displayed, Opened, and Revenue."
         case .rewarded:
             return "Reward ad with reward callback. Tracks Loaded, Displayed, Opened, and Revenue."
+        case .rewardedSSV:
+            return "Real rewarded ad with SSV enabled. After watching, RC polls the backend for verification. Result appears below the buttons."
         case .rewardedInterstitial:
             return "Interstitial format with reward callback and full tracking."
         case .native:
