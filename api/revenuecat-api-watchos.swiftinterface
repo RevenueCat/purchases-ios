@@ -1155,11 +1155,15 @@ extension RevenueCat.CacheFetchPolicy : Swift.Sendable {
 @objc(RCCustomPaywallImpressionParams) final public class CustomPaywallImpressionParams : ObjectiveC.NSObject, Swift.Sendable {
   @objc final public let paywallId: Swift.String?
   @objc final public let offeringId: Swift.String?
+  @objc final public let offering: RevenueCat.Offering?
   #if compiler(>=5.3) && $NonescapableTypes
   @objc public init(paywallId: Swift.String? = nil, offeringId: Swift.String?)
   #endif
   #if compiler(>=5.3) && $NonescapableTypes
   @objc convenience public init(paywallId: Swift.String? = nil)
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @objc public init(paywallId: Swift.String? = nil, offering: RevenueCat.Offering)
   #endif
   @objc deinit
 }
