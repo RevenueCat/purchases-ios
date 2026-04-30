@@ -28,13 +28,37 @@ extension FeatureEventsRequest {
         var timestamp: UInt64
         var paywallId: String?
         var offeringId: String?
-        var presentedOfferingContext: FeatureEventsRequest.PaywallEvent.PresentedOfferingContextData?
+        var presentedOfferingContext: PresentedOfferingContextData?
 
     }
 
 }
 
 extension FeatureEventsRequest.CustomPaywallEvent {
+
+    struct PresentedOfferingContextData: Encodable {
+
+        var placementIdentifier: String?
+        var targetingRevision: Int?
+        var targetingRuleId: String?
+
+        /// Returns `nil` if all fields are `nil`.
+        init?(
+            placementIdentifier: String?,
+            targetingRevision: Int?,
+            targetingRuleId: String?
+        ) {
+            guard placementIdentifier != nil ||
+                    targetingRevision != nil ||
+                    targetingRuleId != nil else {
+                return nil
+            }
+            self.placementIdentifier = placementIdentifier
+            self.targetingRevision = targetingRevision
+            self.targetingRuleId = targetingRuleId
+        }
+
+    }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init?(storedEvent: StoredFeatureEvent) {
@@ -55,7 +79,7 @@ extension FeatureEventsRequest.CustomPaywallEvent {
                 timestamp: event.creationData.date.millisecondsSince1970,
                 paywallId: event.data.paywallId,
                 offeringId: event.data.offeringId,
-                presentedOfferingContext: FeatureEventsRequest.PaywallEvent.PresentedOfferingContextData(
+                presentedOfferingContext: PresentedOfferingContextData(
                     placementIdentifier: event.data.placementIdentifier,
                     targetingRevision: event.data.targetingRevision,
                     targetingRuleId: event.data.targetingRuleId
