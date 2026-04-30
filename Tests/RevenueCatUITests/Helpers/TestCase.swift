@@ -68,6 +68,8 @@ class TestCase: XCTestCase {
 
     // MARK: -
 
+    static var shouldRecordSnapshots: Bool { SnapshotTests.shouldRecordSnapshots }
+
 }
 
 private enum SnapshotTests {
