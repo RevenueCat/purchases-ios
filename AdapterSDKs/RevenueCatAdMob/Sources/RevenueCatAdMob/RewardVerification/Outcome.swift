@@ -14,7 +14,7 @@ internal extension RewardVerification {
 
     /// Terminal SSV verdict delivered by `Dispatcher`.
     enum Outcome: Sendable {
-        case verified(VerifiedReward)
+        case verified(RevenueCat.VerifiedReward)
         case failed
     }
 }

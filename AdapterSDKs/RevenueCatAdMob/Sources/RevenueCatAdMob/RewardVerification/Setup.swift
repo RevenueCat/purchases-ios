@@ -21,6 +21,12 @@ internal extension RewardVerification {
     /// Load-time SSV setup for rewarded AdMob ads.
     enum Setup {
 
+        /// Returns per-ad verification state stashed by ``install(on:apiKey:appUserID:)``, if any.
+        @MainActor
+        static func verificationState(for object: AnyObject) -> State? {
+            RewardVerification.stateStore.retrieve(for: object)
+        }
+
         /// Production entry point. Reads SDK config from `Purchases.shared`; no-ops if not configured.
         @MainActor
         static func install(on loadedAd: some CapableAd) {
