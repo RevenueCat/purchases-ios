@@ -7,7 +7,7 @@ import XCTest
 final class AssociatedObjectStoreTests: AdapterTestCase {
 
     func testRetainThenRetrieveReturnsSameInstance() {
-        let store = Tracking.AssociatedObjectStore<NSObject>()
+        let store = AssociatedObjectStore<NSObject>()
         let owner = NSObject()
         let value = NSObject()
 
@@ -17,15 +17,15 @@ final class AssociatedObjectStoreTests: AdapterTestCase {
     }
 
     func testRetrieveOnUnknownOwnerReturnsNil() {
-        let store = Tracking.AssociatedObjectStore<NSObject>()
+        let store = AssociatedObjectStore<NSObject>()
         let owner = NSObject()
 
         XCTAssertNil(store.retrieve(for: owner))
     }
 
     func testTwoStoresOfSameTypeOnSameOwnerDontCollide() {
-        let storeA = Tracking.AssociatedObjectStore<NSObject>()
-        let storeB = Tracking.AssociatedObjectStore<NSObject>()
+        let storeA = AssociatedObjectStore<NSObject>()
+        let storeB = AssociatedObjectStore<NSObject>()
         let owner = NSObject()
         let valueA = NSObject()
         let valueB = NSObject()
@@ -38,7 +38,7 @@ final class AssociatedObjectStoreTests: AdapterTestCase {
     }
 
     func testRetainNilClearsPreviousValue() {
-        let store = Tracking.AssociatedObjectStore<NSObject>()
+        let store = AssociatedObjectStore<NSObject>()
         let owner = NSObject()
 
         store.set(NSObject(), for: owner)
@@ -48,7 +48,7 @@ final class AssociatedObjectStoreTests: AdapterTestCase {
     }
 
     func testValueIsReleasedWhenOwnerDeallocates() {
-        let store = Tracking.AssociatedObjectStore<NSObject>()
+        let store = AssociatedObjectStore<NSObject>()
         weak var weakValue: NSObject?
 
         autoreleasepool {
