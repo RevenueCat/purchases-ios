@@ -43,6 +43,7 @@ struct HeaderComponentView: View {
                 trailing: 0
             )
         )
+        .environment(\.isWorkflowHeader, true)
     }
 
 }
