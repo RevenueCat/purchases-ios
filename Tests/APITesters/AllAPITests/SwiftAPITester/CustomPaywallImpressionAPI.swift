@@ -46,9 +46,7 @@ func checkCustomPaywallImpressionAPI() {
         // CustomPaywallImpressionParams properties
         let paywallId: String? = paramsWithId.paywallId
         let offeringId: String? = paramsWithOffering.offeringId
-        let placementIdentifier: String? = paramsWithOfferingObject.placementIdentifier
-        let targetingRevision: NSNumber? = paramsWithOfferingObject.targetingRevision
-        let targetingRuleId: String? = paramsWithOfferingObject.targetingRuleId
+        let offeringObject: Offering? = paramsWithOfferingObject.offering
 
         // trackCustomPaywallImpression API
         purchases.trackCustomPaywallImpression(paramsDefault)

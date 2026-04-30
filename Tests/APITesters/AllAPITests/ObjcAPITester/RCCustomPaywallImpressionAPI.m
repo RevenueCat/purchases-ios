@@ -31,9 +31,7 @@
         // CustomPaywallImpressionParams properties
         NSString *paywallId __unused = paramsWithId.paywallId;
         NSString *offeringId __unused = paramsWithOffering.offeringId;
-        NSString *placementIdentifier __unused = paramsWithOfferingObject.placementIdentifier;
-        NSNumber *targetingRevision __unused = paramsWithOfferingObject.targetingRevision;
-        NSString *targetingRuleId __unused = paramsWithOfferingObject.targetingRuleId;
+        RCOffering *offeringObject __unused = paramsWithOfferingObject.offering;
 
         // trackCustomPaywallImpression API
         RCPurchases *purchases = RCPurchases.sharedPurchases;
