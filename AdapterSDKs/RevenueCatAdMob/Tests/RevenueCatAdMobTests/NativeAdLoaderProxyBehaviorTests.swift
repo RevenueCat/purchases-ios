@@ -9,7 +9,7 @@ import GoogleMobileAds
 
 @available(iOS 15.0, *)
 // swiftlint:disable:next type_body_length
-final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
+final class NativeAdLoaderProxyBehaviorTests: AdapterTestCase {
 
     func testLoadAndTrackInstallsProxyAndForwardsFailAndFinishLoading() {
         let adLoader = Self.makeAdLoader()
@@ -162,11 +162,11 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
         }
     }
 
-    // MARK: - Tracking verification (uses injectable rcAdMob)
+    // MARK: - Tracking verification (uses injectable adapter)
 
     func testLoadAndTrackTracksLoadedOnNativeAdReceived() {
         let mockTracker = MockAdTracker()
-        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adapter = Tracking.Adapter(tracker: mockTracker)
         let adLoader = Self.makeAdLoader()
         let spy = AdLoaderDelegateSpy()
         adLoader.delegate = spy
@@ -175,7 +175,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
             Request(),
             placement: "native_feed",
             nativeAdDelegate: nil,
-            rcAdMob: rcAdMob
+            adapter: adapter
         )
 
         let nativeDelegate = adLoader.delegate as? NativeAdLoaderDelegate
@@ -192,7 +192,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
 
     func testLoadAndTrackTracksFailedToLoadOnError() {
         let mockTracker = MockAdTracker()
-        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adapter = Tracking.Adapter(tracker: mockTracker)
         let adLoader = Self.makeAdLoader()
         let spy = AdLoaderDelegateSpy()
         adLoader.delegate = spy
@@ -201,7 +201,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
             Request(),
             placement: "native_feed",
             nativeAdDelegate: nil,
-            rcAdMob: rcAdMob
+            adapter: adapter
         )
 
         let loaderDelegate = adLoader.delegate
@@ -221,7 +221,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
 
     func testLoadAndTrackTracksRevenueOnPaidEvent() {
         let mockTracker = MockAdTracker()
-        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adapter = Tracking.Adapter(tracker: mockTracker)
         let adLoader = Self.makeAdLoader()
         let spy = AdLoaderDelegateSpy()
         adLoader.delegate = spy
@@ -230,7 +230,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
             Request(),
             placement: "native_feed",
             nativeAdDelegate: nil,
-            rcAdMob: rcAdMob
+            adapter: adapter
         )
 
         let nativeBacking = NativeAdPlaceholder()
@@ -253,7 +253,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
     func testLoadAndTrackDoesNotTrackWhenNotConfigured() {
         let mockTracker = MockAdTracker()
         mockTracker.isConfigured = false
-        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adapter = Tracking.Adapter(tracker: mockTracker)
         let adLoader = Self.makeAdLoader()
         let spy = AdLoaderDelegateSpy()
         adLoader.delegate = spy
@@ -262,7 +262,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
             Request(),
             placement: "native_feed",
             nativeAdDelegate: nil,
-            rcAdMob: rcAdMob
+            adapter: adapter
         )
 
         let nativeDelegate = adLoader.delegate as? NativeAdLoaderDelegate
@@ -273,7 +273,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
 
     func testLoadAndTrackTracksNativeImpressionAndClickViaDelegateProxy() {
         let mockTracker = MockAdTracker()
-        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adapter = Tracking.Adapter(tracker: mockTracker)
         let adLoader = Self.makeAdLoader()
         let spy = AdLoaderDelegateSpy()
         adLoader.delegate = spy
@@ -282,7 +282,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
             Request(),
             placement: "native_feed",
             nativeAdDelegate: nil,
-            rcAdMob: rcAdMob
+            adapter: adapter
         )
 
         let nativeBacking = NativeAdPlaceholder()
@@ -312,7 +312,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
 
     func testLoadAndTrackRevenueEventContainsCorrectRevenueData() {
         let mockTracker = MockAdTracker()
-        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adapter = Tracking.Adapter(tracker: mockTracker)
         let adLoader = Self.makeAdLoader()
         let spy = AdLoaderDelegateSpy()
         adLoader.delegate = spy
@@ -321,7 +321,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
             Request(),
             placement: "native_feed",
             nativeAdDelegate: nil,
-            rcAdMob: rcAdMob
+            adapter: adapter
         )
 
         let nativeBacking = NativeAdPlaceholder()
@@ -343,7 +343,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
 
     func testLoadAndTrackFailedToLoadCapturesErrorCode() {
         let mockTracker = MockAdTracker()
-        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adapter = Tracking.Adapter(tracker: mockTracker)
         let adLoader = Self.makeAdLoader()
         let spy = AdLoaderDelegateSpy()
         adLoader.delegate = spy
@@ -352,7 +352,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
             Request(),
             placement: "native_feed",
             nativeAdDelegate: nil,
-            rcAdMob: rcAdMob
+            adapter: adapter
         )
 
         adLoader.delegate?.adLoader(
@@ -366,7 +366,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
 
     func testPaidHandlerWhenNativeAdDeallocatedSkipsTrackingButCallsExistingHandler() {
         let mockTracker = MockAdTracker()
-        let rcAdMob = RCAdMob(tracker: mockTracker)
+        let adapter = Tracking.Adapter(tracker: mockTracker)
         let adLoader = Self.makeAdLoader()
         let spy = AdLoaderDelegateSpy()
         adLoader.delegate = spy
@@ -375,7 +375,7 @@ final class RCAdMobNativeAdLoaderProxyBehaviorTests: RCAdMobTestCase {
             Request(),
             placement: "native_feed",
             nativeAdDelegate: nil,
-            rcAdMob: rcAdMob
+            adapter: adapter
         )
 
         var existingHandlerCalled = false

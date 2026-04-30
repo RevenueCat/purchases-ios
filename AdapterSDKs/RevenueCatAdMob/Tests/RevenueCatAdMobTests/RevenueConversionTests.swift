@@ -6,18 +6,18 @@ import GoogleMobileAds
 @_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
-final class RCAdMobRevenueConversionTests: RCAdMobTestCase {
+final class RevenueConversionTests: AdapterTestCase {
 
     func testRevenueMicrosConvertsFractionalUnitsToMicros() {
         XCTAssertEqual(
-            RCAdMob.revenueMicros(from: NSDecimalNumber(string: "0.005")),
+            Tracking.Adapter.revenueMicros(from: NSDecimalNumber(string: "0.005")),
             5000
         )
     }
 
     func testRevenueMicrosConvertsWholeAndFractionalUnitsToMicros() {
         XCTAssertEqual(
-            RCAdMob.revenueMicros(from: NSDecimalNumber(string: "1.5")),
+            Tracking.Adapter.revenueMicros(from: NSDecimalNumber(string: "1.5")),
             1_500_000
         )
     }

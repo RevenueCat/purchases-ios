@@ -5,7 +5,7 @@ import GoogleMobileAds
 @_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
-final class RCAdMobBannerWrapperBehaviorTests: RCAdMobTestCase {
+final class BannerWrapperBehaviorTests: AdapterTestCase {
 
     func testLoadAndTrackPrefersExplicitDelegateOverExistingDelegate() {
         let bannerView = BannerView(adSize: AdSizeBanner)
@@ -19,7 +19,7 @@ final class RCAdMobBannerWrapperBehaviorTests: RCAdMobTestCase {
             delegate: explicitDelegate
         )
 
-        let trackingDelegate = bannerView.delegate as? RCAdMobBannerViewDelegate
+        let trackingDelegate = bannerView.delegate as? Tracking.BannerViewDelegate
         XCTAssertNotNil(trackingDelegate)
         XCTAssertTrue(trackingDelegate?.delegate === explicitDelegate)
     }
@@ -30,11 +30,11 @@ final class RCAdMobBannerWrapperBehaviorTests: RCAdMobTestCase {
         bannerView.delegate = userDelegate
 
         bannerView.loadAndTrack(request: Request(), placement: "home_banner")
-        let firstTrackingDelegate = bannerView.delegate as? RCAdMobBannerViewDelegate
+        let firstTrackingDelegate = bannerView.delegate as? Tracking.BannerViewDelegate
         XCTAssertNotNil(firstTrackingDelegate)
 
         bannerView.loadAndTrack(request: Request(), placement: "home_banner")
-        let secondTrackingDelegate = bannerView.delegate as? RCAdMobBannerViewDelegate
+        let secondTrackingDelegate = bannerView.delegate as? Tracking.BannerViewDelegate
 
         XCTAssertNotNil(secondTrackingDelegate)
         XCTAssertTrue(secondTrackingDelegate?.delegate === userDelegate)

@@ -1,5 +1,5 @@
 //
-//  FullScreenAd+RCAdMob+Completion.swift
+//  FullScreenAd+Tracking+Completion.swift
 //
 //  Created by RevenueCat on 4/10/26.
 //
