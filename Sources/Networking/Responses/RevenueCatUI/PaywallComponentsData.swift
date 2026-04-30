@@ -28,32 +28,65 @@ import Foundation
 
     public struct PaywallComponentsConfig: Codable, Equatable, Sendable {
 
+        // swiftlint:disable:next nesting
+        @_spi(Internal) public enum LayoutDirection: String, Codable, Equatable, Sendable {
+
+            case system
+            case locale
+            case rtl
+            case ltr
+
+            public init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                let rawValue = try container.decode(String.self)
+
+                guard let value = Self(rawValue: rawValue) else {
+                    Logger.warn(Strings.codable.unexpectedValueError(type: Self.self, value: rawValue))
+                    self = .system
+                    return
+                }
+
+                self = value
+            }
+
+            public func encode(to encoder: Encoder) throws {
+                var container = encoder.singleValueContainer()
+                try container.encode(self.rawValue)
+            }
+
+        }
+
         public var stack: PaywallComponent.StackComponent
         @_spi(Internal) public let header: PaywallComponent.HeaderComponent?
         public let stickyFooter: PaywallComponent.StickyFooterComponent?
         public var background: PaywallComponent.Background
+        @_spi(Internal) public let layoutDirection: LayoutDirection?
 
         public init(
             stack: PaywallComponent.StackComponent,
             stickyFooter: PaywallComponent.StickyFooterComponent?,
-            background: PaywallComponent.Background
+            background: PaywallComponent.Background,
+            layoutDirection: LayoutDirection? = nil
         ) {
             self.header = nil
             self.stack = stack
             self.stickyFooter = stickyFooter
             self.background = background
+            self.layoutDirection = layoutDirection
         }
 
         @_spi(Internal) public init(
             stack: PaywallComponent.StackComponent,
             header: PaywallComponent.HeaderComponent?,
             stickyFooter: PaywallComponent.StickyFooterComponent?,
-            background: PaywallComponent.Background
+            background: PaywallComponent.Background,
+            layoutDirection: LayoutDirection? = nil
         ) {
             self.stack = stack
             self.header = header
             self.stickyFooter = stickyFooter
             self.background = background
+            self.layoutDirection = layoutDirection
         }
 
     }

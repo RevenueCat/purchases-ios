@@ -37,6 +37,7 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         expect(components.id) == "pw_test_1"
         expect(components.templateName) == "componentsTEST"
         expect(components.revision) == 3
+        expect(components.componentsConfig.base.layoutDirection) == .rtl
         expect(components.componentsConfig.base.background) == .color(.init(light: .hex("#220000ff"), dark: nil))
         expect(components.componentsConfig.base.stickyFooter) == nil
         expect(components.componentsConfig.base.stack.spacing) == 16
@@ -57,6 +58,7 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         let components = try XCTUnwrap(offering.paywallComponents)
         expect(components.templateName) == "componentsTEST"
         expect(components.revision) == 3
+        expect(components.componentsConfig.base.layoutDirection).to(beNil())
         expect(components.componentsConfig.base.background) == .color(.init(light: .hex("#220000ff"), dark: nil))
         expect(components.componentsConfig.base.stickyFooter) == nil
         expect(components.componentsConfig.base.stack.spacing) == 16
@@ -71,6 +73,45 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         expect(draftComponents.componentsConfig.base.stack.spacing) == 0
         expect(draftComponents.componentsConfig.base.stack.dimension) == .vertical(.leading, .end)
         expect(draftComponents.componentsConfig.base.stack.components).to(haveCount(1))
+    }
+
+    func testUnknownLayoutDirectionFallsBackToSystem() throws {
+        let data = try XCTUnwrap("""
+        {
+            "template_name": "componentsTEST",
+            "asset_base_url": "https://assets.revenuecat.com",
+            "components_config": {
+                "base": {
+                    "layout_direction": "future_value",
+                    "stack": {
+                        "type": "stack",
+                        "components": [],
+                        "margin": {},
+                        "padding": {},
+                        "size": {
+                            "width": { "type": "fill" },
+                            "height": { "type": "fill" }
+                        },
+                        "dimension": {
+                            "type": "vertical",
+                            "alignment": "center",
+                            "distribution": "center"
+                        },
+                        "spacing": 16
+                    },
+                    "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#ffffff" } } }
+                }
+            },
+            "components_localizations": {},
+            "default_locale": "en_US",
+            "revision": 1
+        }
+        """.data(using: .utf8))
+
+        let components = try JSONDecoder.default.decode(PaywallComponentsData.self, from: data)
+
+        expect(components.componentsConfig.base.layoutDirection) == .system
+        expect(components.errorInfo).to(beNil())
     }
 
     func testDecodesPaywallComponentsWithOnlyDraftPaywallComponents() throws {

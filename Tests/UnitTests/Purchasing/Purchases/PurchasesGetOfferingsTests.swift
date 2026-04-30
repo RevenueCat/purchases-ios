@@ -15,7 +15,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class PurchasesGetOfferingsTests: BasePurchasesTests {
 
@@ -201,6 +201,33 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
 
         expect(self.mockOfferingsManager.invokedClearInMemoryOfferingsCache) == false
         expect(self.mockOfferingsManager.invokedOfferingsCount) == 0
+    }
+
+    func testOverridePreferredUILocaleUpdatesLayoutDirectionFlagWithoutRefetchingWhenLocaleUnchanged() {
+        self.setupPurchases()
+
+        self.purchases.overridePreferredUILocale(nil, honorLayoutDirection: true)
+
+        expect(self.purchases.preferredLocaleOverrideHonorsLayoutDirection) == true
+        expect(self.mockOfferingsManager.invokedClearInMemoryOfferingsCache) == false
+        expect(self.mockOfferingsManager.invokedOfferingsCount) == 0
+    }
+
+    func testOverridePreferredUILocaleDefaultsLayoutDirectionFlagToFalse() {
+        self.setupPurchases()
+
+        self.purchases.overridePreferredUILocale("he")
+
+        expect(self.purchases.preferredLocaleOverrideHonorsLayoutDirection) == false
+    }
+
+    func testOverridePreferredUILocaleWithLocaleOnlyPreservesLayoutDirectionFlag() {
+        self.setupPurchases()
+
+        self.purchases.overridePreferredUILocale("he", honorLayoutDirection: true)
+        self.purchases.overridePreferredUILocale("ar_SA")
+
+        expect(self.purchases.preferredLocaleOverrideHonorsLayoutDirection) == true
     }
 
     func testOverridePreferredUILocaleDoesNotInvalidateOrFetchWhenRateLimited() {

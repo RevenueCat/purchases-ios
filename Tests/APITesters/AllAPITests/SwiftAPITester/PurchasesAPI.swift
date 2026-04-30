@@ -440,6 +440,7 @@ private func checkConfigure() -> Purchases! {
 
 private func checkPreferredUILocaleAPIs(purchases: Purchases) {
     purchases.overridePreferredUILocale("de_DE")
+    purchases.overridePreferredUILocale("he", honorLayoutDirection: true)
     purchases.overridePreferredUILocale(nil)
 }
 

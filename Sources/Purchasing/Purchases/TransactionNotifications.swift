@@ -11,6 +11,9 @@ import Foundation
 extension NSNotification.Name {
     /// A notification that states a purchase has completed
     static let purchaseCompleted = Notification.Name("RevenueCat.PurchaseCompleted")
+
+    /// A notification that states the preferred RevenueCatUI locale override changed.
+    static let preferredUILocaleOverrideChanged = Notification.Name("RevenueCat.PreferredUILocaleOverrideChanged")
 }
 
 extension NotificationCenter {
@@ -23,6 +26,16 @@ extension NotificationCenter {
         self
             .publisher(for: .purchaseCompleted)
             .compactMap { $0.object as? PurchaseResultData }
+            .eraseToAnyPublisher()
+    }
+
+    /// A publisher that wraps the `preferredUILocaleOverrideChanged` notification.
+    ///
+    /// - Important: This is not intended for public consumption and should be used with care.
+    @_spi(Internal) public func preferredUILocaleOverrideChangedPublisher() -> AnyPublisher<Void, Never> {
+        self
+            .publisher(for: .preferredUILocaleOverrideChanged)
+            .map { _ in () }
             .eraseToAnyPublisher()
     }
 }

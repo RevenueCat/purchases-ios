@@ -10,6 +10,7 @@
 
 ## RevenueCatUI SDK
 ### 🐞 Bugfixes
+* `RevenueCatUI` Paywalls and Customer Center can now opt in to deriving layout direction from `overridePreferredUILocale` by passing `honorLayoutDirection: true`. Paywalls V2 can also use the dashboard `layout_direction` setting to match locale or force RTL/LTR.
 * Defer paywall dismissal after purchase callbacks (#6621) via Jacob Rakidzich (@JZDesign)
 ### Paywallsv2
 #### 🐞 Bugfixes

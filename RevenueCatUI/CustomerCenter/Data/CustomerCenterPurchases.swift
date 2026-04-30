@@ -36,6 +36,14 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         return Purchases.shared.storeFrontCountryCode
     }
 
+    var preferredLocaleOverride: String? {
+        return Purchases.shared.preferredLocaleOverride
+    }
+
+    var preferredLocaleOverrideHonorsLayoutDirection: Bool {
+        return Purchases.shared.preferredLocaleOverrideHonorsLayoutDirection
+    }
+
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
         try await Purchases.shared.customerInfo()
     }

@@ -12,6 +12,7 @@
 //
 //  Created by Cesar de la Vega on 27/5/24.
 //
+// swiftlint:disable file_length
 
 import Combine
 import Foundation
@@ -78,6 +79,12 @@ import Foundation
     @Published
     var nonSubscriptionsSection: [PurchaseInformation] = []
 
+    @Published
+    private(set) var preferredLocaleOverride: Locale?
+
+    @Published
+    private(set) var preferredLocaleOverrideHonorsLayoutDirection: Bool
+
     private(set) var purchasesProvider: CustomerCenterPurchasesType
     private(set) var customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
 
@@ -135,6 +142,7 @@ import Foundation
 
     private var error: Error?
     private var impressionData: CustomerCenterEvent.Data?
+    private var cancellables: Set<AnyCancellable> = []
 
     init(
         actionWrapper: CustomerCenterActionWrapper,
@@ -150,6 +158,18 @@ import Foundation
         self.purchasesProvider = purchasesProvider
         self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities
         self.customerInfo = nil
+        self.preferredLocaleOverride = nil
+        self.preferredLocaleOverrideHonorsLayoutDirection = false
+        self.updatePreferredLocaleOverride()
+
+        NotificationCenter.default
+            .preferredUILocaleOverrideChangedPublisher()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.updatePreferredLocaleOverride()
+            }
+            .store(in: &cancellables)
     }
 
     convenience init(
@@ -233,7 +253,7 @@ import Foundation
             return
         }
 
-        let eventData = CustomerCenterEvent.Data(locale: .current,
+        let eventData = CustomerCenterEvent.Data(locale: self.preferredLocaleOverride ?? .current,
                                                  darkMode: darkMode,
                                                  isSandbox: purchasesProvider.isSandbox,
                                                  displayMode: displayMode)
@@ -374,6 +394,18 @@ private extension CustomerCenterViewModel {
         }
 
         return configuration
+    }
+
+    private func updatePreferredLocaleOverride() {
+        guard self.purchasesProvider.isConfigured else {
+            self.preferredLocaleOverride = nil
+            self.preferredLocaleOverrideHonorsLayoutDirection = false
+            return
+        }
+
+        self.preferredLocaleOverride = self.purchasesProvider.preferredLocaleOverride.map(Locale.init)
+        self.preferredLocaleOverrideHonorsLayoutDirection =
+            self.purchasesProvider.preferredLocaleOverrideHonorsLayoutDirection
     }
 }
 

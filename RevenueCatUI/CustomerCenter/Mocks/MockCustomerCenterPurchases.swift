@@ -23,6 +23,8 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     let appUserID: String = "$RC_MOCK_APP_USER_ID"
     let isConfigured: Bool = true
     let storeFrontCountryCode: String? = "ESP"
+    var preferredLocaleOverride: String?
+    var preferredLocaleOverrideHonorsLayoutDirection: Bool
 
     var customerInfo: CustomerInfo
     let customerInfoError: Error?
@@ -43,6 +45,8 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
                                              price: 2.99)],
         showManageSubscriptionsError: Error? = nil,
         beginRefundShouldFail: Bool = false,
+        preferredLocaleOverride: String? = nil,
+        preferredLocaleOverrideHonorsLayoutDirection: Bool = false,
         customerCenterConfigData: CustomerCenterConfigData = CustomerCenterConfigData.mock(
             lastPublishedAppVersion: "2.0.0"
         )
@@ -54,6 +58,8 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
         }))
         self.showManageSubscriptionsError = showManageSubscriptionsError
         self.beginRefundShouldFail = beginRefundShouldFail
+        self.preferredLocaleOverride = preferredLocaleOverride
+        self.preferredLocaleOverrideHonorsLayoutDirection = preferredLocaleOverrideHonorsLayoutDirection
         self.loadCustomerCenterResult = .success(customerCenterConfigData)
     }
 

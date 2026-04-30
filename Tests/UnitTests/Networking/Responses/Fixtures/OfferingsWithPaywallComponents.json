@@ -19,6 +19,7 @@
                 "components_localizations": [],
                 "components_config": {
                     "base": {
+                        "layout_direction": "rtl",
                         "background": {
                             "type": "color",
                             "value": {

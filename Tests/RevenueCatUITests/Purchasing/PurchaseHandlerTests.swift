@@ -40,6 +40,83 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.restoreError).to(beNil())
     }
 
+    func testPreferredLocaleOverrideUpdatesWhenNotificationFires() throws {
+        let purchases = MockPurchases(preferredLocaleOverride: "en_US") { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { event in
+            Logger.debug("Tracking event: \(event)")
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+        let handler = PurchaseHandler(
+            purchases: purchases,
+            eventTracker: .init(purchases: purchases)
+        )
+
+        expect(handler.preferredLocaleOverride?.identifier) == "en_US"
+
+        let localeUpdated = self.expectation(description: "preferred locale override updated")
+        let cancellable = handler.$preferredLocaleOverride
+            .dropFirst()
+            .sink { locale in
+                if locale?.identifier == "he" {
+                    localeUpdated.fulfill()
+                }
+            }
+
+        purchases.preferredLocaleOverride = "he"
+        NotificationCenter.default.post(
+            name: Notification.Name("RevenueCat.PreferredUILocaleOverrideChanged"),
+            object: nil
+        )
+
+        wait(for: [localeUpdated], timeout: 1)
+        withExtendedLifetime(cancellable) {}
+        expect(handler.preferredLocaleOverride?.rcLayoutDirection) == .rightToLeft
+    }
+
+    func testPreferredLocaleLayoutDirectionFlagUpdatesWhenNotificationFires() throws {
+        let purchases = MockPurchases(
+            preferredLocaleOverride: "he",
+            preferredLocaleOverrideHonorsLayoutDirection: false
+        ) { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { event in
+            Logger.debug("Tracking event: \(event)")
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+        let handler = PurchaseHandler(
+            purchases: purchases,
+            eventTracker: .init(purchases: purchases)
+        )
+
+        expect(handler.preferredLocaleOverrideHonorsLayoutDirection) == false
+
+        let flagUpdated = self.expectation(description: "preferred locale layout direction flag updated")
+        let cancellable = handler.$preferredLocaleOverrideHonorsLayoutDirection
+            .dropFirst()
+            .sink { honorsLayoutDirection in
+                if honorsLayoutDirection {
+                    flagUpdated.fulfill()
+                }
+            }
+
+        purchases.preferredLocaleOverrideHonorsLayoutDirection = true
+        NotificationCenter.default.post(
+            name: Notification.Name("RevenueCat.PreferredUILocaleOverrideChanged"),
+            object: nil
+        )
+
+        wait(for: [flagUpdated], timeout: 1)
+        withExtendedLifetime(cancellable) {}
+        expect(handler.preferredLocaleOverrideHonorsLayoutDirection) == true
+    }
+
     func testPurchaseSetsCustomerInfo() async throws {
         let handler: PurchaseHandler = .mock()
 

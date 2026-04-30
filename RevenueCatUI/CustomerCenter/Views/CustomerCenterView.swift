@@ -119,6 +119,7 @@ public struct CustomerCenterView: View {
     // swiftlint:disable:next missing_docs
     public var body: some View {
         navigationContent
+            .rcApplyLayoutDirection(self.preferredLayoutDirection)
             .task {
                 await loadInformationIfNeeded()
             }
@@ -128,6 +129,22 @@ public struct CustomerCenterView: View {
 #endif
                 self.trackImpression()
             }
+    }
+
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private extension CustomerCenterView {
+
+    var preferredLayoutDirection: LayoutDirection? {
+        return PaywallLayoutDirectionResolver.resolve(
+            editorLayoutDirection: nil,
+            preferredLocale: self.viewModel.preferredLocaleOverride,
+            honorsPreferredLocaleLayoutDirection: self.viewModel.preferredLocaleOverrideHonorsLayoutDirection
+        )
     }
 
 }

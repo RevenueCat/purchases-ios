@@ -1699,6 +1699,9 @@ extension RevenueCat.PaywallViewMode : Swift.Codable {
     #if compiler(>=5.3) && $NonescapableTypes
     public func with(preferredUILocaleOverride: Swift.String?) -> RevenueCat.Configuration.Builder
     #endif
+    #if compiler(>=5.3) && $NonescapableTypes
+    public func with(preferredUILocaleOverride: Swift.String?, honorLayoutDirection: Swift.Bool) -> RevenueCat.Configuration.Builder
+    #endif
     @objc deinit
   }
   @objc deinit
@@ -2484,7 +2487,10 @@ extension RevenueCat.Purchases {
 }
 extension RevenueCat.Purchases {
   #if compiler(>=5.3) && $NonescapableTypes
-  final public func overridePreferredUILocale(_ locale: Swift.String?)
+  @objc(overridePreferredUILocale:) final public func overridePreferredUILocale(_ locale: Swift.String?)
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @objc(overridePreferredUILocale:honorLayoutDirection:) final public func overridePreferredUILocale(_ locale: Swift.String?, honorLayoutDirection: Swift.Bool)
   #endif
 }
 extension RevenueCat.Purchases {
