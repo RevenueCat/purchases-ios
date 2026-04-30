@@ -2188,9 +2188,6 @@ workflows:
       - build-tv-watch-mac-and-visionos:
           context:
             - slack-secrets
-      - xcframework-build-smoke:
-          context:
-            - slack-secrets
 
       # =============================================================
       # Hold gate for the Full Test Suite
@@ -2303,6 +2300,11 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+      - xcframework-build-smoke:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
       - spm-receipt-parser:
           requires:
             - approve-full-tests
@@ -2365,6 +2367,7 @@ workflows:
             - installation-tests-all-but-carthage
             - installation-tests-carthage
             - api-tests
+            - xcframework-build-smoke
             - spm-receipt-parser
             - revenuecat-admob-tests
             - deploy-purchase-tester
@@ -2574,9 +2577,6 @@ workflows:
       - build-tv-watch-mac-and-visionos:
           context:
             - slack-secrets
-      - xcframework-build-smoke:
-          context:
-            - slack-secrets
       - docs-build:
           context:
             - slack-secrets
@@ -2622,6 +2622,9 @@ workflows:
       - api-tests:
           context:
             - slack-secrets
+      - xcframework-build-smoke:
+          context:
+            - slack-secrets
       - revenuecat-admob-tests:
           context:
             - slack-secrets
@@ -2665,7 +2668,6 @@ workflows:
             - backend-integration-tests-other
             - backend-integration-tests-offline
             - build-tv-watch-mac-and-visionos
-            - xcframework-build-smoke
             - docs-build
             - run-test-ios-16
             - run-test-ios-15-and-14
@@ -2681,6 +2683,7 @@ workflows:
             - installation-tests-all-but-carthage
             - installation-tests-carthage
             - api-tests
+            - xcframework-build-smoke
             - revenuecat-admob-tests
             - deploy-purchase-tester
             - emerge_binary_size_analysis
