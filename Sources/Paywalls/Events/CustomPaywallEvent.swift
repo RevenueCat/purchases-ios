@@ -68,10 +68,20 @@ extension CustomPaywallEvent {
 
         var paywallId: String?
         var offeringId: String?
+        var placementIdentifier: String?
+        var targetingRevision: Int?
+        var targetingRuleId: String?
 
-        init(paywallId: String?, offeringId: String? = nil) {
+        init(
+            paywallId: String?,
+            offeringId: String? = nil,
+            presentedOfferingContext: PresentedOfferingContext? = nil
+        ) {
             self.paywallId = paywallId
             self.offeringId = offeringId
+            self.placementIdentifier = presentedOfferingContext?.placementIdentifier
+            self.targetingRevision = presentedOfferingContext?.targetingContext?.revision
+            self.targetingRuleId = presentedOfferingContext?.targetingContext?.ruleId
         }
 
     }

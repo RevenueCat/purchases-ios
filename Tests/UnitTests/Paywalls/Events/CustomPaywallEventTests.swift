@@ -312,6 +312,175 @@ class CustomPaywallEventTests: TestCase {
         expect(params.offeringId).to(beNil())
     }
 
+    func testParamsDefaultOfferingIsNil() {
+        let params = CustomPaywallImpressionParams()
+        expect(params.offering).to(beNil())
+    }
+
+    func testParamsWithOfferingIdInitDoesNotStoreOffering() {
+        let params = CustomPaywallImpressionParams(paywallId: "pw", offeringId: "my_offering")
+        expect(params.offering).to(beNil())
+    }
+
+    // MARK: - Params: Offering-based init
+
+    func testParamsWithOfferingPopulatesOfferingId() {
+        let offering = Self.makeOffering(identifier: "my_offering")
+        let params = CustomPaywallImpressionParams(paywallId: "pw", offering: offering)
+        expect(params.paywallId) == "pw"
+        expect(params.offeringId) == "my_offering"
+    }
+
+    func testParamsWithOfferingStoresOffering() {
+        let offering = Self.makeOffering(identifier: "my_offering")
+        let params = CustomPaywallImpressionParams(paywallId: "pw", offering: offering)
+        expect(params.offering) === offering
+    }
+
+    func testParamsWithOfferingDefaultPaywallIdIsNil() {
+        let offering = Self.makeOffering(identifier: "offering_1")
+        let params = CustomPaywallImpressionParams(offering: offering)
+        expect(params.paywallId).to(beNil())
+        expect(params.offeringId) == "offering_1"
+        expect(params.offering) === offering
+    }
+
+    // MARK: - Data: Codable round-trip
+
+    func testDataCodableRoundTripPreservesPlacementAndTargeting() throws {
+        let data = CustomPaywallEvent.Data(
+            paywallId: "pw",
+            offeringId: "off",
+            presentedOfferingContext: PresentedOfferingContext(
+                offeringIdentifier: "off",
+                placementIdentifier: "home_banner",
+                targetingContext: .init(revision: 3, ruleId: "rule_abc123")
+            )
+        )
+
+        let encoded = try JSONEncoder.default.encode(data)
+        let decoded = try JSONDecoder.default.decode(CustomPaywallEvent.Data.self, from: encoded)
+
+        expect(decoded.paywallId) == "pw"
+        expect(decoded.offeringId) == "off"
+        expect(decoded.placementIdentifier) == "home_banner"
+        expect(decoded.targetingRevision) == 3
+        expect(decoded.targetingRuleId) == "rule_abc123"
+    }
+
+    func testDataDecodesLegacyJSONWithoutPlacementOrTargeting() throws {
+        // Mirrors the JSON format produced by an older SDK version that didn't have these fields.
+        let legacyJSON = """
+        {
+            "paywall_id": "pw",
+            "offering_id": "off"
+        }
+        """
+
+        let data = try JSONDecoder.default.decode(
+            CustomPaywallEvent.Data.self,
+            from: try XCTUnwrap(legacyJSON.data(using: .utf8))
+        )
+
+        expect(data.paywallId) == "pw"
+        expect(data.offeringId) == "off"
+        expect(data.placementIdentifier).to(beNil())
+        expect(data.targetingRevision).to(beNil())
+        expect(data.targetingRuleId).to(beNil())
+    }
+
+    // MARK: - Wire encoding: presented_offering_context
+
+    func testRequestEncodingIncludesPresentedOfferingContextWhenAllFieldsSet() throws {
+        let event = CustomPaywallEvent.impression(
+            Self.creationData,
+            .init(
+                paywallId: "pw",
+                offeringId: "off",
+                presentedOfferingContext: PresentedOfferingContext(
+                    offeringIdentifier: "off",
+                    placementIdentifier: "home_banner",
+                    targetingContext: .init(revision: 3, ruleId: "rule_abc123")
+                )
+            )
+        )
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: Self.userID,
+                feature: .customPaywalls,
+                appSessionID: nil,
+                eventDiscriminator: nil
+            )
+        )
+
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomPaywallEvent(storedEvent: storedEvent))
+        let encoded = try JSONEncoder.default.encode(requestEvent)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        let context = try XCTUnwrap(json["presented_offering_context"] as? [String: Any])
+
+        expect(context["placement_identifier"] as? String) == "home_banner"
+        expect(context["targeting_revision"] as? Int) == 3
+        expect(context["targeting_rule_id"] as? String) == "rule_abc123"
+    }
+
+    func testRequestEncodingIncludesPresentedOfferingContextWithPlacementOnly() throws {
+        let event = CustomPaywallEvent.impression(
+            Self.creationData,
+            .init(
+                paywallId: "pw",
+                offeringId: "off",
+                presentedOfferingContext: PresentedOfferingContext(
+                    offeringIdentifier: "off",
+                    placementIdentifier: "home_banner",
+                    targetingContext: nil
+                )
+            )
+        )
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: Self.userID,
+                feature: .customPaywalls,
+                appSessionID: nil,
+                eventDiscriminator: nil
+            )
+        )
+
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomPaywallEvent(storedEvent: storedEvent))
+        let encoded = try JSONEncoder.default.encode(requestEvent)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        let context = try XCTUnwrap(json["presented_offering_context"] as? [String: Any])
+
+        expect(context["placement_identifier"] as? String) == "home_banner"
+        expect(context["targeting_revision"]).to(beNil())
+        expect(context["targeting_rule_id"]).to(beNil())
+    }
+
+    func testRequestEncodingOmitsPresentedOfferingContextWhenAllFieldsNil() throws {
+        let event = CustomPaywallEvent.impression(
+            Self.creationData,
+            .init(paywallId: "pw", offeringId: "off")
+        )
+        let storedEvent = try XCTUnwrap(
+            StoredFeatureEvent(
+                event: event,
+                userID: Self.userID,
+                feature: .customPaywalls,
+                appSessionID: nil,
+                eventDiscriminator: nil
+            )
+        )
+
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomPaywallEvent(storedEvent: storedEvent))
+        expect(requestEvent.presentedOfferingContext).to(beNil())
+
+        let encoded = try JSONEncoder.default.encode(requestEvent)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+
+        expect(json["presented_offering_context"]).to(beNil())
+    }
+
     // MARK: - Helpers
 
     private static let userID = "test-user"
@@ -321,5 +490,25 @@ class CustomPaywallEventTests: TestCase {
         id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
         date: .init(timeIntervalSince1970: 1694029328)
     )
+
+    private static func makeOffering(
+        identifier: String,
+        presentedOfferingContext: PresentedOfferingContext? = nil
+    ) -> Offering {
+        let context = presentedOfferingContext ?? PresentedOfferingContext(offeringIdentifier: identifier)
+        let package = Package(
+            identifier: "$rc_monthly",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "monthly_product")),
+            presentedOfferingContext: context,
+            webCheckoutUrl: nil
+        )
+        return Offering(
+            identifier: identifier,
+            serverDescription: "",
+            availablePackages: [package],
+            webCheckoutUrl: nil
+        )
+    }
 
 }
