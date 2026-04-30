@@ -233,9 +233,11 @@ struct VideoComponentView: View {
         size: CGSize,
         with style: VideoComponentStyle
     ) -> some View {
-        video
-            .frame(maxWidth: calculateMaxWidth(parentWidth: size.width, style: style))
+		let maxWidth = calculateMaxWidth(parentWidth: size.width, style: style)
+        return video
+			.frame(maxWidth: maxWidth)
             .fitToAspectRatio(
+				maxWidth: maxWidth,
                 aspectRatio: aspectRatio(style: style),
                 contentMode: .fill, // This must be set to fill for the modifier to work correctly
                 containerContentMode: style.contentMode // the container is what truly controls this
