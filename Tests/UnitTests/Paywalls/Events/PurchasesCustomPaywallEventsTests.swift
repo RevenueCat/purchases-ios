@@ -183,23 +183,53 @@ class PurchasesCustomPaywallEventsTests: BasePurchasesTests {
         expect(data.targetingRuleId) == "rule_abc123"
     }
 
-    func testTrackCustomPaywallImpressionDoesNotInferContextWhenOfferingIdStringPassed() async throws {
-        let context = PresentedOfferingContext(
+    func testTrackCustomPaywallImpressionDerivesContextFromCachedOfferingMatchingPassedId() async throws {
+        let currentContext = PresentedOfferingContext(
             offeringIdentifier: "current_offering",
-            placementIdentifier: "home_banner",
-            targetingContext: .init(revision: 3, ruleId: "rule_abc123")
+            placementIdentifier: "current_placement",
+            targetingContext: .init(revision: 1, ruleId: "current_rule")
         )
-        self.setupMockOfferingsWithCurrentOffering(
-            identifier: "current_offering",
-            presentedOfferingContext: context
+        let otherContext = PresentedOfferingContext(
+            offeringIdentifier: "other_offering",
+            placementIdentifier: "other_placement",
+            targetingContext: .init(revision: 5, ruleId: "other_rule")
+        )
+        self.setupMockOfferings(
+            offerings: [
+                ("current_offering", currentContext),
+                ("other_offering", otherContext)
+            ],
+            currentOfferingID: "current_offering"
         )
 
-        let params = CustomPaywallImpressionParams(paywallId: "pw", offeringId: "explicit_offering")
+        let params = CustomPaywallImpressionParams(paywallId: "pw", offeringId: "other_offering")
         self.purchases.trackCustomPaywallImpression(params)
 
         let data = try await self.firstTrackedCustomPaywallEventData()
 
-        expect(data.offeringId) == "explicit_offering"
+        expect(data.offeringId) == "other_offering"
+        expect(data.placementIdentifier) == "other_placement"
+        expect(data.targetingRevision) == 5
+        expect(data.targetingRuleId) == "other_rule"
+    }
+
+    func testTrackCustomPaywallImpressionLeavesContextNilWhenPassedIdNotInCache() async throws {
+        let currentContext = PresentedOfferingContext(
+            offeringIdentifier: "current_offering",
+            placementIdentifier: "current_placement",
+            targetingContext: .init(revision: 1, ruleId: "current_rule")
+        )
+        self.setupMockOfferingsWithCurrentOffering(
+            identifier: "current_offering",
+            presentedOfferingContext: currentContext
+        )
+
+        let params = CustomPaywallImpressionParams(paywallId: "pw", offeringId: "unknown_offering")
+        self.purchases.trackCustomPaywallImpression(params)
+
+        let data = try await self.firstTrackedCustomPaywallEventData()
+
+        expect(data.offeringId) == "unknown_offering"
         expect(data.placementIdentifier).to(beNil())
         expect(data.targetingRevision).to(beNil())
         expect(data.targetingRuleId).to(beNil())
@@ -270,23 +300,36 @@ class PurchasesCustomPaywallEventsTests: BasePurchasesTests {
         identifier: String,
         presentedOfferingContext: PresentedOfferingContext? = nil
     ) {
-        let offering: Offering
-        if let presentedOfferingContext = presentedOfferingContext {
-            offering = Self.makeOffering(
-                identifier: identifier,
-                presentedOfferingContext: presentedOfferingContext
-            )
-        } else {
-            offering = Offering(
-                identifier: identifier,
-                serverDescription: "Test offering",
-                availablePackages: [],
-                webCheckoutUrl: nil
-            )
-        }
+        self.setupMockOfferings(
+            offerings: [(identifier, presentedOfferingContext)],
+            currentOfferingID: identifier
+        )
+    }
+
+    private func setupMockOfferings(
+        offerings: [(identifier: String, presentedOfferingContext: PresentedOfferingContext?)],
+        currentOfferingID: String
+    ) {
+        let offeringsByID: [String: Offering] = Dictionary(uniqueKeysWithValues: offerings.map { entry in
+            let offering: Offering = {
+                if let context = entry.presentedOfferingContext {
+                    return Self.makeOffering(
+                        identifier: entry.identifier,
+                        presentedOfferingContext: context
+                    )
+                }
+                return Offering(
+                    identifier: entry.identifier,
+                    serverDescription: "Test offering",
+                    availablePackages: [],
+                    webCheckoutUrl: nil
+                )
+            }()
+            return (entry.identifier, offering)
+        })
         let offerings = Offerings(
-            offerings: [identifier: offering],
-            currentOfferingID: identifier,
+            offerings: offeringsByID,
+            currentOfferingID: currentOfferingID,
             placements: nil,
             targeting: nil,
             contents: .mockContents,
