@@ -14,8 +14,33 @@ import SwiftUI
 #if !os(tvOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WorkflowPageTransitionContext {
+
+    /// Current horizontal offset applied to the page by `WorkflowPaywallView`.
+    /// Header buttons use the inverse value so they stay visually fixed while page content slides.
+    let pageOffset: CGFloat
+    /// Opacity for buttons rendered inside workflow headers.
+    /// This crossfades outgoing and incoming header buttons during page transitions.
+    let headerButtonOpacity: CGFloat
+
+    static let identity = Self(pageOffset: 0, headerButtonOpacity: 1)
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct WorkflowTriggerActionKey: EnvironmentKey {
     static let defaultValue: ((String) -> Bool)? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct WorkflowPageTransitionContextKey: EnvironmentKey {
+    static let defaultValue = WorkflowPageTransitionContext.identity
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct IsWorkflowHeaderKey: EnvironmentKey {
+    /// Marks the header subtree so only header buttons consume workflow page transition context.
+    static let defaultValue = false
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -26,6 +51,16 @@ extension EnvironmentValues {
     var workflowTriggerAction: ((String) -> Bool)? {
         get { self[WorkflowTriggerActionKey.self] }
         set { self[WorkflowTriggerActionKey.self] = newValue }
+    }
+
+    var workflowPageTransitionContext: WorkflowPageTransitionContext {
+        get { self[WorkflowPageTransitionContextKey.self] }
+        set { self[WorkflowPageTransitionContextKey.self] = newValue }
+    }
+
+    var isWorkflowHeader: Bool {
+        get { self[IsWorkflowHeaderKey.self] }
+        set { self[IsWorkflowHeaderKey.self] = newValue }
     }
 }
 
