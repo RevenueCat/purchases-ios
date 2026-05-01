@@ -1,13 +1,42 @@
+## RevenueCat SDK
+### ✨ New Features
+* Add placement and targeting rule to paywall events (#6476) via Dan Pannasch (@dpannasch)
+* Move paywall analytics APIs to Internal SPI (#6700) via Monika Mateska (@MonikaMateska)
+### 🐞 Bugfixes
+* Replace print with Logger.debug in ISODurationFormatter (#6691) via Facundo Menzella (@facumenzella)
+
 ## RevenueCatUI SDK
+### 🐞 Bugfixes
+* FIX: Optimize time to load paywalls (#6694) via Jacob Rakidzich (@JZDesign)
 ### Paywallsv2
+#### ✨ New Features
+* Add explicit directional step transitions to WorkflowPaywallView (#6703) via Facundo Menzella (@facumenzella)
+* Add WorkflowPaywallView for multipage workflow step rendering (#6692) via Facundo Menzella (@facumenzella)
+* Add workflowTrigger to ButtonComponent.Action (#6693) via Facundo Menzella (@facumenzella)
 #### 🐞 Bugfixes
-* PW-1178 | Add visible flag and overrides support to PackageComponent (#6520) via Facundo Menzella (@facumenzella)
+* Fix WorkflowTriggerAction.stepId to be optional (String?) (#6687) via Facundo Menzella (@facumenzella)
+* Fix product.currency_symbol for mismatched formatter locales (#6572) via Facundo Menzella (@facumenzella)
+### Customer Center
+#### ✨ New Features
+* Add workflow-based paywall resolution for multipage paywalls (#6640) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* Fix Customer Center showing wrong management options for expired subscribers (#6674) via Facundo Menzella (@facumenzella)
+### Paywallv2
+#### ✨ New Features
+* Add workflow-based paywall resolution (#6675) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Bump addressable from 2.8.8 to 2.9.0 (#6563) via dependabot[bot] (@dependabot[bot])
-* Bump addressable from 2.8.7 to 2.9.0 in /Tests/InstallationTests/CocoapodsInstallation (#6561) via dependabot[bot] (@dependabot[bot])
-* Fix iOS 14.5 simulator runtime install retry logic (#6533) via Rick (@rickvdl)
-* Bump fastlane-plugin-revenuecat_internal from `6289be1` to `ceecf91` (#6560) via dependabot[bot] (@dependabot[bot])
-* Make PaywallComponents API @_spi(Internal) (#6551) via Antonio Pallares (@ajpallares)
-* Bump fastlane-plugin-revenuecat_internal from `5d6e93f` to `6289be1` (#6550) via dependabot[bot] (@dependabot[bot])
-* Bump fastlane-plugin-revenuecat_internal from `b5a7159` to `5d6e93f` (#6547) via dependabot[bot] (@dependabot[bot])
+* Add RequestSizeCalculation.swift to RevenueCat.xcodeproj (#6713) via Antonio Pallares (@ajpallares)
+* Bump nokogiri from 1.19.2 to 1.19.3 (#6705) via dependabot[bot] (@dependabot[bot])
+* Align workflow trigger matching with Android: typed enums + sealed WorkflowTriggerAction (#6698) via Facundo Menzella (@facumenzella)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#6272) via RevenueCat Git Bot (@RCGitBot)
+* Expose Logger to internal consumers (#6690) via Pol Miro (@polmiro)
+* Delete claude.yml workflow (#6688) via Cesar de la Vega (@vegaro)
+* Decode reward payload in RewardVerification poll response (#6678) via Pol Miro (@polmiro)
+* Document Tuist environment variables in AGENTS.md (#6689) via Facundo Menzella (@facumenzella)
+* Add WorkflowContext to surface full workflow state from PurchaseHandler (#6685) via Facundo Menzella (@facumenzella)
+* Add workflowTriggerAction environment hook for button workflow triggers (#6684) via Facundo Menzella (@facumenzella)
+* Add swiftinterface API diff tracking for RevenueCatUI (#6450) via Facundo Menzella (@facumenzella)
+* Add WorkflowNavigator for multipage workflow step navigation (#6680) via Facundo Menzella (@facumenzella)
+* Add id to PaywallButtonComponent (#6679) via Facundo Menzella (@facumenzella)
+* Rename internal SSV symbols, URL and metric to RewardVerification (#6667) via Pol Miro (@polmiro)

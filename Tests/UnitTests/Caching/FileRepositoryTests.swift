@@ -133,6 +133,28 @@ class FileRepositoryTests: TestCase {
 
     }
 
+    func test_whenChecksumMismatch_throwsChecksumMismatch() async throws {
+        let sut = await makeSystemUnderTest()
+        sut.cache.stubCachedContentExists(with: false)
+        sut.networkService.stubResponse(at: 0, result: .success("SomeData"))
+        sut.cache.stubSaveData(with: .failure(Checksum.ChecksumValidationFailure()))
+
+        do {
+            _ = try await sut.fileRepository.generateOrGetCachedFileURL(
+                for: someURL,
+                withChecksum: .init(algorithm: .sha256, value: "expected-hash")
+            )
+            XCTFail("Expected checksumMismatch error")
+        } catch {
+            switch error as? FileRepository.Error {
+            case .checksumMismatch:
+                break
+            default:
+                XCTFail("Expected checksumMismatch, got \(error)")
+            }
+        }
+    }
+
     func makeSystemUnderTest(
         cacheDirectoryURL: URL? = URL(string: "data:sample"),
         file: StaticString = #filePath,

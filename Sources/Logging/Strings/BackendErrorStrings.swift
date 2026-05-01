@@ -24,6 +24,12 @@ enum BackendErrorStrings {
 
     // Posting offerIdForSigning failed due to a signature problem.
     case signature_error(signatureDataString: Any?)
+    case unknown_reward_verification_status(status: String)
+    case unsupported_reward_verification_reward_type(type: String)
+    case malformed_reward_verification_reward_payload(type: String)
+    case unexpected_reward_verification_reward_value
+    case unknown_workflow_trigger_type(type: String)
+    case unknown_workflow_trigger_action_type(type: String)
 
 }
 
@@ -41,6 +47,18 @@ extension BackendErrorStrings: LogMessage {
             return "Offerings response contained no offerings"
         case .signature_error(let signatureDataString):
             return "Missing 'signatureData' or its structure changed:\n\(String(describing: signatureDataString))"
+        case let .unknown_reward_verification_status(status):
+            return "Received unknown reward verification status: \(status)"
+        case let .unsupported_reward_verification_reward_type(type):
+            return "Received unsupported reward verification reward type: \(type)"
+        case let .malformed_reward_verification_reward_payload(type):
+            return "Received malformed reward verification reward payload for type: \(type)"
+        case .unexpected_reward_verification_reward_value:
+            return "Received unexpected reward verification reward value: expected a JSON object"
+        case let .unknown_workflow_trigger_type(type):
+            return "Received unknown workflow trigger type: \(type)"
+        case let .unknown_workflow_trigger_action_type(type):
+            return "Received unknown workflow trigger action type: \(type)"
         }
     }
 

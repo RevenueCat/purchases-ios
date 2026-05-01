@@ -35,6 +35,9 @@ struct TabControlButtonComponentView: View {
     @EnvironmentObject
     private var tabControlContext: TabControlContext
 
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
+
     private let viewModel: TabControlButtonComponentViewModel
     private let onDismiss: () -> Void
 
@@ -49,7 +52,11 @@ struct TabControlButtonComponentView: View {
 
     var body: some View {
         Button {
-            self.tabControlContext.selectedTabId = self.viewModel.component.tabId
+            let originTabId = self.tabControlContext.selectedTabId
+            let destinationTabId = self.viewModel.component.tabId
+
+            self.tabControlContext.selectedTabId = destinationTabId
+            self.trackTabcomponentInteraction(originTabId: originTabId, destinationTabId: destinationTabId)
         } label: {
             StackComponentView(
                 viewModel: self.viewModel.stackViewModel,
@@ -58,6 +65,22 @@ struct TabControlButtonComponentView: View {
             .environment(\.componentViewState, self.selectedState)
         }
 
+    }
+
+    private func trackTabcomponentInteraction(originTabId: String, destinationTabId: String) {
+        let destinationContextName = self.tabControlContext.contextName(for: destinationTabId)
+
+        _ = self.componentInteractionLogger(.paywallTabControlButtonSelection(
+            componentName: self.tabControlContext.name,
+            destinationTabId: destinationTabId,
+            metadata: .init(
+                originIndex: self.tabControlContext.index(for: originTabId),
+                destinationIndex: self.tabControlContext.index(for: destinationTabId),
+                originContextName: self.tabControlContext.contextName(for: originTabId),
+                destinationContextName: destinationContextName,
+                defaultIndex: self.tabControlContext.defaultTabIndex
+            )
+        ))
     }
 
 }

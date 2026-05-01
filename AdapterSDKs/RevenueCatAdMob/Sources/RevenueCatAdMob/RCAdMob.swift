@@ -188,12 +188,6 @@ internal final class RCAdMob {
             return
         }
 
-        if let wrapper = retrieveFullScreenDelegate(for: fullScreenAd) {
-            wrapper.delegate = newDelegate
-            fullScreenAd.fullScreenContentDelegate = wrapper
-            return
-        }
-
         fullScreenAd.fullScreenContentDelegate = newDelegate
     }
 

@@ -20,11 +20,14 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PurchaseButtonComponentViewModel {
 
+    var componentName: String? {
+        component.name
+    }
     private let component: PaywallComponent.PurchaseButtonComponent
     private let offering: Offering
     let stackViewModel: StackComponentViewModel
 
-    private let customWebCheckoutUrl: URL?
+    let customWebCheckoutUrl: URL?
 
     init(
         localizationProvider: LocalizationProvider,

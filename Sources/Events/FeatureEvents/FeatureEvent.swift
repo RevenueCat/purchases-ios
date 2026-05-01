@@ -74,10 +74,11 @@ private extension PaywallEvent {
             case .exitOffer: return "paywall_exit_offer"
             case .purchaseInitiated: return "paywall_purchase_initiated"
             case .purchaseError: return "paywall_purchase_error"
+            case .componentInteraction: return "paywall_component_interacted"
             }
         }()
 
-        return [
+        var result: [String: Any] = [
             "discriminator": "paywalls",
             "type": typeName,
             "id": self.creationData.id.uuidString,
@@ -89,6 +90,84 @@ private extension PaywallEvent {
             "locale": self.data.localeIdentifier,
             "dark_mode": self.data.darkMode
         ]
+
+        if let interaction = self.componentInteractionData {
+            interaction.mergeIntoPaywallFeatureMap(&result)
+        }
+
+        return result
+    }
+
+}
+
+private extension PaywallEvent.ComponentInteractionData {
+
+    func mergeIntoPaywallFeatureMap(_ result: inout [String: Any]) {
+        self.mergeCoreFields(into: &result)
+        self.mergePackageIdentifiers(into: &result)
+        self.mergeProductIdentifiers(into: &result)
+    }
+
+    func mergeCoreFields(into result: inout [String: Any]) {
+        result["component_type"] = self.componentType.rawValue
+        result["component_value"] = self.componentValue
+        if let name = self.componentName {
+            result["component_name"] = name
+        }
+        if let url = self.componentURL {
+            result["component_url"] = url.absoluteString
+        }
+        if let originIndex = self.originIndex {
+            result["origin_index"] = originIndex
+        }
+        if let destinationIndex = self.destinationIndex {
+            result["destination_index"] = destinationIndex
+        }
+        if let originContextName = self.originContextName {
+            result["origin_context_name"] = originContextName
+        }
+        if let destinationContextName = self.destinationContextName {
+            result["destination_context_name"] = destinationContextName
+        }
+        if let defaultIndex = self.defaultIndex {
+            result["default_index"] = defaultIndex
+        }
+    }
+
+    func mergePackageIdentifiers(into result: inout [String: Any]) {
+        if let originPackageIdentifier = self.originPackageIdentifier {
+            result["origin_package_id"] = originPackageIdentifier
+        }
+        if let destinationPackageIdentifier = self.destinationPackageIdentifier {
+            result["destination_package_id"] = destinationPackageIdentifier
+        }
+        if let defaultPackageIdentifier = self.defaultPackageIdentifier {
+            result["default_package_id"] = defaultPackageIdentifier
+        }
+        if let currentPackageIdentifier = self.currentPackageIdentifier {
+            result["current_package_id"] = currentPackageIdentifier
+        }
+        if let resultingPackageIdentifier = self.resultingPackageIdentifier {
+            result["resulting_package_id"] = resultingPackageIdentifier
+        }
+    }
+
+    func mergeProductIdentifiers(into result: inout [String: Any]) {
+        if let originProductIdentifier = self.originProductIdentifier {
+            result["origin_product_id"] = originProductIdentifier
+        }
+        if let destinationProductIdentifier = self.destinationProductIdentifier {
+            result["destination_product_id"] = destinationProductIdentifier
+        }
+        if let defaultProductIdentifier = self.defaultProductIdentifier {
+            result["default_product_id"] = defaultProductIdentifier
+        }
+        if let currentProductIdentifier = self.currentProductIdentifier {
+            result["current_product_id"] = currentProductIdentifier
+        }
+        if let resultingProductIdentifier = self.resultingProductIdentifier {
+            result["resulting_product_id"] = resultingProductIdentifier
+        }
     }
 
 }

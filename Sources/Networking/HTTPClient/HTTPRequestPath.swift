@@ -11,6 +11,8 @@
 //
 //  Created by Nacho Soto on 8/8/23.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 protocol HTTPRequestPath {
@@ -101,9 +103,11 @@ extension HTTPRequest {
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
         case getVirtualCurrencies(appUserID: String)
+        case getWorkflow(appUserID: String, workflowId: String)
         case postRedeemWebPurchase
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
+        case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
 
     }
 
@@ -176,6 +180,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .getCustomerInfo,
                 .getOfferings,
+                .getWorkflow,
                 .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
@@ -189,7 +194,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getVirtualCurrencies,
                 .appHealthReport,
                 .postCreateTicket,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .rewardVerificationStatus:
             return true
 
         case .health,
@@ -202,6 +208,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .getCustomerInfo,
                 .getOfferings,
+                .getWorkflow,
                 .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
@@ -215,7 +222,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getVirtualCurrencies,
                 .appHealthReport,
                 .postCreateTicket,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .rewardVerificationStatus:
             return true
         case .health,
              .appHealthReportAvailability:
@@ -232,6 +240,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getOfferings,
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
+                .getWorkflow,
                 .appHealthReport,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior:
@@ -245,6 +254,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .postCreateTicket:
             return false
+        case .rewardVerificationStatus:
+            return true
         }
     }
 
@@ -256,9 +267,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getVirtualCurrencies,
                 .health,
                 .appHealthReportAvailability,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .rewardVerificationStatus:
             return true
-        case .getOfferings,
+        case .getWorkflow,
+                .getOfferings,
                 .getIntroEligibility,
                 .postSubscriberAttributes,
                 .postAttributionData,
@@ -327,10 +340,16 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .getVirtualCurrencies(appUserID):
             return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
 
+        case let .getWorkflow(appUserID, workflowId):
+            return "subscribers/\(Self.escape(appUserID))/workflows/\(Self.escape(workflowId))"
+
         case .postCreateTicket:
             return "customercenter/support/create-ticket"
         case let .isPurchaseAllowedByRestoreBehavior(appUserID):
             return "subscribers/\(Self.escape(appUserID))/restore/eligibility"
+
+        case let .rewardVerificationStatus(appUserID, clientTransactionID):
+            return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
         }
     }
 
@@ -341,6 +360,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .getOfferings:
             return "get_offerings"
+
+        case .getWorkflow:
+            return "get_workflow"
 
         case .getIntroEligibility:
             return "get_intro_eligibility"
@@ -388,6 +410,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "post_create_ticket"
         case .isPurchaseAllowedByRestoreBehavior:
             return "post_restore_eligibility"
+
+        case .rewardVerificationStatus:
+            return "get_reward_verification_status"
         }
     }
 

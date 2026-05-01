@@ -125,7 +125,8 @@ private enum ButtonWithSheetPreview {
             shape: .pill
         ),
         action: nil,
-        method: nil
+        method: nil,
+        name: nil
     )
 
     static let viewAllButton = PaywallComponent.ButtonComponent(
@@ -195,7 +196,8 @@ private enum ButtonWithSheetPreview {
                                             shape: .pill
                                         ),
                                         action: .inAppCheckout,
-                                        method: .inAppCheckout
+                                        method: .inAppCheckout,
+                                        name: nil
                                     )),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -216,7 +218,8 @@ private enum ButtonWithSheetPreview {
                                             shape: .pill
                                         ),
                                         action: .webCheckout,
-                                        method: .webCheckout(.init())
+                                        method: .webCheckout(.init()),
+                                        name: nil
                                     )),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -237,7 +240,8 @@ private enum ButtonWithSheetPreview {
                                             shape: .pill
                                         ),
                                         action: .webProductSelection,
-                                        method: .webProductSelection(.init())
+                                        method: .webProductSelection(.init()),
+                                        name: nil
                                     )),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -260,7 +264,8 @@ private enum ButtonWithSheetPreview {
                                         action: .webCheckout,
                                         method: .customWebCheckout(
                                             .init(customUrl: .init(url: "web_checkout_url", packageParam: "rc_package"))
-                                        )
+                                        ),
+                                        name: nil
                                     )),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -283,7 +288,8 @@ private enum ButtonWithSheetPreview {
                                         action: .webProductSelection,
                                         method: .customWebCheckout(
                                             .init(customUrl: .init(url: "web_checkout_url"))
-                                        )
+                                        ),
+                                        name: nil
                                     ))
                                 ],
                                 size: .init(width: .fill, height: .fit),

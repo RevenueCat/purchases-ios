@@ -20,6 +20,7 @@ enum BackendError: Error, Equatable {
 
     case networkError(NetworkError)
     case missingAppUserID(Source)
+    case missingClientTransactionID(Source)
     case emptySubscriberAttributes(Source)
     case missingReceiptFile(URL?, Source)
     case missingTransactionProductIdentifier(Source)
@@ -40,6 +41,12 @@ extension BackendError {
         file: String = #fileID, function: String = #function, line: UInt = #line
     ) -> Self {
         return .missingAppUserID(.init(file: file, function: function, line: line))
+    }
+
+    static func missingClientTransactionID(
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .missingClientTransactionID(.init(file: file, function: function, line: line))
     }
 
     static func missingTransactionJWS(
@@ -102,6 +109,12 @@ extension BackendError: PurchasesErrorConvertible {
             return ErrorUtils.missingAppUserIDError(fileName: source.file,
                                                     functionName: source.function,
                                                     line: source.line)
+
+        case let .missingClientTransactionID(source):
+            return ErrorUtils.configurationError(message: "Missing client transaction ID.",
+                                                 fileName: source.file,
+                                                 functionName: source.function,
+                                                 line: source.line)
 
         case let .missingTransactionJWS(source):
             return ErrorUtils.storeProblemError(fileName: source.file,
@@ -197,6 +210,7 @@ extension BackendError {
             return networkError
 
         case .missingAppUserID,
+             .missingClientTransactionID,
              .emptySubscriberAttributes,
              .missingReceiptFile,
              .invalidAppleSubscriptionKey,
@@ -222,6 +236,7 @@ extension BackendError {
             return error
 
         case .missingAppUserID,
+                .missingClientTransactionID,
                 .emptySubscriberAttributes,
                 .missingReceiptFile,
                 .invalidAppleSubscriptionKey,

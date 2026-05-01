@@ -26,11 +26,15 @@ struct RootView: View {
     @EnvironmentObject
     private var packageContext: PackageContext
 
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
+
     private let viewModel: RootViewModel
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
 
     @State private var sheetViewModel: SheetViewModel?
+    @State private var packageSelectionSheetComponentName: String?
     @State private var overlaidHeaderHeight: CGFloat = 0
 
     internal init(
@@ -98,12 +102,36 @@ struct RootView: View {
         .environment(\.openSheet, { sheet in
             self.sheetViewModel = sheet
         })
-        .bottomSheet(sheet: $sheetViewModel, safeAreaInsets: self.safeAreaInsets)
+        .bottomSheet(
+            sheet: $sheetViewModel,
+            safeAreaInsets: self.safeAreaInsets,
+            onSheetContentAppear: {
+                guard let sheetViewModel else { return }
+                _ = self.componentInteractionLogger(
+                    .paywallPackageSelectionSheetOpen(
+                        sheetComponentName: sheetViewModel.sheet.name,
+                        rootSelectedPackage: self.packageContext.package
+                    )
+                )
+            }
+        )
         .onChangeOf(sheetViewModel) { newValue in
-            if newValue == nil {
-                // Reset package selection to default when sheet is dismissed to prevent
-                // purchasing a hidden package that was selected in the sheet
-                packageContext.package = defaultPackage
+            if let newValue {
+                self.packageSelectionSheetComponentName = newValue.sheet.name
+            } else {
+                // Reset package selection when sheet is dismissed; snapshot sheet name before clear for analytics.
+                let selectionInSheetContext = self.packageContext.package
+                self.packageContext.package = self.defaultPackage
+                let resultingRootPackage = self.packageContext.package
+                let sheetName = self.packageSelectionSheetComponentName
+                self.packageSelectionSheetComponentName = nil
+                _ = self.componentInteractionLogger(
+                    .paywallPackageSelectionSheetClose(
+                        sheetComponentName: sheetName,
+                        sheetSelectedPackage: selectionInSheetContext,
+                        resultingRootPackage: resultingRootPackage
+                    )
+                )
             }
         }
     }

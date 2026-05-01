@@ -1,0 +1,23 @@
+name: Re-run Danger on label change
+
+# When Danger fails on CircleCI because a required label is missing, adding
+# the label doesn't produce a new commit, so CircleCI never re-runs Danger.
+# Delegates to the shared reusable workflow in sdk-github-workflows.
+
+on:
+  pull_request:
+    types: [labeled, unlabeled]
+
+permissions: {}
+
+jobs:
+  rerun-danger:
+    # Only run on the canonical repo (not on forks of this repo that would
+    # inherit the workflow file). The shared workflow handles the fork-PR
+    # filter internally.
+    if: github.repository == 'RevenueCat/purchases-ios'
+    uses: revenuecat/sdk-github-workflows/.github/workflows/rerun-danger.yml@29659177f23b4f2ae6c82f5edf494072cda6fc95
+    with:
+      project_slug: gh/RevenueCat/purchases-ios
+    secrets:
+      CIRCLECI_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}

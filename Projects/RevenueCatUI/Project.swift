@@ -19,8 +19,11 @@ let project = Project(
             ],
             dependencies: [
                 .revenueCat
-            ]
-        ),
+            ],
+            settings: .settings(
+                base: ([:] as SettingsDictionary).appendingTuistSwiftConditions()
+            )
+        )
     ],
     schemes: [
         .scheme(

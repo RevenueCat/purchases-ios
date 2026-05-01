@@ -91,7 +91,8 @@ private extension LoadingPaywallView {
             uniqueKeysWithValues: packages.map { ($0, .unknown) }
         )
     })
-    static let purchaseHandler: PurchaseHandler = .init(purchases: LoadingPaywallPurchases())
+    static let purchases = LoadingPaywallPurchases()
+    static let purchaseHandler: PurchaseHandler = .init(purchases: purchases, eventTracker: .init(purchases: purchases))
 
     static let offeringIdentifier = "offering"
     static let weeklyPackage = Package(
@@ -168,6 +169,16 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
     var subscriptionHistoryTracker: RevenueCat.SubscriptionHistoryTracker {
         SubscriptionHistoryTracker()
     }
+
+    func offerings() async throws -> Offerings { throw ErrorCode.configurationError }
+
+    var cachedOfferings: Offerings? { nil }
+
+#if !os(tvOS)
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
+        throw ErrorCode.configurationError
+    }
+#endif
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
         fatalError("Should not be able to purchase")

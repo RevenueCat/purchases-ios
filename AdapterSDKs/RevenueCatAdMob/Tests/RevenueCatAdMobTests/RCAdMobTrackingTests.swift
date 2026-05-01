@@ -467,7 +467,7 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
         XCTAssertEqual(self.mockTracker.displayedData.count, 1)
     }
 
-    func testUpdateDelegateAfterDirectOverwriteRestoresWrapper() async throws {
+    func testUpdateDelegateAfterDirectOverwriteFallsBackToDirectAssignment() async throws {
         let fakeAd = FakeFullScreenAd()
         let context = FullScreenLoadContext(
             placement: "test", adUnitID: "ca-app-pub-test", adFormat: .interstitial,
@@ -486,8 +486,8 @@ final class RCAdMobTrackingTests: RCAdMobTestCase {
         fakeAd.fullScreenContentDelegate?.adDidRecordImpression?(presentingAd)
 
         XCTAssertTrue(spy.didRecordImpression)
-        XCTAssertTrue(fakeAd.fullScreenContentDelegate is RCAdMobFullScreenContentDelegate)
-        XCTAssertEqual(self.mockTracker.displayedData.count, 1)
+        XCTAssertTrue(fakeAd.fullScreenContentDelegate === spy)
+        XCTAssertTrue(self.mockTracker.displayedData.isEmpty)
     }
 
     func testUpdateDelegateWithNilClearsUserDelegate() async throws {

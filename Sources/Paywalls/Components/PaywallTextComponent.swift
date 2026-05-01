@@ -14,6 +14,7 @@ import Foundation
 
         let type: ComponentType
         public let visible: Bool?
+        public let name: String?
         public let text: LocalizationKey
         public let fontName: String?
         public let fontWeight: FontWeight
@@ -34,6 +35,7 @@ import Foundation
 
         public init(
             visible: Bool? = nil,
+            name: String? = nil,
             text: String,
             fontName: String? = nil,
             fontWeight: FontWeight = .regular,
@@ -49,6 +51,7 @@ import Foundation
         ) {
             self.type = .text
             self.visible = visible
+            self.name = name
             self.text = text
             self.fontName = fontName
             self.fontWeight = fontWeight
@@ -66,6 +69,7 @@ import Foundation
         private enum CodingKeys: String, CodingKey {
             case type
             case visible
+            case name
             case text = "textLid"
             case fontName
             case fontWeight
@@ -85,6 +89,7 @@ import Foundation
 
             self.type = try container.decode(ComponentType.self, forKey: .type)
             self.visible = try container.decodeIfPresent(Bool.self, forKey: .visible)
+            self.name = try container.decodeIfPresent(String.self, forKey: .name)
             self.text = try container.decode(LocalizationKey.self, forKey: .text)
             self.fontName = try container.decodeIfPresent(String.self, forKey: .fontName)
             self.fontWeight = try container.decode(FontWeight.self, forKey: .fontWeight)
@@ -116,6 +121,7 @@ import Foundation
 
             try container.encode(type, forKey: .type)
             try container.encodeIfPresent(visible, forKey: .visible)
+            try container.encodeIfPresent(name, forKey: .name)
             try container.encode(text, forKey: .text)
             try container.encodeIfPresent(fontName, forKey: .fontName)
             try container.encode(fontWeight, forKey: .fontWeight)
@@ -133,6 +139,7 @@ import Foundation
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
             hasher.combine(visible)
+            hasher.combine(name)
             hasher.combine(text)
             hasher.combine(fontName)
             hasher.combine(fontWeight)
@@ -150,6 +157,7 @@ import Foundation
         public static func == (lhs: TextComponent, rhs: TextComponent) -> Bool {
             return lhs.type == rhs.type &&
                    lhs.visible == rhs.visible &&
+                   lhs.name == rhs.name &&
                    lhs.text == rhs.text &&
                    lhs.fontName == rhs.fontName &&
                    lhs.fontWeight == rhs.fontWeight &&
@@ -168,6 +176,7 @@ import Foundation
     final class PartialTextComponent: PaywallPartialComponent {
 
         public let visible: Bool?
+        public let name: String?
         public let text: LocalizationKey?
         public let fontName: String?
         public let fontWeight: FontWeight?
@@ -185,6 +194,7 @@ import Foundation
         }
         public init(
             visible: Bool? = true,
+            name: String? = nil,
             text: LocalizationKey? = nil,
             fontName: String? = nil,
             fontWeight: FontWeight? = nil,
@@ -198,6 +208,7 @@ import Foundation
             fontWeightInt: Int? = nil
         ) {
             self.visible = visible
+            self.name = name
             self.text = text
             self.fontName = fontName
             self.fontWeight = fontWeight
@@ -213,6 +224,7 @@ import Foundation
 
         private enum CodingKeys: String, CodingKey {
             case visible
+            case name
             case text = "textLid"
             case fontName
             case fontWeight
@@ -228,6 +240,7 @@ import Foundation
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(visible)
+            hasher.combine(name)
             hasher.combine(text)
             hasher.combine(fontName)
             hasher.combine(fontWeight)
@@ -243,6 +256,7 @@ import Foundation
 
         public static func == (lhs: PartialTextComponent, rhs: PartialTextComponent) -> Bool {
             return lhs.visible == rhs.visible &&
+                   lhs.name == rhs.name &&
                    lhs.text == rhs.text &&
                    lhs.fontName == rhs.fontName &&
                    lhs.fontWeight == rhs.fontWeight &&

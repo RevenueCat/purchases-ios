@@ -1657,6 +1657,10 @@ SWIFT_CLASS("_TtC10RevenueCat37GetProductEntitlementMappingOperation")
 @interface GetProductEntitlementMappingOperation : CacheableNetworkOperation
 @end
 
+SWIFT_CLASS("_TtC10RevenueCat36GetRewardVerificationStatusOperation")
+@interface GetRewardVerificationStatusOperation : CacheableNetworkOperation
+@end
+
 SWIFT_CLASS("_TtC10RevenueCat29GetVirtualCurrenciesOperation")
 @interface GetVirtualCurrenciesOperation : CacheableNetworkOperation
 @end
@@ -1667,6 +1671,10 @@ SWIFT_CLASS("_TtC10RevenueCat30GetWebBillingProductsOperation")
 
 SWIFT_CLASS("_TtC10RevenueCat31GetWebOfferingProductsOperation")
 @interface GetWebOfferingProductsOperation : CacheableNetworkOperation
+@end
+
+SWIFT_CLASS("_TtC10RevenueCat20GetWorkflowOperation")
+@interface GetWorkflowOperation : CacheableNetworkOperation
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat15HealthOperation")

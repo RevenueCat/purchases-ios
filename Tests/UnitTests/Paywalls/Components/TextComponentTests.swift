@@ -78,6 +78,43 @@ class TextComponentTests: TestCase {
         expect(textComponent.fontSize).to(equal(123))
     }
 
+    func testDecodesNameWhenPresent() throws {
+        let json = """
+        {
+            "type": "text",
+            "name": "footer_terms_link",
+            "text_lid": "123",
+            "font_weight": "regular",
+            "color": { "light": { "type": "hex", "value": "#ffffff" } },
+            "font_size": "body_m",
+            "horizontal_alignment": "center",
+            "size": {
+                "width": { "type": "fill" },
+                "height": { "type": "fill" }
+            },
+            "padding": {
+                "top": 0,
+                "bottom": 0,
+                "leading": 0,
+                "trailing": 0
+            },
+            "margin": {
+                "top": 0,
+                "bottom": 0,
+                "leading": 0,
+                "trailing": 0
+            }
+        }
+        """
+
+        let textComponent = try JSONDecoder.default.decode(
+            PaywallComponent.TextComponent.self,
+            from: json.data(using: .utf8)!
+        )
+
+        expect(textComponent.name).to(equal("footer_terms_link"))
+    }
+
 }
 
 #endif

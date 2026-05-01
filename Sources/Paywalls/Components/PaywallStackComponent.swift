@@ -30,6 +30,7 @@ import Foundation
         }
 
         let type: ComponentType
+        public let name: String?
         public let visible: Bool?
         public let components: [PaywallComponent]
         public let size: Size
@@ -48,6 +49,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialStackComponent>?
 
         public init(
+            name: String? = nil,
             visible: Bool? = nil,
             components: [PaywallComponent],
             dimension: Dimension = .vertical(.center, .start),
@@ -64,6 +66,7 @@ import Foundation
             overflow: Overflow? = nil,
             overrides: ComponentOverrides<PartialStackComponent>? = nil
         ) {
+            self.name = name
             self.visible = visible
             self.components = components
             self.size = size
@@ -83,6 +86,7 @@ import Foundation
         }
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(name)
             hasher.combine(visible)
             hasher.combine(components)
             hasher.combine(size)
@@ -102,6 +106,7 @@ import Foundation
 
         public static func == (lhs: StackComponent, rhs: StackComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.name == rhs.name &&
                    lhs.visible == rhs.visible &&
                    lhs.components == rhs.components &&
                    lhs.size == rhs.size &&
@@ -122,6 +127,7 @@ import Foundation
 
     final class PartialStackComponent: PaywallPartialComponent {
 
+        public let name: String?
         public let visible: Bool?
         public let size: Size?
         public let spacing: CGFloat?
@@ -137,6 +143,7 @@ import Foundation
         public let badge: Badge?
 
         public init(
+            name: String? = nil,
             visible: Bool? = true,
             dimension: Dimension? = nil,
             size: Size? = nil,
@@ -151,6 +158,7 @@ import Foundation
             overflow: PaywallComponent.StackComponent.Overflow? = nil,
             badge: Badge? = nil
         ) {
+            self.name = name
             self.visible = visible
             self.size = size
             self.spacing = spacing
@@ -167,6 +175,7 @@ import Foundation
         }
 
         public func hash(into hasher: inout Hasher) {
+            hasher.combine(name)
             hasher.combine(visible)
             hasher.combine(size)
             hasher.combine(spacing)
@@ -183,7 +192,8 @@ import Foundation
         }
 
         public static func == (lhs: PartialStackComponent, rhs: PartialStackComponent) -> Bool {
-            return lhs.visible == rhs.visible &&
+            return lhs.name == rhs.name &&
+                   lhs.visible == rhs.visible &&
                    lhs.size == rhs.size &&
                    lhs.spacing == rhs.spacing &&
                    lhs.backgroundColor == rhs.backgroundColor &&

@@ -351,6 +351,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             finishTransactions: !observerMode,
             operationDispatcher: operationDispatcher,
             storeKitVersion: storeKitVersion,
+            apiKey: apiKey,
             apiKeyValidationResult: apiKeyValidationResult,
             responseVerificationMode: responseVerificationMode,
             dangerousSettings: dangerousSettings,
@@ -390,7 +391,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let transactionFetcher = StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
 
         let backend = Backend(
-            apiKey: apiKey,
             systemInfo: systemInfo,
             httpClientTimeout: networkTimeout,
             eTagManager: eTagManager,
@@ -940,6 +940,19 @@ public extension Purchases {
 
     var cachedOfferings: Offerings? {
         return self.offeringsManager.cachedOfferings
+    }
+
+    @_spi(Internal)
+    // The backend uses the offering identifier as the workflow lookup key.
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
+        return try await Async.call { completion in
+            self.backend.workflowsAPI.getWorkflow(
+                appUserID: self.appUserID,
+                workflowId: offeringID,
+                isAppBackgrounded: false,
+                completion: completion
+            )
+        }
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
@@ -1514,6 +1527,7 @@ public extension Purchases {
 public extension Purchases {
 
     /// Used by `RevenueCatUI` to keep track of ``PaywallEvent``s.
+    @_spi(Internal)
     func track(paywallEvent: PaywallEvent) async {
         await self.eventsManager?.track(featureEvent: paywallEvent)
     }
@@ -1566,6 +1580,41 @@ public extension Purchases {
     /// Used by `RevenueCatUI` to download and cache paywall images.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     static let paywallImageDownloadSession: URLSession = PaywallCacheWarming.downloadSession
+
+}
+
+// MARK: - Reward Verification (Internal SPI)
+
+extension Purchases {
+
+    /// Polls the backend once for reward verification status using `client_transaction_id`.
+    ///
+    /// Internal API for RC ad adapters.
+    ///
+    /// Cancelling the calling `Task` does not cancel the in-flight HTTP request.
+    @_spi(Internal) public func pollRewardVerificationStatus(
+        clientTransactionID: String
+    ) async throws -> RewardVerificationPollStatus {
+        let response = try await Async.call { completion in
+            self.backend.adsAPI.getRewardVerificationStatus(
+                appUserID: self.appUserID,
+                clientTransactionID: clientTransactionID
+            ) { result in
+                completion(result.mapError(\.asPublicError))
+            }
+        }
+
+        switch response.status {
+        case let .verified(reward):
+            return .verified(reward)
+        case .pending:
+            return .pending
+        case .failed:
+            return .failed
+        case .unknown:
+            return .unknown
+        }
+    }
 
 }
 
@@ -2118,6 +2167,11 @@ extension Purchases {
                 )
             }
         }
+    }
+
+    /// Exposed so adapter modules (e.g., RevenueCatAdMob) can read the configured key.
+    @_spi(Internal) public var apiKey: String {
+        return self.systemInfo.apiKey
     }
 
     // swiftlint:disable missing_docs

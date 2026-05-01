@@ -49,6 +49,8 @@ struct Template7View: TemplateViewType {
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
+    @Environment(\.componentInteractionLogger) var componentInteractionLogger
+
     private var showTierSelector: Bool {
         return self.tiers.count > 1
     }
@@ -213,7 +215,24 @@ struct Template7View: TemplateViewType {
                     backgroundColor: self.currentColors.tierControlBackground,
                     textColor: self.currentColors.tierControlForeground,
                     selectedBackgroundColor: self.currentColors.tierControlSelectedBackground,
-                    selectedTextColor: self.currentColors.tierControlSelectedForeground
+                    selectedTextColor: self.currentColors.tierControlSelectedForeground,
+                    onSelectTier: { tier in
+                        let originPackage = self.selectedPackage.content
+                        let destinationPackage = self.tiers[tier]!.default.content
+                        if originPackage.identifier != destinationPackage.identifier {
+                            self.componentInteractionLogger(
+                                .paywallTierSelection(
+                                    tierDisplayName: tierSelectorComponentInteractionValue(
+                                        tierName: self.tierNames[tier],
+                                        tierId: tier.id
+                                    ),
+                                    componentName: PaywallComponentInteraction.tierSelectorName,
+                                    originPackage: originPackage,
+                                    destinationPackage: destinationPackage
+                                )
+                            )
+                        }
+                    }
                 )
             }
         }
@@ -327,6 +346,17 @@ struct Template7View: TemplateViewType {
                 let isSelected = self.selectedPackage.content === package.content
 
                 Button {
+                    let origin = self.selectedPackage.content
+                    let destination = package.content
+                    if origin.identifier != destination.identifier {
+                        self.componentInteractionLogger(
+                            .paywallPackageRowSelection(
+                                destination: destination,
+                                origin: origin,
+                                defaultPackage: self.tiers[tier]!.default.content
+                            )
+                        )
+                    }
                     self.selectedPackage = package
                 } label: {
                     self.packageButton(package, selected: isSelected)
@@ -483,6 +513,17 @@ struct Template7View: TemplateViewType {
         }
     }
 
+}
+
+internal func tierSelectorComponentInteractionValue(
+    tierName: String?,
+    tierId: String
+) -> String {
+    guard let tierName else { return tierId }
+
+    return tierName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        ? tierId
+        : tierName
 }
 
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)

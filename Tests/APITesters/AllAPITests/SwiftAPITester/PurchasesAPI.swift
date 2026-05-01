@@ -438,12 +438,6 @@ private func checkConfigure() -> Purchases! {
     return nil
 }
 
-private func checkPaywallsAPI(_ purchases: Purchases, _ event: PaywallEvent) async {
-    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-        await purchases.track(paywallEvent: event)
-    }
-}
-
 private func checkPreferredUILocaleAPIs(purchases: Purchases) {
     purchases.overridePreferredUILocale("de_DE")
     purchases.overridePreferredUILocale(nil)

@@ -14,7 +14,7 @@
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class PurchasesConfiguringTests: BasePurchasesTests {
 
@@ -191,6 +191,14 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         )
 
         self.logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string)
+    }
+
+    func testApiKeyIsExposedThroughInternalSPI() {
+        let key = "test_configured_api_key"
+        let purchases = Purchases.configure(withAPIKey: key)
+
+        expect(purchases.apiKey) == key
+        expect(Purchases.shared.apiKey) == key
     }
 
     func testEntitlementVerificationModeDisabledDoesNotSetPublicKey() throws {
