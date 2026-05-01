@@ -26,17 +26,25 @@ struct WorkflowPageTransitionState<Page> {
         case outgoing
     }
 
+    enum Style {
+        case slide
+        case fade
+        case crossfade
+    }
+
     private(set) var currentPage: Page?
     private(set) var outgoingPage: Page?
     private(set) var direction: Direction = .forward
     private(set) var progress: CGFloat = 1
+    private let style: Style
 
     var isTransitioning: Bool {
         return self.outgoingPage != nil
     }
 
-    init(currentPage: Page?) {
+    init(currentPage: Page?, style: Style = .slide) {
         self.currentPage = currentPage
+        self.style = style
     }
 
     mutating func beginTransition(to incomingPage: Page?, direction: Direction) {
@@ -69,7 +77,7 @@ struct WorkflowPageTransitionState<Page> {
     }
 
     func offset(for role: PageRole, width: CGFloat) -> CGFloat {
-        guard self.isTransitioning else {
+        guard self.isTransitioning, self.style == .slide else {
             return 0
         }
 
@@ -91,6 +99,28 @@ struct WorkflowPageTransitionState<Page> {
             return 0
         case .outgoing:
             return 1
+        }
+    }
+
+    func opacity(for role: PageRole) -> CGFloat {
+        guard self.isTransitioning else {
+            return role == .current ? 1 : 0
+        }
+
+        guard self.style != .slide else {
+            return 1
+        }
+
+        switch role {
+        case .current:
+            return self.progress
+        case .outgoing:
+            switch self.style {
+            case .slide, .fade:
+                return 1
+            case .crossfade:
+                return 1 - self.progress
+            }
         }
     }
 
@@ -144,6 +174,7 @@ struct WorkflowPaywallView: View {
 
     private enum Constants {
         static let transitionDuration: Double = 0.25
+        static let transitionStyle: WorkflowPageTransitionState<RenderedPage>.Style = .slide
     }
 
     private let context: WorkflowContext
@@ -183,7 +214,8 @@ struct WorkflowPaywallView: View {
                     stepId: context.workflow.initialStepId,
                     canNavigateBack: false,
                     displayCloseButton: displayCloseButton
-                )
+                ),
+                style: Constants.transitionStyle
             )
         )
     }
@@ -209,6 +241,7 @@ struct WorkflowPaywallView: View {
                             )
                         )
                         .offset(x: pageOffset)
+                        .opacity(self.transitionState.opacity(for: displayedPage.role))
                         .zIndex(self.transitionState.zIndex(for: displayedPage.role))
                 }
 

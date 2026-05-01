@@ -17,7 +17,7 @@ import SwiftUI
 struct WorkflowPageTransitionContext {
 
     /// Current horizontal offset applied to the page by `WorkflowPaywallView`.
-    /// Header buttons use the inverse value so they stay visually fixed while page content slides.
+    /// Header buttons use the inverse value when page content moves horizontally.
     let pageOffset: CGFloat
     /// Opacity for buttons rendered inside workflow headers.
     /// This crossfades outgoing and incoming header buttons during page transitions.
