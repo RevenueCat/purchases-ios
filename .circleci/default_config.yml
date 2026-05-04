@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@3.16.0
+  revenuecat: revenuecat/sdks-common-config@3.20.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -22,6 +22,9 @@ parameters:
     type: boolean
     default: false
   bump_with_fallback_pr_lookup:
+    type: boolean
+    default: false
+  version_file_changed:
     type: boolean
     default: false
   requested_jobs:
@@ -2379,15 +2382,16 @@ workflows:
           <<: *release-tags
       - docs-deploy:
           <<: *release-tags
-      - deploy-purchase-tester:
-          dry_run: false
-          <<: *release-tags
       - make-release:
           requires:
             - push-revenuecatui-pod
             - deploy-to-spm
             - docs-deploy
-            - deploy-purchase-tester
+          <<: *release-tags
+      - deploy-purchase-tester:
+          dry_run: false
+          requires:
+            - make-release
           <<: *release-tags
       - deploy-rct-tester:
           dry_run: false
@@ -2402,8 +2406,10 @@ workflows:
           repo_name: purchases-ios
           requires:
             - make-release
+            - deploy-purchase-tester
             - deploy-rct-tester
             - bump-sdk-in-rc-mobile-app
+            - make-admob-release
           <<: *release-tags
 
   snapshot-bump:
@@ -2413,6 +2419,7 @@ workflows:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
             equal: [bump, << pipeline.parameters.action >>]
+        - equal: [true, << pipeline.parameters.version_file_changed >>]
     jobs:
       - prepare-next-version:
           <<: *only-main-branch

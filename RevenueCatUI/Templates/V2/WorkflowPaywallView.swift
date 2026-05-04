@@ -86,11 +86,24 @@ struct WorkflowPageTransitionState<Page> {
             return role == .current ? 0 : -1
         }
 
-        switch (self.direction, role) {
-        case (.forward, .current), (.back, .outgoing):
-            return 1
-        case (.forward, .outgoing), (.back, .current):
+        switch role {
+        case .current:
             return 0
+        case .outgoing:
+            return 1
+        }
+    }
+
+    func headerButtonOpacity(for role: PageRole) -> CGFloat {
+        guard self.isTransitioning else {
+            return role == .current ? 1 : 0
+        }
+
+        switch role {
+        case .current:
+            return self.progress
+        case .outgoing:
+            return 1 - self.progress
         }
     }
 
@@ -182,11 +195,20 @@ struct WorkflowPaywallView: View {
                 // the outgoing subtree when it changes role from current -> outgoing.
                 // Recreating that subtree at transition start caused visible flashing.
                 ForEach(self.displayedPages) { displayedPage in
+                    let pageOffset = self.transitionState.offset(
+                        for: displayedPage.role,
+                        width: proxy.size.width
+                    )
+
                     self.pageView(for: displayedPage.page)
-                        .offset(x: self.transitionState.offset(
-                            for: displayedPage.role,
-                            width: proxy.size.width
-                        ))
+                        .environment(
+                            \.workflowPageTransitionContext,
+                            .init(
+                                pageOffset: pageOffset,
+                                headerButtonOpacity: self.transitionState.headerButtonOpacity(for: displayedPage.role)
+                            )
+                        )
+                        .offset(x: pageOffset)
                         .zIndex(self.transitionState.zIndex(for: displayedPage.role))
                 }
 

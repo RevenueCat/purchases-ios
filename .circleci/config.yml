@@ -61,6 +61,9 @@ jobs:
     resource_class: small
     steps:
       - checkout
+      - run:
+          name: Generate continuation parameters
+          command: node .circleci/generate-continuation-parameters.js
       - when:
           condition: << pipeline.parameters.requested_jobs >>
           steps:
@@ -71,11 +74,13 @@ jobs:
                 command: node .circleci/generate-requested-jobs-config.js
             - continuation/continue:
                 configuration_path: /tmp/requested-jobs-config.yml
+                parameters: /tmp/continuation-parameters.json
       - unless:
           condition: << pipeline.parameters.requested_jobs >>
           steps:
             - continuation/continue:
                 configuration_path: .circleci/default_config.yml
+                parameters: /tmp/continuation-parameters.json
 
 workflows:
   setup:
