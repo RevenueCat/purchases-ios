@@ -2557,13 +2557,13 @@ private extension Purchases {
         ) { [weak self] offeringsResultData in
             if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
                let offerings = offeringsResultData.value?.offerings {
-                self?.warmUpCaches(offerings: offerings)
+                self?.warmUpCaches(offerings: offerings, isAppBackgrounded: isAppBackgrounded)
             }
         }
     }
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    private func warmUpCaches(offerings: Offerings) {
+    private func warmUpCaches(offerings: Offerings, isAppBackgrounded: Bool) {
         guard let cache = self.paywallCache else {
             return
         }
@@ -2576,6 +2576,30 @@ private extension Purchases {
         self.operationDispatcher.dispatchOnWorkerThread {
             await cache.warmUpPaywallFontsCache(offerings: offerings)
         }
+        if ProcessInfo.processInfo.workflowsEndpointEnabled,
+           let currentOfferingId = offerings.current?.identifier {
+            self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
+                guard let self else { return }
+                let result = try? await Async.call { completion in
+                    self.backend.workflowsAPI.getWorkflow(
+                        appUserID: self.appUserID,
+                        workflowId: currentOfferingId,
+                        isAppBackgrounded: isAppBackgrounded,
+                        completion: completion
+                    )
+                }
+                guard let result else { return }
+                await cache.warmUpWorkflowCaches(workflow: result.workflow)
+            }
+        }
+    }
+
+}
+
+private extension ProcessInfo {
+
+    var workflowsEndpointEnabled: Bool {
+        arguments.contains("-EnableWorkflowsEndpoint")
     }
 
 }

@@ -12,6 +12,8 @@
 
 //  Created by Nacho Soto on 8/7/23.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 protocol PaywallCacheWarmingType: Sendable {
@@ -27,6 +29,9 @@ protocol PaywallCacheWarmingType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpPaywallFontsCache(offerings: Offerings) async
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func warmUpWorkflowCaches(workflow: PublishedWorkflow) async
 
 #if !os(tvOS) // For Paywalls
 
@@ -55,6 +60,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private var hasLoadedEligibility = false
     private var hasLoadedImages = false
     private var hasLoadedVideos = false
+    private var hasLoadedWorkflow = false
     private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
 
     init(
@@ -130,6 +136,61 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
                 }
             }
         }
+    }
+
+    func warmUpWorkflowCaches(workflow: PublishedWorkflow) async {
+        guard !self.hasLoadedWorkflow else { return }
+        self.hasLoadedWorkflow = true
+
+        // Intentionally prewarming all screens, not just those reachable from
+        // `initialStepId`. This trades off potentially downloading assets for
+        // unreachable screens against the simpler implementation. For workflows
+        // with many screens or complex branching, switch to a bounded graph walk
+        // from `initialStepId` via `WorkflowStep.stepTriggerActions` to limit
+        // data, battery, and connection usage.
+        let allScreenData = workflow.screens.values.map { screen in
+            PaywallComponentsData(
+                templateName: screen.templateName,
+                assetBaseURL: screen.assetBaseURL,
+                componentsConfig: screen.componentsConfig,
+                componentsLocalizations: screen.componentsLocalizations,
+                revision: screen.revision,
+                defaultLocaleIdentifier: screen.defaultLocale
+            )
+        }
+
+        let imageURLs = Set(allScreenData.flatMap(\.allImageURLs))
+        let videoURLs = Set(allScreenData.flatMap(\.allLowResVideoUrls))
+
+        await withTaskGroup(of: Void.self) { group in
+            for url in imageURLs {
+                group.addTask { [weak self] in
+                    _ = try? await self?.fileRepository.generateOrGetCachedFileURL(for: url, withChecksum: nil)
+                }
+            }
+        }
+
+        await withTaskGroup(of: Void.self) { group in
+            for source in videoURLs {
+                group.addTask { [weak self] in
+                    _ = try? await self?.fileRepository.generateOrGetCachedFileURL(
+                        for: source.url,
+                        withChecksum: source.checksum
+                    )
+                }
+            }
+        }
+
+        #if !os(tvOS)
+        let fonts = workflow.uiConfig.app.allDownloadableFonts
+        await withTaskGroup(of: Void.self) { group in
+            for font in fonts {
+                group.addTask { [weak self] in
+                    await self?.installFont(from: font)
+                }
+            }
+        }
+        #endif
     }
 
 #if !os(tvOS)
