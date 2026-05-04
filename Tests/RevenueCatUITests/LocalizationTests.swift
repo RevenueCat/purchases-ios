@@ -578,3 +578,58 @@ class LocaleLayoutDirectionTests: TestCase {
     }
 
 }
+
+// MARK: - Locale.selectPreferredLocale
+
+// Verifies that layout direction derives from the content locale actually chosen by
+// selectPreferredLocale, not from the raw device/override locale.
+// Critical case: RTL device language + LTR-only paywall → content resolves to LTR → layout is LTR.
+
+class PaywallsV2LocaleResolutionTests: TestCase {
+
+    // RTL device, LTR-only paywall → resolved locale is LTR (nil → falls back to default en_US)
+    func testRTLDeviceWithLTROnlyPaywallResolvesToLTR() {
+        let chosen = Locale.selectPreferredLocale(
+            from: [Locale(identifier: "en_US")],
+            preferredLocales: [Locale(identifier: "ar")]
+        ) ?? Locale(identifier: "en_US")
+        expect(chosen.swiftUILayoutDirection) == .leftToRight
+    }
+
+    // RTL override, paywall has RTL localization → resolved locale is RTL
+    func testRTLOverrideWithRTLPaywallResolvesToRTL() {
+        let chosen = Locale.selectPreferredLocale(
+            from: [Locale(identifier: "en_US"), Locale(identifier: "he")],
+            preferredLocales: [Locale(identifier: "he-IL"), Locale(identifier: "en_US")]
+        )
+        expect(chosen?.swiftUILayoutDirection) == .rightToLeft
+    }
+
+    // No preferred locale match → returns nil (caller falls back to defaultLocale)
+    func testNoMatchReturnsNil() {
+        let chosen = Locale.selectPreferredLocale(
+            from: [Locale(identifier: "en_US")],
+            preferredLocales: [Locale(identifier: "ja")]
+        )
+        expect(chosen).to(beNil())
+    }
+
+    // Exact region match takes priority over language-only match
+    func testExactRegionMatchTakesPriority() {
+        let chosen = Locale.selectPreferredLocale(
+            from: [Locale(identifier: "en_US"), Locale(identifier: "en_CA")],
+            preferredLocales: [Locale(identifier: "en_CA")]
+        )
+        expect(chosen) == Locale(identifier: "en_CA")
+    }
+
+    // Language-only match returned when exact region unavailable
+    func testLanguageMatchFallsBackWhenNoRegionMatch() {
+        let chosen = Locale.selectPreferredLocale(
+            from: [Locale(identifier: "en_US"), Locale(identifier: "fr_FR")],
+            preferredLocales: [Locale(identifier: "fr_CA")]
+        )
+        expect(chosen) == Locale(identifier: "fr_FR")
+    }
+
+}
