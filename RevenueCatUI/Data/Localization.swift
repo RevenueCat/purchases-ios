@@ -306,10 +306,14 @@ extension Locale {
     /// The SwiftUI `LayoutDirection` that matches this locale's character direction.
     /// Used to propagate RTL layout when a locale override is in effect but the system locale is LTR.
     var swiftUILayoutDirection: LayoutDirection {
-        let code = self.languageCodeIdentifier ?? ""
-        return Locale.characterDirection(forLanguage: code) == .rightToLeft
-            ? .rightToLeft
-            : .leftToRight
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            return self.language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight
+        } else {
+            let code = self.languageCodeIdentifier ?? ""
+            return Locale.characterDirection(forLanguage: code) == .rightToLeft
+                ? .rightToLeft
+                : .leftToRight
+        }
     }
 
     /// Selects the best-matching locale from `availableLocales` given `preferredLocales`.
