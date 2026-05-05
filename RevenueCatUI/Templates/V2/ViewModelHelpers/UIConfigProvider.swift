@@ -131,7 +131,7 @@ final class UIConfigProvider {
                 let textStyle = GenericFont.textStyle(for: fontSize)
                 return Font.custom(fontName, size: fontSize, relativeTo: textStyle)
             } else {
-                return Font.custom(fontName, size: fontSize)
+                return Font.custom(fontName, fixedSize: fontSize)
             }
         } else {
             self.logMessageIfNeeded(.customFontFailedToLoad(fontName: fontName))
