@@ -165,13 +165,16 @@ struct PaywallsV2View: View {
     }
 
     private func loadedPaywallView(paywallState: PaywallState) -> some View {
-        LoadedPaywallsV2View(
+        let contentLocale = paywallState.rootViewModel.localizationProvider.locale
+        return LoadedPaywallsV2View(
             introOfferEligibilityContext: introOfferEligibilityContext,
             paywallState: paywallState,
             uiConfigProvider: self.uiConfigProvider,
             selectedPackageContext: self.selectedPackageContext,
             onDismiss: self.onDismiss
         )
+        .environment(\.locale, contentLocale)
+        .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
@@ -569,20 +572,9 @@ fileprivate extension PaywallsV2View {
     ///   returns `nil`
     ///
     static func preferredLocale(from paywallLocales: [Locale], preferredLocales: [Locale]) -> Locale? {
-        for preferredLocale in preferredLocales {
-            // match language
-            if let languageMatch = paywallLocales.first(where: { $0.matchesLanguage(preferredLocale) }) {
-                // Look for a match that includes region
-                if let exactMatch = paywallLocales.first(where: { $0 == preferredLocale }) {
-                    return exactMatch
-                }
-                // If no region match, return match that matched on region only
-                return languageMatch
-            }
-        }
-
-        return nil
+        return Locale.selectPreferredLocale(from: paywallLocales, preferredLocales: preferredLocales)
     }
+
 }
 
 private struct PaywallFallbackError: Error {

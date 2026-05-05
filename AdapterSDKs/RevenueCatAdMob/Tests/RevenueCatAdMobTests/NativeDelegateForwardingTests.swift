@@ -5,11 +5,11 @@ import GoogleMobileAds
 @_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
-final class RCAdMobNativeDelegateForwardingTests: RCAdMobTestCase {
+final class NativeDelegateForwardingTests: AdapterTestCase {
 
     func testTrackingNativeDelegateForwardsScreenLifecycleCallbacks() {
         let spy = NativeDelegateSpy()
-        let subject = RCAdMobNativeAdDelegate(
+        let subject = Tracking.NativeAdDelegate(
             delegate: spy,
             placement: "feed_native",
             adUnitID: "test_unit"
@@ -30,7 +30,7 @@ final class RCAdMobNativeDelegateForwardingTests: RCAdMobTestCase {
     }
 
     func testTrackingNativeDelegateLifecycleCallbacksDoNotCrashWithoutDelegate() {
-        let subject = RCAdMobNativeAdDelegate(
+        let subject = Tracking.NativeAdDelegate(
             delegate: nil,
             placement: "feed_native",
             adUnitID: "test_unit"
@@ -43,7 +43,7 @@ final class RCAdMobNativeDelegateForwardingTests: RCAdMobTestCase {
     }
 
     func testTrackingNativeDelegateImpressionAndClickDoNotCrashWithoutDelegate() {
-        let subject = RCAdMobNativeAdDelegate(
+        let subject = Tracking.NativeAdDelegate(
             delegate: nil,
             placement: "feed_native",
             adUnitID: "test_unit"
@@ -55,7 +55,7 @@ final class RCAdMobNativeDelegateForwardingTests: RCAdMobTestCase {
     }
 
     func testTrackingNativeDelegateReadsResponseInfoOnlyForTrackedCallbacks() {
-        let subject = RCAdMobNativeAdDelegate(
+        let subject = Tracking.NativeAdDelegate(
             delegate: nil,
             placement: nil,
             adUnitID: ""
