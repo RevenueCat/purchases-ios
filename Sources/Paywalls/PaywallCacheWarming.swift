@@ -161,6 +161,9 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         let imageURLs = Set(allScreenData.flatMap(\.allImageURLs))
         let videoURLs = Set(allScreenData.flatMap(\.allLowResVideoUrls))
+        #if !os(tvOS)
+        let fonts = workflow.uiConfig.app.allDownloadableFonts
+        #endif
 
         await withTaskGroup(of: Void.self) { group in
             for url in imageURLs {
@@ -168,9 +171,6 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
                     _ = try? await self?.fileRepository.generateOrGetCachedFileURL(for: url, withChecksum: nil)
                 }
             }
-        }
-
-        await withTaskGroup(of: Void.self) { group in
             for source in videoURLs {
                 group.addTask { [weak self] in
                     _ = try? await self?.fileRepository.generateOrGetCachedFileURL(
@@ -179,18 +179,14 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
                     )
                 }
             }
-        }
-
-        #if !os(tvOS)
-        let fonts = workflow.uiConfig.app.allDownloadableFonts
-        await withTaskGroup(of: Void.self) { group in
+            #if !os(tvOS)
             for font in fonts {
                 group.addTask { [weak self] in
                     await self?.installFont(from: font)
                 }
             }
+            #endif
         }
-        #endif
     }
 
 #if !os(tvOS)
