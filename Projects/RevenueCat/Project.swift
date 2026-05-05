@@ -27,6 +27,7 @@ let project = Project(
             headers: .headers(
                 public: ["../../Sources/RevenueCat.h"]
             ),
+            scripts: TargetScript.purchasesCoreBuildScripts,
             dependencies: [
                 .purchasesCore
             ],
@@ -55,6 +56,7 @@ let project = Project(
             headers: .headers(
                 project: ["../../Sources/RevenueCat.h"]
             ),
+            scripts: TargetScript.purchasesCoreBuildScripts,
             dependencies: [
                 .purchasesCore
             ],

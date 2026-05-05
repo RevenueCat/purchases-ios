@@ -45,15 +45,46 @@ var ciCompilerFlags: [PackageDescription.SwiftSetting] = [
 let environmentVariables = ProcessInfo.processInfo.environment
 let shouldIncludeDocCPlugin = environmentVariables["INCLUDE_DOCC_PLUGIN"] == "true"
 
+// Optional local-development override for purchases-core: set
+// `PURCHASES_CORE_LOCAL_PATH` either as an env var or as a `Local.xcconfig`
+// key. When set, SPM resolves purchases-core from the local path (so the
+// developer's in-flight Rust changes are picked up). Absent = published dep.
+let purchasesCoreLocalPath: String? = {
+    if let env = environmentVariables["PURCHASES_CORE_LOCAL_PATH"], !env.isEmpty {
+        return env
+    }
+    let localConfig = try? String(
+        contentsOf: URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .appendingPathComponent("Local.xcconfig")
+    )
+    guard let captured = localConfig?
+        .firstMatch(of: #/^PURCHASES_CORE_LOCAL_PATH *= *(.*)$/#.anchorsMatchLineEndings())?
+        .output
+        .1 else {
+        return nil
+    }
+    let trimmed = String(captured).drop(while: \.isWhitespace)
+    let trailingTrimmed = String(trimmed.reversed()).drop(while: \.isWhitespace)
+    let raw = String(trailingTrimmed.reversed())
+    return raw.isEmpty ? nil : raw
+}()
+
 var dependencies: [Package.Dependency] = [
     .package(url: "https://github.com/quick/nimble", exact: "13.7.1"),
     .package(
         url: "https://github.com/pointfreeco/swift-snapshot-testing",
         exact: "1.18.9"
-    ),
-    // Rust core library
-    .package(url: "git@github.com:RevenueCat/purchases-core.git", branch: "rust")
+    )
 ]
+if let localPath = purchasesCoreLocalPath {
+    // Relative paths resolve against Package.swift's directory; absolute paths pass through.
+    let base = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+    let resolved = URL(fileURLWithPath: localPath, relativeTo: base).standardizedFileURL.path
+    dependencies.append(.package(path: resolved))
+} else {
+    dependencies.append(.package(url: "git@github.com:RevenueCat/purchases-core.git", branch: "rust"))
+}
 if shouldIncludeDocCPlugin {
     // Versions 1.4.0 and 1.4.1 are failing to compile, so we are pinning it to 1.3.0 for now
     // https://github.com/RevenueCat/purchases-ios/pull/4216

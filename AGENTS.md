@@ -159,6 +159,16 @@ For snapshot testing, sample applications, pre-commit hooks, and release process
 - `CI.xcconfig` - CI-specific configuration
 - `api/*.swiftinterface` - Public API surface tracking
 
+### Pointing at a local purchases-core
+
+To iterate on `purchases-core` alongside this SDK without publishing, add to `Local.xcconfig`:
+
+```
+PURCHASES_CORE_LOCAL_PATH = ../purchases-core
+```
+
+`Package.swift` swaps the published dep for `.package(path:)`, and `tuist generate` attaches a pre-build script phase to the RevenueCat target that re-runs `scripts/build-ios.sh` in purchases-core when Rust sources change (Xcode skips it when inputs are unchanged; cargo is incremental). After flipping the key, run `tuist clean && tuist generate` to pick it up. For CLI `swift build`, SPM may cache the old manifest evaluation — `touch Package.swift` (or delete `~/Library/Caches/org.swift.swiftpm/manifests/manifest.db*`) to bust it. CocoaPods consumers override in the consumer Podfile: `pod 'PurchasesCore', :path => '../purchases-core'`.
+
 ### Pull Request Labels
 
 When creating a pull request, **always add one of these labels** to categorize the change. These labels determine automatic version bumps and changelog generation:
