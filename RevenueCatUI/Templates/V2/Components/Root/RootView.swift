@@ -47,6 +47,12 @@ struct RootView: View {
         self.defaultPackage = defaultPackage
     }
 
+    // enforce filling the height of the screen to ensure headers and footers
+    // appear where they should for all stack dimensions
+    private var fillVerticalBounds: some View {
+        Color.clear.frame(width: 1)
+    }
+
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
             if let headerViewModel = viewModel.headerViewModel,
@@ -59,6 +65,8 @@ struct RootView: View {
             }
 
             ZStack(alignment: .top) {
+                fillVerticalBounds
+
                 StackComponentView(
                     viewModel: viewModel.stackViewModel,
                     isScrollableByDefault: true,
