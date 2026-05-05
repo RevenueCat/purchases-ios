@@ -16,7 +16,7 @@ jobs:
     # inherit the workflow file). The shared workflow handles the fork-PR
     # filter internally.
     if: github.repository == 'RevenueCat/purchases-ios'
-    uses: revenuecat/sdk-github-workflows/.github/workflows/rerun-danger.yml@29659177f23b4f2ae6c82f5edf494072cda6fc95
+    uses: revenuecat/sdk-github-workflows/.github/workflows/rerun-danger.yml@cfa01c8b37ff29e10067e10644d64c07c3f3b1cb
     with:
       project_slug: gh/RevenueCat/purchases-ios
     secrets:
