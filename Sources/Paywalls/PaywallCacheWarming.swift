@@ -159,6 +159,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
             )
         }
 
+        Logger.verbose(Strings.paywalls.warming_up_workflow(screenCount: allScreenData.count))
+
         let imageURLs = Set(allScreenData.flatMap(\.allImageURLs))
         let videoURLs = Set(allScreenData.flatMap(\.allLowResVideoUrls))
         #if !os(tvOS)
