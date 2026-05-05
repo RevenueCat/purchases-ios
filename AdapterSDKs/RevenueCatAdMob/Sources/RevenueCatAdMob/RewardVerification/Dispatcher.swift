@@ -28,9 +28,8 @@ internal extension RewardVerification {
 
             // Production never cancels this task, but if a future caller (or a test) does,
             // skip the delivery and preserve the token instead of burning it on `.failed`.
-            if Task.isCancelled { return }
-
             await MainActor.run {
+                if Task.isCancelled { return }
                 guard state.consumeFireToken() else { return }
                 outcomeHandler(outcome)
             }
