@@ -945,7 +945,7 @@ public extension Purchases {
     @_spi(Internal)
     // The backend uses the offering identifier as the workflow lookup key.
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
-        return try await Async.call { completion in
+        let result = try await Async.call { completion in
             self.backend.workflowsAPI.getWorkflow(
                 appUserID: self.appUserID,
                 workflowId: offeringID,
@@ -953,6 +953,13 @@ public extension Purchases {
                 completion: completion
             )
         }
+        if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
+           let cache = self.paywallCache {
+            self.operationDispatcher.dispatchOnWorkerThread {
+                await cache.warmUpWorkflowCaches(workflow: result.workflow)
+            }
+        }
+        return result
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
@@ -2557,13 +2564,13 @@ private extension Purchases {
         ) { [weak self] offeringsResultData in
             if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
                let offerings = offeringsResultData.value?.offerings {
-                self?.warmUpCaches(offerings: offerings, isAppBackgrounded: isAppBackgrounded)
+                self?.warmUpCaches(offerings: offerings)
             }
         }
     }
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    private func warmUpCaches(offerings: Offerings, isAppBackgrounded: Bool) {
+    private func warmUpCaches(offerings: Offerings) {
         guard let cache = self.paywallCache else {
             return
         }
@@ -2576,30 +2583,6 @@ private extension Purchases {
         self.operationDispatcher.dispatchOnWorkerThread {
             await cache.warmUpPaywallFontsCache(offerings: offerings)
         }
-        if ProcessInfo.processInfo.workflowsEndpointEnabled,
-           let currentOfferingId = offerings.current?.identifier {
-            self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
-                guard let self else { return }
-                let result = try? await Async.call { completion in
-                    self.backend.workflowsAPI.getWorkflow(
-                        appUserID: self.appUserID,
-                        workflowId: currentOfferingId,
-                        isAppBackgrounded: isAppBackgrounded,
-                        completion: completion
-                    )
-                }
-                guard let result else { return }
-                await cache.warmUpWorkflowCaches(workflow: result.workflow)
-            }
-        }
-    }
-
-}
-
-private extension ProcessInfo {
-
-    var workflowsEndpointEnabled: Bool {
-        arguments.contains("-EnableWorkflowsEndpoint")
     }
 
 }
