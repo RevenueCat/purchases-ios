@@ -112,8 +112,8 @@ import Foundation
     /// Exit offers configuration for this paywall.
     public var exitOffers: ExitOffers?
 
-    /// When `true`, paywall text respects Dynamic Type. Otherwise fixed sizing (default).
-    public var automaticallyScaleFontSize: Bool?
+    /// When `false`, paywall text will not respect Dynamic Type and would use fixed sizing. Otherwise it will scale.
+    public var automaticallyScaleFontSize: Bool
 
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
@@ -142,7 +142,7 @@ import Foundation
                 defaultLocaleIdentifier: String,
                 zeroDecimalPlaceCountries: [String] = [],
                 exitOffers: ExitOffers? = nil,
-                automaticallyScaleFontSize: Bool? = nil) {
+                automaticallyScaleFontSize: Bool = true) {
         self.id = id
         self.templateName = templateName
         self.assetBaseURL = assetBaseURL
@@ -218,7 +218,9 @@ import Foundation
 
         exitOffers = try container.decodeIfPresent(ExitOffers.self, forKey: .exitOffers)
 
-        automaticallyScaleFontSize = try container.decodeIfPresent(Bool.self, forKey: .automaticallyScaleFontSize)
+        let shouldScale = try container.decodeIfPresent(Bool.self, forKey: .automaticallyScaleFontSize)
+        // default behavior should respect the dynamic type settings unless explicitly disabled
+        automaticallyScaleFontSize = shouldScale ?? true
 
         // Decode zeroDecimalPlaceCountries from the nested structure { "apple": [...] }
         if let zeroDecimalData = try container.decodeIfPresent(
@@ -251,7 +253,7 @@ import Foundation
             forKey: .zeroDecimalPlaceCountries
         )
         try container.encodeIfPresent(exitOffers, forKey: .exitOffers)
-        try container.encodeIfPresent(automaticallyScaleFontSize, forKey: .automaticallyScaleFontSize)
+        try container.encode(automaticallyScaleFontSize, forKey: .automaticallyScaleFontSize)
     }
 
 }

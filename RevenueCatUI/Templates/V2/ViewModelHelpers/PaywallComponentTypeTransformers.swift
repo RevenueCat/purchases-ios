@@ -71,9 +71,9 @@ extension PaywallComponent.FontSize {
             baseFont = PlatformFont.systemFont(ofSize: fontSize, weight: .regular)
         }
 
-        // Apply dynamic type scaling only when the dashboard enables accessibility font scaling
+        // Apply dynamic type scaling unless the dashboard explicitly disables font scaling
         #if canImport(UIKit)
-        let shouldScale = automaticallyScaleFontSize == true
+        let shouldScale = automaticallyScaleFontSize != false
         if shouldScale {
             return UIFontMetrics(forTextStyle: self.textStyle).scaledFont(for: baseFont)
         }
