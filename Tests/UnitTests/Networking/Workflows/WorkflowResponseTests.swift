@@ -77,6 +77,31 @@ class WorkflowResponseTests: TestCase {
 
         expect(workflow.id) == "wf_min"
         expect(workflow.contentMaxWidth).to(beNil())
+        expect(workflow.singleStepFallbackId).to(beNil())
+    }
+
+    func testDecodePublishedWorkflowWithSingleStepFallbackId() throws {
+        let json = """
+        {
+          "id": "wf_fallback",
+          "display_name": "Fallback",
+          "initial_step_id": "step_1",
+          "single_step_fallback_id": "step_1",
+          "steps": {},
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(
+            PublishedWorkflow.self, from: json
+        )
+
+        expect(workflow.singleStepFallbackId) == "step_1"
     }
 
     func testDecodePublishedWorkflowWithMetadata() throws {
