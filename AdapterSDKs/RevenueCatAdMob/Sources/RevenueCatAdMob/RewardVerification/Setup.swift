@@ -51,7 +51,6 @@ internal extension RewardVerification {
 
             let options = GoogleMobileAds.ServerSideVerificationOptions()
             options.userIdentifier = appUserID
-            // GMA renames the ObjC `customRewardString` to `customRewardText` in Swift.
             options.customRewardText = customRewardText
             loadedAd.serverSideVerificationOptions = options
 
