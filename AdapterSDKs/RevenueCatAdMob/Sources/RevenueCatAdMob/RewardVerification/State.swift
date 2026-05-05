@@ -35,8 +35,7 @@ internal extension RewardVerification {
     /// Per-ad ``RewardVerification/State`` stash, keyed by the vendor ad object.
     typealias StateStore = AssociatedObjectStore<State>
 
-    /// Process-wide singleton store. Mutated only on the main actor.
-    static let stateStore = StateStore()
+    @MainActor static let stateStore = StateStore()
 }
 
 #endif
