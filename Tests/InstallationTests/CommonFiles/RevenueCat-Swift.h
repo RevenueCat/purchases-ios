@@ -1637,10 +1637,6 @@ typedef SWIFT_ENUM(NSInteger, FakeTrackingManagerAuthorizationStatus, closed) {
   FakeTrackingManagerAuthorizationStatusAuthorized = 3,
 };
 
-SWIFT_CLASS("_TtC10RevenueCat26GetAdMobSSVStatusOperation")
-@interface GetAdMobSSVStatusOperation : CacheableNetworkOperation
-@end
-
 SWIFT_CLASS("_TtC10RevenueCat32GetCustomerCenterConfigOperation")
 @interface GetCustomerCenterConfigOperation : CacheableNetworkOperation
 @end
@@ -1659,6 +1655,10 @@ SWIFT_CLASS("_TtC10RevenueCat21GetOfferingsOperation")
 
 SWIFT_CLASS("_TtC10RevenueCat37GetProductEntitlementMappingOperation")
 @interface GetProductEntitlementMappingOperation : CacheableNetworkOperation
+@end
+
+SWIFT_CLASS("_TtC10RevenueCat36GetRewardVerificationStatusOperation")
+@interface GetRewardVerificationStatusOperation : CacheableNetworkOperation
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat29GetVirtualCurrenciesOperation")

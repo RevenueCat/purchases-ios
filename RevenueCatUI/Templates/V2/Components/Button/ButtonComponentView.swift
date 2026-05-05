@@ -35,6 +35,8 @@ struct ButtonComponentView: View {
 
     @Environment(\.componentInteractionLogger) var componentInteractionLogger
     @Environment(\.workflowTriggerAction) private var workflowTriggerAction
+    @Environment(\.workflowPageTransitionContext) private var workflowPageTransitionContext
+    @Environment(\.isWorkflowHeader) private var isWorkflowHeader
 
     private let viewModel: ButtonComponentViewModel
     private let onDismiss: () -> Void
@@ -79,6 +81,8 @@ struct ButtonComponentView: View {
             .withTransition(viewModel.component.transition)
             .disabled(self.shouldBeDisabled)
             .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
+            .offset(x: self.isWorkflowHeader ? -self.workflowPageTransitionContext.pageOffset : 0)
+            .opacity(self.isWorkflowHeader ? self.workflowPageTransitionContext.headerButtonOpacity : 1)
             #if canImport(SafariServices) && canImport(UIKit)
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
                 SafariView(url: self.inAppBrowserURL!)

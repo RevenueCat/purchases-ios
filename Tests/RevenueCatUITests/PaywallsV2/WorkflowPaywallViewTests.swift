@@ -63,7 +63,7 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(state.progress) == 1
     }
 
-    func testForwardTransitionMovesIncomingPageFromTheRight() {
+    func testForwardTransitionKeepsOutgoingPageOnTopWhileItSlidesLeft() {
         var state = WorkflowPageTransitionState(currentPage: "step_1")
 
         state.beginTransition(to: "step_2", direction: .forward)
@@ -73,13 +73,17 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(state.progress) == 0
         expect(state.offset(for: .current, width: 320)) == 320
         expect(state.offset(for: .outgoing, width: 320)) == 0
-        expect(state.zIndex(for: .current)) == 1
-        expect(state.zIndex(for: .outgoing)) == 0
+        expect(state.zIndex(for: .current)) == 0
+        expect(state.zIndex(for: .outgoing)) == 1
+        expect(state.headerButtonOpacity(for: .current)) == 0
+        expect(state.headerButtonOpacity(for: .outgoing)) == 1
 
         state.advanceAnimation()
 
         expect(state.offset(for: .current, width: 320)) == 0
         expect(state.offset(for: .outgoing, width: 320)) == -320
+        expect(state.headerButtonOpacity(for: .current)) == 1
+        expect(state.headerButtonOpacity(for: .outgoing)) == 0
     }
 
     func testBackTransitionKeepsOutgoingPageOnTopWhileItSlidesRight() {
@@ -93,11 +97,15 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(state.offset(for: .outgoing, width: 320)) == 0
         expect(state.zIndex(for: .current)) == 0
         expect(state.zIndex(for: .outgoing)) == 1
+        expect(state.headerButtonOpacity(for: .current)) == 0
+        expect(state.headerButtonOpacity(for: .outgoing)) == 1
 
         state.advanceAnimation()
 
         expect(state.offset(for: .current, width: 320)) == 0
         expect(state.offset(for: .outgoing, width: 320)) == 320
+        expect(state.headerButtonOpacity(for: .current)) == 1
+        expect(state.headerButtonOpacity(for: .outgoing)) == 0
     }
 
     func testCompletingTransitionDropsOutgoingPage() {
