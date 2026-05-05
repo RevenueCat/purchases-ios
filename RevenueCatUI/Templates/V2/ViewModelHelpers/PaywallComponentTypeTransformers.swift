@@ -20,7 +20,7 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent.FontSize {
 
-    func makeFont(familyName: String?, automaticallyScaleFontSize: Bool? = nil) -> Font {
+    func makeFont(familyName: String?, automaticallyScaleFontSize: Bool = true) -> Font {
         let platformFont = self.makePlatformFont(
             familyName: familyName,
             automaticallyScaleFontSize: automaticallyScaleFontSize
@@ -43,7 +43,7 @@ extension PaywallComponent.FontSize {
     }
 
     // swiftlint:disable cyclomatic_complexity
-    private func makePlatformFont(familyName: String?, automaticallyScaleFontSize: Bool?) -> PlatformFont {
+    private func makePlatformFont(familyName: String?, automaticallyScaleFontSize: Bool = true) -> PlatformFont {
         let fontSize: CGFloat
         switch self {
         case .headingXXL: fontSize = 40
@@ -73,8 +73,7 @@ extension PaywallComponent.FontSize {
 
         // Apply dynamic type scaling unless the dashboard explicitly disables font scaling
         #if canImport(UIKit)
-        let shouldScale = automaticallyScaleFontSize != false
-        if shouldScale {
+        if automaticallyScaleFontSize {
             return UIFontMetrics(forTextStyle: self.textStyle).scaledFont(for: baseFont)
         }
         return baseFont
