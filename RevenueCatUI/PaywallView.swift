@@ -544,6 +544,8 @@ struct LoadedOfferingPaywallView: View {
             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices
         )
         let view = paywallView(withConfig: configuration)
+            .environment(\.locale, self.locale)
+            .environment(\.layoutDirection, self.locale.swiftUILayoutDirection)
             .environmentObject(self.introEligibility)
             .environment(
                 \.componentInteractionLogger,
@@ -740,6 +742,99 @@ struct PaywallView_Previews: PreviewProvider {
         light: TestData.lightColors,
         dark: TestData.darkColors
     )
+
+}
+
+// MARK: - Localization previews
+
+/// Regression previews for RTL layout direction when a locale override is active.
+/// When the system locale is LTR (e.g. English) but `overridePreferredUILocale` is set to an RTL
+/// language, the paywall must render with RTL layout — not just RTL strings.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct PaywallLocalizationPreviews: PreviewProvider {
+
+    static var previews: some View {
+        Self.paywall(locale: "es_ES", offering: Self.spanishOffering)
+            .previewDisplayName("Spanish (LTR)")
+        Self.paywall(locale: "he-IL", offering: Self.hebrewOffering)
+            .previewDisplayName("Hebrew (RTL)")
+        Self.paywall(locale: "ar", offering: Self.arabicOffering)
+            .previewDisplayName("Arabic (RTL)")
+    }
+
+    private static func paywall(locale: String, offering: Offering) -> some View {
+        PaywallView(
+            configuration: .init(
+                offering: offering,
+                customerInfo: TestData.customerInfo,
+                mode: .fullScreen,
+                introEligibility: PreviewHelpers.introEligibilityChecker,
+                purchaseHandler: .mock(preferredLocaleOverride: locale)
+            )
+        )
+        .previewLayout(.device)
+    }
+
+    private static func makeOffering(
+        localization: PaywallData.LocalizedConfiguration,
+        locale: String
+    ) -> Offering {
+        return Offering(
+            identifier: "offering",
+            serverDescription: "Offering",
+            metadata: [:],
+            paywall: .init(
+                templateName: PaywallTemplate.template2.rawValue,
+                config: .init(
+                    packages: [PackageType.weekly.identifier,
+                               PackageType.annual.identifier,
+                               PackageType.monthly.identifier],
+                    images: TestData.images,
+                    colors: .init(
+                        light: TestData.lightColors,
+                        dark: TestData.lightColors
+                    ),
+                    // swiftlint:disable:next force_unwrapping
+                    termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
+                    // swiftlint:disable:next force_unwrapping
+                    privacyURL: URL(string: "https://revenuecat.com/tos")!
+                ),
+                localization: localization,
+                assetBaseURL: TestData.paywallAssetBaseURL,
+                locale: Locale(identifier: locale)
+            ),
+            availablePackages: [TestData.weeklyPackage,
+                                TestData.monthlyPackage,
+                                TestData.annualPackage],
+            webCheckoutUrl: nil
+        )
+    }
+
+    private static let spanishOffering = makeOffering(localization: .init(
+        title: "Despierta la curiosidad de tu hijo",
+        subtitle: "Accede a todo nuestro contenido educativo, confiado por miles de padres.",
+        callToAction: "Comprar",
+        offerDetails: "€9,99 al mes",
+        features: []
+    ), locale: "es_ES")
+
+    private static let hebrewOffering = makeOffering(localization: .init(
+        title: "עוררו את הסקרנות של ילדכם",
+        subtitle: "גישה לכל התוכן החינוכי שלנו, בו בוטחים אלפי הורים.",
+        callToAction: "לרכישה",
+        offerDetails: "₪39.99 לחודש",
+        features: []
+    ), locale: "he-IL")
+
+    private static let arabicOffering = makeOffering(localization: .init(
+        title: "أيقظ فضول طفلك",
+        subtitle: "استمتع بجميع محتوياتنا التعليمية، التي يثق بها آلاف الآباء.",
+        callToAction: "اشترِ الآن",
+        offerDetails: "9.99 $ شهريًا",
+        features: []
+    ), locale: "ar")
 
 }
 
