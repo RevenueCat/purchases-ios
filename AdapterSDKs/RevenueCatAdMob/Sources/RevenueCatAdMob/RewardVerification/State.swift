@@ -14,7 +14,7 @@ internal extension RewardVerification {
     /// Per-ad reward-verification correlation data plus a one-shot guard for the reward-time
     /// outcome dispatch.
     @MainActor
-    final class State: Sendable {
+    final class State {
 
         let clientTransactionID: String
 

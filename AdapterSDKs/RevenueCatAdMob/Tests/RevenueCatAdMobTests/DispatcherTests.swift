@@ -4,6 +4,7 @@ import XCTest
 @_spi(Internal) import RevenueCat
 @testable import RevenueCatAdMob
 
+@MainActor
 @available(iOS 15.0, *)
 final class DispatcherTests: AdapterTestCase {
 

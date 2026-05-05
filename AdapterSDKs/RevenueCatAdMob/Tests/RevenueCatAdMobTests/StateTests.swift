@@ -3,6 +3,7 @@ import XCTest
 #if os(iOS) && canImport(GoogleMobileAds)
 @testable import RevenueCatAdMob
 
+@MainActor
 @available(iOS 15.0, *)
 final class StateTests: AdapterTestCase {
 
