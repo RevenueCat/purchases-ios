@@ -30,8 +30,7 @@ internal extension RewardVerification {
         }
 
         /// Generates a `client_transaction_id`, wires `ServerSideVerificationOptions` onto the ad,
-        /// and stashes per-ad state via `StateStore`. Returns `nil` (and trips an
-        /// `assertionFailure`) if payload encoding fails.
+        /// and stashes per-ad state via `StateStore`. Returns `nil` if payload encoding fails.
         @MainActor
         @discardableResult
         static func install(
@@ -45,7 +44,6 @@ internal extension RewardVerification {
                 apiKey: apiKey,
                 clientTransactionID: clientTransactionID
             ) else {
-                assertionFailure(Strings.customRewardTextEncodingFailed)
                 return nil
             }
 
@@ -66,11 +64,13 @@ internal extension RewardVerification {
                 "api_key": apiKey,
                 "client_transaction_id": clientTransactionID
             ]
-            guard let data = try? JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys]),
-                  let string = String(data: data, encoding: .utf8) else {
+            do {
+                let data = try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])
+                return String(data: data, encoding: .utf8)
+            } catch {
+                assertionFailure(Strings.customRewardTextEncodingFailed(error))
                 return nil
             }
-            return string
         }
     }
 }
