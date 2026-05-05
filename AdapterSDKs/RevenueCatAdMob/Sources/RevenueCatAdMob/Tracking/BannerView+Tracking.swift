@@ -14,9 +14,6 @@ import GoogleMobileAds
 internal extension Tracking {
 
     /// Per-banner state attached to a `BannerView` via an associated object.
-    ///
-    /// Presence of this object signals "we have already wrapped this banner", which is what
-    /// allows us to distinguish a never-wrapped banner from one wrapped with a nil user handler.
     final class BannerTrackingState {
         var delegate: BannerViewDelegate?
         var originalPaidHandler: ((GoogleMobileAds.AdValue) -> Void)?
