@@ -18,7 +18,7 @@ final class RewardVerificationPlacementOverrideTests: AdapterTestCase {
             adFormat: .rewarded,
             responseInfoProvider: { nil }
         )
-        Tracking.Adapter.shared.fullScreenDelegateStore.retain(trackingDelegate, for: fullScreenAd)
+        Tracking.Adapter.shared.fullScreenDelegateStore.set(trackingDelegate, for: fullScreenAd)
 
         Tracking.applyRewardVerificationPlacementOverride(.keepLoadTimePlacement, on: fullScreenAd)
 
@@ -35,7 +35,7 @@ final class RewardVerificationPlacementOverrideTests: AdapterTestCase {
             adFormat: .rewarded,
             responseInfoProvider: { nil }
         )
-        Tracking.Adapter.shared.fullScreenDelegateStore.retain(trackingDelegate, for: fullScreenAd)
+        Tracking.Adapter.shared.fullScreenDelegateStore.set(trackingDelegate, for: fullScreenAd)
 
         Tracking.applyRewardVerificationPlacementOverride(.override(nil), on: fullScreenAd)
 
