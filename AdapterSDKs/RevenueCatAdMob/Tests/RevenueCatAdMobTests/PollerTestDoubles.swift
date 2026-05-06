@@ -1,7 +1,6 @@
 import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
-import GoogleMobileAds
 @_spi(Internal) import RevenueCat
 @testable import RevenueCatAdMob
 
