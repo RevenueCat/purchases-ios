@@ -44,18 +44,6 @@ import Foundation
     /// Verification succeeded with no virtual-currency reward.
     public static let noReward = VerifiedReward(storage: .noReward)
 
-    /// Whether this value is ``unknown``.
-    public var isUnknown: Bool {
-        if case .unknown = self.storage { return true }
-        return false
-    }
-
-    /// Whether this value is ``noReward``.
-    public var isNone: Bool {
-        if case .noReward = self.storage { return true }
-        return false
-    }
-
     /// Non-`nil` when this value represents ``virtualCurrency(code:amount:)``.
     public var virtualCurrency: VirtualCurrencyReward? {
         guard case .virtualCurrency(let payload) = self.storage else { return nil }

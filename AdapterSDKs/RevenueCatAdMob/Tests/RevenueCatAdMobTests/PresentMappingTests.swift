@@ -14,14 +14,14 @@ final class PresentMappingTests: AdapterTestCase {
         XCTAssertEqual(mapped.virtualCurrency?.amount, 7)
     }
 
-    func testMapNoRewardBecomesNone() {
+    func testMapNoReward() {
         let mapped = RewardVerification.mapVerifiedReward(.noReward)
-        XCTAssertTrue(mapped.isNone)
+        XCTAssertEqual(mapped, .noReward)
     }
 
-    func testMapUnsupportedBecomesUnknown() {
+    func testMapUnsupportedReward() {
         let mapped = RewardVerification.mapVerifiedReward(.unsupportedReward)
-        XCTAssertTrue(mapped.isUnknown)
+        XCTAssertEqual(mapped, .unknown)
     }
 
     func testMapOutcomeVerified() {
