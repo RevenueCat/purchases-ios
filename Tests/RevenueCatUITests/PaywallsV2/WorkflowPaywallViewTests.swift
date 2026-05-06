@@ -135,6 +135,53 @@ final class WorkflowPaywallViewTests: TestCase {
 
 }
 
+// MARK: - WorkflowPackageContext tests
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPaywallViewTests {
+
+    func testWorkflowPackageContextDefaultsToNil() {
+        let ctx = WorkflowPackageContext()
+
+        expect(ctx.contextPackage).to(beNil())
+        expect(ctx.fallbackPackage).to(beNil())
+        expect(ctx.onPackageSelected).to(beNil())
+    }
+
+    func testWorkflowPackageContextStoresContextAndFallbackPackages() {
+        let ctx = WorkflowPackageContext(
+            contextPackage: TestData.annualPackage,
+            fallbackPackage: TestData.monthlyPackage
+        )
+
+        expect(ctx.contextPackage?.identifier) == TestData.annualPackage.identifier
+        expect(ctx.fallbackPackage?.identifier) == TestData.monthlyPackage.identifier
+    }
+
+    func testWorkflowPackageContextOnPackageSelectedCallback() {
+        var received: Package?
+        let ctx = WorkflowPackageContext(
+            onPackageSelected: { received = $0 }
+        )
+
+        ctx.onPackageSelected?(TestData.annualPackage)
+
+        expect(received?.identifier) == TestData.annualPackage.identifier
+    }
+
+    func testWorkflowPackageContextOnPackageSelectedCallbackWithNil() {
+        var called = false
+        let ctx = WorkflowPackageContext(
+            onPackageSelected: { _ in called = true }
+        )
+
+        ctx.onPackageSelected?(nil)
+
+        expect(called) == true
+    }
+
+}
+
 // MARK: - computeFallbackPackage tests
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
