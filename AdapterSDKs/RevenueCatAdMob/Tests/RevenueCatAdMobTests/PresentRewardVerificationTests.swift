@@ -84,6 +84,35 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         let result = try XCTUnwrap(receivedResult)
         XCTAssertTrue(result.isFailed)
     }
+
+    func testPresentWithStateInvokesStartedBeforeResult() {
+        let fakeAd = FakeCapableAd()
+        RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
+
+        let poller = RewardVerification.Poller(
+            statusPoller: StubStatusPoller(statuses: [.verified(.noReward)]),
+            sleeper: RecordingSleeper(),
+            jitter: RewardVerification.Jitter { 0 },
+            maxAttempts: 5
+        )
+
+        let expectation = self.expectation(description: "result callback")
+        var events: [String] = []
+        let handler = fakeAd.createUserDidEarnRewardHandler(
+            rewardVerificationStarted: {
+                events.append("started")
+            },
+            rewardVerificationResult: { _ in
+                events.append("result")
+                expectation.fulfill()
+            },
+            poller: poller
+        )
+
+        handler()
+        self.wait(for: [expectation], timeout: 2.0)
+        XCTAssertEqual(events, ["started", "result"])
+    }
 }
 
 // MARK: - Test doubles
