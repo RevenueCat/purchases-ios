@@ -11,8 +11,16 @@ import Foundation
 /// Reward payload after a successful reward verification (non-`enum` surface for the adapter module).
 @_spi(Experimental) public struct VerifiedReward: Sendable, Equatable {
 
+    /// Virtual-currency payload returned after successful verification.
+    public struct VirtualCurrencyReward: Sendable, Equatable {
+        /// Virtual currency identifier.
+        public let code: String
+        /// Granted amount (always greater than zero).
+        public let amount: Int
+    }
+
     private enum Storage: Equatable, Sendable {
-        case virtualCurrency(code: String, amount: Int)
+        case virtualCurrency(VirtualCurrencyReward)
         case unknown
         case none
     }
@@ -26,7 +34,8 @@ import Foundation
     /// Virtual currency line item. `amount` must be greater than zero.
     public static func virtualCurrency(code: String, amount: Int) -> VerifiedReward {
         precondition(amount > 0, "virtualCurrency amount must be greater than zero")
-        return VerifiedReward(storage: .virtualCurrency(code: code, amount: amount))
+        let payload = VirtualCurrencyReward(code: code, amount: amount)
+        return VerifiedReward(storage: .virtualCurrency(payload))
     }
 
     /// Verified reward shape is not modeled in this SDK version.
@@ -34,12 +43,6 @@ import Foundation
 
     /// Verification succeeded with no virtual-currency reward.
     public static let none = VerifiedReward(storage: .none)
-
-    /// Whether this value represents ``virtualCurrency(code:amount:)``.
-    public var isVirtualCurrency: Bool {
-        if case .virtualCurrency = self.storage { return true }
-        return false
-    }
 
     /// Whether this value is ``unknown``.
     public var isUnknown: Bool {
@@ -53,16 +56,10 @@ import Foundation
         return false
     }
 
-    /// Non-`nil` when ``isVirtualCurrency`` is `true`.
-    public var virtualCurrencyCode: String? {
-        guard case .virtualCurrency(let code, _) = self.storage else { return nil }
-        return code
-    }
-
-    /// Non-`nil` when ``isVirtualCurrency`` is `true` (always greater than zero).
-    public var virtualCurrencyAmount: Int? {
-        guard case .virtualCurrency(_, let amount) = self.storage else { return nil }
-        return amount
+    /// Non-`nil` when this value represents ``virtualCurrency(code:amount:)``.
+    public var virtualCurrency: VirtualCurrencyReward? {
+        guard case .virtualCurrency(let payload) = self.storage else { return nil }
+        return payload
     }
 }
 

@@ -10,9 +10,8 @@ final class PresentMappingTests: AdapterTestCase {
     func testMapVirtualCurrencyPositiveAmount() {
         let reward = RevenueCat.VerifiedReward.virtualCurrency(VirtualCurrencyReward(code: "gems", amount: 7))
         let mapped = RewardVerification.mapVerifiedReward(reward)
-        XCTAssertTrue(mapped.isVirtualCurrency)
-        XCTAssertEqual(mapped.virtualCurrencyCode, "gems")
-        XCTAssertEqual(mapped.virtualCurrencyAmount, 7)
+        XCTAssertEqual(mapped.virtualCurrency?.code, "gems")
+        XCTAssertEqual(mapped.virtualCurrency?.amount, 7)
     }
 
     func testMapNoRewardBecomesNone() {
@@ -29,8 +28,8 @@ final class PresentMappingTests: AdapterTestCase {
         let reward = RevenueCat.VerifiedReward.virtualCurrency(VirtualCurrencyReward(code: "c", amount: 2))
         let result = RewardVerification.mapOutcome(.verified(reward))
         XCTAssertTrue(result.isVerified)
-        XCTAssertEqual(result.verifiedReward?.virtualCurrencyCode, "c")
-        XCTAssertEqual(result.verifiedReward?.virtualCurrencyAmount, 2)
+        XCTAssertEqual(result.verifiedReward?.virtualCurrency?.code, "c")
+        XCTAssertEqual(result.verifiedReward?.virtualCurrency?.amount, 2)
     }
 
     func testMapOutcomeFailed() {
