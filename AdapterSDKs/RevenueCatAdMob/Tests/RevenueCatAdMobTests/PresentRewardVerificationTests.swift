@@ -15,17 +15,12 @@ final class PresentRewardVerificationTests: AdapterTestCase {
     func testPresentWithoutVerificationStateInvokesOnlyStartedWhenOutcomeNil() {
         let fakeAd = FakeCapableAd()
         var startedCount = 0
-        let performPresent = PerformPresentSpy()
-
-        RewardVerification.Present.present(
-            capableAd: fakeAd,
+        let handler = fakeAd.createUserDidEarnRewardHandler(
             rewardVerificationStarted: { startedCount += 1 },
-            rewardVerificationResult: nil,
-            performPresent: performPresent.callable
+            rewardVerificationResult: nil
         )
 
-        XCTAssertEqual(performPresent.callCount, 1)
-        performPresent.invokeCapturedHandler()
+        handler()
         XCTAssertEqual(startedCount, 1)
     }
 
@@ -43,20 +38,16 @@ final class PresentRewardVerificationTests: AdapterTestCase {
 
         let expectation = self.expectation(description: "verification result")
         var receivedResult: RewardVerificationResult?
-        let performPresent = PerformPresentSpy()
-
-        RewardVerification.Present.present(
-            capableAd: fakeAd,
+        let handler = fakeAd.createUserDidEarnRewardHandler(
             rewardVerificationStarted: nil,
             rewardVerificationResult: { result in
                 receivedResult = result
                 expectation.fulfill()
             },
-            poller: poller,
-            performPresent: performPresent.callable
+            poller: poller
         )
 
-        performPresent.invokeCapturedHandler()
+        handler()
         self.wait(for: [expectation], timeout: 2.0)
 
         let result = try XCTUnwrap(receivedResult)
@@ -78,20 +69,16 @@ final class PresentRewardVerificationTests: AdapterTestCase {
 
         let expectation = self.expectation(description: "failed result")
         var receivedResult: RewardVerificationResult?
-        let performPresent = PerformPresentSpy()
-
-        RewardVerification.Present.present(
-            capableAd: fakeAd,
+        let handler = fakeAd.createUserDidEarnRewardHandler(
             rewardVerificationStarted: nil,
             rewardVerificationResult: { result in
                 receivedResult = result
                 expectation.fulfill()
             },
-            poller: poller,
-            performPresent: performPresent.callable
+            poller: poller
         )
 
-        performPresent.invokeCapturedHandler()
+        handler()
         self.wait(for: [expectation], timeout: 2.0)
 
         let result = try XCTUnwrap(receivedResult)
@@ -104,24 +91,6 @@ final class PresentRewardVerificationTests: AdapterTestCase {
 @available(iOS 15.0, *)
 private final class FakeCapableAd: RewardVerification.CapableAd {
     var serverSideVerificationOptions: GoogleMobileAds.ServerSideVerificationOptions?
-}
-
-@available(iOS 15.0, *)
-private final class PerformPresentSpy {
-
-    private(set) var callCount = 0
-    private var captured: (() -> Void)?
-
-    @MainActor
-    func callable(_ handler: @escaping () -> Void) {
-        self.callCount += 1
-        self.captured = handler
-    }
-
-    @MainActor
-    func invokeCapturedHandler() {
-        self.captured?()
-    }
 }
 
 #endif

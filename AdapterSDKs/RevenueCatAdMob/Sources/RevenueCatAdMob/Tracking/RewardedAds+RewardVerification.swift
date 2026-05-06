@@ -56,13 +56,13 @@ internal extension Tracking {
             .keepLoadTimePlacement,
             on: self
         )
-        RewardVerification.Present.present(
-            capableAd: self,
+        let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
             rewardVerificationStarted: rewardVerificationStarted,
-            rewardVerificationResult: rewardVerificationResult,
-            performPresent: { wrapped in
-                self.present(from: viewController, userDidEarnRewardHandler: wrapped)
-            }
+            rewardVerificationResult: rewardVerificationResult
+        )
+        self.present(
+            from: viewController,
+            userDidEarnRewardHandler: userDidEarnRewardHandler
         )
     }
 
@@ -83,13 +83,13 @@ internal extension Tracking {
             .override(placement),
             on: self
         )
-        RewardVerification.Present.present(
-            capableAd: self,
+        let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
             rewardVerificationStarted: rewardVerificationStarted,
-            rewardVerificationResult: rewardVerificationResult,
-            performPresent: { wrapped in
-                self.present(from: viewController, userDidEarnRewardHandler: wrapped)
-            }
+            rewardVerificationResult: rewardVerificationResult
+        )
+        self.present(
+            from: viewController,
+            userDidEarnRewardHandler: userDidEarnRewardHandler
         )
     }
 }
@@ -123,13 +123,13 @@ internal extension Tracking {
             .keepLoadTimePlacement,
             on: self
         )
-        RewardVerification.Present.present(
-            capableAd: self,
+        let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
             rewardVerificationStarted: rewardVerificationStarted,
-            rewardVerificationResult: rewardVerificationResult,
-            performPresent: { wrapped in
-                self.present(from: viewController, userDidEarnRewardHandler: wrapped)
-            }
+            rewardVerificationResult: rewardVerificationResult
+        )
+        self.present(
+            from: viewController,
+            userDidEarnRewardHandler: userDidEarnRewardHandler
         )
     }
 
@@ -150,14 +150,55 @@ internal extension Tracking {
             .override(placement),
             on: self
         )
-        RewardVerification.Present.present(
-            capableAd: self,
+        let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
             rewardVerificationStarted: rewardVerificationStarted,
-            rewardVerificationResult: rewardVerificationResult,
-            performPresent: { wrapped in
-                self.present(from: viewController, userDidEarnRewardHandler: wrapped)
-            }
+            rewardVerificationResult: rewardVerificationResult
         )
+        self.present(
+            from: viewController,
+            userDidEarnRewardHandler: userDidEarnRewardHandler
+        )
+    }
+}
+
+@available(iOS 15.0, *)
+internal extension RewardVerification.CapableAd {
+
+    /// Returns the handler used by GoogleMobileAds `present` APIs while optionally dispatching
+    /// RevenueCat reward-verification polling results.
+    ///
+    /// - Parameter poller: For unit tests; pass `nil` in production to use ``RewardVerification.Poller/makeDefault()``.
+    @MainActor
+    func createUserDidEarnRewardHandler(
+        rewardVerificationStarted: (() -> Void)?,
+        rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)?,
+        poller: RewardVerification.Poller? = nil
+    ) -> (() -> Void) {
+        if rewardVerificationResult != nil {
+            assert(
+                RewardVerification.Setup.verificationState(for: self) != nil,
+                Strings.rewardVerificationResultRequiresEnable
+            )
+        }
+
+        guard let state = RewardVerification.Setup.verificationState(for: self),
+              let onResult = rewardVerificationResult else {
+            return { rewardVerificationStarted?() }
+        }
+
+        let resolvedPoller = poller ?? .makeDefault()
+
+        return {
+            rewardVerificationStarted?()
+            RewardVerification.Dispatcher.dispatch(
+                clientTransactionID: state.clientTransactionID,
+                state: state,
+                poller: resolvedPoller,
+                outcomeHandler: { internalOutcome in
+                    onResult(RewardVerification.mapOutcome(internalOutcome))
+                }
+            )
+        }
     }
 }
 

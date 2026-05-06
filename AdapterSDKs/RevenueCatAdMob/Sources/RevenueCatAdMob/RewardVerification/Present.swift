@@ -10,51 +10,6 @@ import Foundation
 import GoogleMobileAds
 @_spi(Internal) import RevenueCat
 
-@available(iOS 15.0, *)
-internal extension RewardVerification {
-
-    /// Wires optional reward-verification callbacks around Google’s `present`.
-    enum Present {
-
-        /// - Parameter poller: For unit tests; pass `nil` in production to use ``Poller/makeDefault()``.
-        @MainActor
-        static func present(
-            capableAd: some CapableAd,
-            rewardVerificationStarted: (() -> Void)?,
-            rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)?,
-            poller: Poller? = nil,
-            performPresent: @MainActor (@escaping () -> Void) -> Void
-        ) {
-            if rewardVerificationResult != nil {
-                assert(
-                    Setup.verificationState(for: capableAd) != nil,
-                    Strings.rewardVerificationResultRequiresEnable
-                )
-            }
-
-            guard let state = Setup.verificationState(for: capableAd),
-                  let onResult = rewardVerificationResult else {
-                performPresent { rewardVerificationStarted?() }
-                return
-            }
-
-            let resolvedPoller = poller ?? Poller.makeDefault()
-
-            performPresent {
-                rewardVerificationStarted?()
-                Dispatcher.dispatch(
-                    clientTransactionID: state.clientTransactionID,
-                    state: state,
-                    poller: resolvedPoller,
-                    outcomeHandler: { internalOutcome in
-                        onResult(RewardVerification.mapOutcome(internalOutcome))
-                    }
-                )
-            }
-        }
-    }
-}
-
 // MARK: - Internal outcome → presentation result
 
 @available(iOS 15.0, *)
