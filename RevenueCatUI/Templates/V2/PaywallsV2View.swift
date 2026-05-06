@@ -48,8 +48,8 @@ struct PaywallsV2View: View {
     @Environment(\.paywallSource)
     private var paywallSource
 
-    @Environment(\.workflowFallbackPackage)
-    private var workflowFallbackPackage
+    @Environment(\.workflowPackageContext)
+    private var workflowPackageContext
 
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
@@ -252,10 +252,18 @@ struct PaywallsV2View: View {
                     self.createEventData(forDefaultPaywall: forDefaultPaywall)
                 )
             }
-            .task(id: self.workflowFallbackPackage?.identifier) {
+            .task(id: self.workflowPackageContext.fallbackPackage?.identifier) {
                 if self.selectedPackageContext.package == nil {
-                    self.selectedPackageContext.package = self.workflowFallbackPackage
+                    self.selectedPackageContext.package = self.workflowPackageContext.fallbackPackage
                 }
+            }
+            .task(id: self.workflowPackageContext.contextPackage?.identifier) {
+                guard case let .success(paywallState) = self.paywallStateManager.state,
+                      let resolved = Self.validatedContextPackage(
+                          self.workflowPackageContext.contextPackage,
+                          in: paywallState.packages
+                      ) else { return }
+                self.selectedPackageContext.package = resolved
             }
             .task {
                 guard !self.didFinishEligibilityCheck else {
@@ -300,6 +308,9 @@ struct PaywallsV2View: View {
                 guard hasPurchased else { return }
 
                 self.dismissAfterPurchaseCompletionCallbacks()
+            }
+            .onReceive(selectedPackageContext.$package) { package in
+                self.workflowPackageContext.onPackageSelected?(package)
             }
 
     }
@@ -488,19 +499,6 @@ fileprivate extension PaywallsV2View {
         }
     }
 
-    static func makeSelectedPackageContext(
-        from paywallState: PaywallState,
-        showZeroDecimalPlacePrices: Bool
-    ) -> PackageContext {
-        return .init(
-            package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
-            variableContext: .init(
-                packages: paywallState.packages,
-                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
-            )
-        )
-    }
-
     static func chooseLocalization(
         componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
         preferredLocales: [Locale],
@@ -587,6 +585,36 @@ fileprivate extension PaywallsV2View {
 
 private struct PaywallFallbackError: Error {
     let reason: String
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PaywallsV2View {
+
+    static func makeSelectedPackageContext(
+        from paywallState: PaywallState,
+        showZeroDecimalPlacePrices: Bool
+    ) -> PackageContext {
+        return .init(
+            package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+            variableContext: .init(
+                packages: paywallState.packages,
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+            )
+        )
+    }
+
+    /// Returns `contextPackage` only if its identifier exists in `packages`, otherwise `nil`.
+    /// Prevents a package from a previous workflow step's offering from being used on a step
+    /// whose offering doesn't include it.
+    static func validatedContextPackage(
+        _ contextPackage: Package?,
+        in packages: [Package]
+    ) -> Package? {
+        return contextPackage.flatMap { pkg in
+            packages.first(where: { $0.identifier == pkg.identifier })
+        }
+    }
+
 }
 
 #endif

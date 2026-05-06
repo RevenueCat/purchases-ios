@@ -28,6 +28,23 @@ struct WorkflowPageTransitionContext {
 
 }
 
+/// Package-related state injected by `WorkflowPaywallView` into each `PaywallsV2View` page.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WorkflowPackageContext {
+
+    /// Package selected on the previous workflow step, forwarded to the current step as its
+    /// initial selection (forward-only — back navigation does not set this).
+    var contextPackage: Package?
+
+    /// Default package from the workflow's `singleStepFallbackId` step, used by packageless
+    /// screens to resolve price/period template variables.
+    var fallbackPackage: Package?
+
+    /// Called when the user's selected package changes inside a workflow paywall step.
+    var onPackageSelected: ((Package?) -> Void)?
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct WorkflowTriggerActionKey: EnvironmentKey {
     static let defaultValue: ((String) -> Bool)? = nil
@@ -45,10 +62,8 @@ private struct IsWorkflowHeaderKey: EnvironmentKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct WorkflowFallbackPackageKey: EnvironmentKey {
-    /// Default package from the workflow's `singleStepFallbackId` step, used by packageless
-    /// screens to resolve price/period template variables.
-    static let defaultValue: Package? = nil
+private struct WorkflowPackageContextKey: EnvironmentKey {
+    static let defaultValue = WorkflowPackageContext()
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -71,9 +86,9 @@ extension EnvironmentValues {
         set { self[IsWorkflowHeaderKey.self] = newValue }
     }
 
-    var workflowFallbackPackage: Package? {
-        get { self[WorkflowFallbackPackageKey.self] }
-        set { self[WorkflowFallbackPackageKey.self] = newValue }
+    var workflowPackageContext: WorkflowPackageContext {
+        get { self[WorkflowPackageContextKey.self] }
+        set { self[WorkflowPackageContextKey.self] = newValue }
     }
 }
 

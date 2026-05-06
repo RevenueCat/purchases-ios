@@ -159,6 +159,7 @@ struct WorkflowPaywallView: View {
     @State private var hasLoggedInvalidState = false
     @State private var transitionState: WorkflowPageTransitionState<RenderedPage>
     @State private var activeTransitionID: UUID?
+    @State private var currentSelectedPackage: Package?
 
     init(
         context: WorkflowContext,
@@ -256,7 +257,14 @@ struct WorkflowPaywallView: View {
             colorScheme: self.colorScheme,
             promoOfferCache: self.promoOfferCache
         )
-        .environment(\.workflowFallbackPackage, self.fallbackPackage)
+        .environment(\.workflowPackageContext, WorkflowPackageContext(
+            contextPackage: page.contextPackage,
+            fallbackPackage: self.fallbackPackage,
+            onPackageSelected: { package in
+                guard let package else { return }
+                self.currentSelectedPackage = package
+            }
+        ))
         .environment(\.workflowTriggerAction, { componentId in
             return self.handleTriggeredNavigation(componentId: componentId)
         })
@@ -315,7 +323,8 @@ struct WorkflowPaywallView: View {
                 from: self.context,
                 stepId: nextStep.id,
                 canNavigateBack: self.navigator.canNavigateBack,
-                displayCloseButton: self.displayCloseButton
+                displayCloseButton: self.displayCloseButton,
+                contextPackage: self.currentSelectedPackage
             ),
             direction: .forward
         )
@@ -375,7 +384,8 @@ struct WorkflowPaywallView: View {
         from context: WorkflowContext,
         stepId: String,
         canNavigateBack: Bool,
-        displayCloseButton: Bool
+        displayCloseButton: Bool,
+        contextPackage: Package? = nil
     ) -> RenderedPage? {
         guard let step = context.workflow.steps[stepId],
               let screenId = step.screenId,
@@ -391,7 +401,8 @@ struct WorkflowPaywallView: View {
 
         return .init(
             content: .init(paywallComponents: paywallComponents, offering: offering),
-            showCloseButton: !canNavigateBack && displayCloseButton
+            showCloseButton: !canNavigateBack && displayCloseButton,
+            contextPackage: contextPackage
         )
     }
 
@@ -416,6 +427,7 @@ private struct RenderedPage: Identifiable {
     let id = UUID()
     let content: CurrentStepContent
     let showCloseButton: Bool
+    let contextPackage: Package?
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

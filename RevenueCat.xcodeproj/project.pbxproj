@@ -1409,6 +1409,7 @@
 		FACD00082F61A1230073D2DE /* PackageComponentViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD00072F61A1230073D2DE /* PackageComponentViewTests.swift */; };
 		FACD000A2F61A1230073D2DE /* PackageValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD00092F61A1230073D2DE /* PackageValidatorTests.swift */; };
 		FACD000C2F61A1230073D2DE /* PackageVisibilityPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD000B2F61A1230073D2DE /* PackageVisibilityPreview.swift */; };
+		79328FBB138540F384AF21DE /* PaywallsV2ViewContextPackageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC7B292A179047E081C94DF7 /* PaywallsV2ViewContextPackageTests.swift */; };
 		FB5A72022F65F5B9005C64A1 /* ViewModelFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5A72012F65F5B9005C64A1 /* ViewModelFactoryTests.swift */; };
 		FD05A71A2EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD05A7192EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift */; };
 		FD15AF5B2DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD15AF582DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift */; };
@@ -2993,6 +2994,7 @@
 		FACD00072F61A1230073D2DE /* PackageComponentViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageComponentViewTests.swift; sourceTree = "<group>"; };
 		FACD00092F61A1230073D2DE /* PackageValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageValidatorTests.swift; sourceTree = "<group>"; };
 		FACD000B2F61A1230073D2DE /* PackageVisibilityPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageVisibilityPreview.swift; sourceTree = "<group>"; };
+		BC7B292A179047E081C94DF7 /* PaywallsV2ViewContextPackageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallsV2ViewContextPackageTests.swift; sourceTree = "<group>"; };
 		FB5A72012F65F5B9005C64A1 /* ViewModelFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModelFactoryTests.swift; sourceTree = "<group>"; };
 		FD05A7192EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2PromotionalOfferPurchaseOptions.swift; sourceTree = "<group>"; };
 		FD15AF572DF9A8F30062467E /* VirtualCurrenciesScrollViewWithOSBackgroundSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesScrollViewWithOSBackgroundSection.swift; sourceTree = "<group>"; };
@@ -3206,6 +3208,7 @@
 				DB1FC9592F9A1B74009A95EA /* WorkflowScreenMapperTests.swift */,
 				F468C7BCEB786BEC80277ECA /* WorkflowNavigatorTests.swift */,
 				6EFD5F7BD8404B6E828C4E10 /* WorkflowPaywallViewTests.swift */,
+				BC7B292A179047E081C94DF7 /* PaywallsV2ViewContextPackageTests.swift */,
 			);
 			path = PaywallsV2;
 			sourceTree = "<group>";
@@ -8375,6 +8378,7 @@
 				FACD00022F61A1230073D2DE /* TextComponentLocalizationTests.swift in Sources */,
 				B413E5A02F97B3B900B5F0CA /* CarouselTabSwitchTests.swift in Sources */,
 				FACD00042F61A1230073D2DE /* ViewModelFactoryBadgeTests.swift in Sources */,
+				79328FBB138540F384AF21DE /* PaywallsV2ViewContextPackageTests.swift in Sources */,
 				FB5A72022F65F5B9005C64A1 /* ViewModelFactoryTests.swift in Sources */,
 				FACD00082F61A1230073D2DE /* PackageComponentViewTests.swift in Sources */,
 				FACD000A2F61A1230073D2DE /* PackageValidatorTests.swift in Sources */,
