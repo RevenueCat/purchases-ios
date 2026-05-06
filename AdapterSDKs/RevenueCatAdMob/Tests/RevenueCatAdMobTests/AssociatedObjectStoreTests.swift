@@ -37,6 +37,30 @@ final class AssociatedObjectStoreTests: AdapterTestCase {
         XCTAssertIdentical(storeB.retrieve(for: owner), valueB)
     }
 
+    func testSetOverwritesPreviousValue() {
+        let store = AssociatedObjectStore<NSObject>()
+        let owner = NSObject()
+        let first = NSObject()
+        let second = NSObject()
+
+        store.set(first, for: owner)
+        store.set(second, for: owner)
+
+        XCTAssertIdentical(store.retrieve(for: owner), second)
+        XCTAssertNotIdentical(store.retrieve(for: owner), first)
+    }
+
+    func testValueOnOneOwnerIsNotVisibleFromAnother() {
+        let store = AssociatedObjectStore<NSObject>()
+        let ownerA = NSObject()
+        let ownerB = NSObject()
+
+        store.set(NSObject(), for: ownerA)
+
+        XCTAssertNotNil(store.retrieve(for: ownerA))
+        XCTAssertNil(store.retrieve(for: ownerB))
+    }
+
     func testRetainNilClearsPreviousValue() {
         let store = AssociatedObjectStore<NSObject>()
         let owner = NSObject()
@@ -45,6 +69,21 @@ final class AssociatedObjectStoreTests: AdapterTestCase {
         store.set(nil, for: owner)
 
         XCTAssertNil(store.retrieve(for: owner))
+    }
+
+    func testValueIsRetainedForLifetimeOfOwner() {
+        let store = AssociatedObjectStore<NSObject>()
+        let owner = NSObject()
+        weak var weakValue: NSObject?
+
+        autoreleasepool {
+            let value = NSObject()
+            weakValue = value
+            store.set(value, for: owner)
+        }
+
+        XCTAssertNotNil(weakValue)
+        _ = owner
     }
 
     func testValueIsReleasedWhenOwnerDeallocates() {
