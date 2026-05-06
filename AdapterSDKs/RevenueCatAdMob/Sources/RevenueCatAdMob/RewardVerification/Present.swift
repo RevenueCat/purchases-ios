@@ -20,7 +20,7 @@ internal extension RewardVerification {
         case .virtualCurrency(let item):
             return .virtualCurrency(code: item.code, amount: item.amount)
         case .noReward:
-            return .none
+            return .noReward
         case .unsupportedReward:
             return .unknown
         }

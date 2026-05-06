@@ -22,7 +22,7 @@ import Foundation
     private enum Storage: Equatable, Sendable {
         case virtualCurrency(VirtualCurrencyReward)
         case unknown
-        case none
+        case noReward
     }
 
     private let storage: Storage
@@ -42,7 +42,7 @@ import Foundation
     public static let unknown = VerifiedReward(storage: .unknown)
 
     /// Verification succeeded with no virtual-currency reward.
-    public static let none = VerifiedReward(storage: .none)
+    public static let noReward = VerifiedReward(storage: .noReward)
 
     /// Whether this value is ``unknown``.
     public var isUnknown: Bool {
@@ -50,9 +50,9 @@ import Foundation
         return false
     }
 
-    /// Whether this value is ``none``.
+    /// Whether this value is ``noReward``.
     public var isNone: Bool {
-        if case .none = self.storage { return true }
+        if case .noReward = self.storage { return true }
         return false
     }
 
