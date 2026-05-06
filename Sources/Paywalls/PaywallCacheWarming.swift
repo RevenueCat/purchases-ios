@@ -60,7 +60,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private var hasLoadedEligibility = false
     private var hasLoadedImages = false
     private var hasLoadedVideos = false
-    private var hasLoadedWorkflow = false
+    private var warmedWorkflowIDs: Set<String> = []
     private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
 
     init(
@@ -139,8 +139,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     }
 
     func warmUpWorkflowCaches(workflow: PublishedWorkflow) async {
-        guard !self.hasLoadedWorkflow else { return }
-        self.hasLoadedWorkflow = true
+        guard !self.warmedWorkflowIDs.contains(workflow.id) else { return }
+        self.warmedWorkflowIDs.insert(workflow.id)
 
         // Intentionally prewarming all screens, not just those reachable from
         // `initialStepId`. This trades off potentially downloading assets for
@@ -148,21 +148,12 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         // with many screens or complex branching, switch to a bounded graph walk
         // from `initialStepId` via `WorkflowStep.stepTriggerActions` to limit
         // data, battery, and connection usage.
-        let allScreenData = workflow.screens.values.map { screen in
-            PaywallComponentsData(
-                templateName: screen.templateName,
-                assetBaseURL: screen.assetBaseURL,
-                componentsConfig: screen.componentsConfig,
-                componentsLocalizations: screen.componentsLocalizations,
-                revision: screen.revision,
-                defaultLocaleIdentifier: screen.defaultLocale
-            )
-        }
+        let screens = Array(workflow.screens.values)
 
-        Logger.verbose(Strings.paywalls.warming_up_workflow(screenCount: allScreenData.count))
+        Logger.verbose(Strings.paywalls.warming_up_workflow(screenCount: screens.count))
 
-        let imageURLs = Set(allScreenData.flatMap(\.allImageURLs))
-        let videoURLs = Set(allScreenData.flatMap(\.allLowResVideoUrls))
+        let imageURLs = Set(screens.flatMap(\.allImageURLs))
+        let videoURLs = Set(screens.flatMap(\.allLowResVideoUrls))
         #if !os(tvOS)
         let fonts = workflow.uiConfig.app.allDownloadableFonts
         #endif
@@ -170,12 +161,14 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         await withTaskGroup(of: Void.self) { group in
             for url in imageURLs {
                 group.addTask { [weak self] in
-                    _ = try? await self?.fileRepository.generateOrGetCachedFileURL(for: url, withChecksum: nil)
+                    guard let self = self else { return }
+                    _ = try? await self.fileRepository.generateOrGetCachedFileURL(for: url, withChecksum: nil)
                 }
             }
             for source in videoURLs {
                 group.addTask { [weak self] in
-                    _ = try? await self?.fileRepository.generateOrGetCachedFileURL(
+                    guard let self = self else { return }
+                    _ = try? await self.fileRepository.generateOrGetCachedFileURL(
                         for: source.url,
                         withChecksum: source.checksum
                     )
@@ -184,7 +177,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
             #if !os(tvOS)
             for font in fonts {
                 group.addTask { [weak self] in
-                    await self?.installFont(from: font)
+                    guard let self = self else { return }
+                    await self.installFont(from: font)
                 }
             }
             #endif
