@@ -8,7 +8,7 @@ import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
 
-/// Reward payload after a successful reward verification (non-`enum` surface for the adapter module).
+/// Reward payload returned after successful verification.
 @_spi(Experimental) public struct VerifiedReward: Sendable, Equatable {
 
     /// Virtual-currency payload returned after successful verification.

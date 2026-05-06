@@ -30,7 +30,7 @@ internal extension Tracking {
 @available(iOS 15.0, *)
 @_spi(Experimental) public extension GoogleMobileAds.RewardedAd {
 
-    /// Configures RevenueCat reward verification for this ad (SSV payload + per-ad state).
+    /// Enables RevenueCat reward verification for this ad.
     ///
     /// Call after the ad has loaded and before presenting it when you will use reward-verification APIs.
     /// If the RevenueCat SDK is not configured, this method does nothing.
@@ -42,7 +42,7 @@ internal extension Tracking {
     /// Presents the ad with optional reward-verification callbacks.
     ///
     /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
-    /// (validated with an `assert` in debug builds).
+    /// (checked with a debug assertion).
     ///
     /// To override the placement used for RevenueCat analytics at show time, use
     /// ``present(from:placement:rewardVerificationStarted:rewardVerificationResult:)`` instead of this method.
@@ -71,7 +71,7 @@ internal extension Tracking {
     /// The placement passed here takes precedence over any placement from
     /// ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:)``.
     /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
-    /// (validated with an `assert` in debug builds).
+    /// (checked with a debug assertion).
     @MainActor
     func present(
         from viewController: UIViewController,
@@ -97,7 +97,7 @@ internal extension Tracking {
 @available(iOS 15.0, *)
 @_spi(Experimental) public extension GoogleMobileAds.RewardedInterstitialAd {
 
-    /// Configures RevenueCat reward verification for this ad (SSV payload + per-ad state).
+    /// Enables RevenueCat reward verification for this ad.
     ///
     /// Call after the ad has loaded and before presenting it when you will use reward-verification APIs.
     /// If the RevenueCat SDK is not configured, this method does nothing.
@@ -109,7 +109,7 @@ internal extension Tracking {
     /// Presents the ad with optional reward-verification callbacks.
     ///
     /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
-    /// (validated with an `assert` in debug builds).
+    /// (checked with a debug assertion).
     ///
     /// To override the placement used for RevenueCat analytics at show time, use
     /// ``present(from:placement:rewardVerificationStarted:rewardVerificationResult:)`` instead of this method.
@@ -138,7 +138,7 @@ internal extension Tracking {
     /// The placement passed here takes precedence over any placement from
     /// ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:)``.
     /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
-    /// (validated with an `assert` in debug builds).
+    /// (checked with a debug assertion).
     @MainActor
     func present(
         from viewController: UIViewController,
