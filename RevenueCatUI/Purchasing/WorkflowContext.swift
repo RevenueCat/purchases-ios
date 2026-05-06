@@ -44,14 +44,20 @@ struct WorkflowContext {
     /// Resolves the default package from the workflow's `singleStepFallbackId` step so that
     /// packageless early screens can still resolve price/period template variables.
     var fallbackPackage: Package? {
-        guard let fallbackStepId = self.workflow.singleStepFallbackId,
-              let step = self.workflow.steps[fallbackStepId],
-              let screenId = step.screenId,
-              let screen = self.workflow.screens[screenId],
-              let offering = self.offering(for: screen.offeringIdentifier) else {
+        guard let fallbackStepId = self.workflow.singleStepFallbackId else {
             return nil
         }
 
+        guard let step = self.workflow.steps[fallbackStepId],
+              let screenId = step.screenId,
+              let screen = self.workflow.screens[screenId],
+              let offering = self.offering(for: screen.offeringIdentifier) else {
+            Logger.warning(Strings.workflow_fallback_package_unresolvable(stepId: fallbackStepId))
+            return nil
+        }
+
+        // Assumes the fallback package is not itself hidden — a hidden default package
+        // would still be selected here, but that configuration is considered invalid.
         let visible = Self.collectVisiblePackages(
             in: screen.componentsConfig.base.stack.components,
             offering: offering
