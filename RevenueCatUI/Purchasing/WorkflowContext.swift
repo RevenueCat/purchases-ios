@@ -40,6 +40,44 @@ struct WorkflowContext {
 
         return offering.withPresentedOfferingContext(presentedOfferingContext)
     }
+
+    /// Resolves the default package from the workflow's `singleStepFallbackId` step so that
+    /// packageless early screens can still resolve price/period template variables.
+    var fallbackPackage: Package? {
+        guard let fallbackStepId = self.workflow.singleStepFallbackId,
+              let step = self.workflow.steps[fallbackStepId],
+              let screenId = step.screenId,
+              let screen = self.workflow.screens[screenId],
+              let offering = self.offering(for: screen.offeringIdentifier) else {
+            return nil
+        }
+
+        let visible = Self.collectVisiblePackages(
+            in: screen.componentsConfig.base.stack.components,
+            offering: offering
+        )
+
+        return visible.first(where: { $0.isSelectedByDefault })?.package
+            ?? visible.first?.package
+    }
+
+    private static func collectVisiblePackages(
+        in components: [PaywallComponent],
+        offering: Offering
+    ) -> [(package: Package, isSelectedByDefault: Bool)] {
+        return components.reduce(into: []) { result, component in
+            switch component {
+            case .package(let pkg) where pkg.visible != false:
+                if let rcPackage = offering.package(identifier: pkg.packageID) {
+                    result.append((package: rcPackage, isSelectedByDefault: pkg.isSelectedByDefault))
+                }
+            case .stack(let stack):
+                result += Self.collectVisiblePackages(in: stack.components, offering: offering)
+            default:
+                break
+            }
+        }
+    }
 }
 
 #endif

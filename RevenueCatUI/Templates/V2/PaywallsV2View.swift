@@ -48,6 +48,9 @@ struct PaywallsV2View: View {
     @Environment(\.paywallSource)
     private var paywallSource
 
+    @Environment(\.workflowFallbackPackage)
+    private var workflowFallbackPackage
+
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -85,10 +88,7 @@ struct PaywallsV2View: View {
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
         colorScheme: ColorScheme,
         promoOfferCache: PaywallPromoOfferCache? = nil,
-        introEligibilityContext: IntroOfferEligibilityContext? = nil,
-        // Workflow fallback: the default package from the workflow's singleStepFallbackId step,
-        // used as the selected package on screens that have no PackageComponents of their own.
-        defaultPackage: Package? = nil
+        introEligibilityContext: IntroOfferEligibilityContext? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
@@ -134,12 +134,11 @@ struct PaywallsV2View: View {
         if case .success(let paywallState) = initialState {
             selectedPackageContext = Self.makeSelectedPackageContext(
                 from: paywallState,
-                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
-                defaultPackage: defaultPackage
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         } else {
             selectedPackageContext = .init(
-                package: defaultPackage,
+                package: nil,
                 variableContext: .init(packages: [], showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
             )
         }
@@ -252,6 +251,11 @@ struct PaywallsV2View: View {
                 self.purchaseHandler.trackPaywallImpression(
                     self.createEventData(forDefaultPaywall: forDefaultPaywall)
                 )
+            }
+            .task(id: self.workflowFallbackPackage?.identifier) {
+                if self.selectedPackageContext.package == nil {
+                    self.selectedPackageContext.package = self.workflowFallbackPackage
+                }
             }
             .task {
                 guard !self.didFinishEligibilityCheck else {
@@ -486,11 +490,10 @@ fileprivate extension PaywallsV2View {
 
     static func makeSelectedPackageContext(
         from paywallState: PaywallState,
-        showZeroDecimalPlacePrices: Bool,
-        defaultPackage: Package? = nil
+        showZeroDecimalPlacePrices: Bool
     ) -> PackageContext {
         return .init(
-            package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage ?? defaultPackage,
+            package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
             variableContext: .init(
                 packages: paywallState.packages,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices

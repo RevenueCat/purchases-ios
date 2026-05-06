@@ -142,12 +142,12 @@ extension WorkflowPaywallViewTests {
 
     func testComputeFallbackPackageReturnsNilWhenNoFallbackStepId() throws {
         let context = try Self.makeContext(singleStepFallbackId: nil)
-        expect(WorkflowPaywallView.computeFallbackPackage(from: context)).to(beNil())
+        expect(context.fallbackPackage).to(beNil())
     }
 
     func testComputeFallbackPackageReturnsNilWhenFallbackIdPointsToMissingStep() throws {
         let context = try Self.makeContext(singleStepFallbackId: "nonexistent_step")
-        expect(WorkflowPaywallView.computeFallbackPackage(from: context)).to(beNil())
+        expect(context.fallbackPackage).to(beNil())
     }
 
     func testComputeFallbackPackageReturnsIsSelectedByDefaultPackage() throws {
@@ -158,8 +158,7 @@ extension WorkflowPaywallViewTests {
                 (id: "$rc_annual", isDefault: true)
             ]
         )
-        let result = WorkflowPaywallView.computeFallbackPackage(from: context)
-        expect(result?.identifier) == "$rc_annual"
+        expect(context.fallbackPackage?.identifier) == "$rc_annual"
     }
 
     func testComputeFallbackPackageReturnsFirstPackageWhenNoneIsDefault() throws {
@@ -170,8 +169,7 @@ extension WorkflowPaywallViewTests {
                 (id: "$rc_annual", isDefault: false)
             ]
         )
-        let result = WorkflowPaywallView.computeFallbackPackage(from: context)
-        expect(result?.identifier) == "$rc_monthly"
+        expect(context.fallbackPackage?.identifier) == "$rc_monthly"
     }
 
     func testComputeFallbackPackageReturnsNilForPackagelessFallbackStep() throws {
@@ -179,8 +177,7 @@ extension WorkflowPaywallViewTests {
             singleStepFallbackId: "step_terminal",
             fallbackPackages: []
         )
-        let result = WorkflowPaywallView.computeFallbackPackage(from: context)
-        expect(result).to(beNil())
+        expect(context.fallbackPackage).to(beNil())
     }
 
 }
