@@ -32,12 +32,8 @@ internal extension RewardVerification {
                 )
             }
 
-            guard let state = Setup.verificationState(for: capableAd) else {
-                performPresent { rewardVerificationStarted?() }
-                return
-            }
-
-            guard let onResult = rewardVerificationResult else {
+            guard let state = Setup.verificationState(for: capableAd),
+                  let onResult = rewardVerificationResult else {
                 performPresent { rewardVerificationStarted?() }
                 return
             }
