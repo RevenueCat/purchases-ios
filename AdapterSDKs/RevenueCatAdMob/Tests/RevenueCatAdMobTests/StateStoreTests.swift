@@ -23,7 +23,7 @@ final class StateStoreTests: AdapterTestCase {
 
         let retrieved = try XCTUnwrap(RewardVerification.stateStore.retrieve(for: host))
         XCTAssertTrue(retrieved === state,
-                      "retrieve(for:) must return the exact instance passed to retain(_:for:)")
+                      "retrieve(for:) must return the exact instance passed to set(_:for:)")
     }
 
     func testStoreOverwritesPreviouslyStashedStateOnSameHost() throws {
