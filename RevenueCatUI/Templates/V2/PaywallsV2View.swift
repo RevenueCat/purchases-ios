@@ -85,7 +85,8 @@ struct PaywallsV2View: View {
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
         colorScheme: ColorScheme,
         promoOfferCache: PaywallPromoOfferCache? = nil,
-        introEligibilityContext: IntroOfferEligibilityContext? = nil
+        introEligibilityContext: IntroOfferEligibilityContext? = nil,
+        defaultPackage: Package? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
@@ -131,11 +132,12 @@ struct PaywallsV2View: View {
         if case .success(let paywallState) = initialState {
             selectedPackageContext = Self.makeSelectedPackageContext(
                 from: paywallState,
-                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                defaultPackage: defaultPackage
             )
         } else {
             selectedPackageContext = .init(
-                package: nil,
+                package: defaultPackage,
                 variableContext: .init(packages: [], showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
             )
         }
@@ -482,10 +484,11 @@ fileprivate extension PaywallsV2View {
 
     static func makeSelectedPackageContext(
         from paywallState: PaywallState,
-        showZeroDecimalPlacePrices: Bool
+        showZeroDecimalPlacePrices: Bool,
+        defaultPackage: Package? = nil
     ) -> PackageContext {
         return .init(
-            package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+            package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage ?? defaultPackage,
             variableContext: .init(
                 packages: paywallState.packages,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices

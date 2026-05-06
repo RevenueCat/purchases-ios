@@ -153,6 +153,7 @@ struct WorkflowPaywallView: View {
     private let displayCloseButton: Bool
     private let promoOfferCache: PaywallPromoOfferCache?
     private let onDismiss: () -> Void
+    private let fallbackPackage: Package?
 
     @StateObject private var navigator: WorkflowNavigator
     @State private var hasLoggedInvalidState = false
@@ -175,6 +176,7 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.promoOfferCache = promoOfferCache
         self.onDismiss = onDismiss
+        self.fallbackPackage = Self.computeFallbackPackage(from: context)
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
         self._transitionState = .init(
             wrappedValue: .init(
@@ -252,7 +254,8 @@ struct WorkflowPaywallView: View {
                 }
             },
             colorScheme: self.colorScheme,
-            promoOfferCache: self.promoOfferCache
+            promoOfferCache: self.promoOfferCache,
+            defaultPackage: self.fallbackPackage
         )
         .environment(\.workflowTriggerAction, { componentId in
             return self.handleTriggeredNavigation(componentId: componentId)
@@ -404,6 +407,54 @@ struct WorkflowPaywallView: View {
                 screenId: self.navigator.currentStep?.screenId
             )
         )
+    }
+
+}
+
+// MARK: - Fallback package
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPaywallView {
+
+    /// Resolves the default package from the workflow's `singleStepFallbackId` step so that
+    /// packageless early screens can still resolve price/period template variables.
+    static func computeFallbackPackage(from context: WorkflowContext) -> Package? {
+        guard let fallbackStepId = context.workflow.singleStepFallbackId,
+              let step = context.workflow.steps[fallbackStepId],
+              let screenId = step.screenId,
+              let screen = context.workflow.screens[screenId],
+              let offering = context.offering(for: screen.offeringIdentifier) else {
+            return nil
+        }
+
+        var visible: [(package: Package, isSelectedByDefault: Bool)] = []
+        Self.collectVisiblePackages(
+            in: screen.componentsConfig.base.stack.components,
+            offering: offering,
+            into: &visible
+        )
+
+        return visible.first(where: { $0.isSelectedByDefault })?.package
+            ?? visible.first?.package
+    }
+
+    private static func collectVisiblePackages(
+        in components: [PaywallComponent],
+        offering: Offering,
+        into result: inout [(package: Package, isSelectedByDefault: Bool)]
+    ) {
+        for component in components {
+            switch component {
+            case .package(let pkg) where pkg.visible != false:
+                if let rcPackage = offering.package(identifier: pkg.packageID) {
+                    result.append((package: rcPackage, isSelectedByDefault: pkg.isSelectedByDefault))
+                }
+            case .stack(let stack):
+                Self.collectVisiblePackages(in: stack.components, offering: offering, into: &result)
+            default:
+                break
+            }
+        }
     }
 
 }
