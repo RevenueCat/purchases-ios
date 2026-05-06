@@ -86,6 +86,8 @@ struct PaywallsV2View: View {
         colorScheme: ColorScheme,
         promoOfferCache: PaywallPromoOfferCache? = nil,
         introEligibilityContext: IntroOfferEligibilityContext? = nil,
+        // Workflow fallback: the default package from the workflow's singleStepFallbackId step,
+        // used as the selected package on screens that have no PackageComponents of their own.
         defaultPackage: Package? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
