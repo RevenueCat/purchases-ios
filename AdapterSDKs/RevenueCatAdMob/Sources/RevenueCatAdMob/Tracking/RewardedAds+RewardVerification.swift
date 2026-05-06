@@ -42,7 +42,7 @@ internal extension Tracking {
     /// Presents the ad with optional reward-verification callbacks.
     ///
     /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
-    /// (enforced with a runtime precondition).
+    /// (validated with an `assert` in debug builds).
     ///
     /// To override the placement used for RevenueCat analytics at show time, use
     /// ``present(from:placement:rewardVerificationStarted:rewardVerificationResult:)`` instead of this method.
@@ -71,7 +71,7 @@ internal extension Tracking {
     /// The placement passed here takes precedence over any placement from
     /// ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:)``.
     /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
-    /// (enforced with a runtime precondition).
+    /// (validated with an `assert` in debug builds).
     @MainActor
     func present(
         from viewController: UIViewController,
@@ -109,7 +109,7 @@ internal extension Tracking {
     /// Presents the ad with optional reward-verification callbacks.
     ///
     /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
-    /// (enforced with a runtime precondition).
+    /// (validated with an `assert` in debug builds).
     ///
     /// To override the placement used for RevenueCat analytics at show time, use
     /// ``present(from:placement:rewardVerificationStarted:rewardVerificationResult:)`` instead of this method.
@@ -138,7 +138,7 @@ internal extension Tracking {
     /// The placement passed here takes precedence over any placement from
     /// ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:)``.
     /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
-    /// (enforced with a runtime precondition).
+    /// (validated with an `assert` in debug builds).
     @MainActor
     func present(
         from viewController: UIViewController,
