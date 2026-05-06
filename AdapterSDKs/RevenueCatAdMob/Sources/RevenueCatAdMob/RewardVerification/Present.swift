@@ -26,7 +26,7 @@ internal extension RewardVerification {
             performPresent: @MainActor (@escaping () -> Void) -> Void
         ) {
             if rewardVerificationResult != nil {
-                precondition(
+                assert(
                     Setup.verificationState(for: capableAd) != nil,
                     Strings.rewardVerificationResultRequiresEnable
                 )
