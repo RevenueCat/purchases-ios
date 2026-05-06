@@ -16,26 +16,43 @@ import Foundation
 extension PaywallComponentsData {
 
     var allImageURLs: [URL] {
-        var imageUrls = self.componentsConfig.base.allImageURLs
-
-        for (_, localeValues) in self.componentsLocalizations {
-            for (_, value) in localeValues {
-                switch value {
-                case .string:
-                    break
-                case .image(let image):
-                    imageUrls += image.imageUrls
-                }
-            }
-        }
-
-        return imageUrls
+        return imageURLs(from: self.componentsConfig, localizations: self.componentsLocalizations)
     }
 
     var allLowResVideoUrls: [URLWithValidation] {
         return self.componentsConfig.base.allLowResVideoUrls
     }
 
+}
+
+extension WorkflowScreen {
+
+    var allImageURLs: [URL] {
+        return imageURLs(from: self.componentsConfig, localizations: self.componentsLocalizations)
+    }
+
+    var allLowResVideoUrls: [URLWithValidation] {
+        return self.componentsConfig.base.allLowResVideoUrls
+    }
+
+}
+
+private func imageURLs(
+    from componentsConfig: PaywallComponentsData.ComponentsConfig,
+    localizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
+) -> [URL] {
+    var imageUrls = componentsConfig.base.allImageURLs
+    for (_, localeValues) in localizations {
+        for (_, value) in localeValues {
+            switch value {
+            case .string:
+                break
+            case .image(let image):
+                imageUrls += image.imageUrls
+            }
+        }
+    }
+    return imageUrls
 }
 
 extension PaywallComponentsData.PaywallComponentsConfig {

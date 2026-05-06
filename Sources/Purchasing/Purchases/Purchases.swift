@@ -945,7 +945,7 @@ public extension Purchases {
     @_spi(Internal)
     // The backend uses the offering identifier as the workflow lookup key.
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
-        return try await Async.call { completion in
+        let result = try await Async.call { completion in
             self.backend.workflowsAPI.getWorkflow(
                 appUserID: self.appUserID,
                 workflowId: offeringID,
@@ -953,6 +953,13 @@ public extension Purchases {
                 completion: completion
             )
         }
+        if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
+           let cache = self.paywallCache {
+            self.operationDispatcher.dispatchOnWorkerThread {
+                await cache.warmUpWorkflowCaches(workflow: result.workflow)
+            }
+        }
+        return result
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {

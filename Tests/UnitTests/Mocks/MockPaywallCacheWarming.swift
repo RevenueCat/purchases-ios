@@ -90,6 +90,25 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
         self.invokedWarmUpPaywallFontsCacheOfferings = offerings
     }
 
+    // MARK: -
+
+    private let _invokedWarmUpWorkflowCaches: Atomic<Bool> = false
+    private let _invokedWarmUpWorkflowCachesWorkflow: Atomic<PublishedWorkflow?> = nil
+
+    var invokedWarmUpWorkflowCaches: Bool {
+        get { return self._invokedWarmUpWorkflowCaches.value }
+        set { self._invokedWarmUpWorkflowCaches.value = newValue }
+    }
+    var invokedWarmUpWorkflowCachesWorkflow: PublishedWorkflow? {
+        get { return self._invokedWarmUpWorkflowCachesWorkflow.value }
+        set { self._invokedWarmUpWorkflowCachesWorkflow.value = newValue }
+    }
+
+    func warmUpWorkflowCaches(workflow: PublishedWorkflow) async {
+        self.invokedWarmUpWorkflowCaches = true
+        self.invokedWarmUpWorkflowCachesWorkflow = workflow
+    }
+
 #if !os(tvOS)
 
     private let _invokedTriggerFontDownloadIfNeeded: Atomic<Bool> = false
