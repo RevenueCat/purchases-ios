@@ -908,6 +908,7 @@ private extension OfferingsManagerTests {
                           packages: [
                             .init(identifier: "$rc_monthly",
                                   platformProductIdentifier: "monthly_freetrial",
+                                  platformProductPlanIdentifier: nil,
                                   webCheckoutUrl: nil)
                           ],
                           webCheckoutUrl: nil)
@@ -927,9 +928,11 @@ private extension OfferingsManagerTests {
                           packages: [
                             .init(identifier: "$rc_monthly",
                                   platformProductIdentifier: "monthly_freetrial",
+                                  platformProductPlanIdentifier: nil,
                                   webCheckoutUrl: nil),
                             .init(identifier: "$rc_yearly",
                                   platformProductIdentifier: "yearly_freetrial",
+                                  platformProductPlanIdentifier: nil,
                                   webCheckoutUrl: nil)
                           ],
                           webCheckoutUrl: nil)
