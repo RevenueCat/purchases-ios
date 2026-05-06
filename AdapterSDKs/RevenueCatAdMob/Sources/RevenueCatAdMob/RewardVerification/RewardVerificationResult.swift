@@ -9,9 +9,6 @@ import Foundation
 #if os(iOS) && canImport(GoogleMobileAds)
 
 /// Result delivered to the app after reward verification polling for a presented rewarded ad.
-///
-/// This type is only for the presentation callback. The adapter’s internal polling pipeline uses
-/// a separate `Outcome` type (`RewardVerification.Outcome`) before mapping to this value.
 @_spi(Experimental) public struct RewardVerificationResult: Sendable, Equatable {
 
     private enum Storage: Equatable, Sendable {
