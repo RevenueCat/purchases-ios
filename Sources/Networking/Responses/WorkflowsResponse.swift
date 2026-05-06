@@ -90,6 +90,7 @@ import Foundation
     public let id: String
     let displayName: String
     public let initialStepId: String
+    public let singleStepFallbackId: String?
     public let steps: [String: WorkflowStep]
     public let screens: [String: WorkflowScreen]
     public let uiConfig: UIConfig
