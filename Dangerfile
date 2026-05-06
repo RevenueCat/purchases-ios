@@ -156,7 +156,7 @@ else
   if existing_comment
     github.api.update_comment(repo, existing_comment.id, body)
   else
-    github.api.create_comment(repo, pr_number, body)
+    github.api.add_comment(repo, pr_number, body)
   end
 
   fail("Purchases iOS checks failed — see the comment above for details.") unless all_failures.empty?
