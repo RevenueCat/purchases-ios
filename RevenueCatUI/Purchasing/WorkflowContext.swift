@@ -86,6 +86,12 @@ struct WorkflowContext {
                 }
             case .stack(let stack):
                 result += Self.collectVisiblePackages(in: stack.components, offering: offering)
+            case .tabs(let tabs):
+                result += Self.collectVisiblePackages(
+                    in: tabs.tabs.flatMap { $0.stack.components }, offering: offering)
+            case .carousel(let carousel):
+                result += Self.collectVisiblePackages(
+                    in: carousel.pages.flatMap { $0.components }, offering: offering)
             default:
                 break
             }
