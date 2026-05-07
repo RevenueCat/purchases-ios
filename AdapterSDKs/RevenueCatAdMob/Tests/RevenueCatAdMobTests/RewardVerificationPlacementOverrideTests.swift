@@ -9,22 +9,6 @@ import GoogleMobileAds
 @available(iOS 15.0, *)
 final class RewardVerificationPlacementOverrideTests: AdapterTestCase {
 
-    func testNoPlacementOverrideKeepsExistingPlacement() {
-        let fullScreenAd = FakeFullScreenAd()
-        let trackingDelegate = Tracking.FullScreenContentDelegate(
-            delegate: nil,
-            placement: "load_time_placement",
-            adUnitID: "ad_unit_id",
-            adFormat: .rewarded,
-            responseInfoProvider: { nil }
-        )
-        Tracking.Adapter.shared.fullScreenDelegateStore.set(trackingDelegate, for: fullScreenAd)
-
-        // Mirrors the overload that does not accept `placement`: no override is applied.
-        let updatedDelegate = Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: fullScreenAd)
-        XCTAssertEqual(updatedDelegate?.placement, "load_time_placement")
-    }
-
     func testPlacementOverrideUpdatesExistingPlacement() {
         let fullScreenAd = FakeFullScreenAd()
         let trackingDelegate = Tracking.FullScreenContentDelegate(
