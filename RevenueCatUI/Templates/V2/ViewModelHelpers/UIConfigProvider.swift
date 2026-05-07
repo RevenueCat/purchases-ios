@@ -100,7 +100,7 @@ final class UIConfigProvider {
     func resolveFont(
         size fontSize: CGFloat,
         name: String,
-        useDynamicType: Bool
+        useDynamicType: Bool = true
     ) -> Font? {
 
         guard let fontsConfig = self.uiConfig.app.fonts[name] else {
