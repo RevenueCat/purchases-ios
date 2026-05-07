@@ -1,3 +1,4 @@
+import Nimble
 import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
@@ -112,6 +113,17 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         handler()
         self.wait(for: [expectation], timeout: 2.0)
         XCTAssertEqual(events, ["started", "result"])
+    }
+
+    func testCreateUserDidEarnRewardHandlerAssertsWhenResultCallbackProvidedWithoutVerificationState() {
+        let fakeAd = FakeCapableAd()
+
+        expect {
+            _ = fakeAd.createUserDidEarnRewardHandler(
+                rewardVerificationStarted: nil,
+                rewardVerificationResult: { _ in }
+            )
+        }.to(throwAssertion())
     }
 }
 

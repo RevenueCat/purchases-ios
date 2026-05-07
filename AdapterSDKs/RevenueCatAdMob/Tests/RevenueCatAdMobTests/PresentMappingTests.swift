@@ -1,3 +1,4 @@
+import Nimble
 import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
@@ -12,6 +13,14 @@ final class PresentMappingTests: AdapterTestCase {
         let mapped = RewardVerification.mapVerifiedReward(reward)
         XCTAssertEqual(mapped.virtualCurrency?.code, "gems")
         XCTAssertEqual(mapped.virtualCurrency?.amount, 7)
+    }
+
+    func testMapVirtualCurrencyWithNonPositiveAmountAsserts() {
+        let reward = RevenueCat.VerifiedReward.virtualCurrency(VirtualCurrencyReward(code: "gems", amount: 0))
+
+        expect {
+            _ = RewardVerification.mapVerifiedReward(reward)
+        }.to(throwAssertion())
     }
 
     func testMapNoReward() {
