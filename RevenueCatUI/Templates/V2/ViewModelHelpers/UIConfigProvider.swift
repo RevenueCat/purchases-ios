@@ -24,18 +24,18 @@ final class UIConfigProvider {
     private let uiConfig: UIConfig
     private let failedToLoadFont: FailedToLoadFont?
     /// Dashboard flag: Dynamic Type only when `automatically_scale_font_size` is true on paywall components.
-    private let automaticallyScaleFontSizeOverride: Bool
+    private let automaticallyScaleFontSize: Bool
     private var loggedMessages: Set<LogMessage> = []
 
     init(uiConfig: UIConfig, failedToLoadFont: FailedToLoadFont? = nil, automaticallyScaleFontSize: Bool = true) {
         self.uiConfig = uiConfig
         self.failedToLoadFont = failedToLoadFont
-        self.automaticallyScaleFontSizeOverride = automaticallyScaleFontSize
+        self.automaticallyScaleFontSize = automaticallyScaleFontSize
     }
 
     /// Dynamic Type is enabled unless the dashboard explicitly sets `automatically_scale_font_size` to `false`.
     func useDynamicType() -> Bool {
-        return self.automaticallyScaleFontSizeOverride
+        return self.automaticallyScaleFontSize
     }
 
     var variableConfig: UIConfig.VariableConfig {
