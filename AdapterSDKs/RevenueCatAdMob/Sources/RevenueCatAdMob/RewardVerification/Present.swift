@@ -21,7 +21,7 @@ internal extension RewardVerification {
         case .noReward:
             return .noReward
         case .unsupportedReward:
-            return .unknown
+            return .unsupportedReward
         }
     }
 

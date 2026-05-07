@@ -30,7 +30,7 @@ final class PresentMappingTests: AdapterTestCase {
 
     func testMapUnsupportedReward() {
         let mapped = RewardVerification.mapVerifiedReward(.unsupportedReward)
-        XCTAssertEqual(mapped, .unknown)
+        XCTAssertEqual(mapped, .unsupportedReward)
     }
 
     func testMapOutcomeVerified() {
