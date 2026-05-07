@@ -56,41 +56,39 @@ struct WorkflowContext {
             return nil
         }
 
-        // Assumes the workflow package is not itself hidden — a hidden default package
-        // would still be selected here, but that configuration is considered invalid.
         let base = screen.componentsConfig.base
         let allComponents = base.stack.components
             + (base.stickyFooter?.stack.components ?? [])
-        let visible = Self.collectVisiblePackages(in: allComponents, offering: offering)
+        let packages = Self.collectPackages(in: allComponents, offering: offering)
 
-        guard let selectedPackage = visible.first(where: { $0.isSelectedByDefault })?.package
-                ?? visible.first?.package else {
+        guard let selectedPackage = packages.first(where: { $0.isSelectedByDefault })?.package
+                ?? packages.first?.package else {
             return nil
         }
 
         return .init(
             selectedPackage: selectedPackage,
-            packages: visible.map(\.package)
+            packages: packages.map(\.package)
         )
     }
 
-    private static func collectVisiblePackages(
+    private static func collectPackages(
         in components: [PaywallComponent],
         offering: Offering
     ) -> [(package: Package, isSelectedByDefault: Bool)] {
         return components.reduce(into: []) { result, component in
             switch component {
-            case .package(let pkg) where pkg.visible ?? true:
+            case .package(let pkg):
                 if let rcPackage = offering.package(identifier: pkg.packageID) {
                     result.append((package: rcPackage, isSelectedByDefault: pkg.isSelectedByDefault))
                 }
             case .stack(let stack):
-                result += Self.collectVisiblePackages(in: stack.components, offering: offering)
+                result += Self.collectPackages(in: stack.components, offering: offering)
             case .tabs(let tabs):
-                result += Self.collectVisiblePackages(
+                result += Self.collectPackages(
                     in: tabs.tabs.flatMap { $0.stack.components }, offering: offering)
             case .carousel(let carousel):
-                result += Self.collectVisiblePackages(
+                result += Self.collectPackages(
                     in: carousel.pages.flatMap { $0.components }, offering: offering)
             default:
                 break
