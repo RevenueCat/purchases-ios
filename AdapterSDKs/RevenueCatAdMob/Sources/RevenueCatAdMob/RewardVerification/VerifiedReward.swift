@@ -7,6 +7,7 @@
 import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
+@_spi(Internal) import RevenueCat
 
 /// Reward payload returned after successful verification.
 @_spi(Experimental) public struct VerifiedReward: Sendable, Equatable {
@@ -34,6 +35,7 @@ import Foundation
     /// Virtual currency line item. `amount` must be greater than zero.
     public static func virtualCurrency(code: String, amount: Int) -> VerifiedReward {
         if amount <= 0 {
+            Logger.error(RewardVerificationStrings.invalid_virtual_currency_amount(amount: amount))
             assertionFailure(Self.Strings.virtualCurrencyAmountMustBeGreaterThanZero)
             return .unsupportedReward
         }
