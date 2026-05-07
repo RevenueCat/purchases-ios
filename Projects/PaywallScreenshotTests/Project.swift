@@ -9,10 +9,10 @@ let project = Project(
     targets: [
         .target(
             name: "PaywallScreenshotTests",
-            destinations: [.iPhone, .iPad, .mac, .macCatalyst, .macWithiPadDesign],
+            destinations: [.iPhone, .iPad, .macCatalyst, .macWithiPadDesign],
             product: .unitTests,
             bundleId: "com.revenuecat.PaywallScreenshotTests",
-            deploymentTargets: .multiplatform(iOS: "15.0", macOS: "12.0"),
+            deploymentTargets: .iOS("15.0"),
             infoPlist: .default,
             sources: [
                 "../../Tests/RevenueCatUITests/PaywallsV2/TakeScreenshot.swift",
