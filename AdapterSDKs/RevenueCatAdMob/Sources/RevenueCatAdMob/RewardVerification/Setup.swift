@@ -50,7 +50,10 @@ internal extension RewardVerification {
                 return nil
             }
 
-            Logger.info(RewardVerificationStrings.setup_install(adType: "\(type(of: loadedAd))", transactionID: clientTransactionID))
+            Logger.info(RewardVerificationStrings.setup_install(
+                adType: "\(type(of: loadedAd))",
+                transactionID: clientTransactionID
+            ))
 
             let options = GoogleMobileAds.ServerSideVerificationOptions()
             options.userIdentifier = appUserID

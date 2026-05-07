@@ -70,7 +70,10 @@ internal extension RewardVerification {
         }
 
         func run(clientTransactionID: String) async -> Outcome {
-            Logger.debug(RewardVerificationStrings.poll_start(transactionID: clientTransactionID, maxAttempts: self.maxAttempts))
+            Logger.debug(RewardVerificationStrings.poll_start(
+                transactionID: clientTransactionID,
+                maxAttempts: self.maxAttempts
+            ))
 
             for attempt in 0..<self.maxAttempts {
                 Logger.verbose(RewardVerificationStrings.poll_attempt(
@@ -89,22 +92,34 @@ internal extension RewardVerification {
 
                 do {
                     let status = try await self.statusPoller.pollStatus(clientTransactionID: clientTransactionID)
-                    Logger.debug(RewardVerificationStrings.poll_status(status: status.logDescription, transactionID: clientTransactionID))
+                    Logger.debug(RewardVerificationStrings.poll_status(
+                        status: status.logDescription,
+                        transactionID: clientTransactionID
+                    ))
                     switch status {
                     case .verified(let reward): return .verified(reward)
                     case .failed: return .failed
                     case .pending, .unknown: continue
                     }
                 } catch let code as ErrorCode where code.isTransientPolling {
-                    Logger.debug(RewardVerificationStrings.poll_transient_error(error: code, transactionID: clientTransactionID))
+                    Logger.debug(RewardVerificationStrings.poll_transient_error(
+                        error: code,
+                        transactionID: clientTransactionID
+                    ))
                     continue
                 } catch {
-                    Logger.error(RewardVerificationStrings.poll_terminal_error(error: error, transactionID: clientTransactionID))
+                    Logger.error(RewardVerificationStrings.poll_terminal_error(
+                        error: error,
+                        transactionID: clientTransactionID
+                    ))
                     return .failed
                 }
             }
 
-            Logger.warn(RewardVerificationStrings.poll_exhausted(maxAttempts: self.maxAttempts, transactionID: clientTransactionID))
+            Logger.warn(RewardVerificationStrings.poll_exhausted(
+                maxAttempts: self.maxAttempts,
+                transactionID: clientTransactionID
+            ))
             return .failed
         }
     }
