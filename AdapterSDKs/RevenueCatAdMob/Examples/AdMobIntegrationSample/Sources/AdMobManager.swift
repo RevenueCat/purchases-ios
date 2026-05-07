@@ -214,7 +214,8 @@ class AdMobManager: NSObject, ObservableObject {
             rewardedVerificationResult = nil
             isWaitingForRewardedReward = true
             rewardedResult = "⏳ Ad shown. Waiting for reward..."
-            ad.present(from: viewController, userDidEarnRewardHandler: {
+            ad.present(from: viewController, userDidEarnRewardHandler: { [weak self] in
+                guard let self = self else { return }
                 let reward = ad.adReward
                 self.isWaitingForRewardedReward = false
                 self.rewardedResult = "🎁 Reward granted: \(reward.amount) \(reward.type)"
@@ -309,7 +310,8 @@ class AdMobManager: NSObject, ObservableObject {
             rewardedInterstitialVerificationResult = nil
             isWaitingForRewardedInterstitialReward = true
             rewardedInterstitialResult = "⏳ Ad shown. Waiting for reward..."
-            ad.present(from: viewController, userDidEarnRewardHandler: {
+            ad.present(from: viewController, userDidEarnRewardHandler: { [weak self] in
+                guard let self = self else { return }
                 let reward = ad.adReward
                 self.isWaitingForRewardedInterstitialReward = false
                 self.rewardedInterstitialResult = "🎁 Reward granted: \(reward.amount) \(reward.type)"
