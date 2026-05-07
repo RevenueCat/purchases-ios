@@ -48,8 +48,8 @@ struct PaywallsV2View: View {
     @Environment(\.paywallSource)
     private var paywallSource
 
-    @Environment(\.workflowFallbackPackage)
-    private var workflowFallbackPackage
+    @Environment(\.workflowPackageContext)
+    private var workflowPackageContext
 
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
@@ -64,6 +64,7 @@ struct PaywallsV2View: View {
     private let uiConfigProvider: UIConfigProvider
     private let offering: Offering
     private let purchaseHandler: PurchaseHandler
+    private let showZeroDecimalPlacePrices: Bool
     /// This is a configuration value from PaywallsV1, but it's important to include here just in case the
     /// default paywall is shown. This is not used in the success path
     private let displayCloseButton: Bool
@@ -99,6 +100,7 @@ struct PaywallsV2View: View {
         self.uiConfigProvider = uiConfigProvider
         self.offering = offering
         self.purchaseHandler = purchaseHandler
+        self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
@@ -252,9 +254,16 @@ struct PaywallsV2View: View {
                     self.createEventData(forDefaultPaywall: forDefaultPaywall)
                 )
             }
-            .task(id: self.workflowFallbackPackage?.identifier) {
-                if self.selectedPackageContext.package == nil {
-                    self.selectedPackageContext.package = self.workflowFallbackPackage
+            .task(id: self.workflowPackageContext?.selectedPackage.identifier) {
+                if self.selectedPackageContext.package == nil,
+                   let workflowPackageContext = self.workflowPackageContext {
+                    await self.selectedPackageContext.update(
+                        package: workflowPackageContext.selectedPackage,
+                        variableContext: .init(
+                            packages: workflowPackageContext.packages,
+                            showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices
+                        )
+                    )
                 }
             }
             .task {

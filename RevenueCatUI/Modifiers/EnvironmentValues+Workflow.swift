@@ -9,7 +9,6 @@
 //
 //  EnvironmentValues+Workflow.swift
 
-@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS)
@@ -45,10 +44,10 @@ private struct IsWorkflowHeaderKey: EnvironmentKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct WorkflowFallbackPackageKey: EnvironmentKey {
-    /// Default package from the workflow's `singleStepFallbackId` step, used by packageless
+private struct WorkflowPackageContextKey: EnvironmentKey {
+    /// Package context from the workflow's `singleStepFallbackId` step, used by packageless
     /// screens to resolve price/period template variables.
-    static let defaultValue: Package? = nil
+    static let defaultValue: WorkflowPackageContext? = nil
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -71,9 +70,9 @@ extension EnvironmentValues {
         set { self[IsWorkflowHeaderKey.self] = newValue }
     }
 
-    var workflowFallbackPackage: Package? {
-        get { self[WorkflowFallbackPackageKey.self] }
-        set { self[WorkflowFallbackPackageKey.self] = newValue }
+    var workflowPackageContext: WorkflowPackageContext? {
+        get { self[WorkflowPackageContextKey.self] }
+        set { self[WorkflowPackageContextKey.self] = newValue }
     }
 }
 

@@ -135,54 +135,56 @@ final class WorkflowPaywallViewTests: TestCase {
 
 }
 
-// MARK: - computeFallbackPackage tests
+// MARK: - workflowPackageContext tests
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowPaywallViewTests {
 
-    func testComputeFallbackPackageReturnsNilWhenNoFallbackStepId() throws {
+    func testWorkflowPackageContextReturnsNilWhenNoFallbackStepId() throws {
         let context = try Self.makeContext(singleStepFallbackId: nil)
-        expect(context.fallbackPackage).to(beNil())
+        expect(context.workflowPackageContext).to(beNil())
     }
 
-    func testComputeFallbackPackageReturnsNilWhenFallbackIdPointsToMissingStep() throws {
+    func testWorkflowPackageContextReturnsNilWhenSingleStepFallbackIdPointsToMissingStep() throws {
         let context = try Self.makeContext(singleStepFallbackId: "nonexistent_step")
-        expect(context.fallbackPackage).to(beNil())
+        expect(context.workflowPackageContext).to(beNil())
     }
 
-    func testComputeFallbackPackageReturnsIsSelectedByDefaultPackage() throws {
+    func testWorkflowPackageContextReturnsIsSelectedByDefaultPackage() throws {
         let context = try Self.makeContext(
             singleStepFallbackId: "step_terminal",
-            fallbackPackages: [
+            workflowPackages: [
                 (id: "$rc_monthly", isDefault: false),
                 (id: "$rc_annual", isDefault: true)
             ]
         )
-        expect(context.fallbackPackage?.identifier) == "$rc_annual"
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_annual"
+        expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_monthly", "$rc_annual"]
     }
 
-    func testComputeFallbackPackageReturnsFirstPackageWhenNoneIsDefault() throws {
+    func testWorkflowPackageContextReturnsFirstPackageWhenNoneIsDefault() throws {
         let context = try Self.makeContext(
             singleStepFallbackId: "step_terminal",
-            fallbackPackages: [
+            workflowPackages: [
                 (id: "$rc_monthly", isDefault: false),
                 (id: "$rc_annual", isDefault: false)
             ]
         )
-        expect(context.fallbackPackage?.identifier) == "$rc_monthly"
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_monthly"
+        expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_monthly", "$rc_annual"]
     }
 
-    func testComputeFallbackPackageReturnsNilForPackagelessFallbackStep() throws {
+    func testWorkflowPackageContextReturnsNilForPackagelessWorkflowStep() throws {
         let context = try Self.makeContext(
             singleStepFallbackId: "step_terminal",
-            fallbackPackages: []
+            workflowPackages: []
         )
-        expect(context.fallbackPackage).to(beNil())
+        expect(context.workflowPackageContext).to(beNil())
     }
 
 }
 
-// MARK: - Helpers for computeFallbackPackage tests
+// MARK: - Helpers for workflowPackageContext tests
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension WorkflowPaywallViewTests {
@@ -191,15 +193,15 @@ private extension WorkflowPaywallViewTests {
 
     static func makeContext(
         singleStepFallbackId: String?,
-        fallbackPackages: [PackageSpec] = []
+        workflowPackages: [PackageSpec] = []
     ) throws -> WorkflowContext {
         let offeringId = "offering_test"
         let workflow = try makeWorkflow(
             singleStepFallbackId: singleStepFallbackId,
-            fallbackPackages: fallbackPackages,
+            workflowPackages: workflowPackages,
             offeringId: offeringId
         )
-        let packages = fallbackPackages.map { spec in
+        let packages = workflowPackages.map { spec in
             Package(
                 identifier: spec.id,
                 packageType: .custom,
@@ -243,10 +245,10 @@ private extension WorkflowPaywallViewTests {
 
     static func makeWorkflow(
         singleStepFallbackId: String?,
-        fallbackPackages: [PackageSpec],
+        workflowPackages: [PackageSpec],
         offeringId: String
     ) throws -> PublishedWorkflow {
-        let fallbackIdJSON = singleStepFallbackId.map { "\"single_step_fallback_id\": \"\($0)\"," } ?? ""
+        let workflowStepIdJSON = singleStepFallbackId.map { "\"single_step_fallback_id\": \"\($0)\"," } ?? ""
 
         let terminalStepJSON: String
         let terminalScreenJSON: String
@@ -255,7 +257,7 @@ private extension WorkflowPaywallViewTests {
             "\(fallbackId)": { "id": "\(fallbackId)", "type": "screen", "screen_id": "screen_terminal" },
             """
             terminalScreenJSON = """
-            "screen_terminal": \(makeScreenJSON(packages: fallbackPackages, offeringId: offeringId)),
+            "screen_terminal": \(makeScreenJSON(packages: workflowPackages, offeringId: offeringId)),
             """
         } else {
             terminalStepJSON = ""
@@ -267,7 +269,7 @@ private extension WorkflowPaywallViewTests {
           "id": "wf_test",
           "display_name": "Test",
           "initial_step_id": "step_initial",
-          \(fallbackIdJSON)
+          \(workflowStepIdJSON)
           "steps": {
             "step_initial": { "id": "step_initial", "type": "screen", "screen_id": "screen_initial" },
             \(terminalStepJSON)

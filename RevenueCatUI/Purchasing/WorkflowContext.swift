@@ -41,30 +41,37 @@ struct WorkflowContext {
         return offering.withPresentedOfferingContext(presentedOfferingContext)
     }
 
-    /// Resolves the default package from the workflow's `singleStepFallbackId` step so that
+    /// Resolves the package context from the workflow's `singleStepFallbackId` step so that
     /// packageless early screens can still resolve price/period template variables.
-    var fallbackPackage: Package? {
-        guard let fallbackStepId = self.workflow.singleStepFallbackId else {
+    var workflowPackageContext: WorkflowPackageContext? {
+        guard let workflowStepId = self.workflow.singleStepFallbackId else {
             return nil
         }
 
-        guard let step = self.workflow.steps[fallbackStepId],
+        guard let step = self.workflow.steps[workflowStepId],
               let screenId = step.screenId,
               let screen = self.workflow.screens[screenId],
               let offering = self.offering(for: screen.offeringIdentifier) else {
-            Logger.warning(Strings.workflow_fallback_package_unresolvable(stepId: fallbackStepId))
+            Logger.warning(Strings.workflow_package_context_unresolvable(stepId: workflowStepId))
             return nil
         }
 
-        // Assumes the fallback package is not itself hidden — a hidden default package
+        // Assumes the workflow package is not itself hidden — a hidden default package
         // would still be selected here, but that configuration is considered invalid.
         let visible = Self.collectVisiblePackages(
             in: screen.componentsConfig.base.stack.components,
             offering: offering
         )
 
-        return visible.first(where: { $0.isSelectedByDefault })?.package
-            ?? visible.first?.package
+        guard let selectedPackage = visible.first(where: { $0.isSelectedByDefault })?.package
+                ?? visible.first?.package else {
+            return nil
+        }
+
+        return .init(
+            selectedPackage: selectedPackage,
+            packages: visible.map(\.package)
+        )
     }
 
     private static func collectVisiblePackages(
@@ -84,6 +91,12 @@ struct WorkflowContext {
             }
         }
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WorkflowPackageContext {
+    let selectedPackage: Package
+    let packages: [Package]
 }
 
 #endif
