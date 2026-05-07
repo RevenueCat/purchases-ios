@@ -27,6 +27,10 @@ import GoogleMobileAds
     /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
     /// (checked with a debug assertion).
     ///
+    /// Callback timing:
+    /// - `rewardVerificationStarted` runs when Google invokes the reward callback, before verification polling starts.
+    /// - `rewardVerificationResult` runs after polling reaches a terminal outcome.
+    ///
     /// To override the placement used for RevenueCat analytics at show time, use
     /// ``present(from:placement:rewardVerificationStarted:rewardVerificationResult:)`` instead of this method.
     @MainActor
@@ -51,6 +55,10 @@ import GoogleMobileAds
     /// ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:)``.
     /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
     /// (checked with a debug assertion).
+    ///
+    /// Callback timing:
+    /// - `rewardVerificationStarted` runs when Google invokes the reward callback, before verification polling starts.
+    /// - `rewardVerificationResult` runs after polling reaches a terminal outcome.
     @MainActor
     func present(
         from viewController: UIViewController,
@@ -87,6 +95,10 @@ import GoogleMobileAds
     /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
     /// (checked with a debug assertion).
     ///
+    /// Callback timing:
+    /// - `rewardVerificationStarted` runs when Google invokes the reward callback, before verification polling starts.
+    /// - `rewardVerificationResult` runs after polling reaches a terminal outcome.
+    ///
     /// To override the placement used for RevenueCat analytics at show time, use
     /// ``present(from:placement:rewardVerificationStarted:rewardVerificationResult:)`` instead of this method.
     @MainActor
@@ -111,6 +123,10 @@ import GoogleMobileAds
     /// ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:)``.
     /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
     /// (checked with a debug assertion).
+    ///
+    /// Callback timing:
+    /// - `rewardVerificationStarted` runs when Google invokes the reward callback, before verification polling starts.
+    /// - `rewardVerificationResult` runs after polling reaches a terminal outcome.
     @MainActor
     func present(
         from viewController: UIViewController,
