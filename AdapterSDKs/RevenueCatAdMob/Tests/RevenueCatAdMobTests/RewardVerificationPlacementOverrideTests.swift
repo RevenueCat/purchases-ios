@@ -9,7 +9,7 @@ import GoogleMobileAds
 @available(iOS 15.0, *)
 final class RewardVerificationPlacementOverrideTests: AdapterTestCase {
 
-    func testKeepLoadTimePlacementDoesNotClearExistingPlacement() {
+    func testNoPlacementOverrideKeepsExistingPlacement() {
         let fullScreenAd = FakeFullScreenAd()
         let trackingDelegate = Tracking.FullScreenContentDelegate(
             delegate: nil,
@@ -20,10 +20,26 @@ final class RewardVerificationPlacementOverrideTests: AdapterTestCase {
         )
         Tracking.Adapter.shared.fullScreenDelegateStore.set(trackingDelegate, for: fullScreenAd)
 
-        Tracking.applyRewardVerificationPlacementOverride(.keepLoadTimePlacement, on: fullScreenAd)
-
+        // Mirrors the overload that does not accept `placement`: no override is applied.
         let updatedDelegate = Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: fullScreenAd)
         XCTAssertEqual(updatedDelegate?.placement, "load_time_placement")
+    }
+
+    func testPlacementOverrideUpdatesExistingPlacement() {
+        let fullScreenAd = FakeFullScreenAd()
+        let trackingDelegate = Tracking.FullScreenContentDelegate(
+            delegate: nil,
+            placement: "load_time_placement",
+            adUnitID: "ad_unit_id",
+            adFormat: .rewarded,
+            responseInfoProvider: { nil }
+        )
+        Tracking.Adapter.shared.fullScreenDelegateStore.set(trackingDelegate, for: fullScreenAd)
+
+        Tracking.applyRewardVerificationPlacementOverride("show_time_placement", on: fullScreenAd)
+
+        let updatedDelegate = Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: fullScreenAd)
+        XCTAssertEqual(updatedDelegate?.placement, "show_time_placement")
     }
 
     func testExplicitNilPlacementOverrideClearsExistingPlacement() {
@@ -37,7 +53,7 @@ final class RewardVerificationPlacementOverrideTests: AdapterTestCase {
         )
         Tracking.Adapter.shared.fullScreenDelegateStore.set(trackingDelegate, for: fullScreenAd)
 
-        Tracking.applyRewardVerificationPlacementOverride(.override(nil), on: fullScreenAd)
+        Tracking.applyRewardVerificationPlacementOverride(nil, on: fullScreenAd)
 
         let updatedDelegate = Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: fullScreenAd)
         XCTAssertNil(updatedDelegate?.placement)

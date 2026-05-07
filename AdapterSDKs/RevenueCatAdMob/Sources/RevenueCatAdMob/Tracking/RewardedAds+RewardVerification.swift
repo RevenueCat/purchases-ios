@@ -15,14 +15,11 @@ internal extension Tracking {
 
     @MainActor
     static func applyRewardVerificationPlacementOverride(
-        _ placementOverride: RewardVerificationPlacementOverride,
+        _ placementOverride: String?,
         on fullScreenAd: AnyObject
     ) {
         if let trackingDelegate = Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: fullScreenAd) {
-            trackingDelegate.placement = RewardVerificationPlacementResolver.resolvedPlacement(
-                currentPlacement: trackingDelegate.placement,
-                override: placementOverride
-            )
+            trackingDelegate.placement = placementOverride
         }
     }
 }
@@ -52,10 +49,6 @@ internal extension Tracking {
         rewardVerificationStarted: (() -> Void)? = nil,
         rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
     ) {
-        Tracking.applyRewardVerificationPlacementOverride(
-            .keepLoadTimePlacement,
-            on: self
-        )
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
             rewardVerificationStarted: rewardVerificationStarted,
             rewardVerificationResult: rewardVerificationResult
@@ -80,7 +73,7 @@ internal extension Tracking {
         rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
     ) {
         Tracking.applyRewardVerificationPlacementOverride(
-            .override(placement),
+            placement,
             on: self
         )
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
@@ -119,10 +112,6 @@ internal extension Tracking {
         rewardVerificationStarted: (() -> Void)? = nil,
         rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
     ) {
-        Tracking.applyRewardVerificationPlacementOverride(
-            .keepLoadTimePlacement,
-            on: self
-        )
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
             rewardVerificationStarted: rewardVerificationStarted,
             rewardVerificationResult: rewardVerificationResult
@@ -147,7 +136,7 @@ internal extension Tracking {
         rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
     ) {
         Tracking.applyRewardVerificationPlacementOverride(
-            .override(placement),
+            placement,
             on: self
         )
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
