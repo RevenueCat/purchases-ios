@@ -65,6 +65,7 @@ struct PaywallsV2View: View {
     private let offering: Offering
     private let purchaseHandler: PurchaseHandler
     private let workflowDefaultPackage: Package?
+    private let workflowPackages: [Package]?
     private let showZeroDecimalPlacePrices: Bool
     /// This is a configuration value from PaywallsV1, but it's important to include here just in case the
     /// default paywall is shown. This is not used in the success path
@@ -86,6 +87,7 @@ struct PaywallsV2View: View {
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
         workflowDefaultPackage: Package? = nil,
+        workflowPackages: [Package]? = nil,
         displayCloseButton: Bool = false,
         onDismiss: @escaping () -> Void,
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
@@ -103,6 +105,7 @@ struct PaywallsV2View: View {
         self.offering = offering
         self.purchaseHandler = purchaseHandler
         self.workflowDefaultPackage = workflowDefaultPackage
+        self.workflowPackages = workflowPackages
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
@@ -143,6 +146,7 @@ struct PaywallsV2View: View {
                     pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
                     workflowDefaultPackage: workflowDefaultPackage
                 ),
+                workflowPackages: workflowPackages,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         } else {
@@ -265,18 +269,6 @@ struct PaywallsV2View: View {
                 self.purchaseHandler.trackPaywallImpression(
                     self.createEventData(forDefaultPaywall: forDefaultPaywall)
                 )
-            }
-            .task(id: self.workflowPackageContext?.selectedPackage.identifier) {
-                if self.selectedPackageContext.package == nil,
-                   let workflowPackageContext = self.workflowPackageContext {
-                    self.selectedPackageContext.update(
-                        package: workflowPackageContext.selectedPackage,
-                        variableContext: .init(
-                            packages: workflowPackageContext.packages,
-                            showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices
-                        )
-                    )
-                }
             }
             .task {
                 guard !self.didFinishEligibilityCheck else {
@@ -512,12 +504,13 @@ extension PaywallsV2View {
     static func makeSelectedPackageContext(
         from paywallState: PaywallState,
         defaultPackage: Package?,
+        workflowPackages: [Package]?,
         showZeroDecimalPlacePrices: Bool
     ) -> PackageContext {
         return .init(
             package: defaultPackage,
             variableContext: .init(
-                packages: paywallState.packages,
+                packages: workflowPackages ?? paywallState.packages,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         )

@@ -247,6 +247,7 @@ struct WorkflowPaywallView: View {
             introEligibilityChecker: self.introEligibilityChecker,
             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
             workflowDefaultPackage: self.workflowPackageContext?.selectedPackage,
+            workflowPackages: self.workflowPackageContext?.packages,
             displayCloseButton: page.showCloseButton,
             onDismiss: self.handleDismiss,
             failedToLoadFont: self.failedToLoadFont,
