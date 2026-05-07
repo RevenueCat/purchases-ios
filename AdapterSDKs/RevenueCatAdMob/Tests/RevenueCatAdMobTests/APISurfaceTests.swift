@@ -158,9 +158,8 @@ final class APISurfaceTests: AdapterTestCase {
         let rewardedInterstitialEnable: (GoogleMobileAds.RewardedInterstitialAd) -> Void = {
             $0.enableRewardVerification()
         }
-
-        XCTAssertNotNil(rewardedEnable)
-        XCTAssertNotNil(rewardedInterstitialEnable)
+        _ = rewardedEnable
+        _ = rewardedInterstitialEnable
     }
 
     @MainActor
