@@ -100,10 +100,8 @@ final class UIConfigProvider {
     func resolveFont(
         size fontSize: CGFloat,
         name: String,
-        useDynamicType: Bool? = nil
+        useDynamicType: Bool
     ) -> Font? {
-
-        let useDynamicType = useDynamicType ?? self.useDynamicType()
 
         guard let fontsConfig = self.uiConfig.app.fonts[name] else {
             self.logMessageIfNeeded(.fontMappingNotFound(name: name))
