@@ -1,5 +1,6 @@
 // swiftlint:disable:next blanket_disable_command
 // swiftlint:disable identifier_name
+// swiftlint:disable file_length type_body_length
 import Foundation
 import GoogleMobileAds
 @_spi(Experimental) import RevenueCatAdMob
@@ -21,9 +22,38 @@ class AdMobManager: NSObject, ObservableObject {
     @Published var interstitialStatus = "Not Loaded"
     @Published var appOpenStatus = "Not Loaded"
     @Published var rewardedStatus = "Not Loaded"
+    @Published var rewardedResult: String?
+    @Published var rewardedVerificationResult: String?
     @Published var rewardedInterstitialStatus = "Not Loaded"
+    @Published var rewardedInterstitialResult: String?
+    @Published var rewardedInterstitialVerificationResult: String?
     @Published var nativeAdStatus = "Not Loaded"
     @Published var nativeVideoAdStatus = "Not Loaded"
+    private var isWaitingForRewardedReward = false
+    private var isWaitingForRewardedInterstitialReward = false
+    private var rewardedLoadMode: RewardVerificationLoadMode = .withoutRewardVerification
+    private var rewardedInterstitialLoadMode: RewardVerificationLoadMode = .withoutRewardVerification
+
+    private enum RewardVerificationLoadMode {
+        case withoutRewardVerification
+        case withRewardVerification
+    }
+
+    func resetRewardedAdSelection() {
+        isWaitingForRewardedReward = false
+        rewardedAd = nil
+        rewardedStatus = "Not Loaded"
+        rewardedResult = "Mode changed. Load again."
+        rewardedVerificationResult = nil
+    }
+
+    func resetRewardedInterstitialAdSelection() {
+        isWaitingForRewardedInterstitialReward = false
+        rewardedInterstitialAd = nil
+        rewardedInterstitialStatus = "Not Loaded"
+        rewardedInterstitialResult = "Mode changed. Load again."
+        rewardedInterstitialVerificationResult = nil
+    }
 
     // MARK: - Banner Ad
 
@@ -108,8 +138,21 @@ class AdMobManager: NSObject, ObservableObject {
 
     // MARK: - Rewarded Ad
 
-    func loadRewardedAd() {
+    func loadRewardedAd(withRewardVerification: Bool) {
+        let mode: RewardVerificationLoadMode = withRewardVerification
+            ? .withRewardVerification
+            : .withoutRewardVerification
+        rewardedLoadMode = mode
         rewardedStatus = "Loading..."
+        isWaitingForRewardedReward = false
+        switch mode {
+        case .withoutRewardVerification:
+            rewardedResult = "⏳ Loading ad without Reward Verification..."
+            rewardedVerificationResult = nil
+        case .withRewardVerification:
+            rewardedResult = nil
+            rewardedVerificationResult = "⏳ Loading ad with Reward Verification..."
+        }
 
         RewardedAd.loadAndTrack(
             withAdUnitID: Constants.AdMob.rewardedAdUnitID,
@@ -122,32 +165,84 @@ class AdMobManager: NSObject, ObservableObject {
             if let error = error {
                 print("❌ Rewarded failed: \(error.localizedDescription)")
                 self.rewardedStatus = "Failed"
+                if mode == .withRewardVerification {
+                    self.rewardedVerificationResult = "❌ Failed to load ad with Reward Verification."
+                } else {
+                    self.rewardedResult = "❌ Failed to load ad without Reward Verification."
+                }
                 return
             }
 
             guard let ad = ad else { return }
 
+            if mode == .withRewardVerification {
+                ad.enableRewardVerification()
+            }
+
             print("✅ Rewarded loaded")
             self.rewardedAd = ad
             self.rewardedStatus = "Ready"
+
+            if mode == .withRewardVerification {
+                self.rewardedVerificationResult = "🔐 Loaded with Reward Verification."
+            } else {
+                self.rewardedResult = "🔓 Loaded without Reward Verification."
+            }
         }
     }
 
-    func showRewardedAd(from viewController: UIViewController, userDidEarnRewardHandler: @escaping () -> Void) {
+    @MainActor
+    func showRewardedAd(from viewController: UIViewController) {
         guard let ad = rewardedAd else {
             print("⚠️ Rewarded not ready")
             return
         }
-        ad.present(from: viewController, userDidEarnRewardHandler: {
-            print("✅ User earned reward")
-            userDidEarnRewardHandler()
-        })
+
+        switch rewardedLoadMode {
+        case .withoutRewardVerification:
+            rewardedVerificationResult = nil
+            isWaitingForRewardedReward = true
+            rewardedResult = "⏳ Ad shown. Waiting for reward..."
+            ad.present(from: viewController, userDidEarnRewardHandler: {
+                let reward = ad.adReward
+                self.isWaitingForRewardedReward = false
+                self.rewardedResult = "🎁 Reward granted: \(reward.amount) \(reward.type)"
+                print("✅ User earned reward")
+            })
+        case .withRewardVerification:
+            rewardedResult = nil
+            rewardedVerificationResult = "Verifying..."
+            ad.present(
+                from: viewController,
+                placement: "rewarded_reward_verification_main",
+                rewardVerificationStarted: {
+                    print("⏳ Rewarded verification started")
+                },
+                rewardVerificationResult: { [weak self] result in
+                    self?.rewardedVerificationResult = Self.message(for: result)
+                    print("✅ Rewarded verification finished: \(String(describing: result.verifiedReward))")
+                }
+            )
+        }
     }
 
     // MARK: - Rewarded Interstitial Ad
 
-    func loadRewardedInterstitialAd() {
+    func loadRewardedInterstitialAd(withRewardVerification: Bool) {
+        let mode: RewardVerificationLoadMode = withRewardVerification
+            ? .withRewardVerification
+            : .withoutRewardVerification
+        rewardedInterstitialLoadMode = mode
         rewardedInterstitialStatus = "Loading..."
+        isWaitingForRewardedInterstitialReward = false
+        switch mode {
+        case .withoutRewardVerification:
+            rewardedInterstitialResult = "⏳ Loading ad without Reward Verification..."
+            rewardedInterstitialVerificationResult = nil
+        case .withRewardVerification:
+            rewardedInterstitialResult = nil
+            rewardedInterstitialVerificationResult = "⏳ Loading ad with Reward Verification..."
+        }
 
         RewardedInterstitialAd.loadAndTrack(
             withAdUnitID: Constants.AdMob.rewardedInterstitialAdUnitID,
@@ -160,27 +255,68 @@ class AdMobManager: NSObject, ObservableObject {
             if let error = error {
                 print("❌ Rewarded Interstitial failed: \(error.localizedDescription)")
                 self.rewardedInterstitialStatus = "Failed"
+                if mode == .withRewardVerification {
+                    self.rewardedInterstitialVerificationResult = "❌ Failed to load ad with Reward Verification."
+                } else {
+                    self.rewardedInterstitialResult = "❌ Failed to load ad without Reward Verification."
+                }
                 return
             }
 
             guard let ad = ad else { return }
 
+            if mode == .withRewardVerification {
+                ad.enableRewardVerification()
+            }
+
             print("✅ Rewarded Interstitial loaded")
             self.rewardedInterstitialAd = ad
             self.rewardedInterstitialStatus = "Ready"
+
+            if mode == .withRewardVerification {
+                self.rewardedInterstitialVerificationResult = "🔐 Loaded with Reward Verification."
+            } else {
+                self.rewardedInterstitialResult = "🔓 Loaded without Reward Verification."
+            }
         }
     }
 
-    // swiftlint:disable:next line_length
-    func showRewardedInterstitialAd(from viewController: UIViewController, userDidEarnRewardHandler: @escaping () -> Void) {
+    @MainActor
+    func showRewardedInterstitialAd(from viewController: UIViewController) {
         guard let ad = rewardedInterstitialAd else {
             print("⚠️ Rewarded Interstitial not ready")
             return
         }
-        ad.present(from: viewController, userDidEarnRewardHandler: {
-            print("✅ User earned reward (rewarded interstitial)")
-            userDidEarnRewardHandler()
-        })
+
+        switch rewardedInterstitialLoadMode {
+        case .withoutRewardVerification:
+            rewardedInterstitialVerificationResult = nil
+            isWaitingForRewardedInterstitialReward = true
+            rewardedInterstitialResult = "⏳ Ad shown. Waiting for reward..."
+            ad.present(from: viewController, userDidEarnRewardHandler: {
+                let reward = ad.adReward
+                self.isWaitingForRewardedInterstitialReward = false
+                self.rewardedInterstitialResult = "🎁 Reward granted: \(reward.amount) \(reward.type)"
+                print("✅ User earned reward (rewarded interstitial)")
+            })
+        case .withRewardVerification:
+            rewardedInterstitialResult = nil
+            rewardedInterstitialVerificationResult = "Verifying..."
+            ad.present(
+                from: viewController,
+                placement: "rewarded_interstitial_reward_verification_main",
+                rewardVerificationStarted: {
+                    print("⏳ Rewarded interstitial verification started")
+                },
+                rewardVerificationResult: { [weak self] result in
+                    self?.rewardedInterstitialVerificationResult = Self.message(for: result)
+                    print(
+                        "✅ Rewarded interstitial verification finished: "
+                        + "\(String(describing: result.verifiedReward))"
+                    )
+                }
+            )
+        }
     }
 
     // MARK: - Native Ad
@@ -238,13 +374,45 @@ extension AdMobManager: FullScreenContentDelegate {
             appOpenAd = nil
             appOpenStatus = "Not Loaded"
         } else if ad is RewardedAd {
+            if isWaitingForRewardedReward {
+                rewardedResult = "⚠️ Ad dismissed before reward was earned"
+                isWaitingForRewardedReward = false
+            } else if rewardedLoadMode == .withRewardVerification,
+                      rewardedVerificationResult == "Verifying..." {
+                rewardedVerificationResult = "⚠️ Ad dismissed before reward verification completed"
+            }
             rewardedAd = nil
             rewardedStatus = "Not Loaded"
         } else if ad is RewardedInterstitialAd {
+            if isWaitingForRewardedInterstitialReward {
+                rewardedInterstitialResult = "⚠️ Ad dismissed before reward was earned"
+                isWaitingForRewardedInterstitialReward = false
+            } else if rewardedInterstitialLoadMode == .withRewardVerification,
+                      rewardedInterstitialVerificationResult == "Verifying..." {
+                rewardedInterstitialVerificationResult = "⚠️ Ad dismissed before reward verification completed"
+            }
             rewardedInterstitialAd = nil
             rewardedInterstitialStatus = "Not Loaded"
         }
     }
+}
+
+private extension AdMobManager {
+
+    static func message(for result: RewardVerificationResult) -> String {
+        guard result.isVerified, let verifiedReward = result.verifiedReward else {
+            return "❌ Verification failed"
+        }
+
+        if let virtualCurrency = verifiedReward.virtualCurrency {
+            return "✅ Verified: granted \(virtualCurrency.amount) \(virtualCurrency.code)"
+        } else if verifiedReward == .noReward {
+            return "✅ Verified: no reward granted"
+        } else {
+            return "✅ Verified: reward type not supported in this SDK"
+        }
+    }
+
 }
 
 // MARK: - NativeAdLoaderDelegate / AdLoaderDelegate

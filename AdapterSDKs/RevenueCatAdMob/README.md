@@ -182,6 +182,86 @@ rewardedInterstitialAd?.present(from: self, userDidEarnRewardHandler: {
 })
 ```
 
+### Server-side reward verification (rewarded + rewarded interstitial)
+
+Enable verification on the loaded ad instance, then present it with reward verification callbacks:
+
+```swift
+// RewardedAd
+RewardedAd.loadAndTrack(
+    withAdUnitID: "AD_UNIT_ID",
+    request: Request(),
+    placement: "rewarded_reward_verification_main",
+    fullScreenContentDelegate: self
+) { ad, error in
+    if let error = error { return }
+    guard let ad else { return }
+
+    ad.enableRewardVerification()
+    self.rewardedAd = ad
+}
+
+rewardedAd?.present(
+    from: self,
+    placement: "rewarded_reward_verification_main",
+    rewardVerificationStarted: {
+        // Reward verification started
+    },
+    rewardVerificationResult: { result in
+        guard result.isVerified, let verifiedReward = result.verifiedReward else {
+            print("Reward verification failed")
+            return
+        }
+
+        if let virtualCurrency = verifiedReward.virtualCurrency {
+            print("Granted \(virtualCurrency.amount) \(virtualCurrency.code)")
+        } else if verifiedReward == .noReward {
+            print("Verified with no reward to grant")
+        } else {
+            print("Verified reward type is not supported in this SDK version")
+        }
+    }
+)
+```
+
+```swift
+// RewardedInterstitialAd
+RewardedInterstitialAd.loadAndTrack(
+    withAdUnitID: "AD_UNIT_ID",
+    request: Request(),
+    placement: "rewarded_interstitial_reward_verification_main",
+    fullScreenContentDelegate: self
+) { ad, error in
+    if let error = error { return }
+    guard let ad else { return }
+
+    ad.enableRewardVerification()
+    self.rewardedInterstitialAd = ad
+}
+
+rewardedInterstitialAd?.present(
+    from: self,
+    placement: "rewarded_interstitial_reward_verification_main",
+    rewardVerificationStarted: {
+        // Reward verification started
+    },
+    rewardVerificationResult: { result in
+        guard result.isVerified, let verifiedReward = result.verifiedReward else {
+            print("Reward verification failed")
+            return
+        }
+
+        if let virtualCurrency = verifiedReward.virtualCurrency {
+            print("Granted \(virtualCurrency.amount) \(virtualCurrency.code)")
+        } else if verifiedReward == .noReward {
+            print("Verified with no reward to grant")
+        } else {
+            print("Verified reward type is not supported in this SDK version")
+        }
+    }
+)
+```
+
 **With RevenueCat tracking:**
 
 ```swift

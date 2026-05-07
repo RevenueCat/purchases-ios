@@ -21,8 +21,8 @@ This sample uses **Google Mobile Ads SDK v13** Swift API (no `GAD` prefix):
 - **Banner** - `GoogleMobileAds.BannerView.loadAndTrack(request:placement:)`
 - **Interstitial** - `GoogleMobileAds.InterstitialAd.loadAndTrack(..., fullScreenContentDelegate: self)`
 - **App Open** - `GoogleMobileAds.AppOpenAd.loadAndTrack(..., fullScreenContentDelegate: self)`
-- **Rewarded** - `GoogleMobileAds.RewardedAd.loadAndTrack(..., fullScreenContentDelegate: self)`
-- **Rewarded Interstitial** - `GoogleMobileAds.RewardedInterstitialAd.loadAndTrack(..., fullScreenContentDelegate: self)`
+- **Rewarded** - `GoogleMobileAds.RewardedAd.loadAndTrack(..., fullScreenContentDelegate: self)` with a Reward Verification toggle, single **Load**, and single **Show**
+- **Rewarded Interstitial** - `GoogleMobileAds.RewardedInterstitialAd.loadAndTrack(..., fullScreenContentDelegate: self)` with a Reward Verification toggle, single **Load**, and single **Show**
 - **Native** - `GoogleMobileAds.AdLoader.loadAndTrack(...)` with AdMob native/ad-loader delegates
 - **Native Video** - native loader with a video-oriented ad unit ID
 - **Error Handling** - intentionally invalid ad unit ID to validate failed-to-load tracking
@@ -93,6 +93,18 @@ In the app:
 3. Tap **Show** (where applicable).
 4. Interact with the ad and dismiss it.
 
+In both rewarded detail screens:
+- Choose whether **Reward Verification** is enabled using the toggle.
+- Tap **Load**, then tap **Show** to present using that loaded mode.
+
+When loaded with Reward Verification, the result card shows:
+- verification start (`Verifying...`)
+- final reward verification outcome:
+  - `✅ Verified: granted <amount> <code>` for virtual-currency rewards
+  - `✅ Verified: no reward granted` when verification succeeds without a reward payload
+  - `✅ Verified: reward type not supported in this SDK` for unknown reward types
+  - `❌ Verification failed` when verification does not succeed
+
 The sample prints diagnostics in the Xcode console and emits RevenueCat ad events for each format. For dashboard verification, background the app after testing to trigger SDK flush.
 
 ---
@@ -127,6 +139,11 @@ The sample prints diagnostics in the Xcode console and emits RevenueCat ad event
 ```
 
 All formats in this app use `loadAndTrack` APIs and pass a `placement` value to improve reporting segmentation.
+
+For reward verification flows, the sample explicitly calls `enableRewardVerification()` on loaded rewarded ad instances, then uses `present(..., rewardVerificationStarted:, rewardVerificationResult:)` to show verification progress and map outcomes to real-world behavior:
+- grant virtual currency when `verifiedReward.virtualCurrency` is present
+- handle the `noReward` verified case separately
+- use a safe fallback for unknown verified reward shapes
 
 > **Important:** Do not reassign wrapped delegates/handlers after calling `loadAndTrack`.
 > For full-screen ads, pass your `fullScreenContentDelegate` through `loadAndTrack`.

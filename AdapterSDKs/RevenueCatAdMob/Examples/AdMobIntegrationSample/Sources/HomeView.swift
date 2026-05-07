@@ -1,3 +1,4 @@
+// swiftlint:disable file_length type_body_length function_parameter_count
 import GoogleMobileAds
 import SwiftUI
 
@@ -74,8 +75,8 @@ private enum AdFormat: String, CaseIterable, Identifiable {
         case .banner: return "Always visible, auto-loaded"
         case .interstitial: return "Full-screen ad"
         case .appOpen: return "App launch/resume ad"
-        case .rewarded: return "Rewards users after viewing"
-        case .rewardedInterstitial: return "Interstitial that rewards users"
+        case .rewarded: return "Rewards users after viewing with optional server-side verification"
+        case .rewardedInterstitial: return "Interstitial that rewards users with optional server-side verification"
         case .native: return "Text + images integrated into UI"
         case .nativeVideo: return "Video content integrated into UI"
         case .errorTesting: return "Triggers ad load failure"
@@ -87,6 +88,8 @@ private struct AdFormatDetailView: View {
     let format: AdFormat
     @ObservedObject var adManager: AdMobManager
     @State private var showErrorFeedback = false
+    @State private var rewardedUsesRewardVerification = false
+    @State private var rewardedInterstitialUsesRewardVerification = false
 
     var body: some View {
         ScrollView {
@@ -125,27 +128,39 @@ private struct AdFormatDetailView: View {
                     )
 
                 case .rewarded:
-                    self.statusAndButtons(
+                    self.rewardedBlock(
                         status: adManager.rewardedStatus,
-                        onLoad: { adManager.loadRewardedAd() },
+                        usesRewardVerification: $rewardedUsesRewardVerification,
+                        onLoad: {
+                            adManager.loadRewardedAd(withRewardVerification: rewardedUsesRewardVerification)
+                        },
                         onShow: {
                             if let rootVC = Self.rootViewController {
-                                adManager.showRewardedAd(from: rootVC) {}
+                                adManager.showRewardedAd(from: rootVC)
                             }
                         },
-                        canShow: adManager.rewardedStatus == "Ready"
+                        canShow: adManager.rewardedStatus == "Ready",
+                        rewardResult: adManager.rewardedResult,
+                        verificationResult: adManager.rewardedVerificationResult
                     )
 
                 case .rewardedInterstitial:
-                    self.statusAndButtons(
+                    self.rewardedBlock(
                         status: adManager.rewardedInterstitialStatus,
-                        onLoad: { adManager.loadRewardedInterstitialAd() },
+                        usesRewardVerification: $rewardedInterstitialUsesRewardVerification,
+                        onLoad: {
+                            adManager.loadRewardedInterstitialAd(
+                                withRewardVerification: rewardedInterstitialUsesRewardVerification
+                            )
+                        },
                         onShow: {
                             if let rootVC = Self.rootViewController {
-                                adManager.showRewardedInterstitialAd(from: rootVC) {}
+                                adManager.showRewardedInterstitialAd(from: rootVC)
                             }
                         },
-                        canShow: adManager.rewardedInterstitialStatus == "Ready"
+                        canShow: adManager.rewardedInterstitialStatus == "Ready",
+                        rewardResult: adManager.rewardedInterstitialResult,
+                        verificationResult: adManager.rewardedInterstitialVerificationResult
                     )
 
                 case .native:
@@ -189,10 +204,21 @@ private struct AdFormatDetailView: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
         }
         .navigationTitle(format.title)
         .navigationBarTitleDisplayMode(.inline)
+        .onChange(of: rewardedUsesRewardVerification) { _ in
+            if format == .rewarded {
+                adManager.resetRewardedAdSelection()
+            }
+        }
+        .onChange(of: rewardedInterstitialUsesRewardVerification) { _ in
+            if format == .rewardedInterstitial {
+                adManager.resetRewardedInterstitialAdSelection()
+            }
+        }
     }
 
     private var detailDescription: String {
@@ -204,9 +230,9 @@ private struct AdFormatDetailView: View {
         case .appOpen:
             return "App launch/resume ad. Tracks Loaded, Displayed, Opened, and Revenue."
         case .rewarded:
-            return "Reward ad with reward callback. Tracks Loaded, Displayed, Opened, and Revenue."
+            return "Load with or without Reward Verification, then tap Show to present the loaded mode."
         case .rewardedInterstitial:
-            return "Interstitial format with reward callback and full tracking."
+            return "Load with or without Reward Verification, then tap Show to present the loaded mode."
         case .native:
             return "Integrated native ad. Native test IDs can be unreliable; custom IDs are best for validation."
         case .nativeVideo:
@@ -256,6 +282,93 @@ private struct AdFormatDetailView: View {
             NativeAdViewRepresentable(nativeAd: nativeAd)
                 .frame(height: 300)
                 .padding(.top, 8)
+        }
+    }
+
+    private func resultCard(message: String) -> some View {
+        let tint = self.resultTint(for: message)
+
+        return Text(message)
+            .font(.body)
+            .foregroundColor(.primary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(tint.opacity(0.12))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(tint.opacity(0.35), lineWidth: 1)
+            )
+    }
+
+    @ViewBuilder
+    private func rewardedBlock(
+        status: String,
+        usesRewardVerification: Binding<Bool>,
+        onLoad: @escaping () -> Void,
+        onShow: @escaping () -> Void,
+        canShow: Bool,
+        rewardResult: String?,
+        verificationResult: String?
+    ) -> some View {
+        Text("Status: \(status)")
+            .font(.caption)
+            .foregroundColor(.secondary)
+
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 10) {
+                Toggle("", isOn: usesRewardVerification)
+                    .labelsHidden()
+                    .tint(.green)
+                    .fixedSize()
+
+                Text("Reward Verification")
+                    .font(.subheadline)
+                    .foregroundColor(.primary)
+            }
+
+            Text("Applies to the next loaded ad")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(uiColor: .secondarySystemBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(uiColor: .separator).opacity(0.45), lineWidth: 1)
+        )
+        .disabled(status == "Loading...")
+
+        Button("Load") { onLoad() }
+            .buttonStyle(.bordered)
+            .disabled(status == "Loading...")
+
+        Button("Show") { onShow() }
+            .buttonStyle(.borderedProminent)
+            .disabled(!canShow)
+
+        if let rewardResult {
+            self.resultCard(message: rewardResult)
+        } else if let verificationResult {
+            self.resultCard(message: verificationResult)
+        }
+    }
+
+    private func resultTint(for message: String) -> Color {
+        if message.hasPrefix("✅") || message.hasPrefix("🎁") {
+            return .green
+        } else if message.hasPrefix("⚠️") {
+            return .orange
+        } else if message.hasPrefix("❌") {
+            return .red
+        } else {
+            return .blue
         }
     }
 
