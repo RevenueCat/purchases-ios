@@ -285,7 +285,12 @@ struct TextComponentStyle {
         self.color = color.asDisplayable(uiConfigProvider: uiConfigProvider)
 
         // WIP: Take into account the fontFamily mapping
-        self.font = Self.makeFont(size: fontSize, name: fontName, uiConfigProvider: uiConfigProvider)
+        self.font = Self.makeFont(
+            size: fontSize,
+            name: fontName,
+            uiConfigProvider: uiConfigProvider,
+            useDynamicType: uiConfigProvider.useDynamicType()
+        )
 
         self.textAlignment = horizontalAlignment.textAlignment
         self.horizontalAlignment = horizontalAlignment.frameAlignment
@@ -361,14 +366,23 @@ enum GenericFont: String {
 extension TextComponentStyle {
 
     @MainActor
-    static func makeFont(size fontSize: CGFloat, name: String?, uiConfigProvider: UIConfigProvider) -> Font {
+    static func makeFont(
+        size fontSize: CGFloat,
+        name: String?,
+        uiConfigProvider: UIConfigProvider,
+        useDynamicType: Bool
+    ) -> Font {
         // Use default font if no name given
         guard let name = name else {
-            return GenericFont.sansSerif.makeFont(fontSize: fontSize)
+            return GenericFont.sansSerif.makeFont(fontSize: fontSize, useDynamicType: useDynamicType)
         }
 
-        let customFont = uiConfigProvider.resolveFont(size: fontSize, name: name)
-        return customFont ?? GenericFont.sansSerif.makeFont(fontSize: fontSize)
+        let customFont = uiConfigProvider.resolveFont(
+            size: fontSize,
+            name: name,
+            useDynamicType: useDynamicType
+        )
+        return customFont ?? GenericFont.sansSerif.makeFont(fontSize: fontSize, useDynamicType: useDynamicType)
     }
 
 }

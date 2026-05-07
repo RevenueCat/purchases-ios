@@ -32,6 +32,7 @@
       "paywall" : null,
       "paywall_components" : {
         "asset_base_url" : "https://assets.pawwalls.com",
+        "automatically_scale_font_size" : true,
         "components_config" : {
           "base" : {
             "background" : {
