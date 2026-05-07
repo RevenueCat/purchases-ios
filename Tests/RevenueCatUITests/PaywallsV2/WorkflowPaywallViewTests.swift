@@ -144,57 +144,34 @@ extension WorkflowPaywallViewTests {
         let ctx = WorkflowPackageContext()
 
         expect(ctx.contextPackage).to(beNil())
-        expect(ctx.fallbackPackage).to(beNil())
-        expect(ctx.onPackageSelected).to(beNil())
+        expect(ctx.defaultPackage).to(beNil())
     }
 
-    func testWorkflowPackageContextStoresContextAndFallbackPackages() {
+    func testWorkflowPackageContextStoresContextAndDefaultPackages() {
         let ctx = WorkflowPackageContext(
             contextPackage: TestData.annualPackage,
-            fallbackPackage: TestData.monthlyPackage
+            defaultPackage: TestData.monthlyPackage
         )
 
         expect(ctx.contextPackage?.identifier) == TestData.annualPackage.identifier
-        expect(ctx.fallbackPackage?.identifier) == TestData.monthlyPackage.identifier
-    }
-
-    func testWorkflowPackageContextOnPackageSelectedCallback() {
-        var received: Package?
-        let ctx = WorkflowPackageContext(
-            onPackageSelected: { received = $0 }
-        )
-
-        ctx.onPackageSelected?(TestData.annualPackage)
-
-        expect(received?.identifier) == TestData.annualPackage.identifier
-    }
-
-    func testWorkflowPackageContextOnPackageSelectedCallbackWithNil() {
-        var called = false
-        let ctx = WorkflowPackageContext(
-            onPackageSelected: { _ in called = true }
-        )
-
-        ctx.onPackageSelected?(nil)
-
-        expect(called) == true
+        expect(ctx.defaultPackage?.identifier) == TestData.monthlyPackage.identifier
     }
 
 }
 
-// MARK: - computeFallbackPackage tests
+// MARK: - computeDefaultPackage tests
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowPaywallViewTests {
 
     func testComputeFallbackPackageReturnsNilWhenNoFallbackStepId() throws {
         let context = try Self.makeContext(singleStepFallbackId: nil)
-        expect(context.fallbackPackage).to(beNil())
+        expect(context.defaultPackage).to(beNil())
     }
 
     func testComputeFallbackPackageReturnsNilWhenFallbackIdPointsToMissingStep() throws {
         let context = try Self.makeContext(singleStepFallbackId: "nonexistent_step")
-        expect(context.fallbackPackage).to(beNil())
+        expect(context.defaultPackage).to(beNil())
     }
 
     func testComputeFallbackPackageReturnsIsSelectedByDefaultPackage() throws {
@@ -205,7 +182,7 @@ extension WorkflowPaywallViewTests {
                 (id: "$rc_annual", isDefault: true)
             ]
         )
-        expect(context.fallbackPackage?.identifier) == "$rc_annual"
+        expect(context.defaultPackage?.identifier) == "$rc_annual"
     }
 
     func testComputeFallbackPackageReturnsFirstPackageWhenNoneIsDefault() throws {
@@ -216,7 +193,7 @@ extension WorkflowPaywallViewTests {
                 (id: "$rc_annual", isDefault: false)
             ]
         )
-        expect(context.fallbackPackage?.identifier) == "$rc_monthly"
+        expect(context.defaultPackage?.identifier) == "$rc_monthly"
     }
 
     func testComputeFallbackPackageReturnsNilForPackagelessFallbackStep() throws {
@@ -224,12 +201,12 @@ extension WorkflowPaywallViewTests {
             singleStepFallbackId: "step_terminal",
             fallbackPackages: []
         )
-        expect(context.fallbackPackage).to(beNil())
+        expect(context.defaultPackage).to(beNil())
     }
 
 }
 
-// MARK: - Helpers for computeFallbackPackage tests
+// MARK: - Helpers for computeDefaultPackage tests
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension WorkflowPaywallViewTests {
