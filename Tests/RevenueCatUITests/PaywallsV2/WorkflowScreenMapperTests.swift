@@ -35,6 +35,7 @@ final class WorkflowScreenMapperTests: TestCase {
         expect(result.data.assetBaseURL) == URL(string: "https://assets.pawwalls.com")
         expect(result.data.revision) == 7
         expect(result.data.defaultLocale) == "en_US"
+        expect(result.data.automaticallyScaleFontSize) == true
     }
 
     func testPassesThroughUiConfig() throws {
