@@ -95,6 +95,19 @@ struct StackComponentView: View {
                 self.make(style: style)
             }
         }
+        // Apply accessibility grouping at the outermost scope so it is not buried under
+        // the style / shape / padding modifier chain produced by make(style:).
+        // `.accessibilityElement(children: .contain)` marks this view as a proper
+        // accessibility container: it has its own node in the XCUITest tree with the
+        // assigned identifier and label, while still allowing children to surface with
+        // their own identifiers. Without it the stack is transparency-propagating and
+        // passes its identifier down to every leaf child.
+        .applyIf(accessibilityLabelOverride != nil || accessibilityIdentifierOverride != nil) { view in
+            view
+                .accessibilityLabel(accessibilityLabelOverride ?? "")
+                .accessibilityIdentifier(accessibilityIdentifierOverride ?? "")
+                .accessibilityElement(children: .contain)
+        }
     }
 
     @ViewBuilder
@@ -161,12 +174,6 @@ struct StackComponentView: View {
                uiConfigProvider: self.viewModel.uiConfigProvider)
         .apply(badge: style.badge, border: style.border, shadow: style.shadow, shape: style.shape)
         .padding(style.margin)
-        // Accessibility applied last (outermost) so style modifiers don't bury the attributes.
-        .applyIf(accessibilityLabelOverride != nil || accessibilityIdentifierOverride != nil) { view in
-            view
-                .accessibilityLabel(accessibilityLabelOverride ?? "")
-                .accessibilityIdentifier(accessibilityIdentifierOverride ?? "")
-        }
     }
 
 }

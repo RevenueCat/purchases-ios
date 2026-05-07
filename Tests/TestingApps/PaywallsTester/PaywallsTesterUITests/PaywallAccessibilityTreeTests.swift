@@ -64,7 +64,7 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
 
     // MARK: - Schema version
 
-    private static let extractorVersion = "2.0.0"
+    private static let extractorVersion = "2.1.0"
 
     // MARK: - Test
 
@@ -338,6 +338,15 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
                 height: Double(cgFrame.size.height)
             )
 
+            // Skip UIKit scaffolding elements that live outside the paywall's coordinate space.
+            // These can be navigation-bar or status-bar artefacts with a negative translated y
+            // (above the paywall root), or zero-dimension invisible placeholders.
+            // Note: check width OR height being zero (not both) — some artefacts have nonzero
+            // width but zero height (e.g. YNbDUWF20g: 402×0).
+            if frame.y < -10 || frame.width == 0 || frame.height == 0 {
+                continue
+            }
+
             let value: String?
             if let rawValue = snapshot.value {
                 let str = "\(rawValue)"
@@ -361,12 +370,19 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
     }
 
     /// DFS walk — appends every element with a non-empty identifier to `pairs`.
+    ///
+    /// The `"paywall"` identifier is a navigation sentinel applied to the outer wrapper view in
+    /// `PaywallsV2View` so that `navigateToLivePaywall` can detect when the paywall appears on
+    /// screen. Because that outer container has no `.accessibilityElement(children: .contain)`
+    /// barrier, SwiftUI propagates the sentinel string down to leaf children that would otherwise
+    /// have no identifier. Those entries must be excluded from the component dictionary.
     private func collectIdedSnapshots(
         _ snapshot: any XCUIElementSnapshot,
         into pairs: inout [(id: String, snapshot: any XCUIElementSnapshot)]
     ) {
-        if !snapshot.identifier.isEmpty {
-            pairs.append((snapshot.identifier, snapshot))
+        let id = snapshot.identifier
+        if !id.isEmpty && id != "paywall" {
+            pairs.append((id, snapshot))
         }
         for child in snapshot.children {
             collectIdedSnapshots(child, into: &pairs)
