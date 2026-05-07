@@ -166,7 +166,8 @@ final class APISurfaceTests: AdapterTestCase {
     func testPresentWithRewardVerificationEntryPointsRemainAvailableInSwift() {
         let rewardedPresent:
             (GoogleMobileAds.RewardedAd)
-            -> (UIViewController, (() -> Void)?, (@MainActor (RewardVerificationResult) -> Void)?) -> Void
+            -> (UIViewController, (@MainActor () -> Void)?, (@MainActor (RewardVerificationResult) -> Void)?)
+                -> Void
             = GoogleMobileAds.RewardedAd.present(
                 from:rewardVerificationStarted:rewardVerificationResult:
             )
@@ -175,14 +176,15 @@ final class APISurfaceTests: AdapterTestCase {
             -> (
                 UIViewController,
                 String?,
-                (() -> Void)?,
+                (@MainActor () -> Void)?,
                 (@MainActor (RewardVerificationResult) -> Void)?
             ) -> Void = GoogleMobileAds.RewardedAd.present(
                 from:placement:rewardVerificationStarted:rewardVerificationResult:
             )
         let rewardedInterstitialPresent:
             (GoogleMobileAds.RewardedInterstitialAd)
-            -> (UIViewController, (() -> Void)?, (@MainActor (RewardVerificationResult) -> Void)?) -> Void
+            -> (UIViewController, (@MainActor () -> Void)?, (@MainActor (RewardVerificationResult) -> Void)?)
+                -> Void
             = GoogleMobileAds.RewardedInterstitialAd.present(
                 from:rewardVerificationStarted:rewardVerificationResult:
             )
@@ -191,7 +193,7 @@ final class APISurfaceTests: AdapterTestCase {
             -> (
                 UIViewController,
                 String?,
-                (() -> Void)?,
+                (@MainActor () -> Void)?,
                 (@MainActor (RewardVerificationResult) -> Void)?
             ) -> Void = GoogleMobileAds.RewardedInterstitialAd.present(
                 from:placement:rewardVerificationStarted:rewardVerificationResult:
