@@ -12,6 +12,7 @@
 import Nimble
 @_spi(Internal) @testable import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 
 #if !os(tvOS)
@@ -133,6 +134,15 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(state.progress) == 1
     }
 
+    func testWorkflowPackageOverridePrefersWorkflowValueOverPageDefault() {
+        let defaultPackage = PaywallsV2View.effectiveDefaultPackage(
+            pageDefaultPackage: TestData.monthlyPackage,
+            workflowDefaultPackage: TestData.annualPackage
+        )
+
+        expect(defaultPackage?.identifier) == TestData.annualPackage.identifier
+    }
+
 }
 
 // MARK: - workflowPackageContext tests
@@ -182,6 +192,32 @@ extension WorkflowPaywallViewTests {
         expect(context.workflowPackageContext).to(beNil())
     }
 
+    func testWorkflowPackageContextReturnsDefaultPackageInsideStickyFooter() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            terminalScreenJSON: Self.makeStickyFooterScreenJSON(
+                packages: [(id: "$rc_annual", isDefault: true)],
+                offeringId: "offering_test"
+            )
+        )
+
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_annual"
+        expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_annual"]
+    }
+
+    func testWorkflowPackageContextReturnsDefaultPackageInsideTabsCarousel() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            terminalScreenJSON: Self.makeTabsCarouselScreenJSON(
+                packageID: "$rc_weekly",
+                offeringId: "offering_test"
+            )
+        )
+
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_weekly"
+        expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_weekly"]
+    }
+
 }
 
 // MARK: - variableContext population tests
@@ -226,23 +262,22 @@ private extension WorkflowPaywallViewTests {
 
     static func makeContext(
         singleStepFallbackId: String?,
-        workflowPackages: [PackageSpec] = []
+        workflowPackages: [PackageSpec] = [],
+        terminalScreenJSON: String? = nil
     ) throws -> WorkflowContext {
         let offeringId = "offering_test"
         let workflow = try makeWorkflow(
             singleStepFallbackId: singleStepFallbackId,
             workflowPackages: workflowPackages,
+            terminalScreenJSON: terminalScreenJSON,
             offeringId: offeringId
         )
-        let packages = workflowPackages.map { spec in
-            Package(
-                identifier: spec.id,
-                packageType: .custom,
-                storeProduct: TestData.monthlyPackage.storeProduct,
-                offeringIdentifier: offeringId,
-                webCheckoutUrl: nil
-            )
-        }
+        let packageIdentifiers = Set(workflowPackages.map(\.id)).union([
+            TestData.monthlyPackage.identifier,
+            TestData.annualPackage.identifier,
+            TestData.weeklyPackage.identifier
+        ])
+        let packages = packageIdentifiers.map { Self.makePackage(identifier: $0, offeringId: offeringId) }
         let offering = Offering(
             identifier: offeringId,
             serverDescription: "Test",
@@ -279,6 +314,7 @@ private extension WorkflowPaywallViewTests {
     static func makeWorkflow(
         singleStepFallbackId: String?,
         workflowPackages: [PackageSpec],
+        terminalScreenJSON customTerminalScreenJSON: String? = nil,
         offeringId: String
     ) throws -> PublishedWorkflow {
         let workflowStepIdJSON = singleStepFallbackId.map { "\"single_step_fallback_id\": \"\($0)\"," } ?? ""
@@ -289,8 +325,10 @@ private extension WorkflowPaywallViewTests {
             terminalStepJSON = """
             "\(fallbackId)": { "id": "\(fallbackId)", "type": "screen", "screen_id": "screen_terminal" },
             """
+            let screenJSON = customTerminalScreenJSON
+                ?? makeScreenJSON(packages: workflowPackages, offeringId: offeringId)
             terminalScreenJSON = """
-            "screen_terminal": \(makeScreenJSON(packages: workflowPackages, offeringId: offeringId)),
+            "screen_terminal": \(screenJSON),
             """
         } else {
             terminalStepJSON = ""
@@ -377,6 +415,136 @@ private extension WorkflowPaywallViewTests {
             "spacing": 0
         }
         """
+    }
+
+    static func makeStickyFooterScreenJSON(
+        packages: [PackageSpec],
+        offeringId: String
+    ) -> String {
+        let componentsJSON = packages.map { packageComponentJSON(id: $0.id, isDefault: $0.isDefault) }
+            .joined(separator: ",")
+
+        return """
+        {
+            "template_name": "template_v2",
+            "asset_base_url": "https://assets.pawwalls.com",
+            "revision": 1,
+            "default_locale": "en_US",
+            "components_localizations": {},
+            "offering_identifier": "\(offeringId)",
+            "components_config": {
+                "base": {
+                    "stack": \(stackJSON(components: "[]")),
+                    "sticky_footer": {
+                        "type": "sticky_footer",
+                        "stack": \(stackJSON(components: "[\(componentsJSON)]"))
+                    },
+                    "background": {
+                        "type": "color",
+                        "value": { "light": { "type": "hex", "value": "#220000ff" } }
+                    }
+                }
+            }
+        }
+        """
+    }
+
+    static func makeTabsCarouselScreenJSON(
+        packageID: String,
+        offeringId: String
+    ) -> String {
+        let packageJSON = packageComponentJSON(id: packageID, isDefault: true)
+        let tabControlComponentsJSON = """
+        [
+            {
+                "type": "tab_control_button",
+                "tab_id": "tab_1",
+                "stack": \(stackJSON(components: "[]"))
+            }
+        ]
+        """
+        let tabControlStackJSON = stackJSON(components: tabControlComponentsJSON)
+        let tabStackJSON = stackJSON(components: """
+        [
+            {
+                "type": "carousel",
+                "page_alignment": "center",
+                "page_spacing": 0,
+                "page_peek": 20,
+                "initial_page_index": 0,
+                "loop": false,
+                "pages": [
+                    \(stackJSON(components: "[\(packageJSON)]"))
+                ]
+            }
+        ]
+        """)
+        let rootStackJSON = stackJSON(components: """
+        [
+            {
+                "type": "tabs",
+                "control": {
+                    "type": "buttons",
+                    "stack": \(tabControlStackJSON)
+                },
+                "tabs": [
+                    {
+                        "id": "tab_1",
+                        "stack": \(tabStackJSON)
+                    }
+                ],
+                "default_tab_id": "tab_1",
+                "visible": true,
+                "size": {
+                    "width": { "type": "fill" },
+                    "height": { "type": "fill" }
+                },
+                "padding": {},
+                "margin": {}
+            }
+        ]
+        """)
+
+        return """
+        {
+            "template_name": "template_v2",
+            "asset_base_url": "https://assets.pawwalls.com",
+            "revision": 1,
+            "default_locale": "en_US",
+            "components_localizations": {},
+            "offering_identifier": "\(offeringId)",
+            "components_config": {
+                "base": {
+                    "stack": \(rootStackJSON),
+                    "background": {
+                        "type": "color",
+                        "value": { "light": { "type": "hex", "value": "#220000ff" } }
+                    }
+                }
+            }
+        }
+        """
+    }
+
+    static func makePackage(identifier: String, offeringId: String) -> Package {
+        let sourcePackage: Package
+
+        switch identifier {
+        case TestData.annualPackage.identifier:
+            sourcePackage = TestData.annualPackage
+        case TestData.weeklyPackage.identifier:
+            sourcePackage = TestData.weeklyPackage
+        default:
+            sourcePackage = TestData.monthlyPackage
+        }
+
+        return Package(
+            identifier: identifier,
+            packageType: .custom,
+            storeProduct: sourcePackage.storeProduct,
+            offeringIdentifier: offeringId,
+            webCheckoutUrl: nil
+        )
     }
 
 }

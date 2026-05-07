@@ -246,13 +246,10 @@ struct WorkflowPaywallView: View {
             purchaseHandler: self.purchaseHandler,
             introEligibilityChecker: self.introEligibilityChecker,
             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
+            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage,
             displayCloseButton: page.showCloseButton,
             onDismiss: self.handleDismiss,
-            failedToLoadFont: { fontConfig in
-                if Purchases.isConfigured {
-                    Purchases.shared.failedToLoadFontWithConfig(fontConfig)
-                }
-            },
+            failedToLoadFont: self.failedToLoadFont,
             colorScheme: self.colorScheme,
             promoOfferCache: self.promoOfferCache
         )
@@ -260,6 +257,12 @@ struct WorkflowPaywallView: View {
         .environment(\.workflowTriggerAction, { componentId in
             return self.handleTriggeredNavigation(componentId: componentId)
         })
+    }
+
+    private func failedToLoadFont(_ fontConfig: UIConfig.FontsConfig) {
+        if Purchases.isConfigured {
+            Purchases.shared.failedToLoadFontWithConfig(fontConfig)
+        }
     }
 
     private func handleDismiss() {

@@ -64,6 +64,7 @@ struct PaywallsV2View: View {
     private let uiConfigProvider: UIConfigProvider
     private let offering: Offering
     private let purchaseHandler: PurchaseHandler
+    private let workflowDefaultPackage: Package?
     private let showZeroDecimalPlacePrices: Bool
     /// This is a configuration value from PaywallsV1, but it's important to include here just in case the
     /// default paywall is shown. This is not used in the success path
@@ -84,6 +85,7 @@ struct PaywallsV2View: View {
         purchaseHandler: PurchaseHandler,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
+        workflowDefaultPackage: Package? = nil,
         displayCloseButton: Bool = false,
         onDismiss: @escaping () -> Void,
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
@@ -100,6 +102,7 @@ struct PaywallsV2View: View {
         self.uiConfigProvider = uiConfigProvider
         self.offering = offering
         self.purchaseHandler = purchaseHandler
+        self.workflowDefaultPackage = workflowDefaultPackage
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
@@ -136,6 +139,10 @@ struct PaywallsV2View: View {
         if case .success(let paywallState) = initialState {
             selectedPackageContext = Self.makeSelectedPackageContext(
                 from: paywallState,
+                defaultPackage: Self.effectiveDefaultPackage(
+                    pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+                    workflowDefaultPackage: workflowDefaultPackage
+                ),
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         } else {
@@ -171,11 +178,16 @@ struct PaywallsV2View: View {
 
     private func loadedPaywallView(paywallState: PaywallState) -> some View {
         let contentLocale = paywallState.rootViewModel.localizationProvider.locale
+        let defaultPackage = Self.effectiveDefaultPackage(
+            pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage ?? self.workflowDefaultPackage
+        )
         return LoadedPaywallsV2View(
             introOfferEligibilityContext: introOfferEligibilityContext,
             paywallState: paywallState,
             uiConfigProvider: self.uiConfigProvider,
             selectedPackageContext: self.selectedPackageContext,
+            defaultPackage: defaultPackage,
             onDismiss: self.onDismiss
         )
         .environment(\.locale, contentLocale)
@@ -361,6 +373,7 @@ private struct LoadedPaywallsV2View: View {
     private let paywallState: PaywallState
     private let uiConfigProvider: UIConfigProvider
     private let onDismiss: () -> Void
+    private let defaultPackage: Package?
 
     @ObservedObject
     private var selectedPackageContext: PackageContext
@@ -370,12 +383,14 @@ private struct LoadedPaywallsV2View: View {
         paywallState: PaywallState,
         uiConfigProvider: UIConfigProvider,
         selectedPackageContext: PackageContext,
+        defaultPackage: Package?,
         onDismiss: @escaping () -> Void
     ) {
         self.introOfferEligibilityContext = introOfferEligibilityContext
         self.paywallState = paywallState
         self.uiConfigProvider = uiConfigProvider
         self.selectedPackageContext = selectedPackageContext
+        self.defaultPackage = defaultPackage
         self.onDismiss = onDismiss
     }
 
@@ -385,7 +400,7 @@ private struct LoadedPaywallsV2View: View {
                 ComponentsView(
                     componentViewModels: [.root(paywallState.rootViewModel)],
                     onDismiss: self.onDismiss,
-                    defaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage
+                    defaultPackage: self.defaultPackage
                 )
                 .fixMacButtons()
             }
@@ -410,10 +425,7 @@ private struct LoadedPaywallsV2View: View {
                 alignment: .top
             )
             .environment(\.selectedPackageId, self.selectedPackageContext.package?.identifier)
-            .environment(
-                \.planSelectionDefaultPackage,
-                paywallState.viewModelFactory.packageValidator.defaultSelectedPackage
-            )
+            .environment(\.planSelectionDefaultPackage, self.defaultPackage)
             .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
         }
@@ -434,7 +446,7 @@ extension EnvironmentValues {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-fileprivate extension PaywallsV2View {
+extension PaywallsV2View {
 
     // swiftlint:disable:next function_parameter_count
     static func createPaywallState(
@@ -499,15 +511,23 @@ fileprivate extension PaywallsV2View {
 
     static func makeSelectedPackageContext(
         from paywallState: PaywallState,
+        defaultPackage: Package?,
         showZeroDecimalPlacePrices: Bool
     ) -> PackageContext {
         return .init(
-            package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+            package: defaultPackage,
             variableContext: .init(
                 packages: paywallState.packages,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         )
+    }
+
+    static func effectiveDefaultPackage(
+        pageDefaultPackage: Package?,
+        workflowDefaultPackage: Package?
+    ) -> Package? {
+        return workflowDefaultPackage ?? pageDefaultPackage
     }
 
     static func chooseLocalization(
