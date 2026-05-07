@@ -29,8 +29,18 @@ internal extension RewardVerification {
             // Production never cancels this task, but if a future caller (or a test) does,
             // skip the delivery and preserve the token instead of burning it on `.failed`.
             await MainActor.run {
-                if Task.isCancelled { return }
-                guard state.consumeFireToken() else { return }
+                if Task.isCancelled {
+                    Logger.debug(RewardVerificationStrings.outcome_cancelled(transactionID: state.clientTransactionID))
+                    return
+                }
+                guard state.consumeFireToken() else {
+                    Logger.debug(RewardVerificationStrings.outcome_suppressed(transactionID: state.clientTransactionID))
+                    return
+                }
+                Logger.info(RewardVerificationStrings.outcome_delivered(
+                    outcome: outcome.logDescription,
+                    transactionID: state.clientTransactionID
+                ))
                 outcomeHandler(outcome)
             }
         }
@@ -51,6 +61,18 @@ internal extension RewardVerification {
                     outcomeHandler: outcomeHandler
                 )
             }
+        }
+    }
+}
+
+// MARK: - Helpers
+
+private extension RewardVerification.Outcome {
+
+    var logDescription: String {
+        switch self {
+        case .verified: return "verified"
+        case .failed: return "failed"
         }
     }
 }

@@ -70,26 +70,56 @@ internal extension RewardVerification {
         }
 
         func run(clientTransactionID: String) async -> Outcome {
+            Logger.debug(RewardVerificationStrings.poll_start(
+                transactionID: clientTransactionID,
+                maxAttempts: self.maxAttempts
+            ))
+
             for attempt in 0..<self.maxAttempts {
-                if Task.isCancelled { return .failed }
+                Logger.verbose(RewardVerificationStrings.poll_attempt(
+                    attempt: attempt + 1,
+                    maxAttempts: self.maxAttempts,
+                    transactionID: clientTransactionID
+                ))
+
+                if Task.isCancelled {
+                    Logger.debug(RewardVerificationStrings.poll_cancelled(transactionID: clientTransactionID))
+                    return .failed
+                }
                 if attempt > 0 {
                     try? await self.sleeper.sleep(seconds: self.jitter.sample())
                 }
 
                 do {
                     let status = try await self.statusPoller.pollStatus(clientTransactionID: clientTransactionID)
+                    Logger.debug(RewardVerificationStrings.poll_status(
+                        status: status.logDescription,
+                        transactionID: clientTransactionID
+                    ))
                     switch status {
                     case .verified(let reward): return .verified(reward)
                     case .failed: return .failed
                     case .pending, .unknown: continue
                     }
                 } catch let code as ErrorCode where code.isTransientPolling {
+                    Logger.debug(RewardVerificationStrings.poll_transient_error(
+                        error: code,
+                        transactionID: clientTransactionID
+                    ))
                     continue
                 } catch {
+                    Logger.error(RewardVerificationStrings.poll_terminal_error(
+                        error: error,
+                        transactionID: clientTransactionID
+                    ))
                     return .failed
                 }
             }
 
+            Logger.warn(RewardVerificationStrings.poll_exhausted(
+                maxAttempts: self.maxAttempts,
+                transactionID: clientTransactionID
+            ))
             return .failed
         }
     }
@@ -107,6 +137,20 @@ internal extension RewardVerification {
 
         func sleep(seconds: TimeInterval) async throws {
             try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+        }
+    }
+}
+
+// MARK: - Helpers
+
+fileprivate extension RewardVerificationPollStatus {
+
+    var logDescription: String {
+        switch self {
+        case .verified: return "verified"
+        case .pending: return "pending"
+        case .failed: return "failed"
+        case .unknown: return "unknown"
         }
     }
 }
