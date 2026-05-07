@@ -28,8 +28,8 @@ import GoogleMobileAds
     /// (checked with a debug assertion).
     ///
     /// Callback timing:
-    /// - `rewardVerificationStarted` runs when Google invokes the reward callback, before verification polling starts.
-    /// - `rewardVerificationResult` runs after polling reaches a terminal outcome.
+    /// - `rewardVerificationStarted` runs when the AdMob SDK invokes the reward callback and verification begins.
+    /// - `rewardVerificationResult` runs later with the final verification outcome.
     ///
     /// To override the placement used for RevenueCat analytics at show time, use
     /// ``present(from:placement:rewardVerificationStarted:rewardVerificationResult:)`` instead of this method.
@@ -57,8 +57,8 @@ import GoogleMobileAds
     /// (checked with a debug assertion).
     ///
     /// Callback timing:
-    /// - `rewardVerificationStarted` runs when Google invokes the reward callback, before verification polling starts.
-    /// - `rewardVerificationResult` runs after polling reaches a terminal outcome.
+    /// - `rewardVerificationStarted` runs when the AdMob SDK invokes the reward callback and verification begins.
+    /// - `rewardVerificationResult` runs later with the final verification outcome.
     @MainActor
     func present(
         from viewController: UIViewController,
@@ -96,8 +96,8 @@ import GoogleMobileAds
     /// (checked with a debug assertion).
     ///
     /// Callback timing:
-    /// - `rewardVerificationStarted` runs when Google invokes the reward callback, before verification polling starts.
-    /// - `rewardVerificationResult` runs after polling reaches a terminal outcome.
+    /// - `rewardVerificationStarted` runs when the AdMob SDK invokes the reward callback and verification begins.
+    /// - `rewardVerificationResult` runs later with the final verification outcome.
     ///
     /// To override the placement used for RevenueCat analytics at show time, use
     /// ``present(from:placement:rewardVerificationStarted:rewardVerificationResult:)`` instead of this method.
@@ -125,8 +125,8 @@ import GoogleMobileAds
     /// (checked with a debug assertion).
     ///
     /// Callback timing:
-    /// - `rewardVerificationStarted` runs when Google invokes the reward callback, before verification polling starts.
-    /// - `rewardVerificationResult` runs after polling reaches a terminal outcome.
+    /// - `rewardVerificationStarted` runs when the AdMob SDK invokes the reward callback and verification begins.
+    /// - `rewardVerificationResult` runs later with the final verification outcome.
     @MainActor
     func present(
         from viewController: UIViewController,
