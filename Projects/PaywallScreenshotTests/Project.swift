@@ -12,7 +12,7 @@ let project = Project(
             destinations: [.iPhone, .iPad, .macCatalyst, .macWithiPadDesign],
             product: .unitTests,
             bundleId: "com.revenuecat.PaywallScreenshotTests",
-            deploymentTargets: .multiplatform(iOS: "15.0", macOS: "12.0"),
+            deploymentTargets: .iOS("15.0"),
             infoPlist: .default,
             sources: [
                 "../../Tests/RevenueCatUITests/PaywallsV2/TakeScreenshot.swift",
@@ -40,7 +40,8 @@ let project = Project(
                     target: "UnitTestsHostApp",
                     path: .relativeToRoot("Projects/RevenueCatTests")
                 )
-            ]
+            ],
+            settings: .settings(base: ["MACOSX_DEPLOYMENT_TARGET": "12.0"])
         )
     ],
     schemes: [
