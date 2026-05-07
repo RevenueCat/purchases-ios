@@ -46,58 +46,58 @@ final class PaywallsV2ViewContextPackageTests: TestCase {
         expect(context.package).to(beNil())
     }
 
-    // MARK: - effectiveFallbackPackage
+    // MARK: - effectiveDefaultPackage
 
-    func testEffectiveFallbackPackageIsNilWhenContextPackageResolvesInStep() {
-        // The fallback must be suppressed when contextPackage resolves: if it weren't, the fallback
-        // task could fire before the contextPackage task, call onPackageSelected with the fallback,
-        // and overwrite the user's carried selection from the previous step.
-        let result = PaywallsV2View.effectiveFallbackPackage(
+    func testEffectiveDefaultPackageIsNilWhenContextPackageResolvesInStep() {
+        // The workflow default must be suppressed when contextPackage resolves: if it weren't, the
+        // default task could fire before the contextPackage task, call workflowOnPackageSelected
+        // with the default, and overwrite the user's carried selection from the previous step.
+        let result = PaywallsV2View.effectiveDefaultPackage(
             contextPackage: TestData.annualPackage,
             stepPackages: [TestData.monthlyPackage, TestData.annualPackage],
-            fallback: TestData.monthlyPackage
+            workflowDefault: TestData.monthlyPackage
         )
         expect(result).to(beNil())
     }
 
-    func testEffectiveFallbackPackageReturnsFallbackOnPackagelessStep() {
+    func testEffectiveDefaultPackageReturnsDefaultOnPackagelessStep() {
         // On a truly packageless step (empty packages), contextPackage can't be resolved —
-        // the fallback is allowed so price/period variables still render on screen.
-        let result = PaywallsV2View.effectiveFallbackPackage(
+        // the workflow default is allowed so price/period variables still render on screen.
+        let result = PaywallsV2View.effectiveDefaultPackage(
             contextPackage: TestData.annualPackage,
             stepPackages: [],
-            fallback: TestData.monthlyPackage
+            workflowDefault: TestData.monthlyPackage
         )
         expect(result?.identifier) == TestData.monthlyPackage.identifier
     }
 
-    func testEffectiveFallbackPackageReturnsFallbackWhenNoContextCarried() {
+    func testEffectiveDefaultPackageReturnsDefaultWhenNoContextCarried() {
         // On the first workflow step there's no prior selection (contextPackage is nil),
-        // so the fallback applies as the initial display/variable-resolution package.
-        let result = PaywallsV2View.effectiveFallbackPackage(
+        // so the workflow default applies as the initial display/variable-resolution package.
+        let result = PaywallsV2View.effectiveDefaultPackage(
             contextPackage: nil,
             stepPackages: [TestData.monthlyPackage, TestData.annualPackage],
-            fallback: TestData.monthlyPackage
+            workflowDefault: TestData.monthlyPackage
         )
         expect(result?.identifier) == TestData.monthlyPackage.identifier
     }
 
-    func testEffectiveFallbackPackageReturnsNilWhenFallbackIsNil() {
-        let result = PaywallsV2View.effectiveFallbackPackage(
+    func testEffectiveDefaultPackageReturnsNilWhenWorkflowDefaultIsNil() {
+        let result = PaywallsV2View.effectiveDefaultPackage(
             contextPackage: nil,
             stepPackages: [],
-            fallback: nil
+            workflowDefault: nil
         )
         expect(result).to(beNil())
     }
 
-    func testEffectiveFallbackPackageContextNotInStepButDifferentFromFallback() {
-        // contextPackage exists but resolves to a different offering's package — step doesn't
-        // include it (cross-offering). Fallback should apply for display on this step.
-        let result = PaywallsV2View.effectiveFallbackPackage(
+    func testEffectiveDefaultPackageContextNotInStepButDifferentFromDefault() {
+        // contextPackage exists but isn't in the step's offering (cross-offering).
+        // The workflow default should apply for display on this step.
+        let result = PaywallsV2View.effectiveDefaultPackage(
             contextPackage: TestData.annualPackage,
             stepPackages: [TestData.weeklyPackage],
-            fallback: TestData.monthlyPackage
+            workflowDefault: TestData.monthlyPackage
         )
         expect(result?.identifier) == TestData.monthlyPackage.identifier
     }

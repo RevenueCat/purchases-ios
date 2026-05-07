@@ -38,10 +38,7 @@ struct WorkflowPackageContext {
 
     /// Default package from the workflow's `singleStepFallbackId` step, used by packageless
     /// screens to resolve price/period template variables.
-    var fallbackPackage: Package?
-
-    /// Called when the user's selected package changes inside a workflow paywall step.
-    var onPackageSelected: ((Package?) -> Void)?
+    var defaultPackage: Package?
 
 }
 
@@ -67,6 +64,11 @@ private struct WorkflowPackageContextKey: EnvironmentKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct WorkflowOnPackageSelectedKey: EnvironmentKey {
+    static let defaultValue: ((Package) -> Void)? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension EnvironmentValues {
     /// Called when a button with a component `id` is tapped inside a workflow paywall.
     /// Returns `true` if the workflow consumed the trigger (navigator found a matching step),
@@ -89,6 +91,14 @@ extension EnvironmentValues {
     var workflowPackageContext: WorkflowPackageContext {
         get { self[WorkflowPackageContextKey.self] }
         set { self[WorkflowPackageContextKey.self] = newValue }
+    }
+
+    /// Called by `PaywallsV2View` when the user selects a package, so `WorkflowPaywallView`
+    /// can carry it forward to the next step. Kept separate from `workflowPackageContext`
+    /// to avoid bundling behaviour with data in the environment.
+    var workflowOnPackageSelected: ((Package) -> Void)? {
+        get { self[WorkflowOnPackageSelectedKey.self] }
+        set { self[WorkflowOnPackageSelectedKey.self] = newValue }
     }
 }
 

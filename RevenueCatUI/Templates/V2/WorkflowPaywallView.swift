@@ -153,7 +153,7 @@ struct WorkflowPaywallView: View {
     private let displayCloseButton: Bool
     private let promoOfferCache: PaywallPromoOfferCache?
     private let onDismiss: () -> Void
-    private let fallbackPackage: Package?
+    private let defaultPackage: Package?
 
     @StateObject private var navigator: WorkflowNavigator
     @State private var hasLoggedInvalidState = false
@@ -177,7 +177,7 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.promoOfferCache = promoOfferCache
         self.onDismiss = onDismiss
-        self.fallbackPackage = context.fallbackPackage
+        self.defaultPackage = context.defaultPackage
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
         self._transitionState = .init(
             wrappedValue: .init(
@@ -259,12 +259,11 @@ struct WorkflowPaywallView: View {
         )
         .environment(\.workflowPackageContext, WorkflowPackageContext(
             contextPackage: page.contextPackage,
-            fallbackPackage: self.fallbackPackage,
-            onPackageSelected: { package in
-                guard let package else { return }
-                self.currentSelectedPackage = package
-            }
+            defaultPackage: self.defaultPackage
         ))
+        .environment(\.workflowOnPackageSelected, { package in
+            self.currentSelectedPackage = package
+        })
         .environment(\.workflowTriggerAction, { componentId in
             return self.handleTriggeredNavigation(componentId: componentId)
         })

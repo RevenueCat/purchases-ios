@@ -51,6 +51,9 @@ struct PaywallsV2View: View {
     @Environment(\.workflowPackageContext)
     private var workflowPackageContext
 
+    @Environment(\.workflowOnPackageSelected)
+    private var workflowOnPackageSelected
+
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -253,15 +256,15 @@ struct PaywallsV2View: View {
                     self.createEventData(forDefaultPaywall: forDefaultPaywall)
                 )
             }
-            .task(id: self.workflowPackageContext.fallbackPackage?.identifier) {
+            .task(id: self.workflowPackageContext.defaultPackage?.identifier) {
                 guard case let .success(paywallState) = self.paywallStateManager.state,
-                      let fallback = Self.effectiveFallbackPackage(
+                      let pkg = Self.effectiveDefaultPackage(
                           contextPackage: self.workflowPackageContext.contextPackage,
                           stepPackages: paywallState.packages,
-                          fallback: self.workflowPackageContext.fallbackPackage
+                          workflowDefault: self.workflowPackageContext.defaultPackage
                       ),
                       self.selectedPackageContext.package == nil else { return }
-                self.selectedPackageContext.package = fallback
+                self.selectedPackageContext.package = pkg
             }
             .task(id: self.workflowPackageContext.contextPackage?.identifier) {
                 guard case let .success(paywallState) = self.paywallStateManager.state,
@@ -321,7 +324,7 @@ struct PaywallsV2View: View {
                     return
                 }
 
-                self.workflowPackageContext.onPackageSelected?(package)
+                self.workflowOnPackageSelected?(package)
             }
 
     }
@@ -626,18 +629,18 @@ extension PaywallsV2View {
         }
     }
 
-    /// Returns `fallback` only when `contextPackage` cannot be resolved in `stepPackages`, `nil` otherwise.
+    /// Returns `workflowDefault` only when `contextPackage` cannot be resolved in `stepPackages`, `nil` otherwise.
     ///
-    /// The fallback is for display only (variable resolution on packageless screens). It must be
-    /// suppressed when `contextPackage` is resolvable so the fallback task cannot race ahead of
-    /// the contextPackage task and overwrite the carried workflow selection via `onPackageSelected`.
-    static func effectiveFallbackPackage(
+    /// The workflow default is for display only (variable resolution on packageless screens). It must be
+    /// suppressed when `contextPackage` is resolvable so the default task cannot race ahead of
+    /// the contextPackage task and overwrite the carried workflow selection via `workflowOnPackageSelected`.
+    static func effectiveDefaultPackage(
         contextPackage: Package?,
         stepPackages: [Package],
-        fallback: Package?
+        workflowDefault: Package?
     ) -> Package? {
         guard validatedContextPackage(contextPackage, in: stepPackages) == nil else { return nil }
-        return fallback
+        return workflowDefault
     }
 
 }

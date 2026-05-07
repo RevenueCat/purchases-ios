@@ -43,7 +43,7 @@ struct WorkflowContext {
 
     /// Resolves the default package from the workflow's `singleStepFallbackId` step so that
     /// packageless early screens can still resolve price/period template variables.
-    var fallbackPackage: Package? {
+    var defaultPackage: Package? {
         guard let fallbackStepId = self.workflow.singleStepFallbackId else {
             return nil
         }
@@ -56,12 +56,10 @@ struct WorkflowContext {
             return nil
         }
 
-        // Assumes the fallback package is not itself hidden — a hidden default package
-        // would still be selected here, but that configuration is considered invalid.
-        let visible = Self.collectVisiblePackages(
-            in: screen.componentsConfig.base.stack.components,
-            offering: offering
-        )
+        let base = screen.componentsConfig.base
+        let allComponents = base.stack.components
+            + (base.stickyFooter?.stack.components ?? [])
+        let visible = Self.collectVisiblePackages(in: allComponents, offering: offering)
 
         return visible.first(where: { $0.isSelectedByDefault })?.package
             ?? visible.first?.package
@@ -73,12 +71,15 @@ struct WorkflowContext {
     ) -> [(package: Package, isSelectedByDefault: Bool)] {
         return components.reduce(into: []) { result, component in
             switch component {
-            case .package(let pkg) where pkg.visible != false:
+            case .package(let pkg) where pkg.visible ?? true:
                 if let rcPackage = offering.package(identifier: pkg.packageID) {
                     result.append((package: rcPackage, isSelectedByDefault: pkg.isSelectedByDefault))
                 }
             case .stack(let stack):
                 result += Self.collectVisiblePackages(in: stack.components, offering: offering)
+            case .tabs(let tabs):
+                result += Self.collectVisiblePackages(
+                    in: tabs.tabs.flatMap { $0.stack.components }, offering: offering)
             default:
                 break
             }
