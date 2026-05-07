@@ -46,6 +46,39 @@ final class PaywallsV2ViewContextPackageTests: TestCase {
         expect(context.package).to(beNil())
     }
 
+    // MARK: - fallback suppression
+
+    // The fallback task skips when `validatedContextPackage` returns non-nil, preventing it from
+    // racing ahead of the contextPackage task and corrupting the carried workflow selection.
+
+    func testFallbackShouldBeSkippedWhenContextPackageResolvesInStep() {
+        // If contextPackage resolves, the fallback must not run — otherwise it can fire before
+        // the contextPackage task, call onPackageSelected with the fallback, and overwrite the
+        // user's selection from the previous step.
+        let packages = [TestData.monthlyPackage, TestData.annualPackage]
+        let contextResolvable = PaywallsV2View.validatedContextPackage(
+            TestData.annualPackage, in: packages
+        ) != nil
+        expect(contextResolvable) == true
+    }
+
+    func testFallbackShouldApplyWhenContextPackageIsUnresolvable() {
+        // On a truly packageless step (no packages in layout), contextPackage can't be resolved,
+        // so the fallback is allowed to apply for display/variable resolution purposes.
+        let contextResolvable = PaywallsV2View.validatedContextPackage(
+            TestData.annualPackage, in: []
+        ) != nil
+        expect(contextResolvable) == false
+    }
+
+    func testFallbackShouldApplyWhenNoContextPackageCarried() {
+        // On the first workflow step (no prior selection), contextPackage is nil → not resolvable
+        // → fallback applies as the initial display package.
+        let packages = [TestData.monthlyPackage, TestData.annualPackage]
+        let contextResolvable = PaywallsV2View.validatedContextPackage(nil, in: packages) != nil
+        expect(contextResolvable) == false
+    }
+
     // MARK: - validatedContextPackage
 
     func testValidatedContextPackageReturnsPackageWhenFoundInOffering() {

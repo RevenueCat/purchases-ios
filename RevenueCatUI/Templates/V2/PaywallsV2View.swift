@@ -235,6 +235,7 @@ struct PaywallsV2View: View {
         )
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     private func addPaywallModifiers<Content: View>(to content: Content) -> some View {
         content
             .onAppear {
@@ -254,6 +255,13 @@ struct PaywallsV2View: View {
                 )
             }
             .task(id: self.workflowPackageContext.fallbackPackage?.identifier) {
+                guard case let .success(paywallState) = self.paywallStateManager.state else { return }
+                // Don't apply the fallback if the carried context package resolves on this step —
+                // the contextPackage task sets it correctly without corrupting the workflow selection.
+                guard Self.validatedContextPackage(
+                    self.workflowPackageContext.contextPackage,
+                    in: paywallState.packages
+                ) == nil else { return }
                 if self.selectedPackageContext.package == nil {
                     self.selectedPackageContext.package = self.workflowPackageContext.fallbackPackage
                 }
