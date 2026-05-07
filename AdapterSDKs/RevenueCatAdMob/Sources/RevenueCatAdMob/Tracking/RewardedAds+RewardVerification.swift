@@ -168,10 +168,10 @@ internal extension RewardVerification.CapableAd {
         if rewardVerificationResult != nil {
             assert(
                 state != nil,
-                Strings.rewardVerificationResultRequiresEnable
+                RewardVerification.Strings.rewardVerificationResultRequiresEnable
             )
             if state == nil {
-                Logger.warn(Strings.rewardVerificationResultMissingVerificationState)
+                Logger.warn(RewardVerification.Strings.rewardVerificationResultMissingVerificationState)
             }
         }
 

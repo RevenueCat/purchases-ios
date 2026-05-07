@@ -24,8 +24,8 @@ internal extension RewardVerification {
             "on this ad after load (with the RevenueCat SDK configured)."
 
         static let rewardVerificationResultMissingVerificationState: String =
-            "RewardVerification.present: `rewardVerificationResult` was provided, but reward verification " +
-            "state is missing. Call `enableRewardVerification()` on the loaded ad before presenting."
+            "Reward verification result callback ignored because reward verification was not enabled " +
+            "for this ad. Call `enableRewardVerification()` after loading and before presenting."
     }
 }
 
