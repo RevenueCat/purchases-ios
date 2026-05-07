@@ -46,37 +46,60 @@ final class PaywallsV2ViewContextPackageTests: TestCase {
         expect(context.package).to(beNil())
     }
 
-    // MARK: - fallback suppression
+    // MARK: - effectiveFallbackPackage
 
-    // The fallback task skips when `validatedContextPackage` returns non-nil, preventing it from
-    // racing ahead of the contextPackage task and corrupting the carried workflow selection.
-
-    func testFallbackShouldBeSkippedWhenContextPackageResolvesInStep() {
-        // If contextPackage resolves, the fallback must not run — otherwise it can fire before
-        // the contextPackage task, call onPackageSelected with the fallback, and overwrite the
-        // user's selection from the previous step.
-        let packages = [TestData.monthlyPackage, TestData.annualPackage]
-        let contextResolvable = PaywallsV2View.validatedContextPackage(
-            TestData.annualPackage, in: packages
-        ) != nil
-        expect(contextResolvable) == true
+    func testEffectiveFallbackPackageIsNilWhenContextPackageResolvesInStep() {
+        // The fallback must be suppressed when contextPackage resolves: if it weren't, the fallback
+        // task could fire before the contextPackage task, call onPackageSelected with the fallback,
+        // and overwrite the user's carried selection from the previous step.
+        let result = PaywallsV2View.effectiveFallbackPackage(
+            contextPackage: TestData.annualPackage,
+            stepPackages: [TestData.monthlyPackage, TestData.annualPackage],
+            fallback: TestData.monthlyPackage
+        )
+        expect(result).to(beNil())
     }
 
-    func testFallbackShouldApplyWhenContextPackageIsUnresolvable() {
-        // On a truly packageless step (no packages in layout), contextPackage can't be resolved,
-        // so the fallback is allowed to apply for display/variable resolution purposes.
-        let contextResolvable = PaywallsV2View.validatedContextPackage(
-            TestData.annualPackage, in: []
-        ) != nil
-        expect(contextResolvable) == false
+    func testEffectiveFallbackPackageReturnsFallbackOnPackagelessStep() {
+        // On a truly packageless step (empty packages), contextPackage can't be resolved —
+        // the fallback is allowed so price/period variables still render on screen.
+        let result = PaywallsV2View.effectiveFallbackPackage(
+            contextPackage: TestData.annualPackage,
+            stepPackages: [],
+            fallback: TestData.monthlyPackage
+        )
+        expect(result?.identifier) == TestData.monthlyPackage.identifier
     }
 
-    func testFallbackShouldApplyWhenNoContextPackageCarried() {
-        // On the first workflow step (no prior selection), contextPackage is nil → not resolvable
-        // → fallback applies as the initial display package.
-        let packages = [TestData.monthlyPackage, TestData.annualPackage]
-        let contextResolvable = PaywallsV2View.validatedContextPackage(nil, in: packages) != nil
-        expect(contextResolvable) == false
+    func testEffectiveFallbackPackageReturnsFallbackWhenNoContextCarried() {
+        // On the first workflow step there's no prior selection (contextPackage is nil),
+        // so the fallback applies as the initial display/variable-resolution package.
+        let result = PaywallsV2View.effectiveFallbackPackage(
+            contextPackage: nil,
+            stepPackages: [TestData.monthlyPackage, TestData.annualPackage],
+            fallback: TestData.monthlyPackage
+        )
+        expect(result?.identifier) == TestData.monthlyPackage.identifier
+    }
+
+    func testEffectiveFallbackPackageReturnsNilWhenFallbackIsNil() {
+        let result = PaywallsV2View.effectiveFallbackPackage(
+            contextPackage: nil,
+            stepPackages: [],
+            fallback: nil
+        )
+        expect(result).to(beNil())
+    }
+
+    func testEffectiveFallbackPackageContextNotInStepButDifferentFromFallback() {
+        // contextPackage exists but resolves to a different offering's package — step doesn't
+        // include it (cross-offering). Fallback should apply for display on this step.
+        let result = PaywallsV2View.effectiveFallbackPackage(
+            contextPackage: TestData.annualPackage,
+            stepPackages: [TestData.weeklyPackage],
+            fallback: TestData.monthlyPackage
+        )
+        expect(result?.identifier) == TestData.monthlyPackage.identifier
     }
 
     // MARK: - validatedContextPackage

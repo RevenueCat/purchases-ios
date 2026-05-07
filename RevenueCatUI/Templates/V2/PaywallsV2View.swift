@@ -235,7 +235,6 @@ struct PaywallsV2View: View {
         )
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     private func addPaywallModifiers<Content: View>(to content: Content) -> some View {
         content
             .onAppear {
@@ -255,16 +254,14 @@ struct PaywallsV2View: View {
                 )
             }
             .task(id: self.workflowPackageContext.fallbackPackage?.identifier) {
-                guard case let .success(paywallState) = self.paywallStateManager.state else { return }
-                // Don't apply the fallback if the carried context package resolves on this step —
-                // the contextPackage task sets it correctly without corrupting the workflow selection.
-                guard Self.validatedContextPackage(
-                    self.workflowPackageContext.contextPackage,
-                    in: paywallState.packages
-                ) == nil else { return }
-                if self.selectedPackageContext.package == nil {
-                    self.selectedPackageContext.package = self.workflowPackageContext.fallbackPackage
-                }
+                guard case let .success(paywallState) = self.paywallStateManager.state,
+                      let fallback = Self.effectiveFallbackPackage(
+                          contextPackage: self.workflowPackageContext.contextPackage,
+                          stepPackages: paywallState.packages,
+                          fallback: self.workflowPackageContext.fallbackPackage
+                      ),
+                      self.selectedPackageContext.package == nil else { return }
+                self.selectedPackageContext.package = fallback
             }
             .task(id: self.workflowPackageContext.contextPackage?.identifier) {
                 guard case let .success(paywallState) = self.paywallStateManager.state,
@@ -627,6 +624,20 @@ extension PaywallsV2View {
         return contextPackage.flatMap { pkg in
             packages.first(where: { $0.identifier == pkg.identifier })
         }
+    }
+
+    /// Returns `fallback` only when `contextPackage` cannot be resolved in `stepPackages`, `nil` otherwise.
+    ///
+    /// The fallback is for display only (variable resolution on packageless screens). It must be
+    /// suppressed when `contextPackage` is resolvable so the fallback task cannot race ahead of
+    /// the contextPackage task and overwrite the carried workflow selection via `onPackageSelected`.
+    static func effectiveFallbackPackage(
+        contextPackage: Package?,
+        stepPackages: [Package],
+        fallback: Package?
+    ) -> Package? {
+        guard validatedContextPackage(contextPackage, in: stepPackages) == nil else { return nil }
+        return fallback
     }
 
 }
