@@ -73,7 +73,7 @@ internal extension RewardVerification {
                 let data = try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])
                 return String(data: data, encoding: .utf8)
             } catch {
-                let message = RewardVerificationStrings.setup_encoding_failed(error: error)
+                let message = RewardVerificationStrings.setup_custom_reward_text_encoding_failed(error: error)
                 Logger.error(message)
                 assertionFailure(message.description)
                 return nil

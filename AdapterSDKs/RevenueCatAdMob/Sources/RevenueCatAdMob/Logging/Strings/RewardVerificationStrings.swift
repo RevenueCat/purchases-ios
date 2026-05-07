@@ -5,17 +5,14 @@
 //
 
 import Foundation
-
-#if os(iOS) && canImport(GoogleMobileAds)
 @_spi(Internal) import RevenueCat
 
 // swiftlint:disable identifier_name
-@available(iOS 15.0, *)
 enum RewardVerificationStrings {
 
     case setup_purchases_not_configured
     case setup_install(adType: String, transactionID: String)
-    case setup_encoding_failed(error: Error)
+    case setup_custom_reward_text_encoding_failed(error: Error)
 
     case poll_start(transactionID: String, maxAttempts: Int)
     case poll_attempt(attempt: Int, maxAttempts: Int, transactionID: String)
@@ -29,7 +26,6 @@ enum RewardVerificationStrings {
     case outcome_suppressed(transactionID: String)
 }
 
-@available(iOS 15.0, *)
 extension RewardVerificationStrings: LogMessage {
 
     var description: String {
@@ -38,7 +34,7 @@ extension RewardVerificationStrings: LogMessage {
             return "RevenueCat SDK is not configured. Cannot install SSV on rewarded ad."
         case let .setup_install(adType, transactionID):
             return "SSV install on ad type=\(adType) transactionID=\(transactionID)"
-        case let .setup_encoding_failed(error):
+        case let .setup_custom_reward_text_encoding_failed(error):
             return "customRewardText encoding failed: \(error)"
 
         case let .poll_start(transactionID, maxAttempts):
@@ -65,5 +61,3 @@ extension RewardVerificationStrings: LogMessage {
 
     var category: String { return "rewardverification" }
 }
-
-#endif
