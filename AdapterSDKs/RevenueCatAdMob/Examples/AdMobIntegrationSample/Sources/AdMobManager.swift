@@ -33,6 +33,8 @@ class AdMobManager: NSObject, ObservableObject {
     private var isWaitingForRewardedInterstitialReward = false
     private var rewardedLoadMode: RewardVerificationLoadMode = .withoutRewardVerification
     private var rewardedInterstitialLoadMode: RewardVerificationLoadMode = .withoutRewardVerification
+    private var rewardedLoadRequestID = 0
+    private var rewardedInterstitialLoadRequestID = 0
 
     private enum RewardVerificationLoadMode {
         case withoutRewardVerification
@@ -40,6 +42,8 @@ class AdMobManager: NSObject, ObservableObject {
     }
 
     func resetRewardedAdSelection() {
+        // Invalidate any in-flight load so stale completions are ignored.
+        rewardedLoadRequestID += 1
         isWaitingForRewardedReward = false
         rewardedAd = nil
         rewardedStatus = "Not Loaded"
@@ -48,6 +52,8 @@ class AdMobManager: NSObject, ObservableObject {
     }
 
     func resetRewardedInterstitialAdSelection() {
+        // Invalidate any in-flight load so stale completions are ignored.
+        rewardedInterstitialLoadRequestID += 1
         isWaitingForRewardedInterstitialReward = false
         rewardedInterstitialAd = nil
         rewardedInterstitialStatus = "Not Loaded"
@@ -142,6 +148,8 @@ class AdMobManager: NSObject, ObservableObject {
         let mode: RewardVerificationLoadMode = withRewardVerification
             ? .withRewardVerification
             : .withoutRewardVerification
+        rewardedLoadRequestID += 1
+        let requestID = rewardedLoadRequestID
         rewardedLoadMode = mode
         rewardedStatus = "Loading..."
         isWaitingForRewardedReward = false
@@ -161,6 +169,7 @@ class AdMobManager: NSObject, ObservableObject {
             fullScreenContentDelegate: self
         ) { [weak self] ad, error in
             guard let self = self else { return }
+            guard self.rewardedLoadRequestID == requestID else { return }
 
             if let error = error {
                 print("❌ Rewarded failed: \(error.localizedDescription)")
@@ -184,8 +193,10 @@ class AdMobManager: NSObject, ObservableObject {
             self.rewardedStatus = "Ready"
 
             if mode == .withRewardVerification {
+                self.rewardedResult = nil
                 self.rewardedVerificationResult = "🔐 Loaded with Reward Verification."
             } else {
+                self.rewardedVerificationResult = nil
                 self.rewardedResult = "🔓 Loaded without Reward Verification."
             }
         }
@@ -232,6 +243,8 @@ class AdMobManager: NSObject, ObservableObject {
         let mode: RewardVerificationLoadMode = withRewardVerification
             ? .withRewardVerification
             : .withoutRewardVerification
+        rewardedInterstitialLoadRequestID += 1
+        let requestID = rewardedInterstitialLoadRequestID
         rewardedInterstitialLoadMode = mode
         rewardedInterstitialStatus = "Loading..."
         isWaitingForRewardedInterstitialReward = false
@@ -251,6 +264,7 @@ class AdMobManager: NSObject, ObservableObject {
             fullScreenContentDelegate: self
         ) { [weak self] ad, error in
             guard let self = self else { return }
+            guard self.rewardedInterstitialLoadRequestID == requestID else { return }
 
             if let error = error {
                 print("❌ Rewarded Interstitial failed: \(error.localizedDescription)")
@@ -274,8 +288,10 @@ class AdMobManager: NSObject, ObservableObject {
             self.rewardedInterstitialStatus = "Ready"
 
             if mode == .withRewardVerification {
+                self.rewardedInterstitialResult = nil
                 self.rewardedInterstitialVerificationResult = "🔐 Loaded with Reward Verification."
             } else {
+                self.rewardedInterstitialVerificationResult = nil
                 self.rewardedInterstitialResult = "🔓 Loaded without Reward Verification."
             }
         }
