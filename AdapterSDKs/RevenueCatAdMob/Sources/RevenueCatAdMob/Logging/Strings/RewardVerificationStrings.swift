@@ -24,6 +24,7 @@ enum RewardVerificationStrings {
     case poll_cancelled(transactionID: String)
     case poll_exhausted(maxAttempts: Int, transactionID: String)
 
+    case outcome_cancelled(transactionID: String)
     case outcome_delivered(outcome: String, transactionID: String)
     case outcome_suppressed(transactionID: String)
 }
@@ -54,6 +55,9 @@ extension RewardVerificationStrings: LogMessage {
         case let .poll_exhausted(maxAttempts, transactionID):
             return "Reward verification poll exhausted \(maxAttempts) attempts transactionID=\(transactionID)"
 
+        case let .outcome_cancelled(transactionID):
+            return "Reward verification outcome cancelled (task cancelled before delivery) " +
+                "transactionID=\(transactionID)"
         case let .outcome_delivered(outcome, transactionID):
             return "Reward verification outcome \(outcome) transactionID=\(transactionID)"
         case let .outcome_suppressed(transactionID):
