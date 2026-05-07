@@ -44,15 +44,15 @@ struct WorkflowContext {
     /// Resolves the package context from the workflow's `singleStepFallbackId` step so that
     /// packageless early screens can still resolve price/period template variables.
     var workflowPackageContext: WorkflowPackageContext? {
-        guard let workflowStepId = self.workflow.singleStepFallbackId else {
+        guard let singleWorkflowStepFallbackId = self.workflow.singleStepFallbackId else {
             return nil
         }
 
-        guard let step = self.workflow.steps[workflowStepId],
+        guard let step = self.workflow.steps[singleWorkflowStepFallbackId],
               let screenId = step.screenId,
               let screen = self.workflow.screens[screenId],
               let offering = self.offering(for: screen.offeringIdentifier) else {
-            Logger.warning(Strings.workflow_package_context_unresolvable(stepId: workflowStepId))
+            Logger.warning(Strings.workflow_package_context_unresolvable(stepId: singleWorkflowStepFallbackId))
             return nil
         }
 

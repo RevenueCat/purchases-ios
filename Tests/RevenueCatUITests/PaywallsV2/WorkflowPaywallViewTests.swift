@@ -235,7 +235,7 @@ extension WorkflowPaywallViewTests {
         )
         expect(packageContext.variableContext.mostExpensivePricePerMonth).to(beNil())
 
-        // Simulate what PaywallsV2View's .task does after reading the injected workflowPackageContext.
+        // Verify that calling update() with a WorkflowPackageContext populates both fields.
         let package = TestData.monthlyPackage
         let workflowCtx = WorkflowPackageContext(selectedPackage: package, packages: [package])
         await packageContext.update(
