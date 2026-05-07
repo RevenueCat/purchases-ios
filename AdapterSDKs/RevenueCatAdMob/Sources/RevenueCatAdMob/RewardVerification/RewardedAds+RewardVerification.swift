@@ -32,7 +32,7 @@ import GoogleMobileAds
     @MainActor
     func present(
         from viewController: UIViewController,
-        rewardVerificationStarted: (() -> Void)? = nil,
+        rewardVerificationStarted: (@MainActor () -> Void)? = nil,
         rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
     ) {
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
@@ -55,7 +55,7 @@ import GoogleMobileAds
     func present(
         from viewController: UIViewController,
         placement: String?,
-        rewardVerificationStarted: (() -> Void)? = nil,
+        rewardVerificationStarted: (@MainActor () -> Void)? = nil,
         rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
     ) {
         Tracking.setShowTimePlacement(placement, on: self)
@@ -92,7 +92,7 @@ import GoogleMobileAds
     @MainActor
     func present(
         from viewController: UIViewController,
-        rewardVerificationStarted: (() -> Void)? = nil,
+        rewardVerificationStarted: (@MainActor () -> Void)? = nil,
         rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
     ) {
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
@@ -115,7 +115,7 @@ import GoogleMobileAds
     func present(
         from viewController: UIViewController,
         placement: String?,
-        rewardVerificationStarted: (() -> Void)? = nil,
+        rewardVerificationStarted: (@MainActor () -> Void)? = nil,
         rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
     ) {
         Tracking.setShowTimePlacement(placement, on: self)
@@ -139,7 +139,7 @@ internal extension RewardVerification.CapableAd {
     /// - Parameter poller: For unit tests; pass `nil` in production to use ``RewardVerification.Poller/makeDefault()``.
     @MainActor
     func createUserDidEarnRewardHandler(
-        rewardVerificationStarted: (() -> Void)?,
+        rewardVerificationStarted: (@MainActor () -> Void)?,
         rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)?,
         poller: RewardVerification.Poller? = nil
     ) -> (() -> Void) {
