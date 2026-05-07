@@ -257,7 +257,7 @@ struct PaywallsV2View: View {
             .task(id: self.workflowPackageContext?.selectedPackage.identifier) {
                 if self.selectedPackageContext.package == nil,
                    let workflowPackageContext = self.workflowPackageContext {
-                    await self.selectedPackageContext.update(
+                    self.selectedPackageContext.update(
                         package: workflowPackageContext.selectedPackage,
                         variableContext: .init(
                             packages: workflowPackageContext.packages,
