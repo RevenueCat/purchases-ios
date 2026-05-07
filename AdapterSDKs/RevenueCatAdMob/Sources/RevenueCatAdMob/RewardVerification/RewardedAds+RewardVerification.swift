@@ -146,11 +146,11 @@ internal extension RewardVerification.CapableAd {
         let state = RewardVerification.Setup.verificationState(for: self)
 
         if rewardVerificationResult != nil, state == nil {
+            Logger.warn(RewardVerificationStrings.result_callback_missing_verification_state)
             assert(
                 state != nil,
                 RewardVerificationStrings.result_callback_requires_enable.description
             )
-            Logger.warn(RewardVerificationStrings.result_callback_missing_verification_state)
         }
 
         return {
