@@ -24,7 +24,10 @@ internal extension RewardVerification {
         /// Production entry point. Reads SDK config from `Purchases.shared`; no-ops if not configured.
         @MainActor
         static func install(on loadedAd: some CapableAd) {
-            guard Purchases.isConfigured else { return }
+            guard Purchases.isConfigured else {
+                Logger.warn(RewardVerificationStrings.setup_purchases_not_configured)
+                return
+            }
             let purchases = Purchases.shared
             self.install(on: loadedAd, apiKey: purchases.apiKey, appUserID: purchases.appUserID)
         }
@@ -47,6 +50,11 @@ internal extension RewardVerification {
                 return nil
             }
 
+            Logger.info(RewardVerificationStrings.setup_install(
+                adType: "\(type(of: loadedAd))",
+                transactionID: clientTransactionID
+            ))
+
             let options = GoogleMobileAds.ServerSideVerificationOptions()
             options.userIdentifier = appUserID
             options.customRewardText = customRewardText
@@ -68,7 +76,9 @@ internal extension RewardVerification {
                 let data = try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])
                 return String(data: data, encoding: .utf8)
             } catch {
-                assertionFailure(Strings.customRewardTextEncodingFailed(error))
+                let message = RewardVerificationStrings.setup_custom_reward_text_encoding_failed(error: error)
+                Logger.error(message)
+                assertionFailure(message.description)
                 return nil
             }
         }
