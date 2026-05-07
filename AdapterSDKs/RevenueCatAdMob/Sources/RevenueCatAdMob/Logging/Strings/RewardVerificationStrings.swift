@@ -5,6 +5,8 @@
 //
 
 import Foundation
+
+#if os(iOS) && canImport(GoogleMobileAds)
 @_spi(Internal) import RevenueCat
 
 // swiftlint:disable identifier_name
@@ -61,3 +63,5 @@ extension RewardVerificationStrings: LogMessage {
 
     var category: String { return "rewardverification" }
 }
+
+#endif
