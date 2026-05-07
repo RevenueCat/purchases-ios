@@ -14,7 +14,7 @@
 import Foundation
 import RevenueCat
 
-// swiftlint:disable identifier_name
+// swiftlint:disable identifier_name file_length
 
 enum Strings {
 
@@ -121,6 +121,7 @@ enum Strings {
     case paywall_contains_unsupported_condition
     case workflow_paywall_invalid_state(currentStepId: String, screenId: String?)
     case paywall_workflow_trigger_not_handled(componentName: String?)
+    case workflow_package_context_unresolvable(stepId: String)
 
 }
 
@@ -391,6 +392,9 @@ extension Strings: CustomStringConvertible {
         case let .paywall_workflow_trigger_not_handled(componentName):
             return "Workflow trigger button was tapped but no matching workflow action was available. " +
             "componentName=\(componentName ?? "nil")"
+        case let .workflow_package_context_unresolvable(stepId):
+            return "Could not resolve package context for singleStepFallbackId '\(stepId)'. " +
+            "Price/period variables may not resolve on packageless screens."
         }
     }
 

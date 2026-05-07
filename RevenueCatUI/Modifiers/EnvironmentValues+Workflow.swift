@@ -44,6 +44,13 @@ private struct IsWorkflowHeaderKey: EnvironmentKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct WorkflowPackageContextKey: EnvironmentKey {
+    /// Package context from the workflow's `singleStepFallbackId` step, used by packageless
+    /// screens to resolve price/period template variables.
+    static let defaultValue: WorkflowPackageContext? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension EnvironmentValues {
     /// Called when a button with a component `id` is tapped inside a workflow paywall.
     /// Returns `true` if the workflow consumed the trigger (navigator found a matching step),
@@ -61,6 +68,11 @@ extension EnvironmentValues {
     var isWorkflowHeader: Bool {
         get { self[IsWorkflowHeaderKey.self] }
         set { self[IsWorkflowHeaderKey.self] = newValue }
+    }
+
+    var workflowPackageContext: WorkflowPackageContext? {
+        get { self[WorkflowPackageContextKey.self] }
+        set { self[WorkflowPackageContextKey.self] = newValue }
     }
 }
 
