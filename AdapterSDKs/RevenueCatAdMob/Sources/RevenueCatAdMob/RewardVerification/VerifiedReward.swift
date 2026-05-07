@@ -53,6 +53,10 @@ import Foundation
         guard case .virtualCurrency(let payload) = self.storage else { return nil }
         return payload
     }
+
+    private enum Strings {
+        static let virtualCurrencyAmountMustBeGreaterThanZero = "virtualCurrency amount must be greater than zero"
+    }
 }
 
 #endif

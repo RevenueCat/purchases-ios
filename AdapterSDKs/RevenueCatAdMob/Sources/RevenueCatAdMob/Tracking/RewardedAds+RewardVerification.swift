@@ -148,9 +148,9 @@ internal extension RewardVerification.CapableAd {
         if rewardVerificationResult != nil, state == nil {
             assert(
                 state != nil,
-                RewardVerification.Strings.rewardVerificationResultRequiresEnable
+                RewardVerificationStrings.result_callback_requires_enable.description
             )
-            Logger.warn(RewardVerification.Strings.rewardVerificationResultMissingVerificationState)
+            Logger.warn(RewardVerificationStrings.result_callback_missing_verification_state)
         }
 
         return {
