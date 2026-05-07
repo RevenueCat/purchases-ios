@@ -23,11 +23,13 @@ final class PaywallsV2ViewContextPackageTests: TestCase {
     // MARK: - makeSelectedPackageContext
 
     @MainActor
-    func testMakeSelectedPackageContextUsesStepDefault() throws {
+    func testMakeSelectedPackageContextUsesProvidedDefault() throws {
         let state = try Self.makePaywallState(defaultPackage: TestData.monthlyPackage)
 
         let context = PaywallsV2View.makeSelectedPackageContext(
             from: state,
+            defaultPackage: TestData.monthlyPackage,
+            workflowPackages: nil,
             showZeroDecimalPlacePrices: true
         )
 
@@ -35,11 +37,13 @@ final class PaywallsV2ViewContextPackageTests: TestCase {
     }
 
     @MainActor
-    func testMakeSelectedPackageContextReturnsNilWhenStepHasNoPackages() throws {
+    func testMakeSelectedPackageContextReturnsNilWhenNoDefault() throws {
         let state = try Self.makePaywallState(defaultPackage: nil)
 
         let context = PaywallsV2View.makeSelectedPackageContext(
             from: state,
+            defaultPackage: nil,
+            workflowPackages: nil,
             showZeroDecimalPlacePrices: true
         )
 
@@ -48,58 +52,71 @@ final class PaywallsV2ViewContextPackageTests: TestCase {
 
     // MARK: - effectiveDefaultPackage
 
-    func testEffectiveDefaultPackageIsNilWhenContextPackageResolvesInStep() {
-        // The workflow default must be suppressed when contextPackage resolves: if it weren't, the
-        // default task could fire before the contextPackage task, call workflowOnPackageSelected
-        // with the default, and overwrite the user's carried selection from the previous step.
+    func testEffectiveDefaultPackagePrefersContextPackageWhenResolvableInStep() {
+        // When a user selected a package on the previous step, it should carry forward
+        // and take priority over the workflow default on the new step.
         let result = PaywallsV2View.effectiveDefaultPackage(
+            pageDefaultPackage: TestData.monthlyPackage,
+            workflowDefaultPackage: TestData.monthlyPackage,
             contextPackage: TestData.annualPackage,
-            stepPackages: [TestData.monthlyPackage, TestData.annualPackage],
-            workflowDefault: TestData.monthlyPackage
+            stepPackages: [TestData.monthlyPackage, TestData.annualPackage]
         )
-        expect(result).to(beNil())
+        expect(result?.identifier) == TestData.annualPackage.identifier
     }
 
-    func testEffectiveDefaultPackageReturnsDefaultOnPackagelessStep() {
-        // On a truly packageless step (empty packages), contextPackage can't be resolved —
-        // the workflow default is allowed so price/period variables still render on screen.
+    func testEffectiveDefaultPackageReturnsWorkflowDefaultOnPackagelessStep() {
+        // On a truly packageless step, contextPackage can't be resolved —
+        // the workflow default applies so price/period variables still render.
         let result = PaywallsV2View.effectiveDefaultPackage(
+            pageDefaultPackage: nil,
+            workflowDefaultPackage: TestData.monthlyPackage,
             contextPackage: TestData.annualPackage,
-            stepPackages: [],
-            workflowDefault: TestData.monthlyPackage
+            stepPackages: []
         )
         expect(result?.identifier) == TestData.monthlyPackage.identifier
     }
 
-    func testEffectiveDefaultPackageReturnsDefaultWhenNoContextCarried() {
+    func testEffectiveDefaultPackageReturnsWorkflowDefaultWhenNoContextCarried() {
         // On the first workflow step there's no prior selection (contextPackage is nil),
         // so the workflow default applies as the initial display/variable-resolution package.
         let result = PaywallsV2View.effectiveDefaultPackage(
+            pageDefaultPackage: TestData.monthlyPackage,
+            workflowDefaultPackage: TestData.annualPackage,
             contextPackage: nil,
-            stepPackages: [TestData.monthlyPackage, TestData.annualPackage],
-            workflowDefault: TestData.monthlyPackage
+            stepPackages: [TestData.monthlyPackage, TestData.annualPackage]
         )
-        expect(result?.identifier) == TestData.monthlyPackage.identifier
+        expect(result?.identifier) == TestData.annualPackage.identifier
     }
 
-    func testEffectiveDefaultPackageReturnsNilWhenWorkflowDefaultIsNil() {
+    func testEffectiveDefaultPackageReturnsNilWhenBothDefaultsAreNil() {
         let result = PaywallsV2View.effectiveDefaultPackage(
+            pageDefaultPackage: nil,
+            workflowDefaultPackage: nil,
             contextPackage: nil,
-            stepPackages: [],
-            workflowDefault: nil
+            stepPackages: []
         )
         expect(result).to(beNil())
     }
 
-    func testEffectiveDefaultPackageContextNotInStepButDifferentFromDefault() {
+    func testEffectiveDefaultPackageReturnsWorkflowDefaultWhenContextNotInStep() {
         // contextPackage exists but isn't in the step's offering (cross-offering).
         // The workflow default should apply for display on this step.
         let result = PaywallsV2View.effectiveDefaultPackage(
+            pageDefaultPackage: TestData.monthlyPackage,
+            workflowDefaultPackage: TestData.monthlyPackage,
             contextPackage: TestData.annualPackage,
-            stepPackages: [TestData.weeklyPackage],
-            workflowDefault: TestData.monthlyPackage
+            stepPackages: [TestData.weeklyPackage]
         )
         expect(result?.identifier) == TestData.monthlyPackage.identifier
+    }
+
+    func testEffectiveDefaultPackageWorkflowOverridesPageDefault() {
+        // Workflow default takes priority over the page's own default.
+        let result = PaywallsV2View.effectiveDefaultPackage(
+            pageDefaultPackage: TestData.monthlyPackage,
+            workflowDefaultPackage: TestData.annualPackage
+        )
+        expect(result?.identifier) == TestData.annualPackage.identifier
     }
 
     // MARK: - validatedContextPackage

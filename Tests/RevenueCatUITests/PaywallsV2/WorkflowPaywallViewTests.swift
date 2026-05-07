@@ -12,6 +12,7 @@
 import Nimble
 @_spi(Internal) @testable import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 
 #if !os(tvOS)
@@ -133,80 +134,126 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(state.progress) == 1
     }
 
-}
-
-// MARK: - WorkflowPackageContext tests
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension WorkflowPaywallViewTests {
-
-    func testWorkflowPackageContextDefaultsToNil() {
-        let ctx = WorkflowPackageContext()
-
-        expect(ctx.contextPackage).to(beNil())
-        expect(ctx.defaultPackage).to(beNil())
-    }
-
-    func testWorkflowPackageContextStoresContextAndDefaultPackages() {
-        let ctx = WorkflowPackageContext(
-            contextPackage: TestData.annualPackage,
-            defaultPackage: TestData.monthlyPackage
+    func testWorkflowPackageOverridePrefersWorkflowValueOverPageDefault() {
+        let defaultPackage = PaywallsV2View.effectiveDefaultPackage(
+            pageDefaultPackage: TestData.monthlyPackage,
+            workflowDefaultPackage: TestData.annualPackage
         )
 
-        expect(ctx.contextPackage?.identifier) == TestData.annualPackage.identifier
-        expect(ctx.defaultPackage?.identifier) == TestData.monthlyPackage.identifier
+        expect(defaultPackage?.identifier) == TestData.annualPackage.identifier
     }
 
 }
 
-// MARK: - computeDefaultPackage tests
+// MARK: - workflowPackageContext tests
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowPaywallViewTests {
 
-    func testComputeFallbackPackageReturnsNilWhenNoFallbackStepId() throws {
+    func testWorkflowPackageContextReturnsNilWhenNoFallbackStepId() throws {
         let context = try Self.makeContext(singleStepFallbackId: nil)
-        expect(context.defaultPackage).to(beNil())
+        expect(context.workflowPackageContext).to(beNil())
     }
 
-    func testComputeFallbackPackageReturnsNilWhenFallbackIdPointsToMissingStep() throws {
+    func testWorkflowPackageContextReturnsNilWhenSingleStepFallbackIdPointsToMissingStep() throws {
         let context = try Self.makeContext(singleStepFallbackId: "nonexistent_step")
-        expect(context.defaultPackage).to(beNil())
+        expect(context.workflowPackageContext).to(beNil())
     }
 
-    func testComputeFallbackPackageReturnsIsSelectedByDefaultPackage() throws {
+    func testWorkflowPackageContextReturnsIsSelectedByDefaultPackage() throws {
         let context = try Self.makeContext(
             singleStepFallbackId: "step_terminal",
-            fallbackPackages: [
+            workflowPackages: [
                 (id: "$rc_monthly", isDefault: false),
                 (id: "$rc_annual", isDefault: true)
             ]
         )
-        expect(context.defaultPackage?.identifier) == "$rc_annual"
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_annual"
+        expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_monthly", "$rc_annual"]
     }
 
-    func testComputeFallbackPackageReturnsFirstPackageWhenNoneIsDefault() throws {
+    func testWorkflowPackageContextReturnsFirstPackageWhenNoneIsDefault() throws {
         let context = try Self.makeContext(
             singleStepFallbackId: "step_terminal",
-            fallbackPackages: [
+            workflowPackages: [
                 (id: "$rc_monthly", isDefault: false),
                 (id: "$rc_annual", isDefault: false)
             ]
         )
-        expect(context.defaultPackage?.identifier) == "$rc_monthly"
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_monthly"
+        expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_monthly", "$rc_annual"]
     }
 
-    func testComputeFallbackPackageReturnsNilForPackagelessFallbackStep() throws {
+    func testWorkflowPackageContextReturnsNilForPackagelessWorkflowStep() throws {
         let context = try Self.makeContext(
             singleStepFallbackId: "step_terminal",
-            fallbackPackages: []
+            workflowPackages: []
         )
-        expect(context.defaultPackage).to(beNil())
+        expect(context.workflowPackageContext).to(beNil())
+    }
+
+    func testWorkflowPackageContextReturnsDefaultPackageInsideStickyFooter() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            terminalScreenJSON: Self.makeStickyFooterScreenJSON(
+                packages: [(id: "$rc_annual", isDefault: true)],
+                offeringId: "offering_test"
+            )
+        )
+
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_annual"
+        expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_annual"]
+    }
+
+    func testWorkflowPackageContextReturnsDefaultPackageInsideTabsCarousel() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            terminalScreenJSON: Self.makeTabsCarouselScreenJSON(
+                packageID: "$rc_weekly",
+                offeringId: "offering_test"
+            )
+        )
+
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_weekly"
+        expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_weekly"]
     }
 
 }
 
-// MARK: - Helpers for computeDefaultPackage tests
+// MARK: - variableContext population tests
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPaywallViewTests {
+
+    func testWorkflowPackageContextPopulatesVariableContextForPricingVariables() async throws {
+        // A packageless screen starts with an empty variableContext.
+        // Before the fix, only `package` was set from workflowPackageContext;
+        // `variableContext` stayed empty, so {{ product.relative_discount }} always resolved to "".
+        let packageContext = PackageContext(
+            package: nil,
+            variableContext: .init(packages: [], showZeroDecimalPlacePrices: true)
+        )
+        expect(packageContext.variableContext.mostExpensivePricePerMonth).to(beNil())
+
+        // Verify that calling update() with a WorkflowPackageContext populates both fields.
+        let package = TestData.monthlyPackage
+        let workflowCtx = WorkflowPackageContext(selectedPackage: package, packages: [package])
+        await packageContext.update(
+            package: workflowCtx.selectedPackage,
+            variableContext: .init(
+                packages: workflowCtx.packages,
+                showZeroDecimalPlacePrices: true
+            )
+        )
+
+        // Both package and variableContext must be set for all price variables to resolve correctly.
+        expect(packageContext.package?.identifier) == package.identifier
+        expect(packageContext.variableContext.mostExpensivePricePerMonth).toNot(beNil())
+    }
+
+}
+
+// MARK: - Helpers for workflowPackageContext tests
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension WorkflowPaywallViewTests {
@@ -215,23 +262,22 @@ private extension WorkflowPaywallViewTests {
 
     static func makeContext(
         singleStepFallbackId: String?,
-        fallbackPackages: [PackageSpec] = []
+        workflowPackages: [PackageSpec] = [],
+        terminalScreenJSON: String? = nil
     ) throws -> WorkflowContext {
         let offeringId = "offering_test"
         let workflow = try makeWorkflow(
             singleStepFallbackId: singleStepFallbackId,
-            fallbackPackages: fallbackPackages,
+            workflowPackages: workflowPackages,
+            terminalScreenJSON: terminalScreenJSON,
             offeringId: offeringId
         )
-        let packages = fallbackPackages.map { spec in
-            Package(
-                identifier: spec.id,
-                packageType: .custom,
-                storeProduct: TestData.monthlyPackage.storeProduct,
-                offeringIdentifier: offeringId,
-                webCheckoutUrl: nil
-            )
-        }
+        let packageIdentifiers = Set(workflowPackages.map(\.id)).union([
+            TestData.monthlyPackage.identifier,
+            TestData.annualPackage.identifier,
+            TestData.weeklyPackage.identifier
+        ])
+        let packages = packageIdentifiers.map { Self.makePackage(identifier: $0, offeringId: offeringId) }
         let offering = Offering(
             identifier: offeringId,
             serverDescription: "Test",
@@ -267,10 +313,11 @@ private extension WorkflowPaywallViewTests {
 
     static func makeWorkflow(
         singleStepFallbackId: String?,
-        fallbackPackages: [PackageSpec],
+        workflowPackages: [PackageSpec],
+        terminalScreenJSON customTerminalScreenJSON: String? = nil,
         offeringId: String
     ) throws -> PublishedWorkflow {
-        let fallbackIdJSON = singleStepFallbackId.map { "\"single_step_fallback_id\": \"\($0)\"," } ?? ""
+        let workflowStepIdJSON = singleStepFallbackId.map { "\"single_step_fallback_id\": \"\($0)\"," } ?? ""
 
         let terminalStepJSON: String
         let terminalScreenJSON: String
@@ -278,8 +325,10 @@ private extension WorkflowPaywallViewTests {
             terminalStepJSON = """
             "\(fallbackId)": { "id": "\(fallbackId)", "type": "screen", "screen_id": "screen_terminal" },
             """
+            let screenJSON = customTerminalScreenJSON
+                ?? makeScreenJSON(packages: workflowPackages, offeringId: offeringId)
             terminalScreenJSON = """
-            "screen_terminal": \(makeScreenJSON(packages: fallbackPackages, offeringId: offeringId)),
+            "screen_terminal": \(screenJSON),
             """
         } else {
             terminalStepJSON = ""
@@ -291,7 +340,7 @@ private extension WorkflowPaywallViewTests {
           "id": "wf_test",
           "display_name": "Test",
           "initial_step_id": "step_initial",
-          \(fallbackIdJSON)
+          \(workflowStepIdJSON)
           "steps": {
             "step_initial": { "id": "step_initial", "type": "screen", "screen_id": "screen_initial" },
             \(terminalStepJSON)
@@ -368,6 +417,137 @@ private extension WorkflowPaywallViewTests {
         """
     }
 
+    static func makeStickyFooterScreenJSON(
+        packages: [PackageSpec],
+        offeringId: String
+    ) -> String {
+        let componentsJSON = packages.map { packageComponentJSON(id: $0.id, isDefault: $0.isDefault) }
+            .joined(separator: ",")
+
+        return """
+        {
+            "template_name": "template_v2",
+            "asset_base_url": "https://assets.pawwalls.com",
+            "revision": 1,
+            "default_locale": "en_US",
+            "components_localizations": {},
+            "offering_identifier": "\(offeringId)",
+            "components_config": {
+                "base": {
+                    "stack": \(stackJSON(components: "[]")),
+                    "sticky_footer": {
+                        "type": "sticky_footer",
+                        "stack": \(stackJSON(components: "[\(componentsJSON)]"))
+                    },
+                    "background": {
+                        "type": "color",
+                        "value": { "light": { "type": "hex", "value": "#220000ff" } }
+                    }
+                }
+            }
+        }
+        """
+    }
+
+    static func makeTabsCarouselScreenJSON(
+        packageID: String,
+        offeringId: String
+    ) -> String {
+        let packageJSON = packageComponentJSON(id: packageID, isDefault: true)
+        let tabControlComponentsJSON = """
+        [
+            {
+                "type": "tab_control_button",
+                "tab_id": "tab_1",
+                "stack": \(stackJSON(components: "[]"))
+            }
+        ]
+        """
+        let tabControlStackJSON = stackJSON(components: tabControlComponentsJSON)
+        let tabStackJSON = stackJSON(components: """
+        [
+            {
+                "type": "carousel",
+                "page_alignment": "center",
+                "page_spacing": 0,
+                "page_peek": 20,
+                "initial_page_index": 0,
+                "loop": false,
+                "pages": [
+                    \(stackJSON(components: "[\(packageJSON)]"))
+                ]
+            }
+        ]
+        """)
+        let rootStackJSON = stackJSON(components: """
+        [
+            {
+                "type": "tabs",
+                "control": {
+                    "type": "buttons",
+                    "stack": \(tabControlStackJSON)
+                },
+                "tabs": [
+                    {
+                        "id": "tab_1",
+                        "stack": \(tabStackJSON)
+                    }
+                ],
+                "default_tab_id": "tab_1",
+                "visible": true,
+                "size": {
+                    "width": { "type": "fill" },
+                    "height": { "type": "fill" }
+                },
+                "padding": {},
+                "margin": {}
+            }
+        ]
+        """)
+
+        return """
+        {
+            "template_name": "template_v2",
+            "asset_base_url": "https://assets.pawwalls.com",
+            "revision": 1,
+            "default_locale": "en_US",
+            "components_localizations": {},
+            "offering_identifier": "\(offeringId)",
+            "components_config": {
+                "base": {
+                    "stack": \(rootStackJSON),
+                    "background": {
+                        "type": "color",
+                        "value": { "light": { "type": "hex", "value": "#220000ff" } }
+                    }
+                }
+            }
+        }
+        """
+    }
+
+    static func makePackage(identifier: String, offeringId: String) -> Package {
+        let sourcePackage: Package
+
+        switch identifier {
+        case TestData.annualPackage.identifier:
+            sourcePackage = TestData.annualPackage
+        case TestData.weeklyPackage.identifier:
+            sourcePackage = TestData.weeklyPackage
+        default:
+            sourcePackage = TestData.monthlyPackage
+        }
+
+        return Package(
+            identifier: identifier,
+            packageType: .custom,
+            storeProduct: sourcePackage.storeProduct,
+            offeringIdentifier: offeringId,
+            webCheckoutUrl: nil
+        )
+    }
+
 }
+
 
 #endif

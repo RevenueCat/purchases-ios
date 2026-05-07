@@ -28,20 +28,6 @@ struct WorkflowPageTransitionContext {
 
 }
 
-/// Package-related state injected by `WorkflowPaywallView` into each `PaywallsV2View` page.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct WorkflowPackageContext {
-
-    /// Package selected on the previous workflow step, forwarded to the current step as its
-    /// initial selection (forward-only — back navigation does not set this).
-    var contextPackage: Package?
-
-    /// Default package from the workflow's `singleStepFallbackId` step, used by packageless
-    /// screens to resolve price/period template variables.
-    var defaultPackage: Package?
-
-}
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct WorkflowTriggerActionKey: EnvironmentKey {
     static let defaultValue: ((String) -> Bool)? = nil
@@ -60,7 +46,9 @@ private struct IsWorkflowHeaderKey: EnvironmentKey {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct WorkflowPackageContextKey: EnvironmentKey {
-    static let defaultValue = WorkflowPackageContext()
+    /// Package context from the workflow's `singleStepFallbackId` step, used by packageless
+    /// screens to resolve price/period template variables.
+    static let defaultValue: WorkflowPackageContext? = nil
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -88,14 +76,13 @@ extension EnvironmentValues {
         set { self[IsWorkflowHeaderKey.self] = newValue }
     }
 
-    var workflowPackageContext: WorkflowPackageContext {
+    var workflowPackageContext: WorkflowPackageContext? {
         get { self[WorkflowPackageContextKey.self] }
         set { self[WorkflowPackageContextKey.self] = newValue }
     }
 
     /// Called by `PaywallsV2View` when the user selects a package, so `WorkflowPaywallView`
-    /// can carry it forward to the next step. Kept separate from `workflowPackageContext`
-    /// to avoid bundling behaviour with data in the environment.
+    /// can carry it forward to the next step.
     var workflowOnPackageSelected: ((Package) -> Void)? {
         get { self[WorkflowOnPackageSelectedKey.self] }
         set { self[WorkflowOnPackageSelectedKey.self] = newValue }

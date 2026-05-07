@@ -22,6 +22,7 @@ struct OfferingsResponse {
 
             let identifier: String
             let platformProductIdentifier: String
+            let platformProductPlanIdentifier: String?
             let webCheckoutUrl: URL?
 
         }

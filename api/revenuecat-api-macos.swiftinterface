@@ -2276,6 +2276,8 @@ extension RevenueCat.Attribution : @unchecked Swift.Sendable {
     @objc public func with(quantity: Swift.Int) -> Self
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     @objc public func with(winBackOffer: RevenueCat.WinBackOffer) -> Self
+    @available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *)
+    @objc public func with(introductoryOfferEligibilityJWS: Swift.String) -> Self
     @objc public func build() -> RevenueCat.PurchaseParams
     @objc deinit
   }

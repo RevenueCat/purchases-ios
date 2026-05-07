@@ -71,6 +71,7 @@ extension OfferingsResponse {
                   packages: [
                     .init(identifier: "$rc_monthly",
                           platformProductIdentifier: "monthly_freetrial",
+                          platformProductPlanIdentifier: nil,
                           webCheckoutUrl: nil)
                   ], webCheckoutUrl: nil)
         ],

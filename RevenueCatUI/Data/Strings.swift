@@ -121,7 +121,7 @@ enum Strings {
     case paywall_contains_unsupported_condition
     case workflow_paywall_invalid_state(currentStepId: String, screenId: String?)
     case paywall_workflow_trigger_not_handled(componentName: String?)
-    case workflow_fallback_package_unresolvable(stepId: String)
+    case workflow_package_context_unresolvable(stepId: String)
 
 }
 
@@ -392,8 +392,8 @@ extension Strings: CustomStringConvertible {
         case let .paywall_workflow_trigger_not_handled(componentName):
             return "Workflow trigger button was tapped but no matching workflow action was available. " +
             "componentName=\(componentName ?? "nil")"
-        case let .workflow_fallback_package_unresolvable(stepId):
-            return "Could not resolve fallback package for singleStepFallbackId '\(stepId)'. " +
+        case let .workflow_package_context_unresolvable(stepId):
+            return "Could not resolve package context for singleStepFallbackId '\(stepId)'. " +
             "Price/period variables may not resolve on packageless screens."
         }
     }

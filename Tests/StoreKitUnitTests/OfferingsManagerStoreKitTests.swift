@@ -108,6 +108,7 @@ private extension OfferingsManagerStoreKitTests {
                       packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: StoreKitConfigTestCase.productID,
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil)
