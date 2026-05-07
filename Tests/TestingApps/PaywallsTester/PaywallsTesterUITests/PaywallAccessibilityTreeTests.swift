@@ -4,8 +4,17 @@
  Captures the XCUITest accessibility tree of a rendered paywall and exports it
  as a structured JSON file conforming to the PaywallLayoutTree schema.
 
- The JSON root is the paywall ScrollView element (identifier == "paywall").
- If no such element is found the full application snapshot is used as the root.
+ OUTPUT FORMAT
+ -------------
+ The JSON contains a flat `components` dictionary keyed by component ID
+ (the accessibility identifier set on each rendered element). All frame
+ coordinates are in the coordinate system of the paywall root — i.e.
+ (0, 0) is the top-left corner of the paywall content area.
+
+ When the same component ID appears on multiple elements (unusual but possible),
+ the entries are disambiguated with a numeric suffix: "id_0", "id_1", …
+
+ Only elements that carry a non-empty accessibility identifier are included.
 
  This test target is attached to the PaywallsTester app. It can navigate via two paths:
 
@@ -55,7 +64,7 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
 
     // MARK: - Schema version
 
-    private static let extractorVersion = "1.0.0"
+    private static let extractorVersion = "2.0.0"
 
     // MARK: - Test
 
@@ -92,13 +101,14 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         // the actual paywall content (app chrome and wrapper containers each have 1–2 children).
         let paywallSnapshot: any XCUIElementSnapshot = findPaywallRoot(in: appSnapshot)
 
-        // Build structured tree
-        let root = buildNode(paywallSnapshot)
+        // Build flat component dictionary, with coordinates relative to the paywall root.
+        let components = buildComponents(from: paywallSnapshot)
 
         // Build metadata
         let osVersion = ProcessInfo.processInfo.operatingSystemVersion
         let platformVersion = "\(osVersion.majorVersion).\(osVersion.minorVersion).\(osVersion.patchVersion)"
         let appFrame = appSnapshot.frame
+        let rootCGFrame = paywallSnapshot.frame
 
         let metadata = PaywallLayoutTree.Metadata(
             platform: "ios",
@@ -108,13 +118,19 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
                 height: Double(appFrame.height),
                 scale: screenScale()
             ),
+            rootFrame: PaywallLayoutTree.Metadata.Frame(
+                x: Double(rootCGFrame.origin.x),
+                y: Double(rootCGFrame.origin.y),
+                width: Double(rootCGFrame.size.width),
+                height: Double(rootCGFrame.size.height)
+            ),
             offeringId: paywallId,
             locale: Locale.current.identifier,
             extractorVersion: Self.extractorVersion,
             timestamp: ISO8601DateFormatter().string(from: Date())
         )
 
-        let tree = PaywallLayoutTree(metadata: metadata, root: root)
+        let tree = PaywallLayoutTree(metadata: metadata, components: components)
 
         // Encode to JSON
         let encoder = JSONEncoder()
@@ -279,46 +295,82 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         return node
     }
 
-    // MARK: - JSON tree builder
+    // MARK: - Flat component builder
 
-    private func buildNode(_ snapshot: any XCUIElementSnapshot) -> PaywallLayoutTree.Node {
-        let nativeTypeName = elementTypeName(snapshot.elementType)
-        let semanticTypeName = semanticType(snapshot.elementType)
+    /// Builds a flat dictionary of components from the paywall snapshot.
+    ///
+    /// Only elements with a non-empty accessibility identifier are included.
+    /// Coordinates are translated so that (0, 0) is the top-left of `rootSnapshot`.
+    ///
+    /// Duplicate IDs are disambiguated with a `_0`, `_1`, … suffix on every occurrence.
+    private func buildComponents(
+        from rootSnapshot: any XCUIElementSnapshot
+    ) -> [String: PaywallLayoutTree.Component] {
+        let origin = rootSnapshot.frame.origin
 
-        let componentId: String? = snapshot.identifier.isEmpty ? nil : snapshot.identifier
-        let label: String? = snapshot.label.isEmpty ? nil : snapshot.label
+        // DFS: collect (id, snapshot) for every element that has an identifier.
+        var pairs: [(id: String, snapshot: any XCUIElementSnapshot)] = []
+        collectIdedSnapshots(rootSnapshot, into: &pairs)
 
-        let value: String?
-        if let rawValue = snapshot.value {
-            let str = "\(rawValue)"
-            value = str.isEmpty ? nil : str
-        } else {
-            value = nil
+        // Count how many times each ID appears.
+        var idCounts: [String: Int] = [:]
+        for (id, _) in pairs { idCounts[id, default: 0] += 1 }
+
+        // Assign dictionary keys, adding numeric suffixes for duplicates.
+        var idIndices: [String: Int] = [:]
+        var result: [String: PaywallLayoutTree.Component] = [:]
+
+        for (id, snapshot) in pairs {
+            let key: String
+            if idCounts[id]! > 1 {
+                let idx = idIndices[id, default: 0]
+                key = "\(id)_\(idx)"
+                idIndices[id] = idx + 1
+            } else {
+                key = id
+            }
+
+            let cgFrame = snapshot.frame
+            let frame = PaywallLayoutTree.Component.Frame(
+                x: Double(cgFrame.origin.x - origin.x),
+                y: Double(cgFrame.origin.y - origin.y),
+                width: Double(cgFrame.size.width),
+                height: Double(cgFrame.size.height)
+            )
+
+            let value: String?
+            if let rawValue = snapshot.value {
+                let str = "\(rawValue)"
+                value = str.isEmpty ? nil : str
+            } else {
+                value = nil
+            }
+
+            result[key] = PaywallLayoutTree.Component(
+                type: semanticType(snapshot.elementType),
+                nativeType: elementTypeName(snapshot.elementType),
+                componentId: id,
+                label: snapshot.label.isEmpty ? nil : snapshot.label,
+                value: value,
+                frame: frame,
+                state: .init(enabled: snapshot.isEnabled, selected: snapshot.isSelected)
+            )
         }
 
-        let cgFrame = snapshot.frame
-        let frame = PaywallLayoutTree.Node.Frame(
-            x: Double(cgFrame.origin.x),
-            y: Double(cgFrame.origin.y),
-            width: Double(cgFrame.size.width),
-            height: Double(cgFrame.size.height)
-        )
+        return result
+    }
 
-        let state = PaywallLayoutTree.Node.State(
-            enabled: snapshot.isEnabled,
-            selected: snapshot.isSelected
-        )
-
-        return PaywallLayoutTree.Node(
-            type: semanticTypeName,
-            nativeType: nativeTypeName,
-            componentId: componentId,
-            label: label,
-            value: value,
-            frame: frame,
-            state: state,
-            children: snapshot.children.map { buildNode($0) }
-        )
+    /// DFS walk — appends every element with a non-empty identifier to `pairs`.
+    private func collectIdedSnapshots(
+        _ snapshot: any XCUIElementSnapshot,
+        into pairs: inout [(id: String, snapshot: any XCUIElementSnapshot)]
+    ) {
+        if !snapshot.identifier.isEmpty {
+            pairs.append((snapshot.identifier, snapshot))
+        }
+        for child in snapshot.children {
+            collectIdedSnapshots(child, into: &pairs)
+        }
     }
 
     // MARK: - Type mapping
@@ -440,12 +492,18 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
 private struct PaywallLayoutTree: Encodable {
 
     let metadata: Metadata
-    let root: Node
+    /// Flat dictionary of all identified components, keyed by component ID.
+    /// When multiple elements share the same ID, keys are suffixed: "id_0", "id_1", …
+    /// All frame coordinates are relative to the paywall root's top-left corner.
+    let components: [String: Component]
 
     struct Metadata: Encodable {
         let platform: String
         let platformVersion: String
         let viewport: Viewport
+        /// Frame of the paywall root in screen coordinates.
+        /// All component frames are expressed relative to this origin.
+        let rootFrame: Frame
         let offeringId: String
         let locale: String
         let extractorVersion: String
@@ -456,19 +514,25 @@ private struct PaywallLayoutTree: Encodable {
             let height: Double
             let scale: Double
         }
+
+        struct Frame: Encodable {
+            let x: Double
+            let y: Double
+            let width: Double
+            let height: Double
+        }
     }
 
-    struct Node: Encodable {
+    struct Component: Encodable {
         let type: String
         let nativeType: String
-        /// The component ID from the paywall JSON definition, surfaced via
-        /// `accessibilityIdentifier` on the rendered element.
-        let componentId: String?
+        /// The original component ID (before any disambiguation suffix).
+        let componentId: String
         let label: String?
         let value: String?
+        /// Frame relative to the paywall root's top-left corner.
         let frame: Frame
         let state: State
-        let children: [Node]
 
         struct Frame: Encodable {
             let x: Double
@@ -478,7 +542,6 @@ private struct PaywallLayoutTree: Encodable {
         }
 
         /// Interaction-state flags as reported by XCUITest.
-        /// `enabled` defaults to true; `selected` defaults to false.
         struct State: Encodable {
             let enabled: Bool
             let selected: Bool
