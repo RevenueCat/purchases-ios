@@ -14,17 +14,9 @@ import GoogleMobileAds
 
 @available(iOS 15.0, *)
 internal extension RewardVerification {
-
-    static let invalidVirtualCurrencyAmountMessage =
-        "Received non-positive virtual currency amount from reward verification response."
-
     static func mapVerifiedReward(_ reward: RevenueCat.VerifiedReward) -> RevenueCatAdMob.VerifiedReward {
         switch reward {
         case .virtualCurrency(let item):
-            if item.amount <= 0 {
-                assert(item.amount > 0, self.invalidVirtualCurrencyAmountMessage)
-                return .unknown
-            }
             return .virtualCurrency(code: item.code, amount: item.amount)
         case .noReward:
             return .noReward

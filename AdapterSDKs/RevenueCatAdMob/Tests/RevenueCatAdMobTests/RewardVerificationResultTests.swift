@@ -23,6 +23,10 @@ final class RewardVerificationResultTests: AdapterTestCase {
         XCTAssertNil(result.verifiedReward)
         XCTAssertEqual(result, .failed)
     }
+
+    func testUnsupportedRewardAliasMatchesUnknown() {
+        XCTAssertEqual(VerifiedReward.unsupportedReward, .unknown)
+    }
 }
 
 #endif

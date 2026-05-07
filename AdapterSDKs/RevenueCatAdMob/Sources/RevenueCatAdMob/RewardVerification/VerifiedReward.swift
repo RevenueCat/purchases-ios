@@ -33,13 +33,20 @@ import Foundation
 
     /// Virtual currency line item. `amount` must be greater than zero.
     public static func virtualCurrency(code: String, amount: Int) -> VerifiedReward {
-        precondition(amount > 0, "virtualCurrency amount must be greater than zero")
+        if amount <= 0 {
+            assertionFailure(Self.Strings.virtualCurrencyAmountMustBeGreaterThanZero)
+            return .unknown
+        }
+
         let payload = VirtualCurrencyReward(code: code, amount: amount)
         return VerifiedReward(storage: .virtualCurrency(payload))
     }
 
     /// Verified reward shape is not modeled in this SDK version.
     public static let unknown = VerifiedReward(storage: .unknown)
+
+    /// Verification succeeded with a reward type that is not currently modeled by this SDK.
+    public static let unsupportedReward = VerifiedReward(storage: .unknown)
 
     /// Verification succeeded with no virtual-currency reward.
     public static let noReward = VerifiedReward(storage: .noReward)

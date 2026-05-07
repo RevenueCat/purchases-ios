@@ -15,6 +15,13 @@ struct RewardVerificationLogMessage: LogMessage {
     let category = "reward_verification"
 }
 
+internal extension VerifiedReward {
+
+    enum Strings {
+        static let virtualCurrencyAmountMustBeGreaterThanZero = "virtualCurrency amount must be greater than zero"
+    }
+}
+
 @available(iOS 15.0, *)
 internal extension RewardVerification {
 
