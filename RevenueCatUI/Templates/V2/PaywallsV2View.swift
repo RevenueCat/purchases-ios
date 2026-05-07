@@ -310,6 +310,11 @@ struct PaywallsV2View: View {
                 self.dismissAfterPurchaseCompletionCallbacks()
             }
             .onReceive(selectedPackageContext.$package) { package in
+                guard case let .success(paywallState) = self.paywallStateManager.state,
+                      let package = Self.validatedContextPackage(package, in: paywallState.packages) else {
+                    return
+                }
+
                 self.workflowPackageContext.onPackageSelected?(package)
             }
 
