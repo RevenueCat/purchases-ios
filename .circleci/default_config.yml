@@ -1881,6 +1881,9 @@ jobs:
       - install-dependencies
       - revenuecat/setup-git-credentials
       - revenuecat/trust-github-key
+      - run:
+          name: Fetch paywall-preview-resources
+          command: bundle exec fastlane ios fetch_paywall_preview_resources
       - revenuecat/install-tuist
       - run:
           name: Generate Tuist workspace
@@ -1888,9 +1891,6 @@ jobs:
             export PATH="$HOME/.local/share/mise/shims:$PATH"
             export TUIST_INCLUDE_TEST_DEPENDENCIES=true
             tuist install && tuist generate --no-open
-      - run:
-          name: Fetch paywall-preview-resources
-          command: bundle exec fastlane ios fetch_paywall_preview_resources
       - run:
           name: Clone paywall-rendering-validation repository
           command: git clone git@github.com:RevenueCat/paywall-rendering-validation.git ../Tests/paywall-rendering-validation
