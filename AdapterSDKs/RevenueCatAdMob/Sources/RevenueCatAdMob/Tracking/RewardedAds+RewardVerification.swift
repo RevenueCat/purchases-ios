@@ -8,7 +8,7 @@ import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Experimental) import RevenueCat
+@_spi(Internal) import RevenueCat
 
 @available(iOS 15.0, *)
 internal extension Tracking {
@@ -163,14 +163,19 @@ internal extension RewardVerification.CapableAd {
         rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)?,
         poller: RewardVerification.Poller? = nil
     ) -> (() -> Void) {
+        let state = RewardVerification.Setup.verificationState(for: self)
+
         if rewardVerificationResult != nil {
             assert(
-                RewardVerification.Setup.verificationState(for: self) != nil,
+                state != nil,
                 Strings.rewardVerificationResultRequiresEnable
             )
+            if state == nil {
+                Logger.warn(Strings.rewardVerificationResultMissingVerificationState)
+            }
         }
 
-        guard let state = RewardVerification.Setup.verificationState(for: self),
+        guard let state,
               let onResult = rewardVerificationResult else {
             return { rewardVerificationStarted?() }
         }
