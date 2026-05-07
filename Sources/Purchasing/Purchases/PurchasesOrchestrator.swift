@@ -443,14 +443,14 @@ final class PurchasesOrchestrator {
 
         #endif
 
+        let introductoryOfferEligibilityJWS = params.introductoryOfferEligibilityJWS
+
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
-        let introductoryOfferEligibilityJWS = params.introductoryOfferEligibilityJWS
         let promotionalOfferOptions = params.promotionalOfferOptions
 
         #else
 
-        let introductoryOfferEligibilityJWS: String? = nil
         let promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions? = nil
 
         #endif
