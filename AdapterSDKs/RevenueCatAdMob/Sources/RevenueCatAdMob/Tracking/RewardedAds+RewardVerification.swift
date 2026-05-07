@@ -11,20 +11,6 @@ import GoogleMobileAds
 @_spi(Internal) import RevenueCat
 
 @available(iOS 15.0, *)
-internal extension Tracking {
-
-    @MainActor
-    static func applyRewardVerificationPlacementOverride(
-        _ placementOverride: String?,
-        on fullScreenAd: AnyObject
-    ) {
-        if let trackingDelegate = Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: fullScreenAd) {
-            trackingDelegate.placement = placementOverride
-        }
-    }
-}
-
-@available(iOS 15.0, *)
 @_spi(Experimental) public extension GoogleMobileAds.RewardedAd {
 
     /// Enables RevenueCat reward verification for this ad.
@@ -72,10 +58,7 @@ internal extension Tracking {
         rewardVerificationStarted: (() -> Void)? = nil,
         rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
     ) {
-        Tracking.applyRewardVerificationPlacementOverride(
-            placement,
-            on: self
-        )
+        Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
             rewardVerificationStarted: rewardVerificationStarted,
             rewardVerificationResult: rewardVerificationResult
@@ -135,10 +118,7 @@ internal extension Tracking {
         rewardVerificationStarted: (() -> Void)? = nil,
         rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
     ) {
-        Tracking.applyRewardVerificationPlacementOverride(
-            placement,
-            on: self
-        )
+        Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
             rewardVerificationStarted: rewardVerificationStarted,
             rewardVerificationResult: rewardVerificationResult

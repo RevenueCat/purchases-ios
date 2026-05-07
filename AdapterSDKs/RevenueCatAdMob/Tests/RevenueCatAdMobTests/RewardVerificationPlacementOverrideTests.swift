@@ -36,7 +36,7 @@ final class RewardVerificationPlacementOverrideTests: AdapterTestCase {
         )
         Tracking.Adapter.shared.fullScreenDelegateStore.set(trackingDelegate, for: fullScreenAd)
 
-        Tracking.applyRewardVerificationPlacementOverride("show_time_placement", on: fullScreenAd)
+        Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: fullScreenAd)?.placement = "show_time_placement"
 
         let updatedDelegate = Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: fullScreenAd)
         XCTAssertEqual(updatedDelegate?.placement, "show_time_placement")
@@ -53,7 +53,7 @@ final class RewardVerificationPlacementOverrideTests: AdapterTestCase {
         )
         Tracking.Adapter.shared.fullScreenDelegateStore.set(trackingDelegate, for: fullScreenAd)
 
-        Tracking.applyRewardVerificationPlacementOverride(nil, on: fullScreenAd)
+        Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: fullScreenAd)?.placement = nil
 
         let updatedDelegate = Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: fullScreenAd)
         XCTAssertNil(updatedDelegate?.placement)
