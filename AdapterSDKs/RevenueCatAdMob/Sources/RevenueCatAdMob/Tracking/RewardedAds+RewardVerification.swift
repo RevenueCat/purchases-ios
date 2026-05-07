@@ -198,4 +198,29 @@ internal extension RewardVerification.CapableAd {
     }
 }
 
+// MARK: - Internal outcome -> presentation result
+
+@available(iOS 15.0, *)
+internal extension RewardVerification {
+    static func mapVerifiedReward(_ reward: RevenueCat.VerifiedReward) -> RevenueCatAdMob.VerifiedReward {
+        switch reward {
+        case .virtualCurrency(let item):
+            return .virtualCurrency(code: item.code, amount: item.amount)
+        case .noReward:
+            return .noReward
+        case .unsupportedReward:
+            return .unsupportedReward
+        }
+    }
+
+    static func mapOutcome(_ outcome: Outcome) -> RewardVerificationResult {
+        switch outcome {
+        case .verified(let reward):
+            return .verified(self.mapVerifiedReward(reward))
+        case .failed:
+            return .failed
+        }
+    }
+}
+
 #endif
