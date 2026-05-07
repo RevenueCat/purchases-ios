@@ -184,6 +184,39 @@ extension WorkflowPaywallViewTests {
 
 }
 
+// MARK: - variableContext population tests
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPaywallViewTests {
+
+    func testWorkflowPackageContextPopulatesVariableContextForPricingVariables() async throws {
+        // A packageless screen starts with an empty variableContext.
+        // Before the fix, only `package` was set from workflowPackageContext;
+        // `variableContext` stayed empty, so {{ product.relative_discount }} always resolved to "".
+        let packageContext = PackageContext(
+            package: nil,
+            variableContext: .init(packages: [], showZeroDecimalPlacePrices: true)
+        )
+        expect(packageContext.variableContext.mostExpensivePricePerMonth).to(beNil())
+
+        // Simulate what PaywallsV2View's .task does after reading the injected workflowPackageContext.
+        let package = TestData.monthlyPackage
+        let workflowCtx = WorkflowPackageContext(selectedPackage: package, packages: [package])
+        await packageContext.update(
+            package: workflowCtx.selectedPackage,
+            variableContext: .init(
+                packages: workflowCtx.packages,
+                showZeroDecimalPlacePrices: true
+            )
+        )
+
+        // Both package and variableContext must be set for all price variables to resolve correctly.
+        expect(packageContext.package?.identifier) == package.identifier
+        expect(packageContext.variableContext.mostExpensivePricePerMonth).toNot(beNil())
+    }
+
+}
+
 // MARK: - Helpers for workflowPackageContext tests
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

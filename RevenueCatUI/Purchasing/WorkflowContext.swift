@@ -58,10 +58,10 @@ struct WorkflowContext {
 
         // Assumes the workflow package is not itself hidden — a hidden default package
         // would still be selected here, but that configuration is considered invalid.
-        let visible = Self.collectVisiblePackages(
-            in: screen.componentsConfig.base.stack.components,
-            offering: offering
-        )
+        let base = screen.componentsConfig.base
+        let allComponents = base.stack.components
+            + (base.stickyFooter?.stack.components ?? [])
+        let visible = Self.collectVisiblePackages(in: allComponents, offering: offering)
 
         guard let selectedPackage = visible.first(where: { $0.isSelectedByDefault })?.package
                 ?? visible.first?.package else {
@@ -80,7 +80,7 @@ struct WorkflowContext {
     ) -> [(package: Package, isSelectedByDefault: Bool)] {
         return components.reduce(into: []) { result, component in
             switch component {
-            case .package(let pkg) where pkg.visible != false:
+            case .package(let pkg) where pkg.visible ?? true:
                 if let rcPackage = offering.package(identifier: pkg.packageID) {
                     result.append((package: rcPackage, isSelectedByDefault: pkg.isSelectedByDefault))
                 }
