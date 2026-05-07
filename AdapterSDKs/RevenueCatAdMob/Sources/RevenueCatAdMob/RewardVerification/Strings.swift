@@ -7,6 +7,13 @@
 import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
+@_spi(Internal) import RevenueCat
+
+@available(iOS 15.0, *)
+struct RewardVerificationLogMessage: LogMessage {
+    let description: String
+    let category = "reward_verification"
+}
 
 @available(iOS 15.0, *)
 internal extension RewardVerification {
@@ -23,9 +30,10 @@ internal extension RewardVerification {
             "Passing a reward verification result callback requires calling enableRewardVerification() " +
             "on this ad after load (with the RevenueCat SDK configured)."
 
-        static let rewardVerificationResultMissingVerificationState: String =
-            "Reward verification result callback ignored because reward verification was not enabled " +
-            "for this ad. Call `enableRewardVerification()` after loading and before presenting."
+        static let rewardVerificationResultMissingVerificationState = RewardVerificationLogMessage(
+            description: "Reward verification result callback ignored because reward verification was not enabled " +
+                "for this ad. Call `enableRewardVerification()` after loading and before presenting."
+        )
     }
 }
 
