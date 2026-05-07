@@ -165,37 +165,33 @@ internal extension RewardVerification.CapableAd {
     ) -> (() -> Void) {
         let state = RewardVerification.Setup.verificationState(for: self)
 
-        guard let onResult = rewardVerificationResult else {
-            return { rewardVerificationStarted?() }
-        }
-
-        if state == nil {
+        if rewardVerificationResult != nil, state == nil {
             assert(
                 state != nil,
                 RewardVerification.Strings.rewardVerificationResultRequiresEnable
             )
             Logger.warn(RewardVerification.Strings.rewardVerificationResultMissingVerificationState)
-
-            return {
-                rewardVerificationStarted?()
-                onResult(.failed)
-            }
         }
-
-        guard let state else {
-            return { rewardVerificationStarted?() }
-        }
-
-        let resolvedPoller = poller ?? .makeDefault()
 
         return {
             rewardVerificationStarted?()
+
+            guard let rewardVerificationResult else {
+                return
+            }
+
+            guard let state else {
+                rewardVerificationResult(.failed)
+                return
+            }
+
+            let resolvedPoller = poller ?? .makeDefault()
             RewardVerification.Dispatcher.dispatch(
                 clientTransactionID: state.clientTransactionID,
                 state: state,
                 poller: resolvedPoller,
                 outcomeHandler: { internalOutcome in
-                    onResult(RewardVerification.mapOutcome(internalOutcome))
+                    rewardVerificationResult(RewardVerification.mapOutcome(internalOutcome))
                 }
             )
         }
