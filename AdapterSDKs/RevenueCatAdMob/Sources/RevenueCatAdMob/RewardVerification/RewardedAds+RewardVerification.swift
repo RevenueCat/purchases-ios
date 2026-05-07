@@ -58,7 +58,7 @@ import GoogleMobileAds
         rewardVerificationStarted: (() -> Void)? = nil,
         rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
     ) {
-        Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
+        Tracking.setShowTimePlacement(placement, on: self)
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
             rewardVerificationStarted: rewardVerificationStarted,
             rewardVerificationResult: rewardVerificationResult
@@ -118,7 +118,7 @@ import GoogleMobileAds
         rewardVerificationStarted: (() -> Void)? = nil,
         rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
     ) {
-        Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
+        Tracking.setShowTimePlacement(placement, on: self)
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
             rewardVerificationStarted: rewardVerificationStarted,
             rewardVerificationResult: rewardVerificationResult
