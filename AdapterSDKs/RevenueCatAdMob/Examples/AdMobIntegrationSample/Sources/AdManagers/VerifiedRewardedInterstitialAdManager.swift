@@ -8,17 +8,16 @@ final class VerifiedRewardedInterstitialAdManager: NSObject, ObservableObject {
 
     var rewardedInterstitialAd: RewardedInterstitialAd?
     @Published var message = "Not Loaded"
-    @Published var verificationResult: String?
+
+    var canShow: Bool { self.rewardedInterstitialAd != nil }
 
     func resetSelection() {
         self.rewardedInterstitialAd = nil
         self.message = "Not Loaded"
-        self.verificationResult = nil
     }
 
     func loadAd() {
-        self.message = "Loading..."
-        self.verificationResult = "⏳ Loading ad..."
+        self.message = "⏳ Loading ad..."
 
         RewardedInterstitialAd.loadAndTrack(
             withAdUnitID: Self.adUnitID,
@@ -30,8 +29,7 @@ final class VerifiedRewardedInterstitialAdManager: NSObject, ObservableObject {
 
             if let error {
                 print("❌ Rewarded Interstitial failed: \(error.localizedDescription)")
-                self.message = "Failed"
-                self.verificationResult = "❌ Load failed"
+                self.message = "❌ Load failed"
                 return
             }
 
@@ -40,8 +38,7 @@ final class VerifiedRewardedInterstitialAdManager: NSObject, ObservableObject {
             loadedAd.enableRewardVerification()
             print("✅ Rewarded Interstitial loaded (verification)")
             self.rewardedInterstitialAd = loadedAd
-            self.message = "Ready"
-            self.verificationResult = "🔐 Loaded"
+            self.message = "🔐 Ready"
         }
     }
 
@@ -52,16 +49,16 @@ final class VerifiedRewardedInterstitialAdManager: NSObject, ObservableObject {
             return
         }
 
-        self.verificationResult = "⏳ Waiting for reward..."
+        self.message = "⏳ Waiting for reward..."
         loadedAd.present(
             from: viewController,
             placement: "rewarded_interstitial_reward_verification_main",
             rewardVerificationStarted: { [weak self] in
-                self?.verificationResult = "⏳ Verifying reward..."
+                self?.message = "⏳ Verifying reward..."
                 print("⏳ Rewarded interstitial verification started")
             },
             rewardVerificationResult: { [weak self] result in
-                self?.verificationResult = RewardVerificationResultMessage.message(for: result)
+                self?.message = RewardVerificationResultMessage.message(for: result)
                 print("✅ Rewarded interstitial verification finished: \(String(describing: result.verifiedReward))")
             }
         )
@@ -71,13 +68,18 @@ final class VerifiedRewardedInterstitialAdManager: NSObject, ObservableObject {
 
 extension VerifiedRewardedInterstitialAdManager: FullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ adObject: any FullScreenPresentingAd) {
-        if self.verificationResult == "⏳ Waiting for reward..." {
-            self.verificationResult = "⚠️ Ad dismissed before reward was earned"
+        var dismissedBeforeReward = false
+
+        if self.message == "⏳ Waiting for reward..." {
+            self.message = "⚠️ Ad dismissed before reward was earned"
+            dismissedBeforeReward = true
         }
 
         if adObject is RewardedInterstitialAd {
             self.rewardedInterstitialAd = nil
-            self.message = "Not Loaded"
+            if !dismissedBeforeReward {
+                self.message = "Not Loaded"
+            }
         }
     }
 }

@@ -8,7 +8,8 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
 
     var rewardedInterstitialAd: RewardedInterstitialAd?
     @Published var message = "Not Loaded"
-    @Published var result: String?
+
+    var canShow: Bool { self.rewardedInterstitialAd != nil }
 
     private var isWaitingForReward = false
 
@@ -16,13 +17,11 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
         self.isWaitingForReward = false
         self.rewardedInterstitialAd = nil
         self.message = "Not Loaded"
-        self.result = nil
     }
 
     func loadAd() {
-        self.message = "Loading..."
+        self.message = "⏳ Loading ad..."
         self.isWaitingForReward = false
-        self.result = "⏳ Loading ad..."
 
         RewardedInterstitialAd.loadAndTrack(
             withAdUnitID: Self.adUnitID,
@@ -34,8 +33,7 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
 
             if let error {
                 print("❌ Rewarded Interstitial failed: \(error.localizedDescription)")
-                self.message = "Failed"
-                self.result = "❌ Load failed"
+                self.message = "❌ Load failed"
                 return
             }
 
@@ -43,8 +41,7 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
 
             print("✅ Rewarded Interstitial loaded")
             self.rewardedInterstitialAd = loadedAd
-            self.message = "Ready"
-            self.result = "🔓 Loaded"
+            self.message = "🔓 Ready"
         }
     }
 
@@ -56,12 +53,15 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
         }
 
         self.isWaitingForReward = true
-        self.result = "⏳ Waiting for reward..."
+        self.message = "⏳ Waiting for reward..."
         loadedAd.present(from: viewController, userDidEarnRewardHandler: { [weak self] in
             guard let self else { return }
             let reward = loadedAd.adReward
             self.isWaitingForReward = false
-            self.result = "🎁 Reward granted: \(reward.amount) \(reward.type)"
+            self.message = """
+            ✅ Reward granted
+            🎁 \(reward.amount) \(reward.type)
+            """
             print("✅ User earned reward (rewarded interstitial)")
         })
     }
@@ -70,14 +70,19 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
 
 extension RewardedInterstitialAdManager: FullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ adObject: any FullScreenPresentingAd) {
+        var dismissedBeforeReward = false
+
         if self.isWaitingForReward {
-            self.result = "⚠️ Ad dismissed before reward was earned"
+            self.message = "⚠️ Ad dismissed before reward was earned"
             self.isWaitingForReward = false
+            dismissedBeforeReward = true
         }
 
         if adObject is RewardedInterstitialAd {
             self.rewardedInterstitialAd = nil
-            self.message = "Not Loaded"
+            if !dismissedBeforeReward {
+                self.message = "Not Loaded"
+            }
         }
     }
 }

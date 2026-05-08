@@ -1,4 +1,4 @@
-// swiftlint:disable file_length type_body_length function_parameter_count
+// swiftlint:disable file_length type_body_length
 import GoogleMobileAds
 import SwiftUI
 
@@ -182,11 +182,9 @@ private struct AdFormatDetailView: View {
                                 }
                             }
                         },
-                        canShow: rewardedMessage == "Ready",
-                        rewardResult: rewardedUsesRewardVerification ? nil : rewardedAdManager.result,
-                        verificationResult: rewardedUsesRewardVerification
-                            ? verifiedRewardedAdManager.verificationResult
-                            : nil
+                        canShow: rewardedUsesRewardVerification
+                            ? verifiedRewardedAdManager.canShow
+                            : rewardedAdManager.canShow
                     )
 
                 case .rewardedInterstitial:
@@ -212,13 +210,9 @@ private struct AdFormatDetailView: View {
                                 }
                             }
                         },
-                        canShow: rewardedInterstitialMessage == "Ready",
-                        rewardResult: rewardedInterstitialUsesRewardVerification
-                            ? nil
-                            : rewardedInterstitialAdManager.result,
-                        verificationResult: rewardedInterstitialUsesRewardVerification
-                            ? verifiedRewardedInterstitialAdManager.verificationResult
-                            : nil
+                        canShow: rewardedInterstitialUsesRewardVerification
+                            ? verifiedRewardedInterstitialAdManager.canShow
+                            : rewardedInterstitialAdManager.canShow
                     )
 
                 case .native:
@@ -429,9 +423,7 @@ private struct AdFormatDetailView: View {
         usesRewardVerification: Binding<Bool>,
         onLoad: @escaping () -> Void,
         onShow: @escaping () -> Void,
-        canShow: Bool,
-        rewardResult: String?,
-        verificationResult: String?
+        canShow: Bool
     ) -> some View {
         Text("Status: \(message)")
             .font(.caption)
@@ -473,10 +465,8 @@ private struct AdFormatDetailView: View {
             .buttonStyle(.borderedProminent)
             .disabled(!canShow)
 
-        if let rewardResult {
-            self.resultCard(message: rewardResult)
-        } else if let verificationResult {
-            self.resultCard(message: verificationResult)
+        if message != "Not Loaded" {
+            self.resultCard(message: message)
         }
     }
 
