@@ -45,7 +45,7 @@ private func imageURLs(
     for (_, localeValues) in localizations {
         for (_, value) in localeValues {
             switch value {
-            case .string:
+            case .string, .video:
                 break
             case .image(let image):
                 imageUrls += image.imageUrls
@@ -352,7 +352,8 @@ private extension PaywallComponent.ThemeImageUrls {
 private extension PaywallComponent.VideoComponent {
 
     var imageUrls: [URL] {
-        fallbackSource?.imageUrls ?? []
+        (fallbackSource?.imageUrls ?? []) +
+        (overrides?.compactMap(\.properties.fallbackSource).flatMap(\.imageUrls) ?? [])
     }
 
     var lowResVideoUrls: [URLWithValidation] {

@@ -59,7 +59,7 @@ import Foundation
     }
 
     public enum LocalizationData: Codable, Equatable, Sendable {
-        case string(String), image(PaywallComponent.ThemeImageUrls)
+        case string(String), image(PaywallComponent.ThemeImageUrls), video(PaywallComponent.ThemeVideoUrls)
 
         public init(from decoder: Decoder) throws {
             let container = try decoder.singleValueContainer()
@@ -67,6 +67,8 @@ import Foundation
                 self = .string(stringValue)
             } else if let imageValue = try? container.decode(PaywallComponent.ThemeImageUrls.self) {
                 self = .image(imageValue)
+            } else if let videoValue = try? container.decode(PaywallComponent.ThemeVideoUrls.self) {
+                self = .video(videoValue)
             } else {
                 throw DecodingError.typeMismatch(
                     LocalizationData.self,
@@ -83,6 +85,8 @@ import Foundation
                 try container.encode(stringValue)
             case .image(let imageValue):
                 try container.encode(imageValue)
+            case .video(let videoValue):
+                try container.encode(videoValue)
             }
         }
     }
