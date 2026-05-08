@@ -9,7 +9,7 @@
 //
 //  CompoundProductIdentifier.swift
 //
-//  Created by RevenueCat.
+//  Created by Will Taylor on 5/8/2026.
 //
 
 import Foundation
@@ -26,6 +26,40 @@ internal struct CompoundProductIdentifier: Hashable {
 
     /// The optional product plan identifier.
     let productPlanIdentifier: String?
+
+    init?(productIdentifier: String, productPlanIdentifier: String?) {
+        guard !productIdentifier.isEmpty else {
+            return nil
+        }
+
+        self.productIdentifier = productIdentifier
+        self.productPlanIdentifier = productPlanIdentifier?.isEmpty == true ? nil : productPlanIdentifier
+    }
+
+    /// Creates a compound product identifier from an SDK-facing product identifier string.
+    ///
+    /// Strings without a colon are treated as base product identifiers. Strings with one colon are split into a
+    /// base product identifier and product plan identifier. Strings with more than one colon are invalid and will
+    /// return nil.
+    init?(productIdentifier: String) {
+        let components = productIdentifier.components(separatedBy: ":")
+
+        switch components.count {
+        case 1:
+            self.init(productIdentifier: productIdentifier, productPlanIdentifier: nil)
+
+        case 2:
+            let productPlanIdentifier = components[1].isEmpty ? nil : components[1]
+
+            self.init(
+                productIdentifier: components[0],
+                productPlanIdentifier: productPlanIdentifier
+            )
+
+        default:
+            return nil
+        }
+    }
 
     /// The identifier that should be requested from StoreKit.
     ///

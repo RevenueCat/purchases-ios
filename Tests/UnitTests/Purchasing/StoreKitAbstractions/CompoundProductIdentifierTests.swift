@@ -18,94 +18,82 @@ import XCTest
 
 class CompoundProductIdentifierTests: TestCase {
 
-    func testInit() {
-        let productId = "com.revenuecat.subscription"
-        let productPlanIdentifier = "monthly"
-
-        let compoundIdentifier = CompoundProductIdentifier(
-            productIdentifier: productId,
-            productPlanIdentifier: productPlanIdentifier
-        )
-
-        expect(compoundIdentifier.productIdentifier) == productId
-        expect(compoundIdentifier.productPlanIdentifier) == productPlanIdentifier
-    }
-
-    func testStoreKitProductIdentifierReturnsProductIdentifierWithoutProductPlanIdentifier() {
-        let identifier = CompoundProductIdentifier(
+    func testStoreKitProductIdentifierReturnsProductIdentifierWithoutProductPlanIdentifier() throws {
+        let identifier = try XCTUnwrap(CompoundProductIdentifier(
             productIdentifier: "com.revenuecat.subscription",
             productPlanIdentifier: nil
-        )
+        ))
 
         expect(identifier.storeKitProductIdentifier) == "com.revenuecat.subscription"
     }
 
-    func testStoreKitProductIdentifierReturnsProductIdentifierWithProductPlanIdentifier() {
-        let identifier = CompoundProductIdentifier(
+    func testStoreKitProductIdentifierReturnsProductIdentifierWithProductPlanIdentifier() throws {
+        let identifier = try XCTUnwrap(CompoundProductIdentifier(
             productIdentifier: "com.revenuecat.subscription",
             productPlanIdentifier: "monthly"
-        )
+        ))
 
         expect(identifier.storeKitProductIdentifier) == "com.revenuecat.subscription"
     }
 
-    func testCompoundProductIdentifierReturnsProductIdentifierWithoutProductPlanIdentifier() {
-        let identifier = CompoundProductIdentifier(
+    func testCompoundProductIdentifierReturnsProductIdentifierWithoutProductPlanIdentifier() throws {
+        let identifier = try XCTUnwrap(CompoundProductIdentifier(
             productIdentifier: "com.revenuecat.subscription",
             productPlanIdentifier: nil
-        )
+        ))
 
         expect(identifier.compoundProductIdentifier) == "com.revenuecat.subscription"
     }
 
-    func testCompoundProductIdentifierCombinesProductIdentifierAndProductPlanIdentifier() {
-        let identifier = CompoundProductIdentifier(
+    func testCompoundProductIdentifierCombinesProductIdentifierAndProductPlanIdentifier() throws {
+        let identifier = try XCTUnwrap(CompoundProductIdentifier(
             productIdentifier: "com.revenuecat.subscription",
             productPlanIdentifier: "monthly"
-        )
+        ))
 
         expect(identifier.compoundProductIdentifier) == "com.revenuecat.subscription:monthly"
     }
 
-    func testCompoundProductIdentifierPreservesProductPlanIdentifierCasing() {
-        let identifier = CompoundProductIdentifier(
+    func testCompoundProductIdentifierPreservesProductPlanIdentifierCasing() throws {
+        let identifier = try XCTUnwrap(CompoundProductIdentifier(
             productIdentifier: "com.revenuecat.subscription",
             productPlanIdentifier: "upFront"
-        )
+        ))
 
         expect(identifier.compoundProductIdentifier) == "com.revenuecat.subscription:upFront"
     }
 
-    func testCompoundProductIdentifierCombinesEmptyProductPlanIdentifier() {
-        let identifier = CompoundProductIdentifier(
+    func testCompoundProductIdentifierIgnoresEmptyProductPlanIdentifier() throws {
+        let identifier = try XCTUnwrap(CompoundProductIdentifier(
             productIdentifier: "com.revenuecat.subscription",
             productPlanIdentifier: ""
-        )
+        ))
 
-        expect(identifier.compoundProductIdentifier) == "com.revenuecat.subscription:"
+        expect(identifier.productPlanIdentifier).to(beNil())
+        expect(identifier.compoundProductIdentifier) == "com.revenuecat.subscription"
     }
 
-    func testEquatableUsesProductIdentifierAndProductPlanIdentifier() {
-        let monthlyIdentifier = CompoundProductIdentifier(
+    func testEquatableUsesProductIdentifierAndProductPlanIdentifier() throws {
+        let monthlyIdentifier = try XCTUnwrap(CompoundProductIdentifier(
             productIdentifier: "com.revenuecat.subscription",
             productPlanIdentifier: "monthly"
-        )
-        let sameMonthlyIdentifier = CompoundProductIdentifier(
+        ))
+        let sameMonthlyIdentifier = try XCTUnwrap(CompoundProductIdentifier(
             productIdentifier: "com.revenuecat.subscription",
             productPlanIdentifier: "monthly"
-        )
-        let upFrontIdentifier = CompoundProductIdentifier(
+        ))
+        let upFrontIdentifier = try XCTUnwrap(CompoundProductIdentifier(
             productIdentifier: "com.revenuecat.subscription",
             productPlanIdentifier: "upFront"
-        )
-        let productOnlyIdentifier = CompoundProductIdentifier(
+        ))
+        let productOnlyIdentifier = try XCTUnwrap(CompoundProductIdentifier(
             productIdentifier: "com.revenuecat.subscription",
             productPlanIdentifier: nil
-        )
-        let differentProductIdentifier = CompoundProductIdentifier(
+        ))
+        let differentProductIdentifier = try XCTUnwrap(CompoundProductIdentifier(
             productIdentifier: "com.revenuecat.other_subscription",
             productPlanIdentifier: "monthly"
-        )
+        ))
 
         expect(monthlyIdentifier) == sameMonthlyIdentifier
         expect(monthlyIdentifier) != upFrontIdentifier
@@ -113,28 +101,139 @@ class CompoundProductIdentifierTests: TestCase {
         expect(monthlyIdentifier) != differentProductIdentifier
     }
 
-    func testHashableKeepsDistinctProductPlanIdentifiers() {
+    func testHashableKeepsDistinctProductPlanIdentifiers() throws {
         let identifiers: Set<CompoundProductIdentifier> = [
-            .init(productIdentifier: "com.revenuecat.subscription", productPlanIdentifier: "monthly"),
-            .init(productIdentifier: "com.revenuecat.subscription", productPlanIdentifier: "monthly"),
-            .init(productIdentifier: "com.revenuecat.subscription", productPlanIdentifier: "upFront"),
-            .init(productIdentifier: "com.revenuecat.subscription", productPlanIdentifier: nil),
-            .init(productIdentifier: "com.revenuecat.other_subscription", productPlanIdentifier: "monthly")
+            try XCTUnwrap(.init(productIdentifier: "com.revenuecat.subscription", productPlanIdentifier: "monthly")),
+            try XCTUnwrap(.init(productIdentifier: "com.revenuecat.subscription", productPlanIdentifier: "monthly")),
+            try XCTUnwrap(.init(productIdentifier: "com.revenuecat.subscription", productPlanIdentifier: "upFront")),
+            try XCTUnwrap(.init(productIdentifier: "com.revenuecat.subscription", productPlanIdentifier: nil)),
+            try XCTUnwrap(.init(
+                productIdentifier: "com.revenuecat.other_subscription",
+                productPlanIdentifier: "monthly"
+            ))
         ]
 
         expect(identifiers).to(haveCount(4))
         expect(identifiers).to(contain(
-            .init(productIdentifier: "com.revenuecat.subscription", productPlanIdentifier: "monthly")
+            try XCTUnwrap(.init(productIdentifier: "com.revenuecat.subscription", productPlanIdentifier: "monthly"))
         ))
         expect(identifiers).to(contain(
-            .init(productIdentifier: "com.revenuecat.subscription", productPlanIdentifier: "upFront")
+            try XCTUnwrap(.init(productIdentifier: "com.revenuecat.subscription", productPlanIdentifier: "upFront"))
         ))
         expect(identifiers).to(contain(
-            .init(productIdentifier: "com.revenuecat.subscription", productPlanIdentifier: nil)
+            try XCTUnwrap(.init(productIdentifier: "com.revenuecat.subscription", productPlanIdentifier: nil))
         ))
         expect(identifiers).to(contain(
-            .init(productIdentifier: "com.revenuecat.other_subscription", productPlanIdentifier: "monthly")
+            try XCTUnwrap(.init(
+                productIdentifier: "com.revenuecat.other_subscription",
+                productPlanIdentifier: "monthly"
+            ))
         ))
+    }
+
+}
+
+// MARK: - Primary Initializer
+extension CompoundProductIdentifierTests {
+
+    func testInitWithProductIdentifierAndProductPlanIdentifier() throws {
+        let productIdentifier = "com.revenuecat.subscription"
+        let productPlanIdentifier = "monthly"
+
+        let compoundIdentifier = try XCTUnwrap(CompoundProductIdentifier(
+            productIdentifier: productIdentifier,
+            productPlanIdentifier: productPlanIdentifier
+        ))
+
+        expect(compoundIdentifier.productIdentifier) == productIdentifier
+        expect(compoundIdentifier.productPlanIdentifier) == productPlanIdentifier
+    }
+
+    func testInitWithProductIdentifierAndNilProductPlanIdentifier() throws {
+        let productIdentifier = "com.revenuecat.subscription"
+
+        let compoundIdentifier = try XCTUnwrap(CompoundProductIdentifier(
+            productIdentifier: productIdentifier,
+            productPlanIdentifier: nil
+        ))
+
+        expect(compoundIdentifier.productIdentifier) == productIdentifier
+        expect(compoundIdentifier.productPlanIdentifier).to(beNil())
+    }
+
+    func testInitWithEmptyProductIdentifierAndProductPlanIdentifierReturnsNil() {
+        expect(CompoundProductIdentifier(
+            productIdentifier: "",
+            productPlanIdentifier: "monthly"
+        )).to(beNil())
+    }
+
+    func testInitWithEmptyProductIdentifierAndNilProductPlanIdentifierReturnsNil() {
+        expect(CompoundProductIdentifier(
+            productIdentifier: "",
+            productPlanIdentifier: nil
+        )).to(beNil())
+    }
+}
+
+// MARK: - String Initializer
+extension CompoundProductIdentifierTests {
+    func testInitWithStringWithoutColonUsesWholeStringAsProductIdentifier() throws {
+        let compoundIdentifier = try XCTUnwrap(CompoundProductIdentifier(
+            productIdentifier: "com.revenuecat.subscription"
+        ))
+
+        expect(compoundIdentifier.productIdentifier) == "com.revenuecat.subscription"
+        expect(compoundIdentifier.productPlanIdentifier).to(beNil())
+        expect(compoundIdentifier.storeKitProductIdentifier) == "com.revenuecat.subscription"
+        expect(compoundIdentifier.compoundProductIdentifier) == "com.revenuecat.subscription"
+    }
+
+    func testInitWithStringWithOneColonSplitsProductIdentifierAndProductPlanIdentifierWithCasing() throws {
+        let compoundIdentifier = try XCTUnwrap(CompoundProductIdentifier(
+            productIdentifier: "com.revenuecat.subscription:upFront"
+        ))
+
+        expect(compoundIdentifier.productIdentifier) == "com.revenuecat.subscription"
+        expect(compoundIdentifier.productPlanIdentifier) == "upFront"
+        expect(compoundIdentifier.storeKitProductIdentifier) == "com.revenuecat.subscription"
+        expect(compoundIdentifier.compoundProductIdentifier) == "com.revenuecat.subscription:upFront"
+    }
+
+    func testInitWithStringWithOneColonAndEmptyProductPlanIdentifier() throws {
+        let compoundIdentifier = try XCTUnwrap(CompoundProductIdentifier(
+            productIdentifier: "com.revenuecat.subscription:"
+        ))
+
+        expect(compoundIdentifier.productIdentifier) == "com.revenuecat.subscription"
+        expect(compoundIdentifier.productPlanIdentifier).to(beNil())
+        expect(compoundIdentifier.compoundProductIdentifier) == "com.revenuecat.subscription"
+    }
+
+    func testInitWithStringWithOneColonAndEmptyProductIdentifierReturnsNil() {
+        expect(CompoundProductIdentifier(
+            productIdentifier: ":monthly"
+        )).to(beNil())
+    }
+
+    func testInitWithEmptyStringReturnsNil() {
+        expect(CompoundProductIdentifier(productIdentifier: "")).to(beNil())
+    }
+
+    func testInitWithMoreThanOneColonReturnsNil() {
+        expect(CompoundProductIdentifier(
+            productIdentifier: "com.revenuecat.subscription:monthly:extra"
+        )).to(beNil())
+    }
+
+    func testInitWithAdjacentColonsReturnsNil() {
+        expect(CompoundProductIdentifier(
+            productIdentifier: "com.revenuecat.subscription::monthly"
+        )).to(beNil())
+    }
+
+    func testInitWithOnlyColonsReturnsNil() {
+        expect(CompoundProductIdentifier(productIdentifier: "::")).to(beNil())
     }
 
 }
