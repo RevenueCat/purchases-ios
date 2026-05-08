@@ -99,6 +99,47 @@ final class WorkflowContextTests: TestCase {
         expect(context.offering(for: "offering_missing")).to(beNil())
     }
 
+    // MARK: - exitOfferOfferingId
+
+    func testExitOfferOfferingIdReturnsNilWhenNoSingleStepFallbackId() throws {
+        let offering = Self.makeOffering(identifier: "offering_a")
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflow(),
+            allOfferings: Self.makeOfferings(offering),
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+
+        expect(context.exitOfferOfferingId).to(beNil())
+    }
+
+    func testExitOfferOfferingIdReturnsOfferingIdFromFallbackStepScreen() throws {
+        let offering = Self.makeOffering(identifier: "offering_a")
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflowWithExitOffer(
+                singleStepFallbackId: "step_1",
+                exitOfferOfferingId: "exit_offering_a"
+            ),
+            allOfferings: Self.makeOfferings(offering),
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+
+        expect(context.exitOfferOfferingId) == "exit_offering_a"
+    }
+
+    func testExitOfferOfferingIdReturnsNilWhenFallbackStepHasNoExitOffers() throws {
+        let offering = Self.makeOffering(identifier: "offering_a")
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflowWithSingleStepFallback(singleStepFallbackId: "step_1"),
+            allOfferings: Self.makeOfferings(offering),
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+
+        expect(context.exitOfferOfferingId).to(beNil())
+    }
+
     // MARK: - resolveWorkflowContext
 
     func testResolveWorkflowContextThrowsWhenFlagIsOff() async throws {
@@ -182,6 +223,81 @@ private extension WorkflowContextTests {
         """
         let data = try XCTUnwrap(json.data(using: .utf8))
         return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+    }
+
+    static func makeWorkflowWithSingleStepFallback(singleStepFallbackId: String) throws -> PublishedWorkflow {
+        let json = """
+        {
+          "id": "wf_test",
+          "display_name": "Test",
+          "initial_step_id": "step_1",
+          "single_step_fallback_id": "\(singleStepFallbackId)",
+          "steps": {
+            "step_1": { "id": "step_1", "type": "screen", "screen_id": "screen_1" }
+          },
+          "screens": {
+            "screen_1": \(Self.screenJSON())
+          },
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {}
+          }
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+    }
+
+    static func makeWorkflowWithExitOffer(
+        singleStepFallbackId: String,
+        exitOfferOfferingId: String
+    ) throws -> PublishedWorkflow {
+        let json = """
+        {
+          "id": "wf_test",
+          "display_name": "Test",
+          "initial_step_id": "step_1",
+          "single_step_fallback_id": "\(singleStepFallbackId)",
+          "steps": {
+            "step_1": { "id": "step_1", "type": "screen", "screen_id": "screen_1" }
+          },
+          "screens": {
+            "screen_1": \(Self.screenJSON(exitOfferOfferingId: exitOfferOfferingId))
+          },
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {}
+          }
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+    }
+
+    static func screenJSON(exitOfferOfferingId: String? = nil) -> String {
+        let exitOffersJSON = exitOfferOfferingId.map {
+            #", "exit_offers": { "dismiss": { "offering_id": "\#($0)" } }"#
+        } ?? ""
+        return """
+        {
+          "template_name": "tmpl",
+          "asset_base_url": "https://assets.revenuecat.com",
+          "default_locale": "en_US",
+          "components_localizations": {},
+          "components_config": {
+            "base": {
+              "stack": {
+                "type": "stack", "components": [],
+                "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+                "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+              },
+              "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
+            }
+          }\(exitOffersJSON)
+        }
+        """
     }
 
 }
