@@ -1,10 +1,10 @@
 import SwiftUI
 
-/// Reward-verification toggle plus Load/Show buttons and an optional `ResultCard`
-/// for surfacing reward outcomes. Used by both rewarded and rewarded-interstitial.
+/// Reward-verification toggle plus Load/Show buttons and a `ResultCard` for
+/// surfacing reward outcomes. Used by both rewarded and rewarded-interstitial.
 struct RewardedControls: View {
 
-    let message: String
+    let message: String?
     let canShow: Bool
     @Binding var usesRewardVerification: Bool
     let onLoad: () -> Void
@@ -12,10 +12,6 @@ struct RewardedControls: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Status: \(self.message)")
-                .font(.caption)
-                .foregroundColor(.secondary)
-
             self.verificationToggle
                 .disabled(Messages.isLoading(self.message))
 
@@ -27,8 +23,8 @@ struct RewardedControls: View {
                 .buttonStyle(.borderedProminent)
                 .disabled(!self.canShow)
 
-            if self.message != Messages.notLoaded {
-                ResultCard(message: self.message)
+            if let message = self.message {
+                ResultCard(message: message)
             }
         }
     }

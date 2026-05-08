@@ -9,7 +9,7 @@ final class NativeAdManager: NSObject, ObservableObject {
     var nativeAdLoader: AdLoader?
 
     @Published var nativeAd: NativeAd?
-    @Published var message = Messages.notLoaded
+    @Published var message: String?
 
     func loadAd() {
         self.message = Messages.loading

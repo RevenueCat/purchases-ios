@@ -7,7 +7,7 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
     private static let adUnitID = "ca-app-pub-3940256099942544/1712485313"
 
     var rewardedAd: RewardedAd?
-    @Published var message = Messages.notLoaded
+    @Published var message: String?
 
     var canShow: Bool { self.rewardedAd != nil }
     private var isWaitingForReward = false
@@ -15,7 +15,7 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
     func resetSelection() {
         self.rewardedAd = nil
         self.isWaitingForReward = false
-        self.message = Messages.notLoaded
+        self.message = nil
     }
 
     func loadAd() {
@@ -73,19 +73,13 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
 
 extension VerifiedRewardedAdManager: FullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ adObject: any FullScreenPresentingAd) {
-        var dismissedBeforeReward = false
-
         if self.isWaitingForReward {
             self.message = Messages.Rewarded.dismissedBeforeReward
             self.isWaitingForReward = false
-            dismissedBeforeReward = true
         }
 
         if adObject is RewardedAd {
             self.rewardedAd = nil
-            if !dismissedBeforeReward {
-                self.message = Messages.notLoaded
-            }
         }
     }
 }

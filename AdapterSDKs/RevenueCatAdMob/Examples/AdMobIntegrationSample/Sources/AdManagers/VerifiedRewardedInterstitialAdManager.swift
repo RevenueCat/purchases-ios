@@ -7,7 +7,7 @@ final class VerifiedRewardedInterstitialAdManager: NSObject, ObservableObject {
     private static let adUnitID = "ca-app-pub-3940256099942544/6978759866"
 
     var rewardedInterstitialAd: RewardedInterstitialAd?
-    @Published var message = Messages.notLoaded
+    @Published var message: String?
 
     var canShow: Bool { self.rewardedInterstitialAd != nil }
     private var isWaitingForReward = false
@@ -15,7 +15,7 @@ final class VerifiedRewardedInterstitialAdManager: NSObject, ObservableObject {
     func resetSelection() {
         self.rewardedInterstitialAd = nil
         self.isWaitingForReward = false
-        self.message = Messages.notLoaded
+        self.message = nil
     }
 
     func loadAd() {
@@ -73,19 +73,13 @@ final class VerifiedRewardedInterstitialAdManager: NSObject, ObservableObject {
 
 extension VerifiedRewardedInterstitialAdManager: FullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ adObject: any FullScreenPresentingAd) {
-        var dismissedBeforeReward = false
-
         if self.isWaitingForReward {
             self.message = Messages.Rewarded.dismissedBeforeReward
             self.isWaitingForReward = false
-            dismissedBeforeReward = true
         }
 
         if adObject is RewardedInterstitialAd {
             self.rewardedInterstitialAd = nil
-            if !dismissedBeforeReward {
-                self.message = Messages.notLoaded
-            }
         }
     }
 }

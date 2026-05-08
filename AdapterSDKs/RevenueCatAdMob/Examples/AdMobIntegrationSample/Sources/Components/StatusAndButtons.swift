@@ -4,17 +4,13 @@ import SwiftUI
 /// (interstitial, app open).
 struct StatusAndButtons: View {
 
-    let message: String
+    let message: String?
     let canShow: Bool
     let onLoad: () -> Void
     let onShow: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Status: \(message)")
-                .font(.caption)
-                .foregroundColor(.secondary)
-
             HStack {
                 Button("Load") { self.onLoad() }
                     .buttonStyle(.bordered)
@@ -23,6 +19,10 @@ struct StatusAndButtons: View {
                 Button("Show") { self.onShow() }
                     .buttonStyle(.borderedProminent)
                     .disabled(!self.canShow)
+            }
+
+            if let message = self.message {
+                ResultCard(message: message)
             }
         }
     }

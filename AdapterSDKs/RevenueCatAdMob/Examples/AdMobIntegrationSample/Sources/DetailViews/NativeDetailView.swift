@@ -11,13 +11,13 @@ struct NativeDetailView: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
 
-                Text("Status: \(self.manager.message)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-
                 Button("Load") { self.manager.loadAd() }
                     .buttonStyle(.bordered)
                     .disabled(Messages.isLoading(self.manager.message))
+
+                if let message = self.manager.message {
+                    ResultCard(message: message)
+                }
 
                 if let nativeAd = self.manager.nativeAd {
                     NativeAdViewRepresentable(nativeAd: nativeAd)

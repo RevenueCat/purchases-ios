@@ -7,7 +7,9 @@ final class InterstitialAdManager: NSObject, ObservableObject {
     private static let adUnitID = "ca-app-pub-3940256099942544/4411468910"
 
     var interstitialAd: InterstitialAd?
-    @Published var message = Messages.notLoaded
+    @Published var message: String?
+
+    var canShow: Bool { self.interstitialAd != nil }
 
     func loadAd() {
         self.message = Messages.loading
@@ -49,7 +51,7 @@ extension InterstitialAdManager: FullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ adObject: any FullScreenPresentingAd) {
         if adObject is InterstitialAd {
             self.interstitialAd = nil
-            self.message = Messages.notLoaded
+            self.message = nil
         }
     }
 }

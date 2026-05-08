@@ -7,7 +7,9 @@ final class AppOpenAdManager: NSObject, ObservableObject {
     private static let adUnitID = "ca-app-pub-3940256099942544/5575463023"
 
     var appOpenAd: AppOpenAd?
-    @Published var message = Messages.notLoaded
+    @Published var message: String?
+
+    var canShow: Bool { self.appOpenAd != nil }
 
     func loadAd() {
         self.message = Messages.loading
@@ -49,7 +51,7 @@ extension AppOpenAdManager: FullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ adObject: any FullScreenPresentingAd) {
         if adObject is AppOpenAd {
             self.appOpenAd = nil
-            self.message = Messages.notLoaded
+            self.message = nil
         }
     }
 }

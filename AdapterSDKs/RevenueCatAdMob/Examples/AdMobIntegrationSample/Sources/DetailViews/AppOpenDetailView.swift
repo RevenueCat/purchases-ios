@@ -13,7 +13,7 @@ struct AppOpenDetailView: View {
 
                 StatusAndButtons(
                     message: self.manager.message,
-                    canShow: self.manager.message == Messages.ready,
+                    canShow: self.manager.canShow,
                     onLoad: { self.manager.loadAd() },
                     onShow: {
                         if let rootVC = RootViewController.current {

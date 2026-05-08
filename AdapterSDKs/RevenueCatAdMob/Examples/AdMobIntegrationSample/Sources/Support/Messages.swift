@@ -3,7 +3,6 @@ import Foundation
 
 enum Messages {
 
-    static let notLoaded = "Not Loaded"
     static let loading = "Loading..."
     static let ready = "Ready"
     static let failed = "Failed"
@@ -25,7 +24,7 @@ enum Messages {
         }
     }
 
-    static func isLoading(_ message: String) -> Bool {
+    static func isLoading(_ message: String?) -> Bool {
         return message == Self.loading || message == Rewarded.loading
     }
 
