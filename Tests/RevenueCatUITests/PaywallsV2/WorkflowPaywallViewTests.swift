@@ -149,7 +149,9 @@ final class WorkflowPaywallViewTests: TestCase {
         state.recordSelection(TestData.monthlyPackage, for: "step_1")
         state.recordSelection(TestData.annualPackage, for: "step_1")
 
-        expect(state.contextPackageForForwardNavigation(from: "step_1")?.identifier) == TestData.annualPackage.identifier
+        expect(
+            state.contextPackageForForwardNavigation(from: "step_1")?.identifier
+        ) == TestData.annualPackage.identifier
     }
 
     func testPackageCarryForwardStateClearsOnlyAbandonedBackNavigationStep() {
@@ -160,7 +162,9 @@ final class WorkflowPaywallViewTests: TestCase {
         state.clearForBackNavigation(from: "step_2")
 
         expect(state.contextPackageForForwardNavigation(from: "step_2")).to(beNil())
-        expect(state.contextPackageForForwardNavigation(from: "step_1")?.identifier) == TestData.monthlyPackage.identifier
+        expect(
+            state.contextPackageForForwardNavigation(from: "step_1")?.identifier
+        ) == TestData.monthlyPackage.identifier
     }
 
     func testPackageCarryForwardStateReturnsNilWithoutKnownCurrentStep() {
