@@ -175,9 +175,9 @@ class AdMobManager: NSObject, ObservableObject {
                 print("❌ Rewarded failed: \(error.localizedDescription)")
                 self.rewardedStatus = "Failed"
                 if mode == .withRewardVerification {
-                    self.rewardedVerificationResult = "❌ Load failed."
+                    self.rewardedVerificationResult = "❌ Load failed"
                 } else {
-                    self.rewardedResult = "❌ Load failed."
+                    self.rewardedResult = "❌ Load failed"
                 }
                 return
             }
@@ -194,10 +194,10 @@ class AdMobManager: NSObject, ObservableObject {
 
             if mode == .withRewardVerification {
                 self.rewardedResult = nil
-                self.rewardedVerificationResult = "🔐 Loaded."
+                self.rewardedVerificationResult = "🔐 Loaded"
             } else {
                 self.rewardedVerificationResult = nil
-                self.rewardedResult = "🔓 Loaded."
+                self.rewardedResult = "🔓 Loaded"
             }
         }
     }
@@ -272,9 +272,9 @@ class AdMobManager: NSObject, ObservableObject {
                 print("❌ Rewarded Interstitial failed: \(error.localizedDescription)")
                 self.rewardedInterstitialStatus = "Failed"
                 if mode == .withRewardVerification {
-                    self.rewardedInterstitialVerificationResult = "❌ Load failed."
+                    self.rewardedInterstitialVerificationResult = "❌ Load failed"
                 } else {
-                    self.rewardedInterstitialResult = "❌ Load failed."
+                    self.rewardedInterstitialResult = "❌ Load failed"
                 }
                 return
             }
@@ -291,10 +291,10 @@ class AdMobManager: NSObject, ObservableObject {
 
             if mode == .withRewardVerification {
                 self.rewardedInterstitialResult = nil
-                self.rewardedInterstitialVerificationResult = "🔐 Loaded."
+                self.rewardedInterstitialVerificationResult = "🔐 Loaded"
             } else {
                 self.rewardedInterstitialVerificationResult = nil
-                self.rewardedInterstitialResult = "🔓 Loaded."
+                self.rewardedInterstitialResult = "🔓 Loaded"
             }
         }
     }
@@ -397,6 +397,10 @@ extension AdMobManager: FullScreenContentDelegate {
             if isWaitingForRewardedReward {
                 rewardedResult = "⚠️ Ad dismissed before reward was earned"
                 isWaitingForRewardedReward = false
+            } else if rewardedLoadMode == .withRewardVerification,
+                      rewardedVerificationResult == "⏳ Waiting for reward..." {
+                // After dismiss in verification mode, backend polling is still expected.
+                rewardedVerificationResult = "⏳ Verifying reward..."
             }
             rewardedAd = nil
             rewardedStatus = "Not Loaded"
@@ -404,6 +408,10 @@ extension AdMobManager: FullScreenContentDelegate {
             if isWaitingForRewardedInterstitialReward {
                 rewardedInterstitialResult = "⚠️ Ad dismissed before reward was earned"
                 isWaitingForRewardedInterstitialReward = false
+            } else if rewardedInterstitialLoadMode == .withRewardVerification,
+                      rewardedInterstitialVerificationResult == "⏳ Waiting for reward..." {
+                // After dismiss in verification mode, backend polling is still expected.
+                rewardedInterstitialVerificationResult = "⏳ Verifying reward..."
             }
             rewardedInterstitialAd = nil
             rewardedInterstitialStatus = "Not Loaded"
