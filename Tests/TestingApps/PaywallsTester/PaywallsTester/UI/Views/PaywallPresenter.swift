@@ -30,10 +30,38 @@ struct PaywallPresenter: View {
     #endif
 
 
+    /// When `SCREENSHOT_MODE=1` is set in the process environment (injected by
+    /// `PaywallAccessibilityTreeTests`), web-checkout URL opens are suppressed so the
+    /// paywall stays on screen long enough for a screenshot to be captured.
+    private var isScreenshotMode: Bool {
+        ProcessInfo.processInfo.environment["SCREENSHOT_MODE"] == "1"
+    }
+
+    /// In screenshot mode, forces intro-offer ineligibility so the paywall renders regular
+    /// pricing (matching the web extractor baseline). Falls back to the SPI default outside
+    /// screenshot mode.  Only available in DEBUG because `.producing(eligibility:)` is a
+    /// `@testable` test helper.
+    #if DEBUG
+    private var screenshotEligibilityChecker: TrialOrIntroEligibilityChecker? {
+        isScreenshotMode ? .producing(eligibility: .ineligible) : nil
+    }
+    #endif
+
     var body: some View {
         switch self.mode {
         case .fullScreen, .sheet:
+            #if DEBUG
+            PaywallView(
+                offering: offering,
+                useDraftPaywall: false,
+                introEligibility: screenshotEligibilityChecker
+            )
+            #else
             PaywallView(offering: offering)
+            #endif
+                .applyIf(isScreenshotMode) { view in
+                    view.environment(\.openURL, OpenURLAction { _ in .discarded })
+                }
                 .onPurchaseStarted({ package in
                     print("Paywall Handler - onPurchaseStarted")
                 })
