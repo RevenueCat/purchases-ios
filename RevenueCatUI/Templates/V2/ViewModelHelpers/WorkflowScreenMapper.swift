@@ -26,7 +26,8 @@ enum WorkflowScreenMapper {
             componentsConfig: screen.componentsConfig,
             componentsLocalizations: screen.componentsLocalizations,
             revision: screen.revision,
-            defaultLocaleIdentifier: screen.defaultLocale
+            defaultLocaleIdentifier: screen.defaultLocale,
+            exitOffers: screen.exitOffers
         )
         return .init(uiConfig: uiConfig, data: data)
     }
