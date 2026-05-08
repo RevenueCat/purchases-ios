@@ -165,29 +165,9 @@ rewardedAd?.present(from: self, userDidEarnRewardHandler: {
 })
 ```
 
-### Rewarded interstitial ads
-
-**AdMob only** ([docs](https://developers.google.com/admob/ios/rewarded-interstitial)):
+**Verification-enabled tracked presentation:**
 
 ```swift
-RewardedInterstitialAd.load(with: "AD_UNIT_ID", request: Request()) { ad, error in
-    if let error = error { return }
-    self.rewardedInterstitialAd = ad
-    ad?.fullScreenContentDelegate = self
-}
-
-// Later, to show:
-rewardedInterstitialAd?.present(from: self, userDidEarnRewardHandler: {
-    // User earned reward
-})
-```
-
-### Server-side reward verification (rewarded + rewarded interstitial)
-
-Enable verification on the loaded ad instance, then present it with reward verification callbacks:
-
-```swift
-// RewardedAd
 RewardedAd.loadAndTrack(
     withAdUnitID: "AD_UNIT_ID",
     request: Request(),
@@ -224,8 +204,47 @@ rewardedAd?.present(
 )
 ```
 
+### Rewarded interstitial ads
+
+**AdMob only** ([docs](https://developers.google.com/admob/ios/rewarded-interstitial)):
+
 ```swift
-// RewardedInterstitialAd
+RewardedInterstitialAd.load(with: "AD_UNIT_ID", request: Request()) { ad, error in
+    if let error = error { return }
+    self.rewardedInterstitialAd = ad
+    ad?.fullScreenContentDelegate = self
+}
+
+// Later, to show:
+rewardedInterstitialAd?.present(from: self, userDidEarnRewardHandler: {
+    // User earned reward
+})
+```
+
+**With RevenueCat tracking:**
+
+```swift
+// Pass fullScreenContentDelegate here. The adapter forwards callbacks to it and adds tracking.
+// Do not set ad.fullScreenContentDelegate or ad.paidEventHandler later, or you'll override RevenueCat's listeners.
+RewardedInterstitialAd.loadAndTrack(
+    withAdUnitID: "AD_UNIT_ID",
+    request: Request(),
+    placement: "between_levels",
+    fullScreenContentDelegate: self
+) { ad, error in
+    if let error = error { return }
+    self.rewardedInterstitialAd = ad
+}
+
+// Later, to show (unchanged):
+rewardedInterstitialAd?.present(from: self, userDidEarnRewardHandler: {
+    // User earned reward
+})
+```
+
+**Verification-enabled tracked presentation:**
+
+```swift
 RewardedInterstitialAd.loadAndTrack(
     withAdUnitID: "AD_UNIT_ID",
     request: Request(),
@@ -260,27 +279,6 @@ rewardedInterstitialAd?.present(
         }
     }
 )
-```
-
-**With RevenueCat tracking:**
-
-```swift
-// Pass fullScreenContentDelegate here. The adapter forwards callbacks to it and adds tracking.
-// Do not set ad.fullScreenContentDelegate or ad.paidEventHandler later, or you'll override RevenueCat's listeners.
-RewardedInterstitialAd.loadAndTrack(
-    withAdUnitID: "AD_UNIT_ID",
-    request: Request(),
-    placement: "between_levels",
-    fullScreenContentDelegate: self
-) { ad, error in
-    if let error = error { return }
-    self.rewardedInterstitialAd = ad
-}
-
-// Later, to show (unchanged):
-rewardedInterstitialAd?.present(from: self, userDidEarnRewardHandler: {
-    // User earned reward
-})
 ```
 
 ### Native ads
