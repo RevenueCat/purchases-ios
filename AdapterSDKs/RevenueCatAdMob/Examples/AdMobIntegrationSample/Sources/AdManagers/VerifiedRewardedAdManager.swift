@@ -4,12 +4,7 @@ import GoogleMobileAds
 
 final class VerifiedRewardedAdManager: NSObject, ObservableObject {
 
-    private static var adUnitID: String {
-        return Constants.configuredAdUnitID(
-            forOverrideKey: "RC_REWARDED_AD_UNIT_ID_OVERRIDE",
-            defaultValue: "ca-app-pub-3940256099942544/1712485313"
-        )
-    }
+    private static let adUnitID = "ca-app-pub-3940256099942544/1712485313"
 
     var rewardedAd: RewardedAd?
     @Published var message: String?

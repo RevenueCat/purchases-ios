@@ -4,12 +4,7 @@ import GoogleMobileAds
 
 final class BannerAdManager: NSObject, ObservableObject {
 
-    private static var adUnitID: String {
-        return Constants.configuredAdUnitID(
-            forOverrideKey: "RC_BANNER_AD_UNIT_ID_OVERRIDE",
-            defaultValue: "ca-app-pub-3940256099942544/2435281174"
-        )
-    }
+    private static let adUnitID = "ca-app-pub-3940256099942544/2435281174"
 
     private(set) var bannerView: BannerView?
 

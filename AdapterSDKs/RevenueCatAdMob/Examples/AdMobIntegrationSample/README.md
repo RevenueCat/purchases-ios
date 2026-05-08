@@ -72,23 +72,9 @@ This sample uses RevenueCatAdMob APIs exposed as experimental Swift SPI (`@_spi(
 
 ### 2. Configure the app
 
-1. Copy `Local.xcconfig.SAMPLE` to `Local.xcconfig` (repo root). `Local.xcconfig` is ignored by git.
-2. Set local override keys in `Local.xcconfig` (without quotes), for example:
-   - `RC_REVENUECAT_API_KEY = appl_...`
-   - `RC_PROXY_URL = http://localhost:8000/`
-   - `RC_REWARDED_AD_UNIT_ID_OVERRIDE = ca-app-pub-.../...`
-   - `RC_REWARDED_INTERSTITIAL_AD_UNIT_ID_OVERRIDE = ca-app-pub-.../...`
-   - Available ad unit override keys:
-     - `RC_BANNER_AD_UNIT_ID_OVERRIDE`
-     - `RC_INTERSTITIAL_AD_UNIT_ID_OVERRIDE`
-     - `RC_APP_OPEN_AD_UNIT_ID_OVERRIDE`
-     - `RC_REWARDED_AD_UNIT_ID_OVERRIDE`
-     - `RC_REWARDED_INTERSTITIAL_AD_UNIT_ID_OVERRIDE`
-     - `RC_NATIVE_AD_UNIT_ID_OVERRIDE`
-     - `RC_NATIVE_VIDEO_AD_UNIT_ID_OVERRIDE`
-     - `RC_INVALID_AD_UNIT_ID_OVERRIDE`
-3. Run `tuist generate Projects/AdMobIntegrationSample` so these settings are applied to the generated project.
-4. Keep committed defaults in source files (placeholder RevenueCat key + Google test AdMob IDs).
+1. Open `Sources/Constants.swift`.
+2. Replace `YOUR_REVENUECAT_API_KEY` with your real RevenueCat API key.
+3. Keep the default AdMob test ad unit IDs in each `Sources/AdManagers/*AdManager.swift` file for local testing.
 
 ### 3. Build and run
 
@@ -182,7 +168,7 @@ These are official Google test IDs and are safe for development.
 Native and native video test IDs can be less reliable than other formats depending on environment. For more reliable native testing:
 
 1. Create ad units in your [AdMob account](https://admob.google.com/)
-2. Set override keys in `Local.xcconfig` (for example `RC_NATIVE_AD_UNIT_ID_OVERRIDE`) and regenerate with Tuist
+2. Replace test IDs in the relevant `Sources/AdManagers/*AdManager.swift` file
 3. Configure your device as a test device in AdMob
 4. Keep test mode enabled during validation
 
@@ -202,7 +188,7 @@ Use the **Error Handling** section in the sample UI:
 
 ### "Missing RevenueCat API key" or build fails at startup
 
-Set `RC_REVENUECAT_API_KEY` in `Local.xcconfig`, regenerate with Tuist, and relaunch the app.
+Make sure `revenueCatAPIKey` in `Sources/Constants.swift` is set to your real RevenueCat API key (replace the `YOUR_REVENUECAT_API_KEY` placeholder).
 
 ### Ads not loading
 

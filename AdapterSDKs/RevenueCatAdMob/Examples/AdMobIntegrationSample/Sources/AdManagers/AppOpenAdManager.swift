@@ -4,12 +4,7 @@ import GoogleMobileAds
 
 final class AppOpenAdManager: NSObject, ObservableObject {
 
-    private static var adUnitID: String {
-        return Constants.configuredAdUnitID(
-            forOverrideKey: "RC_APP_OPEN_AD_UNIT_ID_OVERRIDE",
-            defaultValue: "ca-app-pub-3940256099942544/5575463023"
-        )
-    }
+    private static let adUnitID = "ca-app-pub-3940256099942544/5575463023"
 
     var appOpenAd: AppOpenAd?
     @Published var message: String?
