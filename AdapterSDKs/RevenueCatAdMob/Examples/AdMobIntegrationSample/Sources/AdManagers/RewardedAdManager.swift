@@ -12,18 +12,17 @@ final class RewardedAdManager: NSObject, ObservableObject {
     var canShow: Bool { self.rewardedAd != nil }
 
     private var isWaitingForReward = false
-    private var rewardFlowToken = 0
+    private var presentingAdObjectID: ObjectIdentifier?
 
     func resetSelection() {
-        self.rewardFlowToken += 1
+        self.presentingAdObjectID = nil
         self.isWaitingForReward = false
         self.rewardedAd = nil
         self.message = nil
     }
 
     func loadAd() {
-        self.rewardFlowToken += 1
-        let rewardFlowToken = self.rewardFlowToken
+        self.presentingAdObjectID = nil
         self.message = Messages.Rewarded.loading
         self.isWaitingForReward = false
 
@@ -34,7 +33,6 @@ final class RewardedAdManager: NSObject, ObservableObject {
             fullScreenContentDelegate: self
         ) { [weak self] loadedAd, error in
             guard let self else { return }
-            guard self.rewardFlowToken == rewardFlowToken else { return }
 
             if let error {
                 print("❌ Rewarded failed: \(error.localizedDescription)")
@@ -57,13 +55,15 @@ final class RewardedAdManager: NSObject, ObservableObject {
             return
         }
 
-        let rewardFlowToken = self.rewardFlowToken
+        let presentingAdObjectID = ObjectIdentifier(loadedAd)
+        self.presentingAdObjectID = presentingAdObjectID
         self.isWaitingForReward = true
         self.message = Messages.Rewarded.waitingForReward
         loadedAd.present(from: viewController, userDidEarnRewardHandler: { [weak self] in
             guard let self else { return }
-            guard self.rewardFlowToken == rewardFlowToken else { return }
+            guard self.presentingAdObjectID == presentingAdObjectID else { return }
             let reward = loadedAd.adReward
+            self.presentingAdObjectID = nil
             self.isWaitingForReward = false
             self.message = Messages.Rewarded.rewardGranted(amount: reward.amount, type: reward.type)
             print("✅ User earned reward")
@@ -75,6 +75,7 @@ final class RewardedAdManager: NSObject, ObservableObject {
 extension RewardedAdManager: FullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ adObject: any FullScreenPresentingAd) {
         if self.isWaitingForReward {
+            self.presentingAdObjectID = nil
             self.message = Messages.Rewarded.dismissedBeforeReward
             self.isWaitingForReward = false
         }

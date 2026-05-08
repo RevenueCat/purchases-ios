@@ -11,18 +11,17 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
 
     var canShow: Bool { self.rewardedAd != nil }
     private var isWaitingForReward = false
-    private var rewardFlowToken = 0
+    private var presentingAdObjectID: ObjectIdentifier?
 
     func resetSelection() {
-        self.rewardFlowToken += 1
+        self.presentingAdObjectID = nil
         self.rewardedAd = nil
         self.isWaitingForReward = false
         self.message = nil
     }
 
     func loadAd() {
-        self.rewardFlowToken += 1
-        let rewardFlowToken = self.rewardFlowToken
+        self.presentingAdObjectID = nil
         self.message = Messages.Rewarded.loading
         self.isWaitingForReward = false
 
@@ -33,7 +32,6 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
             fullScreenContentDelegate: self
         ) { [weak self] loadedAd, error in
             guard let self else { return }
-            guard self.rewardFlowToken == rewardFlowToken else { return }
 
             if let error {
                 print("❌ Rewarded failed: \(error.localizedDescription)")
@@ -57,20 +55,22 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
             return
         }
 
-        let rewardFlowToken = self.rewardFlowToken
+        let presentingAdObjectID = ObjectIdentifier(loadedAd)
+        self.presentingAdObjectID = presentingAdObjectID
         self.isWaitingForReward = true
         self.message = Messages.Rewarded.waitingForReward
         loadedAd.present(
             from: viewController,
             placement: "rewarded_reward_verification_main",
             rewardVerificationStarted: { [weak self] in
-                guard let self, self.rewardFlowToken == rewardFlowToken else { return }
+                guard let self, self.presentingAdObjectID == presentingAdObjectID else { return }
                 self.isWaitingForReward = false
                 self.message = Messages.Rewarded.verifyingReward
                 print("⏳ Rewarded verification started")
             },
             rewardVerificationResult: { [weak self] result in
-                guard let self, self.rewardFlowToken == rewardFlowToken else { return }
+                guard let self, self.presentingAdObjectID == presentingAdObjectID else { return }
+                self.presentingAdObjectID = nil
                 self.isWaitingForReward = false
                 self.message = Messages.verificationResultMessage(for: result)
                 print("✅ Rewarded verification finished: \(String(describing: result.verifiedReward))")
@@ -83,6 +83,7 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
 extension VerifiedRewardedAdManager: FullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ adObject: any FullScreenPresentingAd) {
         if self.isWaitingForReward {
+            self.presentingAdObjectID = nil
             self.message = Messages.Rewarded.dismissedBeforeReward
             self.isWaitingForReward = false
         }
