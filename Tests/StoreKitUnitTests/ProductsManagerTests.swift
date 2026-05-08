@@ -56,6 +56,26 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         expect(product.productIdentifier) == identifier
     }
 
+    func testFetchProductsWithCompoundIdentifierOnlyRequestsStoreKitProductIdentifier() throws {
+        let productsRequestFactory = MockProductsRequestFactory()
+        let manager = self.createManager(
+            storeKitVersion: .storeKit1,
+            productsRequestFactory: productsRequestFactory
+        )
+
+        let storeKitProductIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        let compoundProductIdentifier = "\(storeKitProductIdentifier):monthly"
+        let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
+            manager.products(withIdentifiers: Set([compoundProductIdentifier]), completion: completed)
+        }
+
+        let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
+        let product = try XCTUnwrap(unwrappedProducts.onlyElement).product
+
+        expect(productsRequestFactory.invokedRequestParameters) == Set([storeKitProductIdentifier])
+        expect(product.productIdentifier) == storeKitProductIdentifier
+    }
+
     func testClearCacheAfterStorefrontChangesSK1() async throws {
         let manager = self.createManager(storeKitVersion: .storeKit1)
 
@@ -114,6 +134,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     }
 
     fileprivate func createManager(storeKitVersion: StoreKitVersion,
+                                   productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(),
                                    storefront: StorefrontType? = nil,
                                    diagnosticsTracker: DiagnosticsTrackerType? = nil) -> ProductsManager {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
@@ -124,6 +145,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         )
         systemInfo.stubbedStorefront = storefront
         return ProductsManager(
+            productsRequestFactory: productsRequestFactory,
             diagnosticsTracker: diagnosticsTracker,
             systemInfo: systemInfo,
             requestTimeout: Self.requestTimeout

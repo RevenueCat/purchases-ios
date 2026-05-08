@@ -1350,6 +1350,8 @@
 		FD5EB2702DFB19B800DA1974 /* BackendGetVirtualCurrenciesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD5EB26F2DFB19B800DA1974 /* BackendGetVirtualCurrenciesTests.swift */; };
 		FD6D87502FAE3D3800CAF0F2 /* CompoundProductIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD6D874E2FAE3D3800CAF0F2 /* CompoundProductIdentifier.swift */; };
 		FD6D87572FAE3D7700CAF0F2 /* CompoundProductIdentifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD6D87562FAE3D7700CAF0F2 /* CompoundProductIdentifierTests.swift */; };
+		FD6D87582FAE4CD400CAF0F2 /* MockProductsRequestFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35F783903362B65FB7AF3 /* MockProductsRequestFactory.swift */; };
+		FD6D87592FAE4CF700CAF0F2 /* MockProductsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35B08709090FBBFB16EBD /* MockProductsRequest.swift */; };
 		FD8C00472DE7A04200224B78 /* VirtualCurrencyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD8C00462DE7A04200224B78 /* VirtualCurrencyManager.swift */; };
 		FD9BCEBC2DC946C400408A5D /* BottomSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9BCEBB2DC946C400408A5D /* BottomSheetView.swift */; };
 		FD9F982D2BE28A7F0091A5BF /* MockNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B515526D44B2300BD2BD7 /* MockNotificationCenter.swift */; };
@@ -6829,6 +6831,7 @@
 				3543913626F90D6A00E669DF /* TrialOrIntroPriceEligibilityCheckerSK1Tests.swift in Sources */,
 				1EFA95132CDBA58F00CA5951 /* MockRedeemWebPurchaseAPI.swift in Sources */,
 				4F6E81982A81BC30006EF181 /* TestClock.swift in Sources */,
+				FD6D87592FAE4CF700CAF0F2 /* MockProductsRequest.swift in Sources */,
 				1DB9B2A72E57373900252D58 /* OfferingTests.swift in Sources */,
 				2D34D9D227481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift in Sources */,
 				FD18BF4B2DF0DA5400140FD6 /* MockVirtualCurrencyManager.swift in Sources */,
@@ -6849,6 +6852,7 @@
 				57488C8329CB91D20000EE7E /* CustomerInfoOfflineEntitlementsStoreKitTest.swift in Sources */,
 				FD2046812CB8333A00166727 /* StoreKit2PurchaseIntentListenerTests.swift in Sources */,
 				57DE80812807529F008D6C6F /* MockStorefront.swift in Sources */,
+				FD6D87582FAE4CD400CAF0F2 /* MockProductsRequestFactory.swift in Sources */,
 				57544C29285FA95E004E54D5 /* MockAttributeSyncing.swift in Sources */,
 				57057FF928B0048900995F21 /* TestLogHandler.swift in Sources */,
 				4F69EB0A2A14406E00ED6D4B /* Matchers.swift in Sources */,

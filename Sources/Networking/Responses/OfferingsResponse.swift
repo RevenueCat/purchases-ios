@@ -60,23 +60,13 @@ struct OfferingsResponse {
 
 extension OfferingsResponse {
 
-    /// Product identifiers represented by the packages in this response.
-    var compoundProductIdentifiers: Set<CompoundProductIdentifier> {
+    var productIdentifiers: Set<String> {
         return Set(
             self.offerings
                 .lazy
                 .flatMap { $0.packages }
-                .map {
-                    CompoundProductIdentifier(
-                        productIdentifier: $0.platformProductIdentifier,
-                        productPlanIdentifier: $0.platformProductPlanIdentifier
-                    )
-                }
+                .map { $0.platformProductIdentifier }
         )
-    }
-
-    var productIdentifiers: Set<String> {
-        return Set(self.compoundProductIdentifiers.map(\.storeKitProductIdentifier))
     }
 
     var hasAnyWebCheckoutUrl: Bool {

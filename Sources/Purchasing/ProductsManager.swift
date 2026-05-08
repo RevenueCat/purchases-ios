@@ -55,22 +55,32 @@ class ProductsManager: NSObject, ProductsManagerType {
 
     func products(withIdentifiers identifiers: Set<String>, completion: @escaping Completion) {
         let startTime = self.dateProvider.now()
+
+        // It's possible for developers to request compound product identifiers that represent both
+        // a product and a billing plan, like com.rc.sub:monthly. However, StoreKit doesn't recognize
+        // these product IDs, so here, we convert them to product IDs that StoreKit can recognize.
+        let storeKitIdentifiers: Set<String> = Set(
+            identifiers.compactMap({
+                CompoundProductIdentifier(productIdentifier: $0)?.storeKitProductIdentifier
+            })
+        )
+
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
-            self.sk2Products(withIdentifiers: identifiers) { result in
-                let notFoundProducts = identifiers.subtracting(result.value?.map(\.productIdentifier) ?? [])
+            self.sk2Products(withIdentifiers: storeKitIdentifiers) { result in
+                let notFoundProducts = storeKitIdentifiers.subtracting(result.value?.map(\.productIdentifier) ?? [])
                 self.trackProductsRequestIfNeeded(startTime,
-                                                  requestedProductIds: identifiers,
+                                                  requestedProductIds: storeKitIdentifiers,
                                                   notFoundProductIds: notFoundProducts,
                                                   storeKitVersion: .storeKit2,
                                                   error: result.error)
                 completion(result.map { Set($0.map(StoreProduct.from(product:))) })
             }
         } else {
-            self.sk1Products(withIdentifiers: identifiers) { result in
-                let notFoundProducts = identifiers.subtracting(result.value?.map(\.productIdentifier) ?? [])
+            self.sk1Products(withIdentifiers: storeKitIdentifiers) { result in
+                let notFoundProducts = storeKitIdentifiers.subtracting(result.value?.map(\.productIdentifier) ?? [])
                 self.trackProductsRequestIfNeeded(startTime,
-                                                  requestedProductIds: identifiers,
+                                                  requestedProductIds: storeKitIdentifiers,
                                                   notFoundProductIds: notFoundProducts,
                                                   storeKitVersion: .storeKit1,
                                                   error: result.error)
