@@ -7,9 +7,9 @@ struct HomeView: View {
     @StateObject private var interstitialAdManager = InterstitialAdManager()
     @StateObject private var appOpenAdManager = AppOpenAdManager()
     @StateObject private var rewardedAdManager = RewardedAdManager()
-    @StateObject private var rewardedVerifiedAdManager = RewardedVerifiedAdManager()
+    @StateObject private var verifiedRewardedAdManager = VerifiedRewardedAdManager()
     @StateObject private var rewardedInterstitialAdManager = RewardedInterstitialAdManager()
-    @StateObject private var rewardedInterstitialVerifiedAdManager = RewardedInterstitialVerifiedAdManager()
+    @StateObject private var verifiedRewardedInterstitialAdManager = VerifiedRewardedInterstitialAdManager()
     @StateObject private var nativeAdManager = NativeAdManager()
     @StateObject private var nativeVideoAdManager = NativeVideoAdManager()
     @StateObject private var errorTestingAdManager = ErrorTestingAdManager()
@@ -44,9 +44,9 @@ struct HomeView: View {
                             interstitialAdManager: interstitialAdManager,
                             appOpenAdManager: appOpenAdManager,
                             rewardedAdManager: rewardedAdManager,
-                            rewardedVerifiedAdManager: rewardedVerifiedAdManager,
+                            verifiedRewardedAdManager: verifiedRewardedAdManager,
                             rewardedInterstitialAdManager: rewardedInterstitialAdManager,
-                            rewardedInterstitialVerifiedAdManager: rewardedInterstitialVerifiedAdManager,
+                            verifiedRewardedInterstitialAdManager: verifiedRewardedInterstitialAdManager,
                             nativeAdManager: nativeAdManager,
                             nativeVideoAdManager: nativeVideoAdManager,
                             errorTestingAdManager: errorTestingAdManager
@@ -113,9 +113,9 @@ private struct AdFormatDetailView: View {
     @ObservedObject var interstitialAdManager: InterstitialAdManager
     @ObservedObject var appOpenAdManager: AppOpenAdManager
     @ObservedObject var rewardedAdManager: RewardedAdManager
-    @ObservedObject var rewardedVerifiedAdManager: RewardedVerifiedAdManager
+    @ObservedObject var verifiedRewardedAdManager: VerifiedRewardedAdManager
     @ObservedObject var rewardedInterstitialAdManager: RewardedInterstitialAdManager
-    @ObservedObject var rewardedInterstitialVerifiedAdManager: RewardedInterstitialVerifiedAdManager
+    @ObservedObject var verifiedRewardedInterstitialAdManager: VerifiedRewardedInterstitialAdManager
     @ObservedObject var nativeAdManager: NativeAdManager
     @ObservedObject var nativeVideoAdManager: NativeVideoAdManager
     @ObservedObject var errorTestingAdManager: ErrorTestingAdManager
@@ -161,14 +161,14 @@ private struct AdFormatDetailView: View {
 
                 case .rewarded:
                     let rewardedMessage = rewardedUsesRewardVerification
-                        ? rewardedVerifiedAdManager.message
+                        ? verifiedRewardedAdManager.message
                         : rewardedAdManager.message
                     self.rewardedBlock(
                         message: rewardedMessage,
                         usesRewardVerification: $rewardedUsesRewardVerification,
                         onLoad: {
                             if rewardedUsesRewardVerification {
-                                rewardedVerifiedAdManager.loadAd()
+                                verifiedRewardedAdManager.loadAd()
                             } else {
                                 rewardedAdManager.loadAd()
                             }
@@ -176,7 +176,7 @@ private struct AdFormatDetailView: View {
                         onShow: {
                             if let rootVC = Self.rootViewController {
                                 if rewardedUsesRewardVerification {
-                                    rewardedVerifiedAdManager.showAd(from: rootVC)
+                                    verifiedRewardedAdManager.showAd(from: rootVC)
                                 } else {
                                     rewardedAdManager.showAd(from: rootVC)
                                 }
@@ -185,20 +185,20 @@ private struct AdFormatDetailView: View {
                         canShow: rewardedMessage == "Ready",
                         rewardResult: rewardedUsesRewardVerification ? nil : rewardedAdManager.result,
                         verificationResult: rewardedUsesRewardVerification
-                            ? rewardedVerifiedAdManager.verificationResult
+                            ? verifiedRewardedAdManager.verificationResult
                             : nil
                     )
 
                 case .rewardedInterstitial:
                     let rewardedInterstitialMessage = rewardedInterstitialUsesRewardVerification
-                        ? rewardedInterstitialVerifiedAdManager.message
+                        ? verifiedRewardedInterstitialAdManager.message
                         : rewardedInterstitialAdManager.message
                     self.rewardedBlock(
                         message: rewardedInterstitialMessage,
                         usesRewardVerification: $rewardedInterstitialUsesRewardVerification,
                         onLoad: {
                             if rewardedInterstitialUsesRewardVerification {
-                                rewardedInterstitialVerifiedAdManager.loadAd()
+                                verifiedRewardedInterstitialAdManager.loadAd()
                             } else {
                                 rewardedInterstitialAdManager.loadAd()
                             }
@@ -206,7 +206,7 @@ private struct AdFormatDetailView: View {
                         onShow: {
                             if let rootVC = Self.rootViewController {
                                 if rewardedInterstitialUsesRewardVerification {
-                                    rewardedInterstitialVerifiedAdManager.showAd(from: rootVC)
+                                    verifiedRewardedInterstitialAdManager.showAd(from: rootVC)
                                 } else {
                                     rewardedInterstitialAdManager.showAd(from: rootVC)
                                 }
@@ -217,7 +217,7 @@ private struct AdFormatDetailView: View {
                             ? nil
                             : rewardedInterstitialAdManager.result,
                         verificationResult: rewardedInterstitialUsesRewardVerification
-                            ? rewardedInterstitialVerifiedAdManager.verificationResult
+                            ? verifiedRewardedInterstitialAdManager.verificationResult
                             : nil
                     )
 
@@ -264,13 +264,13 @@ private struct AdFormatDetailView: View {
         .onChange(of: rewardedUsesRewardVerification) { _ in
             if format == .rewarded {
                 rewardedAdManager.resetSelection()
-                rewardedVerifiedAdManager.resetSelection()
+                verifiedRewardedAdManager.resetSelection()
             }
         }
         .onChange(of: rewardedInterstitialUsesRewardVerification) { _ in
             if format == .rewardedInterstitial {
                 rewardedInterstitialAdManager.resetSelection()
-                rewardedInterstitialVerifiedAdManager.resetSelection()
+                verifiedRewardedInterstitialAdManager.resetSelection()
             }
         }
     }

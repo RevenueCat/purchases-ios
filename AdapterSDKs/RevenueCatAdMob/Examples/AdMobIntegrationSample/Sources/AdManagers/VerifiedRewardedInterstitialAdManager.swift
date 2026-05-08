@@ -2,7 +2,7 @@ import Foundation
 import GoogleMobileAds
 @_spi(Experimental) import RevenueCatAdMob
 
-final class RewardedInterstitialVerifiedAdManager: NSObject, ObservableObject {
+final class VerifiedRewardedInterstitialAdManager: NSObject, ObservableObject {
 
     private static let adUnitID = "ca-app-pub-3940256099942544/6978759866"
 
@@ -69,7 +69,7 @@ final class RewardedInterstitialVerifiedAdManager: NSObject, ObservableObject {
 
 }
 
-extension RewardedInterstitialVerifiedAdManager: FullScreenContentDelegate {
+extension VerifiedRewardedInterstitialAdManager: FullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ adObject: any FullScreenPresentingAd) {
         if self.verificationResult == "⏳ Waiting for reward..." {
             self.verificationResult = "⚠️ Ad dismissed before reward was earned"
