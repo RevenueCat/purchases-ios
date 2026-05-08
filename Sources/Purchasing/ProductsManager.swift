@@ -59,10 +59,11 @@ class ProductsManager: NSObject, ProductsManagerType {
         // It's possible for developers to request compound product identifiers that represent both
         // a product and a billing plan, like com.rc.sub:monthly. However, StoreKit doesn't recognize
         // these product IDs, so here, we convert them to product IDs that StoreKit can recognize.
+        let compoundProductIdentifiers: Set<CompoundProductIdentifier> = Set(
+            identifiers.compactMap(CompoundProductIdentifier.init(compoundProductIdentifier:))
+        )
         let storeKitIdentifiers: Set<String> = Set(
-            identifiers.compactMap({
-                CompoundProductIdentifier(compoundProductIdentifier: $0)?.storeKitProductIdentifier
-            })
+            compoundProductIdentifiers.map(\.storeKitProductIdentifier)
         )
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
@@ -76,18 +77,16 @@ class ProductsManager: NSObject, ProductsManagerType {
                                                   error: result.error)
 
                 switch result {
-
                 case .success(let storeProductsFromStoreKit):
-                    let productsIncludingBillingPlanProducts = self.populateSK2CompoundProductsIfSupported(
-                        requestedIdentifiers: identifiers,
+                    let productsTakingBillingPlansIntoAccount = self.populateSK2CompoundProductsIfSupported(
+                        requestedIdentifiers: compoundProductIdentifiers,
                         products: storeProductsFromStoreKit
                     )
-                    completion(.success(productsIncludingBillingPlanProducts))
+                    let storeProducts = Set(productsTakingBillingPlansIntoAccount.map(StoreProduct.from(product:)))
+                    completion(.success(storeProducts))
                 case .failure(let error):
                     completion(.failure(error))
                 }
-
-                completion(result.map { Set($0.map(StoreProduct.from(product:))) })
             }
         } else {
             self.sk1Products(withIdentifiers: storeKitIdentifiers) { result in
@@ -119,25 +118,21 @@ class ProductsManager: NSObject, ProductsManagerType {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func populateSK2CompoundProductsIfSupported(
-        requestedIdentifiers: Set<String>,
+        requestedIdentifiers: Set<CompoundProductIdentifier>,
         products: Set<SK2StoreProduct>
-    ) -> Set<StoreProduct> {
+    ) -> Set<SK2StoreProduct> {
         // Billing plans were introduced with Xcode 26.5, which shipped with Swift version 6.3.2.
         #if compiler(>=6.3.2)
         if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
+            let requestedIdentifiersWithPlanIdentifiers = requestedIdentifiers.filter { $0.productPlanIdentifier != nil }
+            guard !requestedIdentifiersWithPlanIdentifiers.isEmpty else {
+                return products
+            }
+
             let productsByStoreKitProductIdentifier = products.dictionaryWithKeys({ $0.productIdentifier })
             var productsIncludingBillingPlanProducts = products
 
-            for requestedIdentifier in requestedIdentifiers {
-                guard let compoundProductIdentifier = CompoundProductIdentifier(
-                    compoundProductIdentifier: requestedIdentifier
-                ) else {
-                    continue
-                }
-                if compoundProductIdentifier.productPlanIdentifier == nil {
-                    continue
-                }
-                
+            for compoundProductIdentifier in requestedIdentifiersWithPlanIdentifiers {
                 let storeKitProductIdentifier = compoundProductIdentifier.storeKitProductIdentifier
                 guard let productFromStoreKit = productsByStoreKitProductIdentifier[storeKitProductIdentifier] else {
                     continue
@@ -151,13 +146,20 @@ class ProductsManager: NSObject, ProductsManagerType {
                 guard let pricingTerms = productFromStoreKit.underlyingSK2Product.subscription?.pricingTerms else {
                     continue
                 }
-                let eligibileBillingPlanTypes = pricingTerms.map({ $0.billingPlanType })
 
-                if eligibileBillingPlanTypes.contains(requestedBillingPlanType) {
-                    // TODO: Build + attach InstallmentsInfo to this product
+                if let requestedPricingTerms = pricingTerms.first(
+                    where: { $0.billingPlanType == requestedBillingPlanType }
+                ) {
+                    let installmentsInfo: InstallmentsInfo? = buildInstallmentsInfo(
+                        from: productFromStoreKit.underlyingSK2Product,
+                        billingPlanType: requestedBillingPlanType,
+                        pricingTerms: requestedPricingTerms
+                    )
+
                     let billingPlanProduct = SK2StoreProduct(
                         sk2Product: productFromStoreKit.underlyingSK2Product,
-                        compoundProductIdentifier: compoundProductIdentifier
+                        compoundProductIdentifier: compoundProductIdentifier,
+                        installmentsInfo: installmentsInfo
                     )
                     productsIncludingBillingPlanProducts.insert(billingPlanProduct)
                     productsIncludingBillingPlanProducts.remove(productFromStoreKit)
@@ -167,9 +169,9 @@ class ProductsManager: NSObject, ProductsManagerType {
                 }
             }
 
-            return Set(productsIncludingBillingPlanProducts.map({StoreProduct.from(product: $0)}))
+            return productsIncludingBillingPlanProducts
         } else {
-            return Set(products.map({StoreProduct.from(product: $0)}))
+            return products
         }
 
         #else
@@ -248,6 +250,88 @@ extension ProductsManagerType {
     }
 
 }
+
+// MARK: - InstallmentsInfo
+#if compiler(>=6.3.2)
+extension ProductsManager {
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    private func buildInstallmentsInfo(
+        from product: SK2Product,
+        billingPlanType: StoreKit.Product.SubscriptionInfo.BillingPlanType,
+        pricingTerms: StoreKit.Product.SubscriptionInfo.PricingTerms
+    ) -> InstallmentsInfo? {
+        guard let commitmentInstallmentsCount = calculateCommitmentInstallmentsCount(
+            billingPlanType: billingPlanType,
+            pricingTerms: pricingTerms
+        ) else { return nil }
+
+        guard let commitmentTotalPeriod = calculateCommitmentTotalPeriod(
+            billingPlanType: billingPlanType,
+            pricingTerms: pricingTerms
+        ) else { return nil }
+
+        let commitmentTotalPrice = pricingTerms.billingPrice * Decimal(commitmentInstallmentsCount)
+        let commitmentTotalDisplayPrice: String = commitmentTotalPrice.formatted(product.priceFormatStyle)
+
+        let installmentBillingPrice = pricingTerms.billingPrice
+        let installmentBillingDisplayPrice = pricingTerms.billingDisplayPrice
+        return InstallmentsInfo(
+            commitmentInstallmentsCount: commitmentInstallmentsCount,
+            commitmentTotalPeriod: commitmentTotalPeriod,
+            commitmentTotalPrice: commitmentTotalPrice,
+            commitmentTotalDisplayPrice: commitmentTotalDisplayPrice,
+            installmentBillingPrice: installmentBillingPrice,
+            installmentBillingDisplayPrice: installmentBillingDisplayPrice
+        )
+    }
+
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    private func calculateCommitmentInstallmentsCount(
+        billingPlanType: StoreKit.Product.SubscriptionInfo.BillingPlanType,
+        pricingTerms: StoreKit.Product.SubscriptionInfo.PricingTerms
+    ) -> Int? {
+        switch billingPlanType {
+        case .monthly:
+            switch pricingTerms.commitmentInfo.period {
+            case .monthly: return 1
+            case .everyTwoMonths: return 2
+            case .everyThreeMonths: return 3
+            case .everySixMonths: return 6
+            case .yearly: return 12
+            default:
+                return nil
+            }
+        case .upFront:
+            return nil
+        default:
+            return nil
+        }
+    }
+
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    private func calculateCommitmentTotalPeriod(
+        billingPlanType: StoreKit.Product.SubscriptionInfo.BillingPlanType,
+        pricingTerms: StoreKit.Product.SubscriptionInfo.PricingTerms
+    ) -> SubscriptionPeriod? {
+        switch billingPlanType {
+        case .monthly:
+            switch pricingTerms.commitmentInfo.period {
+            case .monthly: return SubscriptionPeriod(value: 1, unit: .month)
+            case .everyTwoMonths: return SubscriptionPeriod(value: 2, unit: .month)
+            case .everyThreeMonths: return SubscriptionPeriod(value: 3, unit: .month)
+            case .everySixMonths: return SubscriptionPeriod(value: 6, unit: .month)
+            case .yearly: return SubscriptionPeriod(value: 1, unit: .year)
+            default:
+                return nil
+            }
+        case .upFront:
+            return nil
+        default:
+            return nil
+        }
+    }
+}
+#endif
 
 // MARK: -
 

@@ -79,6 +79,10 @@ internal struct SK1StoreProduct: StoreProductType {
             .compactMap(StoreProductDiscount.init)
     }
 
+    var installmentsInfo: InstallmentsInfo? {
+        // Installments are not supported for StoreKit 1.
+        nil
+    }
 }
 
 extension SK1StoreProduct: Hashable {

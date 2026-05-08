@@ -65,6 +65,7 @@ public struct TestStoreProduct {
     public var introductoryDiscount: StoreProductDiscount?
     public var discounts: [StoreProductDiscount]
     public var locale: Locale
+    public var installmentsInfo: InstallmentsInfo?
 
     // swiftlint:disable:next line_length
     @available(*, deprecated, message: "Use init(localizedTitle:price:currencyCode:localizedPriceString:productIdentifier:productType:localizedDescription:subscriptionGroupIdentifier:subscriptionPeriod:isFamilyShareable:introductoryDiscount:discounts:locale:) instead")
@@ -95,6 +96,7 @@ public struct TestStoreProduct {
         self.introductoryDiscount = introductoryDiscount?.toStoreProductDiscount()
         self.discounts = discounts.map { $0.toStoreProductDiscount() }
         self.locale = locale
+        self.installmentsInfo = nil
     }
 
     /// Creates a new ``TestStoreProduct``.
@@ -127,7 +129,8 @@ public struct TestStoreProduct {
         isFamilyShareable: Bool = false,
         introductoryDiscount: TestStoreProductDiscount? = nil,
         discounts: [TestStoreProductDiscount] = [],
-        locale: Locale
+        locale: Locale,
+        installmentsInfo: InstallmentsInfo? = nil,
     ) {
         self.localizedTitle = localizedTitle
         self.price = price
@@ -142,6 +145,7 @@ public struct TestStoreProduct {
         self.introductoryDiscount = introductoryDiscount?.toStoreProductDiscount()
         self.discounts = discounts.map { $0.toStoreProductDiscount() }
         self.locale = locale
+        self.installmentsInfo = installmentsInfo
     }
 
     // swiftlint:enable missing_docs

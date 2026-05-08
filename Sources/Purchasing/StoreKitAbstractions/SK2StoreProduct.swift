@@ -19,15 +19,18 @@ internal struct SK2StoreProduct: StoreProductType {
     init(sk2Product: SK2Product) {
         self._underlyingSK2Product = .init(sk2Product)
         self.compoundProductIdentifier = CompoundProductIdentifier(for: sk2Product)
+        self.installmentsInfo = nil
     }
 
     @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
     init(
         sk2Product: SK2Product,
-        compoundProductIdentifier: CompoundProductIdentifier
+        compoundProductIdentifier: CompoundProductIdentifier,
+        installmentsInfo: InstallmentsInfo? = nil
     ) {
         self._underlyingSK2Product = .init(sk2Product)
         self.compoundProductIdentifier = compoundProductIdentifier
+        self.installmentsInfo = installmentsInfo
     }
 
     // We can't directly store instances of StoreKit.Product, since that causes
@@ -40,6 +43,8 @@ internal struct SK2StoreProduct: StoreProductType {
     private let compoundProductIdentifier: CompoundProductIdentifier
 
     private let priceFormatterProvider: PriceFormatterProvider = .init()
+
+    let installmentsInfo: InstallmentsInfo?
 
     var productCategory: StoreProduct.ProductCategory {
         return self.productType.productCategory

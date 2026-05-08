@@ -20,7 +20,7 @@ struct FetchProductsView: View {
             NavigationStack {
                 Form {
                     Section {
-                        TextField("Product ID", text: $productID)
+                        TextEditor(text: $productID)
                         Button {
                             Task(priority: .userInitiated) {
                                 self.results = nil
@@ -61,6 +61,58 @@ struct FetchProductsView: View {
             Text(storeProduct.productIdentifier)
                 .multilineTextAlignment(.leading)
                 .lineLimit(nil)
+                .padding(.bottom)
+
+            if #available(iOS 26.4, *) {
+                if let installmentsInfo = storeProduct.installmentsInfo {
+                    VStack(spacing: 10) {
+                        LabeledContent {
+                            Text(installmentsInfo.commitmentInstallmentsCount.description)
+                        } label: {
+                            Text("commitmentInstallmentsCount")
+                        }
+                        LabeledContent {
+                            Text(installmentsInfo.commitmentTotalPeriod.debugDescription)
+                                .multilineTextAlignment(.trailing)
+                        } label: {
+                            Text("commitmentTotalPeriod")
+                        }
+                        LabeledContent {
+                            Text(installmentsInfo.commitmentTotalPrice.description)
+                        } label: {
+                            Text("commitmentTotalPrice")
+                        }
+                        LabeledContent {
+                            Text(installmentsInfo.commitmentTotalDisplayPrice)
+                        } label: {
+                            Text("commitmentTotalDisplayPrice")
+                        }
+                        LabeledContent {
+                            Text(installmentsInfo.installmentBillingPrice.description)
+                        } label: {
+                            Text("installmentBillingPrice")
+                        }
+                        LabeledContent {
+                            Text(installmentsInfo.installmentBillingDisplayPrice)
+                        } label: {
+                            Text("installmentBillingDisplayPrice")
+                        }
+
+                    }
+                    .padding()
+                    .overlay {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.blue.opacity(0.2))
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(lineWidth: 2)
+                                .fill(Color.blue)
+                        }
+                    }
+                } else {
+                    Text("No installmentsInfo")
+                }
+            }
         }
     }
 }

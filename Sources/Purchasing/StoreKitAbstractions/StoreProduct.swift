@@ -91,6 +91,9 @@ public typealias SK2Product = StoreKit.Product
 
     @objc public var discounts: [StoreProductDiscount] { self.product.discounts }
 
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    @objc public var installmentsInfo: InstallmentsInfo? { self.product.installmentsInfo }
+
     // switflint:enable missing_docs
 }
 
@@ -191,6 +194,11 @@ internal protocol StoreProductType: Sendable {
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     var discounts: [StoreProductDiscount] { get }
 
+    /// Describes the  that a user is committing to when they purchase a subscription.
+    /// Always nil when using StoreKit 1. This will be present when a product's billing plan is monthly,
+    /// and will be nil when the billing plan is upFront or when the billing plan is not specified.
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    var installmentsInfo: InstallmentsInfo? { get }
 }
 
 public extension StoreProduct {
