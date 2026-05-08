@@ -137,7 +137,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                     case .customerCenter, .offerCode, .privacyPolicy, .terms, .webPaywallLink, .url, .unknown:
                         break
                     }
-                case .restorePurchases, .navigateBack, .workflowTrigger, .unknown:
+                case .restorePurchases, .navigateBack, .workflowTrigger, .closeWorkflow, .unknown:
                     break
                 }
             case .package(let package):

@@ -94,6 +94,7 @@ import Foundation
             case navigateBack
             case navigateTo(destination: Destination)
             case workflowTrigger
+            case closeWorkflow
 
             case unknown
 
@@ -115,6 +116,8 @@ import Foundation
                     try destination.encode(to: encoder)
                 case .workflowTrigger:
                     try container.encode("workflow", forKey: .type)
+                case .closeWorkflow:
+                    try container.encode("close_workflow", forKey: .type)
                 case .unknown:
                     try container.encode("unknown", forKey: .type)
                 }
@@ -134,6 +137,8 @@ import Foundation
                     self = .navigateTo(destination: destination)
                 case "workflow":
                     self = .workflowTrigger
+                case "close_workflow":
+                    self = .closeWorkflow
                 case "unknown":
                     self = .unknown
                 default:

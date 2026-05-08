@@ -27,6 +27,7 @@ class ButtonComponentViewModel {
         case sheet(RevenueCat.PaywallComponent.ButtonComponent.Sheet)
         case navigateBack
         case workflowTrigger
+        case closeWorkflow
         case unknown
     }
 
@@ -102,6 +103,8 @@ class ButtonComponentViewModel {
             self.action = .navigateBack
         case .workflowTrigger:
             self.action = .workflowTrigger
+        case .closeWorkflow:
+            self.action = .closeWorkflow
         case .unknown:
             self.action = .unknown
         }
@@ -135,6 +138,8 @@ class ButtonComponentViewModel {
             return false
         case .workflowTrigger:
             return false
+        case .closeWorkflow:
+            return false
         case .unknown:
             return false
         case .sheet:
@@ -155,6 +160,8 @@ extension ButtonComponentViewModel.Action {
             return "navigate_back"
         case .workflowTrigger:
             return "workflow_trigger"
+        case .closeWorkflow:
+            return "close_workflow"
         case .unknown:
             return "unknown"
         case .sheet:
@@ -168,7 +175,7 @@ extension ButtonComponentViewModel.Action {
         switch self {
         case .navigateTo(let destination):
             return destination.paywallComponentInteractionURL
-        case .restorePurchases, .navigateBack, .workflowTrigger, .unknown, .sheet:
+        case .restorePurchases, .navigateBack, .workflowTrigger, .closeWorkflow, .unknown, .sheet:
             return nil
         }
     }

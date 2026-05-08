@@ -35,6 +35,7 @@ struct ButtonComponentView: View {
 
     @Environment(\.componentInteractionLogger) var componentInteractionLogger
     @Environment(\.workflowTriggerAction) private var workflowTriggerAction
+    @Environment(\.closeWorkflowAction) private var closeWorkflowAction
     @Environment(\.workflowPageTransitionContext) private var workflowPageTransitionContext
     @Environment(\.isWorkflowHeader) private var isWorkflowHeader
 
@@ -115,6 +116,8 @@ struct ButtonComponentView: View {
             navigateTo(destination: destination)
         case .navigateBack:
             onDismiss()
+        case .closeWorkflow:
+            closeWorkflowAction?()
         case .workflowTrigger:
             Logger.warning(
                 Strings.paywall_workflow_trigger_not_handled(componentName: self.viewModel.component.name)

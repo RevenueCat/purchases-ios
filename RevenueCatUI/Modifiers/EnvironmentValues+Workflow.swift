@@ -33,6 +33,11 @@ private struct WorkflowTriggerActionKey: EnvironmentKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct CloseWorkflowActionKey: EnvironmentKey {
+    static let defaultValue: (() -> Void)? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct WorkflowPageTransitionContextKey: EnvironmentKey {
     static let defaultValue = WorkflowPageTransitionContext.identity
 }
@@ -73,6 +78,14 @@ extension EnvironmentValues {
     var workflowPackageContext: WorkflowPackageContext? {
         get { self[WorkflowPackageContextKey.self] }
         set { self[WorkflowPackageContextKey.self] = newValue }
+    }
+
+    /// Dismisses the entire paywall, bypassing any intermediate workflow step or sheet.
+    /// Set at the outermost paywall view so it remains accessible from nested contexts (e.g. sheets)
+    /// where the local `onDismiss` only closes the sheet.
+    var closeWorkflowAction: (() -> Void)? {
+        get { self[CloseWorkflowActionKey.self] }
+        set { self[CloseWorkflowActionKey.self] = newValue }
     }
 }
 

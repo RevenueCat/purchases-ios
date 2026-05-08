@@ -113,6 +113,7 @@ struct RootView: View {
         .environment(\.openSheet, { sheet in
             self.sheetViewModel = sheet
         })
+        .environment(\.closeWorkflowAction, onDismiss)
         .bottomSheet(
             sheet: $sheetViewModel,
             safeAreaInsets: self.safeAreaInsets,
