@@ -213,7 +213,7 @@ class AdMobManager: NSObject, ObservableObject {
         case .withoutRewardVerification:
             rewardedVerificationResult = nil
             isWaitingForRewardedReward = true
-            rewardedResult = "⏳ Ad shown. Waiting for reward..."
+            rewardedResult = "⏳ Waiting for reward..."
             ad.present(from: viewController, userDidEarnRewardHandler: { [weak self] in
                 guard let self = self else { return }
                 let reward = ad.adReward
@@ -223,11 +223,12 @@ class AdMobManager: NSObject, ObservableObject {
             })
         case .withRewardVerification:
             rewardedResult = nil
-            rewardedVerificationResult = "⏳ Verifying..."
+            rewardedVerificationResult = "⏳ Waiting for reward..."
             ad.present(
                 from: viewController,
                 placement: "rewarded_reward_verification_main",
-                rewardVerificationStarted: {
+                rewardVerificationStarted: { [weak self] in
+                    self?.rewardedVerificationResult = "⏳ Verifying reward..."
                     print("⏳ Rewarded verification started")
                 },
                 rewardVerificationResult: { [weak self] result in
@@ -309,7 +310,7 @@ class AdMobManager: NSObject, ObservableObject {
         case .withoutRewardVerification:
             rewardedInterstitialVerificationResult = nil
             isWaitingForRewardedInterstitialReward = true
-            rewardedInterstitialResult = "⏳ Ad shown. Waiting for reward..."
+            rewardedInterstitialResult = "⏳ Waiting for reward..."
             ad.present(from: viewController, userDidEarnRewardHandler: { [weak self] in
                 guard let self = self else { return }
                 let reward = ad.adReward
@@ -319,11 +320,12 @@ class AdMobManager: NSObject, ObservableObject {
             })
         case .withRewardVerification:
             rewardedInterstitialResult = nil
-            rewardedInterstitialVerificationResult = "⏳ Verifying..."
+            rewardedInterstitialVerificationResult = "⏳ Waiting for reward..."
             ad.present(
                 from: viewController,
                 placement: "rewarded_interstitial_reward_verification_main",
-                rewardVerificationStarted: {
+                rewardVerificationStarted: { [weak self] in
+                    self?.rewardedInterstitialVerificationResult = "⏳ Verifying reward..."
                     print("⏳ Rewarded interstitial verification started")
                 },
                 rewardVerificationResult: { [weak self] result in
