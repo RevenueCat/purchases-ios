@@ -14,6 +14,7 @@
 import Foundation
 import Nimble
 @testable import RevenueCat
+import StoreKit
 import XCTest
 
 class CompoundProductIdentifierTests: TestCase {
@@ -180,7 +181,7 @@ extension CompoundProductIdentifierTests {
 extension CompoundProductIdentifierTests {
     func testInitWithStringWithoutColonUsesWholeStringAsProductIdentifier() throws {
         let compoundIdentifier = try XCTUnwrap(CompoundProductIdentifier(
-            productIdentifier: "com.revenuecat.subscription"
+            compoundProductIdentifier: "com.revenuecat.subscription"
         ))
 
         expect(compoundIdentifier.productIdentifier) == "com.revenuecat.subscription"
@@ -191,7 +192,7 @@ extension CompoundProductIdentifierTests {
 
     func testInitWithStringWithOneColonSplitsProductIdentifierAndProductPlanIdentifierWithCasing() throws {
         let compoundIdentifier = try XCTUnwrap(CompoundProductIdentifier(
-            productIdentifier: "com.revenuecat.subscription:upFront"
+            compoundProductIdentifier: "com.revenuecat.subscription:upFront"
         ))
 
         expect(compoundIdentifier.productIdentifier) == "com.revenuecat.subscription"
@@ -202,7 +203,7 @@ extension CompoundProductIdentifierTests {
 
     func testInitWithStringWithOneColonAndEmptyProductPlanIdentifier() throws {
         let compoundIdentifier = try XCTUnwrap(CompoundProductIdentifier(
-            productIdentifier: "com.revenuecat.subscription:"
+            compoundProductIdentifier: "com.revenuecat.subscription:"
         ))
 
         expect(compoundIdentifier.productIdentifier) == "com.revenuecat.subscription"
@@ -212,28 +213,145 @@ extension CompoundProductIdentifierTests {
 
     func testInitWithStringWithOneColonAndEmptyProductIdentifierReturnsNil() {
         expect(CompoundProductIdentifier(
-            productIdentifier: ":monthly"
+            compoundProductIdentifier: ":monthly"
         )).to(beNil())
     }
 
     func testInitWithEmptyStringReturnsNil() {
-        expect(CompoundProductIdentifier(productIdentifier: "")).to(beNil())
+        expect(CompoundProductIdentifier(compoundProductIdentifier: "")).to(beNil())
     }
 
     func testInitWithMoreThanOneColonReturnsNil() {
         expect(CompoundProductIdentifier(
-            productIdentifier: "com.revenuecat.subscription:monthly:extra"
+            compoundProductIdentifier: "com.revenuecat.subscription:monthly:extra"
         )).to(beNil())
     }
 
     func testInitWithAdjacentColonsReturnsNil() {
         expect(CompoundProductIdentifier(
-            productIdentifier: "com.revenuecat.subscription::monthly"
+            compoundProductIdentifier: "com.revenuecat.subscription::monthly"
         )).to(beNil())
     }
 
     func testInitWithOnlyColonsReturnsNil() {
-        expect(CompoundProductIdentifier(productIdentifier: "::")).to(beNil())
+        expect(CompoundProductIdentifier(compoundProductIdentifier: "::")).to(beNil())
     }
 
 }
+
+// MARK: - StoreKit 2 Billing Plan Type
+#if compiler(>=6.3.2)   // Billing plans were introduced in Xcode 26.5
+extension CompoundProductIdentifierTests {
+
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    func testSK2BillingPlanTypeReturnsNilWithoutProductPlanIdentifier() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let identifier = try XCTUnwrap(CompoundProductIdentifier(
+            productIdentifier: "com.revenuecat.subscription",
+            productPlanIdentifier: nil
+        ))
+
+        expect(identifier.sk2BillingPlanType).to(beNil())
+    }
+
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    func testSK2BillingPlanTypeReturnsNilWithEmptyProductPlanIdentifier() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let identifier = try XCTUnwrap(CompoundProductIdentifier(
+            productIdentifier: "com.revenuecat.subscription",
+            productPlanIdentifier: ""
+        ))
+
+        expect(identifier.sk2BillingPlanType).to(beNil())
+    }
+
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    func testSK2BillingPlanTypeReturnsMonthlyForMonthlyProductPlanIdentifier() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let identifier = try XCTUnwrap(CompoundProductIdentifier(
+            productIdentifier: "com.revenuecat.subscription",
+            productPlanIdentifier: "monthly"
+        ))
+
+        expect(identifier.sk2BillingPlanType) == StoreKit.Product.SubscriptionInfo.BillingPlanType.monthly
+    }
+
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    func testSK2BillingPlanTypeReturnsNilWithIncorrectCase() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let identifier = try XCTUnwrap(CompoundProductIdentifier(
+            productIdentifier: "com.revenuecat.subscription",
+            productPlanIdentifier: "MoNtHlY"
+        ))
+
+        expect(identifier.sk2BillingPlanType) == nil
+    }
+
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    func testSK2BillingPlanTypeReturnsUpFrontForUpfrontProductPlanIdentifier() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let identifier = try XCTUnwrap(CompoundProductIdentifier(
+            productIdentifier: "com.revenuecat.subscription",
+            productPlanIdentifier: "upFront"
+        ))
+
+        expect(identifier.sk2BillingPlanType) == StoreKit.Product.SubscriptionInfo.BillingPlanType.upFront
+    }
+
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    func testSK2BillingPlanTypeReturnsUpFront() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let identifier = try XCTUnwrap(CompoundProductIdentifier(
+            productIdentifier: "com.revenuecat.subscription",
+            productPlanIdentifier: "upFront"
+        ))
+
+        expect(identifier.sk2BillingPlanType) == StoreKit.Product.SubscriptionInfo.BillingPlanType.upFront
+    }
+
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    func testSK2BillingPlanTypeReturnsNilForUnknownProductPlanIdentifier() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let identifier = try XCTUnwrap(CompoundProductIdentifier(
+            productIdentifier: "com.revenuecat.subscription",
+            productPlanIdentifier: "annual"
+        ))
+
+        expect(identifier.sk2BillingPlanType).to(beNil())
+    }
+
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    func testSK2BillingPlanTypeReturnsNilForProductPlanIdentifierWithWhitespace() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let identifier = try XCTUnwrap(CompoundProductIdentifier(
+            productIdentifier: "com.revenuecat.subscription",
+            productPlanIdentifier: " monthly "
+        ))
+
+        expect(identifier.sk2BillingPlanType).to(beNil())
+    }
+
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    func testSK2BillingPlanTypeUsesProductPlanIdentifierFromStringInitializer() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let monthlyIdentifier = try XCTUnwrap(CompoundProductIdentifier(
+            compoundProductIdentifier: "com.revenuecat.subscription:monthly"
+        ))
+        let upFrontIdentifier = try XCTUnwrap(CompoundProductIdentifier(
+            compoundProductIdentifier: "com.revenuecat.subscription:upFront"
+        ))
+
+        expect(monthlyIdentifier.sk2BillingPlanType) == StoreKit.Product.SubscriptionInfo.BillingPlanType.monthly
+        expect(upFrontIdentifier.sk2BillingPlanType) == StoreKit.Product.SubscriptionInfo.BillingPlanType.upFront
+    }
+}
+#endif

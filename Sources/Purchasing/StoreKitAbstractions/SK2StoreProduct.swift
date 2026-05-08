@@ -18,6 +18,16 @@ internal struct SK2StoreProduct: StoreProductType {
 
     init(sk2Product: SK2Product) {
         self._underlyingSK2Product = .init(sk2Product)
+        self.compoundProductIdentifier = CompoundProductIdentifier(for: sk2Product)
+    }
+
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    init(
+        sk2Product: SK2Product,
+        compoundProductIdentifier: CompoundProductIdentifier
+    ) {
+        self._underlyingSK2Product = .init(sk2Product)
+        self.compoundProductIdentifier = compoundProductIdentifier
     }
 
     // We can't directly store instances of StoreKit.Product, since that causes
@@ -26,6 +36,8 @@ internal struct SK2StoreProduct: StoreProductType {
     // Those bugs are fixed, but still cause crashes on iOS 12: https://github.com/RevenueCat/purchases-unity/issues/278
     private let _underlyingSK2Product: Box<SK2Product>
     var underlyingSK2Product: SK2Product { self._underlyingSK2Product.value }
+
+    private let compoundProductIdentifier: CompoundProductIdentifier
 
     private let priceFormatterProvider: PriceFormatterProvider = .init()
 
@@ -45,7 +57,13 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var localizedPriceString: String { underlyingSK2Product.displayPrice }
 
-    var productIdentifier: String { underlyingSK2Product.id }
+    var productIdentifier: String {
+        if compoundProductIdentifier.productPlanIdentifier != nil {
+            return compoundProductIdentifier.compoundProductIdentifier
+        } else {
+            return underlyingSK2Product.id
+        }
+    }
 
     var isFamilyShareable: Bool { underlyingSK2Product.isFamilyShareable }
 
@@ -125,10 +143,11 @@ private extension SK2StoreProduct {
 extension SK2StoreProduct: Hashable {
 
     static func == (lhs: SK2StoreProduct, rhs: SK2StoreProduct) -> Bool {
-        return lhs.underlyingSK2Product == rhs.underlyingSK2Product
+        return (lhs.productIdentifier == rhs.productIdentifier) && (lhs.underlyingSK2Product == rhs.underlyingSK2Product)
     }
 
     func hash(into hasher: inout Hasher) {
+        hasher.combine(self.compoundProductIdentifier)
         hasher.combine(self.underlyingSK2Product)
     }
 

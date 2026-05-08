@@ -61,7 +61,7 @@ class ProductsManager: NSObject, ProductsManagerType {
         // these product IDs, so here, we convert them to product IDs that StoreKit can recognize.
         let storeKitIdentifiers: Set<String> = Set(
             identifiers.compactMap({
-                CompoundProductIdentifier(productIdentifier: $0)?.storeKitProductIdentifier
+                CompoundProductIdentifier(compoundProductIdentifier: $0)?.storeKitProductIdentifier
             })
         )
 
@@ -74,6 +74,19 @@ class ProductsManager: NSObject, ProductsManagerType {
                                                   notFoundProductIds: notFoundProducts,
                                                   storeKitVersion: .storeKit2,
                                                   error: result.error)
+
+                switch result {
+
+                case .success(let storeProductsFromStoreKit):
+                    let productsIncludingBillingPlanProducts = self.populateSK2CompoundProductsIfSupported(
+                        requestedIdentifiers: identifiers,
+                        products: storeProductsFromStoreKit
+                    )
+                    completion(.success(productsIncludingBillingPlanProducts))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+
                 completion(result.map { Set($0.map(StoreProduct.from(product:))) })
             }
         } else {
@@ -102,6 +115,67 @@ class ProductsManager: NSObject, ProductsManagerType {
                 throw ErrorUtils.storeProblemError(error: error)
             }
         }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func populateSK2CompoundProductsIfSupported(
+        requestedIdentifiers: Set<String>,
+        products: Set<SK2StoreProduct>
+    ) -> Set<StoreProduct> {
+        // Billing plans were introduced with Xcode 26.5, which shipped with Swift version 6.3.2.
+        #if compiler(>=6.3.2)
+        if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
+            let productsByStoreKitProductIdentifier = products.dictionaryWithKeys({ $0.productIdentifier })
+            var productsIncludingBillingPlanProducts = products
+
+            for requestedIdentifier in requestedIdentifiers {
+                guard let compoundProductIdentifier = CompoundProductIdentifier(
+                    compoundProductIdentifier: requestedIdentifier
+                ) else {
+                    continue
+                }
+                if compoundProductIdentifier.productPlanIdentifier == nil {
+                    continue
+                }
+                
+                let storeKitProductIdentifier = compoundProductIdentifier.storeKitProductIdentifier
+                guard let productFromStoreKit = productsByStoreKitProductIdentifier[storeKitProductIdentifier] else {
+                    continue
+                }
+
+                guard let requestedBillingPlanType = compoundProductIdentifier.sk2BillingPlanType else {
+                    // Unrecognized billing plan type. Return no products for this request.
+                    productsIncludingBillingPlanProducts.remove(productFromStoreKit)
+                    continue
+                }
+                guard let pricingTerms = productFromStoreKit.underlyingSK2Product.subscription?.pricingTerms else {
+                    continue
+                }
+                let eligibileBillingPlanTypes = pricingTerms.map({ $0.billingPlanType })
+
+                if eligibileBillingPlanTypes.contains(requestedBillingPlanType) {
+                    // TODO: Build + attach InstallmentsInfo to this product
+                    let billingPlanProduct = SK2StoreProduct(
+                        sk2Product: productFromStoreKit.underlyingSK2Product,
+                        compoundProductIdentifier: compoundProductIdentifier
+                    )
+                    productsIncludingBillingPlanProducts.insert(billingPlanProduct)
+                    productsIncludingBillingPlanProducts.remove(productFromStoreKit)
+                } else {
+                    // The requested billing plan isn't available for this user. Return no products for this request.
+                    productsIncludingBillingPlanProducts.remove(productFromStoreKit)
+                }
+            }
+
+            return Set(productsIncludingBillingPlanProducts.map({StoreProduct.from(product: $0)}))
+        } else {
+            return Set(products.map({StoreProduct.from(product: $0)}))
+        }
+
+        #else
+        // Billing plans aren't supported
+        return products
+        #endif
     }
 
     // This class does not implement caching.
