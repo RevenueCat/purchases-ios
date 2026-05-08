@@ -549,5 +549,4 @@ private extension WorkflowPaywallViewTests {
 
 }
 
-
 #endif
