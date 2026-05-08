@@ -8,6 +8,18 @@ let project = Project(
     settings: .framework,
     targets: [
         .target(
+            name: "PaywallScreenshotTestsHostApp",
+            destinations: [.iPhone, .iPad, .macCatalyst, .macWithiPadDesign],
+            product: .app,
+            bundleId: "com.revenuecat.PaywallScreenshotTestsHostApp",
+            deploymentTargets: .iOS("15.0"),
+            infoPlist: .file(path: "../../Tests/UnitTestsHostApp/Info.plist"),
+            sources: [
+                "../../Tests/UnitTestsHostApp/**/*.swift"
+            ],
+            settings: .settings(base: ["MACOSX_DEPLOYMENT_TARGET": "12.0"])
+        ),
+        .target(
             name: "PaywallScreenshotTests",
             destinations: [.iPhone, .iPad, .macCatalyst, .macWithiPadDesign],
             product: .unitTests,
@@ -36,10 +48,7 @@ let project = Project(
                 .revenueCatUI,
                 .nimble,
                 .snapshotTesting,
-                .project(
-                    target: "UnitTestsHostApp",
-                    path: .relativeToRoot("Projects/RevenueCatTests")
-                )
+                .target(name: "PaywallScreenshotTestsHostApp")
             ],
             settings: .settings(base: ["MACOSX_DEPLOYMENT_TARGET": "12.0"])
         )
