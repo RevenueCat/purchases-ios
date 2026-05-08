@@ -47,7 +47,7 @@ class AdMobManager: NSObject, ObservableObject {
         isWaitingForRewardedReward = false
         rewardedAd = nil
         rewardedStatus = "Not Loaded"
-        rewardedResult = "Mode changed. Load again."
+        rewardedResult = nil
         rewardedVerificationResult = nil
     }
 
@@ -57,7 +57,7 @@ class AdMobManager: NSObject, ObservableObject {
         isWaitingForRewardedInterstitialReward = false
         rewardedInterstitialAd = nil
         rewardedInterstitialStatus = "Not Loaded"
-        rewardedInterstitialResult = "Mode changed. Load again."
+        rewardedInterstitialResult = nil
         rewardedInterstitialVerificationResult = nil
     }
 
@@ -175,9 +175,9 @@ class AdMobManager: NSObject, ObservableObject {
                 print("❌ Rewarded failed: \(error.localizedDescription)")
                 self.rewardedStatus = "Failed"
                 if mode == .withRewardVerification {
-                    self.rewardedVerificationResult = "❌ Failed to load ad with Reward Verification."
+                    self.rewardedVerificationResult = "❌ Load failed."
                 } else {
-                    self.rewardedResult = "❌ Failed to load ad without Reward Verification."
+                    self.rewardedResult = "❌ Load failed."
                 }
                 return
             }
@@ -194,10 +194,10 @@ class AdMobManager: NSObject, ObservableObject {
 
             if mode == .withRewardVerification {
                 self.rewardedResult = nil
-                self.rewardedVerificationResult = "🔐 Loaded with Reward Verification."
+                self.rewardedVerificationResult = "🔐 Loaded."
             } else {
                 self.rewardedVerificationResult = nil
-                self.rewardedResult = "🔓 Loaded without Reward Verification."
+                self.rewardedResult = "🔓 Loaded."
             }
         }
     }
@@ -272,9 +272,9 @@ class AdMobManager: NSObject, ObservableObject {
                 print("❌ Rewarded Interstitial failed: \(error.localizedDescription)")
                 self.rewardedInterstitialStatus = "Failed"
                 if mode == .withRewardVerification {
-                    self.rewardedInterstitialVerificationResult = "❌ Failed to load ad with Reward Verification."
+                    self.rewardedInterstitialVerificationResult = "❌ Load failed."
                 } else {
-                    self.rewardedInterstitialResult = "❌ Failed to load ad without Reward Verification."
+                    self.rewardedInterstitialResult = "❌ Load failed."
                 }
                 return
             }
@@ -291,10 +291,10 @@ class AdMobManager: NSObject, ObservableObject {
 
             if mode == .withRewardVerification {
                 self.rewardedInterstitialResult = nil
-                self.rewardedInterstitialVerificationResult = "🔐 Loaded with Reward Verification."
+                self.rewardedInterstitialVerificationResult = "🔐 Loaded."
             } else {
                 self.rewardedInterstitialVerificationResult = nil
-                self.rewardedInterstitialResult = "🔓 Loaded without Reward Verification."
+                self.rewardedInterstitialResult = "🔓 Loaded."
             }
         }
     }
@@ -419,11 +419,20 @@ private extension AdMobManager {
         }
 
         if let virtualCurrency = verifiedReward.virtualCurrency {
-            return "✅ Verified: granted \(virtualCurrency.amount) \(virtualCurrency.code)"
+            return """
+            ✅ Verified
+            🎁 Reward granted: \(virtualCurrency.amount) \(virtualCurrency.code)
+            """
         } else if verifiedReward == .noReward {
-            return "✅ Verified: no reward granted"
+            return """
+            ✅ Verified
+            ℹ️ No reward
+            """
         } else {
-            return "✅ Verified: reward type not supported in this SDK"
+            return """
+            ✅ Verified
+            ⚠️ Unsupported reward
+            """
         }
     }
 

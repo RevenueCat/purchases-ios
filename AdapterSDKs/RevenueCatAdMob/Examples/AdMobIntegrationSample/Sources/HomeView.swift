@@ -292,9 +292,13 @@ private struct AdFormatDetailView: View {
             if self.shouldAnimateEllipsis(message: message) {
                 TimelineView(.periodic(from: .now, by: 0.45)) { context in
                     Text(self.animatedEllipsisMessage(for: message, at: context.date))
+                        .lineSpacing(3)
+                        .multilineTextAlignment(.leading)
                 }
             } else {
                 Text(message)
+                    .lineSpacing(3)
+                    .multilineTextAlignment(.leading)
             }
         }
             .font(.body)
