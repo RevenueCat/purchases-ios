@@ -225,6 +225,63 @@ class WorkflowResponseTests: TestCase {
         expect(screen.offeringIdentifier) == "default"
     }
 
+    func testDecodeWorkflowScreenWithExitOffers() throws {
+        let json = """
+        {
+          "template_name": "tmpl",
+          "asset_base_url": "https://assets.revenuecat.com",
+          "default_locale": "en_US",
+          "components_localizations": {},
+          "components_config": {
+            "base": {
+              "stack": {
+                "type": "stack", "components": [],
+                "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+                "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+              },
+              "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
+            }
+          },
+          "exit_offers": {
+            "dismiss": { "offering_id": "exit_offering_a" }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let screen = try JSONDecoder.default.decode(WorkflowScreen.self, from: json)
+
+        expect(screen.exitOffers?.dismiss?.offeringId) == "exit_offering_a"
+    }
+
+    func testDecodeWorkflowScreenExitOffersAbsentByDefault() throws {
+        let json = """
+        {
+          "template_name": "tmpl",
+          "asset_base_url": "https://assets.revenuecat.com",
+          "default_locale": "en_US",
+          "components_localizations": {},
+          "components_config": {
+            "base": {
+              "stack": {
+                "type": "stack", "components": [],
+                "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+                "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+              },
+              "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
+            }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let screen = try JSONDecoder.default.decode(WorkflowScreen.self, from: json)
+
+        expect(screen.exitOffers).to(beNil())
+    }
+
     func testDecodeWorkflowScreenOfferingFieldsAbsent() throws {
         let json = """
         {
