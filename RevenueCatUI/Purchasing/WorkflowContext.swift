@@ -41,6 +41,18 @@ struct WorkflowContext {
         return offering.withPresentedOfferingContext(presentedOfferingContext)
     }
 
+    /// The exit offer offering ID for this workflow, resolved from `singleStepFallbackId`.
+    /// Returns `nil` if `singleStepFallbackId` is not set or its screen has no exit offer configured.
+    var exitOfferOfferingId: String? {
+        guard let stepId = workflow.singleStepFallbackId,
+              let step = workflow.steps[stepId],
+              let screenId = step.screenId,
+              let screen = workflow.screens[screenId] else {
+            return nil
+        }
+        return screen.exitOffers?.dismiss?.offeringId
+    }
+
     /// Resolves the package context from the workflow's `singleStepFallbackId` step so that
     /// packageless early screens can still resolve price/period template variables.
     var workflowPackageContext: WorkflowPackageContext? {
