@@ -325,7 +325,10 @@ struct PaywallsV2View: View {
 
                 self.dismissAfterPurchaseCompletionCallbacks()
             }
-            .onReceive(selectedPackageContext.$package) { package in
+            // dropFirst: @Published replays the current value on subscription, so a new
+            // PaywallsV2View created during back navigation would immediately fire this callback
+            // with the step's default package, overwriting the carry-forward selection.
+            .onReceive(selectedPackageContext.$package.dropFirst()) { package in
                 guard case let .success(paywallState) = self.paywallStateManager.state,
                       let package = Self.validatedContextPackage(package, in: paywallState.packages) else {
                     return
