@@ -4,7 +4,12 @@ import GoogleMobileAds
 
 final class InterstitialAdManager: NSObject, ObservableObject {
 
-    private static let adUnitID = "ca-app-pub-3940256099942544/4411468910"
+    private static var adUnitID: String {
+        return Constants.configuredAdUnitID(
+            forOverrideKey: "RC_INTERSTITIAL_AD_UNIT_ID_OVERRIDE",
+            defaultValue: "ca-app-pub-3940256099942544/4411468910"
+        )
+    }
 
     var interstitialAd: InterstitialAd?
     @Published var message: String?

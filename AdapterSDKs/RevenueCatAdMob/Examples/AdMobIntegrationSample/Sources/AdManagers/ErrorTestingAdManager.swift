@@ -4,7 +4,12 @@ import GoogleMobileAds
 
 final class ErrorTestingAdManager: NSObject, ObservableObject {
 
-    private static let invalidAdUnitID = "invalid-ad-unit-id"
+    private static var invalidAdUnitID: String {
+        return Constants.configuredAdUnitID(
+            forOverrideKey: "RC_INVALID_AD_UNIT_ID_OVERRIDE",
+            defaultValue: "invalid-ad-unit-id"
+        )
+    }
 
     private var errorTestBannerView: BannerView?
 
