@@ -2,27 +2,23 @@ import Foundation
 import GoogleMobileAds
 @_spi(Experimental) import RevenueCatAdMob
 
-final class RewardedInterstitialAdManager: NSObject, ObservableObject {
+final class RewardedInterstitialVerifiedAdManager: NSObject, ObservableObject {
 
     private static let adUnitID = "ca-app-pub-3940256099942544/6978759866"
 
     var rewardedInterstitialAd: RewardedInterstitialAd?
     @Published var message = "Not Loaded"
-    @Published var result: String?
-
-    private var isWaitingForReward = false
+    @Published var verificationResult: String?
 
     func resetSelection() {
-        self.isWaitingForReward = false
         self.rewardedInterstitialAd = nil
         self.message = "Not Loaded"
-        self.result = nil
+        self.verificationResult = nil
     }
 
     func loadAd() {
         self.message = "Loading..."
-        self.isWaitingForReward = false
-        self.result = "⏳ Loading ad..."
+        self.verificationResult = "⏳ Loading ad..."
 
         RewardedInterstitialAd.loadAndTrack(
             withAdUnitID: Self.adUnitID,
@@ -35,16 +31,17 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
             if let error {
                 print("❌ Rewarded Interstitial failed: \(error.localizedDescription)")
                 self.message = "Failed"
-                self.result = "❌ Load failed"
+                self.verificationResult = "❌ Load failed"
                 return
             }
 
             guard let loadedAd else { return }
 
-            print("✅ Rewarded Interstitial loaded")
+            loadedAd.enableRewardVerification()
+            print("✅ Rewarded Interstitial loaded (verification)")
             self.rewardedInterstitialAd = loadedAd
             self.message = "Ready"
-            self.result = "🔓 Loaded"
+            self.verificationResult = "🔐 Loaded"
         }
     }
 
@@ -55,24 +52,27 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
             return
         }
 
-        self.isWaitingForReward = true
-        self.result = "⏳ Waiting for reward..."
-        loadedAd.present(from: viewController, userDidEarnRewardHandler: { [weak self] in
-            guard let self else { return }
-            let reward = loadedAd.adReward
-            self.isWaitingForReward = false
-            self.result = "🎁 Reward granted: \(reward.amount) \(reward.type)"
-            print("✅ User earned reward (rewarded interstitial)")
-        })
+        self.verificationResult = "⏳ Waiting for reward..."
+        loadedAd.present(
+            from: viewController,
+            placement: "rewarded_interstitial_reward_verification_main",
+            rewardVerificationStarted: { [weak self] in
+                self?.verificationResult = "⏳ Verifying reward..."
+                print("⏳ Rewarded interstitial verification started")
+            },
+            rewardVerificationResult: { [weak self] result in
+                self?.verificationResult = RewardVerificationResultMessage.message(for: result)
+                print("✅ Rewarded interstitial verification finished: \(String(describing: result.verifiedReward))")
+            }
+        )
     }
 
 }
 
-extension RewardedInterstitialAdManager: FullScreenContentDelegate {
+extension RewardedInterstitialVerifiedAdManager: FullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ adObject: any FullScreenPresentingAd) {
-        if self.isWaitingForReward {
-            self.result = "⚠️ Ad dismissed before reward was earned"
-            self.isWaitingForReward = false
+        if self.verificationResult == "⏳ Waiting for reward..." {
+            self.verificationResult = "⚠️ Ad dismissed before reward was earned"
         }
 
         if adObject is RewardedInterstitialAd {

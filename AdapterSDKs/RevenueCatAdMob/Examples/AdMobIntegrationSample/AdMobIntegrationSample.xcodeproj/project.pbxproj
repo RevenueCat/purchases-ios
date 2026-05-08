@@ -20,6 +20,8 @@
 		90DB27212F6DB001006859ED /* NativeAdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27112F6DB001006859ED /* NativeAdManager.swift */; };
 		90DB27222F6DB001006859ED /* ErrorTestingAdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27122F6DB001006859ED /* ErrorTestingAdManager.swift */; };
 		90DB27242F6DB001006859ED /* NativeVideoAdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27142F6DB001006859ED /* NativeVideoAdManager.swift */; };
+		90DB27252F6DB001006859ED /* RewardedVerifiedAdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27152F6DB001006859ED /* RewardedVerifiedAdManager.swift */; };
+		90DB27262F6DB001006859ED /* RewardedInterstitialVerifiedAdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27162F6DB001006859ED /* RewardedInterstitialVerifiedAdManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +39,8 @@
 		90DB27112F6DB001006859ED /* NativeAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/NativeAdManager.swift; sourceTree = "<group>"; };
 		90DB27122F6DB001006859ED /* ErrorTestingAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/ErrorTestingAdManager.swift; sourceTree = "<group>"; };
 		90DB27142F6DB001006859ED /* NativeVideoAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/NativeVideoAdManager.swift; sourceTree = "<group>"; };
+		90DB27152F6DB001006859ED /* RewardedVerifiedAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/RewardedVerifiedAdManager.swift; sourceTree = "<group>"; };
+		90DB27162F6DB001006859ED /* RewardedInterstitialVerifiedAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/RewardedInterstitialVerifiedAdManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,7 +80,9 @@
 				90DB270D2F6DB001006859ED /* InterstitialAdManager.swift */,
 				90DB270E2F6DB001006859ED /* AppOpenAdManager.swift */,
 				90DB270F2F6DB001006859ED /* RewardedAdManager.swift */,
+				90DB27152F6DB001006859ED /* RewardedVerifiedAdManager.swift */,
 				90DB27102F6DB001006859ED /* RewardedInterstitialAdManager.swift */,
+				90DB27162F6DB001006859ED /* RewardedInterstitialVerifiedAdManager.swift */,
 				90DB27112F6DB001006859ED /* NativeAdManager.swift */,
 				90DB27142F6DB001006859ED /* NativeVideoAdManager.swift */,
 				90DB27122F6DB001006859ED /* ErrorTestingAdManager.swift */,
@@ -166,8 +172,10 @@
 				90DB27212F6DB001006859ED /* NativeAdManager.swift in Sources */,
 				90DB27202F6DB001006859ED /* RewardedInterstitialAdManager.swift in Sources */,
 				90DB271F2F6DB001006859ED /* RewardedAdManager.swift in Sources */,
+				90DB27252F6DB001006859ED /* RewardedVerifiedAdManager.swift in Sources */,
 				90DB271E2F6DB001006859ED /* AppOpenAdManager.swift in Sources */,
 				90DB271D2F6DB001006859ED /* InterstitialAdManager.swift in Sources */,
+				90DB27262F6DB001006859ED /* RewardedInterstitialVerifiedAdManager.swift in Sources */,
 				90DB271C2F6DB001006859ED /* BannerAdManager.swift in Sources */,
 				90DB27242F6DB001006859ED /* NativeVideoAdManager.swift in Sources */,
 				90DB271B2F6DB001006859ED /* RewardVerificationResultMessage.swift in Sources */,
