@@ -58,6 +58,7 @@ struct PaywallPresenter: View {
     }
 
     var body: some View {
+        Group {
         switch self.mode {
         case .fullScreen, .sheet:
             fullScreenPaywallView
@@ -129,6 +130,8 @@ struct PaywallPresenter: View {
             ))
 
         }
+        } // Group
+        .statusBar(hidden: isScreenshotMode)
     }
 
 }
