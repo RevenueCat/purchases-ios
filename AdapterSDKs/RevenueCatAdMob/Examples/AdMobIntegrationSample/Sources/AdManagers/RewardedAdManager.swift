@@ -11,12 +11,12 @@ final class RewardedAdManager: NSObject, ObservableObject {
 
     var canShow: Bool { self.rewardedAd != nil }
 
-    private var isWaitingForReward = false
+    private var shouldReportDismissedBeforeReward = false
     private var presentingAdObjectID: ObjectIdentifier?
 
     func resetSelection() {
         self.presentingAdObjectID = nil
-        self.isWaitingForReward = false
+        self.shouldReportDismissedBeforeReward = false
         self.rewardedAd = nil
         self.message = nil
     }
@@ -24,7 +24,7 @@ final class RewardedAdManager: NSObject, ObservableObject {
     func loadAd() {
         self.presentingAdObjectID = nil
         self.message = Messages.Rewarded.loading
-        self.isWaitingForReward = false
+        self.shouldReportDismissedBeforeReward = false
 
         RewardedAd.loadAndTrack(
             withAdUnitID: Self.adUnitID,
@@ -57,14 +57,14 @@ final class RewardedAdManager: NSObject, ObservableObject {
 
         let presentingAdObjectID = ObjectIdentifier(loadedAd)
         self.presentingAdObjectID = presentingAdObjectID
-        self.isWaitingForReward = true
+        self.shouldReportDismissedBeforeReward = true
         self.message = Messages.Rewarded.waitingForReward
         loadedAd.present(from: viewController, userDidEarnRewardHandler: { [weak self] in
             guard let self else { return }
             guard self.presentingAdObjectID == presentingAdObjectID else { return }
             let reward = loadedAd.adReward
             self.presentingAdObjectID = nil
-            self.isWaitingForReward = false
+            self.shouldReportDismissedBeforeReward = false
             self.message = Messages.Rewarded.rewardGranted(amount: reward.amount, type: reward.type)
             print("✅ User earned reward")
         })
@@ -74,10 +74,10 @@ final class RewardedAdManager: NSObject, ObservableObject {
 
 extension RewardedAdManager: FullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ adObject: any FullScreenPresentingAd) {
-        if self.isWaitingForReward {
+        if self.shouldReportDismissedBeforeReward {
             self.presentingAdObjectID = nil
             self.message = Messages.Rewarded.dismissedBeforeReward
-            self.isWaitingForReward = false
+            self.shouldReportDismissedBeforeReward = false
         }
 
         if adObject is RewardedAd {

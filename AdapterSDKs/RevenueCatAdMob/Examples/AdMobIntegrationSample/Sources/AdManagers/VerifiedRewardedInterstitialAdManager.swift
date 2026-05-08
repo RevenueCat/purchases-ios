@@ -10,20 +10,20 @@ final class VerifiedRewardedInterstitialAdManager: NSObject, ObservableObject {
     @Published var message: String?
 
     var canShow: Bool { self.rewardedInterstitialAd != nil }
-    private var isWaitingForReward = false
+    private var shouldReportDismissedBeforeReward = false
     private var presentingAdObjectID: ObjectIdentifier?
 
     func resetSelection() {
         self.presentingAdObjectID = nil
         self.rewardedInterstitialAd = nil
-        self.isWaitingForReward = false
+        self.shouldReportDismissedBeforeReward = false
         self.message = nil
     }
 
     func loadAd() {
         self.presentingAdObjectID = nil
         self.message = Messages.Rewarded.loading
-        self.isWaitingForReward = false
+        self.shouldReportDismissedBeforeReward = false
 
         RewardedInterstitialAd.loadAndTrack(
             withAdUnitID: Self.adUnitID,
@@ -57,21 +57,21 @@ final class VerifiedRewardedInterstitialAdManager: NSObject, ObservableObject {
 
         let presentingAdObjectID = ObjectIdentifier(loadedAd)
         self.presentingAdObjectID = presentingAdObjectID
-        self.isWaitingForReward = true
+        self.shouldReportDismissedBeforeReward = true
         self.message = Messages.Rewarded.waitingForReward
         loadedAd.present(
             from: viewController,
             placement: "rewarded_interstitial_reward_verification_main",
             rewardVerificationStarted: { [weak self] in
                 guard let self, self.presentingAdObjectID == presentingAdObjectID else { return }
-                self.isWaitingForReward = false
+                self.shouldReportDismissedBeforeReward = false
                 self.message = Messages.Rewarded.verifyingReward
                 print("⏳ Rewarded interstitial verification started")
             },
             rewardVerificationResult: { [weak self] result in
                 guard let self, self.presentingAdObjectID == presentingAdObjectID else { return }
                 self.presentingAdObjectID = nil
-                self.isWaitingForReward = false
+                self.shouldReportDismissedBeforeReward = false
                 self.message = Messages.verificationResultMessage(for: result)
                 print("✅ Rewarded interstitial verification finished: \(String(describing: result.verifiedReward))")
             }
@@ -82,10 +82,10 @@ final class VerifiedRewardedInterstitialAdManager: NSObject, ObservableObject {
 
 extension VerifiedRewardedInterstitialAdManager: FullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ adObject: any FullScreenPresentingAd) {
-        if self.isWaitingForReward {
+        if self.shouldReportDismissedBeforeReward {
             self.presentingAdObjectID = nil
             self.message = Messages.Rewarded.dismissedBeforeReward
-            self.isWaitingForReward = false
+            self.shouldReportDismissedBeforeReward = false
         }
 
         if adObject is RewardedInterstitialAd {
