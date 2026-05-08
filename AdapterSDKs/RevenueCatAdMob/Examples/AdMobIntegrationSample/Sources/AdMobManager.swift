@@ -155,11 +155,11 @@ class AdMobManager: NSObject, ObservableObject {
         isWaitingForRewardedReward = false
         switch mode {
         case .withoutRewardVerification:
-            rewardedResult = "⏳ Loading ad without Reward Verification..."
+            rewardedResult = "⏳ Loading ad..."
             rewardedVerificationResult = nil
         case .withRewardVerification:
             rewardedResult = nil
-            rewardedVerificationResult = "⏳ Loading ad with Reward Verification..."
+            rewardedVerificationResult = "⏳ Loading ad..."
         }
 
         RewardedAd.loadAndTrack(
@@ -223,7 +223,7 @@ class AdMobManager: NSObject, ObservableObject {
             })
         case .withRewardVerification:
             rewardedResult = nil
-            rewardedVerificationResult = "Verifying..."
+            rewardedVerificationResult = "⏳ Verifying..."
             ad.present(
                 from: viewController,
                 placement: "rewarded_reward_verification_main",
@@ -251,11 +251,11 @@ class AdMobManager: NSObject, ObservableObject {
         isWaitingForRewardedInterstitialReward = false
         switch mode {
         case .withoutRewardVerification:
-            rewardedInterstitialResult = "⏳ Loading ad without Reward Verification..."
+            rewardedInterstitialResult = "⏳ Loading ad..."
             rewardedInterstitialVerificationResult = nil
         case .withRewardVerification:
             rewardedInterstitialResult = nil
-            rewardedInterstitialVerificationResult = "⏳ Loading ad with Reward Verification..."
+            rewardedInterstitialVerificationResult = "⏳ Loading ad..."
         }
 
         RewardedInterstitialAd.loadAndTrack(
@@ -319,7 +319,7 @@ class AdMobManager: NSObject, ObservableObject {
             })
         case .withRewardVerification:
             rewardedInterstitialResult = nil
-            rewardedInterstitialVerificationResult = "Verifying..."
+            rewardedInterstitialVerificationResult = "⏳ Verifying..."
             ad.present(
                 from: viewController,
                 placement: "rewarded_interstitial_reward_verification_main",
@@ -395,9 +395,6 @@ extension AdMobManager: FullScreenContentDelegate {
             if isWaitingForRewardedReward {
                 rewardedResult = "⚠️ Ad dismissed before reward was earned"
                 isWaitingForRewardedReward = false
-            } else if rewardedLoadMode == .withRewardVerification,
-                      rewardedVerificationResult == "Verifying..." {
-                rewardedVerificationResult = "⚠️ Ad dismissed before reward verification completed"
             }
             rewardedAd = nil
             rewardedStatus = "Not Loaded"
@@ -405,9 +402,6 @@ extension AdMobManager: FullScreenContentDelegate {
             if isWaitingForRewardedInterstitialReward {
                 rewardedInterstitialResult = "⚠️ Ad dismissed before reward was earned"
                 isWaitingForRewardedInterstitialReward = false
-            } else if rewardedInterstitialLoadMode == .withRewardVerification,
-                      rewardedInterstitialVerificationResult == "Verifying..." {
-                rewardedInterstitialVerificationResult = "⚠️ Ad dismissed before reward verification completed"
             }
             rewardedInterstitialAd = nil
             rewardedInterstitialStatus = "Not Loaded"

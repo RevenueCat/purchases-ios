@@ -288,7 +288,15 @@ private struct AdFormatDetailView: View {
     private func resultCard(message: String) -> some View {
         let tint = self.resultTint(for: message)
 
-        return Text(message)
+        return Group {
+            if self.shouldAnimateEllipsis(message: message) {
+                TimelineView(.periodic(from: .now, by: 0.45)) { context in
+                    Text(self.animatedEllipsisMessage(for: message, at: context.date))
+                }
+            } else {
+                Text(message)
+            }
+        }
             .font(.body)
             .foregroundColor(.primary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -301,6 +309,18 @@ private struct AdFormatDetailView: View {
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(tint.opacity(0.35), lineWidth: 1)
             )
+    }
+
+    private func shouldAnimateEllipsis(message: String) -> Bool {
+        message.hasPrefix("⏳") && message.hasSuffix("...")
+    }
+
+    private func animatedEllipsisMessage(for message: String, at date: Date) -> String {
+        guard self.shouldAnimateEllipsis(message: message) else { return message }
+
+        let base = String(message.dropLast(3))
+        let dots = Int(date.timeIntervalSinceReferenceDate * 2).quotientAndRemainder(dividingBy: 3).remainder + 1
+        return base + String(repeating: ".", count: dots)
     }
 
     @ViewBuilder
