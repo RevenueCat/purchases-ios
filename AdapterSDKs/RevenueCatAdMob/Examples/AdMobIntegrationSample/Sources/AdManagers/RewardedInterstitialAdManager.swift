@@ -12,14 +12,18 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
     var canShow: Bool { self.rewardedInterstitialAd != nil }
 
     private var isWaitingForReward = false
+    private var rewardFlowToken = 0
 
     func resetSelection() {
+        self.rewardFlowToken += 1
         self.isWaitingForReward = false
         self.rewardedInterstitialAd = nil
         self.message = nil
     }
 
     func loadAd() {
+        self.rewardFlowToken += 1
+        let rewardFlowToken = self.rewardFlowToken
         self.message = Messages.Rewarded.loading
         self.isWaitingForReward = false
 
@@ -30,6 +34,7 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
             fullScreenContentDelegate: self
         ) { [weak self] loadedAd, error in
             guard let self else { return }
+            guard self.rewardFlowToken == rewardFlowToken else { return }
 
             if let error {
                 print("❌ Rewarded Interstitial failed: \(error.localizedDescription)")
@@ -52,10 +57,12 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
             return
         }
 
+        let rewardFlowToken = self.rewardFlowToken
         self.isWaitingForReward = true
         self.message = Messages.Rewarded.waitingForReward
         loadedAd.present(from: viewController, userDidEarnRewardHandler: { [weak self] in
             guard let self else { return }
+            guard self.rewardFlowToken == rewardFlowToken else { return }
             let reward = loadedAd.adReward
             self.isWaitingForReward = false
             self.message = Messages.Rewarded.rewardGranted(amount: reward.amount, type: reward.type)

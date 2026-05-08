@@ -11,14 +11,18 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
 
     var canShow: Bool { self.rewardedAd != nil }
     private var isWaitingForReward = false
+    private var rewardFlowToken = 0
 
     func resetSelection() {
+        self.rewardFlowToken += 1
         self.rewardedAd = nil
         self.isWaitingForReward = false
         self.message = nil
     }
 
     func loadAd() {
+        self.rewardFlowToken += 1
+        let rewardFlowToken = self.rewardFlowToken
         self.message = Messages.Rewarded.loading
         self.isWaitingForReward = false
 
@@ -29,6 +33,7 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
             fullScreenContentDelegate: self
         ) { [weak self] loadedAd, error in
             guard let self else { return }
+            guard self.rewardFlowToken == rewardFlowToken else { return }
 
             if let error {
                 print("❌ Rewarded failed: \(error.localizedDescription)")
@@ -52,19 +57,22 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
             return
         }
 
+        let rewardFlowToken = self.rewardFlowToken
         self.isWaitingForReward = true
         self.message = Messages.Rewarded.waitingForReward
         loadedAd.present(
             from: viewController,
             placement: "rewarded_reward_verification_main",
             rewardVerificationStarted: { [weak self] in
-                self?.isWaitingForReward = false
-                self?.message = Messages.Rewarded.verifyingReward
+                guard let self, self.rewardFlowToken == rewardFlowToken else { return }
+                self.isWaitingForReward = false
+                self.message = Messages.Rewarded.verifyingReward
                 print("⏳ Rewarded verification started")
             },
             rewardVerificationResult: { [weak self] result in
-                self?.isWaitingForReward = false
-                self?.message = Messages.verificationResultMessage(for: result)
+                guard let self, self.rewardFlowToken == rewardFlowToken else { return }
+                self.isWaitingForReward = false
+                self.message = Messages.verificationResultMessage(for: result)
                 print("✅ Rewarded verification finished: \(String(describing: result.verifiedReward))")
             }
         )
