@@ -30,7 +30,7 @@
 		90DB26D92F6DA55D006859ED /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		90DB26DA2F6DA55D006859ED /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		90DB26E32F6DA862006859ED /* AdMobIntegrationSample-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "AdMobIntegrationSample-Info.plist"; sourceTree = "<group>"; };
-		90DB270B2F6DB001006859ED /* Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/Support/Messages.swift; sourceTree = "<group>"; };
+		90DB270B2F6DB001006859ED /* Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Support/Messages.swift; sourceTree = "<group>"; };
 		90DB270C2F6DB001006859ED /* BannerAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/BannerAdManager.swift; sourceTree = "<group>"; };
 		90DB270D2F6DB001006859ED /* InterstitialAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/InterstitialAdManager.swift; sourceTree = "<group>"; };
 		90DB270E2F6DB001006859ED /* AppOpenAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/AppOpenAdManager.swift; sourceTree = "<group>"; };
