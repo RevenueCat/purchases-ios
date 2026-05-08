@@ -37,28 +37,30 @@ struct PaywallPresenter: View {
         ProcessInfo.processInfo.environment["SCREENSHOT_MODE"] == "1"
     }
 
-    /// In screenshot mode, forces intro-offer ineligibility so the paywall renders regular
-    /// pricing (matching the web extractor baseline). Falls back to the SPI default outside
-    /// screenshot mode.  Only available in DEBUG because `.producing(eligibility:)` is a
-    /// `@testable` test helper.
-    #if DEBUG
-    private var screenshotEligibilityChecker: TrialOrIntroEligibilityChecker? {
-        isScreenshotMode ? .producing(eligibility: .ineligible) : nil
+    /// Returns a `PaywallView` for the `.fullScreen` / `.sheet` cases.
+    ///
+    /// In DEBUG builds, when `SCREENSHOT_MODE=1`, the SPI init is used to force
+    /// intro-offer ineligibility so the paywall renders regular pricing (matching the
+    /// web extractor baseline).  In release builds, the standard public init is used.
+    ///
+    /// The explicit `PaywallView` return type lets `applyIf` infer `Self` correctly
+    /// when chaining modifiers in the `body` `@ViewBuilder`.
+    private var fullScreenPaywallView: PaywallView {
+        #if DEBUG
+        PaywallView(
+            offering: offering,
+            useDraftPaywall: false,
+            introEligibility: isScreenshotMode ? .producing(eligibility: .ineligible) : nil
+        )
+        #else
+        PaywallView(offering: offering)
+        #endif
     }
-    #endif
 
     var body: some View {
         switch self.mode {
         case .fullScreen, .sheet:
-            #if DEBUG
-            PaywallView(
-                offering: offering,
-                useDraftPaywall: false,
-                introEligibility: screenshotEligibilityChecker
-            )
-            #else
-            PaywallView(offering: offering)
-            #endif
+            fullScreenPaywallView
                 .applyIf(isScreenshotMode) { view in
                     view.environment(\.openURL, OpenURLAction { _ in .discarded })
                 }
