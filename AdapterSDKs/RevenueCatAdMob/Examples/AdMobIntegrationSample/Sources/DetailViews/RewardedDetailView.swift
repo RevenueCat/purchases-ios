@@ -33,7 +33,7 @@ struct RewardedDetailView: View {
         }
     }
 
-    private var message: String? {
+    private var message: Message? {
         self.usesRewardVerification
             ? self.verifiedRewardedAdManager.message
             : self.rewardedAdManager.message

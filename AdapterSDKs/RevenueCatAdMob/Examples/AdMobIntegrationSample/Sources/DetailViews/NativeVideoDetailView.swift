@@ -13,7 +13,7 @@ struct NativeVideoDetailView: View {
 
                 Button("Load") { self.manager.loadAd() }
                     .buttonStyle(.bordered)
-                    .disabled(Messages.isLoading(self.manager.message))
+                    .disabled(Message.isLoading(self.manager.message))
 
                 if let message = self.manager.message {
                     ResultCard(message: message)

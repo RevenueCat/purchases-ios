@@ -7,12 +7,12 @@ final class AppOpenAdManager: NSObject, ObservableObject {
     private static let adUnitID = "ca-app-pub-3940256099942544/5575463023"
 
     var appOpenAd: AppOpenAd?
-    @Published var message: String?
+    @Published var message: Message?
 
     var canShow: Bool { self.appOpenAd != nil }
 
     func loadAd() {
-        self.message = Messages.loading
+        self.message = Message.loading
 
         AppOpenAd.loadAndTrack(
             withAdUnitID: Self.adUnitID,
@@ -24,7 +24,7 @@ final class AppOpenAdManager: NSObject, ObservableObject {
 
             if let error {
                 print("❌ App Open failed: \(error.localizedDescription)")
-                self.message = Messages.failed
+                self.message = Message.failed
                 return
             }
 
@@ -32,7 +32,7 @@ final class AppOpenAdManager: NSObject, ObservableObject {
 
             print("✅ App Open loaded")
             self.appOpenAd = loadedAd
-            self.message = Messages.ready
+            self.message = Message.ready
         }
     }
 

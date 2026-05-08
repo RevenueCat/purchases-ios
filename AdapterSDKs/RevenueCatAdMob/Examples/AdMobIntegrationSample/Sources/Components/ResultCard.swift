@@ -4,7 +4,7 @@ import SwiftUI
 /// multi-line messages and an animated ellipsis for in-progress states.
 struct ResultCard: View {
 
-    let message: String
+    let message: Message
 
     var body: some View {
         let tint = Self.tint(for: self.message)
@@ -26,13 +26,13 @@ struct ResultCard: View {
 
     @ViewBuilder
     private var content: some View {
-        if Self.shouldAnimateEllipsis(message: self.message) {
+        if Self.shouldAnimateEllipsis(message: self.message.text) {
             TimelineView(.periodic(from: .now, by: 0.45)) { context in
-                Text(Self.animatedEllipsisMessage(for: self.message, at: context.date))
+                Text(Self.animatedEllipsisMessage(for: self.message.text, at: context.date))
                     .font(.body)
                     .foregroundColor(.primary)
             }
-        } else if let emphasis = Self.emphasizedTwoLineMessage(for: self.message) {
+        } else if let emphasis = Self.emphasizedTwoLineMessage(for: self.message.text) {
             Text(emphasis.firstLine)
                 .font(.body)
                 .foregroundColor(.primary)
@@ -46,7 +46,7 @@ struct ResultCard: View {
                     .font(.headline.weight(.semibold))
                     .foregroundColor(.primary)
             }
-        } else if let twoLine = Self.simpleTwoLineMessage(for: self.message) {
+        } else if let twoLine = Self.simpleTwoLineMessage(for: self.message.text) {
             Text(twoLine.firstLine)
                 .font(.body)
                 .foregroundColor(.primary)
@@ -55,21 +55,22 @@ struct ResultCard: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundColor(.primary)
         } else {
-            Text(self.message)
+            Text(self.message.text)
                 .font(.body)
                 .foregroundColor(.primary)
         }
     }
 
-    private static func tint(for message: String) -> Color {
-        if message.hasPrefix("✅") || message.hasPrefix("🎁") {
-            return .green
-        } else if message.hasPrefix("⚠️") {
-            return .orange
-        } else if message.hasPrefix("❌") {
-            return .red
-        } else {
+    private static func tint(for message: Message) -> Color {
+        switch message.severity {
+        case .info:
             return .blue
+        case .success:
+            return .green
+        case .warning:
+            return .orange
+        case .error:
+            return .red
         }
     }
 

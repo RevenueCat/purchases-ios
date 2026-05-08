@@ -7,7 +7,7 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
     private static let adUnitID = "ca-app-pub-3940256099942544/1712485313"
 
     var rewardedAd: RewardedAd?
-    @Published var message: String?
+    @Published var message: Message?
 
     var canShow: Bool { self.rewardedAd != nil }
     private var shouldReportDismissedBeforeReward = false
@@ -22,7 +22,7 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
 
     func loadAd() {
         self.presentingAdObjectID = nil
-        self.message = Messages.Rewarded.loading
+        self.message = Message.Rewarded.loading
         self.shouldReportDismissedBeforeReward = false
 
         RewardedAd.loadAndTrack(
@@ -35,7 +35,7 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
 
             if let error {
                 print("❌ Rewarded failed: \(error.localizedDescription)")
-                self.message = Messages.Rewarded.loadFailed
+                self.message = Message.Rewarded.loadFailed
                 return
             }
 
@@ -44,7 +44,7 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
             loadedAd.enableRewardVerification()
             print("✅ Rewarded loaded (verification)")
             self.rewardedAd = loadedAd
-            self.message = Messages.Rewarded.readyWithVerification
+            self.message = Message.Rewarded.readyWithVerification
         }
     }
 
@@ -58,21 +58,21 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
         let presentingAdObjectID = ObjectIdentifier(loadedAd)
         self.presentingAdObjectID = presentingAdObjectID
         self.shouldReportDismissedBeforeReward = true
-        self.message = Messages.Rewarded.waitingForReward
+        self.message = Message.Rewarded.waitingForReward
         loadedAd.present(
             from: viewController,
             placement: "rewarded_reward_verification_main",
             rewardVerificationStarted: { [weak self] in
                 guard let self, self.presentingAdObjectID == presentingAdObjectID else { return }
                 self.shouldReportDismissedBeforeReward = false
-                self.message = Messages.Rewarded.verifyingReward
+                self.message = Message.Rewarded.verifyingReward
                 print("⏳ Rewarded verification started")
             },
             rewardVerificationResult: { [weak self] result in
                 guard let self, self.presentingAdObjectID == presentingAdObjectID else { return }
                 self.presentingAdObjectID = nil
                 self.shouldReportDismissedBeforeReward = false
-                self.message = Messages.verificationResultMessage(for: result)
+                self.message = Message.forVerificationResult(result)
                 print("✅ Rewarded verification finished: \(String(describing: result.verifiedReward))")
             }
         )
@@ -84,7 +84,7 @@ extension VerifiedRewardedAdManager: FullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ adObject: any FullScreenPresentingAd) {
         if self.shouldReportDismissedBeforeReward {
             self.presentingAdObjectID = nil
-            self.message = Messages.Rewarded.dismissedBeforeReward
+            self.message = Message.Rewarded.dismissedBeforeReward
             self.shouldReportDismissedBeforeReward = false
         }
 

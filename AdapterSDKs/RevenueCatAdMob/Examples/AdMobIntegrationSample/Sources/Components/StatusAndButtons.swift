@@ -4,7 +4,7 @@ import SwiftUI
 /// (interstitial, app open).
 struct StatusAndButtons: View {
 
-    let message: String?
+    let message: Message?
     let canShow: Bool
     let onLoad: () -> Void
     let onShow: () -> Void
@@ -14,7 +14,7 @@ struct StatusAndButtons: View {
             HStack {
                 Button("Load") { self.onLoad() }
                     .buttonStyle(.bordered)
-                    .disabled(Messages.isLoading(self.message))
+                    .disabled(Message.isLoading(self.message))
 
                 Button("Show") { self.onShow() }
                     .buttonStyle(.borderedProminent)

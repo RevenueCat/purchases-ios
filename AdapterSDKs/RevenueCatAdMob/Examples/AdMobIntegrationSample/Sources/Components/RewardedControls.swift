@@ -4,7 +4,7 @@ import SwiftUI
 /// surfacing reward outcomes. Used by both rewarded and rewarded-interstitial.
 struct RewardedControls: View {
 
-    let message: String?
+    let message: Message?
     let canShow: Bool
     @Binding var usesRewardVerification: Bool
     let onLoad: () -> Void
@@ -13,11 +13,11 @@ struct RewardedControls: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             self.verificationToggle
-                .disabled(Messages.isLoading(self.message))
+                .disabled(Message.isLoading(self.message))
 
             Button("Load") { self.onLoad() }
                 .buttonStyle(.bordered)
-                .disabled(Messages.isLoading(self.message))
+                .disabled(Message.isLoading(self.message))
 
             Button("Show") { self.onShow() }
                 .buttonStyle(.borderedProminent)
