@@ -1004,9 +1004,9 @@ extension VariablesV2 {
             return ""
         }
 
-        guard let localizedFormat = localizations[VariableLocalizationKey.percent.rawValue] else {
-            return ""
-        }
+        // Fall back to a plain "%d%%" format if the UIConfig localizations do not include
+        // a "percent" key for the resolved locale (e.g. en_DE matching a partial en payload).
+        let localizedFormat = localizations[VariableLocalizationKey.percent.rawValue] ?? "%d%%"
 
         let percent = Int((discountRelativeToMostExpensivePerMonth * 100).rounded(.toNearestOrAwayFromZero))
         return String(format: localizedFormat, percent)
