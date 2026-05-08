@@ -128,31 +128,31 @@ private struct AdFormatDetailView: View {
 
                 case .interstitial:
                     self.statusAndButtons(
-                        status: interstitialAdManager.status,
+                        message: interstitialAdManager.message,
                         onLoad: { interstitialAdManager.loadAd() },
                         onShow: {
                             if let rootVC = Self.rootViewController {
                                 interstitialAdManager.showAd(from: rootVC)
                             }
                         },
-                        canShow: interstitialAdManager.status == "Ready"
+                        canShow: interstitialAdManager.message == "Ready"
                     )
 
                 case .appOpen:
                     self.statusAndButtons(
-                        status: appOpenAdManager.status,
+                        message: appOpenAdManager.message,
                         onLoad: { appOpenAdManager.loadAd() },
                         onShow: {
                             if let rootVC = Self.rootViewController {
                                 appOpenAdManager.showAd(from: rootVC)
                             }
                         },
-                        canShow: appOpenAdManager.status == "Ready"
+                        canShow: appOpenAdManager.message == "Ready"
                     )
 
                 case .rewarded:
                     self.rewardedBlock(
-                        status: rewardedAdManager.status,
+                        message: rewardedAdManager.message,
                         usesRewardVerification: $rewardedUsesRewardVerification,
                         onLoad: {
                             rewardedAdManager.loadAd(withRewardVerification: rewardedUsesRewardVerification)
@@ -162,14 +162,14 @@ private struct AdFormatDetailView: View {
                                 rewardedAdManager.showAd(from: rootVC)
                             }
                         },
-                        canShow: rewardedAdManager.status == "Ready",
+                        canShow: rewardedAdManager.message == "Ready",
                         rewardResult: rewardedAdManager.result,
                         verificationResult: rewardedAdManager.verificationResult
                     )
 
                 case .rewardedInterstitial:
                     self.rewardedBlock(
-                        status: rewardedInterstitialAdManager.status,
+                        message: rewardedInterstitialAdManager.message,
                         usesRewardVerification: $rewardedInterstitialUsesRewardVerification,
                         onLoad: {
                             rewardedInterstitialAdManager.loadAd(
@@ -181,14 +181,14 @@ private struct AdFormatDetailView: View {
                                 rewardedInterstitialAdManager.showAd(from: rootVC)
                             }
                         },
-                        canShow: rewardedInterstitialAdManager.status == "Ready",
+                        canShow: rewardedInterstitialAdManager.message == "Ready",
                         rewardResult: rewardedInterstitialAdManager.result,
                         verificationResult: rewardedInterstitialAdManager.verificationResult
                     )
 
                 case .native:
                     self.nativeBlock(
-                        status: nativeAdManager.nativeAdStatus,
+                        message: nativeAdManager.nativeAdMessage,
                         onLoad: {
                             nativeAdManager.loadAd(.native)
                         },
@@ -197,7 +197,7 @@ private struct AdFormatDetailView: View {
 
                 case .nativeVideo:
                     self.nativeBlock(
-                        status: nativeAdManager.nativeVideoAdStatus,
+                        message: nativeAdManager.nativeVideoAdMessage,
                         onLoad: {
                             nativeAdManager.loadAd(.nativeVideo)
                         },
@@ -261,19 +261,19 @@ private struct AdFormatDetailView: View {
 
     @ViewBuilder
     private func statusAndButtons(
-        status: String,
+        message: String,
         onLoad: @escaping () -> Void,
         onShow: @escaping () -> Void,
         canShow: Bool
     ) -> some View {
-        Text("Status: \(status)")
+        Text("Status: \(message)")
             .font(.caption)
             .foregroundColor(.secondary)
 
         HStack {
             Button("Load") { onLoad() }
                 .buttonStyle(.bordered)
-                .disabled(status == "Loading...")
+                .disabled(message == "Loading...")
 
             Button("Show") { onShow() }
                 .buttonStyle(.borderedProminent)
@@ -283,17 +283,17 @@ private struct AdFormatDetailView: View {
 
     @ViewBuilder
     private func nativeBlock(
-        status: String,
+        message: String,
         onLoad: @escaping () -> Void,
         nativeAd: NativeAd?
     ) -> some View {
-        Text("Status: \(status)")
+        Text("Status: \(message)")
             .font(.caption)
             .foregroundColor(.secondary)
 
         Button("Load") { onLoad() }
             .buttonStyle(.bordered)
-            .disabled(status == "Loading...")
+            .disabled(message == "Loading...")
 
         if let nativeAd {
             NativeAdViewRepresentable(nativeAd: nativeAd)
@@ -388,7 +388,7 @@ private struct AdFormatDetailView: View {
 
     @ViewBuilder
     private func rewardedBlock(
-        status: String,
+        message: String,
         usesRewardVerification: Binding<Bool>,
         onLoad: @escaping () -> Void,
         onShow: @escaping () -> Void,
@@ -396,7 +396,7 @@ private struct AdFormatDetailView: View {
         rewardResult: String?,
         verificationResult: String?
     ) -> some View {
-        Text("Status: \(status)")
+        Text("Status: \(message)")
             .font(.caption)
             .foregroundColor(.secondary)
 
@@ -426,11 +426,11 @@ private struct AdFormatDetailView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color(uiColor: .separator).opacity(0.45), lineWidth: 1)
         )
-        .disabled(status == "Loading...")
+        .disabled(message == "Loading...")
 
         Button("Load") { onLoad() }
             .buttonStyle(.bordered)
-            .disabled(status == "Loading...")
+            .disabled(message == "Loading...")
 
         Button("Show") { onShow() }
             .buttonStyle(.borderedProminent)

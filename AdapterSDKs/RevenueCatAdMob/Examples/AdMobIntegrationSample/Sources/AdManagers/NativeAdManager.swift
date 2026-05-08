@@ -17,8 +17,8 @@ final class NativeAdManager: NSObject, ObservableObject {
 
     @Published var nativeAd: NativeAd?
     @Published var nativeVideoAd: NativeAd?
-    @Published var nativeAdStatus = "Not Loaded"
-    @Published var nativeVideoAdStatus = "Not Loaded"
+    @Published var nativeAdMessage = "Not Loaded"
+    @Published var nativeVideoAdMessage = "Not Loaded"
 
     func loadAd(_ type: AdType) {
         let adUnitID: String
@@ -26,11 +26,11 @@ final class NativeAdManager: NSObject, ObservableObject {
 
         switch type {
         case .native:
-            self.nativeAdStatus = "Loading..."
+            self.nativeAdMessage = "Loading..."
             adUnitID = Self.nativeAdUnitID
             placement = "native_main"
         case .nativeVideo:
-            self.nativeVideoAdStatus = "Loading..."
+            self.nativeVideoAdMessage = "Loading..."
             adUnitID = Self.nativeVideoAdUnitID
             placement = "native_video_main"
         }
@@ -67,10 +67,10 @@ extension NativeAdManager: NativeAdLoaderDelegate, AdLoaderDelegate {
 
         if isNativeVideo {
             self.nativeVideoAd = nativeAd
-            self.nativeVideoAdStatus = "Ready"
+            self.nativeVideoAdMessage = "Ready"
         } else {
             self.nativeAd = nativeAd
-            self.nativeAdStatus = "Ready"
+            self.nativeAdMessage = "Ready"
         }
     }
 
@@ -82,9 +82,9 @@ extension NativeAdManager: NativeAdLoaderDelegate, AdLoaderDelegate {
         print("❌ \(isNativeVideo ? "Native video" : "Native") ad failed: \(error.localizedDescription)")
 
         if isNativeVideo {
-            self.nativeVideoAdStatus = "Failed"
+            self.nativeVideoAdMessage = "Failed"
         } else {
-            self.nativeAdStatus = "Failed"
+            self.nativeAdMessage = "Failed"
         }
     }
 }

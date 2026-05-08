@@ -7,7 +7,7 @@ final class RewardedAdManager: NSObject, ObservableObject {
     private static let adUnitID = "ca-app-pub-3940256099942544/1712485313"
 
     var rewardedAd: RewardedAd?
-    @Published var status = "Not Loaded"
+    @Published var message = "Not Loaded"
     @Published var result: String?
     @Published var verificationResult: String?
 
@@ -24,7 +24,7 @@ final class RewardedAdManager: NSObject, ObservableObject {
         self.loadRequestID += 1
         self.isWaitingForReward = false
         self.rewardedAd = nil
-        self.status = "Not Loaded"
+        self.message = "Not Loaded"
         self.result = nil
         self.verificationResult = nil
     }
@@ -37,7 +37,7 @@ final class RewardedAdManager: NSObject, ObservableObject {
         self.loadRequestID += 1
         let requestID = self.loadRequestID
         self.loadMode = mode
-        self.status = "Loading..."
+        self.message = "Loading..."
         self.isWaitingForReward = false
 
         switch mode {
@@ -60,7 +60,7 @@ final class RewardedAdManager: NSObject, ObservableObject {
 
             if let error {
                 print("❌ Rewarded failed: \(error.localizedDescription)")
-                self.status = "Failed"
+                self.message = "Failed"
                 if mode == .withRewardVerification {
                     self.verificationResult = "❌ Load failed"
                 } else {
@@ -77,7 +77,7 @@ final class RewardedAdManager: NSObject, ObservableObject {
 
             print("✅ Rewarded loaded")
             self.rewardedAd = loadedAd
-            self.status = "Ready"
+            self.message = "Ready"
 
             if mode == .withRewardVerification {
                 self.result = nil
@@ -140,7 +140,7 @@ extension RewardedAdManager: FullScreenContentDelegate {
 
         if adObject is RewardedAd {
             self.rewardedAd = nil
-            self.status = "Not Loaded"
+            self.message = "Not Loaded"
         }
     }
 }

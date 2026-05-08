@@ -7,7 +7,7 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
     private static let adUnitID = "ca-app-pub-3940256099942544/6978759866"
 
     var rewardedInterstitialAd: RewardedInterstitialAd?
-    @Published var status = "Not Loaded"
+    @Published var message = "Not Loaded"
     @Published var result: String?
     @Published var verificationResult: String?
 
@@ -24,7 +24,7 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
         self.loadRequestID += 1
         self.isWaitingForReward = false
         self.rewardedInterstitialAd = nil
-        self.status = "Not Loaded"
+        self.message = "Not Loaded"
         self.result = nil
         self.verificationResult = nil
     }
@@ -37,7 +37,7 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
         self.loadRequestID += 1
         let requestID = self.loadRequestID
         self.loadMode = mode
-        self.status = "Loading..."
+        self.message = "Loading..."
         self.isWaitingForReward = false
 
         switch mode {
@@ -60,7 +60,7 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
 
             if let error {
                 print("❌ Rewarded Interstitial failed: \(error.localizedDescription)")
-                self.status = "Failed"
+                self.message = "Failed"
                 if mode == .withRewardVerification {
                     self.verificationResult = "❌ Load failed"
                 } else {
@@ -77,7 +77,7 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
 
             print("✅ Rewarded Interstitial loaded")
             self.rewardedInterstitialAd = loadedAd
-            self.status = "Ready"
+            self.message = "Ready"
 
             if mode == .withRewardVerification {
                 self.result = nil
@@ -140,7 +140,7 @@ extension RewardedInterstitialAdManager: FullScreenContentDelegate {
 
         if adObject is RewardedInterstitialAd {
             self.rewardedInterstitialAd = nil
-            self.status = "Not Loaded"
+            self.message = "Not Loaded"
         }
     }
 }
