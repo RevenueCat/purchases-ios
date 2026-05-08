@@ -31,8 +31,8 @@ This sample uses **Google Mobile Ads SDK v13** Swift API (no `GAD` prefix):
 
 - `Sources/App.swift` - initializes `GoogleMobileAds.MobileAds` and `Purchases`
 - `Sources/HomeView.swift` - UI for loading/showing each ad format and status
-- `Sources/AdMobManager.swift` - all `loadAndTrack` integration code
-- `Sources/Constants.swift` - RevenueCat API key and AdMob ad unit IDs
+- `Sources/*AdManager.swift` - one focused manager per ad format integration path
+- `Sources/Constants.swift` - RevenueCat API key
 
 ---
 
@@ -63,19 +63,18 @@ This sample uses RevenueCatAdMob APIs exposed as experimental Swift SPI (`@_spi(
 ### 1. Prerequisites
 
 1. **Get a RevenueCat API key**
-   - Sign up at [revenuecat.com](https://www.revenuecat.com)
-   - Get your API key from the [RevenueCat Dashboard](https://app.revenuecat.com/)
-
+  - Sign up at [revenuecat.com](https://www.revenuecat.com)
+  - Get your API key from the [RevenueCat Dashboard](https://app.revenuecat.com/)
 2. **AdMob setup** (optional for testing)
-   - This sample uses Google's official test ad unit IDs (see below)
-   - No AdMob account is required to run the sample as-is
-   - For production validation, create an [AdMob account](https://admob.google.com/) and replace IDs
+  - This sample uses Google's official test ad unit IDs (see below)
+  - No AdMob account is required to run the sample as-is
+  - For production validation, create an [AdMob account](https://admob.google.com/) and replace IDs
 
 ### 2. Configure the app
 
 1. Open `Sources/Constants.swift`.
 2. Replace `YOUR_REVENUECAT_API_KEY` with your real RevenueCat API key.
-3. Keep the default AdMob test ad unit IDs for local testing.
+3. Keep the default AdMob test ad unit IDs in each `*AdManager.swift` file for local testing.
 
 ### 3. Build and run
 
@@ -94,6 +93,7 @@ In the app:
 4. Interact with the ad and dismiss it.
 
 In both rewarded detail screens:
+
 - Choose whether **Reward Verification** is enabled using the toggle.
 - Tap **Load**, then tap **Show** to present using that loaded mode.
 
@@ -135,6 +135,7 @@ The sample prints diagnostics in the Xcode console and emits RevenueCat ad event
 All formats in this app use `loadAndTrack` APIs and pass a `placement` value to improve reporting segmentation.
 
 For reward verification flows, the sample explicitly calls `enableRewardVerification()` on loaded rewarded ad instances, then uses `present(..., rewardVerificationStarted:, rewardVerificationResult:)` to show verification progress and map outcomes to real-world behavior:
+
 - grant virtual currency when `verifiedReward.virtualCurrency` is present
 - handle the `noReward` verified case separately
 - use a safe fallback for unknown verified reward shapes
@@ -147,16 +148,18 @@ For reward verification flows, the sample explicitly calls `enableRewardVerifica
 
 This sample uses Google's official test ad unit IDs:
 
-| Ad Format | Ad Unit ID | Status |
-| --------- | ---------- | ------ |
-| **Banner** | `ca-app-pub-3940256099942544/2435281174` | Working |
-| **Interstitial** | `ca-app-pub-3940256099942544/4411468910` | Working |
-| **Rewarded** | `ca-app-pub-3940256099942544/1712485313` | Working |
-| **Rewarded Interstitial** | `ca-app-pub-3940256099942544/6978759866` | Working |
-| **App Open** | `ca-app-pub-3940256099942544/5575463023` | Working |
-| **Native** | `ca-app-pub-3940256099942544/2247696110` | Unreliable |
-| **Native Video** | `ca-app-pub-3940256099942544/1044960115` | Unreliable |
-| **Error Testing** | `invalid-ad-unit-id` | Working |
+
+| Ad Format                 | Ad Unit ID                               | Status     |
+| ------------------------- | ---------------------------------------- | ---------- |
+| **Banner**                | `ca-app-pub-3940256099942544/2435281174` | Working    |
+| **Interstitial**          | `ca-app-pub-3940256099942544/4411468910` | Working    |
+| **Rewarded**              | `ca-app-pub-3940256099942544/1712485313` | Working    |
+| **Rewarded Interstitial** | `ca-app-pub-3940256099942544/6978759866` | Working    |
+| **App Open**              | `ca-app-pub-3940256099942544/5575463023` | Working    |
+| **Native**                | `ca-app-pub-3940256099942544/2247696110` | Unreliable |
+| **Native Video**          | `ca-app-pub-3940256099942544/1044960115` | Unreliable |
+| **Error Testing**         | `invalid-ad-unit-id`                     | Working    |
+
 
 These are official Google test IDs and are safe for development.
 
@@ -165,7 +168,7 @@ These are official Google test IDs and are safe for development.
 Native and native video test IDs can be less reliable than other formats depending on environment. For more reliable native testing:
 
 1. Create ad units in your [AdMob account](https://admob.google.com/)
-2. Replace test IDs in `Sources/Constants.swift`
+2. Replace test IDs in the relevant `*AdManager.swift` file
 3. Configure your device as a test device in AdMob
 4. Keep test mode enabled during validation
 
@@ -175,8 +178,8 @@ AdMob does not provide an official "error trigger" test ad unit ID. This sample 
 
 Use the **Error Handling** section in the sample UI:
 
-- Tap **Load Invalid Ad**.
-- This uses `Constants.AdMob.invalidAdUnitID` to intentionally fail load.
+- Tap **Trigger Ad Load Error**.
+- This uses a hard-coded invalid ad unit ID in `ErrorTestingAdManager` to intentionally fail load.
 - Confirm failure is logged and failure tracking is emitted.
 
 ---

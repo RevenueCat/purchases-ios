@@ -3,7 +3,13 @@ import GoogleMobileAds
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject private var adManager = AdMobManager()
+    @StateObject private var bannerAdManager = BannerAdManager()
+    @StateObject private var interstitialAdManager = InterstitialAdManager()
+    @StateObject private var appOpenAdManager = AppOpenAdManager()
+    @StateObject private var rewardedAdManager = RewardedAdManager()
+    @StateObject private var rewardedInterstitialAdManager = RewardedInterstitialAdManager()
+    @StateObject private var nativeAdManager = NativeAdManager()
+    @StateObject private var errorTestingAdManager = ErrorTestingAdManager()
 
     var body: some View {
         Group {
@@ -28,7 +34,18 @@ struct HomeView: View {
 
             Section {
                 ForEach(AdFormat.allCases) { format in
-                    NavigationLink(destination: AdFormatDetailView(format: format, adManager: adManager)) {
+                    NavigationLink(
+                        destination: AdFormatDetailView(
+                            format: format,
+                            bannerAdManager: bannerAdManager,
+                            interstitialAdManager: interstitialAdManager,
+                            appOpenAdManager: appOpenAdManager,
+                            rewardedAdManager: rewardedAdManager,
+                            rewardedInterstitialAdManager: rewardedInterstitialAdManager,
+                            nativeAdManager: nativeAdManager,
+                            errorTestingAdManager: errorTestingAdManager
+                        )
+                    ) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(format.title)
                                 .font(.headline)
@@ -86,7 +103,13 @@ private enum AdFormat: String, CaseIterable, Identifiable {
 
 private struct AdFormatDetailView: View {
     let format: AdFormat
-    @ObservedObject var adManager: AdMobManager
+    @ObservedObject var bannerAdManager: BannerAdManager
+    @ObservedObject var interstitialAdManager: InterstitialAdManager
+    @ObservedObject var appOpenAdManager: AppOpenAdManager
+    @ObservedObject var rewardedAdManager: RewardedAdManager
+    @ObservedObject var rewardedInterstitialAdManager: RewardedInterstitialAdManager
+    @ObservedObject var nativeAdManager: NativeAdManager
+    @ObservedObject var errorTestingAdManager: ErrorTestingAdManager
     @State private var showErrorFeedback = false
     @State private var rewardedUsesRewardVerification = false
     @State private var rewardedInterstitialUsesRewardVerification = false
@@ -100,96 +123,90 @@ private struct AdFormatDetailView: View {
 
                 switch format {
                 case .banner:
-                    BannerAdView(adManager: adManager)
+                    BannerAdView(manager: bannerAdManager)
                         .frame(height: 50)
 
                 case .interstitial:
                     self.statusAndButtons(
-                        status: adManager.interstitialStatus,
-                        onLoad: { adManager.loadInterstitialAd() },
+                        status: interstitialAdManager.status,
+                        onLoad: { interstitialAdManager.loadAd() },
                         onShow: {
                             if let rootVC = Self.rootViewController {
-                                adManager.showInterstitialAd(from: rootVC)
+                                interstitialAdManager.showAd(from: rootVC)
                             }
                         },
-                        canShow: adManager.interstitialStatus == "Ready"
+                        canShow: interstitialAdManager.status == "Ready"
                     )
 
                 case .appOpen:
                     self.statusAndButtons(
-                        status: adManager.appOpenStatus,
-                        onLoad: { adManager.loadAppOpenAd() },
+                        status: appOpenAdManager.status,
+                        onLoad: { appOpenAdManager.loadAd() },
                         onShow: {
                             if let rootVC = Self.rootViewController {
-                                adManager.showAppOpenAd(from: rootVC)
+                                appOpenAdManager.showAd(from: rootVC)
                             }
                         },
-                        canShow: adManager.appOpenStatus == "Ready"
+                        canShow: appOpenAdManager.status == "Ready"
                     )
 
                 case .rewarded:
                     self.rewardedBlock(
-                        status: adManager.rewardedStatus,
+                        status: rewardedAdManager.status,
                         usesRewardVerification: $rewardedUsesRewardVerification,
                         onLoad: {
-                            adManager.loadRewardedAd(withRewardVerification: rewardedUsesRewardVerification)
+                            rewardedAdManager.loadAd(withRewardVerification: rewardedUsesRewardVerification)
                         },
                         onShow: {
                             if let rootVC = Self.rootViewController {
-                                adManager.showRewardedAd(from: rootVC)
+                                rewardedAdManager.showAd(from: rootVC)
                             }
                         },
-                        canShow: adManager.rewardedStatus == "Ready",
-                        rewardResult: adManager.rewardedResult,
-                        verificationResult: adManager.rewardedVerificationResult
+                        canShow: rewardedAdManager.status == "Ready",
+                        rewardResult: rewardedAdManager.result,
+                        verificationResult: rewardedAdManager.verificationResult
                     )
 
                 case .rewardedInterstitial:
                     self.rewardedBlock(
-                        status: adManager.rewardedInterstitialStatus,
+                        status: rewardedInterstitialAdManager.status,
                         usesRewardVerification: $rewardedInterstitialUsesRewardVerification,
                         onLoad: {
-                            adManager.loadRewardedInterstitialAd(
+                            rewardedInterstitialAdManager.loadAd(
                                 withRewardVerification: rewardedInterstitialUsesRewardVerification
                             )
                         },
                         onShow: {
                             if let rootVC = Self.rootViewController {
-                                adManager.showRewardedInterstitialAd(from: rootVC)
+                                rewardedInterstitialAdManager.showAd(from: rootVC)
                             }
                         },
-                        canShow: adManager.rewardedInterstitialStatus == "Ready",
-                        rewardResult: adManager.rewardedInterstitialResult,
-                        verificationResult: adManager.rewardedInterstitialVerificationResult
+                        canShow: rewardedInterstitialAdManager.status == "Ready",
+                        rewardResult: rewardedInterstitialAdManager.result,
+                        verificationResult: rewardedInterstitialAdManager.verificationResult
                     )
 
                 case .native:
                     self.nativeBlock(
-                        status: adManager.nativeAdStatus,
+                        status: nativeAdManager.nativeAdStatus,
                         onLoad: {
-                            adManager.loadNativeAd(
-                                adUnitID: Constants.AdMob.nativeAdUnitID,
-                                placement: "native_main"
-                            )
+                            nativeAdManager.loadAd(.native)
                         },
-                        nativeAd: adManager.nativeAd
+                        nativeAd: nativeAdManager.nativeAd
                     )
 
                 case .nativeVideo:
                     self.nativeBlock(
-                        status: adManager.nativeVideoAdStatus,
+                        status: nativeAdManager.nativeVideoAdStatus,
                         onLoad: {
-                            adManager.loadNativeAd(
-                                adUnitID: Constants.AdMob.nativeVideoAdUnitID,
-                                placement: "native_video_main"
-                            )
+                            nativeAdManager.loadAd(.nativeVideo)
                         },
-                        nativeAd: adManager.nativeVideoAd
+                        nativeAd: nativeAdManager.nativeVideoAd
                     )
 
                 case .errorTesting:
                     Button("Trigger Ad Load Error") {
-                        adManager.loadAdWithError()
+                        errorTestingAdManager.loadAd()
                         showErrorFeedback = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
                             showErrorFeedback = false
@@ -211,12 +228,12 @@ private struct AdFormatDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: rewardedUsesRewardVerification) { _ in
             if format == .rewarded {
-                adManager.resetRewardedAdSelection()
+                rewardedAdManager.resetSelection()
             }
         }
         .onChange(of: rewardedInterstitialUsesRewardVerification) { _ in
             if format == .rewardedInterstitial {
-                adManager.resetRewardedInterstitialAdSelection()
+                rewardedInterstitialAdManager.resetSelection()
             }
         }
     }
@@ -522,10 +539,10 @@ struct NativeAdViewRepresentable: UIViewRepresentable {
 }
 
 struct BannerAdView: UIViewRepresentable {
-    let adManager: AdMobManager
+    let manager: BannerAdManager
 
     func makeUIView(context: Context) -> BannerView {
-        return adManager.loadBannerAd()
+        return manager.loadAd()
     }
 
     func updateUIView(_ uiView: BannerView, context: Context) {}
