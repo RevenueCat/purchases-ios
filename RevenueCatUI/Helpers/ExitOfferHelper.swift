@@ -18,6 +18,31 @@
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum ExitOfferHelper {
 
+    /// Fetches the exit offer offering for the given offering ID.
+    /// Returns `nil` if the offering ID is not found or fetching fails.
+    /// - Parameter offeringId: The offering identifier of the exit offer
+    /// - Returns: The exit offer's `Offering` if found, `nil` otherwise
+    @MainActor
+    static func fetchValidExitOffer(offeringId: String) async -> Offering? {
+        guard Purchases.isConfigured else { return nil }
+
+        do {
+            let exitOffering = try await Purchases.shared.offerings()
+                .offering(identifier: offeringId)
+
+            if exitOffering != nil {
+                Logger.debug(Strings.prefetchedExitOffer(offeringId))
+            } else {
+                Logger.warning(Strings.exitOfferNotFound(offeringId))
+            }
+
+            return exitOffering
+        } catch {
+            Logger.error(Strings.errorLoadingExitOffer(error))
+            return nil
+        }
+    }
+
     /// Fetches and validates the exit offer offering for the given offering.
     /// Returns `nil` if:
     /// - No exit offer is configured

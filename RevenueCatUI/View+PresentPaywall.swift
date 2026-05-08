@@ -550,6 +550,7 @@ private struct PresentingPaywallModifier: ViewModifier {
     @State
     private var presentedExitOffer: Offering?
 
+    // swiftlint:disable:next function_body_length
     func body(content: Content) -> some View {
         Group {
             switch presentationMode {
@@ -609,6 +610,12 @@ private struct PresentingPaywallModifier: ViewModifier {
                         await self.updateCustomerInfo()
                     }
                 }
+            }
+        }
+        .onPreferenceChange(WorkflowExitOfferOfferingIdPreferenceKey.self) { offeringId in
+            guard ProcessInfo.processInfo.workflowsEndpointEnabled, let offeringId else { return }
+            Task { @MainActor in
+                self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(offeringId: offeringId)
             }
         }
     }
@@ -903,6 +910,12 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                         self.exitOfferPaywallView(for: exitOffering)
                     }
             #endif
+            }
+        }
+        .onPreferenceChange(WorkflowExitOfferOfferingIdPreferenceKey.self) { offeringId in
+            guard ProcessInfo.processInfo.workflowsEndpointEnabled, let offeringId else { return }
+            Task { @MainActor in
+                self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(offeringId: offeringId)
             }
         }
     }

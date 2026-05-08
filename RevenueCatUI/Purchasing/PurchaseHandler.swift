@@ -888,6 +888,17 @@ struct PurchasedResultPreferenceKey: PreferenceKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WorkflowExitOfferOfferingIdPreferenceKey: PreferenceKey {
+
+    static var defaultValue: String?
+
+    static func reduce(value: inout String?, nextValue: () -> String?) {
+        value = nextValue()
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct RestoredCustomerInfoPreferenceKey: PreferenceKey {
 
     static var defaultValue: PurchaseHandler.RestoreResult?
@@ -988,7 +999,7 @@ private extension CustomerInfo {
 }
 
 #if !os(tvOS)
-private extension ProcessInfo {
+extension ProcessInfo {
 
     var workflowsEndpointEnabled: Bool {
         arguments.contains("-EnableWorkflowsEndpoint")

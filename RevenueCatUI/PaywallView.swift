@@ -52,6 +52,9 @@ public struct PaywallView: View {
     private var workflowContext: WorkflowContext?
 
     @State
+    private var workflowExitOfferOfferingId: String?
+
+    @State
     private var customerInfo: CustomerInfo?
     @State
     private var error: NSError?
@@ -220,6 +223,10 @@ public struct PaywallView: View {
             // If the parent view uses refreshable, it can be inherited by the paywall view
             // and pulling down in the paywall would execute the parent's refreshable action
             .refreshableDisabled()
+            .preference(
+                key: WorkflowExitOfferOfferingIdPreferenceKey.self,
+                value: self.workflowExitOfferOfferingId
+            )
     }
 
     @MainActor
@@ -259,6 +266,7 @@ public struct PaywallView: View {
                                     let paywallData = try await self.loadPaywallData()
                                     self.offering = paywallData.offering
                                     self.workflowContext = paywallData.workflowContext
+                                    self.workflowExitOfferOfferingId = paywallData.workflowContext?.exitOfferOfferingId
                                 }
 
                                 if self.customerInfo == nil {
