@@ -143,22 +143,32 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(defaultPackage?.identifier) == TestData.annualPackage.identifier
     }
 
-    func testPackageCarryForwardStateUsesLatestSelectionForForwardNavigation() {
+    func testPackageCarryForwardStateUsesLatestSelectionForCurrentStepForwardNavigation() {
         var state = WorkflowPackageCarryForwardState()
 
-        state.recordSelection(TestData.monthlyPackage)
-        state.recordSelection(TestData.annualPackage)
+        state.recordSelection(TestData.monthlyPackage, for: "step_1")
+        state.recordSelection(TestData.annualPackage, for: "step_1")
 
-        expect(state.contextPackageForForwardNavigation?.identifier) == TestData.annualPackage.identifier
+        expect(state.contextPackageForForwardNavigation(from: "step_1")?.identifier) == TestData.annualPackage.identifier
     }
 
-    func testPackageCarryForwardStateClearsSelectionOnBackNavigation() {
+    func testPackageCarryForwardStateClearsOnlyAbandonedBackNavigationStep() {
         var state = WorkflowPackageCarryForwardState()
 
-        state.recordSelection(TestData.annualPackage)
-        state.clearForBackNavigation()
+        state.recordSelection(TestData.monthlyPackage, for: "step_1")
+        state.recordSelection(TestData.annualPackage, for: "step_2")
+        state.clearForBackNavigation(from: "step_2")
 
-        expect(state.contextPackageForForwardNavigation).to(beNil())
+        expect(state.contextPackageForForwardNavigation(from: "step_2")).to(beNil())
+        expect(state.contextPackageForForwardNavigation(from: "step_1")?.identifier) == TestData.monthlyPackage.identifier
+    }
+
+    func testPackageCarryForwardStateReturnsNilWithoutKnownCurrentStep() {
+        var state = WorkflowPackageCarryForwardState()
+
+        state.recordSelection(TestData.annualPackage, for: "step_1")
+
+        expect(state.contextPackageForForwardNavigation(from: nil)).to(beNil())
     }
 
 }

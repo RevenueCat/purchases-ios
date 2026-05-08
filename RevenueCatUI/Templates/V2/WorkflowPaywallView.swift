@@ -134,18 +134,26 @@ private extension WorkflowPageTransitionState.Direction {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WorkflowPackageCarryForwardState {
 
-    private(set) var selectedPackage: Package?
+    private var selectedPackagesByStepID: [String: Package] = [:]
 
-    var contextPackageForForwardNavigation: Package? {
-        self.selectedPackage
+    func contextPackageForForwardNavigation(from stepID: String?) -> Package? {
+        guard let stepID else {
+            return nil
+        }
+
+        return self.selectedPackagesByStepID[stepID]
     }
 
-    mutating func recordSelection(_ package: Package) {
-        self.selectedPackage = package
+    mutating func recordSelection(_ package: Package, for stepID: String) {
+        self.selectedPackagesByStepID[stepID] = package
     }
 
-    mutating func clearForBackNavigation() {
-        self.selectedPackage = nil
+    mutating func clearForBackNavigation(from stepID: String?) {
+        guard let stepID else {
+            return
+        }
+
+        self.selectedPackagesByStepID[stepID] = nil
     }
 
 }
@@ -277,7 +285,7 @@ struct WorkflowPaywallView: View {
         )
         .environment(\.workflowPackageContext, self.workflowPackageContext)
         .environment(\.workflowOnPackageSelected, { package in
-            self.packageCarryForwardState.recordSelection(package)
+            self.packageCarryForwardState.recordSelection(package, for: page.stepID)
         })
         .environment(\.workflowTriggerAction, { componentId in
             return self.handleTriggeredNavigation(componentId: componentId)
@@ -302,7 +310,7 @@ struct WorkflowPaywallView: View {
         case .dismissWorkflow:
             self.onDismiss()
         case .navigateBack:
-            self.packageCarryForwardState.clearForBackNavigation()
+            self.packageCarryForwardState.clearForBackNavigation(from: self.transitionState.currentPage?.stepID)
 
             guard let previousStep = self.navigator.navigateBack() else {
                 return
@@ -346,7 +354,9 @@ struct WorkflowPaywallView: View {
                 stepId: nextStep.id,
                 canNavigateBack: self.navigator.canNavigateBack,
                 displayCloseButton: self.displayCloseButton,
-                contextPackage: self.packageCarryForwardState.contextPackageForForwardNavigation
+                contextPackage: self.packageCarryForwardState.contextPackageForForwardNavigation(
+                    from: self.transitionState.currentPage?.stepID
+                )
             ),
             direction: .forward
         )
@@ -422,6 +432,7 @@ struct WorkflowPaywallView: View {
         )
 
         return .init(
+            stepID: stepId,
             content: .init(paywallComponents: paywallComponents, offering: offering),
             showCloseButton: !canNavigateBack && displayCloseButton,
             contextPackage: contextPackage
@@ -447,6 +458,7 @@ struct WorkflowPaywallView: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct RenderedPage: Identifiable {
     let id = UUID()
+    let stepID: String
     let content: CurrentStepContent
     let showCloseButton: Bool
     let contextPackage: Package?

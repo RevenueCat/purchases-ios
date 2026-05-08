@@ -29,9 +29,6 @@ struct RootView: View {
     @Environment(\.componentInteractionLogger)
     private var componentInteractionLogger
 
-    @Environment(\.workflowPackageContext)
-    private var workflowPackageContext
-
     private let viewModel: RootViewModel
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
