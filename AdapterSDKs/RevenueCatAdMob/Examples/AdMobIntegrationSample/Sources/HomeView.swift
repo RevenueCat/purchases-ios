@@ -9,6 +9,7 @@ struct HomeView: View {
     @StateObject private var rewardedAdManager = RewardedAdManager()
     @StateObject private var rewardedInterstitialAdManager = RewardedInterstitialAdManager()
     @StateObject private var nativeAdManager = NativeAdManager()
+    @StateObject private var nativeVideoAdManager = NativeVideoAdManager()
     @StateObject private var errorTestingAdManager = ErrorTestingAdManager()
 
     var body: some View {
@@ -43,6 +44,7 @@ struct HomeView: View {
                             rewardedAdManager: rewardedAdManager,
                             rewardedInterstitialAdManager: rewardedInterstitialAdManager,
                             nativeAdManager: nativeAdManager,
+                            nativeVideoAdManager: nativeVideoAdManager,
                             errorTestingAdManager: errorTestingAdManager
                         )
                     ) {
@@ -109,6 +111,7 @@ private struct AdFormatDetailView: View {
     @ObservedObject var rewardedAdManager: RewardedAdManager
     @ObservedObject var rewardedInterstitialAdManager: RewardedInterstitialAdManager
     @ObservedObject var nativeAdManager: NativeAdManager
+    @ObservedObject var nativeVideoAdManager: NativeVideoAdManager
     @ObservedObject var errorTestingAdManager: ErrorTestingAdManager
     @State private var showErrorFeedback = false
     @State private var rewardedUsesRewardVerification = false
@@ -188,20 +191,20 @@ private struct AdFormatDetailView: View {
 
                 case .native:
                     self.nativeBlock(
-                        message: nativeAdManager.nativeAdMessage,
+                        message: nativeAdManager.message,
                         onLoad: {
-                            nativeAdManager.loadAd(.native)
+                            nativeAdManager.loadAd()
                         },
                         nativeAd: nativeAdManager.nativeAd
                     )
 
                 case .nativeVideo:
                     self.nativeBlock(
-                        message: nativeAdManager.nativeVideoAdMessage,
+                        message: nativeVideoAdManager.message,
                         onLoad: {
-                            nativeAdManager.loadAd(.nativeVideo)
+                            nativeVideoAdManager.loadAd()
                         },
-                        nativeAd: nativeAdManager.nativeVideoAd
+                        nativeAd: nativeVideoAdManager.nativeAd
                     )
 
                 case .errorTesting:
