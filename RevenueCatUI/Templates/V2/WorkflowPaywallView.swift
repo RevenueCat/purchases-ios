@@ -132,6 +132,25 @@ private extension WorkflowPageTransitionState.Direction {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WorkflowPackageCarryForwardState {
+
+    private(set) var selectedPackage: Package?
+
+    var contextPackageForForwardNavigation: Package? {
+        self.selectedPackage
+    }
+
+    mutating func recordSelection(_ package: Package) {
+        self.selectedPackage = package
+    }
+
+    mutating func clearForBackNavigation() {
+        self.selectedPackage = nil
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WorkflowPaywallView: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -159,7 +178,7 @@ struct WorkflowPaywallView: View {
     @State private var hasLoggedInvalidState = false
     @State private var transitionState: WorkflowPageTransitionState<RenderedPage>
     @State private var activeTransitionID: UUID?
-    @State private var currentSelectedPackage: Package?
+    @State private var packageCarryForwardState = WorkflowPackageCarryForwardState()
 
     init(
         context: WorkflowContext,
@@ -258,7 +277,7 @@ struct WorkflowPaywallView: View {
         )
         .environment(\.workflowPackageContext, self.workflowPackageContext)
         .environment(\.workflowOnPackageSelected, { package in
-            self.currentSelectedPackage = package
+            self.packageCarryForwardState.recordSelection(package)
         })
         .environment(\.workflowTriggerAction, { componentId in
             return self.handleTriggeredNavigation(componentId: componentId)
@@ -283,7 +302,7 @@ struct WorkflowPaywallView: View {
         case .dismissWorkflow:
             self.onDismiss()
         case .navigateBack:
-            self.currentSelectedPackage = nil
+            self.packageCarryForwardState.clearForBackNavigation()
 
             guard let previousStep = self.navigator.navigateBack() else {
                 return
@@ -327,7 +346,7 @@ struct WorkflowPaywallView: View {
                 stepId: nextStep.id,
                 canNavigateBack: self.navigator.canNavigateBack,
                 displayCloseButton: self.displayCloseButton,
-                contextPackage: self.currentSelectedPackage
+                contextPackage: self.packageCarryForwardState.contextPackageForForwardNavigation
             ),
             direction: .forward
         )

@@ -143,6 +143,24 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(defaultPackage?.identifier) == TestData.annualPackage.identifier
     }
 
+    func testPackageCarryForwardStateUsesLatestSelectionForForwardNavigation() {
+        var state = WorkflowPackageCarryForwardState()
+
+        state.recordSelection(TestData.monthlyPackage)
+        state.recordSelection(TestData.annualPackage)
+
+        expect(state.contextPackageForForwardNavigation?.identifier) == TestData.annualPackage.identifier
+    }
+
+    func testPackageCarryForwardStateClearsSelectionOnBackNavigation() {
+        var state = WorkflowPackageCarryForwardState()
+
+        state.recordSelection(TestData.annualPackage)
+        state.clearForBackNavigation()
+
+        expect(state.contextPackageForForwardNavigation).to(beNil())
+    }
+
 }
 
 // MARK: - workflowPackageContext tests
