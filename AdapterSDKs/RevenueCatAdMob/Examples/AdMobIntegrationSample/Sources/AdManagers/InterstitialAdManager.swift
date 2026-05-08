@@ -7,10 +7,10 @@ final class InterstitialAdManager: NSObject, ObservableObject {
     private static let adUnitID = "ca-app-pub-3940256099942544/4411468910"
 
     var interstitialAd: InterstitialAd?
-    @Published var message = "Not Loaded"
+    @Published var message = Messages.notLoaded
 
     func loadAd() {
-        self.message = "Loading..."
+        self.message = Messages.loading
 
         InterstitialAd.loadAndTrack(
             withAdUnitID: Self.adUnitID,
@@ -22,7 +22,7 @@ final class InterstitialAdManager: NSObject, ObservableObject {
 
             if let error {
                 print("❌ Interstitial failed: \(error.localizedDescription)")
-                self.message = "Failed"
+                self.message = Messages.failed
                 return
             }
 
@@ -30,7 +30,7 @@ final class InterstitialAdManager: NSObject, ObservableObject {
 
             print("✅ Interstitial loaded")
             self.interstitialAd = loadedAd
-            self.message = "Ready"
+            self.message = Messages.ready
         }
     }
 
@@ -49,7 +49,7 @@ extension InterstitialAdManager: FullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ adObject: any FullScreenPresentingAd) {
         if adObject is InterstitialAd {
             self.interstitialAd = nil
-            self.message = "Not Loaded"
+            self.message = Messages.notLoaded
         }
     }
 }

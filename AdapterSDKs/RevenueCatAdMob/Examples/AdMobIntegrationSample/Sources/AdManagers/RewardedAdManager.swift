@@ -7,7 +7,7 @@ final class RewardedAdManager: NSObject, ObservableObject {
     private static let adUnitID = "ca-app-pub-3940256099942544/1712485313"
 
     var rewardedAd: RewardedAd?
-    @Published var message = "Not Loaded"
+    @Published var message = Messages.notLoaded
 
     var canShow: Bool { self.rewardedAd != nil }
 
@@ -16,11 +16,11 @@ final class RewardedAdManager: NSObject, ObservableObject {
     func resetSelection() {
         self.isWaitingForReward = false
         self.rewardedAd = nil
-        self.message = "Not Loaded"
+        self.message = Messages.notLoaded
     }
 
     func loadAd() {
-        self.message = "⏳ Loading ad..."
+        self.message = Messages.Rewarded.loading
         self.isWaitingForReward = false
 
         RewardedAd.loadAndTrack(
@@ -33,7 +33,7 @@ final class RewardedAdManager: NSObject, ObservableObject {
 
             if let error {
                 print("❌ Rewarded failed: \(error.localizedDescription)")
-                self.message = "❌ Load failed"
+                self.message = Messages.Rewarded.loadFailed
                 return
             }
 
@@ -41,7 +41,7 @@ final class RewardedAdManager: NSObject, ObservableObject {
 
             print("✅ Rewarded loaded")
             self.rewardedAd = loadedAd
-            self.message = "🔓 Ready"
+            self.message = Messages.Rewarded.readyWithoutVerification
         }
     }
 
@@ -53,15 +53,12 @@ final class RewardedAdManager: NSObject, ObservableObject {
         }
 
         self.isWaitingForReward = true
-        self.message = "⏳ Waiting for reward..."
+        self.message = Messages.Rewarded.waitingForReward
         loadedAd.present(from: viewController, userDidEarnRewardHandler: { [weak self] in
             guard let self else { return }
             let reward = loadedAd.adReward
             self.isWaitingForReward = false
-            self.message = """
-            ✅ Reward granted
-            🎁 \(reward.amount) \(reward.type)
-            """
+            self.message = Messages.Rewarded.rewardGranted(amount: reward.amount, type: reward.type)
             print("✅ User earned reward")
         })
     }
@@ -73,7 +70,7 @@ extension RewardedAdManager: FullScreenContentDelegate {
         var dismissedBeforeReward = false
 
         if self.isWaitingForReward {
-            self.message = "⚠️ Ad dismissed before reward was earned"
+            self.message = Messages.Rewarded.dismissedBeforeReward
             self.isWaitingForReward = false
             dismissedBeforeReward = true
         }
@@ -81,7 +78,7 @@ extension RewardedAdManager: FullScreenContentDelegate {
         if adObject is RewardedAd {
             self.rewardedAd = nil
             if !dismissedBeforeReward {
-                self.message = "Not Loaded"
+                self.message = Messages.notLoaded
             }
         }
     }

@@ -9,10 +9,10 @@ final class NativeVideoAdManager: NSObject, ObservableObject {
     var nativeVideoAdLoader: AdLoader?
 
     @Published var nativeAd: NativeAd?
-    @Published var message = "Not Loaded"
+    @Published var message = Messages.notLoaded
 
     func loadAd() {
-        self.message = "Loading..."
+        self.message = Messages.loading
         let adLoader = AdLoader(
             adUnitID: Self.adUnitID,
             rootViewController: nil,
@@ -36,12 +36,12 @@ extension NativeVideoAdManager: NativeAdLoaderDelegate, AdLoaderDelegate {
         guard adLoader === self.nativeVideoAdLoader else { return }
         print("✅ Native video ad loaded")
         self.nativeAd = nativeAd
-        self.message = "Ready"
+        self.message = Messages.ready
     }
 
     func adLoader(_ adLoader: AdLoader, didFailToReceiveAdWithError error: Error) {
         guard adLoader === self.nativeVideoAdLoader else { return }
         print("❌ Native video ad failed: \(error.localizedDescription)")
-        self.message = "Failed"
+        self.message = Messages.failed
     }
 }

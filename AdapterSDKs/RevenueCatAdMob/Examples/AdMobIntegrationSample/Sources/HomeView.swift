@@ -144,7 +144,7 @@ private struct AdFormatDetailView: View {
                                 interstitialAdManager.showAd(from: rootVC)
                             }
                         },
-                        canShow: interstitialAdManager.message == "Ready"
+                        canShow: interstitialAdManager.message == Messages.ready
                     )
 
                 case .appOpen:
@@ -156,7 +156,7 @@ private struct AdFormatDetailView: View {
                                 appOpenAdManager.showAd(from: rootVC)
                             }
                         },
-                        canShow: appOpenAdManager.message == "Ready"
+                        canShow: appOpenAdManager.message == Messages.ready
                     )
 
                 case .rewarded:
@@ -304,7 +304,7 @@ private struct AdFormatDetailView: View {
         HStack {
             Button("Load") { onLoad() }
                 .buttonStyle(.bordered)
-                .disabled(message == "Loading...")
+                .disabled(Messages.isLoading(message))
 
             Button("Show") { onShow() }
                 .buttonStyle(.borderedProminent)
@@ -324,7 +324,7 @@ private struct AdFormatDetailView: View {
 
         Button("Load") { onLoad() }
             .buttonStyle(.bordered)
-            .disabled(message == "Loading...")
+            .disabled(Messages.isLoading(message))
 
         if let nativeAd {
             NativeAdViewRepresentable(nativeAd: nativeAd)
@@ -455,17 +455,17 @@ private struct AdFormatDetailView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color(uiColor: .separator).opacity(0.45), lineWidth: 1)
         )
-        .disabled(message == "Loading...")
+        .disabled(Messages.isLoading(message))
 
         Button("Load") { onLoad() }
             .buttonStyle(.bordered)
-            .disabled(message == "Loading...")
+            .disabled(Messages.isLoading(message))
 
         Button("Show") { onShow() }
             .buttonStyle(.borderedProminent)
             .disabled(!canShow)
 
-        if message != "Not Loaded" {
+        if message != Messages.notLoaded {
             self.resultCard(message: message)
         }
     }
