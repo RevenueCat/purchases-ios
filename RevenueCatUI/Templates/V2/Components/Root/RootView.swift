@@ -132,7 +132,7 @@ struct RootView: View {
             } else {
                 // Reset package selection when sheet is dismissed; snapshot sheet name before clear for analytics.
                 let selectionInSheetContext = self.packageContext.package
-                self.packageContext.package = self.workflowPackageContext?.selectedPackage ?? self.defaultPackage
+                self.packageContext.package = self.defaultPackage
                 let resultingRootPackage = self.packageContext.package
                 let sheetName = self.packageSelectionSheetComponentName
                 self.packageSelectionSheetComponentName = nil

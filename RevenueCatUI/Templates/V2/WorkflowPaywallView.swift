@@ -283,6 +283,8 @@ struct WorkflowPaywallView: View {
         case .dismissWorkflow:
             self.onDismiss()
         case .navigateBack:
+            self.currentSelectedPackage = nil
+
             guard let previousStep = self.navigator.navigateBack() else {
                 return
             }
