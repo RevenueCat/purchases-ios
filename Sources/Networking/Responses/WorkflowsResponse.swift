@@ -82,6 +82,7 @@ import Foundation
     @DefaultDecodable.EmptyDictionary
     var config: [String: AnyDecodable]
     public let offeringIdentifier: String?
+    public let exitOffers: ExitOffers?
 
 }
 
@@ -157,6 +158,7 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
         case defaultLocale
         case config
         case offeringIdentifier
+        case exitOffers
     }
 
 }
