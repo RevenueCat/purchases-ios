@@ -47,8 +47,9 @@
 
  OUTPUT
  ------
- JSON file written to /tmp/ (and ~/Desktop/ when the host home directory is discoverable):
-   paywall-tree-<offering-id>-<timestamp>.json
+ Two files written to /tmp/ (and ~/Desktop/ when the host home directory is discoverable):
+   paywall-tree-<offering-id>-<timestamp>.json  — flat component dictionary (PaywallLayoutTree)
+   paywall-tree-<offering-id>-<timestamp>.png   — full-app screenshot at capture time
 
  The JSON conforms to the PaywallLayoutTree schema at:
    https://revenuecat.com/schemas/paywall-layout-tree.json
@@ -64,7 +65,7 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
 
     // MARK: - Schema version
 
-    private static let extractorVersion = "2.1.0"
+    private static let extractorVersion = "2.2.0"
 
     // MARK: - Test
 
@@ -77,6 +78,9 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
             app.launchEnvironment["REVENUECAT_API_KEY"] = apiKey
             app.launchEnvironment["OFFERING_ID"] = paywallId
         }
+        // Suppress web-checkout URL opens so the paywall stays on screen for the screenshot.
+        // PaywallPresenter injects a no-op openURL action when this flag is set.
+        app.launchEnvironment["SCREENSHOT_MODE"] = "1"
         app.launch()
 
         if apiKey != nil {
@@ -85,8 +89,14 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
             try navigateToExamplesPaywall(in: app, id: paywallId)
         }
 
-        // Let SwiftUI layout settle
+        // Let SwiftUI layout and sheet animation fully settle.
+        // Web-checkout URL opens are suppressed via SCREENSHOT_MODE=1 (see PaywallPresenter),
+        // so the paywall remains on screen for the full duration of this sleep.
         Thread.sleep(forTimeInterval: 2)
+
+        // Capture the screenshot while the paywall is fully rendered and on screen.
+        let screenshot = app.screenshot()
+        let pngData = screenshot.pngRepresentation
 
         // Take the full app snapshot for metadata (viewport).
         let appSnapshot = try app.snapshot()
@@ -137,38 +147,50 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let jsonData = try encoder.encode(tree)
 
-        // Build filename
+        // Build filename stem (shared by .json and .png)
         let safe = paywallId
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: " ", with: "_")
         let timestamp = ISO8601DateFormatter().string(from: Date())
             .replacingOccurrences(of: ":", with: "-")
-        let filename = "paywall-tree-\(safe)-\(timestamp).json"
+        let stem = "paywall-tree-\(safe)-\(timestamp)"
+        let jsonFilename = "\(stem).json"
+        let pngFilename = "\(stem).png"
 
-        // Write to /tmp/ (accessible from both simulator and host)
-        let tmpURL = URL(fileURLWithPath: "/tmp").appendingPathComponent(filename)
+        // Write JSON to /tmp/ (accessible from both simulator and host)
+        let tmpURL = URL(fileURLWithPath: "/tmp").appendingPathComponent(jsonFilename)
         try jsonData.write(to: tmpURL)
 
-        // Attempt host Desktop copy when the host home is discoverable
+        // Write PNG to /tmp/
+        let tmpPNGURL = URL(fileURLWithPath: "/tmp").appendingPathComponent(pngFilename)
+        try pngData.write(to: tmpPNGURL)
+
+        // Attempt host Desktop copies when the host home is discoverable
         let hostHomeEnv = ProcessInfo.processInfo.environment["SIMULATOR_HOST_HOME"]
             ?? ProcessInfo.processInfo.environment["HOME"]
         if let hostHome = hostHomeEnv, !hostHome.contains("CoreSimulator") {
-            let desktopURL = URL(fileURLWithPath: hostHome)
-                .appendingPathComponent("Desktop")
-                .appendingPathComponent(filename)
-            try? jsonData.write(to: desktopURL)
-            print("  Desktop copy: \(desktopURL.path)")
+            let desktopDir = URL(fileURLWithPath: hostHome).appendingPathComponent("Desktop")
+            try? jsonData.write(to: desktopDir.appendingPathComponent(jsonFilename))
+            try? pngData.write(to: desktopDir.appendingPathComponent(pngFilename))
+            print("  Desktop copy: \(desktopDir.appendingPathComponent(jsonFilename).path)")
+            print("  Desktop copy: \(desktopDir.appendingPathComponent(pngFilename).path)")
         }
 
-        // Always attach to the .xcresult bundle — extractable via `xcrun xcresulttool`
-        let attachment = XCTAttachment(data: jsonData, uniformTypeIdentifier: "public.json")
-        attachment.name = filename
-        attachment.lifetime = XCTAttachment.Lifetime.keepAlways
-        add(attachment)
+        // Always attach both files to the .xcresult bundle — extractable via `xcrun xcresulttool`
+        let jsonAttachment = XCTAttachment(data: jsonData, uniformTypeIdentifier: "public.json")
+        jsonAttachment.name = jsonFilename
+        jsonAttachment.lifetime = XCTAttachment.Lifetime.keepAlways
+        add(jsonAttachment)
+
+        let pngAttachment = XCTAttachment(data: pngData, uniformTypeIdentifier: "public.png")
+        pngAttachment.name = pngFilename
+        pngAttachment.lifetime = XCTAttachment.Lifetime.keepAlways
+        add(pngAttachment)
 
         print("────────────────────────────────────────")
         print("Accessibility tree written to:")
-        print("  /tmp/\(filename)")
+        print("  /tmp/\(jsonFilename)")
+        print("  /tmp/\(pngFilename)")
         print("────────────────────────────────────────")
     }
 
@@ -200,7 +222,6 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
 
         // Primary path: the app auto-opens the paywall sheet via fetchOfferings().
         if paywallElement.waitForExistence(timeout: Self.offeringsLoadTimeout) {
-            Thread.sleep(forTimeInterval: 2)
             return
         }
 
@@ -219,9 +240,6 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
             paywallElement.waitForExistence(timeout: Self.paywallLoadTimeout),
             "Paywall for '\(id)' did not appear within \(Self.paywallLoadTimeout)s after tap"
         )
-
-        // Let layout and animations settle.
-        Thread.sleep(forTimeInterval: 2)
     }
 
     /// Opens a paywall from the "Examples" tab (V1 templates, no API key required).
@@ -243,8 +261,6 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         } else if anyModeButton.waitForExistence(timeout: 5) {
             anyModeButton.tap()
         }
-
-        Thread.sleep(forTimeInterval: 2)
     }
 
     // MARK: - Screen scale
@@ -316,16 +332,39 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         var idCounts: [String: Int] = [:]
         for (id, _) in pairs { idCounts[id, default: 0] += 1 }
 
+        // For IDs that appear more than once, sort their occurrences spatially
+        // (top-to-bottom, then left-to-right) so the _0/_1/… suffix assignment
+        // is determined by on-screen position rather than DFS traversal order.
+        // This makes the numbering stable across platforms that walk the tree in
+        // different orders (iOS DFS vs. Android BFS).
+        var groupedByDuplicateId: [String: [(snapshot: any XCUIElementSnapshot, dfsIndex: Int)]] = [:]
+        for (dfsIndex, (id, snapshot)) in pairs.enumerated() {
+            if idCounts[id]! > 1 {
+                groupedByDuplicateId[id, default: []].append((snapshot, dfsIndex))
+            }
+        }
+
+        // Build a map from dfsIndex → spatially-stable suffix index for duplicate IDs.
+        var spatialSuffixIndex: [Int: Int] = [:]
+        for (_, occurrences) in groupedByDuplicateId {
+            let sorted = occurrences.sorted {
+                let a = $0.snapshot.frame, b = $1.snapshot.frame
+                if abs(a.minY - b.minY) > 1 { return a.minY < b.minY }
+                return a.minX < b.minX
+            }
+            for (suffixIdx, item) in sorted.enumerated() {
+                spatialSuffixIndex[item.dfsIndex] = suffixIdx
+            }
+        }
+
         // Assign dictionary keys, adding numeric suffixes for duplicates.
-        var idIndices: [String: Int] = [:]
         var result: [String: PaywallLayoutTree.Component] = [:]
 
-        for (id, snapshot) in pairs {
+        for (dfsIndex, (id, snapshot)) in pairs.enumerated() {
             let key: String
             if idCounts[id]! > 1 {
-                let idx = idIndices[id, default: 0]
+                let idx = spatialSuffixIndex[dfsIndex, default: 0]
                 key = "\(id)_\(idx)"
-                idIndices[id] = idx + 1
             } else {
                 key = id
             }
@@ -338,12 +377,15 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
                 height: Double(cgFrame.size.height)
             )
 
-            // Skip UIKit scaffolding elements that live outside the paywall's coordinate space.
-            // These can be navigation-bar or status-bar artefacts with a negative translated y
-            // (above the paywall root), or zero-dimension invisible placeholders.
+            // Skip zero-dimension invisible placeholders (UIKit layout artefacts).
             // Note: check width OR height being zero (not both) — some artefacts have nonzero
-            // width but zero height (e.g. YNbDUWF20g: 402×0).
-            if frame.y < -10 || frame.width == 0 || frame.height == 0 {
+            // width but zero height (e.g. 402×0 nav-bar remnants).
+            //
+            // We intentionally do NOT filter on negative-y frames here. Paywall overlay
+            // components (header images, close buttons) are rendered above the paywall
+            // content root in the safe-area region; their root-relative y is legitimately
+            // negative. The old `frame.y < -10` guard was incorrectly removing them.
+            if frame.width == 0 || frame.height == 0 {
                 continue
             }
 
