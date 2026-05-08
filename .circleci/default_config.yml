@@ -1887,7 +1887,6 @@ jobs:
           name: Fetch paywall-preview-resources
           command: bundle exec fastlane ios fetch_paywall_preview_resources
       - tuist-generate-workspace:
-          query: "PaywallScreenshotTests"
           include_test_dependencies: true
       - run:
           name: Clone paywall-rendering-validation repository
