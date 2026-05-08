@@ -31,7 +31,7 @@ This sample uses **Google Mobile Ads SDK v13** Swift API (no `GAD` prefix):
 
 - `Sources/App.swift` - initializes `GoogleMobileAds.MobileAds` and `Purchases`
 - `Sources/HomeView.swift` - UI for loading/showing each ad format and status
-- `Sources/*AdManager.swift` - one focused manager per ad format integration path
+- `Sources/AdManagers/*AdManager.swift` - one focused manager per ad format integration path
 - `Sources/Constants.swift` - RevenueCat API key
 
 ---
@@ -74,7 +74,7 @@ This sample uses RevenueCatAdMob APIs exposed as experimental Swift SPI (`@_spi(
 
 1. Open `Sources/Constants.swift`.
 2. Replace `YOUR_REVENUECAT_API_KEY` with your real RevenueCat API key.
-3. Keep the default AdMob test ad unit IDs in each `*AdManager.swift` file for local testing.
+3. Keep the default AdMob test ad unit IDs in each `Sources/AdManagers/*AdManager.swift` file for local testing.
 
 ### 3. Build and run
 
@@ -168,7 +168,7 @@ These are official Google test IDs and are safe for development.
 Native and native video test IDs can be less reliable than other formats depending on environment. For more reliable native testing:
 
 1. Create ad units in your [AdMob account](https://admob.google.com/)
-2. Replace test IDs in the relevant `*AdManager.swift` file
+2. Replace test IDs in the relevant `Sources/AdManagers/*AdManager.swift` file
 3. Configure your device as a test device in AdMob
 4. Keep test mode enabled during validation
 

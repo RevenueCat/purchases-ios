@@ -27,14 +27,14 @@
 		90DB26D92F6DA55D006859ED /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		90DB26DA2F6DA55D006859ED /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		90DB26E32F6DA862006859ED /* AdMobIntegrationSample-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "AdMobIntegrationSample-Info.plist"; sourceTree = "<group>"; };
-		90DB270B2F6DB001006859ED /* RewardVerificationResultMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationResultMessage.swift; sourceTree = "<group>"; };
-		90DB270C2F6DB001006859ED /* BannerAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerAdManager.swift; sourceTree = "<group>"; };
-		90DB270D2F6DB001006859ED /* InterstitialAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterstitialAdManager.swift; sourceTree = "<group>"; };
-		90DB270E2F6DB001006859ED /* AppOpenAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppOpenAdManager.swift; sourceTree = "<group>"; };
-		90DB270F2F6DB001006859ED /* RewardedAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardedAdManager.swift; sourceTree = "<group>"; };
-		90DB27102F6DB001006859ED /* RewardedInterstitialAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardedInterstitialAdManager.swift; sourceTree = "<group>"; };
-		90DB27112F6DB001006859ED /* NativeAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAdManager.swift; sourceTree = "<group>"; };
-		90DB27122F6DB001006859ED /* ErrorTestingAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorTestingAdManager.swift; sourceTree = "<group>"; };
+		90DB270B2F6DB001006859ED /* RewardVerificationResultMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/Support/RewardVerificationResultMessage.swift; sourceTree = "<group>"; };
+		90DB270C2F6DB001006859ED /* BannerAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/BannerAdManager.swift; sourceTree = "<group>"; };
+		90DB270D2F6DB001006859ED /* InterstitialAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/InterstitialAdManager.swift; sourceTree = "<group>"; };
+		90DB270E2F6DB001006859ED /* AppOpenAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/AppOpenAdManager.swift; sourceTree = "<group>"; };
+		90DB270F2F6DB001006859ED /* RewardedAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/RewardedAdManager.swift; sourceTree = "<group>"; };
+		90DB27102F6DB001006859ED /* RewardedInterstitialAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/RewardedInterstitialAdManager.swift; sourceTree = "<group>"; };
+		90DB27112F6DB001006859ED /* NativeAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/NativeAdManager.swift; sourceTree = "<group>"; };
+		90DB27122F6DB001006859ED /* ErrorTestingAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/ErrorTestingAdManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
