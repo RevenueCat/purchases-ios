@@ -85,8 +85,8 @@ struct HomeView: View {
 private enum AdFormat: String, CaseIterable, Identifiable {
 
     case banner
-    case interstitial
     case appOpen
+    case interstitial
     case rewarded
     case rewardedInterstitial
     case native
