@@ -130,7 +130,7 @@ public struct TestStoreProduct {
         introductoryDiscount: TestStoreProductDiscount? = nil,
         discounts: [TestStoreProductDiscount] = [],
         locale: Locale,
-        installmentsInfo: InstallmentsInfo? = nil,
+        installmentsInfo: InstallmentsInfo? = nil
     ) {
         self.localizedTitle = localizedTitle
         self.price = price

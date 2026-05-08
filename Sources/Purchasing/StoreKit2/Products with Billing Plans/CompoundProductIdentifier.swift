@@ -22,8 +22,8 @@ import StoreKit
 /// product, such as monthly and up-front billing plans.
 ///
 /// SDK-facing compound product identifier strings use the format `{productIdentifier}` for products without specifying
-/// a particular billing plan, and `{productIdentifier}:{productPlanIdentifier}` for products with a given plan. For example,
-/// `com.revenuecat.subscription` identifies the StoreKit product itself, while
+/// a particular billing plan, and `{productIdentifier}:{productPlanIdentifier}` for products with a given plan.
+/// For example, `com.revenuecat.subscription` identifies the StoreKit product itself, while
 /// `com.revenuecat.subscription:monthly` identifies that StoreKit product with the `monthly` product plan.
 internal struct CompoundProductIdentifier: Hashable {
 

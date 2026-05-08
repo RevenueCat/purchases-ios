@@ -124,7 +124,9 @@ class ProductsManager: NSObject, ProductsManagerType {
         // Billing plans were introduced with Xcode 26.5, which shipped with Swift version 6.3.2.
         #if compiler(>=6.3.2)
         if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
-            let requestedIdentifiersWithPlanIdentifiers = requestedIdentifiers.filter { $0.productPlanIdentifier != nil }
+            let requestedIdentifiersWithPlanIdentifiers = requestedIdentifiers.filter {
+                $0.productPlanIdentifier != nil
+            }
             guard !requestedIdentifiersWithPlanIdentifiers.isEmpty else {
                 return products
             }

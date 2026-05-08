@@ -148,7 +148,8 @@ private extension SK2StoreProduct {
 extension SK2StoreProduct: Hashable {
 
     static func == (lhs: SK2StoreProduct, rhs: SK2StoreProduct) -> Bool {
-        return (lhs.productIdentifier == rhs.productIdentifier) && (lhs.underlyingSK2Product == rhs.underlyingSK2Product)
+        return (lhs.productIdentifier == rhs.productIdentifier)
+            && (lhs.underlyingSK2Product == rhs.underlyingSK2Product)
     }
 
     func hash(into hasher: inout Hasher) {
