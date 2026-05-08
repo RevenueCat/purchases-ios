@@ -104,6 +104,7 @@ extension CompoundProductIdentifier {
 }
 
 // MARK: - StoreKit Mappings
+#if compiler(>=6.3.2)   // Billing plans were introduced in Xcode 26.5
 extension CompoundProductIdentifier {
     /// The StoreKit 2 billing plan type represented by ``productPlanIdentifier``.
     ///
@@ -125,3 +126,4 @@ extension CompoundProductIdentifier {
         }
     }
 }
+#endif
