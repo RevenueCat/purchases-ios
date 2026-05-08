@@ -58,6 +58,7 @@ final class VerifiedRewardedInterstitialAdManager: NSObject, ObservableObject {
             from: viewController,
             placement: "rewarded_interstitial_reward_verification_main",
             rewardVerificationStarted: { [weak self] in
+                self?.isWaitingForReward = false
                 self?.message = Messages.Rewarded.verifyingReward
                 print("⏳ Rewarded interstitial verification started")
             },
