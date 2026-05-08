@@ -10,14 +10,17 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
     @Published var message = Messages.notLoaded
 
     var canShow: Bool { self.rewardedAd != nil }
+    private var isWaitingForReward = false
 
     func resetSelection() {
         self.rewardedAd = nil
+        self.isWaitingForReward = false
         self.message = Messages.notLoaded
     }
 
     func loadAd() {
         self.message = Messages.Rewarded.loading
+        self.isWaitingForReward = false
 
         RewardedAd.loadAndTrack(
             withAdUnitID: Self.adUnitID,
@@ -49,6 +52,7 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
             return
         }
 
+        self.isWaitingForReward = true
         self.message = Messages.Rewarded.waitingForReward
         loadedAd.present(
             from: viewController,
@@ -58,6 +62,7 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
                 print("⏳ Rewarded verification started")
             },
             rewardVerificationResult: { [weak self] result in
+                self?.isWaitingForReward = false
                 self?.message = Messages.verificationResultMessage(for: result)
                 print("✅ Rewarded verification finished: \(String(describing: result.verifiedReward))")
             }
@@ -70,8 +75,9 @@ extension VerifiedRewardedAdManager: FullScreenContentDelegate {
     func adDidDismissFullScreenContent(_ adObject: any FullScreenPresentingAd) {
         var dismissedBeforeReward = false
 
-        if self.message == Messages.Rewarded.waitingForReward {
+        if self.isWaitingForReward {
             self.message = Messages.Rewarded.dismissedBeforeReward
+            self.isWaitingForReward = false
             dismissedBeforeReward = true
         }
 
