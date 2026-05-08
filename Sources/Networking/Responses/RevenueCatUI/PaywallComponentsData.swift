@@ -112,6 +112,9 @@ import Foundation
     /// Exit offers configuration for this paywall.
     public var exitOffers: ExitOffers?
 
+    /// When `false`, paywall text will not respect Dynamic Type and would use fixed sizing. Otherwise it will scale.
+    public var automaticallyScaleFontSize: Bool
+
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
 
@@ -127,6 +130,7 @@ import Foundation
         case _revision = "revision"
         case zeroDecimalPlaceCountries
         case exitOffers
+        case automaticallyScaleFontSize = "automatically_scale_font_size"
     }
 
     public init(id: String? = nil,
@@ -137,7 +141,8 @@ import Foundation
                 revision: Int,
                 defaultLocaleIdentifier: String,
                 zeroDecimalPlaceCountries: [String] = [],
-                exitOffers: ExitOffers? = nil) {
+                exitOffers: ExitOffers? = nil,
+                automaticallyScaleFontSize: Bool = true) {
         self.id = id
         self.templateName = templateName
         self.assetBaseURL = assetBaseURL
@@ -147,6 +152,7 @@ import Foundation
         self.defaultLocale = defaultLocaleIdentifier
         self.zeroDecimalPlaceCountries = zeroDecimalPlaceCountries
         self.exitOffers = exitOffers
+        self.automaticallyScaleFontSize = automaticallyScaleFontSize
     }
 
 }
@@ -212,6 +218,10 @@ import Foundation
 
         exitOffers = try container.decodeIfPresent(ExitOffers.self, forKey: .exitOffers)
 
+        let shouldScale = try container.decodeIfPresent(Bool.self, forKey: .automaticallyScaleFontSize)
+        // default behavior should respect the dynamic type settings unless explicitly disabled
+        automaticallyScaleFontSize = shouldScale ?? true
+
         // Decode zeroDecimalPlaceCountries from the nested structure { "apple": [...] }
         if let zeroDecimalData = try container.decodeIfPresent(
             PaywallData.ZeroDecimalPlaceCountries.self,
@@ -243,6 +253,7 @@ import Foundation
             forKey: .zeroDecimalPlaceCountries
         )
         try container.encodeIfPresent(exitOffers, forKey: .exitOffers)
+        try container.encode(automaticallyScaleFontSize, forKey: .automaticallyScaleFontSize)
     }
 
 }

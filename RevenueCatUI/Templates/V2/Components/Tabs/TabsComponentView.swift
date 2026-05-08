@@ -66,6 +66,9 @@ struct TabsComponentView: View {
     @EnvironmentObject
     private var packageContext: PackageContext
 
+    @Environment(\.workflowPackageContext)
+    private var workflowPackageContext
+
     private let viewModel: TabsComponentViewModel
     private let onDismiss: () -> Void
 
@@ -78,6 +81,7 @@ struct TabsComponentView: View {
         LoadedTabsComponentView(
             viewModel: self.viewModel,
             parentPackageContext: self.packageContext,
+            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage,
             onDismiss: self.onDismiss
         )
     }
@@ -110,6 +114,7 @@ struct LoadedTabsComponentView: View {
     private var selectedPackageId
 
     private let viewModel: TabsComponentViewModel
+    private let workflowDefaultPackage: Package?
     private let onDismiss: () -> Void
 
     @StateObject
@@ -164,9 +169,11 @@ struct LoadedTabsComponentView: View {
     /// an external instance to drive tab switches programmatically without UI interaction.
     init(viewModel: TabsComponentViewModel,
          parentPackageContext: PackageContext,
+         workflowDefaultPackage: Package? = nil,
          onDismiss: @escaping () -> Void,
          tabControlContext: TabControlContext? = nil) {
         self.viewModel = viewModel
+        self.workflowDefaultPackage = workflowDefaultPackage
         self.onDismiss = onDismiss
 
         self._tabControlContext = .init(wrappedValue: tabControlContext ?? TabControlContext(
@@ -203,7 +210,7 @@ struct LoadedTabsComponentView: View {
                 if !tabViewModel.packages.isEmpty {
                     // Tab has its own packages - create context with tab's packages
                     let packageContext = PackageContext(
-                        package: tabViewModel.defaultSelectedPackage,
+                        package: workflowDefaultPackage ?? tabViewModel.defaultSelectedPackage,
                         variableContext: .init(
                             packages: tabViewModel.packages,
                             showZeroDecimalPlacePrices: parentPackageContext.variableContext.showZeroDecimalPlacePrices
@@ -251,7 +258,10 @@ struct LoadedTabsComponentView: View {
             )
             .environmentObject(self.tabControlContext)
             .environmentObject(tierPackageContext)
-            .environment(\.planSelectionDefaultPackage, activeTabViewModel.defaultSelectedPackage)
+            .environment(
+                \.planSelectionDefaultPackage,
+                self.workflowDefaultPackage ?? activeTabViewModel.defaultSelectedPackage
+            )
             .onAppear {
                 if !wasConfigured {
                     self.wasConfigured = true
@@ -287,7 +297,7 @@ struct LoadedTabsComponentView: View {
                     parentOwnedVariableContext: self.parentOwnedVariableContext,
                     parentCurrentVariableContext: self.packageContext.variableContext,
                     tabPackages: newTabViewModel.packages,
-                    tabDefaultPackage: newTabViewModel.defaultSelectedPackage
+                    tabDefaultPackage: self.workflowDefaultPackage ?? newTabViewModel.defaultSelectedPackage
                 )
                 if let tabUpdate = updatePlan.tabUpdate {
                     newTierPackageContext.update(
