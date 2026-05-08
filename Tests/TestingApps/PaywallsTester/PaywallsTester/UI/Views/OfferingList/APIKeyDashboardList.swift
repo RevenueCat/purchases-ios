@@ -157,7 +157,13 @@ struct APIKeyDashboardList: View {
             if let targetId = ProcessInfo.processInfo.environment["OFFERING_ID"],
                let match = offerings.first(where: { $0.id == targetId }) {
                 self.isLoadingPaywall = true
-                self.presentedPaywall = .init(offering: match, mode: .sheet)
+                // In SCREENSHOT_MODE the extractor captures a full-screen render so the
+                // component frames match the web extractor baseline (no sheet chrome).
+                if ProcessInfo.processInfo.environment["SCREENSHOT_MODE"] == "1" {
+                    self.presentedPaywallCover = .init(offering: match, mode: .fullScreen)
+                } else {
+                    self.presentedPaywall = .init(offering: match, mode: .sheet)
+                }
             }
         } catch let error as NSError {
             self.offerings = .failure(error)
