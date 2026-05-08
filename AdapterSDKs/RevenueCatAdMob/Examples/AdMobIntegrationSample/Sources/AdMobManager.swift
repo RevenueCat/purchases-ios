@@ -399,8 +399,7 @@ extension AdMobManager: FullScreenContentDelegate {
                 isWaitingForRewardedReward = false
             } else if rewardedLoadMode == .withRewardVerification,
                       rewardedVerificationResult == "⏳ Waiting for reward..." {
-                // After dismiss in verification mode, backend polling is still expected.
-                rewardedVerificationResult = "⏳ Verifying reward..."
+                rewardedVerificationResult = "⚠️ Ad dismissed before reward was earned"
             }
             rewardedAd = nil
             rewardedStatus = "Not Loaded"
@@ -410,8 +409,7 @@ extension AdMobManager: FullScreenContentDelegate {
                 isWaitingForRewardedInterstitialReward = false
             } else if rewardedInterstitialLoadMode == .withRewardVerification,
                       rewardedInterstitialVerificationResult == "⏳ Waiting for reward..." {
-                // After dismiss in verification mode, backend polling is still expected.
-                rewardedInterstitialVerificationResult = "⏳ Verifying reward..."
+                rewardedInterstitialVerificationResult = "⚠️ Ad dismissed before reward was earned"
             }
             rewardedInterstitialAd = nil
             rewardedInterstitialStatus = "Not Loaded"

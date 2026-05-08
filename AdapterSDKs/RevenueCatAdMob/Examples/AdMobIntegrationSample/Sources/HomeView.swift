@@ -288,31 +288,51 @@ private struct AdFormatDetailView: View {
     private func resultCard(message: String) -> some View {
         let tint = self.resultTint(for: message)
 
-        return Group {
+        return VStack(alignment: .leading, spacing: 10) {
             if self.shouldAnimateEllipsis(message: message) {
                 TimelineView(.periodic(from: .now, by: 0.45)) { context in
                     Text(self.animatedEllipsisMessage(for: message, at: context.date))
-                        .lineSpacing(3)
-                        .multilineTextAlignment(.leading)
+                        .font(.body)
+                        .foregroundColor(.primary)
                 }
+            } else if let emphasis = self.emphasizedTwoLineMessage(for: message) {
+                Text(emphasis.firstLine)
+                    .font(.body)
+                    .foregroundColor(.primary)
+
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text("\(emphasis.secondLabel):")
+                        .font(.body)
+                        .foregroundColor(.primary)
+
+                    Text(emphasis.secondValue)
+                        .font(.headline.weight(.semibold))
+                        .foregroundColor(.primary)
+                }
+            } else if let twoLine = self.simpleTwoLineMessage(for: message) {
+                Text(twoLine.firstLine)
+                    .font(.body)
+                    .foregroundColor(.primary)
+
+                Text(twoLine.secondLine)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.primary)
             } else {
                 Text(message)
-                    .lineSpacing(3)
-                    .multilineTextAlignment(.leading)
+                    .font(.body)
+                    .foregroundColor(.primary)
             }
         }
-            .font(.body)
-            .foregroundColor(.primary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(14)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(tint.opacity(0.12))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(tint.opacity(0.35), lineWidth: 1)
-            )
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(tint.opacity(0.12))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(tint.opacity(0.35), lineWidth: 1)
+        )
     }
 
     private func shouldAnimateEllipsis(message: String) -> Bool {
@@ -325,6 +345,28 @@ private struct AdFormatDetailView: View {
         let base = String(message.dropLast(3))
         let dots = Int(date.timeIntervalSinceReferenceDate * 2).quotientAndRemainder(dividingBy: 3).remainder + 1
         return base + String(repeating: ".", count: dots)
+    }
+
+    private func emphasizedTwoLineMessage(
+        for message: String
+    ) -> (firstLine: String, secondLabel: String, secondValue: String)? {
+        let lines = message.components(separatedBy: .newlines).filter { !$0.isEmpty }
+        guard lines.count == 2 else { return nil }
+        guard let separatorIndex = lines[1].firstIndex(of: ":") else { return nil }
+
+        let label = String(lines[1][..<separatorIndex]).trimmingCharacters(in: .whitespaces)
+        let value = String(lines[1][lines[1].index(after: separatorIndex)...]).trimmingCharacters(in: .whitespaces)
+        guard !label.isEmpty, !value.isEmpty else { return nil }
+
+        return (lines[0], label, value)
+    }
+
+    private func simpleTwoLineMessage(for message: String) -> (firstLine: String, secondLine: String)? {
+        let lines = message.components(separatedBy: .newlines).filter { !$0.isEmpty }
+        guard lines.count == 2 else { return nil }
+        guard self.emphasizedTwoLineMessage(for: message) == nil else { return nil }
+
+        return (lines[0], lines[1])
     }
 
     @ViewBuilder
