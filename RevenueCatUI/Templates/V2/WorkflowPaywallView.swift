@@ -148,6 +148,10 @@ struct WorkflowPackageCarryForwardState {
         self.selectedPackagesByStepID[stepID] = package
     }
 
+    mutating func recordInitialSelection(_ package: Package, for stepID: String) {
+        self.selectedPackagesByStepID[stepID] = self.selectedPackagesByStepID[stepID] ?? package
+    }
+
     mutating func clearForBackNavigation(from stepID: String?) {
         guard let stepID else {
             return
@@ -277,6 +281,7 @@ struct WorkflowPaywallView: View {
             workflowDefaultPackage: self.workflowPackageContext?.selectedPackage,
             workflowPackages: self.workflowPackageContext?.packages,
             workflowContextPackage: page.contextPackage,
+            recordWorkflowInitialSelection: page.shouldRecordInitialPackageSelection,
             displayCloseButton: page.showCloseButton,
             onDismiss: self.handleDismiss,
             failedToLoadFont: self.failedToLoadFont,
@@ -286,6 +291,9 @@ struct WorkflowPaywallView: View {
         .environment(\.workflowPackageContext, self.workflowPackageContext)
         .environment(\.workflowOnPackageSelected, { package in
             self.packageCarryForwardState.recordSelection(package, for: page.stepID)
+        })
+        .environment(\.workflowOnInitialPackageResolved, { package in
+            self.packageCarryForwardState.recordInitialSelection(package, for: page.stepID)
         })
         .environment(\.workflowTriggerAction, { componentId in
             return self.handleTriggeredNavigation(componentId: componentId)
@@ -321,7 +329,8 @@ struct WorkflowPaywallView: View {
                     from: self.context,
                     stepId: previousStep.id,
                     canNavigateBack: self.navigator.canNavigateBack,
-                    displayCloseButton: self.displayCloseButton
+                    displayCloseButton: self.displayCloseButton,
+                    shouldRecordInitialPackageSelection: false
                 ),
                 direction: .back
             )
@@ -356,7 +365,8 @@ struct WorkflowPaywallView: View {
                 displayCloseButton: self.displayCloseButton,
                 contextPackage: self.packageCarryForwardState.contextPackageForForwardNavigation(
                     from: self.transitionState.currentPage?.stepID
-                )
+                ),
+                shouldRecordInitialPackageSelection: true
             ),
             direction: .forward
         )
@@ -417,7 +427,8 @@ struct WorkflowPaywallView: View {
         stepId: String,
         canNavigateBack: Bool,
         displayCloseButton: Bool,
-        contextPackage: Package? = nil
+        contextPackage: Package? = nil,
+        shouldRecordInitialPackageSelection: Bool = false
     ) -> RenderedPage? {
         guard let step = context.workflow.steps[stepId],
               let screenId = step.screenId,
@@ -435,7 +446,8 @@ struct WorkflowPaywallView: View {
             stepID: stepId,
             content: .init(paywallComponents: paywallComponents, offering: offering),
             showCloseButton: !canNavigateBack && displayCloseButton,
-            contextPackage: contextPackage
+            contextPackage: contextPackage,
+            shouldRecordInitialPackageSelection: shouldRecordInitialPackageSelection
         )
     }
 
@@ -462,6 +474,7 @@ private struct RenderedPage: Identifiable {
     let content: CurrentStepContent
     let showCloseButton: Bool
     let contextPackage: Package?
+    let shouldRecordInitialPackageSelection: Bool
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

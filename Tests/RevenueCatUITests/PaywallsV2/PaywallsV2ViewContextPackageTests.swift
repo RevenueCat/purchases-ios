@@ -123,6 +123,38 @@ final class PaywallsV2ViewContextPackageTests: TestCase {
         expect(result?.identifier) == TestData.annualPackage.identifier
     }
 
+    // MARK: - initialPackageToRecordForWorkflow
+
+    func testInitialPackageToRecordForWorkflowReturnsResolvedDefaultOnForwardStep() {
+        let result = PaywallsV2View.initialPackageToRecordForWorkflow(
+            defaultPackage: TestData.annualPackage,
+            shouldRecordInitialPackageSelection: true,
+            hasRecordedInitialPackageSelection: false
+        )
+
+        expect(result?.identifier) == TestData.annualPackage.identifier
+    }
+
+    func testInitialPackageToRecordForWorkflowReturnsNilWhenForwardRecordingIsDisabled() {
+        let result = PaywallsV2View.initialPackageToRecordForWorkflow(
+            defaultPackage: TestData.annualPackage,
+            shouldRecordInitialPackageSelection: false,
+            hasRecordedInitialPackageSelection: false
+        )
+
+        expect(result).to(beNil())
+    }
+
+    func testInitialPackageToRecordForWorkflowReturnsNilAfterInitialSelectionWasRecorded() {
+        let result = PaywallsV2View.initialPackageToRecordForWorkflow(
+            defaultPackage: TestData.annualPackage,
+            shouldRecordInitialPackageSelection: true,
+            hasRecordedInitialPackageSelection: true
+        )
+
+        expect(result).to(beNil())
+    }
+
     // MARK: - validatedContextPackage
 
     func testValidatedContextPackageReturnsPackageWhenFoundInOffering() {

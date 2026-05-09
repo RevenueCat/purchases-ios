@@ -57,6 +57,11 @@ private struct WorkflowOnPackageSelectedKey: EnvironmentKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct WorkflowOnInitialPackageResolvedKey: EnvironmentKey {
+    static let defaultValue: ((Package) -> Void)? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension EnvironmentValues {
     /// Called when a button with a component `id` is tapped inside a workflow paywall.
     /// Returns `true` if the workflow consumed the trigger (navigator found a matching step),
@@ -86,6 +91,14 @@ extension EnvironmentValues {
     var workflowOnPackageSelected: ((Package) -> Void)? {
         get { self[WorkflowOnPackageSelectedKey.self] }
         set { self[WorkflowOnPackageSelectedKey.self] = newValue }
+    }
+
+    /// Called by `PaywallsV2View` when a forward-rendered workflow step resolves its
+    /// initial package so `WorkflowPaywallView` can carry it into the next step even
+    /// if the user proceeds without explicitly re-selecting.
+    var workflowOnInitialPackageResolved: ((Package) -> Void)? {
+        get { self[WorkflowOnInitialPackageResolvedKey.self] }
+        set { self[WorkflowOnInitialPackageResolvedKey.self] = newValue }
     }
 }
 

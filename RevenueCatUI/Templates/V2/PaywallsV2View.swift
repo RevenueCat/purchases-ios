@@ -54,6 +54,9 @@ struct PaywallsV2View: View {
     @Environment(\.workflowOnPackageSelected)
     private var workflowOnPackageSelected
 
+    @Environment(\.workflowOnInitialPackageResolved)
+    private var workflowOnInitialPackageResolved
+
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -70,6 +73,7 @@ struct PaywallsV2View: View {
     private let workflowDefaultPackage: Package?
     private let workflowPackages: [Package]?
     private let workflowContextPackage: Package?
+    private let recordWorkflowInitialSelection: Bool
     private let showZeroDecimalPlacePrices: Bool
     /// This is a configuration value from PaywallsV1, but it's important to include here just in case the
     /// default paywall is shown. This is not used in the success path
@@ -80,6 +84,9 @@ struct PaywallsV2View: View {
 
     @State
     private var paywallSessionID: PaywallEvent.SessionID = .init()
+
+    @State
+    private var hasRecordedInitialWorkflowPackageSelection = false
 
     @StateObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
@@ -93,6 +100,7 @@ struct PaywallsV2View: View {
         workflowDefaultPackage: Package? = nil,
         workflowPackages: [Package]? = nil,
         workflowContextPackage: Package? = nil,
+        recordWorkflowInitialSelection: Bool = false,
         displayCloseButton: Bool = false,
         onDismiss: @escaping () -> Void,
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
@@ -113,6 +121,7 @@ struct PaywallsV2View: View {
         self.workflowDefaultPackage = workflowDefaultPackage
         self.workflowPackages = workflowPackages
         self.workflowContextPackage = workflowContextPackage
+        self.recordWorkflowInitialSelection = recordWorkflowInitialSelection
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
@@ -211,6 +220,9 @@ struct PaywallsV2View: View {
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)
+        .onAppear {
+            self.recordInitialWorkflowPackageSelectionIfNeeded(defaultPackage: defaultPackage)
+        }
     }
 
     @ViewBuilder
@@ -346,6 +358,19 @@ struct PaywallsV2View: View {
 
             self.onDismiss()
         }
+    }
+
+    private func recordInitialWorkflowPackageSelectionIfNeeded(defaultPackage: Package?) {
+        guard let package = Self.initialPackageToRecordForWorkflow(
+            defaultPackage: defaultPackage,
+            shouldRecordInitialPackageSelection: self.recordWorkflowInitialSelection,
+            hasRecordedInitialPackageSelection: self.hasRecordedInitialWorkflowPackageSelection
+        ) else {
+            return
+        }
+
+        self.hasRecordedInitialWorkflowPackageSelection = true
+        self.workflowOnInitialPackageResolved?(package)
     }
 
     private func createEventData(forDefaultPaywall: Bool = false) -> PaywallEvent.Data {
@@ -627,6 +652,18 @@ extension PaywallsV2View {
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         )
+    }
+
+    static func initialPackageToRecordForWorkflow(
+        defaultPackage: Package?,
+        shouldRecordInitialPackageSelection: Bool,
+        hasRecordedInitialPackageSelection: Bool
+    ) -> Package? {
+        guard shouldRecordInitialPackageSelection, !hasRecordedInitialPackageSelection else {
+            return nil
+        }
+
+        return defaultPackage
     }
 
     /// Returns `contextPackage` only if its identifier exists in `packages`, otherwise `nil`.

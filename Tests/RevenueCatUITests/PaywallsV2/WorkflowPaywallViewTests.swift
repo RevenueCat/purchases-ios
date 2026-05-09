@@ -154,6 +154,28 @@ final class WorkflowPaywallViewTests: TestCase {
         ) == TestData.annualPackage.identifier
     }
 
+    func testPackageCarryForwardStateCarriesForwardInitialSelectionForUntouchedIntermediateStep() {
+        var state = WorkflowPackageCarryForwardState()
+
+        state.recordSelection(TestData.annualPackage, for: "step_1")
+        state.recordInitialSelection(TestData.annualPackage, for: "step_2")
+
+        expect(
+            state.contextPackageForForwardNavigation(from: "step_2")?.identifier
+        ) == TestData.annualPackage.identifier
+    }
+
+    func testPackageCarryForwardStateDoesNotOverwriteExplicitSelectionWithInitialSelection() {
+        var state = WorkflowPackageCarryForwardState()
+
+        state.recordSelection(TestData.monthlyPackage, for: "step_2")
+        state.recordInitialSelection(TestData.annualPackage, for: "step_2")
+
+        expect(
+            state.contextPackageForForwardNavigation(from: "step_2")?.identifier
+        ) == TestData.monthlyPackage.identifier
+    }
+
     func testPackageCarryForwardStateClearsOnlyAbandonedBackNavigationStep() {
         var state = WorkflowPackageCarryForwardState()
 
