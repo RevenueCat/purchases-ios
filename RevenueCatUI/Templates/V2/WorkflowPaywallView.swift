@@ -131,11 +131,19 @@ private extension WorkflowPageTransitionState.Direction {
 
 }
 
+/// Tracks the user's package selection per workflow step so that it can be carried
+/// forward when navigating to the next step, even if the user proceeds without
+/// re-selecting on an intermediate step.
+///
+/// - Explicit user selections (`recordSelection`) always win over initial resolutions.
+/// - Back navigation clears only the abandoned step's record, preserving earlier steps.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WorkflowPackageCarryForwardState {
 
     private var selectedPackagesByStepID: [String: Package] = [:]
 
+    /// Returns the package to pre-select on the step that follows `stepID`,
+    /// or `nil` if no selection has been recorded for that step.
     func contextPackageForForwardNavigation(from stepID: String?) -> Package? {
         guard let stepID else {
             return nil
@@ -144,14 +152,20 @@ struct WorkflowPackageCarryForwardState {
         return self.selectedPackagesByStepID[stepID]
     }
 
+    /// Records an explicit user selection, overwriting any previous value for `stepID`.
     mutating func recordSelection(_ package: Package, for stepID: String) {
         self.selectedPackagesByStepID[stepID] = package
     }
 
+    /// Records the initial resolved package for `stepID` only if no explicit selection
+    /// exists yet — ensures passive carry-through in 3-step+ workflows without
+    /// overwriting a deliberate user choice.
     mutating func recordInitialSelection(_ package: Package, for stepID: String) {
         self.selectedPackagesByStepID[stepID] = self.selectedPackagesByStepID[stepID] ?? package
     }
 
+    /// Clears the record for the abandoned step on back navigation.
+    /// Earlier steps' selections are unaffected so they can carry forward again.
     mutating func clearForBackNavigation(from stepID: String?) {
         guard let stepID else {
             return

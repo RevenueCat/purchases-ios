@@ -189,6 +189,25 @@ final class WorkflowPaywallViewTests: TestCase {
         ) == TestData.monthlyPackage.identifier
     }
 
+    func testPackageCarryForwardStatePreservesSelectionForReEnteredStep() {
+        // Simulates: user selects Annual on step 1 → forward to step 2 (initial = Annual)
+        // → back to step 1 (step 2 cleared) → forward again.
+        // Step 1's recorded selection must survive the back navigation so the next
+        // forward nav can carry Annual into step 2 again.
+        var state = WorkflowPackageCarryForwardState()
+
+        state.recordSelection(TestData.annualPackage, for: "step_1")
+        state.recordInitialSelection(TestData.annualPackage, for: "step_2")
+        state.clearForBackNavigation(from: "step_2")
+
+        // Step 1 is untouched — still provides Annual as the context for the next forward nav.
+        expect(
+            state.contextPackageForForwardNavigation(from: "step_1")?.identifier
+        ) == TestData.annualPackage.identifier
+        // Step 2 was cleared so it starts fresh on re-entry.
+        expect(state.contextPackageForForwardNavigation(from: "step_2")).to(beNil())
+    }
+
     func testPackageCarryForwardStateReturnsNilWithoutKnownCurrentStep() {
         var state = WorkflowPackageCarryForwardState()
 
@@ -244,6 +263,35 @@ extension WorkflowPaywallViewTests {
             workflowPackages: []
         )
         expect(context.workflowPackageContext).to(beNil())
+    }
+
+    func testWorkflowPackageContextExcludesHiddenPackages() throws {
+        // A package with visible: false must be filtered out of the context even when
+        // it is marked isSelectedByDefault — ensures the context never preselects a
+        // package that the paywall UI hides from the user.
+        let screenJSON = Self.makeScreenJSON(
+            rawPackageComponents: [
+                Self.packageComponentJSON(id: "$rc_monthly", isDefault: false),
+                Self.packageComponentJSON(id: "$rc_annual", isDefault: true, visible: false)
+            ],
+            offeringId: "offering_test"
+        )
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            terminalScreenJSON: screenJSON
+        )
+        // Annual is hidden so monthly is the only visible package and becomes selected.
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_monthly"
+        expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_monthly"]
+    }
+
+    func testWorkflowPackageContextDefaultsVisibleTrueWhenPropertyIsAbsent() throws {
+        // A package with no explicit visible field is treated as visible (visible ?? true).
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            workflowPackages: [(id: "$rc_monthly", isDefault: true)]
+        )
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_monthly"
     }
 
     func testWorkflowPackageContextReturnsDefaultPackageInsideStickyFooter() throws {
@@ -439,13 +487,37 @@ private extension WorkflowPaywallViewTests {
         """
     }
 
-    static func packageComponentJSON(id: String, isDefault: Bool) -> String {
+    static func packageComponentJSON(id: String, isDefault: Bool, visible: Bool? = nil) -> String {
+        let visibleJSON = visible.map { ",\n            \"visible\": \($0)" } ?? ""
         return """
         {
             "type": "package",
             "packageId": "\(id)",
-            "isSelectedByDefault": \(isDefault),
+            "isSelectedByDefault": \(isDefault)\(visibleJSON),
             "stack": \(stackJSON(components: "[]"))
+        }
+        """
+    }
+
+    static func makeScreenJSON(rawPackageComponents: [String], offeringId: String) -> String {
+        let componentsJSON = rawPackageComponents.joined(separator: ",")
+        return """
+        {
+            "template_name": "template_v2",
+            "asset_base_url": "https://assets.pawwalls.com",
+            "revision": 1,
+            "default_locale": "en_US",
+            "components_localizations": {},
+            "offering_identifier": "\(offeringId)",
+            "components_config": {
+                "base": {
+                    "stack": \(stackJSON(components: "[\(componentsJSON)]")),
+                    "background": {
+                        "type": "color",
+                        "value": { "light": { "type": "hex", "value": "#220000ff" } }
+                    }
+                }
+            }
         }
         """
     }
