@@ -6,7 +6,7 @@ final class InterstitialAdManager: NSObject, ObservableObject {
 
     private static let adUnitID = "ca-app-pub-3940256099942544/4411468910"
 
-    var interstitialAd: InterstitialAd?
+    @Published private(set) var interstitialAd: InterstitialAd?
     @Published var message: Message?
 
     var canShow: Bool { self.interstitialAd != nil }

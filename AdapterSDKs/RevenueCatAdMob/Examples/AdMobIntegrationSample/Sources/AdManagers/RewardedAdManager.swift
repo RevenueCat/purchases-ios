@@ -6,7 +6,7 @@ final class RewardedAdManager: NSObject, ObservableObject {
 
     private static let adUnitID = "ca-app-pub-3940256099942544/1712485313"
 
-    var rewardedAd: RewardedAd?
+    @Published private(set) var rewardedAd: RewardedAd?
     @Published var message: Message?
 
     var canShow: Bool { self.rewardedAd != nil }

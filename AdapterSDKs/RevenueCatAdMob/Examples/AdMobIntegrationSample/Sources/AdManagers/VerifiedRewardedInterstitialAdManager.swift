@@ -6,7 +6,7 @@ final class VerifiedRewardedInterstitialAdManager: NSObject, ObservableObject {
 
     private static let adUnitID = "ca-app-pub-3940256099942544/6978759866"
 
-    var rewardedInterstitialAd: RewardedInterstitialAd?
+    @Published private(set) var rewardedInterstitialAd: RewardedInterstitialAd?
     @Published var message: Message?
 
     var canShow: Bool { self.rewardedInterstitialAd != nil }

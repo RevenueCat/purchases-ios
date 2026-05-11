@@ -6,7 +6,7 @@ final class AppOpenAdManager: NSObject, ObservableObject {
 
     private static let adUnitID = "ca-app-pub-3940256099942544/5575463023"
 
-    var appOpenAd: AppOpenAd?
+    @Published private(set) var appOpenAd: AppOpenAd?
     @Published var message: Message?
 
     var canShow: Bool { self.appOpenAd != nil }
