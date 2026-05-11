@@ -27,6 +27,8 @@ class ProductsManager: NSObject, ProductsManagerType {
 
     private let _productsFetcherSK2: (any Sendable)?
 
+    private let installmentsInfoFactory: InstallmentsInfoFactoryType
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private var productsFetcherSK2: ProductsFetcherSK2 {
         // swiftlint:disable:next force_cast force_unwrapping
@@ -38,6 +40,7 @@ class ProductsManager: NSObject, ProductsManagerType {
         diagnosticsTracker: DiagnosticsTrackerType?,
         systemInfo: SystemInfo,
         requestTimeout: TimeInterval,
+        installmentsInfoFactory: InstallmentsInfoFactoryType = InstallmentsInfoFactory(),
         dateProvider: DateProvider = DateProvider()
     ) {
         self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
@@ -45,6 +48,7 @@ class ProductsManager: NSObject, ProductsManagerType {
         self.diagnosticsTracker = diagnosticsTracker
         self.systemInfo = systemInfo
         self.dateProvider = dateProvider
+        self.installmentsInfoFactory = installmentsInfoFactory
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             self._productsFetcherSK2 = ProductsFetcherSK2()
@@ -152,7 +156,7 @@ class ProductsManager: NSObject, ProductsManagerType {
                 if let requestedPricingTerms = pricingTerms.first(
                     where: { $0.billingPlanType == requestedBillingPlanType }
                 ) {
-                    let installmentsInfo: InstallmentsInfo? = buildInstallmentsInfo(
+                    let installmentsInfo: InstallmentsInfo? = installmentsInfoFactory.buildInstallmentsInfo(
                         from: productFromStoreKit.underlyingSK2Product,
                         billingPlanType: requestedBillingPlanType,
                         pricingTerms: requestedPricingTerms
@@ -252,88 +256,6 @@ extension ProductsManagerType {
     }
 
 }
-
-// MARK: - InstallmentsInfo
-#if compiler(>=6.3.2)
-extension ProductsManager {
-    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
-    private func buildInstallmentsInfo(
-        from product: SK2Product,
-        billingPlanType: StoreKit.Product.SubscriptionInfo.BillingPlanType,
-        pricingTerms: StoreKit.Product.SubscriptionInfo.PricingTerms
-    ) -> InstallmentsInfo? {
-        guard let commitmentInstallmentsCount = calculateCommitmentInstallmentsCount(
-            billingPlanType: billingPlanType,
-            pricingTerms: pricingTerms
-        ) else { return nil }
-
-        guard let commitmentTotalPeriod = calculateCommitmentTotalPeriod(
-            billingPlanType: billingPlanType,
-            pricingTerms: pricingTerms
-        ) else { return nil }
-
-        let commitmentTotalPrice = pricingTerms.billingPrice * Decimal(commitmentInstallmentsCount)
-        let commitmentTotalDisplayPrice: String = commitmentTotalPrice.formatted(product.priceFormatStyle)
-
-        let installmentBillingPrice = pricingTerms.billingPrice
-        let installmentBillingDisplayPrice = pricingTerms.billingDisplayPrice
-        return InstallmentsInfo(
-            commitmentInstallmentsCount: commitmentInstallmentsCount,
-            commitmentTotalPeriod: commitmentTotalPeriod,
-            commitmentTotalPrice: commitmentTotalPrice,
-            commitmentTotalDisplayPrice: commitmentTotalDisplayPrice,
-            installmentBillingPrice: installmentBillingPrice,
-            installmentBillingDisplayPrice: installmentBillingDisplayPrice
-        )
-    }
-
-    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
-    private func calculateCommitmentInstallmentsCount(
-        billingPlanType: StoreKit.Product.SubscriptionInfo.BillingPlanType,
-        pricingTerms: StoreKit.Product.SubscriptionInfo.PricingTerms
-    ) -> Int? {
-        switch billingPlanType {
-        case .monthly:
-            switch pricingTerms.commitmentInfo.period {
-            case .monthly: return 1
-            case .everyTwoMonths: return 2
-            case .everyThreeMonths: return 3
-            case .everySixMonths: return 6
-            case .yearly: return 12
-            default:
-                return nil
-            }
-        case .upFront:
-            return nil
-        default:
-            return nil
-        }
-    }
-
-    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
-    private func calculateCommitmentTotalPeriod(
-        billingPlanType: StoreKit.Product.SubscriptionInfo.BillingPlanType,
-        pricingTerms: StoreKit.Product.SubscriptionInfo.PricingTerms
-    ) -> SubscriptionPeriod? {
-        switch billingPlanType {
-        case .monthly:
-            switch pricingTerms.commitmentInfo.period {
-            case .monthly: return SubscriptionPeriod(value: 1, unit: .month)
-            case .everyTwoMonths: return SubscriptionPeriod(value: 2, unit: .month)
-            case .everyThreeMonths: return SubscriptionPeriod(value: 3, unit: .month)
-            case .everySixMonths: return SubscriptionPeriod(value: 6, unit: .month)
-            case .yearly: return SubscriptionPeriod(value: 1, unit: .year)
-            default:
-                return nil
-            }
-        case .upFront:
-            return nil
-        default:
-            return nil
-        }
-    }
-}
-#endif
 
 // MARK: -
 
