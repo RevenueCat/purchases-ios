@@ -103,6 +103,11 @@ extension Product.PurchaseError: PurchasesErrorConvertible {
                 .missingOfferParameters:
             return ErrorUtils.invalidPromotionalOfferError(error: self)
 
+        #if compiler(>=6.3.2)
+        case .paymentMethodBindingConfigurationRequired:
+            // paymentMethodBindingConfigurationRequired introduced in Xcode 26.5
+            return ErrorUtils.purchasesError(withStoreKitError: self)
+        #endif
         @unknown default:
             return ErrorUtils.unknownError(error: self)
         }
@@ -126,6 +131,11 @@ extension Product.PurchaseError: PurchasesErrorConvertible {
             return "invalid_offer_signature"
         case .missingOfferParameters:
             return "missing_offer_parameters"
+        #if compiler(>=6.3.2)
+        case .paymentMethodBindingConfigurationRequired:
+            // paymentMethodBindingConfigurationRequired introduced in Xcode 26.5
+            return "payment_method_binding_configuration_required"
+        #endif
         @unknown default:
             return "unknown_store_kit_error"
         }
