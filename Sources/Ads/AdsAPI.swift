@@ -16,9 +16,9 @@ import Foundation
 /// Backend transport for ad-related endpoints.
 class AdsAPI {
 
-    typealias AdMobSSVStatusResponseHandler = Backend.ResponseHandler<AdMobSSVStatusResponse>
+    typealias RewardVerificationStatusResponseHandler = Backend.ResponseHandler<RewardVerificationStatusResponse>
 
-    private let callbackCache: CallbackCache<AdMobSSVStatusCallback>
+    private let callbackCache: CallbackCache<RewardVerificationStatusCallback>
     private let backendConfig: BackendConfiguration
 
     init(backendConfig: BackendConfiguration) {
@@ -26,23 +26,23 @@ class AdsAPI {
         self.callbackCache = .init()
     }
 
-    func getAdMobSSVStatus(
+    func getRewardVerificationStatus(
         appUserID: String,
         clientTransactionID: String,
-        completion: @escaping AdMobSSVStatusResponseHandler
+        completion: @escaping RewardVerificationStatusResponseHandler
     ) {
-        let config = GetAdMobSSVStatusOperation.Configuration(
+        let config = GetRewardVerificationStatusOperation.Configuration(
             httpClient: self.backendConfig.httpClient,
             appUserID: appUserID,
             clientTransactionID: clientTransactionID
         )
 
-        let factory = GetAdMobSSVStatusOperation.createFactory(
+        let factory = GetRewardVerificationStatusOperation.createFactory(
             configuration: config,
             callbackCache: self.callbackCache
         )
 
-        let callback = AdMobSSVStatusCallback(cacheKey: factory.cacheKey, completion: completion)
+        let callback = RewardVerificationStatusCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.callbackCache.add(callback)
 
         self.backendConfig.addCacheableOperation(

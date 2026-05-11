@@ -21,6 +21,7 @@
       "paywall" : null,
       "paywall_components" : {
         "asset_base_url" : "https://assets.pawwalls.com",
+        "automatically_scale_font_size" : true,
         "components_config" : {
           "base" : {
             "background" : {
@@ -128,6 +129,7 @@
                           "action" : {
                             "type" : "navigate_back"
                           },
+                          "id" : "68b5fP9Fpd",
                           "name" : "",
                           "stack" : {
                             "components" : [
@@ -1260,6 +1262,7 @@
                             "action" : {
                               "type" : "restore_purchases"
                             },
+                            "id" : "vLoUgvChkK",
                             "name" : "",
                             "stack" : {
                               "components" : [

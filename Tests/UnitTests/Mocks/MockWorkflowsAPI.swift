@@ -12,7 +12,7 @@
 //  Created by RevenueCat.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class MockWorkflowsAPI: WorkflowsAPI, @unchecked Sendable {
 
@@ -23,7 +23,7 @@ class MockWorkflowsAPI: WorkflowsAPI, @unchecked Sendable {
     var invokedGetWorkflow = false
     var invokedGetWorkflowCount = 0
     var invokedGetWorkflowParameters: (appUserID: String, workflowId: String, isAppBackgrounded: Bool)?
-    var stubbedGetWorkflowResult: Result<WorkflowFetchResult, BackendError>?
+    var stubbedGetWorkflowResult: Result<WorkflowDataResult, BackendError>?
 
     override func getWorkflow(appUserID: String,
                               workflowId: String,

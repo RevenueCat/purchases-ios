@@ -15,7 +15,7 @@
 import Foundation
 import Nimble
 @_spi(Internal) @testable import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

@@ -16,7 +16,7 @@
 import Foundation
 
 /// The type of exit offer shown.
-public enum ExitOfferType: String, Codable, Sendable {
+@_spi(Internal) public enum ExitOfferType: String, Codable, Sendable {
 
     /// An exit offer shown when the user attempts to dismiss the paywall without interacting.
     case dismiss
@@ -24,7 +24,7 @@ public enum ExitOfferType: String, Codable, Sendable {
 }
 
 /// The type for the paywall component interactions.
-public enum ComponentInteractionType: String, Codable, Sendable, Hashable {
+@_spi(Internal) public enum ComponentInteractionType: String, Codable, Sendable, Hashable {
 
     /// Tab control button selection.
     /// For precise navigation analytics, prefer the explicit origin / destination fields when present.
@@ -48,7 +48,7 @@ public enum ComponentInteractionType: String, Codable, Sendable, Hashable {
 }
 
 /// An event to be sent by the `RevenueCatUI` SDK.
-public enum PaywallEvent: FeatureEvent {
+@_spi(Internal) public enum PaywallEvent: FeatureEvent {
 
     // swiftlint:disable type_name
 
@@ -114,7 +114,7 @@ public enum PaywallEvent: FeatureEvent {
 extension PaywallEvent {
 
     /// The creation data of a ``PaywallEvent``.
-    public struct CreationData {
+    @_spi(Internal) public struct CreationData {
 
         // swiftlint:disable missing_docs
         public var id: ID
@@ -136,7 +136,7 @@ extension PaywallEvent {
 extension PaywallEvent {
 
     /// The content of a ``PaywallEvent``.
-    public struct Data {
+    @_spi(Internal) public struct Data {
 
         // swiftlint:disable missing_docs
 
@@ -148,6 +148,9 @@ extension PaywallEvent {
         public var localeIdentifier: String
         public var darkMode: Bool
         @_spi(Internal) public var source: PaywallSource?
+        var placementIdentifier: String?
+        var targetingRevision: Int?
+        var targetingRuleId: String?
         var packageId: String?
         var productId: String?
         var errorCode: Int?
@@ -172,7 +175,8 @@ extension PaywallEvent {
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
                 darkMode: darkMode,
-                source: nil
+                source: nil,
+                presentedOfferingContext: offering.availablePackages.first?.presentedOfferingContext
             )
         }
 
@@ -194,7 +198,8 @@ extension PaywallEvent {
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
                 darkMode: darkMode,
-                source: source
+                source: source,
+                presentedOfferingContext: offering.availablePackages.first?.presentedOfferingContext
             )
         }
         #endif
@@ -217,7 +222,8 @@ extension PaywallEvent {
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
                 darkMode: darkMode,
-                source: nil
+                source: nil,
+                presentedOfferingContext: offering.availablePackages.first?.presentedOfferingContext
             )
         }
 
@@ -239,7 +245,8 @@ extension PaywallEvent {
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
                 darkMode: darkMode,
-                source: source
+                source: source,
+                presentedOfferingContext: offering.availablePackages.first?.presentedOfferingContext
             )
         }
         // swiftlint:enable missing_docs
@@ -252,7 +259,8 @@ extension PaywallEvent {
             displayMode: PaywallViewMode,
             localeIdentifier: String,
             darkMode: Bool,
-            source: PaywallSource?,
+            source: PaywallSource? = nil,
+            presentedOfferingContext: PresentedOfferingContext? = nil,
             packageId: String? = nil,
             productId: String? = nil,
             errorCode: Int? = nil,
@@ -266,6 +274,9 @@ extension PaywallEvent {
             self.localeIdentifier = localeIdentifier
             self.darkMode = darkMode
             self.source = source
+            self.placementIdentifier = presentedOfferingContext?.placementIdentifier
+            self.targetingRevision = presentedOfferingContext?.targetingContext?.revision
+            self.targetingRuleId = presentedOfferingContext?.targetingContext?.ruleId
             self.packageId = packageId
             self.productId = productId
             self.errorCode = errorCode
@@ -279,7 +290,7 @@ extension PaywallEvent {
 extension PaywallEvent {
 
     /// The data specific to an exit offer event.
-    public struct ExitOfferData {
+    @_spi(Internal) public struct ExitOfferData {
 
         // swiftlint:disable missing_docs
         public var exitOfferType: ExitOfferType
@@ -303,7 +314,7 @@ extension PaywallEvent {
     /// Data for a ``PaywallEvent/componentInteraction(_:_:_:)`` event.
     /// For navigable controls like tab buttons and carousel page changes, prefer the explicit
     /// origin / destination fields over `componentValue` when they are available.
-    public struct ComponentInteractionData {
+    @_spi(Internal) public struct ComponentInteractionData {
 
         // swiftlint:disable missing_docs
         public var componentType: ComponentInteractionType
@@ -396,7 +407,7 @@ extension PaywallEvent {
 extension PaywallEvent {
 
     /// - Returns: the underlying ``PaywallEvent/CreationData-swift.struct`` for this event.
-    public var creationData: CreationData {
+    @_spi(Internal) public var creationData: CreationData {
         switch self {
         case let .impression(creationData, _): return creationData
         case let .cancel(creationData, _): return creationData
@@ -409,7 +420,7 @@ extension PaywallEvent {
     }
 
     /// - Returns: the underlying ``PaywallEvent/Data-swift.struct`` for this event.
-    public var data: Data {
+    @_spi(Internal) public var data: Data {
         switch self {
         case let .impression(_, data): return data
         case let .cancel(_, data): return data
@@ -422,7 +433,7 @@ extension PaywallEvent {
     }
 
     /// - Returns: the underlying ``PaywallEvent/ExitOfferData-swift.struct`` for exit offer events, nil otherwise.
-    public var exitOfferData: ExitOfferData? {
+    @_spi(Internal) public var exitOfferData: ExitOfferData? {
         switch self {
         case .impression, .cancel, .close, .purchaseInitiated, .purchaseError, .componentInteraction: return nil
         case let .exitOffer(_, _, exitOfferData): return exitOfferData
@@ -430,7 +441,7 @@ extension PaywallEvent {
     }
 
     /// - Returns: control interaction payload for ``PaywallEvent/componentInteraction(_:_:_:)``, nil for other events.
-    public var componentInteractionData: ComponentInteractionData? {
+    @_spi(Internal) public var componentInteractionData: ComponentInteractionData? {
         switch self {
         case .impression, .cancel, .close, .exitOffer, .purchaseInitiated, .purchaseError: return nil
         case let .componentInteraction(_, _, interactionData): return interactionData
@@ -451,20 +462,12 @@ extension PaywallEvent.Data {
         errorCode: Int?,
         errorMessage: String?
     ) -> PaywallEvent.Data {
-        return PaywallEvent.Data(
-            paywallIdentifier: self.paywallIdentifier,
-            offeringIdentifier: self.offeringIdentifier,
-            paywallRevision: self.paywallRevision,
-            sessionID: self.sessionIdentifier,
-            displayMode: self.displayMode,
-            localeIdentifier: self.localeIdentifier,
-            darkMode: self.darkMode,
-            source: self.source,
-            packageId: packageId,
-            productId: productId,
-            errorCode: errorCode,
-            errorMessage: errorMessage
-        )
+        var copy = self
+        copy.packageId = packageId
+        copy.productId = productId
+        copy.errorCode = errorCode
+        copy.errorMessage = errorMessage
+        return copy
     }
 
 }

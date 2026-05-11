@@ -10,32 +10,48 @@
 //  WorkflowsResponse.swift
 //
 //  Created by RevenueCat.
+// swiftlint:disable missing_docs
 
 import Foundation
 
 // MARK: - Detail models
 
-struct WorkflowTrigger {
+@_spi(Internal) public enum WorkflowTriggerType: String, Codable, Equatable, Sendable {
+    case onPress = "on_press"
+    case unknown
 
-    let name: String?
-    let type: String
-    let actionId: String?
-    let componentId: String?
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let value = try container.decode(String.self)
+        switch value {
+        case "on_press":
+            self = .onPress
+        default:
+            Logger.warn(Strings.backendError.unknown_workflow_trigger_type(type: value))
+            self = .unknown
+        }
+    }
+}
+
+@_spi(Internal) public struct WorkflowTrigger {
+
+    public let name: String?
+    public let type: WorkflowTriggerType
+    public let actionId: String?
+    public let componentId: String?
 
 }
 
-struct WorkflowTriggerAction {
-
-    let type: String
-    let stepId: String
-
+@_spi(Internal) public enum WorkflowTriggerAction: Equatable, Sendable {
+    case step(stepId: String)
+    case unknown
 }
 
-struct WorkflowStep {
+@_spi(Internal) public struct WorkflowStep {
 
-    let id: String
+    public let id: String
     let type: String
-    let screenId: String?
+    public let screenId: String?
     @DefaultDecodable.EmptyDictionary
     var paramValues: [String: AnyDecodable]
     @DefaultDecodable.EmptyArray
@@ -44,50 +60,89 @@ struct WorkflowStep {
     var outputs: [String: AnyDecodable]
     @DefaultDecodable.EmptyDictionary
     var triggerActions: [String: WorkflowTriggerAction]
+
+    public var stepTriggers: [WorkflowTrigger] { triggers }
+    public var stepTriggerActions: [String: WorkflowTriggerAction] { triggerActions }
     let metadata: [String: AnyDecodable]?
 
 }
 
-struct WorkflowScreen {
+@_spi(Internal) public struct WorkflowScreen {
 
-    let name: String?
-    let templateName: String
+    public let name: String?
+    public let templateName: String
     @DefaultDecodable.Zero
-    var revision: Int
-    let assetBaseURL: URL
-    let componentsConfig: PaywallComponentsData.ComponentsConfig
-    let componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
-    let defaultLocale: PaywallComponent.LocaleID
+    // swiftlint:disable:next identifier_name
+    var _revision: Int
+    public var revision: Int { _revision }
+    public let assetBaseURL: URL
+    public let componentsConfig: PaywallComponentsData.ComponentsConfig
+    public let componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
+    public let defaultLocale: PaywallComponent.LocaleID
     @DefaultDecodable.EmptyDictionary
     var config: [String: AnyDecodable]
-    let offeringId: String?
+    public let offeringIdentifier: String?
+    public let exitOffers: ExitOffers?
 
 }
 
-struct PublishedWorkflow {
+@_spi(Internal) public struct PublishedWorkflow {
 
-    let id: String
+    public let id: String
     let displayName: String
-    let initialStepId: String
-    let steps: [String: WorkflowStep]
-    let screens: [String: WorkflowScreen]
-    let uiConfig: UIConfig
+    public let initialStepId: String
+    public let singleStepFallbackId: String?
+    public let steps: [String: WorkflowStep]
+    public let screens: [String: WorkflowScreen]
+    public let uiConfig: UIConfig
     let contentMaxWidth: Int?
     let metadata: [String: AnyDecodable]?
 
 }
 
-struct WorkflowFetchResult {
+@_spi(Internal) public struct WorkflowDataResult {
 
-    let workflow: PublishedWorkflow
-    let enrolledVariants: [String: String]?
+    public let workflow: PublishedWorkflow
+    public let enrolledVariants: [String: String]?
 
 }
 
 // MARK: - Codable
 
 extension WorkflowTrigger: Codable, Equatable, Sendable {}
-extension WorkflowTriggerAction: Codable, Equatable, Sendable {}
+
+extension WorkflowTriggerAction: Codable {
+
+    private enum CodingKeys: String, CodingKey {
+        case type
+        case stepId
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decode(String.self, forKey: .type)
+        switch type {
+        case "step":
+            let stepId = try container.decode(String.self, forKey: .stepId)
+            self = .step(stepId: stepId)
+        default:
+            Logger.warn(Strings.backendError.unknown_workflow_trigger_action_type(type: type))
+            self = .unknown
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .step(let stepId):
+            try container.encode("step", forKey: .type)
+            try container.encode(stepId, forKey: .stepId)
+        case .unknown:
+            try container.encode("unknown", forKey: .type)
+        }
+    }
+
+}
 extension WorkflowStep: Codable, Equatable, Sendable {}
 
 extension WorkflowScreen: Codable, Equatable, Sendable {
@@ -95,18 +150,20 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case name
         case templateName
-        case revision
+        // swiftlint:disable:next identifier_name
+        case _revision = "revision"
         case assetBaseURL = "assetBaseUrl"
         case componentsConfig
         case componentsLocalizations
         case defaultLocale
         case config
-        case offeringId
+        case offeringIdentifier
+        case exitOffers
     }
 
 }
 
 extension PublishedWorkflow: Codable, Equatable, Sendable {}
-extension WorkflowFetchResult: Equatable, Sendable {}
+extension WorkflowDataResult: Equatable, Sendable {}
 
 extension PublishedWorkflow: HTTPResponseBody {}

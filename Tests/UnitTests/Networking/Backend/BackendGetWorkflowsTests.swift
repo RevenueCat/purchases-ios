@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class BackendGetWorkflowTests: BaseBackendTests {
 
@@ -29,7 +29,7 @@ class BackendGetWorkflowTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.inlineEnvelopeResponse)
         )
 
-        let result: Atomic<Result<WorkflowFetchResult, BackendError>?> = nil
+        let result: Atomic<Result<WorkflowDataResult, BackendError>?> = nil
         self.workflowsAPI.getWorkflow(
             appUserID: Self.userID,
             workflowId: "wf_1",
@@ -53,7 +53,7 @@ class BackendGetWorkflowTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.inlineEnvelopeWithVariantsResponse)
         )
 
-        let result: Atomic<Result<WorkflowFetchResult, BackendError>?> = nil
+        let result: Atomic<Result<WorkflowDataResult, BackendError>?> = nil
         self.workflowsAPI.getWorkflow(
             appUserID: Self.userID,
             workflowId: "wf_1",

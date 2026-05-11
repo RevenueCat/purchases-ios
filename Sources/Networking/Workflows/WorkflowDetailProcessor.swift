@@ -51,7 +51,7 @@ final class WorkflowDetailProcessor: Sendable {
     }
 
     func process(_ data: Data, completion: @escaping (Result<WorkflowDetailProcessingResult, Error>) -> Void) {
-        guard let json = Self.parseEnvelope(data) else {
+        guard let json = try? data.asJSONDictionary() else {
             completion(.failure(WorkflowDetailProcessingError.invalidEnvelopeJson))
             return
         }
@@ -72,10 +72,6 @@ final class WorkflowDetailProcessor: Sendable {
         case .useCdn:
             self.processCdn(json: json, enrolledVariants: enrolledVariants, completion: completion)
         }
-    }
-
-    private static func parseEnvelope(_ data: Data) -> [String: Any]? {
-        return (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
     }
 
     private struct InlineEnvelope: Decodable {

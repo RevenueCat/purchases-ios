@@ -34,6 +34,9 @@ struct ButtonComponentView: View {
     private var purchaseHandler: PurchaseHandler
 
     @Environment(\.componentInteractionLogger) var componentInteractionLogger
+    @Environment(\.workflowTriggerAction) private var workflowTriggerAction
+    @Environment(\.workflowPageTransitionContext) private var workflowPageTransitionContext
+    @Environment(\.isWorkflowHeader) private var isWorkflowHeader
 
     private let viewModel: ButtonComponentViewModel
     private let onDismiss: () -> Void
@@ -78,6 +81,8 @@ struct ButtonComponentView: View {
             .withTransition(viewModel.component.transition)
             .disabled(self.shouldBeDisabled)
             .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
+            .offset(x: self.isWorkflowHeader ? -self.workflowPageTransitionContext.pageOffset : 0)
+            .opacity(self.isWorkflowHeader ? self.workflowPageTransitionContext.headerButtonOpacity : 1)
             #if canImport(SafariServices) && canImport(UIKit)
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
                 SafariView(url: self.inAppBrowserURL!)
@@ -92,6 +97,13 @@ struct ButtonComponentView: View {
     }
 
     private func performAction() async throws {
+        if let id = viewModel.id,
+           let triggerWorkflow = workflowTriggerAction,
+           triggerWorkflow(id) {
+            trackButtonComponentInteraction()
+            return
+        }
+
         // Intentionally track before branching so unknown actions are surfaced as diagnostic telemetry.
         // These should be excluded from product funnel analytics by filtering componentValue == "unknown".
         self.trackButtonComponentInteraction()
@@ -103,6 +115,10 @@ struct ButtonComponentView: View {
             navigateTo(destination: destination)
         case .navigateBack:
             onDismiss()
+        case .workflowTrigger:
+            Logger.warning(
+                Strings.paywall_workflow_trigger_not_handled(componentName: self.viewModel.component.name)
+            )
         case .unknown:
             Logger.warning(
                 Strings.paywall_unknown_button_action_tracked_for_diagnostics(

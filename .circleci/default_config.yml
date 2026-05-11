@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@3.16.0
+  revenuecat: revenuecat/sdks-common-config@3.20.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -22,6 +22,9 @@ parameters:
     type: boolean
     default: false
   bump_with_fallback_pr_lookup:
+    type: boolean
+    default: false
+  version_file_changed:
     type: boolean
     default: false
   requested_jobs:
@@ -503,15 +506,17 @@ commands:
         type: string
         default: ""
         description: "Optional query to pass to Tuist when generating workspace."
+      include_test_dependencies:
+        type: boolean
+        default: false
+        description: "Whether to include test/dev dependencies when generating the workspace."
     steps:
       - revenuecat/install-tuist
       - run:
           name: Generate Tuist workspace
           command: |
             export PATH="$HOME/.local/share/mise/shims:$PATH"
-            # Skip external test/dev dependencies to speed up tuist install.
-            # No CI job currently needs them (tests run via SPM, not Tuist).
-            export TUIST_INCLUDE_TEST_DEPENDENCIES=false
+            export TUIST_INCLUDE_TEST_DEPENDENCIES=<< parameters.include_test_dependencies >>
             if [ -n "<< parameters.query >>" ]; then
               tuist install && tuist generate << parameters.query >> --no-open
             else
@@ -1881,6 +1886,8 @@ jobs:
       - run:
           name: Fetch paywall-preview-resources
           command: bundle exec fastlane ios fetch_paywall_preview_resources
+      - tuist-generate-workspace:
+          include_test_dependencies: true
       - run:
           name: Clone paywall-rendering-validation repository
           command: git clone git@github.com:RevenueCat/paywall-rendering-validation.git ../Tests/paywall-rendering-validation
@@ -1906,7 +1913,7 @@ jobs:
           name: Update paywall templates
           command: bundle exec fastlane ios update_paywall_preview_resources_commit
 
-  check-api-changes:
+  check-api-changes-revenuecat:
     executor:
       name: macos-executor
       xcode_version: *swiftinterface-xcode-version
@@ -1914,13 +1921,13 @@ jobs:
       - checkout
       - install-dependencies
       - run:
-          name: Generate PR branch swiftinterface
+          name: Generate RevenueCat swiftinterface
           command: |
-            bundle exec fastlane ios generate_swiftinterface
+            bundle exec fastlane ios generate_swiftinterface scheme:RevenueCat
       - run:
-          name: Check API changes
+          name: Check RevenueCat API changes
           command: |
-            bundle exec fastlane ios check_api_changes
+            bundle exec fastlane ios check_api_changes scheme:RevenueCat
       - store_artifacts:
           path: /tmp/pr-swiftinterface/RevenueCat-ios-simulator.swiftinterface
           destination: revenuecat-api-ios-simulator.swiftinterface
@@ -1948,6 +1955,50 @@ jobs:
       - store_artifacts:
           path: /tmp/pr-swiftinterface/RevenueCat-visionos.swiftinterface
           destination: revenuecat-api-visionos.swiftinterface
+      - slack-notify-on-fail
+
+  check-api-changes-revenuecatui:
+    executor:
+      name: macos-executor
+      xcode_version: *swiftinterface-xcode-version
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Generate RevenueCatUI swiftinterface
+          command: |
+            bundle exec fastlane ios generate_swiftinterface scheme:RevenueCatUI
+      - run:
+          name: Check RevenueCatUI API changes
+          command: |
+            bundle exec fastlane ios check_api_changes scheme:RevenueCatUI
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-ios-simulator.swiftinterface
+          destination: revenuecatui-api-ios-simulator.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-ios.swiftinterface
+          destination: revenuecatui-api-ios.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-macos.swiftinterface
+          destination: revenuecatui-api-macos.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-watchos-simulator.swiftinterface
+          destination: revenuecatui-api-watchos-simulator.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-watchos.swiftinterface
+          destination: revenuecatui-api-watchos.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-tvos-simulator.swiftinterface
+          destination: revenuecatui-api-tvos-simulator.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-tvos.swiftinterface
+          destination: revenuecatui-api-tvos.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-visionos-simulator.swiftinterface
+          destination: revenuecatui-api-visionos-simulator.swiftinterface
+      - store_artifacts:
+          path: /tmp/pr-swiftinterface/RevenueCatUI-visionos.swiftinterface
+          destination: revenuecatui-api-visionos.swiftinterface
       - slack-notify-on-fail
 
   generate-swiftinterface:
@@ -2108,7 +2159,10 @@ workflows:
       # Reduced Test Suite: Auto-run on every push
       # =============================================================
       - lint
-      - check-api-changes:
+      - check-api-changes-revenuecat:
+          context:
+            - slack-secrets-ios
+      - check-api-changes-revenuecatui:
           context:
             - slack-secrets-ios
       - run-test-ios-26:
@@ -2276,7 +2330,8 @@ workflows:
           requires:
             # Reduced Test Suite
             - lint
-            - check-api-changes
+            - check-api-changes-revenuecat
+            - check-api-changes-revenuecatui
             - run-test-ios-26
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
@@ -2331,15 +2386,16 @@ workflows:
           <<: *release-tags
       - docs-deploy:
           <<: *release-tags
-      - deploy-purchase-tester:
-          dry_run: false
-          <<: *release-tags
       - make-release:
           requires:
             - push-revenuecatui-pod
             - deploy-to-spm
             - docs-deploy
-            - deploy-purchase-tester
+          <<: *release-tags
+      - deploy-purchase-tester:
+          dry_run: false
+          requires:
+            - make-release
           <<: *release-tags
       - deploy-rct-tester:
           dry_run: false
@@ -2354,8 +2410,10 @@ workflows:
           repo_name: purchases-ios
           requires:
             - make-release
+            - deploy-purchase-tester
             - deploy-rct-tester
             - bump-sdk-in-rc-mobile-app
+            - make-admob-release
           <<: *release-tags
 
   snapshot-bump:
@@ -2365,6 +2423,7 @@ workflows:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
             equal: [bump, << pipeline.parameters.action >>]
+        - equal: [true, << pipeline.parameters.version_file_changed >>]
     jobs:
       - prepare-next-version:
           <<: *only-main-branch
@@ -2483,7 +2542,10 @@ workflows:
             pattern: "^(release/.*|main)$"
             value: << pipeline.git.branch >>
     jobs:
-      - check-api-changes:
+      - check-api-changes-revenuecat:
+          context:
+            - slack-secrets-ios
+      - check-api-changes-revenuecatui:
           context:
             - slack-secrets-ios
       - run-all-maestro-e2e-tests:
@@ -2582,7 +2644,8 @@ workflows:
       # =============================================================
       - all-tests-succeeded:
           requires:
-            - check-api-changes
+            - check-api-changes-revenuecat
+            - check-api-changes-revenuecatui
             - run-all-maestro-e2e-tests
             - lint
             - run-test-ios-26
@@ -2636,4 +2699,3 @@ workflows:
           requires:
             - revenuecat/tag-current-branch
           <<: *release-branches
-

@@ -15,7 +15,7 @@ import Foundation
 
 class WorkflowsAPI {
 
-    typealias WorkflowDetailResponseHandler = Backend.ResponseHandler<WorkflowFetchResult>
+    typealias WorkflowDetailResponseHandler = Backend.ResponseHandler<WorkflowDataResult>
 
     private let workflowDetailCallbackCache: CallbackCache<WorkflowDetailCallback>
     private let backendConfig: BackendConfiguration

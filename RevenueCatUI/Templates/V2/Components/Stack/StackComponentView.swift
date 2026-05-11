@@ -67,15 +67,17 @@ struct StackComponentView: View {
     }
 
     var body: some View {
+        let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
+            package: self.packageContext.package
+        )
+        let isEligibleForPromoOffer = self.paywallPromoOfferCache.isMostLikelyEligible(
+            for: self.packageContext.package
+        )
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                for: self.packageContext.package
-            ),
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackageId: self.selectedPackageId,
             customVariables: self.customVariables,
             colorScheme: colorScheme

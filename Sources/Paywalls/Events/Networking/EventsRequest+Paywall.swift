@@ -30,6 +30,7 @@ extension FeatureEventsRequest {
         var darkMode: Bool
         var localeIdentifier: String
         var source: PaywallSource?
+        var presentedOfferingContext: PresentedOfferingContextData?
         var exitOfferType: ExitOfferType?
         var exitOfferingID: String?
         var packageId: String?
@@ -61,6 +62,30 @@ extension FeatureEventsRequest {
 }
 
 extension FeatureEventsRequest.PaywallEvent {
+
+    struct PresentedOfferingContextData: Encodable {
+
+        var placementIdentifier: String?
+        var targetingRevision: Int?
+        var targetingRuleId: String?
+
+        /// Returns `nil` if all fields are `nil`.
+        init?(
+            placementIdentifier: String?,
+            targetingRevision: Int?,
+            targetingRuleId: String?
+        ) {
+            guard placementIdentifier != nil ||
+                    targetingRevision != nil ||
+                    targetingRuleId != nil else {
+                return nil
+            }
+            self.placementIdentifier = placementIdentifier
+            self.targetingRevision = targetingRevision
+            self.targetingRuleId = targetingRuleId
+        }
+
+    }
 
     enum EventType: String {
 
@@ -111,6 +136,11 @@ extension FeatureEventsRequest.PaywallEvent {
             darkMode: data.darkMode,
             localeIdentifier: data.localeIdentifier,
             source: data.source,
+            presentedOfferingContext: PresentedOfferingContextData(
+                placementIdentifier: data.placementIdentifier,
+                targetingRevision: data.targetingRevision,
+                targetingRuleId: data.targetingRuleId
+            ),
             exitOfferType: exitOfferData?.exitOfferType,
             exitOfferingID: exitOfferData?.exitOfferingIdentifier,
             packageId: data.packageId,
@@ -182,6 +212,7 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case darkMode
         case localeIdentifier = "locale"
         case source
+        case presentedOfferingContext
         case exitOfferType
         case exitOfferingID = "exitOfferingId"
         case packageId = "packageId"

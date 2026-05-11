@@ -1657,6 +1657,10 @@ SWIFT_CLASS("_TtC10RevenueCat37GetProductEntitlementMappingOperation")
 @interface GetProductEntitlementMappingOperation : CacheableNetworkOperation
 @end
 
+SWIFT_CLASS("_TtC10RevenueCat36GetRewardVerificationStatusOperation")
+@interface GetRewardVerificationStatusOperation : CacheableNetworkOperation
+@end
+
 SWIFT_CLASS("_TtC10RevenueCat29GetVirtualCurrenciesOperation")
 @interface GetVirtualCurrenciesOperation : CacheableNetworkOperation
 @end
@@ -1667,6 +1671,10 @@ SWIFT_CLASS("_TtC10RevenueCat30GetWebBillingProductsOperation")
 
 SWIFT_CLASS("_TtC10RevenueCat31GetWebOfferingProductsOperation")
 @interface GetWebOfferingProductsOperation : CacheableNetworkOperation
+@end
+
+SWIFT_CLASS("_TtC10RevenueCat20GetWorkflowOperation")
+@interface GetWorkflowOperation : CacheableNetworkOperation
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat15HealthOperation")
@@ -2260,6 +2268,13 @@ SWIFT_CLASS_NAMED("Builder")
 /// \param winBackOffer The <code>WinBackOffer</code> to apply to the purchase.
 ///
 - (nonnull instancetype)withWinBackOffer:(RCWinBackOffer * _Nonnull)winBackOffer SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(visionos,introduced=2.0) SWIFT_AVAILABILITY(watchos,introduced=11.0) SWIFT_AVAILABILITY(tvos,introduced=18.0) SWIFT_AVAILABILITY(macos,introduced=15.0) SWIFT_AVAILABILITY(ios,introduced=18.0);
+/// Sets an introductoryOfferEligibility JWS to be included with the purchase. StoreKit 2 only.
+/// Refer to https://developer.apple.com/documentation/storekit/product/purchaseoption/introductoryoffereligibility(compactjws:)
+/// for more information.
+/// Availability: iOS 15.0+, macOS 15.4+, tvOS 18.4+, watchOS 11.4+, visionOS 2.4+
+/// \param introductoryOfferEligibilityJWS The <code>introductoryOfferEligibilityJWS</code> to apply to the purchase.
+///
+- (nonnull instancetype)withIntroductoryOfferEligibilityJWS:(NSString * _Nonnull)introductoryOfferEligibilityJWS SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(visionos,introduced=2.4) SWIFT_AVAILABILITY(watchos,introduced=11.4) SWIFT_AVAILABILITY(tvos,introduced=18.4) SWIFT_AVAILABILITY(macos,introduced=15.4) SWIFT_AVAILABILITY(ios,introduced=15.0);
 /// Generate a <code>Configuration</code> object given the values configured by this builder.
 - (RCPurchaseParams * _Nonnull)build SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;

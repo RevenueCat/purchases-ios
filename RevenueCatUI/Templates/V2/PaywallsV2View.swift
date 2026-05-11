@@ -48,6 +48,9 @@ struct PaywallsV2View: View {
     @Environment(\.paywallSource)
     private var paywallSource
 
+    @Environment(\.workflowPackageContext)
+    private var workflowPackageContext
+
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -61,6 +64,9 @@ struct PaywallsV2View: View {
     private let uiConfigProvider: UIConfigProvider
     private let offering: Offering
     private let purchaseHandler: PurchaseHandler
+    private let workflowDefaultPackage: Package?
+    private let workflowPackages: [Package]?
+    private let showZeroDecimalPlacePrices: Bool
     /// This is a configuration value from PaywallsV1, but it's important to include here just in case the
     /// default paywall is shown. This is not used in the success path
     private let displayCloseButton: Bool
@@ -80,6 +86,8 @@ struct PaywallsV2View: View {
         purchaseHandler: PurchaseHandler,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
+        workflowDefaultPackage: Package? = nil,
+        workflowPackages: [Package]? = nil,
         displayCloseButton: Bool = false,
         onDismiss: @escaping () -> Void,
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
@@ -89,13 +97,17 @@ struct PaywallsV2View: View {
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
-            failedToLoadFont: failedToLoadFont
+            failedToLoadFont: failedToLoadFont,
+            automaticallyScaleFontSize: paywallComponents.data.automaticallyScaleFontSize
         )
 
         self.paywallComponentsData = paywallComponents.data
         self.uiConfigProvider = uiConfigProvider
         self.offering = offering
         self.purchaseHandler = purchaseHandler
+        self.workflowDefaultPackage = workflowDefaultPackage
+        self.workflowPackages = workflowPackages
+        self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
@@ -131,6 +143,11 @@ struct PaywallsV2View: View {
         if case .success(let paywallState) = initialState {
             selectedPackageContext = Self.makeSelectedPackageContext(
                 from: paywallState,
+                defaultPackage: Self.effectiveDefaultPackage(
+                    pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+                    workflowDefaultPackage: workflowDefaultPackage
+                ),
+                workflowPackages: workflowPackages,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         } else {
@@ -165,13 +182,21 @@ struct PaywallsV2View: View {
     }
 
     private func loadedPaywallView(paywallState: PaywallState) -> some View {
-        LoadedPaywallsV2View(
+        let contentLocale = paywallState.rootViewModel.localizationProvider.locale
+        let defaultPackage = Self.effectiveDefaultPackage(
+            pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage ?? self.workflowDefaultPackage
+        )
+        return LoadedPaywallsV2View(
             introOfferEligibilityContext: introOfferEligibilityContext,
             paywallState: paywallState,
             uiConfigProvider: self.uiConfigProvider,
             selectedPackageContext: self.selectedPackageContext,
+            defaultPackage: defaultPackage,
             onDismiss: self.onDismiss
         )
+        .environment(\.locale, contentLocale)
+        .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
@@ -341,6 +366,7 @@ private struct LoadedPaywallsV2View: View {
     private let paywallState: PaywallState
     private let uiConfigProvider: UIConfigProvider
     private let onDismiss: () -> Void
+    private let defaultPackage: Package?
 
     @ObservedObject
     private var selectedPackageContext: PackageContext
@@ -350,12 +376,14 @@ private struct LoadedPaywallsV2View: View {
         paywallState: PaywallState,
         uiConfigProvider: UIConfigProvider,
         selectedPackageContext: PackageContext,
+        defaultPackage: Package?,
         onDismiss: @escaping () -> Void
     ) {
         self.introOfferEligibilityContext = introOfferEligibilityContext
         self.paywallState = paywallState
         self.uiConfigProvider = uiConfigProvider
         self.selectedPackageContext = selectedPackageContext
+        self.defaultPackage = defaultPackage
         self.onDismiss = onDismiss
     }
 
@@ -365,7 +393,7 @@ private struct LoadedPaywallsV2View: View {
                 ComponentsView(
                     componentViewModels: [.root(paywallState.rootViewModel)],
                     onDismiss: self.onDismiss,
-                    defaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage
+                    defaultPackage: self.defaultPackage
                 )
                 .fixMacButtons()
             }
@@ -390,10 +418,7 @@ private struct LoadedPaywallsV2View: View {
                 alignment: .top
             )
             .environment(\.selectedPackageId, self.selectedPackageContext.package?.identifier)
-            .environment(
-                \.planSelectionDefaultPackage,
-                paywallState.viewModelFactory.packageValidator.defaultSelectedPackage
-            )
+            .environment(\.planSelectionDefaultPackage, self.defaultPackage)
             .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
         }
@@ -414,7 +439,7 @@ extension EnvironmentValues {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-fileprivate extension PaywallsV2View {
+extension PaywallsV2View {
 
     // swiftlint:disable:next function_parameter_count
     static func createPaywallState(
@@ -479,15 +504,24 @@ fileprivate extension PaywallsV2View {
 
     static func makeSelectedPackageContext(
         from paywallState: PaywallState,
+        defaultPackage: Package?,
+        workflowPackages: [Package]?,
         showZeroDecimalPlacePrices: Bool
     ) -> PackageContext {
         return .init(
-            package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+            package: defaultPackage,
             variableContext: .init(
-                packages: paywallState.packages,
+                packages: workflowPackages ?? paywallState.packages,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         )
+    }
+
+    static func effectiveDefaultPackage(
+        pageDefaultPackage: Package?,
+        workflowDefaultPackage: Package?
+    ) -> Package? {
+        return workflowDefaultPackage ?? pageDefaultPackage
     }
 
     static func chooseLocalization(
@@ -569,20 +603,9 @@ fileprivate extension PaywallsV2View {
     ///   returns `nil`
     ///
     static func preferredLocale(from paywallLocales: [Locale], preferredLocales: [Locale]) -> Locale? {
-        for preferredLocale in preferredLocales {
-            // match language
-            if let languageMatch = paywallLocales.first(where: { $0.matchesLanguage(preferredLocale) }) {
-                // Look for a match that includes region
-                if let exactMatch = paywallLocales.first(where: { $0 == preferredLocale }) {
-                    return exactMatch
-                }
-                // If no region match, return match that matched on region only
-                return languageMatch
-            }
-        }
-
-        return nil
+        return Locale.selectPreferredLocale(from: paywallLocales, preferredLocales: preferredLocales)
     }
+
 }
 
 private struct PaywallFallbackError: Error {

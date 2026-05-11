@@ -29,6 +29,9 @@ struct RootView: View {
     @Environment(\.componentInteractionLogger)
     private var componentInteractionLogger
 
+    @Environment(\.workflowPackageContext)
+    private var workflowPackageContext
+
     private let viewModel: RootViewModel
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
@@ -47,6 +50,12 @@ struct RootView: View {
         self.defaultPackage = defaultPackage
     }
 
+    // enforce filling the height of the screen to ensure headers and footers
+    // appear where they should for all stack dimensions
+    private var fillVerticalBounds: some View {
+        Color.clear.frame(width: 1)
+    }
+
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
             if let headerViewModel = viewModel.headerViewModel,
@@ -59,6 +68,8 @@ struct RootView: View {
             }
 
             ZStack(alignment: .top) {
+                fillVerticalBounds
+
                 StackComponentView(
                     viewModel: viewModel.stackViewModel,
                     isScrollableByDefault: true,
@@ -121,7 +132,7 @@ struct RootView: View {
             } else {
                 // Reset package selection when sheet is dismissed; snapshot sheet name before clear for analytics.
                 let selectionInSheetContext = self.packageContext.package
-                self.packageContext.package = self.defaultPackage
+                self.packageContext.package = self.workflowPackageContext?.selectedPackage ?? self.defaultPackage
                 let resultingRootPackage = self.packageContext.package
                 let sheetName = self.packageSelectionSheetComponentName
                 self.packageSelectionSheetComponentName = nil

@@ -20,23 +20,25 @@ class MockAdsAPI: AdsAPI {
         super.init(backendConfig: MockBackendConfiguration())
     }
 
-    var invokedGetAdMobSSVStatus = false
-    var invokedGetAdMobSSVStatusCount = 0
-    var invokedGetAdMobSSVStatusParameters: (appUserID: String, clientTransactionID: String)?
+    var invokedGetRewardVerificationStatus = false
+    var invokedGetRewardVerificationStatusCount = 0
+    var invokedGetRewardVerificationStatusParameters: (appUserID: String, clientTransactionID: String)?
 
-    var stubbedGetAdMobSSVStatusResult: Result<AdMobSSVStatusResponse, BackendError>?
+    var stubbedGetRewardVerificationStatusResult: Result<RewardVerificationStatusResponse, BackendError>?
 
-    override func getAdMobSSVStatus(
+    override func getRewardVerificationStatus(
         appUserID: String,
         clientTransactionID: String,
-        completion: @escaping AdMobSSVStatusResponseHandler
+        completion: @escaping RewardVerificationStatusResponseHandler
     ) {
-        invokedGetAdMobSSVStatus = true
-        invokedGetAdMobSSVStatusCount += 1
-        invokedGetAdMobSSVStatusParameters = (appUserID, clientTransactionID)
+        invokedGetRewardVerificationStatus = true
+        invokedGetRewardVerificationStatusCount += 1
+        invokedGetRewardVerificationStatusParameters = (appUserID, clientTransactionID)
 
-        guard let result = stubbedGetAdMobSSVStatusResult else {
-            preconditionFailure("Expected stubbedGetAdMobSSVStatusResult to be set before calling getAdMobSSVStatus")
+        guard let result = stubbedGetRewardVerificationStatusResult else {
+            preconditionFailure(
+                "Expected stubbedGetRewardVerificationStatusResult to be set before calling getRewardVerificationStatus"
+            )
         }
 
         completion(result)

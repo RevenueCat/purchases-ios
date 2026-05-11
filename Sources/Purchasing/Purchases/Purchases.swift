@@ -943,6 +943,26 @@ public extension Purchases {
         return self.offeringsManager.cachedOfferings
     }
 
+    @_spi(Internal)
+    // The backend uses the offering identifier as the workflow lookup key.
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
+        let result = try await Async.call { completion in
+            self.backend.workflowsAPI.getWorkflow(
+                appUserID: self.appUserID,
+                workflowId: offeringID,
+                isAppBackgrounded: false,
+                completion: completion
+            )
+        }
+        if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
+           let cache = self.paywallCache {
+            self.operationDispatcher.dispatchOnWorkerThread {
+                await cache.warmUpWorkflowCaches(workflow: result.workflow)
+            }
+        }
+        return result
+    }
+
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
         return try await self.offeringsAsync(fetchPolicy: fetchPolicy)
     }
@@ -1515,6 +1535,7 @@ public extension Purchases {
 public extension Purchases {
 
     /// Used by `RevenueCatUI` to keep track of ``PaywallEvent``s.
+    @_spi(Internal)
     func track(paywallEvent: PaywallEvent) async {
         await self.eventsManager?.track(featureEvent: paywallEvent)
     }
@@ -1570,20 +1591,20 @@ public extension Purchases {
 
 }
 
-// MARK: - AdMob SSV (Internal SPI)
+// MARK: - Reward Verification (Internal SPI)
 
 extension Purchases {
 
-    /// Polls the backend once for AdMob SSV verification status using `client_transaction_id`.
+    /// Polls the backend once for reward verification status using `client_transaction_id`.
     ///
     /// Internal API for RC ad adapters.
     ///
     /// Cancelling the calling `Task` does not cancel the in-flight HTTP request.
-    @_spi(Internal) public func pollAdMobSSVStatus(
+    @_spi(Internal) public func pollRewardVerificationStatus(
         clientTransactionID: String
-    ) async throws -> AdMobSSVPollStatus {
+    ) async throws -> RewardVerificationPollStatus {
         let response = try await Async.call { completion in
-            self.backend.adsAPI.getAdMobSSVStatus(
+            self.backend.adsAPI.getRewardVerificationStatus(
                 appUserID: self.appUserID,
                 clientTransactionID: clientTransactionID
             ) { result in
@@ -1592,8 +1613,8 @@ extension Purchases {
         }
 
         switch response.status {
-        case .validated:
-            return .validated
+        case let .verified(reward):
+            return .verified(reward)
         case .pending:
             return .pending
         case .failed:

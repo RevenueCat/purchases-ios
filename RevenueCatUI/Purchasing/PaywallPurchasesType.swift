@@ -30,6 +30,16 @@ protocol PaywallPurchasesType: Sendable {
     var subscriptionHistoryTracker: SubscriptionHistoryTracker { get }
 
     @Sendable
+    func offerings() async throws -> Offerings
+
+    var cachedOfferings: Offerings? { get }
+
+#if !os(tvOS)
+    @Sendable
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult
+#endif
+
+    @Sendable
     func purchase(
         package: Package,
         promotionalOffer: PromotionalOffer?,

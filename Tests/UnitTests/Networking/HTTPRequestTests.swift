@@ -36,7 +36,7 @@ class HTTPRequestTests: TestCase {
         .postSubscriberAttributes(appUserID: userID),
         .health,
         .getProductEntitlementMapping,
-        .adMobSSVStatus(appUserID: userID, clientTransactionID: clientTransactionID)
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID)
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
         .health
@@ -51,14 +51,14 @@ class HTTPRequestTests: TestCase {
         .health,
         .getOfferings(appUserID: userID),
         .getProductEntitlementMapping,
-        .adMobSSVStatus(appUserID: userID, clientTransactionID: clientTransactionID)
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID)
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
         .logIn,
         .postReceiptData,
         .health,
-        .adMobSSVStatus(appUserID: userID, clientTransactionID: clientTransactionID)
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
         .getCustomerInfo(appUserID: anonymousUser),

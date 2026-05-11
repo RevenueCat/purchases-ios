@@ -224,12 +224,22 @@ struct APIKeyDashboardList: View {
                                     #endif
                                 #endif
                             } else {
+                                #if !os(watchOS)
+                                OfferButton(offering: offering) {
+                                    self.isLoadingPaywall = true
+                                    self.presentedPaywall = .init(offering: offering, mode: .workflow)
+                                }
+                                .contextMenu {
+                                    self.button(for: .workflow, offering: offering)
+                                }
+                                #else
                                 VStack(alignment: .leading) {
                                     Text(offering.id)
                                     Text(offering.serverDescription)
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
+                                #endif
                             }
                         }
                     } header: {
@@ -308,6 +318,8 @@ struct APIKeyDashboardList: View {
                 self.offeringToPresent = offering
             case .presentPaywall:
                 self.presentPaywallOffering = offering
+            case .workflow:
+                self.presentedPaywall = .init(offering: offering, mode: selectedMode)
             }
         } label: {
             Text(selectedMode.name)

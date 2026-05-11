@@ -58,15 +58,17 @@ struct TextComponentView: View {
     }
 
     var body: some View {
+        let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
+            package: self.packageContext.package
+        )
+        let promoOffer = self.paywallPromoOfferCache.get(for: self.packageContext.package)
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
             selectedPackageId: self.selectedPackageId,
             packageContext: self.packageContext,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            promoOffer: self.paywallPromoOfferCache.get(for: self.packageContext.package),
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer,
             countdownTime: countdownTime,
             customVariables: self.customVariables
         ) { style in

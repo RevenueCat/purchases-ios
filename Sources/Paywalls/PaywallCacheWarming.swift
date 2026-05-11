@@ -12,6 +12,8 @@
 
 //  Created by Nacho Soto on 8/7/23.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 protocol PaywallCacheWarmingType: Sendable {
@@ -27,6 +29,9 @@ protocol PaywallCacheWarmingType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpPaywallFontsCache(offerings: Offerings) async
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func warmUpWorkflowCaches(workflow: PublishedWorkflow) async
 
 #if !os(tvOS) // For Paywalls
 
@@ -55,6 +60,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private var hasLoadedEligibility = false
     private var hasLoadedImages = false
     private var hasLoadedVideos = false
+    private var warmedWorkflowIDs: Set<String> = []
     private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
 
     init(
@@ -129,6 +135,53 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
                     await self?.installFont(from: font)
                 }
             }
+        }
+    }
+
+    func warmUpWorkflowCaches(workflow: PublishedWorkflow) async {
+        guard !self.warmedWorkflowIDs.contains(workflow.id) else { return }
+        self.warmedWorkflowIDs.insert(workflow.id)
+
+        // Intentionally prewarming all screens, not just those reachable from
+        // `initialStepId`. This trades off potentially downloading assets for
+        // unreachable screens against the simpler implementation. For workflows
+        // with many screens or complex branching, switch to a bounded graph walk
+        // from `initialStepId` via `WorkflowStep.stepTriggerActions` to limit
+        // data, battery, and connection usage.
+        let screens = Array(workflow.screens.values)
+
+        Logger.verbose(Strings.paywalls.warming_up_workflow(screenCount: screens.count))
+
+        let imageURLs = Set(screens.flatMap(\.allImageURLs))
+        let videoURLs = Set(screens.flatMap(\.allLowResVideoUrls))
+        #if !os(tvOS)
+        let fonts = workflow.uiConfig.app.allDownloadableFonts
+        #endif
+
+        await withTaskGroup(of: Void.self) { group in
+            for url in imageURLs {
+                group.addTask { [weak self] in
+                    guard let self = self else { return }
+                    _ = try? await self.fileRepository.generateOrGetCachedFileURL(for: url, withChecksum: nil)
+                }
+            }
+            for source in videoURLs {
+                group.addTask { [weak self] in
+                    guard let self = self else { return }
+                    _ = try? await self.fileRepository.generateOrGetCachedFileURL(
+                        for: source.url,
+                        withChecksum: source.checksum
+                    )
+                }
+            }
+            #if !os(tvOS)
+            for font in fonts {
+                group.addTask { [weak self] in
+                    guard let self = self else { return }
+                    await self.installFont(from: font)
+                }
+            }
+            #endif
         }
     }
 
