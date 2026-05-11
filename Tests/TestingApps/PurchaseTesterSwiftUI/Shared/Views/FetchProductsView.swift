@@ -63,7 +63,7 @@ struct FetchProductsView: View {
                 .lineLimit(nil)
                 .padding(.bottom)
 
-            if #available(iOS 26.4, *) {
+            if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
                 if let installmentsInfo = storeProduct.installmentsInfo {
                     VStack(spacing: 10) {
                         LabeledContent {
