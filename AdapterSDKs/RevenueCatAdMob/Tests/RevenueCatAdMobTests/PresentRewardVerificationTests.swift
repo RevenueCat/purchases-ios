@@ -52,7 +52,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         self.wait(for: [expectation], timeout: 2.0)
 
         let result = try XCTUnwrap(receivedResult)
-        XCTAssertTrue(result.isVerified)
+        XCTAssertNotNil(result.verifiedReward)
         XCTAssertEqual(result.verifiedReward?.virtualCurrency?.code, "coins")
         XCTAssertEqual(result.verifiedReward?.virtualCurrency?.amount, 4)
     }
