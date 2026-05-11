@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import RevenueCat
+import RevenueCat_CustomEntitlementComputation
 
 func checkInstallmentsInfo(installmentsInfo: InstallmentsInfo) {
     let commitmentInstallmentsCount: Int = installmentsInfo.commitmentInstallmentsCount
