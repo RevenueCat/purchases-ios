@@ -35,64 +35,32 @@ final class PresentMappingTests: AdapterTestCase {
 
     func testMapOutcomeVerified() {
         let reward = RevenueCat.VerifiedReward.virtualCurrency(VirtualCurrencyReward(code: "c", amount: 2))
-        var sideEffectCallCount = 0
-        let originalInvalidation = RewardVerification.SideEffects.invalidateVirtualCurrenciesCache
-        RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = {
-            sideEffectCallCount += 1
-        }
-        defer { RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = originalInvalidation }
-
         let result = RewardVerification.mapOutcome(.verified(reward))
 
-        XCTAssertEqual(sideEffectCallCount, 1)
         XCTAssertNotNil(result.verifiedReward)
         XCTAssertEqual(result.verifiedReward?.virtualCurrency?.code, "c")
         XCTAssertEqual(result.verifiedReward?.virtualCurrency?.amount, 2)
     }
 
     func testMapOutcomeFailed() {
-        var sideEffectCallCount = 0
-        let originalInvalidation = RewardVerification.SideEffects.invalidateVirtualCurrenciesCache
-        RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = {
-            sideEffectCallCount += 1
-        }
-        defer { RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = originalInvalidation }
-
         let result = RewardVerification.mapOutcome(.failed)
 
         XCTAssertTrue(result.isFailed)
         XCTAssertNil(result.verifiedReward)
-        XCTAssertEqual(sideEffectCallCount, 0)
     }
 
-    func testMapOutcomeVerifiedNoRewardDoesNotInvalidateVirtualCurrenciesCache() {
-        var sideEffectCallCount = 0
-        let originalInvalidation = RewardVerification.SideEffects.invalidateVirtualCurrenciesCache
-        RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = {
-            sideEffectCallCount += 1
-        }
-        defer { RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = originalInvalidation }
-
+    func testMapOutcomeVerifiedNoReward() {
         let result = RewardVerification.mapOutcome(.verified(.noReward))
 
         XCTAssertNotNil(result.verifiedReward)
         XCTAssertEqual(result.verifiedReward, .noReward)
-        XCTAssertEqual(sideEffectCallCount, 0)
     }
 
-    func testMapOutcomeVerifiedUnsupportedRewardDoesNotInvalidateVirtualCurrenciesCache() {
-        var sideEffectCallCount = 0
-        let originalInvalidation = RewardVerification.SideEffects.invalidateVirtualCurrenciesCache
-        RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = {
-            sideEffectCallCount += 1
-        }
-        defer { RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = originalInvalidation }
-
+    func testMapOutcomeVerifiedUnsupportedReward() {
         let result = RewardVerification.mapOutcome(.verified(.unsupportedReward))
 
         XCTAssertNotNil(result.verifiedReward)
         XCTAssertEqual(result.verifiedReward, .unsupportedReward)
-        XCTAssertEqual(sideEffectCallCount, 0)
     }
 }
 

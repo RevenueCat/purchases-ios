@@ -13,6 +13,25 @@ final class PresentRewardVerificationTests: AdapterTestCase {
     private static let testAPIKey = "appl_test_present_public_api"
     private static let testAppUserID = "user_present_public_api"
 
+    override func tearDown() {
+        RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = {
+            guard Purchases.isConfigured else { return }
+            Purchases.shared.invalidateVirtualCurrenciesCache()
+        }
+        super.tearDown()
+    }
+
+    func testPresentWithoutVerificationStateInvokesOnlyStartedWhenOutcomeNil() {
+        let fakeAd = FakeCapableAd()
+        var startedCount = 0
+        let handler = fakeAd.createUserDidEarnRewardHandler(
+            rewardVerificationStarted: { startedCount += 1 },
+            rewardVerificationResult: nil
+        )
+
+        handler()
+        XCTAssertEqual(startedCount, 1)
+    }
     func testPresentWithStateAndOutcomeDeliversVerifiedOutcome() throws {
         let fakeAd = FakeCapableAd()
         RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
@@ -112,6 +131,131 @@ final class PresentRewardVerificationTests: AdapterTestCase {
                 rewardVerificationResult: { _ in }
             )
         }.to(throwAssertion())
+    }
+
+    func testPresentWithVerifiedVirtualCurrencyInvalidatesVirtualCurrenciesCache() {
+        let fakeAd = FakeCapableAd()
+        RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
+
+        let reward = VirtualCurrencyReward(code: "coins", amount: 4)
+        let poller = RewardVerification.Poller(
+            statusPoller: StubStatusPoller(statuses: [.verified(.virtualCurrency(reward))]),
+            sleeper: RecordingSleeper(),
+            jitter: RewardVerification.Jitter { 0 },
+            maxAttempts: 5
+        )
+
+        var invalidationCallCount = 0
+        RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = {
+            invalidationCallCount += 1
+        }
+
+        let expectation = self.expectation(description: "verification callback")
+        let handler = fakeAd.createUserDidEarnRewardHandler(
+            rewardVerificationStarted: nil,
+            rewardVerificationResult: { _ in
+                expectation.fulfill()
+            },
+            poller: poller
+        )
+
+        handler()
+        self.wait(for: [expectation], timeout: 2.0)
+
+        XCTAssertEqual(invalidationCallCount, 1)
+    }
+
+    func testPresentWithNoRewardDoesNotInvalidateVirtualCurrenciesCache() {
+        let fakeAd = FakeCapableAd()
+        RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
+
+        let poller = RewardVerification.Poller(
+            statusPoller: StubStatusPoller(statuses: [.verified(.noReward)]),
+            sleeper: RecordingSleeper(),
+            jitter: RewardVerification.Jitter { 0 },
+            maxAttempts: 5
+        )
+
+        var invalidationCallCount = 0
+        RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = {
+            invalidationCallCount += 1
+        }
+
+        let expectation = self.expectation(description: "verification callback")
+        let handler = fakeAd.createUserDidEarnRewardHandler(
+            rewardVerificationStarted: nil,
+            rewardVerificationResult: { _ in
+                expectation.fulfill()
+            },
+            poller: poller
+        )
+
+        handler()
+        self.wait(for: [expectation], timeout: 2.0)
+
+        XCTAssertEqual(invalidationCallCount, 0)
+    }
+
+    func testPresentWithUnsupportedRewardDoesNotInvalidateVirtualCurrenciesCache() {
+        let fakeAd = FakeCapableAd()
+        RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
+
+        let poller = RewardVerification.Poller(
+            statusPoller: StubStatusPoller(statuses: [.verified(.unsupportedReward)]),
+            sleeper: RecordingSleeper(),
+            jitter: RewardVerification.Jitter { 0 },
+            maxAttempts: 5
+        )
+
+        var invalidationCallCount = 0
+        RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = {
+            invalidationCallCount += 1
+        }
+
+        let expectation = self.expectation(description: "verification callback")
+        let handler = fakeAd.createUserDidEarnRewardHandler(
+            rewardVerificationStarted: nil,
+            rewardVerificationResult: { _ in
+                expectation.fulfill()
+            },
+            poller: poller
+        )
+
+        handler()
+        self.wait(for: [expectation], timeout: 2.0)
+
+        XCTAssertEqual(invalidationCallCount, 0)
+    }
+
+    func testPresentWithFailedOutcomeDoesNotInvalidateVirtualCurrenciesCache() {
+        let fakeAd = FakeCapableAd()
+        RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
+
+        let poller = RewardVerification.Poller(
+            statusPoller: StubStatusPoller(statuses: [.failed]),
+            sleeper: RecordingSleeper(),
+            jitter: RewardVerification.Jitter { 0 },
+            maxAttempts: 5
+        )
+
+        var invalidationCallCount = 0
+        RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = {
+            invalidationCallCount += 1
+        }
+
+        let expectation = self.expectation(description: "verification callback")
+        let handler = fakeAd.createUserDidEarnRewardHandler(
+            rewardVerificationStarted: nil,
+            rewardVerificationResult: { _ in
+                expectation.fulfill()
+            },
+            poller: poller
+        )
+
+        handler()
+        self.wait(for: [expectation], timeout: 2.0)
+
+        XCTAssertEqual(invalidationCallCount, 0)
     }
 }
 

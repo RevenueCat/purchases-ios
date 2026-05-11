@@ -193,6 +193,9 @@ internal extension RewardVerification.CapableAd {
                 state: state,
                 poller: resolvedPoller,
                 outcomeHandler: { internalOutcome in
+                    if case .verified(.virtualCurrency) = internalOutcome {
+                        RewardVerification.SideEffects.invalidateVirtualCurrenciesCache()
+                    }
                     rewardVerificationResult(RewardVerification.mapOutcome(internalOutcome))
                 }
             )
@@ -218,9 +221,6 @@ internal extension RewardVerification {
     static func mapOutcome(_ outcome: Outcome) -> RewardVerificationResult {
         switch outcome {
         case .verified(let reward):
-            if case .virtualCurrency = reward {
-                Self.SideEffects.invalidateVirtualCurrenciesCache()
-            }
             return .verified(self.mapVerifiedReward(reward))
         case .failed:
             return .failed

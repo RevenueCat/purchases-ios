@@ -19,7 +19,7 @@ internal enum RewardVerification {
         /// Invalidates virtual-currency cache if the SDK is configured.
         ///
         /// This is test-injected in `RevenueCatAdMobTests` and should remain simple.
-        static var invalidateVirtualCurrenciesCache: @MainActor () -> Void = {
+        static var invalidateVirtualCurrenciesCache: () -> Void = {
             guard Purchases.isConfigured else { return }
             Purchases.shared.invalidateVirtualCurrenciesCache()
         }
