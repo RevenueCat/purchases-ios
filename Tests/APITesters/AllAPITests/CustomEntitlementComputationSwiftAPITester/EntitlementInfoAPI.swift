@@ -12,7 +12,7 @@
 //  Created by Madeline Beyl on 8/25/21.
 
 import Foundation
-import RevenueCat_CustomEntitlementComputation
+import RevenueCat_CustomEntitlementCasdfomputation
 
 var entitlementInfo: EntitlementInfo!
 func checkEntitlementInfoAPI() {
