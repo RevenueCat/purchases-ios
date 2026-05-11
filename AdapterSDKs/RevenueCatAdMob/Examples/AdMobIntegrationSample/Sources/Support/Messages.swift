@@ -28,6 +28,10 @@ struct Message: Equatable {
     ✅ Verified
     ⚠️ Unsupported reward
     """
+    private static let verificationUnhandledRewardTypeText = """
+    ✅ Verified
+    ⚠️ Unhandled reward type
+    """
 
     enum Rewarded {
         static let loading = Message(text: "⏳ Loading ad...", severity: .info, isLoading: true)
@@ -79,9 +83,15 @@ struct Message: Equatable {
                 severity: .success,
                 isLoading: false
             )
-        } else {
+        } else if verifiedReward == .unsupportedReward {
             return .init(
                 text: Self.verificationUnsupportedRewardText,
+                severity: .warning,
+                isLoading: false
+            )
+        } else {
+            return .init(
+                text: Self.verificationUnhandledRewardTypeText,
                 severity: .warning,
                 isLoading: false
             )
