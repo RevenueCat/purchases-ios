@@ -63,9 +63,21 @@ class ProductsManager: NSObject, ProductsManagerType {
         // It's possible for developers to request compound product identifiers that represent both
         // a product and a billing plan, like com.rc.sub:monthly. However, StoreKit doesn't recognize
         // these product IDs, so here, we convert them to product IDs that StoreKit can recognize.
+        var invalidProductIdentifiers: Set<String> = []
         let compoundProductIdentifiers: Set<CompoundProductIdentifier> = Set(
-            identifiers.compactMap(CompoundProductIdentifier.init(compoundProductIdentifier:))
+            identifiers.compactMap { identifier in
+                guard let compoundIdentifier = CompoundProductIdentifier(compoundProductIdentifier: identifier) else {
+                    invalidProductIdentifiers.insert(identifier)
+                    return nil
+                }
+
+                return compoundIdentifier
+            }
         )
+        if !invalidProductIdentifiers.isEmpty {
+            Logger.warn(Strings.storeKit.invalid_product_identifiers(identifiers: invalidProductIdentifiers))
+        }
+
         let storeKitIdentifiers: Set<String> = Set(
             compoundProductIdentifiers.map(\.storeKitProductIdentifier)
         )

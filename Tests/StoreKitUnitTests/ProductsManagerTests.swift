@@ -76,6 +76,60 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         expect(product.productIdentifier) == storeKitProductIdentifier
     }
 
+    func testFetchProductsWithInvalidCompoundIdentifiersLogsWarning() throws {
+        let productsRequestFactory = MockProductsRequestFactory()
+        let manager = self.createManager(
+            storeKitVersion: .storeKit1,
+            productsRequestFactory: productsRequestFactory
+        )
+        self.logger.clearMessages()
+
+        let invalidIdentifiers: Set<String> = [
+            "",
+            "com.revenuecat.subscription:monthly:extra"
+        ]
+        let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
+            manager.products(withIdentifiers: invalidIdentifiers, completion: completed)
+        }
+
+        let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
+        expect(unwrappedProducts).to(beEmpty())
+        expect(productsRequestFactory.invokedRequest) == false
+
+        self.logger.verifyMessageWasLogged(
+            regexPattern: "Invalid product identifiers were ignored: .*com\\.revenuecat\\.subscription:monthly:extra",
+            level: .warn
+        )
+        self.logger.verifyMessageWasLogged(
+            regexPattern: "Invalid product identifiers were ignored: .*\"\"",
+            level: .warn
+        )
+    }
+
+    func testFetchProductsWithValidCompoundIdentifiersDoesNotLogWarning() throws {
+        let productsRequestFactory = MockProductsRequestFactory()
+        let manager = self.createManager(
+            storeKitVersion: .storeKit1,
+            productsRequestFactory: productsRequestFactory
+        )
+        self.logger.clearMessages()
+
+        let validIdentifiers: Set<String> = [
+            "com.revenuecat.sub",
+            "com.revenuecat.sub:monthly"
+        ]
+        let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
+            manager.products(withIdentifiers: validIdentifiers, completion: completed)
+        }
+
+        _ = try XCTUnwrap(receivedProducts?.get())
+        expect(productsRequestFactory.invokedRequestParameters) == ["com.revenuecat.sub"]
+        expect(self.logger.messages).toNot(containElementSatisfying { message in
+            message.level == .warn
+                && message.message.contains("Invalid product identifiers were ignored")
+        })
+    }
+
     func testBaseSK2ProductIsRemovedWhenOnlyCompoundIdentifierIsRequested() throws {
         let storeKitProductIdentifier = "com.revenuecat.subscription"
         let requestedIdentifiers: Set<CompoundProductIdentifier> = [

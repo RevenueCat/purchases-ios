@@ -57,6 +57,8 @@ enum StoreKitStrings {
 
     case no_cached_products_starting_store_products_request(identifiers: Set<String>)
 
+    case invalid_product_identifiers(identifiers: Set<String>)
+
     case sk1_payment_queue_too_many_transactions(count: Int, isSandbox: Bool)
 
     case sk1_finish_transaction_called_with_existing_completion(SKPaymentTransaction)
@@ -174,6 +176,9 @@ extension StoreKitStrings: LogMessage {
 
         case .no_cached_products_starting_store_products_request(let identifiers):
             return "No existing products cached, starting store products request for: \(identifiers)"
+
+        case .invalid_product_identifiers(let identifiers):
+            return "Invalid product identifiers were ignored: \(identifiers)"
 
         case let .sk1_payment_queue_too_many_transactions(count, isSandbox):
             let messageSuffix = isSandbox
