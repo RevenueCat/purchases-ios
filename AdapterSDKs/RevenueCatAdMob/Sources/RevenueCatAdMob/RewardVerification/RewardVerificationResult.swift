@@ -36,6 +36,11 @@ import Foundation
         return reward
     }
 
+    /// Whether this result is ``verified(_:)``.
+    public var isVerified: Bool {
+        self.verifiedReward != nil
+    }
+
     /// Whether this result is ``failed``.
     public var isFailed: Bool {
         if case .failed = self.storage { return true }
