@@ -89,6 +89,7 @@ import Foundation
             hasher.combine(name)
             hasher.combine(id)
             hasher.combine(action)
+            hasher.combine(isCloseWorkflowAction)
             hasher.combine(stack)
             hasher.combine(transition)
         }
@@ -98,6 +99,7 @@ import Foundation
                    lhs.name == rhs.name &&
                    lhs.id == rhs.id &&
                    lhs.action == rhs.action &&
+                   lhs.isCloseWorkflowAction == rhs.isCloseWorkflowAction &&
                    lhs.stack == rhs.stack &&
                    lhs.transition == rhs.transition
 
