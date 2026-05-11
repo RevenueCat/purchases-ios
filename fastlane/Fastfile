@@ -754,7 +754,7 @@ platform :ios do
 
     scan(
       step_name: "scan - watchOS",
-      device: ENV['SCAN_DEVICE'] || "Apple Watch Series 10 (46mm)",
+      device: ENV['SCAN_DEVICE'] || "Apple Watch Series 11 (42mm)",
       ensure_devices_found: true,
       scheme: "RevenueCat",
       prelaunch_simulator: true,
