@@ -76,6 +76,31 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         expect(product.productIdentifier) == storeKitProductIdentifier
     }
 
+    func testBaseSK2ProductIsRemovedWhenOnlyCompoundIdentifierIsRequested() throws {
+        let storeKitProductIdentifier = "com.revenuecat.subscription"
+        let requestedIdentifiers: Set<CompoundProductIdentifier> = [
+            try XCTUnwrap(CompoundProductIdentifier(compoundProductIdentifier: "\(storeKitProductIdentifier):monthly"))
+        ]
+
+        expect(ProductsManager.shouldRemoveBaseSK2Product(
+            productIdentifier: storeKitProductIdentifier,
+            requestedIdentifiers: requestedIdentifiers
+        )) == true
+    }
+
+    func testBaseSK2ProductIsKeptWhenBaseAndCompoundIdentifiersAreRequested() throws {
+        let storeKitProductIdentifier = "com.revenuecat.subscription"
+        let requestedIdentifiers: Set<CompoundProductIdentifier> = [
+            try XCTUnwrap(CompoundProductIdentifier(compoundProductIdentifier: storeKitProductIdentifier)),
+            try XCTUnwrap(CompoundProductIdentifier(compoundProductIdentifier: "\(storeKitProductIdentifier):monthly"))
+        ]
+
+        expect(ProductsManager.shouldRemoveBaseSK2Product(
+            productIdentifier: storeKitProductIdentifier,
+            requestedIdentifiers: requestedIdentifiers
+        )) == false
+    }
+
     func testClearCacheAfterStorefrontChangesSK1() async throws {
         let manager = self.createManager(storeKitVersion: .storeKit1)
 

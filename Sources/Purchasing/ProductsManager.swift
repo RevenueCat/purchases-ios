@@ -138,6 +138,19 @@ class ProductsManager: NSObject, ProductsManagerType {
             let productsByStoreKitProductIdentifier = products.dictionaryWithKeys({ $0.productIdentifier })
             var productsIncludingBillingPlanProducts = products
 
+            // When the user requests a compound product ID but not the base product ID,
+            // we only want to return the compound product
+            func removeBaseProductIfNotRequested(_ product: SK2StoreProduct) {
+                guard Self.shouldRemoveBaseSK2Product(
+                    productIdentifier: product.productIdentifier,
+                    requestedIdentifiers: requestedIdentifiers
+                ) else {
+                    return
+                }
+
+                productsIncludingBillingPlanProducts.remove(product)
+            }
+
             for compoundProductIdentifier in requestedIdentifiersWithPlanIdentifiers {
                 let storeKitProductIdentifier = compoundProductIdentifier.storeKitProductIdentifier
                 guard let productFromStoreKit = productsByStoreKitProductIdentifier[storeKitProductIdentifier] else {
@@ -146,10 +159,11 @@ class ProductsManager: NSObject, ProductsManagerType {
 
                 guard let requestedBillingPlanType = compoundProductIdentifier.sk2BillingPlanType else {
                     // Unrecognized billing plan type. Return no products for this request.
-                    productsIncludingBillingPlanProducts.remove(productFromStoreKit)
+                    removeBaseProductIfNotRequested(productFromStoreKit)
                     continue
                 }
                 guard let pricingTerms = productFromStoreKit.underlyingSK2Product.subscription?.pricingTerms else {
+                    removeBaseProductIfNotRequested(productFromStoreKit)
                     continue
                 }
 
@@ -168,10 +182,10 @@ class ProductsManager: NSObject, ProductsManagerType {
                         installmentsInfo: installmentsInfo
                     )
                     productsIncludingBillingPlanProducts.insert(billingPlanProduct)
-                    productsIncludingBillingPlanProducts.remove(productFromStoreKit)
+                    removeBaseProductIfNotRequested(productFromStoreKit)
                 } else {
                     // The requested billing plan isn't available for this user. Return no products for this request.
-                    productsIncludingBillingPlanProducts.remove(productFromStoreKit)
+                    removeBaseProductIfNotRequested(productFromStoreKit)
                 }
             }
 
@@ -184,6 +198,16 @@ class ProductsManager: NSObject, ProductsManagerType {
         // Billing plans aren't supported
         return products
         #endif
+    }
+
+    static func shouldRemoveBaseSK2Product(
+        productIdentifier: String,
+        requestedIdentifiers: Set<CompoundProductIdentifier>
+    ) -> Bool {
+        return !requestedIdentifiers.contains {
+            $0.productPlanIdentifier == nil
+                && $0.storeKitProductIdentifier == productIdentifier
+        }
     }
 
     // This class does not implement caching.
