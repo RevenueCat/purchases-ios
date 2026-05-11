@@ -986,6 +986,31 @@ jobs:
           destination: scan-test-output-ios-26
       - slack-notify-on-fail
 
+  build-ios-265:
+    executor:
+      name: macos-executor
+      xcode_version: "26.5"
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Build RevenueCat with Xcode 26.5
+          command: xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCat -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES build
+          no_output_timeout: 30m
+      - run:
+          name: Build RevenueCat_CustomEntitlementComputation with Xcode 26.5
+          command: xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCat_CustomEntitlementComputation -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES build
+          no_output_timeout: 30m
+      - run:
+          name: Build ReceiptParser with Xcode 26.5
+          command: xcodebuild -workspace RevenueCat.xcworkspace -scheme "ReceiptParser (RevenueCat Workspace)" -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES build
+          no_output_timeout: 30m
+      - run:
+          name: Build RevenueCatUI with Xcode 26.5
+          command: xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCatUI -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES build
+          no_output_timeout: 30m
+      - slack-notify-on-fail
+
   run-test-ios-18-and-17:
     executor:
       name: macos-executor
@@ -2168,6 +2193,9 @@ workflows:
       - run-test-ios-26:
           context:
             - slack-secrets
+      - build-ios-265:
+          context:
+            - slack-secrets
       - pod-lib-lint:
           context:
             - slack-secrets
@@ -2333,6 +2361,7 @@ workflows:
             - check-api-changes-revenuecat
             - check-api-changes-revenuecatui
             - run-test-ios-26
+            - build-ios-265
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
@@ -2629,6 +2658,9 @@ workflows:
       - run-test-ios-26:
           context:
             - slack-secrets
+      - build-ios-265:
+          context:
+            - slack-secrets
       - pod-lib-lint:
           context:
             - slack-secrets
@@ -2649,6 +2681,7 @@ workflows:
             - run-all-maestro-e2e-tests
             - lint
             - run-test-ios-26
+            - build-ios-265
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
