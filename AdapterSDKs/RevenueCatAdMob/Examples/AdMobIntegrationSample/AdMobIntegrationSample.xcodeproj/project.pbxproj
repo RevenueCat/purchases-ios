@@ -8,19 +8,67 @@
 
 /* Begin PBXBuildFile section */
 		90DB26DC2F6DA55D006859ED /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB26DA2F6DA55D006859ED /* HomeView.swift */; };
-		90DB26DD2F6DA55D006859ED /* AdMobManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB26D72F6DA55D006859ED /* AdMobManager.swift */; };
 		90DB26DE2F6DA55D006859ED /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB26D82F6DA55D006859ED /* App.swift */; };
 		90DB26DF2F6DA55D006859ED /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB26D92F6DA55D006859ED /* Constants.swift */; };
 		90DB26E92F6DA91C006859ED /* RevenueCatAdMob in Frameworks */ = {isa = PBXBuildFile; productRef = 90DB26E82F6DA91C006859ED /* RevenueCatAdMob */; };
+		90DB271B2F6DB001006859ED /* Messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB270B2F6DB001006859ED /* Messages.swift */; };
+		90DB271C2F6DB001006859ED /* BannerAdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB270C2F6DB001006859ED /* BannerAdManager.swift */; };
+		90DB271D2F6DB001006859ED /* InterstitialAdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB270D2F6DB001006859ED /* InterstitialAdManager.swift */; };
+		90DB271E2F6DB001006859ED /* AppOpenAdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB270E2F6DB001006859ED /* AppOpenAdManager.swift */; };
+		90DB271F2F6DB001006859ED /* RewardedAdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB270F2F6DB001006859ED /* RewardedAdManager.swift */; };
+		90DB27202F6DB001006859ED /* RewardedInterstitialAdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27102F6DB001006859ED /* RewardedInterstitialAdManager.swift */; };
+		90DB27212F6DB001006859ED /* NativeAdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27112F6DB001006859ED /* NativeAdManager.swift */; };
+		90DB27222F6DB001006859ED /* ErrorTestingAdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27122F6DB001006859ED /* ErrorTestingAdManager.swift */; };
+		90DB27242F6DB001006859ED /* NativeVideoAdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27142F6DB001006859ED /* NativeVideoAdManager.swift */; };
+		90DB27252F6DB001006859ED /* VerifiedRewardedAdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27152F6DB001006859ED /* VerifiedRewardedAdManager.swift */; };
+		90DB27262F6DB001006859ED /* VerifiedRewardedInterstitialAdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27162F6DB001006859ED /* VerifiedRewardedInterstitialAdManager.swift */; };
+		90DB27502F6DB001006859ED /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27302F6DB001006859ED /* RootViewController.swift */; };
+		90DB27512F6DB001006859ED /* StatusAndButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27312F6DB001006859ED /* StatusAndButtons.swift */; };
+		90DB27522F6DB001006859ED /* RewardedControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27322F6DB001006859ED /* RewardedControls.swift */; };
+		90DB27532F6DB001006859ED /* ResultCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27332F6DB001006859ED /* ResultCard.swift */; };
+		90DB27542F6DB001006859ED /* NativeAdViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27342F6DB001006859ED /* NativeAdViewRepresentable.swift */; };
+		90DB27552F6DB001006859ED /* BannerAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27352F6DB001006859ED /* BannerAdView.swift */; };
+		90DB27562F6DB001006859ED /* BannerDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27362F6DB001006859ED /* BannerDetailView.swift */; };
+		90DB27572F6DB001006859ED /* InterstitialDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27372F6DB001006859ED /* InterstitialDetailView.swift */; };
+		90DB27582F6DB001006859ED /* AppOpenDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27382F6DB001006859ED /* AppOpenDetailView.swift */; };
+		90DB27592F6DB001006859ED /* RewardedDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB27392F6DB001006859ED /* RewardedDetailView.swift */; };
+		90DB275A2F6DB001006859ED /* RewardedInterstitialDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB273A2F6DB001006859ED /* RewardedInterstitialDetailView.swift */; };
+		90DB275B2F6DB001006859ED /* NativeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB273B2F6DB001006859ED /* NativeDetailView.swift */; };
+		90DB275C2F6DB001006859ED /* NativeVideoDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB273C2F6DB001006859ED /* NativeVideoDetailView.swift */; };
+		90DB275D2F6DB001006859ED /* ErrorTestingDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DB273D2F6DB001006859ED /* ErrorTestingDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		90DB26AD2F6DA41B006859ED /* AdMobIntegrationSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AdMobIntegrationSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		90DB26D72F6DA55D006859ED /* AdMobManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdMobManager.swift; sourceTree = "<group>"; };
 		90DB26D82F6DA55D006859ED /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		90DB26D92F6DA55D006859ED /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		90DB26DA2F6DA55D006859ED /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		90DB26E32F6DA862006859ED /* AdMobIntegrationSample-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "AdMobIntegrationSample-Info.plist"; sourceTree = "<group>"; };
+		90DB270B2F6DB001006859ED /* Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Support/Messages.swift; sourceTree = "<group>"; };
+		90DB270C2F6DB001006859ED /* BannerAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/BannerAdManager.swift; sourceTree = "<group>"; };
+		90DB270D2F6DB001006859ED /* InterstitialAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/InterstitialAdManager.swift; sourceTree = "<group>"; };
+		90DB270E2F6DB001006859ED /* AppOpenAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/AppOpenAdManager.swift; sourceTree = "<group>"; };
+		90DB270F2F6DB001006859ED /* RewardedAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/RewardedAdManager.swift; sourceTree = "<group>"; };
+		90DB27102F6DB001006859ED /* RewardedInterstitialAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/RewardedInterstitialAdManager.swift; sourceTree = "<group>"; };
+		90DB27112F6DB001006859ED /* NativeAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/NativeAdManager.swift; sourceTree = "<group>"; };
+		90DB27122F6DB001006859ED /* ErrorTestingAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/ErrorTestingAdManager.swift; sourceTree = "<group>"; };
+		90DB27142F6DB001006859ED /* NativeVideoAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/NativeVideoAdManager.swift; sourceTree = "<group>"; };
+		90DB27152F6DB001006859ED /* VerifiedRewardedAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/VerifiedRewardedAdManager.swift; sourceTree = "<group>"; };
+		90DB27162F6DB001006859ED /* VerifiedRewardedInterstitialAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManagers/VerifiedRewardedInterstitialAdManager.swift; sourceTree = "<group>"; };
+		90DB27302F6DB001006859ED /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Support/RootViewController.swift; sourceTree = "<group>"; };
+		90DB27312F6DB001006859ED /* StatusAndButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components/StatusAndButtons.swift; sourceTree = "<group>"; };
+		90DB27322F6DB001006859ED /* RewardedControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components/RewardedControls.swift; sourceTree = "<group>"; };
+		90DB27332F6DB001006859ED /* ResultCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components/ResultCard.swift; sourceTree = "<group>"; };
+		90DB27342F6DB001006859ED /* NativeAdViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components/NativeAdViewRepresentable.swift; sourceTree = "<group>"; };
+		90DB27352F6DB001006859ED /* BannerAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components/BannerAdView.swift; sourceTree = "<group>"; };
+		90DB27362F6DB001006859ED /* BannerDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViews/BannerDetailView.swift; sourceTree = "<group>"; };
+		90DB27372F6DB001006859ED /* InterstitialDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViews/InterstitialDetailView.swift; sourceTree = "<group>"; };
+		90DB27382F6DB001006859ED /* AppOpenDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViews/AppOpenDetailView.swift; sourceTree = "<group>"; };
+		90DB27392F6DB001006859ED /* RewardedDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViews/RewardedDetailView.swift; sourceTree = "<group>"; };
+		90DB273A2F6DB001006859ED /* RewardedInterstitialDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViews/RewardedInterstitialDetailView.swift; sourceTree = "<group>"; };
+		90DB273B2F6DB001006859ED /* NativeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViews/NativeDetailView.swift; sourceTree = "<group>"; };
+		90DB273C2F6DB001006859ED /* NativeVideoDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViews/NativeVideoDetailView.swift; sourceTree = "<group>"; };
+		90DB273D2F6DB001006859ED /* ErrorTestingDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViews/ErrorTestingDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,7 +103,31 @@
 		90DB26DB2F6DA55D006859ED /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				90DB26D72F6DA55D006859ED /* AdMobManager.swift */,
+				90DB270B2F6DB001006859ED /* Messages.swift */,
+				90DB270C2F6DB001006859ED /* BannerAdManager.swift */,
+				90DB270D2F6DB001006859ED /* InterstitialAdManager.swift */,
+				90DB270E2F6DB001006859ED /* AppOpenAdManager.swift */,
+				90DB270F2F6DB001006859ED /* RewardedAdManager.swift */,
+				90DB27152F6DB001006859ED /* VerifiedRewardedAdManager.swift */,
+				90DB27102F6DB001006859ED /* RewardedInterstitialAdManager.swift */,
+				90DB27162F6DB001006859ED /* VerifiedRewardedInterstitialAdManager.swift */,
+				90DB27112F6DB001006859ED /* NativeAdManager.swift */,
+				90DB27142F6DB001006859ED /* NativeVideoAdManager.swift */,
+				90DB27122F6DB001006859ED /* ErrorTestingAdManager.swift */,
+				90DB27302F6DB001006859ED /* RootViewController.swift */,
+				90DB27312F6DB001006859ED /* StatusAndButtons.swift */,
+				90DB27322F6DB001006859ED /* RewardedControls.swift */,
+				90DB27332F6DB001006859ED /* ResultCard.swift */,
+				90DB27342F6DB001006859ED /* NativeAdViewRepresentable.swift */,
+				90DB27352F6DB001006859ED /* BannerAdView.swift */,
+				90DB27362F6DB001006859ED /* BannerDetailView.swift */,
+				90DB27372F6DB001006859ED /* InterstitialDetailView.swift */,
+				90DB27382F6DB001006859ED /* AppOpenDetailView.swift */,
+				90DB27392F6DB001006859ED /* RewardedDetailView.swift */,
+				90DB273A2F6DB001006859ED /* RewardedInterstitialDetailView.swift */,
+				90DB273B2F6DB001006859ED /* NativeDetailView.swift */,
+				90DB273C2F6DB001006859ED /* NativeVideoDetailView.swift */,
+				90DB273D2F6DB001006859ED /* ErrorTestingDetailView.swift */,
 				90DB26D82F6DA55D006859ED /* App.swift */,
 				90DB26D92F6DA55D006859ED /* Constants.swift */,
 				90DB26DA2F6DA55D006859ED /* HomeView.swift */,
@@ -138,10 +210,34 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				90DB27222F6DB001006859ED /* ErrorTestingAdManager.swift in Sources */,
+				90DB27212F6DB001006859ED /* NativeAdManager.swift in Sources */,
+				90DB27202F6DB001006859ED /* RewardedInterstitialAdManager.swift in Sources */,
+				90DB271F2F6DB001006859ED /* RewardedAdManager.swift in Sources */,
+				90DB27252F6DB001006859ED /* VerifiedRewardedAdManager.swift in Sources */,
+				90DB271E2F6DB001006859ED /* AppOpenAdManager.swift in Sources */,
+				90DB271D2F6DB001006859ED /* InterstitialAdManager.swift in Sources */,
+				90DB27262F6DB001006859ED /* VerifiedRewardedInterstitialAdManager.swift in Sources */,
+				90DB271C2F6DB001006859ED /* BannerAdManager.swift in Sources */,
+				90DB27242F6DB001006859ED /* NativeVideoAdManager.swift in Sources */,
+				90DB271B2F6DB001006859ED /* Messages.swift in Sources */,
 				90DB26DC2F6DA55D006859ED /* HomeView.swift in Sources */,
-				90DB26DD2F6DA55D006859ED /* AdMobManager.swift in Sources */,
 				90DB26DE2F6DA55D006859ED /* App.swift in Sources */,
 				90DB26DF2F6DA55D006859ED /* Constants.swift in Sources */,
+				90DB27502F6DB001006859ED /* RootViewController.swift in Sources */,
+				90DB27512F6DB001006859ED /* StatusAndButtons.swift in Sources */,
+				90DB27522F6DB001006859ED /* RewardedControls.swift in Sources */,
+				90DB27532F6DB001006859ED /* ResultCard.swift in Sources */,
+				90DB27542F6DB001006859ED /* NativeAdViewRepresentable.swift in Sources */,
+				90DB27552F6DB001006859ED /* BannerAdView.swift in Sources */,
+				90DB27562F6DB001006859ED /* BannerDetailView.swift in Sources */,
+				90DB27572F6DB001006859ED /* InterstitialDetailView.swift in Sources */,
+				90DB27582F6DB001006859ED /* AppOpenDetailView.swift in Sources */,
+				90DB27592F6DB001006859ED /* RewardedDetailView.swift in Sources */,
+				90DB275A2F6DB001006859ED /* RewardedInterstitialDetailView.swift in Sources */,
+				90DB275B2F6DB001006859ED /* NativeDetailView.swift in Sources */,
+				90DB275C2F6DB001006859ED /* NativeVideoDetailView.swift in Sources */,
+				90DB275D2F6DB001006859ED /* ErrorTestingDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
