@@ -38,7 +38,7 @@ struct Message: Equatable {
         static let readyWithoutVerification = Message(text: "🔓 Ready", severity: .info, isLoading: false)
         static let readyWithVerification = Message(text: "🔐 Ready", severity: .info, isLoading: false)
         static let waitingForReward = Message(text: "⏳ Waiting for reward...", severity: .info, isLoading: false)
-        static let verifyingReward = Message(text: "⏳ Verifying reward...", severity: .info, isLoading: false)
+        static let verifyingReward = Message(text: "⏳ Verifying reward...", severity: .info, isLoading: true)
         static let loadFailed = Message(text: "❌ Load failed", severity: .error, isLoading: false)
         static let dismissedBeforeReward = Message(
             text: "⚠️ Ad dismissed before reward was earned",
