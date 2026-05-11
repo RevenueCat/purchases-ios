@@ -30,6 +30,8 @@ import GoogleMobileAds
     /// Callback timing:
     /// - `rewardVerificationStarted` runs when the AdMob SDK invokes the reward callback and verification begins.
     /// - `rewardVerificationResult` runs later with the final verification outcome.
+    ///   When verification returns `.verified(.virtualCurrency(...))`, this API automatically invalidates
+    ///   RevenueCat virtual currencies cache before delivering the callback.
     ///
     /// To override the placement used for RevenueCat analytics at show time, use
     /// ``present(from:placement:rewardVerificationStarted:rewardVerificationResult:)`` instead of this method.
@@ -60,6 +62,8 @@ import GoogleMobileAds
     /// Callback timing:
     /// - `rewardVerificationStarted` runs when the AdMob SDK invokes the reward callback and verification begins.
     /// - `rewardVerificationResult` runs later with the final verification outcome.
+    ///   When verification returns `.verified(.virtualCurrency(...))`, this API automatically invalidates
+    ///   RevenueCat virtual currencies cache before delivering the callback.
     @MainActor
     func present(
         from viewController: UIViewController,
@@ -99,6 +103,8 @@ import GoogleMobileAds
     /// Callback timing:
     /// - `rewardVerificationStarted` runs when the AdMob SDK invokes the reward callback and verification begins.
     /// - `rewardVerificationResult` runs later with the final verification outcome.
+    ///   When verification returns `.verified(.virtualCurrency(...))`, this API automatically invalidates
+    ///   RevenueCat virtual currencies cache before delivering the callback.
     ///
     /// To override the placement used for RevenueCat analytics at show time, use
     /// ``present(from:placement:rewardVerificationStarted:rewardVerificationResult:)`` instead of this method.
@@ -129,6 +135,8 @@ import GoogleMobileAds
     /// Callback timing:
     /// - `rewardVerificationStarted` runs when the AdMob SDK invokes the reward callback and verification begins.
     /// - `rewardVerificationResult` runs later with the final verification outcome.
+    ///   When verification returns `.verified(.virtualCurrency(...))`, this API automatically invalidates
+    ///   RevenueCat virtual currencies cache before delivering the callback.
     @MainActor
     func present(
         from viewController: UIViewController,
@@ -210,6 +218,9 @@ internal extension RewardVerification {
     static func mapOutcome(_ outcome: Outcome) -> RewardVerificationResult {
         switch outcome {
         case .verified(let reward):
+            if case .virtualCurrency = reward {
+                Self.SideEffects.invalidateVirtualCurrenciesCache()
+            }
             return .verified(self.mapVerifiedReward(reward))
         case .failed:
             return .failed
