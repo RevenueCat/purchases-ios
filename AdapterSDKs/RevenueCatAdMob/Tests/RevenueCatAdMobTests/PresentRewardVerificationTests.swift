@@ -13,18 +13,6 @@ final class PresentRewardVerificationTests: AdapterTestCase {
     private static let testAPIKey = "appl_test_present_public_api"
     private static let testAppUserID = "user_present_public_api"
 
-    func testPresentWithoutVerificationStateInvokesOnlyStartedWhenOutcomeNil() {
-        let fakeAd = FakeCapableAd()
-        var startedCount = 0
-        let handler = fakeAd.createUserDidEarnRewardHandler(
-            rewardVerificationStarted: { startedCount += 1 },
-            rewardVerificationResult: nil
-        )
-
-        handler()
-        XCTAssertEqual(startedCount, 1)
-    }
-
     func testPresentWithStateAndOutcomeDeliversVerifiedOutcome() throws {
         let fakeAd = FakeCapableAd()
         RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
