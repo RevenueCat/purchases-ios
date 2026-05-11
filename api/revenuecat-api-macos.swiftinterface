@@ -1892,6 +1892,16 @@ extension RevenueCat.EntitlementInfos {
 }
 extension RevenueCat.EntitlementInfos : Swift.Sendable {
 }
+@objc(RCInstallmentsInfo) final public class InstallmentsInfo : ObjectiveC.NSObject, Swift.Sendable {
+  @objc final public let commitmentInstallmentsCount: Swift.Int
+  @objc final public let commitmentTotalPeriod: RevenueCat.SubscriptionPeriod
+  @objc final public let commitmentTotalPrice: Foundation.Decimal
+  @objc final public let commitmentTotalDisplayPrice: Swift.String
+  @objc final public let installmentBillingPrice: Foundation.Decimal
+  @objc final public let installmentBillingDisplayPrice: Swift.String
+  @objc public init(commitmentInstallmentsCount: Swift.Int, commitmentTotalPeriod: RevenueCat.SubscriptionPeriod, commitmentTotalPrice: Foundation.Decimal, commitmentTotalDisplayPrice: Swift.String, installmentBillingPrice: Foundation.Decimal, installmentBillingDisplayPrice: Swift.String)
+  @objc deinit
+}
 @objc(RCIntroEligibilityStatus) public enum IntroEligibilityStatus : Swift.Int {
   case unknown = 0
   case ineligible
@@ -2925,6 +2935,12 @@ public typealias SK2Product = StoreKit.Product
   @objc final public var discounts: [RevenueCat.StoreProductDiscount] {
     @objc get
   }
+  #if compiler(>=5.3) && $NonescapableTypes
+  @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+  @objc final public var installmentsInfo: RevenueCat.InstallmentsInfo? {
+    @objc get
+  }
+  #endif
   @objc deinit
 }
 extension RevenueCat.StoreProduct {
@@ -3338,12 +3354,13 @@ public struct TestStoreProduct {
   public var introductoryDiscount: RevenueCat.StoreProductDiscount?
   public var discounts: [RevenueCat.StoreProductDiscount]
   public var locale: Foundation.Locale
+  public var installmentsInfo: RevenueCat.InstallmentsInfo?
   #if compiler(>=5.3) && $NonescapableTypes
   @available(*, deprecated, message: "Use init(localizedTitle:price:currencyCode:localizedPriceString:productIdentifier:productType:localizedDescription:subscriptionGroupIdentifier:subscriptionPeriod:isFamilyShareable:introductoryDiscount:discounts:locale:) instead")
   public init(localizedTitle: Swift.String, price: Foundation.Decimal, localizedPriceString: Swift.String, productIdentifier: Swift.String, productType: RevenueCat.StoreProduct.ProductType, localizedDescription: Swift.String, subscriptionGroupIdentifier: Swift.String? = nil, subscriptionPeriod: RevenueCat.SubscriptionPeriod? = nil, isFamilyShareable: Swift.Bool = false, introductoryDiscount: RevenueCat.TestStoreProductDiscount? = nil, discounts: [RevenueCat.TestStoreProductDiscount] = [], locale: Foundation.Locale = .current)
   #endif
   #if compiler(>=5.3) && $NonescapableTypes
-  public init(localizedTitle: Swift.String, price: Foundation.Decimal, currencyCode: Swift.String, localizedPriceString: Swift.String, productIdentifier: Swift.String, productType: RevenueCat.StoreProduct.ProductType, localizedDescription: Swift.String, subscriptionGroupIdentifier: Swift.String? = nil, subscriptionPeriod: RevenueCat.SubscriptionPeriod? = nil, isFamilyShareable: Swift.Bool = false, introductoryDiscount: RevenueCat.TestStoreProductDiscount? = nil, discounts: [RevenueCat.TestStoreProductDiscount] = [], locale: Foundation.Locale)
+  public init(localizedTitle: Swift.String, price: Foundation.Decimal, currencyCode: Swift.String, localizedPriceString: Swift.String, productIdentifier: Swift.String, productType: RevenueCat.StoreProduct.ProductType, localizedDescription: Swift.String, subscriptionGroupIdentifier: Swift.String? = nil, subscriptionPeriod: RevenueCat.SubscriptionPeriod? = nil, isFamilyShareable: Swift.Bool = false, introductoryDiscount: RevenueCat.TestStoreProductDiscount? = nil, discounts: [RevenueCat.TestStoreProductDiscount] = [], locale: Foundation.Locale, installmentsInfo: RevenueCat.InstallmentsInfo? = nil)
   #endif
 }
 extension RevenueCat.TestStoreProduct {
