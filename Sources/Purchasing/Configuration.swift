@@ -183,7 +183,7 @@ import Foundation
         /**
          * Set `purchasesAreCompletedBy`.
          * - Parameter purchasesAreCompletedBy: Set this to ``PurchasesAreCompletedBy/myApp``
-         * if you have your own IAP implementation and want to use only RevenueCat's backend. 
+         * if you have your own IAP implementation and want to use only RevenueCat's backend.
          * Default is ``PurchasesAreCompletedBy/revenueCat``.
          * - Parameter storeKitVersion: Set the StoreKit version you're using to make purchases.
          */
@@ -280,7 +280,7 @@ import Foundation
         /// Enabling diagnostics will send some performance and debugging information from the SDK to our servers.
         /// Examples of this information include response times, cache hits or error codes.
         /// This information will be anonymous so it can't be traced back to the end-user
-        /// 
+        ///
         /// Defaults to `false`
         ///
         @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -469,7 +469,12 @@ extension Configuration {
 extension Configuration.APIKeyValidationResult {
 
     func checkForSimulatedStoreAPIKeyInRelease(systemInfo: SystemInfo, apiKey: String) {
-        #if !DEBUG
+        // The `BYPASS_SIMULATED_STORE_RELEASE_CHECK` compilation flag opts out of the Release-build
+        // safeguard. It exists for SDK consumers (e.g. purchases-kmp) that ship the SDK as a
+        // pre-compiled binary always built in Release configuration, where this check would
+        // otherwise crash apps that use a Test Store API key during development. Setting this flag
+        // means apps shipped to production with a Test Store API key won't be caught at runtime.
+        #if !DEBUG && !BYPASS_SIMULATED_STORE_RELEASE_CHECK
         guard self == .simulatedStore, !systemInfo.dangerousSettings.uiPreviewMode else {
             return
         }

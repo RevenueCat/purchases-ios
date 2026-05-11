@@ -12,9 +12,11 @@
 //  Created by Josh Holtz on 7/28/25.
 
 import Combine
+import Foundation
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
+@MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 internal final class PaywallPromoOfferCache: ObservableObject {
 
@@ -27,17 +29,22 @@ internal final class PaywallPromoOfferCache: ObservableObject {
         case signedEligible(PromotionalOffer)
     }
 
+    @Published
     private var cache: [ProductID: Status] = [:]
+    @Published
     private var hasAnySubscriptionHistory: Bool = false
     private var cancellable: AnyCancellable?
 
     // MARK: - Init
 
     init(subscriptionHistoryTracker: SubscriptionHistoryTracker) {
-        Task {
-            self.cancellable = await subscriptionHistoryTracker.status.sink { [weak self] status in
-                self?.hasAnySubscriptionHistory = status == .hasHistory
-            }
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            self.cancellable = await subscriptionHistoryTracker.status
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] status in
+                    self?.hasAnySubscriptionHistory = status == .hasHistory
+                }
         }
     }
 
@@ -72,6 +79,11 @@ internal final class PaywallPromoOfferCache: ObservableObject {
     // MARK: - Internal Logic
 
     private func checkSignedEligibility(packageInfos: [PackageInfo]) async {
+        // Build up results in a local dictionary first, then assign all at once.
+        // This ensures a single atomic update to the @Published property,
+        // which reliably triggers objectWillChange and view updates.
+        var newCacheEntries: [ProductID: Status] = [:]
+
         for packageInfo in packageInfos {
             let storeProduct = packageInfo.package.storeProduct
             if let productCode = packageInfo.promotionalOfferProductCode,
@@ -82,11 +94,18 @@ internal final class PaywallPromoOfferCache: ObservableObject {
                         forProductDiscount: discount,
                         product: storeProduct
                     )
-                    cache[storeProduct.productIdentifier] = .signedEligible(promoOffer)
+                    newCacheEntries[storeProduct.productIdentifier] = .signedEligible(promoOffer)
                 } catch {
-                    cache[storeProduct.productIdentifier] = .ineligible
+                    newCacheEntries[storeProduct.productIdentifier] = .ineligible
                 }
             }
         }
+
+        // Single atomic assignment to trigger @Published and objectWillChange
+        var updatedCache = self.cache
+        for (key, value) in newCacheEntries {
+            updatedCache[key] = value
+        }
+        self.cache = updatedCache
     }
 }

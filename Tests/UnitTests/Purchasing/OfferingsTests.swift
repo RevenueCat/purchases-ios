@@ -21,6 +21,7 @@ class OfferingsTests: TestCase {
         let package = self.offeringsFactory.createPackage(
             with: .init(identifier: "$rc_monthly",
                         platformProductIdentifier: "com.myproduct.monthly",
+                        platformProductPlanIdentifier: nil,
                         webCheckoutUrl: nil),
             productsByID: [
                 "com.myproduct.annual": StoreProduct(sk1Product: SK1Product())
@@ -39,6 +40,7 @@ class OfferingsTests: TestCase {
             self.offeringsFactory.createPackage(
                 with: .init(identifier: packageIdentifier,
                             platformProductIdentifier: productIdentifier,
+                            platformProductPlanIdentifier: nil,
                             webCheckoutUrl: nil),
                 productsByID: [
                     productIdentifier: StoreProduct(sk1Product: product)
@@ -64,9 +66,11 @@ class OfferingsTests: TestCase {
                 packages: [
                     .init(identifier: "$rc_monthly",
                           platformProductIdentifier: "com.myproduct.monthly",
+                          platformProductPlanIdentifier: nil,
                           webCheckoutUrl: nil),
                     .init(identifier: "$rc_annual",
                           platformProductIdentifier: "com.myproduct.annual",
+                          platformProductPlanIdentifier: nil,
                           webCheckoutUrl: nil)
                 ],
                 webCheckoutUrl: nil),
@@ -94,12 +98,15 @@ class OfferingsTests: TestCase {
                     packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: "com.myproduct.monthly",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil),
                         .init(identifier: "$rc_annual",
                               platformProductIdentifier: "com.myproduct.annual",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil),
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.sixMonth",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                     ],
                     webCheckoutUrl: nil),
@@ -124,6 +131,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.sixMonth",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil),
@@ -132,6 +140,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: "com.myproduct.monthly",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil)
@@ -167,6 +176,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.annual",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil),
@@ -175,9 +185,11 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: "com.myproduct.monthly",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil),
                         .init(identifier: "custom_package",
                               platformProductIdentifier: "com.myproduct.custom",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil)
@@ -226,6 +238,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.annual",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ], webCheckoutUrl: nil),
                 .init(identifier: "offering_b",
@@ -233,9 +246,11 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: "com.myproduct.monthly",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil),
                         .init(identifier: "custom_package",
                               platformProductIdentifier: "com.myproduct.custom",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ], webCheckoutUrl: nil),
                 .init(identifier: "offering_c",
@@ -243,9 +258,11 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: "com.myproduct.monthly",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil),
                         .init(identifier: "custom_package",
                               platformProductIdentifier: "com.myproduct.custom",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ], webCheckoutUrl: nil)
             ],
@@ -318,6 +335,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.annual",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil),
@@ -326,9 +344,11 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: "com.myproduct.monthly",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil),
                         .init(identifier: "custom_package",
                               platformProductIdentifier: "com.myproduct.custom",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil)
@@ -375,6 +395,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.annual",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ], webCheckoutUrl: nil)
             ],
@@ -446,6 +467,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.annual",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       metadata: .init(
@@ -457,6 +479,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: "com.myproduct.monthly",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil)
@@ -611,6 +634,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.annual",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil)
@@ -815,6 +839,7 @@ private extension OfferingsTests {
                       packages: [
                         .init(identifier: identifier,
                               platformProductIdentifier: productIdentifier,
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil)

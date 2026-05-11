@@ -15,7 +15,7 @@ import Nimble
 @_spi(Internal) @testable import RevenueCat
 import XCTest
 
-class OfferingsDecodingTests: BaseHTTPResponseTest {
+final class OfferingsDecodingTests: BaseHTTPResponseTest {
 
     private var response: OfferingsResponse!
 
@@ -27,7 +27,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
 
     func testDecodesAllOfferings() throws {
         expect(self.response.currentOfferingId) == "default"
-        expect(self.response.offerings).to(haveCount(6))
+        expect(self.response.offerings).to(haveCount(8))
     }
 
     func testDecodesFirstOffering() throws {
@@ -43,9 +43,31 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
 
         expect(package1.identifier) == PackageType.monthly.description
         expect(package1.platformProductIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
+        expect(package1.platformProductPlanIdentifier).to(beNil())
 
         expect(package2.identifier) == PackageType.annual.description
         expect(package2.platformProductIdentifier) == "com.revenuecat.yearly_10.99.2_week_intro"
+        expect(package2.platformProductPlanIdentifier).to(beNil())
+    }
+
+    func testDecodesPackageWithPlatformProductPlanIdentifier() throws {
+        let response: OfferingsResponse = try Self.decodeFixture("OfferingsWithPlatformProductPlanIdentifier")
+
+        let package = try XCTUnwrap(response.offerings.first?.packages.first)
+
+        expect(package.identifier) == PackageType.monthly.description
+        expect(package.platformProductIdentifier) == "com.revenuecat.monthly"
+        expect(package.platformProductPlanIdentifier) == "monthly"
+    }
+
+    func testDecodesPackageWithoutPlatformProductPlanIdentifier() throws {
+        let response: OfferingsResponse = try Self.decodeFixture("OfferingsWithoutPlatformProductPlanIdentifier")
+
+        let package = try XCTUnwrap(response.offerings.first?.packages.first)
+
+        expect(package.identifier) == PackageType.monthly.description
+        expect(package.platformProductIdentifier) == "com.revenuecat.monthly"
+        expect(package.platformProductPlanIdentifier).to(beNil())
     }
 
     func testDecodesSecondOffering() throws {

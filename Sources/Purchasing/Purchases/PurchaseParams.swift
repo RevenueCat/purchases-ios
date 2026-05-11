@@ -33,6 +33,7 @@ import Foundation
     let product: StoreProduct?
     let promotionalOffer: PromotionalOffer?
     let quantity: Int?
+    let introductoryOfferEligibilityJWS: String?
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -41,17 +42,28 @@ import Foundation
 
     #endif
 
+    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+    let promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?
+
+    #endif
+
     private init(with builder: Builder) {
         self.promotionalOffer = builder.promotionalOffer
         self.product = builder.product
         self.package = builder.package
         self.quantity = builder.quantity
+        self.introductoryOfferEligibilityJWS = builder.introductoryOfferEligibilityJWS
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
         self.winBackOffer = builder.winBackOffer
         self.metadata = builder.metadata
 
+        #endif
+
+        #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        self.promotionalOfferOptions = builder.promotionalOfferOptions
         #endif
     }
 
@@ -61,11 +73,18 @@ import Foundation
         private(set) var package: Package?
         private(set) var product: StoreProduct?
         private(set) var quantity: Int?
+        private(set) var introductoryOfferEligibilityJWS: String?
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
         private(set) var winBackOffer: WinBackOffer?
         private(set) var metadata: [String: String]?
+
+        #endif
+
+        #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+        private(set) var promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?
 
         #endif
 
@@ -135,6 +154,42 @@ import Foundation
         @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
         @objc public func with(winBackOffer: WinBackOffer) -> Self {
             self.winBackOffer = winBackOffer
+            return self
+        }
+
+        #endif
+
+        // swiftlint:disable line_length
+        /**
+         * Sets an introductoryOfferEligibility JWS to be included with the purchase. StoreKit 2 only.
+         * - Parameter introductoryOfferEligibilityJWS: The ``introductoryOfferEligibilityJWS`` to apply to the purchase.
+         *
+         * Refer to https://developer.apple.com/documentation/storekit/product/purchaseoption/introductoryoffereligibility(compactjws:)
+         * for more information.
+         *
+         * Availability: iOS 15.0+, macOS 15.4+, tvOS 18.4+, watchOS 11.4+, visionOS 2.4+
+         */
+        @available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *)
+        @objc public func with(introductoryOfferEligibilityJWS: String) -> Self {
+            self.introductoryOfferEligibilityJWS = introductoryOfferEligibilityJWS
+            return self
+        }
+
+        #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+        // swiftlint:disable line_length
+        /**
+         * Sets a promotionalOfferOptions to be included with the purchase. StoreKit 2 only.
+         * - Parameter promotionalOfferOptions: The ``promotionalOfferOptions`` to apply to the purchase.
+         *
+         * Refer to https://developer.apple.com/documentation/storekit/product/purchaseoption/promotionaloffer(_:compactjws:)
+         * for more information.
+         *
+         * Availability: iOS 15.0+, macOS 26.0+, tvOS 26.0+, watchOS 26.0+, visionOS 26.0+
+         */
+        @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+        @objc public func with(promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions) -> Self {
+            self.promotionalOfferOptions = promotionalOfferOptions
             return self
         }
 

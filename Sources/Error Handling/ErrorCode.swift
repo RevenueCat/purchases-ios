@@ -147,7 +147,10 @@ extension ErrorCode: DescribableError {
         case .logOutAnonymousUserError:
             return "LogOut was called but the current user is anonymous."
         case .configurationError:
-            return "There is an issue with your configuration. Check the underlying error for more details."
+            return """
+                   There is an issue with your configuration. Check the underlying error for more details.
+                   More information: https://rev.cat/sdk-troubleshooting
+                   """
         case .unsupportedError:
             return """
                    There was a problem with the operation. Looks like we doesn't support that yet.

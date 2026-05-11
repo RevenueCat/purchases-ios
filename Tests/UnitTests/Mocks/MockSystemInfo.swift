@@ -17,11 +17,14 @@ class MockSystemInfo: SystemInfo {
     var stubbedIsSandbox: Bool?
     var stubbedIsDebugBuild: Bool?
     var stubbedStorefront: StorefrontType?
+    var stubbedApiKeyValidationResult: Configuration.APIKeyValidationResult?
 
     convenience init(platformInfo: Purchases.PlatformInfo? = nil,
                      finishTransactions: Bool,
                      customEntitlementsComputation: Bool = false,
+                     bundle: Bundle = .main,
                      storeKitVersion: StoreKitVersion = .default,
+                     apiKey: String = "mock_api_key",
                      apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
                      dangerousSettings: DangerousSettings,
@@ -29,7 +32,9 @@ class MockSystemInfo: SystemInfo {
                      preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
         self.init(platformInfo: platformInfo,
                   finishTransactions: finishTransactions,
+                  bundle: bundle,
                   storeKitVersion: storeKitVersion,
+                  apiKey: apiKey,
                   apiKeyValidationResult: apiKeyValidationResult,
                   responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
@@ -42,7 +47,9 @@ class MockSystemInfo: SystemInfo {
                      finishTransactions: Bool,
                      customEntitlementsComputation: Bool = false,
                      uiPreviewMode: Bool = false,
+                     bundle: Bundle = .main,
                      storeKitVersion: StoreKitVersion = .default,
+                     apiKey: String = "mock_api_key",
                      apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
                      clock: ClockType = TestClock(),
@@ -57,7 +64,9 @@ class MockSystemInfo: SystemInfo {
         self.init(platformInfo: platformInfo,
                   finishTransactions: finishTransactions,
                   customEntitlementsComputation: customEntitlementsComputation,
+                  bundle: bundle,
                   storeKitVersion: storeKitVersion,
+                  apiKey: apiKey,
                   apiKeyValidationResult: apiKeyValidationResult,
                   responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
@@ -98,6 +107,11 @@ class MockSystemInfo: SystemInfo {
 
     override var storefront: StorefrontType? {
         return self.stubbedStorefront
+    }
+
+    override var apiKeyValidationResult: Configuration.APIKeyValidationResult {
+        get { return self.stubbedApiKeyValidationResult ?? super.apiKeyValidationResult }
+        set { super.apiKeyValidationResult = newValue }
     }
 }
 

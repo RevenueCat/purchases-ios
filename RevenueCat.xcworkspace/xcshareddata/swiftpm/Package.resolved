@@ -1,15 +1,6 @@
 {
   "pins" : [
     {
-      "identity" : "accessibilitysnapshot",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/EmergeTools/AccessibilitySnapshot.git",
-      "state" : {
-        "revision" : "54046d8fa44b9fa9f0e2229526f6ed89cb5e0ec2",
-        "version" : "1.0.2"
-      }
-    },
-    {
       "identity" : "cwlcatchexception",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mattgallagher/CwlCatchException.git",
@@ -68,8 +59,17 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/EmergeTools/SnapshotPreviews.git",
       "state" : {
-        "revision" : "0d1c6c282a83e5350899046efd3493558dc2d3c8",
-        "version" : "0.10.24"
+        "revision" : "6dfb281493e48e7c09ae9717593ae0b8eb47b15c",
+        "version" : "0.11.0"
+      }
+    },
+    {
+      "identity" : "swift-custom-dump",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/swift-custom-dump",
+      "state" : {
+        "revision" : "2a2a938798236b8fa0bc57c453ee9de9f9ec3ab0",
+        "version" : "1.4.1"
       }
     },
     {
@@ -77,7 +77,26 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-snapshot-testing",
       "state" : {
-        "revision" : "26ed3a2b4a2df47917ca9b790a57f91285b923fb"
+        "revision" : "bf8d8c27f0f0c6d5e77bff0db76ab68f2050d15d",
+        "version" : "1.18.9"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-syntax",
+      "state" : {
+        "revision" : "4799286537280063c85a32f09884cfbca301b1a1",
+        "version" : "602.0.0"
+      }
+    },
+    {
+      "identity" : "xctest-dynamic-overlay",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
+      "state" : {
+        "revision" : "dfd70507def84cb5fb821278448a262c6ff2bbad",
+        "version" : "1.9.0"
       }
     }
   ],

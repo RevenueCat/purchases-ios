@@ -12,9 +12,10 @@
 
 //  Created by Nacho Soto on 8/7/23.
 
+// swiftlint:disable file_length
+
 import Foundation
 
-// swiftlint:disable file_length
 protocol PaywallCacheWarmingType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -29,19 +30,15 @@ protocol PaywallCacheWarmingType: Sendable {
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpPaywallFontsCache(offerings: Offerings) async
 
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func warmUpWorkflowCaches(workflow: PublishedWorkflow) async
+
 #if !os(tvOS) // For Paywalls
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async
 
 #endif
-}
-
-protocol PaywallImageFetcherType: Sendable {
-
-    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func downloadImage(_ url: URL) async throws
-
 }
 
 protocol PaywallFontManagerType: Sendable {
@@ -57,23 +54,21 @@ protocol PaywallFontManagerType: Sendable {
 actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     private let introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType
-    private let imageFetcher: PaywallImageFetcherType
     private let fontsManager: PaywallFontManagerType
     private let fileRepository: FileRepositoryType
 
     private var hasLoadedEligibility = false
     private var hasLoadedImages = false
     private var hasLoadedVideos = false
+    private var warmedWorkflowIDs: Set<String> = []
     private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
 
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
-        imageFetcher: PaywallImageFetcherType = DefaultPaywallImageFetcher(),
         fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession),
         fileRepository: FileRepositoryType = FileRepository.shared
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
-        self.imageFetcher = imageFetcher
         self.fontsManager = fontsManager
         self.fileRepository = fileRepository
     }
@@ -104,13 +99,6 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
                     guard let self = self else { return }
                     // Preferred method - load with FileRepository
                     _ = try? await self.fileRepository.generateOrGetCachedFileURL(for: url, withChecksum: nil)
-
-                    // Legacy method - load with URLSession
-                    do {
-                        try await self.imageFetcher.downloadImage(url)
-                    } catch {
-                        Logger.error(Strings.paywalls.error_prefetching_image(url, error))
-                    }
                 }
             }
         }
@@ -147,6 +135,53 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
                     await self?.installFont(from: font)
                 }
             }
+        }
+    }
+
+    func warmUpWorkflowCaches(workflow: PublishedWorkflow) async {
+        guard !self.warmedWorkflowIDs.contains(workflow.id) else { return }
+        self.warmedWorkflowIDs.insert(workflow.id)
+
+        // Intentionally prewarming all screens, not just those reachable from
+        // `initialStepId`. This trades off potentially downloading assets for
+        // unreachable screens against the simpler implementation. For workflows
+        // with many screens or complex branching, switch to a bounded graph walk
+        // from `initialStepId` via `WorkflowStep.stepTriggerActions` to limit
+        // data, battery, and connection usage.
+        let screens = Array(workflow.screens.values)
+
+        Logger.verbose(Strings.paywalls.warming_up_workflow(screenCount: screens.count))
+
+        let imageURLs = Set(screens.flatMap(\.allImageURLs))
+        let videoURLs = Set(screens.flatMap(\.allLowResVideoUrls))
+        #if !os(tvOS)
+        let fonts = workflow.uiConfig.app.allDownloadableFonts
+        #endif
+
+        await withTaskGroup(of: Void.self) { group in
+            for url in imageURLs {
+                group.addTask { [weak self] in
+                    guard let self = self else { return }
+                    _ = try? await self.fileRepository.generateOrGetCachedFileURL(for: url, withChecksum: nil)
+                }
+            }
+            for source in videoURLs {
+                group.addTask { [weak self] in
+                    guard let self = self else { return }
+                    _ = try? await self.fileRepository.generateOrGetCachedFileURL(
+                        for: source.url,
+                        withChecksum: source.checksum
+                    )
+                }
+            }
+            #if !os(tvOS)
+            for font in fonts {
+                group.addTask { [weak self] in
+                    guard let self = self else { return }
+                    await self.installFont(from: font)
+                }
+            }
+            #endif
         }
     }
 
@@ -206,17 +241,6 @@ extension PaywallCacheWarming {
 
     private static let urlCache = URLCache(memoryCapacity: 50_000_000, // 50M
                                            diskCapacity: 200_000_000) // 200MB
-}
-
-// MARK: -
-
-private final class DefaultPaywallImageFetcher: PaywallImageFetcherType {
-
-    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func downloadImage(_ url: URL) async throws {
-        _ = try await PaywallCacheWarming.downloadSession.data(from: url)
-    }
-
 }
 
 // MARK: - Extensions

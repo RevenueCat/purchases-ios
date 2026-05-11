@@ -91,7 +91,8 @@ private extension LoadingPaywallView {
             uniqueKeysWithValues: packages.map { ($0, .unknown) }
         )
     })
-    static let purchaseHandler: PurchaseHandler = .init(purchases: LoadingPaywallPurchases())
+    static let purchases = LoadingPaywallPurchases()
+    static let purchaseHandler: PurchaseHandler = .init(purchases: purchases, eventTracker: .init(purchases: purchases))
 
     static let offeringIdentifier = "offering"
     static let weeklyPackage = Package(
@@ -118,32 +119,38 @@ private extension LoadingPaywallView {
     static let weeklyProduct = TestStoreProduct(
         localizedTitle: "Weekly",
         price: 1.99,
+        currencyCode: "USD",
         localizedPriceString: "$1.99",
         productIdentifier: "com.revenuecat.product_1",
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO weekly",
         subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: .init(value: 1, unit: .week)
+        subscriptionPeriod: .init(value: 1, unit: .week),
+        locale: Locale(identifier: "en_US")
     )
     static let monthlyProduct = TestStoreProduct(
         localizedTitle: "Monthly",
         price: 12.99,
+        currencyCode: "USD",
         localizedPriceString: "$12.99",
         productIdentifier: "com.revenuecat.product_2",
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO monthly",
         subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: .init(value: 1, unit: .month)
+        subscriptionPeriod: .init(value: 1, unit: .month),
+        locale: Locale(identifier: "en_US")
     )
     static let annualProduct = TestStoreProduct(
         localizedTitle: "Annual",
         price: 69.49,
+        currencyCode: "USD",
         localizedPriceString: "$69.49",
         productIdentifier: "com.revenuecat.product_3",
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO annual",
         subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: .init(value: 1, unit: .year)
+        subscriptionPeriod: .init(value: 1, unit: .year),
+        locale: Locale(identifier: "en_US")
     )
 }
 
@@ -163,15 +170,25 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
         SubscriptionHistoryTracker()
     }
 
+    func offerings() async throws -> Offerings { throw ErrorCode.configurationError }
+
+    var cachedOfferings: Offerings? { nil }
+
+#if !os(tvOS)
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
+        throw ErrorCode.configurationError
+    }
+#endif
+
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
         fatalError("Should not be able to purchase")
     }
 
-    func purchase(package: Package) async throws -> PurchaseResultData {
-        fatalError("Should not be able to purchase")
-    }
-
-    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+    func purchase(
+        package: Package,
+        promotionalOffer: PromotionalOffer?,
+        paywallEvent: PaywallEvent?
+    ) async throws -> PurchaseResultData {
         fatalError("Should not be able to purchase")
     }
 
@@ -181,6 +198,16 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
     func track(paywallEvent: PaywallEvent) async {
         // Ignoring events from loading paywall view
+    }
+
+    func cachePurchaseData(presentedOfferingContext: PresentedOfferingContext,
+                           paywallEvent: PaywallEvent?,
+                           productIdentifier: String) {
+        // No-op for loading paywall
+    }
+
+    func clearCachedPurchaseData(productIdentifier: String) {
+        // No-op for loading paywall
     }
 
     func invalidateCustomerInfoCache() {

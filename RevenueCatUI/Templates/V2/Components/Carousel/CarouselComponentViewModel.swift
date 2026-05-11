@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 1/27/25.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -26,6 +26,7 @@ class CarouselComponentViewModel {
     let uiConfigProvider: UIConfigProvider
     private let component: PaywallComponent.CarouselComponent
     let pageStackViewModels: [StackComponentViewModel]
+    private let pageContextNames: [String?]
 
     private let presentedOverrides: PresentedOverrides<PresentedCarouselPartial>?
 
@@ -33,15 +34,33 @@ class CarouselComponentViewModel {
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
         component: PaywallComponent.CarouselComponent,
-        pageStackViewModels: [StackComponentViewModel]
+        pageStackViewModels: [StackComponentViewModel],
+        discardRules: Bool = false
     ) {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
         self.pageStackViewModels = pageStackViewModels
+        self.pageContextNames = component.pages.map(\.name)
 
-        self.presentedOverrides = self.component.overrides?.toPresentedOverrides { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
+
+    var componentName: String? {
+        self.component.name
+    }
+
+    func pageContextName(at index: Int) -> String? {
+        guard self.pageContextNames.indices.contains(index) else { return nil }
+
+        return self.pageContextNames[index]
+    }
+
+    /// Invoked each time the carousel's `onAppear` fires. Set in tests to detect that the
+    /// carousel view was recreated (and its `@State` reset) after a tab switch.
+    #if DEBUG
+    var onViewAppear: (() -> Void)?
+    #endif
 
     @ViewBuilder
     // swiftlint:disable:next function_parameter_count
@@ -50,14 +69,21 @@ class CarouselComponentViewModel {
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (CarouselComponentStyle) -> some View
     ) -> some View {
+        let conditionContext = self.uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables
+        )
         let partial = PresentedCarouselPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
             with: self.presentedOverrides
         )
 

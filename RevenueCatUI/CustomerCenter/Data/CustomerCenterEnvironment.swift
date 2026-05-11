@@ -108,6 +108,7 @@ extension EnvironmentValues {
 /// registering environment handlers to avoid overriding host handlers.
 final class CustomerCenterExternalActions: @unchecked Sendable {
     // Composite closures invoked by the SDK
+    var restoreInitiated: (@MainActor @Sendable (ResumeAction) -> Void)?
     var restoreStarted: @MainActor @Sendable () -> Void = {}
     var restoreFailed: @MainActor @Sendable (Error) -> Void = { _ in }
     var restoreCompleted: @MainActor @Sendable (CustomerInfo) -> Void = { _ in }
@@ -117,6 +118,8 @@ final class CustomerCenterExternalActions: @unchecked Sendable {
     var feedbackSurveyCompleted: @MainActor @Sendable (String) -> Void = { _ in }
     var managementOptionSelected: @MainActor @Sendable (CustomerCenterActionable) -> Void = { _ in }
     var promotionalOfferSuccess: @MainActor @Sendable () -> Void = {}
+    var promotionalOfferSucceeded: @MainActor @Sendable (CustomerInfo, StoreTransaction, String) -> Void =
+        { _, _, _ in }
     var changePlansSelected: @MainActor @Sendable (String) -> Void = { _ in }
     var customActionSelected: @MainActor @Sendable (String, String?) -> Void = { _, _ in }
 }

@@ -13,8 +13,6 @@
 
 import Foundation
 
-#if ENABLE_AD_EVENTS_TRACKING
-
 /// The content of a request to the ad events endpoint.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct AdEventsRequest {
@@ -50,8 +48,9 @@ extension AdEventsRequest {
         var appUserId: String
         var appSessionId: String
         var timestamp: UInt64
-        var networkName: String
+        var networkName: String?
         var mediatorName: String
+        var adFormat: String
         var placement: String?
         var adUnitId: String
         var impressionId: String?
@@ -97,8 +96,9 @@ extension AdEventsRequest.AdEventRequest {
                 appUserId: storedEvent.userID,
                 appSessionId: storedEvent.appSessionID.uuidString,
                 timestamp: creationData.date.millisecondsSince1970,
-                networkName: eventData.networkName,
+                networkName: adEvent.networkName,
                 mediatorName: eventData.mediatorName.rawValue,
+                adFormat: eventData.adFormat.rawValue,
                 placement: eventData.placement,
                 adUnitId: eventData.adUnitId,
                 impressionId: adEvent.impressionIdentifier,
@@ -151,6 +151,7 @@ extension AdEventsRequest.AdEventRequest: Encodable {
         case timestamp = "timestampMs"
         case networkName
         case mediatorName
+        case adFormat
         case placement
         case adUnitId
         case impressionId
@@ -162,5 +163,3 @@ extension AdEventsRequest.AdEventRequest: Encodable {
     }
 
 }
-
-#endif

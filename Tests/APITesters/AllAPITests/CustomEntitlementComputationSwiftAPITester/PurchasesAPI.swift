@@ -175,11 +175,43 @@ private func checkPurchaseParams() {
     let packageParamsBuilder = PurchaseParams.Builder(package: pack)
         .with(promotionalOffer: offer)
         .with(quantity: 3)
+
+    if #available(iOS 15.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
+        let _ = PurchaseParams.Builder(package: pack)
+            .with(
+                promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions(
+                    offerID: "abc",
+                    compactJWS: "123"
+                )
+            )
+    }
+
+    if #available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) {
+        let _ = PurchaseParams.Builder(package: pack)
+            .with(introductoryOfferEligibilityJWS: "abc123")
+    }
+
     let _: PurchaseParams = packageParamsBuilder.build()
 
     let productParamsBuilder = PurchaseParams.Builder(product: storeProduct)
         .with(promotionalOffer: offer)
         .with(quantity: 5)
+
+    if #available(iOS 15.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
+        let _ = PurchaseParams.Builder(product: storeProduct)
+            .with(
+                promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions(
+                    offerID: "abc",
+                    compactJWS: "123"
+                )
+            )
+    }
+
+    if #available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) {
+        let _ = PurchaseParams.Builder(product: storeProduct)
+            .with(introductoryOfferEligibilityJWS: "abc123")
+    }
+
     let _: PurchaseParams = productParamsBuilder.build()
 }
 
@@ -208,6 +240,10 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
         let _: CustomerInfo = try await purchases.restorePurchases()
 
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            let _: Bool = try await purchases.isPurchaseAllowedByRestoreBehavior()
+        }
+
         if #available(iOS 15.0, *) {
 #if os(iOS)
             try await purchases.showManageSubscriptions()
@@ -232,6 +268,10 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
         purchases.beginRefundRequest(forEntitlement: "") { (_: Result<RefundRequestStatus, PublicError>) in }
         purchases.beginRefundRequestForActiveEntitlement { (_: Result<RefundRequestStatus, PublicError>) in }
 #endif
+    }
+
+    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+        purchases.isPurchaseAllowedByRestoreBehavior { (_: Bool?, _: PublicError?) in }
     }
 
     purchases.checkTrialOrIntroDiscountEligibility(

@@ -158,7 +158,7 @@ extension FileHandler {
     enum Error: Swift.Error {
 
         case failedCreatingFile(URL)
-        case failedCreatingDirectory(URL)
+        case failedCreatingDirectory(URL, Swift.Error)
         case failedCreatingHandle(Swift.Error)
         case failedSeeking(Swift.Error)
         case failedEmptyingFile(Swift.Error)
@@ -193,7 +193,7 @@ private extension FileHandler {
                                                      withIntermediateDirectories: true,
                                                      attributes: nil)
             } catch {
-                throw Error.failedCreatingDirectory(directoryURL)
+                throw Error.failedCreatingDirectory(directoryURL, error)
             }
         }
 

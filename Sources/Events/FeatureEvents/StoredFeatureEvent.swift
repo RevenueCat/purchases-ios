@@ -23,7 +23,8 @@ struct StoredFeatureEvent {
     private(set) var eventDiscriminator: String?
 
     init?<T: Encodable>(event: T, userID: String, feature: Feature, appSessionID: UUID?, eventDiscriminator: String?) {
-        guard let encodedJSON = try? event.encodedJSON else {
+        guard let data = try? JSONEncoder.fractionalSecondsFeatureEvents.encode(event),
+              let encodedJSON = String(data: data, encoding: .utf8) else {
             return nil
         }
 
@@ -36,10 +37,26 @@ struct StoredFeatureEvent {
 
 }
 
+private extension JSONEncoder {
+
+    static let fractionalSecondsFeatureEvents: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        encoder.dateEncodingStrategy = .custom { date, encoder in
+            var container = encoder.singleValueContainer()
+            try container.encode(JSONDecoder.iso8601WithFractionalSeconds.string(from: date))
+        }
+
+        return encoder
+    }()
+
+}
+
 enum Feature: String, Codable {
 
     case paywalls
     case customerCenter
+    case customPaywalls
 
 }
 

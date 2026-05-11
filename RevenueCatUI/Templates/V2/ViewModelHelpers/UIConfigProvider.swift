@@ -23,15 +23,64 @@ final class UIConfigProvider {
 
     private let uiConfig: UIConfig
     private let failedToLoadFont: FailedToLoadFont?
+    /// Dashboard flag: Dynamic Type only when `automatically_scale_font_size` is true on paywall components.
+    private let automaticallyScaleFontSize: Bool
     private var loggedMessages: Set<LogMessage> = []
 
-    init(uiConfig: UIConfig, failedToLoadFont: FailedToLoadFont? = nil) {
+    init(uiConfig: UIConfig, failedToLoadFont: FailedToLoadFont? = nil, automaticallyScaleFontSize: Bool = true) {
         self.uiConfig = uiConfig
         self.failedToLoadFont = failedToLoadFont
+        self.automaticallyScaleFontSize = automaticallyScaleFontSize
+    }
+
+    /// Dynamic Type is enabled unless the dashboard explicitly sets `automatically_scale_font_size` to `false`.
+    func useDynamicType() -> Bool {
+        return self.automaticallyScaleFontSize
     }
 
     var variableConfig: UIConfig.VariableConfig {
         return self.uiConfig.variableConfig
+    }
+
+    /// Returns the default values for custom variables defined in the dashboard.
+    /// Keys are variable names (without the `custom.` prefix), values are typed `CustomVariableValue`.
+    var defaultCustomVariables: [String: CustomVariableValue] {
+        return self.uiConfig.customVariables.compactMapValues { definition in
+            Self.parseCustomVariableValue(type: definition.type, defaultValue: definition.defaultValue)
+        }
+    }
+
+    /// Parses a custom variable definition into a typed `CustomVariableValue`.
+    /// The backend sends types: "string", "number", "boolean" with validated default values.
+    private static func parseCustomVariableValue(type: String, defaultValue: String) -> CustomVariableValue? {
+        switch type {
+        case "string":
+            return .string(defaultValue)
+        case "number":
+            guard let doubleValue = Double(defaultValue) else {
+                Logger.warning(Strings.paywall_custom_variable_invalid_number(value: defaultValue))
+                return .string(defaultValue)
+            }
+            return .number(doubleValue)
+        case "boolean":
+            // Backend validates that defaultValue is exactly "true" or "false"
+            return .bool(defaultValue == "true")
+        default:
+            Logger.warning(Strings.paywall_custom_variable_unknown_type(type: type))
+            return .string(defaultValue)
+        }
+    }
+
+    /// Creates a `ConditionContext` by merging developer-provided custom variables with dashboard defaults.
+    func conditionContext(
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue]
+    ) -> ConditionContext {
+        ConditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            defaultCustomVariables: self.defaultCustomVariables
+        )
     }
 
     func getColor(for name: String) -> PaywallComponent.ColorScheme? {
@@ -48,7 +97,11 @@ final class UIConfigProvider {
     }
 
     @MainActor
-    func resolveFont(size fontSize: CGFloat, name: String) -> Font? {
+    func resolveFont(
+        size fontSize: CGFloat,
+        name: String,
+        useDynamicType: Bool = true
+    ) -> Font? {
 
         guard let fontsConfig = self.uiConfig.app.fonts[name] else {
             self.logMessageIfNeeded(.fontMappingNotFound(name: name))
@@ -68,24 +121,21 @@ final class UIConfigProvider {
 
         // Check if the font name is a generic font (serif, sans-serif, monospace)
         if let genericFont = GenericFont(rawValue: fontName) {
-            return genericFont.makeFont(fontSize: fontSize)
-        }
-
-        guard let customFont = PlatformFont(name: fontName, size: fontSize) else {
+            return genericFont.makeFont(fontSize: fontSize, useDynamicType: useDynamicType)
+        } else if PlatformFont(name: fontName, size: fontSize) != nil {
+            if useDynamicType {
+                // Use relativeTo: to enable proper Dynamic Type support that automatically
+                // scales when the user changes accessibility text size settings.
+                let textStyle = GenericFont.textStyle(for: fontSize)
+                return Font.custom(fontName, size: fontSize, relativeTo: textStyle)
+            } else {
+                return Font.custom(fontName, fixedSize: fontSize)
+            }
+        } else {
             self.logMessageIfNeeded(.customFontFailedToLoad(fontName: fontName))
             self.failedToLoadFont?(fontsConfig)
             return nil
         }
-
-        // Apply dynamic type scaling
-        #if canImport(UIKit)
-        let uiFont = UIFontMetrics.default.scaledFont(for: customFont)
-        return Font(uiFont)
-        #else
-        // macOS does not support dynamic type
-        // (see https://developer.apple.com/design/human-interface-guidelines/typography)
-        return Font(customFont)
-        #endif
     }
 }
 

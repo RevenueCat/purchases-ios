@@ -164,6 +164,78 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         expect(self.paywallCache.invokedWarmUpPaywallImagesCacheOfferings) == offerings
     }
 
+    // MARK: - overridePreferredUILocale
+
+    func testOverridePreferredUILocaleInvalidatesInMemoryCache() {
+        self.setupPurchases()
+
+        self.mockOfferingsManager.invokedClearInMemoryOfferingsCache = false
+        self.mockOfferingsManager.invokedOfferingsCount = 0
+
+        self.purchases.overridePreferredUILocale("fr_FR")
+
+        expect(self.mockOfferingsManager.invokedClearInMemoryOfferingsCache) == true
+        expect(self.mockOfferingsManager.invokedClearInMemoryOfferingsCacheCount) == 1
+    }
+
+    func testOverridePreferredUILocaleRefetchesOfferings() {
+        self.setupPurchases()
+
+        self.mockOfferingsManager.invokedOfferingsCount = 0
+
+        self.purchases.overridePreferredUILocale("de_DE")
+
+        expect(self.mockOfferingsManager.invokedOfferingsCount) == 1
+    }
+
+    func testOverridePreferredUILocaleDoesNothingWhenLocaleUnchanged() {
+        self.setupPurchases()
+
+        self.purchases.overridePreferredUILocale("it_IT")
+        self.mockOfferingsManager.invokedClearInMemoryOfferingsCache = false
+        self.mockOfferingsManager.invokedClearInMemoryOfferingsCacheCount = 0
+        self.mockOfferingsManager.invokedOfferingsCount = 0
+
+        // Call again with the same locale
+        self.purchases.overridePreferredUILocale("it_IT")
+
+        expect(self.mockOfferingsManager.invokedClearInMemoryOfferingsCache) == false
+        expect(self.mockOfferingsManager.invokedOfferingsCount) == 0
+    }
+
+    func testOverridePreferredUILocaleDoesNotInvalidateOrFetchWhenRateLimited() {
+        self.setupPurchases()
+
+        // Exhaust the rate limiter (maxCalls: 2)
+        self.purchases.overridePreferredUILocale("fr_FR")
+        self.purchases.overridePreferredUILocale("de_DE")
+
+        // Reset counters after exhausting the rate limiter
+        self.mockOfferingsManager.invokedClearInMemoryOfferingsCache = false
+        self.mockOfferingsManager.invokedClearInMemoryOfferingsCacheCount = 0
+        self.mockOfferingsManager.invokedOfferingsCount = 0
+
+        // Third call should be fully rate-limited
+        self.purchases.overridePreferredUILocale("es_ES")
+
+        expect(self.mockOfferingsManager.invokedClearInMemoryOfferingsCache) == false
+        expect(self.mockOfferingsManager.invokedOfferingsCount) == 0
+    }
+
+    func testOverridePreferredUILocaleWithNilClearsOverride() {
+        self.setupPurchases()
+
+        self.purchases.overridePreferredUILocale("fr_FR")
+        self.mockOfferingsManager.invokedClearInMemoryOfferingsCache = false
+        self.mockOfferingsManager.invokedClearInMemoryOfferingsCacheCount = 0
+        self.mockOfferingsManager.invokedOfferingsCount = 0
+
+        self.purchases.overridePreferredUILocale(nil)
+
+        expect(self.mockOfferingsManager.invokedClearInMemoryOfferingsCache) == true
+        expect(self.mockOfferingsManager.invokedOfferingsCount) == 1
+    }
+
     // MARK: - UI preview mode
 
     func testFirstInitializationInUIPreviewModeDoesGetOfferingsIfAppActive() {

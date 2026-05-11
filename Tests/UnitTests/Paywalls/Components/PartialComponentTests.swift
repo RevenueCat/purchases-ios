@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 10/26/24.
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 #if !os(tvOS) // For Paywalls V2

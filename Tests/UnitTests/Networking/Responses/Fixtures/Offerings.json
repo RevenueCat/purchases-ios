@@ -134,6 +134,78 @@
             "paywall": {
                 "Missing": "data"
             }
+        },
+        {
+            "description": "Offering with paywall and exit offers",
+            "identifier": "paywall_with_exit_offers",
+            "packages": [
+                {
+                    "identifier": "$rc_monthly",
+                    "platform_product_identifier": "com.revenuecat.monthly_4.99.1_week_intro"
+                }
+            ],
+            "paywall": {
+                "template_name": "1",
+                "localized_strings": {
+                    "en_US": {
+                        "title": "Paywall with Exit Offers",
+                        "call_to_action": "Purchase now",
+                        "offer_details": "{{ sub_price_per_month }} per month"
+                    }
+                },
+                "config": {
+                    "packages": ["$rc_monthly"],
+                    "images_heic": {
+                        "header": "header.heic"
+                    },
+                    "colors": {
+                        "light": {
+                            "background": "#FFFFFF"
+                        }
+                    }
+                },
+                "asset_base_url": "https://rc-paywalls.s3.amazonaws.com",
+                "revision": 1,
+                "exit_offers": {
+                    "dismiss": {
+                        "offering_id": "exit_offer_offering"
+                    }
+                }
+            }
+        },
+        {
+            "description": "Offering with paywall and empty exit offers",
+            "identifier": "paywall_with_empty_exit_offers",
+            "packages": [
+                {
+                    "identifier": "$rc_monthly",
+                    "platform_product_identifier": "com.revenuecat.monthly_4.99.1_week_intro"
+                }
+            ],
+            "paywall": {
+                "template_name": "1",
+                "localized_strings": {
+                    "en_US": {
+                        "title": "Paywall with Empty Exit Offers",
+                        "call_to_action": "Purchase now",
+                        "offer_details": "{{ sub_price_per_month }} per month"
+                    }
+                },
+                "config": {
+                    "packages": ["$rc_monthly"],
+                    "images_heic": {
+                        "header": "header.heic"
+                    },
+                    "colors": {
+                        "light": {
+                            "background": "#FFFFFF"
+                        }
+                    }
+                },
+                "asset_base_url": "https://rc-paywalls.s3.amazonaws.com",
+                "revision": 1,
+                "exit_offers": {}
+            }
         }
     ]
 }

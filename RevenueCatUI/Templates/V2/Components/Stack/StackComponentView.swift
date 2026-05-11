@@ -11,7 +11,7 @@
 //
 //  Created by James Borthwick on 2024-08-20.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 // swiftlint:disable file_length
@@ -39,6 +39,11 @@ struct StackComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
     private let onDismiss: () -> Void
@@ -62,15 +67,19 @@ struct StackComponentView: View {
     }
 
     var body: some View {
+        let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
+            package: self.packageContext.package
+        )
+        let isEligibleForPromoOffer = self.paywallPromoOfferCache.isMostLikelyEligible(
+            for: self.packageContext.package
+        )
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                for: self.packageContext.package
-            ),
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
             colorScheme: colorScheme
         ) { style in
             if style.visible {
@@ -113,7 +122,7 @@ struct StackComponentView: View {
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(
                         componentViewModels: self.viewModel.viewModels,
-                        ignoreSafeArea: self.viewModel.shouldApplySafeAreaInset,
+                        pushNonFirstChildrenBelowSafeArea: self.viewModel.firstChildIsFullWidthMedia,
                         onDismiss: self.onDismiss
                     )
                 }
@@ -131,6 +140,7 @@ struct StackComponentView: View {
         })
         .scrollableIfEnabled(
             style.dimension,
+            size: style.size,
             enabled: style.scrollable ?? self.isScrollableByDefault
         )
         .shape(border: nil,
@@ -158,22 +168,32 @@ private extension Axis {
 fileprivate extension View {
 
     @ViewBuilder
+
     func scrollableIfEnabled(
         _ dimension: PaywallComponent.Dimension,
+        size: PaywallComponent.Size,
         enabled: Bool = true
     ) -> some View {
         if enabled {
             switch dimension {
-            case .horizontal:
-                ScrollView(.horizontal) {
-                    self
-                }
-                .scrollBounceBehaviorBasedOnSize()
-            case .vertical:
-                ScrollView(.vertical) {
-                    self
-                }
-                .scrollBounceBehaviorBasedOnSize()
+            case .horizontal(let verticalAlignment, let distribution):
+                self.scrollableIfNecessaryWhenAvailable(
+                    .horizontal,
+                    fillContent: size.width == .fill,
+                    alignment: Alignment(
+                        horizontal: distribution.horizontalFrameAlignment.horizontal,
+                        vertical: verticalAlignment.frameAlignment.vertical
+                    )
+                )
+            case .vertical(let horizontalAlignment, let distribution):
+                self.scrollableIfNecessaryWhenAvailable(
+                    .vertical,
+                    fillContent: size.height == .fill,
+                    alignment: Alignment(
+                        horizontal: horizontalAlignment.frameAlignment.horizontal,
+                        vertical: distribution.verticalFrameAlignment.vertical
+                    )
+                )
             case .zlayer:
                 self
             }
@@ -277,7 +297,10 @@ struct HorizontalStack: View {
                 alignment: verticalAlignment.stackAlignment,
                 spacing: style.spacing
             ) {
-                ComponentsView(componentViewModels: self.viewModels, onDismiss: self.onDismiss)
+                ComponentsView(
+                    componentViewModels: self.viewModels,
+                    onDismiss: self.onDismiss
+                )
             }
         case .flex:
             FlexHStack(
@@ -773,7 +796,6 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
@@ -785,7 +807,6 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,

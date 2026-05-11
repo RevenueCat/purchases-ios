@@ -69,6 +69,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Monthly Product",
             price: 6.99,
+            currencyCode: "USD",
             localizedPriceString: "$6.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -132,6 +133,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Monthly Product",
             price: 6.99,
+            currencyCode: "USD",
             localizedPriceString: "$6.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -192,6 +194,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Monthly Product",
             price: 6.99,
+            currencyCode: "USD",
             localizedPriceString: "$6.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -253,6 +256,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Monthly Product",
             price: 6.99,
+            currencyCode: "USD",
             localizedPriceString: "$6.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -312,6 +316,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Monthly Product",
             price: 6.99,
+            currencyCode: "USD",
             localizedPriceString: "$6.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -540,8 +545,8 @@ final class PurchaseInformationTests: TestCase {
             )
         )
 
-        // title from entitlement instead of product identifier
-        expect(subscriptionInfo.title) == "One-time Purchase"
+        // title uses entitlement identifier when no StoreKit product is available for promotional store
+        expect(subscriptionInfo.title) == "premium"
         expect(subscriptionInfo.pricePaid) == .free
         expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
@@ -587,7 +592,7 @@ final class PurchaseInformationTests: TestCase {
             )
         )
 
-        expect(subscriptionInfo.title) == "One-time Purchase"
+        expect(subscriptionInfo.title) == "premium"
         expect(subscriptionInfo.pricePaid) == .free
         expect(subscriptionInfo.renewalPrice).to(beNil())
         // false - no way to know if its lifetime
@@ -595,6 +600,129 @@ final class PurchaseInformationTests: TestCase {
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .promotional
+    }
+
+    func testDetermineTitlePromotionalUsesEntitlementIdentifier() throws {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithPromotional
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: entitlement.productIdentifier,
+            store: .promotional,
+            type: .subscription(
+                isActive: true,
+                willRenew: false,
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
+            ),
+            isCancelled: false,
+            managementURL: nil,
+            price: .init(currency: "USD", amount: 0),
+            displayName: nil,
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: true
+        )
+
+        let purchaseInfo = PurchaseInformation(
+            entitlement: entitlement,
+            subscribedProduct: nil,
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            managementURL: nil,
+            localization: Self.mockLocalization
+        )
+
+        // Promotional store with no product: entitlement identifier is used as title
+        expect(purchaseInfo.title) == "premium"
+    }
+
+    func testDetermineTitlePromotionalNoEntitlementFallsBackToTypeLabel() throws {
+        let mockTransaction = MockTransaction(
+            productIdentifier: "rc_promo_some_product",
+            store: .promotional,
+            type: .subscription(
+                isActive: true,
+                willRenew: false,
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
+            ),
+            isCancelled: false,
+            managementURL: nil,
+            price: .init(currency: "USD", amount: 0),
+            displayName: nil,
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: true
+        )
+
+        let purchaseInfo = PurchaseInformation(
+            entitlement: nil,
+            subscribedProduct: nil,
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            managementURL: nil,
+            localization: Self.mockLocalization
+        )
+
+        // With no entitlement, promotional guard is skipped.
+        // isSubscriptionType = false for .promotional store, so falls through to "One-time Purchase"
+        expect(purchaseInfo.title) == "One-time Purchase"
+    }
+
+    func testDetermineTitleProductTitleTakesPriorityOverEntitlementIdentifier() throws {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithPromotional
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
+
+        let mockProduct = TestStoreProduct(
+            localizedTitle: "Pro Access",
+            price: 0,
+            currencyCode: "USD",
+            localizedPriceString: "$0.00",
+            productIdentifier: entitlement.productIdentifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: "Pro access via promo",
+            subscriptionGroupIdentifier: nil,
+            subscriptionPeriod: nil,
+            introductoryDiscount: nil,
+            locale: Self.locale
+        )
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: entitlement.productIdentifier,
+            store: .promotional,
+            type: .subscription(
+                isActive: true,
+                willRenew: false,
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
+            ),
+            isCancelled: false,
+            managementURL: nil,
+            price: .init(currency: "USD", amount: 0),
+            displayName: nil,
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: true
+        )
+
+        let purchaseInfo = PurchaseInformation(
+            entitlement: entitlement,
+            subscribedProduct: mockProduct.toStoreProduct(),
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            managementURL: nil,
+            localization: Self.mockLocalization
+        )
+
+        // StoreKit product title wins over entitlement identifier
+        expect(purchaseInfo.title) == "Pro Access"
     }
 
     func testInitWithStripeEntitlement() throws {
@@ -1100,8 +1228,8 @@ final class PurchaseInformationTests: TestCase {
 
     // MARK: - Tests for improved title and price determination logic
 
-    func testDetermineTitleWithEntitlementIdentifierFallback() throws {
-        // Use existing Google Play fixture which has entitlement identifier "premium"
+    func testDetermineTitlePlayStoreFallsBackToSubscriptionType() throws {
+        // Play Store transactions with no StoreKit product should fall back to type label, not entitlement identifier
         let customerInfo = CustomerInfoFixtures.customerInfoWithGoogleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
@@ -1148,6 +1276,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Premium Monthly Subscription",
             price: 9.99,
+            currencyCode: "USD",
             localizedPriceString: "$9.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
@@ -1197,6 +1326,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Premium Product",
             price: 19.99, // Different from transaction price
+            currencyCode: "USD",
             localizedPriceString: "$19.99",
             productIdentifier: "com.app.premium",
             productType: .autoRenewableSubscription,
@@ -1318,6 +1448,7 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Premium Product",
             price: 14.99,
+            currencyCode: "USD",
             localizedPriceString: "$14.99",
             productIdentifier: "com.app.premium",
             productType: .autoRenewableSubscription,
@@ -1700,10 +1831,12 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Monthly",
             price: 9.99,
+            currencyCode: "USD",
             localizedPriceString: "$9.99",
             productIdentifier: entitlement.productIdentifier,
             productType: .autoRenewableSubscription,
-            localizedDescription: "Monthly subscription"
+            localizedDescription: "Monthly subscription",
+            locale: Self.locale
         )
 
         let mockTransaction = MockTransaction(
@@ -1746,10 +1879,12 @@ final class PurchaseInformationTests: TestCase {
         let mockProduct = TestStoreProduct(
             localizedTitle: "Seasonal Pass",
             price: 19.99,
+            currencyCode: "USD",
             localizedPriceString: "$19.99",
             productIdentifier: "seasonal_pass",
             productType: .nonRenewableSubscription,
-            localizedDescription: "3-month pass"
+            localizedDescription: "3-month pass",
+            locale: Self.locale
         )
 
         let mockTransaction = MockTransaction(

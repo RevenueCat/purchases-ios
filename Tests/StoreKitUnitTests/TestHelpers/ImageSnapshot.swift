@@ -11,8 +11,6 @@
 //
 //  Created by Nacho Soto on 6/12/23.
 
-#if swift(>=5.8)
-
 import Foundation
 import Nimble
 import SnapshotTesting
@@ -23,7 +21,7 @@ func haveValidSnapshot<Value>(
     as strategy: Snapshotting<Value, some Any>,
     named name: String? = nil,
     separateOSVersions: Bool = true,
-    record recording: Bool = false,
+    record recording: Bool? = nil,
     timeout: TimeInterval = 5,
     file: StaticString = #file,
     line: UInt = #line
@@ -34,7 +32,7 @@ func haveValidSnapshot<Value>(
         }
 
         guard let errorMessage = verifySnapshot(
-            matching: value,
+            of: value,
             as: strategy,
             named: name,
             record: recording,
@@ -54,5 +52,3 @@ func haveValidSnapshot<Value>(
         )
     }
 }
-
-#endif

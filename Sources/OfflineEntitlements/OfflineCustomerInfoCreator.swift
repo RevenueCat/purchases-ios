@@ -41,9 +41,12 @@ class OfflineCustomerInfoCreator {
         with purchasedProductsFetcher: PurchasedProductsFetcherType?,
         productEntitlementMappingFetcher: ProductEntitlementMappingFetcher,
         tracker: DiagnosticsTrackerType?,
-        observerMode: Bool
+        observerMode: Bool,
+        customEntitlementComputation: Bool = false
     ) -> OfflineCustomerInfoCreator? {
-        guard let fetcher = purchasedProductsFetcher, !observerMode else {
+        guard let fetcher = purchasedProductsFetcher,
+              !observerMode,
+              !customEntitlementComputation else {
             Logger.debug(Strings.offlineEntitlements.offline_entitlements_not_available)
             return nil
         }

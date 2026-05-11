@@ -15,7 +15,7 @@
 
 import Foundation
 
-extension PaywallComponent {
+@_spi(Internal) extension PaywallComponent {
 
     public final class VideoComponent: PaywallComponentBase {
 

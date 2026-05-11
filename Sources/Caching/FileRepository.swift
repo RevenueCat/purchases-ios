@@ -39,7 +39,15 @@ import Foundation
         self.networkService = networkService
         self.fileManager = fileManager
 
-        self.cacheURL = fileManager.createCacheDirectoryIfNeeded(basePath: basePath)
+        self.cacheURL = fileManager.createCacheDirectoryIfNeeded(
+            basePath: basePath,
+            /*
+             In order to use the app specific directory structure the existing
+             cached files will have to be moved first.
+             Until that happens we'll keep using the existing 'RevenueCat' directory
+            */
+            inAppSpecificDirectory: false
+        )
     }
 
     /// Create a file repository
@@ -75,7 +83,7 @@ import Foundation
                         withChecksum: checksum
                       )
                 else {
-                    Logger.error(Strings.fileRepository.failedToCreateCacheDirectory(url).description)
+                    Logger.error(Strings.fileRepository.failedToCreateCacheDirectory(url))
                     throw Error.failedToCreateCacheDirectory(url.absoluteString)
                 }
 
@@ -109,9 +117,9 @@ import Foundation
         do {
             return try await networkService.bytes(from: url)
         } catch {
-            let message = Strings.fileRepository.failedToFetchFileFromRemoteSource(url, error).description
+            let message = Strings.fileRepository.failedToFetchFileFromRemoteSource(url, error)
             Logger.error(message)
-            throw Error.failedToFetchFileFromRemoteSource(message)
+            throw Error.failedToFetchFileFromRemoteSource(message.description)
         }
     }
 
@@ -122,10 +130,12 @@ import Foundation
     ) async throws {
         do {
             try await fileManager.saveData(bytes, to: url, checksum: checksum)
+        } catch is Checksum.ChecksumValidationFailure {
+            throw Error.checksumMismatch
         } catch {
-            let message = Strings.fileRepository.failedToSaveCachedFile(url, error).description
+            let message = Strings.fileRepository.failedToSaveCachedFile(url, error)
             Logger.error(message)
-            throw Error.failedToSaveCachedFile(message)
+            throw Error.failedToSaveCachedFile(message.description)
         }
     }
 
@@ -172,6 +182,9 @@ extension FileRepository {
 
         /// Used when fetching the data fails
         case failedToFetchFileFromRemoteSource(String)
+
+        /// Used when the downloaded file's checksum does not match the expected value
+        case checksumMismatch
     }
 }
 

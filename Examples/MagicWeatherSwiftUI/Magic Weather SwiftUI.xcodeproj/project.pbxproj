@@ -21,6 +21,7 @@
 		A73C6F032E29944D00DBC86A /* PurchasesDelegateHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A73C6EEA2E29944D00DBC86A /* PurchasesDelegateHandler.swift */; };
 		A73C6F042E29944D00DBC86A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A73C6EEF2E29944D00DBC86A /* ContentView.swift */; };
 		A73C6F052E29944D00DBC86A /* WeatherViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A73C6EED2E29944D00DBC86A /* WeatherViewModel.swift */; };
+		CCF831142F29F96000829663 /* PresentableNSError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF831132F29F95500829663 /* PresentableNSError.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -52,6 +53,7 @@
 		A73C6EF22E29944D00DBC86A /* WeatherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherView.swift; sourceTree = "<group>"; };
 		A73C6EF52E29944D00DBC86A /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		A73C6EF62E29944D00DBC86A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		CCF831132F29F95500829663 /* PresentableNSError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentableNSError.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +113,7 @@
 		A73C6EE82E29944D00DBC86A /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				CCF831132F29F95500829663 /* PresentableNSError.swift */,
 				A73C6EE62E29944D00DBC86A /* Extensions.swift */,
 				A73C6EE72E29944D00DBC86A /* SampleData.swift */,
 			);
@@ -251,6 +254,7 @@
 				A73C6EFF2E29944D00DBC86A /* UserView.swift in Sources */,
 				A73C6F002E29944D00DBC86A /* WeatherView.swift in Sources */,
 				A73C6F012E29944D00DBC86A /* SampleData.swift in Sources */,
+				CCF831142F29F96000829663 /* PresentableNSError.swift in Sources */,
 				A73C6F022E29944D00DBC86A /* PaywallView.swift in Sources */,
 				A73C6F032E29944D00DBC86A /* PurchasesDelegateHandler.swift in Sources */,
 				A73C6F042E29944D00DBC86A /* ContentView.swift in Sources */,

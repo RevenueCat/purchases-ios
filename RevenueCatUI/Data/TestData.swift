@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 // swiftlint:disable type_body_length file_length force_unwrapping
@@ -45,6 +45,7 @@ enum TestData {
     static let weeklyProduct = TestStoreProduct(
         localizedTitle: "Weekly",
         price: 1.99,
+        currencyCode: "USD",
         localizedPriceString: "$1.99",
         productIdentifier: "com.revenuecat.product_1",
         productType: .autoRenewableSubscription,
@@ -56,6 +57,7 @@ enum TestData {
     static let monthlyProduct = TestStoreProduct(
         localizedTitle: "Monthly",
         price: 6.99,
+        currencyCode: "USD",
         localizedPriceString: "$6.99",
         productIdentifier: "com.revenuecat.product_2",
         productType: .autoRenewableSubscription,
@@ -68,6 +70,7 @@ enum TestData {
     static let threeMonthProduct = TestStoreProduct(
         localizedTitle: "3 months",
         price: 4.99,
+        currencyCode: "USD",
         localizedPriceString: "$4.99",
         productIdentifier: "com.revenuecat.product_5",
         productType: .autoRenewableSubscription,
@@ -80,6 +83,7 @@ enum TestData {
     static let threeMonthProductThailand = TestStoreProduct(
         localizedTitle: "3 months",
         price: 5.00,
+        currencyCode: Locale.thailand.rc_languageCode!,
         localizedPriceString: "฿5.00",
         productIdentifier: "com.revenuecat.product_5",
         productType: .autoRenewableSubscription,
@@ -92,6 +96,7 @@ enum TestData {
     static let sixMonthProduct = TestStoreProduct(
         localizedTitle: "6 months",
         price: 7.99,
+        currencyCode: "USD",
         localizedPriceString: "$7.99",
         productIdentifier: "com.revenuecat.product_5",
         productType: .autoRenewableSubscription,
@@ -104,6 +109,7 @@ enum TestData {
     static let annualProduct = TestStoreProduct(
         localizedTitle: "Annual",
         price: 53.99,
+        currencyCode: "USD",
         localizedPriceString: "$53.99",
         productIdentifier: "com.revenuecat.product_3",
         productType: .autoRenewableSubscription,
@@ -116,6 +122,7 @@ enum TestData {
     static let annualProduct60 = TestStoreProduct(
         localizedTitle: "Annual",
         price: 60.00,
+        currencyCode: "USD",
         localizedPriceString: "$60.00",
         productIdentifier: "com.revenuecat.product_3",
         productType: .autoRenewableSubscription,
@@ -128,24 +135,36 @@ enum TestData {
     static let annualProduct60Taiwan = TestStoreProduct(
         localizedTitle: "Annual",
         price: 60.00,
-        localizedPriceString: "$60.00",
+        currencyCode: "USD",
+        localizedPriceString: "US$60.00",
         productIdentifier: "com.revenuecat.product_3",
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO annual",
         subscriptionGroupIdentifier: "group",
         subscriptionPeriod: .init(value: 1, unit: .year),
-        introductoryDiscount: Self.intro(14, .day, priceString: "$2.99"),
+        introductoryDiscount: Self.intro(14, .day, priceString: "US$2.99"),
         locale: Locale.taiwan
     )
     static let lifetimeProduct = TestStoreProduct(
         localizedTitle: "Lifetime",
         price: 119.49,
+        currencyCode: "USD",
         localizedPriceString: "$119.49",
         productIdentifier: "com.revenuecat.product_lifetime",
         productType: .nonConsumable,
         localizedDescription: "Lifetime purchase",
         subscriptionGroupIdentifier: "group",
         subscriptionPeriod: nil,
+        locale: Self.locale
+    )
+    static let consumableProduct = TestStoreProduct(
+        localizedTitle: "Coins",
+        price: 4.99,
+        currencyCode: "USD",
+        localizedPriceString: "$4.99",
+        productIdentifier: "com.revenuecat.consumable_coins",
+        productType: .consumable,
+        localizedDescription: "100 Coins",
         locale: Self.locale
     )
     static let weeklyPackage = Package(
@@ -211,12 +230,20 @@ enum TestData {
         offeringIdentifier: Self.offeringIdentifier,
         webCheckoutUrl: nil
     )
+    static let consumablePackage = Package(
+        identifier: "consumable",
+        packageType: .custom,
+        storeProduct: Self.consumableProduct.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier,
+        webCheckoutUrl: nil
+    )
 
     #if DEBUG
 
     static let productWithPromoOfferPayUpFront = TestStoreProduct(
         localizedTitle: "PRO monthly",
         price: 3.99,
+        currencyCode: "USD",
         localizedPriceString: "$3.99",
         productIdentifier: "com.revenuecat.promo.product_2",
         productType: .autoRenewableSubscription,
@@ -239,6 +266,7 @@ enum TestData {
     static let productWithIntroOffer = TestStoreProduct(
         localizedTitle: "PRO monthly",
         price: 3.99,
+        currencyCode: "USD",
         localizedPriceString: "$3.99",
         productIdentifier: "com.revenuecat.product_4",
         productType: .autoRenewableSubscription,
@@ -260,6 +288,7 @@ enum TestData {
     static let productWithIntroOfferPayUpFront = TestStoreProduct(
         localizedTitle: "PRO monthly",
         price: 3.99,
+        currencyCode: "USD",
         localizedPriceString: "$3.99",
         productIdentifier: "com.revenuecat.product_5",
         productType: .autoRenewableSubscription,
@@ -278,9 +307,32 @@ enum TestData {
         discounts: [],
         locale: Self.locale
     )
+    static let productWithIntroOfferPayUpFrontWholeDollar = TestStoreProduct(
+        localizedTitle: "PRO annual",
+        price: 60.00,
+        currencyCode: "USD",
+        localizedPriceString: "$60.00",
+        productIdentifier: "com.revenuecat.product_7",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO annual",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 1, unit: .year),
+        introductoryDiscount: .init(
+            identifier: "intro",
+            price: 2.00,
+            localizedPriceString: "$2.00",
+            paymentMode: .payUpFront,
+            subscriptionPeriod: .init(value: 1, unit: .month),
+            numberOfPeriods: 1,
+            type: .introductory
+        ),
+        discounts: [],
+        locale: Self.locale
+    )
     static let productWithNoIntroOffer = TestStoreProduct(
         localizedTitle: "PRO annual",
         price: 34.99,
+        currencyCode: "USD",
         localizedPriceString: "$34.99",
         productIdentifier: "com.revenuecat.product_3",
         productType: .autoRenewableSubscription,
@@ -326,6 +378,13 @@ enum TestData {
         identifier: PackageType.monthly.identifier,
         packageType: .monthly,
         storeProduct: productWithIntroOfferPayUpFront.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier,
+        webCheckoutUrl: nil
+    )
+    static let packageWithIntroOfferPayUpFrontWholeDollar = Package(
+        identifier: PackageType.annual.identifier,
+        packageType: .annual,
+        storeProduct: productWithIntroOfferPayUpFrontWholeDollar.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier,
         webCheckoutUrl: nil
     )
@@ -525,7 +584,7 @@ enum TestData {
                 offerDetailsWithIntroOffer: "Includes {{ sub_offer_duration }} **free** trial",
                 offerName: "{{ sub_duration_in_months }}"
             ),
-            assetBaseURL: Bundle.module.resourceURL ?? Bundle.module.bundleURL
+            assetBaseURL: Bundle.revenueCatUI.resourceURL ?? Bundle.revenueCatUI.bundleURL
         ),
         availablePackages: [TestData.monthlyPackage,
                             TestData.sixMonthPackage,

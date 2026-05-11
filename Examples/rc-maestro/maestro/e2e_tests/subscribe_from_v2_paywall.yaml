@@ -10,10 +10,15 @@ name: Subscribe to product through V2 Paywall for default offering
 
 ---
 - clearState
+# Dismiss any leftover system alerts from previous test runs (e.g. StoreKit purchase confirmations)
+- pressKey: home
 - launchApp:
     arguments:
         e2e_test_flow: subscribe_from_v2_paywall
 - assertVisible: "entitlement (pro): nil"
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
 - tapOn:
     text: "Present Paywall"
 - assertVisible: "Paywall V2"

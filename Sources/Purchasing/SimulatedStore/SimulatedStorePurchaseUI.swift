@@ -142,7 +142,7 @@ private extension UIViewController {
 
 private extension DefaultSimulatedStorePurchaseUI {
 
-    static let purchaseAlertTitle = "Test Purchase"
+    static let purchaseAlertTitle = "Test Store Purchase"
     static let purchaseActionTitle = "Test valid purchase"
     static let cancelActionTitle = "Cancel"
     static let failureActionTitle = "Test failed purchase"

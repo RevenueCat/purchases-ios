@@ -14,8 +14,8 @@ class MockHTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
     private let defaultTimeout: TimeInterval
     private(set) var recordedResults: [HTTPRequestTimeoutManager.RequestResult] = []
     private(set) var timeoutCallCount = 0
-    private(set) var lastTimeoutPath: HTTPRequestPath?
     private(set) var lastTimeoutIsFallback: Bool?
+    private(set) var lastTimeoutFallbackAvailable: Bool?
 
     init(defaultTimeout: TimeInterval) {
         self.defaultTimeout = defaultTimeout
@@ -24,10 +24,10 @@ class MockHTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
 
     var timeoutToReturn: TimeInterval
 
-    func timeout(for path: HTTPRequestPath, isFallback: Bool) -> TimeInterval {
+    func timeout(isFallback: Bool, fallbackAvailable: Bool) -> TimeInterval {
         timeoutCallCount += 1
-        lastTimeoutPath = path
         lastTimeoutIsFallback = isFallback
+        lastTimeoutFallbackAvailable = fallbackAvailable
         return timeoutToReturn
     }
 
@@ -38,8 +38,8 @@ class MockHTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
     func reset() {
         recordedResults.removeAll()
         timeoutCallCount = 0
-        lastTimeoutPath = nil
         lastTimeoutIsFallback = nil
+        lastTimeoutFallbackAvailable = nil
         timeoutToReturn = defaultTimeout
     }
 }

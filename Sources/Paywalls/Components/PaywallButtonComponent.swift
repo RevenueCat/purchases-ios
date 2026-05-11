@@ -15,21 +15,27 @@
 
 import Foundation
 
-public extension PaywallComponent {
+@_spi(Internal) public extension PaywallComponent {
 
     final class ButtonComponent: PaywallComponentBase {
 
         let type: ComponentType
+        public let name: String?
+        public let id: String?
         public let action: Action
         public let stack: PaywallComponent.StackComponent
         public let transition: PaywallComponent.Transition?
 
         public init(
+            name: String? = nil,
+            id: String? = nil,
             action: Action,
             stack: PaywallComponent.StackComponent,
             transition: PaywallComponent.Transition? = nil
         ) {
             self.type = .button
+            self.name = name
+            self.id = id
             self.action = action
             self.stack = stack
             self.transition = transition
@@ -37,6 +43,8 @@ public extension PaywallComponent {
 
         private enum CodingKeys: String, CodingKey {
             case type
+            case name
+            case id
             case action
             case stack
             case transition
@@ -45,6 +53,8 @@ public extension PaywallComponent {
         required public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.type = try container.decode(ComponentType.self, forKey: .type)
+            self.name = try container.decodeIfPresent(String.self, forKey: .name)
+            self.id = try container.decodeIfPresent(String.self, forKey: .id)
             self.action = try container.decode(Action.self, forKey: .action)
             self.stack = try container.decode(PaywallComponent.StackComponent.self, forKey: .stack)
             self.transition = try container.decodeIfPresent(PaywallComponent.Transition.self, forKey: .transition)
@@ -53,13 +63,17 @@ public extension PaywallComponent {
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
             try container.encode(type, forKey: .type)
+            try container.encodeIfPresent(name, forKey: .name)
+            try container.encodeIfPresent(id, forKey: .id)
             try container.encode(action, forKey: .action)
             try container.encode(stack, forKey: .stack)
-            try container.encode(transition, forKey: .transition)
+            try container.encodeIfPresent(transition, forKey: .transition)
         }
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(name)
+            hasher.combine(id)
             hasher.combine(action)
             hasher.combine(stack)
             hasher.combine(transition)
@@ -67,6 +81,8 @@ public extension PaywallComponent {
 
         public static func == (lhs: ButtonComponent, rhs: ButtonComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.name == rhs.name &&
+                   lhs.id == rhs.id &&
                    lhs.action == rhs.action &&
                    lhs.stack == rhs.stack &&
                    lhs.transition == rhs.transition
@@ -77,6 +93,7 @@ public extension PaywallComponent {
             case restorePurchases
             case navigateBack
             case navigateTo(destination: Destination)
+            case workflowTrigger
 
             case unknown
 
@@ -96,6 +113,8 @@ public extension PaywallComponent {
                 case .navigateTo(let destination):
                     try container.encode("navigate_to", forKey: .type)
                     try destination.encode(to: encoder)
+                case .workflowTrigger:
+                    try container.encode("workflow", forKey: .type)
                 case .unknown:
                     try container.encode("unknown", forKey: .type)
                 }
@@ -113,6 +132,8 @@ public extension PaywallComponent {
                 case "navigate_to":
                     let destination = try Destination(from: decoder)
                     self = .navigateTo(destination: destination)
+                case "workflow":
+                    self = .workflowTrigger
                 case "unknown":
                     self = .unknown
                 default:

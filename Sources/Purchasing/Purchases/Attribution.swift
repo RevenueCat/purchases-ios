@@ -37,6 +37,8 @@ import Foundation
 
     weak var delegate: AttributionDelegate?
 
+    var syncAttributesAndOfferingsIfNeededHandler: ((@escaping (Offerings?, PublicError?) -> Void) -> Void)?
+
     init(subscriberAttributesManager: SubscriberAttributesManager,
          currentUserProvider: CurrentUserProvider,
          attributionPoster: AttributionPoster,
@@ -307,6 +309,36 @@ public extension Attribution {
     }
 
     /**
+     * Subscriber attribute associated with the Solar Engine Distinct ID for the user.
+     * Recommended for the RevenueCat Solar Engine integration.
+     *
+     * - Parameter solarEngineDistinctId: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc func setSolarEngineDistinctId(_ solarEngineDistinctId: String?) {
+        self.subscriberAttributesManager.setSolarEngineDistinctId(solarEngineDistinctId, appUserID: appUserID)
+    }
+
+    /**
+     * Subscriber attribute associated with the Solar Engine Account ID for the user.
+     * Recommended for the RevenueCat Solar Engine integration.
+     *
+     * - Parameter solarEngineAccountId: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc func setSolarEngineAccountId(_ solarEngineAccountId: String?) {
+        self.subscriberAttributesManager.setSolarEngineAccountId(solarEngineAccountId, appUserID: appUserID)
+    }
+
+    /**
+     * Subscriber attribute associated with the Solar Engine Visitor ID for the user.
+     * Recommended for the RevenueCat Solar Engine integration.
+     *
+     * - Parameter solarEngineVisitorId: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc func setSolarEngineVisitorId(_ solarEngineVisitorId: String?) {
+        self.subscriberAttributesManager.setSolarEngineVisitorId(solarEngineVisitorId, appUserID: appUserID)
+    }
+
+    /**
      * Subscriber attribute associated with the Mixpanel Distinct ID for the user.
      * Optional for the RevenueCat Mixpanel integration.
      *
@@ -451,6 +483,85 @@ public extension Attribution {
         self.subscriberAttributesManager.setCreative(creative, appUserID: appUserID)
     }
 
+    /**
+     * Sets conversion data from AppsFlyer's `onConversionDataSuccess` callback.
+     *
+     * This method extracts relevant attribution fields from the AppsFlyer conversion data
+     * and sets the corresponding RevenueCat subscriber attributes. Note that this method will
+     * never unset any attributes, even when passed `nil`. To unset attributes, call the setter
+     * method for the individual attribute that should be unset with a `nil` value.
+     *
+     * The following attributes are set based on the conversion data:
+     * - `$mediaSource`: From `media_source`, or "Organic" if `af_status` is "Organic"
+     * - `$campaign`: From `campaign`
+     * - `$adGroup`: From `adgroup`, with fallback to `adset`
+     * - `$ad`: From `af_ad`, with fallback to `ad_id`
+     * - `$keyword`: From `af_keywords`, with fallback to `keyword`
+     * - `$creative`: From `creative`, with fallback to `af_creative`
+     *
+     * #### Related Articles
+     * - [AppsFlyer RevenueCat Integration](https://docs.revenuecat.com/docs/appsflyer)
+     * - [AppsFlyer Conversion Data](https://dev.appsflyer.com/hc/docs/conversion-data-ios)
+     *
+     * - Parameter data: The conversion data dictionary from AppsFlyer's `onConversionDataSuccess`.
+     */
+    @objc func setAppsFlyerConversionData(_ data: [AnyHashable: Any]?) {
+        self.subscriberAttributesManager.setAppsFlyerConversionData(data, appUserID: appUserID)
+    }
+
+    /**
+     * Sets attribution data from Appstack's attribution params, then syncs attributes and fetches
+     * offerings so that Appstack-based targeting is applied before the callback returns.
+     *
+     * Note: Offering fetching is rate limited, so the offerings being returned might be cached if the 
+     * limit is hit.
+     *
+     * Pass the dictionary received from `AppstackAttributionSdk.shared.getAttributionParams()` directly.
+     * The SDK extracts relevant attribution info and sets the appropriate subscriber attributes. Note
+     * that this method will never unset any attributes, even if passed `nil`. To unset an attribute,
+     * call the individual setter with a `nil` value.
+     *
+     * - Parameter data: The attribution params from `AppstackAttributionSdk.shared.getAttributionParams()`.
+     * - Parameter completion: Called with the ``Offerings`` (targeted with Appstack data, or the cached 
+     * ones if rate limited) or an error.
+     */
+    @objc func setAppstackAttributionParams(
+        _ data: [String: Any]?,
+        completion: @escaping (Offerings?, PublicError?) -> Void
+    ) {
+        self.subscriberAttributesManager.setAppstackAttributionParams(data, appUserID: appUserID)
+        guard let handler = self.syncAttributesAndOfferingsIfNeededHandler else {
+            completion(nil, nil)
+            return
+        }
+        handler(completion)
+    }
+
+    /**
+     * Sets attribution data from Appstack's attribution params, then syncs attributes and fetches
+     * offerings so that Appstack-based targeting is applied before this method returns.
+     * 
+     * Note: Offering fetching is rate limited, so the offerings being returned might be cached if the 
+     * limit is hit.
+     *
+     * - Parameter data: The attribution params from `AppstackAttributionSdk.shared.getAttributionParams()`.
+     * - Returns: ``Offerings`` targeted with the Appstack attribution data (or the cached ones), or `nil` 
+     * if none are configured.
+     * - Throws: A ``PublicError`` if the sync or offerings fetch fails.
+     */
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func setAppstackAttributionParams(_ data: [String: Any]?) async throws -> Offerings? {
+        return try await withCheckedThrowingContinuation { continuation in
+            self.setAppstackAttributionParams(data) { offerings, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: offerings)
+                }
+            }
+        }
+    }
+
 }
 
 #endif
@@ -484,6 +595,13 @@ extension Attribution {
         return self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: self.appUserID,
                                                                           syncedAttribute: syncedAttribute,
                                                                           completion: completion)
+    }
+
+    /// Caches the current ATT consent status as a subscriber attribute.
+    /// Called from `PurchasesOrchestrator.refreshATTStatusAndGetUnsyncedAttributes` (receipt posts)
+    /// and from `SubscriberAttributesManager.syncAttributesForAllUsers` (foreground/background/login/logout).
+    func setATTConsentStatus(forAppUserID appUserID: String) {
+        self.subscriberAttributesManager.setATTConsentStatus(forAppUserID: appUserID)
     }
 
     func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttribute.Dictionary {
@@ -524,6 +642,28 @@ extension Attribution {
 
     func markAdServicesTokenAsSynced(_ token: String, appUserID: String) {
         self.attributionPoster.markAdServicesToken(token, asSyncedFor: appUserID)
+    }
+
+    func markSyncedIfNeeded(
+        subscriberAttributes: SubscriberAttribute.Dictionary?,
+        adServicesToken: String?,
+        appUserID: String,
+        error: BackendError?
+    ) {
+        if let error = error {
+            guard error.successfullySynced else { return }
+
+            if let attributeErrors = (error as NSError).subscriberAttributesErrors, !attributeErrors.isEmpty {
+                Logger.error(Strings.attribution.subscriber_attributes_error(
+                    errors: attributeErrors
+                ))
+            }
+        }
+
+        self.markAttributesAsSynced(subscriberAttributes, appUserID: appUserID)
+        if let adServicesToken = adServicesToken {
+            self.markAdServicesTokenAsSynced(adServicesToken, appUserID: appUserID)
+        }
     }
 
 }

@@ -23,12 +23,8 @@ import XCTest
 /// Base class for Snapshot tests
 ///
 /// ### Automation:
-/// - To first run them locally you need:
-/// `bundle exec fastlane fetch_snapshots`
 /// - If your PR requires updating snapshots, you can generate them on CI:
 /// `bundle exec fastlane generate_snapshots_RCUI`
-/// - Once those PRs are merged in `purchases-ios-snapshots`, you can update the commit:
-/// `bundle exec fastlane update_snapshots_repo`
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 class BaseSnapshotTest: TestCase {
@@ -117,11 +113,22 @@ extension BaseSnapshotTest {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
+    /// Record snapshot for Emerge BYOS upload.
+    @MainActor
+    func recordSnapshot(
+        size: CGSize,
+        file: FileString = #filePath,
+        filename: StaticString = #file,
+        line: UInt = #line
+    ) {
+        self.snapshot(size: size, record: true, separateOSVersions: false, file: file, filename: filename, line: line)
+    }
+
     @MainActor
     func snapshotTablet(file: StaticString = #file, line: UInt = #line) {
         self
             .environment(\.userInterfaceIdiom, .pad)
-            .snapshot(
+            .recordSnapshot(
                 size: BaseSnapshotTest.iPadSize,
                 filename: file,
                 line: line
@@ -132,7 +139,7 @@ extension View {
     func snapshotLandscape(file: StaticString = #file, line: UInt = #line) {
         self
             .environment(\.verticalSizeClass, .compact)
-            .snapshot(
+            .recordSnapshot(
                 size: BaseSnapshotTest.landscapeSize,
                 filename: file,
                 line: line

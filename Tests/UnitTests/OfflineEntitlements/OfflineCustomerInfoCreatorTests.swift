@@ -156,6 +156,18 @@ class CreateOfflineCustomerInfoCreatorTests: TestCase {
         ).to(beNil())
     }
 
+    func testCreateIfAvailableInCustomEntitlementComputationMode() {
+        expect(
+            OfflineCustomerInfoCreator.createIfAvailable(
+                with: MockPurchasedProductsFetcher(),
+                productEntitlementMappingFetcher: MockProductEntitlementMappingFetcher(),
+                tracker: nil,
+                observerMode: false,
+                customEntitlementComputation: true
+            )
+        ).to(beNil())
+    }
+
     func testCreateIfAvailable() {
         expect(
             OfflineCustomerInfoCreator.createIfAvailable(

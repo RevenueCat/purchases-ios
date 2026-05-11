@@ -43,6 +43,9 @@ struct RestorePurchasesAlert: View {
     @Environment(\.supportInformation)
     private var supportInformation: CustomerCenterConfigData.Support?
 
+    @Environment(\.customerCenterExternalActions)
+    private var externalActions: CustomerCenterExternalActions
+
     init(
         isPresented: Binding<Bool>,
         actionWrapper: CustomerCenterActionWrapper,
@@ -85,7 +88,15 @@ struct RestorePurchasesAlert: View {
         )
         .task(id: isPresented) {
             if isPresented {
-                await viewModel.performRestore(purchasesProvider: customerCenterViewModel.purchasesProvider)
+                let didStartRestore = await viewModel.performRestore(
+                    purchasesProvider: customerCenterViewModel.purchasesProvider,
+                    restoreInitiated: self.externalActions.restoreInitiated
+                )
+                if !didStartRestore {
+                    self.customerCenterViewModel.onDismissRestorePurchasesAlert()
+                    self.isPresented = false
+                    self.viewModel.alertType = .loading
+                }
             }
         }
     }
@@ -272,7 +283,11 @@ private class MockRestorePurchasesAlertViewModel: RestorePurchasesAlertViewModel
         self.alertType = alertType
     }
 
-    override func performRestore(purchasesProvider: CustomerCenterPurchasesType) async {
+    override func performRestore(
+        purchasesProvider: CustomerCenterPurchasesType,
+        restoreInitiated: (@MainActor @Sendable (ResumeAction) -> Void)? = nil
+    ) async -> Bool {
+        true
     }
 
 }

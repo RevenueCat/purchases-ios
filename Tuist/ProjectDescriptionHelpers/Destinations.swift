@@ -16,4 +16,22 @@ extension Destinations {
             .appleVisionWithiPadDesign
         ]
     }
+
+    /// All Apple platform destinations, with optional macWithiPadDesign support.
+    /// - Parameter macWithiPadDesign: Whether to include the `.macWithiPadDesign` destination.
+    /// - Returns: A set of all relevant Apple destinations.
+    public static func allPlatforms(macWithiPadDesign: Bool) -> Destinations {
+        let destinations: [Destination?] = [
+            .iPhone,
+            .iPad,
+            .mac,
+            macWithiPadDesign ? .macWithiPadDesign : nil,
+            .macCatalyst,
+            .appleWatch,
+            .appleTv,
+            .appleVision,
+            .appleVisionWithiPadDesign
+        ]
+        return Set(destinations.compactMap { $0 })
+    }
 }

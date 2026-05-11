@@ -180,6 +180,10 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     packageParamsBuilder = packageParamsBuilder.with(metadata: ["foo":"bar"])
     #endif
 
+    if #available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) {
+        packageParamsBuilder = packageParamsBuilder.with(introductoryOfferEligibilityJWS: "abc123")
+    }
+
     if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
         packageParamsBuilder = packageParamsBuilder.with(winBackOffer: winBackOffer)
     }
@@ -192,6 +196,10 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     #if ENABLE_TRANSACTION_METADATA
     productParamsBuilder = productParamsBuilder.with(metadata: ["foo":"bar"])
     #endif
+
+    if #available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) {
+        productParamsBuilder = productParamsBuilder.with(introductoryOfferEligibilityJWS: "abc123")
+    }
 
     if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
         productParamsBuilder = packageParamsBuilder.with(winBackOffer: winBackOffer)
@@ -404,6 +412,10 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
     }
     #endif
 
+    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+        purchases.recordPurchase(productID: "") { (_: StoreTransaction?, _: PublicError?) in }
+    }
+
     purchases.redeemWebPurchase(webPurchaseRedemption: webPurchaseRedemption, completion: redemptionCompletion)
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -432,12 +444,6 @@ private func checkConfigure() -> Purchases! {
     Purchases.configure(withAPIKey: "", appUserID: nil, purchasesAreCompletedBy: .myApp, storeKitVersion: .default)
 
     return nil
-}
-
-private func checkPaywallsAPI(_ purchases: Purchases, _ event: PaywallEvent) async {
-    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-        await purchases.track(paywallEvent: event)
-    }
 }
 
 private func checkPreferredUILocaleAPIs(purchases: Purchases) {

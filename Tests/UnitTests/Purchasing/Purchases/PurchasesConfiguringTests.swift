@@ -14,7 +14,7 @@
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class PurchasesConfiguringTests: BasePurchasesTests {
 
@@ -193,6 +193,14 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         self.logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string)
     }
 
+    func testApiKeyIsExposedThroughInternalSPI() {
+        let key = "test_configured_api_key"
+        let purchases = Purchases.configure(withAPIKey: key)
+
+        expect(purchases.apiKey) == key
+        expect(Purchases.shared.apiKey) == key
+    }
+
     func testEntitlementVerificationModeDisabledDoesNotSetPublicKey() throws {
         let purchases = Purchases.configure(
             with: .init(withAPIKey: "")
@@ -332,6 +340,29 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         await expect(self.backend.healthReportAvailabilityRequests)
             .toEventually(equal([identityManager.currentAppUserID]))
         await expect(self.backend.healthReportRequests).toEventually(equal([]))
+    }
+
+    func testHealthCheckIsEnqueuedAfterCacheOperations() async {
+        self.systemInfo.stubbedIsApplicationBackgrounded = false
+        self.setupPurchases()
+
+        // healthReportAvailability should be the last operation enqueued,
+        // so once it's called, all cache operations must have already been called.
+        await expect(self.backend.healthReportAvailabilityRequests).toEventually(haveCount(1))
+
+        expect(self.backend.getCustomerInfoCallCount).to(beGreaterThan(0))
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).to(beGreaterThan(0))
+        expect(self.mockOfflineEntitlementsManager.invokedUpdateProductsEntitlementsCacheIfStaleCount)
+            .to(beGreaterThan(0))
+
+        // Verify getCustomerInfo was called before healthReportAvailability
+        let order = self.backend.callOrder
+        guard let customerInfoIndex = order.firstIndex(of: .getCustomerInfo),
+              let healthAvailabilityIndex = order.firstIndex(of: .healthReportAvailability) else {
+            fail("Expected both getCustomerInfo and healthReportAvailability to be called")
+            return
+        }
+        expect(customerInfoIndex).to(beLessThan(healthAvailabilityIndex))
     }
 
     func testFirstInitializationFromForegroundUpdatesCustomerInfoCacheIfUserDefaultsCacheStale() async {

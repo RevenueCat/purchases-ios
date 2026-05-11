@@ -1,5 +1,18 @@
 import ProjectDescription
 
+extension SettingsDictionary {
+
+    /// Appends any flags from `TUIST_SWIFT_CONDITIONS` to `SWIFT_ACTIVE_COMPILATION_CONDITIONS`.
+    public func appendingTuistSwiftConditions() -> SettingsDictionary {
+        let flags = Environment.extraSwiftConditions
+        guard !flags.isEmpty else { return self }
+        return merging([
+            "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) \(flags.joined(separator: " "))"
+        ])
+    }
+
+}
+
 extension Settings {
 
     /// Default settings configuration for app projects in the RevenueCat SDK repo.

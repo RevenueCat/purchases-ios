@@ -21,6 +21,7 @@
       "paywall" : null,
       "paywall_components" : {
         "asset_base_url" : "https://assets.pawwalls.com",
+        "automatically_scale_font_size" : true,
         "components_config" : {
           "base" : {
             "background" : {
@@ -65,6 +66,7 @@
                             "top" : 0,
                             "trailing" : 0
                           },
+                          "name" : "",
                           "padding" : {
                             "bottom" : 0,
                             "leading" : 0,
@@ -94,6 +96,7 @@
                         "top" : 0,
                         "trailing" : 24
                       },
+                      "name" : "",
                       "padding" : {
                         "bottom" : 0,
                         "leading" : 0,
@@ -126,6 +129,8 @@
                           "action" : {
                             "type" : "navigate_back"
                           },
+                          "id" : "68b5fP9Fpd",
+                          "name" : "",
                           "stack" : {
                             "components" : [
                               {
@@ -190,6 +195,7 @@
                               "top" : 0,
                               "trailing" : 0
                             },
+                            "name" : "",
                             "padding" : {
                               "bottom" : 4,
                               "leading" : 4,
@@ -207,7 +213,6 @@
                             "spacing" : 0,
                             "type" : "stack"
                           },
-                          "transition" : null,
                           "type" : "button"
                         }
                       ],
@@ -221,6 +226,7 @@
                         "top" : 24,
                         "trailing" : 24
                       },
+                      "name" : "",
                       "padding" : {
                         "bottom" : 0,
                         "leading" : 0,
@@ -258,6 +264,7 @@
                     "top" : 8,
                     "trailing" : 0
                   },
+                  "name" : "",
                   "padding" : {
                     "bottom" : 0,
                     "leading" : 0,
@@ -296,6 +303,7 @@
                 "top" : 0,
                 "trailing" : 0
               },
+              "name" : "Content",
               "padding" : {
                 "bottom" : 0,
                 "leading" : 0,
@@ -340,6 +348,7 @@
                         "components" : [
                           {
                             "is_selected_by_default" : true,
+                            "name" : "",
                             "package_id" : "$rc_lifetime",
                             "stack" : {
                               "background" : {
@@ -386,6 +395,7 @@
                                         "top" : 0,
                                         "trailing" : 0
                                       },
+                                      "name" : "",
                                       "padding" : {
                                         "bottom" : 0,
                                         "leading" : 0,
@@ -415,6 +425,7 @@
                                     "top" : 0,
                                     "trailing" : 12
                                   },
+                                  "name" : "",
                                   "padding" : {
                                     "bottom" : 4,
                                     "leading" : 8,
@@ -537,6 +548,7 @@
                                             "top" : 0,
                                             "trailing" : 0
                                           },
+                                          "name" : "",
                                           "padding" : {
                                             "bottom" : 0,
                                             "leading" : 0,
@@ -566,6 +578,7 @@
                                         "top" : 0,
                                         "trailing" : 0
                                       },
+                                      "name" : "",
                                       "padding" : {
                                         "bottom" : 0,
                                         "leading" : 0,
@@ -609,6 +622,7 @@
                                         "top" : 0,
                                         "trailing" : 0
                                       },
+                                      "name" : "",
                                       "padding" : {
                                         "bottom" : 0,
                                         "leading" : 0,
@@ -638,6 +652,7 @@
                                     "top" : 0,
                                     "trailing" : 0
                                   },
+                                  "name" : "",
                                   "padding" : {
                                     "bottom" : 0,
                                     "leading" : 0,
@@ -681,6 +696,7 @@
                                     "top" : 0,
                                     "trailing" : 0
                                   },
+                                  "name" : "",
                                   "padding" : {
                                     "bottom" : 0,
                                     "leading" : 0,
@@ -710,6 +726,7 @@
                                 "top" : 0,
                                 "trailing" : 0
                               },
+                              "name" : "",
                               "overrides" : [
                                 {
                                   "conditions" : [
@@ -771,6 +788,7 @@
                           },
                           {
                             "is_selected_by_default" : false,
+                            "name" : "",
                             "package_id" : "$rc_monthly",
                             "stack" : {
                               "background" : {
@@ -875,6 +893,7 @@
                                             "top" : 0,
                                             "trailing" : 0
                                           },
+                                          "name" : "",
                                           "padding" : {
                                             "bottom" : 0,
                                             "leading" : 0,
@@ -904,6 +923,7 @@
                                         "top" : 0,
                                         "trailing" : 0
                                       },
+                                      "name" : "",
                                       "padding" : {
                                         "bottom" : 0,
                                         "leading" : 0,
@@ -946,6 +966,7 @@
                                         "top" : 0,
                                         "trailing" : 0
                                       },
+                                      "name" : "",
                                       "padding" : {
                                         "bottom" : 0,
                                         "leading" : 0,
@@ -975,6 +996,7 @@
                                     "top" : 0,
                                     "trailing" : 0
                                   },
+                                  "name" : "",
                                   "padding" : {
                                     "bottom" : 0,
                                     "leading" : 0,
@@ -1017,6 +1039,7 @@
                                     "top" : 0,
                                     "trailing" : 0
                                   },
+                                  "name" : "",
                                   "padding" : {
                                     "bottom" : 0,
                                     "leading" : 0,
@@ -1046,6 +1069,7 @@
                                 "top" : 0,
                                 "trailing" : 0
                               },
+                              "name" : "",
                               "overrides" : [
                                 {
                                   "conditions" : [
@@ -1117,6 +1141,7 @@
                           "top" : 0,
                           "trailing" : 0
                         },
+                        "name" : "Packages",
                         "padding" : {
                           "bottom" : 0,
                           "leading" : 0,
@@ -1146,6 +1171,7 @@
                       {
                         "components" : [
                           {
+                            "name" : "",
                             "stack" : {
                               "background" : {
                                 "type" : "color",
@@ -1173,6 +1199,7 @@
                                     "top" : 0,
                                     "trailing" : 0
                                   },
+                                  "name" : "",
                                   "padding" : {
                                     "bottom" : 0,
                                     "leading" : 0,
@@ -1202,6 +1229,7 @@
                                 "top" : 0,
                                 "trailing" : 0
                               },
+                              "name" : "",
                               "padding" : {
                                 "bottom" : 14,
                                 "leading" : 8,
@@ -1234,6 +1262,8 @@
                             "action" : {
                               "type" : "restore_purchases"
                             },
+                            "id" : "vLoUgvChkK",
+                            "name" : "",
                             "stack" : {
                               "components" : [
                                 {
@@ -1252,6 +1282,7 @@
                                     "top" : 0,
                                     "trailing" : 0
                                   },
+                                  "name" : "",
                                   "padding" : {
                                     "bottom" : 0,
                                     "leading" : 0,
@@ -1281,6 +1312,7 @@
                                 "top" : 0,
                                 "trailing" : 0
                               },
+                              "name" : "",
                               "padding" : {
                                 "bottom" : 0,
                                 "leading" : 0,
@@ -1307,7 +1339,6 @@
                               "spacing" : 0,
                               "type" : "stack"
                             },
-                            "transition" : null,
                             "type" : "button"
                           }
                         ],
@@ -1322,6 +1353,7 @@
                           "top" : 0,
                           "trailing" : 0
                         },
+                        "name" : "Buttons",
                         "padding" : {
                           "bottom" : 0,
                           "leading" : 0,
@@ -1360,6 +1392,7 @@
                       "top" : 0,
                       "trailing" : 0
                     },
+                    "name" : "",
                     "padding" : {
                       "bottom" : 0,
                       "leading" : 0,
@@ -1398,6 +1431,7 @@
                   "top" : 0,
                   "trailing" : 0
                 },
+                "name" : "Footer",
                 "padding" : {
                   "bottom" : 0,
                   "leading" : 16,
@@ -1453,8 +1487,22 @@
           }
         },
         "default_locale" : "en_US",
+        "exit_offers" : {
+
+        },
+        "id" : "pweafd4630898c454c",
         "revision" : 2,
-        "template_name" : "components"
+        "template_name" : "components",
+        "zero_decimal_place_countries" : {
+          "apple" : [
+            "TWN",
+            "KAZ",
+            "MEX",
+            "PHL",
+            "THA",
+            "IND"
+          ]
+        }
       }
     },
     {
@@ -1514,6 +1562,7 @@
           "tos_url" : "https://revenuecat.com/tos"
         },
         "default_locale" : "en_US",
+        "id" : "pw2fe69b42dccf4c9e",
         "localized_strings" : {
           "en_US" : {
             "call_to_action" : "Continue",
@@ -1572,6 +1621,9 @@
       "fonts" : {
 
       }
+    },
+    "custom_variables" : {
+
     },
     "localizations" : {
       "ar_SA" : {
@@ -2278,6 +2330,53 @@
         "year" : "año",
         "year_short" : "año",
         "yearly" : "anual"
+      },
+      "eu" : {
+        "annual" : "urteko",
+        "annual_short" : "urt",
+        "annually" : "urtero",
+        "daily" : "egunero",
+        "day" : "egun",
+        "day_short" : "eg",
+        "free_price" : "doan",
+        "month" : "hilabete",
+        "month_short" : "hil",
+        "monthly" : "hilabetero",
+        "num_day_few" : "%d egun",
+        "num_day_many" : "%d egun",
+        "num_day_one" : "%d egun",
+        "num_day_other" : "%d egun",
+        "num_day_two" : "%d egun",
+        "num_day_zero" : "%d egun",
+        "num_days_short" : "%deg",
+        "num_month_few" : "%d hilabete",
+        "num_month_many" : "%d hilabete",
+        "num_month_one" : "%d hilabete",
+        "num_month_other" : "%d hilabete",
+        "num_month_two" : "%d hilabete",
+        "num_month_zero" : "%d hilabete",
+        "num_months_short" : "%dhil",
+        "num_week_few" : "%d aste",
+        "num_week_many" : "%d aste",
+        "num_week_one" : "%d aste",
+        "num_week_other" : "%d aste",
+        "num_week_two" : "%d aste",
+        "num_week_zero" : "%d aste",
+        "num_weeks_short" : "%dast",
+        "num_year_few" : "%d urte",
+        "num_year_many" : "%d urte",
+        "num_year_one" : "%d urte",
+        "num_year_other" : "%d urte",
+        "num_year_two" : "%d urte",
+        "num_year_zero" : "%d urte",
+        "num_years_short" : "%durt",
+        "percent" : "%%%d",
+        "week" : "aste",
+        "week_short" : "ast",
+        "weekly" : "astero",
+        "year" : "urte",
+        "year_short" : "urt",
+        "yearly" : "urtero"
       },
       "fi" : {
         "annual" : "vuosittainen",
@@ -3359,6 +3458,100 @@
         "year" : "rok",
         "year_short" : "r",
         "yearly" : "ročne"
+      },
+      "sr_Cyrl" : {
+        "annual" : "годишњи",
+        "annual_short" : "год",
+        "annually" : "годишње",
+        "daily" : "дневно",
+        "day" : "дан",
+        "day_short" : "дан",
+        "free_price" : "бесплатно",
+        "month" : "месец",
+        "month_short" : "мес",
+        "monthly" : "месечно",
+        "num_day_few" : "%d дана",
+        "num_day_many" : "%d дана",
+        "num_day_one" : "%d дан",
+        "num_day_other" : "%d дана",
+        "num_day_two" : "%d дана",
+        "num_day_zero" : "%d дан",
+        "num_days_short" : "%dд",
+        "num_month_few" : "%d месеца",
+        "num_month_many" : "%d месеци",
+        "num_month_one" : "%d месец",
+        "num_month_other" : "%d месеци",
+        "num_month_two" : "%d месеца",
+        "num_month_zero" : "%d месец",
+        "num_months_short" : "%dмес",
+        "num_week_few" : "%d недеље",
+        "num_week_many" : "%d недеља",
+        "num_week_one" : "%d недеља",
+        "num_week_other" : "%d недеља",
+        "num_week_two" : "%d недеље",
+        "num_week_zero" : "%d недеља",
+        "num_weeks_short" : "%dнед",
+        "num_year_few" : "%d године",
+        "num_year_many" : "%d година",
+        "num_year_one" : "%d година",
+        "num_year_other" : "%d година",
+        "num_year_two" : "%d године",
+        "num_year_zero" : "%d година",
+        "num_years_short" : "%dгод",
+        "percent" : "%d%%",
+        "week" : "недеља",
+        "week_short" : "нед",
+        "weekly" : "недељно",
+        "year" : "година",
+        "year_short" : "год",
+        "yearly" : "годишње"
+      },
+      "sr_Latn" : {
+        "annual" : "godišnji",
+        "annual_short" : "god",
+        "annually" : "godišnje",
+        "daily" : "dnevno",
+        "day" : "dan",
+        "day_short" : "dan",
+        "free_price" : "besplatno",
+        "month" : "mesec",
+        "month_short" : "mes",
+        "monthly" : "mesečno",
+        "num_day_few" : "%d dana",
+        "num_day_many" : "%d dana",
+        "num_day_one" : "%d dan",
+        "num_day_other" : "%d dana",
+        "num_day_two" : "%d dana",
+        "num_day_zero" : "%d dan",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d meseca",
+        "num_month_many" : "%d meseci",
+        "num_month_one" : "%d mesec",
+        "num_month_other" : "%d meseci",
+        "num_month_two" : "%d meseca",
+        "num_month_zero" : "%d mesec",
+        "num_months_short" : "%dmes",
+        "num_week_few" : "%d nedelje",
+        "num_week_many" : "%d nedelja",
+        "num_week_one" : "%d nedelja",
+        "num_week_other" : "%d nedelja",
+        "num_week_two" : "%d nedelje",
+        "num_week_zero" : "%d nedelja",
+        "num_weeks_short" : "%dned",
+        "num_year_few" : "%d godine",
+        "num_year_many" : "%d godina",
+        "num_year_one" : "%d godina",
+        "num_year_other" : "%d godina",
+        "num_year_two" : "%d godine",
+        "num_year_zero" : "%d godina",
+        "num_years_short" : "%dgod",
+        "percent" : "%d%%",
+        "week" : "nedelja",
+        "week_short" : "ned",
+        "weekly" : "nedeljno",
+        "year" : "godina",
+        "year_short" : "god",
+        "yearly" : "godišnje"
       },
       "sv" : {
         "annual" : "årlig",

@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 8/27/24.
 // swiftlint:disable file_length
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -20,8 +20,12 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent.FontSize {
 
-    func makeFont(familyName: String?) -> Font {
-        return Font(self.makePlatformFont(familyName: familyName))
+    func makeFont(familyName: String?, automaticallyScaleFontSize: Bool = true) -> Font {
+        let platformFont = self.makePlatformFont(
+            familyName: familyName,
+            automaticallyScaleFontSize: automaticallyScaleFontSize
+        )
+        return Font(platformFont)
     }
 
     private var textStyle: PlatformFont.TextStyle {
@@ -39,7 +43,7 @@ extension PaywallComponent.FontSize {
     }
 
     // swiftlint:disable cyclomatic_complexity
-    private func makePlatformFont(familyName: String?) -> PlatformFont {
+    private func makePlatformFont(familyName: String?, automaticallyScaleFontSize: Bool = true) -> PlatformFont {
         let fontSize: CGFloat
         switch self {
         case .headingXXL: fontSize = 40
@@ -67,9 +71,12 @@ extension PaywallComponent.FontSize {
             baseFont = PlatformFont.systemFont(ofSize: fontSize, weight: .regular)
         }
 
-        // Apply dynamic type scaling
+        // Apply dynamic type scaling unless the dashboard explicitly disables font scaling
         #if canImport(UIKit)
-        return UIFontMetrics(forTextStyle: self.textStyle).scaledFont(for: baseFont)
+        if automaticallyScaleFontSize {
+            return UIFontMetrics(forTextStyle: self.textStyle).scaledFont(for: baseFont)
+        }
+        return baseFont
         #else
         // macOS does not support dynamic type (see
         // https://developer.apple.com/design/human-interface-guidelines/typography)

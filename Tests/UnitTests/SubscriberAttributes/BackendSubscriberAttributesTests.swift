@@ -53,6 +53,7 @@ class BackendSubscriberAttributesTests: TestCase {
         finishTransactions: true,
         storefrontProvider: MockStorefrontProvider(),
         storeKitVersion: .versionForTests,
+        apiKey: BackendSubscriberAttributesTests.apiKey,
         responseVerificationMode: .disabled,
         isAppBackgrounded: false,
         preferredLocalesProvider: .mock(locales: ["en-US"])
@@ -96,13 +97,14 @@ class BackendSubscriberAttributesTests: TestCase {
         backend.post(receipt: self.receipt,
                      productData: nil,
                      transactionData: .init(
-                        appUserID: self.appUserID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: subscriberAttributesByKey,
-                        storefront: nil,
-                        source: .init(isRestore: false, initiationSource: .restore)
+                        storeCountry: nil
                      ),
-                     observerMode: false) { _ in }
+                     postReceiptSource: .init(isRestore: false, initiationSource: .restore),
+                     observerMode: false,
+                     originalPurchaseCompletedBy: .revenueCat,
+                     appUserID: self.appUserID) { _ in }
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
     }
@@ -114,14 +116,15 @@ class BackendSubscriberAttributesTests: TestCase {
             self.backend.post(receipt: self.receipt,
                               productData: nil,
                               transactionData: .init(
-                                 appUserID: self.appUserID,
                                  presentedOfferingContext: nil,
                                  unsyncedAttributes: [:],
                                  aadAttributionToken: token,
-                                 storefront: nil,
-                                 source: .init(isRestore: false, initiationSource: .restore)
+                                 storeCountry: nil
                               ),
-                              observerMode: false) { _ in
+                              postReceiptSource: .init(isRestore: false, initiationSource: .restore),
+                              observerMode: false,
+                              originalPurchaseCompletedBy: nil,
+                              appUserID: self.appUserID) { _ in
                 completion()
             }
         }
@@ -142,13 +145,14 @@ class BackendSubscriberAttributesTests: TestCase {
         backend.post(receipt: self.receipt,
                      productData: nil,
                      transactionData: .init(
-                        appUserID: self.appUserID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: subscriberAttributesByKey,
-                        storefront: nil,
-                        source: .init(isRestore: false, initiationSource: .queue)
+                        storeCountry: nil
                      ),
-                     observerMode: false) {
+                     postReceiptSource: .init(isRestore: false, initiationSource: .queue),
+                     observerMode: false,
+                     originalPurchaseCompletedBy: .revenueCat,
+                     appUserID: self.appUserID) {
             receivedResult.value = $0
         }
 
@@ -166,13 +170,14 @@ class BackendSubscriberAttributesTests: TestCase {
         backend.post(receipt: self.receipt,
                      productData: nil,
                      transactionData: .init(
-                        appUserID: self.appUserID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
-                        storefront: nil,
-                        source: .init(isRestore: false, initiationSource: .purchase)
+                        storeCountry: nil
                      ),
-                     observerMode: false) { _ in }
+                     postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+                     observerMode: false,
+                     originalPurchaseCompletedBy: .revenueCat,
+                     appUserID: self.appUserID) { _ in }
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
     }
@@ -209,13 +214,14 @@ class BackendSubscriberAttributesTests: TestCase {
                 receipt: self.receipt,
                 productData: nil,
                 transactionData: .init(
-                    appUserID: self.appUserID,
                     presentedOfferingContext: nil,
                     unsyncedAttributes: subscriberAttributesByKey,
-                    storefront: nil,
-                    source: .init(isRestore: false, initiationSource: .queue)
+                    storeCountry: nil
                 ),
-                observerMode: false
+                postReceiptSource: .init(isRestore: false, initiationSource: .queue),
+                observerMode: false,
+                originalPurchaseCompletedBy: .revenueCat,
+                appUserID: self.appUserID
             ) { result in
                 completion(result.value)
             }
@@ -263,13 +269,14 @@ class BackendSubscriberAttributesTests: TestCase {
                 receipt: self.receipt,
                 productData: nil,
                 transactionData: .init(
-                    appUserID: self.appUserID,
                     presentedOfferingContext: nil,
                     unsyncedAttributes: subscriberAttributesByKey,
-                    storefront: nil,
-                    source: .init(isRestore: false, initiationSource: .restore)
+                    storeCountry: nil
                 ),
-                observerMode: false
+                postReceiptSource: .init(isRestore: false, initiationSource: .restore),
+                observerMode: false,
+                originalPurchaseCompletedBy: .revenueCat,
+                appUserID: self.appUserID
             ) { result in
                 completion(result.error)
             }
@@ -451,13 +458,14 @@ class BackendSubscriberAttributesTests: TestCase {
                 backend.post(receipt: self.receipt,
                              productData: nil,
                              transactionData: .init(
-                                appUserID: self.appUserID,
                                 presentedOfferingContext: nil,
                                 unsyncedAttributes: subscriberAttributesByKey,
-                                storefront: nil,
-                                source: .init(isRestore: false, initiationSource: .purchase)
+                                storeCountry: nil
                              ),
-                             observerMode: false) { _ in
+                             postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+                             observerMode: false,
+                             originalPurchaseCompletedBy: nil,
+                             appUserID: self.appUserID) { _ in
                     continuation.resume()
                 }
             }
@@ -482,6 +490,156 @@ class BackendSubscriberAttributesTests: TestCase {
         expect(self.mockHTTPClient.calls).to(haveCount(1))
     }
 
+    func testPostReceiptCachesRequestsWhenOnlyConsentStatusExistsWithDifferentTimestamps() async {
+        self.mockHTTPClient.disableSnapshotTesting()
+
+        let subsequentNows: [Date] = (1...100).map { offset in
+            self.referenceDate.advanced(by: .seconds(offset))
+        }
+        let dateProvider = MockDateProvider(stubbedNow: self.referenceDate, subsequentNows: subsequentNows)
+
+        let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
+                                                    systemInfo: self.systemInfo)
+
+        let config = BackendConfiguration(httpClient: self.mockHTTPClient,
+                                          operationDispatcher: MockOperationDispatcher(),
+                                          operationQueue: MockBackend.QueueProvider.createBackendQueue(),
+                                          diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
+                                          systemInfo: self.systemInfo,
+                                          offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
+                                          dateProvider: dateProvider)
+
+        let backend = Backend(backendConfig: config, attributionFetcher: attributionFetcher)
+
+        let emptySubscriberAttributes: [String: SubscriberAttribute] = [:]
+
+        self.mockHTTPClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success, response: self.validSubscriberResponse, delay: .milliseconds(200))
+        )
+
+        let postReceiptCall = {
+            await withUnsafeContinuation { continuation in
+                backend.post(receipt: self.receipt,
+                             productData: nil,
+                             transactionData: .init(
+                                presentedOfferingContext: nil,
+                                unsyncedAttributes: emptySubscriberAttributes,
+                                storeCountry: nil
+                             ),
+                             postReceiptSource: .init(isRestore: false, initiationSource: .restore),
+                             observerMode: false,
+                             originalPurchaseCompletedBy: nil,
+                             appUserID: self.appUserID) { _ in
+                    continuation.resume()
+                }
+            }
+        }
+
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask {
+                await postReceiptCall()
+            }
+
+            group.addTask {
+                await postReceiptCall()
+            }
+        }
+
+        expect(dateProvider.invokedNowCount) > 1
+        expect(self.mockHTTPClient.calls).to(haveCount(1))
+    }
+
+    func testPostReceiptCachesRequestsWithMultipleAttributesAndDifferentConsentStatusTimestamps() async {
+        self.mockHTTPClient.disableSnapshotTesting()
+
+        let subsequentNows: [Date] = (1...100).map { offset in
+            self.referenceDate.advanced(by: .seconds(offset))
+        }
+        let dateProvider = MockDateProvider(stubbedNow: self.referenceDate, subsequentNows: subsequentNows)
+
+        let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
+                                                    systemInfo: self.systemInfo)
+
+        let config = BackendConfiguration(httpClient: self.mockHTTPClient,
+                                          operationDispatcher: MockOperationDispatcher(),
+                                          operationQueue: MockBackend.QueueProvider.createBackendQueue(),
+                                          diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
+                                          systemInfo: self.systemInfo,
+                                          offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
+                                          dateProvider: dateProvider)
+
+        let backend = Backend(backendConfig: config, attributionFetcher: attributionFetcher)
+
+        let attributeZ = SubscriberAttribute(withKey: "zzz_last_attribute",
+                                             value: "last_value",
+                                             dateProvider: dateProvider)
+        let attributeA = SubscriberAttribute(withKey: "aaa_first_attribute",
+                                             value: "first_value",
+                                             dateProvider: dateProvider)
+        let attributeM = SubscriberAttribute(withKey: "mmm_middle_attribute",
+                                             value: "middle_value",
+                                             dateProvider: dateProvider)
+
+        let subscriberAttributesOrderedAMZ: [String: SubscriberAttribute] = [
+            attributeA.key: attributeA,
+            attributeM.key: attributeM,
+            attributeZ.key: attributeZ
+        ]
+
+        let subscriberAttributesOrderedZMA: [String: SubscriberAttribute] = [
+            attributeZ.key: attributeZ,
+            attributeM.key: attributeM,
+            attributeA.key: attributeA
+        ]
+
+        self.mockHTTPClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success, response: self.validSubscriberResponse, delay: .milliseconds(200))
+        )
+
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask {
+                await withUnsafeContinuation { continuation in
+                    backend.post(receipt: self.receipt,
+                                 productData: nil,
+                                 transactionData: .init(
+                                    presentedOfferingContext: nil,
+                                    unsyncedAttributes: subscriberAttributesOrderedAMZ,
+                                    storeCountry: nil
+                                 ),
+                                 postReceiptSource: .init(isRestore: false, initiationSource: .restore),
+                                 observerMode: false,
+                                 originalPurchaseCompletedBy: nil,
+                                 appUserID: self.appUserID) { _ in
+                        continuation.resume()
+                    }
+                }
+            }
+
+            group.addTask {
+                await withUnsafeContinuation { continuation in
+                    backend.post(receipt: self.receipt,
+                                 productData: nil,
+                                 transactionData: .init(
+                                    presentedOfferingContext: nil,
+                                    unsyncedAttributes: subscriberAttributesOrderedZMA,
+                                    storeCountry: nil
+                                 ),
+                                 postReceiptSource: .init(isRestore: false, initiationSource: .restore),
+                                 observerMode: false,
+                                 originalPurchaseCompletedBy: nil,
+                                 appUserID: self.appUserID) { _ in
+                        continuation.resume()
+                    }
+                }
+            }
+        }
+
+        expect(dateProvider.invokedNowCount) > 1
+        expect(self.mockHTTPClient.calls).to(haveCount(1))
+    }
+
     func createClient() -> MockHTTPClient {
         return self.createClient(#file)
     }
@@ -492,8 +650,7 @@ class BackendSubscriberAttributesTests: TestCase {
             self.mockDiagnosticsTracker = MockDiagnosticsTracker()
         }
 
-        return MockHTTPClient(apiKey: Self.apiKey,
-                              systemInfo: self.systemInfo,
+        return MockHTTPClient(systemInfo: self.systemInfo,
                               eTagManager: self.mockETagManager,
                               diagnosticsTracker: self.mockDiagnosticsTracker,
                               sourceTestFile: file)

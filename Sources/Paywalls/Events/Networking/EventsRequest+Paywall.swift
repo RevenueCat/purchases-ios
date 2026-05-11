@@ -21,6 +21,7 @@ extension FeatureEventsRequest {
         let version: Int
         var type: EventType
         var appUserID: String
+        var paywallID: String?
         var sessionID: String
         var offeringID: String
         var paywallRevision: Int
@@ -28,6 +29,33 @@ extension FeatureEventsRequest {
         var displayMode: PaywallViewMode
         var darkMode: Bool
         var localeIdentifier: String
+        var source: PaywallSource?
+        var presentedOfferingContext: PresentedOfferingContextData?
+        var exitOfferType: ExitOfferType?
+        var exitOfferingID: String?
+        var packageId: String?
+        var productId: String?
+        var errorCode: Int?
+        var errorMessage: String?
+        var componentType: ComponentInteractionType?
+        var componentName: String?
+        var componentValue: String?
+        var componentURL: URL?
+        var originIndex: Int?
+        var destinationIndex: Int?
+        var originContextName: String?
+        var destinationContextName: String?
+        var defaultIndex: Int?
+        var originPackageIdentifier: String?
+        var destinationPackageIdentifier: String?
+        var defaultPackageIdentifier: String?
+        var originProductIdentifier: String?
+        var destinationProductIdentifier: String?
+        var defaultProductIdentifier: String?
+        var currentPackageIdentifier: String?
+        var resultingPackageIdentifier: String?
+        var currentProductIdentifier: String?
+        var resultingProductIdentifier: String?
 
     }
 
@@ -35,11 +63,39 @@ extension FeatureEventsRequest {
 
 extension FeatureEventsRequest.PaywallEvent {
 
+    struct PresentedOfferingContextData: Encodable {
+
+        var placementIdentifier: String?
+        var targetingRevision: Int?
+        var targetingRuleId: String?
+
+        /// Returns `nil` if all fields are `nil`.
+        init?(
+            placementIdentifier: String?,
+            targetingRevision: Int?,
+            targetingRuleId: String?
+        ) {
+            guard placementIdentifier != nil ||
+                    targetingRevision != nil ||
+                    targetingRuleId != nil else {
+                return nil
+            }
+            self.placementIdentifier = placementIdentifier
+            self.targetingRevision = targetingRevision
+            self.targetingRuleId = targetingRuleId
+        }
+
+    }
+
     enum EventType: String {
 
         case impression = "paywall_impression"
         case cancel = "paywall_cancel"
         case close = "paywall_close"
+        case exitOffer = "paywall_exit_offer"
+        case purchaseInitiated = "paywall_purchase_initiated"
+        case purchaseError = "paywall_purchase_error"
+        case componentInteraction = "paywall_component_interacted"
 
     }
 
@@ -52,26 +108,65 @@ extension FeatureEventsRequest.PaywallEvent {
 
         do {
             let paywallEvent = try JSONDecoder.default.decode(PaywallEvent.self, from: jsonData)
-            let creationData = paywallEvent.creationData
-            let data = paywallEvent.data
-
-            self.init(
-                id: creationData.id.uuidString,
-                version: Self.version,
-                type: paywallEvent.eventType,
-                appUserID: storedEvent.userID,
-                sessionID: data.sessionIdentifier.uuidString,
-                offeringID: data.offeringIdentifier,
-                paywallRevision: data.paywallRevision,
-                timestamp: creationData.date.millisecondsSince1970,
-                displayMode: data.displayMode,
-                darkMode: data.darkMode,
-                localeIdentifier: data.localeIdentifier
-            )
+            self.init(decodedPaywallEvent: paywallEvent, appUserID: storedEvent.userID)
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
             return nil
         }
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    private init(decodedPaywallEvent: PaywallEvent, appUserID: String) {
+        let creationData = decodedPaywallEvent.creationData
+        let data = decodedPaywallEvent.data
+        let exitOfferData = decodedPaywallEvent.exitOfferData
+        let componentInteractionData = decodedPaywallEvent.componentInteractionData
+
+        self.init(
+            id: creationData.id.uuidString,
+            version: Self.version,
+            type: decodedPaywallEvent.eventType,
+            appUserID: appUserID,
+            paywallID: data.paywallIdentifier,
+            sessionID: data.sessionIdentifier.uuidString,
+            offeringID: data.offeringIdentifier,
+            paywallRevision: data.paywallRevision,
+            timestamp: creationData.date.millisecondsSince1970,
+            displayMode: data.displayMode,
+            darkMode: data.darkMode,
+            localeIdentifier: data.localeIdentifier,
+            source: data.source,
+            presentedOfferingContext: PresentedOfferingContextData(
+                placementIdentifier: data.placementIdentifier,
+                targetingRevision: data.targetingRevision,
+                targetingRuleId: data.targetingRuleId
+            ),
+            exitOfferType: exitOfferData?.exitOfferType,
+            exitOfferingID: exitOfferData?.exitOfferingIdentifier,
+            packageId: data.packageId,
+            productId: data.productId,
+            errorCode: data.errorCode,
+            errorMessage: data.errorMessage,
+            componentType: componentInteractionData?.componentType,
+            componentName: componentInteractionData?.componentName,
+            componentValue: componentInteractionData?.componentValue,
+            componentURL: componentInteractionData?.componentURL,
+            originIndex: componentInteractionData?.originIndex,
+            destinationIndex: componentInteractionData?.destinationIndex,
+            originContextName: componentInteractionData?.originContextName,
+            destinationContextName: componentInteractionData?.destinationContextName,
+            defaultIndex: componentInteractionData?.defaultIndex,
+            originPackageIdentifier: componentInteractionData?.originPackageIdentifier,
+            destinationPackageIdentifier: componentInteractionData?.destinationPackageIdentifier,
+            defaultPackageIdentifier: componentInteractionData?.defaultPackageIdentifier,
+            originProductIdentifier: componentInteractionData?.originProductIdentifier,
+            destinationProductIdentifier: componentInteractionData?.destinationProductIdentifier,
+            defaultProductIdentifier: componentInteractionData?.defaultProductIdentifier,
+            currentPackageIdentifier: componentInteractionData?.currentPackageIdentifier,
+            resultingPackageIdentifier: componentInteractionData?.resultingPackageIdentifier,
+            currentProductIdentifier: componentInteractionData?.currentProductIdentifier,
+            resultingProductIdentifier: componentInteractionData?.resultingProductIdentifier
+        )
     }
 
     private static let version: Int = 1
@@ -86,6 +181,10 @@ private extension PaywallEvent {
         case .impression: return .impression
         case .cancel: return .cancel
         case .close: return .close
+        case .exitOffer: return .exitOffer
+        case .purchaseInitiated: return .purchaseInitiated
+        case .purchaseError: return .purchaseError
+        case .componentInteraction: return .componentInteraction
         }
 
     }
@@ -104,6 +203,7 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case version
         case type
         case appUserID = "appUserId"
+        case paywallID = "paywallId"
         case sessionID = "sessionId"
         case offeringID = "offeringId"
         case paywallRevision
@@ -111,6 +211,33 @@ extension FeatureEventsRequest.PaywallEvent: Encodable {
         case displayMode
         case darkMode
         case localeIdentifier = "locale"
+        case source
+        case presentedOfferingContext
+        case exitOfferType
+        case exitOfferingID = "exitOfferingId"
+        case packageId = "packageId"
+        case productId = "productId"
+        case errorCode
+        case errorMessage
+        case componentType
+        case componentName
+        case componentValue
+        case componentURL = "componentUrl"
+        case originIndex
+        case destinationIndex
+        case originContextName
+        case destinationContextName
+        case defaultIndex
+        case originPackageIdentifier = "originPackageId"
+        case destinationPackageIdentifier = "destinationPackageId"
+        case defaultPackageIdentifier = "defaultPackageId"
+        case originProductIdentifier = "originProductId"
+        case destinationProductIdentifier = "destinationProductId"
+        case defaultProductIdentifier = "defaultProductId"
+        case currentPackageIdentifier = "currentPackageId"
+        case resultingPackageIdentifier = "resultingPackageId"
+        case currentProductIdentifier = "currentProductId"
+        case resultingProductIdentifier = "resultingProductId"
 
     }
 

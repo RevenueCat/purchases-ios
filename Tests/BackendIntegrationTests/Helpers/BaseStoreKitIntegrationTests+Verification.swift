@@ -114,13 +114,63 @@ extension BaseStoreKitIntegrationTests {
 
     func verifySpecificTransactionWasFinished(
         _ storeTransaction: StoreTransaction,
+        count: Int? = 1,
         file: FileString = #file,
         line: UInt = #line
     ) {
-        let expectedLog = Self.finishingSpecificTransactionLog(transaction: storeTransaction)
+        self.verifySpecificTransactionWasFinished(transactionId: storeTransaction.transactionIdentifier,
+                                                  productId: storeTransaction.productIdentifier,
+                                                  count: count,
+                                                  file: file,
+                                                  line: line)
+    }
+
+    func verifySpecificTransactionWasFinished(
+        transactionId: String,
+        productId: String,
+        count: Int? = 1,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        let expectedLog = Self.finishingSpecificTransactionLog(transactionId: transactionId, productId: productId)
         self.logger.verifyMessageWasLogged(expectedLog,
                                            level: .info,
-                                           expectedCount: 1,
+                                           expectedCount: count,
+                                           file: file,
+                                           line: line)
+    }
+
+    func verifySpecificTransactionIsEventuallyFinished(
+        transactionId: String,
+        productId: String,
+        count: Int? = 1,
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws {
+        let expectedLog = Self.finishingSpecificTransactionLog(transactionId: transactionId, productId: productId)
+        try await self.logger.verifyMessageIsEventuallyLogged(
+            expectedLog,
+            level: .info,
+            expectedCount: count,
+            timeout: .seconds(5),
+            pollInterval: .milliseconds(100),
+            file: file,
+            line: line
+        )
+    }
+
+    /// Use this method to check a transaction was finished for a specific product identifier
+    /// when you don't have access to the specific `StoreTransaction` object.
+    func verifyTransactionWasFinishedForProductIdentifier(
+        _ productIdentifier: String,
+        count: Int? = 1,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        let expectedLogRegexPattern = Self.finishingTransactionLogRegexPattern(productIdentifier: productIdentifier)
+        self.logger.verifyMessageWasLogged(regexPattern: expectedLogRegexPattern,
+                                           level: .info,
+                                           expectedCount: count,
                                            file: file,
                                            line: line)
     }
@@ -137,11 +187,12 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) {
-        let expectedLog = Self.finishingSpecificTransactionLog(transaction: storeTransaction)
+        let expectedLog = Self.finishingSpecificTransactionLog(transactionId: storeTransaction.transactionIdentifier,
+                                                               productId: storeTransaction.productIdentifier)
         self.logger.verifyMessageWasNotLogged(expectedLog, file: file, line: line)
     }
 
-    func verifyTransactionIsEventuallyFinished(
+    func verifyAnyTransactionIsEventuallyFinished(
         count: Int? = nil,
         file: FileString = #file,
         line: UInt = #line

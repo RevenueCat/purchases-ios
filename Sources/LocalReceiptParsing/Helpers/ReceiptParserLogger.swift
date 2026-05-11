@@ -16,14 +16,14 @@ import Foundation
 final class ReceiptParserLogger: LoggerType {
 
     func verbose(
-        _ message: @autoclosure () -> LogMessage,
+        _ message: LogMessage,
         fileName: String?,
         functionName: String?,
         line: UInt
     ) {
         Self.log(
             level: .verbose,
-            message: message(),
+            message: message,
             fileName: fileName,
             functionName: functionName,
             line: line
@@ -31,14 +31,14 @@ final class ReceiptParserLogger: LoggerType {
     }
 
     func debug(
-        _ message: @autoclosure () -> LogMessage,
+        _ message: LogMessage,
         fileName: String?,
         functionName: String?,
         line: UInt
     ) {
         Self.log(
             level: .debug,
-            message: message(),
+            message: message,
             fileName: fileName,
             functionName: functionName,
             line: line
@@ -46,14 +46,14 @@ final class ReceiptParserLogger: LoggerType {
     }
 
     func info(
-        _ message: @autoclosure () -> LogMessage,
+        _ message: LogMessage,
         fileName: String?,
         functionName: String?,
         line: UInt
     ) {
         Self.log(
             level: .info,
-            message: message(),
+            message: message,
             fileName: fileName,
             functionName: functionName,
             line: line
@@ -61,14 +61,14 @@ final class ReceiptParserLogger: LoggerType {
     }
 
     func warn(
-        _ message: @autoclosure () -> LogMessage,
+        _ message: LogMessage,
         fileName: String?,
         functionName: String?,
         line: UInt
     ) {
         Self.log(
             level: .warn,
-            message: message(),
+            message: message,
             fileName: fileName,
             functionName: functionName,
             line: line
@@ -76,14 +76,14 @@ final class ReceiptParserLogger: LoggerType {
     }
 
     func error(
-        _ message: @autoclosure () -> LogMessage,
+        _ message: LogMessage,
         fileName: String,
         functionName: String,
         line: UInt
     ) {
         Self.log(
             level: .error,
-            message: message(),
+            message: message,
             fileName: fileName,
             functionName: functionName,
             line: line
@@ -91,12 +91,10 @@ final class ReceiptParserLogger: LoggerType {
     }
 
     private static func log(level: LogLevel,
-                            message: @autoclosure () -> LogMessage,
+                            message: LogMessage,
                             fileName: String? = #fileID,
                             functionName: String? = #function,
                             line: UInt = #line) {
-        let message = message()
-
         defaultLogHandler(
             framework: Self.framework,
             verbose: false,

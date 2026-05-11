@@ -1,18 +1,15 @@
 ## RevenueCat SDK
-### 🐞 Bugfixes
-* fix: Call onRestoreCompleted if there are no subscriptions / non subscriptions (#5813) via Facundo Menzella (@facumenzella)
+### ✨ New Features
+* Add support for intro offer eligibility override in non-cec mode (#6748) via Mark Villacampa (@MarkVillacampa)
 
 ## RevenueCatUI SDK
-### Customer Center
-#### 🐞 Bugfixes
-* Remove extra check for showing new support ticket creation button (#5896) via Rosie Watson (@RosieWatson)
+### Paywallv2
+#### ✨ New Features
+* Resolve price/period variables on packageless workflow screens (#6737) via Facundo Menzella (@facumenzella)
+* FEAT: Allow disabling of automatic font scaling (#6727) via Jacob Rakidzich (@JZDesign)
 
 ### 🔄 Other Changes
-* Add custom purchase and restore logic handlers to UIKit paywalls (#5902) via Antonio Pallares (@ajpallares)
-* Add extra non subscription events (#5895) via Pol Miro (@polmiro)
-* Show redacted Test Api key in alert when detected in Release configuration (#5897) via Antonio Pallares (@ajpallares)
-* Improve flakiness of some tests (#5893) via Antonio Pallares (@ajpallares)
-* Improve DangerFile detection of added / deleted files (#5845) via Facundo Menzella (@facumenzella)
-* Fix flaky test (#5887) via Antonio Pallares (@ajpallares)
-* Remove CI step to install unused dependency (#5890) via Antonio Pallares (@ajpallares)
-* Disable Emerge snapshots for mac catalyst because of flakiness (#5885) via Rick (@rickvdl)
+* [Billing Plans]: Parse platform_product_plan_identifier in offerings response (#6738) via Will Taylor (@fire-at-will)
+* fix for CI - add missing JSON field (#6747) via Jacob Rakidzich (@JZDesign)
+* chore: add logging to reward verification (#6745) via Peter Porfy (@peterporfy)
+* Add internal reward-verification adapter pipeline (#6663) via Pol Miro (@polmiro)

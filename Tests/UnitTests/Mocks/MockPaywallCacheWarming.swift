@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 8/7/23.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 final class MockPaywallCacheWarming: PaywallCacheWarmingType {
 
@@ -88,6 +88,25 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
     func warmUpPaywallFontsCache(offerings: Offerings) {
         self.invokedWarmUpPaywallFontsCache = true
         self.invokedWarmUpPaywallFontsCacheOfferings = offerings
+    }
+
+    // MARK: -
+
+    private let _invokedWarmUpWorkflowCaches: Atomic<Bool> = false
+    private let _invokedWarmUpWorkflowCachesWorkflow: Atomic<PublishedWorkflow?> = nil
+
+    var invokedWarmUpWorkflowCaches: Bool {
+        get { return self._invokedWarmUpWorkflowCaches.value }
+        set { self._invokedWarmUpWorkflowCaches.value = newValue }
+    }
+    var invokedWarmUpWorkflowCachesWorkflow: PublishedWorkflow? {
+        get { return self._invokedWarmUpWorkflowCachesWorkflow.value }
+        set { self._invokedWarmUpWorkflowCachesWorkflow.value = newValue }
+    }
+
+    func warmUpWorkflowCaches(workflow: PublishedWorkflow) async {
+        self.invokedWarmUpWorkflowCaches = true
+        self.invokedWarmUpWorkflowCachesWorkflow = workflow
     }
 
 #if !os(tvOS)

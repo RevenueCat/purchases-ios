@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 1/24/22.
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import StoreKit
 import StoreKitTest
 import XCTest
@@ -26,11 +26,7 @@ extension XCTestCase {
 
     func setShortestTestSessionTimeRate(_ testSession: SKTestSession) {
         if #available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *) {
-            #if swift(>=5.8)
             testSession.timeRate = .oneRenewalEveryTwoSeconds
-            #else
-            testSession.timeRate = SKTestSession.TimeRate.monthlyRenewalEveryThirtySeconds
-            #endif
         } else if #available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *) {
             testSession.timeRate = SKTestSession.TimeRate.monthlyRenewalEveryThirtySeconds
         }
@@ -38,11 +34,7 @@ extension XCTestCase {
 
     func setLongestTestSessionTimeRate(_ testSession: SKTestSession) {
         if #available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *) {
-            #if swift(>=5.8)
             testSession.timeRate = .oneRenewalEveryFifteenMinutes
-            #else
-            testSession.timeRate = SKTestSession.TimeRate.monthlyRenewalEveryHour
-            #endif
         } else if #available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *) {
             testSession.timeRate = SKTestSession.TimeRate.monthlyRenewalEveryHour
         }

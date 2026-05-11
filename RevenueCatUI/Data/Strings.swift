@@ -14,7 +14,7 @@
 import Foundation
 import RevenueCat
 
-// swiftlint:disable identifier_name
+// swiftlint:disable identifier_name file_length
 
 enum Strings {
 
@@ -23,6 +23,7 @@ enum Strings {
     case unrecognized_variable_name(variableName: String)
 
     case product_already_subscribed
+    case purchase_failed(Error)
 
     case determining_whether_to_display_paywall
     case displaying_paywall
@@ -31,13 +32,18 @@ enum Strings {
     case tier_has_no_available_products_for_paywall(String)
 
     case attempted_to_track_event_with_missing_data
+    case paywall_unknown_button_action_tracked_for_diagnostics(componentName: String?, actionValue: String)
 
     case image_starting_request(URL)
     case image_result(Result<(), ImageLoader.Error>)
+    case image_failed_to_load(URL, Error)
 
+    case restore_purchases_gate_start
+    case restore_purchases_gate_finish(with: Bool)
     case restoring_purchases
     case restored_purchases
     case restore_purchases_with_empty_result
+    case restore_purchases_failed(Error)
     case setting_restored_customer_info
 
     case executing_purchase_logic
@@ -66,6 +72,7 @@ enum Strings {
     case successfully_opened_url_deep_link(String)
     case no_selected_package_found
     case no_web_checkout_url_found
+    case variable_requires_package(variableName: String)
 
     // Customer Center
     case could_not_find_subscription_information
@@ -77,6 +84,7 @@ enum Strings {
     case promo_offer_purchase_cancelled(String, String)
     case promo_offer_purchase_succeeded(String, String, String)
     case promo_offer_purchase_failed(String, String, Error)
+    case promo_offer_nil_transaction(String, String)
     case could_not_determine_type_of_custom_url
     case active_product_is_not_apple_loading_without_product_information(Store)
     case could_not_find_product_loading_without_product_information(String)
@@ -89,6 +97,32 @@ enum Strings {
     case fontMappingNotFound(name: String)
     case customFontFailedToLoad(fontName: String)
     case googleFontsNotSupported
+
+    // Custom Variables
+    case paywall_custom_variable_not_found(variableName: String)
+    case paywall_custom_variable_invalid_number(value: String)
+    case paywall_custom_variable_unknown_type(type: String)
+    case paywall_variable_looks_like_custom(variableName: String)
+    case paywall_custom_variable_invalid_key(key: String)
+
+    // Video
+    case video_failed_to_set_audio_session_category(Error)
+    case video_failed_to_cache(URL, Error)
+
+    // Exit Offers
+    case errorFetchingOfferings(Error)
+    case exitOfferNotFound(String)
+    case exitOfferSameAsCurrent
+    case prefetchedExitOffer(String)
+    case presentingExitOffer(String)
+    case errorLoadingExitOffer(Error)
+
+    // Conditional Configurability
+    case paywall_contains_unsupported_condition
+    case workflow_paywall_invalid_state(currentStepId: String, screenId: String?)
+    case paywall_workflow_trigger_not_handled(componentName: String?)
+    case workflow_package_context_unresolvable(stepId: String)
+
 }
 
 extension Strings: CustomStringConvertible {
@@ -127,6 +161,10 @@ extension Strings: CustomStringConvertible {
         case .attempted_to_track_event_with_missing_data:
             return "Attempted to track event with missing data"
 
+        case let .paywall_unknown_button_action_tracked_for_diagnostics(componentName, actionValue):
+            return "Tracked unknown paywall button action for diagnostics. " +
+            "componentName=\(componentName ?? "nil"), actionValue=\(actionValue)"
+
         case let .image_starting_request(url):
             return "Starting request for image: '\(url)'"
 
@@ -137,6 +175,9 @@ extension Strings: CustomStringConvertible {
             case let .failure(error):
                 return "Failed loading image: \(error)"
             }
+
+        case let .image_failed_to_load(url, error):
+            return "Failed to load image from '\(url)': \(error)"
 
         case .restoring_purchases:
             return "Restoring purchases"
@@ -235,6 +276,10 @@ extension Strings: CustomStringConvertible {
         case let .promo_offer_purchase_failed(productId, offerId, error):
             return "Promotional offer purchase failed for product '\(productId)' with offer '\(offerId)': \(error)"
 
+        case let .promo_offer_nil_transaction(productId, offerId):
+            return "Promotional offer purchase for product '\(productId)' with offer '\(offerId)' succeeded " +
+            "but no transaction was returned by StoreKit."
+
         case .could_not_offer_for_any_active_subscriptions:
             return "Could not find offer with id for any active subscription"
 
@@ -282,6 +327,9 @@ extension Strings: CustomStringConvertible {
         case .no_web_checkout_url_found:
             return "No web checkout url found."
 
+        case let .variable_requires_package(variableName):
+            return "Paywall variable '\(variableName)' requires a package but none was provided."
+
         case .localizationNotFound(let identifier):
             return "Could not find localizations for '\(identifier)'"
         case .fontMappingNotFound(let name):
@@ -290,6 +338,63 @@ extension Strings: CustomStringConvertible {
             return "Custom font '\(fontName)' could not be loaded. Falling back to system font."
         case .googleFontsNotSupported:
             return "Google Fonts are not supported on this platform"
+
+        case .paywall_custom_variable_not_found(let variableName):
+            return "Custom variable '\(variableName)' was not found. " +
+            "Make sure to provide a value using .customPaywallVariables() or set a default in the dashboard."
+
+        case .paywall_custom_variable_invalid_number(let value):
+            return "Custom variable default value '\(value)' could not be parsed as a number. Using as string."
+
+        case .paywall_custom_variable_unknown_type(let type):
+            return "Unknown custom variable type '\(type)'. Using as string."
+
+        case .paywall_variable_looks_like_custom(let variableName):
+            return "Variable '\(variableName)' looks like a custom variable but uses incorrect syntax. " +
+            "Custom variables must use the 'custom.' prefix with a dot, e.g., '{{ custom.variable_name }}'."
+
+        case .paywall_custom_variable_invalid_key(let key):
+            return "Custom variable key '\(key)' is invalid. " +
+            "Keys must start with a letter and contain only letters, numbers, and underscores."
+
+        case .video_failed_to_set_audio_session_category(let error):
+            return "Failed to set audio session category: \(error)"
+        case .video_failed_to_cache(let url, let error):
+            return "Failed to cache video at \(url): \(error)"
+
+        case .errorFetchingOfferings(let error):
+            return "Error fetching offerings: \(error)"
+        case .exitOfferNotFound(let offeringId):
+            return "Exit offer offering '\(offeringId)' not found"
+        case .exitOfferSameAsCurrent:
+            return "Exit offer is the same as the current offering, skipping"
+        case .prefetchedExitOffer(let offeringId):
+            return "Prefetched exit offer offering '\(offeringId)'"
+        case .presentingExitOffer(let offeringId):
+            return "Presenting exit offer paywall for offering '\(offeringId)'"
+        case .errorLoadingExitOffer(let error):
+            return "Error loading exit offer: \(error)"
+        case .restore_purchases_gate_start:
+            return "Restore Purchases Initiated… waiting for resumable callback to proceed."
+        case .restore_purchases_gate_finish(with: let proceed):
+            // swiftlint:disable:next line_length
+            return "Restore Purchases gate complete. The SDK **\(proceed ? "will" : "will not")** attempt to restore purchases."
+        case .restore_purchases_failed(let error):
+            return "Restore failed with error: \(error)"
+        case .purchase_failed(let error):
+            return "Purchase failed with error: \(error)"
+        case .paywall_contains_unsupported_condition:
+            return "Unsupported paywall rule encountered. " +
+            "Rendering paywall without conditional configurability rules."
+        case let .workflow_paywall_invalid_state(currentStepId, screenId):
+            return "Workflow paywall could not resolve the current screen. " +
+            "currentStepId=\(currentStepId), screenId=\(screenId ?? "nil")"
+        case let .paywall_workflow_trigger_not_handled(componentName):
+            return "Workflow trigger button was tapped but no matching workflow action was available. " +
+            "componentName=\(componentName ?? "nil")"
+        case let .workflow_package_context_unresolvable(stepId):
+            return "Could not resolve package context for singleStepFallbackId '\(stepId)'. " +
+            "Price/period variables may not resolve on packageless screens."
         }
     }
 

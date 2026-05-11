@@ -18,7 +18,7 @@ import StoreKit
 extension ProductRequestData {
 
     /// Initializes a `ProductRequestData` from a `StoreProduct`
-    init(with product: StoreProduct, storefront: StorefrontType?) {
+    init(with product: StoreProduct, storeCountry: String?) {
         let paymentMode = Self.extractPaymentMode(for: product)
         let introPrice = Self.extractIntroPrice(for: product)
 
@@ -33,7 +33,7 @@ extension ProductRequestData {
             productIdentifier: product.productIdentifier,
             paymentMode: paymentMode,
             currencyCode: product.priceFormatter?.currencyCode,
-            storefront: storefront,
+            storeCountry: storeCountry,
             price: product.price as Decimal,
             normalDuration: normalDuration,
             introDuration: introDuration,

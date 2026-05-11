@@ -156,6 +156,10 @@ class OfferingsManager {
         return productIDsFromBackend.subtracting(productIDsFromStore)
     }
 
+    func clearInMemoryOfferingsCache() {
+        self.deviceCache.clearInMemoryOfferingsCache()
+    }
+
     func invalidateCachedOfferings(appUserID: String) {
         self.deviceCache.clearOfferingsCache(appUserID: appUserID)
     }
@@ -231,7 +235,9 @@ private extension OfferingsManager {
         let productIdentifiers = contents.response.productIdentifiers
 
         guard !productIdentifiers.isEmpty else {
-            let errorMessage = Strings.offering.configuration_error_no_products_for_offering.description
+            let errorMessage = Strings.offering.configuration_error_no_products_for_offering(
+                apiKeyValidationResult: self.systemInfo.apiKeyValidationResult
+            ).description
             completion(.failure(.configurationError(errorMessage, underlyingError: nil)))
             return
         }
@@ -377,6 +383,7 @@ private extension OfferingsManager {
             let testProduct = TestStoreProduct(
                 localizedTitle: "PRO \(productType.type)",
                 price: Decimal(productType.price),
+                currencyCode: "USD",
                 localizedPriceString: String(format: "$%.2f", productType.price),
                 productIdentifier: identifier,
                 productType: productType.period == nil ? .nonConsumable : .autoRenewableSubscription,
@@ -384,7 +391,8 @@ private extension OfferingsManager {
                 subscriptionGroupIdentifier: productType.period == nil ? nil : "group",
                 subscriptionPeriod: productType.period,
                 introductoryDiscount: introductoryDiscount,
-                discounts: []
+                discounts: [],
+                locale: Locale(identifier: "en_US")
             )
 
             return testProduct.toStoreProduct()

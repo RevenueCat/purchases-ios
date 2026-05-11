@@ -4,6 +4,7 @@
     "X-Client-Build-Version" : "12345",
     "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
     "X-Client-Version" : "17.0.0",
+    "X-Installation-Method" : "unknown",
     "X-Is-Backgrounded" : "false",
     "X-Is-Debug-Build" : "true",
     "X-Is-Sandbox" : "false",
@@ -41,7 +42,10 @@
       "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
       "initiation_source" : "restore",
       "is_restore" : false,
-      "observer_mode" : false
+      "observer_mode" : false,
+      "payload_version" : 1,
+      "purchase_completed_by" : "revenuecat",
+      "sdk_originated" : false
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"

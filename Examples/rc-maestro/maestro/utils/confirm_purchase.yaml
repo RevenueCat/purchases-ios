@@ -21,7 +21,7 @@ env:
       true: ${MAESTRO_STORE == 'test_store'}
     commands:
       - takeScreenshot: "${SCREENSHOT_PREFIX} - Test Store Purchase Alert"
-      - assertVisible: "Test purchase"
+      - assertVisible: "Test Store Purchase"
       - tapOn:
           text: "Test valid purchase"
 
@@ -34,5 +34,9 @@ env:
       - tapOn:
           text: "Subscribe"
       - takeScreenshot: "${SCREENSHOT_PREFIX} - IAP Confirmation"
+      - extendedWaitUntil:
+          visible: "OK"
+          timeout: 15000
+      - waitForAnimationToEnd
       - tapOn:
           text: "OK"

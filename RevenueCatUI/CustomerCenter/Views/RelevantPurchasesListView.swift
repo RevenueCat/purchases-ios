@@ -35,6 +35,9 @@ struct RelevantPurchasesListView: View {
     @Environment(\.navigationOptions)
     var navigationOptions
 
+    @Environment(\.supportInformation)
+    private var supportInformation
+
     @StateObject
     private var viewModel: RelevantPurchasesListViewModel
 
@@ -93,6 +96,7 @@ struct RelevantPurchasesListView: View {
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
+                .environment(\.supportInformation, supportInformation)
             }
             .compatibleNavigation(
                 isPresented: $viewModel.showAllPurchases,
@@ -174,9 +178,14 @@ struct RelevantPurchasesListView: View {
                 }
 
                 ScrollViewSection(title: localization[.actionsSectionTitle]) {
-                    ActiveSubscriptionButtonsView(viewModel: viewModel)
-                        .padding(.horizontal)
-                        .padding(.bottom, 16)
+                    ActiveSubscriptionButtonsView(
+                        viewModel: viewModel,
+                        activePurchaseIdentifier: customerInfoViewModel.subscriptionsSection.count == 1
+                            ? customerInfoViewModel.subscriptionsSection.first?.productIdentifier
+                            : nil
+                    )
+                    .padding(.horizontal)
+                    .padding(.bottom, 16)
                 }
 
                 if viewModel.shouldShowSeeAllPurchases {
