@@ -544,9 +544,6 @@ commands:
     parameters:
       test_plan:
         type: string
-      scan_device:
-        type: string
-        default: "iPhone 16 (18.5)"
     steps:
       - checkout
       - install-dependencies
@@ -556,7 +553,7 @@ commands:
           command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: << parameters.scan_device >>
+            SCAN_DEVICE: iPhone 16 (18.5)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
