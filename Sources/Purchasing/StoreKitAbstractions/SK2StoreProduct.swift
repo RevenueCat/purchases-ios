@@ -148,7 +148,7 @@ private extension SK2StoreProduct {
 extension SK2StoreProduct: Hashable {
 
     static func == (lhs: SK2StoreProduct, rhs: SK2StoreProduct) -> Bool {
-        return (lhs.productIdentifier == rhs.productIdentifier)
+        return (lhs.compoundProductIdentifier == rhs.compoundProductIdentifier)
             && (lhs.underlyingSK2Product == rhs.underlyingSK2Product)
     }
 
