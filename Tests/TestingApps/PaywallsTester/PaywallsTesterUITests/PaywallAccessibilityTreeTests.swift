@@ -65,7 +65,7 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
 
     // MARK: - Schema version
 
-    private static let extractorVersion = "2.2.0"
+    private static let extractorVersion = "2.3.0"
 
     // MARK: - Test
 
