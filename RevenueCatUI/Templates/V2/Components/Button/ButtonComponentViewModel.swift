@@ -100,11 +100,9 @@ class ButtonComponentViewModel {
                 self.action = .sheet(sheet)
             }
         case .navigateBack:
-            self.action = .navigateBack
+            self.action = component.isCloseWorkflowAction ? .closeWorkflow : .navigateBack
         case .workflowTrigger:
             self.action = .workflowTrigger
-        case .closeWorkflow:
-            self.action = .closeWorkflow
         case .unknown:
             self.action = .unknown
         }

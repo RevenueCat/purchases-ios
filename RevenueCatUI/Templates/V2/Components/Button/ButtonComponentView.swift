@@ -117,7 +117,13 @@ struct ButtonComponentView: View {
         case .navigateBack:
             onDismiss()
         case .closeWorkflow:
-            closeWorkflowAction?()
+            if let closeWorkflowAction {
+                closeWorkflowAction()
+            } else {
+                Logger.warning(
+                    Strings.paywall_close_workflow_action_not_handled(componentName: self.viewModel.component.name)
+                )
+            }
         case .workflowTrigger:
             Logger.warning(
                 Strings.paywall_workflow_trigger_not_handled(componentName: self.viewModel.component.name)

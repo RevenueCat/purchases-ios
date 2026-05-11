@@ -274,32 +274,30 @@ class ButtonComponentCodableTests: TestCase {
         let jsonData = jsonString.data(using: .utf8)!
         let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
 
-        let buttonComponent = PaywallComponent.ButtonComponent(
-            action: .closeWorkflow,
-            stack: .init(
-                components: [],
-                dimension: .vertical(.center, .start),
-                size: .init(width: .fill, height: .fill)
-            )
-        )
-
-        XCTAssertEqual(decodedButton, buttonComponent)
+        XCTAssertEqual(decodedButton.action, .navigateBack)
+        XCTAssertTrue(decodedButton.isCloseWorkflowAction)
     }
 
-    func testCloseWorkflowEncoding() throws {
-        let buttonComponent = PaywallComponent.ButtonComponent(
-            action: .closeWorkflow,
-            stack: .init(
-                components: [],
-                dimension: .vertical(.center, .start),
-                size: .init(width: .fill, height: .fill)
-            )
+    func testCloseWorkflowRoundTripsThroughEncoding() throws {
+        let jsonString = """
+        {
+            "type": "button",
+            "action": {
+                "type": "close_workflow"
+            },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let original = try JSONDecoder.default.decode(
+            PaywallComponent.ButtonComponent.self,
+            from: jsonString.data(using: .utf8)!
         )
 
-        let encoded = try JSONEncoder.default.encode(buttonComponent)
+        let encoded = try JSONEncoder.default.encode(original)
         let decoded = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: encoded)
 
-        XCTAssertEqual(decoded.action, .closeWorkflow)
+        XCTAssertEqual(decoded.action, .navigateBack)
+        XCTAssertTrue(decoded.isCloseWorkflowAction)
     }
 
     func testDecodesNameIgnoresExtraIdInJSON() throws {
