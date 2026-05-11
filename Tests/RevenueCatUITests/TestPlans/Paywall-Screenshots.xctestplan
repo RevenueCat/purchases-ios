@@ -18,9 +18,9 @@
     ],
     "maximumTestExecutionTimeAllowance" : 1000,
     "targetForVariableExpansion" : {
-      "containerPath" : "container:RevenueCat.xcodeproj",
-      "identifier" : "2DEAC2D926EFE46E006914ED",
-      "name" : "UnitTestsHostApp"
+      "containerPath" : "container:PaywallScreenshotTests.xcodeproj",
+      "identifier" : "D8BF606FC07CF46E0845E102",
+      "name" : "PaywallScreenshotTestsHostApp"
     },
     "testExecutionOrdering" : "random"
   },
@@ -30,9 +30,9 @@
         "TakeScreenshotTests\/testPaywallValidationScreenshots()"
       ],
       "target" : {
-        "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "887A63202C1D174200E1A461",
-        "name" : "RevenueCatUITestsDev"
+        "containerPath" : "container:PaywallScreenshotTests.xcodeproj",
+        "identifier" : "4504C21D9459D124BD328BF4",
+        "name" : "PaywallScreenshotTests"
       }
     }
   ],
