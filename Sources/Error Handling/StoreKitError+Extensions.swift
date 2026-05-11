@@ -106,7 +106,7 @@ extension Product.PurchaseError: PurchasesErrorConvertible {
         #if compiler(>=6.3.2)
         case .paymentMethodBindingConfigurationRequired:
             // paymentMethodBindingConfigurationRequired introduced in Xcode 26.5
-            return ErrorUtils.purchasesError(withStoreKitError: self)
+            return ErrorUtils.storeProblemError(error: self)
         #endif
         @unknown default:
             return ErrorUtils.unknownError(error: self)
