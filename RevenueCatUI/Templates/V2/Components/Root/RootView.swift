@@ -34,6 +34,7 @@ struct RootView: View {
 
     private let viewModel: RootViewModel
     private let onDismiss: () -> Void
+    private let closeWorkflowAction: (() -> Void)?
     private let defaultPackage: Package?
 
     @State private var sheetViewModel: SheetViewModel?
@@ -43,10 +44,12 @@ struct RootView: View {
     internal init(
         viewModel: RootViewModel,
         onDismiss: @escaping () -> Void,
+        closeWorkflowAction: (() -> Void)? = nil,
         defaultPackage: Package?
     ) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
+        self.closeWorkflowAction = closeWorkflowAction
         self.defaultPackage = defaultPackage
     }
 
@@ -113,7 +116,7 @@ struct RootView: View {
         .environment(\.openSheet, { sheet in
             self.sheetViewModel = sheet
         })
-        .environment(\.closeWorkflowAction, onDismiss)
+        .environment(\.closeWorkflowAction, self.closeWorkflowAction ?? onDismiss)
         .bottomSheet(
             sheet: $sheetViewModel,
             safeAreaInsets: self.safeAreaInsets,

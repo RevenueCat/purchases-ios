@@ -30,17 +30,20 @@ struct ComponentsView: View {
     /// Used for ZStacks where the first child is a hero image that bleeds into the safe area.
     private let pushNonFirstChildrenBelowSafeArea: Bool
     private let onDismiss: () -> Void
+    private let closeWorkflowAction: (() -> Void)?
     private let defaultPackage: Package?
 
     init(
         componentViewModels: [PaywallComponentViewModel],
         pushNonFirstChildrenBelowSafeArea: Bool = false,
         onDismiss: @escaping () -> Void,
+        closeWorkflowAction: (() -> Void)? = nil,
         defaultPackage: Package? = nil
     ) {
         self.componentViewModels = componentViewModels
         self.pushNonFirstChildrenBelowSafeArea = pushNonFirstChildrenBelowSafeArea
         self.onDismiss = onDismiss
+        self.closeWorkflowAction = closeWorkflowAction
         self.defaultPackage = defaultPackage
     }
 
@@ -61,7 +64,12 @@ struct ComponentsView: View {
     private func view(for item: PaywallComponentViewModel) -> some View {
         switch item {
         case .root(let viewModel):
-            RootView(viewModel: viewModel, onDismiss: onDismiss, defaultPackage: defaultPackage)
+            RootView(
+                viewModel: viewModel,
+                onDismiss: onDismiss,
+                closeWorkflowAction: closeWorkflowAction,
+                defaultPackage: defaultPackage
+            )
         case .text(let viewModel):
             TextComponentView(viewModel: viewModel)
         case .image(let viewModel):
