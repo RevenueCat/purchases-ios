@@ -749,7 +749,7 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 15m
           environment:
-            DEVICE: iPhone 17,OS=26.4
+            DEVICE: iPhone 16,OS=18.5
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
