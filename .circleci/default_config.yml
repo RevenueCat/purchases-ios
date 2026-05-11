@@ -986,7 +986,7 @@ jobs:
           destination: scan-test-output-ios-26
       - slack-notify-on-fail
 
-  build-ios-265:
+  build-xcode-26.5:
     executor:
       name: macos-executor
       xcode_version: "26.5"
@@ -2193,7 +2193,7 @@ workflows:
       - run-test-ios-26:
           context:
             - slack-secrets
-      - build-ios-265:
+      - build-xcode-26.5:
           context:
             - slack-secrets
       - pod-lib-lint:
@@ -2361,7 +2361,7 @@ workflows:
             - check-api-changes-revenuecat
             - check-api-changes-revenuecatui
             - run-test-ios-26
-            - build-ios-265
+            - build-xcode-26.5
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
@@ -2658,7 +2658,7 @@ workflows:
       - run-test-ios-26:
           context:
             - slack-secrets
-      - build-ios-265:
+      - build-xcode-26.5:
           context:
             - slack-secrets
       - pod-lib-lint:
@@ -2681,7 +2681,7 @@ workflows:
             - run-all-maestro-e2e-tests
             - lint
             - run-test-ios-26
-            - build-ios-265
+            - build-xcode-26.5
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
