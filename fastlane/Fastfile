@@ -434,7 +434,7 @@ platform :ios do
   desc "Record V1 template snapshots and upload to Emerge"
   lane :record_and_upload_v1_snapshots do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
-    destination = ENV['DEVICE'] || "iPhone 17,OS=26.2"
+    destination = ENV['DEVICE'] || "iPhone 17,OS=26.5"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
 
     begin
