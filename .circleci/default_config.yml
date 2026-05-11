@@ -104,7 +104,7 @@ aliases:
         ignore: /.*/
       branches:
         only: main
-  swiftinterface-xcode-version: &swiftinterface-xcode-version "26.5"
+  swiftinterface-xcode-version: &swiftinterface-xcode-version "26.3"
 commands:
   slack-notify-on-fail:
     steps:
