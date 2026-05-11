@@ -81,7 +81,7 @@ if let localPath = purchasesCoreLocalPath {
     // Relative paths resolve against Package.swift's directory; absolute paths pass through.
     let base = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
     let resolved = URL(fileURLWithPath: localPath, relativeTo: base).standardizedFileURL.path
-    dependencies.append(.package(path: resolved))
+    dependencies.append(.package(name: "purchases-core", path: resolved))
 } else {
     dependencies.append(.package(url: "git@github.com:RevenueCat/purchases-core.git", branch: "rust"))
 }
