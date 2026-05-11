@@ -434,7 +434,7 @@ platform :ios do
   desc "Record V1 template snapshots and upload to Emerge"
   lane :record_and_upload_v1_snapshots do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
-    destination = ENV['DEVICE'] || "iPhone 17,OS=26.4"
+    destination = ENV['DEVICE'] || "iPhone 17,OS=26.2"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
 
     begin
@@ -754,7 +754,7 @@ platform :ios do
 
     scan(
       step_name: "scan - watchOS",
-      device: ENV['SCAN_DEVICE'] || "Apple Watch Series 11 (42mm)",
+      device: ENV['SCAN_DEVICE'] || "Apple Watch Series 10 (46mm)",
       ensure_devices_found: true,
       scheme: "RevenueCat",
       prelaunch_simulator: true,
@@ -772,7 +772,7 @@ platform :ios do
   desc "Runs all RevenueCatAdMob tests (standalone SPM package under AdapterSDKs/RevenueCatAdMob)"
   lane :test_revenuecat_admob do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
-    destination = ENV['DEVICE'] || "iPhone 17,OS=26.4"
+    destination = ENV['DEVICE'] || "iPhone 16,OS=18.5"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
 
     xcodebuild(
@@ -1755,7 +1755,7 @@ platform :ios do
     begin
       scan(
         project: "./Tests/v#{major}LoadShedderIntegration/v#{major}LoadShedderIntegration.xcodeproj",
-        device: ENV['SCAN_DEVICE'] || "iPhone 17 (26.4)",
+        device: ENV['SCAN_DEVICE'] || "iPhone 16 (18.5)",
         scheme: "v#{major}LoadShedderIntegration",
         ensure_devices_found: true,
         derived_data_path: "scan_derived_data",
