@@ -1280,11 +1280,9 @@ jobs:
   backend-integration-tests-SK2:
     executor:
       name: macos-executor
-      xcode_version: "26.5"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK2"
-          scan_device: "iPhone 17 (26.4)"
       - slack-notify-on-fail
 
   backend-integration-tests-other:
