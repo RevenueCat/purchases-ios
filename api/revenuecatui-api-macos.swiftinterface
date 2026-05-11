@@ -1,7 +1,7 @@
 // swift-interface-format-version: 1.0
-// swift-compiler-version: Apple Swift version 6.2.4 effective-5.10 (swiftlang-6.2.4.1.4 clang-1700.6.4.2)
-// swift-module-flags: -target arm64-apple-macos10.15 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -module-name RevenueCatUI -package-name purchases_ios
-// swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2.4
+// swift-compiler-version: Apple Swift version 6.3.1 effective-5.10 (swiftlang-6.3.1.1.2 clang-2100.0.123.102)
+// swift-module-flags: -target arm64-apple-macos10.15 -enable-objc-interop -enable-library-evolution -swift-version 5 -O -enable-experimental-feature DebugDescriptionMacro -module-name RevenueCatUI -package-name purchases_ios
+// swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.3.1
 import AVKit
 import AppKit
 import Combine
@@ -25,9 +25,7 @@ import _WebKit_SwiftUI
 public struct CustomActionData {
   public let actionIdentifier: Swift.String
   public let purchaseIdentifier: Swift.String?
-  #if compiler(>=5.3) && $NonescapableTypes
   public init(actionIdentifier: Swift.String, purchaseIdentifier: Swift.String?)
-  #endif
 }
 extension RevenueCatUI.CustomActionData : Swift.Equatable {
   public static func == (lhs: RevenueCatUI.CustomActionData, rhs: RevenueCatUI.CustomActionData) -> Swift.Bool
@@ -71,9 +69,7 @@ public enum CustomerCenterManagementOption {
   public struct CustomAction : RevenueCatUI.CustomerCenterActionable {
     public let actionIdentifier: Swift.String
     public let purchaseIdentifier: Swift.String?
-    #if compiler(>=5.3) && $NonescapableTypes
     public init(actionIdentifier: Swift.String, purchaseIdentifier: Swift.String?)
-    #endif
   }
 }
 public struct CustomerCenterNavigationOptions {
@@ -81,9 +77,7 @@ public struct CustomerCenterNavigationOptions {
   public let usesExistingNavigation: Swift.Bool
   public let shouldShowCloseButton: Swift.Bool
   public let onCloseHandler: (() -> Swift.Void)?
-  #if compiler(>=5.3) && $NonescapableTypes
   public init(usesNavigationStack: Swift.Bool = true, usesExistingNavigation: Swift.Bool = false, shouldShowCloseButton: Swift.Bool = true, onCloseHandler: (() -> Swift.Void)? = nil)
-  #endif
 }
 extension RevenueCatUI.CustomerCenterNavigationOptions {
   public static let `default`: RevenueCatUI.CustomerCenterNavigationOptions
@@ -164,12 +158,8 @@ open class CustomPaywallFontProvider : RevenueCatUI.PaywallFontProvider {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 @_Concurrency.MainActor @preconcurrency public struct PaywallView : SwiftUICore.View {
-  #if compiler(>=5.3) && $NonescapableTypes
   @_Concurrency.MainActor @preconcurrency public init(fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), displayCloseButton: Swift.Bool = false, performPurchase: RevenueCatUI.PerformPurchase? = nil, performRestore: RevenueCatUI.PerformRestore? = nil)
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
   @_Concurrency.MainActor @preconcurrency public init(offering: RevenueCat.Offering, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), displayCloseButton: Swift.Bool = false, performPurchase: RevenueCatUI.PerformPurchase? = nil, performRestore: RevenueCatUI.PerformRestore? = nil)
-  #endif
   @_Concurrency.MainActor @preconcurrency public var body: some SwiftUICore.View {
     get
   }
@@ -204,7 +194,6 @@ public struct MyAppPurchaseLogic {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 extension SwiftUICore.View {
-  #if compiler(>=5.3) && $NonescapableTypes
   @available(iOS, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
   @available(tvOS, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
   @available(watchOS, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
@@ -212,12 +201,8 @@ extension SwiftUICore.View {
   @available(macCatalyst, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
   @_Concurrency.MainActor @preconcurrency public func presentPaywallIfNeeded(requiredEntitlementIdentifier: Swift.String, offering: RevenueCat.Offering? = nil, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), presentationMode: RevenueCatUI.PaywallPresentationMode = .default, purchaseStarted: @escaping RevenueCatUI.PurchaseStartedHandler, purchaseCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseCancelled: RevenueCatUI.PurchaseCancelledHandler? = nil, restoreCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseFailure: RevenueCatUI.PurchaseFailureHandler? = nil, restoreFailure: RevenueCatUI.PurchaseFailureHandler? = nil, onDismiss: (() -> Swift.Void)? = nil) -> some SwiftUICore.View
   
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
   @_Concurrency.MainActor @preconcurrency public func presentPaywallIfNeeded(requiredEntitlementIdentifier: Swift.String, offering: RevenueCat.Offering? = nil, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), presentationMode: RevenueCatUI.PaywallPresentationMode = .default, myAppPurchaseLogic: RevenueCatUI.MyAppPurchaseLogic? = nil, purchaseStarted: RevenueCatUI.PurchaseOfPackageStartedHandler? = nil, purchaseCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseCancelled: RevenueCatUI.PurchaseCancelledHandler? = nil, restoreStarted: RevenueCatUI.RestoreStartedHandler? = nil, restoreCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseFailure: RevenueCatUI.PurchaseFailureHandler? = nil, restoreFailure: RevenueCatUI.PurchaseFailureHandler? = nil, onDismiss: (() -> Swift.Void)? = nil) -> some SwiftUICore.View
   
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
   @available(iOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
   @available(tvOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
   @available(watchOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
@@ -225,20 +210,14 @@ extension SwiftUICore.View {
   @available(macCatalyst, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
   @_Concurrency.MainActor @preconcurrency public func presentPaywallIfNeeded(offering: RevenueCat.Offering? = nil, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), presentationMode: RevenueCatUI.PaywallPresentationMode = .default, myAppPurchaseLogic: RevenueCatUI.MyAppPurchaseLogic? = nil, shouldDisplay: @escaping @Sendable (RevenueCat.CustomerInfo) -> Swift.Bool, purchaseStarted: @escaping RevenueCatUI.PurchaseStartedHandler, purchaseCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseCancelled: RevenueCatUI.PurchaseCancelledHandler? = nil, restoreCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseFailure: RevenueCatUI.PurchaseFailureHandler? = nil, restoreFailure: RevenueCatUI.PurchaseFailureHandler? = nil, onDismiss: (() -> Swift.Void)? = nil) -> some SwiftUICore.View
   
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
   @_Concurrency.MainActor @preconcurrency public func presentPaywallIfNeeded(offering: RevenueCat.Offering? = nil, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), presentationMode: RevenueCatUI.PaywallPresentationMode = .default, myAppPurchaseLogic: RevenueCatUI.MyAppPurchaseLogic? = nil, shouldDisplay: @escaping @Sendable (RevenueCat.CustomerInfo) -> Swift.Bool, purchaseStarted: RevenueCatUI.PurchaseOfPackageStartedHandler? = nil, purchaseCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseCancelled: RevenueCatUI.PurchaseCancelledHandler? = nil, restoreStarted: RevenueCatUI.RestoreStartedHandler? = nil, restoreCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseFailure: RevenueCatUI.PurchaseFailureHandler? = nil, restoreFailure: RevenueCatUI.PurchaseFailureHandler? = nil, onDismiss: (() -> Swift.Void)? = nil) -> some SwiftUICore.View
   
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
   @_Concurrency.MainActor @preconcurrency public func presentPaywall(offering: SwiftUICore.Binding<RevenueCat.Offering?>, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), presentationMode: RevenueCatUI.PaywallPresentationMode = .default, myAppPurchaseLogic: RevenueCatUI.MyAppPurchaseLogic? = nil, purchaseStarted: RevenueCatUI.PurchaseOfPackageStartedHandler? = nil, purchaseCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseCancelled: RevenueCatUI.PurchaseCancelledHandler? = nil, restoreStarted: RevenueCatUI.RestoreStartedHandler? = nil, restoreCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseFailure: RevenueCatUI.PurchaseFailureHandler? = nil, restoreFailure: RevenueCatUI.PurchaseFailureHandler? = nil, onDismiss: (() -> Swift.Void)? = nil) -> some SwiftUICore.View
   
-  #endif
 }
 public typealias PaywallTierChangeHandler = @_Concurrency.MainActor @Sendable (_ tier: RevenueCat.PaywallData.Tier, _ localizedName: Swift.String) -> Swift.Void
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension SwiftUICore.View {
-  #if compiler(>=5.3) && $NonescapableTypes
   @available(iOS, deprecated: 1, renamed: "paywallFooter(condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
   @available(tvOS, deprecated: 1, renamed: "paywallFooter(condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
   @available(watchOS, deprecated: 1, renamed: "paywallFooter(condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
@@ -246,8 +225,6 @@ extension SwiftUICore.View {
   @available(macCatalyst, deprecated: 1, renamed: "paywallFooter(condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
   @_Concurrency.MainActor @preconcurrency public func paywallFooter(condensed: Swift.Bool = false, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), purchaseStarted: @escaping RevenueCatUI.PurchaseStartedHandler, purchaseCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseCancelled: RevenueCatUI.PurchaseCancelledHandler? = nil, restoreCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseFailure: RevenueCatUI.PurchaseFailureHandler? = nil, restoreFailure: RevenueCatUI.PurchaseFailureHandler? = nil) -> some SwiftUICore.View
   
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
   @available(iOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
   @available(tvOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
   @available(watchOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
@@ -255,13 +232,9 @@ extension SwiftUICore.View {
   @available(macCatalyst, deprecated: 1, renamed: "originalTemplatePaywallFooter(condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
   @_Concurrency.MainActor @preconcurrency public func paywallFooter(condensed: Swift.Bool = false, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), myAppPurchaseLogic: RevenueCatUI.MyAppPurchaseLogic? = nil, purchaseStarted: RevenueCatUI.PurchaseOfPackageStartedHandler? = nil, purchaseCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseCancelled: RevenueCatUI.PurchaseCancelledHandler? = nil, restoreStarted: RevenueCatUI.RestoreStartedHandler? = nil, restoreCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseFailure: RevenueCatUI.PurchaseFailureHandler? = nil, restoreFailure: RevenueCatUI.PurchaseFailureHandler? = nil) -> some SwiftUICore.View
   
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
   @available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
   @_Concurrency.MainActor @preconcurrency public func originalTemplatePaywallFooter(condensed: Swift.Bool = false, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), myAppPurchaseLogic: RevenueCatUI.MyAppPurchaseLogic? = nil, purchaseStarted: RevenueCatUI.PurchaseOfPackageStartedHandler? = nil, purchaseCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseCancelled: RevenueCatUI.PurchaseCancelledHandler? = nil, restoreStarted: RevenueCatUI.RestoreStartedHandler? = nil, restoreCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseFailure: RevenueCatUI.PurchaseFailureHandler? = nil, restoreFailure: RevenueCatUI.PurchaseFailureHandler? = nil) -> some SwiftUICore.View
   
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
   @available(iOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
   @available(tvOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
   @available(watchOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
@@ -269,8 +242,6 @@ extension SwiftUICore.View {
   @available(macCatalyst, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
   @_disfavoredOverload @_Concurrency.MainActor @preconcurrency public func paywallFooter(offering: RevenueCat.Offering, condensed: Swift.Bool = false, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), purchaseStarted: @escaping RevenueCatUI.PurchaseStartedHandler, purchaseCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseCancelled: RevenueCatUI.PurchaseCancelledHandler? = nil, restoreCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseFailure: RevenueCatUI.PurchaseFailureHandler? = nil, restoreFailure: RevenueCatUI.PurchaseFailureHandler? = nil) -> some SwiftUICore.View
   
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
   @available(iOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
   @available(tvOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
   @available(watchOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
@@ -278,12 +249,9 @@ extension SwiftUICore.View {
   @available(macCatalyst, deprecated: 1, renamed: "originalTemplatePaywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
   @_Concurrency.MainActor @preconcurrency public func paywallFooter(offering: RevenueCat.Offering, condensed: Swift.Bool = false, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), myAppPurchaseLogic: RevenueCatUI.MyAppPurchaseLogic? = nil, purchaseStarted: RevenueCatUI.PurchaseOfPackageStartedHandler? = nil, purchaseCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseCancelled: RevenueCatUI.PurchaseCancelledHandler? = nil, restoreStarted: RevenueCatUI.RestoreStartedHandler? = nil, restoreCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseFailure: RevenueCatUI.PurchaseFailureHandler? = nil, restoreFailure: RevenueCatUI.PurchaseFailureHandler? = nil) -> some SwiftUICore.View
   
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
   @available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
   @_Concurrency.MainActor @preconcurrency public func originalTemplatePaywallFooter(offering: RevenueCat.Offering, condensed: Swift.Bool = false, fonts: any RevenueCatUI.PaywallFontProvider = DefaultPaywallFontProvider(), myAppPurchaseLogic: RevenueCatUI.MyAppPurchaseLogic? = nil, purchaseStarted: RevenueCatUI.PurchaseOfPackageStartedHandler? = nil, purchaseCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseCancelled: RevenueCatUI.PurchaseCancelledHandler? = nil, restoreStarted: RevenueCatUI.RestoreStartedHandler? = nil, restoreCompleted: RevenueCatUI.PurchaseOrRestoreCompletedHandler? = nil, purchaseFailure: RevenueCatUI.PurchaseFailureHandler? = nil, restoreFailure: RevenueCatUI.PurchaseFailureHandler? = nil) -> some SwiftUICore.View
   
-  #endif
 }
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension SwiftUICore.View {
