@@ -132,8 +132,8 @@ class ProductsManager: NSObject, ProductsManagerType {
         }
     }
 
-    // swiftlint:disable:next function_body_length
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    // swiftlint:disable:next function_body_length
     func populateSK2CompoundProductsIfSupported(
         requestedIdentifiers: Set<CompoundProductIdentifier>,
         products: Set<SK2StoreProduct>
