@@ -26,7 +26,7 @@ struct ResultCard: View {
 
     @ViewBuilder
     private var content: some View {
-        if Self.shouldAnimateEllipsis(message: self.message.text) {
+        if self.message.isLoading {
             TimelineView(.periodic(from: .now, by: 0.45)) { context in
                 Text(Self.animatedEllipsisMessage(for: self.message.text, at: context.date))
                     .font(.body)
@@ -74,12 +74,8 @@ struct ResultCard: View {
         }
     }
 
-    private static func shouldAnimateEllipsis(message: String) -> Bool {
-        message.hasPrefix("⏳") && message.hasSuffix("...")
-    }
-
     private static func animatedEllipsisMessage(for message: String, at date: Date) -> String {
-        guard Self.shouldAnimateEllipsis(message: message) else { return message }
+        guard message.hasSuffix("...") else { return message }
 
         let base = String(message.dropLast(3))
         let dots = Int(date.timeIntervalSinceReferenceDate * 2).quotientAndRemainder(dividingBy: 3).remainder + 1
