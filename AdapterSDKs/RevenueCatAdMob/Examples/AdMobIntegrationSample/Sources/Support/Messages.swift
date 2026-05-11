@@ -59,7 +59,7 @@ struct Message: Equatable {
     }
 
     static func forVerificationResult(_ result: RewardVerificationResult) -> Message {
-        guard result.isVerified, let verifiedReward = result.verifiedReward else {
+        guard let verifiedReward = result.verifiedReward else {
             return Self.verificationFailed
         }
 
