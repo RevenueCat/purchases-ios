@@ -183,7 +183,7 @@ RewardedAd.loadAndTrack(
 
 rewardedAd?.present(
     from: self,
-    placement: "rewarded_reward_verification_main",
+    placement: "optional_placement_override",
     rewardVerificationStarted: {
         // Reward verification started
     },
@@ -260,7 +260,7 @@ RewardedInterstitialAd.loadAndTrack(
 
 rewardedInterstitialAd?.present(
     from: self,
-    placement: "rewarded_interstitial_reward_verification_main",
+    placement: "optional_placement_override",
     rewardVerificationStarted: {
         // Reward verification started
     },
