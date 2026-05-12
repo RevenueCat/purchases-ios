@@ -400,10 +400,10 @@ private struct LoadedPaywallsV2View: View {
                 ComponentsView(
                     componentViewModels: [.root(paywallState.rootViewModel)],
                     onDismiss: self.onDismiss,
-                    closeWorkflowAction: self.closeWorkflowAction,
                     defaultPackage: self.defaultPackage
                 )
                 .fixMacButtons()
+                .environment(\.closeWorkflowAction, self.closeWorkflowAction ?? self.onDismiss)
             }
             // Used for header image and sticky footer
             .environment(\.safeAreaInsets, proxy.safeAreaInsets)
