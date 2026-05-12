@@ -40,6 +40,7 @@ func checkStoreProductAPI() {
     }
     if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
         let installmentsInfo: InstallmentsInfo? = product.installmentsInfo
+        let billingPlanIdentifier: String? = product.billingPlanIdentifier
     }
 
     print(

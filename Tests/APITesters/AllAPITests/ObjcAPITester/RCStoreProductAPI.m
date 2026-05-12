@@ -28,6 +28,7 @@
     }
     if (@available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)) {
         RCInstallmentsInfo *installmentsInfo  __unused = product.installmentsInfo;
+        NSString *billingPlanIdentifier __unused = product.billingPlanIdentifier;
     }
     NSString *subscriptionGroupIdentifier  __unused = product.subscriptionGroupIdentifier;
     NSNumberFormatter *priceFormatter  __unused = product.priceFormatter;

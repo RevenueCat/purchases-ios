@@ -65,6 +65,7 @@ public struct TestStoreProduct {
     public var introductoryDiscount: StoreProductDiscount?
     public var discounts: [StoreProductDiscount]
     public var locale: Locale
+    public var billingPlanIdentifier: String?
     public var installmentsInfo: InstallmentsInfo?
 
     // swiftlint:disable:next line_length
@@ -96,6 +97,7 @@ public struct TestStoreProduct {
         self.introductoryDiscount = introductoryDiscount?.toStoreProductDiscount()
         self.discounts = discounts.map { $0.toStoreProductDiscount() }
         self.locale = locale
+        self.billingPlanIdentifier = nil
         self.installmentsInfo = nil
     }
 
@@ -130,6 +132,7 @@ public struct TestStoreProduct {
         introductoryDiscount: TestStoreProductDiscount? = nil,
         discounts: [TestStoreProductDiscount] = [],
         locale: Locale,
+        billingPlanIdentifier: String? = nil,
         installmentsInfo: InstallmentsInfo? = nil
     ) {
         self.localizedTitle = localizedTitle
@@ -145,6 +148,7 @@ public struct TestStoreProduct {
         self.introductoryDiscount = introductoryDiscount?.toStoreProductDiscount()
         self.discounts = discounts.map { $0.toStoreProductDiscount() }
         self.locale = locale
+        self.billingPlanIdentifier = billingPlanIdentifier
         self.installmentsInfo = installmentsInfo
     }
 

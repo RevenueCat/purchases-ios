@@ -19,6 +19,7 @@ internal struct SK2StoreProduct: StoreProductType {
     init(sk2Product: SK2Product) {
         self._underlyingSK2Product = .init(sk2Product)
         self.compoundProductIdentifier = CompoundProductIdentifier(for: sk2Product)
+        self.billingPlanIdentifier = nil
         self.installmentsInfo = nil
     }
 
@@ -30,6 +31,7 @@ internal struct SK2StoreProduct: StoreProductType {
     ) {
         self._underlyingSK2Product = .init(sk2Product)
         self.compoundProductIdentifier = compoundProductIdentifier
+        self.billingPlanIdentifier = compoundProductIdentifier.productPlanIdentifier
         self.installmentsInfo = installmentsInfo
     }
 
@@ -45,6 +47,8 @@ internal struct SK2StoreProduct: StoreProductType {
     private let priceFormatterProvider: PriceFormatterProvider = .init()
 
     let installmentsInfo: InstallmentsInfo?
+
+    let billingPlanIdentifier: String?
 
     var productCategory: StoreProduct.ProductCategory {
         return self.productType.productCategory
@@ -62,13 +66,7 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var localizedPriceString: String { underlyingSK2Product.displayPrice }
 
-    var productIdentifier: String {
-        if compoundProductIdentifier.productPlanIdentifier != nil {
-            return compoundProductIdentifier.compoundProductIdentifier
-        } else {
-            return underlyingSK2Product.id
-        }
-    }
+    var productIdentifier: String { return underlyingSK2Product.id }
 
     var isFamilyShareable: Bool { underlyingSK2Product.isFamilyShareable }
 

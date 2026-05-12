@@ -79,6 +79,11 @@ internal struct SK1StoreProduct: StoreProductType {
             .compactMap(StoreProductDiscount.init)
     }
 
+    var billingPlanIdentifier: String? {
+        // Billing plans are not supported for StoreKit 1.
+        nil
+    }
+
     var installmentsInfo: InstallmentsInfo? {
         // Installments are not supported for StoreKit 1.
         nil

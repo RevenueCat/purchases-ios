@@ -94,6 +94,9 @@ public typealias SK2Product = StoreKit.Product
     @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
     @objc public var installmentsInfo: InstallmentsInfo? { self.product.installmentsInfo }
 
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    @objc public var billingPlanIdentifier: String? { self.product.billingPlanIdentifier }
+
     // switflint:enable missing_docs
 }
 
@@ -140,6 +143,10 @@ internal protocol StoreProductType: Sendable {
 
     /// The string that identifies the product to the Apple App Store.
     var productIdentifier: String { get }
+
+    /// The billing plan identifier for this product.
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    var billingPlanIdentifier: String? { get }
 
     /// A Boolean value that indicates whether the product is available for family sharing in App Store Connect.
     /// Check the value of `isFamilyShareable` to learn whether an in-app purchase is sharable with the family group.
