@@ -300,6 +300,41 @@ class ButtonComponentCodableTests: TestCase {
         XCTAssertTrue(decoded.isCloseWorkflowAction)
     }
 
+    func testCloseWorkflowAndNavigateBackButtonsAreNotEqual() throws {
+        let closeWorkflowJSON = """
+        {
+            "type": "button",
+            "action": { "type": "close_workflow" },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let navigateBackJSON = """
+        {
+            "type": "button",
+            "action": { "type": "navigate_back" },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+
+        let closeWorkflow = try JSONDecoder.default.decode(
+            PaywallComponent.ButtonComponent.self,
+            from: closeWorkflowJSON.data(using: .utf8)!
+        )
+        let navigateBack = try JSONDecoder.default.decode(
+            PaywallComponent.ButtonComponent.self,
+            from: navigateBackJSON.data(using: .utf8)!
+        )
+
+        // Both decode to the same public .action value, but isCloseWorkflowAction distinguishes them.
+        XCTAssertEqual(closeWorkflow.action, navigateBack.action)
+        XCTAssertTrue(closeWorkflow.isCloseWorkflowAction)
+        XCTAssertFalse(navigateBack.isCloseWorkflowAction)
+
+        // Equatable and Hashable must treat them as distinct.
+        XCTAssertNotEqual(closeWorkflow, navigateBack)
+        XCTAssertNotEqual(closeWorkflow.hashValue, navigateBack.hashValue)
+    }
+
     func testDecodesNameIgnoresExtraIdInJSON() throws {
         let jsonString = """
         {
