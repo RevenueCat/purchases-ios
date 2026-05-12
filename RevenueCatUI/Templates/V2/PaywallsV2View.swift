@@ -197,7 +197,7 @@ struct PaywallsV2View: View {
             selectedPackageContext: self.selectedPackageContext,
             defaultPackage: defaultPackage,
             onDismiss: self.onDismiss,
-            closeWorkflowAction: self.closeWorkflowAction ?? self.onDismiss
+            closeWorkflowAction: self.closeWorkflowAction
         )
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
@@ -370,7 +370,7 @@ private struct LoadedPaywallsV2View: View {
     private let paywallState: PaywallState
     private let uiConfigProvider: UIConfigProvider
     private let onDismiss: () -> Void
-    private let closeWorkflowAction: () -> Void
+    private let closeWorkflowAction: (() -> Void)?
     private let defaultPackage: Package?
 
     @ObservedObject
@@ -383,7 +383,7 @@ private struct LoadedPaywallsV2View: View {
         selectedPackageContext: PackageContext,
         defaultPackage: Package?,
         onDismiss: @escaping () -> Void,
-        closeWorkflowAction: @escaping () -> Void
+        closeWorkflowAction: (() -> Void)? = nil
     ) {
         self.introOfferEligibilityContext = introOfferEligibilityContext
         self.paywallState = paywallState
