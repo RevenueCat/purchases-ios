@@ -262,8 +262,7 @@ extension StoreKitStrings: LogMessage {
             "StoreKit. Expiration date: \(iso8601ExpirationDate)"
 
         case .sk2_unrecognized_billing_plan_identifer(let billingPlanIdentifier):
-            return "An unrecognized billing plan identifier was detected: \(billingPlanIdentifier). Will return no " +
-            "products for this request."
+            return "An unrecognized billing plan identifier was detected: \(billingPlanIdentifier)."
         }
     }
 
