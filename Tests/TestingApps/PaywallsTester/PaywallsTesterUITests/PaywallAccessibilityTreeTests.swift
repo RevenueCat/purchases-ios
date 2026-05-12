@@ -8,7 +8,7 @@
  -------------
  The JSON contains a flat `components` dictionary keyed by component ID
  (the accessibility identifier set on each rendered element). All frame
- coordinates are in the coordinate system of the paywall root — i.e.
+ coordinates are integers in the coordinate system of the paywall root — i.e.
  (0, 0) is the top-left corner of the paywall content area.
 
  When the same component ID appears on multiple elements (unusual but possible),
@@ -16,40 +16,70 @@
 
  Only elements that carry a non-empty accessibility identifier are included.
 
- This test target is attached to the PaywallsTester app. It can navigate via two paths:
+ This test target is attached to the PaywallsTester app. It can navigate via three paths:
 
- A) Examples tab (no API key required) — opens the first V1 template paywall.
+ A) Hermetic local offering (no API key, no network) — set LOCAL_OFFERINGS_PATH to
+    a local `offerings.json` and OFFERING_ID to one of the offerings inside it.
+    The PaywallsTester app loads the offering via `LocalOfferingLoader` and presents it.
  B) Live Paywalls tab (API key required) — loads a specific offering by ID from
     the RevenueCat backend and opens its paywall.
+ C) Examples tab (no API key, no LOCAL_OFFERINGS_PATH) — opens the first V1 template paywall.
 
  HOW TO RUN
  ----------
 
- Examples tab (default, no API key):
+ Hermetic (preferred for CI / cross-platform parity tests):
 
+      TEST_RUNNER_LOCAL_OFFERINGS_PATH=/path/to/offerings.json \
+      TEST_RUNNER_OFFERING_ID=my-v2-offering \
       xcodebuild test \
         -workspace Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace \
         -scheme "PaywallAccessibilityTreeTests" \
-        -destination 'platform=iOS Simulator,name=iPhone 17' \
-        -only-testing PaywallsTesterUITests/PaywallAccessibilityTreeTests/testCaptureAccessibilityTree
+        -destination 'platform=iOS Simulator,name=iPhone 17'
 
  Live Paywalls tab (V2 paywall by offering ID):
 
       TEST_RUNNER_RC_API_KEY=appl_xxx TEST_RUNNER_OFFERING_ID=my-v2-offering xcodebuild test \
         -workspace Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace \
         -scheme "PaywallAccessibilityTreeTests" \
-        -destination 'platform=iOS Simulator,name=iPhone 17' \
-        -only-testing PaywallsTesterUITests/PaywallAccessibilityTreeTests/testCaptureAccessibilityTree
+        -destination 'platform=iOS Simulator,name=iPhone 17'
 
-   RC_API_KEY  — RevenueCat API key; triggers the Live Paywalls navigation path.
-   OFFERING_ID — offering to open; required when RC_API_KEY is set.
-                 When omitted without RC_API_KEY, defaults to "examples-first".
+ Examples tab (default, no API key):
+
+      xcodebuild test \
+        -workspace Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace \
+        -scheme "PaywallAccessibilityTreeTests" \
+        -destination 'platform=iOS Simulator,name=iPhone 17'
+
+   LOCAL_OFFERINGS_PATH — path to a local `offerings.json`; bypasses the RevenueCat backend.
+                          Asset URLs are rewritten to file:// URLs adjacent to the JSON;
+                          see LocalOfferingLoader.swift for the convention.
+   OFFERING_ID          — offering to open; required when RC_API_KEY or LOCAL_OFFERINGS_PATH is set.
+                          When omitted without RC_API_KEY, defaults to "examples-first".
+   RC_API_KEY           — RevenueCat API key; triggers the Live Paywalls navigation path.
+
+ Per-device parameterization (single-device per invocation; outer scripts handle device matrices):
+
+   DEVICE_CLASS         — free-text label stored verbatim in metadata.deviceClass
+                          (e.g. "tablet", "tablet-landscape", "mini", "dynamic-island").
+   DEVICE_ORIENTATION   — "portrait" (default) | "landscape". Rotates via XCUIDevice.
+   COLOR_SCHEME         — "light" (default) | "dark". Applied via .preferredColorScheme().
+   TEST_LOCALE          — BCP-47 locale, e.g. "en_US" (default), "de_DE", "ja_JP".
+
+ Artifact location:
+
+   TEST_ARTIFACTS_DIR   — override output directory. Default is
+                          $HOST_PROJECT_DIR/fastlane/test_output/xctest/paywall-accessibility-tree/
+                          (auto-resolved from SIMULATOR_HOST_HOME if not provided).
+   DEV_DESKTOP_COPY=1   — also write a copy to ~/Desktop on the host (local dev convenience).
 
  OUTPUT
  ------
- Two files written to /tmp/ (and ~/Desktop/ when the host home directory is discoverable):
+ Two files written to the resolved artifact directory:
    paywall-tree-<offering-id>-<timestamp>.json  — flat component dictionary (PaywallLayoutTree)
    paywall-tree-<offering-id>-<timestamp>.png   — full-app screenshot at capture time
+
+ Both files are also attached to the .xcresult bundle via XCTAttachment.
 
  The JSON conforms to the PaywallLayoutTree schema at:
    https://revenuecat.com/schemas/paywall-layout-tree.json
@@ -65,29 +95,76 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
 
     // MARK: - Schema version
 
-    private static let extractorVersion = "2.3.0"
+    private static let extractorVersion = "2.4.0"
 
     // MARK: - Test
 
     func testCaptureAccessibilityTree() throws {
-        let paywallId = ProcessInfo.processInfo.environment["OFFERING_ID"] ?? "examples-first"
-        let apiKey = ProcessInfo.processInfo.environment["RC_API_KEY"]
+        let env = ProcessInfo.processInfo.environment
+        let paywallId = env["OFFERING_ID"] ?? "examples-first"
+        let localPath = env["LOCAL_OFFERINGS_PATH"]
+        let apiKey = env["RC_API_KEY"]
+        let deviceClass = env["DEVICE_CLASS"]
+        let orientation = (env["DEVICE_ORIENTATION"] ?? "portrait").lowercased()
+        let colorScheme = (env["COLOR_SCHEME"] ?? "light").lowercased()
+        let testLocale = env["TEST_LOCALE"] ?? "en_US"
 
         let app = XCUIApplication()
-        if let apiKey = apiKey {
+
+        // The simulator occasionally interrupts the paywall with a system "Sign in to
+        // Apple Account" dialog when running in hermetic mode (where the SDK isn't talking
+        // to the App Store). Dismiss it automatically so the screenshot captures the paywall.
+        // The monitor must be installed before `app.launch()`.
+        let interruptionMonitor = addUIInterruptionMonitor(withDescription: "Apple Account") { alert in
+            let cancelButton = alert.buttons["Cancel"]
+            if cancelButton.exists {
+                cancelButton.tap()
+                return true
+            }
+            return false
+        }
+        defer { removeUIInterruptionMonitor(interruptionMonitor) }
+
+        // Pass through navigation-relevant env vars to the app.
+        if let localPath = localPath {
+            app.launchEnvironment["LOCAL_OFFERINGS_PATH"] = localPath
+            app.launchEnvironment["OFFERING_ID"] = paywallId
+        } else if let apiKey = apiKey {
             app.launchEnvironment["REVENUECAT_API_KEY"] = apiKey
             app.launchEnvironment["OFFERING_ID"] = paywallId
         }
         // Suppress web-checkout URL opens so the paywall stays on screen for the screenshot.
         // PaywallPresenter injects a no-op openURL action when this flag is set.
         app.launchEnvironment["SCREENSHOT_MODE"] = "1"
+        // Plumb the color-scheme override to PaywallPresenter.
+        app.launchEnvironment["COLOR_SCHEME"] = colorScheme
+
+        // Locale overrides — applied via the documented launch-argument hook.
+        let language = String(testLocale.prefix(while: { $0 != "_" && $0 != "-" }))
+        app.launchArguments += ["-AppleLanguages", "(\(language))", "-AppleLocale", testLocale]
+
         app.launch()
 
-        if apiKey != nil {
+        if localPath != nil || apiKey != nil {
             try navigateToLivePaywall(in: app, id: paywallId)
         } else {
             try navigateToExamplesPaywall(in: app, id: paywallId)
         }
+
+        // Apply orientation override after the paywall is on screen so SwiftUI re-lays
+        // out the components against the new viewport before we capture.
+        if orientation == "landscape" {
+            XCUIDevice.shared.orientation = .landscapeLeft
+            Thread.sleep(forTimeInterval: 0.5)
+        }
+
+        // Explicitly dismiss any "Sign in to Apple Account" dialog that the system pops
+        // up when StoreKit isn't authenticated. The UIInterruptionMonitor only fires on
+        // user interaction, so we proactively look for and dismiss the alert here.
+        dismissSystemAccountAlertIfPresent(in: app)
+        // Tap into the app to give the UIInterruptionMonitor a chance to consume any
+        // alert it caught.
+        app.tap()
 
         // Let SwiftUI layout and sheet animation fully settle.
         // Web-checkout URL opens are suppressed via SCREENSHOT_MODE=1 (see PaywallPresenter),
@@ -114,6 +191,10 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         // Build flat component dictionary, with coordinates relative to the paywall root.
         let components = buildComponents(from: paywallSnapshot)
 
+        // Read the safe-area insets from the test-only probe element injected by
+        // PaywallsV2View.safeAreaProbe. Best-effort; missing on non-V2 paywalls.
+        let safeAreaInsets = readSafeAreaInsets(in: app)
+
         // Build metadata
         let osVersion = ProcessInfo.processInfo.operatingSystemVersion
         let platformVersion = "\(osVersion.majorVersion).\(osVersion.minorVersion).\(osVersion.patchVersion)"
@@ -124,18 +205,17 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
             platform: "ios",
             platformVersion: platformVersion,
             viewport: PaywallLayoutTree.Metadata.Viewport(
-                width: Double(appFrame.width),
-                height: Double(appFrame.height),
+                width: Self.roundToInt(appFrame.width),
+                height: Self.roundToInt(appFrame.height),
                 scale: screenScale()
             ),
-            rootFrame: PaywallLayoutTree.Metadata.Frame(
-                x: Double(rootCGFrame.origin.x),
-                y: Double(rootCGFrame.origin.y),
-                width: Double(rootCGFrame.size.width),
-                height: Double(rootCGFrame.size.height)
-            ),
+            rootFrame: Self.normalizeFrame(rootCGFrame),
+            safeAreaInsets: safeAreaInsets,
             offeringId: paywallId,
-            locale: Locale.current.identifier,
+            locale: testLocale,
+            deviceClass: deviceClass,
+            colorScheme: colorScheme,
+            orientation: orientation,
             extractorVersion: Self.extractorVersion,
             timestamp: ISO8601DateFormatter().string(from: Date())
         )
@@ -157,18 +237,18 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         let jsonFilename = "\(stem).json"
         let pngFilename = "\(stem).png"
 
-        // Write JSON to /tmp/ (accessible from both simulator and host)
-        let tmpURL = URL(fileURLWithPath: "/tmp").appendingPathComponent(jsonFilename)
-        try jsonData.write(to: tmpURL)
+        // Resolve the on-disk artifact location.
+        let artifactDir = Self.resolveArtifactDirectory()
+        try? FileManager.default.createDirectory(at: artifactDir, withIntermediateDirectories: true)
 
-        // Write PNG to /tmp/
-        let tmpPNGURL = URL(fileURLWithPath: "/tmp").appendingPathComponent(pngFilename)
-        try pngData.write(to: tmpPNGURL)
+        let jsonURL = artifactDir.appendingPathComponent(jsonFilename)
+        let pngURL = artifactDir.appendingPathComponent(pngFilename)
+        try jsonData.write(to: jsonURL)
+        try pngData.write(to: pngURL)
 
-        // Attempt host Desktop copies when the host home is discoverable
-        let hostHomeEnv = ProcessInfo.processInfo.environment["SIMULATOR_HOST_HOME"]
-            ?? ProcessInfo.processInfo.environment["HOME"]
-        if let hostHome = hostHomeEnv, !hostHome.contains("CoreSimulator") {
+        // Optional ~/Desktop copy for local development.
+        if env["DEV_DESKTOP_COPY"] == "1",
+           let hostHome = env["SIMULATOR_HOST_HOME"], !hostHome.contains("CoreSimulator") {
             let desktopDir = URL(fileURLWithPath: hostHome).appendingPathComponent("Desktop")
             try? jsonData.write(to: desktopDir.appendingPathComponent(jsonFilename))
             try? pngData.write(to: desktopDir.appendingPathComponent(pngFilename))
@@ -189,9 +269,90 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
 
         print("────────────────────────────────────────")
         print("Accessibility tree written to:")
-        print("  /tmp/\(jsonFilename)")
-        print("  /tmp/\(pngFilename)")
+        print("  \(jsonURL.path)")
+        print("  \(pngURL.path)")
         print("────────────────────────────────────────")
+    }
+
+    // MARK: - Artifact location
+
+    /// Returns the directory where the JSON + PNG artifacts should be written.
+    ///
+    /// Resolution order:
+    ///   1. `TEST_ARTIFACTS_DIR` env var (absolute path)
+    ///   2. `<SIMULATOR_HOST_HOME-or-HOST_PROJECT_DIR>/fastlane/test_output/xctest/paywall-accessibility-tree/`
+    ///   3. `/tmp/` (fallback if no host hint available)
+    private static func resolveArtifactDirectory() -> URL {
+        let env = ProcessInfo.processInfo.environment
+        if let override = env["TEST_ARTIFACTS_DIR"], !override.isEmpty {
+            return URL(fileURLWithPath: override, isDirectory: true)
+        }
+        // SIMULATOR_HOST_HOME is auto-injected by XCTest; HOST_PROJECT_DIR is opt-in by caller.
+        let hostHint = env["HOST_PROJECT_DIR"]
+            ?? env["SIMULATOR_HOST_HOME"]
+        if let host = hostHint, !host.contains("CoreSimulator") {
+            return URL(fileURLWithPath: host, isDirectory: true)
+                .appendingPathComponent("fastlane/test_output/xctest/paywall-accessibility-tree",
+                                       isDirectory: true)
+        }
+        return URL(fileURLWithPath: "/tmp", isDirectory: true)
+    }
+
+    // MARK: - Coordinate normalization
+
+    /// Banker's rounding (round-half-to-even) — Swift's `.rounded()` default,
+    /// applied to convert a `CGFloat` to a deterministic `Int` for JSON output.
+    private static func roundToInt(_ value: CGFloat) -> Int {
+        return Int(Double(value).rounded())
+    }
+
+    private static func normalizeFrame(_ frame: CGRect) -> PaywallLayoutTree.Frame {
+        return PaywallLayoutTree.Frame(
+            x: roundToInt(frame.origin.x),
+            y: roundToInt(frame.origin.y),
+            width: roundToInt(frame.size.width),
+            height: roundToInt(frame.size.height)
+        )
+    }
+
+    // MARK: - System alert dismissal
+
+    /// Looks for an "Apple Account" / StoreKit sign-in alert and taps Cancel.
+    /// Best-effort; returns immediately if no such alert is present.
+    private func dismissSystemAccountAlertIfPresent(in app: XCUIApplication) {
+        // Springboard hosts the iOS system alerts that appear over the app.
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let candidates = [
+            springboard.alerts.buttons["Cancel"].firstMatch,
+            springboard.buttons["Cancel"].firstMatch,
+            app.alerts.buttons["Cancel"].firstMatch,
+            app.buttons["Cancel"].firstMatch
+        ]
+        for button in candidates where button.exists && button.isHittable {
+            button.tap()
+            return
+        }
+    }
+
+    // MARK: - Safe-area read
+
+    /// Reads the comma-separated `top,bottom,leading,trailing` payload from the
+    /// `__safe_area_insets` probe element emitted by PaywallsV2View when SCREENSHOT_MODE=1.
+    /// Returns `nil` when the probe isn't present (e.g. V1 paywalls).
+    private func readSafeAreaInsets(in app: XCUIApplication) -> PaywallLayoutTree.Insets? {
+        let probe = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", "__safe_area_insets"))
+            .firstMatch
+        guard probe.waitForExistence(timeout: 1) else { return nil }
+        let raw = (probe.value as? String) ?? ""
+        let parts = raw.split(separator: ",").compactMap { Double($0) }
+        guard parts.count == 4 else { return nil }
+        return PaywallLayoutTree.Insets(
+            top: Int(parts[0].rounded()),
+            bottom: Int(parts[1].rounded()),
+            leading: Int(parts[2].rounded()),
+            trailing: Int(parts[3].rounded())
+        )
     }
 
     // MARK: - Navigation
@@ -345,12 +506,15 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         }
 
         // Build a map from dfsIndex → spatially-stable suffix index for duplicate IDs.
+        // Frames are pre-rounded to integers so the y-comparison is exact (no tolerance).
         var spatialSuffixIndex: [Int: Int] = [:]
         for (_, occurrences) in groupedByDuplicateId {
             let sorted = occurrences.sorted {
-                let a = $0.snapshot.frame, b = $1.snapshot.frame
-                if abs(a.minY - b.minY) > 1 { return a.minY < b.minY }
-                return a.minX < b.minX
+                let aY = Self.roundToInt($0.snapshot.frame.minY)
+                let bY = Self.roundToInt($1.snapshot.frame.minY)
+                if aY != bY { return aY < bY }
+                return Self.roundToInt($0.snapshot.frame.minX)
+                    < Self.roundToInt($1.snapshot.frame.minX)
             }
             for (suffixIdx, item) in sorted.enumerated() {
                 spatialSuffixIndex[item.dfsIndex] = suffixIdx
@@ -369,12 +533,15 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
                 key = id
             }
 
+            // Coordinates are stored as integers relative to the paywall root.
+            // We translate the absolute snapshot frame by the root origin and then
+            // round each component independently (banker's rounding).
             let cgFrame = snapshot.frame
-            let frame = PaywallLayoutTree.Component.Frame(
-                x: Double(cgFrame.origin.x - origin.x),
-                y: Double(cgFrame.origin.y - origin.y),
-                width: Double(cgFrame.size.width),
-                height: Double(cgFrame.size.height)
+            let frame = PaywallLayoutTree.Frame(
+                x: Self.roundToInt(cgFrame.origin.x - origin.x),
+                y: Self.roundToInt(cgFrame.origin.y - origin.y),
+                width: Self.roundToInt(cgFrame.size.width),
+                height: Self.roundToInt(cgFrame.size.height)
             )
 
             // Skip zero-dimension invisible placeholders (UIKit layout artefacts).
@@ -386,6 +553,12 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
             // content root in the safe-area region; their root-relative y is legitimately
             // negative. The old `frame.y < -10` guard was incorrectly removing them.
             if frame.width == 0 || frame.height == 0 {
+                continue
+            }
+
+            // Filter out the test-only safe-area sentinel — it's read separately and
+            // does not belong in the component dictionary.
+            if id == "__safe_area_insets" {
                 continue
             }
 
@@ -547,6 +720,10 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
 
 /// Root container for the PaywallLayoutTree JSON output.
 /// Conforms to https://revenuecat.com/schemas/paywall-layout-tree.json
+///
+/// **Coordinate format (extractor 2.4.0+):** all positional values are emitted as
+/// integers (rounded via banker's rounding from the raw `CGFloat` snapshot frames).
+/// This eliminates sub-pixel layout noise and makes byte-level diffing meaningful.
 private struct PaywallLayoutTree: Encodable {
 
     let metadata: Metadata
@@ -555,6 +732,22 @@ private struct PaywallLayoutTree: Encodable {
     /// All frame coordinates are relative to the paywall root's top-left corner.
     let components: [String: Component]
 
+    /// Rectangle on the device coordinate grid. Integer-valued.
+    struct Frame: Encodable {
+        let x: Int
+        let y: Int
+        let width: Int
+        let height: Int
+    }
+
+    /// Directional inset values (top/bottom/leading/trailing). Integer-valued.
+    struct Insets: Encodable {
+        let top: Int
+        let bottom: Int
+        let leading: Int
+        let trailing: Int
+    }
+
     struct Metadata: Encodable {
         let platform: String
         let platformVersion: String
@@ -562,22 +755,28 @@ private struct PaywallLayoutTree: Encodable {
         /// Frame of the paywall root in screen coordinates.
         /// All component frames are expressed relative to this origin.
         let rootFrame: Frame
+        /// Safe-area insets reported by the running app. `nil` for V1 paywalls or
+        /// when the safe-area probe could not be read.
+        let safeAreaInsets: Insets?
         let offeringId: String
         let locale: String
+        /// Free-text label passed by the caller via `DEVICE_CLASS` env var (e.g. "tablet",
+        /// "dynamic-island"). Used by downstream cross-platform tooling to correlate
+        /// runs without re-parsing the file name.
+        let deviceClass: String?
+        /// "light" | "dark" — which color scheme the paywall was rendered with.
+        let colorScheme: String
+        /// "portrait" | "landscape" — orientation at capture time.
+        let orientation: String
         let extractorVersion: String
         let timestamp: String
 
         struct Viewport: Encodable {
-            let width: Double
-            let height: Double
+            let width: Int
+            let height: Int
+            /// Physical-pixel scale factor (e.g. 3.0 on Retina iPhones).
+            /// Not a coordinate, so kept as Double.
             let scale: Double
-        }
-
-        struct Frame: Encodable {
-            let x: Double
-            let y: Double
-            let width: Double
-            let height: Double
         }
     }
 
@@ -588,16 +787,9 @@ private struct PaywallLayoutTree: Encodable {
         let componentId: String
         let label: String?
         let value: String?
-        /// Frame relative to the paywall root's top-left corner.
+        /// Frame relative to the paywall root's top-left corner. Integer-valued.
         let frame: Frame
         let state: State
-
-        struct Frame: Encodable {
-            let x: Double
-            let y: Double
-            let width: Double
-            let height: Double
-        }
 
         /// Interaction-state flags as reported by XCUITest.
         struct State: Encodable {

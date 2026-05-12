@@ -109,6 +109,32 @@ struct APIKeyDashboardList: View {
 
     private func fetchOfferings() async {
         do {
+            // UITest hermetic hook: load an offering from a local `offerings.json` instead
+            // of contacting the RevenueCat backend. Used by `PaywallAccessibilityTreeTests`
+            // to capture paywall trees without a live API key.
+            if let localPath = ProcessInfo.processInfo.environment["LOCAL_OFFERINGS_PATH"],
+               let targetId = ProcessInfo.processInfo.environment["OFFERING_ID"] {
+                do {
+                    let offering = try LocalOfferingLoader.loadOffering(from: localPath, matching: targetId)
+                    self.isLoadingPaywall = true
+                    if ProcessInfo.processInfo.environment["SCREENSHOT_MODE"] == "1" {
+                        self.presentedPaywallCover = .init(offering: offering, mode: .fullScreen)
+                    } else {
+                        self.presentedPaywall = .init(offering: offering, mode: .sheet)
+                    }
+                    // Populate the success state with just this offering so the dashboard
+                    // doesn't display an indefinite spinner behind the presented paywall.
+                    self.offerings = .success(
+                        .init(sections: [Template(name: nil)], offeringsBySection: [Template(name: nil): [offering]])
+                    )
+                    return
+                } catch {
+                    print("LocalOfferingLoader failed: \(error)")
+                    self.offerings = .failure(error as NSError)
+                    return
+                }
+            }
+
             // Force refresh offerings
             _ = try await Purchases.shared.syncAttributesAndOfferingsIfNeeded()
 

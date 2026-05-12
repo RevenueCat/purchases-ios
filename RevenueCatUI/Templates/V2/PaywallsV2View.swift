@@ -292,7 +292,34 @@ struct PaywallsV2View: View {
             }
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("paywall")
+            .background(safeAreaProbe)
 
+    }
+
+    /// Test-only sentinel that carries the paywall's safe-area insets in its
+    /// `.accessibilityValue` so that `PaywallAccessibilityTreeTests` can read them from
+    /// the XCUITest accessibility snapshot.
+    ///
+    /// Active only when `SCREENSHOT_MODE=1` is set in the process environment
+    /// (the same flag that gates the screenshot-mode behavior in `PaywallPresenter`).
+    /// In every other build the body returns `EmptyView` so production paywalls carry
+    /// no extra accessibility node.
+    @ViewBuilder
+    private var safeAreaProbe: some View {
+        if ProcessInfo.processInfo.environment["SCREENSHOT_MODE"] == "1" {
+            GeometryReader { proxy in
+                Color.clear
+                    .accessibilityIdentifier("__safe_area_insets")
+                    .accessibilityValue(
+                        "\(proxy.safeAreaInsets.top)," +
+                        "\(proxy.safeAreaInsets.bottom)," +
+                        "\(proxy.safeAreaInsets.leading)," +
+                        "\(proxy.safeAreaInsets.trailing)"
+                    )
+            }
+        } else {
+            EmptyView()
+        }
     }
 
     private func dismissAfterPurchaseCompletionCallbacks() {

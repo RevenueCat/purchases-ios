@@ -1,8 +1,8 @@
 # iOS Paywall Extractor — Fidelity Notes
 
 > **Extractor:** `PaywallAccessibilityTreeTests` in `PaywallsTesterUITests`  
-> **Current schema version:** 2.2.0  
-> **Last updated:** 2026-05-08
+> **Current schema version:** 2.4.0  
+> **Last updated:** 2026-05-12
 
 ---
 
@@ -27,6 +27,7 @@ This document classifies each known difference as a **bug** (fixed or unfixed), 
 | H3a: `paywall_0`…`paywall_N` synthetic keys | Navigation sentinel leaks into component dictionary | Bug | 2.1.0 / extractor filter |
 | H3b: off-paywall scaffolding element | 0×0 or 0-height element in output | Bug | 2.1.0 / extractor frame guard |
 | H4: `_N` suffix order is traversal-dependent | `id_0` / `id_1` assignment depends on DFS order, differs across platforms | Bug | 2.2.0 / spatial sort |
+| H5: direct-child text components silently dropped | Text components that are direct children of the root stack (no `.contain` barrier) receive the `"paywall"` sentinel identifier via UIKit propagation → filtered by `collectIdedSnapshots` | Bug | 2.3.0 / add `.contain` to "paywall" VStack |
 | `ImageComponent` IDs not captured | Images never appear by their source component ID | Model gap | Open — `ImageComponent` has no `id` field |
 | Type change: `stack`→`button` | Source JSON type `stack`; export type `button` | Intentional | — |
 | Type change: `package`→`button` | Source JSON type `package`; export type `button` | Intentional | — |
@@ -190,6 +191,132 @@ Elements that appear higher on screen get lower suffix indices. Ties (elements o
 
 ---
 
+## Coordinate normalization (added in 2.4.0)
+
+All frame values (`x`, `y`, `width`, `height`), `rootFrame`, `viewport.width`, `viewport.height`, and every entry of `safeAreaInsets` are emitted as **JSON integers**. The raw `CGFloat` values from `XCUIElementSnapshot.frame` are rounded with banker's rounding (Swift's `Double.rounded()` default — round-half-to-even).
+
+This eliminates sub-pixel layout noise (values like `824.3333333333333` or `15.666666666666629`), makes byte-level diffs across runs meaningful, and makes the duplicate-ID spatial sort (H4) trivially correct without a tolerance window.
+
+**Cross-platform note:** the web extractor still emits fractional coordinates as of this writing. Downstream tooling that compares iOS and web outputs should round web values to integers before diffing, or pin the comparison to integer precision. Aligning the web side is a follow-up.
+
+**`scale`** in `viewport` is intentionally **not** an integer — it's the physical-pixel scale factor (e.g. `3.0` on Retina iPhones), not a coordinate.
+
+---
+
+## Safe-area insets in metadata (added in 2.4.0)
+
+`metadata.safeAreaInsets` carries the SwiftUI `safeAreaInsets` reported by `GeometryReader` inside the running paywall:
+
+```json
+"safeAreaInsets": {
+  "top": 47,
+  "bottom": 34,
+  "leading": 0,
+  "trailing": 0
+}
+```
+
+**How it works.** When `SCREENSHOT_MODE=1` is active, `PaywallsV2View.safeAreaProbe` injects a hidden accessibility element with identifier `__safe_area_insets` whose `accessibilityValue` is a comma-separated `top,bottom,leading,trailing` string. The XCUITest reads the value after `app.snapshot()` and parses it into the metadata. In every other build the probe returns `EmptyView` so production paywalls carry no extra accessibility node.
+
+`safeAreaInsets` is omitted from the JSON for V1 paywalls or any path where the probe isn't present.
+
+The `__safe_area_insets` identifier is excluded from the `components` dictionary by `buildComponents` so it never appears as a "component" in the output.
+
+---
+
+## Hermetic local-offering loading (added in 2.4.0)
+
+The test can now run without an RC API key. Set `TEST_RUNNER_LOCAL_OFFERINGS_PATH=/path/to/offerings.json` and `TEST_RUNNER_OFFERING_ID=<id>`. The PaywallsTester app loads the offering via `LocalOfferingLoader` (in `Tests/TestingApps/PaywallsTester/PaywallsTester/Config/`), bypassing `Purchases.shared.offerings()`.
+
+**Asset URL rewriting.** Remote asset references are rewritten to `file://` URLs adjacent to the JSON:
+
+- `https://assets.pawwalls.com/...` → `<offerings.json dir>/pawwalls/assets/...`
+- `https://icons.pawwalls.com/...`  → `<offerings.json dir>/pawwalls/icons/...`
+
+Missing local assets fail to render silently — the accessibility tree is still captured. The fixture directory convention matches `Tests/paywall-preview-resources/resources/`.
+
+**Mock packages.** The loader injects a standard set of `$rc_lifetime` / `$rc_annual` / `$rc_six_month` / `$rc_three_month` / `$rc_two_month` / `$rc_monthly` / `$rc_weekly` packages backed by `PreviewMock.Product` so any V2 component referencing a standard `package_id` resolves cleanly.
+
+---
+
+## Single-device parameterization (added in 2.4.0)
+
+Each test invocation runs against one simulator (chosen by the caller's `xcodebuild -destination`). Three env vars configure per-run characteristics; the resulting JSON records each:
+
+| Env var | JSON `metadata` field | Default |
+|---|---|---|
+| `TEST_LOCALE` | `locale` (e.g. `en_US`) | `en_US` |
+| `DEVICE_ORIENTATION` (`portrait` / `landscape`) | `orientation` | `portrait` |
+| `COLOR_SCHEME` (`light` / `dark`) | `colorScheme` | `light` |
+| `DEVICE_CLASS` (free-text e.g. `tablet`, `mini`) | `deviceClass` (optional) | — |
+
+Locale is applied via `-AppleLanguages`/`-AppleLocale` launch arguments; orientation via `XCUIDevice.shared.orientation`; color scheme via `.preferredColorScheme(...)` in `PaywallPresenter`. Cross-device matrices are intended to be driven by an outer script that invokes `xcodebuild test` once per (device, locale, orientation, color scheme) combination.
+
+---
+
+## Artifact location (changed in 2.4.0)
+
+Output files (`paywall-tree-<id>-<ts>.json` + `.png`) now write to:
+
+1. `$TEST_ARTIFACTS_DIR/` (if set)
+2. `<host-project-dir>/fastlane/test_output/xctest/paywall-accessibility-tree/` (default; `<host-project-dir>` resolved from `HOST_PROJECT_DIR` or `SIMULATOR_HOST_HOME`)
+3. `/tmp/` (fallback only when no host hint is available)
+
+`DEV_DESKTOP_COPY=1` opts back into the previous `~/Desktop` copy for local development convenience.
+
+Both files are always attached to the `.xcresult` bundle via `XCTAttachment` — that's the canonical CI extraction path and is independent of the on-disk write location.
+
+---
+
+## H5 — Direct-child text components silently dropped (bug, fixed in 2.3.0)
+
+### Symptom
+
+A `TextComponent` that is a direct child of the root stack appears in the rendered screenshot but is absent from the extractor JSON output. Example: `1OTK5qjUm9` ("Unlock access to all recipes" headline) is visible in the PNG but missing from `components` in the JSON.
+
+### Root cause
+
+`PaywallsV2View.addPaywallModifiers` applies `.accessibilityIdentifier("paywall")` to the outer `VStack` **without** `.accessibilityElement(children: .contain)`:
+
+```swift
+// PaywallsV2View.swift (pre-fix)
+content
+    ...
+    .accessibilityIdentifier("paywall")   // no .contain
+```
+
+Without `.contain`, UIKit treats the VStack as accessibility-transparent and **propagates the `"paywall"` identifier downward** to leaf accessible descendants that do not have their own `.contain` barrier. `TextComponentView` sets `.accessibilityIdentifier(viewModel.componentId)` on its text node but does not add `.accessibilityElement(children: .contain)`, so it provides no such barrier. UIKit overwrites the text node's identifier with `"paywall"`.
+
+`collectIdedSnapshots` then encounters the node with `identifier == "paywall"` and drops it:
+
+```swift
+if !id.isEmpty && id != "paywall" {
+    pairs.append((id, snapshot))   // "paywall" is filtered out
+}
+```
+
+The component is in the tree but its real ID is never seen by the extractor.
+
+Most other components are unaffected because they are nested inside `.accessibilityElement(children: .contain)` barriers (stacks, packages, sticky footer) that prevent propagation.
+
+### What triggered the regression
+
+The `.statusBar(hidden: isScreenshotMode)` modifier was added to `PaywallPresenter` (commit `2423d00d9`). Hiding the status bar changes the safe-area geometry, which altered the UIKit accessibility tree layout enough to start triggering the "paywall" propagation for direct-child text nodes where it had not been triggered previously.
+
+### Fix (2.3.0)
+
+`PaywallsV2View.swift` — add `.accessibilityElement(children: .contain)` before `.accessibilityIdentifier("paywall")` in `addPaywallModifiers`:
+
+```swift
+// PaywallsV2View.swift (fix)
+.accessibilityElement(children: .contain)   // ← added
+.accessibilityIdentifier("paywall")
+```
+
+With `.contain`, the `"paywall"` identifier is locked to the VStack container node and is **not** propagated to any descendant. Every child (including direct-child text nodes) retains its own identifier. The `navigateToLivePaywall` UITest sentinel (`waitForExistence` on `identifier == "paywall"`) continues to work because the container node itself still carries the identifier.
+
+---
+
 ## Test-mode rendering toggles (added in 2.2.0)
 
 Cross-platform comparison (iOS extractor vs. web extractor) revealed three rendering discrepancies caused by test-environment setup, not by the paywall code itself. The following toggles align the iOS test render with the web baseline.
@@ -239,3 +366,5 @@ When a `StackComponent` or `PackageComponent` is rendered inside a `ButtonCompon
 | 2.0.0 | Flat component dictionary; coordinates translated to paywall-root space; `rootFrame` in metadata |
 | 2.1.0 | Fix H1 (`StackComponentView` + `.accessibilityElement(children: .contain)`); filter `"paywall"` sentinel; skip off-paywall zero-size/zero-height scaffolding elements |
 | 2.2.0 | Fix H2d (remove `y < -10` guard — overlay components now included); Fix H4 (spatial sort for `_N` suffix stability); PNG export alongside JSON |
+| 2.3.0 | Fix H5 (add `.accessibilityElement(children: .contain)` to "paywall" VStack — direct-child text components now captured with correct IDs) |
+| 2.4.0 | Hermetic local-offering loading via `LOCAL_OFFERINGS_PATH` (no API key required); single-device parameterization (`DEVICE_CLASS` / `DEVICE_ORIENTATION` / `COLOR_SCHEME` / `TEST_LOCALE`); artifact output moved to `fastlane/test_output/xctest/paywall-accessibility-tree/`; `metadata.safeAreaInsets` populated from a SwiftUI safe-area probe; **all coordinate values normalized to integers**; per-run metadata (`deviceClass`, `colorScheme`, `orientation`) added |

@@ -37,6 +37,17 @@ struct PaywallPresenter: View {
         ProcessInfo.processInfo.environment["SCREENSHOT_MODE"] == "1"
     }
 
+    /// Optional color-scheme override injected by `PaywallAccessibilityTreeTests` via
+    /// `app.launchEnvironment["COLOR_SCHEME"]`. When set to `"light"` or `"dark"`, forces
+    /// the paywall subtree to that scheme; otherwise the system trait is honored.
+    private var colorSchemeOverride: ColorScheme? {
+        switch ProcessInfo.processInfo.environment["COLOR_SCHEME"] {
+        case "dark": return .dark
+        case "light": return .light
+        default: return nil
+        }
+    }
+
     /// Returns a `PaywallView` for the `.fullScreen` / `.sheet` cases.
     ///
     /// In DEBUG builds, when `SCREENSHOT_MODE=1`, the SPI init is used to force
@@ -132,6 +143,9 @@ struct PaywallPresenter: View {
         }
         } // Group
         .statusBar(hidden: isScreenshotMode)
+        .applyIf(colorSchemeOverride != nil) { view in
+            view.preferredColorScheme(colorSchemeOverride)
+        }
     }
 
 }
