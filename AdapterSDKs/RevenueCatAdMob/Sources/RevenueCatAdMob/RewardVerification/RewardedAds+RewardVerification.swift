@@ -22,9 +22,9 @@ import GoogleMobileAds
         RewardVerification.Setup.install(on: self)
     }
 
-    /// Presents the ad with optional reward-verification callbacks.
+    /// Presents the ad with a required reward-verification result callback.
     ///
-    /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
+    /// You must call ``enableRewardVerification()`` before presenting
     /// (checked with a debug assertion).
     ///
     /// Callback timing:
@@ -37,7 +37,7 @@ import GoogleMobileAds
     func present(
         from viewController: UIViewController,
         rewardVerificationStarted: (@MainActor () -> Void)? = nil,
-        rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
+        rewardVerificationResult: @escaping @MainActor (RewardVerificationResult) -> Void
     ) {
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
             rewardVerificationStarted: rewardVerificationStarted,
@@ -49,11 +49,12 @@ import GoogleMobileAds
         )
     }
 
-    /// Presents the ad with optional reward-verification callbacks and an explicit placement for RevenueCat analytics.
+    /// Presents the ad with a required reward-verification result callback
+    /// and an explicit placement for RevenueCat analytics.
     ///
     /// The placement passed here takes precedence over any placement from
     /// ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:)``.
-    /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
+    /// You must call ``enableRewardVerification()`` before presenting
     /// (checked with a debug assertion).
     ///
     /// Callback timing:
@@ -64,7 +65,7 @@ import GoogleMobileAds
         from viewController: UIViewController,
         placement: String?,
         rewardVerificationStarted: (@MainActor () -> Void)? = nil,
-        rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
+        rewardVerificationResult: @escaping @MainActor (RewardVerificationResult) -> Void
     ) {
         Tracking.setShowTimePlacement(placement, on: self)
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
@@ -90,9 +91,9 @@ import GoogleMobileAds
         RewardVerification.Setup.install(on: self)
     }
 
-    /// Presents the ad with optional reward-verification callbacks.
+    /// Presents the ad with a required reward-verification result callback.
     ///
-    /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
+    /// You must call ``enableRewardVerification()`` before presenting
     /// (checked with a debug assertion).
     ///
     /// Callback timing:
@@ -105,7 +106,7 @@ import GoogleMobileAds
     func present(
         from viewController: UIViewController,
         rewardVerificationStarted: (@MainActor () -> Void)? = nil,
-        rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
+        rewardVerificationResult: @escaping @MainActor (RewardVerificationResult) -> Void
     ) {
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
             rewardVerificationStarted: rewardVerificationStarted,
@@ -117,11 +118,12 @@ import GoogleMobileAds
         )
     }
 
-    /// Presents the ad with optional reward-verification callbacks and an explicit placement for RevenueCat analytics.
+    /// Presents the ad with a required reward-verification result callback
+    /// and an explicit placement for RevenueCat analytics.
     ///
     /// The placement passed here takes precedence over any placement from
     /// ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:)``.
-    /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
+    /// You must call ``enableRewardVerification()`` before presenting
     /// (checked with a debug assertion).
     ///
     /// Callback timing:
@@ -132,7 +134,7 @@ import GoogleMobileAds
         from viewController: UIViewController,
         placement: String?,
         rewardVerificationStarted: (@MainActor () -> Void)? = nil,
-        rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
+        rewardVerificationResult: @escaping @MainActor (RewardVerificationResult) -> Void
     ) {
         Tracking.setShowTimePlacement(placement, on: self)
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
@@ -156,12 +158,12 @@ internal extension RewardVerification.CapableAd {
     @MainActor
     func createUserDidEarnRewardHandler(
         rewardVerificationStarted: (@MainActor () -> Void)?,
-        rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)?,
+        rewardVerificationResult: @escaping @MainActor (RewardVerificationResult) -> Void,
         poller: RewardVerification.Poller? = nil
     ) -> (() -> Void) {
         let state = RewardVerification.Setup.verificationState(for: self)
 
-        if rewardVerificationResult != nil, state == nil {
+        if state == nil {
             Logger.warn(RewardVerificationStrings.result_callback_missing_verification_state)
             assert(
                 state != nil,
@@ -171,10 +173,6 @@ internal extension RewardVerification.CapableAd {
 
         return {
             rewardVerificationStarted?()
-
-            guard let rewardVerificationResult else {
-                return
-            }
 
             guard let state else {
                 rewardVerificationResult(.failed)

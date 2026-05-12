@@ -19,6 +19,7 @@ var projects: [Path] = [
 // Exclude them when TUIST_INCLUDE_TEST_DEPENDENCIES=false to allow skipping those downloads on CI.
 if Environment.includeTestDependencies {
     projects.append("./Projects/RevenueCatTests")
+    projects.append("./Projects/PaywallScreenshotTests")
     projects.append("./Projects/RevenueCatAdMob")
     projects.append("./Projects/AdMobIntegrationSample")
 }
