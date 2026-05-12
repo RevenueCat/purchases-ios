@@ -202,7 +202,7 @@ struct PaywallsV2View: View {
         let contentLocale = paywallState.rootViewModel.localizationProvider.locale
         let defaultPackage = Self.effectiveDefaultPackage(
             pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
-            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage ?? self.workflowDefaultPackage,
+            workflowDefaultPackage: self.workflowDefaultPackage,
             contextPackage: self.workflowContextPackage,
             stepPackages: paywallState.packages
         )
