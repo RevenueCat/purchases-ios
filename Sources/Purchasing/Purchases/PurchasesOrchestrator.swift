@@ -795,7 +795,6 @@ final class PurchasesOrchestrator {
                 )
                 #endif
             }
-
             #if compiler(>=6.3.2)
             if #available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *),
                let subscriptionInfo = sk2Product.subscription { // Don't apply billing plans to OTPs
@@ -808,7 +807,7 @@ final class PurchasesOrchestrator {
                 } else if eligibleBillingPlanTypes.contains(sk2BillingPlanType) {
                     options.insert(.billingPlanType(sk2BillingPlanType))
                 } else {
-                    // TODO: throw
+                    throw ErrorUtils.productNotAvailableForPurchaseError()
                 }
             }
             #endif
