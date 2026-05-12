@@ -5,22 +5,6 @@
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES">
-      <BuildActionEntries>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "NO"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
-            buildForAnalyzing = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "2D6C021E2549F5620039CB92"
-               BuildableName = "SPMInstallationTests.xctest"
-               BlueprintName = "SPMInstallationTests"
-               ReferencedContainer = "container:SPMInstallation.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-      </BuildActionEntries>
    </BuildAction>
    <TestAction
       buildConfiguration = "Debug"
@@ -53,9 +37,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "2D6C021E2549F5620039CB92"
-            BuildableName = "SPMInstallationTests.xctest"
-            BlueprintName = "SPMInstallationTests"
+            BlueprintIdentifier = "57C0BB7529F847B600827807"
+            BuildableName = "SPMInstallation.app"
+            BlueprintName = "SPMInstallation"
             ReferencedContainer = "container:SPMInstallation.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

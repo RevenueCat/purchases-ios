@@ -274,7 +274,6 @@
 				OTHER_SWIFT_FLAGS = "-DSPM_INSTALLATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -298,7 +297,6 @@
 				OTHER_SWIFT_FLAGS = "-DSPM_INSTALLATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
