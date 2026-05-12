@@ -63,8 +63,14 @@ import Foundation
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
             self.id = try container.decodeIfPresent(String.self, forKey: .id)
             let actionContainer = try container.nestedContainer(keyedBy: ActionCodingKeys.self, forKey: .action)
-            self.isCloseWorkflowAction = try actionContainer.decode(String.self, forKey: .type) == "close_workflow"
-            self.action = try container.decode(Action.self, forKey: .action)
+            let rawActionType = try actionContainer.decode(String.self, forKey: .type)
+            if rawActionType == "close_workflow" {
+                self.isCloseWorkflowAction = true
+                self.action = .navigateBack
+            } else {
+                self.isCloseWorkflowAction = false
+                self.action = try container.decode(Action.self, forKey: .action)
+            }
             self.stack = try container.decode(PaywallComponent.StackComponent.self, forKey: .stack)
             self.transition = try container.decodeIfPresent(PaywallComponent.Transition.self, forKey: .transition)
         }
@@ -150,8 +156,6 @@ import Foundation
                     self = .navigateTo(destination: destination)
                 case "workflow":
                     self = .workflowTrigger
-                case "close_workflow":
-                    self = .navigateBack
                 case "unknown":
                     self = .unknown
                 default:

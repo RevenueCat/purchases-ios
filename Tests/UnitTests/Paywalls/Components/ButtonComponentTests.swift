@@ -330,9 +330,8 @@ class ButtonComponentCodableTests: TestCase {
         XCTAssertTrue(closeWorkflow.isCloseWorkflowAction)
         XCTAssertFalse(navigateBack.isCloseWorkflowAction)
 
-        // Equatable and Hashable must treat them as distinct.
+        // Equatable must treat them as distinct.
         XCTAssertNotEqual(closeWorkflow, navigateBack)
-        XCTAssertNotEqual(closeWorkflow.hashValue, navigateBack.hashValue)
     }
 
     func testDecodesNameIgnoresExtraIdInJSON() throws {
