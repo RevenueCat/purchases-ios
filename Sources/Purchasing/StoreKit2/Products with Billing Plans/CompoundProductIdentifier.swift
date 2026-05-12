@@ -122,6 +122,9 @@ extension CompoundProductIdentifier {
         case "upFront":
             return StoreKit.Product.SubscriptionInfo.BillingPlanType.upFront
         default:
+            Logger.warn(
+                StoreKitStrings.sk2_unrecognized_billing_plan_identifer(billingPlanIdentifier: productPlanIdentifier)
+            )
             return nil
         }
     }

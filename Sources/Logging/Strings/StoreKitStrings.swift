@@ -89,6 +89,8 @@ enum StoreKitStrings {
 
     case sk2_receipt_missing_purchase(transactionId: String)
 
+    case sk2_unrecognized_billing_plan_identifer(billingPlanIdentifier: String)
+
     #if DEBUG
 
     case sk1_wrapper_notifying_delegate_of_existing_transactions(count: Int)
@@ -258,6 +260,10 @@ extension StoreKitStrings: LogMessage {
             return "StoreKit did not raise any errors while processing the purchase, but the transaction returned by " +
             "StoreKit contains an expiration date that is in the past. This is likely an issue with " +
             "StoreKit. Expiration date: \(iso8601ExpirationDate)"
+
+        case .sk2_unrecognized_billing_plan_identifer(let billingPlanIdentifier):
+            return "An unrecognized billing plan identifier was detected: \(billingPlanIdentifier). Will return no " +
+            "products for this request."
         }
     }
 
