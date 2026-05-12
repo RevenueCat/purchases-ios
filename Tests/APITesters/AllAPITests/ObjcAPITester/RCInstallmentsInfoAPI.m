@@ -25,14 +25,17 @@
 
 + (void)checkInit {
     RCSubscriptionPeriod *commitmentTotalPeriod;
+    RCSubscriptionPeriod *commitmentInstallmentPeriod;
 
     RCInstallmentsInfo *installmentsInfo __unused = [[RCInstallmentsInfo alloc]
         initWithCommitmentInstallmentsCount:12
-                      commitmentTotalPeriod:commitmentTotalPeriod
-                       commitmentTotalPrice:[[NSDecimalNumber alloc] initWithInt:100].decimalValue
-                commitmentTotalDisplayPrice:@"$100.00"
-                    installmentBillingPrice:[[NSDecimalNumber alloc] initWithInt:10].decimalValue
-             installmentBillingDisplayPrice:@"$10.00"];
+        commitmentInstallmentPeriod:commitmentInstallmentPeriod
+        installmentBillingPrice:[[NSDecimalNumber alloc] initWithInt:10].decimalValue
+        installmentBillingDisplayPrice:@"$10.00"
+        commitmentTotalPeriod:commitmentTotalPeriod
+        commitmentTotalPrice:[[NSDecimalNumber alloc] initWithInt:100].decimalValue
+        commitmentTotalDisplayPrice:@"$100.00"
+    ];
 }
 
 @end
