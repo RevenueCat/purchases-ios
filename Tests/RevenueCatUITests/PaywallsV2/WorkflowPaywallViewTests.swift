@@ -216,6 +216,35 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(state.contextPackageForForwardNavigation(from: nil)).to(beNil())
     }
 
+    func testBackNavigationRestoresPreviousSelectionAsContextPackage() {
+        // Simulates: user selects Annual on step 1 → forward to step 2 → back to step 1.
+        // step 1's carry-forward state still holds Annual, so back navigation should
+        // pass it as contextPackage so the re-rendered page displays Annual, not the default.
+        var state = WorkflowPackageCarryForwardState()
+
+        state.recordSelection(TestData.annualPackage, for: "step_1")
+        state.recordInitialSelection(TestData.annualPackage, for: "step_2")
+
+        // Back navigation clears step 2 (the abandoned step).
+        state.clearForBackNavigation(from: "step_2")
+
+        // The contextPackage for back navigation is read from the destination step (step 1).
+        let contextPackageForBackNav = state.contextPackageForForwardNavigation(from: "step_1")
+        expect(contextPackageForBackNav?.identifier) == TestData.annualPackage.identifier
+    }
+
+    func testBackNavigationContextPackageIsNilWhenNoSelectionRecorded() {
+        // If the user never changed the selection on step 1, back navigation should
+        // not pre-select anything — the page renders with its own default.
+        var state = WorkflowPackageCarryForwardState()
+
+        state.recordInitialSelection(TestData.annualPackage, for: "step_2")
+        state.clearForBackNavigation(from: "step_2")
+
+        let contextPackageForBackNav = state.contextPackageForForwardNavigation(from: "step_1")
+        expect(contextPackageForBackNav).to(beNil())
+    }
+
 }
 
 // MARK: - workflowPackageContext tests

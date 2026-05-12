@@ -345,6 +345,11 @@ struct WorkflowPaywallView: View {
                     stepId: previousStep.id,
                     canNavigateBack: self.navigator.canNavigateBack,
                     displayCloseButton: self.displayCloseButton,
+                    // Restore the selection the user had on this step so the displayed
+                    // package matches the carry-forward state on re-entry.
+                    contextPackage: self.packageCarryForwardState.contextPackageForForwardNavigation(
+                        from: previousStep.id
+                    ),
                     shouldRecordInitialPackageSelection: false
                 ),
                 direction: .back
