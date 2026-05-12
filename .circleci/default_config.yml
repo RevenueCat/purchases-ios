@@ -559,6 +559,8 @@ commands:
       - checkout
       - install-dependencies
       - update-spm-installation-commit
+      - tuist-generate-workspace:
+          include_test_dependencies: true
       - run:
           name: Run backend_integration Tests
           command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
