@@ -89,8 +89,6 @@ enum StoreKitStrings {
 
     case sk2_receipt_missing_purchase(transactionId: String)
 
-    case sk2_unrecognized_billing_plan_identifer(billingPlanIdentifier: String)
-
     #if DEBUG
 
     case sk1_wrapper_notifying_delegate_of_existing_transactions(count: Int)
@@ -108,6 +106,14 @@ enum StoreKitStrings {
     case sk2_sync_purchases_no_transaction_or_apptransaction_found
 
     case sk2_purchase_did_not_error_but_expiration_date_is_in_past(expirationDate: Date)
+
+    case sk2_unrecognized_billing_plan_identifer(billingPlanIdentifier: String)
+
+    case sk2_no_billing_plan_found(compoundProductIdentifier: CompoundProductIdentifier)
+
+    case sk2_no_pricing_terms_found(compoundProductIdentifier: CompoundProductIdentifier)
+
+    case sk2_user_not_eligible_for_billing_plan(compoundProductIdentifier: CompoundProductIdentifier)
 }
 
 extension StoreKitStrings: LogMessage {
@@ -263,6 +269,27 @@ extension StoreKitStrings: LogMessage {
 
         case .sk2_unrecognized_billing_plan_identifer(let billingPlanIdentifier):
             return "An unrecognized billing plan identifier was detected: \(billingPlanIdentifier)."
+
+        case .sk2_no_billing_plan_found(let compoundProductIdentifier):
+            return "Unrecognized billing plan type. Will not return a product identifier " +
+            "for \(compoundProductIdentifier.compoundProductIdentifier)"
+
+        case .sk2_no_pricing_terms_found(let compoundProductIdentifier):
+            return "No pricing terms were found for product with productIdentifier " +
+            "\(compoundProductIdentifier.storeKitProductIdentifier). Will not return a product " +
+            "for \(compoundProductIdentifier.compoundProductIdentifier)"
+
+        case .sk2_user_not_eligible_for_billing_plan(let compoundProductIdentifier):
+            if let productPlanIdentifier = compoundProductIdentifier.productPlanIdentifier {
+                return "The user is not eligible for the \(productPlanIdentifier) " +
+                "billing plan. Will not return a product " +
+                "for \(compoundProductIdentifier.compoundProductIdentifier)"
+            } else {
+                return "The user is not eligible for the requested " +
+                "billing plan. Will not return a product " +
+                "for \(compoundProductIdentifier.compoundProductIdentifier)"
+            }
+
         }
     }
 

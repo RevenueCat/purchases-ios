@@ -172,10 +172,12 @@ class ProductsManager: NSObject, ProductsManagerType {
 
                 guard let requestedBillingPlanType = compoundProductIdentifier.sk2BillingPlanType else {
                     // Unrecognized billing plan type. Return no products for this request.
+                    Logger.warn(StoreKitStrings.sk2_no_billing_plan_found(compoundProductIdentifier: compoundProductIdentifier))
                     removeBaseProductIfNotRequested(productFromStoreKit)
                     continue
                 }
                 guard let pricingTerms = productFromStoreKit.underlyingSK2Product.subscription?.pricingTerms else {
+                    Logger.warn(StoreKitStrings.sk2_no_pricing_terms_found(compoundProductIdentifier: compoundProductIdentifier))
                     removeBaseProductIfNotRequested(productFromStoreKit)
                     continue
                 }
@@ -198,6 +200,11 @@ class ProductsManager: NSObject, ProductsManagerType {
                     removeBaseProductIfNotRequested(productFromStoreKit)
                 } else {
                     // The requested billing plan isn't available for this user. Return no products for this request.
+                    Logger.warn(
+                        StoreKitStrings.sk2_user_not_eligible_for_billing_plan(
+                            compoundProductIdentifier: compoundProductIdentifier
+                        )
+                    )
                     removeBaseProductIfNotRequested(productFromStoreKit)
                 }
             }
