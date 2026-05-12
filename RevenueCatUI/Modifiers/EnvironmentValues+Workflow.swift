@@ -46,15 +46,20 @@ private struct IsWorkflowHeaderKey: EnvironmentKey {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct WorkflowPackageContextKey: EnvironmentKey {
-    /// Package context from the workflow's `singleStepFallbackId` step, used by packageless
-    /// screens to resolve price/period template variables.
+    // Workflow-wide static context derived from `singleStepFallbackId`.
+    // Carries both a selectedPackage AND the full packages array so that packageless
+    // screens (which have no offerings of their own) can still populate variableContext
+    // and resolve price/period template variables.
+    // Same value on every page for the lifetime of the workflow.
     static let defaultValue: WorkflowPackageContext? = nil
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct WorkflowContextPackageKey: EnvironmentKey {
-    /// Package carried forward from the previous workflow step, used by tab components
-    /// to pre-select a matching package when the step's offering contains it.
+    // Per-step carry-forward: the single Package the user selected (or that was resolved
+    // as the default) on the previous step. Changes on every forward navigation; nil on
+    // back navigation. Only a Package — no packages array — because its sole job is
+    // pre-selection, not variable resolution.
     static let defaultValue: Package? = nil
 }
 
@@ -88,13 +93,19 @@ extension EnvironmentValues {
         set { self[IsWorkflowHeaderKey.self] = newValue }
     }
 
+    /// Workflow-wide static context derived from `singleStepFallbackId`.
+    /// Carries `selectedPackage` + the full `packages` array so packageless screens
+    /// can populate their `variableContext` and resolve price/period template variables.
+    /// The same value is set on every page for the lifetime of the workflow.
     var workflowPackageContext: WorkflowPackageContext? {
         get { self[WorkflowPackageContextKey.self] }
         set { self[WorkflowPackageContextKey.self] = newValue }
     }
 
-    /// Package carried forward from the previous workflow step.
-    /// Tab components validate this against their own package list before using it.
+    /// Per-step carry-forward: the package the user selected (or that was resolved as the
+    /// default) on the previous workflow step. Set fresh on each forward navigation; nil on
+    /// back navigation. Components that create their own PackageContext (e.g. tabs) read this
+    /// to pre-select a matching package, validated against their own offering's package list.
     var workflowContextPackage: Package? {
         get { self[WorkflowContextPackageKey.self] }
         set { self[WorkflowContextPackageKey.self] = newValue }
