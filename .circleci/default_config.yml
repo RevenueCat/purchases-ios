@@ -986,6 +986,11 @@ jobs:
           destination: scan-test-output-ios-26
       - slack-notify-on-fail
 
+  # As of May 12, 2026, there is a StoreKit bug that is preventing us from running unit tests
+  # when building with Xcode 26.4+. When built with Xcode 26.4+, tests that fetch products
+  # with StoreKit with a SKConfig file fail to fetch products. Thus, a good chunk of our
+  # tests fail. While we can't run the tests, the least that we can do is ensure that the
+  # SDK builds on Xcode 26.5 with iOS 26.5, so this job does that.
   build-xcode-265:
     executor:
       name: macos-executor
