@@ -1322,6 +1322,8 @@
 		FA6ABC7C2A81673F00353AF7 /* SystemFontRegistryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA6ABC7B2A81673F00353AF8 /* SystemFontRegistryTests.swift */; };
 		FACD000C2F61A1230073D2DE /* PackageVisibilityPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD000B2F61A1230073D2DE /* PackageVisibilityPreview.swift */; };
 		FD03B7672FB3A858005F79A3 /* InstallmentInfosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD03B7662FB3A858005F79A3 /* InstallmentInfosTests.swift */; };
+		FD03B76E2FB3AAD8005F79A3 /* OSAgnosticBillingPlanType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD03B76D2FB3AAD8005F79A3 /* OSAgnosticBillingPlanType.swift */; };
+		FD03B76F2FB3AAD8005F79A3 /* OSAgnosticBillingPlanType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD03B76D2FB3AAD8005F79A3 /* OSAgnosticBillingPlanType.swift */; };
 		FD05A71A2EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD05A7192EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift */; };
 		FD15AF5B2DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD15AF582DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift */; };
 		FD15AF5C2DF9A8F30062467E /* VirtualCurrencyBalancesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD15AF592DF9A8F30062467E /* VirtualCurrencyBalancesScreen.swift */; };
@@ -2878,6 +2880,7 @@
 		FACD000B2F61A1230073D2DE /* PackageVisibilityPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageVisibilityPreview.swift; sourceTree = "<group>"; };
 		FB5A72012F65F5B9005C64A1 /* ViewModelFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModelFactoryTests.swift; sourceTree = "<group>"; };
 		FD03B7662FB3A858005F79A3 /* InstallmentInfosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallmentInfosTests.swift; sourceTree = "<group>"; };
+		FD03B76D2FB3AAD8005F79A3 /* OSAgnosticBillingPlanType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OSAgnosticBillingPlanType.swift; path = Sources/Purchasing/Purchases/OSAgnosticBillingPlanType.swift; sourceTree = SOURCE_ROOT; };
 		FD05A7192EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2PromotionalOfferPurchaseOptions.swift; sourceTree = "<group>"; };
 		FD15AF572DF9A8F30062467E /* VirtualCurrenciesScrollViewWithOSBackgroundSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesScrollViewWithOSBackgroundSection.swift; sourceTree = "<group>"; };
 		FD15AF582DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalanceListRow.swift; sourceTree = "<group>"; };
@@ -6200,6 +6203,7 @@
 			isa = PBXGroup;
 			children = (
 				FD6D874E2FAE3D3800CAF0F2 /* CompoundProductIdentifier.swift */,
+				FD03B76D2FB3AAD8005F79A3 /* OSAgnosticBillingPlanType.swift */,
 			);
 			path = "Products with Billing Plans";
 			sourceTree = "<group>";
@@ -6955,6 +6959,7 @@
 				F5FCD3EA27DA0D0B003BDC04 /* PriceFormatterProvider.swift in Sources */,
 				B3083A132699334C007B5503 /* Offering.swift in Sources */,
 				4D6ABB0E2AF13FB100BB2A08 /* StoreEnvironment.swift in Sources */,
+				FD03B76E2FB3AAD8005F79A3 /* OSAgnosticBillingPlanType.swift in Sources */,
 				1ED4CA4D2CC1515F0021AB8F /* DeepLinkParser.swift in Sources */,
 				2DD58DD827F240EB000FDFE3 /* EmptyFile.swift in Sources */,
 				2CD72942268A823900BFC976 /* Data+Extensions.swift in Sources */,
@@ -7673,6 +7678,7 @@
 				574A2F4F282D7B9E00150D40 /* PostOfferDecodingTests.swift in Sources */,
 				2DDF41CE24F6F4C3005BC22D /* InAppPurchaseBuilderTests.swift in Sources */,
 				75A3B2B32F16B458001C4CA7 /* MockLargeItemCache.swift in Sources */,
+				FD03B76F2FB3AAD8005F79A3 /* OSAgnosticBillingPlanType.swift in Sources */,
 				573A10DB2800AF4700F976E5 /* PurchaseErrorTests.swift in Sources */,
 				16DA8EC92E4EE24100283940 /* JsonLoader.swift in Sources */,
 				FDC892D22CCAD0EE000AEB9F /* MockStoreKit2PurchaseIntentListener.swift in Sources */,
