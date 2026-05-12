@@ -1049,6 +1049,84 @@ final class TabsPackageInheritanceTests: TestCase {
     }
 }
 
+// MARK: - workflowContextPackage carry-forward tests
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension TabsPackageInheritanceTests {
+
+    func testCarryForwardPackagePreselectsTabWhenItExistsInTab() {
+        // User selected parentPackageB on the previous workflow step.
+        // Tab 1 contains parentPackageB, so it should be pre-selected.
+        let tab1ViewModel = TestTabData(
+            tabId: "tab1",
+            packages: [self.parentPackageA, self.parentPackageB],
+            defaultSelectedPackage: self.parentPackageA
+        )
+        let parentContext = PackageContext(
+            package: self.parentPackageA,
+            variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
+        )
+
+        let initialPackage = validated(self.parentPackageB, in: tab1ViewModel.packages)
+            ?? nil
+            ?? tab1ViewModel.defaultSelectedPackage
+
+        expect(initialPackage?.identifier) == self.parentPackageB.identifier
+    }
+
+    func testCarryForwardPackageIsIgnoredWhenNotInTab() {
+        // User selected tabPackageC on the previous step, but Tab 1 only has A and B.
+        // Should fall back to workflowDefaultPackage (parentPackageB).
+        let tab1ViewModel = TestTabData(
+            tabId: "tab1",
+            packages: [self.parentPackageA, self.parentPackageB],
+            defaultSelectedPackage: self.parentPackageA
+        )
+
+        let initialPackage = validated(self.tabPackageC, in: tab1ViewModel.packages)
+            ?? self.parentPackageB
+            ?? tab1ViewModel.defaultSelectedPackage
+
+        expect(initialPackage?.identifier) == self.parentPackageB.identifier
+    }
+
+    func testCarryForwardPackageFallsBackToTabDefaultWhenBothWorkflowPackagesAbsent() {
+        // No carry-forward and no workflowDefaultPackage; tab uses its own default.
+        let tab1ViewModel = TestTabData(
+            tabId: "tab1",
+            packages: [self.tabPackageC],
+            defaultSelectedPackage: self.tabPackageC
+        )
+
+        let initialPackage = validated(nil, in: tab1ViewModel.packages)
+            ?? nil
+            ?? tab1ViewModel.defaultSelectedPackage
+
+        expect(initialPackage?.identifier) == self.tabPackageC.identifier
+    }
+
+    func testCarryForwardPackageTakesPriorityOverWorkflowDefault() {
+        // Both carry-forward (parentPackageB) and workflowDefault (parentPackageA) are available
+        // in the tab. Carry-forward must win.
+        let tab1ViewModel = TestTabData(
+            tabId: "tab1",
+            packages: [self.parentPackageA, self.parentPackageB],
+            defaultSelectedPackage: self.parentPackageA
+        )
+
+        let initialPackage = validated(self.parentPackageB, in: tab1ViewModel.packages)
+            ?? self.parentPackageA
+            ?? tab1ViewModel.defaultSelectedPackage
+
+        expect(initialPackage?.identifier) == self.parentPackageB.identifier
+    }
+
+    // Helper mirroring LoadedTabsComponentView.validated(_:in:)
+    private func validated(_ pkg: Package?, in packages: [Package]) -> Package? {
+        pkg.flatMap { pkg in packages.first(where: { $0.identifier == pkg.identifier }) }
+    }
+}
+
 // MARK: - Test Helpers
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

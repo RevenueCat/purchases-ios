@@ -303,6 +303,7 @@ struct WorkflowPaywallView: View {
             promoOfferCache: self.promoOfferCache
         )
         .environment(\.workflowPackageContext, self.workflowPackageContext)
+        .environment(\.workflowContextPackage, page.contextPackage)
         .environment(\.workflowOnPackageSelected, { package in
             self.packageCarryForwardState.recordSelection(package, for: page.stepID)
         })

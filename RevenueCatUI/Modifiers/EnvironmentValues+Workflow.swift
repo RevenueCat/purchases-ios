@@ -52,6 +52,13 @@ private struct WorkflowPackageContextKey: EnvironmentKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct WorkflowContextPackageKey: EnvironmentKey {
+    /// Package carried forward from the previous workflow step, used by tab components
+    /// to pre-select a matching package when the step's offering contains it.
+    static let defaultValue: Package? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct WorkflowOnPackageSelectedKey: EnvironmentKey {
     static let defaultValue: ((Package) -> Void)? = nil
 }
@@ -84,6 +91,13 @@ extension EnvironmentValues {
     var workflowPackageContext: WorkflowPackageContext? {
         get { self[WorkflowPackageContextKey.self] }
         set { self[WorkflowPackageContextKey.self] = newValue }
+    }
+
+    /// Package carried forward from the previous workflow step.
+    /// Tab components validate this against their own package list before using it.
+    var workflowContextPackage: Package? {
+        get { self[WorkflowContextPackageKey.self] }
+        set { self[WorkflowContextPackageKey.self] = newValue }
     }
 
     /// Called by `PaywallsV2View` when the user selects a package, so `WorkflowPaywallView`

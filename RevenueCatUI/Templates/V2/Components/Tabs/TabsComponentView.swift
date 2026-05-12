@@ -69,6 +69,9 @@ struct TabsComponentView: View {
     @Environment(\.workflowPackageContext)
     private var workflowPackageContext
 
+    @Environment(\.workflowContextPackage)
+    private var workflowContextPackage
+
     private let viewModel: TabsComponentViewModel
     private let onDismiss: () -> Void
 
@@ -82,6 +85,7 @@ struct TabsComponentView: View {
             viewModel: self.viewModel,
             parentPackageContext: self.packageContext,
             workflowDefaultPackage: self.workflowPackageContext?.selectedPackage,
+            workflowContextPackage: self.workflowContextPackage,
             onDismiss: self.onDismiss
         )
     }
@@ -115,6 +119,7 @@ struct LoadedTabsComponentView: View {
 
     private let viewModel: TabsComponentViewModel
     private let workflowDefaultPackage: Package?
+    private let workflowContextPackage: Package?
     private let onDismiss: () -> Void
 
     @StateObject
@@ -170,10 +175,12 @@ struct LoadedTabsComponentView: View {
     init(viewModel: TabsComponentViewModel,
          parentPackageContext: PackageContext,
          workflowDefaultPackage: Package? = nil,
+         workflowContextPackage: Package? = nil,
          onDismiss: @escaping () -> Void,
          tabControlContext: TabControlContext? = nil) {
         self.viewModel = viewModel
         self.workflowDefaultPackage = workflowDefaultPackage
+        self.workflowContextPackage = workflowContextPackage
         self.onDismiss = onDismiss
 
         self._tabControlContext = .init(wrappedValue: tabControlContext ?? TabControlContext(
@@ -208,9 +215,13 @@ struct LoadedTabsComponentView: View {
         self._tierPackageContexts = .init(initialValue: Dictionary(
             uniqueKeysWithValues: viewModel.tabViewModels.map { key, tabViewModel -> (String, PackageContext) in
                 if !tabViewModel.packages.isEmpty {
-                    // Tab has its own packages - create context with tab's packages
+                    // Tab has its own packages - create context with tab's packages.
+                    // Carry-forward (workflowContextPackage) takes priority if it exists in this tab.
+                    let initialPackage = Self.validated(workflowContextPackage, in: tabViewModel.packages)
+                        ?? workflowDefaultPackage
+                        ?? tabViewModel.defaultSelectedPackage
                     let packageContext = PackageContext(
-                        package: workflowDefaultPackage ?? tabViewModel.defaultSelectedPackage,
+                        package: initialPackage,
                         variableContext: .init(
                             packages: tabViewModel.packages,
                             showZeroDecimalPlacePrices: parentPackageContext.variableContext.showZeroDecimalPlacePrices
@@ -260,7 +271,9 @@ struct LoadedTabsComponentView: View {
             .environmentObject(tierPackageContext)
             .environment(
                 \.planSelectionDefaultPackage,
-                self.workflowDefaultPackage ?? activeTabViewModel.defaultSelectedPackage
+                Self.validated(self.workflowContextPackage, in: activeTabViewModel.packages)
+                    ?? self.workflowDefaultPackage
+                    ?? activeTabViewModel.defaultSelectedPackage
             )
             .onAppear {
                 if !wasConfigured {
@@ -297,7 +310,9 @@ struct LoadedTabsComponentView: View {
                     parentOwnedVariableContext: self.parentOwnedVariableContext,
                     parentCurrentVariableContext: self.packageContext.variableContext,
                     tabPackages: newTabViewModel.packages,
-                    tabDefaultPackage: self.workflowDefaultPackage ?? newTabViewModel.defaultSelectedPackage
+                    tabDefaultPackage: Self.validated(self.workflowContextPackage, in: newTabViewModel.packages)
+                        ?? self.workflowDefaultPackage
+                        ?? newTabViewModel.defaultSelectedPackage
                 )
                 if let tabUpdate = updatePlan.tabUpdate {
                     newTierPackageContext.update(
@@ -364,6 +379,13 @@ struct LoadedTabsComponentView: View {
                 }
             }
         }
+    }
+
+    /// Returns `pkg` only if its identifier exists in `packages`, otherwise `nil`.
+    /// Prevents a carry-forward package from a different step's offering being applied
+    /// to a tab whose offering doesn't include it.
+    private static func validated(_ pkg: Package?, in packages: [Package]) -> Package? {
+        pkg.flatMap { pkg in packages.first(where: { $0.identifier == pkg.identifier }) }
     }
 
 }
