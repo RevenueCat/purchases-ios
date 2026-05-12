@@ -167,7 +167,7 @@ internal extension RewardVerification.CapableAd {
     func createUserDidEarnRewardHandler(
         rewardVerificationStarted: (@MainActor () -> Void)?,
         rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)?,
-        poller: RewardVerification.Poller? = nil
+        poller: RewardVerification.Poller? = nil,
         invalidateVirtualCurrenciesCache: @escaping @MainActor () -> Void
             = RewardVerification.SideEffects.invalidateVirtualCurrenciesCacheIfConfigured
     ) -> (() -> Void) {

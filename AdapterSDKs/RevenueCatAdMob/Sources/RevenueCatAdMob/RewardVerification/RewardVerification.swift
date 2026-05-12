@@ -19,7 +19,10 @@ internal enum RewardVerification {
         /// Invalidates virtual-currency cache if the SDK is configured.
         @MainActor
         static func invalidateVirtualCurrenciesCacheIfConfigured() {
-            guard Purchases.isConfigured else { return }
+            guard Purchases.isConfigured else {
+                Logger.warn(RewardVerificationStrings.side_effect_purchases_not_configured)
+                return
+            }
             Purchases.shared.invalidateVirtualCurrenciesCache()
         }
     }
