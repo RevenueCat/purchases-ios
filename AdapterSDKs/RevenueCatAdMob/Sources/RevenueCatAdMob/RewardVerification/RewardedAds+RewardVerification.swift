@@ -166,12 +166,14 @@ internal extension RewardVerification.CapableAd {
     @MainActor
     func createUserDidEarnRewardHandler(
         rewardVerificationStarted: (@MainActor () -> Void)?,
-        rewardVerificationResult: @escaping @MainActor (RewardVerificationResult) -> Void,
+        rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)?,
         poller: RewardVerification.Poller? = nil
+        invalidateVirtualCurrenciesCache: @escaping @MainActor () -> Void
+            = RewardVerification.SideEffects.invalidateVirtualCurrenciesCacheIfConfigured
     ) -> (() -> Void) {
         let state = RewardVerification.Setup.verificationState(for: self)
 
-        if state == nil {
+        if rewardVerificationResult != nil, state == nil {
             Logger.warn(RewardVerificationStrings.result_callback_missing_verification_state)
             assert(
                 state != nil,
@@ -181,6 +183,10 @@ internal extension RewardVerification.CapableAd {
 
         return {
             rewardVerificationStarted?()
+
+            guard let rewardVerificationResult else {
+                return
+            }
 
             guard let state else {
                 rewardVerificationResult(.failed)
@@ -194,7 +200,7 @@ internal extension RewardVerification.CapableAd {
                 poller: resolvedPoller,
                 outcomeHandler: { internalOutcome in
                     if case .verified(.virtualCurrency) = internalOutcome {
-                        RewardVerification.SideEffects.invalidateVirtualCurrenciesCache()
+                        invalidateVirtualCurrenciesCache()
                     }
                     rewardVerificationResult(RewardVerification.mapOutcome(internalOutcome))
                 }

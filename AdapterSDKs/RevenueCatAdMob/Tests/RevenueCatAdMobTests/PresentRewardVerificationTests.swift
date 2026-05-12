@@ -13,15 +13,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
     private static let testAPIKey = "appl_test_present_public_api"
     private static let testAppUserID = "user_present_public_api"
 
-    override func tearDown() {
-        RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = {
-            guard Purchases.isConfigured else { return }
-            Purchases.shared.invalidateVirtualCurrenciesCache()
-        }
-        super.tearDown()
-    }
-
-    func testPresentWithoutVerificationStateInvokesOnlyStartedWhenOutcomeNil() {
+    func testCreateUserDidEarnRewardHandlerWithoutVerificationStateInvokesOnlyStartedWhenOutcomeNil() {
         let fakeAd = FakeCapableAd()
         var startedCount = 0
         let handler = fakeAd.createUserDidEarnRewardHandler(
@@ -32,7 +24,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         handler()
         XCTAssertEqual(startedCount, 1)
     }
-    func testPresentWithStateAndOutcomeDeliversVerifiedOutcome() throws {
+    func testCreateUserDidEarnRewardHandlerWithStateDeliversVerifiedOutcome() throws {
         let fakeAd = FakeCapableAd()
         RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
 
@@ -64,7 +56,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         XCTAssertEqual(result.verifiedReward?.virtualCurrency?.amount, 4)
     }
 
-    func testPresentWithStateAndOutcomeDeliversFailedWhenPollerFails() throws {
+    func testCreateUserDidEarnRewardHandlerWithStateDeliversFailedWhenPollerFails() throws {
         let fakeAd = FakeCapableAd()
         RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
 
@@ -93,7 +85,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         XCTAssertTrue(result.isFailed)
     }
 
-    func testPresentWithStateInvokesStartedBeforeResult() {
+    func testCreateUserDidEarnRewardHandlerWithStateInvokesStartedBeforeResult() {
         let fakeAd = FakeCapableAd()
         RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
 
@@ -133,7 +125,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         }.to(throwAssertion())
     }
 
-    func testPresentWithVerifiedVirtualCurrencyInvalidatesVirtualCurrenciesCache() {
+    func testCreateUserDidEarnRewardHandlerWithVerifiedVirtualCurrencyInvalidatesVirtualCurrenciesCache() {
         let fakeAd = FakeCapableAd()
         RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
 
@@ -146,7 +138,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         )
 
         var invalidationCallCount = 0
-        RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = {
+        let invalidateVirtualCurrenciesCache = {
             invalidationCallCount += 1
         }
 
@@ -156,7 +148,8 @@ final class PresentRewardVerificationTests: AdapterTestCase {
             rewardVerificationResult: { _ in
                 expectation.fulfill()
             },
-            poller: poller
+            poller: poller,
+            invalidateVirtualCurrenciesCache: invalidateVirtualCurrenciesCache
         )
 
         handler()
@@ -165,7 +158,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         XCTAssertEqual(invalidationCallCount, 1)
     }
 
-    func testPresentWithNoRewardDoesNotInvalidateVirtualCurrenciesCache() {
+    func testCreateUserDidEarnRewardHandlerWithNoRewardDoesNotInvalidateVirtualCurrenciesCache() {
         let fakeAd = FakeCapableAd()
         RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
 
@@ -177,7 +170,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         )
 
         var invalidationCallCount = 0
-        RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = {
+        let invalidateVirtualCurrenciesCache = {
             invalidationCallCount += 1
         }
 
@@ -187,7 +180,8 @@ final class PresentRewardVerificationTests: AdapterTestCase {
             rewardVerificationResult: { _ in
                 expectation.fulfill()
             },
-            poller: poller
+            poller: poller,
+            invalidateVirtualCurrenciesCache: invalidateVirtualCurrenciesCache
         )
 
         handler()
@@ -196,7 +190,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         XCTAssertEqual(invalidationCallCount, 0)
     }
 
-    func testPresentWithUnsupportedRewardDoesNotInvalidateVirtualCurrenciesCache() {
+    func testCreateUserDidEarnRewardHandlerWithUnsupportedRewardDoesNotInvalidateVirtualCurrenciesCache() {
         let fakeAd = FakeCapableAd()
         RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
 
@@ -208,7 +202,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         )
 
         var invalidationCallCount = 0
-        RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = {
+        let invalidateVirtualCurrenciesCache = {
             invalidationCallCount += 1
         }
 
@@ -218,7 +212,8 @@ final class PresentRewardVerificationTests: AdapterTestCase {
             rewardVerificationResult: { _ in
                 expectation.fulfill()
             },
-            poller: poller
+            poller: poller,
+            invalidateVirtualCurrenciesCache: invalidateVirtualCurrenciesCache
         )
 
         handler()
@@ -227,7 +222,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         XCTAssertEqual(invalidationCallCount, 0)
     }
 
-    func testPresentWithFailedOutcomeDoesNotInvalidateVirtualCurrenciesCache() {
+    func testCreateUserDidEarnRewardHandlerWithFailedOutcomeDoesNotInvalidateVirtualCurrenciesCache() {
         let fakeAd = FakeCapableAd()
         RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
 
@@ -239,7 +234,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         )
 
         var invalidationCallCount = 0
-        RewardVerification.SideEffects.invalidateVirtualCurrenciesCache = {
+        let invalidateVirtualCurrenciesCache = {
             invalidationCallCount += 1
         }
 
@@ -249,7 +244,8 @@ final class PresentRewardVerificationTests: AdapterTestCase {
             rewardVerificationResult: { _ in
                 expectation.fulfill()
             },
-            poller: poller
+            poller: poller,
+            invalidateVirtualCurrenciesCache: invalidateVirtualCurrenciesCache
         )
 
         handler()
