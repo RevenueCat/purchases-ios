@@ -209,6 +209,7 @@ struct PaywallsV2View: View {
             onDismiss: self.onDismiss,
             closeWorkflowAction: self.closeWorkflowAction
         )
+        .environment(\.isPaywallLoading, !self.didFinishEligibilityCheck)
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
