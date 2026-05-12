@@ -21,19 +21,13 @@ final class ButtonComponentViewModelInteractionTests: TestCase {
         expect(action.paywallComponentInteractionURL).to(beNil())
     }
 
-    func testWorkflowTriggerInteractionValue() {
-        let action: ButtonComponentViewModel.Action = .workflowTrigger
-
-        expect(action.paywallComponentInteractionValue) == "workflow_trigger"
-        expect(action.paywallComponentInteractionURL).to(beNil())
-    }
-
     func testCloseWorkflowInteractionValue() {
         let action: ButtonComponentViewModel.Action = .closeWorkflow
 
         expect(action.paywallComponentInteractionValue) == "close_workflow"
         expect(action.paywallComponentInteractionURL).to(beNil())
     }
+
 
 }
 
