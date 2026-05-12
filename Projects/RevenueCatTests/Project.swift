@@ -123,12 +123,6 @@ let project = Project(
             dependencies: [
              .storeKit
             ],
-            settings: .settings(
-                base: [
-                    "APPLICATION_EXTENSION_API_ONLY": "YES",
-                    "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"
-                ]
-            ),
             metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
