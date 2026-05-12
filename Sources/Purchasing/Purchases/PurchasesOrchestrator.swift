@@ -520,11 +520,25 @@ final class PurchasesOrchestrator {
                           completion: completionWithTracking)
         } else if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
                   let sk2Product = product.sk2Product {
+
+            let osAgnosticBillingPlanType: OSAgnosticBillingPlanType?
+            #if compiler(>=6.3.2)
+            if #available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *),
+                let providedBillingPlanType = product.installmentsInfo?.billingPlanType {
+                osAgnosticBillingPlanType = OSAgnosticBillingPlanType.fromSKBillingPlanType(providedBillingPlanType)
+            } else {
+                osAgnosticBillingPlanType = nil
+            }
+            #else
+            osAgnosticBillingPlanType = nil
+            #endif
+
             self.purchase(sk2Product: sk2Product,
                           package: package,
                           promotionalOffer: promotionalOffer,
                           winBackOffer: winBackOffer,
                           introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
+                          osAgnosticBillingPlanType: osAgnosticBillingPlanType,
                           promotionalOfferOptions: promotionalOfferOptions,
                           metadata: metadata,
                           paywallEvent: paywallEvent,
@@ -650,6 +664,7 @@ final class PurchasesOrchestrator {
                   promotionalOffer: PromotionalOffer.SignedData?,
                   winBackOffer: WinBackOffer?,
                   introductoryOfferEligibilityJWS: String?,
+                  osAgnosticBillingPlanType: OSAgnosticBillingPlanType?,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
@@ -663,6 +678,7 @@ final class PurchasesOrchestrator {
                     promotionalOffer: promotionalOffer,
                     winBackOffer: winBackOffer?.discount.sk2Discount,
                     introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
+                    osAgnosticBillingPlanType: osAgnosticBillingPlanType,
                     promotionalOfferOptions: promotionalOfferOptions,
                     metadata: metadata,
                     paywallEvent: paywallEvent,
@@ -704,6 +720,7 @@ final class PurchasesOrchestrator {
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
                   winBackOffer: Product.SubscriptionOffer? = nil,
                   introductoryOfferEligibilityJWS: String?,
+                  osAgnosticBillingPlanType: OSAgnosticBillingPlanType?,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
@@ -778,6 +795,23 @@ final class PurchasesOrchestrator {
                 )
                 #endif
             }
+
+            #if compiler(>=6.3.2)
+            if #available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *),
+               let subscriptionInfo = sk2Product.subscription { // Don't apply billing plans to OTPs
+
+                let sk2BillingPlanType = osAgnosticBillingPlanType?.skBillingPlanType ?? .upFront
+                let eligibleBillingPlanTypes = Set(subscriptionInfo.pricingTerms.map({ $0.billingPlanType }))
+
+                if case .upFront = sk2BillingPlanType, eligibleBillingPlanTypes.contains(sk2BillingPlanType) {
+                    options.insert(.billingPlanType(sk2BillingPlanType))
+                } else if eligibleBillingPlanTypes.contains(sk2BillingPlanType) {
+                    options.insert(.billingPlanType(sk2BillingPlanType))
+                } else {
+                    // TODO: throw
+                }
+            }
+            #endif
 
             let presentedOfferingContext = package?.presentedOfferingContext
 
@@ -1562,6 +1596,7 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
                                     promotionalOffer: nil,
                                     winBackOffer: offer,
                                     introductoryOfferEligibilityJWS: nil,
+                                    osAgnosticBillingPlanType: nil,
                                     promotionalOfferOptions: nil
                                 )
 
