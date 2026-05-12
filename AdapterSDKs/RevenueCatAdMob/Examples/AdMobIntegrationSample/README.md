@@ -139,6 +139,7 @@ For reward verification flows, the sample explicitly calls `enableRewardVerifica
 - grant virtual currency when `verifiedReward.virtualCurrency` is present
 - handle the `noReward` verified case separately
 - use a safe fallback for unknown verified reward shapes
+- rely on adapter-managed cache invalidation for verified virtual currency rewards (then refetch balances when needed)
 
 > **Important:** Do not reassign wrapped delegates/handlers after calling `loadAndTrack`.
 > For full-screen ads, pass your `fullScreenContentDelegate` through `loadAndTrack`.

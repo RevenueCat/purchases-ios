@@ -30,6 +30,8 @@ import GoogleMobileAds
     /// Callback timing:
     /// - `rewardVerificationStarted` runs when the AdMob SDK invokes the reward callback and verification begins.
     /// - `rewardVerificationResult` runs later with the final verification outcome.
+    ///   When verification returns `.verified(.virtualCurrency(...))`, this API automatically invalidates
+    ///   RevenueCat virtual currencies cache before delivering the callback.
     ///
     /// To override the placement used for RevenueCat analytics at show time, use
     /// ``present(from:placement:rewardVerificationStarted:rewardVerificationResult:)`` instead of this method.
@@ -60,6 +62,8 @@ import GoogleMobileAds
     /// Callback timing:
     /// - `rewardVerificationStarted` runs when the AdMob SDK invokes the reward callback and verification begins.
     /// - `rewardVerificationResult` runs later with the final verification outcome.
+    ///   When verification returns `.verified(.virtualCurrency(...))`, this API automatically invalidates
+    ///   RevenueCat virtual currencies cache before delivering the callback.
     @MainActor
     func present(
         from viewController: UIViewController,
@@ -99,6 +103,8 @@ import GoogleMobileAds
     /// Callback timing:
     /// - `rewardVerificationStarted` runs when the AdMob SDK invokes the reward callback and verification begins.
     /// - `rewardVerificationResult` runs later with the final verification outcome.
+    ///   When verification returns `.verified(.virtualCurrency(...))`, this API automatically invalidates
+    ///   RevenueCat virtual currencies cache before delivering the callback.
     ///
     /// To override the placement used for RevenueCat analytics at show time, use
     /// ``present(from:placement:rewardVerificationStarted:rewardVerificationResult:)`` instead of this method.
@@ -129,6 +135,8 @@ import GoogleMobileAds
     /// Callback timing:
     /// - `rewardVerificationStarted` runs when the AdMob SDK invokes the reward callback and verification begins.
     /// - `rewardVerificationResult` runs later with the final verification outcome.
+    ///   When verification returns `.verified(.virtualCurrency(...))`, this API automatically invalidates
+    ///   RevenueCat virtual currencies cache before delivering the callback.
     @MainActor
     func present(
         from viewController: UIViewController,
@@ -158,12 +166,14 @@ internal extension RewardVerification.CapableAd {
     @MainActor
     func createUserDidEarnRewardHandler(
         rewardVerificationStarted: (@MainActor () -> Void)?,
-        rewardVerificationResult: @escaping @MainActor (RewardVerificationResult) -> Void,
-        poller: RewardVerification.Poller? = nil
+        rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)?,
+        poller: RewardVerification.Poller? = nil,
+        invalidateVirtualCurrenciesCache: @escaping @MainActor () -> Void
+            = RewardVerification.SideEffects.invalidateVirtualCurrenciesCacheIfConfigured
     ) -> (() -> Void) {
         let state = RewardVerification.Setup.verificationState(for: self)
 
-        if state == nil {
+        if rewardVerificationResult != nil, state == nil {
             Logger.warn(RewardVerificationStrings.result_callback_missing_verification_state)
             assert(
                 state != nil,
@@ -173,6 +183,10 @@ internal extension RewardVerification.CapableAd {
 
         return {
             rewardVerificationStarted?()
+
+            guard let rewardVerificationResult else {
+                return
+            }
 
             guard let state else {
                 rewardVerificationResult(.failed)
@@ -185,6 +199,9 @@ internal extension RewardVerification.CapableAd {
                 state: state,
                 poller: resolvedPoller,
                 outcomeHandler: { internalOutcome in
+                    if case .verified(.virtualCurrency) = internalOutcome {
+                        invalidateVirtualCurrenciesCache()
+                    }
                     rewardVerificationResult(RewardVerification.mapOutcome(internalOutcome))
                 }
             )
