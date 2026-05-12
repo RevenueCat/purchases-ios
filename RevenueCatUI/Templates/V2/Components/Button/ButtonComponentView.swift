@@ -164,7 +164,7 @@ struct ButtonComponentView: View {
             Logger.warning(
                 Strings.paywall_unknown_button_action_tracked_for_diagnostics(
                     componentName: self.viewModel.component.name,
-                    actionValue: self.viewModel.action.paywallComponentInteractionValue
+                    actionValue: self.viewModel.action.paywallComponentInteractionValue ?? "unknown"
                 )
             )
         case .sheet(let sheet):
@@ -179,9 +179,10 @@ struct ButtonComponentView: View {
     }
 
     private func trackButtonComponentInteraction() {
+        guard let componentValue = self.viewModel.action.paywallComponentInteractionValue else { return }
         self.componentInteractionLogger(.paywallNonPurchaseButtonAction(
             componentName: self.viewModel.component.name,
-            componentValue: self.viewModel.action.paywallComponentInteractionValue,
+            componentValue: componentValue,
             componentURL: self.viewModel.action.paywallComponentInteractionURL
         ))
     }

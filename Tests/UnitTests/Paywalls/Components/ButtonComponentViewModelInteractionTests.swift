@@ -28,6 +28,12 @@ final class ButtonComponentViewModelInteractionTests: TestCase {
         expect(action.paywallComponentInteractionURL).to(beNil())
     }
 
+    func testWorkflowTriggerInteractionValueIsNil() {
+        let action: ButtonComponentViewModel.Action = .workflowTrigger
+
+        expect(action.paywallComponentInteractionValue).to(beNil())
+    }
+
 
 }
 
