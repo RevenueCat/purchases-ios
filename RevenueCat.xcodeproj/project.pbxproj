@@ -1321,6 +1321,7 @@
 		F5FCD3FC27DA2034003BDC04 /* PriceFormatterProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5FCD3FB27DA2034003BDC04 /* PriceFormatterProviderTests.swift */; };
 		FA6ABC7C2A81673F00353AF7 /* SystemFontRegistryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA6ABC7B2A81673F00353AF8 /* SystemFontRegistryTests.swift */; };
 		FACD000C2F61A1230073D2DE /* PackageVisibilityPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD000B2F61A1230073D2DE /* PackageVisibilityPreview.swift */; };
+		FD03B7672FB3A858005F79A3 /* InstallmentInfosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD03B7662FB3A858005F79A3 /* InstallmentInfosTests.swift */; };
 		FD05A71A2EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD05A7192EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift */; };
 		FD15AF5B2DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD15AF582DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift */; };
 		FD15AF5C2DF9A8F30062467E /* VirtualCurrencyBalancesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD15AF592DF9A8F30062467E /* VirtualCurrencyBalancesScreen.swift */; };
@@ -2876,6 +2877,7 @@
 		FACD00092F61A1230073D2DE /* PackageValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageValidatorTests.swift; sourceTree = "<group>"; };
 		FACD000B2F61A1230073D2DE /* PackageVisibilityPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageVisibilityPreview.swift; sourceTree = "<group>"; };
 		FB5A72012F65F5B9005C64A1 /* ViewModelFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModelFactoryTests.swift; sourceTree = "<group>"; };
+		FD03B7662FB3A858005F79A3 /* InstallmentInfosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallmentInfosTests.swift; sourceTree = "<group>"; };
 		FD05A7192EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2PromotionalOfferPurchaseOptions.swift; sourceTree = "<group>"; };
 		FD15AF572DF9A8F30062467E /* VirtualCurrenciesScrollViewWithOSBackgroundSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesScrollViewWithOSBackgroundSection.swift; sourceTree = "<group>"; };
 		FD15AF582DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalanceListRow.swift; sourceTree = "<group>"; };
@@ -3473,6 +3475,7 @@
 				4D24EF3F2B04EA6000E586D2 /* StoreEnvironmentTests.swift */,
 				5733D01028D00354008638D8 /* PromotionalOfferTests.swift */,
 				FD6D87562FAE3D7700CAF0F2 /* CompoundProductIdentifierTests.swift */,
+				FD03B7662FB3A858005F79A3 /* InstallmentInfosTests.swift */,
 			);
 			path = StoreKitAbstractions;
 			sourceTree = "<group>";
@@ -7510,6 +7513,7 @@
 				57BF87592967880C00424254 /* MockCachingTrialOrIntroPriceEligibilityChecker.swift in Sources */,
 				2DDF41CD24F6F4C3005BC22D /* ASN1ContainerBuilderTests.swift in Sources */,
 				573A10D52800A7C800F976E5 /* SKErrorTests.swift in Sources */,
+				FD03B7672FB3A858005F79A3 /* InstallmentInfosTests.swift in Sources */,
 				7581A92D2E2EB27100D0C3DE /* MockTestStorePurchaseHandler.swift in Sources */,
 				750B39FE2E40940F005E141D /* PurchasesOrchestratorSimulatedStoreTests.swift in Sources */,
 				4F6ABC7A2A81649800250E63 /* MockPaywallCacheWarming.swift in Sources */,

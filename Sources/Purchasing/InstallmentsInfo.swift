@@ -12,6 +12,7 @@
 //  Created by Will Taylor on 5/8/26.
 
 import Foundation
+import StoreKit
 
 /// Information about the installments that a subscriber will pay across multiple billing periods
 @objc(RCInstallmentsInfo) public final class InstallmentsInfo: NSObject, Sendable {
@@ -36,6 +37,15 @@ import Foundation
 
     /// Localized display price for ``commitmentTotalPrice``.
     @objc public let commitmentTotalDisplayPrice: String
+
+    @available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *)
+    internal var billingPlanType: SK2BillingPlanType? {
+        if commitmentInstallmentPeriod.value == 1 && commitmentInstallmentPeriod.unit == .month {
+            return .monthly
+        } else {
+            return nil
+        }
+    }
 
     /// Creates a new ``InstallmentsInfo``.
     ///

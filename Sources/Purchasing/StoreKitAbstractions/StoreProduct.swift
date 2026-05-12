@@ -22,6 +22,9 @@ public typealias SK1Product = SKProduct
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 public typealias SK2Product = StoreKit.Product
 
+@available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *)
+internal typealias SK2BillingPlanType = StoreKit.Product.SubscriptionInfo.BillingPlanType
+
 // It's an @objc wrapper of a `StoreProductType`. Swift-only code can use the protocol directly.
 /// Type that provides access to all of `StoreKit`'s product type's properties.
 @objc(RCStoreProduct) public final class StoreProduct: NSObject, StoreProductType {
