@@ -394,8 +394,8 @@ platform :ios do
     end
 
     scan_options = {
-      workspace: 'RevenueCat.xcworkspace',
-      scheme: 'RevenueCatUITestsDev',
+      workspace: 'RevenueCat-Tuist.xcworkspace',
+      scheme: 'PaywallScreenshotTests',
       testplan: 'Paywall-Screenshots',
       destination: destination,
       result_bundle: true,
