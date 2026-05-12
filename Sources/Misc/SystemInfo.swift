@@ -13,6 +13,7 @@
 //
 
 import Foundation
+import PurchasesCore
 
 #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
 import UIKit
@@ -119,6 +120,10 @@ class SystemInfo {
         #else
         return "unknown"
         #endif
+    }
+
+    static var purchasesCoreVersion: String {
+        return version()
     }
 
     static var systemVersion: String {

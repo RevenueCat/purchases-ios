@@ -122,7 +122,8 @@ class HTTPClient {
             RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)",
             "X-Is-Backgrounded": "\(self.systemInfo.isAppBackgroundedState)",
             "X-Is-Debug-Build": "\(self.systemInfo.isDebugBuild)",
-            "X-Installation-Method": SystemInfo.installationMethod
+            "X-Installation-Method": SystemInfo.installationMethod,
+            "X-Purchases-Core-Version": SystemInfo.purchasesCoreVersion,
         ]
 
         if let storefront = self.systemInfo.storefront {

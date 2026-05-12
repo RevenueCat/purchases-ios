@@ -977,6 +977,7 @@
 		75D9DE072D79FC0E0068554F /* testEncoding.1.json in Resources */ = {isa = PBXBuildFile; fileRef = 75D9DE022D79FC0E0068554F /* testEncoding.1.json */; };
 		75D9DE082D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9DE052D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift */; };
 		75E61CB62E2F9EF30034B41C /* MockTestStorePurchaseHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7581A92C2E2EB27100D0C3DE /* MockTestStorePurchaseHandler.swift */; };
+		75EAB6DE2FB30E0B009193C8 /* PurchasesCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA000002AABBCCDD00000002 /* PurchasesCore */; };
 		75FCD4CE2E37FBE100036C02 /* SimulatedStoreMockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FCD4CC2E37FBE100036C02 /* SimulatedStoreMockData.swift */; };
 		75FCD4CF2E37FBE100036C02 /* SimulatedStoreProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FCD4CD2E37FBE100036C02 /* SimulatedStoreProductsManagerTests.swift */; };
 		7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */; };
@@ -1224,7 +1225,6 @@
 		B34D2AA0269606E400D88C3A /* IntroEligibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3DF6A4F269524080030D57C /* IntroEligibility.swift */; };
 		B34D2AA626976FC700D88C3A /* ErrorCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34D2AA526976FC700D88C3A /* ErrorCode.swift */; };
 		B35042C426CDB79A00905B95 /* Purchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35042C326CDB79A00905B95 /* Purchases.swift */; };
-		AA000003AABBCCDD00000003 /* NativeHttpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000004AABBCCDD00000004 /* NativeHttpClient.swift */; };
 		B35042C626CDD3B100905B95 /* PurchasesDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */; };
 		B359DDF027EAA2B4003ABA54 /* MockDateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B516F26D44E8D00BD2BD7 /* MockDateProvider.swift */; };
 		B35F9E0926B4BEED00095C3F /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35F9E0826B4BEED00095C3F /* String+Extensions.swift */; };
@@ -2766,7 +2766,6 @@
 		B34605EA279A766C0031CA74 /* OperationQueue+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OperationQueue+Extensions.swift"; sourceTree = "<group>"; };
 		B34D2AA526976FC700D88C3A /* ErrorCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorCode.swift; sourceTree = "<group>"; };
 		B35042C326CDB79A00905B95 /* Purchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Purchases.swift; sourceTree = "<group>"; };
-		AA000004AABBCCDD00000004 /* NativeHttpClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeHttpClient.swift; sourceTree = "<group>"; };
 		B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDelegate.swift; sourceTree = "<group>"; };
 		B35F9E0826B4BEED00095C3F /* String+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
 		B36824BD268FBC5B00957E4C /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
@@ -2939,6 +2938,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				75EAB6DE2FB30E0B009193C8 /* PurchasesCore in Frameworks */,
 				4F5A62AC2A9AD18E0096067E /* SwiftUI.framework in Frameworks */,
 				A5B6CDD8280F3843007629D5 /* AdServices.framework in Frameworks */,
 			);
@@ -6052,7 +6052,6 @@
 				887E7B582C13CD2C002977DE /* PurchasesAreCompletedBy.swift */,
 				4D2C7D0A2CC40A35002562BC /* PurchaseParams.swift */,
 				57FD7B1428DA4037009CA4E4 /* PurchasesType.swift */,
-				AA000004AABBCCDD00000004 /* NativeHttpClient.swift */,
 				B35042C326CDB79A00905B95 /* Purchases.swift */,
 				B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */,
 				2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */,
@@ -6498,10 +6497,6 @@
 					};
 					887A5FB92C1D036200E1A461 = {
 						CreatedOnToolsVersion = 15.4;
-					};
-					887A63202C1D174200E1A461 = {
-						CreatedOnToolsVersion = 15.4;
-						TestTargetID = 2DEAC2D926EFE46E006914ED;
 					};
 				};
 			};
@@ -7124,7 +7119,6 @@
 				16BCA36C2E4D9B5700B39E7F /* SimpleNetworkServiceType.swift in Sources */,
 				57EAE52D274468900060EB74 /* RawDataContainer.swift in Sources */,
 				B35042C426CDB79A00905B95 /* Purchases.swift in Sources */,
-				AA000003AABBCCDD00000003 /* NativeHttpClient.swift in Sources */,
 				16BCA3682E4D9B0C00B39E7F /* FileRepository.swift in Sources */,
 				2D1015DE275A57FC0086173F /* SubscriptionPeriod.swift in Sources */,
 				57C0BB6929F840BD00827807 /* FrameworkDisambiguation.swift in Sources */,
@@ -9653,6 +9647,11 @@
 			package = 57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
 			productName = SnapshotTesting;
 		};
+		AA000002AABBCCDD00000002 /* PurchasesCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA000001AABBCCDD00000001 /* XCRemoteSwiftPackageReference "purchases-core" */;
+			productName = PurchasesCore;
+		};
 		FD2E6C9E2C480FF000CB4BD7 /* OHHTTPStubs */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
@@ -9662,11 +9661,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubsSwift;
-		};
-		AA000002AABBCCDD00000002 /* PurchasesCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AA000001AABBCCDD00000001 /* XCRemoteSwiftPackageReference "purchases-core" */;
-			productName = PurchasesCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
