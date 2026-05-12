@@ -38,6 +38,7 @@ import StoreKit
     /// Localized display price for ``commitmentTotalPrice``.
     @objc public let commitmentTotalDisplayPrice: String
 
+    #if compiler(>=6.3.2)
     @available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *)
     internal var billingPlanType: SK2BillingPlanType? {
         if commitmentInstallmentPeriod.value == 1 && commitmentInstallmentPeriod.unit == .month {
@@ -46,6 +47,7 @@ import StoreKit
             return nil
         }
     }
+    #endif
 
     /// Creates a new ``InstallmentsInfo``.
     ///
