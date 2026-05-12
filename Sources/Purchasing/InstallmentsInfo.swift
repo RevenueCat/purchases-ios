@@ -19,6 +19,15 @@ import Foundation
     /// Number of installments the customer commits to paying.
     @objc public let commitmentInstallmentsCount: Int
 
+    /// The duration for each installment.
+    @objc public let commitmentInstallmentPeriod: SubscriptionPeriod
+
+    /// Price charged for each installment billing period.
+    @objc public let installmentBillingPrice: Decimal
+
+    /// Localized display price for ``installmentBillingPrice``.
+    @objc public let installmentBillingDisplayPrice: String
+
     /// Total duration of the customer's installment commitment.
     @objc public let commitmentTotalPeriod: SubscriptionPeriod
 
@@ -28,34 +37,31 @@ import Foundation
     /// Localized display price for ``commitmentTotalPrice``.
     @objc public let commitmentTotalDisplayPrice: String
 
-    /// Price charged for each installment billing period.
-    @objc public let installmentBillingPrice: Decimal
-
-    /// Localized display price for ``installmentBillingPrice``.
-    @objc public let installmentBillingDisplayPrice: String
-
     /// Creates a new ``InstallmentsInfo``.
     ///
     /// - Parameters:
     ///   - commitmentInstallmentsCount: Number of installments the customer commits to paying.
+    ///   - commitmentInstallmentPeriod: The duration for each installment.
+    ///   - installmentBillingPrice: Price charged for each installment billing period.
+    ///   - installmentBillingDisplayPrice: Localized display price for `installmentBillingPrice`.
     ///   - commitmentTotalPeriod: Total duration of the customer's installment commitment.
     ///   - commitmentTotalPrice: Total price the customer commits to paying across all installments.
     ///   - commitmentTotalDisplayPrice: Localized display price for `commitmentTotalPrice`.
-    ///   - installmentBillingPrice: Price charged for each installment billing period.
-    ///   - installmentBillingDisplayPrice: Localized display price for `installmentBillingPrice`.
     @objc public init(
         commitmentInstallmentsCount: Int,
+        commitmentInstallmentPeriod: SubscriptionPeriod,
+        installmentBillingPrice: Decimal,
+        installmentBillingDisplayPrice: String,
         commitmentTotalPeriod: SubscriptionPeriod,
         commitmentTotalPrice: Decimal,
-        commitmentTotalDisplayPrice: String,
-        installmentBillingPrice: Decimal,
-        installmentBillingDisplayPrice: String
+        commitmentTotalDisplayPrice: String
     ) {
         self.commitmentInstallmentsCount = commitmentInstallmentsCount
+        self.commitmentInstallmentPeriod = commitmentInstallmentPeriod
+        self.installmentBillingPrice = installmentBillingPrice
+        self.installmentBillingDisplayPrice = installmentBillingDisplayPrice
         self.commitmentTotalPeriod = commitmentTotalPeriod
         self.commitmentTotalPrice = commitmentTotalPrice
         self.commitmentTotalDisplayPrice = commitmentTotalDisplayPrice
-        self.installmentBillingPrice = installmentBillingPrice
-        self.installmentBillingDisplayPrice = installmentBillingDisplayPrice
     }
 }

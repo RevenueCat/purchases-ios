@@ -67,12 +67,17 @@ final class InstallmentsInfoFactory: InstallmentsInfoFactoryType {
         billingPrice: Decimal,
         billingDisplayPrice: String,
         commitmentInstallmentsCount: Int? = nil,
+        commitmentInstallmentsPeriod: SubscriptionPeriod? = nil,
         commitmentTotalPeriod: SubscriptionPeriod? = nil,
         commitmentTotalDisplayPrice: String
     ) -> InstallmentsInfo? {
         guard let commitmentInstallmentsCount = commitmentInstallmentsCount ?? calculateCommitmentInstallmentsCount(
             billingPlanType: billingPlanType,
             commitmentPeriod: commitmentPeriod
+        ) else { return nil }
+
+        guard let commitmentInstallmentPeriod = commitmentInstallmentsPeriod ?? calculateCommitmentInstallmentPeriod(
+            billingPlanType: billingPlanType
         ) else { return nil }
 
         guard let commitmentTotalPeriod = commitmentTotalPeriod ?? calculateCommitmentTotalPeriod(
@@ -85,11 +90,12 @@ final class InstallmentsInfoFactory: InstallmentsInfoFactoryType {
         let installmentBillingDisplayPrice = billingDisplayPrice
         return InstallmentsInfo(
             commitmentInstallmentsCount: commitmentInstallmentsCount,
+            commitmentInstallmentPeriod: commitmentInstallmentPeriod,
+            installmentBillingPrice: installmentBillingPrice,
+            installmentBillingDisplayPrice: installmentBillingDisplayPrice,
             commitmentTotalPeriod: commitmentTotalPeriod,
             commitmentTotalPrice: commitmentTotalPrice,
-            commitmentTotalDisplayPrice: commitmentTotalDisplayPrice,
-            installmentBillingPrice: installmentBillingPrice,
-            installmentBillingDisplayPrice: installmentBillingDisplayPrice
+            commitmentTotalDisplayPrice: commitmentTotalDisplayPrice
         )
     }
 #endif
@@ -115,6 +121,20 @@ extension InstallmentsInfoFactory {
             default:
                 return nil
             }
+        case .upFront:
+            return nil
+        default:
+            return nil
+        }
+    }
+
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    func calculateCommitmentInstallmentPeriod(
+        billingPlanType: StoreKit.Product.SubscriptionInfo.BillingPlanType
+    ) -> SubscriptionPeriod? {
+        switch billingPlanType {
+        case .monthly:
+            return SubscriptionPeriod(value: 1, unit: .month)
         case .upFront:
             return nil
         default:
