@@ -102,7 +102,7 @@ let project = Project(
             additionalFiles: [
                 "../../Tests/StoreKitUnitTests/UnitTestsConfiguration.storekit"
             ],
-            metadata: .metadata(tags: ["RevenueCatTests"]),
+            metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
         // MARK: – BackendIntegrationTests Host App
@@ -129,7 +129,7 @@ let project = Project(
                     "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"
                 ]
             ),
-            metadata: .metadata(tags: ["RevenueCatTests"]),
+            metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
         .target(
@@ -168,7 +168,7 @@ let project = Project(
                     "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"
                 ]
             ),
-            metadata: .metadata(tags: ["RevenueCatTests"]),
+            metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
         .target(
@@ -261,7 +261,14 @@ let project = Project(
             shared: true,
             buildAction: .buildAction(targets: ["BackendIntegrationTests"]),
             testAction: .testPlans([
-                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-All-CI.xctestplan")
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-All-CI.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-All.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-SK1.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-SK2.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-Offline.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-Other.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-CustomEntitlements.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-LoadShedder.xctestplan")
                 ]
             ),
             runAction: .runAction(
