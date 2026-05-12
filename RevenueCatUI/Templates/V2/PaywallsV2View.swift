@@ -195,6 +195,7 @@ struct PaywallsV2View: View {
             defaultPackage: defaultPackage,
             onDismiss: self.onDismiss
         )
+        .environment(\.isPaywallLoading, !self.didFinishEligibilityCheck)
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
