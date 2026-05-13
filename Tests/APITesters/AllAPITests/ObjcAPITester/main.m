@@ -9,6 +9,7 @@
 #import "RCAdTrackerAPI.h"
 #import "RCAttributionAPI.h"
 #import "RCAttributionNetworkAPI.h"
+#import "RCBillingPlanTypeAPI.h"
 #import "RCConfigurationAPI.h"
 #import "RCCustomerInfoAPI.h"
 #import "RCEntitlementInfoAPI.h"
@@ -98,6 +99,8 @@ int main(int argc, const char * argv[]) {
             [RCPaywallViewControllerAPI checkAPI];
             [RCCustomPaywallImpressionAPI checkAPI];
         }
+
+        [RCBillingPlanTypeAPI checkAPI];
     }
     return 0;
 }
