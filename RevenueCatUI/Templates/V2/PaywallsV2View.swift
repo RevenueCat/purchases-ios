@@ -159,15 +159,21 @@ struct PaywallsV2View: View {
 
         let selectedPackageContext: PackageContext
         if case .success(let paywallState) = initialState {
+            let resolvedDefault = Self.effectiveDefaultPackage(
+                pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+                workflowDefaultPackage: workflowDefaultPackage,
+                contextPackage: workflowContextPackage,
+                stepPackages: paywallState.packages
+            )
+            // When the carried contextPackage resolves in this step's offering, use the
+            // step's own package set for variableContext so that relative price comparisons
+            // (e.g. discount vs. monthly) reference the same catalog as the selected package.
+            let contextPackageResolved = Self.validatedContextPackage(workflowContextPackage,
+                                                                      in: paywallState.packages) != nil
             selectedPackageContext = Self.makeSelectedPackageContext(
                 from: paywallState,
-                defaultPackage: Self.effectiveDefaultPackage(
-                    pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
-                    workflowDefaultPackage: workflowDefaultPackage,
-                    contextPackage: workflowContextPackage,
-                    stepPackages: paywallState.packages
-                ),
-                workflowPackages: workflowPackages,
+                defaultPackage: resolvedDefault,
+                workflowPackages: contextPackageResolved ? nil : workflowPackages,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         } else {
@@ -225,7 +231,11 @@ struct PaywallsV2View: View {
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)
         .onAppear {
-            self.recordInitialWorkflowPackageSelectionIfNeeded(defaultPackage: defaultPackage)
+            self.recordInitialWorkflowPackageSelectionIfNeeded(
+                defaultPackage: defaultPackage,
+                contextPackage: self.workflowContextPackage,
+                stepPackages: paywallState.packages
+            )
         }
     }
 
@@ -364,9 +374,15 @@ struct PaywallsV2View: View {
         }
     }
 
-    private func recordInitialWorkflowPackageSelectionIfNeeded(defaultPackage: Package?) {
+    private func recordInitialWorkflowPackageSelectionIfNeeded(
+        defaultPackage: Package?,
+        contextPackage: Package?,
+        stepPackages: [Package]
+    ) {
         guard let package = Self.initialPackageToRecordForWorkflow(
             defaultPackage: defaultPackage,
+            contextPackage: contextPackage,
+            stepPackages: stepPackages,
             shouldRecordInitialPackageSelection: self.recordWorkflowInitialSelection,
             hasRecordedInitialPackageSelection: self.hasRecordedInitialWorkflowPackageSelection
         ) else {
@@ -664,11 +680,21 @@ extension PaywallsV2View {
 
     static func initialPackageToRecordForWorkflow(
         defaultPackage: Package?,
+        contextPackage: Package? = nil,
+        stepPackages: [Package] = [],
         shouldRecordInitialPackageSelection: Bool,
         hasRecordedInitialPackageSelection: Bool
     ) -> Package? {
         guard shouldRecordInitialPackageSelection, !hasRecordedInitialPackageSelection else {
             return nil
+        }
+
+        // Packageless step: there are no step packages to validate against, so
+        // effectiveDefaultPackage fell back to workflowDefaultPackage for rendering.
+        // Record the carried contextPackage instead so the user's selection from a
+        // previous step is not replaced by the workflow fallback SKU.
+        if stepPackages.isEmpty, let contextPackage = contextPackage {
+            return contextPackage
         }
 
         return defaultPackage

@@ -155,6 +155,34 @@ final class PaywallsV2ViewContextPackageTests: TestCase {
         expect(result).to(beNil())
     }
 
+    func testInitialPackageToRecordForWorkflowCarriesContextPackageOnPackagelessStep() {
+        // On a packageless intermediate step, effectiveDefaultPackage falls back to
+        // workflowDefaultPackage for rendering. The carry-forward record must still use
+        // the user's actual contextPackage so later steps inherit the real selection.
+        let result = PaywallsV2View.initialPackageToRecordForWorkflow(
+            defaultPackage: TestData.monthlyPackage,
+            contextPackage: TestData.annualPackage,
+            stepPackages: [],
+            shouldRecordInitialPackageSelection: true,
+            hasRecordedInitialPackageSelection: false
+        )
+
+        expect(result?.identifier) == TestData.annualPackage.identifier
+    }
+
+    func testInitialPackageToRecordForWorkflowUsesDefaultWhenNoContextOnPackagelessStep() {
+        // No contextPackage on a packageless step: fall back to the workflow default.
+        let result = PaywallsV2View.initialPackageToRecordForWorkflow(
+            defaultPackage: TestData.monthlyPackage,
+            contextPackage: nil,
+            stepPackages: [],
+            shouldRecordInitialPackageSelection: true,
+            hasRecordedInitialPackageSelection: false
+        )
+
+        expect(result?.identifier) == TestData.monthlyPackage.identifier
+    }
+
     // MARK: - validatedContextPackage
 
     func testValidatedContextPackageReturnsPackageWhenFoundInOffering() {
