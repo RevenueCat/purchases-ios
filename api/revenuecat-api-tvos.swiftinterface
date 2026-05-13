@@ -1902,6 +1902,12 @@ extension RevenueCat.EntitlementInfos : Swift.Sendable {
   @objc final public let commitmentTotalDisplayPrice: Swift.String
   @objc final public let billingPlanType: RevenueCat.BillingPlanType
   @objc public init(commitmentInstallmentsCount: Swift.Int, commitmentInstallmentPeriod: RevenueCat.SubscriptionPeriod, installmentBillingPrice: Foundation.Decimal, installmentBillingDisplayPrice: Swift.String, commitmentTotalPeriod: RevenueCat.SubscriptionPeriod, commitmentTotalPrice: Foundation.Decimal, commitmentTotalDisplayPrice: Swift.String, billingPlanType: RevenueCat.BillingPlanType)
+  #if compiler(>=5.3) && $NonescapableTypes
+  @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
+  #endif
+  @objc override final public var hash: Swift.Int {
+    @objc get
+  }
   @objc deinit
 }
 @objc(RCIntroEligibilityStatus) public enum IntroEligibilityStatus : Swift.Int {
