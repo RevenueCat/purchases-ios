@@ -265,7 +265,7 @@ final class WorkflowPaywallViewTests: TestCase {
     }
 
     func testInitialStepRecordsItsDefaultPackageForCarryForward() {
-        // The initial step has shouldRecordInitialPackageSelection: true so that
+        // The initial step has recordInitialWorkflowPackageSelection: true so that
         // a user who proceeds without explicitly selecting carries the displayed default
         // forward to the next step, instead of falling back to workflowDefaultPackage.
         var state = WorkflowPackageCarryForwardState()

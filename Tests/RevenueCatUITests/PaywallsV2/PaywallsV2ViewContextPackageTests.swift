@@ -128,7 +128,7 @@ final class PaywallsV2ViewContextPackageTests: TestCase {
     func testInitialPackageToRecordForWorkflowReturnsResolvedDefaultOnForwardStep() {
         let result = PaywallsV2View.initialPackageToRecordForWorkflow(
             defaultPackage: TestData.annualPackage,
-            shouldRecordInitialPackageSelection: true,
+            recordInitialWorkflowPackageSelection: true,
             hasRecordedInitialPackageSelection: false
         )
 
@@ -138,7 +138,7 @@ final class PaywallsV2ViewContextPackageTests: TestCase {
     func testInitialPackageToRecordForWorkflowReturnsNilWhenForwardRecordingIsDisabled() {
         let result = PaywallsV2View.initialPackageToRecordForWorkflow(
             defaultPackage: TestData.annualPackage,
-            shouldRecordInitialPackageSelection: false,
+            recordInitialWorkflowPackageSelection: false,
             hasRecordedInitialPackageSelection: false
         )
 
@@ -148,7 +148,7 @@ final class PaywallsV2ViewContextPackageTests: TestCase {
     func testInitialPackageToRecordForWorkflowReturnsNilAfterInitialSelectionWasRecorded() {
         let result = PaywallsV2View.initialPackageToRecordForWorkflow(
             defaultPackage: TestData.annualPackage,
-            shouldRecordInitialPackageSelection: true,
+            recordInitialWorkflowPackageSelection: true,
             hasRecordedInitialPackageSelection: true
         )
 
@@ -163,7 +163,7 @@ final class PaywallsV2ViewContextPackageTests: TestCase {
             defaultPackage: TestData.monthlyPackage,
             contextPackage: TestData.annualPackage,
             stepPackages: [],
-            shouldRecordInitialPackageSelection: true,
+            recordInitialWorkflowPackageSelection: true,
             hasRecordedInitialPackageSelection: false
         )
 
@@ -176,7 +176,7 @@ final class PaywallsV2ViewContextPackageTests: TestCase {
             defaultPackage: TestData.monthlyPackage,
             contextPackage: nil,
             stepPackages: [],
-            shouldRecordInitialPackageSelection: true,
+            recordInitialWorkflowPackageSelection: true,
             hasRecordedInitialPackageSelection: false
         )
 

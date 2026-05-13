@@ -158,8 +158,7 @@ struct WorkflowPackageCarryForwardState {
     }
 
     /// Records the initial resolved package for `stepID` only if no explicit selection
-    /// exists yet — ensures passive carry-through in 3-step+ workflows without
-    /// overwriting a deliberate user choice.
+    /// exists yet — ensures passive carry-through without overwriting a deliberate user choice.
     mutating func recordInitialSelection(_ package: Package, for stepID: String) {
         self.selectedPackagesByStepID[stepID] = self.selectedPackagesByStepID[stepID] ?? package
     }
@@ -231,7 +230,7 @@ struct WorkflowPaywallView: View {
                     stepId: context.workflow.initialStepId,
                     canNavigateBack: false,
                     displayCloseButton: displayCloseButton,
-                    shouldRecordInitialPackageSelection: true
+                    recordInitialWorkflowPackageSelection: true
                 )
             )
         )
@@ -296,7 +295,7 @@ struct WorkflowPaywallView: View {
             workflowDefaultPackage: self.workflowFallbackContext?.selectedPackage,
             workflowPackages: self.workflowFallbackContext?.packages,
             workflowCarriedPackage: page.contextPackage,
-            recordWorkflowInitialSelection: page.shouldRecordInitialPackageSelection,
+            recordInitialWorkflowPackageSelection: page.recordInitialWorkflowPackageSelection,
             displayCloseButton: page.showCloseButton,
             onDismiss: self.handleDismiss,
             closeWorkflowAction: self.onDismiss,
@@ -352,7 +351,7 @@ struct WorkflowPaywallView: View {
                     contextPackage: self.packageCarryForwardState.contextPackageForForwardNavigation(
                         from: previousStep.id
                     ),
-                    shouldRecordInitialPackageSelection: false
+                    recordInitialWorkflowPackageSelection: false
                 ),
                 direction: .back
             )
@@ -388,7 +387,7 @@ struct WorkflowPaywallView: View {
                 contextPackage: self.packageCarryForwardState.contextPackageForForwardNavigation(
                     from: self.transitionState.currentPage?.stepID
                 ),
-                shouldRecordInitialPackageSelection: true
+                recordInitialWorkflowPackageSelection: true
             ),
             direction: .forward
         )
@@ -450,7 +449,7 @@ struct WorkflowPaywallView: View {
         canNavigateBack: Bool,
         displayCloseButton: Bool,
         contextPackage: Package? = nil,
-        shouldRecordInitialPackageSelection: Bool = false
+        recordInitialWorkflowPackageSelection: Bool = false
     ) -> RenderedPage? {
         guard let step = context.workflow.steps[stepId],
               let screenId = step.screenId,
@@ -469,7 +468,7 @@ struct WorkflowPaywallView: View {
             content: .init(paywallComponents: paywallComponents, offering: offering),
             showCloseButton: !canNavigateBack && displayCloseButton,
             contextPackage: contextPackage,
-            shouldRecordInitialPackageSelection: shouldRecordInitialPackageSelection
+            recordInitialWorkflowPackageSelection: recordInitialWorkflowPackageSelection
         )
     }
 
@@ -496,7 +495,7 @@ private struct RenderedPage: Identifiable {
     let content: CurrentStepContent
     let showCloseButton: Bool
     let contextPackage: Package?
-    let shouldRecordInitialPackageSelection: Bool
+    let recordInitialWorkflowPackageSelection: Bool
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

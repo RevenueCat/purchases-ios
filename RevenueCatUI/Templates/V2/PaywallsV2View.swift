@@ -70,7 +70,7 @@ struct PaywallsV2View: View {
     private let workflowDefaultPackage: Package?
     private let workflowPackages: [Package]?
     private let workflowCarriedPackage: Package?
-    private let recordWorkflowInitialSelection: Bool
+    private let recordInitialWorkflowPackageSelection: Bool
     private let showZeroDecimalPlacePrices: Bool
     /// This is a configuration value from PaywallsV1, but it's important to include here just in case the
     /// default paywall is shown. This is not used in the success path
@@ -101,7 +101,7 @@ struct PaywallsV2View: View {
         workflowDefaultPackage: Package? = nil,
         workflowPackages: [Package]? = nil,
         workflowCarriedPackage: Package? = nil,
-        recordWorkflowInitialSelection: Bool = false,
+        recordInitialWorkflowPackageSelection: Bool = false,
         displayCloseButton: Bool = false,
         onDismiss: @escaping () -> Void,
         closeWorkflowAction: (() -> Void)? = nil,
@@ -123,7 +123,7 @@ struct PaywallsV2View: View {
         self.workflowDefaultPackage = workflowDefaultPackage
         self.workflowPackages = workflowPackages
         self.workflowCarriedPackage = workflowCarriedPackage
-        self.recordWorkflowInitialSelection = recordWorkflowInitialSelection
+        self.recordInitialWorkflowPackageSelection = recordInitialWorkflowPackageSelection
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
@@ -390,7 +390,7 @@ struct PaywallsV2View: View {
             defaultPackage: defaultPackage,
             contextPackage: contextPackage,
             stepPackages: stepPackages,
-            shouldRecordInitialPackageSelection: self.recordWorkflowInitialSelection,
+            recordInitialWorkflowPackageSelection: self.recordInitialWorkflowPackageSelection,
             hasRecordedInitialPackageSelection: self.hasRecordedInitialWorkflowPackageSelection
         ) else {
             return
@@ -689,10 +689,10 @@ extension PaywallsV2View {
         defaultPackage: Package?,
         contextPackage: Package? = nil,
         stepPackages: [Package] = [],
-        shouldRecordInitialPackageSelection: Bool,
+        recordInitialWorkflowPackageSelection: Bool,
         hasRecordedInitialPackageSelection: Bool
     ) -> Package? {
-        guard shouldRecordInitialPackageSelection, !hasRecordedInitialPackageSelection else {
+        guard recordInitialWorkflowPackageSelection, !hasRecordedInitialPackageSelection else {
             return nil
         }
 
