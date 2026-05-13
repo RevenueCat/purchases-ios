@@ -204,6 +204,10 @@ rewardedAd?.present(
 )
 ```
 
+When `rewardVerificationResult` returns `.verified(.virtualCurrency(...))`, the adapter automatically calls
+`Purchases.shared.invalidateVirtualCurrenciesCache()` (if Purchases is configured) before delivering the callback.
+You only need to refetch balances (`getVirtualCurrencies` / `virtualCurrencies()`) when your UI needs fresh values.
+
 ### Rewarded interstitial ads
 
 **AdMob only** ([docs](https://developers.google.com/admob/ios/rewarded-interstitial)):
@@ -280,6 +284,9 @@ rewardedInterstitialAd?.present(
     }
 )
 ```
+
+As with rewarded ads, `.verified(.virtualCurrency(...))` automatically invalidates RevenueCat's virtual-currency cache
+before your result callback executes.
 
 ### Native ads
 
