@@ -987,12 +987,6 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             self.restoreFailure?($0)
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
-        .onPreferenceChange(WorkflowExitOfferOfferingIdPreferenceKey.self) { offeringId in
-            guard ProcessInfo.processInfo.workflowsEndpointEnabled, let offeringId else { return }
-            Task { @MainActor in
-                self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(offeringId: offeringId)
-            }
-        }
         .task {
             self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
         }
