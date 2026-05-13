@@ -1900,7 +1900,8 @@ extension RevenueCat.EntitlementInfos : Swift.Sendable {
   @objc final public let commitmentTotalPeriod: RevenueCat.SubscriptionPeriod
   @objc final public let commitmentTotalPrice: Foundation.Decimal
   @objc final public let commitmentTotalDisplayPrice: Swift.String
-  @objc public init(commitmentInstallmentsCount: Swift.Int, commitmentInstallmentPeriod: RevenueCat.SubscriptionPeriod, installmentBillingPrice: Foundation.Decimal, installmentBillingDisplayPrice: Swift.String, commitmentTotalPeriod: RevenueCat.SubscriptionPeriod, commitmentTotalPrice: Foundation.Decimal, commitmentTotalDisplayPrice: Swift.String)
+  @objc final public let billingPlanType: RevenueCat.BillingPlanType
+  @objc public init(commitmentInstallmentsCount: Swift.Int, commitmentInstallmentPeriod: RevenueCat.SubscriptionPeriod, installmentBillingPrice: Foundation.Decimal, installmentBillingDisplayPrice: Swift.String, commitmentTotalPeriod: RevenueCat.SubscriptionPeriod, commitmentTotalPrice: Foundation.Decimal, commitmentTotalDisplayPrice: Swift.String, billingPlanType: RevenueCat.BillingPlanType)
   @objc deinit
 }
 @objc(RCIntroEligibilityStatus) public enum IntroEligibilityStatus : Swift.Int {
@@ -2800,6 +2801,12 @@ extension StoreKit.SKRequest : @unchecked @retroactive Swift.Sendable {
 }
 extension StoreKit.SKProductsRequest : @unchecked @retroactive Swift.Sendable {
 }
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc(RCBillingPlanType) final public class BillingPlanType : ObjectiveC.NSObject, Swift.Sendable {
+  @objc(RCUpFront) public static let upFront: RevenueCat.BillingPlanType
+  @objc(RCMonthly) public static let monthly: RevenueCat.BillingPlanType
+  public static func ~= (lhs: RevenueCat.BillingPlanType, rhs: RevenueCat.BillingPlanType) -> Swift.Bool
+  @objc deinit
+}
 extension RevenueCat.StoreProduct {
   @objc(RCStoreProductCategory) public enum ProductCategory : Swift.Int {
     case subscription
@@ -2919,12 +2926,6 @@ public typealias SK2Product = StoreKit.Product
   #if compiler(>=5.3) && $NonescapableTypes
   @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
   @objc final public var installmentsInfo: RevenueCat.InstallmentsInfo? {
-    @objc get
-  }
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
-  @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
-  @objc final public var billingPlanIdentifier: Swift.String? {
     @objc get
   }
   #endif
