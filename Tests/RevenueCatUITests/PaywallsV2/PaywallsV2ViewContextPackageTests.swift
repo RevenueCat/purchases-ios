@@ -231,7 +231,7 @@ final class PaywallsV2ViewContextPackageTests: TestCase {
         )
         .environmentObject(packageContext)
         .environmentObject(purchaseHandler)
-        .environment(\.workflowPackageContext, .init(selectedPackage: TestData.monthlyPackage, packages: packages))
+        .environment(\.workflowFallbackContext, .init(selectedPackage: TestData.monthlyPackage, packages: packages))
         .environment(\.safeAreaInsets, EdgeInsets())
         .frame(width: 300, height: 400)
 

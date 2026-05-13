@@ -50,7 +50,7 @@ private struct IsWorkflowHeaderKey: EnvironmentKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct WorkflowPackageContextKey: EnvironmentKey {
+private struct WorkflowFallbackContextKey: EnvironmentKey {
     // Workflow-wide static context derived from `singleStepFallbackId`.
     // Carries both a selectedPackage AND the full packages array so that packageless
     // screens (which have no offerings of their own) can still populate variableContext
@@ -60,7 +60,7 @@ private struct WorkflowPackageContextKey: EnvironmentKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct WorkflowContextPackageKey: EnvironmentKey {
+private struct WorkflowCarriedPackageKey: EnvironmentKey {
     // Per-step carry-forward: the single Package the user selected (or that was resolved
     // as the default) on the previous step. Changes on every forward navigation; nil on
     // back navigation. Only a Package — no packages array — because its sole job is
@@ -98,22 +98,33 @@ extension EnvironmentValues {
         set { self[IsWorkflowHeaderKey.self] = newValue }
     }
 
-    /// Workflow-wide static context derived from `singleStepFallbackId`.
-    /// Carries `selectedPackage` + the full `packages` array so packageless screens
-    /// can populate their `variableContext` and resolve price/period template variables.
-    /// The same value is set on every page for the lifetime of the workflow.
-    var workflowPackageContext: WorkflowPackageContext? {
-        get { self[WorkflowPackageContextKey.self] }
-        set { self[WorkflowPackageContextKey.self] = newValue }
+    /// Workflow-wide static fallback context derived from `singleStepFallbackId`.
+    ///
+    /// Carries `selectedPackage` + the full `packages` array so packageless screens can
+    /// populate their `variableContext` and resolve price/period template variables even
+    /// when the step has no offering of its own. The same value is set on every page for
+    /// the lifetime of the workflow.
+    ///
+    /// Distinct from `workflowCarriedPackage`: this is a stable, workflow-scoped fallback;
+    /// the carried package is a per-step value that changes with each navigation.
+    var workflowFallbackContext: WorkflowPackageContext? {
+        get { self[WorkflowFallbackContextKey.self] }
+        set { self[WorkflowFallbackContextKey.self] = newValue }
     }
 
     /// Per-step carry-forward: the package the user selected (or that was resolved as the
-    /// default) on the previous workflow step. Set fresh on each forward navigation; nil on
-    /// back navigation. Components that create their own PackageContext (e.g. tabs) read this
-    /// to pre-select a matching package, validated against their own offering's package list.
-    var workflowContextPackage: Package? {
-        get { self[WorkflowContextPackageKey.self] }
-        set { self[WorkflowContextPackageKey.self] = newValue }
+    /// default) on the immediately preceding workflow step.
+    ///
+    /// Set fresh on each forward navigation; cleared on back navigation. Components that
+    /// create their own `PackageContext` (e.g. tabs) read this to pre-select a matching
+    /// package, validated against their own offering's package list.
+    ///
+    /// Distinct from `workflowFallbackContext`: this changes on every navigation and carries
+    /// only a single `Package` — no packages array — because its sole job is pre-selection,
+    /// not variable resolution.
+    var workflowCarriedPackage: Package? {
+        get { self[WorkflowCarriedPackageKey.self] }
+        set { self[WorkflowCarriedPackageKey.self] = newValue }
     }
 
     /// Called by `PaywallsV2View` when the user selects a package, so `WorkflowPaywallView`

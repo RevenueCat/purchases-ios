@@ -55,7 +55,7 @@ struct WorkflowContext {
 
     /// Resolves the package context from the workflow's `singleStepFallbackId` step so that
     /// packageless early screens can still resolve price/period template variables.
-    var workflowPackageContext: WorkflowPackageContext? {
+    var workflowFallbackContext: WorkflowPackageContext? {
         guard let singleWorkflowStepFallbackId = self.workflow.singleStepFallbackId else {
             return nil
         }

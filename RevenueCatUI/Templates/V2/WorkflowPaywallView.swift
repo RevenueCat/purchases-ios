@@ -198,7 +198,7 @@ struct WorkflowPaywallView: View {
     private let displayCloseButton: Bool
     private let promoOfferCache: PaywallPromoOfferCache?
     private let onDismiss: () -> Void
-    private let workflowPackageContext: WorkflowPackageContext?
+    private let workflowFallbackContext: WorkflowPackageContext?
 
     @StateObject private var navigator: WorkflowNavigator
     @State private var hasLoggedInvalidState = false
@@ -222,7 +222,7 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.promoOfferCache = promoOfferCache
         self.onDismiss = onDismiss
-        self.workflowPackageContext = context.workflowPackageContext
+        self.workflowFallbackContext = context.workflowFallbackContext
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
         self._transitionState = .init(
             wrappedValue: .init(
@@ -293,9 +293,9 @@ struct WorkflowPaywallView: View {
             purchaseHandler: self.purchaseHandler,
             introEligibilityChecker: self.introEligibilityChecker,
             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
-            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage,
-            workflowPackages: self.workflowPackageContext?.packages,
-            workflowContextPackage: page.contextPackage,
+            workflowDefaultPackage: self.workflowFallbackContext?.selectedPackage,
+            workflowPackages: self.workflowFallbackContext?.packages,
+            workflowCarriedPackage: page.contextPackage,
             recordWorkflowInitialSelection: page.shouldRecordInitialPackageSelection,
             displayCloseButton: page.showCloseButton,
             onDismiss: self.handleDismiss,
@@ -304,8 +304,8 @@ struct WorkflowPaywallView: View {
             colorScheme: self.colorScheme,
             promoOfferCache: self.promoOfferCache
         )
-        .environment(\.workflowPackageContext, self.workflowPackageContext)
-        .environment(\.workflowContextPackage, page.contextPackage)
+        .environment(\.workflowFallbackContext, self.workflowFallbackContext)
+        .environment(\.workflowCarriedPackage, page.contextPackage)
         .environment(\.workflowOnPackageSelected, { package in
             self.packageCarryForwardState.recordSelection(package, for: page.stepID)
         })

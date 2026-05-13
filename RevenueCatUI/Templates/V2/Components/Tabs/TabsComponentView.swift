@@ -66,11 +66,11 @@ struct TabsComponentView: View {
     @EnvironmentObject
     private var packageContext: PackageContext
 
-    @Environment(\.workflowPackageContext)
-    private var workflowPackageContext
+    @Environment(\.workflowFallbackContext)
+    private var workflowFallbackContext
 
-    @Environment(\.workflowContextPackage)
-    private var workflowContextPackage
+    @Environment(\.workflowCarriedPackage)
+    private var workflowCarriedPackage
 
     private let viewModel: TabsComponentViewModel
     private let onDismiss: () -> Void
@@ -84,8 +84,8 @@ struct TabsComponentView: View {
         LoadedTabsComponentView(
             viewModel: self.viewModel,
             parentPackageContext: self.packageContext,
-            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage,
-            workflowContextPackage: self.workflowContextPackage,
+            workflowDefaultPackage: self.workflowFallbackContext?.selectedPackage,
+            workflowCarriedPackage: self.workflowCarriedPackage,
             onDismiss: self.onDismiss
         )
     }
@@ -116,8 +116,8 @@ struct LoadedTabsComponentView: View {
     private var customVariables
     @Environment(\.selectedPackageId)
     private var selectedPackageId
-    @Environment(\.workflowContextPackage)
-    private var workflowContextPackage
+    @Environment(\.workflowCarriedPackage)
+    private var workflowCarriedPackage
 
     private let viewModel: TabsComponentViewModel
     private let workflowDefaultPackage: Package?
@@ -176,7 +176,7 @@ struct LoadedTabsComponentView: View {
     init(viewModel: TabsComponentViewModel,
          parentPackageContext: PackageContext,
          workflowDefaultPackage: Package? = nil,
-         workflowContextPackage: Package? = nil,
+         workflowCarriedPackage: Package? = nil,
          onDismiss: @escaping () -> Void,
          tabControlContext: TabControlContext? = nil) {
         self.viewModel = viewModel
@@ -216,8 +216,8 @@ struct LoadedTabsComponentView: View {
             uniqueKeysWithValues: viewModel.tabViewModels.map { key, tabViewModel -> (String, PackageContext) in
                 if !tabViewModel.packages.isEmpty {
                     // Tab has its own packages - create context with tab's packages.
-                    // Carry-forward (workflowContextPackage) takes priority if it exists in this tab.
-                    let initialPackage = Self.validated(workflowContextPackage, in: tabViewModel.packages)
+                    // Carry-forward (workflowCarriedPackage) takes priority if it exists in this tab.
+                    let initialPackage = Self.validated(workflowCarriedPackage, in: tabViewModel.packages)
                         ?? workflowDefaultPackage
                         ?? tabViewModel.defaultSelectedPackage
                     let packageContext = PackageContext(
@@ -271,7 +271,7 @@ struct LoadedTabsComponentView: View {
             .environmentObject(tierPackageContext)
             .environment(
                 \.planSelectionDefaultPackage,
-                Self.validated(self.workflowContextPackage, in: activeTabViewModel.packages)
+                Self.validated(self.workflowCarriedPackage, in: activeTabViewModel.packages)
                     ?? self.workflowDefaultPackage
                     ?? activeTabViewModel.defaultSelectedPackage
             )
@@ -310,7 +310,7 @@ struct LoadedTabsComponentView: View {
                     parentOwnedVariableContext: self.parentOwnedVariableContext,
                     parentCurrentVariableContext: self.packageContext.variableContext,
                     tabPackages: newTabViewModel.packages,
-                    tabDefaultPackage: Self.validated(self.workflowContextPackage, in: newTabViewModel.packages)
+                    tabDefaultPackage: Self.validated(self.workflowCarriedPackage, in: newTabViewModel.packages)
                         ?? self.workflowDefaultPackage
                         ?? newTabViewModel.defaultSelectedPackage
                 )

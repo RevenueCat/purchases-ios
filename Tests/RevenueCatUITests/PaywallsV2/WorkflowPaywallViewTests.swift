@@ -291,19 +291,19 @@ final class WorkflowPaywallViewTests: TestCase {
 
 }
 
-// MARK: - workflowPackageContext tests
+// MARK: - workflowFallbackContext tests
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowPaywallViewTests {
 
     func testWorkflowPackageContextReturnsNilWhenNoFallbackStepId() throws {
         let context = try Self.makeContext(singleStepFallbackId: nil)
-        expect(context.workflowPackageContext).to(beNil())
+        expect(context.workflowFallbackContext).to(beNil())
     }
 
     func testWorkflowPackageContextReturnsNilWhenSingleStepFallbackIdPointsToMissingStep() throws {
         let context = try Self.makeContext(singleStepFallbackId: "nonexistent_step")
-        expect(context.workflowPackageContext).to(beNil())
+        expect(context.workflowFallbackContext).to(beNil())
     }
 
     func testWorkflowPackageContextReturnsIsSelectedByDefaultPackage() throws {
@@ -314,8 +314,8 @@ extension WorkflowPaywallViewTests {
                 (id: "$rc_annual", isDefault: true)
             ]
         )
-        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_annual"
-        expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_monthly", "$rc_annual"]
+        expect(context.workflowFallbackContext?.selectedPackage.identifier) == "$rc_annual"
+        expect(context.workflowFallbackContext?.packages.map(\.identifier)) == ["$rc_monthly", "$rc_annual"]
     }
 
     func testWorkflowPackageContextReturnsFirstPackageWhenNoneIsDefault() throws {
@@ -326,8 +326,8 @@ extension WorkflowPaywallViewTests {
                 (id: "$rc_annual", isDefault: false)
             ]
         )
-        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_monthly"
-        expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_monthly", "$rc_annual"]
+        expect(context.workflowFallbackContext?.selectedPackage.identifier) == "$rc_monthly"
+        expect(context.workflowFallbackContext?.packages.map(\.identifier)) == ["$rc_monthly", "$rc_annual"]
     }
 
     func testWorkflowPackageContextReturnsNilForPackagelessWorkflowStep() throws {
@@ -335,7 +335,7 @@ extension WorkflowPaywallViewTests {
             singleStepFallbackId: "step_terminal",
             workflowPackages: []
         )
-        expect(context.workflowPackageContext).to(beNil())
+        expect(context.workflowFallbackContext).to(beNil())
     }
 
     func testWorkflowPackageContextExcludesHiddenPackages() throws {
@@ -354,8 +354,8 @@ extension WorkflowPaywallViewTests {
             terminalScreenJSON: screenJSON
         )
         // Annual is hidden so monthly is the only visible package and becomes selected.
-        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_monthly"
-        expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_monthly"]
+        expect(context.workflowFallbackContext?.selectedPackage.identifier) == "$rc_monthly"
+        expect(context.workflowFallbackContext?.packages.map(\.identifier)) == ["$rc_monthly"]
     }
 
     func testWorkflowPackageContextDefaultsVisibleTrueWhenPropertyIsAbsent() throws {
@@ -364,7 +364,7 @@ extension WorkflowPaywallViewTests {
             singleStepFallbackId: "step_terminal",
             workflowPackages: [(id: "$rc_monthly", isDefault: true)]
         )
-        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_monthly"
+        expect(context.workflowFallbackContext?.selectedPackage.identifier) == "$rc_monthly"
     }
 
     func testWorkflowPackageContextReturnsDefaultPackageInsideStickyFooter() throws {
@@ -376,8 +376,8 @@ extension WorkflowPaywallViewTests {
             )
         )
 
-        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_annual"
-        expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_annual"]
+        expect(context.workflowFallbackContext?.selectedPackage.identifier) == "$rc_annual"
+        expect(context.workflowFallbackContext?.packages.map(\.identifier)) == ["$rc_annual"]
     }
 
     func testWorkflowPackageContextReturnsDefaultPackageInsideTabsCarousel() throws {
@@ -389,8 +389,8 @@ extension WorkflowPaywallViewTests {
             )
         )
 
-        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_weekly"
-        expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_weekly"]
+        expect(context.workflowFallbackContext?.selectedPackage.identifier) == "$rc_weekly"
+        expect(context.workflowFallbackContext?.packages.map(\.identifier)) == ["$rc_weekly"]
     }
 
 }
@@ -402,7 +402,7 @@ extension WorkflowPaywallViewTests {
 
     func testWorkflowPackageContextPopulatesVariableContextForPricingVariables() async throws {
         // A packageless screen starts with an empty variableContext.
-        // Before the fix, only `package` was set from workflowPackageContext;
+        // Before the fix, only `package` was set from workflowFallbackContext;
         // `variableContext` stayed empty, so {{ product.relative_discount }} always resolved to "".
         let packageContext = PackageContext(
             package: nil,
@@ -428,7 +428,7 @@ extension WorkflowPaywallViewTests {
 
 }
 
-// MARK: - Helpers for workflowPackageContext tests
+// MARK: - Helpers for workflowFallbackContext tests
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension WorkflowPaywallViewTests {

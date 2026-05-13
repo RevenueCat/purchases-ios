@@ -48,9 +48,6 @@ struct PaywallsV2View: View {
     @Environment(\.paywallSource)
     private var paywallSource
 
-    @Environment(\.workflowPackageContext)
-    private var workflowPackageContext
-
     @Environment(\.workflowOnPackageSelected)
     private var workflowOnPackageSelected
 
@@ -72,7 +69,7 @@ struct PaywallsV2View: View {
     private let purchaseHandler: PurchaseHandler
     private let workflowDefaultPackage: Package?
     private let workflowPackages: [Package]?
-    private let workflowContextPackage: Package?
+    private let workflowCarriedPackage: Package?
     private let recordWorkflowInitialSelection: Bool
     private let showZeroDecimalPlacePrices: Bool
     /// This is a configuration value from PaywallsV1, but it's important to include here just in case the
@@ -103,7 +100,7 @@ struct PaywallsV2View: View {
         showZeroDecimalPlacePrices: Bool,
         workflowDefaultPackage: Package? = nil,
         workflowPackages: [Package]? = nil,
-        workflowContextPackage: Package? = nil,
+        workflowCarriedPackage: Package? = nil,
         recordWorkflowInitialSelection: Bool = false,
         displayCloseButton: Bool = false,
         onDismiss: @escaping () -> Void,
@@ -125,7 +122,7 @@ struct PaywallsV2View: View {
         self.purchaseHandler = purchaseHandler
         self.workflowDefaultPackage = workflowDefaultPackage
         self.workflowPackages = workflowPackages
-        self.workflowContextPackage = workflowContextPackage
+        self.workflowCarriedPackage = workflowCarriedPackage
         self.recordWorkflowInitialSelection = recordWorkflowInitialSelection
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
@@ -165,13 +162,13 @@ struct PaywallsV2View: View {
             let resolvedDefault = Self.effectiveDefaultPackage(
                 pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
                 workflowDefaultPackage: workflowDefaultPackage,
-                contextPackage: workflowContextPackage,
+                contextPackage: workflowCarriedPackage,
                 stepPackages: paywallState.packages
             )
             // When the carried contextPackage resolves in this step's offering, use the
             // step's own package set for variableContext so that relative price comparisons
             // (e.g. discount vs. monthly) reference the same catalog as the selected package.
-            let contextPackageResolved = Self.validatedContextPackage(workflowContextPackage,
+            let contextPackageResolved = Self.validatedContextPackage(workflowCarriedPackage,
                                                                       in: paywallState.packages) != nil
             selectedPackageContext = Self.makeSelectedPackageContext(
                 from: paywallState,
@@ -215,7 +212,7 @@ struct PaywallsV2View: View {
         let defaultPackage = Self.effectiveDefaultPackage(
             pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
             workflowDefaultPackage: self.workflowDefaultPackage,
-            contextPackage: self.workflowContextPackage,
+            contextPackage: self.workflowCarriedPackage,
             stepPackages: paywallState.packages
         )
         return LoadedPaywallsV2View(
@@ -236,7 +233,7 @@ struct PaywallsV2View: View {
         .onAppear {
             self.recordInitialWorkflowPackageSelectionIfNeeded(
                 defaultPackage: defaultPackage,
-                contextPackage: self.workflowContextPackage,
+                contextPackage: self.workflowCarriedPackage,
                 stepPackages: paywallState.packages
             )
             self.isReadyForWorkflowPackageSelection = true

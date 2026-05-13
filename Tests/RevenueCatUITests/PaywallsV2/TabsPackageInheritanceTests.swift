@@ -1036,7 +1036,7 @@ final class TabsPackageInheritanceTests: TestCase {
     }
 }
 
-// MARK: - workflowContextPackage carry-forward tests
+// MARK: - workflowCarriedPackage carry-forward tests
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TabsPackageInheritanceTests {
