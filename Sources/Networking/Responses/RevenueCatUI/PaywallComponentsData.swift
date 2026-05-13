@@ -130,7 +130,7 @@ import Foundation
         case _revision = "revision"
         case zeroDecimalPlaceCountries
         case exitOffers
-        case automaticallyScaleFontSize = "automatically_scale_font_size"
+        case automaticallyScaleFontSize
     }
 
     public init(id: String? = nil,

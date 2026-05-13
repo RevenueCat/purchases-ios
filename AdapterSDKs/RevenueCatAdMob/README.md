@@ -165,6 +165,49 @@ rewardedAd?.present(from: self, userDidEarnRewardHandler: {
 })
 ```
 
+**Verification-enabled tracked presentation:**
+
+```swift
+RewardedAd.loadAndTrack(
+    withAdUnitID: "AD_UNIT_ID",
+    request: Request(),
+    placement: "rewarded_reward_verification_main",
+    fullScreenContentDelegate: self
+) { ad, error in
+    if let error = error { return }
+    guard let ad else { return }
+
+    ad.enableRewardVerification()
+    self.rewardedAd = ad
+}
+
+rewardedAd?.present(
+    from: self,
+    placement: "optional_placement_override",
+    rewardVerificationStarted: {
+        // Reward verification started
+    },
+    rewardVerificationResult: { result in
+        guard let verifiedReward = result.verifiedReward else {
+            print("Reward verification failed")
+            return
+        }
+
+        if let virtualCurrency = verifiedReward.virtualCurrency {
+            print("Granted \(virtualCurrency.amount) \(virtualCurrency.code)")
+        } else if verifiedReward == .noReward {
+            print("Verified with no reward to grant")
+        } else {
+            print("Verified reward type is not supported in this SDK version")
+        }
+    }
+)
+```
+
+When `rewardVerificationResult` returns `.verified(.virtualCurrency(...))`, the adapter automatically calls
+`Purchases.shared.invalidateVirtualCurrenciesCache()` (if Purchases is configured) before delivering the callback.
+You only need to refetch balances (`getVirtualCurrencies` / `virtualCurrencies()`) when your UI needs fresh values.
+
 ### Rewarded interstitial ads
 
 **AdMob only** ([docs](https://developers.google.com/admob/ios/rewarded-interstitial)):
@@ -202,6 +245,48 @@ rewardedInterstitialAd?.present(from: self, userDidEarnRewardHandler: {
     // User earned reward
 })
 ```
+
+**Verification-enabled tracked presentation:**
+
+```swift
+RewardedInterstitialAd.loadAndTrack(
+    withAdUnitID: "AD_UNIT_ID",
+    request: Request(),
+    placement: "rewarded_interstitial_reward_verification_main",
+    fullScreenContentDelegate: self
+) { ad, error in
+    if let error = error { return }
+    guard let ad else { return }
+
+    ad.enableRewardVerification()
+    self.rewardedInterstitialAd = ad
+}
+
+rewardedInterstitialAd?.present(
+    from: self,
+    placement: "optional_placement_override",
+    rewardVerificationStarted: {
+        // Reward verification started
+    },
+    rewardVerificationResult: { result in
+        guard let verifiedReward = result.verifiedReward else {
+            print("Reward verification failed")
+            return
+        }
+
+        if let virtualCurrency = verifiedReward.virtualCurrency {
+            print("Granted \(virtualCurrency.amount) \(virtualCurrency.code)")
+        } else if verifiedReward == .noReward {
+            print("Verified with no reward to grant")
+        } else {
+            print("Verified reward type is not supported in this SDK version")
+        }
+    }
+)
+```
+
+As with rewarded ads, `.verified(.virtualCurrency(...))` automatically invalidates RevenueCat's virtual-currency cache
+before your result callback executes.
 
 ### Native ads
 

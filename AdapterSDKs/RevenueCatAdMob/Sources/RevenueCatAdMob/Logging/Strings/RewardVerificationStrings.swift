@@ -13,6 +13,7 @@ import Foundation
 enum RewardVerificationStrings {
 
     case setup_purchases_not_configured
+    case side_effect_purchases_not_configured
     case setup_install(adType: String, transactionID: String)
     case setup_custom_reward_text_encoding_failed(error: Error)
 
@@ -27,6 +28,10 @@ enum RewardVerificationStrings {
     case outcome_cancelled(transactionID: String)
     case outcome_delivered(outcome: String, transactionID: String)
     case outcome_suppressed(transactionID: String)
+
+    case result_callback_requires_enable
+    case result_callback_missing_verification_state
+    case invalid_virtual_currency_amount(amount: Int)
 }
 
 extension RewardVerificationStrings: LogMessage {
@@ -35,6 +40,8 @@ extension RewardVerificationStrings: LogMessage {
         switch self {
         case .setup_purchases_not_configured:
             return "RevenueCat SDK is not configured. Cannot install reward verification on rewarded ad."
+        case .side_effect_purchases_not_configured:
+            return "RevenueCat SDK is not configured. Cannot invalidate virtual currencies cache."
         case let .setup_install(adType, transactionID):
             return "Reward verification install on ad type=\(adType) transactionID=\(transactionID)"
         case let .setup_custom_reward_text_encoding_failed(error):
@@ -62,6 +69,16 @@ extension RewardVerificationStrings: LogMessage {
             return "Reward verification outcome \(outcome) transactionID=\(transactionID)"
         case let .outcome_suppressed(transactionID):
             return "Reward verification outcome suppressed (token already consumed) transactionID=\(transactionID)"
+
+        case .result_callback_requires_enable:
+            return "Passing a reward verification result callback requires calling enableRewardVerification() " +
+                "on this ad after load (with the RevenueCat SDK configured)."
+        case .result_callback_missing_verification_state:
+            return "Reward verification result callback ignored because reward verification was not enabled " +
+                "for this ad. Call `enableRewardVerification()` after loading and before presenting."
+        case let .invalid_virtual_currency_amount(amount):
+            return "Reward verification received an invalid virtual currency amount (\(amount)); " +
+                "falling back to unsupportedReward."
         }
     }
 

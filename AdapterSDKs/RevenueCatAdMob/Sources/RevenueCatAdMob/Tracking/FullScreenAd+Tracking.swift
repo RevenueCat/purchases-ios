@@ -310,6 +310,12 @@ internal extension Tracking {
         let paidEventHandler: ((GoogleMobileAds.AdValue) -> Void)?
     }
 
+    /// Updates the show-time placement used for RevenueCat analytics on tracked full-screen ads.
+    @MainActor
+    static func setShowTimePlacement(_ placement: String?, on fullScreenAd: AnyObject) {
+        Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: fullScreenAd)?.placement = placement
+    }
+
 }
 
 @available(iOS 15.0, *)
