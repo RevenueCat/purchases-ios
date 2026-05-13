@@ -27,20 +27,22 @@ enum ExitOfferHelper {
         guard Purchases.isConfigured else { return nil }
 
         do {
-            let exitOffering = try await Purchases.shared.offerings()
-                .offering(identifier: offeringId)
-
-            if exitOffering != nil {
-                Logger.debug(Strings.prefetchedExitOffer(offeringId))
-            } else {
-                Logger.warning(Strings.exitOfferNotFound(offeringId))
-            }
-
-            return exitOffering
+            let allOfferings = try await Purchases.shared.offerings()
+            return Self.exitOffer(offeringId: offeringId, from: allOfferings)
         } catch {
             Logger.error(Strings.errorLoadingExitOffer(error))
             return nil
         }
+    }
+
+    static func exitOffer(offeringId: String, from offerings: Offerings) -> Offering? {
+        let offering = offerings.offering(identifier: offeringId)
+        if offering != nil {
+            Logger.debug(Strings.prefetchedExitOffer(offeringId))
+        } else {
+            Logger.warning(Strings.exitOfferNotFound(offeringId))
+        }
+        return offering
     }
 
     /// Fetches and validates the exit offer offering for the given offering.
