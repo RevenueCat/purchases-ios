@@ -250,6 +250,7 @@ struct WorkflowPaywallView: View {
             workflowPackages: self.workflowPackageContext?.packages,
             displayCloseButton: page.showCloseButton,
             onDismiss: self.handleDismiss,
+            closeWorkflowAction: self.onDismiss,
             failedToLoadFont: self.failedToLoadFont,
             colorScheme: self.colorScheme,
             promoOfferCache: self.promoOfferCache
