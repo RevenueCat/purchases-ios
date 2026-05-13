@@ -585,7 +585,7 @@ extension WorkflowPaywallViewTests {
 
         let result = WorkflowPaywallView.exitOfferContext(for: context, currentStepId: "step_terminal")
 
-        expect(result?.exitOfferOffering?.identifier) == "exit_offering_a"
+        expect(result?.exitOfferOffering.identifier) == "exit_offering_a"
     }
 
     private static func makeContextWithExitOffer(

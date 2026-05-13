@@ -308,10 +308,11 @@ struct WorkflowPaywallView: View {
         currentStepId: String
     ) -> WorkflowExitOfferContext? {
         guard let triggeringStepId = context.exitOfferTriggeringStepId,
-              currentStepId == triggeringStepId else {
+              currentStepId == triggeringStepId,
+              let offering = context.exitOfferOffering else {
             return nil
         }
-        return WorkflowExitOfferContext(exitOfferOffering: context.exitOfferOffering)
+        return WorkflowExitOfferContext(exitOfferOffering: offering)
     }
 
     static func dismissalAction(
