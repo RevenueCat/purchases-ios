@@ -39,5 +39,17 @@ internal extension BillingPlanType {
             return nil
         }
     }
+
+    @available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *)
+    var skBillingPlanType: StoreKit.Product.SubscriptionInfo.BillingPlanType? {
+        switch self {
+        case .monthly:
+            return StoreKit.Product.SubscriptionInfo.BillingPlanType.monthly
+        case .upFront:
+            return StoreKit.Product.SubscriptionInfo.BillingPlanType.upFront
+        default:
+            return nil
+        }
+    }
 }
 #endif

@@ -57,7 +57,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                             promotionalOffer: nil,
                                             winBackOffer: nil,
                                             introductoryOfferEligibilityJWS: nil,
-                                            osAgnosticBillingPlanType: nil,
+                                            billingPlanType: nil,
                                             promotionalOfferOptions: nil)
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
@@ -82,7 +82,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -107,7 +107,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                                 promotionalOffer: nil,
                                                 winBackOffer: nil,
                                                 introductoryOfferEligibilityJWS: nil,
-                                                osAgnosticBillingPlanType: nil,
+                                                billingPlanType: nil,
                                                 promotionalOfferOptions: nil)
             XCTFail("Expected error")
         } catch {
@@ -138,7 +138,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 promotionalOffer: offer,
                 winBackOffer: nil,
                 introductoryOfferEligibilityJWS: nil,
-                osAgnosticBillingPlanType: nil,
+                billingPlanType: nil,
                 promotionalOfferOptions: nil
             )
 
@@ -162,7 +162,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil)
 
         expect(transaction).to(beNil())
@@ -189,7 +189,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                                                                   promotionalOffer: nil,
                                                                                   winBackOffer: nil,
                                                                                   introductoryOfferEligibilityJWS: nil,
-                                                                                  osAgnosticBillingPlanType: nil,
+                                                                                  billingPlanType: nil,
                                                                                   promotionalOfferOptions: nil)
 
         expect(self.mockStoreKit2TransactionListener?.invokedHandle) == true
@@ -229,7 +229,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -250,7 +250,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
         expect(result.transaction?.sk2Transaction?.appAccountToken).to(beNil())
@@ -287,7 +287,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -490,7 +490,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                                  promotionalOffer: nil,
                                                  winBackOffer: nil,
                                                  introductoryOfferEligibilityJWS: nil,
-                                                 osAgnosticBillingPlanType: nil,
+                                                 billingPlanType: nil,
                                                  promotionalOfferOptions: nil)
 
         expect(
@@ -522,7 +522,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil,
             paywallEvent: paywallEvent
         )
@@ -562,7 +562,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -585,7 +585,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -624,7 +624,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -662,7 +662,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                                  promotionalOffer: nil,
                                                  winBackOffer: nil,
                                                  introductoryOfferEligibilityJWS: nil,
-                                                 osAgnosticBillingPlanType: nil,
+                                                 billingPlanType: nil,
                                                  promotionalOfferOptions: nil)
 
         // Verify the backend was called
@@ -701,7 +701,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                                  promotionalOffer: nil,
                                                  winBackOffer: nil,
                                                  introductoryOfferEligibilityJWS: nil,
-                                                 osAgnosticBillingPlanType: nil,
+                                                 billingPlanType: nil,
                                                  promotionalOfferOptions: nil)
 
         expect(self.backend.invokedPostReceiptDataParameters).toNot(beNil())
@@ -732,7 +732,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                             package: package,
                                             promotionalOffer: nil,
                                             introductoryOfferEligibilityJWS: nil,
-                                            osAgnosticBillingPlanType: nil,
+                                            billingPlanType: nil,
                                             promotionalOfferOptions: nil)
 
         let manager = try self.mockEventsManager
@@ -764,7 +764,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -814,7 +814,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -973,7 +973,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
         let returnedExpirationDate = try XCTUnwrap(transaction?.sk2Transaction?.expirationDate)
@@ -1006,7 +1006,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
         let returnedExpirationDate = try XCTUnwrap(transaction?.sk2Transaction?.expirationDate)
@@ -1269,7 +1269,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
         expect(cancelled) == true
@@ -1314,7 +1314,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 promotionalOffer: nil,
                 winBackOffer: nil,
                 introductoryOfferEligibilityJWS: nil,
-                osAgnosticBillingPlanType: nil,
+                billingPlanType: nil,
                 promotionalOfferOptions: nil
             )
             XCTFail("Expected error")
@@ -1364,7 +1364,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
         expect(cancelled) == true
@@ -1410,7 +1410,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 promotionalOffer: nil,
                 winBackOffer: nil,
                 introductoryOfferEligibilityJWS: nil,
-                osAgnosticBillingPlanType: nil,
+                billingPlanType: nil,
                 promotionalOfferOptions: nil
             )
             XCTFail("Expected error")
@@ -1462,7 +1462,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 promotionalOffer: nil,
                 winBackOffer: nil,
                 introductoryOfferEligibilityJWS: nil,
-                osAgnosticBillingPlanType: nil,
+                billingPlanType: nil,
                 promotionalOfferOptions: nil
             )
             XCTFail("Expected error")
@@ -1518,7 +1518,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -1562,7 +1562,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 promotionalOffer: nil,
                 winBackOffer: nil,
                 introductoryOfferEligibilityJWS: nil,
-                osAgnosticBillingPlanType: nil,
+                billingPlanType: nil,
                 promotionalOfferOptions: nil
             )
             XCTFail("Expected error")
@@ -1613,7 +1613,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
         expect(cancelled) == true
@@ -1627,7 +1627,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
-            osAgnosticBillingPlanType: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
         expect(transaction).toNot(beNil())
@@ -2383,7 +2383,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                                                   promotionalOffer: nil,
                                                                   winBackOffer: nil,
                                                                   introductoryOfferEligibilityJWS: nil,
-                                                                  osAgnosticBillingPlanType: nil,
+                                                                  billingPlanType: nil,
                                                                   promotionalOfferOptions: nil)
 
         expect(transaction).toNot(beNil())
@@ -2444,7 +2444,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 promotionalOffer: offer,
                 winBackOffer: nil,
                 introductoryOfferEligibilityJWS: nil,
-                osAgnosticBillingPlanType: nil,
+                billingPlanType: nil,
                 promotionalOfferOptions: nil
             )
             XCTFail("Expected error")
@@ -2501,7 +2501,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                                             promotionalOffer: nil,
                                                             winBackOffer: nil,
                                                             introductoryOfferEligibilityJWS: nil,
-                                                            osAgnosticBillingPlanType: nil,
+                                                            billingPlanType: nil,
                                                             promotionalOfferOptions: nil)
             XCTFail("Expected error")
         } catch {
