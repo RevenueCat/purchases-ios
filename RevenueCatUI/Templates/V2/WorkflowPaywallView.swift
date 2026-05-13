@@ -232,7 +232,7 @@ struct WorkflowPaywallView: View {
         // triggering step; when the user navigates away the value becomes nil, clearing
         // exitOfferOffering — matching Android's shouldTriggerExitOfferForCurrentStep guard.
         .preference(
-            key: WorkflowExitOfferOfferingIdPreferenceKey.self,
+            key: WorkflowExitOfferPreferenceKey.self,
             value: Self.exitOfferContext(for: self.context, currentStepId: self.navigator.currentStepId)
         )
     }

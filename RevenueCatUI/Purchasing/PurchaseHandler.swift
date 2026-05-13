@@ -898,7 +898,7 @@ struct WorkflowExitOfferContext: Equatable {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct WorkflowExitOfferOfferingIdPreferenceKey: PreferenceKey {
+struct WorkflowExitOfferPreferenceKey: PreferenceKey {
 
     static var defaultValue: WorkflowExitOfferContext?
 

@@ -672,7 +672,7 @@ private struct PresentingPaywallModifier: ViewModifier {
             self.restoreFailure?($0)
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
-        .onPreferenceChange(WorkflowExitOfferOfferingIdPreferenceKey.self) { context in
+        .onPreferenceChange(WorkflowExitOfferPreferenceKey.self) { context in
             self.handleWorkflowExitOfferPreferenceChange(context)
         }
         .task {
