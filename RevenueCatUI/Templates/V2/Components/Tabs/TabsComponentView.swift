@@ -116,10 +116,11 @@ struct LoadedTabsComponentView: View {
     private var customVariables
     @Environment(\.selectedPackageId)
     private var selectedPackageId
+    @Environment(\.workflowContextPackage)
+    private var workflowContextPackage
 
     private let viewModel: TabsComponentViewModel
     private let workflowDefaultPackage: Package?
-    private let workflowContextPackage: Package?
     private let onDismiss: () -> Void
 
     @StateObject
@@ -180,7 +181,6 @@ struct LoadedTabsComponentView: View {
          tabControlContext: TabControlContext? = nil) {
         self.viewModel = viewModel
         self.workflowDefaultPackage = workflowDefaultPackage
-        self.workflowContextPackage = workflowContextPackage
         self.onDismiss = onDismiss
 
         self._tabControlContext = .init(wrappedValue: tabControlContext ?? TabControlContext(
