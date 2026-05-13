@@ -307,6 +307,9 @@ struct WorkflowPaywallView: View {
         for context: WorkflowContext,
         currentStepId: String
     ) -> WorkflowExitOfferContext? {
+        // nil triggeringStepId means no exit offer is configured — not "fire from any step".
+        // Android's triggeringWorkflowStepId == null branch covers the non-workflow path,
+        // which iOS handles separately via .task{} + fetchValidExitOffer(for:).
         guard let triggeringStepId = context.exitOfferTriggeringStepId,
               currentStepId == triggeringStepId else {
             return nil
