@@ -79,6 +79,7 @@ struct PaywallsV2View: View {
     /// default paywall is shown. This is not used in the success path
     private let displayCloseButton: Bool
     private let onDismiss: () -> Void
+    private let closeWorkflowAction: (() -> Void)?
     @State
     private var didFinishEligibilityCheck: Bool = false
 
@@ -103,6 +104,7 @@ struct PaywallsV2View: View {
         recordWorkflowInitialSelection: Bool = false,
         displayCloseButton: Bool = false,
         onDismiss: @escaping () -> Void,
+        closeWorkflowAction: (() -> Void)? = nil,
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
         colorScheme: ColorScheme,
         promoOfferCache: PaywallPromoOfferCache? = nil,
@@ -125,6 +127,7 @@ struct PaywallsV2View: View {
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
+        self.closeWorkflowAction = closeWorkflowAction
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
         ))
@@ -212,7 +215,8 @@ struct PaywallsV2View: View {
             uiConfigProvider: self.uiConfigProvider,
             selectedPackageContext: self.selectedPackageContext,
             defaultPackage: defaultPackage,
-            onDismiss: self.onDismiss
+            onDismiss: self.onDismiss,
+            closeWorkflowAction: self.closeWorkflowAction
         )
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
@@ -412,6 +416,7 @@ private struct LoadedPaywallsV2View: View {
     private let paywallState: PaywallState
     private let uiConfigProvider: UIConfigProvider
     private let onDismiss: () -> Void
+    private let closeWorkflowAction: (() -> Void)?
     private let defaultPackage: Package?
 
     @ObservedObject
@@ -423,7 +428,8 @@ private struct LoadedPaywallsV2View: View {
         uiConfigProvider: UIConfigProvider,
         selectedPackageContext: PackageContext,
         defaultPackage: Package?,
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        closeWorkflowAction: (() -> Void)? = nil
     ) {
         self.introOfferEligibilityContext = introOfferEligibilityContext
         self.paywallState = paywallState
@@ -431,6 +437,7 @@ private struct LoadedPaywallsV2View: View {
         self.selectedPackageContext = selectedPackageContext
         self.defaultPackage = defaultPackage
         self.onDismiss = onDismiss
+        self.closeWorkflowAction = closeWorkflowAction
     }
 
     var body: some View {
@@ -442,6 +449,7 @@ private struct LoadedPaywallsV2View: View {
                     defaultPackage: self.defaultPackage
                 )
                 .fixMacButtons()
+                .environment(\.closeWorkflowAction, self.closeWorkflowAction ?? self.onDismiss)
             }
             // Used for header image and sticky footer
             .environment(\.safeAreaInsets, proxy.safeAreaInsets)
