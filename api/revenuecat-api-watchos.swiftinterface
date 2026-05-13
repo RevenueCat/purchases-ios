@@ -1970,12 +1970,15 @@ extension RevenueCat.IntroEligibility : Swift.Sendable {
 extension RevenueCat.NonSubscriptionTransaction : Swift.Sendable {
 }
 @_hasMissingDesignatedInitializers @objc(RCOffering) final public class Offering : ObjectiveC.NSObject {
+  public struct PaywallComponents {
+  }
   @objc final public let identifier: Swift.String
   @objc final public let serverDescription: Swift.String
   @objc final public var metadata: [Swift.String : Any] {
     @objc get
   }
   final public let paywall: RevenueCat.PaywallData?
+  final public let paywallComponents: RevenueCat.Offering.PaywallComponents?
   final public var hasPaywall: Swift.Bool {
     get
   }
@@ -2005,6 +2008,9 @@ extension RevenueCat.NonSubscriptionTransaction : Swift.Sendable {
   #if compiler(>=5.3) && $NonescapableTypes
   convenience public init(identifier: Swift.String, serverDescription: Swift.String, metadata: [Swift.String : Any] = [:], paywall: RevenueCat.PaywallData?, availablePackages: [RevenueCat.Package], webCheckoutUrl: Foundation.URL?)
   #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  convenience public init(identifier: Swift.String, serverDescription: Swift.String, metadata: [Swift.String : Any] = [:], paywall: RevenueCat.PaywallData? = nil, paywallComponents: RevenueCat.Offering.PaywallComponents?, availablePackages: [RevenueCat.Package], webCheckoutUrl: Foundation.URL?)
+  #endif
   @objc deinit
 }
 extension RevenueCat.Offering {
@@ -2018,6 +2024,8 @@ extension RevenueCat.Offering : Swift.Identifiable {
     get
   }
   public typealias ID = Swift.String
+}
+extension RevenueCat.Offering.PaywallComponents : Swift.Sendable {
 }
 extension RevenueCat.Offering : Swift.Sendable {
 }

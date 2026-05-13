@@ -61,7 +61,11 @@ struct ComponentsView: View {
     private func view(for item: PaywallComponentViewModel) -> some View {
         switch item {
         case .root(let viewModel):
-            RootView(viewModel: viewModel, onDismiss: onDismiss, defaultPackage: defaultPackage)
+            RootView(
+                viewModel: viewModel,
+                onDismiss: onDismiss,
+                defaultPackage: defaultPackage
+            )
         case .text(let viewModel):
             TextComponentView(viewModel: viewModel)
         case .image(let viewModel):
