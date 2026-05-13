@@ -549,4 +549,59 @@ private extension WorkflowPaywallViewTests {
 
 }
 
+// MARK: - exitOfferContext tests
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPaywallViewTests {
+
+    func testExitOfferContextReturnsNilWhenNotOnTriggeringStep() throws {
+        let context = try Self.makeContextWithExitOffer(
+            singleStepFallbackId: "step_terminal",
+            exitOfferOfferingId: "exit_offering_a"
+        )
+
+        // step_initial != step_terminal → no exit offer
+        let result = WorkflowPaywallView.exitOfferContext(for: context, currentStepId: "step_initial")
+
+        expect(result).to(beNil())
+    }
+
+    func testExitOfferContextReturnsNilWhenNoExitOfferConfigured() throws {
+        let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
+
+        let result = WorkflowPaywallView.exitOfferContext(for: context, currentStepId: "step_terminal")
+
+        expect(result).to(beNil())
+    }
+
+    func testExitOfferContextReturnsContextWhenOnTriggeringStep() throws {
+        let context = try Self.makeContextWithExitOffer(
+            singleStepFallbackId: "step_terminal",
+            exitOfferOfferingId: "exit_offering_a"
+        )
+
+        let result = WorkflowPaywallView.exitOfferContext(for: context, currentStepId: "step_terminal")
+
+        expect(result?.exitOfferOfferingId) == "exit_offering_a"
+        expect(result?.currentOfferingId) == context.initialOffering.identifier
+    }
+
+    private static func makeContextWithExitOffer(
+        singleStepFallbackId: String,
+        exitOfferOfferingId: String
+    ) throws -> WorkflowContext {
+        let offeringId = "offering_test"
+        let baseJSON = Self.makeScreenJSON(packages: [], offeringId: offeringId)
+        let screenJSON = String(baseJSON.dropLast()) + """
+        , "exit_offers": { "dismiss": { "offering_id": "\(exitOfferOfferingId)" } }
+        }
+        """
+        return try Self.makeContext(
+            singleStepFallbackId: singleStepFallbackId,
+            terminalScreenJSON: screenJSON
+        )
+    }
+
+}
+
 #endif

@@ -550,6 +550,9 @@ private struct PresentingPaywallModifier: ViewModifier {
     @State
     private var presentedExitOffer: Offering?
 
+    @State
+    private var workflowExitOfferTask: Task<Void, Never>?
+
     func body(content: Content) -> some View {
         Group {
             switch presentationMode {
@@ -628,6 +631,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
     }
 
+    // swiftlint:disable:next function_body_length
     private func paywallView(_ data: Data) -> some View {
         PaywallView(
             configuration: .init(
@@ -672,9 +676,24 @@ private struct PresentingPaywallModifier: ViewModifier {
             self.restoreFailure?($0)
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
+        .onPreferenceChange(WorkflowExitOfferOfferingIdPreferenceKey.self) { context in
+            self.handleWorkflowExitOfferPreferenceChange(context)
+        }
         .task {
+            // When the workflows endpoint is enabled, offerings don't include paywall
+            // components, so exit offers are resolved exclusively from WorkflowContext
+            // via the preference key above.
+            guard !ProcessInfo.processInfo.workflowsEndpointEnabled else {
+                self.cancelWorkflowExitOfferTask()
+                self.exitOfferOffering = nil
+                return
+            }
+
             guard let offering = await self.purchaseHandler.resolveOffering(for: self.content) else { return }
             self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
+        }
+        .onDisappear {
+            self.cancelWorkflowExitOfferTask()
         }
     }
 
@@ -737,6 +756,31 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.exitOfferOffering = nil
         self.purchaseHandler.resetForNewSession()
         self.onDismiss?()
+    }
+
+    private func handleWorkflowExitOfferPreferenceChange(_ context: WorkflowExitOfferContext?) {
+        guard ProcessInfo.processInfo.workflowsEndpointEnabled else { return }
+
+        self.cancelWorkflowExitOfferTask()
+        self.exitOfferOffering = nil
+
+        guard let context else { return }
+
+        self.workflowExitOfferTask = Task { @MainActor in
+            let exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(
+                offeringId: context.exitOfferOfferingId,
+                currentOfferingId: context.currentOfferingId
+            )
+
+            guard !Task.isCancelled else { return }
+
+            self.exitOfferOffering = exitOfferOffering
+        }
+    }
+
+    private func cancelWorkflowExitOfferTask() {
+        self.workflowExitOfferTask?.cancel()
+        self.workflowExitOfferTask = nil
     }
 
     private func exitOfferPaywallView(for offering: Offering) -> some View {
