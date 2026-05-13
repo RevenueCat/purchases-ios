@@ -30,11 +30,17 @@ enum ExitOfferHelper {
 
         do {
             let allOfferings = try await Purchases.shared.offerings()
-            return Self.validExitOffer(
-                offeringId: offeringId,
-                currentOfferingId: currentOfferingId,
-                from: allOfferings
-            )
+            // Log here, not in the synchronous helpers — those are called on every SwiftUI render.
+            guard let exitOffering = allOfferings.offering(identifier: offeringId) else {
+                Logger.warning(Strings.exitOfferNotFound(offeringId))
+                return nil
+            }
+            guard exitOffering.identifier != currentOfferingId else {
+                Logger.warning(Strings.exitOfferSameAsCurrent)
+                return nil
+            }
+            Logger.debug(Strings.prefetchedExitOffer(offeringId))
+            return exitOffering
         } catch {
             Logger.error(Strings.errorLoadingExitOffer(error))
             return nil
@@ -69,7 +75,6 @@ enum ExitOfferHelper {
         }
 
         guard exitOffering.identifier != currentOfferingId else {
-            Logger.warning(Strings.exitOfferSameAsCurrent)
             return nil
         }
 
@@ -77,15 +82,7 @@ enum ExitOfferHelper {
     }
 
     static func exitOffer(offeringId: String, from offerings: Offerings) -> Offering? {
-        let offering = offerings.offering(identifier: offeringId)
-
-        if offering != nil {
-            Logger.debug(Strings.prefetchedExitOffer(offeringId))
-        } else {
-            Logger.warning(Strings.exitOfferNotFound(offeringId))
-        }
-
-        return offering
+        return offerings.offering(identifier: offeringId)
     }
 
 }

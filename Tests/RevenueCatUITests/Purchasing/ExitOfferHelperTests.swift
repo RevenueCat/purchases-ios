@@ -37,15 +37,6 @@ final class ExitOfferHelperTests: TestCase {
         expect(result).to(beNil())
     }
 
-    func testExitOfferLogsWarningWhenNotFound() {
-        let offerings = Self.makeOfferings([])
-
-        _ = ExitOfferHelper.exitOffer(offeringId: "missing_offering", from: offerings)
-
-        self.logger.verifyMessageWasLogged("Exit offer offering 'missing_offering' not found",
-                                           level: .warn)
-    }
-
     func testValidExitOfferReturnsNilWhenExitOfferMatchesCurrentOffering() {
         let offerings = Self.makeOfferings([Self.makeOffering(identifier: "offering_a")])
 
@@ -56,7 +47,6 @@ final class ExitOfferHelperTests: TestCase {
         )
 
         expect(result).to(beNil())
-        self.logger.verifyMessageWasLogged("Exit offer is the same as the current offering", level: .warn)
     }
 
     func testValidExitOfferReturnsOfferingWhenDifferentFromCurrentOffering() {

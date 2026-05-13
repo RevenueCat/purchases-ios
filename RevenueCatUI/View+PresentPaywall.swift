@@ -748,6 +748,9 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     private func handleWorkflowExitOfferPreferenceChange(_ context: WorkflowExitOfferContext?) {
         guard ProcessInfo.processInfo.workflowsEndpointEnabled else { return }
+        if let offeringId = context?.exitOfferOffering?.identifier {
+            Logger.debug(Strings.prefetchedExitOffer(offeringId))
+        }
         self.exitOfferOffering = context?.exitOfferOffering
     }
 
