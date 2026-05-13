@@ -38,16 +38,8 @@ import StoreKit
     /// Localized display price for ``commitmentTotalPrice``.
     @objc public let commitmentTotalDisplayPrice: String
 
-    #if compiler(>=6.3.2)
-    @available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *)
-    internal var billingPlanType: SK2BillingPlanType? {
-        if commitmentInstallmentPeriod.value == 1 && commitmentInstallmentPeriod.unit == .month {
-            return .monthly
-        } else {
-            return nil
-        }
-    }
-    #endif
+    /// The billing plan used for the installments.
+    @objc public let billingPlanType: BillingPlanType
 
     /// Creates a new ``InstallmentsInfo``.
     ///
@@ -59,6 +51,7 @@ import StoreKit
     ///   - commitmentTotalPeriod: Total duration of the customer's installment commitment.
     ///   - commitmentTotalPrice: Total price the customer commits to paying across all installments.
     ///   - commitmentTotalDisplayPrice: Localized display price for `commitmentTotalPrice`.
+    ///   - billingPlanType: Billing plan type used for the installments.
     @objc public init(
         commitmentInstallmentsCount: Int,
         commitmentInstallmentPeriod: SubscriptionPeriod,
@@ -66,7 +59,8 @@ import StoreKit
         installmentBillingDisplayPrice: String,
         commitmentTotalPeriod: SubscriptionPeriod,
         commitmentTotalPrice: Decimal,
-        commitmentTotalDisplayPrice: String
+        commitmentTotalDisplayPrice: String,
+        billingPlanType: BillingPlanType
     ) {
         self.commitmentInstallmentsCount = commitmentInstallmentsCount
         self.commitmentInstallmentPeriod = commitmentInstallmentPeriod
@@ -75,5 +69,6 @@ import StoreKit
         self.commitmentTotalPeriod = commitmentTotalPeriod
         self.commitmentTotalPrice = commitmentTotalPrice
         self.commitmentTotalDisplayPrice = commitmentTotalDisplayPrice
+        self.billingPlanType = billingPlanType
     }
 }

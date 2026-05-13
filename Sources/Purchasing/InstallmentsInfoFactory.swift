@@ -85,6 +85,10 @@ final class InstallmentsInfoFactory: InstallmentsInfoFactoryType {
             commitmentPeriod: commitmentPeriod
         ) else { return nil }
 
+        guard let rcBillingPlanType = BillingPlanType.from(storeKitBillingPlanType: billingPlanType) else {
+            return nil
+        }
+
         let commitmentTotalPrice = billingPrice * Decimal(commitmentInstallmentsCount)
         let installmentBillingPrice = billingPrice
         let installmentBillingDisplayPrice = billingDisplayPrice
@@ -95,7 +99,8 @@ final class InstallmentsInfoFactory: InstallmentsInfoFactoryType {
             installmentBillingDisplayPrice: installmentBillingDisplayPrice,
             commitmentTotalPeriod: commitmentTotalPeriod,
             commitmentTotalPrice: commitmentTotalPrice,
-            commitmentTotalDisplayPrice: commitmentTotalDisplayPrice
+            commitmentTotalDisplayPrice: commitmentTotalDisplayPrice,
+            billingPlanType: rcBillingPlanType
         )
     }
 #endif
