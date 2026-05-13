@@ -1321,12 +1321,6 @@
 		F5FCD3FC27DA2034003BDC04 /* PriceFormatterProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5FCD3FB27DA2034003BDC04 /* PriceFormatterProviderTests.swift */; };
 		FA6ABC7C2A81673F00353AF7 /* SystemFontRegistryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA6ABC7B2A81673F00353AF8 /* SystemFontRegistryTests.swift */; };
 		FACD000C2F61A1230073D2DE /* PackageVisibilityPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD000B2F61A1230073D2DE /* PackageVisibilityPreview.swift */; };
-<<<<<<< purchasing-products-with-billing-plans
-		FD03B7672FB3A858005F79A3 /* InstallmentInfosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD03B7662FB3A858005F79A3 /* InstallmentInfosTests.swift */; };
-		FD03B76E2FB3AAD8005F79A3 /* OSAgnosticBillingPlanType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD03B76D2FB3AAD8005F79A3 /* OSAgnosticBillingPlanType.swift */; };
-		FD03B76F2FB3AAD8005F79A3 /* OSAgnosticBillingPlanType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD03B76D2FB3AAD8005F79A3 /* OSAgnosticBillingPlanType.swift */; };
-=======
->>>>>>> fetching-products-with-billing-plans
 		FD05A71A2EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD05A7192EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift */; };
 		FD15AF5B2DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD15AF582DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift */; };
 		FD15AF5C2DF9A8F30062467E /* VirtualCurrencyBalancesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD15AF592DF9A8F30062467E /* VirtualCurrencyBalancesScreen.swift */; };
@@ -2883,12 +2877,8 @@
 		FACD00072F61A1230073D2DE /* PackageComponentViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageComponentViewTests.swift; sourceTree = "<group>"; };
 		FACD00092F61A1230073D2DE /* PackageValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageValidatorTests.swift; sourceTree = "<group>"; };
 		FACD000B2F61A1230073D2DE /* PackageVisibilityPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageVisibilityPreview.swift; sourceTree = "<group>"; };
+		0E4CCD8E9E454A2EB3760E06 /* ButtonComponentViewModelMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentViewModelMappingTests.swift; sourceTree = "<group>"; };
 		FB5A72012F65F5B9005C64A1 /* ViewModelFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModelFactoryTests.swift; sourceTree = "<group>"; };
-<<<<<<< purchasing-products-with-billing-plans
-		FD03B7662FB3A858005F79A3 /* InstallmentInfosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallmentInfosTests.swift; sourceTree = "<group>"; };
-		FD03B76D2FB3AAD8005F79A3 /* OSAgnosticBillingPlanType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OSAgnosticBillingPlanType.swift; path = Sources/Purchasing/Purchases/OSAgnosticBillingPlanType.swift; sourceTree = SOURCE_ROOT; };
-=======
->>>>>>> fetching-products-with-billing-plans
 		FD05A7192EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2PromotionalOfferPurchaseOptions.swift; sourceTree = "<group>"; };
 		FD15AF572DF9A8F30062467E /* VirtualCurrenciesScrollViewWithOSBackgroundSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesScrollViewWithOSBackgroundSection.swift; sourceTree = "<group>"; };
 		FD15AF582DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalanceListRow.swift; sourceTree = "<group>"; };
@@ -3095,6 +3085,7 @@
 				DB1FC9592F9A1B74009A95EA /* WorkflowScreenMapperTests.swift */,
 				F468C7BCEB786BEC80277ECA /* WorkflowNavigatorTests.swift */,
 				6EFD5F7BD8404B6E828C4E10 /* WorkflowPaywallViewTests.swift */,
+				0E4CCD8E9E454A2EB3760E06 /* ButtonComponentViewModelMappingTests.swift */,
 			);
 			path = PaywallsV2;
 			sourceTree = "<group>";
@@ -6214,7 +6205,6 @@
 			isa = PBXGroup;
 			children = (
 				FD6D874E2FAE3D3800CAF0F2 /* CompoundProductIdentifier.swift */,
-				FD03B76D2FB3AAD8005F79A3 /* OSAgnosticBillingPlanType.swift */,
 			);
 			path = "Products with Billing Plans";
 			sourceTree = "<group>";

@@ -13,6 +13,7 @@ import Foundation
 enum RewardVerificationStrings {
 
     case setup_purchases_not_configured
+    case side_effect_purchases_not_configured
     case setup_install(adType: String, transactionID: String)
     case setup_custom_reward_text_encoding_failed(error: Error)
 
@@ -39,6 +40,8 @@ extension RewardVerificationStrings: LogMessage {
         switch self {
         case .setup_purchases_not_configured:
             return "RevenueCat SDK is not configured. Cannot install reward verification on rewarded ad."
+        case .side_effect_purchases_not_configured:
+            return "RevenueCat SDK is not configured. Cannot invalidate virtual currencies cache."
         case let .setup_install(adType, transactionID):
             return "Reward verification install on ad type=\(adType) transactionID=\(transactionID)"
         case let .setup_custom_reward_text_encoding_failed(error):
