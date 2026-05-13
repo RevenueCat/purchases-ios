@@ -264,6 +264,31 @@ final class WorkflowPaywallViewTests: TestCase {
         ) == TestData.monthlyPackage.identifier
     }
 
+    func testInitialStepRecordsItsDefaultPackageForCarryForward() {
+        // The initial step has shouldRecordInitialPackageSelection: true so that
+        // a user who proceeds without explicitly selecting carries the displayed default
+        // forward to the next step, instead of falling back to workflowDefaultPackage.
+        var state = WorkflowPackageCarryForwardState()
+
+        state.recordInitialSelection(TestData.annualPackage, for: "step_initial")
+
+        expect(
+            state.contextPackageForForwardNavigation(from: "step_initial")?.identifier
+        ) == TestData.annualPackage.identifier
+    }
+
+    func testInitialStepExplicitSelectionWinsOverInitialDefault() {
+        // Explicit selection on the initial step must override the passively recorded initial package.
+        var state = WorkflowPackageCarryForwardState()
+
+        state.recordInitialSelection(TestData.annualPackage, for: "step_initial")
+        state.recordSelection(TestData.monthlyPackage, for: "step_initial")
+
+        expect(
+            state.contextPackageForForwardNavigation(from: "step_initial")?.identifier
+        ) == TestData.monthlyPackage.identifier
+    }
+
 }
 
 // MARK: - workflowPackageContext tests

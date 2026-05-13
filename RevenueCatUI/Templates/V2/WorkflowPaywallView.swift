@@ -230,7 +230,8 @@ struct WorkflowPaywallView: View {
                     from: context,
                     stepId: context.workflow.initialStepId,
                     canNavigateBack: false,
-                    displayCloseButton: displayCloseButton
+                    displayCloseButton: displayCloseButton,
+                    shouldRecordInitialPackageSelection: true
                 )
             )
         )
