@@ -809,7 +809,7 @@ final class PurchasesOrchestrator {
                         // whatever the product's default is.
                         Logger.debug(StoreKitStrings.sk2_upFront_billing_plan_not_available)
                     } else {
-                        Logger.debug(
+                        Logger.error(
                             StoreKitStrings.sk2_user_not_eligible_for_billing_plan_at_purchase_time(
                                 billingPlanType: sk2BillingPlanType.rawValue
                             )
