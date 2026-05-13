@@ -374,7 +374,9 @@ class StoreProductTests: StoreKitConfigTestCase {
     }
 
     @available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, visionOS 26.4, *)
-    func testIsEqualComparesInstallmentsInfoWhenAvailable() {
+    func testIsEqualComparesInstallmentsInfoWhenAvailable() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
         let product = Self.testProduct(
             productIdentifier: "product_id",
             installmentsInfo: Self.installmentsInfo(commitmentInstallmentsCount: 3)
@@ -548,6 +550,75 @@ class StoreProductTests: StoreKitConfigTestCase {
 
 }
 
+// MARK: - Compound Product Identifier
+
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
+extension StoreProductTests {
+
+    func testCompoundProductIdentifierReturnsProductIdentifierForSK1Product() {
+        let productIdentifier = "com.revenuecat.product"
+        let storeProduct = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productIdentifier))
+
+        expect(storeProduct.compoundProductIdentifier) == productIdentifier
+    }
+
+    func testCompoundProductIdentifierReturnsProductIdentifierForTestProductWithoutInstallmentsInfo() {
+        let productIdentifier = "com.revenuecat.product"
+        let storeProduct = Self.testProduct(
+            productIdentifier: productIdentifier,
+            installmentsInfo: nil
+        )
+
+        expect(storeProduct.compoundProductIdentifier) == productIdentifier
+    }
+
+    func testCompoundProductIdentifierPreservesProductIdentifierWithColonWithoutInstallmentsInfo() {
+        let productIdentifier = "com.revenuecat.product:monthly"
+        let storeProduct = Self.testProduct(
+            productIdentifier: productIdentifier,
+            installmentsInfo: nil
+        )
+
+        expect(storeProduct.compoundProductIdentifier) == productIdentifier
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testCompoundProductIdentifierReturnsProductIdentifierForSK2ProductWithoutInstallmentsInfo() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let storeProduct = try await ProductsFetcherSK2().product(withIdentifier: Self.productID)
+
+        expect(storeProduct.compoundProductIdentifier) == Self.productID
+    }
+
+    func testCompoundProductIdentifierAddsMonthlyProductPlanIdentifierForMonthlyInstallmentsInfo() {
+        let productIdentifier = "com.revenuecat.product"
+        let storeProduct = Self.testProduct(
+            productIdentifier: productIdentifier,
+            installmentsInfo: Self.installmentsInfo(
+                commitmentInstallmentsCount: 3,
+                billingPlanType: .monthly
+            )
+        )
+
+        expect(storeProduct.compoundProductIdentifier) == "\(productIdentifier):monthly"
+    }
+
+    func testCompoundProductIdentifierReturnsProductIdentifierForUpFrontInstallmentsInfo() {
+        let productIdentifier = "com.revenuecat.product"
+        let storeProduct = Self.testProduct(
+            productIdentifier: productIdentifier,
+            installmentsInfo: Self.installmentsInfo(
+                commitmentInstallmentsCount: 1,
+                billingPlanType: .upFront
+            )
+        )
+
+        expect(storeProduct.compoundProductIdentifier) == productIdentifier
+    }
+
+}
+
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 private extension StoreProductTests {
 
@@ -600,7 +671,10 @@ private extension StoreProductTests {
         ).toStoreProduct()
     }
 
-    static func installmentsInfo(commitmentInstallmentsCount: Int) -> InstallmentsInfo {
+    static func installmentsInfo(
+        commitmentInstallmentsCount: Int,
+        billingPlanType: BillingPlanType = .monthly
+    ) -> InstallmentsInfo {
         return InstallmentsInfo(
             commitmentInstallmentsCount: commitmentInstallmentsCount,
             commitmentInstallmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
@@ -609,7 +683,7 @@ private extension StoreProductTests {
             commitmentTotalPeriod: SubscriptionPeriod(value: commitmentInstallmentsCount, unit: .month),
             commitmentTotalPrice: Decimal(commitmentInstallmentsCount) * 3.99,
             commitmentTotalDisplayPrice: "$\(commitmentInstallmentsCount * 399 / 100).99",
-            billingPlanType: .monthly
+            billingPlanType: billingPlanType
         )
     }
 
