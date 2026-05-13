@@ -890,7 +890,7 @@ struct PurchasedResultPreferenceKey: PreferenceKey {
 struct WorkflowExitOfferContext: Equatable {
 
     let currentOfferingId: String
-    let exitOfferOfferingId: String?
+    let exitOfferOfferingId: String
 
 }
 

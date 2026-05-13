@@ -764,11 +764,11 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.cancelWorkflowExitOfferTask()
         self.exitOfferOffering = nil
 
-        guard let context, let offeringId = context.exitOfferOfferingId else { return }
+        guard let context else { return }
 
         self.workflowExitOfferTask = Task { @MainActor in
             let exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(
-                offeringId: offeringId,
+                offeringId: context.exitOfferOfferingId,
                 currentOfferingId: context.currentOfferingId
             )
 

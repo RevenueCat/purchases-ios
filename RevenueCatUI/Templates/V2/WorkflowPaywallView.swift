@@ -308,12 +308,13 @@ struct WorkflowPaywallView: View {
         currentStepId: String
     ) -> WorkflowExitOfferContext? {
         guard let triggeringStepId = context.exitOfferTriggeringStepId,
-              currentStepId == triggeringStepId else {
+              currentStepId == triggeringStepId,
+              let exitOfferOfferingId = context.exitOfferOfferingId else {
             return nil
         }
         return WorkflowExitOfferContext(
             currentOfferingId: context.initialOffering.identifier,
-            exitOfferOfferingId: context.exitOfferOfferingId
+            exitOfferOfferingId: exitOfferOfferingId
         )
     }
 
