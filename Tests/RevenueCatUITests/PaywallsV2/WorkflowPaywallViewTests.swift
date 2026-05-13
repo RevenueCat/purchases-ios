@@ -245,6 +245,25 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(contextPackageForBackNav).to(beNil())
     }
 
+    func testClearForBackNavigationOnNilStepIDIsNoOp() {
+        // clearForBackNavigation(from: nil) must not corrupt any recorded selection.
+        // This guards against the case where transitionState.currentPage?.stepID is nil
+        // when navigateBack() fails and the guard exits early.
+        var state = WorkflowPackageCarryForwardState()
+
+        state.recordSelection(TestData.annualPackage, for: "step_1")
+        state.recordSelection(TestData.monthlyPackage, for: "step_2")
+
+        state.clearForBackNavigation(from: nil)
+
+        expect(
+            state.contextPackageForForwardNavigation(from: "step_1")?.identifier
+        ) == TestData.annualPackage.identifier
+        expect(
+            state.contextPackageForForwardNavigation(from: "step_2")?.identifier
+        ) == TestData.monthlyPackage.identifier
+    }
+
 }
 
 // MARK: - workflowPackageContext tests

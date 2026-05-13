@@ -334,11 +334,11 @@ struct WorkflowPaywallView: View {
         case .dismissWorkflow:
             self.onDismiss()
         case .navigateBack:
-            self.packageCarryForwardState.clearForBackNavigation(from: self.transitionState.currentPage?.stepID)
-
             guard let previousStep = self.navigator.navigateBack() else {
                 return
             }
+
+            self.packageCarryForwardState.clearForBackNavigation(from: self.transitionState.currentPage?.stepID)
 
             self.startTransition(
                 to: Self.renderedPage(
