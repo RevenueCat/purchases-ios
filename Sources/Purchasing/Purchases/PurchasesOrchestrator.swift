@@ -797,12 +797,25 @@ final class PurchasesOrchestrator {
                 let sk2BillingPlanType = billingPlanType?.skBillingPlanType ?? .upFront
                 let eligibleBillingPlanTypes = Set(subscriptionInfo.pricingTerms.map({ $0.billingPlanType }))
 
-                if case .upFront = sk2BillingPlanType, eligibleBillingPlanTypes.contains(sk2BillingPlanType) {
-                    options.insert(.billingPlanType(sk2BillingPlanType))
-                } else if eligibleBillingPlanTypes.contains(sk2BillingPlanType) {
+                if eligibleBillingPlanTypes.contains(sk2BillingPlanType) {
+                    Logger.debug(
+                        StoreKitStrings.sk2_applying_billing_plan(billingPlanType: sk2BillingPlanType.rawValue)
+                    )
                     options.insert(.billingPlanType(sk2BillingPlanType))
                 } else {
-                    throw ErrorUtils.productNotAvailableForPurchaseError()
+                    if case .upFront = sk2BillingPlanType {
+                        // For some reason, the product doesn't have a pricing term with the upFront billing plan type.
+                        // In that case, we just won't apply a billing plan type at all and attempt to purchase
+                        // whatever the product's default is.
+                        Logger.debug(StoreKitStrings.sk2_upFront_billing_plan_not_available)
+                    } else {
+                        Logger.debug(
+                            StoreKitStrings.sk2_user_not_eligible_for_billing_plan_at_purchase_time(
+                                billingPlanType: sk2BillingPlanType.rawValue
+                            )
+                        )
+                        throw ErrorUtils.productNotAvailableForPurchaseError()
+                    }
                 }
             }
             #endif
