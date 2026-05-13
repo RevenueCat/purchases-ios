@@ -53,6 +53,14 @@ struct WorkflowContext {
         return screen.exitOffers?.dismiss?.offeringId
     }
 
+    /// The step ID from which the exit offer may be triggered.
+    /// Non-nil only when an exit offer is configured on `singleStepFallbackId`.
+    /// Used to guard against showing the exit offer when dismissing from a different step.
+    var exitOfferTriggeringStepId: String? {
+        guard exitOfferOfferingId != nil else { return nil }
+        return workflow.singleStepFallbackId
+    }
+
     /// Resolves the package context from the workflow's `singleStepFallbackId` step so that
     /// packageless early screens can still resolve price/period template variables.
     var workflowPackageContext: WorkflowPackageContext? {

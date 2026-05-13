@@ -140,6 +140,47 @@ final class WorkflowContextTests: TestCase {
         expect(context.exitOfferOfferingId).to(beNil())
     }
 
+    // MARK: - exitOfferTriggeringStepId
+
+    func testExitOfferTriggeringStepIdReturnsNilWhenNoSingleStepFallbackId() throws {
+        let offering = Self.makeOffering(identifier: "offering_a")
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflow(),
+            allOfferings: Self.makeOfferings(offering),
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+
+        expect(context.exitOfferTriggeringStepId).to(beNil())
+    }
+
+    func testExitOfferTriggeringStepIdReturnsNilWhenFallbackStepHasNoExitOffer() throws {
+        let offering = Self.makeOffering(identifier: "offering_a")
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflowWithSingleStepFallback(singleStepFallbackId: "step_1"),
+            allOfferings: Self.makeOfferings(offering),
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+
+        expect(context.exitOfferTriggeringStepId).to(beNil())
+    }
+
+    func testExitOfferTriggeringStepIdReturnsSingleStepFallbackIdWhenExitOfferIsConfigured() throws {
+        let offering = Self.makeOffering(identifier: "offering_a")
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflowWithExitOffer(
+                singleStepFallbackId: "step_1",
+                exitOfferOfferingId: "exit_offering_a"
+            ),
+            allOfferings: Self.makeOfferings(offering),
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+
+        expect(context.exitOfferTriggeringStepId) == "step_1"
+    }
+
     // MARK: - resolveWorkflowContext
 
     func testResolveWorkflowContextThrowsWhenFlagIsOff() async throws {
