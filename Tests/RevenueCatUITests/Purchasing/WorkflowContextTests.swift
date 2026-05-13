@@ -185,7 +185,7 @@ final class WorkflowContextTests: TestCase {
         expect(context.exitOfferOffering).to(beNil())
     }
 
-    func testExitOfferOfferingReturnsOfferingForMultiPageWorkflowByScanning() throws {
+    func testExitOfferOfferingReturnsNilForMultiPageWorkflowWithoutSingleStepFallbackId() throws {
         let offering = Self.makeOffering(identifier: "offering_a")
         let exitOffering = Self.makeOffering(identifier: "exit_offering_a")
         let context = WorkflowContext(
@@ -198,7 +198,8 @@ final class WorkflowContextTests: TestCase {
             presentedOfferingContext: nil
         )
 
-        expect(context.exitOfferOffering?.identifier) == "exit_offering_a"
+        // No singleStepFallbackId — exit offer is not resolved (mirrors Android's dismissExitOffer).
+        expect(context.exitOfferOffering).to(beNil())
     }
 
     // MARK: - exitOfferTriggeringStepId
@@ -242,7 +243,7 @@ final class WorkflowContextTests: TestCase {
         expect(context.exitOfferTriggeringStepId) == "step_1"
     }
 
-    func testExitOfferTriggeringStepIdReturnsStepIdForMultiPageWorkflow() throws {
+    func testExitOfferTriggeringStepIdReturnsNilForMultiPageWorkflowWithoutSingleStepFallbackId() throws {
         let offering = Self.makeOffering(identifier: "offering_a")
         let context = WorkflowContext(
             workflow: try Self.makeMultiPageWorkflowWithExitOffer(
@@ -254,7 +255,8 @@ final class WorkflowContextTests: TestCase {
             presentedOfferingContext: nil
         )
 
-        expect(context.exitOfferTriggeringStepId) == "step_2"
+        // No singleStepFallbackId — triggering step is not resolved (mirrors Android's dismissExitOffer).
+        expect(context.exitOfferTriggeringStepId).to(beNil())
     }
 
     // MARK: - resolveWorkflowContext

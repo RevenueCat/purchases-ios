@@ -56,27 +56,18 @@ struct WorkflowContext {
         )
     }
 
-    /// Finds the first exit offer entry in the workflow.
-    /// For single-step workflows reads from `singleStepFallbackId`'s screen.
-    /// For multi-page workflows scans all steps for a screen with a configured exit offer.
-    /// Assumption: at most one exit offer is configured per workflow.
+    /// Resolves the exit offer entry from `singleStepFallbackId`'s screen.
+    /// Returns `nil` if `singleStepFallbackId` is absent or its screen has no exit offer configured.
+    /// Mirrors Android's `dismissExitOffer` which also relies solely on `singleStepFallbackId`.
     private var exitOfferEntry: (offeringId: String, triggeringStepId: String)? {
-        if let stepId = workflow.singleStepFallbackId,
-           let step = workflow.steps[stepId],
-           let screenId = step.screenId,
-           let screen = workflow.screens[screenId],
-           let offeringId = screen.exitOffers?.dismiss?.offeringId {
-            return (offeringId: offeringId, triggeringStepId: stepId)
+        guard let stepId = workflow.singleStepFallbackId,
+              let step = workflow.steps[stepId],
+              let screenId = step.screenId,
+              let screen = workflow.screens[screenId],
+              let offeringId = screen.exitOffers?.dismiss?.offeringId else {
+            return nil
         }
-
-        for (stepId, step) in workflow.steps {
-            guard let screenId = step.screenId,
-                  let screen = workflow.screens[screenId],
-                  let offeringId = screen.exitOffers?.dismiss?.offeringId else { continue }
-            return (offeringId: offeringId, triggeringStepId: stepId)
-        }
-
-        return nil
+        return (offeringId: offeringId, triggeringStepId: stepId)
     }
 
     /// Resolves the package context from the workflow's `singleStepFallbackId` step so that
