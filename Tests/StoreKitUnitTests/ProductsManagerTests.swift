@@ -56,6 +56,105 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         expect(product.productIdentifier) == identifier
     }
 
+    func testFetchProductsWithCompoundIdentifierOnlyRequestsStoreKitProductIdentifier() throws {
+        let productsRequestFactory = MockProductsRequestFactory()
+        let manager = self.createManager(
+            storeKitVersion: .storeKit1,
+            productsRequestFactory: productsRequestFactory
+        )
+
+        let storeKitProductIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        let compoundProductIdentifier = "\(storeKitProductIdentifier):monthly"
+        let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
+            manager.products(withIdentifiers: Set([compoundProductIdentifier]), completion: completed)
+        }
+
+        let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
+        let product = try XCTUnwrap(unwrappedProducts.onlyElement).product
+
+        expect(productsRequestFactory.invokedRequestParameters) == Set([storeKitProductIdentifier])
+        expect(product.productIdentifier) == storeKitProductIdentifier
+    }
+
+    func testFetchProductsWithInvalidCompoundIdentifiersLogsWarning() throws {
+        let productsRequestFactory = MockProductsRequestFactory()
+        let manager = self.createManager(
+            storeKitVersion: .storeKit1,
+            productsRequestFactory: productsRequestFactory
+        )
+        self.logger.clearMessages()
+
+        let invalidIdentifiers: Set<String> = [
+            "",
+            "com.revenuecat.subscription:monthly:extra"
+        ]
+        let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
+            manager.products(withIdentifiers: invalidIdentifiers, completion: completed)
+        }
+
+        let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
+        expect(unwrappedProducts).to(beEmpty())
+        expect(productsRequestFactory.invokedRequest) == false
+
+        self.logger.verifyMessageWasLogged(
+            regexPattern: "Invalid product identifiers were ignored: .*com\\.revenuecat\\.subscription:monthly:extra",
+            level: .warn
+        )
+        self.logger.verifyMessageWasLogged(
+            regexPattern: "Invalid product identifiers were ignored: .*\"\"",
+            level: .warn
+        )
+    }
+
+    func testFetchProductsWithValidCompoundIdentifiersDoesNotLogWarning() throws {
+        let productsRequestFactory = MockProductsRequestFactory()
+        let manager = self.createManager(
+            storeKitVersion: .storeKit1,
+            productsRequestFactory: productsRequestFactory
+        )
+        self.logger.clearMessages()
+
+        let validIdentifiers: Set<String> = [
+            "com.revenuecat.sub",
+            "com.revenuecat.sub:monthly"
+        ]
+        let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
+            manager.products(withIdentifiers: validIdentifiers, completion: completed)
+        }
+
+        _ = try XCTUnwrap(receivedProducts?.get())
+        expect(productsRequestFactory.invokedRequestParameters) == ["com.revenuecat.sub"]
+        expect(self.logger.messages).toNot(containElementSatisfying { message in
+            message.level == .warn
+                && message.message.contains("Invalid product identifiers were ignored")
+        })
+    }
+
+    func testBaseSK2ProductIsRemovedWhenOnlyCompoundIdentifierIsRequested() throws {
+        let storeKitProductIdentifier = "com.revenuecat.subscription"
+        let requestedIdentifiers: Set<CompoundProductIdentifier> = [
+            try XCTUnwrap(CompoundProductIdentifier(compoundProductIdentifier: "\(storeKitProductIdentifier):monthly"))
+        ]
+
+        expect(ProductsManager.shouldRemoveBaseSK2Product(
+            productIdentifier: storeKitProductIdentifier,
+            requestedIdentifiers: requestedIdentifiers
+        )) == true
+    }
+
+    func testBaseSK2ProductIsKeptWhenBaseAndCompoundIdentifiersAreRequested() throws {
+        let storeKitProductIdentifier = "com.revenuecat.subscription"
+        let requestedIdentifiers: Set<CompoundProductIdentifier> = [
+            try XCTUnwrap(CompoundProductIdentifier(compoundProductIdentifier: storeKitProductIdentifier)),
+            try XCTUnwrap(CompoundProductIdentifier(compoundProductIdentifier: "\(storeKitProductIdentifier):monthly"))
+        ]
+
+        expect(ProductsManager.shouldRemoveBaseSK2Product(
+            productIdentifier: storeKitProductIdentifier,
+            requestedIdentifiers: requestedIdentifiers
+        )) == false
+    }
+
     func testClearCacheAfterStorefrontChangesSK1() async throws {
         let manager = self.createManager(storeKitVersion: .storeKit1)
 
@@ -114,6 +213,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     }
 
     fileprivate func createManager(storeKitVersion: StoreKitVersion,
+                                   productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(),
                                    storefront: StorefrontType? = nil,
                                    diagnosticsTracker: DiagnosticsTrackerType? = nil) -> ProductsManager {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
@@ -124,6 +224,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         )
         systemInfo.stubbedStorefront = storefront
         return ProductsManager(
+            productsRequestFactory: productsRequestFactory,
             diagnosticsTracker: diagnosticsTracker,
             systemInfo: systemInfo,
             requestTimeout: Self.requestTimeout
