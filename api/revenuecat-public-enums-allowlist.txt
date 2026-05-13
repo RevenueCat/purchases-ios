@@ -1,0 +1,61 @@
+# Consumer-facing enums currently exposed by `RevenueCat`.
+#
+# This file enforces the company-wide policy that no NEW enum types may
+# be added to consumer-facing APIs (fully public + @_spi(Experimental)).
+# Existing enums are grandfathered in via this allowlist; new entries
+# require API council approval.
+#
+# `@_spi(Internal)` enums are intentionally excluded (they are not part
+# of the consumer-facing surface).
+#
+# To regenerate after an approved API change:
+#   bundle exec fastlane ios check_public_enums scheme:RevenueCat regenerate:true
+#
+# Format: one fully-qualified enum name per line (relative to the module),
+# e.g. `AppleReceipt.Environment`.
+
+AppleReceipt.Environment
+AppleReceipt.InAppPurchase.ProductType
+AttributionNetwork
+CacheFetchPolicy
+Checksum.Algorithm
+Configuration.EntitlementVerificationMode
+CustomerCenterPresentationMode
+ErrorCode
+IntroEligibilityStatus
+LogLevel
+PackageType
+PaywallColor.ColorScheme
+PaywallViewMode
+PeriodType
+PurchaseOwnershipType
+Purchases.EntitlementInfo
+Purchases.EntitlementInfos
+Purchases.ErrorCode
+Purchases.ErrorUtils
+Purchases.Errors
+Purchases.FinishableKey
+Purchases.Offering
+Purchases.PackageType
+Purchases.PeriodType
+Purchases.PurchaserInfo
+Purchases.ReadableErrorCodeKey
+Purchases.RevenueCatBackendErrorCode
+Purchases.Store
+Purchases.Transaction
+PurchasesAreCompletedBy
+PurchasesDiagnostics.Error
+PurchasesReceiptParser.Error
+RCBackendErrorCode
+RCPaymentMode
+RefundRequestStatus
+Store
+StoreKitVersion
+StoreMessageType
+StoreProduct.ProductCategory
+StoreProduct.ProductType
+StoreProductDiscount.DiscountType
+StoreProductDiscount.PaymentMode
+SubscriptionPeriod.Unit
+VerificationResult
+WebPurchaseRedemptionResult

@@ -1,0 +1,19 @@
+# Consumer-facing enums currently exposed by `RevenueCatUI`.
+#
+# This file enforces the company-wide policy that no NEW enum types may
+# be added to consumer-facing APIs (fully public + @_spi(Experimental)).
+# Existing enums are grandfathered in via this allowlist; new entries
+# require API council approval.
+#
+# `@_spi(Internal)` enums are intentionally excluded (they are not part
+# of the consumer-facing surface).
+#
+# To regenerate after an approved API change:
+#   bundle exec fastlane ios check_public_enums scheme:RevenueCatUI regenerate:true
+#
+# Format: one fully-qualified enum name per line (relative to the module),
+# e.g. `AppleReceipt.Environment`.
+
+CustomerCenterAction
+CustomerCenterManagementOption
+PaywallPresentationMode
