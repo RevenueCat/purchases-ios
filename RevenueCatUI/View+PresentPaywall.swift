@@ -550,7 +550,6 @@ private struct PresentingPaywallModifier: ViewModifier {
     @State
     private var presentedExitOffer: Offering?
 
-    // swiftlint:disable:next function_body_length
     func body(content: Content) -> some View {
         Group {
             switch presentationMode {
@@ -610,12 +609,6 @@ private struct PresentingPaywallModifier: ViewModifier {
                         await self.updateCustomerInfo()
                     }
                 }
-            }
-        }
-        .onPreferenceChange(WorkflowExitOfferOfferingIdPreferenceKey.self) { offeringId in
-            guard ProcessInfo.processInfo.workflowsEndpointEnabled, let offeringId else { return }
-            Task { @MainActor in
-                self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(offeringId: offeringId)
             }
         }
     }
@@ -679,6 +672,12 @@ private struct PresentingPaywallModifier: ViewModifier {
             self.restoreFailure?($0)
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
+        .onPreferenceChange(WorkflowExitOfferOfferingIdPreferenceKey.self) { offeringId in
+            guard ProcessInfo.processInfo.workflowsEndpointEnabled, let offeringId else { return }
+            Task { @MainActor in
+                self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(offeringId: offeringId)
+            }
+        }
         .task {
             guard let offering = await self.purchaseHandler.resolveOffering(for: self.content) else { return }
             self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
@@ -912,12 +911,6 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             #endif
             }
         }
-        .onPreferenceChange(WorkflowExitOfferOfferingIdPreferenceKey.self) { offeringId in
-            guard ProcessInfo.processInfo.workflowsEndpointEnabled, let offeringId else { return }
-            Task { @MainActor in
-                self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(offeringId: offeringId)
-            }
-        }
     }
 
     private func paywallView(for offering: Offering) -> some View {
@@ -959,6 +952,12 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             self.restoreFailure?($0)
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
+        .onPreferenceChange(WorkflowExitOfferOfferingIdPreferenceKey.self) { offeringId in
+            guard ProcessInfo.processInfo.workflowsEndpointEnabled, let offeringId else { return }
+            Task { @MainActor in
+                self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(offeringId: offeringId)
+            }
+        }
         .task {
             self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
         }
