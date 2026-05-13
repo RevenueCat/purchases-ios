@@ -228,8 +228,8 @@ struct WorkflowPaywallView: View {
         .allowsHitTesting(!self.transitionState.isTransitioning)
         .clipped()
         // Re-emitted on every step change because navigator is @StateObject with @Published
-        // currentStepId. When the user navigates away from the triggering step the value
-        // becomes nil, causing PresentingPaywallModifier to cancel the fetch and clear
+        // currentStepId. The exit offer is resolved synchronously from allOfferings on the
+        // triggering step; when the user navigates away the value becomes nil, clearing
         // exitOfferOffering — matching Android's shouldTriggerExitOfferForCurrentStep guard.
         .preference(
             key: WorkflowExitOfferOfferingIdPreferenceKey.self,
@@ -308,14 +308,10 @@ struct WorkflowPaywallView: View {
         currentStepId: String
     ) -> WorkflowExitOfferContext? {
         guard let triggeringStepId = context.exitOfferTriggeringStepId,
-              currentStepId == triggeringStepId,
-              let exitOfferOfferingId = context.exitOfferOfferingId else {
+              currentStepId == triggeringStepId else {
             return nil
         }
-        return WorkflowExitOfferContext(
-            currentOfferingId: context.initialOffering.identifier,
-            exitOfferOfferingId: exitOfferOfferingId
-        )
+        return WorkflowExitOfferContext(exitOfferOffering: context.exitOfferOffering)
     }
 
     static func dismissalAction(

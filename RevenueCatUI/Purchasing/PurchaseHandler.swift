@@ -889,8 +889,11 @@ struct PurchasedResultPreferenceKey: PreferenceKey {
 
 struct WorkflowExitOfferContext: Equatable {
 
-    let currentOfferingId: String
-    let exitOfferOfferingId: String
+    let exitOfferOffering: Offering?
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.exitOfferOffering?.identifier == rhs.exitOfferOffering?.identifier
+    }
 
 }
 
