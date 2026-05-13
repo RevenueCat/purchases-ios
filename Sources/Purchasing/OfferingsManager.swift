@@ -254,7 +254,7 @@ private extension OfferingsManager {
                 return
             }
 
-            let productsByID = products.dictionaryWithKeys { $0.productIdentifier }
+            let productsByID = products.dictionaryWithKeys { $0.compoundProductIdentifier }
 
             let missingProductIDs = self.getMissingProductIDs(productIDsFromStore: Set(productsByID.keys),
                                                               productIDsFromBackend: productIdentifiers)

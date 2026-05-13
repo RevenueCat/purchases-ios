@@ -373,6 +373,38 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(nonSubscription.productCategory) == .nonSubscription
     }
 
+    @available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, visionOS 26.4, *)
+    func testIsEqualComparesInstallmentsInfoWhenAvailable() {
+        let product = Self.testProduct(
+            productIdentifier: "product_id",
+            installmentsInfo: Self.installmentsInfo(commitmentInstallmentsCount: 3)
+        )
+        let sameProduct = Self.testProduct(
+            productIdentifier: "product_id",
+            installmentsInfo: Self.installmentsInfo(commitmentInstallmentsCount: 3)
+        )
+        let productWithDifferentInstallments = Self.testProduct(
+            productIdentifier: "product_id",
+            installmentsInfo: Self.installmentsInfo(commitmentInstallmentsCount: 6)
+        )
+        let productWithoutInstallments = Self.testProduct(
+            productIdentifier: "product_id",
+            installmentsInfo: nil
+        )
+        let differentProduct = Self.testProduct(
+            productIdentifier: "other_product_id",
+            installmentsInfo: Self.installmentsInfo(commitmentInstallmentsCount: 3)
+        )
+
+        expect(product.isEqual(sameProduct)) == true
+        expect(product.hash) == sameProduct.hash
+
+        expect(product.isEqual(productWithDifferentInstallments)) == false
+        expect(product.isEqual(productWithoutInstallments)) == false
+        expect(productWithoutInstallments.isEqual(product)) == false
+        expect(product.isEqual(differentProduct)) == false
+    }
+
     func testTestProduct() {
         let title = "Product"
         let price: Decimal = 3.99
@@ -548,6 +580,37 @@ private extension StoreProductTests {
         } else {
             expect(productA.subscriptionGroupIdentifier) == productB.subscriptionGroupIdentifier
         }
+    }
+
+    static func testProduct(
+        productIdentifier: String,
+        installmentsInfo: InstallmentsInfo?
+    ) -> StoreProduct {
+        return TestStoreProduct(
+            localizedTitle: "product",
+            price: 3.99,
+            currencyCode: "USD",
+            localizedPriceString: "$3.99",
+            productIdentifier: productIdentifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: "",
+            subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            locale: Locale(identifier: "en_US"),
+            installmentsInfo: installmentsInfo
+        ).toStoreProduct()
+    }
+
+    static func installmentsInfo(commitmentInstallmentsCount: Int) -> InstallmentsInfo {
+        return InstallmentsInfo(
+            commitmentInstallmentsCount: commitmentInstallmentsCount,
+            commitmentInstallmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            installmentBillingPrice: 3.99,
+            installmentBillingDisplayPrice: "$3.99",
+            commitmentTotalPeriod: SubscriptionPeriod(value: commitmentInstallmentsCount, unit: .month),
+            commitmentTotalPrice: Decimal(commitmentInstallmentsCount) * 3.99,
+            commitmentTotalDisplayPrice: "$\(commitmentInstallmentsCount * 399 / 100).99",
+            billingPlanType: .monthly
+        )
     }
 
 }

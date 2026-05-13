@@ -65,7 +65,12 @@ extension OfferingsResponse {
             self.offerings
                 .lazy
                 .flatMap { $0.packages }
-                .map { $0.platformProductIdentifier }
+                .map {
+                    CompoundProductIdentifier(
+                        productIdentifier: $0.platformProductIdentifier,
+                        productPlanIdentifier: $0.platformProductPlanIdentifier
+                    )?.compoundProductIdentifier ?? $0.platformProductIdentifier
+                }
         )
     }
 

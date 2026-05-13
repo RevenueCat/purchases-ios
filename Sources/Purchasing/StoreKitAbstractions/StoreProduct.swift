@@ -53,12 +53,22 @@ internal typealias SK2BillingPlanType = StoreKit.Product.SubscriptionInfo.Billin
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
-        return self.productIdentifier == (object as? StoreProductType)?.productIdentifier
+        guard let other = object as? StoreProductType else { return false }
+        guard self.productIdentifier == other.productIdentifier else { return false }
+
+        if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
+            return self.installmentsInfo == other.installmentsInfo
+        } else {
+            return true
+        }
     }
 
     public override var hash: Int {
         var hasher = Hasher()
         hasher.combine(self.productIdentifier)
+        if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
+            hasher.combine(self.installmentsInfo)
+        }
 
         return hasher.finalize()
     }
@@ -98,6 +108,22 @@ internal typealias SK2BillingPlanType = StoreKit.Product.SubscriptionInfo.Billin
 
     @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
     @objc public var installmentsInfo: InstallmentsInfo? { self.product.installmentsInfo }
+
+    internal var compoundProductIdentifier: String {
+        if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
+            guard let installmentsInfo else { return productIdentifier }
+            switch installmentsInfo.billingPlanType {
+            case .monthly:
+                return "\(productIdentifier):monthly"
+            case .upFront:
+                return productIdentifier
+            default:
+                return productIdentifier
+            }
+        } else {
+            return productIdentifier
+        }
+    }
 
     // switflint:enable missing_docs
 }

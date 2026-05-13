@@ -71,4 +71,31 @@ import StoreKit
         self.commitmentTotalDisplayPrice = commitmentTotalDisplayPrice
         self.billingPlanType = billingPlanType
     }
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? InstallmentsInfo else { return false }
+
+        return self.commitmentInstallmentsCount == other.commitmentInstallmentsCount
+            && self.commitmentInstallmentPeriod == other.commitmentInstallmentPeriod
+            && self.installmentBillingPrice == other.installmentBillingPrice
+            && self.installmentBillingDisplayPrice == other.installmentBillingDisplayPrice
+            && self.commitmentTotalPeriod == other.commitmentTotalPeriod
+            && self.commitmentTotalPrice == other.commitmentTotalPrice
+            && self.commitmentTotalDisplayPrice == other.commitmentTotalDisplayPrice
+            && self.billingPlanType == other.billingPlanType
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(self.commitmentInstallmentsCount)
+        hasher.combine(self.commitmentInstallmentPeriod)
+        hasher.combine(self.installmentBillingPrice)
+        hasher.combine(self.installmentBillingDisplayPrice)
+        hasher.combine(self.commitmentTotalPeriod)
+        hasher.combine(self.commitmentTotalPrice)
+        hasher.combine(self.commitmentTotalDisplayPrice)
+        hasher.combine(self.billingPlanType)
+
+        return hasher.finalize()
+    }
 }
