@@ -89,6 +89,9 @@ struct PaywallsV2View: View {
     @State
     private var hasRecordedInitialWorkflowPackageSelection = false
 
+    @State
+    private var isReadyForWorkflowPackageSelection = false
+
     @StateObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
 
@@ -236,6 +239,7 @@ struct PaywallsV2View: View {
                 contextPackage: self.workflowContextPackage,
                 stepPackages: paywallState.packages
             )
+            self.isReadyForWorkflowPackageSelection = true
         }
     }
 
@@ -354,7 +358,13 @@ struct PaywallsV2View: View {
             // dropFirst: @Published replays the current value on subscription, so a new
             // PaywallsV2View created during back navigation would immediately fire this callback
             // with the step's default package, overwriting the carry-forward selection.
+            //
+            // isReadyForWorkflowPackageSelection: tab components call packageContext.update()
+            // in their onAppear to sync the parent context, which fires this receiver before
+            // any user interaction. SwiftUI fires child onAppear before the outer onAppear
+            // that sets this flag, so those initialization emissions are blocked here.
             .onReceive(selectedPackageContext.$package.dropFirst()) { package in
+                guard self.isReadyForWorkflowPackageSelection else { return }
                 guard case let .success(paywallState) = self.paywallStateManager.state,
                       let package = Self.validatedContextPackage(package, in: paywallState.packages) else {
                     return
