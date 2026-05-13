@@ -52,9 +52,6 @@ public struct PaywallView: View {
     private var workflowContext: WorkflowContext?
 
     @State
-    private var workflowExitOfferOfferingId: String?
-
-    @State
     private var customerInfo: CustomerInfo?
     @State
     private var error: NSError?
@@ -225,7 +222,10 @@ public struct PaywallView: View {
             .refreshableDisabled()
             .preference(
                 key: WorkflowExitOfferOfferingIdPreferenceKey.self,
-                value: self.workflowExitOfferOfferingId
+                value: Self.workflowExitOfferContext(
+                    offering: self.offering,
+                    workflowContext: self.workflowContext
+                )
             )
     }
 
@@ -266,7 +266,6 @@ public struct PaywallView: View {
                                     let paywallData = try await self.loadPaywallData()
                                     self.offering = paywallData.offering
                                     self.workflowContext = paywallData.workflowContext
-                                    self.workflowExitOfferOfferingId = paywallData.workflowContext?.exitOfferOfferingId
                                 }
 
                                 if self.customerInfo == nil {
@@ -289,6 +288,18 @@ public struct PaywallView: View {
         } else {
             return false
         }
+    }
+
+    private static func workflowExitOfferContext(
+        offering: Offering?,
+        workflowContext: WorkflowContext?
+    ) -> WorkflowExitOfferContext? {
+        guard let offering, let workflowContext else { return nil }
+
+        return .init(
+            currentOfferingId: offering.identifier,
+            exitOfferOfferingId: workflowContext.exitOfferOfferingId
+        )
     }
 
 //    var paywallPromoOfferCache: PaywallPromoOfferCache {

@@ -80,6 +80,30 @@ final class PaywallViewConfigurationTests: TestCase {
         let packageContext = try XCTUnwrap(result.offering.availablePackages.first?.presentedOfferingContext)
         expect(packageContext.offeringIdentifier) == initialOffering.identifier
     }
+
+    func testOfferingIdentifierUsesWorkflowExitOfferPreferencePreloadWhenWorkflowsEnabled() {
+        let content: PaywallViewConfiguration.Content = .offeringIdentifier(
+            "offering_a",
+            presentedOfferingContext: nil
+        )
+
+        expect(content.usesWorkflowExitOfferPreferencePreload(workflowsEndpointEnabled: true)) == true
+    }
+
+    func testOfferingIdentifierDoesNotUseWorkflowExitOfferPreferencePreloadWhenWorkflowsDisabled() {
+        let content: PaywallViewConfiguration.Content = .offeringIdentifier(
+            "offering_a",
+            presentedOfferingContext: nil
+        )
+
+        expect(content.usesWorkflowExitOfferPreferencePreload(workflowsEndpointEnabled: false)) == false
+    }
+
+    func testDirectOfferingDoesNotUseWorkflowExitOfferPreferencePreload() {
+        let content: PaywallViewConfiguration.Content = .offering(TestData.offeringWithNoIntroOffer)
+
+        expect(content.usesWorkflowExitOfferPreferencePreload(workflowsEndpointEnabled: true)) == false
+    }
 #endif
 
 }

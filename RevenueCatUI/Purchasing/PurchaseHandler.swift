@@ -887,12 +887,19 @@ struct PurchasedResultPreferenceKey: PreferenceKey {
 
 }
 
+struct WorkflowExitOfferContext: Equatable {
+
+    let currentOfferingId: String
+    let exitOfferOfferingId: String?
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WorkflowExitOfferOfferingIdPreferenceKey: PreferenceKey {
 
-    static var defaultValue: String?
+    static var defaultValue: WorkflowExitOfferContext?
 
-    static func reduce(value: inout String?, nextValue: () -> String?) {
+    static func reduce(value: inout WorkflowExitOfferContext?, nextValue: () -> WorkflowExitOfferContext?) {
         value = nextValue()
     }
 

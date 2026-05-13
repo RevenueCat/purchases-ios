@@ -8,6 +8,7 @@
 //      https://opensource.org/licenses/MIT
 //
 //  ExitOfferHelperTests.swift
+//
 
 import Nimble
 @_spi(Internal) @testable import RevenueCat
@@ -18,8 +19,6 @@ import XCTest
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class ExitOfferHelperTests: TestCase {
-
-    // MARK: - exitOffer(offeringId:from:)
 
     func testExitOfferReturnsOfferingWhenFound() {
         let target = Self.makeOffering(identifier: "exit_offering_a")
@@ -47,22 +46,48 @@ final class ExitOfferHelperTests: TestCase {
                                            level: .warn)
     }
 
-    // MARK: - fetchValidExitOffer(offeringId:) — guard path
+    func testValidExitOfferReturnsNilWhenExitOfferMatchesCurrentOffering() {
+        let offerings = Self.makeOfferings([Self.makeOffering(identifier: "offering_a")])
 
-    func testFetchValidExitOfferReturnsNilWhenPurchasesNotConfigured() async {
-        // Purchases is not configured in unit tests by default.
+        let result = ExitOfferHelper.validExitOffer(
+            offeringId: "offering_a",
+            currentOfferingId: "offering_a",
+            from: offerings
+        )
+
+        expect(result).to(beNil())
+        self.logger.verifyMessageWasLogged("Exit offer is the same as the current offering", level: .warn)
+    }
+
+    func testValidExitOfferReturnsOfferingWhenDifferentFromCurrentOffering() {
+        let offerings = Self.makeOfferings([
+            Self.makeOffering(identifier: "offering_a"),
+            Self.makeOffering(identifier: "exit_offering_a")
+        ])
+
+        let result = ExitOfferHelper.validExitOffer(
+            offeringId: "exit_offering_a",
+            currentOfferingId: "offering_a",
+            from: offerings
+        )
+
+        expect(result?.identifier) == "exit_offering_a"
+    }
+
+    func testFetchValidExitOfferReturnsNilWhenPurchasesNotConfigured() async throws {
         guard !Purchases.isConfigured else {
             throw XCTSkip("Purchases is already configured; cannot test the unconfigured guard")
         }
 
-        let result = await ExitOfferHelper.fetchValidExitOffer(offeringId: "exit_offering_a")
+        let result = await ExitOfferHelper.fetchValidExitOffer(
+            offeringId: "exit_offering_a",
+            currentOfferingId: "offering_a"
+        )
 
         expect(result).to(beNil())
     }
 
 }
-
-// MARK: - Helpers
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension ExitOfferHelperTests {
