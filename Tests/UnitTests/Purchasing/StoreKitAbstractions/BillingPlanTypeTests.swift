@@ -13,9 +13,9 @@
 
 import Foundation
 import Nimble
+import StoreKit
 @testable import RevenueCat
 import XCTest
-import StoreKit
 
 class BillingPlanTypeTests: TestCase {
     func testEquality() {
