@@ -51,6 +51,14 @@ public struct PaywallView: View {
     @State
     private var workflowContext: WorkflowContext?
 
+    // Stored separately rather than computed in `body` from `offering` + `workflowContext`
+    // to avoid a double preference emission: if SwiftUI renders between the two state
+    // assignments, the preference would fire once with a nil context and again with the
+    // real value. Setting it atomically alongside the other state after loadPaywallData()
+    // guarantees a single emission.
+    @State
+    private var exitOfferContext: WorkflowExitOfferContext?
+
     @State
     private var customerInfo: CustomerInfo?
     @State
@@ -222,10 +230,7 @@ public struct PaywallView: View {
             .refreshableDisabled()
             .preference(
                 key: WorkflowExitOfferOfferingIdPreferenceKey.self,
-                value: Self.workflowExitOfferContext(
-                    offering: self.offering,
-                    workflowContext: self.workflowContext
-                )
+                value: self.exitOfferContext
             )
     }
 
@@ -266,6 +271,10 @@ public struct PaywallView: View {
                                     let paywallData = try await self.loadPaywallData()
                                     self.offering = paywallData.offering
                                     self.workflowContext = paywallData.workflowContext
+                                    self.exitOfferContext = Self.workflowExitOfferContext(
+                                        offering: paywallData.offering,
+                                        workflowContext: paywallData.workflowContext
+                                    )
                                 }
 
                                 if self.customerInfo == nil {
