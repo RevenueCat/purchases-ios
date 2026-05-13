@@ -680,7 +680,10 @@ private struct PresentingPaywallModifier: ViewModifier {
             self.handleWorkflowExitOfferPreferenceChange(context)
         }
         .task {
-            guard !self.content.usesWorkflowExitOfferPreferencePreload() else {
+            // When the workflows endpoint is enabled, offerings don't include paywall
+            // components, so exit offers are resolved exclusively from WorkflowContext
+            // via the preference key above.
+            guard !ProcessInfo.processInfo.workflowsEndpointEnabled else {
                 self.cancelWorkflowExitOfferTask()
                 self.exitOfferOffering = nil
                 return
@@ -756,7 +759,7 @@ private struct PresentingPaywallModifier: ViewModifier {
     }
 
     private func handleWorkflowExitOfferPreferenceChange(_ context: WorkflowExitOfferContext?) {
-        guard self.content.usesWorkflowExitOfferPreferencePreload() else { return }
+        guard ProcessInfo.processInfo.workflowsEndpointEnabled else { return }
 
         self.cancelWorkflowExitOfferTask()
         self.exitOfferOffering = nil
@@ -1078,23 +1081,6 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         self.exitOfferOffering = nil
         self.purchaseHandler.resetForNewSession()
         self.onDismiss?()
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension PaywallViewConfiguration.Content {
-
-    func usesWorkflowExitOfferPreferencePreload(
-        workflowsEndpointEnabled: Bool = ProcessInfo.processInfo.arguments.contains("-EnableWorkflowsEndpoint")
-    ) -> Bool {
-        guard workflowsEndpointEnabled else { return false }
-
-        if case .offeringIdentifier = self {
-            return true
-        }
-
-        return false
     }
 
 }
