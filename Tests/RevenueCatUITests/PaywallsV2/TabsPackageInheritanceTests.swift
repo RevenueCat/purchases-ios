@@ -1049,13 +1049,7 @@ extension TabsPackageInheritanceTests {
             packages: [self.parentPackageA, self.parentPackageB],
             defaultSelectedPackage: self.parentPackageA
         )
-        let parentContext = PackageContext(
-            package: self.parentPackageA,
-            variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
-        )
-
         let initialPackage = validated(self.parentPackageB, in: tab1ViewModel.packages)
-            ?? nil
             ?? tab1ViewModel.defaultSelectedPackage
 
         expect(initialPackage?.identifier) == self.parentPackageB.identifier
@@ -1070,9 +1064,8 @@ extension TabsPackageInheritanceTests {
             defaultSelectedPackage: self.parentPackageA
         )
 
-        let initialPackage = validated(self.tabPackageC, in: tab1ViewModel.packages)
+        let initialPackage: Package? = validated(self.tabPackageC, in: tab1ViewModel.packages)
             ?? self.parentPackageB
-            ?? tab1ViewModel.defaultSelectedPackage
 
         expect(initialPackage?.identifier) == self.parentPackageB.identifier
     }
@@ -1101,9 +1094,8 @@ extension TabsPackageInheritanceTests {
             defaultSelectedPackage: self.parentPackageA
         )
 
-        let initialPackage = validated(self.parentPackageB, in: tab1ViewModel.packages)
+        let initialPackage: Package? = validated(self.parentPackageB, in: tab1ViewModel.packages)
             ?? self.parentPackageA
-            ?? tab1ViewModel.defaultSelectedPackage
 
         expect(initialPackage?.identifier) == self.parentPackageB.identifier
     }
