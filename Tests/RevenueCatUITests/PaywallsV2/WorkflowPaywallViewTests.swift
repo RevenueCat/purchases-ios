@@ -263,7 +263,8 @@ private extension WorkflowPaywallViewTests {
     static func makeContext(
         singleStepFallbackId: String?,
         workflowPackages: [PackageSpec] = [],
-        terminalScreenJSON: String? = nil
+        terminalScreenJSON: String? = nil,
+        extraOfferings: [Offering] = []
     ) throws -> WorkflowContext {
         let offeringId = "offering_test"
         let workflow = try makeWorkflow(
@@ -286,8 +287,10 @@ private extension WorkflowPaywallViewTests {
             availablePackages: packages,
             webCheckoutUrl: nil
         )
+        var offeringsDict: [String: Offering] = [offeringId: offering]
+        for extra in extraOfferings { offeringsDict[extra.identifier] = extra }
         let offerings = Offerings(
-            offerings: [offeringId: offering],
+            offerings: offeringsDict,
             currentOfferingID: nil,
             placements: nil,
             targeting: nil,
@@ -582,8 +585,7 @@ extension WorkflowPaywallViewTests {
 
         let result = WorkflowPaywallView.exitOfferContext(for: context, currentStepId: "step_terminal")
 
-        expect(result?.exitOfferOfferingId) == "exit_offering_a"
-        expect(result?.currentOfferingId) == context.initialOffering.identifier
+        expect(result?.exitOfferOffering?.identifier) == "exit_offering_a"
     }
 
     private static func makeContextWithExitOffer(
@@ -596,9 +598,18 @@ extension WorkflowPaywallViewTests {
         , "exit_offers": { "dismiss": { "offering_id": "\(exitOfferOfferingId)" } }
         }
         """
+        let exitOffering = Offering(
+            identifier: exitOfferOfferingId,
+            serverDescription: "Exit offering",
+            metadata: [:],
+            paywall: nil,
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
         return try Self.makeContext(
             singleStepFallbackId: singleStepFallbackId,
-            terminalScreenJSON: screenJSON
+            terminalScreenJSON: screenJSON,
+            extraOfferings: [exitOffering]
         )
     }
 

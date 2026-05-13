@@ -41,24 +41,42 @@ struct WorkflowContext {
         return offering.withPresentedOfferingContext(presentedOfferingContext)
     }
 
-    /// The exit offer offering ID for this workflow, resolved from `singleStepFallbackId`.
-    /// Returns `nil` if `singleStepFallbackId` is not set or its screen has no exit offer configured.
-    var exitOfferOfferingId: String? {
-        guard let stepId = workflow.singleStepFallbackId,
-              let step = workflow.steps[stepId],
-              let screenId = step.screenId,
-              let screen = workflow.screens[screenId] else {
-            return nil
-        }
-        return screen.exitOffers?.dismiss?.offeringId
+    /// The step ID from which the exit offer may be triggered.
+    /// Used to guard against showing the exit offer when dismissing from a different step.
+    var exitOfferTriggeringStepId: String? { exitOfferEntry?.triggeringStepId }
+
+    /// The exit offer resolved synchronously from `allOfferings`.
+    /// Non-nil only when an exit offer is configured and its offering is present in the loaded offerings bundle.
+    var exitOfferOffering: Offering? {
+        guard let entry = exitOfferEntry else { return nil }
+        return ExitOfferHelper.validExitOffer(
+            offeringId: entry.offeringId,
+            currentOfferingId: initialOffering.identifier,
+            from: allOfferings
+        )
     }
 
-    /// The step ID from which the exit offer may be triggered.
-    /// Non-nil only when an exit offer is configured on `singleStepFallbackId`.
-    /// Used to guard against showing the exit offer when dismissing from a different step.
-    var exitOfferTriggeringStepId: String? {
-        guard exitOfferOfferingId != nil else { return nil }
-        return workflow.singleStepFallbackId
+    /// Finds the first exit offer entry in the workflow.
+    /// For single-step workflows reads from `singleStepFallbackId`'s screen.
+    /// For multi-page workflows scans all steps for a screen with a configured exit offer.
+    /// Assumption: at most one exit offer is configured per workflow.
+    private var exitOfferEntry: (offeringId: String, triggeringStepId: String)? {
+        if let stepId = workflow.singleStepFallbackId,
+           let step = workflow.steps[stepId],
+           let screenId = step.screenId,
+           let screen = workflow.screens[screenId],
+           let offeringId = screen.exitOffers?.dismiss?.offeringId {
+            return (offeringId: offeringId, triggeringStepId: stepId)
+        }
+
+        for (stepId, step) in workflow.steps {
+            guard let screenId = step.screenId,
+                  let screen = workflow.screens[screenId],
+                  let offeringId = screen.exitOffers?.dismiss?.offeringId else { continue }
+            return (offeringId: offeringId, triggeringStepId: stepId)
+        }
+
+        return nil
     }
 
     /// Resolves the package context from the workflow's `singleStepFallbackId` step so that
