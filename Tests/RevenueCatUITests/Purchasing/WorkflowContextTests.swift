@@ -294,6 +294,54 @@ final class WorkflowContextTests: TestCase {
         expect(result?.selectedPackage.identifier) == "$rc_monthly"
     }
 
+    func testEffectivePackageContextPreferringCarryForwardSelectsDestinationOfferingsPackage() throws {
+        // Multi-offering: step_fallback uses "offering_a", step_own uses "offering_b".
+        // Both expose $rc_monthly — same identifier but different Package objects from different offerings.
+        // Carry-forward must return the $rc_monthly from offering_b (the destination step),
+        // not offering_a's instance (the source).
+        let context = try Self.makeWorkflowContextWithMultiOfferingSteps(
+            fallbackOfferingId: "offering_a",
+            fallbackPackages: [(id: "$rc_monthly", isDefault: true)],
+            ownOfferingId: "offering_b",
+            ownPackages: [(id: "$rc_monthly", isDefault: true)]
+        )
+        let monthlyFromFallback = try XCTUnwrap(
+            context.packageContext(for: "step_fallback")?.selectedPackage
+        )
+        expect(monthlyFromFallback.offeringIdentifier) == "offering_a"
+
+        let result = try XCTUnwrap(
+            context.effectivePackageContext(for: "step_own", preferring: monthlyFromFallback)
+        )
+
+        expect(result.selectedPackage.identifier) == "$rc_monthly"
+        expect(result.selectedPackage.offeringIdentifier) == "offering_b"
+    }
+
+    func testEffectivePackageContextWorkflowDefaultFallbackSelectsDestinationOfferingsPackage() throws {
+        // Multi-offering: step_fallback (offering_a) has [annual (default), weekly].
+        //                 step_own    (offering_b) has [annual, monthly].
+        // Preferred = weekly (not in step_own) → triggers the wfDefault path (lines 99-101).
+        // wfDefault = annual from offering_a IS present in step_own by identifier.
+        // Result must use annual from offering_b, not offering_a's instance.
+        let context = try Self.makeWorkflowContextWithMultiOfferingSteps(
+            fallbackOfferingId: "offering_a",
+            fallbackPackages: [(id: "$rc_annual", isDefault: true), (id: "$rc_weekly", isDefault: false)],
+            ownOfferingId: "offering_b",
+            ownPackages: [(id: "$rc_annual", isDefault: false), (id: "$rc_monthly", isDefault: true)]
+        )
+        let weeklyFromFallback = try XCTUnwrap(
+            context.packageContext(for: "step_fallback")?.packages.first { $0.identifier == "$rc_weekly" }
+        )
+
+        let result = try XCTUnwrap(
+            context.effectivePackageContext(for: "step_own", preferring: weeklyFromFallback)
+        )
+
+        expect(result.selectedPackage.identifier) == "$rc_annual"
+        expect(result.selectedPackage.offeringIdentifier) == "offering_b"
+    }
+
     // MARK: - exitOfferOfferingId
 
     func testExitOfferOfferingReturnsNilWhenNoSingleStepFallbackId() throws {
@@ -720,6 +768,122 @@ private extension WorkflowContextTests {
             workflow: workflow,
             allOfferings: offerings,
             initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+    }
+
+    /// Builds a `WorkflowContext` where `step_fallback` and `step_own` each resolve to a
+    /// *distinct* offering. Use this helper to verify that carry-forward logic selects the
+    /// Package object that belongs to the **destination** step's offering, not the source's.
+    static func makeWorkflowContextWithMultiOfferingSteps(
+        fallbackOfferingId: String,
+        fallbackPackages: [PackageSpec],
+        ownOfferingId: String,
+        ownPackages: [PackageSpec]
+    ) throws -> WorkflowContext {
+        func rcPackages(_ specs: [PackageSpec], offeringId: String) -> [Package] {
+            specs.map { spec in
+                Package(
+                    identifier: spec.id,
+                    packageType: .custom,
+                    storeProduct: TestData.monthlyPackage.storeProduct,
+                    offeringIdentifier: offeringId,
+                    webCheckoutUrl: nil
+                )
+            }
+        }
+
+        let fallbackOffering = Offering(
+            identifier: fallbackOfferingId,
+            serverDescription: "Fallback",
+            metadata: [:],
+            paywall: nil,
+            availablePackages: rcPackages(fallbackPackages, offeringId: fallbackOfferingId),
+            webCheckoutUrl: nil
+        )
+        let ownOffering = Offering(
+            identifier: ownOfferingId,
+            serverDescription: "Own",
+            metadata: [:],
+            paywall: nil,
+            availablePackages: rcPackages(ownPackages, offeringId: ownOfferingId),
+            webCheckoutUrl: nil
+        )
+        let offerings = Offerings(
+            offerings: [fallbackOfferingId: fallbackOffering, ownOfferingId: ownOffering],
+            currentOfferingID: nil,
+            placements: nil,
+            targeting: nil,
+            contents: .init(
+                response: .init(
+                    currentOfferingId: nil,
+                    offerings: [],
+                    placements: nil,
+                    targeting: nil,
+                    uiConfig: nil
+                ),
+                httpResponseOriginalSource: .mainServer
+            ),
+            loadedFromDiskCache: false
+        )
+
+        func screenJSON(packages: [PackageSpec], offeringId: String) -> String {
+            let componentsJSON = packages.map { pkg in
+                """
+                {
+                    "type": "package",
+                    "packageId": "\(pkg.id)",
+                    "isSelectedByDefault": \(pkg.isDefault),
+                    "stack": \(Self.minimalStackJSON())
+                }
+                """
+            }.joined(separator: ",")
+            return """
+            {
+              "template_name": "tmpl",
+              "asset_base_url": "https://assets.revenuecat.com",
+              "default_locale": "en_US",
+              "offering_identifier": "\(offeringId)",
+              "components_localizations": {},
+              "components_config": {
+                "base": {
+                  "stack": \(Self.minimalStackJSON(components: "[\(componentsJSON)]")),
+                  "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
+                }
+              }
+            }
+            """
+        }
+
+        let json = """
+        {
+          "id": "wf_test",
+          "display_name": "Test",
+          "initial_step_id": "step_initial",
+          "single_step_fallback_id": "step_fallback",
+          "steps": {
+            "step_initial": { "id": "step_initial", "type": "screen" },
+            "step_fallback": { "id": "step_fallback", "type": "screen", "screen_id": "screen_fallback" },
+            "step_own": { "id": "step_own", "type": "screen", "screen_id": "screen_own" }
+          },
+          "screens": {
+            "screen_fallback": \(screenJSON(packages: fallbackPackages, offeringId: fallbackOfferingId)),
+            "screen_own": \(screenJSON(packages: ownPackages, offeringId: ownOfferingId))
+          },
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {}
+          }
+        }
+        """
+        let workflow = try JSONDecoder.default.decode(
+            PublishedWorkflow.self,
+            from: XCTUnwrap(json.data(using: .utf8))
+        )
+        return WorkflowContext(
+            workflow: workflow,
+            allOfferings: offerings,
+            initialOffering: fallbackOffering,
             presentedOfferingContext: nil
         )
     }

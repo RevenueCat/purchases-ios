@@ -125,13 +125,13 @@ struct WorkflowContext {
             return base
         }
 
-        if base.packages.contains(where: { $0.identifier == preferredPackage.identifier }) {
-            return .init(selectedPackage: preferredPackage, packages: base.packages)
+        if let matched = base.packages.first(where: { $0.identifier == preferredPackage.identifier }) {
+            return .init(selectedPackage: matched, packages: base.packages)
         }
 
         if let wfDefault = wfContext?.selectedPackage,
-           base.packages.contains(where: { $0.identifier == wfDefault.identifier }) {
-            return .init(selectedPackage: wfDefault, packages: base.packages)
+           let matched = base.packages.first(where: { $0.identifier == wfDefault.identifier }) {
+            return .init(selectedPackage: matched, packages: base.packages)
         }
 
         return base
