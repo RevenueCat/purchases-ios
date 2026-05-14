@@ -86,9 +86,6 @@ let package = Package(
                     ],
                     exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans"],
                     resources: [.copy("Resources/header.heic"), .copy("Resources/background.heic")]),
-        // RulesEngine — internal dependency of `RevenueCat` / `RevenueCatUI`,
-        // intentionally not exposed as a `.library(...)` product so SPM
-        // integrators can't add it directly.
         .target(name: "RulesEngine",
                 path: "RulesEngine"),
         .testTarget(name: "RulesEngineTests",
