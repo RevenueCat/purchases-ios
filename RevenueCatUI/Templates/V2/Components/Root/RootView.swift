@@ -136,12 +136,12 @@ struct RootView: View {
             } else {
                 // Reset package selection when sheet is dismissed; snapshot sheet name before clear for analytics.
                 let selectionInSheetContext = self.packageContext.package
-                if self.workflowPackageContext != nil {
-                    self.packageContext.package = self.packageBeforeSheet ?? self.defaultPackage
-                    self.packageBeforeSheet = nil
-                } else {
-                    self.packageContext.package = self.defaultPackage
-                }
+                self.packageContext.package = Self.restoredPackageAfterSheetDismissal(
+                    workflowPackageContext: self.workflowPackageContext,
+                    packageBeforeSheet: self.packageBeforeSheet,
+                    defaultPackage: self.defaultPackage
+                )
+                self.packageBeforeSheet = nil
                 let resultingRootPackage = self.packageContext.package
                 let sheetName = self.packageSelectionSheetComponentName
                 self.packageSelectionSheetComponentName = nil
@@ -154,6 +154,22 @@ struct RootView: View {
                 )
             }
         }
+    }
+
+    /// Returns the package that should be selected after a selection sheet is dismissed.
+    ///
+    /// In a workflow context the view snapshots the pre-sheet selection on open; this restores
+    /// that snapshot so navigating into and out of the sheet is a no-op for the workflow step.
+    /// Outside a workflow the sheet always resets to the step default.
+    static func restoredPackageAfterSheetDismissal(
+        workflowPackageContext: WorkflowPackageContext?,
+        packageBeforeSheet: Package?,
+        defaultPackage: Package?
+    ) -> Package? {
+        if workflowPackageContext != nil {
+            return packageBeforeSheet ?? defaultPackage
+        }
+        return defaultPackage
     }
 
 }
