@@ -30,11 +30,17 @@ enum ExitOfferHelper {
 
         do {
             let allOfferings = try await Purchases.shared.offerings()
-            return Self.validExitOffer(
+            let result = Self.validExitOffer(
                 offeringId: offeringId,
                 currentOfferingId: currentOfferingId,
                 from: allOfferings
             )
+            if result != nil {
+                Logger.debug(Strings.prefetchedExitOffer(offeringId))
+            } else {
+                Logger.warning(Strings.exitOfferNotFound(offeringId))
+            }
+            return result
         } catch {
             Logger.error(Strings.errorLoadingExitOffer(error))
             return nil
@@ -77,15 +83,7 @@ enum ExitOfferHelper {
     }
 
     static func exitOffer(offeringId: String, from offerings: Offerings) -> Offering? {
-        let offering = offerings.offering(identifier: offeringId)
-
-        if offering != nil {
-            Logger.debug(Strings.prefetchedExitOffer(offeringId))
-        } else {
-            Logger.warning(Strings.exitOfferNotFound(offeringId))
-        }
-
-        return offering
+        return offerings.offering(identifier: offeringId)
     }
 
 }
