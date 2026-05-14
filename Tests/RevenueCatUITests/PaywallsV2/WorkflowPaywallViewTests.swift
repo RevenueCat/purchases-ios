@@ -218,6 +218,36 @@ extension WorkflowPaywallViewTests {
         expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_weekly"]
     }
 
+    func testPageWorkflowPackageContextUsesScreenPackagesInsteadOfFallbackPackages() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            workflowPackages: [(id: "$rc_monthly", isDefault: true)],
+            initialScreenJSON: Self.makeScreenJSON(
+                packages: [(id: "$rc_annual", isDefault: true)],
+                offeringId: "offering_test"
+            )
+        )
+        let initialScreen = try XCTUnwrap(context.workflow.screens["screen_initial"])
+        let initialOffering = try XCTUnwrap(context.offering(for: initialScreen.offeringIdentifier))
+        let pagePackageContext = context.workflowPackageContext(for: initialScreen, offering: initialOffering)
+
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_monthly"
+        expect(pagePackageContext?.selectedPackage.identifier) == "$rc_annual"
+        expect(pagePackageContext?.packages.map(\.identifier)) == ["$rc_annual"]
+    }
+
+    func testPageWorkflowPackageContextReturnsNilForPackagelessScreen() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            workflowPackages: [(id: "$rc_monthly", isDefault: true)]
+        )
+        let initialScreen = try XCTUnwrap(context.workflow.screens["screen_initial"])
+        let initialOffering = try XCTUnwrap(context.offering(for: initialScreen.offeringIdentifier))
+
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_monthly"
+        expect(context.workflowPackageContext(for: initialScreen, offering: initialOffering)).to(beNil())
+    }
+
 }
 
 // MARK: - packageContext(for:) via WorkflowContext
@@ -408,6 +438,7 @@ private extension WorkflowPaywallViewTests {
     static func makeContext(
         singleStepFallbackId: String?,
         workflowPackages: [PackageSpec] = [],
+        initialScreenJSON: String? = nil,
         terminalScreenJSON: String? = nil,
         extraOfferings: [Offering] = []
     ) throws -> WorkflowContext {
@@ -415,6 +446,7 @@ private extension WorkflowPaywallViewTests {
         let workflow = try makeWorkflow(
             singleStepFallbackId: singleStepFallbackId,
             workflowPackages: workflowPackages,
+            initialScreenJSON: initialScreenJSON,
             terminalScreenJSON: terminalScreenJSON,
             offeringId: offeringId
         )
@@ -462,10 +494,13 @@ private extension WorkflowPaywallViewTests {
     static func makeWorkflow(
         singleStepFallbackId: String?,
         workflowPackages: [PackageSpec],
+        initialScreenJSON customInitialScreenJSON: String? = nil,
         terminalScreenJSON customTerminalScreenJSON: String? = nil,
         offeringId: String
     ) throws -> PublishedWorkflow {
         let workflowStepIdJSON = singleStepFallbackId.map { "\"single_step_fallback_id\": \"\($0)\"," } ?? ""
+        let initialScreenJSON = customInitialScreenJSON
+            ?? makeScreenJSON(packages: [], offeringId: offeringId)
 
         let terminalStepJSON: String
         let terminalScreenJSON: String
@@ -495,7 +530,7 @@ private extension WorkflowPaywallViewTests {
             "step_placeholder": { "id": "step_placeholder", "type": "screen" }
           },
           "screens": {
-            "screen_initial": \(makeScreenJSON(packages: [], offeringId: offeringId)),
+            "screen_initial": \(initialScreenJSON),
             \(terminalScreenJSON)
             "screen_placeholder": \(makeScreenJSON(packages: [], offeringId: offeringId))
           },

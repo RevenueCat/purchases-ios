@@ -147,6 +147,13 @@ struct WorkflowContext {
             return nil
         }
 
+        return self.workflowPackageContext(for: screen, offering: offering)
+    }
+
+    func workflowPackageContext(
+        for screen: WorkflowScreen,
+        offering: Offering
+    ) -> WorkflowPackageContext? {
         let base = screen.componentsConfig.base
         let allComponents = base.stack.components
             + (base.stickyFooter?.stack.components ?? [])

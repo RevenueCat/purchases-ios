@@ -153,7 +153,6 @@ struct WorkflowPaywallView: View {
     private let displayCloseButton: Bool
     private let promoOfferCache: PaywallPromoOfferCache?
     private let onDismiss: () -> Void
-    private let workflowPackageContext: WorkflowPackageContext?
 
     @StateObject private var navigator: WorkflowNavigator
     @State private var hasLoggedInvalidState = false
@@ -177,7 +176,6 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.promoOfferCache = promoOfferCache
         self.onDismiss = onDismiss
-        self.workflowPackageContext = context.workflowPackageContext
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
         let initialStepId = context.workflow.initialStepId
         let initialPackageContext = Self.buildPackageContext(
@@ -195,7 +193,10 @@ struct WorkflowPaywallView: View {
                     canNavigateBack: false,
                     displayCloseButton: displayCloseButton,
                     packageContext: initialPackageContext,
-                    effectiveWorkflowPackageContext: context.effectivePackageContext(for: initialStepId)
+                    effectiveWorkflowPackageContext: context.effectivePackageContext(
+                        for: initialStepId,
+                        preferring: initialPackageContext.package
+                    )
                 )
             )
         )
@@ -265,8 +266,8 @@ struct WorkflowPaywallView: View {
             purchaseHandler: self.purchaseHandler,
             introEligibilityChecker: self.introEligibilityChecker,
             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
-            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage,
-            workflowPackages: self.workflowPackageContext?.packages,
+            workflowDefaultPackage: page.effectiveWorkflowPackageContext?.selectedPackage,
+            workflowPackages: page.effectiveWorkflowPackageContext?.packages,
             displayCloseButton: page.showCloseButton,
             onDismiss: self.handleDismiss,
             closeWorkflowAction: self.onDismiss,
@@ -478,7 +479,10 @@ struct WorkflowPaywallView: View {
             canNavigateBack: canNavigateBack,
             displayCloseButton: self.displayCloseButton,
             packageContext: packageContext,
-            effectiveWorkflowPackageContext: self.context.effectivePackageContext(for: stepId)
+            effectiveWorkflowPackageContext: self.context.effectivePackageContext(
+                for: stepId,
+                preferring: packageContext.package
+            )
         )
     }
 
