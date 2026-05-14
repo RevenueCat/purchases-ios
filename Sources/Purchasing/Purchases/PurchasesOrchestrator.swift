@@ -799,13 +799,13 @@ final class PurchasesOrchestrator {
 
                 if eligibleBillingPlanTypes.contains(sk2BillingPlanType) {
                     Logger.debug(
-                        StoreKitStrings.sk2_applying_billing_plan(billingPlanType: billingPlanType.value)
+                        StoreKitStrings.sk2_applying_billing_plan(billingPlanType: billingPlanType.rawValue)
                     )
                     options.insert(.billingPlanType(sk2BillingPlanType))
                 } else {
                     Logger.error(
                         StoreKitStrings.sk2_user_not_eligible_for_billing_plan_at_purchase_time(
-                            billingPlanType: billingPlanType.value
+                            billingPlanType: billingPlanType.rawValue
                         )
                     )
                     throw ErrorUtils.productNotAvailableForPurchaseError()
