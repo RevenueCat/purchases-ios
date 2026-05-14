@@ -30,7 +30,7 @@ final class RootViewSheetDismissalTests: TestCase {
 
         let result = RootView.restoredPackageAfterSheetDismissal(
             workflowPackageContext: workflowCtx,
-            packageBeforeSheet: snapshot,
+            packageBeforeOpeningSheet: snapshot,
             defaultPackage: defaultPackage
         )
 
@@ -45,7 +45,7 @@ final class RootViewSheetDismissalTests: TestCase {
 
         let result = RootView.restoredPackageAfterSheetDismissal(
             workflowPackageContext: workflowCtx,
-            packageBeforeSheet: nil,
+            packageBeforeOpeningSheet: nil,
             defaultPackage: defaultPackage
         )
 
@@ -60,7 +60,7 @@ final class RootViewSheetDismissalTests: TestCase {
 
         let result = RootView.restoredPackageAfterSheetDismissal(
             workflowPackageContext: nil,
-            packageBeforeSheet: snapshot,
+            packageBeforeOpeningSheet: snapshot,
             defaultPackage: defaultPackage
         )
 
@@ -73,7 +73,7 @@ final class RootViewSheetDismissalTests: TestCase {
 
         let result = RootView.restoredPackageAfterSheetDismissal(
             workflowPackageContext: workflowCtx,
-            packageBeforeSheet: nil,
+            packageBeforeOpeningSheet: nil,
             defaultPackage: nil
         )
 

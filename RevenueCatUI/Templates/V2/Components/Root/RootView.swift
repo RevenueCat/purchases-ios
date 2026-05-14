@@ -38,7 +38,7 @@ struct RootView: View {
 
     @State private var sheetViewModel: SheetViewModel?
     @State private var packageSelectionSheetComponentName: String?
-    @State private var packageBeforeSheet: Package?
+    @State private var packageBeforeOpeningSheet: Package?
     @State private var overlaidHeaderHeight: CGFloat = 0
 
     internal init(
@@ -131,17 +131,17 @@ struct RootView: View {
             if let newValue {
                 self.packageSelectionSheetComponentName = newValue.sheet.name
                 if self.workflowPackageContext != nil {
-                    self.packageBeforeSheet = self.packageContext.package
+                    self.packageBeforeOpeningSheet = self.packageContext.package
                 }
             } else {
                 // Reset package selection when sheet is dismissed; snapshot sheet name before clear for analytics.
                 let selectionInSheetContext = self.packageContext.package
                 self.packageContext.package = Self.restoredPackageAfterSheetDismissal(
                     workflowPackageContext: self.workflowPackageContext,
-                    packageBeforeSheet: self.packageBeforeSheet,
+                    packageBeforeOpeningSheet: self.packageBeforeOpeningSheet,
                     defaultPackage: self.defaultPackage
                 )
-                self.packageBeforeSheet = nil
+                self.packageBeforeOpeningSheet = nil
                 let resultingRootPackage = self.packageContext.package
                 let sheetName = self.packageSelectionSheetComponentName
                 self.packageSelectionSheetComponentName = nil
@@ -163,11 +163,11 @@ struct RootView: View {
     /// Outside a workflow the sheet always resets to the step default.
     static func restoredPackageAfterSheetDismissal(
         workflowPackageContext: WorkflowPackageContext?,
-        packageBeforeSheet: Package?,
+        packageBeforeOpeningSheet: Package?,
         defaultPackage: Package?
     ) -> Package? {
         if workflowPackageContext != nil {
-            return packageBeforeSheet ?? defaultPackage
+            return packageBeforeOpeningSheet ?? defaultPackage
         }
         return defaultPackage
     }
