@@ -1385,6 +1385,7 @@
 		FDE57B0E2DF8BC1100101CE2 /* VirtualCurrenciesDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE57B0D2DF8BC1100101CE2 /* VirtualCurrenciesDecodingTests.swift */; };
 		FDED7EC52F33DF0A00827E54 /* IsPurchaseAllowedByRestoreBehaviorCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED7EC42F33DF0A00827E54 /* IsPurchaseAllowedByRestoreBehaviorCallback.swift */; };
 		FDEEEEEE000000000000A002 /* RewardVerificationStatusResponseDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDEEEEEE000000000000A001 /* RewardVerificationStatusResponseDecodingTests.swift */; };
+		FDF6B1AA2FB628E0006840E8 /* TestStoreProductTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDF6B1A92FB628E0006840E8 /* TestStoreProductTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1559,6 +1560,7 @@
 		03F446542D303E350046129A /* PaddingPropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddingPropertyTests.swift; sourceTree = "<group>"; };
 		03F446562D303FA10046129A /* CornerRadiusesPropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerRadiusesPropertyTests.swift; sourceTree = "<group>"; };
 		077AC81FEBE38D1468AE8670 /* VideoAutoplayHandlerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VideoAutoplayHandlerTests.swift; sourceTree = "<group>"; };
+		0E4CCD8E9E454A2EB3760E06 /* ButtonComponentViewModelMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentViewModelMappingTests.swift; sourceTree = "<group>"; };
 		13B0EAB50136613F69FAA3BB /* SynchronizedUserDefaultsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SynchronizedUserDefaultsTests.swift; sourceTree = "<group>"; };
 		161627FD2F50987800DEEDEB /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
 		16216FEE2EBB8641008ACFE9 /* ResumeAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResumeAction.swift; sourceTree = "<group>"; };
@@ -2935,6 +2937,7 @@
 		FDE57B0D2DF8BC1100101CE2 /* VirtualCurrenciesDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesDecodingTests.swift; sourceTree = "<group>"; };
 		FDED7EC42F33DF0A00827E54 /* IsPurchaseAllowedByRestoreBehaviorCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IsPurchaseAllowedByRestoreBehaviorCallback.swift; sourceTree = "<group>"; };
 		FDEEEEEE000000000000A001 /* RewardVerificationStatusResponseDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationStatusResponseDecodingTests.swift; sourceTree = "<group>"; };
+		FDF6B1A92FB628E0006840E8 /* TestStoreProductTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStoreProductTests.swift; sourceTree = "<group>"; };
 		FECF627761D375C8431EB866 /* StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProduct.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -4944,6 +4947,7 @@
 				900D270D2F96A00000D32EDF /* PurchasesRewardVerificationTests.swift */,
 				77AABEB72F0C23450018C1D3 /* PurchasesStoreMessagesTests.swift */,
 				FD4E63412F34E0B60040BA46 /* PurchasesIsPurchaseAllowedByRestoreBehaviorTests.swift */,
+				FDF6B1A92FB628E0006840E8 /* TestStoreProductTests.swift */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";
@@ -7412,6 +7416,7 @@
 				03C7305B2D35985900297FEC /* TextComponentTests.swift in Sources */,
 				FDE57B0E2DF8BC1100101CE2 /* VirtualCurrenciesDecodingTests.swift in Sources */,
 				75FCD4CE2E37FBE100036C02 /* SimulatedStoreMockData.swift in Sources */,
+				FDF6B1AA2FB628E0006840E8 /* TestStoreProductTests.swift in Sources */,
 				75FCD4CF2E37FBE100036C02 /* SimulatedStoreProductsManagerTests.swift in Sources */,
 				1DE37A192F61AF94009CA3AC /* PurchasesCustomPaywallEventsTests.swift in Sources */,
 				B36824BF268FBC8700957E4C /* SubscriberAttributeTests.swift in Sources */,
