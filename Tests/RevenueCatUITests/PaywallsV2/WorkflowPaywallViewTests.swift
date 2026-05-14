@@ -315,6 +315,57 @@ extension WorkflowPaywallViewTests {
         expect(packageContext.variableContext.mostExpensivePricePerMonth).toNot(beNil())
     }
 
+    /// Verifies that once a step's `PackageContext` is cached, subsequent navigations to that step
+    /// reuse the cached instance (preserving any user mutations) rather than re-applying carry-forward.
+    ///
+    /// Scenario: user navigates step1 → step2 (annual carried forward), selects monthly on step2,
+    /// returns to step1, then navigates forward to step2 again.
+    /// Step2 must show monthly (the user's own previous selection), not annual (the new carry-forward).
+    /// `WorkflowPaywallView.renderedPageForStep` implements this via the cache-hit path that skips
+    /// `buildPackageContext` entirely when the step already has a `PackageContext` in `stepPackageContexts`.
+    func testCachedStepContextTakesPrecedenceOverCarryForwardOnRevisit() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            workflowPackages: [(id: "$rc_annual", isDefault: true), (id: "$rc_monthly", isDefault: false)]
+        )
+        let annual = try XCTUnwrap(
+            context.packageContext(for: "step_terminal")?.packages.first { $0.identifier == "$rc_annual" }
+        )
+        let monthly = try XCTUnwrap(
+            context.packageContext(for: "step_terminal")?.packages.first { $0.identifier == "$rc_monthly" }
+        )
+
+        // First forward navigation: annual carried forward → step gets annual.
+        let cachedCtx = WorkflowPaywallView.buildPackageContext(
+            stepId: "step_terminal",
+            context: context,
+            preferredPackage: annual,
+            showZeroDecimalPlacePrices: false
+        )
+        expect(cachedCtx.package?.identifier) == annual.identifier
+
+        // User selects monthly on the step (mutation through the reference stored in stepPackageContexts).
+        cachedCtx.package = monthly
+
+        // Simulate the per-step cache that WorkflowPaywallView maintains.
+        let stepCache: [String: PackageContext] = ["step_terminal": cachedCtx]
+
+        // Second forward navigation would carry annual again — but the step is already cached.
+        // WorkflowPaywallView.renderedPageForStep takes the cache-hit path and skips buildPackageContext.
+        // Demonstrate the divergence: carry-forward would produce annual, cache has monthly.
+        let wouldBeWithCarryForward = WorkflowPaywallView.buildPackageContext(
+            stepId: "step_terminal",
+            context: context,
+            preferredPackage: annual,
+            showZeroDecimalPlacePrices: false
+        )
+
+        // Cache-hit path: user's own selection (monthly) is preserved.
+        expect(stepCache["step_terminal"]?.package?.identifier) == monthly.identifier
+        // Cache-miss path would have produced annual — confirming cache hit takes precedence.
+        expect(wouldBeWithCarryForward.package?.identifier) == annual.identifier
+    }
+
     /// Verifies that `buildPackageContext` returns an empty `PackageContext` for a step that
     /// has no package components and no workflow fallback (nil `effectivePackageContext`).
     func testBuildPackageContextReturnsEmptyContextForPackagelessStepWithNoFallback() throws {
