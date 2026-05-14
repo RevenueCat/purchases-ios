@@ -49,8 +49,8 @@ class BillingPlanTypeTests: TestCase {
     }
 }
 
-// MARK: - Value
-extension BillingPlanType {
+// MARK: - BillingPlanType.rawValue
+extension BillingPlanTypeTests {
     func testBillingPlanTypeValues() {
         expect(BillingPlanType.monthly.rawValue).to(equal("monthly"))
         expect(BillingPlanType.upFront.rawValue).to(equal("upFront"))
