@@ -26,7 +26,7 @@ extension ProductEntitlementMappingResponse {
     struct Product: Equatable {
 
         var identifier: String
-        var basePlanId: String? = nil
+        var basePlanId: String?
         var entitlements: [String]
 
     }
