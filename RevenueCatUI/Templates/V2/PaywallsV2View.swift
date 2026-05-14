@@ -191,7 +191,7 @@ struct PaywallsV2View: View {
 
     private func loadedPaywallView(paywallState: PaywallState) -> some View {
         let contentLocale = paywallState.rootViewModel.localizationProvider.locale
-        let defaultPackage = self.selectedPackageContextOverride?.package ?? Self.effectiveDefaultPackage(
+        let defaultPackage = Self.effectiveDefaultPackage(
             pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
             workflowDefaultPackage: self.workflowPackageContext?.selectedPackage ?? self.workflowDefaultPackage
         )
