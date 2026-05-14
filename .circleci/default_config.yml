@@ -2437,8 +2437,15 @@ workflows:
           requires:
             - push-revenuecat-pod
           <<: *release-tags
-      - push-rules-engine-pod:
-          <<: *release-tags
+      # `push-rules-engine-pod` is intentionally not wired up here: the
+      # `RulesEngine` module is currently a skeleton with no functionality and
+      # no consumer, so we don't want to start publishing empty
+      # `RevenueCatRulesEngine` versions to CocoaPods trunk on every release.
+      # The job definition, `push_rules_engine_pod` fastlane lane,
+      # `check_pods` pod_lib_lint, and the `version_replacements` entry are
+      # all kept so the podspec stays linted and version-bumped. A follow-up
+      # PR will re-add this entry (and the corresponding `make-release`
+      # requirement) once a real consumer of `RulesEngine` ships.
       - deploy-to-spm:
           <<: *release-tags
       - deploy-to-purchases-ios-admob:
@@ -2454,7 +2461,6 @@ workflows:
       - make-release:
           requires:
             - push-revenuecatui-pod
-            - push-rules-engine-pod
             - deploy-to-spm
             - docs-deploy
           <<: *release-tags
