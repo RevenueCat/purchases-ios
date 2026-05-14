@@ -435,7 +435,7 @@ struct WorkflowPaywallView: View {
         workflowPackageContext: WorkflowPackageContext?,
         showZeroDecimalPlacePrices: Bool
     ) -> PackageContext {
-        let effective = context.effectivePackageContext(for: stepId) ?? workflowPackageContext
+        let effective = context.effectivePackageContext(for: stepId)
 
         guard let effective else {
             return PackageContext(
