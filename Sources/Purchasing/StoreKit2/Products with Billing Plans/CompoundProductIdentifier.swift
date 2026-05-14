@@ -19,7 +19,7 @@ import StoreKit
 ///
 /// StoreKit only knows about the base ``productIdentifier``. RevenueCat can also receive an optional
 /// ``productPlanIdentifier`` from the backend to distinguish multiple SDK products backed by the same StoreKit
-/// product, such as monthly and up-front billing plans.
+/// product, such as monthly billing plans.
 ///
 /// SDK-facing compound product identifier strings use the format `{productIdentifier}` for products without specifying
 /// a particular billing plan, and `{productIdentifier}:{productPlanIdentifier}` for products with a given plan.
@@ -119,8 +119,6 @@ extension CompoundProductIdentifier {
         switch productPlanIdentifier {
         case "monthly":
             return StoreKit.Product.SubscriptionInfo.BillingPlanType.monthly
-        case "upFront":
-            return StoreKit.Product.SubscriptionInfo.BillingPlanType.upFront
         default:
             Logger.warn(
                 StoreKitStrings.sk2_unrecognized_billing_plan_identifer(billingPlanIdentifier: productPlanIdentifier)

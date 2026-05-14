@@ -292,7 +292,7 @@ extension CompoundProductIdentifierTests {
     }
 
     @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
-    func testSK2BillingPlanTypeReturnsUpFrontForUpfrontProductPlanIdentifier() throws {
+    func testSK2BillingPlanTypeReturnsNilForUpfrontProductPlanIdentifier() throws {
         try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
 
         let identifier = try XCTUnwrap(CompoundProductIdentifier(
@@ -300,19 +300,7 @@ extension CompoundProductIdentifierTests {
             productPlanIdentifier: "upFront"
         ))
 
-        expect(identifier.sk2BillingPlanType) == StoreKit.Product.SubscriptionInfo.BillingPlanType.upFront
-    }
-
-    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
-    func testSK2BillingPlanTypeReturnsUpFront() throws {
-        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
-
-        let identifier = try XCTUnwrap(CompoundProductIdentifier(
-            productIdentifier: "com.revenuecat.subscription",
-            productPlanIdentifier: "upFront"
-        ))
-
-        expect(identifier.sk2BillingPlanType) == StoreKit.Product.SubscriptionInfo.BillingPlanType.upFront
+        expect(identifier.sk2BillingPlanType).to(beNil())
     }
 
     @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
@@ -340,18 +328,25 @@ extension CompoundProductIdentifierTests {
     }
 
     @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
-    func testSK2BillingPlanTypeUsesProductPlanIdentifierFromStringInitializer() throws {
+    func testSK2BillingPlanTypeUsesSupportedProductPlanIdentifierFromStringInitializer() throws {
         try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
 
         let monthlyIdentifier = try XCTUnwrap(CompoundProductIdentifier(
             compoundProductIdentifier: "com.revenuecat.subscription:monthly"
         ))
+
+        expect(monthlyIdentifier.sk2BillingPlanType) == StoreKit.Product.SubscriptionInfo.BillingPlanType.monthly
+    }
+
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    func testSK2BillingPlanTypeReturnsNilForUpfrontProductPlanIdentifierFromStringInitializer() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
         let upFrontIdentifier = try XCTUnwrap(CompoundProductIdentifier(
             compoundProductIdentifier: "com.revenuecat.subscription:upFront"
         ))
 
-        expect(monthlyIdentifier.sk2BillingPlanType) == StoreKit.Product.SubscriptionInfo.BillingPlanType.monthly
-        expect(upFrontIdentifier.sk2BillingPlanType) == StoreKit.Product.SubscriptionInfo.BillingPlanType.upFront
+        expect(upFrontIdentifier.sk2BillingPlanType).to(beNil())
     }
 }
 #endif
