@@ -463,10 +463,6 @@ struct WorkflowPaywallView: View {
         let packageContext: PackageContext
         if let cached = self.stepPackageContexts[stepId] {
             packageContext = cached
-            if carryForwardPackage != nil {
-                let resolved = self.context.effectivePackageContext(for: stepId, preferring: carryForwardPackage)
-                packageContext.package = resolved?.selectedPackage ?? packageContext.package
-            }
         } else {
             packageContext = Self.buildPackageContext(
                 stepId: stepId,
