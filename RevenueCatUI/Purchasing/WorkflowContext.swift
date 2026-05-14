@@ -107,6 +107,35 @@ struct WorkflowContext {
         return self.packageContext(for: stepId) ?? self.workflowPackageContext
     }
 
+    /// Returns the effective package context for `stepId`, preferring `preferredPackage` as the
+    /// selection when that package is present in the step's available packages.
+    ///
+    /// Used for forward navigation carry-forward: when the user selected a package on a prior step,
+    /// that selection should seed the next step when the package is available there.
+    /// Falls back to the workflow-global default (`workflowPackageContext`) if `preferredPackage`
+    /// is absent from the step. As a last resort (workflow has no `singleStepFallbackId`), returns
+    /// the step's own authored default from `isSelectedByDefault`.
+    func effectivePackageContext(for stepId: String, preferring preferredPackage: Package?) -> WorkflowPackageContext? {
+        guard let base = self.effectivePackageContext(for: stepId) else {
+            return nil
+        }
+
+        guard let preferredPackage else {
+            return base
+        }
+
+        if base.packages.contains(where: { $0.identifier == preferredPackage.identifier }) {
+            return .init(selectedPackage: preferredPackage, packages: base.packages)
+        }
+
+        if let wfDefault = self.workflowPackageContext?.selectedPackage,
+           base.packages.contains(where: { $0.identifier == wfDefault.identifier }) {
+            return .init(selectedPackage: wfDefault, packages: base.packages)
+        }
+
+        return base
+    }
+
     /// Resolves the package context for any step by scanning its screen's components.
     /// Returns `nil` if the step, screen, or offering cannot be resolved, or if the step has no package components.
     func packageContext(for stepId: String) -> WorkflowPackageContext? {

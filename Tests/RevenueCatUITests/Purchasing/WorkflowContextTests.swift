@@ -211,6 +211,89 @@ final class WorkflowContextTests: TestCase {
         expect(effective?.selectedPackage.identifier) == context.workflowPackageContext?.selectedPackage.identifier
     }
 
+    // MARK: - effectivePackageContext(for:preferring:)
+
+    func testEffectivePackageContextPreferredPackageSelectedWhenAvailableInStep() throws {
+        // step_own has [monthly (default), weekly]. Preferred = weekly.
+        // weekly IS in step_own → should be selected.
+        let context = try Self.makeWorkflowContextWithFallbackAndOwnStep(
+            fallbackPackages: [(id: "$rc_annual", isDefault: true)],
+            ownStepPackages: [(id: "$rc_monthly", isDefault: true), (id: "$rc_weekly", isDefault: false)]
+        )
+        let weekly = try XCTUnwrap(
+            context.packageContext(for: "step_own")?.packages.first(where: { $0.identifier == "$rc_weekly" })
+        )
+
+        let result = context.effectivePackageContext(for: "step_own", preferring: weekly)
+
+        expect(result?.selectedPackage.identifier) == "$rc_weekly"
+        expect(result?.packages.map(\.identifier)) == ["$rc_monthly", "$rc_weekly"]
+    }
+
+    func testEffectivePackageContextPreferredNotInStepFallsBackToWorkflowDefault() throws {
+        // step_own has [monthly, annual]. Global fallback default = annual.
+        // step_fallback has [annual (default), weekly].
+        // Preferred = weekly (NOT in step_own). Workflow default (annual) IS in step_own → use annual.
+        let context = try Self.makeWorkflowContextWithFallbackAndOwnStep(
+            fallbackPackages: [(id: "$rc_annual", isDefault: true), (id: "$rc_weekly", isDefault: false)],
+            ownStepPackages: [(id: "$rc_monthly", isDefault: true), (id: "$rc_annual", isDefault: false)]
+        )
+        let weekly = try XCTUnwrap(
+            context.workflowPackageContext?.packages.first(where: { $0.identifier == "$rc_weekly" })
+        )
+
+        let result = context.effectivePackageContext(for: "step_own", preferring: weekly)
+
+        expect(result?.selectedPackage.identifier) == "$rc_annual"
+        expect(result?.packages.map(\.identifier)) == ["$rc_monthly", "$rc_annual"]
+    }
+
+    func testEffectivePackageContextNilPreferredReturnsStepOwnDefault() throws {
+        // No carry-forward (nil preferred) → use the step's own isSelectedByDefault.
+        let context = try Self.makeWorkflowContextWithFallbackAndOwnStep(
+            fallbackPackages: [(id: "$rc_annual", isDefault: true)],
+            ownStepPackages: [(id: "$rc_monthly", isDefault: true), (id: "$rc_weekly", isDefault: false)]
+        )
+
+        let result = context.effectivePackageContext(for: "step_own", preferring: nil)
+
+        expect(result?.selectedPackage.identifier) == "$rc_monthly"
+    }
+
+    func testEffectivePackageContextPreferredCarriedThroughPackagelessStep() throws {
+        // step_own has no package components → falls back to workflowPackageContext.
+        // workflowPackageContext has [annual (default), monthly].
+        // Preferred = monthly (IS in the workflow context's packages) → should be selected.
+        let context = try Self.makeWorkflowContextWithFallbackAndOwnStep(
+            fallbackPackages: [(id: "$rc_annual", isDefault: true), (id: "$rc_monthly", isDefault: false)],
+            ownStepPackages: []
+        )
+        let monthly = try XCTUnwrap(
+            context.workflowPackageContext?.packages.first(where: { $0.identifier == "$rc_monthly" })
+        )
+
+        let result = context.effectivePackageContext(for: "step_own", preferring: monthly)
+
+        expect(result?.selectedPackage.identifier) == "$rc_monthly"
+    }
+
+    func testEffectivePackageContextPreferredNotInStepAndNoWorkflowDefaultFallsBackToStepDefault() throws {
+        // step_own has [monthly (default), weekly]. Global fallback has [annual].
+        // annual is NOT in step_own. Preferred = annual (not in step_own, wfDefault = annual also not in step_own).
+        // Last resort: step_own's own default (monthly).
+        let context = try Self.makeWorkflowContextWithFallbackAndOwnStep(
+            fallbackPackages: [(id: "$rc_annual", isDefault: true)],
+            ownStepPackages: [(id: "$rc_monthly", isDefault: true), (id: "$rc_weekly", isDefault: false)]
+        )
+        let annual = try XCTUnwrap(
+            context.workflowPackageContext?.selectedPackage
+        )
+
+        let result = context.effectivePackageContext(for: "step_own", preferring: annual)
+
+        expect(result?.selectedPackage.identifier) == "$rc_monthly"
+    }
+
     // MARK: - exitOfferOfferingId
 
     func testExitOfferOfferingReturnsNilWhenNoSingleStepFallbackId() throws {
@@ -438,8 +521,6 @@ private extension WorkflowContextTests {
 
     typealias PackageSpec = (id: String, isDefault: Bool)
 
-    /// Builds a `WorkflowContext` containing one step with package components,
-    /// backed by an offering that has all the named packages.
     /// Builds a `WorkflowContext` with two package-bearing steps:
     /// - `step_fallback` (set as `singleStepFallbackId`) with `fallbackPackages`
     /// - `step_own` with `ownStepPackages` (may be empty to simulate a packageless step)

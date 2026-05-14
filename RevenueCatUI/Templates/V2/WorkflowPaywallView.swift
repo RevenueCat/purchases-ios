@@ -184,7 +184,7 @@ struct WorkflowPaywallView: View {
         let initialPackageContext = Self.buildPackageContext(
             stepId: initialStepId,
             context: context,
-            workflowPackageContext: wfPackageContext,
+            preferredPackage: nil,
             showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
         )
         self._stepPackageContexts = .init(wrappedValue: [initialStepId: initialPackageContext])
@@ -307,7 +307,8 @@ struct WorkflowPaywallView: View {
             self.startTransition(
                 to: self.renderedPageForStep(
                     stepId: previousStep.id,
-                    canNavigateBack: self.navigator.canNavigateBack
+                    canNavigateBack: self.navigator.canNavigateBack,
+                    carryForwardPackage: nil
                 ),
                 direction: .back
             )
@@ -344,7 +345,8 @@ struct WorkflowPaywallView: View {
         self.startTransition(
             to: self.renderedPageForStep(
                 stepId: nextStep.id,
-                canNavigateBack: self.navigator.canNavigateBack
+                canNavigateBack: self.navigator.canNavigateBack,
+                carryForwardPackage: self.transitionState.currentPage?.packageContext.package
             ),
             direction: .forward
         )
@@ -432,10 +434,10 @@ struct WorkflowPaywallView: View {
     private static func buildPackageContext(
         stepId: String,
         context: WorkflowContext,
-        workflowPackageContext: WorkflowPackageContext?,
+        preferredPackage: Package?,
         showZeroDecimalPlacePrices: Bool
     ) -> PackageContext {
-        let effective = context.effectivePackageContext(for: stepId)
+        let effective = context.effectivePackageContext(for: stepId, preferring: preferredPackage)
 
         guard let effective else {
             return PackageContext(
@@ -455,16 +457,21 @@ struct WorkflowPaywallView: View {
 
     private func renderedPageForStep(
         stepId: String,
-        canNavigateBack: Bool
+        canNavigateBack: Bool,
+        carryForwardPackage: Package?
     ) -> RenderedPage? {
         let packageContext: PackageContext
         if let cached = self.stepPackageContexts[stepId] {
             packageContext = cached
+            if carryForwardPackage != nil {
+                let resolved = self.context.effectivePackageContext(for: stepId, preferring: carryForwardPackage)
+                packageContext.package = resolved?.selectedPackage ?? packageContext.package
+            }
         } else {
             packageContext = Self.buildPackageContext(
                 stepId: stepId,
                 context: self.context,
-                workflowPackageContext: self.workflowPackageContext,
+                preferredPackage: carryForwardPackage,
                 showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices
             )
             self.stepPackageContexts[stepId] = packageContext
