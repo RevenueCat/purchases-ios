@@ -57,6 +57,21 @@ struct WorkflowContext {
         )
     }
 
+    /// Returns a `WorkflowExitOfferContext` if `stepId` is the exit-offer triggering step
+    /// and the exit offer offering is present in the loaded offerings bundle.
+    /// Evaluates `exitOfferEntry` once, avoiding the double traversal that would occur
+    /// when reading `exitOfferTriggeringStepId` and `exitOfferOffering` separately.
+    func exitOfferContext(forStepId stepId: String) -> WorkflowExitOfferContext? {
+        guard let entry = exitOfferEntry,
+              stepId == entry.triggeringStepId,
+              let offering = ExitOfferHelper.validExitOffer(
+                  offeringId: entry.offeringId,
+                  currentOfferingId: initialOffering.identifier,
+                  from: allOfferings
+              ) else { return nil }
+        return WorkflowExitOfferContext(exitOfferOffering: offering)
+    }
+
     /// Resolves the exit offer entry from `singleStepFallbackId`'s screen.
     /// Returns `nil` if `singleStepFallbackId` is absent or its screen has no exit offer configured.
     /// Mirrors Android's `dismissExitOffer` which also relies solely on `singleStepFallbackId`.
