@@ -112,6 +112,14 @@ struct FetchProductsView: View {
                 } else {
                     Text("No installmentsInfo")
                 }
+
+                Button {
+                    Task(priority: .userInitiated) {
+                        try! await Purchases.shared.purchase(product: storeProduct)
+                    }
+                } label: {
+                    Text("Purchase with RC")
+                }
             }
         }
     }
