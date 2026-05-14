@@ -262,6 +262,78 @@ extension WorkflowPaywallViewTests {
 
 }
 
+// MARK: - Step package context cache
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPaywallViewTests {
+
+    /// Guards that `PackageContext` is a reference type.
+    /// `WorkflowPaywallView` stores one `PackageContext` per step in `stepPackageContexts`
+    /// and passes the same instance as `selectedPackageContextOverride` to `PaywallsV2View`.
+    /// Mutations made inside `PaywallsV2View` (user selecting a different package) must be
+    /// visible through the cached reference so that back-then-forward navigation restores the
+    /// user's choice rather than the authored default.
+    /// If `PackageContext` is ever refactored to a struct, this test breaks before behaviour does.
+    func testPackageContextMutationsPropagateThroughStepCacheReference() {
+        let ctx = PackageContext(
+            package: TestData.annualPackage,
+            variableContext: .init(packages: [TestData.annualPackage, TestData.monthlyPackage],
+                                   showZeroDecimalPlacePrices: false)
+        )
+        // Simulate what WorkflowPaywallView does: store the instance in the per-step cache.
+        let cache: [String: PackageContext] = ["step_terminal": ctx]
+
+        // Simulate the user selecting a different package (mutation inside PaywallsV2View).
+        ctx.package = TestData.monthlyPackage
+
+        // The cache entry must reflect the mutation — same object, not a copy.
+        expect(cache["step_terminal"]?.package?.identifier) == TestData.monthlyPackage.identifier
+    }
+
+    /// Verifies that `buildPackageContext` carries the user's current selection forward when
+    /// the preferred package exists in the next step's available packages.
+    /// This is the forward-navigation path: user picks annual on step 1, navigates to step 2
+    /// which also offers annual — step 2 should pre-select annual, not fall back to its own default.
+    func testBuildPackageContextCarriesForwardPreferredPackageWhenAvailableInStep() throws {
+        // step_terminal has annual (default) and monthly.
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            workflowPackages: [(id: "$rc_annual", isDefault: true), (id: "$rc_monthly", isDefault: false)]
+        )
+        let monthly = try XCTUnwrap(
+            context.packageContext(for: "step_terminal")?.packages.first { $0.identifier == "$rc_monthly" }
+        )
+
+        let packageContext = WorkflowPaywallView.buildPackageContext(
+            stepId: "step_terminal",
+            context: context,
+            preferredPackage: monthly,
+            showZeroDecimalPlacePrices: false
+        )
+
+        expect(packageContext.package?.identifier) == "$rc_monthly"
+        expect(packageContext.variableContext.mostExpensivePricePerMonth).toNot(beNil())
+    }
+
+    /// Verifies that `buildPackageContext` returns an empty `PackageContext` for a step that
+    /// has no package components and no workflow fallback (nil `effectivePackageContext`).
+    func testBuildPackageContextReturnsEmptyContextForPackagelessStepWithNoFallback() throws {
+        // No singleStepFallbackId → no global workflow package context.
+        let context = try Self.makeContext(singleStepFallbackId: nil)
+
+        let packageContext = WorkflowPaywallView.buildPackageContext(
+            stepId: "step_initial",
+            context: context,
+            preferredPackage: nil,
+            showZeroDecimalPlacePrices: false
+        )
+
+        expect(packageContext.package).to(beNil())
+        expect(packageContext.variableContext.mostExpensivePricePerMonth).to(beNil())
+    }
+
+}
+
 // MARK: - variableContext population tests
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

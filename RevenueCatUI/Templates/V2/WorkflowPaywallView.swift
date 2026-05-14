@@ -431,7 +431,7 @@ struct WorkflowPaywallView: View {
         )
     }
 
-    private static func buildPackageContext(
+    static func buildPackageContext(
         stepId: String,
         context: WorkflowContext,
         preferredPackage: Package?,
