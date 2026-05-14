@@ -117,7 +117,7 @@ extension CompoundProductIdentifier {
         }
 
         switch productPlanIdentifier {
-        case "monthly":
+        case BillingPlanType.monthly.value:
             return StoreKit.Product.SubscriptionInfo.BillingPlanType.monthly
         default:
             Logger.warn(

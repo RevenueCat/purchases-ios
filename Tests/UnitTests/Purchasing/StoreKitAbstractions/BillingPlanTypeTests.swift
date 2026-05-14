@@ -49,6 +49,27 @@ class BillingPlanTypeTests: TestCase {
     }
 }
 
+// MARK: - Value
+extension BillingPlanType {
+    func testBillingPlanTypeValues() {
+        expect(BillingPlanType.monthly.value).to(equal("monthly"))
+        expect(BillingPlanType.upFront.value).to(equal("upFront"))
+    }
+
+    func testBillingPlanTypeFrom() {
+        expect(BillingPlanType.from(value: "monthly")).to(equal(BillingPlanType.monthly))
+        expect(BillingPlanType.from(value: "upFront")).to(equal(BillingPlanType.upFront))
+
+        expect(BillingPlanType.from(value: "")).to(equal(nil))
+        expect(BillingPlanType.from(value: ";lijsdf")).to(equal(nil))
+    }
+
+    func testBillingPlanTypeFromIsCaseSensitive() {
+        expect(BillingPlanType.from(value: "Monthly")).to(equal(nil))
+        expect(BillingPlanType.from(value: "upfront")).to(equal(nil))
+    }
+}
+
 // MARK: - To/From StoreKit BillingPlanType
 #if compiler(>=6.3.2)
 extension BillingPlanTypeTests {

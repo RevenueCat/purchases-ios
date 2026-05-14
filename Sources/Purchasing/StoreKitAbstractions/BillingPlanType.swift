@@ -13,16 +13,35 @@ import StoreKit
 @objc(RCBillingPlanType)
 public final class BillingPlanType: NSObject, Sendable {
     /// Upfront billing plan, where the user pays in full when purchasing the product.
-    @objc(RCUpFront) public static let upFront = BillingPlanType()
+    @objc(RCUpFront) public static let upFront = BillingPlanType(value: "upFront")
 
     /// Monthly billing plan, where the user pays in monthly installments.
-    @objc(RCMonthly) public static let monthly = BillingPlanType()
+    @objc(RCMonthly) public static let monthly = BillingPlanType(value: "monthly")
 
-    private override init() {}
+    private init(value: String) {
+        self.value = value
+        super.init()
+    }
+
+    /// String representation of the BillingPlanType.
+    public let value: String
 
     /// Pattern matching operator
     public static func ~= (lhs: BillingPlanType, rhs: BillingPlanType) -> Bool {
         lhs === rhs
+    }
+}
+
+extension BillingPlanType {
+    /// Get the billing plan type for a given value string.
+    public static func from(value: String) -> BillingPlanType? {
+        if value == BillingPlanType.monthly.value {
+            return BillingPlanType.monthly
+        } else if value == BillingPlanType.upFront.value {
+            return BillingPlanType.upFront
+        } else {
+            return nil
+        }
     }
 }
 
