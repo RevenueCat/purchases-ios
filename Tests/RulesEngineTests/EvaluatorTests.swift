@@ -199,6 +199,26 @@ final class EvaluatorTests: XCTestCase {
         }
     }
 
+    // MARK: - Arithmetic dispatched through evaluator
+
+    func testArithmeticPredicateWithVarOperand() throws {
+        // session.app_launch_count * 2 == 6 → true when count is 3
+        let predicate = """
+            {"==": [
+                {"*": [{"var": "session.app_launch_count"}, 2]},
+                6
+            ]}
+            """
+        let vars = ["session": Value.object(["app_launch_count": .int(3)])]
+        XCTAssertTrue(try run(predicate, vars: vars))
+    }
+
+    func testDivideByZeroReturnsNullWhichIsFalsy() throws {
+        // {"/": [10, 0]} → null → predicate is falsy
+        let predicate = "{\"/\": [10, 0]}"
+        XCTAssertFalse(try run(predicate))
+    }
+
     // MARK: - Multi-key object treated as data, not operator
 
     func testMultiKeyObjectIsLiteralDataValue() throws {
