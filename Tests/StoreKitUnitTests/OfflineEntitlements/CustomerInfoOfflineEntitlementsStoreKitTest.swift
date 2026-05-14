@@ -134,6 +134,36 @@ class CustomerInfoOfflineEntitlementsStoreKitTest: StoreKitConfigTestCase {
         expect(info.entitlements.all).to(beEmpty())
     }
 
+    func testUsesProductIDForMappingLookupAndBaseProductIdentifierForCustomerInfo() throws {
+        let productIdentifier = "com.revenuecat.product"
+        let productID = "\(productIdentifier):monthly"
+        let productPlanIdentifier = "monthly"
+        let entitlementID = "pro"
+
+        let product = PurchasedSK2Product(
+            productIdentifier: productIdentifier,
+            id: productID,
+            productPlanIdentifier: productPlanIdentifier,
+            subscription: .init(purchaseDate: Date(), productPlanIdentifier: productPlanIdentifier),
+            entitlement: .init(productIdentifier: productIdentifier, rawData: [:])
+        )
+        let mapping = ProductEntitlementMapping(entitlementsByProduct: [
+            productID: [entitlementID]
+        ])
+
+        let customerInfo = CustomerInfo(
+            from: [product],
+            mapping: mapping,
+            userID: Self.userID,
+            sandboxEnvironmentDetector: self.sandboxDetector
+        )
+
+        expect(customerInfo.activeSubscriptions) == [productID]
+        expect(customerInfo.entitlements.all).to(haveCount(1))
+        expect(customerInfo.entitlements[entitlementID]?.productIdentifier) == productIdentifier
+        expect(customerInfo.entitlements[entitlementID]?.productPlanIdentifier) == productPlanIdentifier
+    }
+
     func testEmptyMapping() async throws {
         let transaction = try await self.createTransactionWithPurchase()
         let mapping: ProductEntitlementMapping = .empty

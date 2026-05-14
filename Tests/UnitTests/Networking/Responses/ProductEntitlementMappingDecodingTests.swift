@@ -40,6 +40,29 @@ class ProductEntitlementMappingDecodingTests: BaseHTTPResponseTest {
         expect(products["com.revenuecat.foo_3"]?.entitlements) == ["pro_2"]
     }
 
+    func testDecodesBasePlanId() throws {
+        let data = try XCTUnwrap("""
+        {
+            "product_entitlement_mapping": {
+                "com.revenuecat.foo_1:monthly": {
+                    "product_identifier": "com.revenuecat.foo_1",
+                    "base_plan_id": "monthly",
+                    "entitlements": [
+                        "pro_1"
+                    ]
+                }
+            }
+        }
+        """.data(using: .utf8))
+
+        let response = try JSONDecoder.default.decode(ProductEntitlementMappingResponse.self, from: data)
+        let product = response.products["com.revenuecat.foo_1:monthly"]
+
+        expect(product?.identifier) == "com.revenuecat.foo_1"
+        expect(product?.basePlanId) == "monthly"
+        expect(product?.entitlements) == ["pro_1"]
+    }
+
     func testConversionToMapping() {
         let mapping = self.response.toMapping()
 
@@ -53,6 +76,31 @@ class ProductEntitlementMappingDecodingTests: BaseHTTPResponseTest {
             ],
             "com.revenuecat.foo_3": [
                 "pro_2"
+            ]
+        ]
+    }
+
+    func testConversionToMappingUsesBasePlanId() throws {
+        let data = try XCTUnwrap("""
+        {
+            "product_entitlement_mapping": {
+                "com.revenuecat.foo_1:monthly": {
+                    "product_identifier": "com.revenuecat.foo_1",
+                    "base_plan_id": "monthly",
+                    "entitlements": [
+                        "pro_1"
+                    ]
+                }
+            }
+        }
+        """.data(using: .utf8))
+
+        let response = try JSONDecoder.default.decode(ProductEntitlementMappingResponse.self, from: data)
+        let mapping = response.toMapping()
+
+        expect(mapping.entitlementsByProduct) == [
+            "com.revenuecat.foo_1:monthly": [
+                "pro_1"
             ]
         ]
     }

@@ -18,6 +18,8 @@ import StoreKit
 struct PurchasedSK2Product {
 
     let productIdentifier: String
+    let id: String
+    let productPlanIdentifier: String?
     let subscription: CustomerInfoResponse.Subscription
     let entitlement: CustomerInfoResponse.Entitlement
 
@@ -35,6 +37,11 @@ extension PurchasedSK2Product {
         let expiration = transaction.expirationDate
 
         self.productIdentifier = transaction.productID
+        self.productPlanIdentifier = Self.productPlanIdentifier(from: transaction)
+        self.id = CompoundProductIdentifier(
+            productIdentifier: transaction.productID,
+            productPlanIdentifier: self.productPlanIdentifier
+        )?.compoundProductIdentifier ?? transaction.productID
         self.subscription = .init(
             periodType: transaction.offerType?.periodType ?? .normal,
             purchaseDate: transaction.purchaseDate,
@@ -42,7 +49,8 @@ extension PurchasedSK2Product {
             expiresDate: transaction.expirationDate,
             store: .appStore,
             isSandbox: sandboxEnvironmentDetector.isSandbox,
-            ownershipType: transaction.ownershipType.type
+            ownershipType: transaction.ownershipType.type,
+            productPlanIdentifier: self.productPlanIdentifier
         )
         self.entitlement = .init(
             expiresDate: expiration,
@@ -86,4 +94,30 @@ private extension StoreKit.Transaction.OwnershipType {
         }
     }
 
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+private extension PurchasedSK2Product {
+    static func productPlanIdentifier(from transaction: StoreKit.Transaction) -> String? {
+        #if compiler(>=6.3.2)
+        if #available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *),
+           let skBillingPlanType = transaction.billingPlanType,
+           let billingPlanType = BillingPlanType.from(storeKitBillingPlanType: skBillingPlanType) {
+
+            switch billingPlanType {
+            case .monthly:
+                return billingPlanType.rawValue
+            case .upFront:
+                return nil
+            default:
+                return nil
+            }
+
+        } else {
+            return nil
+        }
+        #else
+        return nil
+        #endif
+    }
 }

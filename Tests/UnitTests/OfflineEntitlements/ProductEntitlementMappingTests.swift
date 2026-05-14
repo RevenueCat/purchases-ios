@@ -69,6 +69,28 @@ class ProductEntitlementMappingTests: TestCase {
         ]
     }
 
+    func testResponseToMappingUsesBasePlanIdForCompoundProductIdentifier() {
+        let response = ProductEntitlementMappingResponse(products: [
+            "product_1:monthly": .init(identifier: "product_1", basePlanId: "monthly", entitlements: ["pro_1"])
+        ])
+
+        let mapping = response.toMapping()
+
+        expect(mapping.entitlements(for: "product_1:monthly")) == ["pro_1"]
+        expect(mapping.entitlements(for: "product_1")).to(beEmpty())
+    }
+
+    func testResponseToMappingUsesPayloadProductIdentifierInsteadOfOuterKey() {
+        let response = ProductEntitlementMappingResponse(products: [
+            "product_1:monthly": .init(identifier: "product_1", entitlements: ["pro_1"])
+        ])
+
+        let mapping = response.toMapping()
+
+        expect(mapping.entitlements(for: "product_1")) == ["pro_1"]
+        expect(mapping.entitlements(for: "product_1:monthly")).to(beEmpty())
+    }
+
     func testEncoding() throws {
         let response = ProductEntitlementMapping(entitlementsByProduct: [
             "product_1": [
