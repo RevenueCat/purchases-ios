@@ -103,6 +103,7 @@ struct WorkflowContext {
     /// Returns the package context that should be broadcast in the environment for `stepId`.
     /// Prefers the step's own package context when available so that package-bearing steps
     /// use their own configured defaults rather than the global workflow fallback.
+    /// Equivalent to `effectivePackageContext(for:preferring: nil)`.
     func effectivePackageContext(for stepId: String) -> WorkflowPackageContext? {
         return self.packageContext(for: stepId) ?? self.workflowPackageContext
     }

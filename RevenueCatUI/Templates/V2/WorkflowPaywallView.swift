@@ -194,10 +194,12 @@ struct WorkflowPaywallView: View {
                     stepId: initialStepId,
                     canNavigateBack: false,
                     displayCloseButton: displayCloseButton,
-                    packageContext: initialPackageContext,
-                    effectiveWorkflowPackageContext: context.effectivePackageContext(
-                        for: initialStepId,
-                        preferring: initialPackageContext.package
+                    packageInput: .init(
+                        packageContext: initialPackageContext,
+                        effectiveWorkflowPackageContext: context.effectivePackageContext(
+                            for: initialStepId,
+                            preferring: initialPackageContext.package
+                        )
                     )
                 )
             )
@@ -404,14 +406,12 @@ struct WorkflowPaywallView: View {
         self.activeTransitionID = nil
     }
 
-    // swiftlint:disable:next function_parameter_count
     private static func renderedPage(
         from context: WorkflowContext,
         stepId: String,
         canNavigateBack: Bool,
         displayCloseButton: Bool,
-        packageContext: PackageContext,
-        effectiveWorkflowPackageContext: WorkflowPackageContext?
+        packageInput: RenderedPagePackageInput
     ) -> RenderedPage? {
         guard let step = context.workflow.steps[stepId],
               let screenId = step.screenId,
@@ -428,8 +428,8 @@ struct WorkflowPaywallView: View {
         return .init(
             content: .init(paywallComponents: paywallComponents, offering: offering),
             showCloseButton: !canNavigateBack && displayCloseButton,
-            packageContext: packageContext,
-            effectiveWorkflowPackageContext: effectiveWorkflowPackageContext
+            packageContext: packageInput.packageContext,
+            effectiveWorkflowPackageContext: packageInput.effectiveWorkflowPackageContext
         )
     }
 
@@ -480,10 +480,12 @@ struct WorkflowPaywallView: View {
             stepId: stepId,
             canNavigateBack: canNavigateBack,
             displayCloseButton: self.displayCloseButton,
-            packageContext: packageContext,
-            effectiveWorkflowPackageContext: self.context.effectivePackageContext(
-                for: stepId,
-                preferring: packageContext.package
+            packageInput: .init(
+                packageContext: packageContext,
+                effectiveWorkflowPackageContext: self.context.effectivePackageContext(
+                    for: stepId,
+                    preferring: packageContext.package
+                )
             )
         )
     }
@@ -525,6 +527,12 @@ private struct DisplayedPage: Identifiable {
 private struct CurrentStepContent {
     let paywallComponents: Offering.PaywallComponents
     let offering: Offering
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct RenderedPagePackageInput {
+    let packageContext: PackageContext
+    let effectiveWorkflowPackageContext: WorkflowPackageContext?
 }
 
 #endif
