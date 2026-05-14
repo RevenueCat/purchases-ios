@@ -41,36 +41,31 @@ Suggested fields:
 ```swift
 struct PaywallStateScope: Hashable, Sendable {
     let instanceID: UUID
+    let paywallID: String?
     let offeringIdentifier: String
     let paywallRevision: Int?
     let workflowPageID: String?
 }
 ```
 
-`instanceID` is the primary collision boundary. `offeringIdentifier`, `paywallRevision`, and `workflowPageID` make observation payloads understandable and help consumers distinguish events, but they must not be the only scoping mechanism because the same offering or workflow screen can be rendered more than once.
+`paywallID` comes from `PaywallComponentsData.id`. It should be part of the observable identity because copied paywalls receive a different paywall ID while retaining identical component IDs. `instanceID` remains the runtime collision boundary for the less common but still valid case where the same paywall is rendered more than once at the same time. `offeringIdentifier`, `paywallRevision`, and `workflowPageID` make observation payloads understandable and help consumers distinguish events, but they must not be the only scoping mechanism.
 
 ### Component identity
 
-The adapter assigns an identity to each component while `ViewModelFactory` walks the component tree.
+The Paywalls V2 JSON includes an `id` on every component, but the current Swift models do not consistently represent it. The first implementation should add that `id` field to every component model before using the adapter. The adapter then assigns an identity to each component while `ViewModelFactory` walks the component tree.
 
 Suggested fields:
 
 ```swift
 struct PaywallComponentIdentity: Hashable, Sendable {
+    let paywallID: String?
+    let componentID: String
     let type: String
-    let serverID: String?
     let name: String?
-    let path: String
 }
 ```
 
-The structural `path` is required because many Paywalls V2 components only have `name`, and names can be duplicated. `serverID` is available only for component types that already expose IDs, such as buttons, tabs, countdowns, or sheets. A copied paywall can therefore reuse all server IDs and names while still receiving distinct state keys because the keys also include `PaywallStateScope.instanceID`.
-
-Example paths:
-
-- `root.header.stack[0].image`
-- `root.stack[2].package[monthly].stack[1].text`
-- `root.stack[4].button.sheet[upsell].stack[0].text`
+The stable observable component identity is the combination of paywall ID and component ID. This prevents copied paywalls from muddying state propagation or observability when their component IDs remain identical to the original paywall. `name` remains useful for analytics and debugging, but it is not part of uniqueness because names can be duplicated or absent. Internal state keys still include `PaywallStateScope.instanceID`, so two simultaneous renderings of the same paywall do not share mutable state.
 
 ### State keys
 
@@ -151,9 +146,9 @@ Important implementation rules:
 
 ### Consumer hooks
 
-The SwiftUI API should mirror existing RevenueCatUI gate modifiers such as `.onPurchaseInitiated` and `.onRestoreInitiated`.
+The SwiftUI API should eventually mirror existing RevenueCatUI gate modifiers such as `.onPurchaseInitiated` and `.onRestoreInitiated`. Until the behavior and surface area are fully worked out, these hooks and their data types should be exposed only as `@_spi(Internal) public`, not regular `public` API.
 
-Proposed public shape:
+Proposed initial SPI shape:
 
 ```swift
 PaywallView()
@@ -183,7 +178,7 @@ Committed events include:
 - new value
 - source details, such as package row tap or derived rule evaluation
 
-The public event/proposal types should avoid new public enums unless the team explicitly accepts the API stability risk.
+The event/proposal types should avoid new public enums unless the team explicitly accepts the API stability risk. If these move from SPI to stable public API later, prefer public structs with static factories or other API-stable shapes.
 
 ### Adapter flow
 
@@ -201,6 +196,15 @@ Existing broad runtime inputs become state slots:
 - countdown time
 
 The first implementation should prioritize selected package ID because it is directly user-controlled and already drives override changes.
+
+Package selection has one important existing special case: package selection inside a presented sheet is temporary. Today `RootView` resets `PackageContext.package` when a bottom sheet is dismissed, restoring the workflow-selected package or the paywall default package. The adapter must preserve that behavior by distinguishing root package selection from sheet-scoped package selection.
+
+Suggested package selection keys:
+
+- `paywall.root_selected_package_id`
+- `paywall.sheet[componentID].selected_package_id`
+
+When a sheet is visible, sheet content should read and write the sheet-scoped selected package slot. When the sheet is dismissed, the active package context switches back to the root selected package, using the same workflow/default restoration rule that `RootView` uses today. Sheet selection proposals should include the sheet component ID in their details so apps can observe or gate them separately from root package selection.
 
 #### Derived field projection
 
@@ -222,9 +226,13 @@ This allows component-by-component migration. A component can continue using `st
 
 Add the state store, state keys, scoped identities, mutation proposal, and event pipeline. Inject one store per `PaywallsV2View` instance through the environment. No component behavior changes yet.
 
-### Phase 2: Package selection bridge
+### Phase 2: Component IDs in models
 
-Change package row selection so it requests a mutation for `paywall.selected_package_id` instead of directly updating `PackageContext`. On commit, bridge the selected package ID back into `PackageContext`.
+Add the JSON `id` field to all Paywalls V2 component models and carry that ID into `PaywallComponentIdentity`. This is a prerequisite for state observability and avoids deriving identity from structural paths.
+
+### Phase 3: Package selection bridge
+
+Change package row selection so it requests a mutation for `paywall.root_selected_package_id` or `paywall.sheet[componentID].selected_package_id`, depending on whether the row is rendered in the root paywall or a presented sheet. On commit, bridge the active selected package ID back into `PackageContext`.
 
 This proves:
 
@@ -232,8 +240,9 @@ This proves:
 - app gates can replace selected package changes
 - committed events include paywall and component scope
 - duplicate paywall instances do not share selection state
+- sheet package selection does not leak into root package selection after dismissal
 
-### Phase 3: Reactive text fields
+### Phase 4: Reactive text fields
 
 Add a projected style object or field observers for `TextComponentView`. Start with:
 
@@ -246,11 +255,11 @@ Add a projected style object or field observers for `TextComponentView`. Start w
 
 The legacy `TextComponentViewModel.styles(...)` path remains available while the component is behind the adapter or a feature flag.
 
-### Phase 4: Stack and package visibility
+### Phase 5: Stack and package visibility
 
 Move `StackComponentView` and `PackageComponentViewModel.visible(...)` to projected `visible` slots. This makes conditional sections and package rows update independently.
 
-### Phase 5: Expand field coverage
+### Phase 6: Expand field coverage
 
 Migrate additional component types and fields according to observed value:
 
@@ -274,10 +283,12 @@ Unit tests should cover the state store first:
 Adapter tests should cover Paywalls V2 behavior:
 
 - two `PaywallsV2View` instances with copied component IDs maintain independent selected package state
+- two copied paywalls with different paywall IDs and identical component IDs produce distinct observable component identities
 - package row tap emits a proposed mutation
 - rejecting the proposal leaves the selected package unchanged
 - replacing the proposal selects the replacement package
 - committed selection updates `PackageContext`
+- sheet-scoped package selection is restored to the root workflow/default package when the sheet dismisses
 - text override projection matches the legacy `styles(...)` result for the same inputs
 - custom variable conditions keep their current missing-variable semantics
 - unsupported condition discard behavior remains unchanged
@@ -288,7 +299,7 @@ Snapshot or lightweight SwiftUI tests should be added only after the first compo
 
 ### Public API stability
 
-New public Swift enums are source-breaking in this SDK's build model. Public event and value APIs should use structs with static factories or keep enum-like details internal.
+New public Swift enums are source-breaking in this SDK's build model. The first implementation should keep consumer-facing state APIs behind `@_spi(Internal) public`. If those APIs graduate to stable public API later, event and value APIs should use structs with static factories or keep enum-like details internal.
 
 ### State fan-out
 
@@ -300,7 +311,7 @@ The adapter must not reimplement override semantics differently. It should call 
 
 ### Multi-paywall collision
 
-Server IDs and names cannot be trusted as unique runtime keys. Every key must include `PaywallStateScope.instanceID`, and component identity must include a structural path.
+Component IDs cannot be trusted as globally unique runtime keys because copied paywalls can retain identical component IDs. Observable component identity must include paywall ID plus component ID, and every mutable state key must also include `PaywallStateScope.instanceID`.
 
 ### Gate deadlocks
 
@@ -309,8 +320,9 @@ The gate callback must not run while the store holds locks. Default acceptance s
 ## Acceptance criteria
 
 - Existing Paywalls V2 JSON decodes and renders without schema changes.
+- Paywalls V2 component models expose the JSON component `id` field needed for state identity.
 - A paywall instance has an isolated state scope.
-- Package selection can be observed and gated through the new pipeline.
+- Root and sheet-scoped package selection can be observed and gated through the new pipeline.
 - Two copied paywall instances with identical component IDs do not cross-update.
 - The first migrated component field projection matches existing override behavior.
 - Existing purchase, restore, and component interaction APIs continue to work.
