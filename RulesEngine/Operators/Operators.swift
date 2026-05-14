@@ -58,6 +58,15 @@ enum Operators {
         case "%":
             return try ArithmeticOperators.opMod(args: args, vars: vars)
 
+        case "<":
+            return try ComparisonOperators.opLt(args: args, vars: vars)
+        case "<=":
+            return try ComparisonOperators.opLe(args: args, vars: vars)
+        case ">":
+            return try ComparisonOperators.opGt(args: args, vars: vars)
+        case ">=":
+            return try ComparisonOperators.opGe(args: args, vars: vars)
+
         default:
             throw RuleError.unsupportedOperator(name: operatorName)
         }
