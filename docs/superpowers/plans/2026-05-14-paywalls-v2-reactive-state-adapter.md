@@ -46,7 +46,7 @@ This plan implements the approved first slice:
   Maps one or more raw override properties into direct or derived state mutations, such as deriving an icon URL field from icon-name and formats coding keys.
 
 - `RevenueCatUI/Templates/V2/State/PaywallStateMutation.swift`  
-  Mutation, change details, proposed/committed change, and proposal resolution model.
+  Mutation, generic change details, phantom-stage proposed/committed change, and proposal resolution model.
 
 - `RevenueCatUI/Templates/V2/State/PaywallStateStore.swift`  
   Combine-backed store with request, gate, commit, per-key publisher, and resolved events.
@@ -622,15 +622,16 @@ final class PaywallStateStoreTests: TestCase {
     func testRequestWithoutGateCommitsImmediately() {
         let key = Self.makeKey(field: .component("visible"))
         let store = PaywallStateStore(initialValues: [key: .bool(true)])
-        var events: [PaywallStateChange] = []
+        var events: [PaywallStateChange<PaywallStateChangeCommitted>] = []
         store.resolvedEvents.sink { events.append($0) }.store(in: &cancellables)
 
-        store.request(.init(key: key, value: .bool(false)), details: .init(source: "test"))
+        store.request(.init(key: key, value: .bool(false)), details: TestStateChangeDetails(source: "test"))
 
         XCTAssertEqual(store.value(for: key), .bool(false))
         XCTAssertEqual(events.count, 1)
         XCTAssertEqual(events.first?.oldValue, .bool(true))
         XCTAssertEqual(events.first?.newValue, .bool(false))
+        XCTAssertEqual((events.first?.details as? TestStateChangeDetails)?.source, "test")
     }
 
     func testGateCanRejectMutation() {
@@ -642,7 +643,7 @@ final class PaywallStateStoreTests: TestCase {
 
         store.request(
             .init(key: key, value: .bool(false)),
-            details: .init(source: "test"),
+            details: TestStateChangeDetails(source: "test"),
             mutationHandler: handler
         )
 
@@ -656,15 +657,16 @@ final class PaywallStateStoreTests: TestCase {
             originalKey: .bool(true),
             replacementKey: .string("old")
         ])
-        var events: [PaywallStateChange] = []
+        var events: [PaywallStateChange<PaywallStateChangeCommitted>] = []
         store.resolvedEvents.sink { events.append($0) }.store(in: &cancellables)
         let handler = PaywallStateMutationHandler { proposal in
+            XCTAssertEqual(proposal.change.key, originalKey)
             proposal.replace(with: .init(key: replacementKey, value: .string("new")))
         }
 
         store.request(
             .init(key: originalKey, value: .bool(false)),
-            details: .init(source: "test"),
+            details: TestStateChangeDetails(source: "test"),
             mutationHandler: handler
         )
 
@@ -686,7 +688,7 @@ final class PaywallStateStoreTests: TestCase {
 
         store.request(
             .init(key: key, value: .bool(false)),
-            details: .init(source: "test"),
+            details: TestStateChangeDetails(source: "test"),
             mutationHandler: handler
         )
 
@@ -715,6 +717,10 @@ final class PaywallStateStoreTests: TestCase {
 
 }
 
+private struct TestStateChangeDetails: PaywallStateChangeDetails {
+    let source: String
+}
+
 #endif
 ```
 
@@ -730,7 +736,11 @@ Expected: fail to compile because store and mutation types do not exist.
 
 - [ ] **Step 3: Add mutation and proposal types**
 
-The store must not own a mutable global handler. The handler is passed into each request from the SwiftUI environment or the package selection coordinator. A handler that receives a proposal must resolve it exactly once by calling `accept()`, `reject()`, or `replace(with:)`; unresolved proposals assert in DEBUG on deinit.
+Mirror the `ios-state-example` shape here. The store must not own a mutable global handler. The handler is passed into each request from the SwiftUI environment or the package selection coordinator. A handler that receives a proposal must resolve it exactly once by calling `accept()`, `reject()`, or `replace(with:)`; unresolved proposals assert in DEBUG on deinit.
+
+Use generic detail payloads. Reducers should inspect `change.details as? SomeConcreteDetails` and act only on the detail type they understand. This avoids a single catch-all details struct that grows a field for every future event source.
+
+Use a phantom stage type on state changes. Proposals carry `PaywallStateChange<PaywallStateChangeProposed>` and committed event streams emit `PaywallStateChange<PaywallStateChangeCommitted>`, which prevents accidentally passing a proposed change where a committed change is expected.
 
 Create `RevenueCatUI/Templates/V2/State/PaywallStateMutation.swift`:
 
@@ -752,23 +762,40 @@ import Foundation
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@_spi(Internal) public struct PaywallStateChangeDetails: Hashable, Sendable {
-    @_spi(Internal) public let source: String
-    @_spi(Internal) public let sheetComponentID: String?
+@_spi(Internal) public protocol PaywallStateChangeDetails: Hashable, Sendable {}
 
-    @_spi(Internal)
-    public init(source: String, sheetComponentID: String? = nil) {
-        self.source = source
-        self.sheetComponentID = sheetComponentID
-    }
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@_spi(Internal) public protocol PaywallStateChangeStage: Sendable {}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@_spi(Internal) public struct PaywallStateChangeProposed: PaywallStateChangeStage {
+    @_spi(Internal) public init() {}
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@_spi(Internal) public struct PaywallStateChange: Hashable, Sendable {
+@_spi(Internal) public struct PaywallStateChangeCommitted: PaywallStateChangeStage {
+    @_spi(Internal) public init() {}
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@_spi(Internal) public struct PaywallStateChange<Stage: PaywallStateChangeStage>: Sendable {
     @_spi(Internal) public let key: PaywallStateKey
     @_spi(Internal) public let oldValue: PaywallStateValue?
     @_spi(Internal) public let newValue: PaywallStateValue?
-    @_spi(Internal) public let details: PaywallStateChangeDetails
+    @_spi(Internal) public let details: (any PaywallStateChangeDetails)?
+
+    @_spi(Internal)
+    public init(
+        key: PaywallStateKey,
+        oldValue: PaywallStateValue?,
+        newValue: PaywallStateValue?,
+        details: (any PaywallStateChangeDetails)?
+    ) {
+        self.key = key
+        self.oldValue = oldValue
+        self.newValue = newValue
+        self.details = details
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -787,12 +814,15 @@ import Foundation
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @_spi(Internal) public final class PaywallStateMutationProposal: @unchecked Sendable {
-    @_spi(Internal) public let change: PaywallStateChange
+    @_spi(Internal) public let change: PaywallStateChange<PaywallStateChangeProposed>
 
     private let lock = NSLock()
     private var resolve: ((Resolution) -> Void)?
 
-    init(change: PaywallStateChange, resolve: @escaping (Resolution) -> Void) {
+    init(
+        change: PaywallStateChange<PaywallStateChangeProposed>,
+        resolve: @escaping (Resolution) -> Void
+    ) {
         self.change = change
         self.resolve = resolve
     }
@@ -849,13 +879,16 @@ final class PaywallStateStore: ObservableObject {
 
     private let lock = NSLock()
     private var subjects: [PaywallStateKey: CurrentValueSubject<PaywallStateValue?, Never>]
-    private let resolvedEventsSubject = PassthroughSubject<PaywallStateChange, Never>()
+    private let resolvedEventsSubject = PassthroughSubject<
+        PaywallStateChange<PaywallStateChangeCommitted>,
+        Never
+    >()
 
     init(initialValues: [PaywallStateKey: PaywallStateValue?] = [:]) {
         self.subjects = initialValues.mapValues { CurrentValueSubject<PaywallStateValue?, Never>($0) }
     }
 
-    var resolvedEvents: AnyPublisher<PaywallStateChange, Never> {
+    var resolvedEvents: AnyPublisher<PaywallStateChange<PaywallStateChangeCommitted>, Never> {
         self.resolvedEventsSubject.eraseToAnyPublisher()
     }
 
@@ -871,10 +904,10 @@ final class PaywallStateStore: ObservableObject {
 
     func request(
         _ mutation: PaywallStateMutation,
-        details: PaywallStateChangeDetails,
+        details: (any PaywallStateChangeDetails)?,
         mutationHandler: PaywallStateMutationHandler? = nil
     ) {
-        let proposedChange = PaywallStateChange(
+        let proposedChange = PaywallStateChange<PaywallStateChangeProposed>(
             key: mutation.key,
             oldValue: self.value(for: mutation.key),
             newValue: mutation.value,
@@ -899,12 +932,12 @@ final class PaywallStateStore: ObservableObject {
         mutationHandler(proposal)
     }
 
-    private func commit(_ mutation: PaywallStateMutation, details: PaywallStateChangeDetails) {
+    private func commit(_ mutation: PaywallStateMutation, details: (any PaywallStateChangeDetails)?) {
         let subject = self.subject(for: mutation.key)
         let oldValue = subject.value
         guard oldValue != mutation.value else { return }
 
-        let change = PaywallStateChange(
+        let change = PaywallStateChange<PaywallStateChangeCommitted>(
             key: mutation.key,
             oldValue: oldValue,
             newValue: mutation.value,
@@ -982,7 +1015,7 @@ private struct PaywallStateMutationHandlerKey: EnvironmentKey {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct PaywallStateChangeObserverKey: EnvironmentKey {
-    static let defaultValue: (@Sendable (PaywallStateChange) -> Void)? = nil
+    static let defaultValue: (@Sendable (PaywallStateChange<PaywallStateChangeCommitted>) -> Void)? = nil
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -997,7 +1030,7 @@ extension EnvironmentValues {
         set { self[PaywallStateMutationHandlerKey.self] = newValue }
     }
 
-    var paywallStateChangeObserver: (@Sendable (PaywallStateChange) -> Void)? {
+    var paywallStateChangeObserver: (@Sendable (PaywallStateChange<PaywallStateChangeCommitted>) -> Void)? {
         get { self[PaywallStateChangeObserverKey.self] }
         set { self[PaywallStateChangeObserverKey.self] = newValue }
     }
@@ -1019,7 +1052,7 @@ import SwiftUI
 @_spi(Internal) public extension View {
 
     func onPaywallStateChange(
-        _ action: @escaping @Sendable (PaywallStateChange) -> Void
+        _ action: @escaping @Sendable (PaywallStateChange<PaywallStateChangeCommitted>) -> Void
     ) -> some View {
         self.environment(\.paywallStateChangeObserver, action)
     }
@@ -1676,6 +1709,14 @@ import Foundation
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
+struct PaywallPackageSelectionDetails: PaywallStateChangeDetails {
+    let sourceComponentID: String
+    let sheetComponentID: String?
+    let reason: String?
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
 final class PaywallPackageSelectionCoordinator: ObservableObject {
 
     private let scope: PaywallStateScope
@@ -1735,7 +1776,11 @@ final class PaywallPackageSelectionCoordinator: ObservableObject {
             )
             self.store.request(
                 .init(key: sheetKey, value: nil),
-                details: .init(source: "sheet_dismiss", sheetComponentID: sheetComponentID),
+                details: PaywallPackageSelectionDetails(
+                    sourceComponentID: "sheet_dismiss",
+                    sheetComponentID: sheetComponentID,
+                    reason: "dismiss"
+                ),
                 mutationHandler: self.mutationHandler
             )
         }
@@ -1756,7 +1801,11 @@ final class PaywallPackageSelectionCoordinator: ObservableObject {
         let key = PaywallStateKey.paywall(scope: self.scope, field: field)
         self.store.request(
             .init(key: key, value: .packageID(packageID)),
-            details: .init(source: sourceComponent.componentID, sheetComponentID: sheetComponentID),
+            details: PaywallPackageSelectionDetails(
+                sourceComponentID: sourceComponent.componentID,
+                sheetComponentID: sheetComponentID,
+                reason: "select"
+            ),
             mutationHandler: self.mutationHandler
         )
         if self.store.value(for: key)?.packageID == packageID {
@@ -2017,6 +2066,10 @@ func projectedStyle(
 Add `ProjectedTextComponentStyle` as a small internal wrapper:
 
 ```swift
+struct PaywallComponentProjectionDetails: PaywallStateChangeDetails {
+    let componentID: String
+}
+
 struct ProjectedTextComponentStyle {
     let style: TextComponentStyle
     let stateMutations: [PaywallStateMutation]
@@ -2060,7 +2113,7 @@ private func publishProjectedText(_ projection: ProjectedTextComponentStyle) {
     for mutation in projection.stateMutations {
         paywallStateStore.request(
             mutation,
-            details: .init(source: viewModel.identity.componentID),
+            details: PaywallComponentProjectionDetails(componentID: viewModel.identity.componentID),
             mutationHandler: self.paywallStateMutationHandler
         )
     }
@@ -2100,6 +2153,10 @@ Create `Tests/APITesters/AllAPITests/SwiftAPITester/PaywallsV2ReactiveStateAPI.s
 @_spi(Internal) import RevenueCatUI
 import SwiftUI
 
+private struct APIDetails: PaywallStateChangeDetails {
+    let source: String
+}
+
 private func checkPaywallsV2ReactiveStateAPI() {
     _ = PaywallStateScope(
         paywallID: "paywall",
@@ -2108,10 +2165,11 @@ private func checkPaywallsV2ReactiveStateAPI() {
         workflowPageID: nil
     )
     _ = PaywallStateValue.string("value")
-    _ = PaywallStateChangeDetails(source: "component")
+    _ = APIDetails(source: "component")
     _ = EmptyView()
         .onPaywallStateChange { _ in }
         .onPaywallStateMutation { proposal in
+            _ = proposal.change as PaywallStateChange<PaywallStateChangeProposed>
             proposal.accept()
         }
 }

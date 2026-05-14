@@ -135,8 +135,8 @@ Conceptual API:
 final class PaywallStateStore: ObservableObject {
     func value(for key: PaywallStateKey) -> PaywallStateValue?
     func publisher(for key: PaywallStateKey) -> AnyPublisher<PaywallStateValue?, Never>
-    func request(_ mutation: PaywallStateMutation, details: PaywallStateChangeDetails)
-    var resolvedEvents: AnyPublisher<PaywallStateChange, Never> { get }
+    func request(_ mutation: PaywallStateMutation, details: (any PaywallStateChangeDetails)?)
+    var resolvedEvents: AnyPublisher<PaywallStateChange<PaywallStateChangeCommitted>, Never> { get }
 }
 ```
 
@@ -147,6 +147,8 @@ Important implementation rules:
 - If a proposal is replaced with a different key, compute the replacement old value from the replacement key.
 - A proposal can resolve only once.
 - Default behavior accepts mutations immediately.
+- Model proposed and committed changes with a phantom stage type: `PaywallStateChange<PaywallStateChangeProposed>` for gates and `PaywallStateChange<PaywallStateChangeCommitted>` for resolved events.
+- Keep change details generic. `PaywallStateChangeDetails` should be a protocol, and reducers can opt in by casting to the concrete details type they understand, instead of expanding one catch-all details struct for every future source.
 
 ### Consumer hooks
 
@@ -164,7 +166,7 @@ PaywallView()
     }
 ```
 
-The mutation hook receives a proposal that supports:
+The mutation hook receives a proposal containing a `PaywallStateChange<PaywallStateChangeProposed>` and supports:
 
 - `accept()`
 - `reject()`
@@ -182,7 +184,7 @@ Committed events include:
 - new value
 - source details, such as package row tap or derived rule evaluation
 
-The event/proposal types should avoid new public enums unless the team explicitly accepts the API stability risk. If these move from SPI to stable public API later, prefer public structs with static factories or other API-stable shapes.
+The event/proposal types should avoid new public enums unless the team explicitly accepts the API stability risk. If these move from SPI to stable public API later, prefer public structs, protocols, and static factories or other API-stable shapes. The stage markers can be empty structs conforming to a marker protocol instead of public enums.
 
 ### Adapter flow
 
