@@ -261,7 +261,8 @@ struct WorkflowPaywallView: View {
             closeWorkflowAction: self.onDismiss,
             failedToLoadFont: self.failedToLoadFont,
             colorScheme: self.colorScheme,
-            promoOfferCache: self.promoOfferCache
+            promoOfferCache: self.promoOfferCache,
+            workflowPageID: page.screenID
         )
         .environment(\.workflowPackageContext, self.workflowPackageContext)
         .environment(\.workflowTriggerAction, { componentId in
@@ -411,7 +412,8 @@ struct WorkflowPaywallView: View {
 
         return .init(
             content: .init(paywallComponents: paywallComponents, offering: offering),
-            showCloseButton: !canNavigateBack && displayCloseButton
+            showCloseButton: !canNavigateBack && displayCloseButton,
+            screenID: screenId
         )
     }
 
@@ -436,6 +438,7 @@ private struct RenderedPage: Identifiable {
     let id = UUID()
     let content: CurrentStepContent
     let showCloseButton: Bool
+    let screenID: String
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

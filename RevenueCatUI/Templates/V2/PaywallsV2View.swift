@@ -51,6 +51,9 @@ struct PaywallsV2View: View {
     @Environment(\.workflowPackageContext)
     private var workflowPackageContext
 
+    @Environment(\.paywallStateChangeObserver)
+    private var paywallStateChangeObserver
+
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -58,8 +61,12 @@ struct PaywallsV2View: View {
     private var paywallStateManager: PaywallStateManager
 
     @StateObject
+    private var paywallStateStore: PaywallStateStore
+
+    @StateObject
     private var selectedPackageContext: PackageContext
 
+    private let paywallStateScope: PaywallStateScope
     private let paywallComponentsData: PaywallComponentsData
     private let uiConfigProvider: UIConfigProvider
     private let offering: Offering
@@ -95,7 +102,9 @@ struct PaywallsV2View: View {
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
         colorScheme: ColorScheme,
         promoOfferCache: PaywallPromoOfferCache? = nil,
-        introEligibilityContext: IntroOfferEligibilityContext? = nil
+        introEligibilityContext: IntroOfferEligibilityContext? = nil,
+        workflowPageID: String? = nil,
+        paywallStateStore: PaywallStateStore? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
@@ -113,6 +122,13 @@ struct PaywallsV2View: View {
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
         self.closeWorkflowAction = closeWorkflowAction
+        self.paywallStateScope = .init(
+            paywallID: paywallComponents.data.id,
+            offeringIdentifier: offering.identifier,
+            paywallRevision: paywallComponents.data.revision,
+            workflowPageID: workflowPageID
+        )
+        self._paywallStateStore = .init(wrappedValue: paywallStateStore ?? PaywallStateStore())
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
         ))
@@ -202,9 +218,14 @@ struct PaywallsV2View: View {
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+        .environment(\.paywallStateStore, self.paywallStateStore)
+        .environment(\.paywallStateScope, self.paywallStateScope)
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)
+        .onReceive(self.paywallStateStore.resolvedEvents) { change in
+            self.paywallStateChangeObserver?(change)
+        }
     }
 
     @ViewBuilder
