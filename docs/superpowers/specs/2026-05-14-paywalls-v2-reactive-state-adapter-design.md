@@ -135,8 +135,8 @@ Conceptual API:
 final class PaywallStateStore: ObservableObject {
     func value(for key: PaywallStateKey) -> PaywallStateValue?
     func publisher(for key: PaywallStateKey) -> AnyPublisher<PaywallStateValue?, Never>
-    func request(_ mutation: PaywallStateMutation, details: (any PaywallState.Details)?)
-    var resolvedEvents: AnyPublisher<PaywallState.Change<PaywallState.ChangeCommitted>, Never> { get }
+    func request(_ mutation: PaywallStateMutation, details: (any PaywallStateChange.Details)?)
+    var resolvedEvents: AnyPublisher<PaywallStateChange.Event<PaywallStateChange.Committed>, Never> { get }
 }
 ```
 
@@ -147,8 +147,9 @@ Important implementation rules:
 - If a proposal is replaced with a different key, compute the replacement old value from the replacement key.
 - A proposal can resolve only once.
 - Default behavior accepts mutations immediately.
-- Model proposed and committed changes with a phantom stage type under a `PaywallState` namespace: `PaywallState.Change<PaywallState.ChangeProposed>` for gates and `PaywallState.Change<PaywallState.ChangeCommitted>` for resolved events.
-- Keep change details generic. `PaywallState.Details` should be a protocol, and reducers can opt in by casting to the concrete details type they understand, instead of expanding one catch-all details struct for every future source.
+- Model proposed and committed changes with a phantom stage type under a `PaywallStateChange` namespace: `PaywallStateChange.Event<PaywallStateChange.Proposed>` for gates and `PaywallStateChange.Event<PaywallStateChange.Committed>` for resolved events.
+- Keep change details generic. `PaywallStateChange.Details` should be a protocol, and reducers can opt in by casting to the concrete details type they understand, instead of expanding one catch-all details struct for every future source.
+- Keep details as plain `Sendable` values without actor isolation. Apply `@MainActor` to side-effect coordinators that mutate UI-facing objects, not to detail payloads.
 
 ### Consumer hooks
 
@@ -166,7 +167,7 @@ PaywallView()
     }
 ```
 
-The mutation hook receives a proposal containing a `PaywallState.Change<PaywallState.ChangeProposed>` and supports:
+The mutation hook receives a proposal containing a `PaywallStateChange.Event<PaywallStateChange.Proposed>` and supports:
 
 - `accept()`
 - `reject()`
@@ -216,6 +217,8 @@ When a sheet is visible, sheet content should read and write the sheet-scoped se
 
 Existing `PresentedPartial.buildPartial(...)` semantics remain the compatibility source. The adapter evaluates the same rules, but writes fields into state slots based on the selected override's raw `properties` keys.
 
+Raw override properties should be captured during the normal decode pass from the `properties` container. Do not recover raw properties by re-encoding typed partials or large JSON subtrees back into `Data`.
+
 Example for a text component:
 
 1. Read source slots: selected package ID, component state, screen condition, eligibility, custom variables.
@@ -235,6 +238,7 @@ Add the state store, state keys, scoped identities, mutation proposal, and event
 ### Phase 2: Component IDs in models
 
 Add the JSON `id` field to all Paywalls V2 component models and carry that ID into `PaywallComponentIdentity`. This is a prerequisite for state observability and avoids deriving identity from structural paths.
+Any `CodingKeys` needed by reducer or test code should be `internal` rather than `private`, so tests and reducer logic can reference the serialized key names without duplicating string literals.
 
 ### Phase 3: Package selection bridge
 
@@ -246,6 +250,7 @@ This proves:
 - app gates can replace selected package changes
 - committed events include paywall and component scope
 - duplicate paywall instances do not share selection state
+- copied paywalls are tested through a shared state store with different paywall IDs and identical component IDs, proving the scoped keys isolate state in the same pipeline
 - sheet package selection does not leak into root package selection after dismissal
 
 ### Phase 4: Reactive text fields
