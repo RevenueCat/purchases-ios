@@ -6,6 +6,7 @@
 //
 // swiftlint:disable missing_docs file_length
 
+import Combine
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
@@ -66,7 +67,9 @@ struct PaywallsV2View: View {
     @StateObject
     private var selectedPackageContext: PackageContext
 
-    private let paywallStateScope: PaywallStateScope
+    @State
+    private var paywallStateScope: PaywallStateScope
+
     private let paywallComponentsData: PaywallComponentsData
     private let uiConfigProvider: UIConfigProvider
     private let offering: Offering
@@ -104,7 +107,8 @@ struct PaywallsV2View: View {
         promoOfferCache: PaywallPromoOfferCache? = nil,
         introEligibilityContext: IntroOfferEligibilityContext? = nil,
         workflowPageID: String? = nil,
-        paywallStateStore: PaywallStateStore? = nil
+        paywallStateStore: PaywallStateStore? = nil,
+        paywallStateScope: PaywallStateScope? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
@@ -122,12 +126,13 @@ struct PaywallsV2View: View {
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
         self.closeWorkflowAction = closeWorkflowAction
-        self.paywallStateScope = .init(
+        let resolvedPaywallStateScope = paywallStateScope ?? PaywallStateScope(
             paywallID: paywallComponents.data.id,
             offeringIdentifier: offering.identifier,
             paywallRevision: paywallComponents.data.revision,
             workflowPageID: workflowPageID
         )
+        self._paywallStateScope = .init(initialValue: resolvedPaywallStateScope)
         self._paywallStateStore = .init(wrappedValue: paywallStateStore ?? PaywallStateStore())
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker

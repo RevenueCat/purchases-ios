@@ -22,7 +22,7 @@ struct PaywallStateSlotRegistry {
         case packageID
     }
 
-    static let acceptingAllForTests = PaywallStateSlotRegistry(acceptsUnknownKeys: true)
+    static let acceptingAll = PaywallStateSlotRegistry(acceptsUnknownKeys: true)
 
     private var expectedKinds: [PaywallStateKey: ValueKind] = [:]
     private let acceptsUnknownKeys: Bool

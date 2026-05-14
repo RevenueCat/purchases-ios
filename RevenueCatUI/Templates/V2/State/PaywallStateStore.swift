@@ -28,14 +28,16 @@ final class PaywallStateStore: ObservableObject {
 
     init(
         initialValues: [PaywallStateKey: PaywallStateValue?] = [:],
-        slotRegistry: PaywallStateSlotRegistry = .acceptingAllForTests
+        slotRegistry: PaywallStateSlotRegistry = .acceptingAll
     ) {
         self.slotRegistry = slotRegistry
         self.values = initialValues
     }
 
     var resolvedEvents: AnyPublisher<PaywallStateChange.Event<PaywallStateChange.Committed>, Never> {
-        self.resolvedEventsSubject.eraseToAnyPublisher()
+        self.resolvedEventsSubject
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
     }
 
     func value(for key: PaywallStateKey) -> PaywallStateValue? {
@@ -55,6 +57,7 @@ final class PaywallStateStore: ObservableObject {
                         .eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher()
                 )
         }
+        .receive(on: DispatchQueue.main)
         .eraseToAnyPublisher()
     }
 

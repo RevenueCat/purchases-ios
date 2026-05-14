@@ -873,7 +873,7 @@ struct PaywallStateSlotRegistry {
     private var expectedKinds: [PaywallStateKey: ValueKind] = [:]
     private let acceptsUnknownKeys: Bool
 
-    static let acceptingAllForTests = PaywallStateSlotRegistry(acceptsUnknownKeys: true)
+    static let acceptingAll = PaywallStateSlotRegistry(acceptsUnknownKeys: true)
 
     init(acceptsUnknownKeys: Bool = false) {
         self.acceptsUnknownKeys = acceptsUnknownKeys
@@ -926,7 +926,7 @@ final class PaywallStateStore: ObservableObject {
 
     init(
         initialValues: [PaywallStateKey: PaywallStateValue?] = [:],
-        slotRegistry: PaywallStateSlotRegistry = .acceptingAllForTests
+        slotRegistry: PaywallStateSlotRegistry = .acceptingAll
     ) {
         self.slotRegistry = slotRegistry
         self.values = initialValues
@@ -1181,23 +1181,27 @@ Modify `PaywallsV2View`:
 ```swift
 @StateObject
 private var paywallStateStore: PaywallStateStore
-private let paywallStateScope: PaywallStateScope
+@State
+private var paywallStateScope: PaywallStateScope
 ```
 
-In `init`, create the store and scope. Add `workflowPageID: String? = nil` and `paywallStateStore: PaywallStateStore? = nil` to `PaywallsV2View.init`, and pass the workflow screen/page ID from `WorkflowPaywallView.pageView(for:)`.
+In `init`, create the store and scope. Add `workflowPageID: String? = nil`,
+`paywallStateStore: PaywallStateStore? = nil`, and `paywallStateScope: PaywallStateScope? = nil`
+to `PaywallsV2View.init`, and pass the workflow screen/page ID from `WorkflowPaywallView.pageView(for:)`.
 
 ```swift
 let paywallStateStore = paywallStateStore ?? PaywallStateStore()
 self._paywallStateStore = .init(wrappedValue: paywallStateStore)
-self.paywallStateScope = PaywallStateScope(
+let resolvedPaywallStateScope = paywallStateScope ?? PaywallStateScope(
     paywallID: paywallComponents.data.id,
     offeringIdentifier: offering.identifier,
     paywallRevision: paywallComponents.data.revision,
     workflowPageID: workflowPageID
 )
+self._paywallStateScope = .init(initialValue: resolvedPaywallStateScope)
 ```
 
-Accepting an optional store in the initializer lets workflows or tests run multiple paywall scopes through a shared state pipeline. The view still creates its own store when no store is supplied.
+Accepting an optional store and scope in the initializer lets workflows or tests run multiple paywall scopes through a shared state pipeline. The view still creates its own store when no store is supplied.
 
 In `loadedPaywallView(paywallState:)`, add:
 
