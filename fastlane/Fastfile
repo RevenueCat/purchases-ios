@@ -2294,13 +2294,11 @@ platform :ios do
     sdk = "iphonesimulator"
     destination = "generic/platform=iOS Simulator"
 
-    # The public swiftinterface is platform-independent (it reflects the source
-    # only), so building for one SDK is enough to assert "RulesEngine exposes
-    # zero non-@_spi(Internal) public API". Anything declared
-    # @_spi(Internal) public is emitted into RulesEngine.private.swiftinterface,
-    # not the public RulesEngine.swiftinterface, so it cannot leak through this
-    # check by construction. Unlike a baseline-diff, no committed reference
-    # file exists for a contributor to regenerate to silence the check.
+    # Anything declared @_spi(Internal) public is emitted into
+    # RulesEngine.private.swiftinterface, not the public RulesEngine.swiftinterface,
+    # so it cannot leak through this check by construction. Unlike a baseline-diff,
+    # no committed reference file exists for a contributor to regenerate to
+    # silence the check.
     setup_swiftinterface_xcconfig
     begin
       Dir.chdir("..") do
