@@ -100,6 +100,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                     .applyIfLet(self.sheetHeight, apply: { view, height in
                         view.frame(height: height)
                     })
+                    .environment(\.paywallPackageSelectionSheetComponentID, sheetViewModel.sheet.id)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     .onAppear {
                         self.onSheetContentAppear?()

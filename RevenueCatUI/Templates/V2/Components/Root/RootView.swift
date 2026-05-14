@@ -32,11 +32,15 @@ struct RootView: View {
     @Environment(\.workflowPackageContext)
     private var workflowPackageContext
 
+    @Environment(\.paywallPackageSelectionCoordinator)
+    private var packageSelectionCoordinator
+
     private let viewModel: RootViewModel
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
 
     @State private var sheetViewModel: SheetViewModel?
+    @State private var packageSelectionSheetComponentID: String?
     @State private var packageSelectionSheetComponentName: String?
     @State private var overlaidHeaderHeight: CGFloat = 0
 
@@ -128,13 +132,21 @@ struct RootView: View {
         )
         .onChangeOf(sheetViewModel) { newValue in
             if let newValue {
+                self.packageSelectionSheetComponentID = newValue.sheet.id
                 self.packageSelectionSheetComponentName = newValue.sheet.name
             } else {
                 // Reset package selection when sheet is dismissed; snapshot sheet name before clear for analytics.
                 let selectionInSheetContext = self.packageContext.package
-                self.packageContext.package = self.workflowPackageContext?.selectedPackage ?? self.defaultPackage
-                let resultingRootPackage = self.packageContext.package
+                let resultingRootPackage = self.workflowPackageContext?.selectedPackage ?? self.defaultPackage
+                if let packageSelectionSheetComponentID {
+                    if let packageSelectionCoordinator {
+                        packageSelectionCoordinator.clearSheetSelection(componentID: packageSelectionSheetComponentID)
+                    } else {
+                        self.packageContext.package = resultingRootPackage
+                    }
+                }
                 let sheetName = self.packageSelectionSheetComponentName
+                self.packageSelectionSheetComponentID = nil
                 self.packageSelectionSheetComponentName = nil
                 _ = self.componentInteractionLogger(
                     .paywallPackageSelectionSheetClose(

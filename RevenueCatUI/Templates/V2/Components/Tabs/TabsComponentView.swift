@@ -113,6 +113,12 @@ struct LoadedTabsComponentView: View {
     @Environment(\.selectedPackageId)
     private var selectedPackageId
 
+    @Environment(\.paywallPackageSelectionCoordinator)
+    private var packageSelectionCoordinator
+
+    @Environment(\.paywallPackageSelectionSheetComponentID)
+    private var packageSelectionSheetComponentID
+
     private let viewModel: TabsComponentViewModel
     private let workflowDefaultPackage: Package?
     private let onDismiss: () -> Void
@@ -249,7 +255,7 @@ struct LoadedTabsComponentView: View {
                 parentPackageContext: self.packageContext,
                 tabPackageIdentifiers: Set(activeTabViewModel.packages.map(\.identifier)),
                 onChange: { context in
-                    self.packageContext.update(
+                    self.updateParentPackageSelection(
                         package: context.package,
                         variableContext: context.variableContext
                     )
@@ -268,7 +274,7 @@ struct LoadedTabsComponentView: View {
                     // Propagate the initial tab's package to parent context for the purchase button.
                     // Subsequent changes are handled by the onChange callback in LoadedTabComponentView.
                     if let package = tierPackageContext.package {
-                        self.packageContext.update(
+                        self.updateParentPackageSelection(
                             package: package,
                             variableContext: tierPackageContext.variableContext
                         )
@@ -306,7 +312,7 @@ struct LoadedTabsComponentView: View {
                     )
                 }
                 if let parentUpdate = updatePlan.parentUpdate {
-                    self.packageContext.update(
+                    self.updateParentPackageSelection(
                         package: parentUpdate.package,
                         variableContext: parentUpdate.variableContext
                     )
@@ -363,6 +369,36 @@ struct LoadedTabsComponentView: View {
                     )
                 }
             }
+        }
+    }
+
+    private func updateParentPackageSelection(
+        package: Package?,
+        variableContext: PackageContext.VariableContext
+    ) {
+        guard let package else {
+            if let packageSelectionCoordinator {
+                packageSelectionCoordinator.clearPackageSelection(
+                    sheetComponentID: self.packageSelectionSheetComponentID,
+                    variableContext: variableContext,
+                    source: .tabs
+                )
+            } else {
+                self.packageContext.update(package: nil, variableContext: variableContext)
+            }
+            return
+        }
+
+        if let packageSelectionCoordinator {
+            packageSelectionCoordinator.selectPackage(
+                package,
+                sheetComponentID: self.packageSelectionSheetComponentID,
+                componentIdentity: nil,
+                variableContext: variableContext,
+                source: .tabs
+            )
+        } else {
+            self.packageContext.update(package: package, variableContext: variableContext)
         }
     }
 

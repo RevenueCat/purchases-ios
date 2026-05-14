@@ -55,6 +55,9 @@ struct PaywallsV2View: View {
     @Environment(\.paywallStateChangeObserver)
     private var paywallStateChangeObserver
 
+    @Environment(\.paywallStateMutationHandler)
+    private var paywallStateMutationHandler
+
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -216,8 +219,14 @@ struct PaywallsV2View: View {
             introOfferEligibilityContext: introOfferEligibilityContext,
             paywallState: paywallState,
             uiConfigProvider: self.uiConfigProvider,
+            paywallStateStore: self.paywallStateStore,
+            paywallStateScope: self.paywallStateScope,
+            paywallStateMutationHandler: self.paywallStateMutationHandler,
             selectedPackageContext: self.selectedPackageContext,
             defaultPackage: defaultPackage,
+            currentWorkflowSelectedPackage: {
+                self.workflowPackageContext?.selectedPackage
+            },
             onDismiss: self.onDismiss,
             closeWorkflowAction: self.closeWorkflowAction
         )
@@ -400,6 +409,9 @@ private struct LoadedPaywallsV2View: View {
     private let closeWorkflowAction: (() -> Void)?
     private let defaultPackage: Package?
 
+    @StateObject
+    private var packageSelectionCoordinator: PaywallPackageSelectionCoordinator
+
     @ObservedObject
     private var selectedPackageContext: PackageContext
 
@@ -407,8 +419,12 @@ private struct LoadedPaywallsV2View: View {
         introOfferEligibilityContext: IntroOfferEligibilityContext,
         paywallState: PaywallState,
         uiConfigProvider: UIConfigProvider,
+        paywallStateStore: PaywallStateStore,
+        paywallStateScope: PaywallStateScope,
+        paywallStateMutationHandler: PaywallStateMutationHandler?,
         selectedPackageContext: PackageContext,
         defaultPackage: Package?,
+        currentWorkflowSelectedPackage: @escaping () -> Package?,
         onDismiss: @escaping () -> Void,
         closeWorkflowAction: (() -> Void)? = nil
     ) {
@@ -417,6 +433,15 @@ private struct LoadedPaywallsV2View: View {
         self.uiConfigProvider = uiConfigProvider
         self.selectedPackageContext = selectedPackageContext
         self.defaultPackage = defaultPackage
+        self._packageSelectionCoordinator = .init(wrappedValue: PaywallPackageSelectionCoordinator(
+            scope: paywallStateScope,
+            store: paywallStateStore,
+            mutationHandler: paywallStateMutationHandler,
+            packageContext: selectedPackageContext,
+            packages: paywallState.packages,
+            defaultPackage: defaultPackage,
+            currentWorkflowSelectedPackage: currentWorkflowSelectedPackage
+        ))
         self.onDismiss = onDismiss
         self.closeWorkflowAction = closeWorkflowAction
     }
@@ -454,6 +479,7 @@ private struct LoadedPaywallsV2View: View {
             )
             .environment(\.selectedPackageId, self.selectedPackageContext.package?.identifier)
             .environment(\.planSelectionDefaultPackage, self.defaultPackage)
+            .environment(\.paywallPackageSelectionCoordinator, self.packageSelectionCoordinator)
             .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
         }

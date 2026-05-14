@@ -81,6 +81,7 @@ struct PackageComponentView: View {
             .packageSelectorIfNeeded(
                 packageContext: self.packageContext,
                 package: package,
+                componentIdentity: self.viewModel.identity,
                 componentName: self.viewModel.componentName,
                 hasPurchaseButton: self.viewModel.hasPurchaseButton
             )
@@ -95,12 +96,14 @@ private extension View {
     func packageSelectorIfNeeded(
         packageContext: PackageContext,
         package: Package,
+        componentIdentity: PaywallComponentIdentity,
         componentName: String?,
         hasPurchaseButton: Bool
     ) -> some View {
         modifier(PackageSelectorIfNeeded(
             packageContext: packageContext,
             package: package,
+            componentIdentity: componentIdentity,
             componentName: componentName,
             hasPurchaseButton: hasPurchaseButton
         ))
@@ -115,9 +118,14 @@ private struct PackageSelectorIfNeeded: ViewModifier {
     private var componentInteractionLogger
     @Environment(\.planSelectionDefaultPackage)
     private var planSelectionDefaultPackage
+    @Environment(\.paywallPackageSelectionCoordinator)
+    private var packageSelectionCoordinator
+    @Environment(\.paywallPackageSelectionSheetComponentID)
+    private var packageSelectionSheetComponentID
 
     let packageContext: PackageContext
     let package: Package
+    let componentIdentity: PaywallComponentIdentity
     let componentName: String?
     let hasPurchaseButton: Bool
 
@@ -140,10 +148,19 @@ private struct PackageSelectorIfNeeded: ViewModifier {
                         )
                     )
                 }
-                self.packageContext.update(
-                    package: self.package,
-                    variableContext: self.packageContext.variableContext
-                )
+                if let packageSelectionCoordinator {
+                    packageSelectionCoordinator.selectPackage(
+                        self.package,
+                        sheetComponentID: self.packageSelectionSheetComponentID,
+                        componentIdentity: self.componentIdentity,
+                        variableContext: self.packageContext.variableContext
+                    )
+                } else {
+                    self.packageContext.update(
+                        package: self.package,
+                        variableContext: self.packageContext.variableContext
+                    )
+                }
             } label: {
                 content
             }
