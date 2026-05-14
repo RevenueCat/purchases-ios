@@ -123,6 +123,46 @@ final class PaywallStateStoreTests: TestCase {
         XCTAssertEqual(store.value(for: key), .bool(true))
     }
 
+    func testPublisherReplaysCurrentValueAndReceivesMatchingUpdates() {
+        let key = Self.makeKey(field: .component("visible"))
+        let unrelatedKey = Self.makeKey(field: .component("text"))
+        let store = PaywallStateStore(initialValues: [key: .bool(true)])
+        var receivedValues: [PaywallStateValue?] = []
+        let updateExpectation = self.expectation(description: "matching update")
+        updateExpectation.expectedFulfillmentCount = 2
+
+        store.publisher(for: key)
+            .sink {
+                receivedValues.append($0)
+                updateExpectation.fulfill()
+            }
+            .store(in: &cancellables)
+
+        store.request(.init(key: unrelatedKey, value: .string("ignored")), details: nil)
+        store.request(.init(key: key, value: .bool(false)), details: nil)
+
+        self.wait(for: [updateExpectation], timeout: 1)
+        XCTAssertEqual(receivedValues, [.bool(true), .bool(false)])
+    }
+
+    func testPublisherCreatedAfterCommitReplaysCanonicalValue() {
+        let key = Self.makeKey(field: .component("visible"))
+        let store = PaywallStateStore(initialValues: [key: .bool(true)])
+        var receivedValues: [PaywallStateValue?] = []
+        let replayExpectation = self.expectation(description: "current replay")
+
+        store.request(.init(key: key, value: .bool(false)), details: nil)
+        store.publisher(for: key)
+            .sink {
+                receivedValues.append($0)
+                replayExpectation.fulfill()
+            }
+            .store(in: &cancellables)
+
+        self.wait(for: [replayExpectation], timeout: 1)
+        XCTAssertEqual(receivedValues.first, .bool(false))
+    }
+
     private static func makeKey(field: PaywallStateKey.Field) -> PaywallStateKey {
         let scope = PaywallStateScope(
             instanceID: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,

@@ -10,6 +10,7 @@
 
 import Combine
 import Foundation
+@_spi(Internal) import RevenueCat
 
 #if !os(tvOS)
 
@@ -20,7 +21,6 @@ final class PaywallStateStore: ObservableObject {
     private let eventQueue = DispatchQueue(label: "com.revenuecat.paywalls.state.events")
     private let slotRegistry: PaywallStateSlotRegistry
     private var values: [PaywallStateKey: PaywallStateValue?]
-    private var subjects: [PaywallStateKey: CurrentValueSubject<PaywallStateValue?, Never>]
     private let resolvedEventsSubject = PassthroughSubject<
         PaywallStateChange.Event<PaywallStateChange.Committed>,
         Never
@@ -32,7 +32,6 @@ final class PaywallStateStore: ObservableObject {
     ) {
         self.slotRegistry = slotRegistry
         self.values = initialValues
-        self.subjects = initialValues.mapValues { CurrentValueSubject<PaywallStateValue?, Never>($0) }
     }
 
     var resolvedEvents: AnyPublisher<PaywallStateChange.Event<PaywallStateChange.Committed>, Never> {
@@ -47,7 +46,16 @@ final class PaywallStateStore: ObservableObject {
     }
 
     func publisher(for key: PaywallStateKey) -> AnyPublisher<PaywallStateValue?, Never> {
-        self.subject(for: key).eraseToAnyPublisher()
+        Deferred { [weak self] in
+            Just(self?.value(for: key) ?? nil)
+                .append(
+                    self?.resolvedEvents
+                        .filter { $0.key == key }
+                        .map(\.newValue)
+                        .eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher()
+                )
+        }
+        .eraseToAnyPublisher()
     }
 
     func request(
@@ -82,50 +90,30 @@ final class PaywallStateStore: ObservableObject {
 
     private func commit(_ mutation: PaywallStateMutation, details: (any PaywallStateChange.Details)?) {
         guard self.slotRegistry.accepts(mutation) else {
+            Logger.warning("Ignoring invalid paywall state mutation for key '\(mutation.key.field.rawValue)'.")
             return
         }
 
         self.lock.lock()
-        let result: (
-            subject: CurrentValueSubject<PaywallStateValue?, Never>,
-            change: PaywallStateChange.Event<PaywallStateChange.Committed>
-        )? = {
+        let result: PaywallStateChange.Event<PaywallStateChange.Committed>? = {
             let oldValue = self.values[mutation.key] ?? nil
             guard oldValue != mutation.value else { return nil }
 
             self.values[mutation.key] = mutation.value
-            let subject = self.subjectLocked(for: mutation.key)
             let change = PaywallStateChange.Event<PaywallStateChange.Committed>(
                 key: mutation.key,
                 oldValue: oldValue,
                 newValue: mutation.value,
                 details: details
             )
-            return (subject, change)
+            return change
         }()
         self.lock.unlock()
 
         guard let result else { return }
         self.eventQueue.async {
-            result.subject.send(mutation.value)
-            self.resolvedEventsSubject.send(result.change)
+            self.resolvedEventsSubject.send(result)
         }
-    }
-
-    private func subject(for key: PaywallStateKey) -> CurrentValueSubject<PaywallStateValue?, Never> {
-        self.lock.lock()
-        let subject = self.subjectLocked(for: key)
-        self.lock.unlock()
-        return subject
-    }
-
-    private func subjectLocked(for key: PaywallStateKey) -> CurrentValueSubject<PaywallStateValue?, Never> {
-        if let subject = self.subjects[key] {
-            return subject
-        }
-        let subject = CurrentValueSubject<PaywallStateValue?, Never>(self.values[key] ?? nil)
-        self.subjects[key] = subject
-        return subject
     }
 
 }
