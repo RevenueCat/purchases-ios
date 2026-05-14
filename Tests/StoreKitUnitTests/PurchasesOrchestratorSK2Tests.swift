@@ -2095,7 +2095,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             expect(self.backend.invokedPostReceiptDataParameters?.productData?.currencyCode) == "EUR"
             expect(self.backend.invokedPostReceiptDataParameters?.productData?.price) == 19.99
             expect(
-                self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
+                self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?
+                    .offeringIdentifier
             ) == "stored_offering"
             expect(self.backend.invokedPostReceiptDataParameters?.originalPurchaseCompletedBy) == .myApp
             expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == true
