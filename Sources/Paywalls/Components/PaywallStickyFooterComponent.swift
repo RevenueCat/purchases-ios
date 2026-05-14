@@ -19,7 +19,7 @@ import Foundation
 
     final class StickyFooterComponent: PaywallComponentBase {
 
-        public let id: String
+        public let id: String?
         public let stack: PaywallComponent.StackComponent
 
         public init(

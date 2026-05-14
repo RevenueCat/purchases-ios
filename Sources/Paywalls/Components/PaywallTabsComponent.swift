@@ -19,7 +19,7 @@ import Foundation
     final class TabControlButtonComponent: Codable, Sendable, Hashable, Equatable {
 
         let type: ComponentType
-        public let id: String
+        public let id: String?
         public let tabId: String
         public let name: String?
         public let stack: StackComponent
@@ -52,7 +52,7 @@ import Foundation
     final class TabControlToggleComponent: Codable, Sendable, Hashable, Equatable {
 
         let type: ComponentType
-        public let id: String
+        public let id: String?
         public let name: String?
         public let thumbColorOn: ColorScheme
         public let thumbColorOff: ColorScheme
@@ -99,7 +99,7 @@ import Foundation
     final class TabControlComponent: Codable, Sendable, Hashable, Equatable {
 
         let type: ComponentType
-        public let id: String
+        public let id: String?
 
         public init(id: String = "") {
             self.type = .tabControl
@@ -121,7 +121,7 @@ import Foundation
 
         final public class Tab: Codable, Sendable, Hashable, Equatable {
 
-            public let id: String
+            public let id: String?
             public let name: String?
             public let stack: StackComponent
 
@@ -171,7 +171,7 @@ import Foundation
         }
 
         let type: ComponentType
-        public let id: String
+        public let id: String?
         public let name: String?
         public let visible: Bool?
         public let size: Size

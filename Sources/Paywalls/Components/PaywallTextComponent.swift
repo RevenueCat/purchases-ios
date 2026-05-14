@@ -13,7 +13,7 @@ import Foundation
     final class TextComponent: PaywallComponentBase {
 
         let type: ComponentType
-        public let id: String
+        public let id: String?
         public let visible: Bool?
         public let name: String?
         public let text: LocalizationKey
@@ -92,7 +92,7 @@ import Foundation
             let container = try decoder.container(keyedBy: CodingKeys.self)
 
             self.type = try container.decode(ComponentType.self, forKey: .type)
-            self.id = try container.decode(String.self, forKey: .id)
+            self.id = try container.decodeIfPresent(String.self, forKey: .id)
             self.visible = try container.decodeIfPresent(Bool.self, forKey: .visible)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
             self.text = try container.decode(LocalizationKey.self, forKey: .text)

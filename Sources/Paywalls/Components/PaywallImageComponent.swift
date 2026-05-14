@@ -13,7 +13,7 @@ import Foundation
     final class ImageComponent: PaywallComponentBase {
 
         let type: ComponentType
-        public let id: String
+        public let id: String?
         public let visible: Bool?
         public let source: ThemeImageUrls
         public let size: Size

@@ -19,7 +19,7 @@ import Foundation
     final class TimelineComponent: PaywallComponentBase {
 
         let type: ComponentType
-        public let id: String
+        public let id: String?
         public let visible: Bool?
         public let iconAlignment: IconAlignment?
         public let itemSpacing: CGFloat?

@@ -20,7 +20,7 @@ import Foundation
     final class PackageComponent: PaywallComponentBase {
 
         let type: ComponentType
-        public let id: String
+        public let id: String?
         public let packageID: String
         public let isSelectedByDefault: Bool
         public let visible: Bool?

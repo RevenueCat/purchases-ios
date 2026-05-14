@@ -21,7 +21,7 @@ import Foundation
 
         let type: ComponentType
         public let name: String?
-        public let id: String
+        public let id: String?
         public let action: Action
         public let stack: PaywallComponent.StackComponent
         public let transition: PaywallComponent.Transition?
@@ -61,7 +61,7 @@ import Foundation
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.type = try container.decode(ComponentType.self, forKey: .type)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
-            self.id = try container.decode(String.self, forKey: .id)
+            self.id = try container.decodeIfPresent(String.self, forKey: .id)
             let actionContainer = try container.nestedContainer(keyedBy: ActionCodingKeys.self, forKey: .action)
             let rawActionType = try actionContainer.decode(String.self, forKey: .type)
             if rawActionType == "close_workflow" {
@@ -260,7 +260,7 @@ import Foundation
         }
 
         public struct Sheet: Codable, Hashable, Sendable {
-            public let id: String
+            public let id: String?
             public let name: String?
             public let stack: StackComponent
             public let backgroundBlur: Bool

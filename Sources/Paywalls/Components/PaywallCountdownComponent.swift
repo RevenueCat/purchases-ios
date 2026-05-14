@@ -20,7 +20,7 @@ import Foundation
     final class CountdownComponent: PaywallComponentBase {
 
         let type: ComponentType
-        public let id: String
+        public let id: String?
         public let name: String?
         public let style: CountdownStyle
         public let countFrom: CountFrom
@@ -65,7 +65,7 @@ import Foundation
         required public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.type = try container.decode(ComponentType.self, forKey: .type)
-            self.id = try container.decode(String.self, forKey: .id)
+            self.id = try container.decodeIfPresent(String.self, forKey: .id)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
             self.style = try container.decode(CountdownStyle.self, forKey: .style)
             self.countFrom = try container.decode(CountFrom.self, forKey: .countFrom)

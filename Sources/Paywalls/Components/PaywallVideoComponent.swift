@@ -20,7 +20,7 @@ import Foundation
     public final class VideoComponent: PaywallComponentBase {
 
         let type: ComponentType
-        public let id: String
+        public let id: String?
         public let source: ThemeVideoUrls
         public let fallbackSource: ThemeImageUrls?
         public let visible: Bool?

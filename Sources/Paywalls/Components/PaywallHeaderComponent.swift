@@ -29,7 +29,7 @@ import Foundation
 
     final class HeaderComponent: PaywallComponentBase {
 
-        @_spi(Internal) public let id: String
+        @_spi(Internal) public let id: String??
         @_spi(Internal) public let stack: PaywallComponent.StackComponent
 
         @_spi(Internal) public init(

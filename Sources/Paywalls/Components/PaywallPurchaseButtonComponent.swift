@@ -12,7 +12,7 @@ import Foundation
 
     final class PurchaseButtonComponent: PaywallComponentBase {
 
-        public let id: String
+        public let id: String?
         public let name: String?
         let type: ComponentType
         public let stack: PaywallComponent.StackComponent

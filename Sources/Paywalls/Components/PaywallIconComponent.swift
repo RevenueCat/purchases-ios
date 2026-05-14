@@ -77,7 +77,7 @@ import Foundation
         }
 
         let type: ComponentType
-        public let id: String
+        public let id: String?
         public let visible: Bool?
         public let baseUrl: String
         public let iconName: String
