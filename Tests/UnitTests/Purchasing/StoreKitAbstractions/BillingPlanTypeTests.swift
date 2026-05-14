@@ -13,8 +13,10 @@
 
 import Foundation
 import Nimble
-@testable import RevenueCat
+import StoreKit
 import XCTest
+
+@testable import RevenueCat
 
 class BillingPlanTypeTests: TestCase {
     func testEquality() {
@@ -47,13 +49,27 @@ class BillingPlanTypeTests: TestCase {
     }
 }
 
+// MARK: - To/From StoreKit BillingPlanType
 #if compiler(>=6.3.2)
 extension BillingPlanTypeTests {
 
     @available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *)
-    func testFromStoreKitBillingPlanType() {
+    func testFromStoreKitBillingPlanType() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
         expect(BillingPlanType.from(storeKitBillingPlanType: .monthly)).to(equal(BillingPlanType.monthly))
         expect(BillingPlanType.from(storeKitBillingPlanType: .upFront)).to(equal(BillingPlanType.upFront))
+    }
+
+    @available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *)
+    func testSKBillingPlanTypeComputedProperty() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        expect(BillingPlanType.monthly.skBillingPlanType)
+            .to(equal(StoreKit.Product.SubscriptionInfo.BillingPlanType.monthly))
+
+        expect(BillingPlanType.upFront.skBillingPlanType)
+            .to(equal(StoreKit.Product.SubscriptionInfo.BillingPlanType.upFront))
     }
 }
 #endif
