@@ -135,8 +135,8 @@ Conceptual API:
 final class PaywallStateStore: ObservableObject {
     func value(for key: PaywallStateKey) -> PaywallStateValue?
     func publisher(for key: PaywallStateKey) -> AnyPublisher<PaywallStateValue?, Never>
-    func request(_ mutation: PaywallStateMutation, details: (any PaywallStateChangeDetails)?)
-    var resolvedEvents: AnyPublisher<PaywallStateChange<PaywallStateChangeCommitted>, Never> { get }
+    func request(_ mutation: PaywallStateMutation, details: (any PaywallState.Details)?)
+    var resolvedEvents: AnyPublisher<PaywallState.Change<PaywallState.ChangeCommitted>, Never> { get }
 }
 ```
 
@@ -147,8 +147,8 @@ Important implementation rules:
 - If a proposal is replaced with a different key, compute the replacement old value from the replacement key.
 - A proposal can resolve only once.
 - Default behavior accepts mutations immediately.
-- Model proposed and committed changes with a phantom stage type: `PaywallStateChange<PaywallStateChangeProposed>` for gates and `PaywallStateChange<PaywallStateChangeCommitted>` for resolved events.
-- Keep change details generic. `PaywallStateChangeDetails` should be a protocol, and reducers can opt in by casting to the concrete details type they understand, instead of expanding one catch-all details struct for every future source.
+- Model proposed and committed changes with a phantom stage type under a `PaywallState` namespace: `PaywallState.Change<PaywallState.ChangeProposed>` for gates and `PaywallState.Change<PaywallState.ChangeCommitted>` for resolved events.
+- Keep change details generic. `PaywallState.Details` should be a protocol, and reducers can opt in by casting to the concrete details type they understand, instead of expanding one catch-all details struct for every future source.
 
 ### Consumer hooks
 
@@ -166,7 +166,7 @@ PaywallView()
     }
 ```
 
-The mutation hook receives a proposal containing a `PaywallStateChange<PaywallStateChangeProposed>` and supports:
+The mutation hook receives a proposal containing a `PaywallState.Change<PaywallState.ChangeProposed>` and supports:
 
 - `accept()`
 - `reject()`
