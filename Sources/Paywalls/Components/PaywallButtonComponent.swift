@@ -29,8 +29,8 @@ import Foundation
         @_spi(Internal) public let isCloseWorkflowAction: Bool
 
         public init(
-            id: String = "",
             name: String? = nil,
+            id: String? = nil,
             action: Action,
             stack: PaywallComponent.StackComponent,
             transition: PaywallComponent.Transition? = nil
@@ -260,7 +260,7 @@ import Foundation
         }
 
         public struct Sheet: Codable, Hashable, Sendable {
-            public let id: String?
+            public let id: String
             public let name: String?
             public let stack: StackComponent
             public let backgroundBlur: Bool
@@ -278,6 +278,24 @@ import Foundation
                 self.stack = stack
                 self.backgroundBlur = backgroundBlur
                 self.size = size
+            }
+
+            private enum CodingKeys: String, CodingKey {
+                case id
+                case name
+                case stack
+                case backgroundBlur
+                case size
+            }
+
+            public init(from decoder: Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                self.id = try container.decodeIfPresent(String.self, forKey: .id)
+                    ?? "$revenuecat_legacy_missing_id$sheet"
+                self.name = try container.decodeIfPresent(String.self, forKey: .name)
+                self.stack = try container.decode(StackComponent.self, forKey: .stack)
+                self.backgroundBlur = try container.decode(Bool.self, forKey: .backgroundBlur)
+                self.size = try container.decodeIfPresent(Size.self, forKey: .size)
             }
         }
     }

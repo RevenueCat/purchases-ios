@@ -40,6 +40,21 @@ class TextComponentViewModel {
     private let text: String
     private let presentedOverrides: PresentedOverrides<LocalizedTextPartial>?
 
+    convenience init(
+        localizationProvider: LocalizationProvider,
+        uiConfigProvider: UIConfigProvider,
+        component: PaywallComponent.TextComponent,
+        discardRules: Bool = false
+    ) throws {
+        try self.init(
+            identity: PaywallComponentIdentityFactory(paywallID: nil).identity(for: component),
+            localizationProvider: localizationProvider,
+            uiConfigProvider: uiConfigProvider,
+            component: component,
+            discardRules: discardRules
+        )
+    }
+
     init(
         identity: PaywallComponentIdentity,
         localizationProvider: LocalizationProvider,
