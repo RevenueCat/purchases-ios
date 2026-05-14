@@ -6,11 +6,11 @@
 
 import Foundation
 
-/// Public namespace for the RevenueCat rules engine.
+/// Namespace for the RevenueCat rules engine.
 ///
-/// This module is an implementation detail of the RevenueCat SDK. It is
-/// shipped as a separate framework so it can be consumed by `RevenueCat`
-/// and/or `RevenueCatUI` without coupling them to each other, but it is
-/// not intended for direct consumption by app developers and offers no
-/// compatibility guarantees.
-public enum RulesEngine {}
+/// This module is an implementation detail of the RevenueCat SDK. Every
+/// declaration in this framework is exposed under the `Internal` SPI
+/// (`@_spi(Internal)`) so it can be consumed by `RevenueCat` and/or
+/// `RevenueCatUI` without becoming part of the SDK's public API. Add
+/// `@_spi(Internal)` to every new public declaration in this module.
+@_spi(Internal) public enum RulesEngine {}

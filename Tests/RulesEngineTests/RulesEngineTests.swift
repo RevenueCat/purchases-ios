@@ -6,7 +6,7 @@
 
 import XCTest
 
-@testable import RulesEngine
+@_spi(Internal) @testable import RulesEngine
 
 final class RulesEngineTests: XCTestCase {
 
