@@ -748,6 +748,10 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     private func handleWorkflowExitOfferPreferenceChange(_ context: WorkflowExitOfferContext?) {
         guard ProcessInfo.processInfo.workflowsEndpointEnabled else { return }
+        // Don't nil out exitOfferOffering once an exit offer is already being presented:
+        // SwiftUI may fire a final nil preference update during the dismiss animation, after
+        // handleMainPaywallDismiss has already copied exitOfferOffering into presentedExitOffer.
+        guard context != nil || self.presentedExitOffer == nil else { return }
         self.exitOfferOffering = context?.exitOfferOffering
     }
 
