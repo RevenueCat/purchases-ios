@@ -55,7 +55,14 @@ final class ExitOfferHelperTests: TestCase {
         )
 
         expect(result).to(beNil())
-        self.logger.verifyMessageWasLogged("Exit offer is the same as the current offering", level: .warn)
+        // validExitOffer is a pure function — no side effects — so it's safe to call on every
+        // SwiftUI render. The exitOfferSameAsCurrent warning is emitted by fetchValidExitOffer
+        // (the one-shot async path) instead.
+        self.logger.verifyMessageWasNotLogged(
+            Strings.exitOfferSameAsCurrent,
+            level: .warn,
+            allowNoMessages: true
+        )
     }
 
     func testValidExitOfferReturnsOfferingWhenDifferentFromCurrentOffering() {
