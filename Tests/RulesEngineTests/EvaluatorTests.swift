@@ -235,6 +235,39 @@ final class EvaluatorTests: XCTestCase {
         XCTAssertTrue(try run(predicate, vars: vars))
     }
 
+    // MARK: - String + array operators (integration through dispatch)
+
+    func testInOperatorAgainstArrayWithVarNeedle() throws {
+        // {"in": [{"var": "country"}, ["US", "CA", "MX"]]}
+        let predicate = """
+            {"in": [
+                {"var": "country"},
+                ["US", "CA", "MX"]
+            ]}
+            """
+        XCTAssertTrue(try run(predicate, vars: ["country": .string("CA")]))
+        XCTAssertFalse(try run(predicate, vars: ["country": .string("FR")]))
+    }
+
+    func testMissingSomeInsideIfGatesRequiredData() throws {
+        // Pattern: "the rule needs at least 2 of these 3 fields populated".
+        // We use it as a guard: if the data is insufficient, fall back to a
+        // literal `false`; otherwise the inner check runs.
+        let predicate = """
+            {
+                "if": [
+                    {"!!": {"missing_some": [2, ["a", "b", "c"]]}},
+                    false,
+                    {"==": [{"var": "a"}, 1]}
+                ]
+            }
+            """
+        // Two of three fields → data sufficient → inner check runs (a == 1 → true).
+        XCTAssertTrue(try run(predicate, vars: ["a": .int(1), "b": .int(2)]))
+        // Only one field → data insufficient → falls back to false.
+        XCTAssertFalse(try run(predicate, vars: ["a": .int(1)]))
+    }
+
     // MARK: - Multi-key object treated as data, not operator
 
     func testMultiKeyObjectIsLiteralDataValue() throws {

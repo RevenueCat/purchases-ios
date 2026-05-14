@@ -15,7 +15,7 @@ enum Operators {
 
     /// Dispatch a JSON Logic operator. Throws `RuleError.unsupportedOperator`
     /// when the operator name isn't implemented in this slice.
-    // swiftlint:disable:next cyclomatic_complexity
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     static func dispatch(
         op operatorName: String,
         args: Value,
@@ -26,6 +26,8 @@ enum Operators {
             return try AccessorOperators.opVar(args: args, vars: vars)
         case "missing":
             return try AccessorOperators.opMissing(args: args, vars: vars)
+        case "missing_some":
+            return try AccessorOperators.opMissingSome(args: args, vars: vars)
 
         case "==":
             return try EqualityOperators.opLooseEq(args: args, vars: vars)
@@ -66,6 +68,15 @@ enum Operators {
             return try ComparisonOperators.opGt(args: args, vars: vars)
         case ">=":
             return try ComparisonOperators.opGe(args: args, vars: vars)
+
+        case "in":
+            return try StringArrayOperators.opIn(args: args, vars: vars)
+        case "cat":
+            return try StringArrayOperators.opCat(args: args, vars: vars)
+        case "substr":
+            return try StringArrayOperators.opSubstr(args: args, vars: vars)
+        case "merge":
+            return try StringArrayOperators.opMerge(args: args, vars: vars)
 
         default:
             throw RuleError.unsupportedOperator(name: operatorName)
