@@ -227,9 +227,7 @@ extension WorkflowPaywallViewTests {
                 offeringId: "offering_test"
             )
         )
-        let initialScreen = try XCTUnwrap(context.workflow.screens["screen_initial"])
-        let initialOffering = try XCTUnwrap(context.offering(for: initialScreen.offeringIdentifier))
-        let pagePackageContext = context.workflowPackageContext(for: initialScreen, offering: initialOffering)
+        let pagePackageContext = context.packageContext(for: "step_initial")
 
         expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_monthly"
         expect(pagePackageContext?.selectedPackage.identifier) == "$rc_annual"
@@ -241,11 +239,9 @@ extension WorkflowPaywallViewTests {
             singleStepFallbackId: "step_terminal",
             workflowPackages: [(id: "$rc_monthly", isDefault: true)]
         )
-        let initialScreen = try XCTUnwrap(context.workflow.screens["screen_initial"])
-        let initialOffering = try XCTUnwrap(context.offering(for: initialScreen.offeringIdentifier))
 
         expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_monthly"
-        expect(context.workflowPackageContext(for: initialScreen, offering: initialOffering)).to(beNil())
+        expect(context.packageContext(for: "step_initial")).to(beNil())
     }
 
 }
@@ -296,6 +292,24 @@ extension WorkflowPaywallViewTests {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowPaywallViewTests {
+
+    func testPackageContextRemainsReferenceType() {
+        func requiresReferenceType<T: AnyObject>(_: T.Type) {}
+
+        requiresReferenceType(PackageContext.self)
+    }
+
+    func testCachedPackageContextMutationsPropagateThroughReference() {
+        let cached = PackageContext(
+            package: TestData.monthlyPackage,
+            variableContext: .init(packages: [TestData.monthlyPackage, TestData.annualPackage])
+        )
+        let stepCache: [String: PackageContext] = ["step_terminal": cached]
+
+        cached.package = TestData.annualPackage
+
+        expect(stepCache["step_terminal"]?.package?.identifier) == TestData.annualPackage.identifier
+    }
 
     /// Verifies that `buildPackageContext` carries the user's current selection forward when
     /// the preferred package exists in the next step's available packages.

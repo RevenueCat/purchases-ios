@@ -150,7 +150,7 @@ struct WorkflowContext {
         return self.workflowPackageContext(for: screen, offering: offering)
     }
 
-    func workflowPackageContext(
+    private func workflowPackageContext(
         for screen: WorkflowScreen,
         offering: Offering
     ) -> WorkflowPackageContext? {

@@ -158,6 +158,8 @@ struct WorkflowPaywallView: View {
     @State private var hasLoggedInvalidState = false
     @State private var transitionState: WorkflowPageTransitionState<RenderedPage>
     @State private var activeTransitionID: UUID?
+    /// PackageContext is intentionally cached by reference: PaywallsV2View mutates the same
+    /// instance, so user selections persist when revisiting a workflow step.
     @State private var stepPackageContexts: [String: PackageContext]
 
     init(
