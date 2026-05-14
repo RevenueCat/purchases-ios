@@ -43,7 +43,7 @@ This plan implements the approved first slice:
   Builds state field names from override `properties` keys and nested property paths.
 
 - `RevenueCatUI/Templates/V2/State/PaywallStateReducerRegistry.swift`
-  Maps one or more raw override properties into direct or derived state mutations, such as deriving `component.icon_url` from `icon_name` and `formats`.
+  Maps one or more raw override properties into direct or derived state mutations, such as deriving an icon URL field from icon-name and formats coding keys.
 
 - `RevenueCatUI/Templates/V2/State/PaywallStateMutation.swift`  
   Mutation, change details, proposed/committed change, and proposal resolution model.
@@ -226,20 +226,22 @@ final class PaywallComponentIdentityTests: TestCase {
             "component.color"
         )
         XCTAssertEqual(
-            PaywallStateKey.Field.component("icon_name").rawValue,
-            "component.icon_name"
+            PaywallStateKey.Field.component("iconName").rawValue,
+            "component.iconName"
         )
     }
 
     func testIconReducerEmitsDerivedIconURLField() {
         let registry = PaywallStateReducerRegistry()
+        let iconNameKey = PaywallComponent.PartialIconComponent.CodingKeys.iconName.stringValue
+        let formatsKey = PaywallComponent.PartialIconComponent.CodingKeys.formats.stringValue
 
         XCTAssertEqual(
             registry.fields(
                 forComponentType: "icon",
-                propertyNames: ["icon_name", "formats"]
+                propertyNames: [iconNameKey, formatsKey]
             ),
-            Set([.component("icon_name"), .component("formats"), .component("icon_url")])
+            Set([.component(iconNameKey), .component(formatsKey), .component("iconURL")])
         )
     }
 
@@ -419,15 +421,7 @@ import Foundation
 struct PaywallOverridePropertyKeyBuilder {
 
     func field(forPropertyPath propertyPath: String) -> PaywallStateKey.Field {
-        .component(Self.normalize(propertyPath))
-    }
-
-    static func normalize(_ propertyPath: String) -> String {
-        propertyPath
-            .replacingOccurrences(of: "iconName", with: "icon_name")
-            .replacingOccurrences(of: "backgroundColor", with: "background_color")
-            .replacingOccurrences(of: "fontWeight", with: "font_weight")
-            .replacingOccurrences(of: "fontName", with: "font_name")
+        .component(propertyPath)
     }
 
 }
@@ -435,7 +429,7 @@ struct PaywallOverridePropertyKeyBuilder {
 #endif
 ```
 
-This starts with explicit normalization for existing camelCase coding keys. During implementation, prefer deriving names from each component's `CodingKeys` raw values so JSON names like `icon_name` and `background_color` become the state field names without extra SDK-authored mapping.
+Use the property name exactly as it appears after decoding/serialization. If the model serializes a key as camelCase, use camelCase. If the model serializes a key as snake_case, use snake_case. Do not normalize casing in this builder.
 
 - [ ] **Step 7: Add reducer registry skeleton**
 
@@ -453,11 +447,13 @@ struct PaywallStateReducerRegistry {
 
     func fields(forComponentType componentType: String, propertyNames: Set<String>) -> Set<PaywallStateKey.Field> {
         var fields = Set(propertyNames.map { self.keyBuilder.field(forPropertyPath: $0) })
+        let iconNameKey = PaywallComponent.PartialIconComponent.CodingKeys.iconName.stringValue
+        let formatsKey = PaywallComponent.PartialIconComponent.CodingKeys.formats.stringValue
 
-        if componentType == "icon",
-           propertyNames.contains("icon_name"),
-           propertyNames.contains("formats") {
-            fields.insert(.component("icon_url"))
+        if componentType == PaywallComponent.ComponentType.icon.rawValue,
+           propertyNames.contains(iconNameKey),
+           propertyNames.contains(formatsKey) {
+            fields.insert(.component("iconURL"))
         }
 
         return fields
@@ -468,7 +464,7 @@ struct PaywallStateReducerRegistry {
 #endif
 ```
 
-This registry is the composition point for dynamic behavior. Direct properties emit direct fields, and reducers can compose multiple properties into derived fields without hardcoding a fixed global field list. For example, an icon override with `icon_name` and `formats` emits `component.icon_name`, `component.formats`, and `component.icon_url`.
+This registry is the composition point for dynamic behavior. Direct properties emit direct fields, and reducers can compose multiple properties into derived fields without hardcoding a fixed global field list. Reducer inputs should use each component's `CodingKeys` string values instead of duplicated string literals. For example, an icon override with the icon name and formats coding keys emits direct fields for those serialized property names plus a derived `component.iconURL` field.
 
 - [ ] **Step 8: Add `PaywallStateValue`**
 
@@ -1187,6 +1183,8 @@ id: String = UUID().uuidString
 
 Prefer explicit IDs in new tests. Preserve existing tests by providing a default value in source initializers.
 
+For every partial component that can appear in override `properties`, add explicit `CodingKeys` if it currently relies on synthesized coding keys. Keep those coding keys at least `internal` so reducer code can reference `CodingKeys.<property>.stringValue` instead of duplicating serialized property names.
+
 - [ ] **Step 4: Preserve raw override property names**
 
 In `ComponentOverrides.swift`, keep the existing typed partial decode for compatibility, but also store a raw JSON property bag. The purpose is not to render unknown fields immediately; it is to generate state keys and expose unresolved properties to reducer code without waiting for a new SDK release.
@@ -1224,7 +1222,7 @@ struct PresentedOverride<T: PresentedPartial> {
 }
 ```
 
-In `toPresentedOverrides(...)`, pass `partial.rawProperties` into `PresentedOverride`. Add a test with an icon override containing `color`, `formats`, and `icon_name`, and assert both `ComponentOverride.rawProperties.keys` and the corresponding `PresentedOverride.rawProperties.keys` include those JSON property names.
+In `toPresentedOverrides(...)`, pass `partial.rawProperties` into `PresentedOverride`. Add a test with an icon override containing color, formats, and icon-name properties built from `PaywallComponent.PartialIconComponent.CodingKeys`, and assert both `ComponentOverride.rawProperties.keys` and the corresponding `PresentedOverride.rawProperties.keys` include those serialized JSON property names.
 
 - [ ] **Step 5: Audit construction and traversal call sites**
 
@@ -2027,7 +2025,7 @@ struct ProjectedTextComponentStyle {
 
 Then make legacy `styles(...)` call `projectedStyle(...).style`.
 
-The important behavior is that the state mutations are generated from override properties, not a hardcoded text field list. Use `PresentedOverride.rawProperties.keys` and `PaywallOverridePropertyKeyBuilder` to decide which fields changed. If the selected override contains `{ "properties": { "visible": false } }`, emit `component.visible`. If it contains `{ "properties": { "text": "..." } }`, emit `component.text`. For icon components, the reducer registry should be able to see both `icon_name` and `formats` and emit the derived `component.icon_url` field. Base fields can emit the same dynamic keys during initial projection.
+The important behavior is that the state mutations are generated from override properties, not a hardcoded text field list. Use `PresentedOverride.rawProperties.keys` and `PaywallOverridePropertyKeyBuilder` to decide which fields changed. If the selected override contains `{ "properties": { "visible": false } }`, emit `component.visible`. If it contains `{ "properties": { "text": "..." } }`, emit `component.text`. For icon components, the reducer registry should use the icon-name and formats coding keys to emit the derived icon URL field. Base fields can emit the same dynamic keys during initial projection.
 
 - [ ] **Step 4: Commit projected values into the state store**
 
