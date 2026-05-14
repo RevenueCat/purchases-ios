@@ -13,9 +13,13 @@
 
 import Nimble
 @_spi(Internal) import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 import XCTest
+
+#if os(iOS)
+import UIKit
+#endif
 
 #if !os(tvOS) // For Paywalls V2
 
@@ -296,6 +300,141 @@ class TextComponentLocalizationTests: TestCase {
     }
 
     @MainActor
+    func testProjectedStyleTextMatchesLegacyStyleForSelectedPackageOverride() throws {
+        let textComponent = Self.makeSelectedPackageTextComponent()
+        let localizations = Self.selectedPackageTextLocalizations
+        let viewModel = try TextComponentViewModel(
+            identity: Self.identity(for: textComponent),
+            localizationProvider: LocalizationProvider(locale: .current, localizedStrings: localizations),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            component: textComponent
+        )
+        let packageContext = PackageContext(
+            package: TestData.annualPackage,
+            variableContext: .init(packages: [TestData.monthlyPackage, TestData.annualPackage])
+        )
+
+        var legacyText: String?
+        _ = viewModel.styles(
+            state: .default,
+            condition: .compact,
+            selectedPackageId: TestData.annualPackage.identifier,
+            packageContext: packageContext,
+            isEligibleForIntroOffer: false,
+            promoOffer: nil
+        ) { style -> EmptyView in
+            legacyText = style.text
+            return EmptyView()
+        }
+
+        let projectedText = viewModel.projectedStyle(
+            state: .default,
+            condition: .compact,
+            selectedPackageId: TestData.annualPackage.identifier,
+            packageContext: packageContext,
+            isEligibleForIntroOffer: false,
+            promoOffer: nil,
+            paywallStateScope: Self.makeScope()
+        ).style.text
+
+        expect(projectedText).to(equal(legacyText))
+    }
+
+    @MainActor
+    func testProjectedMutationsIncludeSelectedPackageTextField() throws {
+        let textComponent = Self.makeSelectedPackageTextComponent()
+        let identity = Self.identity(for: textComponent)
+        let scope = Self.makeScope()
+        let viewModel = try TextComponentViewModel(
+            identity: identity,
+            localizationProvider: LocalizationProvider(
+                locale: .current,
+                localizedStrings: Self.selectedPackageTextLocalizations
+            ),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            component: textComponent
+        )
+        let packageContext = PackageContext(
+            package: TestData.annualPackage,
+            variableContext: .init(packages: [TestData.monthlyPackage, TestData.annualPackage])
+        )
+
+        let projection = viewModel.projectedStyle(
+            state: .default,
+            condition: .compact,
+            selectedPackageId: TestData.annualPackage.identifier,
+            packageContext: packageContext,
+            isEligibleForIntroOffer: false,
+            promoOffer: nil,
+            paywallStateScope: scope
+        )
+
+        let expectedKey = PaywallStateKey(
+            scope: scope,
+            component: identity,
+            field: .component(PaywallComponent.PartialTextComponent.CodingKeys.text.stringValue)
+        )
+        XCTAssertTrue(projection.stateMutations.contains(.init(
+            key: expectedKey,
+            value: .string("Selected annual text")
+        )))
+    }
+
+#if os(iOS)
+    @MainActor
+    func testCommittedTextStateIsRenderedWhenStoreAlreadyHasCommittedText() throws {
+        let textComponent = PaywallComponent.TextComponent(
+            id: "committed_text_component",
+            text: "base_text",
+            color: Self.black
+        )
+        let identity = Self.identity(for: textComponent)
+        let scope = Self.makeScope()
+        let textStateKey = PaywallStateKey(
+            scope: scope,
+            component: identity,
+            field: .component(PaywallComponent.PartialTextComponent.CodingKeys.text.stringValue)
+        )
+        let store = PaywallStateStore(initialValues: [
+            textStateKey: .string("Committed text")
+        ])
+        let viewModel = try TextComponentViewModel(
+            identity: identity,
+            localizationProvider: LocalizationProvider(
+                locale: .current,
+                localizedStrings: [
+                    "base_text": .string("Projected fallback text")
+                ]
+            ),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            component: textComponent
+        )
+
+        let view = TextComponentView(viewModel: viewModel)
+            .environmentObject(PackageContext(package: nil, variableContext: .init()))
+            .environmentObject(IntroOfferEligibilityContext(
+                introEligibilityChecker: BaseSnapshotTest.eligibleChecker
+            ))
+            .environmentObject(PaywallPromoOfferCache(
+                subscriptionHistoryTracker: SubscriptionHistoryTracker()
+            ))
+            .environment(\.paywallStateStore, store)
+            .environment(\.paywallStateScope, scope)
+            .environment(\.componentViewState, ComponentViewState.default)
+            .environment(\.screenCondition, ScreenCondition.compact)
+
+        let (window, hostedView) = Self.host(view)
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+
+        XCTAssertTrue(hostedView.containsText("Committed text"))
+        XCTAssertFalse(hostedView.containsText("Projected fallback text"))
+    }
+#endif
+
+    @MainActor
     func testSelectedPackageNotInConditionUsesGlobalSelectedPackageIdInsidePackageScope() throws {
         let textComponent = PaywallComponent.TextComponent(
             visible: false,
@@ -495,6 +634,44 @@ class TextComponentLocalizationTests: TestCase {
         return PaywallComponentIdentityFactory(paywallID: nil).identity(for: component)
     }
 
+    private static var selectedPackageTextLocalizations: PaywallComponent.LocalizationDictionary {
+        [
+            "base_text": .string("Base text"),
+            "selected_annual_text": .string("Selected annual text")
+        ]
+    }
+
+    private static func makeSelectedPackageTextComponent() -> PaywallComponent.TextComponent {
+        let textKey = PaywallComponent.PartialTextComponent.CodingKeys.text.stringValue
+
+        return PaywallComponent.TextComponent(
+            id: "selected_package_text_component",
+            text: "base_text",
+            color: Self.black,
+            overrides: [
+                .init(
+                    extendedConditions: [
+                        .selectedPackage(operator: .in, packages: [TestData.annualPackage.identifier])
+                    ],
+                    properties: .init(text: "selected_annual_text"),
+                    rawProperties: [
+                        textKey: .string("selected_annual_text")
+                    ]
+                )
+            ]
+        )
+    }
+
+    private static func makeScope() -> PaywallStateScope {
+        PaywallStateScope(
+            instanceID: UUID(uuidString: "00000000-0000-0000-0000-000000000007")!,
+            paywallID: "paywall_a",
+            offeringIdentifier: "default",
+            paywallRevision: 1,
+            workflowPageID: nil
+        )
+    }
+
     private func makeConditionalVisibilityViewModel() throws -> TextComponentViewModel {
         let textComponent = PaywallComponent.TextComponent(
             visible: false,
@@ -579,5 +756,42 @@ class TextComponentLocalizationTests: TestCase {
     }
 
 }
+
+#if os(iOS)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension TextComponentLocalizationTests {
+
+    static func host<Content: View>(_ view: Content) -> (UIWindow, UIView) {
+        let controller = UIHostingController(
+            rootView: view
+                .frame(width: 300, height: 200)
+        )
+        let window = UIWindow(frame: CGRect(origin: .zero, size: CGSize(width: 300, height: 200)))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        controller.view.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+
+        return (window, controller.view)
+    }
+
+}
+
+private extension UIView {
+
+    func containsText(_ text: String) -> Bool {
+        if let label = self as? UILabel, label.text == text {
+            return true
+        }
+
+        if self.accessibilityLabel == text {
+            return true
+        }
+
+        return self.subviews.contains { $0.containsText(text) }
+    }
+
+}
+#endif
 
 #endif

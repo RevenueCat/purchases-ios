@@ -21,6 +21,15 @@ import UIKit
 #if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
+struct TextComponentStyleProjection {
+
+    let style: TextComponentStyle
+    let stateMutations: [PaywallStateMutation]
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TextComponentViewModel {
 
     let identity: PaywallComponentIdentity
@@ -67,12 +76,39 @@ class TextComponentViewModel {
         customVariables: [String: CustomVariableValue] = [:],
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
+        let projection = self.projectedStyle(
+            state: state,
+            condition: condition,
+            selectedPackageId: selectedPackageId,
+            packageContext: packageContext,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer,
+            countdownTime: countdownTime,
+            customVariables: customVariables
+        )
+
+        apply(projection.style)
+    }
+
+    @MainActor
+    // swiftlint:disable:next function_parameter_count
+    func projectedStyle(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        selectedPackageId: String?,
+        packageContext: PackageContext,
+        isEligibleForIntroOffer: Bool,
+        promoOffer: PromotionalOffer?,
+        countdownTime: CountdownTime? = nil,
+        customVariables: [String: CustomVariableValue] = [:],
+        paywallStateScope: PaywallStateScope? = nil
+    ) -> TextComponentStyleProjection {
         let isEligibleForPromoOffer = promoOffer != nil
         let conditionContext = uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables
         )
-        let localizedPartial = LocalizedTextPartial.buildPartial(
+        let partialResult = LocalizedTextPartial.buildPartialResult(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
@@ -80,6 +116,7 @@ class TextComponentViewModel {
             conditionContext: conditionContext,
             with: self.presentedOverrides
         )
+        let localizedPartial = partialResult.partial
         let partial = localizedPartial?.partial
         let text = localizedPartial?.text ?? self.text
 
@@ -111,7 +148,45 @@ class TextComponentViewModel {
             horizontalAlignment: partial?.horizontalAlignment ?? self.component.horizontalAlignment
         )
 
-        apply(style)
+        return TextComponentStyleProjection(
+            style: style,
+            stateMutations: self.stateMutations(
+                for: style,
+                paywallStateScope: paywallStateScope
+            )
+        )
+    }
+
+    func textStateKey(scope: PaywallStateScope) -> PaywallStateKey {
+        return self.stateKey(
+            scope: scope,
+            field: PaywallComponent.PartialTextComponent.CodingKeys.text.stringValue
+        )
+    }
+
+    private func stateKey(scope: PaywallStateScope, field: String) -> PaywallStateKey {
+        return PaywallStateKey(
+            scope: scope,
+            component: self.identity,
+            field: .component(field)
+        )
+    }
+
+    private func stateMutations(
+        for style: TextComponentStyle,
+        paywallStateScope: PaywallStateScope?
+    ) -> [PaywallStateMutation] {
+        guard let paywallStateScope else {
+            return []
+        }
+
+        let textField = PaywallComponent.PartialTextComponent.CodingKeys.text.stringValue
+        return [
+            PaywallStateMutation(
+                key: self.stateKey(scope: paywallStateScope, field: textField),
+                value: .string(style.text)
+            )
+        ]
     }
 
     private struct TextProcessingConfig {

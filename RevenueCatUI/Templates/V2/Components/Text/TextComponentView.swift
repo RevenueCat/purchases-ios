@@ -13,6 +13,7 @@
 
 // swiftlint:disable file_length
 
+import Combine
 import Foundation
 @_spi(Internal) import RevenueCat
 import SwiftUI
@@ -46,10 +47,22 @@ struct TextComponentView: View {
     @Environment(\.selectedPackageId)
     private var selectedPackageId
 
+    @Environment(\.paywallStateStore)
+    private var paywallStateStore
+
+    @Environment(\.paywallStateScope)
+    private var paywallStateScope
+
+    @Environment(\.paywallStateMutationHandler)
+    private var paywallStateMutationHandler
+
     // Observing dynamicTypeSize triggers view rebuilds when Dynamic Type settings change,
     // which causes fonts to be recreated with the correct scaled size.
     @Environment(\.dynamicTypeSize)
     private var dynamicTypeSize
+
+    @State
+    private var committedText: String?
 
     private let viewModel: TextComponentViewModel
 
@@ -62,7 +75,7 @@ struct TextComponentView: View {
             package: self.packageContext.package
         )
         let promoOffer = self.paywallPromoOfferCache.get(for: self.packageContext.package)
-        viewModel.styles(
+        let projection = viewModel.projectedStyle(
             state: self.componentViewState,
             condition: self.screenCondition,
             selectedPackageId: self.selectedPackageId,
@@ -70,11 +83,17 @@ struct TextComponentView: View {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             promoOffer: promoOffer,
             countdownTime: countdownTime,
-            customVariables: self.customVariables
-        ) { style in
+            customVariables: self.customVariables,
+            paywallStateScope: self.paywallStateScope
+        )
+        let style = projection.style
+        let textStateKey = self.paywallStateScope.map { self.viewModel.textStateKey(scope: $0) }
+        let renderedText = self.committedText ?? style.text
+
+        Group {
             if style.visible {
                 NonLocalizedMarkdownText(
-                    text: style.text,
+                    text: renderedText,
                     font: style.font,
                     fontWeight: style.fontWeight,
                     componentName: style.name
@@ -88,6 +107,50 @@ struct TextComponentView: View {
                     .backgroundStyle(style.backgroundStyle)
                     .padding(style.margin)
             }
+        }
+        .onAppear {
+            self.refreshCommittedText(for: textStateKey)
+            self.publish(projection.stateMutations)
+        }
+        .onChange(of: projection.stateMutations) { stateMutations in
+            self.publish(stateMutations)
+        }
+        .onChange(of: textStateKey) { key in
+            self.refreshCommittedText(for: key)
+        }
+        .onReceive(self.committedValuePublisher(for: textStateKey)) { value in
+            self.committedText = value?.stringValue
+        }
+    }
+
+    private func committedValuePublisher(for key: PaywallStateKey?) -> AnyPublisher<PaywallStateValue?, Never> {
+        guard let paywallStateStore = self.paywallStateStore, let key else {
+            return Empty().eraseToAnyPublisher()
+        }
+
+        return paywallStateStore.publisher(for: key)
+    }
+
+    private func refreshCommittedText(for key: PaywallStateKey?) {
+        guard let paywallStateStore = self.paywallStateStore, let key else {
+            self.committedText = nil
+            return
+        }
+
+        self.committedText = paywallStateStore.value(for: key)?.stringValue
+    }
+
+    private func publish(_ mutations: [PaywallStateMutation]) {
+        guard let paywallStateStore = self.paywallStateStore else {
+            return
+        }
+
+        for mutation in mutations {
+            paywallStateStore.request(
+                mutation,
+                details: nil,
+                mutationHandler: self.paywallStateMutationHandler
+            )
         }
     }
 

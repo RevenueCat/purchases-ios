@@ -32,6 +32,13 @@ protocol PresentedPartial {
 /// Array holding override configurations for different presentation states
 typealias PresentedOverrides<T: PresentedPartial> = [PresentedOverride<T>]
 
+struct PresentedPartialBuildResult<T: PresentedPartial> {
+
+    let partial: T?
+    let rawProperties: [String: PaywallComponentPropertyValue]
+
+}
+
 /// Structure holding override configurations for a presentation state
 struct PresentedOverride<T: PresentedPartial> {
 
@@ -95,11 +102,32 @@ extension PresentedPartial {
         conditionContext: ConditionContext,
         with presentedOverrides: PresentedOverrides<Self>?
     ) -> Self? {
+        return Self.buildPartialResult(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
+            with: presentedOverrides
+        ).partial
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    // swiftlint:disable:next function_parameter_count
+    static func buildPartialResult(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        conditionContext: ConditionContext,
+        with presentedOverrides: PresentedOverrides<Self>?
+    ) -> PresentedPartialBuildResult<Self> {
         guard let presentedOverrides else {
-            return nil
+            return PresentedPartialBuildResult(partial: nil, rawProperties: [:])
         }
 
         var presentedPartial: Self?
+        var rawProperties: [String: PaywallComponentPropertyValue] = [:]
 
         for presentedOverride in presentedOverrides where self.shouldApply(
             for: presentedOverride.conditions,
@@ -110,9 +138,10 @@ extension PresentedPartial {
             conditionContext: conditionContext
         ) {
             presentedPartial = Self.combine(presentedPartial, with: presentedOverride.properties)
+            rawProperties.merge(presentedOverride.rawProperties) { _, new in new }
         }
 
-        return presentedPartial
+        return PresentedPartialBuildResult(partial: presentedPartial, rawProperties: rawProperties)
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
