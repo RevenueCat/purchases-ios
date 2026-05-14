@@ -1,0 +1,316 @@
+# Paywalls V2 Reactive State Adapter Design
+
+## Summary
+
+Paywalls V2 should preserve the current backend JSON format while gaining a reactive, state-driven runtime. The first implementation will add an adapter inside RevenueCatUI that projects existing Paywalls V2 components, overrides, and runtime inputs into scoped state slots. Component views will subscribe to the fields they render instead of asking their view models to recompute whole style objects from broad environment changes.
+
+This design follows the architecture demonstrated by `ios-state-example`: state mutations are requested, optionally gated by the consuming app, committed into keyed state slots, and published as resolved events. It also borrows the POC repository's idea of independent state cells driving view content, styles, and effects. Unlike the POC, this first implementation does not require new server-rendered `state`, `controls`, or `effects` fields in Paywalls V2 JSON.
+
+## Context
+
+Current Paywalls V2 rendering builds an immutable view-model tree once in `PaywallsV2View.createPaywallState(...)`. Each component then calls a `styles(...)` function that merges base component properties with applicable overrides using inputs such as `ComponentViewState`, `ScreenCondition`, selected package ID, intro or promo offer eligibility, countdown time, and custom variables.
+
+This works functionally, but it makes state changes coarse-grained. For example, package selection updates `PackageContext`, and many views can re-evaluate their entire style even if only one field changed. The target architecture is a finer-grained adapter where `selected_package_id`, component visibility, text, color, padding, and similar fields are independent observable values.
+
+## Goals
+
+- Preserve the existing Paywalls V2 JSON payload and decoding behavior for the first implementation.
+- Introduce a RevenueCatUI-internal reactive state store that can serve many paywall instances at once.
+- Scope all state by paywall instance so copied paywalls with identical component IDs do not affect each other.
+- Let consuming applications optionally observe committed paywall state events.
+- Let consuming applications optionally gate, reject, or replace proposed paywall state mutations.
+- Migrate behavior incrementally, starting with package selection and a small set of component fields.
+- Keep existing override semantics as the compatibility source of truth during the migration.
+
+## Non-goals
+
+- Do not add new Paywalls V2 JSON fields in the first implementation.
+- Do not require backend, dashboard, or schema changes.
+- Do not replace all component view models in one pass.
+- Do not make a breaking public API change.
+- Do not introduce a global state store shared across unrelated paywall instances without explicit scoping.
+
+## Architecture
+
+### Paywall instance scope
+
+Each `PaywallsV2View` instance creates a `PaywallStateScope` when it is initialized. The scope identifies the runtime paywall instance, not just the server paywall definition.
+
+Suggested fields:
+
+```swift
+struct PaywallStateScope: Hashable, Sendable {
+    let instanceID: UUID
+    let offeringIdentifier: String
+    let paywallRevision: Int?
+    let workflowPageID: String?
+}
+```
+
+`instanceID` is the primary collision boundary. `offeringIdentifier`, `paywallRevision`, and `workflowPageID` make observation payloads understandable and help consumers distinguish events, but they must not be the only scoping mechanism because the same offering or workflow screen can be rendered more than once.
+
+### Component identity
+
+The adapter assigns an identity to each component while `ViewModelFactory` walks the component tree.
+
+Suggested fields:
+
+```swift
+struct PaywallComponentIdentity: Hashable, Sendable {
+    let type: String
+    let serverID: String?
+    let name: String?
+    let path: String
+}
+```
+
+The structural `path` is required because many Paywalls V2 components only have `name`, and names can be duplicated. `serverID` is available only for component types that already expose IDs, such as buttons, tabs, countdowns, or sheets. A copied paywall can therefore reuse all server IDs and names while still receiving distinct state keys because the keys also include `PaywallStateScope.instanceID`.
+
+Example paths:
+
+- `root.header.stack[0].image`
+- `root.stack[2].package[monthly].stack[1].text`
+- `root.stack[4].button.sheet[upsell].stack[0].text`
+
+### State keys
+
+Every observable value is addressed by a scoped key.
+
+```swift
+struct PaywallStateKey: Hashable, Sendable {
+    let scope: PaywallStateScope
+    let component: PaywallComponentIdentity
+    let field: String
+}
+```
+
+Global paywall-level values use a synthetic component identity such as `paywall`.
+
+Initial important fields:
+
+- `paywall.selected_package_id`
+- `component.visible`
+- `component.text`
+- `component.color`
+- `component.background`
+- `component.padding`
+- `component.margin`
+- `component.size`
+- `component.font_weight`
+
+### State values
+
+The first implementation needs a small value type that covers current override outputs and mutation inputs.
+
+Use a public API-safe shape if exposed, following the existing `CustomVariableValue` pattern: a public struct with static factories and private storage rather than a new public enum. Internally, the store can use an enum if it remains internal.
+
+Suggested internal cases:
+
+- `string(String)`
+- `number(Double)`
+- `bool(Bool)`
+- `packageID(String?)`
+- `color(DisplayableColorScheme)` or a serializable color wrapper
+- `edgeInsets(EdgeInsets)` or a paywall padding wrapper
+- `size(PaywallComponent.Size)`
+- `rawHashable` only if a strongly typed wrapper is not practical for an early field
+
+The first pass should keep the field set narrow and avoid a catch-all value model that is hard to test.
+
+### State store
+
+RevenueCatUI adds an internal store similar to `ios-state-example`'s `StateManager`, with improvements for multiple paywalls and composed consumer hooks.
+
+Responsibilities:
+
+- hold keyed state slots
+- publish per-key values
+- publish committed events
+- handle mutation requests
+- route proposed mutations through an optional gate
+- commit accepted or replacement mutations
+
+Conceptual API:
+
+```swift
+final class PaywallStateStore: ObservableObject {
+    func value(for key: PaywallStateKey) -> PaywallStateValue?
+    func publisher(for key: PaywallStateKey) -> AnyPublisher<PaywallStateValue?, Never>
+    func request(_ mutation: PaywallStateMutation, details: PaywallStateChangeDetails)
+    var resolvedEvents: AnyPublisher<PaywallStateChange, Never> { get }
+}
+```
+
+Important implementation rules:
+
+- Do not store one mutable interceptor directly on the store in a way that nested views can overwrite.
+- Resolve app gates outside internal locks or serial queues.
+- If a proposal is replaced with a different key, compute the replacement old value from the replacement key.
+- A proposal can resolve only once.
+- Default behavior accepts mutations immediately.
+
+### Consumer hooks
+
+The SwiftUI API should mirror existing RevenueCatUI gate modifiers such as `.onPurchaseInitiated` and `.onRestoreInitiated`.
+
+Proposed public shape:
+
+```swift
+PaywallView()
+    .onPaywallStateChange { change in
+        // observe committed changes
+    }
+    .onPaywallStateMutation { proposal in
+        proposal.accept()
+    }
+```
+
+The mutation hook receives a proposal that supports:
+
+- `accept()`
+- `reject()`
+- `replace(with:)`
+
+Committed events include:
+
+- paywall instance ID
+- offering identifier
+- paywall revision
+- workflow page ID, when available
+- component identity
+- field
+- old value
+- new value
+- source details, such as package row tap or derived rule evaluation
+
+The public event/proposal types should avoid new public enums unless the team explicitly accepts the API stability risk.
+
+### Adapter flow
+
+The adapter has two layers.
+
+#### Source state bridge
+
+Existing broad runtime inputs become state slots:
+
+- selected package ID
+- screen condition
+- custom variables used by condition evaluation
+- intro offer eligibility per package
+- promo offer eligibility per package
+- countdown time
+
+The first implementation should prioritize selected package ID because it is directly user-controlled and already drives override changes.
+
+#### Derived field projection
+
+Existing `PresentedPartial.buildPartial(...)` semantics remain the compatibility source. The adapter evaluates the same rules, but writes the resulting fields into state slots.
+
+Example for a text component:
+
+1. Read source slots: selected package ID, component state, screen condition, eligibility, custom variables.
+2. Evaluate the component's existing overrides using the same condition order and combination semantics.
+3. Produce projected field values: visible, text, color, font, padding, margin.
+4. Commit only fields whose values changed.
+5. The SwiftUI text view observes the projected field slots it renders.
+
+This allows component-by-component migration. A component can continue using `styles(...)` until it has a reactive projection.
+
+## Initial migration slice
+
+### Phase 1: Internal primitives and scoping
+
+Add the state store, state keys, scoped identities, mutation proposal, and event pipeline. Inject one store per `PaywallsV2View` instance through the environment. No component behavior changes yet.
+
+### Phase 2: Package selection bridge
+
+Change package row selection so it requests a mutation for `paywall.selected_package_id` instead of directly updating `PackageContext`. On commit, bridge the selected package ID back into `PackageContext`.
+
+This proves:
+
+- app gates can reject package changes
+- app gates can replace selected package changes
+- committed events include paywall and component scope
+- duplicate paywall instances do not share selection state
+
+### Phase 3: Reactive text fields
+
+Add a projected style object or field observers for `TextComponentView`. Start with:
+
+- visible
+- text
+- color
+- font weight
+- padding
+- margin
+
+The legacy `TextComponentViewModel.styles(...)` path remains available while the component is behind the adapter or a feature flag.
+
+### Phase 4: Stack and package visibility
+
+Move `StackComponentView` and `PackageComponentViewModel.visible(...)` to projected `visible` slots. This makes conditional sections and package rows update independently.
+
+### Phase 5: Expand field coverage
+
+Migrate additional component types and fields according to observed value:
+
+- image visibility and URL-related fields
+- button disabled or visible state
+- carousel and tabs selection
+- background, border, shadow, badge, and layout fields
+
+## Testing strategy
+
+Unit tests should cover the state store first:
+
+- a request without a gate commits immediately
+- a gate can accept a mutation
+- a gate can reject a mutation
+- a gate can replace value and key
+- a proposal resolves only once
+- replacement old value comes from the replacement key
+- committed events include scope and details
+
+Adapter tests should cover Paywalls V2 behavior:
+
+- two `PaywallsV2View` instances with copied component IDs maintain independent selected package state
+- package row tap emits a proposed mutation
+- rejecting the proposal leaves the selected package unchanged
+- replacing the proposal selects the replacement package
+- committed selection updates `PackageContext`
+- text override projection matches the legacy `styles(...)` result for the same inputs
+- custom variable conditions keep their current missing-variable semantics
+- unsupported condition discard behavior remains unchanged
+
+Snapshot or lightweight SwiftUI tests should be added only after the first component slice is stable.
+
+## Risks and mitigations
+
+### Public API stability
+
+New public Swift enums are source-breaking in this SDK's build model. Public event and value APIs should use structs with static factories or keep enum-like details internal.
+
+### State fan-out
+
+Projecting every field for every component can create many slots. The first implementation should project only fields needed by migrated components, and only commit changed values.
+
+### Rule divergence
+
+The adapter must not reimplement override semantics differently. It should call or share logic with `PresentedPartial.buildPartial(...)` and existing partial combination code.
+
+### Multi-paywall collision
+
+Server IDs and names cannot be trusted as unique runtime keys. Every key must include `PaywallStateScope.instanceID`, and component identity must include a structural path.
+
+### Gate deadlocks
+
+The gate callback must not run while the store holds locks. Default acceptance should remain synchronous and simple, but app-provided gates must be able to resolve asynchronously.
+
+## Acceptance criteria
+
+- Existing Paywalls V2 JSON decodes and renders without schema changes.
+- A paywall instance has an isolated state scope.
+- Package selection can be observed and gated through the new pipeline.
+- Two copied paywall instances with identical component IDs do not cross-update.
+- The first migrated component field projection matches existing override behavior.
+- Existing purchase, restore, and component interaction APIs continue to work.
