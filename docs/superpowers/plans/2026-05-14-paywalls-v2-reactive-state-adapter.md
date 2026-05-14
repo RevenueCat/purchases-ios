@@ -103,6 +103,8 @@ This plan implements the approved first slice:
 - `RevenueCatUI/Templates/V2/Components/Text/TextComponentView.swift`  
   Add a first reactive text projection while keeping legacy `styles(...)` as the comparison/fallback path.
 
+> **Review (incomplete modify list):** Three component types are nested inside `Sources/Paywalls/Components/PaywallTabsComponent.swift` — `TabControlComponent`, `TabControlButtonComponent`, `TabControlToggleComponent` — and `PaywallComponentIdentityFactory` already references all three. They each need the `id` field. The plan only lists `PaywallTabsComponent.swift`, which is correct file-wise but doesn't make the nested-type work explicit. Also: `Sources/Paywalls/Components/PaywallHeaderComponent.swift` exists but isn't mentioned — clarify whether the type is dead code (since `PaywallComponent.fallbackHeader` has no associated value) or whether it needs `id`. Lastly, confirm `RevenueCatUI/Templates/V2/WorkflowPaywallView.swift` and `Sources/Paywalls/PaywallV2CacheWarming.swift` don't construct components in a way that requires updates.
+
 - `Tests/RevenueCatUITests/PaywallsV2/ViewModelFactoryTests.swift`
 - `Tests/RevenueCatUITests/PaywallsV2/PackageComponentViewTests.swift`
 - `Tests/RevenueCatUITests/PaywallsV2/TextComponentLocalizationTests.swift`  
@@ -361,6 +363,8 @@ import Foundation
 
 - [ ] **Step 6: Add `PaywallStateValue`**
 
+> **Review:** `PaywallStateValue` is declared `internal` (no access modifier), but Task 2 exposes it through `@_spi(Internal) public` types (`PaywallStateChange.oldValue`/`.newValue`, `PaywallStateMutation` via `PaywallStateMutationProposal.replace(with:)`). Confirmed via compiler: `error: property cannot be declared public because its type uses an internal type`. `@_spi` is still `public` for access-control. Promote `PaywallStateValue` and `PaywallStateMutation` to `@_spi(Internal) public`, and per the design doc, prefer the `CustomVariableValue` shape (public struct with static factories, private storage) over a raw enum so a future graduation to stable public API doesn't require an `@frozen`-breaking case addition.
+
 Create `RevenueCatUI/Templates/V2/State/PaywallStateValue.swift`:
 
 ```swift
@@ -539,6 +543,10 @@ swift test --filter PaywallStateStoreTests
 Expected: fail to compile because store and mutation types do not exist.
 
 - [ ] **Step 3: Add mutation and proposal types**
+
+> **Review (mutationHandler ownership):** Storing `var mutationHandler` directly on `PaywallStateStore` violates the design doc's explicit rule: *"Do not store one mutable interceptor directly on the store in a way that nested views can overwrite."* Task 3 sets `store.mutationHandler = …` from `.onAppear`, which means a nested `PaywallsV2View` (workflow exit offer, embedded paywall) can silently overwrite the outer handler. Read the handler from the SwiftUI environment at request time, or have an outer coordinator own it and call into the store.
+
+> **Review (silent-drop hazard):** A non-nil `PaywallStateMutationHandler` that never calls `accept()` / `reject()` / `replace(with:)` causes the proposal to be silently dropped — the store has no timeout or default. Document the contract explicitly, add a `DEBUG`-only assertion if the proposal is deinit'd unresolved, or fall back to accept on deinit. Otherwise an app passing an async gate that forgets to resolve will look like "package taps do nothing" in production.
 
 Create `RevenueCatUI/Templates/V2/State/PaywallStateMutation.swift`:
 
@@ -765,6 +773,8 @@ func testDefaultEnvironmentStoreIsAvailable() {
 This test is intentionally small; the environment is exercised by compilation when the new keys are used in `PaywallsV2View`.
 
 - [ ] **Step 2: Add environment keys**
+
+> **Review:** `static let defaultValue = PaywallStateStore()` on an `EnvironmentKey` produces a **single process-wide store**, shared by any view that reads `\.paywallStateStore` without an injected value. This directly violates the design doc: *"Do not introduce a global state store shared across unrelated paywall instances without explicit scoping."* Two simultaneous `PaywallsV2View`s (or a workflow with a child paywall, or any test that forgets to inject) would cross-contaminate. Either (a) make the env value `PaywallStateStore?` with `defaultValue = nil` and `fatalError`/precondition at the read site inside V2 code, or (b) drop the custom env key and use `@EnvironmentObject` so SwiftUI's runtime catches missing injection.
 
 Create `RevenueCatUI/Templates/V2/State/PaywallStateEnvironment.swift`:
 
@@ -1025,6 +1035,8 @@ git commit -m "feat: expose paywalls v2 component ids"
 
 ---
 
+> **Review (Task 5 — ViewModelFactory callers):** `ViewModelFactory` is a `struct` at `RevenueCatUI/Templates/V2/ViewModelHelpers/ViewModelFactory.swift:29` with self-recursive `toViewModel(...)` calls at lines 537 and 551. Adding an init parameter — even with `paywallID: String? = nil` defaulted — needs an explicit audit step: every call site that constructs a `ViewModelFactory` (production code, previews, tests) must receive the real paywall ID, not the default, or the identity propagation silently no-ops with `nil`. Add a search step (`rg "ViewModelFactory(" RevenueCatUI Tests`) and enumerate updates before Step 4. Also: the snippet `var factory = ViewModelFactory(paywallID: ...)` uses `var` for a struct — confirm `toViewModel` doesn't need `mutating`, otherwise let it be `let`.
+
 ## Task 5: Carry component identity through view-model creation
 
 **Files:**
@@ -1247,6 +1259,10 @@ git commit -m "feat: carry paywall component identity through v2 view models"
 ```
 
 ---
+
+> **Review (Task 6 — missing isolation test & sheet-slot cleanup):**
+> 1. The design doc's acceptance criteria explicitly require: *"Two `PaywallsV2View` instances with copied component IDs maintain independent selected package state."* The closest test here (`testRuntimeScopesSeparateSamePaywallRenderedTwice` in Task 1) only checks that two `PaywallStateKey`s with different `instanceID`s are unequal — that proves the *key* shape, not end-to-end isolation through a real `PaywallStateStore` + `PaywallPackageSelectionCoordinator` pair driven by package row taps. Add an explicit test that creates two coordinators sharing component IDs but different scopes, mutates one, and asserts the other's `PackageContext` and store slot are untouched.
+> 2. `restoreRootSelectionAfterSheetDismiss()` updates `PackageContext` back to root, but leaves the `paywall.sheet[componentID].selected_package_id` slot populated with the last sheet selection. Next presentation of the same sheet will read the stale value (or fire spurious `change` events). Either clear the slot on dismiss, or seed it from the root selection at present time and document the chosen direction.
 
 ## Task 6: Add package selection coordinator for root and sheet selection
 
@@ -1685,6 +1701,8 @@ Then make legacy `styles(...)` call `projectedStyle(...)`.
 
 - [ ] **Step 4: Commit projected values into the state store**
 
+> **Review:** The snippet calls `self.paywallStateStore.request(...)` inline in the view's construction (effectively from `body`). SwiftUI re-evaluates `body` continuously, so this writes to the store on every layout pass — producing "Modifying state during view update" runtime warnings and risking publisher→state→re-render feedback loops (especially once other components observe `.componentText`). Move the write into `.onAppear` + `.onChange(of:)` for the inputs that feed `projectedStyle(...)`, or a `.task(id:)` keyed on the same inputs. The `commit` short-circuit on unchanged value mitigates the loop but doesn't fix the "during view update" violation.
+
 In `TextComponentView`, read store:
 
 ```swift
@@ -1726,6 +1744,11 @@ git commit -m "feat: add paywalls text style projection"
 ```
 
 ---
+
+> **Review (Task 8 — verification is thin & API testers not updated):**
+> 1. Filtered `swift test` runs only the new tests. Add `swift build` (catches non-test compile errors in production targets) and a broader run — `bundle exec fastlane test_ios` or `tuist test RevenueCatUITests` — to surface regressions in existing tests (especially snapshot tests under `Tests/RevenueCatUITests/Templates/V2/` that exercise `TextComponentView`).
+> 2. The plan never touches `Tests/APITesters/SwiftAPITester` or `ObjcAPITester`. Any new `@_spi(Internal) public` symbol intended to stay stable should be exercised there so the `run_api_tests` lane catches accidental breakage on the SPI surface (the testers import with `@_spi(Internal)`).
+> 3. Add an explicit step to re-record or verify snapshot tests after Task 7 lands, since `TextComponentView` rendering path changes.
 
 ## Task 8: Run API and focused regression checks
 
