@@ -159,6 +159,58 @@ final class WorkflowContextTests: TestCase {
         expect(context.packageContext(for: "step_terminal")?.selectedPackage.identifier) == "$rc_annual"
     }
 
+    // MARK: - effectivePackageContext(for:)
+
+    func testEffectivePackageContextForPackageBearingStepUsesStepContextNotGlobalFallback() throws {
+        // Workflow: global fallback = annual (step_fallback), step_own has monthly + weekly.
+        // effectivePackageContext for step_own must return monthly — the step's own default —
+        // not annual (the global fallback).
+        let context = try Self.makeWorkflowContextWithFallbackAndOwnStep(
+            fallbackPackages: [(id: "$rc_annual", isDefault: true)],
+            ownStepPackages: [(id: "$rc_monthly", isDefault: true), (id: "$rc_weekly", isDefault: false)]
+        )
+
+        let effective = context.effectivePackageContext(for: "step_own")
+
+        expect(effective?.selectedPackage.identifier) == "$rc_monthly"
+        expect(effective?.packages.map(\.identifier)) == ["$rc_monthly", "$rc_weekly"]
+    }
+
+    func testEffectivePackageContextForPackagelessStepFallsBackToGlobalWorkflowContext() throws {
+        // Packageless step (step_initial) has no package components.
+        // effectivePackageContext must return the global fallback (annual).
+        let context = try Self.makeWorkflowContextWithFallbackAndOwnStep(
+            fallbackPackages: [(id: "$rc_annual", isDefault: true)],
+            ownStepPackages: []
+        )
+
+        let effective = context.effectivePackageContext(for: "step_own")
+
+        expect(effective?.selectedPackage.identifier) == "$rc_annual"
+    }
+
+    func testEffectivePackageContextReturnsNilWhenNoPackagesAnywhere() throws {
+        let context = try Self.makeWorkflowContextWithPackageStep(
+            stepId: "step_terminal",
+            packages: []
+        )
+
+        expect(context.effectivePackageContext(for: "step_terminal")).to(beNil())
+        expect(context.effectivePackageContext(for: "step_initial")).to(beNil())
+    }
+
+    func testEffectivePackageContextForFallbackStepMatchesWorkflowPackageContext() throws {
+        let context = try Self.makeWorkflowContextWithPackageStep(
+            stepId: "step_terminal",
+            packages: [(id: "$rc_annual", isDefault: true)],
+            singleStepFallbackId: "step_terminal"
+        )
+
+        let effective = context.effectivePackageContext(for: "step_terminal")
+
+        expect(effective?.selectedPackage.identifier) == context.workflowPackageContext?.selectedPackage.identifier
+    }
+
     // MARK: - exitOfferOfferingId
 
     func testExitOfferOfferingReturnsNilWhenNoSingleStepFallbackId() throws {
@@ -388,6 +440,111 @@ private extension WorkflowContextTests {
 
     /// Builds a `WorkflowContext` containing one step with package components,
     /// backed by an offering that has all the named packages.
+    /// Builds a `WorkflowContext` with two package-bearing steps:
+    /// - `step_fallback` (set as `singleStepFallbackId`) with `fallbackPackages`
+    /// - `step_own` with `ownStepPackages` (may be empty to simulate a packageless step)
+    static func makeWorkflowContextWithFallbackAndOwnStep(
+        fallbackPackages: [PackageSpec],
+        ownStepPackages: [PackageSpec]
+    ) throws -> WorkflowContext {
+        let offeringId = "offering_test"
+        let allPackages = (fallbackPackages + ownStepPackages)
+            .map { spec in
+                Package(
+                    identifier: spec.id,
+                    packageType: .custom,
+                    storeProduct: TestData.monthlyPackage.storeProduct,
+                    offeringIdentifier: offeringId,
+                    webCheckoutUrl: nil
+                )
+            }
+        let offering = Offering(
+            identifier: offeringId,
+            serverDescription: "Test",
+            metadata: [:],
+            paywall: nil,
+            availablePackages: allPackages,
+            webCheckoutUrl: nil
+        )
+        let offerings = Offerings(
+            offerings: [offeringId: offering],
+            currentOfferingID: nil,
+            placements: nil,
+            targeting: nil,
+            contents: .init(
+                response: .init(
+                    currentOfferingId: nil,
+                    offerings: [],
+                    placements: nil,
+                    targeting: nil,
+                    uiConfig: nil
+                ),
+                httpResponseOriginalSource: .mainServer
+            ),
+            loadedFromDiskCache: false
+        )
+
+        func screenJSON(packages: [PackageSpec]) -> String {
+            let componentsJSON = packages.map { pkg in
+                """
+                {
+                    "type": "package",
+                    "packageId": "\(pkg.id)",
+                    "isSelectedByDefault": \(pkg.isDefault),
+                    "stack": \(Self.minimalStackJSON())
+                }
+                """
+            }.joined(separator: ",")
+            return """
+            {
+              "template_name": "tmpl",
+              "asset_base_url": "https://assets.revenuecat.com",
+              "default_locale": "en_US",
+              "offering_identifier": "\(offeringId)",
+              "components_localizations": {},
+              "components_config": {
+                "base": {
+                  "stack": \(Self.minimalStackJSON(components: "[\(componentsJSON)]")),
+                  "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
+                }
+              }
+            }
+            """
+        }
+
+        let json = """
+        {
+          "id": "wf_test",
+          "display_name": "Test",
+          "initial_step_id": "step_initial",
+          "single_step_fallback_id": "step_fallback",
+          "steps": {
+            "step_initial": { "id": "step_initial", "type": "screen" },
+            "step_fallback": { "id": "step_fallback", "type": "screen", "screen_id": "screen_fallback" },
+            "step_own": { "id": "step_own", "type": "screen", "screen_id": "screen_own" }
+          },
+          "screens": {
+            "screen_fallback": \(screenJSON(packages: fallbackPackages)),
+            "screen_own": \(screenJSON(packages: ownStepPackages))
+          },
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {}
+          }
+        }
+        """
+        let workflow = try JSONDecoder.default.decode(
+            PublishedWorkflow.self,
+            from: XCTUnwrap(json.data(using: .utf8))
+        )
+        return WorkflowContext(
+            workflow: workflow,
+            allOfferings: offerings,
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+    }
+
     static func makeWorkflowContextWithPackageStep(
         stepId: String,
         packages: [PackageSpec],

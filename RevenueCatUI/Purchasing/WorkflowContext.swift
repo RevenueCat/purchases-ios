@@ -100,6 +100,13 @@ struct WorkflowContext {
         return context
     }
 
+    /// Returns the package context that should be broadcast in the environment for `stepId`.
+    /// Prefers the step's own package context when available so that package-bearing steps
+    /// use their own configured defaults rather than the global workflow fallback.
+    func effectivePackageContext(for stepId: String) -> WorkflowPackageContext? {
+        return self.packageContext(for: stepId) ?? self.workflowPackageContext
+    }
+
     /// Resolves the package context for any step by scanning its screen's components.
     /// Returns `nil` if the step, screen, or offering cannot be resolved, or if the step has no package components.
     func packageContext(for stepId: String) -> WorkflowPackageContext? {

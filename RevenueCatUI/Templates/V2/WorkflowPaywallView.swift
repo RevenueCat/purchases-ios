@@ -195,7 +195,8 @@ struct WorkflowPaywallView: View {
                     stepId: initialStepId,
                     canNavigateBack: false,
                     displayCloseButton: displayCloseButton,
-                    packageContext: initialPackageContext
+                    packageContext: initialPackageContext,
+                    effectiveWorkflowPackageContext: context.effectivePackageContext(for: initialStepId)
                 )
             )
         )
@@ -275,7 +276,7 @@ struct WorkflowPaywallView: View {
             promoOfferCache: self.promoOfferCache,
             selectedPackageContextOverride: page.packageContext
         )
-        .environment(\.workflowPackageContext, self.workflowPackageContext)
+        .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
         .environment(\.workflowTriggerAction, { componentId in
             return self.handleTriggeredNavigation(componentId: componentId)
         })
@@ -399,12 +400,14 @@ struct WorkflowPaywallView: View {
         self.activeTransitionID = nil
     }
 
+    // swiftlint:disable:next function_parameter_count
     private static func renderedPage(
         from context: WorkflowContext,
         stepId: String,
         canNavigateBack: Bool,
         displayCloseButton: Bool,
-        packageContext: PackageContext
+        packageContext: PackageContext,
+        effectiveWorkflowPackageContext: WorkflowPackageContext?
     ) -> RenderedPage? {
         guard let step = context.workflow.steps[stepId],
               let screenId = step.screenId,
@@ -421,7 +424,8 @@ struct WorkflowPaywallView: View {
         return .init(
             content: .init(paywallComponents: paywallComponents, offering: offering),
             showCloseButton: !canNavigateBack && displayCloseButton,
-            packageContext: packageContext
+            packageContext: packageContext,
+            effectiveWorkflowPackageContext: effectiveWorkflowPackageContext
         )
     }
 
@@ -431,17 +435,9 @@ struct WorkflowPaywallView: View {
         workflowPackageContext: WorkflowPackageContext?,
         showZeroDecimalPlacePrices: Bool
     ) -> PackageContext {
-        if let stepPackageContext = context.packageContext(for: stepId) {
-            return PackageContext(
-                package: stepPackageContext.selectedPackage,
-                variableContext: .init(
-                    packages: stepPackageContext.packages,
-                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
-                )
-            )
-        }
+        let effective = context.effectivePackageContext(for: stepId) ?? workflowPackageContext
 
-        guard let workflow = workflowPackageContext else {
+        guard let effective else {
             return PackageContext(
                 package: nil,
                 variableContext: .init(packages: [], showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
@@ -449,9 +445,9 @@ struct WorkflowPaywallView: View {
         }
 
         return PackageContext(
-            package: workflow.selectedPackage,
+            package: effective.selectedPackage,
             variableContext: .init(
-                packages: workflow.packages,
+                packages: effective.packages,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         )
@@ -479,7 +475,8 @@ struct WorkflowPaywallView: View {
             stepId: stepId,
             canNavigateBack: canNavigateBack,
             displayCloseButton: self.displayCloseButton,
-            packageContext: packageContext
+            packageContext: packageContext,
+            effectiveWorkflowPackageContext: self.context.effectivePackageContext(for: stepId)
         )
     }
 
@@ -505,6 +502,7 @@ private struct RenderedPage: Identifiable {
     let content: CurrentStepContent
     let showCloseButton: Bool
     let packageContext: PackageContext
+    let effectiveWorkflowPackageContext: WorkflowPackageContext?
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
