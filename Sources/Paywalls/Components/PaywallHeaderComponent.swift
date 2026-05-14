@@ -29,11 +29,11 @@ import Foundation
 
     final class HeaderComponent: PaywallComponentBase {
 
-        @_spi(Internal) public let id: String??
+        @_spi(Internal) public let id: String?
         @_spi(Internal) public let stack: PaywallComponent.StackComponent
 
         @_spi(Internal) public init(
-            id: String = "",
+            id: String? = nil,
             stack: PaywallComponent.StackComponent
         ) {
             self.id = id
@@ -52,7 +52,7 @@ import Foundation
 
         @_spi(Internal) public convenience init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: HeaderCodingKeys.self)
-            let id = try container.decode(String.self, forKey: .id)
+            let id = try container.decodeIfPresent(String.self, forKey: .id)
             let stack = try container.decode(PaywallComponent.StackComponent.self, forKey: .stack)
 
             self.init(id: id, stack: stack)
@@ -62,7 +62,7 @@ import Foundation
             var container = encoder.container(keyedBy: HeaderCodingKeys.self)
 
             try container.encode(HeaderType.header, forKey: .type)
-            try container.encode(self.id, forKey: .id)
+            try container.encodeIfPresent(self.id, forKey: .id)
             try container.encode(self.stack, forKey: .stack)
         }
 
