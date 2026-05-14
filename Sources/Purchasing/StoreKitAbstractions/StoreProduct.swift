@@ -58,11 +58,7 @@ internal typealias SK2BillingPlanType = StoreKit.Product.SubscriptionInfo.Billin
 
     public override var hash: Int {
         var hasher = Hasher()
-        hasher.combine(self.productIdentifier)
-        if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
-            hasher.combine(self.installmentsInfo)
-        }
-
+        hasher.combine(self.id)
         return hasher.finalize()
     }
 
