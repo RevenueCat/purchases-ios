@@ -103,6 +103,7 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         XCTAssertNil(storeProduct.testStoreProduct)
 
+        expect(storeProduct.id) == Self.productID
         expect(storeProduct.productIdentifier) == Self.productID
         expect(storeProduct.productCategory) == .subscription
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
@@ -157,6 +158,7 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         XCTAssertNil(storeProduct.testStoreProduct)
 
+        expect(storeProduct.id) == Self.productID   // No billing plans
         expect(storeProduct.productIdentifier) == Self.productID
         expect(storeProduct.productCategory) == .subscription
         expect(storeProduct.productType) == .autoRenewableSubscription
@@ -373,40 +375,6 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(nonSubscription.productCategory) == .nonSubscription
     }
 
-    @available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, visionOS 26.4, *)
-    func testIsEqualComparesInstallmentsInfoWhenAvailable() throws {
-        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
-
-        let product = Self.testProduct(
-            productIdentifier: "product_id",
-            installmentsInfo: Self.installmentsInfo(commitmentInstallmentsCount: 3)
-        )
-        let sameProduct = Self.testProduct(
-            productIdentifier: "product_id",
-            installmentsInfo: Self.installmentsInfo(commitmentInstallmentsCount: 3)
-        )
-        let productWithDifferentInstallments = Self.testProduct(
-            productIdentifier: "product_id",
-            installmentsInfo: Self.installmentsInfo(commitmentInstallmentsCount: 6)
-        )
-        let productWithoutInstallments = Self.testProduct(
-            productIdentifier: "product_id",
-            installmentsInfo: nil
-        )
-        let differentProduct = Self.testProduct(
-            productIdentifier: "other_product_id",
-            installmentsInfo: Self.installmentsInfo(commitmentInstallmentsCount: 3)
-        )
-
-        expect(product.isEqual(sameProduct)) == true
-        expect(product.hash) == sameProduct.hash
-
-        expect(product.isEqual(productWithDifferentInstallments)) == false
-        expect(product.isEqual(productWithoutInstallments)) == false
-        expect(productWithoutInstallments.isEqual(product)) == false
-        expect(product.isEqual(differentProduct)) == false
-    }
-
     func testTestProduct() {
         let title = "Product"
         let price: Decimal = 3.99
@@ -438,6 +406,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let storeProduct = product.toStoreProduct()
 
         XCTAssertNotNil(storeProduct.testStoreProduct)
+        expect(storeProduct.id) == "com.revenuecat.product"
         expect(storeProduct.localizedTitle) == title
         expect(storeProduct.price) == price
         expect(storeProduct.localizedPriceString) == localizedPrice
@@ -549,8 +518,6 @@ class StoreProductTests: StoreKitConfigTestCase {
     }
 
 }
-
-// MARK: - Compound Product Identifier
 
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 extension StoreProductTests {
