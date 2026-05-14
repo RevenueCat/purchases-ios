@@ -83,6 +83,8 @@ internal struct SK1StoreProduct: StoreProductType {
         // Installments are not supported for StoreKit 1.
         nil
     }
+
+    var id: String { return self.productIdentifier }
 }
 
 extension SK1StoreProduct: Hashable {

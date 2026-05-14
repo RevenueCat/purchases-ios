@@ -103,6 +103,7 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         XCTAssertNil(storeProduct.testStoreProduct)
 
+        expect(storeProduct.id) == Self.productID
         expect(storeProduct.productIdentifier) == Self.productID
         expect(storeProduct.productCategory) == .subscription
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
@@ -157,6 +158,7 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         XCTAssertNil(storeProduct.testStoreProduct)
 
+        expect(storeProduct.id) == Self.productID   // No billing plans
         expect(storeProduct.productIdentifier) == Self.productID
         expect(storeProduct.productCategory) == .subscription
         expect(storeProduct.productType) == .autoRenewableSubscription
@@ -404,6 +406,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let storeProduct = product.toStoreProduct()
 
         XCTAssertNotNil(storeProduct.testStoreProduct)
+        expect(storeProduct.id) == "com.revenuecat.product"
         expect(storeProduct.localizedTitle) == title
         expect(storeProduct.price) == price
         expect(storeProduct.localizedPriceString) == localizedPrice
@@ -517,6 +520,75 @@ class StoreProductTests: StoreKitConfigTestCase {
 }
 
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
+extension StoreProductTests {
+
+    func testIdReturnsProductIdentifierForSK1Product() {
+        let productIdentifier = "com.revenuecat.product"
+        let storeProduct = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productIdentifier))
+
+        expect(storeProduct.id) == productIdentifier
+    }
+
+    func testIdReturnsProductIdentifierForTestProductWithoutInstallmentsInfo() {
+        let productIdentifier = "com.revenuecat.product"
+        let storeProduct = Self.testProduct(
+            productIdentifier: productIdentifier,
+            installmentsInfo: nil
+        )
+
+        expect(storeProduct.id) == productIdentifier
+    }
+
+    func testIdPreservesProductIdentifierWithColonWithoutInstallmentsInfo() {
+        let productIdentifier = "com.revenuecat.product:monthly"
+        let storeProduct = Self.testProduct(
+            productIdentifier: productIdentifier,
+            installmentsInfo: nil
+        )
+
+        expect(storeProduct.id) == productIdentifier
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testIdReturnsProductIdentifierForSK2ProductWithoutInstallmentsInfo() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let storeProduct = try await ProductsFetcherSK2().product(withIdentifier: Self.productID)
+
+        expect(storeProduct.id) == Self.productID
+    }
+
+    func testIdAddsMonthlyProductPlanIdentifierForMonthlyInstallmentsInfo() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let productIdentifier = "com.revenuecat.product"
+        let storeProduct = Self.testProduct(
+            productIdentifier: productIdentifier,
+            installmentsInfo: Self.installmentsInfo(
+                commitmentInstallmentsCount: 3,
+                billingPlanType: .monthly
+            )
+        )
+
+        expect(storeProduct.id) == "\(productIdentifier):monthly"
+    }
+
+    func testIdReturnsProductIdentifierForUpFrontInstallmentsInfo() {
+        let productIdentifier = "com.revenuecat.product"
+        let storeProduct = Self.testProduct(
+            productIdentifier: productIdentifier,
+            installmentsInfo: Self.installmentsInfo(
+                commitmentInstallmentsCount: 1,
+                billingPlanType: .upFront
+            )
+        )
+
+        expect(storeProduct.id) == productIdentifier
+    }
+
+}
+
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 private extension StoreProductTests {
 
     func expectEqualProducts(_ productA: StoreProductType, _ productB: StoreProductType) {
@@ -548,6 +620,40 @@ private extension StoreProductTests {
         } else {
             expect(productA.subscriptionGroupIdentifier) == productB.subscriptionGroupIdentifier
         }
+    }
+
+    static func testProduct(
+        productIdentifier: String,
+        installmentsInfo: InstallmentsInfo?
+    ) -> StoreProduct {
+        return TestStoreProduct(
+            localizedTitle: "product",
+            price: 3.99,
+            currencyCode: "USD",
+            localizedPriceString: "$3.99",
+            productIdentifier: productIdentifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: "",
+            subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            locale: Locale(identifier: "en_US"),
+            installmentsInfo: installmentsInfo
+        ).toStoreProduct()
+    }
+
+    static func installmentsInfo(
+        commitmentInstallmentsCount: Int,
+        billingPlanType: BillingPlanType = .monthly
+    ) -> InstallmentsInfo {
+        return InstallmentsInfo(
+            commitmentInstallmentsCount: commitmentInstallmentsCount,
+            commitmentInstallmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            installmentBillingPrice: 3.99,
+            installmentBillingDisplayPrice: "$3.99",
+            commitmentTotalPeriod: SubscriptionPeriod(value: commitmentInstallmentsCount, unit: .month),
+            commitmentTotalPrice: Decimal(commitmentInstallmentsCount) * 3.99,
+            commitmentTotalDisplayPrice: "$\(commitmentInstallmentsCount * 399 / 100).99",
+            billingPlanType: billingPlanType
+        )
     }
 
 }

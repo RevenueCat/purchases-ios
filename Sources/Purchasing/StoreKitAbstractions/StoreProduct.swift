@@ -53,13 +53,12 @@ internal typealias SK2BillingPlanType = StoreKit.Product.SubscriptionInfo.Billin
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
-        return self.productIdentifier == (object as? StoreProductType)?.productIdentifier
+        return self.id == (object as? StoreProductType)?.id
     }
 
     public override var hash: Int {
         var hasher = Hasher()
-        hasher.combine(self.productIdentifier)
-
+        hasher.combine(self.id)
         return hasher.finalize()
     }
 
@@ -98,6 +97,8 @@ internal typealias SK2BillingPlanType = StoreKit.Product.SubscriptionInfo.Billin
 
     @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
     @objc public var installmentsInfo: InstallmentsInfo? { self.product.installmentsInfo }
+
+    @objc internal var id: String { return product.id }
 
     // switflint:enable missing_docs
 }
@@ -204,6 +205,10 @@ internal protocol StoreProductType: Sendable {
     /// and will be nil when the billing plan is upFront or when the billing plan is not specified.
     @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
     var installmentsInfo: InstallmentsInfo? { get }
+
+    /// If the product has a billing plan associated with it, this will be "{productIdentifier}:{billingPlanType}".
+    /// Otherwise, it will be "{productIdentifier}"
+    var id: String { get }
 }
 
 public extension StoreProduct {

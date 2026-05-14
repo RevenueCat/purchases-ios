@@ -165,6 +165,20 @@ extension TestStoreProduct: StoreProductType {
         }
     }
 
+    internal var id: String {
+        if let installmentsInfo {
+            switch installmentsInfo.billingPlanType {
+            case .monthly:
+                return "\(self.productIdentifier):monthly"
+            case .upFront:
+                return self.productIdentifier
+            default:
+                return self.productIdentifier
+            }
+        } else {
+            return self.productIdentifier
+        }
+    }
 }
 
 extension TestStoreProduct {

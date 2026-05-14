@@ -103,6 +103,7 @@ internal struct SK2StoreProduct: StoreProductType {
             .compactMap { StoreProductDiscount(sk2Discount: $0, currencyCode: self.currencyCode) }
     }
 
+    var id: String { return self.compoundProductIdentifier.compoundProductIdentifier }
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

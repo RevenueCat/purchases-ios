@@ -95,7 +95,12 @@ class OfferingsFactory {
         productsByID: [String: StoreProduct],
         offeringIdentifier: String
     ) -> Package? {
-        guard let product = productsByID[data.platformProductIdentifier] else {
+        let compoundProductIdentifier = CompoundProductIdentifier(
+            productIdentifier: data.platformProductIdentifier,
+            productPlanIdentifier: data.platformProductPlanIdentifier
+        )?.compoundProductIdentifier ?? data.platformProductIdentifier
+
+        guard let product = productsByID[compoundProductIdentifier] else {
             return nil
         }
 
