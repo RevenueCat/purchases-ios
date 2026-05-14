@@ -221,8 +221,13 @@ struct ImageComponentView: View {
                 containerContentMode: style.contentMode
             )
             .frame(maxWidth: maxWidth)
-            // WIP: Fix this later when accessibility info is available
-            .accessibilityHidden(true)
+        // Previously this view applied `.accessibilityHidden(true)` as a
+        // placeholder until proper a11y info was wired up. That blanket hide
+        // prevented the cross-platform layout-validation extractor (and screen
+        // readers) from locating image components by their dashboard
+        // `componentId`. The image is now visible to the accessibility tree;
+        // its label and identifier are applied at the call site in
+        // `ComponentsView` alongside the other component types.
     }
 
 }

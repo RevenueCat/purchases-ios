@@ -13,7 +13,9 @@ import Foundation
     final class ImageComponent: PaywallComponentBase {
 
         let type: ComponentType
+		public let id: String?
         public let visible: Bool?
+        public let name: String?
         public let source: ThemeImageUrls
         public let size: Size
         public let overrideSourceLid: LocalizationKey?
@@ -28,7 +30,9 @@ import Foundation
         public let overrides: ComponentOverrides<PartialImageComponent>?
 
         public init(
+            id: String? = nil,
             visible: Bool? = nil,
+            name: String? = nil,
             source: ThemeImageUrls,
             size: Size = .init(width: .fill, height: .fit),
             overrideSourceLid: LocalizationKey? = nil,
@@ -41,8 +45,10 @@ import Foundation
             shadow: Shadow? = nil,
             overrides: ComponentOverrides<PartialImageComponent>? = nil
         ) {
+            self.id = id
             self.type = .image
             self.visible = visible
+            self.name = name
             self.source = source
             self.size = size
             self.overrideSourceLid = overrideSourceLid
@@ -57,8 +63,10 @@ import Foundation
         }
 
         public func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
             hasher.combine(type)
             hasher.combine(visible)
+            hasher.combine(name)
             hasher.combine(source)
             hasher.combine(size)
             hasher.combine(overrideSourceLid)
@@ -73,8 +81,10 @@ import Foundation
         }
 
         public static func == (lhs: ImageComponent, rhs: ImageComponent) -> Bool {
-            return lhs.type == rhs.type &&
+            return lhs.id == rhs.id &&
+                   lhs.type == rhs.type &&
                    lhs.visible == rhs.visible &&
+                   lhs.name == rhs.name &&
                    lhs.source == rhs.source &&
                    lhs.size == rhs.size &&
                    lhs.overrideSourceLid == rhs.overrideSourceLid &&
@@ -92,6 +102,7 @@ import Foundation
     final class PartialImageComponent: PaywallPartialComponent {
 
         public let visible: Bool?
+        public let name: String?
         public let source: ThemeImageUrls?
         public let size: Size?
         public let overrideSourceLid: LocalizationKey?
@@ -105,6 +116,7 @@ import Foundation
 
         public init(
             visible: Bool? = true,
+            name: String? = nil,
             source: ThemeImageUrls? = nil,
             size: Size? = nil,
             overrideSourceLid: LocalizationKey? = nil,
@@ -117,6 +129,7 @@ import Foundation
             shadow: Shadow? = nil
         ) {
             self.visible = visible
+            self.name = name
             self.source = source
             self.size = size
             self.overrideSourceLid = overrideSourceLid
@@ -131,6 +144,7 @@ import Foundation
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(visible)
+            hasher.combine(name)
             hasher.combine(source)
             hasher.combine(size)
             hasher.combine(overrideSourceLid)
@@ -145,6 +159,7 @@ import Foundation
 
         public static func == (lhs: PartialImageComponent, rhs: PartialImageComponent) -> Bool {
             return lhs.visible == rhs.visible &&
+                   lhs.name == rhs.name &&
                    lhs.source == rhs.source &&
                    lhs.size == rhs.size &&
                    lhs.overrideSourceLid == rhs.overrideSourceLid &&

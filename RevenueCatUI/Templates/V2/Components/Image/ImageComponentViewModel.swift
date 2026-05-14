@@ -25,6 +25,13 @@ class ImageComponentViewModel {
     private let component: PaywallComponent.ImageComponent
     var cachedMeasuredSize: CGSize?
 
+    /// Dashboard ID used by the cross-platform layout-extractor harness to find
+    /// this component in the rendered accessibility tree. Mirrors the
+    /// `componentId` / `componentName` accessors on other V2 view models
+    /// (TextComponentViewModel, IconComponentViewModel, etc.).
+    var componentId: String? { component.id }
+    var componentName: String? { component.name }
+
     private let imageInfo: PaywallComponent.ThemeImageUrls
     private let presentedOverrides: PresentedOverrides<LocalizedImagePartial>?
 

@@ -71,15 +71,30 @@ struct ComponentsView: View {
         case .text(let viewModel):
             TextComponentView(viewModel: viewModel)
                 .applyIf(!isInsideButtonLabel) { view in
-                    view.accessibilityIdentifier(viewModel.componentId ?? "text")
+                    view
+                        .accessibilityIdentifier(viewModel.componentId ?? "text")
+                        // Mark the text as an explicit accessibility element so
+                        // SwiftUI doesn't merge it into a parent stack carrying
+                        // `.accessibilityElement(children: .contain)`. Without
+                        // this, adjacent texts inside a feature row (icon + text)
+                        // get absorbed into the row's a11y identity on iOS and
+                        // become unfindable by `accessibilityIdentifier` in
+                        // XCUITest. `.contain` is preferred over `.ignore` so
+                        // that the Text view's implicit content-as-label is
+                        // preserved for VoiceOver.
+                        .accessibilityElement(children: .contain)
                 }
                 .accessibilityHidden(isInsideButtonLabel)
         case .image(let viewModel):
             ImageComponentView(viewModel: viewModel)
+                .accessibilityLabel(viewModel.componentName ?? "image")
+                .accessibilityIdentifier(viewModel.componentId ?? "image")
+                .accessibilityElement(children: .contain)
         case .icon(let viewModel):
             IconComponentView(viewModel: viewModel)
                 .accessibilityLabel(viewModel.componentName)
                 .accessibilityIdentifier(viewModel.componentId ?? viewModel.componentName)
+                .accessibilityElement(children: .contain)
         case .stack(let viewModel):
             StackComponentView(
                 viewModel: viewModel,
@@ -95,6 +110,7 @@ struct ComponentsView: View {
         case .button(let viewModel):
             ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
                 .accessibilityIdentifier(viewModel.component.id ?? viewModel.id ?? "button")
+                .accessibilityElement(children: .contain)
         case .package(let viewModel):
             PackageComponentView(viewModel: viewModel, onDismiss: onDismiss)
                 .accessibilityLabel(viewModel.componentName ?? "package")
@@ -126,6 +142,7 @@ struct ComponentsView: View {
             TabControlButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
                 .accessibilityLabel(viewModel.component.name ?? "tab_control_button")
                 .accessibilityIdentifier(viewModel.component.id ?? viewModel.component.tabId)
+                .accessibilityElement(children: .contain)
         case .tabControlToggle(let viewModel):
             TabControlToggleComponentView(viewModel: viewModel, onDismiss: onDismiss)
                 .accessibilityLabel(viewModel.component.name ?? "tab_control_toggle")

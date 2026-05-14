@@ -95,7 +95,13 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
 
     // MARK: - Schema version
 
-    private static let extractorVersion = "2.4.0"
+    /// Bumped to `3.0.0` to match the cross-platform `SCHEMA.md`. v3 makes the
+    /// extractor dashboard-driven: every component declared in the dashboard
+    /// config is emitted as a key, with `rendered: true` + captured frame when
+    /// the rendered tree surfaced a matching `accessibilityIdentifier`, or
+    /// `rendered: false` + zero-frame sentinel otherwise. No more `_N`
+    /// sub-element splits, no synthetic ids.
+    private static let extractorVersion = "3.0.0"
 
     // MARK: - Test
 
@@ -188,8 +194,20 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         // the actual paywall content (app chrome and wrapper containers each have 1–2 children).
         let paywallSnapshot: any XCUIElementSnapshot = findPaywallRoot(in: appSnapshot)
 
-        // Build flat component dictionary, with coordinates relative to the paywall root.
-        let components = buildComponents(from: paywallSnapshot)
+        // Per SCHEMA.md v3: load the dashboard component specs and emit one entry per
+        // declared `componentId`. When `LOCAL_OFFERINGS_PATH` is set we can read the
+        // dashboard tree directly; otherwise fall back to the legacy render-tree-driven
+        // walk (which still emits a usable v2-ish dict, but isn't dashboard-aligned).
+        let dashboardSpecs: [DashboardSpec]? = {
+            guard let localPath = localPath else { return nil }
+            return Self.loadDashboardSpecs(offeringsPath: localPath, offeringId: paywallId)
+        }()
+        if dashboardSpecs == nil {
+            print("WARNING: LOCAL_OFFERINGS_PATH not set or could not load dashboard specs " +
+                  "for OFFERING_ID=\(paywallId). Falling back to render-tree-driven export. " +
+                  "The output will not conform to SCHEMA.md v3.")
+        }
+        let components = buildComponents(from: paywallSnapshot, dashboardSpecs: dashboardSpecs)
 
         // Read the safe-area insets from the test-only probe element injected by
         // PaywallsV2View.safeAreaProbe. Best-effort; missing on non-V2 paywalls.
@@ -474,30 +492,95 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
 
     // MARK: - Flat component builder
 
-    /// Builds a flat dictionary of components from the paywall snapshot.
+    /// Builds a flat dictionary of components for the export.
     ///
-    /// Only elements with a non-empty accessibility identifier are included.
-    /// Coordinates are translated so that (0, 0) is the top-left of `rootSnapshot`.
-    ///
-    /// Duplicate IDs are disambiguated with a `_0`, `_1`, … suffix on every occurrence.
+    /// - When `dashboardSpecs` is non-nil (SCHEMA.md v3 path), emits one entry per
+    ///   declared dashboard component. `rendered: true` carries the captured frame
+    ///   when an XCUITest snapshot with a matching `accessibilityIdentifier` was found;
+    ///   `rendered: false` carries the zero-frame sentinel `(0,0,0,0)` otherwise.
+    /// - When `dashboardSpecs` is nil (legacy fallback), walks the rendered tree and
+    ///   emits one entry per element with a non-empty identifier, suffixing duplicates
+    ///   with `_0`/`_1`. This branch is kept only for the Examples-tab / RC_API_KEY
+    ///   navigation paths where the test can't easily load the dashboard config.
     private func buildComponents(
+        from rootSnapshot: any XCUIElementSnapshot,
+        dashboardSpecs: [DashboardSpec]?
+    ) -> [String: PaywallLayoutTree.Component] {
+        if let specs = dashboardSpecs {
+            return buildComponentsDashboardDriven(from: rootSnapshot, dashboardSpecs: specs)
+        }
+        return buildComponentsLegacy(from: rootSnapshot)
+    }
+
+    /// Per `SCHEMA.md` v3: every declared dashboard `componentId` is emitted as a
+    /// key, with `rendered: true/false` and the appropriate frame.
+    private func buildComponentsDashboardDriven(
+        from rootSnapshot: any XCUIElementSnapshot,
+        dashboardSpecs: [DashboardSpec]
+    ) -> [String: PaywallLayoutTree.Component] {
+        let origin = rootSnapshot.frame.origin
+        let byIdentifier = indexByAccessibilityIdentifier(rootSnapshot)
+
+        var result: [String: PaywallLayoutTree.Component] = [:]
+        for spec in dashboardSpecs {
+            let type = Self.collapseDashboardType(spec.rawType)
+            guard let snapshot = byIdentifier[spec.id] else {
+                // Not surfaced in the rendered tree — emit the zero-frame sentinel.
+                result[spec.id] = PaywallLayoutTree.Component(
+                    type: type,
+                    rendered: false,
+                    nativeType: nil,
+                    componentId: spec.id,
+                    label: nil,
+                    value: nil,
+                    frame: PaywallLayoutTree.Frame(x: 0, y: 0, width: 0, height: 0),
+                    state: .init(enabled: true, selected: false)
+                )
+                continue
+            }
+
+            let cgFrame = snapshot.frame
+            let frame = PaywallLayoutTree.Frame(
+                x: Self.roundToInt(cgFrame.origin.x - origin.x),
+                y: Self.roundToInt(cgFrame.origin.y - origin.y),
+                width: Self.roundToInt(cgFrame.size.width),
+                height: Self.roundToInt(cgFrame.size.height)
+            )
+
+            let value: String?
+            if let rawValue = snapshot.value {
+                let str = "\(rawValue)"
+                value = str.isEmpty ? nil : str
+            } else {
+                value = nil
+            }
+
+            result[spec.id] = PaywallLayoutTree.Component(
+                type: type,
+                rendered: true,
+                nativeType: nativeTypeName(for: snapshot, type: type),
+                componentId: spec.id,
+                label: snapshot.label.isEmpty ? nil : snapshot.label,
+                value: value,
+                frame: frame,
+                state: .init(enabled: snapshot.isEnabled, selected: snapshot.isSelected)
+            )
+        }
+        return result
+    }
+
+    /// Legacy render-tree-driven export (used when no dashboard config is available).
+    /// Emits the v2-shape with `_N` suffixes on duplicate ids.
+    private func buildComponentsLegacy(
         from rootSnapshot: any XCUIElementSnapshot
     ) -> [String: PaywallLayoutTree.Component] {
         let origin = rootSnapshot.frame.origin
-
-        // DFS: collect (id, snapshot) for every element that has an identifier.
         var pairs: [(id: String, snapshot: any XCUIElementSnapshot)] = []
         collectIdedSnapshots(rootSnapshot, into: &pairs)
 
-        // Count how many times each ID appears.
         var idCounts: [String: Int] = [:]
         for (id, _) in pairs { idCounts[id, default: 0] += 1 }
 
-        // For IDs that appear more than once, sort their occurrences spatially
-        // (top-to-bottom, then left-to-right) so the _0/_1/… suffix assignment
-        // is determined by on-screen position rather than DFS traversal order.
-        // This makes the numbering stable across platforms that walk the tree in
-        // different orders (iOS DFS vs. Android BFS).
         var groupedByDuplicateId: [String: [(snapshot: any XCUIElementSnapshot, dfsIndex: Int)]] = [:]
         for (dfsIndex, (id, snapshot)) in pairs.enumerated() {
             if idCounts[id]! > 1 {
@@ -505,8 +588,6 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
             }
         }
 
-        // Build a map from dfsIndex → spatially-stable suffix index for duplicate IDs.
-        // Frames are pre-rounded to integers so the y-comparison is exact (no tolerance).
         var spatialSuffixIndex: [Int: Int] = [:]
         for (_, occurrences) in groupedByDuplicateId {
             let sorted = occurrences.sorted {
@@ -521,9 +602,7 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
             }
         }
 
-        // Assign dictionary keys, adding numeric suffixes for duplicates.
         var result: [String: PaywallLayoutTree.Component] = [:]
-
         for (dfsIndex, (id, snapshot)) in pairs.enumerated() {
             let key: String
             if idCounts[id]! > 1 {
@@ -533,9 +612,6 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
                 key = id
             }
 
-            // Coordinates are stored as integers relative to the paywall root.
-            // We translate the absolute snapshot frame by the root origin and then
-            // round each component independently (banker's rounding).
             let cgFrame = snapshot.frame
             let frame = PaywallLayoutTree.Frame(
                 x: Self.roundToInt(cgFrame.origin.x - origin.x),
@@ -544,23 +620,8 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
                 height: Self.roundToInt(cgFrame.size.height)
             )
 
-            // Skip zero-dimension invisible placeholders (UIKit layout artefacts).
-            // Note: check width OR height being zero (not both) — some artefacts have nonzero
-            // width but zero height (e.g. 402×0 nav-bar remnants).
-            //
-            // We intentionally do NOT filter on negative-y frames here. Paywall overlay
-            // components (header images, close buttons) are rendered above the paywall
-            // content root in the safe-area region; their root-relative y is legitimately
-            // negative. The old `frame.y < -10` guard was incorrectly removing them.
-            if frame.width == 0 || frame.height == 0 {
-                continue
-            }
-
-            // Filter out the test-only safe-area sentinel — it's read separately and
-            // does not belong in the component dictionary.
-            if id == "__safe_area_insets" {
-                continue
-            }
+            if frame.width == 0 || frame.height == 0 { continue }
+            if id == "__safe_area_insets" { continue }
 
             let value: String?
             if let rawValue = snapshot.value {
@@ -570,8 +631,10 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
                 value = nil
             }
 
+            let semanticType = semanticType(snapshot.elementType)
             result[key] = PaywallLayoutTree.Component(
-                type: semanticType(snapshot.elementType),
+                type: semanticType,
+                rendered: true,
                 nativeType: elementTypeName(snapshot.elementType),
                 componentId: id,
                 label: snapshot.label.isEmpty ? nil : snapshot.label,
@@ -580,8 +643,164 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
                 state: .init(enabled: snapshot.isEnabled, selected: snapshot.isSelected)
             )
         }
-
         return result
+    }
+
+    /// Indexes every node in [snapshot] by its `accessibilityIdentifier`. First-write-wins
+    /// if multiple nodes share an identifier (unusual once the dashboard fixture is
+    /// well-formed; see `LOOP.md` §3 for how cross-platform comparison handles it anyway).
+    private func indexByAccessibilityIdentifier(
+        _ snapshot: any XCUIElementSnapshot
+    ) -> [String: any XCUIElementSnapshot] {
+        var out: [String: any XCUIElementSnapshot] = [:]
+        func walk(_ node: any XCUIElementSnapshot) {
+            let id = node.identifier
+            // Skip the navigation sentinel and the safe-area probe — they aren't
+            // dashboard components.
+            if !id.isEmpty && id != "paywall" && id != "__safe_area_insets" && out[id] == nil {
+                out[id] = node
+            }
+            for child in node.children {
+                walk(child)
+            }
+        }
+        walk(snapshot)
+        return out
+    }
+
+    /// `nativeType` per `SCHEMA.md` §7.2 — collapses to the closed cross-platform
+    /// enum.
+    ///
+    /// The dashboard `type` is the authoritative signal for every non-container
+    /// case (text, image, icon, button, toggle, input, scroll). SwiftUI views
+    /// with `.accessibilityLabel` report to XCUITest as `.staticText`
+    /// regardless of their visual content — an image with alt text is
+    /// `.staticText`, an icon with a name is `.staticText`, a button wrapping
+    /// a label is `.staticText` once we mark it as a `.contain` accessibility
+    /// container. Trusting XCUITest's `elementType` first would misclassify
+    /// every one of those as `StaticText`.
+    ///
+    /// For `container` we DO consult `elementType`, because the dashboard
+    /// collapses several visually-distinct kinds of wrapper (`stack`, `tabs`,
+    /// `package`, scrollable variants, …) into the single `container` schema
+    /// type — XCUITest tells us when one of those wrappers is actually a
+    /// scroll view or a button.
+    private func nativeTypeName(
+        for snapshot: any XCUIElementSnapshot,
+        type: String
+    ) -> String {
+        switch type {
+        case "text":
+            return "StaticText"
+        case "image":
+            return "Image"
+        case "icon":
+            return "Icon"
+        case "button":
+            return "Button"
+        case "toggle":
+            return "Toggle"
+        case "input":
+            return "Input"
+        case "scroll":
+            return "ScrollView"
+        case "container":
+            switch snapshot.elementType {
+            case .scrollView:
+                return "ScrollView"
+            case .button, .radioButton:
+                return "Button"
+            default:
+                return "Container"
+            }
+        default:
+            return "Other"
+        }
+    }
+
+    // MARK: - Dashboard spec loader
+
+    /// Walks the offerings JSON at [offeringsPath] for the offering with [offeringId]
+    /// and returns every `(id, rawType)` pair found in its components config. Returns
+    /// nil if the file can't be loaded or the offering isn't found.
+    fileprivate static func loadDashboardSpecs(
+        offeringsPath: String,
+        offeringId: String
+    ) -> [DashboardSpec]? {
+        let url = URL(fileURLWithPath: offeringsPath)
+        guard let data = try? Data(contentsOf: url) else { return nil }
+        guard let root = try? JSONSerialization.jsonObject(with: data) else { return nil }
+
+        // The /offerings response has shape: { "offerings": [ { "identifier": ...,
+        // "paywall_components": { "components_config": { ... }, ... } } ] }.
+        // The `paywall_components` dict directly decodes to `PaywallComponentsData`
+        // (see LocalOfferingLoader.swift in PaywallsTester); there is no inner `data`
+        // level.
+        guard let dict = root as? [String: Any] else { return nil }
+        guard let offerings = dict["offerings"] as? [[String: Any]] else { return nil }
+        guard let matching = offerings.first(where: { ($0["identifier"] as? String) == offeringId }) else {
+            return nil
+        }
+        let paywallComponents = matching["paywall_components"] as? [String: Any]
+        guard let config = paywallComponents?["components_config"] as? [String: Any] else { return nil }
+
+        var out: [DashboardSpec] = []
+        var seen: Set<String> = []
+        func walk(_ value: Any) {
+            if let obj = value as? [String: Any] {
+                if let id = obj["id"] as? String, !id.isEmpty,
+                   let type = obj["type"] as? String, !type.isEmpty,
+                   !seen.contains(id) {
+                    seen.insert(id)
+                    out.append(DashboardSpec(id: id, rawType: type))
+                }
+                for (_, v) in obj { walk(v) }
+            } else if let arr = value as? [Any] {
+                for v in arr { walk(v) }
+            }
+        }
+        walk(config)
+        return out
+    }
+
+    /// Maps raw dashboard `type` strings to the closed enum in `SCHEMA.md` §7.1.
+    /// Unknown types fall through to `container` — the safest default for unmapped
+    /// wrappers.
+    fileprivate static func collapseDashboardType(_ raw: String) -> String {
+        switch raw {
+        case "text": return "text"
+        case "image": return "image"
+        case "icon": return "icon"
+        case "button",
+             "purchase_button",
+             "wallet_button",
+             "redemption_button",
+             "express_purchase_button":
+            return "button"
+        case "toggle": return "toggle"
+        case "input_text",
+             "input_single_choice",
+             "input_multiple_choice":
+            return "input"
+        case "stack",
+             "package",
+             "tabs",
+             "tab",
+             "tab_control",
+             "tab_control_button",
+             "tab_control_toggle",
+             "carousel",
+             "timeline",
+             "timeline_item",
+             "badge",
+             "footer",
+             "header",
+             "paywall",
+             "sticky_footer":
+            return "container"
+        default:
+            return "container"
+        }
     }
 
     /// DFS walk — appends every element with a non-empty identifier to `pairs`.
@@ -781,13 +1000,25 @@ private struct PaywallLayoutTree: Encodable {
     }
 
     struct Component: Encodable {
+        /// Dashboard-side semantic type from the closed enum in `SCHEMA.md` §7.1.
+        /// Always emitted; comes from the dashboard config, not the rendered tree.
         let type: String
-        let nativeType: String
-        /// The original component ID (before any disambiguation suffix).
+        /// `true` when the rendered tree surfaced a node with a matching
+        /// `accessibilityIdentifier`. `false` means the component is in the
+        /// dashboard but didn't render (merged, hidden, conditionally omitted).
+        let rendered: Bool
+        /// Platform-specific native widget category from `SCHEMA.md` §7.2. Only
+        /// emitted when `rendered: true` — the renderer didn't run otherwise.
+        let nativeType: String?
+        /// The dashboard component ID. Duplicates the dict key.
         let componentId: String
+        /// Only emitted on text-bearing rendered components.
         let label: String?
+        /// Only emitted when XCUITest reported a value (text input, etc.) on
+        /// a rendered component.
         let value: String?
-        /// Frame relative to the paywall root's top-left corner. Integer-valued.
+        /// When `rendered: false`, exactly `{0,0,0,0}`. Otherwise relative to
+        /// the paywall root's top-left corner. Integer-valued.
         let frame: Frame
         let state: State
 
@@ -797,4 +1028,14 @@ private struct PaywallLayoutTree: Encodable {
             let selected: Bool
         }
     }
+}
+
+/// One dashboard component declaration extracted from the offerings JSON.
+/// The dashboard-driven exporter (SCHEMA.md v3) emits one entry per `DashboardSpec`,
+/// looked up in the rendered tree by `accessibilityIdentifier`.
+fileprivate struct DashboardSpec {
+    let id: String
+    /// Raw dashboard type (e.g. "stack", "purchase_button"). Collapsed to the
+    /// schema's closed enum via `PaywallAccessibilityTreeTests.collapseDashboardType`.
+    let rawType: String
 }
