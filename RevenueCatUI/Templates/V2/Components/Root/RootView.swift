@@ -38,6 +38,7 @@ struct RootView: View {
 
     @State private var sheetViewModel: SheetViewModel?
     @State private var packageSelectionSheetComponentName: String?
+    @State private var packageBeforeSheet: Package?
     @State private var overlaidHeaderHeight: CGFloat = 0
 
     internal init(
@@ -129,10 +130,18 @@ struct RootView: View {
         .onChangeOf(sheetViewModel) { newValue in
             if let newValue {
                 self.packageSelectionSheetComponentName = newValue.sheet.name
+                if self.workflowPackageContext != nil {
+                    self.packageBeforeSheet = self.packageContext.package
+                }
             } else {
                 // Reset package selection when sheet is dismissed; snapshot sheet name before clear for analytics.
                 let selectionInSheetContext = self.packageContext.package
-                self.packageContext.package = self.workflowPackageContext?.selectedPackage ?? self.defaultPackage
+                if self.workflowPackageContext != nil {
+                    self.packageContext.package = self.packageBeforeSheet ?? self.defaultPackage
+                    self.packageBeforeSheet = nil
+                } else {
+                    self.packageContext.package = self.defaultPackage
+                }
                 let resultingRootPackage = self.packageContext.package
                 let sheetName = self.packageSelectionSheetComponentName
                 self.packageSelectionSheetComponentName = nil

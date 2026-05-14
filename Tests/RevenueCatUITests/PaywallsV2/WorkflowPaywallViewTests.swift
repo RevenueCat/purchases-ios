@@ -220,6 +220,48 @@ extension WorkflowPaywallViewTests {
 
 }
 
+// MARK: - packageContext(for:) via WorkflowContext
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPaywallViewTests {
+
+    func testPackageContextForStepWithOwnPackagesReturnsStepLocalPackages() throws {
+        // Package-bearing step: step has its own package components.
+        // packageContext(for:) must return the step's own packages, not the workflow fallback.
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            workflowPackages: [(id: "$rc_monthly", isDefault: false), (id: "$rc_annual", isDefault: true)]
+        )
+
+        // step_terminal has the terminal screen with $rc_annual as default
+        let result = context.packageContext(for: "step_terminal")
+
+        expect(result?.selectedPackage.identifier) == "$rc_annual"
+        expect(result?.packages.map(\.identifier)) == ["$rc_monthly", "$rc_annual"]
+    }
+
+    func testPackageContextForPackagelessStepReturnsNil() throws {
+        // Packageless step: step_initial has no package components.
+        // packageContext(for:) must return nil so callers can fall back to the workflow context.
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            workflowPackages: [(id: "$rc_annual", isDefault: true)]
+        )
+
+        // step_initial uses screen_initial which has no packages
+        let result = context.packageContext(for: "step_initial")
+
+        expect(result).to(beNil())
+    }
+
+    func testPackageContextForMissingStepReturnsNil() throws {
+        let context = try Self.makeContext(singleStepFallbackId: nil)
+
+        expect(context.packageContext(for: "nonexistent_step")).to(beNil())
+    }
+
+}
+
 // MARK: - variableContext population tests
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

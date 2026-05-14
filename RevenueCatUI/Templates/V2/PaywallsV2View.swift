@@ -67,6 +67,7 @@ struct PaywallsV2View: View {
     private let workflowDefaultPackage: Package?
     private let workflowPackages: [Package]?
     private let showZeroDecimalPlacePrices: Bool
+    private let selectedPackageContextOverride: PackageContext?
     /// This is a configuration value from PaywallsV1, but it's important to include here just in case the
     /// default paywall is shown. This is not used in the success path
     private let displayCloseButton: Bool
@@ -95,7 +96,8 @@ struct PaywallsV2View: View {
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
         colorScheme: ColorScheme,
         promoOfferCache: PaywallPromoOfferCache? = nil,
-        introEligibilityContext: IntroOfferEligibilityContext? = nil
+        introEligibilityContext: IntroOfferEligibilityContext? = nil,
+        selectedPackageContextOverride: PackageContext? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
@@ -113,6 +115,7 @@ struct PaywallsV2View: View {
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
         self.closeWorkflowAction = closeWorkflowAction
+        self.selectedPackageContextOverride = selectedPackageContextOverride
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
         ))
@@ -143,7 +146,9 @@ struct PaywallsV2View: View {
         )
 
         let selectedPackageContext: PackageContext
-        if case .success(let paywallState) = initialState {
+        if let override = selectedPackageContextOverride {
+            selectedPackageContext = override
+        } else if case .success(let paywallState) = initialState {
             selectedPackageContext = Self.makeSelectedPackageContext(
                 from: paywallState,
                 defaultPackage: Self.effectiveDefaultPackage(
@@ -186,7 +191,7 @@ struct PaywallsV2View: View {
 
     private func loadedPaywallView(paywallState: PaywallState) -> some View {
         let contentLocale = paywallState.rootViewModel.localizationProvider.locale
-        let defaultPackage = Self.effectiveDefaultPackage(
+        let defaultPackage = self.selectedPackageContextOverride?.package ?? Self.effectiveDefaultPackage(
             pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
             workflowDefaultPackage: self.workflowPackageContext?.selectedPackage ?? self.workflowDefaultPackage
         )

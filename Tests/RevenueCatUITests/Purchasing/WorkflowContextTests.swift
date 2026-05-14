@@ -99,7 +99,67 @@ final class WorkflowContextTests: TestCase {
         expect(context.offering(for: "offering_missing")).to(beNil())
     }
 
-    // MARK: - exitOfferOffering (single-page)
+    // MARK: - packageContext(for:)
+
+    func testPackageContextForStepWithPackagesReturnsSelectedByDefaultPackage() throws {
+        let context = try Self.makeWorkflowContextWithPackageStep(
+            stepId: "step_terminal",
+            packages: [
+                (id: "$rc_monthly", isDefault: false),
+                (id: "$rc_annual", isDefault: true)
+            ]
+        )
+
+        let result = context.packageContext(for: "step_terminal")
+
+        expect(result?.selectedPackage.identifier) == "$rc_annual"
+        expect(result?.packages.map(\.identifier)) == ["$rc_monthly", "$rc_annual"]
+    }
+
+    func testPackageContextForStepWithPackagesReturnsFirstWhenNoneIsDefault() throws {
+        let context = try Self.makeWorkflowContextWithPackageStep(
+            stepId: "step_terminal",
+            packages: [
+                (id: "$rc_monthly", isDefault: false),
+                (id: "$rc_annual", isDefault: false)
+            ]
+        )
+
+        let result = context.packageContext(for: "step_terminal")
+
+        expect(result?.selectedPackage.identifier) == "$rc_monthly"
+    }
+
+    func testPackageContextForPackagelessStepReturnsNil() throws {
+        let context = try Self.makeWorkflowContextWithPackageStep(
+            stepId: "step_terminal",
+            packages: []
+        )
+
+        expect(context.packageContext(for: "step_terminal")).to(beNil())
+    }
+
+    func testPackageContextForMissingStepReturnsNil() throws {
+        let context = try Self.makeWorkflowContextWithPackageStep(
+            stepId: "step_terminal",
+            packages: [(id: "$rc_annual", isDefault: true)]
+        )
+
+        expect(context.packageContext(for: "step_missing")).to(beNil())
+    }
+
+    func testWorkflowPackageContextDelegatesToPackageContextForFallbackStep() throws {
+        let context = try Self.makeWorkflowContextWithPackageStep(
+            stepId: "step_terminal",
+            packages: [(id: "$rc_annual", isDefault: true)],
+            singleStepFallbackId: "step_terminal"
+        )
+
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_annual"
+        expect(context.packageContext(for: "step_terminal")?.selectedPackage.identifier) == "$rc_annual"
+    }
+
+    // MARK: - exitOfferOfferingId
 
     func testExitOfferOfferingReturnsNilWhenNoSingleStepFallbackId() throws {
         let offering = Self.makeOffering(identifier: "offering_a")
@@ -322,6 +382,120 @@ private extension WorkflowContextTests {
             placementIdentifier: "home_screen",
             targetingContext: .init(revision: 7, ruleId: "rule_1")
         )
+    }
+
+    typealias PackageSpec = (id: String, isDefault: Bool)
+
+    /// Builds a `WorkflowContext` containing one step with package components,
+    /// backed by an offering that has all the named packages.
+    static func makeWorkflowContextWithPackageStep(
+        stepId: String,
+        packages: [PackageSpec],
+        singleStepFallbackId: String? = nil
+    ) throws -> WorkflowContext {
+        let offeringId = "offering_test"
+        let fallbackJSON = singleStepFallbackId.map { "\"single_step_fallback_id\": \"\($0)\"," } ?? ""
+        let componentsJSON = packages
+            .map { pkg in
+                """
+                {
+                    "type": "package",
+                    "packageId": "\(pkg.id)",
+                    "isSelectedByDefault": \(pkg.isDefault),
+                    "stack": \(Self.minimalStackJSON())
+                }
+                """
+            }
+            .joined(separator: ",")
+
+        let json = """
+        {
+          "id": "wf_test",
+          "display_name": "Test",
+          "initial_step_id": "step_initial",
+          \(fallbackJSON)
+          "steps": {
+            "step_initial": { "id": "step_initial", "type": "screen" },
+            "\(stepId)": { "id": "\(stepId)", "type": "screen", "screen_id": "screen_target" }
+          },
+          "screens": {
+            "screen_target": {
+              "template_name": "tmpl",
+              "asset_base_url": "https://assets.revenuecat.com",
+              "default_locale": "en_US",
+              "offering_identifier": "\(offeringId)",
+              "components_localizations": {},
+              "components_config": {
+                "base": {
+                  "stack": \(Self.minimalStackJSON(components: "[\(componentsJSON)]")),
+                  "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
+                }
+              }
+            }
+          },
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {}
+          }
+        }
+        """
+        let workflow = try JSONDecoder.default.decode(
+            PublishedWorkflow.self,
+            from: XCTUnwrap(json.data(using: .utf8))
+        )
+
+        let rcPackages = packages.map { spec in
+            Package(
+                identifier: spec.id,
+                packageType: .custom,
+                storeProduct: TestData.monthlyPackage.storeProduct,
+                offeringIdentifier: offeringId,
+                webCheckoutUrl: nil
+            )
+        }
+        let offering = Offering(
+            identifier: offeringId,
+            serverDescription: "Test",
+            metadata: [:],
+            paywall: nil,
+            availablePackages: rcPackages,
+            webCheckoutUrl: nil
+        )
+        let offerings = Offerings(
+            offerings: [offeringId: offering],
+            currentOfferingID: nil,
+            placements: nil,
+            targeting: nil,
+            contents: .init(
+                response: .init(
+                    currentOfferingId: nil,
+                    offerings: [],
+                    placements: nil,
+                    targeting: nil,
+                    uiConfig: nil
+                ),
+                httpResponseOriginalSource: .mainServer
+            ),
+            loadedFromDiskCache: false
+        )
+        return WorkflowContext(
+            workflow: workflow,
+            allOfferings: offerings,
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+    }
+
+    static func minimalStackJSON(components: String = "[]") -> String {
+        return """
+        {
+          "type": "stack", "components": \(components),
+          "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+          "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+          "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+          "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+        }
+        """
     }
 
     static func makeWorkflow() throws -> PublishedWorkflow {
