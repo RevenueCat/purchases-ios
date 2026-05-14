@@ -83,7 +83,9 @@ let package = Package(
         .library(name: "ReceiptParser",
                  targets: ["ReceiptParser"]),
         .library(name: "RevenueCatUI",
-                 targets: ["RevenueCatUI"])
+                 targets: ["RevenueCatUI"]),
+        .library(name: "RulesEngine",
+                 targets: ["RulesEngine"])
     ],
     dependencies: dependencies,
     targets: [
@@ -135,6 +137,13 @@ let package = Package(
                         .copy("Resources/header.heic"),
                         .copy("Resources/background.heic"),
                         .copy("PaywallsV2/__PreviewResources__")
-                    ])
+                    ]),
+        // RulesEngine
+        .target(name: "RulesEngine",
+                path: "RulesEngine",
+                swiftSettings: ciCompilerFlags + additionalCompilerFlags),
+        .testTarget(name: "RulesEngineTests",
+                    dependencies: ["RulesEngine"],
+                    path: "Tests/RulesEngineTests")
     ]
 )
