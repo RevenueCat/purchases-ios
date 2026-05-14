@@ -10,6 +10,7 @@ class StackComponentTests: TestCase {
         let jsonStack = """
         {
             "type": "stack",
+            "id": "stack_1",
             "dimension": {
                 "type": "vertical",
                 "alignment": "center",
@@ -45,6 +46,7 @@ class StackComponentTests: TestCase {
         let jsonStack = """
         {
             "type": "stack",
+            "id": "stack_with_badge",
             "dimension": {
                 "type": "vertical",
                 "alignment": "center",

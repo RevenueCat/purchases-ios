@@ -13,6 +13,7 @@ import Foundation
     final class ImageComponent: PaywallComponentBase {
 
         let type: ComponentType
+        public let id: String
         public let visible: Bool?
         public let source: ThemeImageUrls
         public let size: Size
@@ -28,6 +29,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialImageComponent>?
 
         public init(
+            id: String = "",
             visible: Bool? = nil,
             source: ThemeImageUrls,
             size: Size = .init(width: .fill, height: .fit),
@@ -42,6 +44,7 @@ import Foundation
             overrides: ComponentOverrides<PartialImageComponent>? = nil
         ) {
             self.type = .image
+            self.id = id
             self.visible = visible
             self.source = source
             self.size = size
@@ -58,6 +61,7 @@ import Foundation
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(id)
             hasher.combine(visible)
             hasher.combine(source)
             hasher.combine(size)
@@ -74,6 +78,7 @@ import Foundation
 
         public static func == (lhs: ImageComponent, rhs: ImageComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.id == rhs.id &&
                    lhs.visible == rhs.visible &&
                    lhs.source == rhs.source &&
                    lhs.size == rhs.size &&
@@ -127,6 +132,20 @@ import Foundation
             self.margin = margin
             self.border = border
             self.shadow = shadow
+        }
+
+        @_spi(Internal) public enum CodingKeys: String, CodingKey {
+            case visible
+            case source
+            case size
+            case overrideSourceLid
+            case maskShape
+            case fitMode
+            case colorOverlay
+            case padding
+            case margin
+            case border
+            case shadow
         }
 
         public func hash(into hasher: inout Hasher) {

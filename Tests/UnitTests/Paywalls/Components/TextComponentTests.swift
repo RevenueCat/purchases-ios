@@ -10,6 +10,7 @@ class TextComponentTests: TestCase {
         let jsonStack = """
         {
             "type": "text",
+            "id": "text_font_size_string",
             "text_lid": "123",
             "font_weight": "regular",
             "color": { "light": { "type": "hex", "value": "#ffffff" } },
@@ -46,6 +47,7 @@ class TextComponentTests: TestCase {
         let jsonStack = """
         {
             "type": "text",
+            "id": "text_font_size_number",
             "text_lid": "123",
             "font_weight": "regular",
             "color": { "light": { "type": "hex", "value": "#ffffff" } },
@@ -82,6 +84,7 @@ class TextComponentTests: TestCase {
         let json = """
         {
             "type": "text",
+            "id": "footer_terms_link_text",
             "name": "footer_terms_link",
             "text_lid": "123",
             "font_weight": "regular",

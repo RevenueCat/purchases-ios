@@ -114,6 +114,7 @@ private extension WorkflowScreenMapperTests {
                 "base": {
                     "stack": {
                         "type": "stack",
+                        "id": "workflow_screen_stack",
                         "components": [],
                         "dimension": {
                             "type": "vertical",

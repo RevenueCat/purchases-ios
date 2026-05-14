@@ -44,9 +44,11 @@ final class ButtonComponentViewModelMappingTests: TestCase {
         let json = """
         {
             "type": "button",
+            "id": "button_\(actionType)",
             "action": { "type": "\(actionType)" },
             "stack": {
                 "type": "stack",
+                "id": "button_stack_\(actionType)",
                 "dimension": {"type": "vertical", "alignment": "center", "distribution": "start"},
                 "size": {"width": {"type": "fill"}, "height": {"type": "fill"}},
                 "padding": {"top": 0, "bottom": 0, "leading": 0, "trailing": 0},

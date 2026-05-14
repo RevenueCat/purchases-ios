@@ -20,6 +20,7 @@ import Foundation
     public final class VideoComponent: PaywallComponentBase {
 
         let type: ComponentType
+        public let id: String
         public let source: ThemeVideoUrls
         public let fallbackSource: ThemeImageUrls?
         public let visible: Bool?
@@ -39,6 +40,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialVideoComponent>?
 
         public init(
+            id: String = "",
             visible: Bool? = nil,
             source: ThemeVideoUrls,
             fallbackSource: ThemeImageUrls? = nil,
@@ -57,6 +59,7 @@ import Foundation
             overrides: ComponentOverrides<PartialVideoComponent>? = nil
         ) {
             self.type = .video
+            self.id = id
             self.source = source
             self.fallbackSource = fallbackSource
             self.visible = visible
@@ -77,6 +80,7 @@ import Foundation
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(id)
             hasher.combine(visible)
             hasher.combine(showControls)
             hasher.combine(autoPlay)
@@ -97,6 +101,7 @@ import Foundation
 
         public static func == (lhs: VideoComponent, rhs: VideoComponent) -> Bool {
             return lhs.type == rhs.type &&
+            lhs.id == rhs.id &&
             lhs.visible == rhs.visible &&
             lhs.showControls == rhs.showControls &&
             lhs.autoPlay == rhs.autoPlay &&
@@ -166,6 +171,24 @@ import Foundation
             self.margin = margin
             self.border = border
             self.shadow = shadow
+        }
+
+        @_spi(Internal) public enum CodingKeys: String, CodingKey {
+            case source
+            case fallbackSource
+            case visible
+            case showControls
+            case autoPlay
+            case loop
+            case muteAudio
+            case size
+            case fitMode
+            case maskShape
+            case colorOverlay
+            case padding
+            case margin
+            case border
+            case shadow
         }
 
         public func hash(into hasher: inout Hasher) {

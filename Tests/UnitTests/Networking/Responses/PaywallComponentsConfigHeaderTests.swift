@@ -19,6 +19,7 @@ class PaywallComponentsConfigHeaderTests: TestCase {
     private let stackJSON = """
     {
         "type": "stack",
+        "id": "config_stack",
         "dimension": {
             "type": "vertical",
             "alignment": "center",
@@ -51,6 +52,7 @@ class PaywallComponentsConfigHeaderTests: TestCase {
             "background": \(self.backgroundJSON),
             "header": {
                 "type": "header",
+                "id": "header",
                 "stack": \(self.stackJSON)
             }
         }
@@ -105,10 +107,12 @@ class PaywallComponentsConfigHeaderTests: TestCase {
             "background": \(self.backgroundJSON),
             "header": {
                 "type": "header",
+                "id": "header",
                 "stack": \(self.stackJSON)
             },
             "sticky_footer": {
                 "type": "sticky_footer",
+                "id": "sticky_footer",
                 "stack": \(self.stackJSON)
             }
         }

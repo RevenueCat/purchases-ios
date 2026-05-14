@@ -37,6 +37,17 @@ struct PresentedOverride<T: PresentedPartial> {
 
     let conditions: [PaywallComponent.ExtendedCondition]
     let properties: T?
+    let rawProperties: [String: PaywallComponentPropertyValue]
+
+    init(
+        conditions: [PaywallComponent.ExtendedCondition],
+        properties: T?,
+        rawProperties: [String: PaywallComponentPropertyValue] = [:]
+    ) {
+        self.conditions = conditions
+        self.properties = properties
+        self.rawProperties = rawProperties
+    }
 
 }
 
@@ -322,7 +333,8 @@ extension Array {
 
             return PresentedOverride(
                 conditions: partial.extendedConditions,
-                properties: presentedPartial
+                properties: presentedPartial,
+                rawProperties: partial.rawProperties
             )
         }
     }

@@ -19,12 +19,14 @@ import Foundation
     final class TabControlButtonComponent: Codable, Sendable, Hashable, Equatable {
 
         let type: ComponentType
+        public let id: String
         public let tabId: String
         public let name: String?
         public let stack: StackComponent
 
-        public init(tabId: String, stack: StackComponent, name: String? = nil) {
+        public init(id: String = "", tabId: String, stack: StackComponent, name: String? = nil) {
             self.type = .tabControlButton
+            self.id = id
             self.tabId = tabId
             self.name = name
             self.stack = stack
@@ -32,6 +34,7 @@ import Foundation
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(id)
             hasher.combine(tabId)
             hasher.combine(name)
             hasher.combine(stack)
@@ -39,6 +42,7 @@ import Foundation
 
         public static func == (lhs: TabControlButtonComponent, rhs: TabControlButtonComponent) -> Bool {
             return lhs.type == rhs.type &&
+                lhs.id == rhs.id &&
                 lhs.tabId == rhs.tabId &&
                 lhs.name == rhs.name &&
                 lhs.stack == rhs.stack
@@ -48,19 +52,22 @@ import Foundation
     final class TabControlToggleComponent: Codable, Sendable, Hashable, Equatable {
 
         let type: ComponentType
+        public let id: String
         public let name: String?
         public let thumbColorOn: ColorScheme
         public let thumbColorOff: ColorScheme
         public let trackColorOn: ColorScheme
         public let trackColorOff: ColorScheme
 
-        public init(defaultValue: Bool,
+        public init(id: String = "",
+                    defaultValue: Bool,
                     name: String? = nil,
                     thumbColorOn: ColorScheme,
                     thumbColorOff: ColorScheme,
                     trackColorOn: ColorScheme,
                     trackColorOff: ColorScheme) {
             self.type = .tabControlToggle
+            self.id = id
             self.name = name
             self.thumbColorOn = thumbColorOn
             self.thumbColorOff = thumbColorOff
@@ -70,6 +77,7 @@ import Foundation
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(id)
             hasher.combine(name)
             hasher.combine(thumbColorOn)
             hasher.combine(thumbColorOff)
@@ -79,6 +87,7 @@ import Foundation
 
         public static func == (lhs: TabControlToggleComponent, rhs: TabControlToggleComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.id == rhs.id &&
                    lhs.name == rhs.name &&
                    lhs.thumbColorOn == rhs.thumbColorOn &&
                    lhs.thumbColorOff == rhs.thumbColorOff &&
@@ -90,17 +99,21 @@ import Foundation
     final class TabControlComponent: Codable, Sendable, Hashable, Equatable {
 
         let type: ComponentType
+        public let id: String
 
-        public init() {
+        public init(id: String = "") {
             self.type = .tabControl
+            self.id = id
         }
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(id)
         }
 
         public static func == (lhs: TabControlComponent, rhs: TabControlComponent) -> Bool {
-            return lhs.type == rhs.type
+            return lhs.type == rhs.type &&
+                   lhs.id == rhs.id
         }
     }
 
@@ -158,6 +171,7 @@ import Foundation
         }
 
         let type: ComponentType
+        public let id: String
         public let name: String?
         public let visible: Bool?
         public let size: Size
@@ -175,6 +189,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialTabsComponent>?
 
         public init(
+            id: String = "",
             name: String? = nil,
             visible: Bool? = nil,
             size: Size = .init(width: .fill, height: .fit),
@@ -192,6 +207,7 @@ import Foundation
             overrides: ComponentOverrides<PartialTabsComponent>? = nil
         ) {
             self.type = .stack
+            self.id = id
             self.name = name
             self.visible = visible
             self.size = size
@@ -211,6 +227,7 @@ import Foundation
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(id)
             hasher.combine(name)
             hasher.combine(visible)
             hasher.combine(size)
@@ -228,6 +245,7 @@ import Foundation
 
         public static func == (lhs: TabsComponent, rhs: TabsComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.id == rhs.id &&
                    lhs.name == rhs.name &&
                    lhs.visible == rhs.visible &&
                    lhs.size == rhs.size &&
@@ -273,6 +291,17 @@ import Foundation
             self.shape = shape
             self.border = border
             self.shadow = shadow
+        }
+
+        @_spi(Internal) public enum CodingKeys: String, CodingKey {
+            case visible
+            case size
+            case padding
+            case margin
+            case background
+            case shape
+            case border
+            case shadow
         }
 
         public func hash(into hasher: inout Hasher) {

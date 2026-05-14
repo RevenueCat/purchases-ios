@@ -19,6 +19,7 @@ import Foundation
     final class TimelineComponent: PaywallComponentBase {
 
         let type: ComponentType
+        public let id: String
         public let visible: Bool?
         public let iconAlignment: IconAlignment?
         public let itemSpacing: CGFloat?
@@ -32,6 +33,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialTimelineComponent>?
 
         public init(
+            id: String = "",
             visible: Bool? = nil,
             iconAlignment: IconAlignment?,
             itemSpacing: CGFloat?,
@@ -44,6 +46,7 @@ import Foundation
             overrides: ComponentOverrides<PartialTimelineComponent>?
         ) {
             self.type = .timeline
+            self.id = id
             self.visible = visible
             self.iconAlignment = iconAlignment
             self.itemSpacing = itemSpacing
@@ -60,7 +63,8 @@ import Foundation
             lhs: PaywallComponent.TimelineComponent,
             rhs: PaywallComponent.TimelineComponent
         ) -> Bool {
-            return lhs.iconAlignment == rhs.iconAlignment &&
+            return lhs.id == rhs.id &&
+                   lhs.iconAlignment == rhs.iconAlignment &&
                    lhs.visible == rhs.visible &&
                    lhs.itemSpacing == rhs.itemSpacing &&
                    lhs.textSpacing == rhs.textSpacing &&
@@ -72,6 +76,7 @@ import Foundation
         }
 
         public func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
             hasher.combine(visible)
             hasher.combine(iconAlignment)
             hasher.combine(itemSpacing)
@@ -191,6 +196,17 @@ import Foundation
             self.margin = margin
         }
 
+        @_spi(Internal) public enum CodingKeys: String, CodingKey {
+            case visible
+            case iconAlignment
+            case itemSpacing
+            case textSpacing
+            case columnGutter
+            case size
+            case padding
+            case margin
+        }
+
         public func hash(into hasher: inout Hasher) {
             hasher.combine(visible)
             hasher.combine(iconAlignment)
@@ -227,6 +243,11 @@ import Foundation
                     connector: TimelineComponent.Connector?) {
             self.visible = visible
             self.connector = connector
+        }
+
+        @_spi(Internal) public enum CodingKeys: String, CodingKey {
+            case visible
+            case connector
         }
 
         public static func == (lhs: PartialTimelineItem,

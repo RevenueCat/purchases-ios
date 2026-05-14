@@ -13,6 +13,7 @@ import Foundation
     final class TextComponent: PaywallComponentBase {
 
         let type: ComponentType
+        public let id: String
         public let visible: Bool?
         public let name: String?
         public let text: LocalizationKey
@@ -34,6 +35,7 @@ import Foundation
         }
 
         public init(
+            id: String = "",
             visible: Bool? = nil,
             name: String? = nil,
             text: String,
@@ -50,6 +52,7 @@ import Foundation
             fontWeightInt: Int? = nil
         ) {
             self.type = .text
+            self.id = id
             self.visible = visible
             self.name = name
             self.text = text
@@ -68,6 +71,7 @@ import Foundation
 
         private enum CodingKeys: String, CodingKey {
             case type
+            case id
             case visible
             case name
             case text = "textLid"
@@ -88,6 +92,7 @@ import Foundation
             let container = try decoder.container(keyedBy: CodingKeys.self)
 
             self.type = try container.decode(ComponentType.self, forKey: .type)
+            self.id = try container.decode(String.self, forKey: .id)
             self.visible = try container.decodeIfPresent(Bool.self, forKey: .visible)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
             self.text = try container.decode(LocalizationKey.self, forKey: .text)
@@ -120,6 +125,7 @@ import Foundation
             var container = encoder.container(keyedBy: CodingKeys.self)
 
             try container.encode(type, forKey: .type)
+            try container.encode(id, forKey: .id)
             try container.encodeIfPresent(visible, forKey: .visible)
             try container.encodeIfPresent(name, forKey: .name)
             try container.encode(text, forKey: .text)
@@ -138,6 +144,7 @@ import Foundation
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(id)
             hasher.combine(visible)
             hasher.combine(name)
             hasher.combine(text)
@@ -156,6 +163,7 @@ import Foundation
 
         public static func == (lhs: TextComponent, rhs: TextComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.id == rhs.id &&
                    lhs.visible == rhs.visible &&
                    lhs.name == rhs.name &&
                    lhs.text == rhs.text &&
@@ -222,7 +230,7 @@ import Foundation
             self.fontWeightInt = fontWeightInt
         }
 
-        private enum CodingKeys: String, CodingKey {
+        @_spi(Internal) public enum CodingKeys: String, CodingKey {
             case visible
             case name
             case text = "textLid"

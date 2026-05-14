@@ -207,7 +207,7 @@ class WorkflowResponseTests: TestCase {
           "components_config": {
             "base": {
               "stack": {
-                "type": "stack", "components": [],
+                "type": "stack", "id": "workflow_screen_stack", "components": [],
                 "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
                 "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
                 "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
@@ -235,7 +235,7 @@ class WorkflowResponseTests: TestCase {
           "components_config": {
             "base": {
               "stack": {
-                "type": "stack", "components": [],
+                "type": "stack", "id": "workflow_screen_stack", "components": [],
                 "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
                 "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
                 "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
@@ -265,7 +265,7 @@ class WorkflowResponseTests: TestCase {
           "components_config": {
             "base": {
               "stack": {
-                "type": "stack", "components": [],
+                "type": "stack", "id": "workflow_screen_stack", "components": [],
                 "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
                 "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
                 "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
@@ -292,7 +292,7 @@ class WorkflowResponseTests: TestCase {
           "components_config": {
             "base": {
               "stack": {
-                "type": "stack", "components": [],
+                "type": "stack", "id": "workflow_screen_stack", "components": [],
                 "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
                 "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
                 "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },

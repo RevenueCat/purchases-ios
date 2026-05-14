@@ -20,6 +20,7 @@ import Foundation
     final class PackageComponent: PaywallComponentBase {
 
         let type: ComponentType
+        public let id: String
         public let packageID: String
         public let isSelectedByDefault: Bool
         public let visible: Bool?
@@ -30,6 +31,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialPackageComponent>?
 
         public init(
+            id: String = "",
             packageID: String,
             isSelectedByDefault: Bool,
             visible: Bool? = nil,
@@ -39,6 +41,7 @@ import Foundation
             overrides: ComponentOverrides<PartialPackageComponent>? = nil
         ) {
             self.type = .package
+            self.id = id
             self.packageID = packageID
             self.isSelectedByDefault = isSelectedByDefault
             self.visible = visible
@@ -50,6 +53,7 @@ import Foundation
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(id)
             hasher.combine(packageID)
             hasher.combine(isSelectedByDefault)
             hasher.combine(visible)
@@ -61,6 +65,7 @@ import Foundation
 
         public static func == (lhs: PackageComponent, rhs: PackageComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.id == rhs.id &&
                    lhs.packageID == rhs.packageID &&
                    lhs.isSelectedByDefault == rhs.isSelectedByDefault &&
                    lhs.visible == rhs.visible &&
@@ -79,6 +84,10 @@ import Foundation
             self.visible = visible
         }
 
+        @_spi(Internal) public enum CodingKeys: String, CodingKey {
+            case visible
+        }
+
         public func hash(into hasher: inout Hasher) {
             hasher.combine(visible)
         }
@@ -94,6 +103,7 @@ extension PaywallComponent.PackageComponent {
 
     enum CodingKeys: String, CodingKey {
         case type
+        case id
         case packageID = "packageId"
         case isSelectedByDefault
         case visible

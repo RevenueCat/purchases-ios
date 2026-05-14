@@ -9,6 +9,7 @@ class HeaderComponentTests: TestCase {
     private let defaultStackJSON = """
     {
         "type": "stack",
+        "id": "default_stack",
         "dimension": {
             "type": "vertical",
             "alignment": "center",
@@ -38,8 +39,10 @@ class HeaderComponentTests: TestCase {
         let json = """
         {
             "type": "header",
+            "id": "header_1",
             "stack": {
                 "type": "stack",
+                "id": "header_stack",
                 "dimension": {
                     "type": "vertical",
                     "alignment": "center",
@@ -64,6 +67,7 @@ class HeaderComponentTests: TestCase {
                 "components": [
                     {
                         "type": "text",
+                        "id": "header_text_component",
                         "text_lid": "header_text",
                         "font_weight": "regular",
                         "color": {
@@ -108,6 +112,7 @@ class HeaderComponentTests: TestCase {
         let json = """
         {
             "type": "header",
+            "id": "header_1",
             "stack": \(self.defaultStackJSON)
         }
         """
@@ -135,6 +140,7 @@ class HeaderComponentTests: TestCase {
             from: json.data(using: .utf8)!
         )
 
+        expect(decoded.id) == "header_1"
         expect(decoded.stack.components).to(beEmpty())
     }
 
@@ -151,6 +157,7 @@ class HeaderComponentTests: TestCase {
         let jsonObject = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
 
         expect(jsonObject["type"] as? String) == "header"
+        expect(jsonObject["id"] as? String) == ""
         expect(jsonObject["stack"]).toNot(beNil())
     }
 

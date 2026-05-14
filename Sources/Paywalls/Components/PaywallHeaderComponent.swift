@@ -19,6 +19,7 @@ import Foundation
 
     private enum HeaderCodingKeys: String, CodingKey {
         case type
+        case id
         case stack
     }
 
@@ -28,33 +29,40 @@ import Foundation
 
     final class HeaderComponent: PaywallComponentBase {
 
+        @_spi(Internal) public let id: String
         @_spi(Internal) public let stack: PaywallComponent.StackComponent
 
         @_spi(Internal) public init(
+            id: String = "",
             stack: PaywallComponent.StackComponent
         ) {
+            self.id = id
             self.stack = stack
         }
 
         public func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
             hasher.combine(stack)
         }
 
         public static func == (lhs: HeaderComponent, rhs: HeaderComponent) -> Bool {
-            return lhs.stack == rhs.stack
+            return lhs.id == rhs.id &&
+                   lhs.stack == rhs.stack
         }
 
         @_spi(Internal) public convenience init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: HeaderCodingKeys.self)
+            let id = try container.decode(String.self, forKey: .id)
             let stack = try container.decode(PaywallComponent.StackComponent.self, forKey: .stack)
 
-            self.init(stack: stack)
+            self.init(id: id, stack: stack)
         }
 
         @_spi(Internal) public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: HeaderCodingKeys.self)
 
             try container.encode(HeaderType.header, forKey: .type)
+            try container.encode(self.id, forKey: .id)
             try container.encode(self.stack, forKey: .stack)
         }
 

@@ -9,6 +9,7 @@ class FallbackComponentTests: TestCase {
     let jsonStringDefaultStack = """
     {
         "type": "stack",
+        "id": "fallback_stack",
         "dimension": {
             "type": "vertical",
             "alignment": "center",
@@ -114,6 +115,7 @@ class FallbackComponentTests: TestCase {
             },
             "fallback": {
                 "type": "text",
+                "id": "invalid_text_fallback",
                 "wrong": "property"
             }
         }

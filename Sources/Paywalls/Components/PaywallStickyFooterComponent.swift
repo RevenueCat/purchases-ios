@@ -19,20 +19,25 @@ import Foundation
 
     final class StickyFooterComponent: PaywallComponentBase {
 
+        public let id: String
         public let stack: PaywallComponent.StackComponent
 
         public init(
+            id: String = "",
             stack: PaywallComponent.StackComponent
         ) {
+            self.id = id
             self.stack = stack
         }
 
         public func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
             hasher.combine(stack)
         }
 
         public static func == (lhs: StickyFooterComponent, rhs: StickyFooterComponent) -> Bool {
-            return lhs.stack == rhs.stack
+            return lhs.id == rhs.id &&
+                   lhs.stack == rhs.stack
         }
 
     }

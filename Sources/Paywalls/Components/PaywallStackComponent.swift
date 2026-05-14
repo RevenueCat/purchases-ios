@@ -30,6 +30,7 @@ import Foundation
         }
 
         let type: ComponentType
+        public let id: String
         public let name: String?
         public let visible: Bool?
         public let components: [PaywallComponent]
@@ -49,6 +50,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialStackComponent>?
 
         public init(
+            id: String = "",
             name: String? = nil,
             visible: Bool? = nil,
             components: [PaywallComponent],
@@ -66,6 +68,7 @@ import Foundation
             overflow: Overflow? = nil,
             overrides: ComponentOverrides<PartialStackComponent>? = nil
         ) {
+            self.id = id
             self.name = name
             self.visible = visible
             self.components = components
@@ -86,6 +89,7 @@ import Foundation
         }
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(id)
             hasher.combine(name)
             hasher.combine(visible)
             hasher.combine(components)
@@ -106,6 +110,7 @@ import Foundation
 
         public static func == (lhs: StackComponent, rhs: StackComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.id == rhs.id &&
                    lhs.name == rhs.name &&
                    lhs.visible == rhs.visible &&
                    lhs.components == rhs.components &&
@@ -172,6 +177,23 @@ import Foundation
             self.shadow = shadow
             self.overflow = overflow
             self.badge = badge
+        }
+
+        @_spi(Internal) public enum CodingKeys: String, CodingKey {
+            case name
+            case visible
+            case size
+            case spacing
+            case backgroundColor
+            case background
+            case dimension
+            case padding
+            case margin
+            case shape
+            case border
+            case shadow
+            case overflow
+            case badge
         }
 
         public func hash(into hasher: inout Hasher) {

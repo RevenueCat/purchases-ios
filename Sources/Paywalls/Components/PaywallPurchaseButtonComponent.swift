@@ -12,6 +12,7 @@ import Foundation
 
     final class PurchaseButtonComponent: PaywallComponentBase {
 
+        public let id: String
         public let name: String?
         let type: ComponentType
         public let stack: PaywallComponent.StackComponent
@@ -147,12 +148,14 @@ import Foundation
         }
 
         public init(
+            id: String = "",
             stack: PaywallComponent.StackComponent,
             action: Action?,
             method: Method?,
             name: String?
         ) {
             self.type = .purchaseButton
+            self.id = id
             self.stack = stack
             self.action = action
             self.method = method
@@ -161,6 +164,7 @@ import Foundation
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(id)
             hasher.combine(stack)
             hasher.combine(action)
             hasher.combine(method)
@@ -169,6 +173,7 @@ import Foundation
 
         public static func == (lhs: PurchaseButtonComponent, rhs: PurchaseButtonComponent) -> Bool {
             return lhs.type == rhs.type &&
+                lhs.id == rhs.id &&
                 lhs.stack == rhs.stack &&
                 lhs.action == rhs.action &&
                 lhs.method == rhs.method &&

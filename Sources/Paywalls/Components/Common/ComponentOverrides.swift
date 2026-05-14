@@ -17,6 +17,118 @@ import Foundation
 
 @_spi(Internal) public protocol PaywallPartialComponent: PaywallComponentBase {}
 
+@_spi(Internal) public struct PaywallComponentPropertyValue: Codable, Hashable, Sendable {
+
+    private enum Storage: Hashable, Sendable {
+        case null
+        case string(String)
+        case number(Double)
+        case bool(Bool)
+        case object([String: PaywallComponentPropertyValue])
+        case array([PaywallComponentPropertyValue])
+    }
+
+    private let storage: Storage
+
+    private init(_ storage: Storage) {
+        self.storage = storage
+    }
+
+    @_spi(Internal) public static let null = PaywallComponentPropertyValue(.null)
+
+    @_spi(Internal) public static func string(_ value: String) -> PaywallComponentPropertyValue {
+        PaywallComponentPropertyValue(.string(value))
+    }
+
+    @_spi(Internal) public static func number(_ value: Double) -> PaywallComponentPropertyValue {
+        PaywallComponentPropertyValue(.number(value))
+    }
+
+    @_spi(Internal) public static func bool(_ value: Bool) -> PaywallComponentPropertyValue {
+        PaywallComponentPropertyValue(.bool(value))
+    }
+
+    @_spi(Internal) public static func object(
+        _ value: [String: PaywallComponentPropertyValue]
+    ) -> PaywallComponentPropertyValue {
+        PaywallComponentPropertyValue(.object(value))
+    }
+
+    @_spi(Internal) public static func array(
+        _ value: [PaywallComponentPropertyValue]
+    ) -> PaywallComponentPropertyValue {
+        PaywallComponentPropertyValue(.array(value))
+    }
+
+    public init(from decoder: Decoder) throws {
+        let singleValueContainer = try decoder.singleValueContainer()
+
+        if singleValueContainer.decodeNil() {
+            self = .null
+        } else if let bool = try? singleValueContainer.decode(Bool.self) {
+            self = .bool(bool)
+        } else if let number = try? singleValueContainer.decode(Double.self) {
+            self = .number(number)
+        } else if let string = try? singleValueContainer.decode(String.self) {
+            self = .string(string)
+        } else if var unkeyedContainer = try? decoder.unkeyedContainer() {
+            var values: [PaywallComponentPropertyValue] = []
+            while !unkeyedContainer.isAtEnd {
+                values.append(try unkeyedContainer.decode(PaywallComponentPropertyValue.self))
+            }
+            self = .array(values)
+        } else {
+            let keyedContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+            let values = try keyedContainer.allKeys.reduce(
+                into: [String: PaywallComponentPropertyValue]()
+            ) { result, key in
+                result[key.stringValue] = try keyedContainer.decode(
+                    PaywallComponentPropertyValue.self,
+                    forKey: key
+                )
+            }
+            self = .object(values)
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var singleValueContainer = encoder.singleValueContainer()
+
+        switch self.storage {
+        case .null:
+            try singleValueContainer.encodeNil()
+        case .string(let value):
+            try singleValueContainer.encode(value)
+        case .number(let value):
+            try singleValueContainer.encode(value)
+        case .bool(let value):
+            try singleValueContainer.encode(value)
+        case .object(let value):
+            try singleValueContainer.encode(value)
+        case .array(let value):
+            try singleValueContainer.encode(value)
+        }
+    }
+
+}
+
+private struct DynamicCodingKey: CodingKey {
+
+    let stringValue: String
+    let intValue: Int?
+
+    init?(stringValue: String) {
+        self.stringValue = stringValue
+        self.intValue = nil
+    }
+
+    init?(intValue: Int) {
+        self.stringValue = "\(intValue)"
+        self.intValue = intValue
+    }
+
+}
+
 // MARK: - Public Types
 
 @_spi(Internal) public extension PaywallComponent {
@@ -29,31 +141,58 @@ import Foundation
             extendedConditions.map { $0.toCondition() }
         }
         public let properties: T
+        @_spi(Internal) public let rawProperties: [String: PaywallComponentPropertyValue]
 
         /// Internal storage for extended conditions with full type information
         @_spi(Internal) public let extendedConditions: [ExtendedCondition]
 
-        public init(conditions: [Condition], properties: T) {
+        public init(
+            conditions: [Condition],
+            properties: T,
+            rawProperties: [String: PaywallComponentPropertyValue] = [:]
+        ) {
             self.extendedConditions = conditions.map { ExtendedCondition(from: $0) }
             self.properties = properties
+            self.rawProperties = rawProperties
         }
 
         @_spi(Internal)
-        public init(extendedConditions: [ExtendedCondition], properties: T) {
+        public init(
+            extendedConditions: [ExtendedCondition],
+            properties: T,
+            rawProperties: [String: PaywallComponentPropertyValue] = [:]
+        ) {
             self.extendedConditions = extendedConditions
             self.properties = properties
+            self.rawProperties = rawProperties
         }
 
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.extendedConditions = try container.decode([ExtendedCondition].self, forKey: .conditions)
+            let propertiesContainer = try container.nestedContainer(
+                keyedBy: DynamicCodingKey.self,
+                forKey: .properties
+            )
+            self.rawProperties = try propertiesContainer.allKeys.reduce(
+                into: [String: PaywallComponentPropertyValue]()
+            ) { result, key in
+                result[key.stringValue] = try propertiesContainer.decode(
+                    PaywallComponentPropertyValue.self,
+                    forKey: key
+                )
+            }
             self.properties = try container.decode(T.self, forKey: .properties)
         }
 
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
             try container.encode(extendedConditions, forKey: .conditions)
-            try container.encode(properties, forKey: .properties)
+            if rawProperties.isEmpty {
+                try container.encode(properties, forKey: .properties)
+            } else {
+                try container.encode(rawProperties, forKey: .properties)
+            }
         }
 
         // swiftlint:disable:next nesting

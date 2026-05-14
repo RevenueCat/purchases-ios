@@ -9,6 +9,7 @@ class ButtonComponentCodableTests: TestCase {
     let jsonStringDefaultStack = """
     {
         "type": "stack",
+        "id": "",
         "dimension": {
             "type": "vertical",
             "alignment": "center",
@@ -37,6 +38,7 @@ class ButtonComponentCodableTests: TestCase {
     lazy var buttonWithTransition = """
         {
             "type": "button",
+            "id": "",
             "action": {
                 "type": "restore_purchases"
             },
@@ -65,6 +67,7 @@ class ButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "button",
+            "id": "",
             "action": {
                 "type": "restore_purchases"
             },
@@ -90,6 +93,7 @@ class ButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "button",
+            "id": "",
             "action": {
                 "type": "navigate_back"
             },
@@ -115,6 +119,7 @@ class ButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "button",
+            "id": "",
             "action": {
                 "type": "navigate_to",
                 "destination": "customer_center"
@@ -141,6 +146,7 @@ class ButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "button",
+            "id": "",
             "action": {
                 "type": "navigate_to",
                 "destination": "terms",
@@ -174,6 +180,7 @@ class ButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "button",
+            "id": "",
             "action": {
                 "type": "navigate_to",
                 "destination": "privacy_policy",
@@ -207,6 +214,7 @@ class ButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "button",
+            "id": "",
             "action": {
                 "type": "navigate_to",
                 "destination": "url",
@@ -240,6 +248,7 @@ class ButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "button",
+            "id": "",
             "action": {
                 "type": "workflow"
             },
@@ -265,6 +274,7 @@ class ButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "button",
+            "id": "",
             "action": {
                 "type": "close_workflow"
             },
@@ -282,6 +292,7 @@ class ButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "button",
+            "id": "",
             "action": {
                 "type": "close_workflow"
             },
@@ -304,6 +315,7 @@ class ButtonComponentCodableTests: TestCase {
         let closeWorkflowJSON = """
         {
             "type": "button",
+            "id": "",
             "action": { "type": "close_workflow" },
             "stack": \(jsonStringDefaultStack)
         }
@@ -311,6 +323,7 @@ class ButtonComponentCodableTests: TestCase {
         let navigateBackJSON = """
         {
             "type": "button",
+            "id": "",
             "action": { "type": "navigate_back" },
             "stack": \(jsonStringDefaultStack)
         }

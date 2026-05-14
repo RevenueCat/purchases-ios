@@ -30,6 +30,7 @@
                         },
                         "stack": {
                             "type": "stack",
+                            "id": "pw_test_1_stack",
                             "components": [],
                             "margin": {},
                             "padding": {},
@@ -81,9 +82,11 @@
                         },
                         "stack": {
                             "type": "stack",
+                            "id": "pw_test_2_stack",
                             "components": [
                                 {
                                     "type": "text",
+                                    "id": "pw_test_2_text",
                                     "fontWeight": "thin",
                                     "text_lid": "title",
                                     "font_size": 24,
@@ -146,9 +149,11 @@
                         },
                         "stack": {
                             "type": "stack",
+                            "id": "pw_test_2_draft_stack",
                             "components": [
                                 {
                                     "type": "text",
+                                    "id": "pw_test_2_draft_text",
                                     "fontWeight": "bold",
                                     "text_lid": "title",
                                     "font_size": 24,
@@ -221,9 +226,11 @@
                         },
                         "stack": {
                             "type": "stack",
+                            "id": "pw_test_3_draft_stack",
                             "components": [
                                 {
                                     "type": "text",
+                                    "id": "pw_test_3_draft_text",
                                     "fontWeight": "bold",
                                     "text_lid": "title",
                                     "font_size": 24,
@@ -296,6 +303,7 @@
                         },
                         "stack": {
                             "type": "stack",
+                            "id": "pw_test_4_stack",
                             "components": [],
                             "margin": {},
                             "padding": {},
@@ -352,6 +360,7 @@
                         },
                         "stack": {
                             "type": "stack",
+                            "id": "pw_test_5_stack",
                             "components": [],
                             "margin": {},
                             "padding": {},

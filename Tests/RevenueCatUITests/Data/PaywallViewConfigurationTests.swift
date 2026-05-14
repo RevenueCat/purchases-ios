@@ -176,6 +176,7 @@ private extension PaywallViewConfigurationTests {
                 "base": {
                   "stack": {
                     "type": "stack",
+                    "id": "paywall_view_configuration_stack",
                     "components": [],
                     "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
                     "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },

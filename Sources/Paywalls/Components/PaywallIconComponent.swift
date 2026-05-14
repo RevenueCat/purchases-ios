@@ -77,6 +77,7 @@ import Foundation
         }
 
         let type: ComponentType
+        public let id: String
         public let visible: Bool?
         public let baseUrl: String
         public let iconName: String
@@ -90,6 +91,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialIconComponent>?
 
         public init(
+            id: String = "",
             visible: Bool? = nil,
             baseUrl: String,
             iconName: String,
@@ -102,6 +104,7 @@ import Foundation
             overrides: ComponentOverrides<PartialIconComponent>? = nil
         ) {
             self.type = .image
+            self.id = id
             self.visible = visible
             self.baseUrl = baseUrl
             self.iconName = iconName
@@ -116,6 +119,7 @@ import Foundation
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(id)
             hasher.combine(visible)
             hasher.combine(baseUrl)
             hasher.combine(iconName)
@@ -130,6 +134,7 @@ import Foundation
 
         public static func == (lhs: IconComponent, rhs: IconComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.id == rhs.id &&
                    lhs.visible == rhs.visible &&
                    lhs.baseUrl == rhs.baseUrl &&
                    lhs.iconName == rhs.iconName &&
@@ -175,6 +180,18 @@ import Foundation
             self.margin = margin
             self.color = color
             self.iconBackground = iconBackground
+        }
+
+        @_spi(Internal) public enum CodingKeys: String, CodingKey {
+            case visible
+            case baseUrl
+            case iconName
+            case formats
+            case size
+            case padding
+            case margin
+            case color
+            case iconBackground
         }
 
         public func hash(into hasher: inout Hasher) {

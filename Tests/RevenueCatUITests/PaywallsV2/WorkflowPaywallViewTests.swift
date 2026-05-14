@@ -392,6 +392,7 @@ private extension WorkflowPaywallViewTests {
         return """
         {
             "type": "package",
+            "id": "package_component_\(id)",
             "packageId": "\(id)",
             "isSelectedByDefault": \(isDefault),
             "stack": \(stackJSON(components: "[]"))
@@ -403,6 +404,7 @@ private extension WorkflowPaywallViewTests {
         return """
         {
             "type": "stack",
+            "id": "stack",
             "components": \(components),
             "dimension": {
                 "type": "vertical",
@@ -440,6 +442,7 @@ private extension WorkflowPaywallViewTests {
                     "stack": \(stackJSON(components: "[]")),
                     "sticky_footer": {
                         "type": "sticky_footer",
+                        "id": "sticky_footer",
                         "stack": \(stackJSON(components: "[\(componentsJSON)]"))
                     },
                     "background": {
@@ -461,6 +464,7 @@ private extension WorkflowPaywallViewTests {
         [
             {
                 "type": "tab_control_button",
+                "id": "tab_control_button_1",
                 "tab_id": "tab_1",
                 "stack": \(stackJSON(components: "[]"))
             }
@@ -471,6 +475,7 @@ private extension WorkflowPaywallViewTests {
         [
             {
                 "type": "carousel",
+                "id": "carousel_1",
                 "page_alignment": "center",
                 "page_spacing": 0,
                 "page_peek": 20,
@@ -486,6 +491,7 @@ private extension WorkflowPaywallViewTests {
         [
             {
                 "type": "tabs",
+                "id": "tabs_1",
                 "control": {
                     "type": "buttons",
                     "stack": \(tabControlStackJSON)

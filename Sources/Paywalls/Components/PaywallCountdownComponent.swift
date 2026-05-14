@@ -20,6 +20,7 @@ import Foundation
     final class CountdownComponent: PaywallComponentBase {
 
         let type: ComponentType
+        public let id: String
         public let name: String?
         public let style: CountdownStyle
         public let countFrom: CountFrom
@@ -29,7 +30,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialCountdownComponent>?
 
         public init(
-            id: String? = nil,
+            id: String = "",
             name: String? = nil,
             style: CountdownStyle,
             countFrom: CountFrom,
@@ -39,6 +40,7 @@ import Foundation
             overrides: ComponentOverrides<PartialCountdownComponent>? = nil
         ) {
             self.type = .countdown
+            self.id = id
             self.name = name
             self.style = style
             self.countFrom = countFrom
@@ -50,6 +52,7 @@ import Foundation
 
         private enum CodingKeys: String, CodingKey {
             case type
+            case id
             case name
             case style
             case countFrom
@@ -62,6 +65,7 @@ import Foundation
         required public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.type = try container.decode(ComponentType.self, forKey: .type)
+            self.id = try container.decode(String.self, forKey: .id)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
             self.style = try container.decode(CountdownStyle.self, forKey: .style)
             self.countFrom = try container.decode(CountFrom.self, forKey: .countFrom)
@@ -77,6 +81,7 @@ import Foundation
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
             try container.encode(type, forKey: .type)
+            try container.encode(id, forKey: .id)
             try container.encodeIfPresent(name, forKey: .name)
             try container.encode(style, forKey: .style)
             try container.encode(countFrom, forKey: .countFrom)
@@ -88,6 +93,7 @@ import Foundation
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(id)
             hasher.combine(name)
             hasher.combine(style)
             hasher.combine(countFrom)
@@ -99,6 +105,7 @@ import Foundation
 
         public static func == (lhs: CountdownComponent, rhs: CountdownComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.id == rhs.id &&
                    lhs.name == rhs.name &&
                    lhs.style == rhs.style &&
                    lhs.countFrom == rhs.countFrom &&
@@ -171,6 +178,10 @@ import Foundation
 
         public init(style: CountdownComponent.CountdownStyle? = nil) {
             self.style = style
+        }
+
+        @_spi(Internal) public enum CodingKeys: String, CodingKey {
+            case style
         }
 
         public func hash(into hasher: inout Hasher) {

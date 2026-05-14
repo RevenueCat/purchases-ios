@@ -114,6 +114,7 @@ import Foundation
 
         let type: ComponentType
 
+        public let id: String
         public let name: String?
         public let visible: Bool?
         public let size: Size?
@@ -137,6 +138,7 @@ import Foundation
         public let overrides: ComponentOverrides<PartialCarouselComponent>?
 
         public init(
+            id: String = "",
             name: String? = nil,
             visible: Bool? = nil,
             size: PaywallComponent.Size? = nil,
@@ -158,6 +160,7 @@ import Foundation
         ) {
             self.type = .carousel
 
+            self.id = id
             self.name = name
             self.visible = visible
             self.size = size
@@ -180,6 +183,7 @@ import Foundation
 
         public static func == (lhs: CarouselComponent, rhs: CarouselComponent) -> Bool {
             return lhs.type == rhs.type &&
+                lhs.id == rhs.id &&
                 lhs.name == rhs.name &&
                 lhs.visible == rhs.visible &&
                 lhs.size == rhs.size &&
@@ -203,6 +207,7 @@ import Foundation
         // MARK: - Hashable
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(id)
             hasher.combine(name)
             hasher.combine(visible)
             hasher.combine(size)
@@ -277,6 +282,24 @@ import Foundation
             self.loop = loop
             self.autoAdvance = autoAdvance
             self.pageControl = pageControl
+        }
+
+        @_spi(Internal) public enum CodingKeys: String, CodingKey {
+            case visible
+            case size
+            case padding
+            case margin
+            case background
+            case shape
+            case border
+            case shadow
+            case pageAlignment
+            case pageSpacing
+            case pagePeek
+            case initialPageIndex
+            case loop
+            case autoAdvance
+            case pageControl
         }
 
         public static func == (lhs: PartialCarouselComponent, rhs: PartialCarouselComponent) -> Bool {

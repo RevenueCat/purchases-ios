@@ -9,6 +9,7 @@ class PurchaseButtonComponentCodableTests: TestCase {
     let jsonStringDefaultStack = """
     {
         "type": "stack",
+        "id": "",
         "dimension": {
             "type": "vertical",
             "alignment": "center",
@@ -38,6 +39,7 @@ class PurchaseButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "purchase_button",
+            "id": "",
             "stack": \(jsonStringDefaultStack)
         }
         """
@@ -63,6 +65,7 @@ class PurchaseButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "purchase_button",
+            "id": "",
             "name": "my_purchase_button",
             "stack": \(jsonStringDefaultStack)
         }
@@ -78,6 +81,7 @@ class PurchaseButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "purchase_button",
+            "id": "",
             "stack": \(jsonStringDefaultStack)
         }
         """
@@ -92,6 +96,7 @@ class PurchaseButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "purchase_button",
+            "id": "",
             "method": {
                 "type": "in_app_checkout"
             },
@@ -120,6 +125,7 @@ class PurchaseButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "purchase_button",
+            "id": "",
             "method": {
                 "type": "web_checkout"
             },
@@ -148,6 +154,7 @@ class PurchaseButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "purchase_button",
+            "id": "",
             "method": {
                 "type": "web_checkout",
                 "auto_dismiss": false,
@@ -178,6 +185,7 @@ class PurchaseButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "purchase_button",
+            "id": "",
             "method": {
                 "type": "web_product_selection"
             },
@@ -206,6 +214,7 @@ class PurchaseButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "purchase_button",
+            "id": "",
             "method": {
                 "type": "web_product_selection",
                 "auto_dismiss": false,
@@ -236,6 +245,7 @@ class PurchaseButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "purchase_button",
+            "id": "",
             "method": {
                 "type": "custom_web_checkout",
                 "custom_url": {
@@ -273,6 +283,7 @@ class PurchaseButtonComponentCodableTests: TestCase {
         let jsonString = """
         {
             "type": "purchase_button",
+            "id": "",
             "method": {
                 "type": "custom_web_checkout",
                 "custom_url": {
