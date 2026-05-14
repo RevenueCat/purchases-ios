@@ -23,6 +23,7 @@ import UIKit
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TextComponentViewModel {
 
+    let identity: PaywallComponentIdentity
     private let localizationProvider: LocalizationProvider
     let uiConfigProvider: UIConfigProvider
     private let component: PaywallComponent.TextComponent
@@ -31,11 +32,13 @@ class TextComponentViewModel {
     private let presentedOverrides: PresentedOverrides<LocalizedTextPartial>?
 
     init(
+        identity: PaywallComponentIdentity,
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
         component: PaywallComponent.TextComponent,
         discardRules: Bool = false
     ) throws {
+        self.identity = identity
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component

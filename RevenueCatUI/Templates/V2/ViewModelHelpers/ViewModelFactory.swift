@@ -29,10 +29,15 @@ class PurchaseButtonCollector {
 struct ViewModelFactory {
 
     let packageValidator = PackageValidator()
+    let identityFactory: PaywallComponentIdentityFactory
 
     /// When true, all rule-based overrides are discarded globally across all components.
     /// Set when any component in the paywall contains unsupported conditions.
     private(set) var discardRules: Bool = false
+
+    init(paywallID: String? = nil) {
+        self.identityFactory = PaywallComponentIdentityFactory(paywallID: paywallID)
+    }
 
     mutating func toRootViewModel(
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
@@ -121,6 +126,7 @@ struct ViewModelFactory {
         case .text(let component):
             return .text(
                 try TextComponentViewModel(
+                    identity: self.identityFactory.identity(for: component),
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: component,
@@ -184,6 +190,7 @@ struct ViewModelFactory {
 
             return .button(
                 try ButtonComponentViewModel(
+                    identity: self.identityFactory.identity(for: component),
                     component: component,
                     localizationProvider: localizationProvider,
                     offering: offering,
@@ -209,6 +216,7 @@ struct ViewModelFactory {
             let hasPurchaseButton = packagePurchaseButtonCollector.hasPurchaseButton
 
             let viewModel = PackageComponentViewModel(
+                identity: self.identityFactory.identity(for: component),
                 component: component,
                 offering: offering,
                 stackViewModel: stackViewModel,
@@ -276,6 +284,7 @@ struct ViewModelFactory {
                 var description: TextComponentViewModel?
                 if let descriptionComponent = item.description {
                     description = try TextComponentViewModel(
+                        identity: self.identityFactory.identity(for: descriptionComponent),
                         localizationProvider: localizationProvider,
                         uiConfigProvider: uiConfigProvider,
                         component: descriptionComponent,
@@ -285,6 +294,7 @@ struct ViewModelFactory {
                 return TimelineItemViewModel(
                     component: item,
                     title: try TextComponentViewModel(
+                        identity: self.identityFactory.identity(for: item.title),
                         localizationProvider: localizationProvider,
                         uiConfigProvider: uiConfigProvider,
                         component: item.title,
@@ -561,6 +571,7 @@ struct ViewModelFactory {
         } ?? []
 
         return StackComponentViewModel(
+            identity: self.identityFactory.identity(for: component),
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModels,

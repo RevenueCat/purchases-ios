@@ -100,6 +100,7 @@ private extension PackageComponentViewTests {
         )
 
         return PackageComponentViewModel(
+            identity: factory.identityFactory.identity(for: component),
             component: component,
             offering: offering,
             stackViewModel: stackViewModel,

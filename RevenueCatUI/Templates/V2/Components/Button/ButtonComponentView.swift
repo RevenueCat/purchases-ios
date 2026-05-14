@@ -314,6 +314,7 @@ fileprivate extension ButtonComponentViewModel {
         )
 
         try self.init(
+            identity: factory.identityFactory.identity(for: component),
             component: component,
             localizationProvider: localizationProvider,
             offering: offering,

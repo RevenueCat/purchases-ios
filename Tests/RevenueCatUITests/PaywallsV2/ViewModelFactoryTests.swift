@@ -21,6 +21,46 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class ViewModelFactoryTests: TestCase {
 
+    // MARK: - Component Identity Tests
+
+    @MainActor
+    func testTextViewModelReceivesComponentAndPaywallIdentity() throws {
+        let text = PaywallComponent.TextComponent(
+            id: "headline_component",
+            name: "Headline",
+            text: "headline_lid",
+            color: Self.black
+        )
+
+        let factory = ViewModelFactory(paywallID: "paywall_123")
+        let viewModel = try factory.toViewModel(
+            component: .text(text),
+            packageValidator: factory.packageValidator,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "headline_lid": .string("Headline")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        guard case .text(let textViewModel) = viewModel else {
+            fail("Expected text view model")
+            return
+        }
+
+        expect(textViewModel.identity.paywallID).to(equal("paywall_123"))
+        expect(textViewModel.identity.componentID).to(equal("headline_component"))
+        expect(textViewModel.identity.type).to(equal("text"))
+        expect(textViewModel.identity.name).to(equal("Headline"))
+        expect(textViewModel.identity).to(equal(PaywallComponentIdentity(
+            paywallID: "paywall_123",
+            componentID: "headline_component",
+            type: "stack",
+            name: nil
+        )))
+    }
+
     // MARK: - Unsupported Condition Tests
 
     @MainActor

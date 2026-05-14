@@ -397,10 +397,12 @@ fileprivate extension TimelineComponentViewModel {
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider
     ) throws {
+        let identityFactory = PaywallComponentIdentityFactory(paywallID: nil)
         let models = try component.items.map { item in
             var description: TextComponentViewModel?
             if let descriptionComponent = item.description {
                 description = try TextComponentViewModel(
+                    identity: identityFactory.identity(for: descriptionComponent),
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: descriptionComponent
@@ -409,6 +411,7 @@ fileprivate extension TimelineComponentViewModel {
             return TimelineItemViewModel(
                 component: item,
                 title: try TextComponentViewModel(
+                    identity: identityFactory.identity(for: item.title),
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: item.title

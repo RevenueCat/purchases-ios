@@ -308,6 +308,7 @@ fileprivate extension PackageComponentViewModel {
         )
 
         self.init(
+            identity: factory.identityFactory.identity(for: component),
             component: component,
             offering: offering,
             stackViewModel: stackViewModel,

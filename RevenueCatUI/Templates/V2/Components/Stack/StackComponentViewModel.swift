@@ -21,6 +21,7 @@ typealias PresentedStackPartial = PaywallComponent.PartialStackComponent
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class StackComponentViewModel {
 
+    let identity: PaywallComponentIdentity
     let component: PaywallComponent.StackComponent
     let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
@@ -49,12 +50,14 @@ class StackComponentViewModel {
     private let discardRules: Bool
 
     init(
+        identity: PaywallComponentIdentity,
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel],
         badgeViewModels: [PaywallComponentViewModel],
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false
     ) {
+        self.identity = identity
         self.component = component
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
@@ -65,6 +68,7 @@ class StackComponentViewModel {
 
     func copy(withViewModels newViewModels: [PaywallComponentViewModel]) -> StackComponentViewModel {
         return StackComponentViewModel(
+            identity: self.identity,
             component: self.component,
             viewModels: newViewModels,
             badgeViewModels: self.badgeViewModels,

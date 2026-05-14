@@ -21,6 +21,7 @@ typealias PresentedPackagePartial = PaywallComponent.PartialPackageComponent
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageComponentViewModel {
 
+    let identity: PaywallComponentIdentity
     let isSelectedByDefault: Bool
     let promotionalOfferProductCode: String?
     let componentName: String?
@@ -33,6 +34,7 @@ class PackageComponentViewModel {
     private let presentedOverrides: PresentedOverrides<PresentedPackagePartial>?
 
     init(
+        identity: PaywallComponentIdentity,
         component: PaywallComponent.PackageComponent,
         offering: Offering,
         stackViewModel: StackComponentViewModel,
@@ -40,6 +42,7 @@ class PackageComponentViewModel {
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false
     ) {
+        self.identity = identity
         self.componentVisible = component.visible
         self.uiConfigProvider = uiConfigProvider
         self.isSelectedByDefault = component.isSelectedByDefault

@@ -67,13 +67,16 @@ final class ButtonComponentViewModelMappingTests: TestCase {
         for component: PaywallComponent.ButtonComponent
     ) throws -> ButtonComponentViewModel {
         let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
+        let identityFactory = PaywallComponentIdentityFactory(paywallID: nil)
         let stackViewModel = StackComponentViewModel(
+            identity: identityFactory.identity(for: component.stack),
             component: component.stack,
             viewModels: [],
             badgeViewModels: [],
             uiConfigProvider: uiConfigProvider
         )
         return try ButtonComponentViewModel(
+            identity: identityFactory.identity(for: component),
             component: component,
             localizationProvider: LocalizationProvider(locale: .current, localizedStrings: [:]),
             offering: .init(

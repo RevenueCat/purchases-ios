@@ -149,6 +149,7 @@ struct PaywallsV2View: View {
         // because StateObject init is an autoclosure that will only get executed once.
         // Note: paywallStateManager.state is created once; if it becomes dynamic, refresh selectedPackageContext.
         let initialState = Self.createPaywallState(
+            paywallID: paywallComponents.data.id,
             componentsConfig: componentsConfig,
             componentsLocalizations: paywallComponents.data.componentsLocalizations,
             preferredLocales: purchaseHandler.preferredLocales,
@@ -477,6 +478,7 @@ extension PaywallsV2View {
 
     // swiftlint:disable:next function_parameter_count
     static func createPaywallState(
+        paywallID: String?,
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
         preferredLocales: [Locale],
@@ -495,7 +497,7 @@ extension PaywallsV2View {
         )
 
         do {
-            var factory = ViewModelFactory()
+            var factory = ViewModelFactory(paywallID: paywallID)
             let root = try factory.toRootViewModel(
                 componentsConfig: componentsConfig,
                 offering: offering,

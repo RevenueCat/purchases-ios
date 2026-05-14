@@ -38,6 +38,7 @@ class TextComponentLocalizationTests: TestCase {
 
         // When: Creating TextComponentViewModel should NOT throw
         let viewModel = try TextComponentViewModel(
+            identity: Self.identity(for: textComponent),
             localizationProvider: LocalizationProvider(
                 locale: .current,
                 localizedStrings: localizations
@@ -82,6 +83,7 @@ class TextComponentLocalizationTests: TestCase {
 
         // When: Creating TextComponentViewModel
         _ = try TextComponentViewModel(
+            identity: Self.identity(for: textComponent),
             localizationProvider: LocalizationProvider(
                 locale: .current,
                 localizedStrings: localizations
@@ -122,6 +124,7 @@ class TextComponentLocalizationTests: TestCase {
         // When/Then: Creating TextComponentViewModel should NOT throw
         expect {
             try TextComponentViewModel(
+                identity: Self.identity(for: textComponent),
                 localizationProvider: LocalizationProvider(
                     locale: .current,
                     localizedStrings: localizations
@@ -142,30 +145,34 @@ class TextComponentLocalizationTests: TestCase {
     func testMultipleMissingLocalizations_LogsWarningForEach() throws {
         // Given: Multiple text components with missing localizations
         let localizations: PaywallComponent.LocalizationDictionary = [:]
+        let firstTextComponent = PaywallComponent.TextComponent(
+            text: "missing_lid_1",
+            color: Self.black
+        )
+        let secondTextComponent = PaywallComponent.TextComponent(
+            text: "missing_lid_2",
+            color: Self.black
+        )
 
         // When: Creating multiple TextComponentViewModels
         _ = try? TextComponentViewModel(
+            identity: Self.identity(for: firstTextComponent),
             localizationProvider: LocalizationProvider(
                 locale: .current,
                 localizedStrings: localizations
             ),
             uiConfigProvider: try Self.createUIConfigProvider(),
-            component: PaywallComponent.TextComponent(
-                text: "missing_lid_1",
-                color: Self.black
-            )
+            component: firstTextComponent
         )
 
         _ = try? TextComponentViewModel(
+            identity: Self.identity(for: secondTextComponent),
             localizationProvider: LocalizationProvider(
                 locale: .current,
                 localizedStrings: localizations
             ),
             uiConfigProvider: try Self.createUIConfigProvider(),
-            component: PaywallComponent.TextComponent(
-                text: "missing_lid_2",
-                color: Self.black
-            )
+            component: secondTextComponent
         )
 
         // Then: Both warnings should be logged
@@ -262,6 +269,7 @@ class TextComponentLocalizationTests: TestCase {
         ]
 
         let viewModel = try TextComponentViewModel(
+            identity: Self.identity(for: textComponent),
             localizationProvider: LocalizationProvider(locale: .current, localizedStrings: localizations),
             uiConfigProvider: try Self.createUIConfigProvider(),
             component: textComponent
@@ -307,6 +315,7 @@ class TextComponentLocalizationTests: TestCase {
             "badge_text": .string("Most popular!")
         ]
         let viewModel = try TextComponentViewModel(
+            identity: Self.identity(for: textComponent),
             localizationProvider: LocalizationProvider(locale: .current, localizedStrings: localizations),
             uiConfigProvider: try Self.createUIConfigProvider(),
             component: textComponent
@@ -349,6 +358,7 @@ class TextComponentLocalizationTests: TestCase {
         )
 
         let viewModel = StackComponentViewModel(
+            identity: Self.identity(for: stackComponent),
             component: stackComponent,
             viewModels: [],
             badgeViewModels: [],
@@ -477,6 +487,14 @@ class TextComponentLocalizationTests: TestCase {
         return UIConfigProvider(uiConfig: uiConfig)
     }
 
+    private static func identity(for component: PaywallComponent.TextComponent) -> PaywallComponentIdentity {
+        return PaywallComponentIdentityFactory(paywallID: nil).identity(for: component)
+    }
+
+    private static func identity(for component: PaywallComponent.StackComponent) -> PaywallComponentIdentity {
+        return PaywallComponentIdentityFactory(paywallID: nil).identity(for: component)
+    }
+
     private func makeConditionalVisibilityViewModel() throws -> TextComponentViewModel {
         let textComponent = PaywallComponent.TextComponent(
             visible: false,
@@ -496,6 +514,7 @@ class TextComponentLocalizationTests: TestCase {
         ]
 
         return try TextComponentViewModel(
+            identity: Self.identity(for: textComponent),
             localizationProvider: LocalizationProvider(locale: .current, localizedStrings: localizations),
             uiConfigProvider: try Self.createUIConfigProvider(),
             component: textComponent
@@ -508,28 +527,32 @@ class TextComponentLocalizationTests: TestCase {
     ///   - promoPriceStack: hidden by default, shown when `selected + promo_offer` both match
     private func makeZLayeredPriceStacks() throws -> (intro: StackComponentViewModel,
                                                       promo: StackComponentViewModel) {
+        let introComponent = PaywallComponent.StackComponent(
+            visible: false,
+            components: [],
+            dimension: .zlayer(.center),
+            overrides: [
+                .init(extendedConditions: [.introOffer], properties: .init(visible: true))
+            ]
+        )
+        let promoComponent = PaywallComponent.StackComponent(
+            visible: false,
+            components: [],
+            dimension: .zlayer(.center),
+            overrides: [
+                .init(extendedConditions: [.selected, .promoOffer], properties: .init(visible: true))
+            ]
+        )
         let intro = StackComponentViewModel(
-            component: PaywallComponent.StackComponent(
-                visible: false,
-                components: [],
-                dimension: .zlayer(.center),
-                overrides: [
-                    .init(extendedConditions: [.introOffer], properties: .init(visible: true))
-                ]
-            ),
+            identity: Self.identity(for: introComponent),
+            component: introComponent,
             viewModels: [],
             badgeViewModels: [],
             uiConfigProvider: try Self.createUIConfigProvider()
         )
         let promo = StackComponentViewModel(
-            component: PaywallComponent.StackComponent(
-                visible: false,
-                components: [],
-                dimension: .zlayer(.center),
-                overrides: [
-                    .init(extendedConditions: [.selected, .promoOffer], properties: .init(visible: true))
-                ]
-            ),
+            identity: Self.identity(for: promoComponent),
+            component: promoComponent,
             viewModels: [],
             badgeViewModels: [],
             uiConfigProvider: try Self.createUIConfigProvider()

@@ -45,6 +45,7 @@ class ButtonComponentViewModel {
     }
 
     let component: PaywallComponent.ButtonComponent
+    let identity: PaywallComponentIdentity
     let id: String?
     let localizationProvider: LocalizationProvider
     let action: Action
@@ -53,12 +54,14 @@ class ButtonComponentViewModel {
 
     // swiftlint:disable:next cyclomatic_complexity
     init(
+        identity: PaywallComponentIdentity,
         component: PaywallComponent.ButtonComponent,
         localizationProvider: LocalizationProvider,
         offering: Offering,
         stackViewModel: StackComponentViewModel,
         sheetStackViewModel: StackComponentViewModel? = nil
     ) throws {
+        self.identity = identity
         self.component = component
         self.id = component.id
         self.localizationProvider = localizationProvider

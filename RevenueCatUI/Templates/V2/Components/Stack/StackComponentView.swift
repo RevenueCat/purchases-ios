@@ -815,6 +815,7 @@ extension StackComponentViewModel {
         }
 
         self.init(
+            identity: factory.identityFactory.identity(for: component),
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModels ?? [],
