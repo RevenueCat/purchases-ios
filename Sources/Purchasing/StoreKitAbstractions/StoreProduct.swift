@@ -54,14 +54,7 @@ internal typealias SK2BillingPlanType = StoreKit.Product.SubscriptionInfo.Billin
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? StoreProductType else { return false }
-        guard self.productIdentifier == other.productIdentifier else { return false }
-
-        if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
-            return self.installmentsInfo == other.installmentsInfo
-        } else {
-            return true
-        }
+        return self.id == (object as? StoreProductType)?.id
     }
 
     public override var hash: Int {
@@ -110,21 +103,7 @@ internal typealias SK2BillingPlanType = StoreKit.Product.SubscriptionInfo.Billin
     @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
     @objc public var installmentsInfo: InstallmentsInfo? { self.product.installmentsInfo }
 
-    internal var compoundProductIdentifier: String {
-        if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
-            guard let installmentsInfo else { return productIdentifier }
-            switch installmentsInfo.billingPlanType {
-            case .monthly:
-                return "\(productIdentifier):monthly"
-            case .upFront:
-                return productIdentifier
-            default:
-                return productIdentifier
-            }
-        } else {
-            return productIdentifier
-        }
-    }
+    @objc internal var id: String { return product.id }
 
     // switflint:enable missing_docs
 }
@@ -231,6 +210,10 @@ internal protocol StoreProductType: Sendable {
     /// and will be nil when the billing plan is upFront or when the billing plan is not specified.
     @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
     var installmentsInfo: InstallmentsInfo? { get }
+
+    /// If the product has a billing plan associated with it, this will be "{productIdentifier}:{billingPlanType}".
+    /// Otherwise, it will be "{productIdentifier}"
+    var id: String { get }
 }
 
 public extension StoreProduct {

@@ -165,6 +165,7 @@ extension TestStoreProduct: StoreProductType {
         }
     }
 
+    internal var id: String { return self.productIdentifier }
 }
 
 extension TestStoreProduct {

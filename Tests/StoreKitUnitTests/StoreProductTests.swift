@@ -555,43 +555,43 @@ class StoreProductTests: StoreKitConfigTestCase {
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 extension StoreProductTests {
 
-    func testCompoundProductIdentifierReturnsProductIdentifierForSK1Product() {
+    func testIdReturnsProductIdentifierForSK1Product() {
         let productIdentifier = "com.revenuecat.product"
         let storeProduct = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productIdentifier))
 
-        expect(storeProduct.compoundProductIdentifier) == productIdentifier
+        expect(storeProduct.id) == productIdentifier
     }
 
-    func testCompoundProductIdentifierReturnsProductIdentifierForTestProductWithoutInstallmentsInfo() {
+    func testIdReturnsProductIdentifierForTestProductWithoutInstallmentsInfo() {
         let productIdentifier = "com.revenuecat.product"
         let storeProduct = Self.testProduct(
             productIdentifier: productIdentifier,
             installmentsInfo: nil
         )
 
-        expect(storeProduct.compoundProductIdentifier) == productIdentifier
+        expect(storeProduct.id) == productIdentifier
     }
 
-    func testCompoundProductIdentifierPreservesProductIdentifierWithColonWithoutInstallmentsInfo() {
+    func testIdPreservesProductIdentifierWithColonWithoutInstallmentsInfo() {
         let productIdentifier = "com.revenuecat.product:monthly"
         let storeProduct = Self.testProduct(
             productIdentifier: productIdentifier,
             installmentsInfo: nil
         )
 
-        expect(storeProduct.compoundProductIdentifier) == productIdentifier
+        expect(storeProduct.id) == productIdentifier
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testCompoundProductIdentifierReturnsProductIdentifierForSK2ProductWithoutInstallmentsInfo() async throws {
+    func testIdReturnsProductIdentifierForSK2ProductWithoutInstallmentsInfo() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let storeProduct = try await ProductsFetcherSK2().product(withIdentifier: Self.productID)
 
-        expect(storeProduct.compoundProductIdentifier) == Self.productID
+        expect(storeProduct.id) == Self.productID
     }
 
-    func testCompoundProductIdentifierAddsMonthlyProductPlanIdentifierForMonthlyInstallmentsInfo() throws {
+    func testIdAddsMonthlyProductPlanIdentifierForMonthlyInstallmentsInfo() throws {
         try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
 
         let productIdentifier = "com.revenuecat.product"
@@ -603,10 +603,10 @@ extension StoreProductTests {
             )
         )
 
-        expect(storeProduct.compoundProductIdentifier) == "\(productIdentifier):monthly"
+        expect(storeProduct.id) == "\(productIdentifier):monthly"
     }
 
-    func testCompoundProductIdentifierReturnsProductIdentifierForUpFrontInstallmentsInfo() {
+    func testIdReturnsProductIdentifierForUpFrontInstallmentsInfo() {
         let productIdentifier = "com.revenuecat.product"
         let storeProduct = Self.testProduct(
             productIdentifier: productIdentifier,
@@ -616,7 +616,7 @@ extension StoreProductTests {
             )
         )
 
-        expect(storeProduct.compoundProductIdentifier) == productIdentifier
+        expect(storeProduct.id) == productIdentifier
     }
 
 }
