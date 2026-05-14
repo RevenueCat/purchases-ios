@@ -116,7 +116,8 @@ struct WorkflowContext {
     /// is absent from the step. As a last resort (workflow has no `singleStepFallbackId`), returns
     /// the step's own authored default from `isSelectedByDefault`.
     func effectivePackageContext(for stepId: String, preferring preferredPackage: Package?) -> WorkflowPackageContext? {
-        guard let base = self.effectivePackageContext(for: stepId) else {
+        let wfContext = self.workflowPackageContext
+        guard let base = self.packageContext(for: stepId) ?? wfContext else {
             return nil
         }
 
@@ -128,7 +129,7 @@ struct WorkflowContext {
             return .init(selectedPackage: preferredPackage, packages: base.packages)
         }
 
-        if let wfDefault = self.workflowPackageContext?.selectedPackage,
+        if let wfDefault = wfContext?.selectedPackage,
            base.packages.contains(where: { $0.identifier == wfDefault.identifier }) {
             return .init(selectedPackage: wfDefault, packages: base.packages)
         }
