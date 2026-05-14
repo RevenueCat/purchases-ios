@@ -2039,6 +2039,11 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
     func testSyncPurchasesSK2UsesStoredLocalTransactionMetadata() async throws {
         for productID in ["stored_product_from_purchase", "stored_product_from_purchase:monthly"] {
+            self.backend.invokedPostReceiptData = false
+            self.backend.invokedPostReceiptDataCount = 0
+            self.backend.invokedPostReceiptDataParameters = nil
+            self.backend.invokedPostReceiptDataParametersList = []
+
             let transaction = try await createTransaction(finished: true)
             self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = transaction
 
