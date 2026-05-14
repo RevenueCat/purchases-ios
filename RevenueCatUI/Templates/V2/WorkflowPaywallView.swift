@@ -309,10 +309,9 @@ struct WorkflowPaywallView: View {
             }
 
             self.startTransition(
-                to: self.renderedPageForStep(
+                to: self.renderedPageForBackNavigation(
                     stepId: previousStep.id,
-                    canNavigateBack: self.navigator.canNavigateBack,
-                    carryForwardPackage: nil
+                    canNavigateBack: self.navigator.canNavigateBack
                 ),
                 direction: .back
             )
@@ -347,7 +346,7 @@ struct WorkflowPaywallView: View {
         }
 
         self.startTransition(
-            to: self.renderedPageForStep(
+            to: self.renderedPageForForwardNavigation(
                 stepId: nextStep.id,
                 canNavigateBack: self.navigator.canNavigateBack,
                 carryForwardPackage: self.transitionState.currentPage?.packageContext.package
@@ -457,7 +456,30 @@ struct WorkflowPaywallView: View {
         )
     }
 
-    private func renderedPageForStep(
+    private func renderedPageForBackNavigation(
+        stepId: String,
+        canNavigateBack: Bool
+    ) -> RenderedPage? {
+        guard let packageContext = self.stepPackageContexts[stepId] else {
+            preconditionFailure("back-navigation target should always be cached")
+        }
+
+        return Self.renderedPage(
+            from: self.context,
+            stepId: stepId,
+            canNavigateBack: canNavigateBack,
+            displayCloseButton: self.displayCloseButton,
+            packageInput: .init(
+                packageContext: packageContext,
+                effectiveWorkflowPackageContext: self.context.effectivePackageContext(
+                    for: stepId,
+                    preferring: packageContext.package
+                )
+            )
+        )
+    }
+
+    private func renderedPageForForwardNavigation(
         stepId: String,
         canNavigateBack: Bool,
         carryForwardPackage: Package?
@@ -466,12 +488,6 @@ struct WorkflowPaywallView: View {
         if let cached = self.stepPackageContexts[stepId] {
             packageContext = cached
         } else {
-            if canNavigateBack {
-                precondition(
-                    self.stepPackageContexts[stepId] != nil,
-                    "back-navigation target should always be cached"
-                )
-            }
             packageContext = Self.buildPackageContext(
                 stepId: stepId,
                 context: self.context,
