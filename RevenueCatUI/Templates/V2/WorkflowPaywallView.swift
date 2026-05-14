@@ -466,6 +466,12 @@ struct WorkflowPaywallView: View {
         if let cached = self.stepPackageContexts[stepId] {
             packageContext = cached
         } else {
+            if canNavigateBack {
+                precondition(
+                    self.stepPackageContexts[stepId] != nil,
+                    "back-navigation target should always be cached"
+                )
+            }
             packageContext = Self.buildPackageContext(
                 stepId: stepId,
                 context: self.context,
