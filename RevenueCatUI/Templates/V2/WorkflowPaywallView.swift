@@ -461,7 +461,13 @@ struct WorkflowPaywallView: View {
         canNavigateBack: Bool
     ) -> RenderedPage? {
         guard let packageContext = self.stepPackageContexts[stepId] else {
-            preconditionFailure("back-navigation target should always be cached")
+            Logger.error(
+                Strings.workflow_paywall_invalid_state(
+                    currentStepId: stepId,
+                    screenId: self.context.workflow.steps[stepId]?.screenId
+                )
+            )
+            return nil
         }
 
         return Self.renderedPage(
