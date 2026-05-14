@@ -1007,13 +1007,3 @@ private extension CustomerInfo {
     }
 
 }
-
-#if !os(tvOS)
-extension ProcessInfo {
-
-    var workflowsEndpointEnabled: Bool {
-        arguments.contains("-EnableWorkflowsEndpoint")
-    }
-
-}
-#endif

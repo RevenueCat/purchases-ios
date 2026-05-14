@@ -9,6 +9,7 @@
 //
 //  WorkflowContext.swift
 
+import Foundation
 @_spi(Internal) import RevenueCat
 
 #if !os(tvOS)
@@ -130,6 +131,15 @@ struct WorkflowContext {
 struct WorkflowPackageContext {
     let selectedPackage: Package
     let packages: [Package]
+}
+
+// Temporary launch-argument gate — remove once workflows are fully released.
+extension ProcessInfo {
+
+    var workflowsEndpointEnabled: Bool {
+        arguments.contains("-EnableWorkflowsEndpoint")
+    }
+
 }
 
 #endif
