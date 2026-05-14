@@ -36,14 +36,14 @@ This plan implements the approved first slice:
 - `RevenueCatUI/Templates/V2/State/PaywallStateKey.swift`  
   Scoped state slot key with dynamic field names generated from override property paths.
 
+- `RevenueCatUI/Templates/V2/State/PaywallStateSlotRegistry.swift`
+  Registers generated fields and expected value kinds so gates cannot replace mutations with invalid key/value pairs.
+
 - `RevenueCatUI/Templates/V2/State/PaywallStateValue.swift`  
   SPI-safe value representation for primitive values, package IDs, and raw JSON-shaped values from override properties.
 
 - `RevenueCatUI/Templates/V2/State/PaywallOverridePropertyKeyBuilder.swift`
   Builds state field names from override `properties` keys and nested property paths.
-
-- `RevenueCatUI/Templates/V2/State/PaywallStateReducerRegistry.swift`
-  Maps one or more raw override properties into direct or derived state mutations, such as deriving an icon URL field from icon-name and formats coding keys.
 
 - `RevenueCatUI/Templates/V2/State/PaywallStateMutation.swift`  
   Mutation, generic change details, phantom-stage proposed/committed change, and proposal resolution model.
@@ -72,7 +72,7 @@ This plan implements the approved first slice:
 - `Tests/RevenueCatUITests/PaywallsV2/PaywallPackageSelectionCoordinatorTests.swift`  
   Root and sheet package selection bridge tests.
 
-- `Tests/APITesters/AllAPITests/SwiftAPITester/PaywallsV2ReactiveStateAPI.swift`
+- `Tests/APITesters/AllAPITests/RevenueCatUISwiftAPITester/PaywallsV2ReactiveStateAPI.swift`
   Swift API tester coverage for the initial `@_spi(Internal) public` state API.
 
 ### Modify
@@ -91,7 +91,7 @@ This plan implements the approved first slice:
 - `Sources/Paywalls/Components/PaywallVideoComponent.swift`
 - `Sources/Paywalls/Components/PaywallCountdownComponent.swift`
 - `Sources/Paywalls/Components/PaywallHeaderComponent.swift`
-  Add `public let id: String` or `public let id: String?` depending on current JSON requirements. Decode and encode `id` without changing the JSON payload shape. In `PaywallTabsComponent.swift`, explicitly update the nested `TabControlComponent`, `TabControlButtonComponent`, and `TabControlToggleComponent` types in addition to `TabsComponent`.
+  Add `public let id: String` to each component model. Decode the JSON `id` as required for server payloads; do not silently generate random IDs. Update direct initializers, tests, and previews to provide explicit deterministic IDs. In `PaywallTabsComponent.swift`, explicitly update the nested `TabControlComponent`, `TabControlButtonComponent`, and `TabControlToggleComponent` types in addition to `TabsComponent`.
 
 - `Sources/Paywalls/Components/Common/ComponentOverrides.swift`
   Preserve raw override `properties` alongside the typed partial component so dynamic state keys can be generated from JSON property names, including future fields not yet represented by a typed partial.
@@ -111,6 +111,9 @@ This plan implements the approved first slice:
 - `RevenueCatUI/Templates/V2/Components/Packages/Package/PackageComponentView.swift`  
   Route package row selection through the state store instead of directly mutating root `PackageContext`.
 
+- `RevenueCatUI/Templates/V2/Components/Tabs/TabsComponentView.swift`
+  Route tab-driven package context changes through the same package selection coordinator so tabs cannot bypass gates/events/state slots.
+
 - `RevenueCatUI/Templates/V2/Components/Root/RootView.swift`
 - `RevenueCatUI/Templates/V2/Components/Button/BottomSheetView.swift`
 - `RevenueCatUI/Templates/V2/Components/Button/ButtonComponentView.swift`  
@@ -118,10 +121,10 @@ This plan implements the approved first slice:
 
 - `RevenueCatUI/Templates/V2/Components/Text/TextComponentViewModel.swift`
 - `RevenueCatUI/Templates/V2/Components/Text/TextComponentView.swift`  
-  Add a first reactive text projection while keeping legacy `styles(...)` as the comparison/fallback path.
+  Add a first reactive text projection and render from committed per-field state with legacy `styles(...)` as initialization/fallback.
 
 - `RevenueCatUI/Templates/V2/WorkflowPaywallView.swift`
-  Audit `PaywallsV2View` construction for workflow pages and pass paywall ID/scope through each rendered page.
+  Add and pass a workflow page/screen identifier into `PaywallsV2View` so `PaywallStateScope.workflowPageID` is meaningful for workflow-rendered paywalls.
 
 - `Sources/Paywalls/Components/PaywallV2CacheWarming.swift`
   Audit traversal after IDs are added. This file walks existing component trees and should not need identity state, but compile it after model initializer changes.
@@ -141,7 +144,6 @@ This plan implements the approved first slice:
 - Create: `RevenueCatUI/Templates/V2/State/PaywallStateKey.swift`
 - Create: `RevenueCatUI/Templates/V2/State/PaywallStateValue.swift`
 - Create: `RevenueCatUI/Templates/V2/State/PaywallOverridePropertyKeyBuilder.swift`
-- Create: `RevenueCatUI/Templates/V2/State/PaywallStateReducerRegistry.swift`
 - Test: `Tests/RevenueCatUITests/PaywallsV2/PaywallComponentIdentityTests.swift`
 
 - [ ] **Step 1: Write identity tests**
@@ -192,6 +194,23 @@ final class PaywallComponentIdentityTests: TestCase {
         XCTAssertEqual(left, right)
     }
 
+    func testSamePaywallAndComponentIDIgnoresTypeMetadata() {
+        let textIdentity = PaywallComponentIdentity(
+            paywallID: "paywall_a",
+            componentID: "component_title",
+            type: "text",
+            name: nil
+        )
+        let wrappedIdentity = PaywallComponentIdentity(
+            paywallID: "paywall_a",
+            componentID: "component_title",
+            type: "stack",
+            name: nil
+        )
+
+        XCTAssertEqual(textIdentity, wrappedIdentity)
+    }
+
     func testRuntimeScopesSeparateSamePaywallRenderedTwice() {
         let identity = PaywallComponentIdentity(
             paywallID: "paywall_a",
@@ -231,20 +250,6 @@ final class PaywallComponentIdentityTests: TestCase {
         )
     }
 
-    func testIconReducerEmitsDerivedIconURLField() {
-        let registry = PaywallStateReducerRegistry()
-        let iconNameKey = PaywallComponent.PartialIconComponent.CodingKeys.iconName.stringValue
-        let formatsKey = PaywallComponent.PartialIconComponent.CodingKeys.formats.stringValue
-
-        XCTAssertEqual(
-            registry.fields(
-                forComponentType: "icon",
-                propertyNames: [iconNameKey, formatsKey]
-            ),
-            Set([.component(iconNameKey), .component(formatsKey), .component("iconURL")])
-        )
-    }
-
 }
 
 #endif
@@ -266,7 +271,6 @@ Create `RevenueCatUI/Templates/V2/State/PaywallStateScope.swift`:
 
 ```swift
 @_spi(Internal) import RevenueCat
-import Combine
 import Foundation
 
 #if !os(tvOS)
@@ -332,14 +336,12 @@ import Foundation
 
     public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.paywallID == rhs.paywallID &&
-            lhs.componentID == rhs.componentID &&
-            lhs.type == rhs.type
+            lhs.componentID == rhs.componentID
     }
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(paywallID)
         hasher.combine(componentID)
-        hasher.combine(type)
     }
 
 }
@@ -432,42 +434,7 @@ struct PaywallOverridePropertyKeyBuilder {
 
 Use the property name exactly as it appears after decoding/serialization. If the model serializes a key as camelCase, use camelCase. If the model serializes a key as snake_case, use snake_case. Do not normalize casing in this builder.
 
-- [ ] **Step 7: Add reducer registry skeleton**
-
-Create `RevenueCatUI/Templates/V2/State/PaywallStateReducerRegistry.swift`:
-
-```swift
-import Foundation
-
-#if !os(tvOS)
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct PaywallStateReducerRegistry {
-
-    private let keyBuilder = PaywallOverridePropertyKeyBuilder()
-
-    func fields(forComponentType componentType: String, propertyNames: Set<String>) -> Set<PaywallStateKey.Field> {
-        var fields = Set(propertyNames.map { self.keyBuilder.field(forPropertyPath: $0) })
-        let iconNameKey = PaywallComponent.PartialIconComponent.CodingKeys.iconName.stringValue
-        let formatsKey = PaywallComponent.PartialIconComponent.CodingKeys.formats.stringValue
-
-        if componentType == PaywallComponent.ComponentType.icon.rawValue,
-           propertyNames.contains(iconNameKey),
-           propertyNames.contains(formatsKey) {
-            fields.insert(.component("iconURL"))
-        }
-
-        return fields
-    }
-
-}
-
-#endif
-```
-
-This registry is the composition point for dynamic behavior. Direct properties emit direct fields, and reducers can compose multiple properties into derived fields without hardcoding a fixed global field list. Reducer inputs should use each component's `CodingKeys` string values instead of duplicated string literals. For example, an icon override with the icon name and formats coding keys emits direct fields for those serialized property names plus a derived `component.iconURL` field.
-
-- [ ] **Step 8: Add `PaywallStateValue`**
+- [ ] **Step 7: Add `PaywallStateValue`**
 
 Create `RevenueCatUI/Templates/V2/State/PaywallStateValue.swift`:
 
@@ -578,7 +545,7 @@ import Foundation
 #endif
 ```
 
-- [ ] **Step 9: Run test to verify it passes**
+- [ ] **Step 8: Run test to verify it passes**
 
 Run:
 
@@ -588,7 +555,7 @@ swift test --filter PaywallComponentIdentityTests
 
 Expected: pass for `PaywallComponentIdentityTests`.
 
-- [ ] **Step 10: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
 git add RevenueCatUI/Templates/V2/State Tests/RevenueCatUITests/PaywallsV2/PaywallComponentIdentityTests.swift
@@ -601,6 +568,7 @@ git commit -m "feat: add paywalls reactive state identity primitives"
 
 **Files:**
 - Create: `RevenueCatUI/Templates/V2/State/PaywallStateMutation.swift`
+- Create: `RevenueCatUI/Templates/V2/State/PaywallStateSlotRegistry.swift`
 - Create: `RevenueCatUI/Templates/V2/State/PaywallStateStore.swift`
 - Test: `Tests/RevenueCatUITests/PaywallsV2/PaywallStateStoreTests.swift`
 
@@ -633,6 +601,24 @@ final class PaywallStateStoreTests: TestCase {
         XCTAssertEqual(events.first?.oldValue, .bool(true))
         XCTAssertEqual(events.first?.newValue, .bool(false))
         XCTAssertEqual((events.first?.details as? TestStateChangeDetails)?.source, "test")
+    }
+
+    func testRejectsReplacementWithWrongValueKind() {
+        let key = Self.makeKey(field: .component("visible"))
+        var registry = PaywallStateSlotRegistry()
+        registry.register(key, kind: .bool)
+        let store = PaywallStateStore(initialValues: [key: .bool(true)], slotRegistry: registry)
+        let handler = PaywallStateMutationHandler { proposal in
+            proposal.replace(with: .init(key: key, value: .string("not a bool")))
+        }
+
+        store.request(
+            .init(key: key, value: .bool(false)),
+            details: TestStateChangeDetails(source: "test"),
+            mutationHandler: handler
+        )
+
+        XCTAssertEqual(store.value(for: key), .bool(true))
     }
 
     func testGateCanRejectMutation() {
@@ -865,7 +851,57 @@ import Foundation
 #endif
 ```
 
-- [ ] **Step 4: Add state store**
+- [ ] **Step 4: Add slot registry**
+
+Create `RevenueCatUI/Templates/V2/State/PaywallStateSlotRegistry.swift`:
+
+```swift
+import Foundation
+
+#if !os(tvOS)
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct PaywallStateSlotRegistry {
+
+    enum ValueKind {
+        case anyJSON
+        case string
+        case bool
+        case packageID
+    }
+
+    private var expectedKinds: [PaywallStateKey: ValueKind] = [:]
+    private let acceptsUnknownKeys: Bool
+
+    static let acceptingAllForTests = PaywallStateSlotRegistry(acceptsUnknownKeys: true)
+
+    init(acceptsUnknownKeys: Bool = false) {
+        self.acceptsUnknownKeys = acceptsUnknownKeys
+    }
+
+    mutating func register(_ key: PaywallStateKey, kind: ValueKind) {
+        self.expectedKinds[key] = kind
+    }
+
+    func accepts(_ mutation: PaywallStateMutation) -> Bool {
+        guard let kind = self.expectedKinds[mutation.key] else { return self.acceptsUnknownKeys }
+        switch (kind, mutation.value) {
+        case (.anyJSON, .some(.json)), (.string, .some(.string)), (.bool, .some(.bool)),
+             (.packageID, .some(.packageID)), (_, .none):
+            return true
+        default:
+            return false
+        }
+    }
+
+}
+
+#endif
+```
+
+The store should consult this registry before committing accepted or replacement mutations. Replacements targeting unknown fields or using the wrong value kind should be rejected with diagnostics.
+
+- [ ] **Step 5: Add state store**
 
 Create `RevenueCatUI/Templates/V2/State/PaywallStateStore.swift`:
 
@@ -879,6 +915,8 @@ import Foundation
 final class PaywallStateStore: ObservableObject {
 
     private let lock = NSLock()
+    private let eventQueue = DispatchQueue(label: "com.revenuecat.paywalls.state.events")
+    private let slotRegistry: PaywallStateSlotRegistry
     private var values: [PaywallStateKey: PaywallStateValue?]
     private var subjects: [PaywallStateKey: CurrentValueSubject<PaywallStateValue?, Never>]
     private let resolvedEventsSubject = PassthroughSubject<
@@ -886,7 +924,11 @@ final class PaywallStateStore: ObservableObject {
         Never
     >()
 
-    init(initialValues: [PaywallStateKey: PaywallStateValue?] = [:]) {
+    init(
+        initialValues: [PaywallStateKey: PaywallStateValue?] = [:],
+        slotRegistry: PaywallStateSlotRegistry = .acceptingAllForTests
+    ) {
+        self.slotRegistry = slotRegistry
         self.values = initialValues
         self.subjects = initialValues.mapValues { CurrentValueSubject<PaywallStateValue?, Never>($0) }
     }
@@ -936,6 +978,10 @@ final class PaywallStateStore: ObservableObject {
     }
 
     private func commit(_ mutation: PaywallStateMutation, details: (any PaywallStateChange.Details)?) {
+        guard self.slotRegistry.accepts(mutation) else {
+            Logger.warning(Strings.paywall_state_invalid_mutation)
+            return
+        }
         let result: (
             subject: CurrentValueSubject<PaywallStateValue?, Never>,
             change: PaywallStateChange.Event<PaywallStateChange.Committed>
@@ -955,9 +1001,12 @@ final class PaywallStateStore: ObservableObject {
         }
 
         guard let result else { return }
-        // Publish outside the lock so subscribers cannot re-enter while state is locked.
-        result.subject.send(mutation.value)
-        self.resolvedEventsSubject.send(result.change)
+        // Publish outside the lock and through a serial queue so concurrent async gate
+        // resolutions cannot call Combine send concurrently.
+        self.eventQueue.async {
+            result.subject.send(mutation.value)
+            self.resolvedEventsSubject.send(result.change)
+        }
     }
 
     private func subject(for key: PaywallStateKey) -> CurrentValueSubject<PaywallStateValue?, Never> {
@@ -980,7 +1029,7 @@ final class PaywallStateStore: ObservableObject {
 #endif
 ```
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [ ] **Step 6: Run tests to verify they pass**
 
 Run:
 
@@ -990,7 +1039,7 @@ swift test --filter PaywallStateStoreTests
 
 Expected: pass for `PaywallStateStoreTests`.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add RevenueCatUI/Templates/V2/State Tests/RevenueCatUITests/PaywallsV2/PaywallStateStoreTests.swift
@@ -1035,6 +1084,10 @@ private struct PaywallStateChangeObserverKey: EnvironmentKey {
     static let defaultValue: (@Sendable (PaywallStateChange.Event<PaywallStateChange.Committed>) -> Void)? = nil
 }
 
+private struct PaywallStateScopeKey: EnvironmentKey {
+    static let defaultValue: PaywallStateScope? = nil
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension EnvironmentValues {
     var paywallStateStore: PaywallStateStore? {
@@ -1050,6 +1103,11 @@ extension EnvironmentValues {
     var paywallStateChangeObserver: (@Sendable (PaywallStateChange.Event<PaywallStateChange.Committed>) -> Void)? {
         get { self[PaywallStateChangeObserverKey.self] }
         set { self[PaywallStateChangeObserverKey.self] = newValue }
+    }
+
+    var paywallStateScope: PaywallStateScope? {
+        get { self[PaywallStateScopeKey.self] }
+        set { self[PaywallStateScopeKey.self] = newValue }
     }
 }
 
@@ -1071,19 +1129,50 @@ import SwiftUI
     func onPaywallStateChange(
         _ action: @escaping @Sendable (PaywallStateChange.Event<PaywallStateChange.Committed>) -> Void
     ) -> some View {
-        self.environment(\.paywallStateChangeObserver, action)
+        self.modifier(PaywallStateChangeObserverModifier(action: action))
     }
 
     func onPaywallStateMutation(
         _ action: @escaping @Sendable (PaywallStateMutationProposal) -> Void
     ) -> some View {
-        self.environment(\.paywallStateMutationHandler, PaywallStateMutationHandler(action: action))
+        self.modifier(PaywallStateMutationHandlerModifier(action: action))
     }
 
 }
 
+private struct PaywallStateChangeObserverModifier: ViewModifier {
+    @Environment(\.paywallStateChangeObserver) private var existing
+
+    let action: @Sendable (PaywallStateChange.Event<PaywallStateChange.Committed>) -> Void
+
+    func body(content: Content) -> some View {
+        content.environment(\.paywallStateChangeObserver) { change in
+            self.existing?(change)
+            self.action(change)
+        }
+    }
+}
+
+private struct PaywallStateMutationHandlerModifier: ViewModifier {
+    @Environment(\.paywallStateMutationHandler) private var existing
+
+    let action: @Sendable (PaywallStateMutationProposal) -> Void
+
+    func body(content: Content) -> some View {
+        content.environment(\.paywallStateMutationHandler, PaywallStateMutationHandler { proposal in
+            if let existing {
+                existing(proposal)
+            } else {
+                self.action(proposal)
+            }
+        })
+    }
+}
+
 #endif
 ```
+
+Change observers compose by calling existing observer first and then the new observer. Mutation handlers do not both receive the same proposal because a proposal can resolve once; if an existing handler is present, it owns the proposal. Add tests that document this behavior for multiple modifiers.
 
 - [ ] **Step 4: Inject store in `PaywallsV2View`**
 
@@ -1092,19 +1181,29 @@ Modify `PaywallsV2View`:
 ```swift
 @StateObject
 private var paywallStateStore: PaywallStateStore
+private let paywallStateScope: PaywallStateScope
 ```
 
-In `init`, create:
+In `init`, create the store and scope. Add `workflowPageID: String? = nil` and `paywallStateStore: PaywallStateStore? = nil` to `PaywallsV2View.init`, and pass the workflow screen/page ID from `WorkflowPaywallView.pageView(for:)`.
 
 ```swift
-let paywallStateStore = PaywallStateStore()
+let paywallStateStore = paywallStateStore ?? PaywallStateStore()
 self._paywallStateStore = .init(wrappedValue: paywallStateStore)
+self.paywallStateScope = PaywallStateScope(
+    paywallID: paywallComponents.data.id,
+    offeringIdentifier: offering.identifier,
+    paywallRevision: paywallComponents.data.revision,
+    workflowPageID: workflowPageID
+)
 ```
+
+Accepting an optional store in the initializer lets workflows or tests run multiple paywall scopes through a shared state pipeline. The view still creates its own store when no store is supplied.
 
 In `loadedPaywallView(paywallState:)`, add:
 
 ```swift
 .environment(\.paywallStateStore, self.paywallStateStore)
+.environment(\.paywallStateScope, self.paywallStateScope)
 .onReceive(self.paywallStateStore.resolvedEvents) { change in
     self.paywallStateChangeObserver?(change)
 }
@@ -1355,7 +1454,12 @@ struct PresentedOverride<T: PresentedPartial> {
 }
 ```
 
-In `toPresentedOverrides(...)`, pass `partial.rawProperties` into `PresentedOverride`. Add a test with an icon override containing color, formats, and icon-name properties built from `PaywallComponent.PartialIconComponent.CodingKeys`, and assert both `ComponentOverride.rawProperties.keys` and the corresponding `PresentedOverride.rawProperties.keys` include those serialized JSON property names.
+In `toPresentedOverrides(...)`, pass `partial.rawProperties` into `PresentedOverride`. Add tests that prove:
+
+- an icon override containing color, formats, and icon-name properties built from `PaywallComponent.PartialIconComponent.CodingKeys` preserves those serialized JSON property names in both `ComponentOverride.rawProperties.keys` and `PresentedOverride.rawProperties.keys`
+- unknown override keys survive typed partial decoding
+- nested object and array values decode into exact `PaywallComponentPropertyValue` values
+- raw property values can be converted into `PaywallStateValue.json`
 
 - [ ] **Step 5: Audit construction and traversal call sites**
 
@@ -1444,6 +1548,7 @@ func testTextViewModelReceivesPaywallComponentIdentity() throws {
     XCTAssertEqual(textViewModel.identity.componentID, "text_component")
     XCTAssertEqual(textViewModel.identity.paywallID, "paywall_a")
 }
+
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -1704,6 +1809,35 @@ final class PaywallPackageSelectionCoordinatorTests: TestCase {
         XCTAssertEqual(context.package?.identifier, monthly.identifier)
     }
 
+    func testReplacementRootSelectionCommitsReplacementToPackageContext() {
+        let monthly = TestData.monthlyPackage
+        let annual = TestData.annualPackage
+        let context = PackageContext(package: monthly, variableContext: .init(packages: [monthly, annual]))
+        let store = PaywallStateStore()
+        let handler = PaywallStateMutationHandler { proposal in
+            proposal.replace(
+                with: .init(
+                    key: proposal.change.key,
+                    value: .packageID(monthly.identifier)
+                )
+            )
+        }
+        let coordinator = PaywallPackageSelectionCoordinator(
+            scope: Self.scope,
+            store: store,
+            mutationHandler: handler,
+            packageContext: context,
+            packages: [monthly, annual],
+            defaultPackage: monthly,
+            currentWorkflowSelectedPackage: { nil }
+        )
+
+        coordinator.selectRootPackage(annual, sourceComponent: Self.packageIdentity)
+
+        XCTAssertEqual(context.package?.identifier, monthly.identifier)
+        XCTAssertEqual(store.value(for: .paywall(scope: Self.scope, field: .rootSelectedPackageID)), .packageID(monthly.identifier))
+    }
+
     func testSheetDismissRestoresDefaultPackage() {
         let monthly = TestData.monthlyPackage
         let annual = TestData.annualPackage
@@ -1893,7 +2027,9 @@ final class PaywallPackageSelectionCoordinator: ObservableObject {
     private func observeCommittedSelectionChanges() {
         self.store.resolvedEvents
             .sink { [weak self] change in
-                self?.handleCommittedSelectionChange(change)
+                Task { @MainActor [weak self] in
+                    self?.handleCommittedSelectionChange(change)
+                }
             }
             .store(in: &self.cancellables)
     }
@@ -2034,6 +2170,8 @@ if let activeSheetComponentID {
 
 Keep `componentInteractionLogger` behavior before the state request.
 
+Also update `TabsComponentView` package selection paths so tab initial selection, tab switching, tab package updates, and parent package updates go through `PaywallPackageSelectionCoordinator` instead of calling `PackageContext.update(...)` directly. Add a test that selects a package through tabs and verifies the same gate/event/state behavior as package rows.
+
 - [ ] **Step 6: Add active sheet environment**
 
 In `BottomSheetView.swift`, add an environment key:
@@ -2088,8 +2226,54 @@ git commit -m "feat: route paywalls package selection through state"
 **Files:**
 - Modify: `RevenueCatUI/Templates/V2/Components/Text/TextComponentViewModel.swift`
 - Modify: `RevenueCatUI/Templates/V2/Components/Text/TextComponentView.swift`
-- Modify: `RevenueCatUI/Templates/V2/State/PaywallStateReducerRegistry.swift`
 - Test: `Tests/RevenueCatUITests/PaywallsV2/TextComponentLocalizationTests.swift`
+
+- [ ] **Step 0: Add committed-state rendering test**
+
+Add a test that proves the first text slice actually renders from committed field state, not only from locally recomputed style:
+
+```swift
+@MainActor
+func testTextViewRendersCommittedTextStateAfterGateReplacement() throws {
+    let scope = PaywallStateScope(
+        paywallID: "paywall_a",
+        offeringIdentifier: "default",
+        paywallRevision: 1,
+        workflowPageID: nil
+    )
+    let store = PaywallStateStore()
+    let textComponent = PaywallComponent.TextComponent(
+        id: "text_a",
+        text: "base_lid",
+        color: Self.black
+    )
+    let viewModel = try TextComponentViewModel(
+        identity: .init(paywallID: "paywall_a", componentID: "text_a", type: "text", name: nil),
+        localizationProvider: .init(locale: .current, localizedStrings: ["base_lid": .string("Base")]),
+        uiConfigProvider: try Self.createUIConfigProvider(),
+        component: textComponent
+    )
+    let textKey = PaywallStateKey(scope: scope, component: viewModel.identity, field: .component("text"))
+
+    store.request(
+        .init(key: textKey, value: .string("Replaced")),
+        details: PaywallComponentProjectionDetails(componentID: "text_a")
+    )
+
+    let view = TextComponentView(viewModel: viewModel)
+        .environment(\.paywallStateStore, store)
+        .environment(\.paywallStateScope, scope)
+        .previewRequiredPaywallsV2Properties()
+
+    let (window, hostedView) = Self.host(view)
+    defer {
+        window.isHidden = true
+        window.rootViewController = nil
+    }
+
+    XCTAssertTrue(hostedView.containsText("Replaced"))
+}
+```
 
 - [ ] **Step 1: Add projection equivalence test**
 
@@ -2243,7 +2427,7 @@ struct ProjectedTextComponentStyle {
 
 Then make legacy `styles(...)` call `projectedStyle(...).style`.
 
-The important behavior is that the state mutations are generated from override properties, not a hardcoded text field list. Use `PresentedOverride.rawProperties.keys` and `PaywallOverridePropertyKeyBuilder` to decide which fields changed. If the selected override contains `{ "properties": { "visible": false } }`, emit `component.visible`. If it contains `{ "properties": { "text": "..." } }`, emit `component.text`. For icon components, the reducer registry should use the icon-name and formats coding keys to emit the derived icon URL field. Base fields can emit the same dynamic keys during initial projection.
+The important behavior is that the state mutations are generated from override properties, not a hardcoded text field list. Use `PresentedOverride.rawProperties.keys` and `PaywallOverridePropertyKeyBuilder` to decide which fields changed. If the selected override contains `{ "properties": { "visible": false } }`, emit `component.visible`. If it contains `{ "properties": { "text": "..." } }`, emit `component.text`. Base fields can emit the same dynamic keys during initial projection.
 
 - [ ] **Step 4: Commit projected values into the state store**
 
@@ -2253,20 +2437,27 @@ In `TextComponentView`, read store:
 @Environment(\.paywallStateStore)
 private var paywallStateStore
 
+@Environment(\.paywallStateScope)
+private var paywallStateScope
+
 @Environment(\.paywallStateMutationHandler)
 private var paywallStateMutationHandler
 ```
 
-Do not write to the state store while constructing `body`. Compute the style for rendering, then publish the projected fields from `.onAppear` and `.onChange(of:)` / `.task(id:)` keyed by the same inputs that feed `projectedStyle(...)`.
+Do not write to the state store while constructing `body`. Compute the style for initialization/fallback, then render text fields from committed state publishers. Publish projected fields from `.onAppear` and `.onChange(of:)` / `.task(id:)` keyed by the same inputs that feed `projectedStyle(...)`.
 
 ```swift
 let projection = viewModel.projectedStyle(...)
-render(projection.style)
+let renderedText = committedText ?? projection.style.text
+render(projection.style.replacing(text: renderedText))
     .onAppear {
         self.publishProjectedText(projection)
     }
     .onChangeOf(projection.style.text) { _ in
         self.publishProjectedText(projection)
+    }
+    .onReceive(textPublisher(for: projection)) { value in
+        self.committedText = value?.stringValue
     }
 ```
 
@@ -2274,7 +2465,7 @@ Add a helper:
 
 ```swift
 private func publishProjectedText(_ projection: ProjectedTextComponentStyle) {
-    guard let paywallStateStore else { return }
+    guard let paywallStateStore, let paywallStateScope else { return }
     for mutation in projection.stateMutations {
         paywallStateStore.request(
             mutation,
@@ -2283,9 +2474,17 @@ private func publishProjectedText(_ projection: ProjectedTextComponentStyle) {
         )
     }
 }
+
+private func textPublisher(for projection: ProjectedTextComponentStyle) -> AnyPublisher<PaywallStateValue?, Never> {
+    guard let paywallStateStore, let paywallStateScope else {
+        return Just(nil).eraseToAnyPublisher()
+    }
+    let key = PaywallStateKey(scope: paywallStateScope, component: viewModel.identity, field: .component("text"))
+    return paywallStateStore.publisher(for: key)
+}
 ```
 
-Keep rendering from `style` in this task. Observing the projected fields directly can be a subsequent migration once equivalence is covered.
+Render from committed per-field state when available, with `projection.style` as the initialization/fallback path. Repeat the same pattern for the first text fields in scope: visible, text, color, font weight, padding, and margin.
 
 - [ ] **Step 5: Run targeted tests**
 
@@ -2312,7 +2511,7 @@ git commit -m "feat: add paywalls text style projection"
 
 - [ ] **Step 1: Add Swift API tester coverage for SPI state APIs**
 
-Create `Tests/APITesters/AllAPITests/SwiftAPITester/PaywallsV2ReactiveStateAPI.swift` and import the SPI surface:
+Create `Tests/APITesters/AllAPITests/RevenueCatUISwiftAPITester/PaywallsV2ReactiveStateAPI.swift` and import the SPI surface:
 
 ```swift
 @_spi(Internal) import RevenueCatUI
@@ -2340,7 +2539,7 @@ private func checkPaywallsV2ReactiveStateAPI() {
 }
 ```
 
-Do not add Objective-C API tester coverage unless implementation introduces `@objc` state types or methods.
+Register this file in `Projects/APITesters/Project.swift` if the target source list does not pick it up automatically. Do not add Objective-C API tester coverage unless implementation introduces `@objc` state types or methods.
 
 - [ ] **Step 2: Run focused Swift tests**
 
