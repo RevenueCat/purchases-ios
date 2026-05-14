@@ -177,8 +177,7 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.promoOfferCache = promoOfferCache
         self.onDismiss = onDismiss
-        let wfPackageContext = context.workflowPackageContext
-        self.workflowPackageContext = wfPackageContext
+        self.workflowPackageContext = context.workflowPackageContext
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
         let initialStepId = context.workflow.initialStepId
         let initialPackageContext = Self.buildPackageContext(
