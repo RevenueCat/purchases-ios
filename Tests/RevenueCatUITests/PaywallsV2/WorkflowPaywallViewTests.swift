@@ -267,29 +267,6 @@ extension WorkflowPaywallViewTests {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowPaywallViewTests {
 
-    /// Guards that `PackageContext` is a reference type.
-    /// `WorkflowPaywallView` stores one `PackageContext` per step in `stepPackageContexts`
-    /// and passes the same instance as `selectedPackageContextOverride` to `PaywallsV2View`.
-    /// Mutations made inside `PaywallsV2View` (user selecting a different package) must be
-    /// visible through the cached reference so that back-then-forward navigation restores the
-    /// user's choice rather than the authored default.
-    /// If `PackageContext` is ever refactored to a struct, this test breaks before behaviour does.
-    func testPackageContextMutationsPropagateThroughStepCacheReference() {
-        let ctx = PackageContext(
-            package: TestData.annualPackage,
-            variableContext: .init(packages: [TestData.annualPackage, TestData.monthlyPackage],
-                                   showZeroDecimalPlacePrices: false)
-        )
-        // Simulate what WorkflowPaywallView does: store the instance in the per-step cache.
-        let cache: [String: PackageContext] = ["step_terminal": ctx]
-
-        // Simulate the user selecting a different package (mutation inside PaywallsV2View).
-        ctx.package = TestData.monthlyPackage
-
-        // The cache entry must reflect the mutation — same object, not a copy.
-        expect(cache["step_terminal"]?.package?.identifier) == TestData.monthlyPackage.identifier
-    }
-
     /// Verifies that `buildPackageContext` carries the user's current selection forward when
     /// the preferred package exists in the next step's available packages.
     /// This is the forward-navigation path: user picks annual on step 1, navigates to step 2
@@ -323,6 +300,9 @@ extension WorkflowPaywallViewTests {
     /// Step2 must show monthly (the user's own previous selection), not annual (the new carry-forward).
     /// `WorkflowPaywallView.renderedPageForStep` implements this via the cache-hit path that skips
     /// `buildPackageContext` entirely when the step already has a `PackageContext` in `stepPackageContexts`.
+    ///
+    /// This also guards that `PackageContext` is a reference type: the mutation at line
+    /// `cachedCtx.package = monthly` must be visible through `stepCache` for the cache to work.
     func testCachedStepContextTakesPrecedenceOverCarryForwardOnRevisit() throws {
         let context = try Self.makeContext(
             singleStepFallbackId: "step_terminal",
