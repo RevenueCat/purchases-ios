@@ -24,7 +24,7 @@ public final class BillingPlanType: NSObject, Sendable {
     }
 
     /// String representation of the BillingPlanType.
-    public let rawValue: String
+    @objc public let rawValue: String
 
     /// Pattern matching operator
     public static func ~= (lhs: BillingPlanType, rhs: BillingPlanType) -> Bool {
