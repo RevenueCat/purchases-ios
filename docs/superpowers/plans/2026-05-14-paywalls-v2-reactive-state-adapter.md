@@ -266,6 +266,7 @@ Create `RevenueCatUI/Templates/V2/State/PaywallStateScope.swift`:
 
 ```swift
 @_spi(Internal) import RevenueCat
+import Combine
 import Foundation
 
 #if !os(tvOS)
@@ -878,6 +879,7 @@ import Foundation
 final class PaywallStateStore: ObservableObject {
 
     private let lock = NSLock()
+    private var values: [PaywallStateKey: PaywallStateValue?]
     private var subjects: [PaywallStateKey: CurrentValueSubject<PaywallStateValue?, Never>]
     private let resolvedEventsSubject = PassthroughSubject<
         PaywallStateChange.Event<PaywallStateChange.Committed>,
@@ -885,6 +887,7 @@ final class PaywallStateStore: ObservableObject {
     >()
 
     init(initialValues: [PaywallStateKey: PaywallStateValue?] = [:]) {
+        self.values = initialValues
         self.subjects = initialValues.mapValues { CurrentValueSubject<PaywallStateValue?, Never>($0) }
     }
 
@@ -894,7 +897,7 @@ final class PaywallStateStore: ObservableObject {
 
     func value(for key: PaywallStateKey) -> PaywallStateValue? {
         self.lock.withLock {
-            self.subjects[key]?.value
+            self.values[key] ?? nil
         }
     }
 
@@ -933,29 +936,43 @@ final class PaywallStateStore: ObservableObject {
     }
 
     private func commit(_ mutation: PaywallStateMutation, details: (any PaywallStateChange.Details)?) {
-        let subject = self.subject(for: mutation.key)
-        let oldValue = subject.value
-        guard oldValue != mutation.value else { return }
+        let result: (
+            subject: CurrentValueSubject<PaywallStateValue?, Never>,
+            change: PaywallStateChange.Event<PaywallStateChange.Committed>
+        )? = self.lock.withLock {
+            let oldValue = self.values[mutation.key] ?? nil
+            guard oldValue != mutation.value else { return nil }
 
-        let change = PaywallStateChange.Event<PaywallStateChange.Committed>(
-            key: mutation.key,
-            oldValue: oldValue,
-            newValue: mutation.value,
-            details: details
-        )
-        subject.send(mutation.value)
-        self.resolvedEventsSubject.send(change)
+            self.values[mutation.key] = mutation.value
+            let subject = self.subjectLocked(for: mutation.key)
+            let change = PaywallStateChange.Event<PaywallStateChange.Committed>(
+                key: mutation.key,
+                oldValue: oldValue,
+                newValue: mutation.value,
+                details: details
+            )
+            return (subject, change)
+        }
+
+        guard let result else { return }
+        // Publish outside the lock so subscribers cannot re-enter while state is locked.
+        result.subject.send(mutation.value)
+        self.resolvedEventsSubject.send(result.change)
     }
 
     private func subject(for key: PaywallStateKey) -> CurrentValueSubject<PaywallStateValue?, Never> {
         self.lock.withLock {
-            if let subject = self.subjects[key] {
-                return subject
-            }
-            let subject = CurrentValueSubject<PaywallStateValue?, Never>(nil)
-            self.subjects[key] = subject
+            self.subjectLocked(for: key)
+        }
+    }
+
+    private func subjectLocked(for key: PaywallStateKey) -> CurrentValueSubject<PaywallStateValue?, Never> {
+        if let subject = self.subjects[key] {
             return subject
         }
+        let subject = CurrentValueSubject<PaywallStateValue?, Never>(self.values[key] ?? nil)
+        self.subjects[key] = subject
+        return subject
     }
 
 }
@@ -1258,6 +1275,64 @@ Add a small JSON value type or reuse `PaywallStateJSONValue` if it lives in a mo
     }
     @_spi(Internal) public static func array(_ value: [PaywallComponentPropertyValue]) -> PaywallComponentPropertyValue {
         PaywallComponentPropertyValue(.array(value))
+    }
+
+    public init(from decoder: Decoder) throws {
+        if let singleValueContainer = try? decoder.singleValueContainer(),
+           singleValueContainer.decodeNil() {
+            self = .null
+        } else if let bool = try? decoder.singleValueContainer().decode(Bool.self) {
+            self = .bool(bool)
+        } else if let number = try? decoder.singleValueContainer().decode(Double.self) {
+            self = .number(number)
+        } else if let string = try? decoder.singleValueContainer().decode(String.self) {
+            self = .string(string)
+        } else if var unkeyedContainer = try? decoder.unkeyedContainer() {
+            var values: [PaywallComponentPropertyValue] = []
+            while !unkeyedContainer.isAtEnd {
+                values.append(try unkeyedContainer.decode(PaywallComponentPropertyValue.self))
+            }
+            self = .array(values)
+        } else {
+            let keyedContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+            let values = try keyedContainer.allKeys.reduce(into: [String: PaywallComponentPropertyValue]()) { result, key in
+                result[key.stringValue] = try keyedContainer.decode(PaywallComponentPropertyValue.self, forKey: key)
+            }
+            self = .object(values)
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var singleValueContainer = encoder.singleValueContainer()
+        switch self.storage {
+        case .null:
+            try singleValueContainer.encodeNil()
+        case .string(let value):
+            try singleValueContainer.encode(value)
+        case .number(let value):
+            try singleValueContainer.encode(value)
+        case .bool(let value):
+            try singleValueContainer.encode(value)
+        case .array(let value):
+            try singleValueContainer.encode(value)
+        case .object(let value):
+            try singleValueContainer.encode(value)
+        }
+    }
+}
+
+private struct DynamicCodingKey: CodingKey {
+    let stringValue: String
+    let intValue: Int?
+
+    init?(stringValue: String) {
+        self.stringValue = stringValue
+        self.intValue = nil
+    }
+
+    init?(intValue: Int) {
+        self.stringValue = "\(intValue)"
+        self.intValue = intValue
     }
 }
 ```
@@ -1599,7 +1674,8 @@ final class PaywallPackageSelectionCoordinatorTests: TestCase {
             mutationHandler: nil,
             packageContext: context,
             packages: [monthly, annual],
-            defaultPackage: monthly
+            defaultPackage: monthly,
+            currentWorkflowSelectedPackage: { nil }
         )
 
         coordinator.selectRootPackage(annual, sourceComponent: Self.packageIdentity)
@@ -1619,7 +1695,8 @@ final class PaywallPackageSelectionCoordinatorTests: TestCase {
             mutationHandler: handler,
             packageContext: context,
             packages: [monthly, annual],
-            defaultPackage: monthly
+            defaultPackage: monthly,
+            currentWorkflowSelectedPackage: { nil }
         )
 
         coordinator.selectRootPackage(annual, sourceComponent: Self.packageIdentity)
@@ -1638,7 +1715,8 @@ final class PaywallPackageSelectionCoordinatorTests: TestCase {
             mutationHandler: nil,
             packageContext: context,
             packages: [monthly, annual],
-            defaultPackage: monthly
+            defaultPackage: monthly,
+            currentWorkflowSelectedPackage: { nil }
         )
 
         coordinator.selectSheetPackage(annual, sheetComponentID: "sheet_a", sourceComponent: Self.packageIdentity)
@@ -1648,6 +1726,28 @@ final class PaywallPackageSelectionCoordinatorTests: TestCase {
         XCTAssertEqual(context.package?.identifier, monthly.identifier)
         let sheetKey = PaywallStateKey.paywall(scope: Self.scope, field: .sheetSelectedPackageID(componentID: "sheet_a"))
         XCTAssertNil(store.value(for: sheetKey))
+    }
+
+    func testSheetDismissUsesCurrentWorkflowPackageAtDismissalTime() {
+        let monthly = TestData.monthlyPackage
+        let annual = TestData.annualPackage
+        var workflowSelectedPackage: Package? = monthly
+        let context = PackageContext(package: monthly, variableContext: .init(packages: [monthly, annual]))
+        let coordinator = PaywallPackageSelectionCoordinator(
+            scope: Self.scope,
+            store: PaywallStateStore(),
+            mutationHandler: nil,
+            packageContext: context,
+            packages: [monthly, annual],
+            defaultPackage: monthly,
+            currentWorkflowSelectedPackage: { workflowSelectedPackage }
+        )
+
+        coordinator.selectSheetPackage(monthly, sheetComponentID: "sheet_a", sourceComponent: Self.packageIdentity)
+        workflowSelectedPackage = annual
+        coordinator.restoreRootSelectionAfterSheetDismiss()
+
+        XCTAssertEqual(context.package?.identifier, annual.identifier)
     }
 
     func testCopiedPaywallInstancesDoNotSharePackageSelection() {
@@ -1664,7 +1764,8 @@ final class PaywallPackageSelectionCoordinatorTests: TestCase {
             mutationHandler: nil,
             packageContext: firstContext,
             packages: [monthly, annual],
-            defaultPackage: monthly
+            defaultPackage: monthly,
+            currentWorkflowSelectedPackage: { nil }
         )
         let copiedScope = Self.scope(paywallID: "paywall_copy")
         let secondCoordinator = PaywallPackageSelectionCoordinator(
@@ -1673,7 +1774,8 @@ final class PaywallPackageSelectionCoordinatorTests: TestCase {
             mutationHandler: nil,
             packageContext: secondContext,
             packages: [monthly, annual],
-            defaultPackage: monthly
+            defaultPackage: monthly,
+            currentWorkflowSelectedPackage: { nil }
         )
         let originalIdentity = Self.packageIdentity(paywallID: "paywall_original", componentID: copiedComponentID)
         let copiedIdentity = Self.packageIdentity(paywallID: "paywall_copy", componentID: copiedComponentID)
@@ -1752,7 +1854,8 @@ struct PaywallPackageSelectionDetails: PaywallStateChange.Details {
     let reason: String?
 }
 
-Details must remain plain `Sendable` values without actor isolation. Apply `@MainActor` to the side-effect coordinator that mutates `PackageContext`, not to the detail payload.
+// Details must remain plain Sendable values without actor isolation.
+// Apply @MainActor to the side-effect coordinator that mutates PackageContext.
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
@@ -1764,7 +1867,9 @@ final class PaywallPackageSelectionCoordinator: ObservableObject {
     private let packageContext: PackageContext
     private let packagesByID: [String: Package]
     private let defaultPackage: Package?
+    private let currentWorkflowSelectedPackage: () -> Package?
     private var activeSheetComponentID: String?
+    private var cancellables: Set<AnyCancellable> = []
 
     init(
         scope: PaywallStateScope,
@@ -1772,7 +1877,8 @@ final class PaywallPackageSelectionCoordinator: ObservableObject {
         mutationHandler: PaywallStateMutationHandler?,
         packageContext: PackageContext,
         packages: [Package],
-        defaultPackage: Package?
+        defaultPackage: Package?,
+        currentWorkflowSelectedPackage: @escaping () -> Package?
     ) {
         self.scope = scope
         self.store = store
@@ -1780,6 +1886,36 @@ final class PaywallPackageSelectionCoordinator: ObservableObject {
         self.packageContext = packageContext
         self.packagesByID = Dictionary(uniqueKeysWithValues: packages.map { ($0.identifier, $0) })
         self.defaultPackage = defaultPackage
+        self.currentWorkflowSelectedPackage = currentWorkflowSelectedPackage
+        self.observeCommittedSelectionChanges()
+    }
+
+    private func observeCommittedSelectionChanges() {
+        self.store.resolvedEvents
+            .sink { [weak self] change in
+                self?.handleCommittedSelectionChange(change)
+            }
+            .store(in: &self.cancellables)
+    }
+
+    private func handleCommittedSelectionChange(
+        _ change: PaywallStateChange.Event<PaywallStateChange.Committed>
+    ) {
+        guard change.key.scope == self.scope else { return }
+
+        if change.key.field == .rootSelectedPackageID, self.activeSheetComponentID == nil {
+            self.updatePackageContext(packageID: change.newValue?.packageID)
+        } else if let activeSheetComponentID,
+                  change.key.field == .sheetSelectedPackageID(componentID: activeSheetComponentID) {
+            self.updatePackageContext(packageID: change.newValue?.packageID)
+        }
+    }
+
+    private func updatePackageContext(packageID: String?) {
+        self.packageContext.update(
+            package: packageID.flatMap { self.packagesByID[$0] } ?? self.currentWorkflowSelectedPackage() ?? self.defaultPackage,
+            variableContext: self.packageContext.variableContext
+        )
     }
 
     func selectRootPackage(_ package: Package, sourceComponent: PaywallComponentIdentity) {
@@ -1823,12 +1959,8 @@ final class PaywallPackageSelectionCoordinator: ObservableObject {
                 mutationHandler: self.mutationHandler
             )
         }
-        let rootKey = PaywallStateKey.paywall(scope: self.scope, field: .rootSelectedPackageID)
-        let rootPackageID = self.store.value(for: rootKey)?.packageID
-        self.packageContext.update(
-            package: rootPackageID.flatMap { self.packagesByID[$0] } ?? self.defaultPackage,
-            variableContext: self.packageContext.variableContext
-        )
+        let rootPackageID = self.store.value(for: .paywall(scope: self.scope, field: .rootSelectedPackageID))?.packageID
+        self.updatePackageContext(packageID: rootPackageID)
     }
 
     private func request(
@@ -1847,12 +1979,6 @@ final class PaywallPackageSelectionCoordinator: ObservableObject {
             ),
             mutationHandler: self.mutationHandler
         )
-        if self.store.value(for: key)?.packageID == packageID {
-            self.packageContext.update(
-                package: self.packagesByID[packageID],
-                variableContext: self.packageContext.variableContext
-            )
-        }
     }
 
 }

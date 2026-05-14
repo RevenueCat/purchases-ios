@@ -147,6 +147,7 @@ Important implementation rules:
 - If a proposal is replaced with a different key, compute the replacement old value from the replacement key.
 - A proposal can resolve only once.
 - Default behavior accepts mutations immediately.
+- Keep canonical state values under a lock and update them atomically before publishing through Combine subjects. `CurrentValueSubject` is not the synchronization primitive.
 - Model proposed and committed changes with a phantom stage type under a `PaywallStateChange` namespace: `PaywallStateChange.Event<PaywallStateChange.Proposed>` for gates and `PaywallStateChange.Event<PaywallStateChange.Committed>` for resolved events.
 - Keep change details generic. `PaywallStateChange.Details` should be a protocol, and reducers can opt in by casting to the concrete details type they understand, instead of expanding one catch-all details struct for every future source.
 - Keep details as plain `Sendable` values without actor isolation. Apply `@MainActor` to side-effect coordinators that mutate UI-facing objects, not to detail payloads.
@@ -211,7 +212,7 @@ Suggested package selection keys:
 - `paywall.root_selected_package_id`
 - `paywall.sheet[componentID].selected_package_id`
 
-When a sheet is visible, sheet content should read and write the sheet-scoped selected package slot. When the sheet is dismissed, the active package context switches back to the root selected package, using the same workflow/default restoration rule that `RootView` uses today. Sheet selection proposals should include the sheet component ID in their details so apps can observe or gate them separately from root package selection.
+When a sheet is visible, sheet content should read and write the sheet-scoped selected package slot. When the sheet is dismissed, the active package context switches back to the root selected package, using the same workflow/default restoration rule that `RootView` uses today. The coordinator must query the current workflow selected package at dismissal time instead of capturing a potentially stale default at initialization. Sheet selection proposals should include the sheet component ID in their details so apps can observe or gate them separately from root package selection.
 
 #### Derived field projection
 
