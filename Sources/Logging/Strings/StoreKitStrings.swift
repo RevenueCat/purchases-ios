@@ -117,8 +117,6 @@ enum StoreKitStrings {
 
     case sk2_applying_billing_plan(billingPlanType: String)
 
-    case sk2_upFront_billing_plan_not_available
-
     case sk2_user_not_eligible_for_billing_plan_at_purchase_time(billingPlanType: String)
 }
 
@@ -298,11 +296,6 @@ extension StoreKitStrings: LogMessage {
 
         case .sk2_applying_billing_plan(let billingPlanType):
             return "Applying billing plan of type \(billingPlanType) to the purchase."
-
-        case .sk2_upFront_billing_plan_not_available:
-            return "The upFront billing plan type does not appear to be available " +
-            "on this product. Not applying a billing plan to the purchase and will " +
-            "let StoreKit purchase the default billing plan."
 
         case .sk2_user_not_eligible_for_billing_plan_at_purchase_time(let billingPlanType):
             return "The user is not eligible for the \(billingPlanType) billing plan and thus " +

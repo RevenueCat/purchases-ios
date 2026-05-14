@@ -792,9 +792,8 @@ final class PurchasesOrchestrator {
             }
             #if compiler(>=6.3.2)
             if #available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *),
-               let subscriptionInfo = sk2Product.subscription { // Don't apply billing plans to OTPs
-
-                let sk2BillingPlanType = billingPlanType?.skBillingPlanType ?? .upFront
+               let subscriptionInfo = sk2Product.subscription, // Don't apply billing plans to OTPs
+               let sk2BillingPlanType = billingPlanType?.skBillingPlanType {
                 let eligibleBillingPlanTypes = Set(subscriptionInfo.pricingTerms.map({ $0.billingPlanType }))
 
                 if eligibleBillingPlanTypes.contains(sk2BillingPlanType) {
@@ -803,19 +802,12 @@ final class PurchasesOrchestrator {
                     )
                     options.insert(.billingPlanType(sk2BillingPlanType))
                 } else {
-                    if case .upFront = sk2BillingPlanType {
-                        // For some reason, the product doesn't have a pricing term with the upFront billing plan type.
-                        // In that case, we just won't apply a billing plan type at all and attempt to purchase
-                        // whatever the product's default is.
-                        Logger.debug(StoreKitStrings.sk2_upFront_billing_plan_not_available)
-                    } else {
-                        Logger.error(
-                            StoreKitStrings.sk2_user_not_eligible_for_billing_plan_at_purchase_time(
-                                billingPlanType: sk2BillingPlanType.rawValue
-                            )
+                    Logger.error(
+                        StoreKitStrings.sk2_user_not_eligible_for_billing_plan_at_purchase_time(
+                            billingPlanType: sk2BillingPlanType.rawValue
                         )
-                        throw ErrorUtils.productNotAvailableForPurchaseError()
-                    }
+                    )
+                    throw ErrorUtils.productNotAvailableForPurchaseError()
                 }
             }
             #endif
