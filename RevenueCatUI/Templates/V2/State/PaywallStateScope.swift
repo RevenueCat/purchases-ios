@@ -12,6 +12,8 @@ import Foundation
 
 #if !os(tvOS)
 
+// swiftlint:disable missing_docs
+
 /// Identifies a single runtime paywall instance for reactive state isolation.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @_spi(Internal) public struct PaywallStateScope: Hashable, Sendable {
@@ -38,5 +40,7 @@ import Foundation
     }
 
 }
+
+// swiftlint:enable missing_docs
 
 #endif

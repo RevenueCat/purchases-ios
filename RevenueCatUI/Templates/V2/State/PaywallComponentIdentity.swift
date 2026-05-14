@@ -12,6 +12,8 @@ import Foundation
 
 #if !os(tvOS)
 
+// swiftlint:disable missing_docs
+
 /// Observable component identity. Type and name are metadata; uniqueness is paywall ID + component ID.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @_spi(Internal) public struct PaywallComponentIdentity: Hashable, Sendable {
@@ -45,5 +47,7 @@ import Foundation
     }
 
 }
+
+// swiftlint:enable missing_docs
 
 #endif

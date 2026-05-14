@@ -8,7 +8,7 @@
 //      https://opensource.org/licenses/MIT
 //
 
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
 #if !os(tvOS)
@@ -96,14 +96,38 @@ final class PaywallComponentIdentityTests: TestCase {
     }
 
     func testComponentFieldCanBeBuiltFromOverridePropertyName() {
+        let builder = PaywallOverridePropertyKeyBuilder()
+
         XCTAssertEqual(
             PaywallStateKey.Field.component("color").rawValue,
             "component.color"
         )
         XCTAssertEqual(
-            PaywallStateKey.Field.component("iconName").rawValue,
+            builder.field(forPropertyPath: "iconName").rawValue,
             "component.iconName"
         )
+        XCTAssertEqual(
+            builder.field(forPropertyPath: "font_weight").rawValue,
+            "component.font_weight"
+        )
+    }
+
+    func testPaywallKeyUsesSyntheticPaywallComponentIdentity() {
+        let scope = PaywallStateScope(
+            instanceID: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+            paywallID: "paywall_a",
+            offeringIdentifier: "default",
+            paywallRevision: 7,
+            workflowPageID: nil
+        )
+
+        let key = PaywallStateKey.paywall(scope: scope, field: .rootSelectedPackageID)
+
+        XCTAssertEqual(key.scope, scope)
+        XCTAssertEqual(key.field, .rootSelectedPackageID)
+        XCTAssertEqual(key.component.paywallID, "paywall_a")
+        XCTAssertEqual(key.component.componentID, "paywall")
+        XCTAssertEqual(key.component.type, "paywall")
     }
 
 }

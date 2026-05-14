@@ -12,6 +12,8 @@ import Foundation
 
 #if !os(tvOS)
 
+// swiftlint:disable missing_docs
+
 /// Fully-scoped key for a single paywall state slot.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @_spi(Internal) public struct PaywallStateKey: Hashable, Sendable {
@@ -71,5 +73,7 @@ import Foundation
     }
 
 }
+
+// swiftlint:enable missing_docs
 
 #endif
