@@ -81,7 +81,7 @@ final class PaywallComponentIdentityFactory {
         // are stable across renders; modern payloads should use backend-provided component ids.
         let next = (self.legacyFallbackCounters[type] ?? 0) + 1
         self.legacyFallbackCounters[type] = next
-        return "legacy_\(type.rawValue)_\(next)"
+        return "$revenuecat_legacy_missing_id$\(type.rawValue)$\(next)"
     }
 
 }

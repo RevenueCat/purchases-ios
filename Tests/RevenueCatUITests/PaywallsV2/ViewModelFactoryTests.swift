@@ -61,6 +61,34 @@ class ViewModelFactoryTests: TestCase {
         )))
     }
 
+    @MainActor
+    func testLegacyMissingComponentIDUsesReservedFallbackPrefix() throws {
+        let text = PaywallComponent.TextComponent(
+            name: "Headline",
+            text: "headline_lid",
+            color: Self.black
+        )
+
+        let factory = ViewModelFactory(paywallID: "paywall_123")
+        let viewModel = try factory.toViewModel(
+            component: .text(text),
+            packageValidator: factory.packageValidator,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "headline_lid": .string("Headline")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        guard case .text(let textViewModel) = viewModel else {
+            fail("Expected text view model")
+            return
+        }
+
+        expect(textViewModel.identity.componentID).to(equal("$revenuecat_legacy_missing_id$text$1"))
+    }
+
     // MARK: - Unsupported Condition Tests
 
     @MainActor
