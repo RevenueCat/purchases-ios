@@ -766,16 +766,21 @@ flowchart LR
     </section>
 
     <section>
-      <h2>9. Animated overrides: useful, but coarse-grained</h2>
+      <h2>9. Two paths for animation</h2>
       <p>
-        Once overrides are treated as state projections, an override can also describe how the transition
-        into those projected values should happen. That opens the door to smooth package selection,
-        eligibility, or personalization changes without inventing a separate animation system for every
-        component.
+        Animation can be introduced in two ways. The first is pragmatic and fast: keep using overrides,
+        and treat animation as part of the matched override. The second is more ambitious: evolve the JSON
+        toward explicit paywall state, where components define anonymous rules that reference named global
+        state values.
       </p>
+
       <div class="two-col">
         <div>
-          <h3>A possible shape</h3>
+          <h3>Option 1: animate override groups</h3>
+          <p>
+            This path keeps the current override model and adds animation metadata to the override itself.
+            It is the quickest way to make selected package rows, badges, colors, and text feel smoother.
+          </p>
           <div class="code-block">{
   "conditions": [{ "type": "selected" }],
   "animation": {
@@ -791,80 +796,100 @@ flowchart LR
 }</div>
         </div>
         <div>
-          <h3>What the adapter sees</h3>
+          <h3>Option 2: make state explicit</h3>
           <p>
-            The override produces a group of state mutations: text, color, visibility, and any other
-            projected fields. The animation metadata becomes a transaction-level instruction attached
-            to the change group.
+            This path is closer to the POC architecture. The paywall owns named observable state values,
+            while components declare anonymous rules that reference those state values in their
+            <code>when</code> clauses.
           </p>
-          <p>
-            The app can still gate the proposed mutation group. If accepted, RevenueCatUI applies the
-            committed values using the animation metadata.
-          </p>
+          <div class="code-block">{
+  "when": {
+    "state": "selected_package_id",
+    "operator": "=",
+    "value": "annual"
+  },
+  "set": {
+    "textLid": {
+      "value": "annual_title",
+      "animation": { "type": "instant" }
+    },
+    "color": {
+      "value": { "light": { "type": "hex", "value": "#2EBEE5" } },
+      "animation": { "type": "ease_in_out", "duration_ms": 250 }
+    }
+  }
+}</div>
         </div>
       </div>
+
       <div class="diagram-card">
         <pre class="mermaid">
 flowchart LR
-  Override["Matched override"] --> Values["Projected values"]
-  Override --> Animation["Animation metadata"]
-  Values --> Group["Mutation group"]
-  Animation --> Group
-  Group --> Gate["Optional app gate"]
-  Gate --> Commit["Committed state"]
-  Commit --> SwiftUI["Animated field updates"]
+  State["Named paywall state"] --> Rule["Anonymous component rule"]
+  Rule --> SetValues["Set field values"]
+  SetValues --> FieldA["textLid animation"]
+  SetValues --> FieldB["color animation"]
+  FieldA --> Mutations["Independent mutations"]
+  FieldB --> Mutations
+  Mutations --> Store["Paywall state store"]
         </pre>
       </div>
-      <div class="callout">
-        <strong>The tradeoff:</strong> override-level animation is simple and natural for dashboard-authored
-        state changes, but it is intentionally coarse. One animation applies to every property changed by
-        that override.
-      </div>
+
       <table>
         <thead>
           <tr>
-            <th>Approach</th>
-            <th>Benefit</th>
-            <th>Cost</th>
+            <th>Option</th>
+            <th>Why choose it</th>
+            <th>Tradeoff</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>Animation on the override</td>
-            <td>Easy to author. One condition produces one transition style for the entire visual state.</td>
+            <td>1. Override-level animation</td>
             <td>
-              Text, color, visibility, spacing, and image changes all share the same easing, delay, and duration.
-              A three-second ease-in-out applies to every changed field.
+              Fastest path. It reuses current conditions, current partial merging, and current Paywalls V2 JSON
+              shape with a small additive animation field.
+            </td>
+            <td>
+              Coarse-grained. One override may change text, color, visibility, spacing, and image values.
+              One animation applies to all of those changes.
             </td>
           </tr>
           <tr>
-            <td>Animation per property</td>
-            <td>Precise. Color can fade quickly while layout moves slowly and text swaps instantly.</td>
+            <td>2. Explicit state rules</td>
             <td>
-              More verbose JSON, more validation, and more room for conflicting animation instructions.
+              More expressive. Paywall-level state is named and observable, while component rules can apply
+              independent animations to individual values.
             </td>
-          </tr>
-          <tr>
-            <td>Reducer-chosen animation</td>
-            <td>The SDK can pick sensible defaults for derived fields such as icon URLs or visibility.</td>
             <td>
-              Less dashboard control unless reducers expose their own animation inputs.
+              Requires a broader JSON evolution, validation rules, and cross-platform implementation work.
             </td>
           </tr>
         </tbody>
       </table>
-      <h3>Recommendation</h3>
+
+      <h3>How grouping would work in Option 2</h3>
       <p>
-        Your concern is valid. An override describes the next static content difference, and that difference
-        can include several field changes. If animation metadata lives at the override level, the animation
-        is best understood as a <em>group transition</em>, not a per-field choreography.
+        Component rules do not need names of their own. They are anonymous projections from named paywall
+        state to component values. If a rule has a group animation, values without their own animation can
+        inherit it. Values with their own animation override the group.
       </p>
-      <p>
-        That is still useful for the first version because most paywall state changes should feel cohesive:
-        a package row becomes selected, a badge appears, and text/color update together. If we later need
-        different timings per field, the architecture can extend the raw property model to allow property-level
-        animation without changing the core propose → gate → commit pipeline.
-      </p>
+      <div class="code-block">{
+  "when": { "state": "selected_package_id", "operator": "=", "value": "annual" },
+  "animation": { "type": "ease_in_out", "duration_ms": 300 },
+  "set": {
+    "visible": { "value": true },
+    "color": { "value": { "light": { "type": "hex", "value": "#2EBEE5" } } },
+    "textLid": {
+      "value": "annual_title",
+      "animation": { "type": "instant" }
+    }
+  }
+}</div>
+      <div class="callout">
+        <strong>Recommendation:</strong> Option 1 is useful as a near-term bridge. Option 2 is the cleaner
+        long-term model if the goal is truly dynamic state and per-property animation.
+      </div>
     </section>
 
     <section>
