@@ -14,7 +14,10 @@
 
 + (void)checkAPI {
     RCBillingPlanType *monthly __unused = [RCBillingPlanType RCMonthly];
+    NSString *monthlyRawValue __unused = [RCBillingPlanType RCMonthly].rawValue;
+
     RCBillingPlanType *upFront __unused = [RCBillingPlanType RCUpFront];
+    NSString *upFrontRawValue __unused = [RCBillingPlanType RCUpFront].rawValue;
 }
 
 

@@ -169,7 +169,7 @@ extension TestStoreProduct: StoreProductType {
         if let installmentsInfo {
             switch installmentsInfo.billingPlanType {
             case .monthly:
-                return "\(self.productIdentifier):monthly"
+                return "\(self.productIdentifier):\(installmentsInfo.billingPlanType.rawValue)"
             case .upFront:
                 return self.productIdentifier
             default:

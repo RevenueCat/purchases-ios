@@ -2815,9 +2815,10 @@ extension StoreKit.SKRequest : @unchecked @retroactive Swift.Sendable {
 }
 extension StoreKit.SKProductsRequest : @unchecked @retroactive Swift.Sendable {
 }
-@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc(RCBillingPlanType) final public class BillingPlanType : ObjectiveC.NSObject, Swift.Sendable {
+@_hasMissingDesignatedInitializers @objc(RCBillingPlanType) final public class BillingPlanType : ObjectiveC.NSObject, Swift.Sendable {
   @objc(RCUpFront) public static let upFront: RevenueCat.BillingPlanType
   @objc(RCMonthly) public static let monthly: RevenueCat.BillingPlanType
+  @objc final public let rawValue: Swift.String
   public static func ~= (lhs: RevenueCat.BillingPlanType, rhs: RevenueCat.BillingPlanType) -> Swift.Bool
   @objc deinit
 }

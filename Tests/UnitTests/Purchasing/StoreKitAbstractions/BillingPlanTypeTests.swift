@@ -49,6 +49,14 @@ class BillingPlanTypeTests: TestCase {
     }
 }
 
+// MARK: - BillingPlanType.rawValue
+extension BillingPlanTypeTests {
+    func testBillingPlanTypeValues() {
+        expect(BillingPlanType.monthly.rawValue).to(equal("monthly"))
+        expect(BillingPlanType.upFront.rawValue).to(equal("upFront"))
+    }
+}
+
 // MARK: - To/From StoreKit BillingPlanType
 #if compiler(>=6.3.2)
 extension BillingPlanTypeTests {

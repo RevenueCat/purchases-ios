@@ -793,18 +793,19 @@ final class PurchasesOrchestrator {
             #if compiler(>=6.3.2)
             if #available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *),
                let subscriptionInfo = sk2Product.subscription, // Don't apply billing plans to OTPs
-               let sk2BillingPlanType = billingPlanType?.skBillingPlanType {
+               let billingPlanType,
+               let sk2BillingPlanType = billingPlanType.skBillingPlanType {
                 let eligibleBillingPlanTypes = Set(subscriptionInfo.pricingTerms.map({ $0.billingPlanType }))
 
                 if eligibleBillingPlanTypes.contains(sk2BillingPlanType) {
                     Logger.debug(
-                        StoreKitStrings.sk2_applying_billing_plan(billingPlanType: sk2BillingPlanType.rawValue)
+                        StoreKitStrings.sk2_applying_billing_plan(billingPlanType: billingPlanType.rawValue)
                     )
                     options.insert(.billingPlanType(sk2BillingPlanType))
                 } else {
                     Logger.error(
                         StoreKitStrings.sk2_user_not_eligible_for_billing_plan_at_purchase_time(
-                            billingPlanType: sk2BillingPlanType.rawValue
+                            billingPlanType: billingPlanType.rawValue
                         )
                     )
                     throw ErrorUtils.productNotAvailableForPurchaseError()
