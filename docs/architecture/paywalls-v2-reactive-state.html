@@ -544,14 +544,14 @@ sequenceDiagram
         <pre class="mermaid">
 stateDiagram-v2
   [*] --> Requested
-  Requested --> Proposed: create Event&lt;Proposed&gt;
+  Requested --> Proposed: create proposed event
   Proposed --> Rejected: reject()
   Proposed --> Accepted: accept()
-  Proposed --> Replaced: replace(with:)
+  Proposed --> Replaced: replace
   Accepted --> Committed: commit original mutation
   Replaced --> Committed: commit replacement mutation
   Rejected --> [*]: no state change
-  Committed --> [*]: publish Event&lt;Committed&gt;
+  Committed --> [*]: publish committed event
         </pre>
       </div>
       <div class="code-block">PaywallStateChange.Event&lt;PaywallStateChange.Proposed&gt;
