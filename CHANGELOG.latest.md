@@ -14,7 +14,7 @@
 * Fix Custom Entitlement Computation SPM installation test (#6770) via Antonio Pallares (@ajpallares)
 * [Billing Plans]: Introduce Xcode 26.5 build job + handle StoreKitError.paymentMethodBindingConfigurationRequired (#6767) via Will Taylor (@fire-at-will)
 * Auto-invalidate VC cache for verified rewards (#6765) via Pol Miro (@polmiro)
-* Require rewardVerificationCompleted callback (#6762) via Pol Miro (@polmiro)
+* Require rewardVerificationResult callback (#6762) via Pol Miro (@polmiro)
 * Bump fastlane from 2.233.1 to 2.234.0 (#6764) via dependabot[bot] (@dependabot[bot])
 * Fix example app disable controls during reward verification (#6761) via Pol Miro (@polmiro)
 * Add reward verification support to AdMobIntegrationSample example app (#6746) via Pol Miro (@polmiro)
