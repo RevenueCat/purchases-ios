@@ -30,7 +30,7 @@ class InstallmentsInfoFactoryTests: TestCase {
             self.buildInstallmentsInfo(commitmentPeriod: .monthly, commitmentTotalDisplayPrice: "$4.99")
         )
 
-        expect(installmentsInfo.commitmentInstallmentsCount) == 1
+        expect(installmentsInfo.installmentsCount) == 1
         expect(installmentsInfo.commitmentTotalPeriod) == SubscriptionPeriod(value: 1, unit: .month)
         expect(installmentsInfo.commitmentTotalPrice) == Self.decimal(cents: 499)
         expect(installmentsInfo.commitmentTotalDisplayPrice) == "$4.99"
@@ -43,7 +43,7 @@ class InstallmentsInfoFactoryTests: TestCase {
             self.buildInstallmentsInfo(commitmentPeriod: .everyTwoMonths, commitmentTotalDisplayPrice: "$9.98")
         )
 
-        expect(installmentsInfo.commitmentInstallmentsCount) == 2
+        expect(installmentsInfo.installmentsCount) == 2
         expect(installmentsInfo.commitmentTotalPeriod) == SubscriptionPeriod(value: 2, unit: .month)
         expect(installmentsInfo.commitmentTotalPrice) == Self.decimal(cents: 998)
         expect(installmentsInfo.commitmentTotalDisplayPrice) == "$9.98"
@@ -56,7 +56,7 @@ class InstallmentsInfoFactoryTests: TestCase {
             self.buildInstallmentsInfo(commitmentPeriod: .everyThreeMonths, commitmentTotalDisplayPrice: "$14.97")
         )
 
-        expect(installmentsInfo.commitmentInstallmentsCount) == 3
+        expect(installmentsInfo.installmentsCount) == 3
         expect(installmentsInfo.commitmentTotalPeriod) == SubscriptionPeriod(value: 3, unit: .month)
         expect(installmentsInfo.commitmentTotalPrice) == Self.decimal(cents: 1497)
         expect(installmentsInfo.commitmentTotalDisplayPrice) == "$14.97"
@@ -69,7 +69,7 @@ class InstallmentsInfoFactoryTests: TestCase {
             self.buildInstallmentsInfo(commitmentPeriod: .everySixMonths, commitmentTotalDisplayPrice: "$29.94")
         )
 
-        expect(installmentsInfo.commitmentInstallmentsCount) == 6
+        expect(installmentsInfo.installmentsCount) == 6
         expect(installmentsInfo.commitmentTotalPeriod) == SubscriptionPeriod(value: 6, unit: .month)
         expect(installmentsInfo.commitmentTotalPrice) == Self.decimal(cents: 2994)
         expect(installmentsInfo.commitmentTotalDisplayPrice) == "$29.94"
@@ -82,7 +82,7 @@ class InstallmentsInfoFactoryTests: TestCase {
             self.buildInstallmentsInfo(commitmentPeriod: .yearly, commitmentTotalDisplayPrice: "$59.88")
         )
 
-        expect(installmentsInfo.commitmentInstallmentsCount) == 12
+        expect(installmentsInfo.installmentsCount) == 12
         expect(installmentsInfo.commitmentTotalPeriod) == SubscriptionPeriod(value: 1, unit: .year)
         expect(installmentsInfo.commitmentTotalPrice) == Self.decimal(cents: 5988)
         expect(installmentsInfo.commitmentTotalDisplayPrice) == "$59.88"

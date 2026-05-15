@@ -74,8 +74,8 @@ private extension TestStoreProductTests {
         billingPlanType: BillingPlanType
     ) -> InstallmentsInfo {
         return InstallmentsInfo(
-            commitmentInstallmentsCount: 3,
-            commitmentInstallmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            installmentsCount: 3,
+            installmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
             installmentBillingPrice: 3.99,
             installmentBillingDisplayPrice: "$3.99",
             commitmentTotalPeriod: SubscriptionPeriod(value: 3, unit: .month),

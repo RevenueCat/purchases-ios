@@ -18,10 +18,10 @@ import StoreKit
 @objc(RCInstallmentsInfo) public final class InstallmentsInfo: NSObject, Sendable {
 
     /// Number of installments the customer commits to paying.
-    @objc public let commitmentInstallmentsCount: Int
+    @objc public let installmentsCount: Int
 
     /// The duration for each installment.
-    @objc public let commitmentInstallmentPeriod: SubscriptionPeriod
+    @objc public let installmentPeriod: SubscriptionPeriod
 
     /// Price charged for each installment billing period.
     @objc public let installmentBillingPrice: Decimal
@@ -44,8 +44,8 @@ import StoreKit
     /// Creates a new ``InstallmentsInfo``.
     ///
     /// - Parameters:
-    ///   - commitmentInstallmentsCount: Number of installments the customer commits to paying.
-    ///   - commitmentInstallmentPeriod: The duration for each installment.
+    ///   - installmentsCount: Number of installments the customer commits to paying.
+    ///   - installmentPeriod: The duration for each installment.
     ///   - installmentBillingPrice: Price charged for each installment billing period.
     ///   - installmentBillingDisplayPrice: Localized display price for `installmentBillingPrice`.
     ///   - commitmentTotalPeriod: Total duration of the customer's installment commitment.
@@ -53,8 +53,8 @@ import StoreKit
     ///   - commitmentTotalDisplayPrice: Localized display price for `commitmentTotalPrice`.
     ///   - billingPlanType: Billing plan type used for the installments.
     @objc public init(
-        commitmentInstallmentsCount: Int,
-        commitmentInstallmentPeriod: SubscriptionPeriod,
+        installmentsCount: Int,
+        installmentPeriod: SubscriptionPeriod,
         installmentBillingPrice: Decimal,
         installmentBillingDisplayPrice: String,
         commitmentTotalPeriod: SubscriptionPeriod,
@@ -62,8 +62,8 @@ import StoreKit
         commitmentTotalDisplayPrice: String,
         billingPlanType: BillingPlanType
     ) {
-        self.commitmentInstallmentsCount = commitmentInstallmentsCount
-        self.commitmentInstallmentPeriod = commitmentInstallmentPeriod
+        self.installmentsCount = installmentsCount
+        self.installmentPeriod = installmentPeriod
         self.installmentBillingPrice = installmentBillingPrice
         self.installmentBillingDisplayPrice = installmentBillingDisplayPrice
         self.commitmentTotalPeriod = commitmentTotalPeriod
@@ -75,8 +75,8 @@ import StoreKit
     public override func isEqual(_ object: Any?) -> Bool {
         guard let other = object as? InstallmentsInfo else { return false }
 
-        return self.commitmentInstallmentsCount == other.commitmentInstallmentsCount
-            && self.commitmentInstallmentPeriod == other.commitmentInstallmentPeriod
+        return self.installmentsCount == other.installmentsCount
+            && self.installmentPeriod == other.installmentPeriod
             && self.installmentBillingPrice == other.installmentBillingPrice
             && self.installmentBillingDisplayPrice == other.installmentBillingDisplayPrice
             && self.commitmentTotalPeriod == other.commitmentTotalPeriod
@@ -87,8 +87,8 @@ import StoreKit
 
     public override var hash: Int {
         var hasher = Hasher()
-        hasher.combine(self.commitmentInstallmentsCount)
-        hasher.combine(self.commitmentInstallmentPeriod)
+        hasher.combine(self.installmentsCount)
+        hasher.combine(self.installmentPeriod)
         hasher.combine(self.installmentBillingPrice)
         hasher.combine(self.installmentBillingDisplayPrice)
         hasher.combine(self.commitmentTotalPeriod)

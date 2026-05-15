@@ -10,8 +10,8 @@ import Foundation
 import RevenueCat_CustomEntitlementComputation
 
 func checkInstallmentsInfo(installmentsInfo: InstallmentsInfo) {
-    let _: Int = installmentsInfo.commitmentInstallmentsCount
-    let _: SubscriptionPeriod = installmentsInfo.commitmentInstallmentPeriod
+    let _: Int = installmentsInfo.installmentsCount
+    let _: SubscriptionPeriod = installmentsInfo.installmentPeriod
     let _: Decimal = installmentsInfo.installmentBillingPrice
     let _: String = installmentsInfo.installmentBillingDisplayPrice
     let _: SubscriptionPeriod = installmentsInfo.commitmentTotalPeriod
@@ -22,8 +22,8 @@ func checkInstallmentsInfo(installmentsInfo: InstallmentsInfo) {
 
 func checkInstallmentsInfoInit() {
     let installmentsInfo: InstallmentsInfo = InstallmentsInfo(
-        commitmentInstallmentsCount: 12,
-        commitmentInstallmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
+        installmentsCount: 12,
+        installmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
         installmentBillingPrice: 10,
         installmentBillingDisplayPrice: "$10.00",
         commitmentTotalPeriod: SubscriptionPeriod(value: 1, unit: .year),

@@ -565,7 +565,7 @@ extension StoreProductTests {
         let storeProduct = Self.testProduct(
             productIdentifier: productIdentifier,
             installmentsInfo: Self.installmentsInfo(
-                commitmentInstallmentsCount: 3,
+                installmentsCount: 3,
                 billingPlanType: .monthly
             )
         )
@@ -578,7 +578,7 @@ extension StoreProductTests {
         let storeProduct = Self.testProduct(
             productIdentifier: productIdentifier,
             installmentsInfo: Self.installmentsInfo(
-                commitmentInstallmentsCount: 1,
+                installmentsCount: 1,
                 billingPlanType: .upFront
             )
         )
@@ -641,17 +641,17 @@ private extension StoreProductTests {
     }
 
     static func installmentsInfo(
-        commitmentInstallmentsCount: Int,
+        installmentsCount: Int,
         billingPlanType: BillingPlanType = .monthly
     ) -> InstallmentsInfo {
         return InstallmentsInfo(
-            commitmentInstallmentsCount: commitmentInstallmentsCount,
-            commitmentInstallmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            installmentsCount: installmentsCount,
+            installmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
             installmentBillingPrice: 3.99,
             installmentBillingDisplayPrice: "$3.99",
-            commitmentTotalPeriod: SubscriptionPeriod(value: commitmentInstallmentsCount, unit: .month),
-            commitmentTotalPrice: Decimal(commitmentInstallmentsCount) * 3.99,
-            commitmentTotalDisplayPrice: "$\(commitmentInstallmentsCount * 399 / 100).99",
+            commitmentTotalPeriod: SubscriptionPeriod(value: installmentsCount, unit: .month),
+            commitmentTotalPrice: Decimal(installmentsCount) * 3.99,
+            commitmentTotalDisplayPrice: "$\(installmentsCount * 399 / 100).99",
             billingPlanType: billingPlanType
         )
     }

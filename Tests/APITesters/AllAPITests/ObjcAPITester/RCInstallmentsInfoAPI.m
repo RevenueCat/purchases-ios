@@ -15,7 +15,7 @@
 + (void)checkAPI {
     RCInstallmentsInfo *installmentsInfo;
 
-    NSInteger commitmentInstallmentsCount __unused = installmentsInfo.commitmentInstallmentsCount;
+    NSInteger installmentsCount __unused = installmentsInfo.installmentsCount;
     RCSubscriptionPeriod *commitmentTotalPeriod __unused = installmentsInfo.commitmentTotalPeriod;
     NSDecimal commitmentTotalPrice __unused = installmentsInfo.commitmentTotalPrice;
     NSString *commitmentTotalDisplayPrice __unused = installmentsInfo.commitmentTotalDisplayPrice;
@@ -26,11 +26,11 @@
 
 + (void)checkInit {
     RCSubscriptionPeriod *commitmentTotalPeriod;
-    RCSubscriptionPeriod *commitmentInstallmentPeriod;
+    RCSubscriptionPeriod *installmentPeriod;
 
     RCInstallmentsInfo *installmentsInfo __unused = [[RCInstallmentsInfo alloc]
-                                                     initWithCommitmentInstallmentsCount:12
-                                                     commitmentInstallmentPeriod:commitmentInstallmentPeriod
+                                                     initWithInstallmentsCount:12
+                                                     installmentPeriod:installmentPeriod
                                                      installmentBillingPrice:[[NSDecimalNumber alloc] initWithInt:10].decimalValue
                                                      installmentBillingDisplayPrice:@"$10.00"
                                                      commitmentTotalPeriod:commitmentTotalPeriod

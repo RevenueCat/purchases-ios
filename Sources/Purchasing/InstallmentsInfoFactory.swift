@@ -36,7 +36,7 @@ final class InstallmentsInfoFactory: InstallmentsInfoFactoryType {
         billingPlanType: StoreKit.Product.SubscriptionInfo.BillingPlanType,
         pricingTerms: StoreKit.Product.SubscriptionInfo.PricingTerms
     ) -> InstallmentsInfo? {
-        guard let commitmentInstallmentsCount = calculateCommitmentInstallmentsCount(
+        guard let installmentsCount = calculateInstallmentsCount(
             billingPlanType: billingPlanType,
             commitmentPeriod: pricingTerms.commitmentInfo.period
         ) else { return nil }
@@ -46,7 +46,7 @@ final class InstallmentsInfoFactory: InstallmentsInfoFactoryType {
             commitmentPeriod: pricingTerms.commitmentInfo.period
         ) else { return nil }
 
-        let commitmentTotalPrice = pricingTerms.billingPrice * Decimal(commitmentInstallmentsCount)
+        let commitmentTotalPrice = pricingTerms.billingPrice * Decimal(installmentsCount)
         let commitmentTotalDisplayPrice: String = commitmentTotalPrice.formatted(product.priceFormatStyle)
 
         return self.buildInstallmentsInfo(
@@ -54,7 +54,7 @@ final class InstallmentsInfoFactory: InstallmentsInfoFactoryType {
             commitmentPeriod: pricingTerms.commitmentInfo.period,
             billingPrice: pricingTerms.billingPrice,
             billingDisplayPrice: pricingTerms.billingDisplayPrice,
-            commitmentInstallmentsCount: commitmentInstallmentsCount,
+            installmentsCount: installmentsCount,
             commitmentTotalPeriod: commitmentTotalPeriod,
             commitmentTotalDisplayPrice: commitmentTotalDisplayPrice
         )
@@ -66,17 +66,17 @@ final class InstallmentsInfoFactory: InstallmentsInfoFactoryType {
         commitmentPeriod: StoreKit.Product.SubscriptionPeriod,
         billingPrice: Decimal,
         billingDisplayPrice: String,
-        commitmentInstallmentsCount: Int? = nil,
-        commitmentInstallmentsPeriod: SubscriptionPeriod? = nil,
+        installmentsCount: Int? = nil,
+        installmentPeriod: SubscriptionPeriod? = nil,
         commitmentTotalPeriod: SubscriptionPeriod? = nil,
         commitmentTotalDisplayPrice: String
     ) -> InstallmentsInfo? {
-        guard let commitmentInstallmentsCount = commitmentInstallmentsCount ?? calculateCommitmentInstallmentsCount(
+        guard let installmentsCount = installmentsCount ?? calculateInstallmentsCount(
             billingPlanType: billingPlanType,
             commitmentPeriod: commitmentPeriod
         ) else { return nil }
 
-        guard let commitmentInstallmentPeriod = commitmentInstallmentsPeriod ?? calculateCommitmentInstallmentPeriod(
+        guard let installmentPeriod = installmentPeriod ?? calculateInstallmentPeriod(
             billingPlanType: billingPlanType
         ) else { return nil }
 
@@ -89,12 +89,12 @@ final class InstallmentsInfoFactory: InstallmentsInfoFactoryType {
             return nil
         }
 
-        let commitmentTotalPrice = billingPrice * Decimal(commitmentInstallmentsCount)
+        let commitmentTotalPrice = billingPrice * Decimal(installmentsCount)
         let installmentBillingPrice = billingPrice
         let installmentBillingDisplayPrice = billingDisplayPrice
         return InstallmentsInfo(
-            commitmentInstallmentsCount: commitmentInstallmentsCount,
-            commitmentInstallmentPeriod: commitmentInstallmentPeriod,
+            installmentsCount: installmentsCount,
+            installmentPeriod: installmentPeriod,
             installmentBillingPrice: installmentBillingPrice,
             installmentBillingDisplayPrice: installmentBillingDisplayPrice,
             commitmentTotalPeriod: commitmentTotalPeriod,
@@ -111,7 +111,7 @@ final class InstallmentsInfoFactory: InstallmentsInfoFactoryType {
 extension InstallmentsInfoFactory {
 
     @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
-    func calculateCommitmentInstallmentsCount(
+    func calculateInstallmentsCount(
         billingPlanType: StoreKit.Product.SubscriptionInfo.BillingPlanType,
         commitmentPeriod: StoreKit.Product.SubscriptionPeriod
     ) -> Int? {
@@ -134,7 +134,7 @@ extension InstallmentsInfoFactory {
     }
 
     @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
-    func calculateCommitmentInstallmentPeriod(
+    func calculateInstallmentPeriod(
         billingPlanType: StoreKit.Product.SubscriptionInfo.BillingPlanType
     ) -> SubscriptionPeriod? {
         switch billingPlanType {

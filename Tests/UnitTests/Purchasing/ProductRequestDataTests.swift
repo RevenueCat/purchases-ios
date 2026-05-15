@@ -321,8 +321,8 @@ private extension ProductRequestDataTests {
         commitmentTotalPrice: Decimal = 11.97
     ) -> InstallmentsInfo {
         return InstallmentsInfo(
-            commitmentInstallmentsCount: 3,
-            commitmentInstallmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            installmentsCount: 3,
+            installmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
             installmentBillingPrice: installmentBillingPrice,
             installmentBillingDisplayPrice: "$\(installmentBillingPrice)",
             commitmentTotalPeriod: SubscriptionPeriod(value: 3, unit: .month),

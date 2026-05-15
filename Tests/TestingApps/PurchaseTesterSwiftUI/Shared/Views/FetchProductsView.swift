@@ -67,9 +67,9 @@ struct FetchProductsView: View {
                 if let installmentsInfo = storeProduct.installmentsInfo {
                     VStack(spacing: 10) {
                         LabeledContent {
-                            Text(installmentsInfo.commitmentInstallmentsCount.description)
+                            Text(installmentsInfo.installmentsCount.description)
                         } label: {
-                            Text("commitmentInstallmentsCount")
+                            Text("installmentsCount")
                         }
                         LabeledContent {
                             Text(installmentsInfo.commitmentTotalPeriod.debugDescription)
