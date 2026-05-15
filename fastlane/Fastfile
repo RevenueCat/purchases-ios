@@ -2282,22 +2282,36 @@ platform :ios do
 
   desc "Assert RulesEngine has no public, non-@_spi(Internal) API"
   lane :check_rules_engine_no_public_api do
-    require 'tmpdir'
-
     scheme = "RulesEngine"
     sdk = "iphonesimulator"
     destination = "generic/platform=iOS Simulator"
+    workspace = "RevenueCat-Tuist.xcworkspace"
 
     # Anything declared @_spi(Internal) public is emitted into
     # RulesEngine.private.swiftinterface, not the public RulesEngine.swiftinterface,
     # so it cannot leak through this check by construction. Unlike a baseline-diff,
     # no committed reference file exists for a contributor to regenerate to
     # silence the check.
+    #
+    # `RulesEngine` is intentionally NOT exposed as an SPM `.library` product (it's
+    # only ever pulled in as an internal transitive dependency of `RevenueCat` /
+    # `RevenueCatUI`), so there is no auto-generated SPM scheme for it. Build it via
+    # the Tuist-generated workspace instead. CI runs `tuist install && tuist generate
+    # RulesEngine --no-open` before invoking this lane; locally, run that yourself
+    # from the repo root before invoking the lane.
+    workspace_path = "../#{workspace}"
+    unless File.directory?(workspace_path)
+      UI.user_error!(
+        "#{workspace} not found. Run `tuist install && tuist generate RulesEngine --no-open` " \
+        "from the repo root before invoking this lane."
+      )
+    end
+
     setup_swiftinterface_xcconfig
     begin
       Dir.chdir("..") do
         sh("xcodebuild", "clean", "build",
-           "-workspace", ".",
+           "-workspace", workspace,
            "-scheme", scheme,
            "-derivedDataPath", ".build",
            "-configuration", "Release",

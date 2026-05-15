@@ -2038,6 +2038,8 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - tuist-generate-workspace:
+          query: "RulesEngine"
       - run:
           name: Assert RulesEngine has no non-@_spi(Internal) public API
           command: |
