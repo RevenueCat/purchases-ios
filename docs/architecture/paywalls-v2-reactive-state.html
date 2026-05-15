@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paywalls V2 Reactive State Architecture</title>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      themeVariables: {
+        primaryColor: "#EAF7FF",
+        primaryTextColor: "#0B1F33",
+        primaryBorderColor: "#2EBEE5",
+        lineColor: "#5B7083",
+        secondaryColor: "#F6F0FF",
+        tertiaryColor: "#F8FBFD",
+        fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+      }
+    });
+  </script>
+  <style>
+    :root {
+      --rc-blue: #2EBEE5;
+      --rc-blue-dark: #0E7898;
+      --ink: #102033;
+      --muted: #617386;
+      --panel: #FFFFFF;
+      --panel-soft: #F6FAFD;
+      --line: #D9E5EE;
+      --green: #21A67A;
+      --amber: #F5A524;
+      --purple: #805AD5;
+      --shadow: 0 18px 55px rgba(16, 32, 51, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(46, 190, 229, 0.22), transparent 28rem),
+        radial-gradient(circle at top right, rgba(128, 90, 213, 0.16), transparent 24rem),
+        linear-gradient(180deg, #F8FCFF 0%, #EDF6FA 100%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+
+    main {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 0 auto;
+      padding: 44px 0 72px;
+    }
+
+    header.hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 28px;
+      align-items: stretch;
+      margin-bottom: 28px;
+    }
+
+    .hero-card,
+    section,
+    .callout,
+    .diagram-card {
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(217, 229, 238, 0.9);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .hero-card {
+      padding: 38px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      right: -90px;
+      top: -80px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(46, 190, 229, 0.26), rgba(128, 90, 213, 0.18));
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      color: var(--rc-blue-dark);
+      background: rgba(46, 190, 229, 0.12);
+      border: 1px solid rgba(46, 190, 229, 0.28);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 22px 0 16px;
+      font-size: clamp(38px, 5vw, 68px);
+      line-height: 0.95;
+      letter-spacing: -0.055em;
+    }
+
+    h2 {
+      margin: 0 0 18px;
+      font-size: clamp(28px, 3vw, 42px);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    h3 {
+      margin: 24px 0 10px;
+      font-size: 19px;
+      letter-spacing: -0.02em;
+    }
+
+    p {
+      margin: 0 0 14px;
+      color: var(--muted);
+    }
+
+    .hero-card p {
+      max-width: 760px;
+      font-size: 18px;
+    }
+
+    .status-panel {
+      padding: 26px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .status-item {
+      padding: 17px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #FFFFFF, #F8FBFD);
+    }
+
+    .status-item strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 15px;
+    }
+
+    .status-item span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    section {
+      padding: 30px;
+      margin: 24px 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .tile {
+      padding: 22px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+    }
+
+    .tile h3 {
+      margin-top: 0;
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .pill {
+      padding: 8px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(46, 190, 229, 0.28);
+      background: rgba(46, 190, 229, 0.10);
+      color: #155E75;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .callout {
+      padding: 22px 24px;
+      margin: 22px 0;
+      border-left: 5px solid var(--rc-blue);
+    }
+
+    .callout strong {
+      color: var(--ink);
+    }
+
+    .diagram-card {
+      padding: 20px;
+      margin: 18px 0 8px;
+      overflow-x: auto;
+    }
+
+    .mermaid {
+      min-width: 720px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #FFFFFF;
+    }
+
+    th,
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: #294157;
+      background: #F0F7FB;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    code {
+      padding: 2px 6px;
+      border-radius: 7px;
+      color: #0B4A6F;
+      background: rgba(46, 190, 229, 0.12);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+
+    .code-block {
+      padding: 18px;
+      overflow-x: auto;
+      border-radius: 18px;
+      color: #D8ECFF;
+      background: #0B1F33;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .legend div {
+      padding: 13px;
+      border-radius: 16px;
+      background: #FFFFFF;
+      border: 1px solid var(--line);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .legend b {
+      display: block;
+      color: var(--ink);
+    }
+
+    footer {
+      margin-top: 40px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+    }
+
+    @media (max-width: 860px) {
+      header.hero,
+      .grid,
+      .two-col,
+      .legend {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        width: min(100vw - 22px, 1180px);
+        padding-top: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-card">
+        <span class="eyebrow">RevenueCatUI • Paywalls V2</span>
+        <h1>Reactive State Adapter Architecture</h1>
+        <p>
+          This architecture adds a scoped, proposal-driven, reactive state pipeline to Paywalls V2
+          without changing the existing backend JSON schema. It lets RevenueCatUI update individual
+          fields, lets apps observe or gate state changes, and keeps copied paywalls isolated even
+          when their component IDs are identical.
+        </p>
+        <div class="pill-list">
+          <span class="pill">Backward-compatible JSON</span>
+          <span class="pill">Scoped state keys</span>
+          <span class="pill">Propose → gate → commit</span>
+          <span class="pill">Dynamic override fields</span>
+          <span class="pill">Composable reducers</span>
+        </div>
+      </div>
+      <aside class="status-panel">
+        <div class="status-item">
+          <strong>Primary constraint</strong>
+          <span>Do not require server, dashboard, or schema changes for the first slice.</span>
+        </div>
+        <div class="status-item">
+          <strong>Isolation rule</strong>
+          <span>Every mutable key includes runtime scope plus paywall/component identity.</span>
+        </div>
+        <div class="status-item">
+          <strong>Consumer control</strong>
+          <span>Apps can observe committed changes or gate proposed mutations through SPI hooks.</span>
+        </div>
+      </aside>
+    </header>
+
+    <section>
+      <h2>1. Architectural intent</h2>
+      <div class="grid">
+        <div class="tile">
+          <h3>From coarse styles</h3>
+          <p>
+            Paywalls V2 currently recomputes full component styles from environment values such as
+            selected package, eligibility, screen size, countdowns, and custom variables.
+          </p>
+        </div>
+        <div class="tile">
+          <h3>To field-level state</h3>
+          <p>
+            The adapter projects individual renderable fields into state slots such as
+            <code>component.text</code>, <code>component.visible</code>, or
+            <code>paywall.root_selected_package_id</code>.
+          </p>
+        </div>
+        <div class="tile">
+          <h3>With app gates</h3>
+          <p>
+            A state request becomes a proposed change. The app may accept, reject, or replace it before
+            the store commits and publishes the resolved event.
+          </p>
+        </div>
+      </div>
+      <div class="callout">
+        <strong>Core idea:</strong> the existing Paywalls V2 payload stays the source of truth, while the
+        UI gets a finer-grained runtime projection of that payload.
+      </div>
+    </section>
+
+    <section>
+      <h2>2. System architecture</h2>
+      <p>
+        The adapter sits between decoded Paywalls V2 models and SwiftUI rendering. It compiles component
+        identity, override property names, and runtime inputs into scoped state keys. Components can then
+        render from committed state instead of recomputing the entire style tree.
+      </p>
+      <div class="diagram-card">
+        <pre class="mermaid">
+flowchart LR
+  Backend[Existing Paywalls V2 JSON] --> Decode[RevenueCat models decode]
+  Decode --> Models[PaywallComponent tree]
+  Models --> Factory[ViewModelFactory]
+  Factory --> Identity[PaywallComponentIdentityFactory]
+  Factory --> ViewModels[Component ViewModels]
+  Models --> RawProps[Raw override properties]
+  RawProps --> KeyBuilder[PaywallOverridePropertyKeyBuilder]
+  KeyBuilder --> Keys[Scoped PaywallStateKey]
+  ViewModels --> Projection[Field projection]
+  Projection --> Store[PaywallStateStore]
+  Store --> SwiftUI[SwiftUI component views]
+  Store --> Hooks[App observe/gate hooks]
+  Hooks --> Store
+
+  classDef source fill:#EAF7FF,stroke:#2EBEE5,color:#0B1F33;
+  classDef runtime fill:#F6F0FF,stroke:#805AD5,color:#24103E;
+  classDef ui fill:#F7FFF9,stroke:#21A67A,color:#0C3327;
+  class Backend,Decode,Models source;
+  class Factory,Identity,RawProps,KeyBuilder,Keys,Projection,Store runtime;
+  class SwiftUI,Hooks ui;
+        </pre>
+      </div>
+      <div class="legend">
+        <div><b>Decode layer</b> Preserves existing payload compatibility.</div>
+        <div><b>Projection layer</b> Creates field keys from component and override data.</div>
+        <div><b>Store layer</b> Owns canonical state, proposals, and committed events.</div>
+        <div><b>UI layer</b> Observes committed fields and renders selectively.</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>3. Identity and state keys</h2>
+      <p>
+        State isolation is the foundation of the design. A key is not just a dashboard component ID.
+        It is the combination of runtime paywall scope, observable component identity, and dynamic field name.
+      </p>
+      <div class="two-col">
+        <div>
+          <h3>Runtime scope</h3>
+          <div class="code-block">PaywallStateScope
+├─ instanceID: UUID
+├─ paywallID: String?
+├─ offeringIdentifier: String
+├─ paywallRevision: Int?
+└─ workflowPageID: String?</div>
+        </div>
+        <div>
+          <h3>Component identity</h3>
+          <div class="code-block">PaywallComponentIdentity
+├─ paywallID: String?
+├─ componentID: String
+├─ type: String      // metadata
+└─ name: String?    // metadata</div>
+        </div>
+      </div>
+      <div class="diagram-card">
+        <pre class="mermaid">
+flowchart TD
+  A[PaywallStateScope] --> K[PaywallStateKey]
+  B[PaywallComponentIdentity] --> K
+  C[Field name] --> K
+  K --> S[(PaywallStateStore)]
+
+  A1["instanceID: runtime UUID"] --> A
+  A2["paywallID: copied paywall boundary"] --> A
+  A3["workflowPageID: workflow screen boundary"] --> A
+
+  B1["componentID: backend id or deterministic legacy fallback"] --> B
+  B2["type/name: useful metadata, not equality"] --> B
+
+  C1["component.text"] --> C
+  C2["component.visible"] --> C
+  C3["paywall.root_selected_package_id"] --> C
+        </pre>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Risk</th>
+            <th>How the architecture handles it</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Copied paywalls keep identical component IDs.</td>
+            <td>Observable identity includes paywall ID; mutable keys also include runtime instance scope.</td>
+          </tr>
+          <tr>
+            <td>The same paywall renders twice at once.</td>
+            <td><code>instanceID</code> separates the two live runtime trees.</td>
+          </tr>
+          <tr>
+            <td>Legacy payloads do not contain component IDs.</td>
+            <td>The identity factory creates deterministic RevenueCat-reserved fallback IDs.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>4. Mutation pipeline</h2>
+      <p>
+        The pipeline mirrors the iOS state example: requests become proposed changes, apps can gate
+        those proposals, and only committed changes update canonical state and notify observers.
+      </p>
+      <div class="diagram-card">
+        <pre class="mermaid">
+sequenceDiagram
+  participant UI as Component / Coordinator
+  participant Store as PaywallStateStore
+  participant Gate as App mutation hook
+  participant State as Canonical state
+  participant Events as Resolved events
+
+  UI->>Store: request(PaywallStateMutation, details)
+  Store->>Store: build PaywallStateChange.Event&lt;Proposed&gt;
+  alt mutation hook exists
+    Store->>Gate: proposal(change)
+    Gate-->>Store: accept / reject / replace
+  else no hook
+    Store->>Store: accept by default
+  end
+  alt accepted or replaced
+    Store->>State: atomically update value under lock
+    Store->>Events: publish Event&lt;Committed&gt; on serialized queue
+    Events-->>UI: update observed field
+    Events-->>App: onPaywallStateChange
+  else rejected
+    Store-->>UI: no committed event
+  end
+        </pre>
+      </div>
+      <div class="callout">
+        <strong>Concurrency rule:</strong> canonical values live under lock. Combine subjects are for
+        delivery, not synchronization.
+      </div>
+    </section>
+
+    <section>
+      <h2>5. Proposed vs committed state</h2>
+      <p>
+        The type system distinguishes changes that still need a decision from changes that are already
+        resolved. Consumers cannot accidentally treat a proposal as a committed event.
+      </p>
+      <div class="diagram-card">
+        <pre class="mermaid">
+stateDiagram-v2
+  [*] --> Requested
+  Requested --> Proposed: create Event&lt;Proposed&gt;
+  Proposed --> Rejected: reject()
+  Proposed --> Accepted: accept()
+  Proposed --> Replaced: replace(with:)
+  Accepted --> Committed: commit original mutation
+  Replaced --> Committed: commit replacement mutation
+  Rejected --> [*]: no state change
+  Committed --> [*]: publish Event&lt;Committed&gt;
+        </pre>
+      </div>
+      <div class="code-block">PaywallStateChange.Event&lt;PaywallStateChange.Proposed&gt;
+PaywallStateChange.Event&lt;PaywallStateChange.Committed&gt;
+PaywallStateChange.Details // generic protocol; reducers cast to concrete details</div>
+    </section>
+
+    <section>
+      <h2>6. Dynamic fields from existing JSON</h2>
+      <p>
+        The first adapter slice does not add new JSON fields. Instead, it preserves raw override
+        <code>properties</code> and generates state fields from their serialized keys. This keeps the
+        architecture composable while preserving existing payloads.
+      </p>
+      <div class="diagram-card">
+        <pre class="mermaid">
+flowchart LR
+  O["override.properties"] --> Raw["rawProperties"]
+  Raw --> Keys["PaywallOverridePropertyKeyBuilder"]
+  Keys --> Direct["Direct field: component.&lt;property&gt;"]
+  Raw --> Reducer["Reducer (future slices)"]
+  Reducer --> Derived["Derived field"]
+  Direct --> Mutations["PaywallStateMutation[]"]
+  Derived --> Mutations
+  Mutations --> Store["PaywallStateStore"]
+        </pre>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Payload example</th>
+            <th>State field</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>{ "properties": { "visible": false } }</code></td>
+            <td><code>component.visible</code></td>
+            <td>Direct field from serialized property key.</td>
+          </tr>
+          <tr>
+            <td><code>{ "properties": { "textLid": "title" } }</code></td>
+            <td><code>component.textLid</code></td>
+            <td>Uses the component CodingKeys value; no manual casing conversion.</td>
+          </tr>
+          <tr>
+            <td><code>{ "properties": { "formats": ..., "iconName": ... } }</code></td>
+            <td>Derived field in future icon slice</td>
+            <td>Reducer can compose raw properties into a URL or display asset.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout">
+        <strong>No re-encoding:</strong> raw properties are captured during the decode pass. The adapter does
+        not recover them by encoding typed partials back into JSON.
+      </div>
+    </section>
+
+    <section>
+      <h2>7. Package selection flow</h2>
+      <p>
+        Package selection is the first high-value interaction routed through state. Package rows and
+        tabs both request mutations. The selected package context updates only after the store publishes
+        a committed event, so async gates and <code>replace(with:)</code> work correctly.
+      </p>
+      <div class="diagram-card">
+        <pre class="mermaid">
+sequenceDiagram
+  participant Row as Package row / tabs
+  participant Coord as PaywallPackageSelectionCoordinator
+  participant Store as PaywallStateStore
+  participant Gate as App mutation hook
+  participant Context as PackageContext
+
+  Row->>Coord: select package
+  Coord->>Store: request root/sheet package mutation
+  Store->>Gate: proposal
+  Gate-->>Store: accept / reject / replace
+  Store-->>Coord: committed selection event
+  Coord->>Context: update(package, variableContext)
+        </pre>
+      </div>
+      <h3>Sheet-specific behavior</h3>
+      <div class="diagram-card">
+        <pre class="mermaid">
+stateDiagram-v2
+  [*] --> RootSelection
+  RootSelection --> SheetOpen: open sheet
+  SheetOpen --> SheetSelection: select package in sheet
+  SheetSelection --> SheetDismissed: dismiss sheet
+  SheetOpen --> SheetDismissed: dismiss without selection
+  SheetDismissed --> RootSelection: restore current workflow package or default
+        </pre>
+      </div>
+      <p>
+        Sheet selection uses <code>paywall.sheet[componentID].selected_package_id</code>. Dismissal clears
+        the sheet slot and restores the current workflow-selected package at dismissal time, not a stale
+        package captured when the coordinator was created.
+      </p>
+    </section>
+
+    <section>
+      <h2>8. First component slice: Text</h2>
+      <p>
+        Text is the first component to project committed field state. It still computes a legacy style
+        for initialization and fallback, but the rendered text can come from the committed
+        <code>component.textLid</code> state slot.
+      </p>
+      <div class="diagram-card">
+        <pre class="mermaid">
+flowchart TD
+  Env[Runtime inputs] --> Style[TextComponentViewModel.projectedStyle]
+  Overrides[Presented overrides + rawProperties] --> Style
+  Style --> Projection[TextComponentStyleProjection]
+  Projection --> Mutations[Text field mutations]
+  Mutations --> Store[PaywallStateStore]
+  Store --> Publisher[publisher(for: text key)]
+  Publisher --> View[TextComponentView]
+  Style --> Fallback[Legacy style fallback]
+  Fallback --> View
+        </pre>
+      </div>
+      <div class="two-col">
+        <div class="tile">
+          <h3>Why this is useful</h3>
+          <p>
+            If an app gate replaces or rejects a proposed text change, the view renders what the state
+            store actually committed, not what the view model locally recomputed.
+          </p>
+        </div>
+        <div class="tile">
+          <h3>What comes next</h3>
+          <p>
+            The same pattern can expand to visibility, color, padding, package rows, tabs, icons, carousel
+            selection, and other override-driven fields.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>9. Public surface and compatibility</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Area</th>
+            <th>Decision</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>API exposure</td>
+            <td><code>@_spi(Internal) public</code></td>
+            <td>The surface is still experimental and should not become stable public API yet.</td>
+          </tr>
+          <tr>
+            <td>Objective-C</td>
+            <td>No new Obj-C surface</td>
+            <td>The first slice is SwiftUI/RevenueCatUI-only.</td>
+          </tr>
+          <tr>
+            <td>Existing JSON</td>
+            <td>Backward-compatible decode</td>
+            <td>Missing component IDs in older payloads should not break paywall decode.</td>
+          </tr>
+          <tr>
+            <td>Raw overrides</td>
+            <td>Preserve raw property bag</td>
+            <td>Future reducer behavior can be introduced without changing the JSON schema.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>10. Implementation map</h2>
+      <div class="grid">
+        <div class="tile">
+          <h3>State core</h3>
+          <p><code>RevenueCatUI/Templates/V2/State</code></p>
+          <p>Scope, identity, keys, values, mutation proposals, slot registry, store, environment hooks.</p>
+        </div>
+        <div class="tile">
+          <h3>Model compatibility</h3>
+          <p><code>Sources/Paywalls/Components</code></p>
+          <p>Component IDs, raw override properties, internal coding keys for reducer/test use.</p>
+        </div>
+        <div class="tile">
+          <h3>Runtime integration</h3>
+          <p><code>RevenueCatUI/Templates/V2</code></p>
+          <p>View model identity, package selection coordinator, text projection, workflow page scoping.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Paywalls V2 Reactive State Adapter • Architecture reference for RevenueCatUI
+    </footer>
+  </main>
+</body>
+</html>
