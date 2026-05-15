@@ -83,11 +83,13 @@ struct PurchaseButtonComponentView: View {
             viewModel.componentName.flatMap { $0.isEmpty ? nil : $0 } ?? "purchase_button"
         )
         .accessibilityIdentifier(viewModel.componentId ?? "purchase_button")
-        // Expose the purchase button as a queryable container in the XCUITest
-        // tree so the cross-platform layout-validation extractor can find it
-        // by its dashboard `componentId` without it merging with its inner
-        // stack content.
-        .accessibilityElement(children: .contain)
+        // Only expose this as a distinct a11y container when the
+        // cross-platform layout extractor is active — otherwise SwiftUI's
+        // default merging keeps VoiceOver navigation focused on the
+        // button-as-a-whole instead of its inner stack content.
+        .applyIf(PaywallDebugMode.isLayoutExtractorActive) { view in
+            view.accessibilityElement(children: .contain)
+        }
         .disabled(self.shouldBeDisabled)
         .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
         #if canImport(SafariServices) && canImport(UIKit)

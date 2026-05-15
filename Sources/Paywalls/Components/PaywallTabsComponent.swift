@@ -96,18 +96,24 @@ import Foundation
 
         public let id: String?
         let type: ComponentType
+        public let name: String?
 
-        public init(id: String? = nil) {
+        public init(id: String? = nil, name: String? = nil) {
             self.id = id
             self.type = .tabControl
+            self.name = name
         }
 
         public func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
             hasher.combine(type)
+            hasher.combine(name)
         }
 
         public static func == (lhs: TabControlComponent, rhs: TabControlComponent) -> Bool {
-            return lhs.type == rhs.type
+            return lhs.id == rhs.id &&
+                   lhs.type == rhs.type &&
+                   lhs.name == rhs.name
         }
     }
 

@@ -97,16 +97,47 @@ struct StackComponentView: View {
         }
         // Apply accessibility grouping at the outermost scope so it is not buried under
         // the style / shape / padding modifier chain produced by make(style:).
-        // `.accessibilityElement(children: .contain)` marks this view as a proper
-        // accessibility container: it has its own node in the XCUITest tree with the
-        // assigned identifier and label, while still allowing children to surface with
-        // their own identifiers. Without it the stack is transparency-propagating and
-        // passes its identifier down to every leaf child.
+        //
+        // We use two different strategies depending on whether the
+        // cross-platform layout extractor is active:
+        //
+        //   - **Production (default)**: `.accessibilityElement(children: .contain)`
+        //     marks the stack as a proper accessibility container — its own
+        //     node in the tree with the assigned identifier/label, children
+        //     surface individually with their own identifiers. This is what
+        //     VoiceOver expects.
+        //
+        //   - **Extractor mode (`RC_LAYOUT_EXTRACTOR_MODE=1`)**: same goal
+        //     but via a transparent `.overlay(Color.clear...)` probe that
+        //     carries the stack's identifier and label. SwiftUI sizes the
+        //     overlay to the wrapped view's full layout box, so the probe's
+        //     a11y frame is the stack's true visual frame (union of all
+        //     children). Avoids the `.contain` failure mode where the
+        //     parent's a11y frame collapses to just the first child's frame
+        //     when there are multiple nested a11y containers — see the
+        //     POC investigation in
+        //     `paywall-rendering-validation`. Children remain individually
+        //     accessible because we don't add `.contain` to the stack
+        //     itself in this branch — SwiftUI's default child-exposure
+        //     applies, which is enough for the extractor (and irrelevant
+        //     to production VoiceOver since this branch is gated).
         .applyIf(accessibilityLabelOverride != nil || accessibilityIdentifierOverride != nil) { view in
-            view
-                .accessibilityLabel(accessibilityLabelOverride ?? "")
-                .accessibilityIdentifier(accessibilityIdentifierOverride ?? "")
-                .accessibilityElement(children: .contain)
+            Group {
+                if PaywallDebugMode.isLayoutExtractorActive {
+                    view.overlay(
+                        Color.clear
+                            .allowsHitTesting(false)
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel(accessibilityLabelOverride ?? "")
+                            .accessibilityIdentifier(accessibilityIdentifierOverride ?? "")
+                    )
+                } else {
+                    view
+                        .accessibilityLabel(accessibilityLabelOverride ?? "")
+                        .accessibilityIdentifier(accessibilityIdentifierOverride ?? "")
+                        .accessibilityElement(children: .contain)
+                }
+            }
         }
     }
 

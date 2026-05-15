@@ -29,6 +29,7 @@ class TimelineComponentViewModel {
     let uiConfigProvider: UIConfigProvider
     let id = UUID()
     var componentId: String? { component.id }
+    var componentName: String? { component.name }
 
     private let presentedOverrides: PresentedOverrides<PresentedTimelinePartial>?
 

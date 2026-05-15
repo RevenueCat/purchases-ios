@@ -221,13 +221,14 @@ struct ImageComponentView: View {
                 containerContentMode: style.contentMode
             )
             .frame(maxWidth: maxWidth)
-        // Previously this view applied `.accessibilityHidden(true)` as a
-        // placeholder until proper a11y info was wired up. That blanket hide
-        // prevented the cross-platform layout-validation extractor (and screen
-        // readers) from locating image components by their dashboard
-        // `componentId`. The image is now visible to the accessibility tree;
-        // its label and identifier are applied at the call site in
-        // `ComponentsView` alongside the other component types.
+            // Images are decorative on a marketing surface; hiding them from
+            // the accessibility tree keeps VoiceOver navigation focused on
+            // the actionable text and buttons. The cross-platform layout
+            // extractor needs the image to surface as its own a11y node
+            // though, so flip the behavior when the extractor flag is set.
+            .applyIf(!PaywallDebugMode.isLayoutExtractorActive) { view in
+                view.accessibilityHidden(true)
+            }
     }
 
 }

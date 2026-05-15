@@ -21,6 +21,7 @@ import Foundation
         public let id: String?
         let type: ComponentType
         public let visible: Bool?
+        public let name: String?
         public let iconAlignment: IconAlignment?
         public let itemSpacing: CGFloat?
         public let textSpacing: CGFloat?
@@ -35,6 +36,7 @@ import Foundation
         public init(
             id: String? = nil,
             visible: Bool? = nil,
+            name: String? = nil,
             iconAlignment: IconAlignment?,
             itemSpacing: CGFloat?,
             textSpacing: CGFloat?,
@@ -48,6 +50,7 @@ import Foundation
             self.id = id
             self.type = .timeline
             self.visible = visible
+            self.name = name
             self.iconAlignment = iconAlignment
             self.itemSpacing = itemSpacing
             self.textSpacing = textSpacing
@@ -63,7 +66,9 @@ import Foundation
             lhs: PaywallComponent.TimelineComponent,
             rhs: PaywallComponent.TimelineComponent
         ) -> Bool {
-            return lhs.iconAlignment == rhs.iconAlignment &&
+            return lhs.id == rhs.id &&
+                   lhs.name == rhs.name &&
+                   lhs.iconAlignment == rhs.iconAlignment &&
                    lhs.visible == rhs.visible &&
                    lhs.itemSpacing == rhs.itemSpacing &&
                    lhs.textSpacing == rhs.textSpacing &&
@@ -75,6 +80,8 @@ import Foundation
         }
 
         public func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
+            hasher.combine(name)
             hasher.combine(visible)
             hasher.combine(iconAlignment)
             hasher.combine(itemSpacing)

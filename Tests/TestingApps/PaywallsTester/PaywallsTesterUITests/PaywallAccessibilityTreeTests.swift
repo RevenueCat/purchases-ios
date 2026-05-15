@@ -142,6 +142,12 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
         // Suppress web-checkout URL opens so the paywall stays on screen for the screenshot.
         // PaywallPresenter injects a no-op openURL action when this flag is set.
         app.launchEnvironment["SCREENSHOT_MODE"] = "1"
+        // Opt the V2 paywall views into the layout-extractor accessibility
+        // mode so every component surfaces as a distinct queryable a11y
+        // element and images aren't hidden from the XCUITest tree. Gated
+        // by `PaywallDebugMode.isLayoutExtractorActive` in RevenueCatUI —
+        // production paywalls keep their curated VoiceOver behavior.
+        app.launchEnvironment["RC_LAYOUT_EXTRACTOR_MODE"] = "1"
         // Plumb the color-scheme override to PaywallPresenter.
         app.launchEnvironment["COLOR_SCHEME"] = colorScheme
 
@@ -514,6 +520,12 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
 
     /// Per `SCHEMA.md` v3: every declared dashboard `componentId` is emitted as a
     /// key, with `rendered: true/false` and the appropriate frame.
+    ///
+    /// When the SDK is built with `RC_LAYOUT_EXTRACTOR_MODE=1`, each component
+    /// view also writes a small JSON metadata payload to `accessibilityValue`
+    /// (see `RevenueCatUI/.../ComponentsView.swift → extractorMetadata`).
+    /// We prefer that payload over the dashboard JSON's `rawType` when it's
+    /// present, so the SDK's own classification is authoritative.
     private func buildComponentsDashboardDriven(
         from rootSnapshot: any XCUIElementSnapshot,
         dashboardSpecs: [DashboardSpec]
@@ -523,11 +535,12 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
 
         var result: [String: PaywallLayoutTree.Component] = [:]
         for spec in dashboardSpecs {
-            let type = Self.collapseDashboardType(spec.rawType)
             guard let snapshot = byIdentifier[spec.id] else {
                 // Not surfaced in the rendered tree — emit the zero-frame sentinel.
+                // For rendered: false we have no SDK metadata to consult, so
+                // fall back to the dashboard JSON's raw type.
                 result[spec.id] = PaywallLayoutTree.Component(
-                    type: type,
+                    type: Self.collapseDashboardType(spec.rawType),
                     rendered: false,
                     nativeType: nil,
                     componentId: spec.id,
@@ -539,6 +552,15 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
                 continue
             }
 
+            // Prefer the SDK-emitted metadata when present. `rawType` from the
+            // payload bypasses the offering-JSON path entirely — useful when
+            // the SDK's classification diverges from what the dashboard would
+            // suggest (e.g. a `purchase_button` rendered as a generic button
+            // in a non-purchase context).
+            let metadata = Self.parseExtractorMetadata(from: snapshot)
+            let rawType = metadata?.type ?? spec.rawType
+            let type = Self.collapseDashboardType(rawType)
+
             let cgFrame = snapshot.frame
             let frame = PaywallLayoutTree.Frame(
                 x: Self.roundToInt(cgFrame.origin.x - origin.x),
@@ -547,8 +569,15 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
                 height: Self.roundToInt(cgFrame.size.height)
             )
 
+            // When the SDK encoded the extractor metadata into accessibilityValue,
+            // skip it for the output `value` field — it's structured data, not
+            // user-facing content. For non-extractor-mode snapshots (no
+            // metadata) keep the raw value as before so input components etc.
+            // still report it.
             let value: String?
-            if let rawValue = snapshot.value {
+            if metadata != nil {
+                value = nil
+            } else if let rawValue = snapshot.value {
                 let str = "\(rawValue)"
                 value = str.isEmpty ? nil : str
             } else {
@@ -567,6 +596,25 @@ final class PaywallAccessibilityTreeTests: XCTestCase {
             )
         }
         return result
+    }
+
+    /// Parses the JSON payload that `RevenueCatUI`'s `extractorMetadata`
+    /// modifier writes to `accessibilityValue` when
+    /// `RC_LAYOUT_EXTRACTOR_MODE=1` is set on the app process. Shape:
+    /// `{"t":"<dashboardType>","n":"<dashboardName>"}`. Returns `nil` for any
+    /// snapshot that doesn't carry a parseable payload (e.g. legacy SDK
+    /// builds, or production builds where the modifier is a no-op).
+    fileprivate static func parseExtractorMetadata(
+        from snapshot: any XCUIElementSnapshot
+    ) -> ExtractorMetadata? {
+        guard let raw = snapshot.value as? String, !raw.isEmpty else { return nil }
+        guard let data = raw.data(using: .utf8) else { return nil }
+        guard let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return nil
+        }
+        guard let type = dict["t"] as? String, !type.isEmpty else { return nil }
+        let name = dict["n"] as? String
+        return ExtractorMetadata(type: type, name: name?.isEmpty == true ? nil : name)
     }
 
     /// Legacy render-tree-driven export (used when no dashboard config is available).
@@ -1038,4 +1086,18 @@ fileprivate struct DashboardSpec {
     /// Raw dashboard type (e.g. "stack", "purchase_button"). Collapsed to the
     /// schema's closed enum via `PaywallAccessibilityTreeTests.collapseDashboardType`.
     let rawType: String
+}
+
+/// SDK-emitted metadata read from `accessibilityValue` on a rendered
+/// component snapshot. Produced by `extractorMetadata(type:name:)` in
+/// `RevenueCatUI/.../ComponentsView.swift` when
+/// `RC_LAYOUT_EXTRACTOR_MODE=1` is set on the app process.
+fileprivate struct ExtractorMetadata {
+    /// Dashboard type as the SDK classifies it (e.g. "purchase_button",
+    /// "stack", "icon"). Authoritative over the offering JSON's `rawType`
+    /// when present.
+    let type: String
+    /// Optional human-readable name; nil when not declared on the dashboard
+    /// component.
+    let name: String?
 }
