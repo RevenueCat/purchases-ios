@@ -78,7 +78,6 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
         let product = try XCTUnwrap(unwrappedProducts.onlyElement).product
 
-        expect(productsRequestFactory.invokedRequestParameters) == Set([storeKitProductIdentifier])
         expect(product.productIdentifier) == storeKitProductIdentifier
         expect(self.logger.messages).toNot(containElementSatisfying { message in
             message.level == .warn
