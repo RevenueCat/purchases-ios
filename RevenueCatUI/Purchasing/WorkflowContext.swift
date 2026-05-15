@@ -60,11 +60,25 @@ struct WorkflowContext {
             return nil
         }
 
-        guard let step = self.workflow.steps[singleWorkflowStepFallbackId],
+        guard let packageContext = self.packageContext(for: singleWorkflowStepFallbackId) else {
+            Logger.warning(Strings.workflow_package_context_unresolvable(stepId: singleWorkflowStepFallbackId))
+            return nil
+        }
+
+        return packageContext
+    }
+
+    /// Resolves the package context for a concrete workflow step, falling back to
+    /// `singleStepFallbackId` for packageless steps.
+    func effectivePackageContext(for stepId: String) -> WorkflowPackageContext? {
+        return self.packageContext(for: stepId) ?? self.workflowPackageContext
+    }
+
+    private func packageContext(for stepId: String) -> WorkflowPackageContext? {
+        guard let step = self.workflow.steps[stepId],
               let screenId = step.screenId,
               let screen = self.workflow.screens[screenId],
               let offering = self.offering(for: screen.offeringIdentifier) else {
-            Logger.warning(Strings.workflow_package_context_unresolvable(stepId: singleWorkflowStepFallbackId))
             return nil
         }
 

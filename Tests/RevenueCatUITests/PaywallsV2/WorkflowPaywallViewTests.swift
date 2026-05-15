@@ -143,6 +143,54 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(defaultPackage?.identifier) == TestData.annualPackage.identifier
     }
 
+    func testEffectiveWorkflowPackageContextUsesCarriedPackageForDestinationBroadcast() {
+        let destinationDefaultPackage = Self.makePackage(identifier: "$rc_monthly", offeringId: "destination")
+        let destinationCarriedPackage = Self.makePackage(identifier: "$rc_annual", offeringId: "destination")
+        let sourceCarriedPackage = Self.makePackage(identifier: "$rc_annual", offeringId: "source")
+        let base = WorkflowPackageContext(
+            selectedPackage: destinationDefaultPackage,
+            packages: [destinationDefaultPackage, destinationCarriedPackage]
+        )
+
+        let context = WorkflowPaywallView.effectiveWorkflowPackageContext(
+            base: base,
+            carryForwardPackage: sourceCarriedPackage
+        )
+
+        expect(context?.selectedPackage) === destinationCarriedPackage
+        expect(context?.selectedPackage.identifier) == "$rc_annual"
+        expect(context?.selectedPackage.presentedOfferingContext.offeringIdentifier) == "destination"
+    }
+
+    func testEffectiveWorkflowPackageContextKeepsDestinationDefaultWhenCarriedPackageIsUnavailable() {
+        let destinationDefaultPackage = Self.makePackage(identifier: "$rc_monthly", offeringId: "destination")
+        let sourceCarriedPackage = Self.makePackage(identifier: "$rc_annual", offeringId: "source")
+        let base = WorkflowPackageContext(
+            selectedPackage: destinationDefaultPackage,
+            packages: [destinationDefaultPackage]
+        )
+
+        let context = WorkflowPaywallView.effectiveWorkflowPackageContext(
+            base: base,
+            carryForwardPackage: sourceCarriedPackage
+        )
+
+        expect(context?.selectedPackage) === destinationDefaultPackage
+        expect(context?.selectedPackage.identifier) == "$rc_monthly"
+    }
+
+    func testEffectiveWorkflowPackageContextCanCarryIntoPackagelessDestination() {
+        let sourceCarriedPackage = Self.makePackage(identifier: "$rc_annual", offeringId: "source")
+
+        let context = WorkflowPaywallView.effectiveWorkflowPackageContext(
+            base: nil,
+            carryForwardPackage: sourceCarriedPackage
+        )
+
+        expect(context?.selectedPackage) === sourceCarriedPackage
+        expect(context?.packages.first) === sourceCarriedPackage
+    }
+
 }
 
 // MARK: - workflowPackageContext tests
@@ -218,6 +266,37 @@ extension WorkflowPaywallViewTests {
         expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_weekly"]
     }
 
+    func testEffectivePackageContextUsesStepPackageContextBeforeWorkflowFallback() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            terminalScreenJSON: Self.makeScreenJSON(
+                packages: [(id: "$rc_annual", isDefault: true)],
+                offeringId: "offering_test"
+            ),
+            initialScreenJSON: Self.makeScreenJSON(
+                packages: [(id: "$rc_monthly", isDefault: true)],
+                offeringId: "offering_test"
+            )
+        )
+
+        let packageContext = context.effectivePackageContext(for: "step_initial")
+
+        expect(packageContext?.selectedPackage.identifier) == "$rc_monthly"
+        expect(packageContext?.packages.map(\.identifier)) == ["$rc_monthly"]
+    }
+
+    func testEffectivePackageContextFallsBackToWorkflowPackageContextForPackagelessStep() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            workflowPackages: [(id: "$rc_annual", isDefault: true)]
+        )
+
+        let packageContext = context.effectivePackageContext(for: "step_initial")
+
+        expect(packageContext?.selectedPackage.identifier) == "$rc_annual"
+        expect(packageContext?.packages.map(\.identifier)) == ["$rc_annual"]
+    }
+
 }
 
 // MARK: - variableContext population tests
@@ -263,13 +342,15 @@ private extension WorkflowPaywallViewTests {
     static func makeContext(
         singleStepFallbackId: String?,
         workflowPackages: [PackageSpec] = [],
-        terminalScreenJSON: String? = nil
+        terminalScreenJSON: String? = nil,
+        initialScreenJSON: String? = nil
     ) throws -> WorkflowContext {
         let offeringId = "offering_test"
         let workflow = try makeWorkflow(
             singleStepFallbackId: singleStepFallbackId,
             workflowPackages: workflowPackages,
             terminalScreenJSON: terminalScreenJSON,
+            initialScreenJSON: initialScreenJSON,
             offeringId: offeringId
         )
         let packageIdentifiers = Set(workflowPackages.map(\.id)).union([
@@ -315,6 +396,7 @@ private extension WorkflowPaywallViewTests {
         singleStepFallbackId: String?,
         workflowPackages: [PackageSpec],
         terminalScreenJSON customTerminalScreenJSON: String? = nil,
+        initialScreenJSON customInitialScreenJSON: String? = nil,
         offeringId: String
     ) throws -> PublishedWorkflow {
         let workflowStepIdJSON = singleStepFallbackId.map { "\"single_step_fallback_id\": \"\($0)\"," } ?? ""
@@ -347,7 +429,7 @@ private extension WorkflowPaywallViewTests {
             "step_placeholder": { "id": "step_placeholder", "type": "screen" }
           },
           "screens": {
-            "screen_initial": \(makeScreenJSON(packages: [], offeringId: offeringId)),
+            "screen_initial": \(customInitialScreenJSON ?? makeScreenJSON(packages: [], offeringId: offeringId)),
             \(terminalScreenJSON)
             "screen_placeholder": \(makeScreenJSON(packages: [], offeringId: offeringId))
           },

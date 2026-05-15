@@ -33,6 +33,9 @@ struct ButtonComponentView: View {
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
+    @EnvironmentObject
+    private var packageContext: PackageContext
+
     @Environment(\.componentInteractionLogger) var componentInteractionLogger
     @Environment(\.workflowTriggerAction) private var workflowTriggerAction
     @Environment(\.closeWorkflowAction) private var closeWorkflowAction
@@ -100,7 +103,7 @@ struct ButtonComponentView: View {
     private func performAction() async throws {
         if let id = viewModel.id,
            let triggerWorkflow = workflowTriggerAction,
-           triggerWorkflow(id) {
+           triggerWorkflow(id, self.packageContext.package) {
             trackButtonComponentInteraction()
             return
         }

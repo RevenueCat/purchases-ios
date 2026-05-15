@@ -153,7 +153,6 @@ struct WorkflowPaywallView: View {
     private let displayCloseButton: Bool
     private let promoOfferCache: PaywallPromoOfferCache?
     private let onDismiss: () -> Void
-    private let workflowPackageContext: WorkflowPackageContext?
 
     @StateObject private var navigator: WorkflowNavigator
     @State private var hasLoggedInvalidState = false
@@ -176,7 +175,6 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.promoOfferCache = promoOfferCache
         self.onDismiss = onDismiss
-        self.workflowPackageContext = context.workflowPackageContext
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
         self._transitionState = .init(
             wrappedValue: .init(
@@ -184,7 +182,8 @@ struct WorkflowPaywallView: View {
                     from: context,
                     stepId: context.workflow.initialStepId,
                     canNavigateBack: false,
-                    displayCloseButton: displayCloseButton
+                    displayCloseButton: displayCloseButton,
+                    carryForwardPackage: nil
                 )
             )
         )
@@ -246,8 +245,8 @@ struct WorkflowPaywallView: View {
             purchaseHandler: self.purchaseHandler,
             introEligibilityChecker: self.introEligibilityChecker,
             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
-            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage,
-            workflowPackages: self.workflowPackageContext?.packages,
+            workflowDefaultPackage: page.workflowPackageContext?.selectedPackage,
+            workflowPackages: page.workflowPackageContext?.packages,
             displayCloseButton: page.showCloseButton,
             onDismiss: self.handleDismiss,
             closeWorkflowAction: self.onDismiss,
@@ -255,9 +254,9 @@ struct WorkflowPaywallView: View {
             colorScheme: self.colorScheme,
             promoOfferCache: self.promoOfferCache
         )
-        .environment(\.workflowPackageContext, self.workflowPackageContext)
-        .environment(\.workflowTriggerAction, { componentId in
-            return self.handleTriggeredNavigation(componentId: componentId)
+        .environment(\.workflowPackageContext, page.workflowPackageContext)
+        .environment(\.workflowTriggerAction, { componentId, package in
+            return self.handleTriggeredNavigation(componentId: componentId, carryForwardPackage: package)
         })
     }
 
@@ -288,7 +287,8 @@ struct WorkflowPaywallView: View {
                     from: self.context,
                     stepId: previousStep.id,
                     canNavigateBack: self.navigator.canNavigateBack,
-                    displayCloseButton: self.displayCloseButton
+                    displayCloseButton: self.displayCloseButton,
+                    carryForwardPackage: nil
                 ),
                 direction: .back
             )
@@ -309,7 +309,7 @@ struct WorkflowPaywallView: View {
         return .navigateBack
     }
 
-    private func handleTriggeredNavigation(componentId: String) -> Bool {
+    private func handleTriggeredNavigation(componentId: String, carryForwardPackage: Package?) -> Bool {
         guard !self.transitionState.isTransitioning,
               let nextStep = self.navigator.triggerAction(componentId: componentId) else {
             return false
@@ -320,7 +320,8 @@ struct WorkflowPaywallView: View {
                 from: self.context,
                 stepId: nextStep.id,
                 canNavigateBack: self.navigator.canNavigateBack,
-                displayCloseButton: self.displayCloseButton
+                displayCloseButton: self.displayCloseButton,
+                carryForwardPackage: carryForwardPackage
             ),
             direction: .forward
         )
@@ -380,7 +381,8 @@ struct WorkflowPaywallView: View {
         from context: WorkflowContext,
         stepId: String,
         canNavigateBack: Bool,
-        displayCloseButton: Bool
+        displayCloseButton: Bool,
+        carryForwardPackage: Package?
     ) -> RenderedPage? {
         guard let step = context.workflow.steps[stepId],
               let screenId = step.screenId,
@@ -394,9 +396,39 @@ struct WorkflowPaywallView: View {
             uiConfig: context.workflow.uiConfig
         )
 
+        let workflowPackageContext = Self.effectiveWorkflowPackageContext(
+            base: context.effectivePackageContext(for: stepId),
+            carryForwardPackage: carryForwardPackage
+        )
+
         return .init(
             content: .init(paywallComponents: paywallComponents, offering: offering),
+            workflowPackageContext: workflowPackageContext,
             showCloseButton: !canNavigateBack && displayCloseButton
+        )
+    }
+
+    static func effectiveWorkflowPackageContext(
+        base: WorkflowPackageContext?,
+        carryForwardPackage: Package?
+    ) -> WorkflowPackageContext? {
+        guard let carryForwardPackage else {
+            return base
+        }
+
+        guard let base else {
+            return .init(selectedPackage: carryForwardPackage, packages: [carryForwardPackage])
+        }
+
+        guard let destinationPackage = base.packages.first(
+            where: { $0.identifier == carryForwardPackage.identifier }
+        ) else {
+            return base
+        }
+
+        return .init(
+            selectedPackage: destinationPackage,
+            packages: base.packages
         )
     }
 
@@ -420,6 +452,7 @@ struct WorkflowPaywallView: View {
 private struct RenderedPage: Identifiable {
     let id = UUID()
     let content: CurrentStepContent
+    let workflowPackageContext: WorkflowPackageContext?
     let showCloseButton: Bool
 }
 
