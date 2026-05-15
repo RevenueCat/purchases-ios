@@ -691,14 +691,14 @@ stateDiagram-v2
       <div class="diagram-card">
         <pre class="mermaid">
 flowchart TD
-  Env[Runtime inputs] --> Style[TextComponentViewModel.projectedStyle]
-  Overrides[Presented overrides + rawProperties] --> Style
-  Style --> Projection[TextComponentStyleProjection]
-  Projection --> Mutations[Text field mutations]
-  Mutations --> Store[PaywallStateStore]
-  Store --> Publisher[publisher(for: text key)]
-  Publisher --> View[TextComponentView]
-  Style --> Fallback[Legacy style fallback]
+  Env["Runtime inputs"] --> Style["Text component projection"]
+  Overrides["Presented overrides and raw properties"] --> Style
+  Style --> Projection["Projected text style"]
+  Projection --> Mutations["Text field mutations"]
+  Mutations --> Store["Paywall state store"]
+  Store --> Publisher["Text key publisher"]
+  Publisher --> View["Text component view"]
+  Style --> Fallback["Legacy style fallback"]
   Fallback --> View
         </pre>
       </div>
