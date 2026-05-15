@@ -46,19 +46,16 @@ import Foundation
     @_spi(Internal) public let scope: PaywallStateScope
     @_spi(Internal) public let component: PaywallComponentIdentity
     @_spi(Internal) public let field: Field
-    @_spi(Internal) public let renderContext: String?
 
     @_spi(Internal)
     public init(
         scope: PaywallStateScope,
         component: PaywallComponentIdentity,
-        field: Field,
-        renderContext: String? = nil
+        field: Field
     ) {
         self.scope = scope
         self.component = component
         self.field = field
-        self.renderContext = renderContext
     }
 
     @_spi(Internal)

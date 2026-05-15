@@ -53,9 +53,6 @@ struct TextComponentView: View {
     @Environment(\.paywallStateScope)
     private var paywallStateScope
 
-    @Environment(\.paywallStateRenderContext)
-    private var paywallStateRenderContext
-
     @Environment(\.paywallStateMutationHandler)
     private var paywallStateMutationHandler
 
@@ -87,13 +84,10 @@ struct TextComponentView: View {
             promoOffer: promoOffer,
             countdownTime: countdownTime,
             customVariables: self.customVariables,
-            paywallStateScope: self.paywallStateScope,
-            renderContext: self.paywallStateRenderContext
+            paywallStateScope: self.paywallStateScope
         )
         let style = projection.style
-        let textStateKey = self.paywallStateScope.map {
-            self.viewModel.textStateKey(scope: $0, renderContext: self.paywallStateRenderContext)
-        }
+        let textStateKey = self.paywallStateScope.map { self.viewModel.textStateKey(scope: $0) }
         let renderedText = self.committedText ?? style.text
 
         Group {
