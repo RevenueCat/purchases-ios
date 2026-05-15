@@ -67,7 +67,6 @@ struct PaywallsV2View: View {
     private let workflowDefaultPackage: Package?
     private let workflowPackages: [Package]?
     private let showZeroDecimalPlacePrices: Bool
-    private let selectedPackageContextOverride: PackageContext?
     /// This is a configuration value from PaywallsV1, but it's important to include here just in case the
     /// default paywall is shown. This is not used in the success path
     private let displayCloseButton: Bool
@@ -115,7 +114,6 @@ struct PaywallsV2View: View {
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
         self.closeWorkflowAction = closeWorkflowAction
-        self.selectedPackageContextOverride = selectedPackageContextOverride
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
         ))
