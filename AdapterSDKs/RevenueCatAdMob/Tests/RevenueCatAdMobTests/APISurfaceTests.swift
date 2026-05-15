@@ -169,7 +169,7 @@ final class APISurfaceTests: AdapterTestCase {
             -> (UIViewController, (@MainActor () -> Void)?, (@escaping @MainActor (RewardVerificationResult) -> Void))
                 -> Void
             = GoogleMobileAds.RewardedAd.present(
-                from:rewardVerificationStarted:rewardVerificationResult:
+                from:rewardVerificationStarted:rewardVerificationCompleted:
             )
         let rewardedPresentWithPlacement:
             (GoogleMobileAds.RewardedAd)
@@ -179,14 +179,14 @@ final class APISurfaceTests: AdapterTestCase {
                 (@MainActor () -> Void)?,
                 (@escaping @MainActor (RewardVerificationResult) -> Void)
             ) -> Void = GoogleMobileAds.RewardedAd.present(
-                from:placement:rewardVerificationStarted:rewardVerificationResult:
+                from:placement:rewardVerificationStarted:rewardVerificationCompleted:
             )
         let rewardedInterstitialPresent:
             (GoogleMobileAds.RewardedInterstitialAd)
             -> (UIViewController, (@MainActor () -> Void)?, (@escaping @MainActor (RewardVerificationResult) -> Void))
                 -> Void
             = GoogleMobileAds.RewardedInterstitialAd.present(
-                from:rewardVerificationStarted:rewardVerificationResult:
+                from:rewardVerificationStarted:rewardVerificationCompleted:
             )
         let rewardedInterstitialPresentWithPlacement:
             (GoogleMobileAds.RewardedInterstitialAd)
@@ -196,7 +196,7 @@ final class APISurfaceTests: AdapterTestCase {
                 (@MainActor () -> Void)?,
                 (@escaping @MainActor (RewardVerificationResult) -> Void)
             ) -> Void = GoogleMobileAds.RewardedInterstitialAd.present(
-                from:placement:rewardVerificationStarted:rewardVerificationResult:
+                from:placement:rewardVerificationStarted:rewardVerificationCompleted:
             )
 
         XCTAssertNotNil(rewardedPresent)
