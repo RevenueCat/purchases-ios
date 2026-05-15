@@ -970,8 +970,13 @@ stateDiagram-v2
       <p>
         Text is the first component to project committed field state. It still computes a legacy style
         for initialization and fallback, but the rendered text can come from the committed
-        <code>component.textLid</code> state slot.
+        text state slot.
       </p>
+      <div class="callout">
+        <strong>Important naming nuance:</strong> the current first slice uses the serialized field name
+        <code>component.textLid</code>, but the value committed to state is the already-localized,
+        processed display string. The store renders strings, not localization IDs.
+      </div>
       <div class="diagram-card">
         <pre class="mermaid">
 flowchart TD
@@ -986,6 +991,32 @@ flowchart TD
   Fallback --> View
         </pre>
       </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Concept</th>
+            <th>What it means today</th>
+            <th>What to watch</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>textLid</code> in JSON</td>
+            <td>A localization key that must be resolved against <code>componentsLocalizations</code>.</td>
+            <td>If the key is missing, the current localization path does not render the key as fallback text.</td>
+          </tr>
+          <tr>
+            <td>Text value in state</td>
+            <td>The localized and processed string that should be displayed.</td>
+            <td>If the store contains <code>"Hello"</code>, the view renders <code>Hello</code> directly.</td>
+          </tr>
+          <tr>
+            <td>Future field naming</td>
+            <td>The state field may be better named <code>component.text</code> or <code>component.rendered_text</code>.</td>
+            <td><code>component.textLid</code> sounds like it stores a key, but today it stores rendered text.</td>
+          </tr>
+        </tbody>
+      </table>
       <div class="two-col">
         <div class="tile">
           <h3>Why this is useful</h3>
