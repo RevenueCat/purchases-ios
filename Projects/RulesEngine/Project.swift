@@ -20,6 +20,20 @@ let project = Project(
             settings: .settings(
                 base: ([:] as SettingsDictionary).appendingTuistSwiftConditions()
             )
+        ),
+        .target(
+            name: "RulesEngineTests",
+            destinations: .allRevenueCat,
+            product: .unitTests,
+            bundleId: "com.revenuecat.RulesEngineTests",
+            deploymentTargets: .allRevenueCat,
+            infoPlist: .default,
+            sources: [
+                "../../Tests/RulesEngineTests/**/*.swift"
+            ],
+            dependencies: [
+                .target(name: "RulesEngine")
+            ]
         )
     ],
     schemes: [
@@ -27,6 +41,9 @@ let project = Project(
             name: "RulesEngine",
             shared: true,
             buildAction: .buildAction(targets: ["RulesEngine"]),
+            testAction: .targets([
+                .testableTarget(target: .init(stringLiteral: "RulesEngineTests"))
+            ]),
             runAction: .runAction(configuration: "Debug"),
             archiveAction: .archiveAction(configuration: "Release"),
             profileAction: .profileAction(configuration: "Release"),
