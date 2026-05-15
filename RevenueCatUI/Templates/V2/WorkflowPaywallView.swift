@@ -239,8 +239,13 @@ struct WorkflowPaywallView: View {
         // Write the exit offer directly via the binding injected by PresentingPaywallModifier.
         // This is more reliable than the preference key when the workflow is inside a sheet,
         // since preferences don't always propagate across presentation boundaries.
+        // Must use exitOfferContext(for:currentStepId:), not context.exitOfferOffering, because
+        // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
-            self.exitOfferOfferingBinding.wrappedValue = self.context.exitOfferOffering
+            self.syncExitOfferBinding()
+        }
+        .onChange(of: self.navigator.currentStepId) { _ in
+            self.syncExitOfferBinding()
         }
     }
 
@@ -308,6 +313,12 @@ struct WorkflowPaywallView: View {
                 direction: .back
             )
         }
+    }
+
+    private func syncExitOfferBinding() {
+        self.exitOfferOfferingBinding.wrappedValue = Self.exitOfferContext(
+            for: self.context, currentStepId: self.navigator.currentStepId
+        )?.exitOfferOffering
     }
 
     static func exitOfferContext(
