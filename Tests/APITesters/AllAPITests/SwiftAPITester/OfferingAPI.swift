@@ -37,6 +37,7 @@ func checkOfferingAPI() {
     let metadataOptionalInt: Int? = off.getMetadataValue(for: "", default: nil)
     let metadataDecodable: Data? = off.getMetadataValue(for: "")
     let _: PaywallData? = off.paywall
+    let _: Offering.PaywallComponents? = off.paywallComponents
     let bool: Bool = off.hasPaywall
 
     print(off!, ident, sDesc, aPacks, lPack!, annPack!, smPack!, thmPack!, twmPack!,
@@ -70,6 +71,22 @@ private func checkCreateOfferingAPI(package: Package) {
         serverDescription: "",
         metadata: [String: Any](),
         paywall: Optional<PaywallData>.none,
+        availablePackages: [package],
+        webCheckoutUrl: URL(string: "https://revenuecat.com")
+    )
+    _ = Offering(
+        identifier: "",
+        serverDescription: "",
+        paywallComponents: Optional<Offering.PaywallComponents>.none,
+        availablePackages: [package],
+        webCheckoutUrl: URL(string: "https://revenuecat.com")
+    )
+    _ = Offering(
+        identifier: "",
+        serverDescription: "",
+        metadata: [String: Any](),
+        paywall: Optional<PaywallData>.none,
+        paywallComponents: Optional<Offering.PaywallComponents>.none,
         availablePackages: [package],
         webCheckoutUrl: URL(string: "https://revenuecat.com")
     )

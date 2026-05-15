@@ -134,7 +134,7 @@ The sample prints diagnostics in the Xcode console and emits RevenueCat ad event
 
 All formats in this app use `loadAndTrack` APIs and pass a `placement` value to improve reporting segmentation.
 
-For reward verification flows, the sample explicitly calls `enableRewardVerification()` on loaded rewarded ad instances, then uses `present(..., rewardVerificationStarted:, rewardVerificationResult:)` to show verification progress and map outcomes to real-world behavior:
+For reward verification flows, the sample explicitly calls `enableRewardVerification()` on loaded rewarded ad instances, then uses `present(..., rewardVerificationStarted:, rewardVerificationCompleted:)` to show verification progress and map outcomes to real-world behavior:
 
 - grant virtual currency when `verifiedReward.virtualCurrency` is present
 - handle the `noReward` verified case separately

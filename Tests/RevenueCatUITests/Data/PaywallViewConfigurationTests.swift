@@ -80,6 +80,7 @@ final class PaywallViewConfigurationTests: TestCase {
         let packageContext = try XCTUnwrap(result.offering.availablePackages.first?.presentedOfferingContext)
         expect(packageContext.offeringIdentifier) == initialOffering.identifier
     }
+
 #endif
 
 }

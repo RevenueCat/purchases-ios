@@ -99,9 +99,9 @@ final class WorkflowContextTests: TestCase {
         expect(context.offering(for: "offering_missing")).to(beNil())
     }
 
-    // MARK: - exitOfferOfferingId
+    // MARK: - exitOfferOffering (single-page)
 
-    func testExitOfferOfferingIdReturnsNilWhenNoSingleStepFallbackId() throws {
+    func testExitOfferOfferingReturnsNilWhenNoSingleStepFallbackId() throws {
         let offering = Self.makeOffering(identifier: "offering_a")
         let context = WorkflowContext(
             workflow: try Self.makeWorkflow(),
@@ -110,10 +110,125 @@ final class WorkflowContextTests: TestCase {
             presentedOfferingContext: nil
         )
 
-        expect(context.exitOfferOfferingId).to(beNil())
+        expect(context.exitOfferOffering).to(beNil())
     }
 
-    func testExitOfferOfferingIdReturnsOfferingIdFromFallbackStepScreen() throws {
+    func testExitOfferOfferingReturnsNilWhenFallbackStepHasNoExitOffers() throws {
+        let offering = Self.makeOffering(identifier: "offering_a")
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflowWithSingleStepFallback(singleStepFallbackId: "step_1"),
+            allOfferings: Self.makeOfferings(offering),
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+
+        expect(context.exitOfferOffering).to(beNil())
+    }
+
+    func testExitOfferOfferingReturnsNilWhenExitOfferingNotInAllOfferings() throws {
+        let offering = Self.makeOffering(identifier: "offering_a")
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflowWithExitOffer(
+                singleStepFallbackId: "step_1",
+                exitOfferOfferingId: "exit_offering_a"
+            ),
+            allOfferings: Self.makeOfferings(offering),  // exit offering not included
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+
+        expect(context.exitOfferOffering).to(beNil())
+    }
+
+    func testExitOfferOfferingReturnsNilWhenSameAsCurrentOffering() throws {
+        let offering = Self.makeOffering(identifier: "offering_a")
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflowWithExitOffer(
+                singleStepFallbackId: "step_1",
+                exitOfferOfferingId: "offering_a"  // same as initial offering
+            ),
+            allOfferings: Self.makeOfferings(offering),
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+
+        expect(context.exitOfferOffering).to(beNil())
+    }
+
+    func testExitOfferOfferingReturnsOfferingWhenConfiguredAndAvailable() throws {
+        let offering = Self.makeOffering(identifier: "offering_a")
+        let exitOffering = Self.makeOffering(identifier: "exit_offering_a")
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflowWithExitOffer(
+                singleStepFallbackId: "step_1",
+                exitOfferOfferingId: "exit_offering_a"
+            ),
+            allOfferings: Self.makeOfferings([offering, exitOffering]),
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+
+        expect(context.exitOfferOffering?.identifier) == "exit_offering_a"
+    }
+
+    // MARK: - exitOfferOffering (multi-page)
+
+    func testExitOfferOfferingReturnsNilForMultiPageWorkflowWithNoExitOffer() throws {
+        let offering = Self.makeOffering(identifier: "offering_a")
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflow(),
+            allOfferings: Self.makeOfferings(offering),
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+
+        expect(context.exitOfferOffering).to(beNil())
+    }
+
+    func testExitOfferOfferingReturnsNilForMultiPageWorkflowWithoutSingleStepFallbackId() throws {
+        let offering = Self.makeOffering(identifier: "offering_a")
+        let exitOffering = Self.makeOffering(identifier: "exit_offering_a")
+        let context = WorkflowContext(
+            workflow: try Self.makeMultiPageWorkflowWithExitOffer(
+                exitOfferOfferingId: "exit_offering_a",
+                onStepId: "step_2"
+            ),
+            allOfferings: Self.makeOfferings([offering, exitOffering]),
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+
+        // No singleStepFallbackId — exit offer is not resolved (mirrors Android's dismissExitOffer).
+        expect(context.exitOfferOffering).to(beNil())
+    }
+
+    // MARK: - exitOfferTriggeringStepId
+
+    func testExitOfferTriggeringStepIdReturnsNilWhenNoExitOffer() throws {
+        let offering = Self.makeOffering(identifier: "offering_a")
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflow(),
+            allOfferings: Self.makeOfferings(offering),
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+
+        expect(context.exitOfferTriggeringStepId).to(beNil())
+    }
+
+    func testExitOfferTriggeringStepIdReturnsNilWhenFallbackStepHasNoExitOffer() throws {
+        let offering = Self.makeOffering(identifier: "offering_a")
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflowWithSingleStepFallback(singleStepFallbackId: "step_1"),
+            allOfferings: Self.makeOfferings(offering),
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+
+        expect(context.exitOfferTriggeringStepId).to(beNil())
+    }
+
+    func testExitOfferTriggeringStepIdReturnsSingleStepFallbackIdWhenExitOfferIsConfigured() throws {
         let offering = Self.makeOffering(identifier: "offering_a")
         let context = WorkflowContext(
             workflow: try Self.makeWorkflowWithExitOffer(
@@ -125,19 +240,23 @@ final class WorkflowContextTests: TestCase {
             presentedOfferingContext: nil
         )
 
-        expect(context.exitOfferOfferingId) == "exit_offering_a"
+        expect(context.exitOfferTriggeringStepId) == "step_1"
     }
 
-    func testExitOfferOfferingIdReturnsNilWhenFallbackStepHasNoExitOffers() throws {
+    func testExitOfferTriggeringStepIdReturnsNilForMultiPageWorkflowWithoutSingleStepFallbackId() throws {
         let offering = Self.makeOffering(identifier: "offering_a")
         let context = WorkflowContext(
-            workflow: try Self.makeWorkflowWithSingleStepFallback(singleStepFallbackId: "step_1"),
+            workflow: try Self.makeMultiPageWorkflowWithExitOffer(
+                exitOfferOfferingId: "exit_offering_a",
+                onStepId: "step_2"
+            ),
             allOfferings: Self.makeOfferings(offering),
             initialOffering: offering,
             presentedOfferingContext: nil
         )
 
-        expect(context.exitOfferOfferingId).to(beNil())
+        // No singleStepFallbackId — triggering step is not resolved (mirrors Android's dismissExitOffer).
+        expect(context.exitOfferTriggeringStepId).to(beNil())
     }
 
     // MARK: - resolveWorkflowContext
@@ -263,6 +382,33 @@ private extension WorkflowContextTests {
           },
           "screens": {
             "screen_1": \(Self.screenJSON(exitOfferOfferingId: exitOfferOfferingId))
+          },
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {}
+          }
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+    }
+
+    static func makeMultiPageWorkflowWithExitOffer(
+        exitOfferOfferingId: String,
+        onStepId: String
+    ) throws -> PublishedWorkflow {
+        let json = """
+        {
+          "id": "wf_test",
+          "display_name": "Test",
+          "initial_step_id": "step_1",
+          "steps": {
+            "step_1": { "id": "step_1", "type": "screen", "screen_id": "screen_1" },
+            "\(onStepId)": { "id": "\(onStepId)", "type": "screen", "screen_id": "screen_2" }
+          },
+          "screens": {
+            "screen_1": \(Self.screenJSON()),
+            "screen_2": \(Self.screenJSON(exitOfferOfferingId: exitOfferOfferingId))
           },
           "ui_config": {
             "app": { "colors": {}, "fonts": {} },
