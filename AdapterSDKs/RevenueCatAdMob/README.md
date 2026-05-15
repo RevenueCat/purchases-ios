@@ -187,7 +187,7 @@ rewardedAd?.present(
     rewardVerificationStarted: {
         // Reward verification started
     },
-    rewardVerificationResult: { result in
+    rewardVerificationCompleted: { result in
         guard let verifiedReward = result.verifiedReward else {
             print("Reward verification failed")
             return
@@ -204,7 +204,7 @@ rewardedAd?.present(
 )
 ```
 
-When `rewardVerificationResult` returns `.verified(.virtualCurrency(...))`, the adapter automatically calls
+When `rewardVerificationCompleted` returns `.verified(.virtualCurrency(...))`, the adapter automatically calls
 `Purchases.shared.invalidateVirtualCurrenciesCache()` (if Purchases is configured) before delivering the callback.
 You only need to refetch balances (`getVirtualCurrencies` / `virtualCurrencies()`) when your UI needs fresh values.
 
@@ -268,7 +268,7 @@ rewardedInterstitialAd?.present(
     rewardVerificationStarted: {
         // Reward verification started
     },
-    rewardVerificationResult: { result in
+    rewardVerificationCompleted: { result in
         guard let verifiedReward = result.verifiedReward else {
             print("Reward verification failed")
             return
