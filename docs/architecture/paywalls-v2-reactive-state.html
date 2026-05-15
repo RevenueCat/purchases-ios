@@ -766,7 +766,109 @@ flowchart LR
     </section>
 
     <section>
-      <h2>9. Package selection flow</h2>
+      <h2>9. Animated overrides: useful, but coarse-grained</h2>
+      <p>
+        Once overrides are treated as state projections, an override can also describe how the transition
+        into those projected values should happen. That opens the door to smooth package selection,
+        eligibility, or personalization changes without inventing a separate animation system for every
+        component.
+      </p>
+      <div class="two-col">
+        <div>
+          <h3>A possible shape</h3>
+          <div class="code-block">{
+  "conditions": [{ "type": "selected" }],
+  "animation": {
+    "type": "ease_in_out",
+    "duration_ms": 300,
+    "delay_ms": 0
+  },
+  "properties": {
+    "textLid": "selected_title",
+    "color": { "light": { "type": "hex", "value": "#2EBEE5" } },
+    "visible": true
+  }
+}</div>
+        </div>
+        <div>
+          <h3>What the adapter sees</h3>
+          <p>
+            The override produces a group of state mutations: text, color, visibility, and any other
+            projected fields. The animation metadata becomes a transaction-level instruction attached
+            to the change group.
+          </p>
+          <p>
+            The app can still gate the proposed mutation group. If accepted, RevenueCatUI applies the
+            committed values using the animation metadata.
+          </p>
+        </div>
+      </div>
+      <div class="diagram-card">
+        <pre class="mermaid">
+flowchart LR
+  Override["Matched override"] --> Values["Projected values"]
+  Override --> Animation["Animation metadata"]
+  Values --> Group["Mutation group"]
+  Animation --> Group
+  Group --> Gate["Optional app gate"]
+  Gate --> Commit["Committed state"]
+  Commit --> SwiftUI["Animated field updates"]
+        </pre>
+      </div>
+      <div class="callout">
+        <strong>The tradeoff:</strong> override-level animation is simple and natural for dashboard-authored
+        state changes, but it is intentionally coarse. One animation applies to every property changed by
+        that override.
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Approach</th>
+            <th>Benefit</th>
+            <th>Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Animation on the override</td>
+            <td>Easy to author. One condition produces one transition style for the entire visual state.</td>
+            <td>
+              Text, color, visibility, spacing, and image changes all share the same easing, delay, and duration.
+              A three-second ease-in-out applies to every changed field.
+            </td>
+          </tr>
+          <tr>
+            <td>Animation per property</td>
+            <td>Precise. Color can fade quickly while layout moves slowly and text swaps instantly.</td>
+            <td>
+              More verbose JSON, more validation, and more room for conflicting animation instructions.
+            </td>
+          </tr>
+          <tr>
+            <td>Reducer-chosen animation</td>
+            <td>The SDK can pick sensible defaults for derived fields such as icon URLs or visibility.</td>
+            <td>
+              Less dashboard control unless reducers expose their own animation inputs.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>Recommendation</h3>
+      <p>
+        Your concern is valid. An override describes the next static content difference, and that difference
+        can include several field changes. If animation metadata lives at the override level, the animation
+        is best understood as a <em>group transition</em>, not a per-field choreography.
+      </p>
+      <p>
+        That is still useful for the first version because most paywall state changes should feel cohesive:
+        a package row becomes selected, a badge appears, and text/color update together. If we later need
+        different timings per field, the architecture can extend the raw property model to allow property-level
+        animation without changing the core propose → gate → commit pipeline.
+      </p>
+    </section>
+
+    <section>
+      <h2>10. Package selection flow</h2>
       <p>
         Package selection is the first high-value interaction routed through state. Package rows and
         tabs both request mutations. The selected package context updates only after the store publishes
@@ -809,7 +911,7 @@ stateDiagram-v2
     </section>
 
     <section>
-      <h2>10. First component slice: Text</h2>
+      <h2>11. First component slice: Text</h2>
       <p>
         Text is the first component to project committed field state. It still computes a legacy style
         for initialization and fallback, but the rendered text can come from the committed
@@ -848,7 +950,7 @@ flowchart TD
     </section>
 
     <section>
-      <h2>11. Public surface and compatibility</h2>
+      <h2>12. Public surface and compatibility</h2>
       <table>
         <thead>
           <tr>
@@ -883,7 +985,7 @@ flowchart TD
     </section>
 
     <section>
-      <h2>12. Implementation map</h2>
+      <h2>13. Implementation map</h2>
       <div class="grid">
         <div class="tile">
           <h3>State core</h3>
