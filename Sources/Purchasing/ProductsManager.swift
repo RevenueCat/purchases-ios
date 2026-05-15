@@ -57,6 +57,7 @@ class ProductsManager: NSObject, ProductsManagerType {
         }
     }
 
+    // swiftlint:disable:next function_body_length
     func products(withIdentifiers identifiers: Set<String>, completion: @escaping Completion) {
         let startTime = self.dateProvider.now()
 
