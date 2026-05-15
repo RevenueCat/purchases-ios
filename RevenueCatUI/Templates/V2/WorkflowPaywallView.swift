@@ -136,6 +136,7 @@ struct WorkflowPaywallView: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.workflowExitOfferOfferingBinding) private var exitOfferOfferingBinding
 
     enum DismissalAction: Equatable {
         case dismissWorkflow
@@ -235,6 +236,12 @@ struct WorkflowPaywallView: View {
             key: WorkflowExitOfferPreferenceKey.self,
             value: Self.exitOfferContext(for: self.context, currentStepId: self.navigator.currentStepId)
         )
+        // Write the exit offer directly via the binding injected by PresentingPaywallModifier.
+        // This is more reliable than the preference key when the workflow is inside a sheet,
+        // since preferences don't always propagate across presentation boundaries.
+        .onAppear {
+            self.exitOfferOfferingBinding.wrappedValue = self.context.exitOfferOffering
+        }
     }
 
     // MARK: - Helpers
