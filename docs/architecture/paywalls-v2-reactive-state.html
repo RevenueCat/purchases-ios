@@ -766,20 +766,20 @@ flowchart LR
     </section>
 
     <section>
-      <h2>9. Two paths for animation</h2>
+      <h2>9. Animation roadmap</h2>
       <p>
-        Animation can be introduced in two ways. The first is pragmatic and fast: keep using overrides,
-        and treat animation as part of the matched override. The second is more ambitious: evolve the JSON
-        toward explicit paywall state, where components define anonymous rules that reference named global
-        state values.
+        Animation does not need to arrive all at once. The practical path is to start by animating the
+        override model we already have, then graduate toward explicit paywall state once the runtime and
+        dashboard are ready for a more expressive schema.
       </p>
 
       <div class="two-col">
         <div>
-          <h3>Option 1: animate override groups</h3>
+          <h3>Phase 1: animate override groups</h3>
           <p>
-            This path keeps the current override model and adds animation metadata to the override itself.
-            It is the quickest way to make selected package rows, badges, colors, and text feel smoother.
+            The bridge step keeps the current override model and adds animation metadata to the override
+            itself. It is the quickest way to make selected package rows, badges, colors, and text feel
+            smoother without asking the backend or dashboard to adopt a new state schema.
           </p>
           <div class="code-block">{
   "conditions": [{ "type": "selected" }],
@@ -796,10 +796,10 @@ flowchart LR
 }</div>
         </div>
         <div>
-          <h3>Option 2: make state explicit</h3>
+          <h3>Phase 2: make state explicit</h3>
           <p>
-            This path is closer to the POC architecture. The paywall owns named observable state values,
-            while components declare anonymous rules that reference those state values in their
+            The long-term step is closer to the POC architecture. The paywall owns named observable state
+            values, while components declare anonymous rules that reference those state values in their
             <code>when</code> clauses.
           </p>
           <div class="code-block">{
@@ -838,9 +838,9 @@ flowchart LR
       <table>
         <thead>
           <tr>
-            <th>Option</th>
-            <th>Why choose it</th>
-            <th>Tradeoff</th>
+            <th>Step</th>
+            <th>Why it comes first/next</th>
+            <th>Tradeoff to carry forward</th>
           </tr>
         </thead>
         <tbody>
@@ -858,8 +858,8 @@ flowchart LR
           <tr>
             <td>2. Explicit state rules</td>
             <td>
-              More expressive. Paywall-level state is named and observable, while component rules can apply
-              independent animations to individual values.
+              Builds on the same reactive store, but moves from override patches to named observable paywall
+              state and anonymous component rules.
             </td>
             <td>
               Requires a broader JSON evolution, validation rules, and cross-platform implementation work.
@@ -868,7 +868,7 @@ flowchart LR
         </tbody>
       </table>
 
-      <h3>How grouping would work in Option 2</h3>
+      <h3>How grouping would work in Phase 2</h3>
       <p>
         Component rules do not need names of their own. They are anonymous projections from named paywall
         state to component values. If a rule has a group animation, values without their own animation can
@@ -887,8 +887,8 @@ flowchart LR
   }
 }</div>
       <div class="callout">
-        <strong>Recommendation:</strong> Option 1 is useful as a near-term bridge. Option 2 is the cleaner
-        long-term model if the goal is truly dynamic state and per-property animation.
+        <strong>Roadmap:</strong> animated overrides are the near-term bridge. Explicit state rules are the
+        long-term model for truly dynamic paywalls and per-property animation.
       </div>
     </section>
 
