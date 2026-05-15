@@ -85,6 +85,12 @@ class ProductsManagerTests: StoreKitConfigTestCase {
                     compoundProductIdentifier: compoundIdentifier
                 ).description
         })
+        expect(self.logger.messages).toNot(containElementSatisfying { message in
+            message.level == .warn
+                && message.message == Strings.storeKit.sk1_does_not_support_billing_plans(
+                    compoundProductIdentifier: compoundIdentifier
+                ).description
+        })
     }
 
     func testFetchProductsWithCompoundIdentifierWithBillingPlanDoesNotRequestProductOnUnsupportedOSVersions() throws {
@@ -112,6 +118,43 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         expect(productsRequestFactory.invokedRequest) == false
         self.logger.verifyMessageWasLogged(
             Strings.storeKit.sk2_billing_plans_are_unavailable_on_this_os_version(
+                compoundProductIdentifier: compoundProductIdentifier
+            ),
+            level: .warn
+        )
+        expect(self.logger.messages).toNot(containElementSatisfying { message in
+            message.level == .warn
+                && message.message == Strings.storeKit.sk1_does_not_support_billing_plans(
+                    compoundProductIdentifier: compoundProductIdentifier
+                ).description
+        })
+    }
+
+    func testFetchProductsWithCompoundIdentifierWithBillingPlanDoesNotRequestProductWithStoreKit1() throws {
+        try AvailabilityChecks.iOS264APINotAvailableOrSkipTest()
+        
+        let productsRequestFactory = MockProductsRequestFactory()
+        let manager = self.createManager(
+            storeKitVersion: .storeKit1,
+            productsRequestFactory: productsRequestFactory
+        )
+        self.logger.clearMessages()
+
+        let compoundProductIdentifier = try XCTUnwrap(
+            CompoundProductIdentifier(compoundProductIdentifier: "com.revenuecat.subscription:monthly")
+        )
+        let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
+            manager.products(
+                withIdentifiers: Set([compoundProductIdentifier.compoundProductIdentifier]),
+                completion: completed
+            )
+        }
+
+        let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
+        expect(unwrappedProducts).to(beEmpty())
+        expect(productsRequestFactory.invokedRequest) == false
+        self.logger.verifyMessageWasLogged(
+            Strings.storeKit.sk1_does_not_support_billing_plans(
                 compoundProductIdentifier: compoundProductIdentifier
             ),
             level: .warn
@@ -272,7 +315,6 @@ class ProductsManagerTests: StoreKitConfigTestCase {
             requestTimeout: Self.requestTimeout
         )
     }
-
 }
 
 // swiftlint:disable type_name

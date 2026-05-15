@@ -63,6 +63,8 @@ enum StoreKitStrings {
 
     case sk1_finish_transaction_called_with_existing_completion(SKPaymentTransaction)
 
+    case sk1_does_not_support_billing_plans(compoundProductIdentifier: CompoundProductIdentifier)
+
     case sk1_product_request_too_slow
 
     case sk2_product_request_too_slow
@@ -205,6 +207,10 @@ extension StoreKitStrings: LogMessage {
         case let .sk1_finish_transaction_called_with_existing_completion(transaction):
             return "StoreKit1Wrapper.finishTransaction was called for '\(transaction.productIdentifier ?? "")' " +
             "but found an existing completion block."
+
+        case .sk1_does_not_support_billing_plans(let compoundProductIdentifier):
+            return "Products with billing plans are not supported when using StoreKit 1. Will not return " +
+            "a product for \(compoundProductIdentifier.compoundProductIdentifier)"
 
         case .sk1_product_request_too_slow:
             return "StoreKit 1 product request took longer than expected"
