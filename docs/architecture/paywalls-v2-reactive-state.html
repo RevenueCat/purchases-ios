@@ -991,6 +991,40 @@ flowchart TD
   Fallback --> View
         </pre>
       </div>
+      <h3>Text update sequence</h3>
+      <p>
+        A text update starts with the same inputs Paywalls V2 already understands. A package row can provide
+        local selected state to its children, while any text elsewhere can react to the globally selected package
+        through a selected package condition. The projection resolves the matching <code>textLid</code> into a
+        display string before it writes to state.
+      </p>
+      <div class="diagram-card">
+        <pre class="mermaid">
+sequenceDiagram
+  participant Selection as Package selection
+  participant Context as PackageContext
+  participant Text as TextComponentView
+  participant VM as TextComponentViewModel
+  participant Loc as Localizations
+  participant Store as PaywallStateStore
+
+  Selection->>Context: commit selected package
+  Context-->>Text: selectedPackageId and local selected state
+  Text->>VM: project style with runtime inputs
+  VM->>VM: find matching text override
+  VM->>Loc: resolve textLid
+  Loc-->>VM: rendered display string
+  VM-->>Text: text state mutation
+  Text->>Store: request text mutation
+  Store-->>Text: committed text event
+  Text->>Text: render committed string
+        </pre>
+      </div>
+      <div class="callout">
+        <strong>Two ways a text override can match:</strong> text inside a selected package row can use
+        <code>selected</code>; text elsewhere should use <code>selected_package_condition</code> when it needs
+        to react to package A being selected.
+      </div>
       <table>
         <thead>
           <tr>
