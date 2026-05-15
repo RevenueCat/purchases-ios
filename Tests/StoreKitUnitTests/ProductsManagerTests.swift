@@ -131,8 +131,6 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     }
 
     func testFetchProductsWithCompoundIdentifierWithBillingPlanDoesNotRequestProductWithStoreKit1() throws {
-        try AvailabilityChecks.iOS264APINotAvailableOrSkipTest()
-
         let productsRequestFactory = MockProductsRequestFactory()
         let manager = self.createManager(
             storeKitVersion: .storeKit1,
