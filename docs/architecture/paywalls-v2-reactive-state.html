@@ -336,10 +336,76 @@
 
     .legend b { display: block; color: var(--text-strong); }
 
+    .summary {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .summary-lead {
+      padding: 22px;
+      border-radius: var(--radius-lg);
+      background: var(--surface-tint);
+      border: 1px solid var(--border-subtle);
+      font-size: 18px;
+      color: var(--muted-strong);
+    }
+
+    .benefit-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .benefit-list li {
+      padding: 16px 16px 16px 44px;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      position: relative;
+      color: var(--muted);
+    }
+
+    .benefit-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      color: var(--rc-green);
+      font-weight: 800;
+    }
+
+    .benefit-list strong {
+      display: block;
+      color: var(--text-strong);
+      margin-bottom: 3px;
+    }
+
+    .quote {
+      padding: 24px;
+      border-radius: var(--radius-xl);
+      background: linear-gradient(135deg, var(--rc-accent-soft), var(--surface));
+      border: 1px solid color-mix(in srgb, var(--rc-accent) 28%, var(--border));
+      color: var(--text-strong);
+      font-size: 19px;
+      letter-spacing: -0.015em;
+    }
+
+    .quote span {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+
     footer { margin-top: 40px; color: var(--muted); text-align: center; font-size: 13px; }
 
     @media (max-width: 860px) {
-      header.hero, .grid, .two-col, .legend { grid-template-columns: 1fr; }
+      header.hero, .grid, .two-col, .legend, .summary { grid-template-columns: 1fr; }
       main { width: min(100vw - 22px, var(--content)); padding-top: 22px; }
       .hero-card, section { padding: 24px; }
     }
@@ -350,12 +416,12 @@
     <header class="hero">
       <div class="hero-card">
         <span class="eyebrow">RevenueCatUI • Paywalls V2</span>
-        <h1>Reactive State Adapter Architecture</h1>
+        <h1>Reactive paywalls that change with intent</h1>
         <p>
-          This architecture adds a scoped, proposal-driven, reactive state pipeline to Paywalls V2
-          without changing the existing backend JSON schema. It lets RevenueCatUI update individual
-          fields, lets apps observe or gate state changes, and keeps copied paywalls isolated even
-          when their component IDs are identical.
+          Paywalls V2 already gives teams a flexible server-authored UI. The reactive state adapter
+          makes that UI more precise: state changes update the fields that actually changed, apps can
+          observe or gate those changes, and multiple paywalls can run side by side without stepping
+          on each other.
         </p>
         <div class="pill-list">
           <span class="pill">Backward-compatible JSON</span>
@@ -367,43 +433,104 @@
       </div>
       <aside class="status-panel">
         <div class="status-item">
-          <strong>Primary constraint</strong>
-          <span>Do not require server, dashboard, or schema changes for the first slice.</span>
+          <strong>Adoption path</strong>
+          <span>Start with the existing Paywalls V2 payload and migrate behavior incrementally.</span>
         </div>
         <div class="status-item">
-          <strong>Isolation rule</strong>
-          <span>Every mutable key includes runtime scope plus paywall/component identity.</span>
+          <strong>Developer promise</strong>
+          <span>Observe, reject, or replace UI state changes before they are committed.</span>
         </div>
         <div class="status-item">
-          <strong>Consumer control</strong>
-          <span>Apps can observe committed changes or gate proposed mutations through SPI hooks.</span>
+          <strong>User experience</strong>
+          <span>Update the package, text, or visibility that changed instead of rebuilding the world.</span>
         </div>
       </aside>
     </header>
 
     <section>
-      <h2>1. Architectural intent</h2>
+      <h2>1. Executive summary</h2>
+      <div class="summary">
+        <div class="summary-lead">
+          The adapter turns Paywalls V2 from a mostly static rendering pass into a scoped state pipeline.
+          It keeps the backend JSON compatible, but gives the runtime a cleaner contract: propose a change,
+          let the app decide, then commit exactly what changed.
+        </div>
+        <ul class="benefit-list">
+          <li>
+            <strong>Less redraw churn</strong>
+            Field-level state lets SwiftUI do the work it is good at: updating small pieces of UI.
+          </li>
+          <li>
+            <strong>More app control</strong>
+            Apps can gate package selection, personalization, or workflow-driven state without forking
+            the paywall renderer.
+          </li>
+          <li>
+            <strong>Safer experimentation</strong>
+            Runtime scope keeps copied paywalls and concurrent paywalls isolated, even when component IDs match.
+          </li>
+        </ul>
+      </div>
+      <div class="callout">
+        <strong>The practical outcome:</strong> product teams can add more dynamic paywall behavior while SDK
+        teams keep compatibility, debuggability, and ownership boundaries intact.
+      </div>
+    </section>
+
+    <section>
+      <h2>2. The problem this solves</h2>
       <div class="grid">
         <div class="tile">
-          <h3>From coarse styles</h3>
+          <h3>State is too coarse</h3>
           <p>
-            Paywalls V2 currently recomputes full component styles from environment values such as
-            selected package, eligibility, screen size, countdowns, and custom variables.
+            Today a package selection or condition change often causes full style recomputation. That is
+            simple, but it makes the UI less predictable as paywalls become more dynamic.
           </p>
         </div>
         <div class="tile">
-          <h3>To field-level state</h3>
+          <h3>Apps need a decision point</h3>
           <p>
-            The adapter projects individual renderable fields into state slots such as
-            <code>component.text</code>, <code>component.visible</code>, or
-            <code>paywall.root_selected_package_id</code>.
+            Some apps need to authenticate, enforce business rules, or adjust a selection before the
+            paywall commits it. That should be explicit, not hidden in one-off callbacks.
           </p>
         </div>
         <div class="tile">
-          <h3>With app gates</h3>
+          <h3>Paywalls can be copied</h3>
           <p>
-            A state request becomes a proposed change. The app may accept, reject, or replace it before
-            the store commits and publishes the resolved event.
+            Copied paywalls can keep identical component IDs. State propagation has to know which
+            paywall instance it belongs to, not just which component ID changed.
+          </p>
+        </div>
+      </div>
+      <div class="quote">
+        The goal is not to make Paywalls V2 more complicated. It is to make state changes visible,
+        reviewable, and scoped.
+        <span>That gives both the SDK and the consuming app clearer responsibilities.</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>3. What changes</h2>
+      <div class="grid">
+        <div class="tile">
+          <h3>From style snapshots</h3>
+          <p>
+            View models can still compute legacy styles, but migrated components also project the fields
+            they render into state slots.
+          </p>
+        </div>
+        <div class="tile">
+          <h3>To committed field state</h3>
+          <p>
+            A text component can render committed text from the store while using the existing style path
+            as initialization and fallback.
+          </p>
+        </div>
+        <div class="tile">
+          <h3>With proposed mutations</h3>
+          <p>
+            A change becomes a proposed event first. The app can accept it, reject it, or replace it.
+            Only committed events update canonical state.
           </p>
         </div>
       </div>
@@ -414,7 +541,7 @@
     </section>
 
     <section>
-      <h2>2. System architecture</h2>
+      <h2>4. System architecture</h2>
       <p>
         The adapter sits between decoded Paywalls V2 models and SwiftUI rendering. It compiles component
         identity, override property names, and runtime inputs into scoped state keys. Components can then
@@ -454,7 +581,7 @@ flowchart LR
     </section>
 
     <section>
-      <h2>3. Identity and state keys</h2>
+      <h2>5. Identity and state keys</h2>
       <p>
         State isolation is the foundation of the design. A key is not just a dashboard component ID.
         It is the combination of runtime paywall scope, observable component identity, and dynamic field name.
@@ -523,7 +650,7 @@ flowchart TD
     </section>
 
     <section>
-      <h2>4. Mutation pipeline</h2>
+      <h2>6. Mutation pipeline</h2>
       <p>
         The pipeline mirrors the iOS state example: requests become proposed changes, apps can gate
         those proposals, and only committed changes update canonical state and notify observers.
@@ -562,7 +689,7 @@ sequenceDiagram
     </section>
 
     <section>
-      <h2>5. Proposed vs committed state</h2>
+      <h2>7. Proposed vs committed state</h2>
       <p>
         The type system distinguishes changes that still need a decision from changes that are already
         resolved. Consumers cannot accidentally treat a proposal as a committed event.
@@ -587,7 +714,7 @@ PaywallStateChange.Details // generic protocol; reducers cast to concrete detail
     </section>
 
     <section>
-      <h2>6. Dynamic fields from existing JSON</h2>
+      <h2>8. Dynamic fields from existing JSON</h2>
       <p>
         The first adapter slice does not add new JSON fields. Instead, it preserves raw override
         <code>properties</code> and generates state fields from their serialized keys. This keeps the
@@ -598,10 +725,10 @@ PaywallStateChange.Details // generic protocol; reducers cast to concrete detail
 flowchart LR
   O["override.properties"] --> Raw["rawProperties"]
   Raw --> Keys["PaywallOverridePropertyKeyBuilder"]
-  Keys --> Direct["Direct field: component.&lt;property&gt;"]
+  Keys --> Direct["Direct component property field"]
   Raw --> Reducer["Reducer (future slices)"]
   Reducer --> Derived["Derived field"]
-  Direct --> Mutations["PaywallStateMutation[]"]
+  Direct --> Mutations["State mutation list"]
   Derived --> Mutations
   Mutations --> Store["PaywallStateStore"]
         </pre>
@@ -639,7 +766,7 @@ flowchart LR
     </section>
 
     <section>
-      <h2>7. Package selection flow</h2>
+      <h2>9. Package selection flow</h2>
       <p>
         Package selection is the first high-value interaction routed through state. Package rows and
         tabs both request mutations. The selected package context updates only after the store publishes
@@ -682,7 +809,7 @@ stateDiagram-v2
     </section>
 
     <section>
-      <h2>8. First component slice: Text</h2>
+      <h2>10. First component slice: Text</h2>
       <p>
         Text is the first component to project committed field state. It still computes a legacy style
         for initialization and fallback, but the rendered text can come from the committed
@@ -721,7 +848,7 @@ flowchart TD
     </section>
 
     <section>
-      <h2>9. Public surface and compatibility</h2>
+      <h2>11. Public surface and compatibility</h2>
       <table>
         <thead>
           <tr>
@@ -756,7 +883,7 @@ flowchart TD
     </section>
 
     <section>
-      <h2>10. Implementation map</h2>
+      <h2>12. Implementation map</h2>
       <div class="grid">
         <div class="tile">
           <h3>State core</h3>
