@@ -57,6 +57,8 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     }
 
     func testFetchProductsWithCompoundIdentifierOnlyRequestsStoreKitProductIdentifier() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
         let productsRequestFactory = MockProductsRequestFactory()
         let manager = self.createManager(
             storeKitVersion: .storeKit1,
@@ -74,6 +76,37 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         expect(productsRequestFactory.invokedRequestParameters) == Set([storeKitProductIdentifier])
         expect(product.productIdentifier) == storeKitProductIdentifier
+    }
+
+    func testFetchProductsWithCompoundIdentifierWithBillingPlanDoesNotRequestProductOnUnsupportedOSVersions() throws {
+        try AvailabilityChecks.iOS264APINotAvailableOrSkipTest()
+
+        let productsRequestFactory = MockProductsRequestFactory()
+        let manager = self.createManager(
+            storeKitVersion: .storeKit2,
+            productsRequestFactory: productsRequestFactory
+        )
+        self.logger.clearMessages()
+
+        let compoundProductIdentifier = try XCTUnwrap(
+            CompoundProductIdentifier(compoundProductIdentifier: "com.revenuecat.subscription:monthly")
+        )
+        let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
+            manager.products(
+                withIdentifiers: Set([compoundProductIdentifier.compoundProductIdentifier]),
+                completion: completed
+            )
+        }
+
+        let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
+        expect(unwrappedProducts).to(beEmpty())
+        expect(productsRequestFactory.invokedRequest) == false
+        self.logger.verifyMessageWasLogged(
+            Strings.storeKit.sk2_billing_plans_are_unavailable_on_this_os_version(
+                compoundProductIdentifier: compoundProductIdentifier
+            ),
+            level: .warn
+        )
     }
 
     func testFetchProductsWithInvalidCompoundIdentifiersLogsWarning() throws {

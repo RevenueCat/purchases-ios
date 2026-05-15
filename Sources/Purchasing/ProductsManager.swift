@@ -71,7 +71,21 @@ class ProductsManager: NSObject, ProductsManagerType {
                     return nil
                 }
 
-                return compoundIdentifier
+                // Don't return products with billing plans if running on <iOS 26.4, where they aren't supported
+                if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
+                    return compoundIdentifier
+                } else {
+                    guard compoundIdentifier.productPlanIdentifier == nil else {
+                        Logger.warn(
+                            StoreKitStrings.sk2_billing_plans_are_unavailable_on_this_os_version(
+                                compoundProductIdentifier: compoundIdentifier
+                            )
+                        )
+                        return nil
+                    }
+
+                    return compoundIdentifier
+                }
             }
         )
         if !invalidProductIdentifiers.isEmpty {
