@@ -42,7 +42,7 @@ let project = Project(
             shared: true,
             buildAction: .buildAction(targets: ["RulesEngine"]),
             testAction: .targets([
-                .testableTarget(target: .init(stringLiteral: "RulesEngineTests"))
+                .testableTarget(target: "RulesEngineTests")
             ]),
             runAction: .runAction(configuration: "Debug"),
             archiveAction: .archiveAction(configuration: "Release"),
