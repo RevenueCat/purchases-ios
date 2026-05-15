@@ -32,7 +32,6 @@ end
 files_with_version_number = {
   './RevenueCat.podspec' => ['s.version          = "{x}"'],
   './RevenueCatUI.podspec' => ['s.version          = "{x}"'],
-  './RevenueCatRulesEngine.podspec' => ['s.version          = "{x}"'],
   './Sources/Misc/SystemInfo.swift' => ['return "{x}"'],
   './.version' => ['{x}'],
   './scripts/docs/v4_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v4_api_migration_guide'],
@@ -1227,11 +1226,6 @@ platform :ios do
     pod_push_with_error_handling(path: "RevenueCatUI.podspec", synchronous: true)
   end
 
-  desc "Release to CocoaPods"
-  lane :push_rules_engine_pod do |options|
-    pod_push_with_error_handling(path: "RevenueCatRulesEngine.podspec", synchronous: true)
-  end
-
   desc "Tag current branch with current version number"
   lane :tag_current_branch do |options|
     version_number = current_version_number
@@ -2286,6 +2280,68 @@ platform :ios do
     end
   end
 
+  desc "Assert RulesEngine has no public, non-@_spi(Internal) API"
+  lane :check_rules_engine_no_public_api do
+    scheme = "RulesEngine"
+    sdk = "iphonesimulator"
+    destination = "generic/platform=iOS Simulator"
+    workspace = "RevenueCat-Tuist.xcworkspace"
+
+    # Anything declared @_spi(Internal) public is emitted into
+    # RulesEngine.private.swiftinterface, not the public RulesEngine.swiftinterface,
+    # so it cannot leak through this check by construction. Unlike a baseline-diff,
+    # no committed reference file exists for a contributor to regenerate to
+    # silence the check.
+    #
+    # `RulesEngine` is intentionally NOT exposed as an SPM `.library` product (it's
+    # only ever pulled in as an internal transitive dependency of `RevenueCat` /
+    # `RevenueCatUI`), so there is no auto-generated SPM scheme for it. Build it via
+    # the Tuist-generated workspace instead. CI runs `tuist install && tuist generate
+    # RulesEngine --no-open` before invoking this lane; locally, run that yourself
+    # from the repo root before invoking the lane.
+    workspace_path = "../#{workspace}"
+    unless File.directory?(workspace_path)
+      UI.user_error!(
+        "#{workspace} not found. Run `tuist install && tuist generate RulesEngine --no-open` " \
+        "from the repo root before invoking this lane."
+      )
+    end
+
+    setup_swiftinterface_xcconfig
+    begin
+      Dir.chdir("..") do
+        sh("xcodebuild", "clean", "build",
+           "-workspace", workspace,
+           "-scheme", scheme,
+           "-derivedDataPath", ".build",
+           "-configuration", "Release",
+           "-sdk", sh("xcrun --sdk #{sdk} --show-sdk-path").strip,
+           "-destination", destination,
+           "BUILD_LIBRARY_FOR_DISTRIBUTION=YES")
+      end
+
+      files = ApiDiffHelper.find_swiftinterface_file("../.build", sdk, scheme)
+      UI.user_error!("Could not find #{scheme}.swiftinterface for #{sdk}") if files.empty?
+
+      body = File.readlines(files.first).reject do |line|
+        line.start_with?("//") || line.start_with?("import ") || line.strip.empty?
+      end
+
+      unless body.empty?
+        UI.error("RulesEngine has public, non-@_spi(Internal) declarations:")
+        body.each { |l| UI.error("  #{l.chomp}") }
+        UI.user_error!(
+          "Every public declaration in RulesEngine MUST be marked @_spi(Internal). " \
+          "If you need to expose a truly public symbol, update fastlane/Fastfile's " \
+          "check_rules_engine_no_public_api lane to allow-list it."
+        )
+      end
+      UI.success("OK: RulesEngine public swiftinterface is empty (no non-@_spi(Internal) API).")
+    ensure
+      cleanup_swiftinterface_xcconfig
+    end
+  end
+
   desc "Check API changes and report results"
   lane :check_api_changes do |options|
     schemes = if options[:scheme]
@@ -2481,12 +2537,6 @@ lane :check_pods do
     verbose: true,
     podspec: 'RevenueCatUI.podspec',
     include_podspecs: 'RevenueCat.podspec',
-    platforms: 'ios,osx,tvos,watchos,visionos',
-    fail_fast: true
-  )
-  pod_lib_lint(
-    verbose: true,
-    podspec: 'RevenueCatRulesEngine.podspec',
     platforms: 'ios,osx,tvos,watchos,visionos',
     fail_fast: true
   )

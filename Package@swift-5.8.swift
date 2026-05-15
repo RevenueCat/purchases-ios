@@ -44,9 +44,7 @@ let package = Package(
         .library(name: "ReceiptParser",
                  targets: ["ReceiptParser"]),
         .library(name: "RevenueCatUI",
-                 targets: ["RevenueCatUI"]),
-        .library(name: "RulesEngine",
-                 targets: ["RulesEngine"])
+                 targets: ["RevenueCatUI"])
     ],
     dependencies: dependencies,
     targets: [
@@ -88,7 +86,6 @@ let package = Package(
                     ],
                     exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans"],
                     resources: [.copy("Resources/header.heic"), .copy("Resources/background.heic")]),
-        // RulesEngine
         .target(name: "RulesEngine",
                 path: "RulesEngine"),
         .testTarget(name: "RulesEngineTests",
