@@ -70,6 +70,7 @@ struct PackageComponentView: View {
                 onDismiss: self.onDismiss
             )
             .environment(\.componentViewState, packageViewState)
+            .environment(\.paywallStateRenderContext, self.viewModel.renderContext(for: package))
             // Overrides the existing PackageContext
             .environmentObject(PackageContext(
                 // This is needed so text component children use this

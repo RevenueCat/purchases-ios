@@ -23,6 +23,11 @@ private struct PaywallStateScopeKey: EnvironmentKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct PaywallStateRenderContextKey: EnvironmentKey {
+    static let defaultValue: String? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct PaywallStateMutationHandlerKey: EnvironmentKey {
     static let defaultValue: PaywallStateMutationHandler? = nil
 }
@@ -43,6 +48,11 @@ extension EnvironmentValues {
     var paywallStateScope: PaywallStateScope? {
         get { self[PaywallStateScopeKey.self] }
         set { self[PaywallStateScopeKey.self] = newValue }
+    }
+
+    var paywallStateRenderContext: String? {
+        get { self[PaywallStateRenderContextKey.self] }
+        set { self[PaywallStateRenderContextKey.self] = newValue }
     }
 
     var paywallStateMutationHandler: PaywallStateMutationHandler? {

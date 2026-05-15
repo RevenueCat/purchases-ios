@@ -85,6 +85,10 @@ class PackageComponentViewModel {
         return partial?.visible ?? self.componentVisible ?? true
     }
 
+    func renderContext(for package: Package) -> String {
+        return "\(self.identity.componentID):\(package.identifier)"
+    }
+
 }
 
 extension PresentedPackagePartial: PresentedPartial {

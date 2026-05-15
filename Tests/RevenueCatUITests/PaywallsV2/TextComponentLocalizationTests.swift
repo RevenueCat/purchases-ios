@@ -345,6 +345,7 @@ class TextComponentLocalizationTests: TestCase {
         let textComponent = Self.makeSelectedPackageTextComponent()
         let identity = Self.identity(for: textComponent)
         let scope = Self.makeScope()
+        let renderContext = "package_component:annual"
         let viewModel = try TextComponentViewModel(
             identity: identity,
             localizationProvider: LocalizationProvider(
@@ -366,18 +367,66 @@ class TextComponentLocalizationTests: TestCase {
             packageContext: packageContext,
             isEligibleForIntroOffer: false,
             promoOffer: nil,
-            paywallStateScope: scope
+            paywallStateScope: scope,
+            renderContext: renderContext
         )
 
         let expectedKey = PaywallStateKey(
             scope: scope,
             component: identity,
-            field: .component(PaywallComponent.PartialTextComponent.CodingKeys.text.stringValue)
+            field: .component(PaywallComponent.PartialTextComponent.CodingKeys.text.stringValue),
+            renderContext: renderContext
         )
         XCTAssertTrue(projection.stateMutations.contains(.init(
             key: expectedKey,
             value: .string("Selected annual text")
         )))
+    }
+
+    @MainActor
+    func testProjectedTextMutationsAreIsolatedByRenderContext() throws {
+        let textComponent = Self.makeSelectedPackageTextComponent()
+        let identity = Self.identity(for: textComponent)
+        let scope = Self.makeScope()
+        let viewModel = try TextComponentViewModel(
+            identity: identity,
+            localizationProvider: LocalizationProvider(
+                locale: .current,
+                localizedStrings: Self.selectedPackageTextLocalizations
+            ),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            component: textComponent
+        )
+        let packageContext = PackageContext(
+            package: TestData.annualPackage,
+            variableContext: .init(packages: [TestData.monthlyPackage, TestData.annualPackage])
+        )
+
+        let annualProjection = viewModel.projectedStyle(
+            state: .selected,
+            condition: .compact,
+            selectedPackageId: TestData.annualPackage.identifier,
+            packageContext: packageContext,
+            isEligibleForIntroOffer: false,
+            promoOffer: nil,
+            paywallStateScope: scope,
+            renderContext: "package_component:annual"
+        )
+        let monthlyProjection = viewModel.projectedStyle(
+            state: .default,
+            condition: .compact,
+            selectedPackageId: TestData.annualPackage.identifier,
+            packageContext: packageContext,
+            isEligibleForIntroOffer: false,
+            promoOffer: nil,
+            paywallStateScope: scope,
+            renderContext: "package_component:monthly"
+        )
+
+        XCTAssertNotEqual(
+            annualProjection.stateMutations.first?.key,
+            monthlyProjection.stateMutations.first?.key
+        )
     }
 
 #if os(iOS)

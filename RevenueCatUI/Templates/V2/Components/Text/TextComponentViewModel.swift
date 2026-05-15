@@ -116,7 +116,8 @@ class TextComponentViewModel {
         promoOffer: PromotionalOffer?,
         countdownTime: CountdownTime? = nil,
         customVariables: [String: CustomVariableValue] = [:],
-        paywallStateScope: PaywallStateScope? = nil
+        paywallStateScope: PaywallStateScope? = nil,
+        renderContext: String? = nil
     ) -> TextComponentStyleProjection {
         let isEligibleForPromoOffer = promoOffer != nil
         let conditionContext = uiConfigProvider.conditionContext(
@@ -167,29 +168,33 @@ class TextComponentViewModel {
             style: style,
             stateMutations: self.stateMutations(
                 for: style,
-                paywallStateScope: paywallStateScope
+                paywallStateScope: paywallStateScope,
+                renderContext: renderContext
             )
         )
     }
 
-    func textStateKey(scope: PaywallStateScope) -> PaywallStateKey {
+    func textStateKey(scope: PaywallStateScope, renderContext: String? = nil) -> PaywallStateKey {
         return self.stateKey(
             scope: scope,
-            field: PaywallComponent.PartialTextComponent.CodingKeys.text.stringValue
+            field: PaywallComponent.PartialTextComponent.CodingKeys.text.stringValue,
+            renderContext: renderContext
         )
     }
 
-    private func stateKey(scope: PaywallStateScope, field: String) -> PaywallStateKey {
+    private func stateKey(scope: PaywallStateScope, field: String, renderContext: String?) -> PaywallStateKey {
         return PaywallStateKey(
             scope: scope,
             component: self.identity,
-            field: .component(field)
+            field: .component(field),
+            renderContext: renderContext
         )
     }
 
     private func stateMutations(
         for style: TextComponentStyle,
-        paywallStateScope: PaywallStateScope?
+        paywallStateScope: PaywallStateScope?,
+        renderContext: String?
     ) -> [PaywallStateMutation] {
         guard let paywallStateScope else {
             return []
@@ -198,7 +203,7 @@ class TextComponentViewModel {
         let textField = PaywallComponent.PartialTextComponent.CodingKeys.text.stringValue
         return [
             PaywallStateMutation(
-                key: self.stateKey(scope: paywallStateScope, field: textField),
+                key: self.stateKey(scope: paywallStateScope, field: textField, renderContext: renderContext),
                 value: .string(style.text)
             )
         ]
