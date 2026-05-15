@@ -104,7 +104,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
                 message.level == .warn
                     && message.message == Strings.storeKit.sk2_billing_plans_are_unavailable_on_this_os_version(
                         compoundProductIdentifier: compoundIdentifier
-                    )
+                    ).description
             })
         }
     }
