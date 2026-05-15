@@ -61,12 +61,16 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let productsRequestFactory = MockProductsRequestFactory()
         let manager = self.createManager(
-            storeKitVersion: .storeKit1,
+            storeKitVersion: .storeKit2,
             productsRequestFactory: productsRequestFactory
         )
+        self.logger.clearMessages()
 
         let storeKitProductIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         let compoundProductIdentifier = "\(storeKitProductIdentifier):monthly"
+        let compoundIdentifier = try XCTUnwrap(
+            CompoundProductIdentifier(compoundProductIdentifier: compoundProductIdentifier)
+        )
         let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
             manager.products(withIdentifiers: Set([compoundProductIdentifier]), completion: completed)
         }
@@ -76,6 +80,12 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         expect(productsRequestFactory.invokedRequestParameters) == Set([storeKitProductIdentifier])
         expect(product.productIdentifier) == storeKitProductIdentifier
+        expect(self.logger.messages).toNot(containElementSatisfying { message in
+            message.level == .warn
+                && message.message == Strings.storeKit.sk2_billing_plans_are_unavailable_on_this_os_version(
+                    compoundProductIdentifier: compoundIdentifier
+                ).description
+        })
     }
 
     func testFetchProductsWithCompoundIdentifierWithBillingPlanDoesNotRequestProductOnUnsupportedOSVersions() throws {
