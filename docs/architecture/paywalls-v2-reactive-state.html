@@ -323,6 +323,34 @@
       line-height: 1.55;
     }
 
+    .json-block {
+      margin: 0;
+      padding: 18px;
+      overflow-x: auto;
+      border-radius: var(--radius-lg);
+      color: var(--pre-text);
+      background: var(--pre-bg);
+      border: 1px solid var(--border-subtle);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      tab-size: 2;
+    }
+
+    .json-key { color: #7DD3FC; }
+    .json-string { color: #A7F3D0; }
+    .json-number { color: #FDE68A; }
+    .json-bool { color: #C4B5FD; }
+    .json-punc { color: #94A3B8; }
+
+    @media (prefers-color-scheme: light) {
+      .json-key { color: #0369A1; }
+      .json-string { color: #047857; }
+      .json-number { color: #B45309; }
+      .json-bool { color: #6D28D9; }
+      .json-punc { color: #64748B; }
+    }
+
     .legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
 
     .legend div {
@@ -781,19 +809,21 @@ flowchart LR
             itself. It is the quickest way to make selected package rows, badges, colors, and text feel
             smoother without asking the backend or dashboard to adopt a new state schema.
           </p>
-          <div class="code-block">{
-  "conditions": [{ "type": "selected" }],
-  "animation": {
-    "type": "ease_in_out",
-    "duration_ms": 300,
-    "delay_ms": 0
-  },
-  "properties": {
-    "textLid": "selected_title",
-    "color": { "light": { "type": "hex", "value": "#2EBEE5" } },
-    "visible": true
-  }
-}</div>
+          <pre class="json-block"><span class="json-punc">{</span>
+  <span class="json-key">"conditions"</span><span class="json-punc">:</span> <span class="json-punc">[</span><span class="json-punc">{</span> <span class="json-key">"type"</span><span class="json-punc">:</span> <span class="json-string">"selected"</span> <span class="json-punc">}</span><span class="json-punc">]</span><span class="json-punc">,</span>
+  <span class="json-key">"animation"</span><span class="json-punc">:</span> <span class="json-punc">{</span>
+    <span class="json-key">"type"</span><span class="json-punc">:</span> <span class="json-string">"ease_in_out"</span><span class="json-punc">,</span>
+    <span class="json-key">"duration_ms"</span><span class="json-punc">:</span> <span class="json-number">300</span><span class="json-punc">,</span>
+    <span class="json-key">"delay_ms"</span><span class="json-punc">:</span> <span class="json-number">0</span>
+  <span class="json-punc">}</span><span class="json-punc">,</span>
+  <span class="json-key">"properties"</span><span class="json-punc">:</span> <span class="json-punc">{</span>
+    <span class="json-key">"textLid"</span><span class="json-punc">:</span> <span class="json-string">"selected_title"</span><span class="json-punc">,</span>
+    <span class="json-key">"color"</span><span class="json-punc">:</span> <span class="json-punc">{</span>
+      <span class="json-key">"light"</span><span class="json-punc">:</span> <span class="json-punc">{</span> <span class="json-key">"type"</span><span class="json-punc">:</span> <span class="json-string">"hex"</span><span class="json-punc">,</span> <span class="json-key">"value"</span><span class="json-punc">:</span> <span class="json-string">"#2EBEE5"</span> <span class="json-punc">}</span>
+    <span class="json-punc">}</span><span class="json-punc">,</span>
+    <span class="json-key">"visible"</span><span class="json-punc">:</span> <span class="json-bool">true</span>
+  <span class="json-punc">}</span>
+<span class="json-punc">}</span></pre>
         </div>
         <div>
           <h3>Phase 2: make state explicit</h3>
@@ -802,23 +832,23 @@ flowchart LR
             values, while components declare anonymous rules that reference those state values in their
             <code>when</code> clauses.
           </p>
-          <div class="code-block">{
-  "when": {
-    "state": "selected_package_id",
-    "operator": "=",
-    "value": "annual"
-  },
-  "set": {
-    "textLid": {
-      "value": "annual_title",
-      "animation": { "type": "instant" }
-    },
-    "color": {
-      "value": { "light": { "type": "hex", "value": "#2EBEE5" } },
-      "animation": { "type": "ease_in_out", "duration_ms": 250 }
-    }
-  }
-}</div>
+          <pre class="json-block"><span class="json-punc">{</span>
+  <span class="json-key">"when"</span><span class="json-punc">:</span> <span class="json-punc">{</span>
+    <span class="json-key">"state"</span><span class="json-punc">:</span> <span class="json-string">"selected_package_id"</span><span class="json-punc">,</span>
+    <span class="json-key">"operator"</span><span class="json-punc">:</span> <span class="json-string">"="</span><span class="json-punc">,</span>
+    <span class="json-key">"value"</span><span class="json-punc">:</span> <span class="json-string">"annual"</span>
+  <span class="json-punc">}</span><span class="json-punc">,</span>
+  <span class="json-key">"set"</span><span class="json-punc">:</span> <span class="json-punc">{</span>
+    <span class="json-key">"textLid"</span><span class="json-punc">:</span> <span class="json-punc">{</span>
+      <span class="json-key">"value"</span><span class="json-punc">:</span> <span class="json-string">"annual_title"</span><span class="json-punc">,</span>
+      <span class="json-key">"animation"</span><span class="json-punc">:</span> <span class="json-punc">{</span> <span class="json-key">"type"</span><span class="json-punc">:</span> <span class="json-string">"instant"</span> <span class="json-punc">}</span>
+    <span class="json-punc">}</span><span class="json-punc">,</span>
+    <span class="json-key">"color"</span><span class="json-punc">:</span> <span class="json-punc">{</span>
+      <span class="json-key">"value"</span><span class="json-punc">:</span> <span class="json-punc">{</span> <span class="json-key">"light"</span><span class="json-punc">:</span> <span class="json-punc">{</span> <span class="json-key">"type"</span><span class="json-punc">:</span> <span class="json-string">"hex"</span><span class="json-punc">,</span> <span class="json-key">"value"</span><span class="json-punc">:</span> <span class="json-string">"#2EBEE5"</span> <span class="json-punc">}</span> <span class="json-punc">}</span><span class="json-punc">,</span>
+      <span class="json-key">"animation"</span><span class="json-punc">:</span> <span class="json-punc">{</span> <span class="json-key">"type"</span><span class="json-punc">:</span> <span class="json-string">"ease_in_out"</span><span class="json-punc">,</span> <span class="json-key">"duration_ms"</span><span class="json-punc">:</span> <span class="json-number">250</span> <span class="json-punc">}</span>
+    <span class="json-punc">}</span>
+  <span class="json-punc">}</span>
+<span class="json-punc">}</span></pre>
         </div>
       </div>
 
@@ -874,18 +904,18 @@ flowchart LR
         state to component values. If a rule has a group animation, values without their own animation can
         inherit it. Values with their own animation override the group.
       </p>
-      <div class="code-block">{
-  "when": { "state": "selected_package_id", "operator": "=", "value": "annual" },
-  "animation": { "type": "ease_in_out", "duration_ms": 300 },
-  "set": {
-    "visible": { "value": true },
-    "color": { "value": { "light": { "type": "hex", "value": "#2EBEE5" } } },
-    "textLid": {
-      "value": "annual_title",
-      "animation": { "type": "instant" }
-    }
-  }
-}</div>
+      <pre class="json-block"><span class="json-punc">{</span>
+  <span class="json-key">"when"</span><span class="json-punc">:</span> <span class="json-punc">{</span> <span class="json-key">"state"</span><span class="json-punc">:</span> <span class="json-string">"selected_package_id"</span><span class="json-punc">,</span> <span class="json-key">"operator"</span><span class="json-punc">:</span> <span class="json-string">"="</span><span class="json-punc">,</span> <span class="json-key">"value"</span><span class="json-punc">:</span> <span class="json-string">"annual"</span> <span class="json-punc">}</span><span class="json-punc">,</span>
+  <span class="json-key">"animation"</span><span class="json-punc">:</span> <span class="json-punc">{</span> <span class="json-key">"type"</span><span class="json-punc">:</span> <span class="json-string">"ease_in_out"</span><span class="json-punc">,</span> <span class="json-key">"duration_ms"</span><span class="json-punc">:</span> <span class="json-number">300</span> <span class="json-punc">}</span><span class="json-punc">,</span>
+  <span class="json-key">"set"</span><span class="json-punc">:</span> <span class="json-punc">{</span>
+    <span class="json-key">"visible"</span><span class="json-punc">:</span> <span class="json-punc">{</span> <span class="json-key">"value"</span><span class="json-punc">:</span> <span class="json-bool">true</span> <span class="json-punc">}</span><span class="json-punc">,</span>
+    <span class="json-key">"color"</span><span class="json-punc">:</span> <span class="json-punc">{</span> <span class="json-key">"value"</span><span class="json-punc">:</span> <span class="json-punc">{</span> <span class="json-key">"light"</span><span class="json-punc">:</span> <span class="json-punc">{</span> <span class="json-key">"type"</span><span class="json-punc">:</span> <span class="json-string">"hex"</span><span class="json-punc">,</span> <span class="json-key">"value"</span><span class="json-punc">:</span> <span class="json-string">"#2EBEE5"</span> <span class="json-punc">}</span> <span class="json-punc">}</span> <span class="json-punc">}</span><span class="json-punc">,</span>
+    <span class="json-key">"textLid"</span><span class="json-punc">:</span> <span class="json-punc">{</span>
+      <span class="json-key">"value"</span><span class="json-punc">:</span> <span class="json-string">"annual_title"</span><span class="json-punc">,</span>
+      <span class="json-key">"animation"</span><span class="json-punc">:</span> <span class="json-punc">{</span> <span class="json-key">"type"</span><span class="json-punc">:</span> <span class="json-string">"instant"</span> <span class="json-punc">}</span>
+    <span class="json-punc">}</span>
+  <span class="json-punc">}</span>
+<span class="json-punc">}</span></pre>
       <div class="callout">
         <strong>Roadmap:</strong> animated overrides are the near-term bridge. Explicit state rules are the
         long-term model for truly dynamic paywalls and per-property animation.
