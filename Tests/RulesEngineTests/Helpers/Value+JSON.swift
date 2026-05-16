@@ -5,7 +5,6 @@
 //
 
 import Foundation
-import XCTest
 
 @testable import RulesEngine
 
@@ -30,7 +29,9 @@ extension Value {
         }
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])
-            return Value.fromJSONObject(json)
+            return try Value.fromJSONObject(json)
+        } catch let error as RuleError {
+            throw error
         } catch {
             throw RuleError.parse(message: error.localizedDescription)
         }
@@ -38,8 +39,10 @@ extension Value {
 
     /// Recursively convert a value produced by `JSONSerialization` (the
     /// `Any` is one of `NSNull`, `NSNumber`, `String`, `[Any]`, or
-    /// `[String: Any]`).
-    static func fromJSONObject(_ object: Any) -> Value {
+    /// `[String: Any]`). Throws `RuleError.parse` if it encounters anything
+    /// else — better to fail loudly than to silently coerce unknown
+    /// Foundation types (`Date`, `NSValue`, …) to `.null`.
+    static func fromJSONObject(_ object: Any) throws -> Value {
         if object is NSNull {
             return .null
         }
@@ -67,16 +70,18 @@ extension Value {
             return .string(string)
         }
         if let array = object as? [Any] {
-            return .array(array.map(Value.fromJSONObject))
+            return .array(try array.map(Value.fromJSONObject))
         }
         if let dict = object as? [String: Any] {
             var result: [String: Value] = [:]
             result.reserveCapacity(dict.count)
             for (key, value) in dict {
-                result[key] = Value.fromJSONObject(value)
+                result[key] = try Value.fromJSONObject(value)
             }
             return .object(result)
         }
-        return .null
+        throw RuleError.parse(
+            message: "unexpected JSONSerialization output of type \(type(of: object))"
+        )
     }
 }

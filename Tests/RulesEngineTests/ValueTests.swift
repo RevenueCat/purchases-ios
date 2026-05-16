@@ -128,4 +128,30 @@ final class ValueTests: XCTestCase {
         XCTAssertFalse(strictEq(.bool(true), .int(1)))
         XCTAssertFalse(strictEq(.null, .bool(false)))
     }
+
+    // MARK: - NaN / Infinity edge cases
+
+    func testNaNIsFalsyAndNeverEqualsItself() {
+        // IEEE 754: any comparison involving NaN is false, including NaN==NaN.
+        // We piggy-back on `==` (rather than reimplementing it), so callers
+        // that introduce NaN through float coercion get the standard "NaN
+        // poisons the comparison" behavior.
+        XCTAssertFalse(Value.float(.nan).isTruthy)
+        XCTAssertFalse(looseEq(.float(.nan), .float(.nan)))
+        XCTAssertFalse(strictEq(.float(.nan), .float(.nan)))
+        XCTAssertFalse(looseEq(.float(.nan), .int(0)))
+        XCTAssertFalse(looseEq(.float(.nan), .float(0.0)))
+    }
+
+    func testInfinityIsTruthyAndComparesByIEEE754() {
+        XCTAssertTrue(Value.float(.infinity).isTruthy)
+        XCTAssertTrue(Value.float(-.infinity).isTruthy)
+
+        XCTAssertTrue(looseEq(.float(.infinity), .float(.infinity)))
+        XCTAssertTrue(strictEq(.float(.infinity), .float(.infinity)))
+        XCTAssertFalse(looseEq(.float(.infinity), .float(-.infinity)))
+
+        // Cross-type: +Infinity never numerically equals a finite int.
+        XCTAssertFalse(looseEq(.float(.infinity), .int(.max)))
+    }
 }

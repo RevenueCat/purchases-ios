@@ -176,4 +176,45 @@ final class LogicOperatorsTests: XCTestCase {
             .null
         )
     }
+
+    func testIfSingleArgReturnsItUnchanged() throws {
+        // `{"if": [expr]}` — degenerate form: no condition pair and no
+        // explicit else slot, so the lone argument falls through to the
+        // trailing "else" branch and is returned as-is.
+        XCTAssertEqual(
+            try LogicOperators.opIf(args: .array([.string("only")]),
+                                    vars: .null,
+                                    logger: PrintLogger()),
+            .string("only")
+        )
+        XCTAssertEqual(
+            try LogicOperators.opIf(args: .array([.bool(false)]),
+                                    vars: .null,
+                                    logger: PrintLogger()),
+            .bool(false)
+        )
+    }
+
+    func testIfTwoArgFormReturnsThenOrNull() throws {
+        // `{"if": [cond, then]}` — no else clause. Returns `then` when the
+        // condition is truthy, `null` otherwise (rather than the falsy
+        // condition value).
+        let truthy = Value.array([.bool(true), .string("yes")])
+        XCTAssertEqual(
+            try LogicOperators.opIf(args: truthy, vars: .null, logger: PrintLogger()),
+            .string("yes")
+        )
+
+        let falsy = Value.array([.bool(false), .string("yes")])
+        XCTAssertEqual(
+            try LogicOperators.opIf(args: falsy, vars: .null, logger: PrintLogger()),
+            .null
+        )
+
+        let falsyInt = Value.array([.int(0), .string("yes")])
+        XCTAssertEqual(
+            try LogicOperators.opIf(args: falsyInt, vars: .null, logger: PrintLogger()),
+            .null
+        )
+    }
 }
