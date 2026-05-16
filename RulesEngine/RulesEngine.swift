@@ -21,3 +21,62 @@ import Foundation
 /// callers to write `RulesEngine.RulesEngine.something` to reach the
 /// namespace.
 @_spi(Internal) public enum Rules {}
+
+extension Rules {
+
+    /// Logger used by the evaluator and operator implementations for
+    /// diagnostic warnings (e.g. missing variables, unknown operators,
+    /// malformed args). Defaults to `PrintLogger` during development; the
+    /// SDK integration point will replace this with an adapter into the
+    /// host SDK's logging system.
+    ///
+    /// Threading the logger through every operator call would be pure
+    /// boilerplate (only `AccessorOperators` actually emits warnings
+    /// today), so we make it module state. Access is `NSLock`-synchronized
+    /// through `loggerStorage` so a concurrent reader during a
+    /// `withLogger` swap can't observe a half-assigned value.
+    static var logger: RulesEngineLogger {
+        get { loggerStorage.value }
+        set { loggerStorage.value = newValue }
+    }
+
+    /// Install `logger` as the module logger for the duration of `body`,
+    /// restoring the previous logger on exit (including when `body`
+    /// throws). Convenient for scoped overrides in tests; not designed
+    /// for concurrent use across tasks — `XCTest` runs test methods
+    /// serially within a class, which is the only contract we lean on.
+    static func withLogger<T>(
+        _ logger: RulesEngineLogger,
+        _ body: () throws -> T
+    ) rethrows -> T {
+        let previous = self.logger
+        self.logger = logger
+        defer { self.logger = previous }
+        return try body()
+    }
+
+    private static let loggerStorage = LoggerStorage()
+}
+
+/// Locked storage for `Rules.logger`. A reference type so the enclosing
+/// namespace's `static let loggerStorage` can be a stored property
+/// (Swift forbids stored properties on enums, but `static let` of a
+/// class instance is fine).
+private final class LoggerStorage {
+
+    private let lock = NSLock()
+    private var current: RulesEngineLogger = PrintLogger()
+
+    var value: RulesEngineLogger {
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            return current
+        }
+        set {
+            lock.lock()
+            defer { lock.unlock() }
+            current = newValue
+        }
+    }
+}

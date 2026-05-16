@@ -19,34 +19,33 @@ enum Operators {
     static func dispatch(
         op operatorName: String,
         args: Value,
-        vars: Value,
-        logger: RulesEngineLogger
+        vars: Value
     ) throws -> Value {
         switch operatorName {
         case "var":
-            return try AccessorOperators.opVar(args: args, vars: vars, logger: logger)
+            return try AccessorOperators.opVar(args: args, vars: vars)
         case "missing":
-            return try AccessorOperators.opMissing(args: args, vars: vars, logger: logger)
+            return try AccessorOperators.opMissing(args: args, vars: vars)
 
         case "==":
-            return try EqualityOperators.opLooseEq(args: args, vars: vars, logger: logger)
+            return try EqualityOperators.opLooseEq(args: args, vars: vars)
         case "!=":
-            return try EqualityOperators.opLooseNe(args: args, vars: vars, logger: logger)
+            return try EqualityOperators.opLooseNe(args: args, vars: vars)
         case "===":
-            return try EqualityOperators.opStrictEq(args: args, vars: vars, logger: logger)
+            return try EqualityOperators.opStrictEq(args: args, vars: vars)
         case "!==":
-            return try EqualityOperators.opStrictNe(args: args, vars: vars, logger: logger)
+            return try EqualityOperators.opStrictNe(args: args, vars: vars)
 
         case "!":
-            return try LogicOperators.opNot(args: args, vars: vars, logger: logger)
+            return try LogicOperators.opNot(args: args, vars: vars)
         case "!!":
-            return try LogicOperators.opNotNot(args: args, vars: vars, logger: logger)
+            return try LogicOperators.opNotNot(args: args, vars: vars)
         case "and":
-            return try LogicOperators.opAnd(args: args, vars: vars, logger: logger)
+            return try LogicOperators.opAnd(args: args, vars: vars)
         case "or":
-            return try LogicOperators.opOr(args: args, vars: vars, logger: logger)
+            return try LogicOperators.opOr(args: args, vars: vars)
         case "if":
-            return try LogicOperators.opIf(args: args, vars: vars, logger: logger)
+            return try LogicOperators.opIf(args: args, vars: vars)
 
         default:
             throw RuleError.unsupportedOperator(name: operatorName)
@@ -66,12 +65,8 @@ enum Operators {
     }
 
     /// Evaluate every element in an argument list.
-    static func evalArgs(
-        _ args: Value,
-        vars: Value,
-        logger: RulesEngineLogger
-    ) throws -> [Value] {
-        try argsAsList(args).map { try Evaluator.evaluateValue($0, vars: vars, logger: logger) }
+    static func evalArgs(_ args: Value, vars: Value) throws -> [Value] {
+        try argsAsList(args).map { try Evaluator.evaluateValue($0, vars: vars) }
     }
 
     /// Evaluate exactly two arguments. Used by binary operators (`==`, `!=`,
@@ -80,10 +75,9 @@ enum Operators {
     static func evalTwo(
         _ args: Value,
         vars: Value,
-        logger: RulesEngineLogger,
         opName: String
     ) throws -> (Value, Value) {
-        let evaluated = try evalArgs(args, vars: vars, logger: logger)
+        let evaluated = try evalArgs(args, vars: vars)
         guard evaluated.count == 2 else {
             throw RuleError.typeMismatch(
                 message: "operator '\(opName)' expects 2 arguments, got \(evaluated.count)"

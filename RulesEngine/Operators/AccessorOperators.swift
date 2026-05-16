@@ -22,12 +22,8 @@ enum AccessorOperators {
     /// Variable lookup uses **strict JSON Logic dot-path semantics on
     /// nested objects**. There is no flat-key fallback (i.e. we do not also
     /// try the literal dotted string as a single key in the top-level map).
-    static func opVar(
-        args: Value,
-        vars: Value,
-        logger: RulesEngineLogger
-    ) throws -> Value {
-        let (path, defaultValue) = try parseVarArgs(args, logger: logger)
+    static func opVar(args: Value, vars: Value) throws -> Value {
+        let (path, defaultValue) = try parseVarArgs(args)
 
         if path.isEmpty {
             return vars
@@ -39,18 +35,14 @@ enum AccessorOperators {
         if let defaultValue = defaultValue {
             return defaultValue
         }
-        logger.warn("missing variable: \(path)")
+        Rules.logger.warn("missing variable: \(path)")
         return .null
     }
 
     /// `{"missing": ["a", "b.c"]}` returns the array of keys (as strings)
     /// that are NOT present in the data. Returns `[]` when nothing is
     /// missing.
-    static func opMissing(
-        args: Value,
-        vars: Value,
-        logger: RulesEngineLogger
-    ) throws -> Value {
+    static func opMissing(args: Value, vars: Value) throws -> Value {
         let keys: [Value]
         if case .array(let items) = args {
             keys = items
@@ -73,10 +65,7 @@ enum AccessorOperators {
 
     /// Normalize `var`'s arg into a `(path, default)` tuple. Accepts a
     /// string/number literal, `null` (= empty path), or `[path, default?]`.
-    private static func parseVarArgs(
-        _ args: Value,
-        logger: RulesEngineLogger
-    ) throws -> (String, Value?) {
+    private static func parseVarArgs(_ args: Value) throws -> (String, Value?) {
         switch args {
         case .null:
             return ("", nil)
@@ -87,7 +76,7 @@ enum AccessorOperators {
         case .float(let value):
             return (formatNumber(value), nil)
         case .array(let items):
-            return try parseVarArrayArgs(items, logger: logger)
+            return try parseVarArrayArgs(items)
         default:
             throw RuleError.typeMismatch(
                 message: "var arg must be a string, number, or array, got \(args)"
@@ -95,14 +84,11 @@ enum AccessorOperators {
         }
     }
 
-    private static func parseVarArrayArgs(
-        _ items: [Value],
-        logger: RulesEngineLogger
-    ) throws -> (String, Value?) {
+    private static func parseVarArrayArgs(_ items: [Value]) throws -> (String, Value?) {
         let path = try pathSegment(from: items.first)
         let defaultValue: Value? = items.count >= 2 ? items[1] : nil
         if items.count > 2 {
-            logger.warn(
+            Rules.logger.warn(
                 "var: ignoring \(items.count - 2) extra arg(s); expected [path] or [path, default]"
             )
         }

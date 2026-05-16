@@ -43,11 +43,7 @@ final class EqualityOperatorsTests: XCTestCase {
 
     func testArityMismatchIsTypeError() {
         XCTAssertThrowsError(
-            try EqualityOperators.opLooseEq(
-                args: .array([.int(1)]),
-                vars: .null,
-                logger: PrintLogger()
-            )
+            try EqualityOperators.opLooseEq(args: .array([.int(1)]), vars: .null)
         ) { error in
             guard case RuleError.typeMismatch = error else {
                 return XCTFail("expected RuleError.typeMismatch, got \(error)")
@@ -58,15 +54,15 @@ final class EqualityOperatorsTests: XCTestCase {
     // MARK: - Helpers
 
     private func evalEq(_ args: Value) throws -> Value {
-        try EqualityOperators.opLooseEq(args: args, vars: .null, logger: PrintLogger())
+        try EqualityOperators.opLooseEq(args: args, vars: .null)
     }
     private func evalNe(_ args: Value) throws -> Value {
-        try EqualityOperators.opLooseNe(args: args, vars: .null, logger: PrintLogger())
+        try EqualityOperators.opLooseNe(args: args, vars: .null)
     }
     private func evalStrictEq(_ args: Value) throws -> Value {
-        try EqualityOperators.opStrictEq(args: args, vars: .null, logger: PrintLogger())
+        try EqualityOperators.opStrictEq(args: args, vars: .null)
     }
     private func evalStrictNe(_ args: Value) throws -> Value {
-        try EqualityOperators.opStrictNe(args: args, vars: .null, logger: PrintLogger())
+        try EqualityOperators.opStrictNe(args: args, vars: .null)
     }
 }

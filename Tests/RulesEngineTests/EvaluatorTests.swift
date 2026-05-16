@@ -6,7 +6,7 @@
 
 import XCTest
 
-@testable import RulesEngine
+@_spi(Internal) @testable import RulesEngine
 
 final class EvaluatorTests: XCTestCase {
 
@@ -153,11 +153,12 @@ final class EvaluatorTests: XCTestCase {
         // missing, since missing → null and null == null.
         let predicate = "{\"==\": [{\"var\": \"missing\"}, null]}"
         let logger = CapturingLogger()
-        let result = try Evaluator.evaluate(
-            predicate: try Value.fromJSONString(predicate),
-            variables: [:],
-            logger: logger
-        )
+        let result = try Rules.withLogger(logger) {
+            try Evaluator.evaluate(
+                predicate: try Value.fromJSONString(predicate),
+                variables: [:]
+            )
+        }
         XCTAssertTrue(result)
         XCTAssertEqual(logger.warnings.count, 1)
         XCTAssertTrue(logger.warnings[0].contains("missing"))
@@ -168,7 +169,7 @@ final class EvaluatorTests: XCTestCase {
     func testUnsupportedOperatorSurfacesError() throws {
         let predicate = try Value.fromJSONString("{\"someUnknownOp\": [1, 2]}")
         XCTAssertThrowsError(
-            try Evaluator.evaluate(predicate: predicate, variables: [:], logger: CapturingLogger())
+            try Evaluator.evaluate(predicate: predicate, variables: [:])
         ) { error in
             guard case RuleError.unsupportedOperator = error else {
                 return XCTFail("expected RuleError.unsupportedOperator, got \(error)")
@@ -190,7 +191,7 @@ final class EvaluatorTests: XCTestCase {
     func testArityErrorOnBinaryOperatorSurfacesTypeMismatch() throws {
         let predicate = try Value.fromJSONString("{\"==\": [1]}")
         XCTAssertThrowsError(
-            try Evaluator.evaluate(predicate: predicate, variables: [:], logger: CapturingLogger())
+            try Evaluator.evaluate(predicate: predicate, variables: [:])
         ) { error in
             guard case RuleError.typeMismatch = error else {
                 return XCTFail("expected RuleError.typeMismatch, got \(error)")
@@ -226,10 +227,6 @@ final class EvaluatorTests: XCTestCase {
 
     private func run(_ predicateJSON: String, vars: [String: Value] = [:]) throws -> Bool {
         let predicate = try Value.fromJSONString(predicateJSON)
-        return try Evaluator.evaluate(
-            predicate: predicate,
-            variables: vars,
-            logger: CapturingLogger()
-        )
+        return try Evaluator.evaluate(predicate: predicate, variables: vars)
     }
 }

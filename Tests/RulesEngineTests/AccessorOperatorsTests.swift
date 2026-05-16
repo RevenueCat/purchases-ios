@@ -6,17 +6,38 @@
 
 import XCTest
 
-@testable import RulesEngine
+@_spi(Internal) @testable import RulesEngine
 
 final class AccessorOperatorsTests: XCTestCase {
+
+    // Every test in this class either reads from or asserts on the captured
+    // warnings, so install a fresh `CapturingLogger` per test and restore
+    // the prior module logger on tear-down. XCTest runs methods within a
+    // class serially, so the global swap is safe.
+    private var logger: CapturingLogger!
+    private var previousLogger: RulesEngineLogger!
+
+    override func setUp() {
+        super.setUp()
+        logger = CapturingLogger()
+        previousLogger = Rules.logger
+        Rules.logger = logger
+    }
+
+    override func tearDown() {
+        Rules.logger = previousLogger
+        previousLogger = nil
+        logger = nil
+        super.tearDown()
+    }
 
     // MARK: - var
 
     func testVarResolvesTopLevelKey() throws {
         let vars = Value.object(["name": .string("ada")])
-        let (out, warnings) = try runVar(.string("name"), vars: vars)
+        let out = try AccessorOperators.opVar(args: .string("name"), vars: vars)
         XCTAssertEqual(out, .string("ada"))
-        XCTAssertTrue(warnings.isEmpty)
+        XCTAssertTrue(logger.warnings.isEmpty)
     }
 
     func testVarResolvesDotPathIntoNestedObject() throws {
@@ -24,7 +45,10 @@ final class AccessorOperatorsTests: XCTestCase {
         let vars = Value.object([
             "subscriber": .object(["last_seen_country": .string("US")])
         ])
-        let (out, _) = try runVar(.string("subscriber.last_seen_country"), vars: vars)
+        let out = try AccessorOperators.opVar(
+            args: .string("subscriber.last_seen_country"),
+            vars: vars
+        )
         XCTAssertEqual(out, .string("US"))
     }
 
@@ -32,33 +56,31 @@ final class AccessorOperatorsTests: XCTestCase {
         let vars = Value.object([
             "items": .array([.string("first"), .string("second"), .string("third")])
         ])
-        let (out, _) = try runVar(.string("items.1"), vars: vars)
+        let out = try AccessorOperators.opVar(args: .string("items.1"), vars: vars)
         XCTAssertEqual(out, .string("second"))
     }
 
     func testVarMissingKeyReturnsNullAndWarns() throws {
         let vars = Value.object(["a": .int(1)])
-        let (out, warnings) = try runVar(.string("missing_key"), vars: vars)
+        let out = try AccessorOperators.opVar(args: .string("missing_key"), vars: vars)
         XCTAssertEqual(out, .null)
-        XCTAssertEqual(warnings.count, 1)
-        XCTAssertTrue(warnings[0].contains("missing_key"))
+        XCTAssertEqual(logger.warnings.count, 1)
+        XCTAssertTrue(logger.warnings[0].contains("missing_key"))
     }
 
     func testVarMissingDotPathReturnsNullAndWarns() throws {
         let vars = Value.object(["a": .object(["b": .int(1)])])
-        let (out, warnings) = try runVar(.string("a.c"), vars: vars)
+        let out = try AccessorOperators.opVar(args: .string("a.c"), vars: vars)
         XCTAssertEqual(out, .null)
-        XCTAssertEqual(warnings.count, 1)
-        XCTAssertTrue(warnings[0].contains("a.c"))
+        XCTAssertEqual(logger.warnings.count, 1)
+        XCTAssertTrue(logger.warnings[0].contains("a.c"))
     }
 
     func testVarMissingWithDefaultReturnsDefaultAndDoesNotWarn() throws {
         let vars = Value.object(["a": .int(1)])
-        let logger = CapturingLogger()
         let result = try AccessorOperators.opVar(
             args: .array([.string("missing"), .string("fallback")]),
-            vars: vars,
-            logger: logger
+            vars: vars
         )
         XCTAssertEqual(result, .string("fallback"))
         XCTAssertTrue(logger.warnings.isEmpty)
@@ -66,14 +88,14 @@ final class AccessorOperatorsTests: XCTestCase {
 
     func testVarEmptyPathReturnsEntireData() throws {
         let vars = Value.object(["x": .int(1)])
-        let (out, _) = try runVar(.string(""), vars: vars)
+        let out = try AccessorOperators.opVar(args: .string(""), vars: vars)
         XCTAssertEqual(out, vars)
     }
 
     func testVarWithNumericPathArgIsCoercedToString() throws {
         // {"var": 0} on array data
         let vars = Value.array([.string("zero"), .string("one")])
-        let (out, _) = try runVar(.int(0), vars: vars)
+        let out = try AccessorOperators.opVar(args: .int(0), vars: vars)
         XCTAssertEqual(out, .string("zero"))
     }
 
@@ -82,17 +104,17 @@ final class AccessorOperatorsTests: XCTestCase {
         // lookup walks "a" then "b" and finds nothing. Documents the
         // deferred fallback behavior.
         let vars = Value.object(["a.b": .int(42)])
-        let (out, warnings) = try runVar(.string("a.b"), vars: vars)
+        let out = try AccessorOperators.opVar(args: .string("a.b"), vars: vars)
         XCTAssertEqual(out, .null)
-        XCTAssertEqual(warnings.count, 1)
+        XCTAssertEqual(logger.warnings.count, 1)
     }
 
     func testVarExtraArgsAreIgnoredWithWarning() throws {
         // Reference impls silently ignore extras; we surface a warning so it
         // doesn't become a silent bug. Path + default still resolve normally.
         let vars = Value.object(["a": .int(1)])
-        let (out, warnings) = try runVar(
-            .array([
+        let out = try AccessorOperators.opVar(
+            args: .array([
                 .string("missing_key"),
                 .string("fallback"),
                 .string("ignored1"),
@@ -104,19 +126,17 @@ final class AccessorOperatorsTests: XCTestCase {
         XCTAssertEqual(out, .string("fallback"))
         // One warning for the extras; no missing-variable warning since the
         // default short-circuited the lookup.
-        XCTAssertEqual(warnings.count, 1)
-        XCTAssertTrue(warnings[0].contains("ignoring 2 extra"))
+        XCTAssertEqual(logger.warnings.count, 1)
+        XCTAssertTrue(logger.warnings[0].contains("ignoring 2 extra"))
     }
 
     // MARK: - missing
 
     func testMissingReturnsKeysNotPresent() throws {
         let vars = Value.object(["a": .int(1), "b": .int(2)])
-        let logger = CapturingLogger()
         let result = try AccessorOperators.opMissing(
             args: .array([.string("a"), .string("b"), .string("c")]),
-            vars: vars,
-            logger: logger
+            vars: vars
         )
         XCTAssertEqual(result, .array([.string("c")]))
         // `missing` itself does not warn (it's a check, not a read).
@@ -125,42 +145,25 @@ final class AccessorOperatorsTests: XCTestCase {
 
     func testMissingReturnsEmptyArrayWhenAllPresent() throws {
         let vars = Value.object(["a": .int(1)])
-        let logger = CapturingLogger()
         let result = try AccessorOperators.opMissing(
             args: .array([.string("a")]),
-            vars: vars,
-            logger: logger
+            vars: vars
         )
         XCTAssertEqual(result, .array([]))
     }
 
     func testMissingSupportsDotPathKeys() throws {
         let vars = Value.object(["user": .object(["name": .string("ada")])])
-        let logger = CapturingLogger()
         let result = try AccessorOperators.opMissing(
             args: .array([.string("user.name"), .string("user.email")]),
-            vars: vars,
-            logger: logger
+            vars: vars
         )
         XCTAssertEqual(result, .array([.string("user.email")]))
     }
 
     func testMissingSingletonShorthandIsSupported() throws {
         let vars = Value.object([:])
-        let logger = CapturingLogger()
-        let result = try AccessorOperators.opMissing(
-            args: .string("a"),
-            vars: vars,
-            logger: logger
-        )
+        let result = try AccessorOperators.opMissing(args: .string("a"), vars: vars)
         XCTAssertEqual(result, .array([.string("a")]))
-    }
-
-    // MARK: - Helpers
-
-    private func runVar(_ pathArg: Value, vars: Value) throws -> (Value, [String]) {
-        let logger = CapturingLogger()
-        let result = try AccessorOperators.opVar(args: pathArg, vars: vars, logger: logger)
-        return (result, logger.warnings)
     }
 }
