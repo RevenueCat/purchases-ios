@@ -28,7 +28,6 @@ if !includeTestDependencies {
             "SnapshotTesting": .framework, // default is .staticFramework,
             "RevenueCat": .framework,
             "RevenueCatUI": .framework,
-            "RulesEngine": .framework,
             "Purchases": .framework,
             "GoogleMobileAds": .framework,
             "OHHTTPStubs": .framework,
