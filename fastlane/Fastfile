@@ -2323,6 +2323,12 @@ platform :ios do
       files = ApiDiffHelper.find_swiftinterface_file("../.build", sdk, scheme)
       UI.user_error!("Could not find #{scheme}.swiftinterface for #{sdk}") if files.empty?
 
+      # Filter strictly: a "leaked" declaration is any line that is not a header
+      # comment, a plain `import`, or blank. If a future Xcode bump introduces
+      # new top-of-file constructs (e.g. `@_exported import ...`, `#if compiler(...)`,
+      # `@available(*, unavailable, ...)`), the lane will flag them as false
+      # positives — extend this rejection list rather than hunting for a real
+      # public-API leak that isn't there.
       body = File.readlines(files.first).reject do |line|
         line.start_with?("//") || line.start_with?("import ") || line.strip.empty?
       end
