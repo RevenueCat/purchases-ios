@@ -14,10 +14,5 @@
 
 import Foundation
 
-/// Namespace for the RevenueCat rules engine. Named `Rules` rather than
-/// `RulesEngine` to avoid colliding with the module name — from the test
-/// target's perspective (`@testable import RulesEngine`) the bare
-/// identifier `RulesEngine` resolves to the module, which would force
-/// callers to write `RulesEngine.RulesEngine.something` to reach the
-/// namespace.
+/// Namespace for the RevenueCat rules engine.
 @_spi(Internal) public enum Rules {}
