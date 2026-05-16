@@ -19,17 +19,6 @@ import Foundation
 
 extension Rules {
 
-    /// Logger used by the evaluator and operator implementations for
-    /// diagnostic warnings (e.g. missing variables, unknown operators,
-    /// malformed args). Defaults to `PrintLogger` during development; the
-    /// SDK integration point will replace this with an adapter into the
-    /// host SDK's logging system.
-    ///
-    /// Threading the logger through every operator call would be pure
-    /// boilerplate (only `AccessorOperators` actually emits warnings
-    /// today), so we make it module state. Access is `NSLock`-synchronized
-    /// through `loggerStorage` so a concurrent reader during a write
-    /// can't observe a half-assigned value.
     static var logger: RulesEngineLogger {
         get { loggerStorage.value }
         set { loggerStorage.value = newValue }
