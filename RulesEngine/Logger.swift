@@ -16,7 +16,7 @@ import Foundation
 /// Default behaviour during development is noisy (`PrintLogger`); the
 /// production default will be revisited once the engine is wired up to the
 /// rest of the SDK.
-internal protocol RulesEngineLogger {
+protocol RulesEngineLogger {
 
     func warn(_ message: String)
 }
@@ -24,7 +24,7 @@ internal protocol RulesEngineLogger {
 /// Default logger used by the in-module callers: writes warnings to stderr
 /// via `print(... to: &stderr)` so warnings don't get lost in release-mode
 /// log filters that ignore plain `print`.
-internal struct PrintLogger: RulesEngineLogger {
+struct PrintLogger: RulesEngineLogger {
 
     init() {}
 
@@ -38,7 +38,7 @@ internal struct PrintLogger: RulesEngineLogger {
 /// production module (rather than under `Tests/`) so non-test callers can
 /// reference it from internal helpers without an extra link step. Marked
 /// `final` since there is no reason to subclass it.
-internal final class CapturingLogger: RulesEngineLogger {
+final class CapturingLogger: RulesEngineLogger {
 
     private let lock = NSLock()
     private var captured: [String] = []

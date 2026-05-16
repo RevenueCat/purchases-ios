@@ -12,7 +12,7 @@ import Foundation
 /// arrays evaluate element-wise, single-key objects dispatch to an operator,
 /// multi-key objects are treated as literal data. Operators handle their
 /// own short-circuit / arity logic.
-internal enum Evaluator {
+enum Evaluator {
 
     /// Module-internal entry point. A future iteration will surface this via
     /// the SDK-facing API.

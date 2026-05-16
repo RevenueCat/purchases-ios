@@ -7,7 +7,7 @@
 import Foundation
 
 /// `var` and `missing` — the data-accessor operators.
-internal enum AccessorOperators {
+enum AccessorOperators {
 
     /// `{"var": "subscriber.last_seen_country"}` — look up a (possibly
     /// nested) value by dot-path. `{"var": ["path", default]}` returns

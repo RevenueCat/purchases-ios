@@ -7,7 +7,7 @@
 import Foundation
 
 /// Equality operators: `==`, `!=`, `===`, `!==`.
-internal enum EqualityOperators {
+enum EqualityOperators {
 
     /// `{"==": [a, b]}` — JSON Logic loose equality. Coerces across primitive
     /// types (e.g. `1 == "1"` is true). Full coercion table in `looseEq`.

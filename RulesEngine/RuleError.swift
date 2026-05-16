@@ -12,7 +12,7 @@ import Foundation
 /// for them — per the JSON Logic spec, they resolve to `null` and a warning
 /// is logged instead. If a strict mode is ever needed, we'd add a
 /// `missingVariable` case.
-internal enum RuleError: Error, Equatable {
+enum RuleError: Error, Equatable {
 
     /// The predicate JSON could not be parsed.
     case parse(message: String)

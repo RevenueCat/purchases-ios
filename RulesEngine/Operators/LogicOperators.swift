@@ -10,7 +10,7 @@ import Foundation
 ///
 /// `and`, `or`, and `if` short-circuit and therefore can't use the eager
 /// `evalArgs` helpers — they evaluate their arguments one at a time.
-internal enum LogicOperators {
+enum LogicOperators {
 
     /// `{"!": x}` — boolean negation. Coerces to bool first per JSON Logic
     /// truthiness rules.

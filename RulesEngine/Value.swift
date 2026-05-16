@@ -17,7 +17,7 @@ import Foundation
 /// JSON parsing intentionally lives only in tests (see the `Value+JSON.swift`
 /// test helper). Production callers will cross the FFI with a typed `Value`
 /// tree they construct from the host SDK's JSON parser.
-internal enum Value: Equatable {
+enum Value: Equatable {
 
     case null
     case bool(Bool)
@@ -80,7 +80,7 @@ extension Value {
 /// common primitive cases. Arrays/objects compare structurally (deviates
 /// from JS reference identity but is more useful for rule authors).
 // swiftlint:disable:next cyclomatic_complexity
-internal func looseEq(_ lhs: Value, _ rhs: Value) -> Bool {
+func looseEq(_ lhs: Value, _ rhs: Value) -> Bool {
     switch (lhs, rhs) {
     case (.null, .null):
         return true
@@ -122,7 +122,7 @@ internal func looseEq(_ lhs: Value, _ rhs: Value) -> Bool {
 /// strict-eq treats `int(1)` and `float(1.0)` as equal — they represent the
 /// same JS `Number`, and our split is an internal modeling choice.
 // swiftlint:disable:next cyclomatic_complexity
-internal func strictEq(_ lhs: Value, _ rhs: Value) -> Bool {
+func strictEq(_ lhs: Value, _ rhs: Value) -> Bool {
     switch (lhs, rhs) {
     case (.null, .null):
         return true

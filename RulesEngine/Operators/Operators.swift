@@ -11,7 +11,7 @@ import Foundation
 /// Operators are responsible for evaluating their own arguments. Most use
 /// the `evalTwo` / `evalArgs` helpers which evaluate eagerly; short-circuit
 /// operators (`and`, `or`, `if`) iterate manually.
-internal enum Operators {
+enum Operators {
 
     /// Dispatch a JSON Logic operator. Throws `RuleError.unsupportedOperator`
     /// when the operator name isn't implemented in this slice.
