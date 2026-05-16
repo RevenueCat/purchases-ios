@@ -310,7 +310,7 @@ private extension CustomerCenterViewModel {
             transaction: inactiveSub,
             customerInfo: customerInfo,
             purchasesProvider: purchasesProvider,
-            changePlans: [],
+            changePlans: configuration.changePlans,
             customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
             localization: configuration.localization
         )
