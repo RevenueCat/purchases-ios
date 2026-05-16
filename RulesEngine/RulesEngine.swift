@@ -33,26 +33,11 @@ extension Rules {
     /// Threading the logger through every operator call would be pure
     /// boilerplate (only `AccessorOperators` actually emits warnings
     /// today), so we make it module state. Access is `NSLock`-synchronized
-    /// through `loggerStorage` so a concurrent reader during a
-    /// `withLogger` swap can't observe a half-assigned value.
+    /// through `loggerStorage` so a concurrent reader during a write
+    /// can't observe a half-assigned value.
     static var logger: RulesEngineLogger {
         get { loggerStorage.value }
         set { loggerStorage.value = newValue }
-    }
-
-    /// Install `logger` as the module logger for the duration of `body`,
-    /// restoring the previous logger on exit (including when `body`
-    /// throws). Convenient for scoped overrides in tests; not designed
-    /// for concurrent use across tasks — `XCTest` runs test methods
-    /// serially within a class, which is the only contract we lean on.
-    static func withLogger<T>(
-        _ logger: RulesEngineLogger,
-        _ body: () throws -> T
-    ) rethrows -> T {
-        let previous = self.logger
-        self.logger = logger
-        defer { self.logger = previous }
-        return try body()
     }
 
     private static let loggerStorage = LoggerStorage()

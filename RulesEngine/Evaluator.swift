@@ -14,8 +14,8 @@ import Foundation
 /// own short-circuit / arity logic.
 ///
 /// Diagnostic warnings (missing variables, malformed args, ignored extras)
-/// are routed through `Rules.logger`. Tests can swap that logger via
-/// `Rules.withLogger { ... }` to capture or silence output.
+/// are routed through `Rules.logger`; assign it (typically once at
+/// startup) to capture or silence output.
 enum Evaluator {
 
     /// Module-internal entry point. A future iteration will surface this via
