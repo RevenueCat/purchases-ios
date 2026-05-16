@@ -17,7 +17,7 @@ import Foundation
 /// JSON parsing intentionally lives only in tests (see the `Value+JSON.swift`
 /// test helper). Production callers will cross the FFI with a typed `Value`
 /// tree they construct from the host SDK's JSON parser.
-internal indirect enum Value: Equatable {
+internal enum Value: Equatable {
 
     case null
     case bool(Bool)
