@@ -134,11 +134,12 @@ The sample prints diagnostics in the Xcode console and emits RevenueCat ad event
 
 All formats in this app use `loadAndTrack` APIs and pass a `placement` value to improve reporting segmentation.
 
-For reward verification flows, the sample explicitly calls `enableRewardVerification()` on loaded rewarded ad instances, then uses `present(..., rewardVerificationStarted:, rewardVerificationResult:)` to show verification progress and map outcomes to real-world behavior:
+For reward verification flows, the sample explicitly calls `enableRewardVerification()` on loaded rewarded ad instances, then uses `present(..., rewardVerificationStarted:, rewardVerificationCompleted:)` to show verification progress and map outcomes to real-world behavior:
 
 - grant virtual currency when `verifiedReward.virtualCurrency` is present
 - handle the `noReward` verified case separately
 - use a safe fallback for unknown verified reward shapes
+- rely on adapter-managed cache invalidation for verified virtual currency rewards (then refetch balances when needed)
 
 > **Important:** Do not reassign wrapped delegates/handlers after calling `loadAndTrack`.
 > For full-screen ads, pass your `fullScreenContentDelegate` through `loadAndTrack`.

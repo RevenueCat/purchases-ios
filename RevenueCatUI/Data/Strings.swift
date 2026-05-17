@@ -120,6 +120,7 @@ enum Strings {
     // Conditional Configurability
     case paywall_contains_unsupported_condition
     case workflow_paywall_invalid_state(currentStepId: String, screenId: String?)
+    case paywall_close_workflow_action_not_handled(componentName: String?)
     case paywall_workflow_trigger_not_handled(componentName: String?)
     case workflow_package_context_unresolvable(stepId: String)
 
@@ -389,6 +390,9 @@ extension Strings: CustomStringConvertible {
         case let .workflow_paywall_invalid_state(currentStepId, screenId):
             return "Workflow paywall could not resolve the current screen. " +
             "currentStepId=\(currentStepId), screenId=\(screenId ?? "nil")"
+        case let .paywall_close_workflow_action_not_handled(componentName):
+            return "Close workflow button was tapped but no close workflow action was available. " +
+            "componentName=\(componentName ?? "nil")"
         case let .paywall_workflow_trigger_not_handled(componentName):
             return "Workflow trigger button was tapped but no matching workflow action was available. " +
             "componentName=\(componentName ?? "nil")"

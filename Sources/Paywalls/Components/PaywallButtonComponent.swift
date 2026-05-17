@@ -25,6 +25,8 @@ import Foundation
         public let action: Action
         public let stack: PaywallComponent.StackComponent
         public let transition: PaywallComponent.Transition?
+        /// Preserves the backend-only `close_workflow` action without growing the public enum surface.
+        @_spi(Internal) public let isCloseWorkflowAction: Bool
 
         public init(
             name: String? = nil,
@@ -39,6 +41,7 @@ import Foundation
             self.action = action
             self.stack = stack
             self.transition = transition
+            self.isCloseWorkflowAction = false
         }
 
         private enum CodingKeys: String, CodingKey {
@@ -50,12 +53,24 @@ import Foundation
             case transition
         }
 
+        private enum ActionCodingKeys: String, CodingKey {
+            case type
+        }
+
         required public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.type = try container.decode(ComponentType.self, forKey: .type)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
             self.id = try container.decodeIfPresent(String.self, forKey: .id)
-            self.action = try container.decode(Action.self, forKey: .action)
+            let actionContainer = try container.nestedContainer(keyedBy: ActionCodingKeys.self, forKey: .action)
+            let rawActionType = try actionContainer.decode(String.self, forKey: .type)
+            if rawActionType == "close_workflow" {
+                self.isCloseWorkflowAction = true
+                self.action = .navigateBack
+            } else {
+                self.isCloseWorkflowAction = false
+                self.action = try container.decode(Action.self, forKey: .action)
+            }
             self.stack = try container.decode(PaywallComponent.StackComponent.self, forKey: .stack)
             self.transition = try container.decodeIfPresent(PaywallComponent.Transition.self, forKey: .transition)
         }
@@ -65,7 +80,12 @@ import Foundation
             try container.encode(type, forKey: .type)
             try container.encodeIfPresent(name, forKey: .name)
             try container.encodeIfPresent(id, forKey: .id)
-            try container.encode(action, forKey: .action)
+            if self.isCloseWorkflowAction {
+                var actionContainer = container.nestedContainer(keyedBy: ActionCodingKeys.self, forKey: .action)
+                try actionContainer.encode("close_workflow", forKey: .type)
+            } else {
+                try container.encode(action, forKey: .action)
+            }
             try container.encode(stack, forKey: .stack)
             try container.encodeIfPresent(transition, forKey: .transition)
         }
@@ -75,6 +95,7 @@ import Foundation
             hasher.combine(name)
             hasher.combine(id)
             hasher.combine(action)
+            hasher.combine(isCloseWorkflowAction)
             hasher.combine(stack)
             hasher.combine(transition)
         }
@@ -84,6 +105,7 @@ import Foundation
                    lhs.name == rhs.name &&
                    lhs.id == rhs.id &&
                    lhs.action == rhs.action &&
+                   lhs.isCloseWorkflowAction == rhs.isCloseWorkflowAction &&
                    lhs.stack == rhs.stack &&
                    lhs.transition == rhs.transition
 

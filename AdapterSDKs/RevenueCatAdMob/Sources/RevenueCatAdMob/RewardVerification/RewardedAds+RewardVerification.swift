@@ -22,26 +22,28 @@ import GoogleMobileAds
         RewardVerification.Setup.install(on: self)
     }
 
-    /// Presents the ad with optional reward-verification callbacks.
+    /// Presents the ad with a required reward-verification result callback.
     ///
-    /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
+    /// You must call ``enableRewardVerification()`` before presenting
     /// (checked with a debug assertion).
     ///
     /// Callback timing:
     /// - `rewardVerificationStarted` runs when the AdMob SDK invokes the reward callback and verification begins.
-    /// - `rewardVerificationResult` runs later with the final verification outcome.
+    /// - `rewardVerificationCompleted` runs later with the final verification outcome.
+    ///   When verification returns `.verified(.virtualCurrency(...))`, this API automatically invalidates
+    ///   RevenueCat virtual currencies cache before delivering the callback.
     ///
     /// To override the placement used for RevenueCat analytics at show time, use
-    /// ``present(from:placement:rewardVerificationStarted:rewardVerificationResult:)`` instead of this method.
+    /// ``present(from:placement:rewardVerificationStarted:rewardVerificationCompleted:)`` instead of this method.
     @MainActor
     func present(
         from viewController: UIViewController,
         rewardVerificationStarted: (@MainActor () -> Void)? = nil,
-        rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
+        rewardVerificationCompleted: @escaping @MainActor (RewardVerificationResult) -> Void
     ) {
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
             rewardVerificationStarted: rewardVerificationStarted,
-            rewardVerificationResult: rewardVerificationResult
+            rewardVerificationCompleted: rewardVerificationCompleted
         )
         self.present(
             from: viewController,
@@ -49,27 +51,30 @@ import GoogleMobileAds
         )
     }
 
-    /// Presents the ad with optional reward-verification callbacks and an explicit placement for RevenueCat analytics.
+    /// Presents the ad with a required reward-verification result callback
+    /// and an explicit placement for RevenueCat analytics.
     ///
     /// The placement passed here takes precedence over any placement from
     /// ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:)``.
-    /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
+    /// You must call ``enableRewardVerification()`` before presenting
     /// (checked with a debug assertion).
     ///
     /// Callback timing:
     /// - `rewardVerificationStarted` runs when the AdMob SDK invokes the reward callback and verification begins.
-    /// - `rewardVerificationResult` runs later with the final verification outcome.
+    /// - `rewardVerificationCompleted` runs later with the final verification outcome.
+    ///   When verification returns `.verified(.virtualCurrency(...))`, this API automatically invalidates
+    ///   RevenueCat virtual currencies cache before delivering the callback.
     @MainActor
     func present(
         from viewController: UIViewController,
         placement: String?,
         rewardVerificationStarted: (@MainActor () -> Void)? = nil,
-        rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
+        rewardVerificationCompleted: @escaping @MainActor (RewardVerificationResult) -> Void
     ) {
         Tracking.setShowTimePlacement(placement, on: self)
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
             rewardVerificationStarted: rewardVerificationStarted,
-            rewardVerificationResult: rewardVerificationResult
+            rewardVerificationCompleted: rewardVerificationCompleted
         )
         self.present(
             from: viewController,
@@ -90,26 +95,28 @@ import GoogleMobileAds
         RewardVerification.Setup.install(on: self)
     }
 
-    /// Presents the ad with optional reward-verification callbacks.
+    /// Presents the ad with a required reward-verification result callback.
     ///
-    /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
+    /// You must call ``enableRewardVerification()`` before presenting
     /// (checked with a debug assertion).
     ///
     /// Callback timing:
     /// - `rewardVerificationStarted` runs when the AdMob SDK invokes the reward callback and verification begins.
-    /// - `rewardVerificationResult` runs later with the final verification outcome.
+    /// - `rewardVerificationCompleted` runs later with the final verification outcome.
+    ///   When verification returns `.verified(.virtualCurrency(...))`, this API automatically invalidates
+    ///   RevenueCat virtual currencies cache before delivering the callback.
     ///
     /// To override the placement used for RevenueCat analytics at show time, use
-    /// ``present(from:placement:rewardVerificationStarted:rewardVerificationResult:)`` instead of this method.
+    /// ``present(from:placement:rewardVerificationStarted:rewardVerificationCompleted:)`` instead of this method.
     @MainActor
     func present(
         from viewController: UIViewController,
         rewardVerificationStarted: (@MainActor () -> Void)? = nil,
-        rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
+        rewardVerificationCompleted: @escaping @MainActor (RewardVerificationResult) -> Void
     ) {
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
             rewardVerificationStarted: rewardVerificationStarted,
-            rewardVerificationResult: rewardVerificationResult
+            rewardVerificationCompleted: rewardVerificationCompleted
         )
         self.present(
             from: viewController,
@@ -117,27 +124,30 @@ import GoogleMobileAds
         )
     }
 
-    /// Presents the ad with optional reward-verification callbacks and an explicit placement for RevenueCat analytics.
+    /// Presents the ad with a required reward-verification result callback
+    /// and an explicit placement for RevenueCat analytics.
     ///
     /// The placement passed here takes precedence over any placement from
     /// ``loadAndTrack(withAdUnitID:request:placement:fullScreenContentDelegate:paidEventHandler:)``.
-    /// When `rewardVerificationResult` is non-`nil`, you must call ``enableRewardVerification()`` first
+    /// You must call ``enableRewardVerification()`` before presenting
     /// (checked with a debug assertion).
     ///
     /// Callback timing:
     /// - `rewardVerificationStarted` runs when the AdMob SDK invokes the reward callback and verification begins.
-    /// - `rewardVerificationResult` runs later with the final verification outcome.
+    /// - `rewardVerificationCompleted` runs later with the final verification outcome.
+    ///   When verification returns `.verified(.virtualCurrency(...))`, this API automatically invalidates
+    ///   RevenueCat virtual currencies cache before delivering the callback.
     @MainActor
     func present(
         from viewController: UIViewController,
         placement: String?,
         rewardVerificationStarted: (@MainActor () -> Void)? = nil,
-        rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)? = nil
+        rewardVerificationCompleted: @escaping @MainActor (RewardVerificationResult) -> Void
     ) {
         Tracking.setShowTimePlacement(placement, on: self)
         let userDidEarnRewardHandler = self.createUserDidEarnRewardHandler(
             rewardVerificationStarted: rewardVerificationStarted,
-            rewardVerificationResult: rewardVerificationResult
+            rewardVerificationCompleted: rewardVerificationCompleted
         )
         self.present(
             from: viewController,
@@ -156,12 +166,14 @@ internal extension RewardVerification.CapableAd {
     @MainActor
     func createUserDidEarnRewardHandler(
         rewardVerificationStarted: (@MainActor () -> Void)?,
-        rewardVerificationResult: (@MainActor (RewardVerificationResult) -> Void)?,
-        poller: RewardVerification.Poller? = nil
+        rewardVerificationCompleted: (@MainActor (RewardVerificationResult) -> Void)?,
+        poller: RewardVerification.Poller? = nil,
+        invalidateVirtualCurrenciesCache: @escaping @MainActor () -> Void
+            = RewardVerification.SideEffects.invalidateVirtualCurrenciesCacheIfConfigured
     ) -> (() -> Void) {
         let state = RewardVerification.Setup.verificationState(for: self)
 
-        if rewardVerificationResult != nil, state == nil {
+        if rewardVerificationCompleted != nil, state == nil {
             Logger.warn(RewardVerificationStrings.result_callback_missing_verification_state)
             assert(
                 state != nil,
@@ -172,12 +184,12 @@ internal extension RewardVerification.CapableAd {
         return {
             rewardVerificationStarted?()
 
-            guard let rewardVerificationResult else {
+            guard let rewardVerificationCompleted else {
                 return
             }
 
             guard let state else {
-                rewardVerificationResult(.failed)
+                rewardVerificationCompleted(.failed)
                 return
             }
 
@@ -187,7 +199,10 @@ internal extension RewardVerification.CapableAd {
                 state: state,
                 poller: resolvedPoller,
                 outcomeHandler: { internalOutcome in
-                    rewardVerificationResult(RewardVerification.mapOutcome(internalOutcome))
+                    if case .verified(.virtualCurrency) = internalOutcome {
+                        invalidateVirtualCurrenciesCache()
+                    }
+                    rewardVerificationCompleted(RewardVerification.mapOutcome(internalOutcome))
                 }
             )
         }

@@ -187,7 +187,7 @@ rewardedAd?.present(
     rewardVerificationStarted: {
         // Reward verification started
     },
-    rewardVerificationResult: { result in
+    rewardVerificationCompleted: { result in
         guard let verifiedReward = result.verifiedReward else {
             print("Reward verification failed")
             return
@@ -203,6 +203,10 @@ rewardedAd?.present(
     }
 )
 ```
+
+When `rewardVerificationCompleted` returns `.verified(.virtualCurrency(...))`, the adapter automatically calls
+`Purchases.shared.invalidateVirtualCurrenciesCache()` (if Purchases is configured) before delivering the callback.
+You only need to refetch balances (`getVirtualCurrencies` / `virtualCurrencies()`) when your UI needs fresh values.
 
 ### Rewarded interstitial ads
 
@@ -264,7 +268,7 @@ rewardedInterstitialAd?.present(
     rewardVerificationStarted: {
         // Reward verification started
     },
-    rewardVerificationResult: { result in
+    rewardVerificationCompleted: { result in
         guard let verifiedReward = result.verifiedReward else {
             print("Reward verification failed")
             return
@@ -280,6 +284,9 @@ rewardedInterstitialAd?.present(
     }
 )
 ```
+
+As with rewarded ads, `.verified(.virtualCurrency(...))` automatically invalidates RevenueCat's virtual-currency cache
+before your result callback executes.
 
 ### Native ads
 
