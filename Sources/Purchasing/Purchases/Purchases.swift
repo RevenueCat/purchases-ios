@@ -316,6 +316,15 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let virtualCurrencyManager: VirtualCurrencyManagerType
 
+    /// The ``Configuration`` used to configure this instance, if it was created via
+    /// ``Purchases/configure(with:)-3wmd0`` (or one of its overloads). Used by
+    /// ``Purchases/setDefaultInstance(_:dedupingAgainst:)`` to deduplicate subsequent
+    /// `configure` calls that pass an equal ``Configuration``.
+    ///
+    /// `nil` when the instance is created via legacy/test paths that do not flow through
+    /// a ``Configuration``; those paths opt out of deduplication.
+    internal let currentConfiguration: Configuration?
+
     @_spi(Internal) public let subscriptionHistoryTracker = SubscriptionHistoryTracker()
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
@@ -333,7 +342,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      showStoreMessagesAutomatically: Bool,
                      diagnosticsEnabled: Bool = false,
                      preferredLocale: String?,
-                     automaticDeviceIdentifierCollectionEnabled: Bool = true
+                     automaticDeviceIdentifierCollectionEnabled: Bool = true,
+                     currentConfiguration: Configuration? = nil
     ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
@@ -708,7 +718,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   diagnosticsTracker: diagnosticsTracker,
                   virtualCurrencyManager: virtualCurrencyManager,
                   healthManager: healthManager,
-                  transactionMetadataSyncHelper: transactionMetadataSyncHelper
+                  transactionMetadataSyncHelper: transactionMetadataSyncHelper,
+                  currentConfiguration: currentConfiguration
         )
     }
 
@@ -741,7 +752,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          diagnosticsTracker: DiagnosticsTrackerType?,
          virtualCurrencyManager: VirtualCurrencyManagerType,
          healthManager: SDKHealthManager,
-         transactionMetadataSyncHelper: TransactionMetadataSyncHelper
+         transactionMetadataSyncHelper: TransactionMetadataSyncHelper,
+         currentConfiguration: Configuration? = nil
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -793,6 +805,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.virtualCurrencyManager = virtualCurrencyManager
         self.healthManager = healthManager
         self.transactionMetadataSyncHelper = transactionMetadataSyncHelper
+        self.currentConfiguration = currentConfiguration
 
         super.init()
 
@@ -865,10 +878,26 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     }
 
     /// - Parameter purchases: this is an `@autoclosure` to be able to clear the previous instance
-    /// from memory before creating the new one.
+    /// from memory before creating the new one. It is also not evaluated when ``dedupingAgainst``
+    /// matches the current instance's configuration, avoiding an unnecessary allocation.
+    /// - Parameter configuration: when non-`nil`, and the current instance was configured with an
+    /// equal ``Configuration``, the existing instance is returned and ``purchases`` is not invoked
+    /// (mirroring `purchases-android`'s `configure` behavior). Callers that do not have a
+    /// ``Configuration`` to compare against (e.g. legacy or test paths) leave this `nil` and the
+    /// historical "replace and warn" behavior is preserved.
     @discardableResult
-    static func setDefaultInstance(_ purchases: @autoclosure () -> Purchases) -> Purchases {
+    static func setDefaultInstance(
+        _ purchases: @autoclosure () -> Purchases,
+        dedupingAgainst configuration: Configuration? = nil
+    ) -> Purchases {
         return self.purchases.modify { currentInstance in
+            if let configuration,
+               let existingInstance = currentInstance,
+               existingInstance.currentConfiguration == configuration {
+                Logger.info(Strings.configure.purchase_instance_already_set_with_same_config)
+                return existingInstance
+            }
+
             if currentInstance != nil {
                 #if DEBUG
                 if ProcessInfo.isRunningRevenueCatTests {
@@ -1686,20 +1715,25 @@ public extension Purchases {
      */
     @objc(configureWithConfiguration:)
     @discardableResult static func configure(with configuration: Configuration) -> Purchases {
-        configure(withAPIKey: configuration.apiKey,
-                  appUserID: configuration.appUserID,
-                  observerMode: configuration.observerMode,
-                  userDefaults: configuration.userDefaults,
-                  platformInfo: configuration.platformInfo,
-                  responseVerificationMode: configuration.responseVerificationMode,
-                  storeKitVersion: configuration.storeKitVersion,
-                  storeKitTimeout: configuration.storeKit1Timeout,
-                  networkTimeout: configuration.networkTimeout,
-                  dangerousSettings: configuration.dangerousSettings,
-                  showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
-                  diagnosticsEnabled: configuration.diagnosticsEnabled,
-                  preferredLocale: configuration.preferredLocale,
-                  automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled
+        return self.setDefaultInstance(
+            .init(
+                apiKey: configuration.apiKey,
+                appUserID: configuration.appUserID,
+                userDefaults: configuration.userDefaults,
+                observerMode: configuration.observerMode,
+                platformInfo: configuration.platformInfo,
+                responseVerificationMode: configuration.responseVerificationMode,
+                storeKitVersion: configuration.storeKitVersion,
+                storeKitTimeout: configuration.storeKit1Timeout,
+                networkTimeout: configuration.networkTimeout,
+                dangerousSettings: configuration.dangerousSettings,
+                showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
+                diagnosticsEnabled: configuration.diagnosticsEnabled,
+                preferredLocale: configuration.preferredLocale,
+                automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled,
+                currentConfiguration: configuration
+            ),
+            dedupingAgainst: configuration
         )
     }
 
@@ -1950,43 +1984,6 @@ public extension Purchases {
     }
 
     #endif
-
-    // swiftlint:disable:next function_parameter_count
-    @discardableResult internal static func configure(
-        withAPIKey apiKey: String,
-        appUserID: String?,
-        observerMode: Bool,
-        userDefaults: UserDefaults?,
-        applicationSupportDirectory: URL? = nil,
-        platformInfo: PlatformInfo?,
-        responseVerificationMode: Signing.ResponseVerificationMode,
-        storeKitVersion: StoreKitVersion,
-        storeKitTimeout: TimeInterval,
-        networkTimeout: TimeInterval,
-        dangerousSettings: DangerousSettings?,
-        showStoreMessagesAutomatically: Bool,
-        diagnosticsEnabled: Bool,
-        preferredLocale: String?,
-        automaticDeviceIdentifierCollectionEnabled: Bool = true
-    ) -> Purchases {
-        return self.setDefaultInstance(
-            .init(apiKey: apiKey,
-                  appUserID: appUserID,
-                  userDefaults: userDefaults,
-                  applicationSupportDirectory: applicationSupportDirectory,
-                  observerMode: observerMode,
-                  platformInfo: platformInfo,
-                  responseVerificationMode: responseVerificationMode,
-                  storeKitVersion: storeKitVersion,
-                  storeKitTimeout: storeKitTimeout,
-                  networkTimeout: networkTimeout,
-                  dangerousSettings: dangerousSettings,
-                  showStoreMessagesAutomatically: showStoreMessagesAutomatically,
-                  diagnosticsEnabled: diagnosticsEnabled,
-                  preferredLocale: preferredLocale,
-                  automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled)
-        )
-    }
 
 }
 

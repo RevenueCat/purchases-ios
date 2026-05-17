@@ -39,6 +39,8 @@ enum ConfigureStrings {
 
     case purchase_instance_already_set
 
+    case purchase_instance_already_set_with_same_config
+
     case initial_app_user_id(isSet: Bool)
 
     case no_singleton_instance
@@ -118,6 +120,9 @@ extension ConfigureStrings: LogMessage {
             return "Delegate set"
         case .purchase_instance_already_set:
             return "Purchases instance already set. Did you mean to configure two Purchases objects?"
+        case .purchase_instance_already_set_with_same_config:
+            return "Purchases instance already set with the same Configuration. " +
+                "Returning the existing instance instead of creating a new one."
         case .initial_app_user_id(let isSet):
             return isSet
                 ? "Initial App User ID set"
