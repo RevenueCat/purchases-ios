@@ -11,18 +11,14 @@ import XCTest
 final class AccessorOperatorsTests: XCTestCase {
 
     private var logger: CapturingLogger!
-    private var previousLogger: RulesEngineLogger!
 
     override func setUp() {
         super.setUp()
         logger = CapturingLogger()
-        previousLogger = Rules.logger
         Rules.logger = logger
     }
 
     override func tearDown() {
-        Rules.logger = previousLogger
-        previousLogger = nil
         logger = nil
         super.tearDown()
     }
