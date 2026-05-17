@@ -10,10 +10,6 @@ import XCTest
 
 final class AccessorOperatorsTests: XCTestCase {
 
-    // Every test in this class either reads from or asserts on the captured
-    // warnings, so install a fresh `CapturingLogger` per test and restore
-    // the prior module logger on tear-down. XCTest runs methods within a
-    // class serially, so the global swap is safe.
     private var logger: CapturingLogger!
     private var previousLogger: RulesEngineLogger!
 
