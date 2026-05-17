@@ -1296,6 +1296,7 @@
 		DBE7C6552F02D48900A28663 /* StoreProductDiscount+CustomerCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBE7C6542F02D48900A28663 /* StoreProductDiscount+CustomerCenter.swift */; };
 		DC6FC62BD17B7DB03A096C2A /* Value+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72848B4B4D101F1B94E228E /* Value+JSON.swift */; };
 		92393E0060DF470C9D8DBF5B /* Rules+WithLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02886F2673E4452BA325685C /* Rules+WithLogger.swift */; };
+		C808D299537245E695865C31 /* CapturingLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = E51CFC7D19BE49D2BA1A79CC /* CapturingLogger.swift */; };
 		DDD45A15A641C0FF0BEF6178 /* PaywallCountdownComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A05E9E1B04B32B832DB194 /* PaywallCountdownComponent.swift */; };
 		E1C0A001BEEF0001CCDD0001 /* PaywallHeaderComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C0A006BEEF0001CCDD0001 /* PaywallHeaderComponent.swift */; };
 		E1C0A002BEEF0001CCDD0001 /* HeaderComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C0A007BEEF0001CCDD0001 /* HeaderComponentViewModel.swift */; };
@@ -2842,6 +2843,7 @@
 		B49121C11022272A08D75B4E /* AccessorOperatorsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AccessorOperatorsTests.swift; sourceTree = "<group>"; };
 		B72848B4B4D101F1B94E228E /* Value+JSON.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Value+JSON.swift"; sourceTree = "<group>"; };
 		02886F2673E4452BA325685C /* Rules+WithLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Rules+WithLogger.swift"; sourceTree = "<group>"; };
+		E51CFC7D19BE49D2BA1A79CC /* CapturingLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CapturingLogger.swift"; sourceTree = "<group>"; };
 		B78483ACCDD62ABD40AF8827 /* Evaluator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Evaluator.swift; sourceTree = "<group>"; };
 		B7BA50D5AA17E5D4A5D3E99D /* Operators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Operators.swift; sourceTree = "<group>"; };
 		B807748D6D88B7836EC273ED /* EqualityOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EqualityOperators.swift; sourceTree = "<group>"; };
@@ -6206,6 +6208,7 @@
 			children = (
 				B72848B4B4D101F1B94E228E /* Value+JSON.swift */,
 				02886F2673E4452BA325685C /* Rules+WithLogger.swift */,
+				E51CFC7D19BE49D2BA1A79CC /* CapturingLogger.swift */,
 			);
 			name = Helpers;
 			path = Helpers;
@@ -7991,6 +7994,7 @@
 				A6A3409CEDC8684F6236046F /* RulesEngineTests.swift in Sources */,
 				DC6FC62BD17B7DB03A096C2A /* Value+JSON.swift in Sources */,
 				92393E0060DF470C9D8DBF5B /* Rules+WithLogger.swift in Sources */,
+				C808D299537245E695865C31 /* CapturingLogger.swift in Sources */,
 				52F3084EFE9305570DC0D2FD /* LoggerTests.swift in Sources */,
 				AAAA22A18C52C28D5AB90B6D /* ValueTests.swift in Sources */,
 				6651B707B8702C9AD4A64E92 /* EvaluatorTests.swift in Sources */,

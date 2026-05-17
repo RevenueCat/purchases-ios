@@ -34,30 +34,6 @@ struct PrintLogger: RulesEngineLogger {
     }
 }
 
-/// Test-only logger that captures messages for assertion. Lives in the
-/// production module (rather than under `Tests/`) so non-test callers can
-/// reference it from internal helpers without an extra link step. Marked
-/// `final` since there is no reason to subclass it.
-final class CapturingLogger: RulesEngineLogger {
-
-    private let lock = NSLock()
-    private var captured: [String] = []
-
-    init() {}
-
-    var warnings: [String] {
-        lock.lock()
-        defer { lock.unlock() }
-        return captured
-    }
-
-    func warn(_ message: String) {
-        lock.lock()
-        defer { lock.unlock() }
-        captured.append(message)
-    }
-}
-
 /// Adapts a `FileHandle` to `TextOutputStream` so we can write to stderr via
 /// the standard `print(... to:)` API. Only used by `PrintLogger`.
 private struct FileHandleOutputStream: TextOutputStream {
