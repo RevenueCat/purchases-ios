@@ -42,37 +42,94 @@ import Foundation
     static let storeKitRequestTimeoutDefault: TimeInterval = 30
     static let networkTimeoutDefault: TimeInterval = 60
 
-    let apiKey: String
-    let appUserID: String?
-    let observerMode: Bool
-    let userDefaults: UserDefaults?
-    let storeKitVersion: StoreKitVersion
-    let dangerousSettings: DangerousSettings?
-    let networkTimeout: TimeInterval
-    let storeKit1Timeout: TimeInterval
-    let platformInfo: Purchases.PlatformInfo?
+    /// Value-type backing store for `Configuration`'s comparable fields.
+    ///
+    /// Keeping the stored properties in a `Hashable` struct lets the synthesized
+    /// `Equatable`/`Hashable` conformances drive `isEqual(_:)` and `hash`, so adding a new
+    /// field only requires touching `Storage`.
+    ///
+    /// `UserDefaults` is included and compared by reference identity (the default `NSObject`
+    /// equality). This dedups the common case (both `nil`, both `.standard`, or the same cached
+    /// suite) while still rebuilding the SDK if a different `UserDefaults` instance is provided.
+    internal struct Storage: Hashable {
+        let apiKey: String
+        let appUserID: String?
+        let observerMode: Bool
+        let userDefaults: UserDefaults?
+        let storeKitVersion: StoreKitVersion
+        let dangerousSettings: DangerousSettings?
+        let networkTimeout: TimeInterval
+        let storeKit1Timeout: TimeInterval
+        let platformInfo: Purchases.PlatformInfo?
+        let responseVerificationMode: ResponseVerificationModeKey
+        let showStoreMessagesAutomatically: Bool
+        let preferredLocale: String?
+        let automaticDeviceIdentifierCollectionEnabled: Bool
+        let diagnosticsEnabled: Bool
+    }
+
+    /// Case-only proxy for `Signing.ResponseVerificationMode`. The associated `PublicKey` is
+    /// always the same hardcoded value loaded by `Signing.loadPublicKey()`, so case identity is
+    /// sufficient to determine configuration equality.
+    internal enum ResponseVerificationModeKey: Hashable {
+        case disabled
+        case informational
+        case enforced
+
+        init(_ mode: Signing.ResponseVerificationMode) {
+            switch mode {
+            case .disabled: self = .disabled
+            case .informational: self = .informational
+            case .enforced: self = .enforced
+            }
+        }
+    }
+
+    internal let storage: Storage
     let responseVerificationMode: Signing.ResponseVerificationMode
-    let showStoreMessagesAutomatically: Bool
-    let preferredLocale: String?
-    let automaticDeviceIdentifierCollectionEnabled: Bool
-    internal let diagnosticsEnabled: Bool
+
+    var apiKey: String { self.storage.apiKey }
+    var appUserID: String? { self.storage.appUserID }
+    var observerMode: Bool { self.storage.observerMode }
+    var userDefaults: UserDefaults? { self.storage.userDefaults }
+    var storeKitVersion: StoreKitVersion { self.storage.storeKitVersion }
+    var dangerousSettings: DangerousSettings? { self.storage.dangerousSettings }
+    var networkTimeout: TimeInterval { self.storage.networkTimeout }
+    var storeKit1Timeout: TimeInterval { self.storage.storeKit1Timeout }
+    var platformInfo: Purchases.PlatformInfo? { self.storage.platformInfo }
+    var showStoreMessagesAutomatically: Bool { self.storage.showStoreMessagesAutomatically }
+    var preferredLocale: String? { self.storage.preferredLocale }
+    var automaticDeviceIdentifierCollectionEnabled: Bool {
+        self.storage.automaticDeviceIdentifierCollectionEnabled
+    }
+    internal var diagnosticsEnabled: Bool { self.storage.diagnosticsEnabled }
 
     private init(with builder: Builder) {
-        self.apiKey = builder.apiKey
-        self.appUserID = builder.appUserID
-        self.observerMode = builder.observerMode
-        self.userDefaults = builder.userDefaults
-        self.storeKitVersion = builder.storeKitVersion
-        self.dangerousSettings = builder.dangerousSettings
-        self.storeKit1Timeout = builder.storeKit1Timeout
-        self.networkTimeout = builder.networkTimeout
-        self.platformInfo = builder.platformInfo
         self.responseVerificationMode = builder.responseVerificationMode
-        self.showStoreMessagesAutomatically = builder.showStoreMessagesAutomatically
-        self.diagnosticsEnabled = builder.diagnosticsEnabled
-        self.preferredLocale = builder.preferredLocale
-        self.automaticDeviceIdentifierCollectionEnabled = builder.automaticDeviceIdentifierCollectionEnabled
+        self.storage = Storage(
+            apiKey: builder.apiKey,
+            appUserID: builder.appUserID,
+            observerMode: builder.observerMode,
+            userDefaults: builder.userDefaults,
+            storeKitVersion: builder.storeKitVersion,
+            dangerousSettings: builder.dangerousSettings,
+            networkTimeout: builder.networkTimeout,
+            storeKit1Timeout: builder.storeKit1Timeout,
+            platformInfo: builder.platformInfo,
+            responseVerificationMode: ResponseVerificationModeKey(builder.responseVerificationMode),
+            showStoreMessagesAutomatically: builder.showStoreMessagesAutomatically,
+            preferredLocale: builder.preferredLocale,
+            automaticDeviceIdentifierCollectionEnabled: builder.automaticDeviceIdentifierCollectionEnabled,
+            diagnosticsEnabled: builder.diagnosticsEnabled
+        )
     }
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? Configuration else { return false }
+        return self.storage == other.storage
+    }
+
+    public override var hash: Int { self.storage.hashValue }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
