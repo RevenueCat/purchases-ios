@@ -21,27 +21,12 @@ protocol RulesEngineLogger {
     func warn(_ message: String)
 }
 
-/// Default logger used by the in-module callers: writes warnings to stderr
-/// via `print(... to: &stderr)` so warnings don't get lost in release-mode
-/// log filters that ignore plain `print`.
+/// Stop-gap default logger. The native SDK injects its own adapter at
+/// integration time, so this exists only to avoid an optional logger
+/// type during development.
 struct PrintLogger: RulesEngineLogger {
 
-    init() {}
-
     func warn(_ message: String) {
-        var stderr = FileHandleOutputStream(handle: .standardError)
-        print("[RulesEngine] \(message)", to: &stderr)
-    }
-}
-
-/// Adapts a `FileHandle` to `TextOutputStream` so we can write to stderr via
-/// the standard `print(... to:)` API. Only used by `PrintLogger`.
-private struct FileHandleOutputStream: TextOutputStream {
-
-    let handle: FileHandle
-
-    mutating func write(_ string: String) {
-        guard let data = string.data(using: .utf8) else { return }
-        handle.write(data)
+        print("[RulesEngine] \(message)")
     }
 }
