@@ -30,9 +30,7 @@ enum LogicOperators {
     /// semantics: `and` returns the actual value, not a coerced boolean).
     static func opAnd(args: Value, vars: Value) throws -> Value {
         let items = Operators.argsAsList(args)
-        if items.isEmpty {
-            return .bool(true) // vacuous truth
-        }
+        // Empty input falls through with `last == .bool(true)` (vacuous truth).
         var last: Value = .bool(true)
         for item in items {
             last = try Evaluator.evaluateValue(item, vars: vars)
@@ -47,9 +45,7 @@ enum LogicOperators {
     /// value or, if all are falsy, the last value.
     static func opOr(args: Value, vars: Value) throws -> Value {
         let items = Operators.argsAsList(args)
-        if items.isEmpty {
-            return .bool(false)
-        }
+        // Empty input falls through with `last == .bool(false)`.
         var last: Value = .bool(false)
         for item in items {
             last = try Evaluator.evaluateValue(item, vars: vars)
@@ -65,9 +61,6 @@ enum LogicOperators {
     /// clause and with no truthy condition, returns `null`.
     static func opIf(args: Value, vars: Value) throws -> Value {
         let items = Operators.argsAsList(args)
-        if items.isEmpty {
-            return .null
-        }
         var index = 0
         while index + 1 < items.count {
             let condition = try Evaluator.evaluateValue(items[index], vars: vars)
