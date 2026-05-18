@@ -881,10 +881,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     /// from memory before creating the new one. It is also not evaluated when ``dedupingAgainst``
     /// matches the current instance's configuration, avoiding an unnecessary allocation.
     /// - Parameter configuration: when non-`nil`, and the current instance was configured with an
-    /// equal ``Configuration``, the existing instance is returned and ``purchases`` is not invoked
-    /// (mirroring `purchases-android`'s `configure` behavior). Callers that do not have a
-    /// ``Configuration`` to compare against (e.g. legacy or test paths) leave this `nil` and the
-    /// historical "replace and warn" behavior is preserved.
+    /// equal ``Configuration``, the existing instance is returned and ``purchases`` is not invoked.
+    /// Callers that do not have a ``Configuration`` to compare against (e.g. legacy or test paths)
+    /// leave this `nil` and the historical "replace and warn" behavior is preserved.
     @discardableResult
     static func setDefaultInstance(
         _ purchases: @autoclosure () -> Purchases,
