@@ -244,7 +244,7 @@ struct WorkflowPaywallView: View {
         .onAppear {
             self.syncExitOfferBinding()
         }
-        .onChange(of: self.navigator.currentStepId) { _ in
+        .onChangeOf(self.navigator.currentStepId) { _ in
             self.syncExitOfferBinding()
         }
     }
