@@ -59,8 +59,24 @@ final class LogicOperatorsTests: XCTestCase {
         XCTAssertEqual(try LogicOperators.opAnd(args: args, vars: .null), .bool(false))
     }
 
-    func testAndEmptyIsTrue() throws {
-        XCTAssertEqual(try LogicOperators.opAnd(args: .array([]), vars: .null), .bool(true))
+    func testAndEmptyReturnsNull() throws {
+        // Spec parity: json-logic-js returns `undefined` for `{"and": []}`,
+        // which we map to `.null`. Both are falsy, so an outer `if` will
+        // take its `else` branch.
+        XCTAssertEqual(try LogicOperators.opAnd(args: .array([]), vars: .null), .null)
+    }
+
+    func testEmptyAndInsideIfTakesElseBranch() throws {
+        // Reaches into the `if`/`and` interaction the spec parity is meant
+        // to preserve. With `{"and": []}` → `.null` (falsy), the surrounding
+        // `if` selects the `else` branch — the previous behavior of
+        // returning `.bool(true)` for vacuous truth would have flipped this.
+        let args = Value.array([
+            .object(["and": .array([])]),
+            .string("yes"),
+            .string("no")
+        ])
+        XCTAssertEqual(try LogicOperators.opIf(args: args, vars: .null), .string("no"))
     }
 
     // MARK: - or
@@ -75,8 +91,11 @@ final class LogicOperatorsTests: XCTestCase {
         XCTAssertEqual(try LogicOperators.opOr(args: args, vars: .null), .null)
     }
 
-    func testOrEmptyIsFalse() throws {
-        XCTAssertEqual(try LogicOperators.opOr(args: .array([]), vars: .null), .bool(false))
+    func testOrEmptyReturnsNull() throws {
+        // Spec parity: json-logic-js returns `undefined` for `{"or": []}`,
+        // which we map to `.null` (rather than `.bool(false)`). Falsy, so
+        // outer truthiness checks behave identically to the old return.
+        XCTAssertEqual(try LogicOperators.opOr(args: .array([]), vars: .null), .null)
     }
 
     // MARK: - if

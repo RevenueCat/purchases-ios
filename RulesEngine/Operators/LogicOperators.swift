@@ -28,10 +28,17 @@ enum LogicOperators {
     /// `{"and": [a, b, c]}` — short-circuit AND. Returns the first falsy
     /// value or, if all are truthy, the last value (matches JS / JSON Logic
     /// semantics: `and` returns the actual value, not a coerced boolean).
+    ///
+    /// Empty input returns `.null` to mirror the json-logic-js spec, where
+    /// the empty-args case falls through to an uninitialized `current`
+    /// (i.e. `undefined`). Both are falsy, so observers that only check
+    /// truthiness keep working; the visible difference shows up in
+    /// constructs like `{"if": [{"and": []}, then, else]}`, which the spec
+    /// routes to `else`.
     static func opAnd(args: Value, vars: Value) throws -> Value {
         let items = Operators.argsAsList(args)
-        // Empty input falls through with `last == .bool(true)` (vacuous truth).
-        var last: Value = .bool(true)
+        // Empty input falls through with `last == .null` (≈ JS `undefined`).
+        var last: Value = .null
         for item in items {
             last = try Evaluator.evaluateValue(item, vars: vars)
             if !last.isTruthy {
@@ -43,10 +50,13 @@ enum LogicOperators {
 
     /// `{"or": [a, b, c]}` — short-circuit OR. Returns the first truthy
     /// value or, if all are falsy, the last value.
+    ///
+    /// Empty input returns `.null` to mirror the json-logic-js spec — same
+    /// reasoning as `opAnd`.
     static func opOr(args: Value, vars: Value) throws -> Value {
         let items = Operators.argsAsList(args)
-        // Empty input falls through with `last == .bool(false)`.
-        var last: Value = .bool(false)
+        // Empty input falls through with `last == .null` (≈ JS `undefined`).
+        var last: Value = .null
         for item in items {
             last = try Evaluator.evaluateValue(item, vars: vars)
             if last.isTruthy {
