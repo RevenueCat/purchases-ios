@@ -180,13 +180,13 @@ struct WorkflowPaywallView: View {
         self.onDismiss = onDismiss
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
         let initialStepId = context.workflow.initialStepId
-        let initialPackageContext = Self.buildPackageContext(
+        let initialPackageInput = Self.buildPackageInput(
             stepId: initialStepId,
             context: context,
             preferredPackage: nil,
             showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
         )
-        self._stepPackageContexts = .init(wrappedValue: [initialStepId: initialPackageContext])
+        self._stepPackageContexts = .init(wrappedValue: [initialStepId: initialPackageInput.packageContext])
         self._transitionState = .init(
             wrappedValue: .init(
                 currentPage: Self.renderedPage(
@@ -194,13 +194,7 @@ struct WorkflowPaywallView: View {
                     stepId: initialStepId,
                     canNavigateBack: false,
                     displayCloseButton: displayCloseButton,
-                    packageInput: .init(
-                        packageContext: initialPackageContext,
-                        effectiveWorkflowPackageContext: context.effectivePackageContext(
-                            for: initialStepId,
-                            preferring: initialPackageContext.package
-                        )
-                    )
+                    packageInput: initialPackageInput
                 )
             )
         )
@@ -304,15 +298,17 @@ struct WorkflowPaywallView: View {
         case .dismissWorkflow:
             self.onDismiss()
         case .navigateBack:
-            guard let previousStep = self.navigator.navigateBack() else {
+            guard let destination = self.navigator.backNavigationDestination,
+                  let page = self.renderedPageForBackNavigation(
+                      stepId: destination.step.id,
+                      canNavigateBack: destination.canNavigateBackAfterNavigation
+                  ) else {
                 return
             }
 
+            self.navigator.navigateBack()
             self.startTransition(
-                to: self.renderedPageForBackNavigation(
-                    stepId: previousStep.id,
-                    canNavigateBack: self.navigator.canNavigateBack
-                ),
+                to: page,
                 direction: .back
             )
         }
@@ -432,27 +428,33 @@ struct WorkflowPaywallView: View {
         )
     }
 
-    static func buildPackageContext(
+    static func buildPackageInput(
         stepId: String,
         context: WorkflowContext,
         preferredPackage: Package?,
         showZeroDecimalPlacePrices: Bool
-    ) -> PackageContext {
+    ) -> RenderedPagePackageInput {
         let effective = context.effectivePackageContext(for: stepId, preferring: preferredPackage)
 
         guard let effective else {
-            return PackageContext(
-                package: nil,
-                variableContext: .init(packages: [], showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            return .init(
+                packageContext: .init(
+                    package: nil,
+                    variableContext: .init(packages: [], showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+                ),
+                effectiveWorkflowPackageContext: nil
             )
         }
 
-        return PackageContext(
-            package: effective.selectedPackage,
-            variableContext: .init(
-                packages: effective.packages,
-                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
-            )
+        return .init(
+            packageContext: .init(
+                package: effective.selectedPackage,
+                variableContext: .init(
+                    packages: effective.packages,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
+            ),
+            effectiveWorkflowPackageContext: effective
         )
     }
 
@@ -490,17 +492,23 @@ struct WorkflowPaywallView: View {
         canNavigateBack: Bool,
         carryForwardPackage: Package?
     ) -> RenderedPage? {
-        let packageContext: PackageContext
+        let packageInput: RenderedPagePackageInput
         if let cached = self.stepPackageContexts[stepId] {
-            packageContext = cached
+            packageInput = .init(
+                packageContext: cached,
+                effectiveWorkflowPackageContext: self.context.effectivePackageContext(
+                    for: stepId,
+                    preferring: cached.package
+                )
+            )
         } else {
-            packageContext = Self.buildPackageContext(
+            packageInput = Self.buildPackageInput(
                 stepId: stepId,
                 context: self.context,
                 preferredPackage: carryForwardPackage,
                 showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices
             )
-            self.stepPackageContexts[stepId] = packageContext
+            self.stepPackageContexts[stepId] = packageInput.packageContext
         }
 
         return Self.renderedPage(
@@ -508,13 +516,7 @@ struct WorkflowPaywallView: View {
             stepId: stepId,
             canNavigateBack: canNavigateBack,
             displayCloseButton: self.displayCloseButton,
-            packageInput: .init(
-                packageContext: packageContext,
-                effectiveWorkflowPackageContext: self.context.effectivePackageContext(
-                    for: stepId,
-                    preferring: packageContext.package
-                )
-            )
+            packageInput: packageInput
         )
     }
 
@@ -558,7 +560,7 @@ private struct CurrentStepContent {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct RenderedPagePackageInput {
+struct RenderedPagePackageInput {
     let packageContext: PackageContext
     let effectiveWorkflowPackageContext: WorkflowPackageContext?
 }

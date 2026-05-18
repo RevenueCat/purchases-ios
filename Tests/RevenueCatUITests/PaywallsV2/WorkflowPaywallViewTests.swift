@@ -311,11 +311,11 @@ extension WorkflowPaywallViewTests {
         expect(stepCache["step_terminal"]?.package?.identifier) == TestData.annualPackage.identifier
     }
 
-    /// Verifies that `buildPackageContext` carries the user's current selection forward when
+    /// Verifies that `buildPackageInput` carries the user's current selection forward when
     /// the preferred package exists in the next step's available packages.
     /// This is the forward-navigation path: user picks annual on step 1, navigates to step 2
     /// which also offers annual — step 2 should pre-select annual, not fall back to its own default.
-    func testBuildPackageContextCarriesForwardPreferredPackageWhenAvailableInStep() throws {
+    func testBuildPackageInputCarriesForwardPreferredPackageWhenAvailableInStep() throws {
         // step_terminal has annual (default) and monthly.
         let context = try Self.makeContext(
             singleStepFallbackId: "step_terminal",
@@ -325,15 +325,16 @@ extension WorkflowPaywallViewTests {
             context.packageContext(for: "step_terminal")?.packages.first { $0.identifier == "$rc_monthly" }
         )
 
-        let packageContext = WorkflowPaywallView.buildPackageContext(
+        let packageInput = WorkflowPaywallView.buildPackageInput(
             stepId: "step_terminal",
             context: context,
             preferredPackage: monthly,
             showZeroDecimalPlacePrices: false
         )
 
-        expect(packageContext.package?.identifier) == "$rc_monthly"
-        expect(packageContext.variableContext.mostExpensivePricePerMonth).toNot(beNil())
+        expect(packageInput.packageContext.package?.identifier) == "$rc_monthly"
+        expect(packageInput.effectiveWorkflowPackageContext?.selectedPackage.identifier) == "$rc_monthly"
+        expect(packageInput.packageContext.variableContext.mostExpensivePricePerMonth).toNot(beNil())
     }
 
     /// Verifies that once a step's `PackageContext` is cached, subsequent navigations to that step
@@ -342,8 +343,8 @@ extension WorkflowPaywallViewTests {
     /// Scenario: user navigates step1 → step2 (annual carried forward), selects monthly on step2,
     /// returns to step1, then navigates forward to step2 again.
     /// Step2 must show monthly (the user's own previous selection), not annual (the new carry-forward).
-    /// `WorkflowPaywallView.renderedPageForStep` implements this via the cache-hit path that skips
-    /// `buildPackageContext` entirely when the step already has a `PackageContext` in `stepPackageContexts`.
+    /// `WorkflowPaywallView.renderedPageForForwardNavigation` implements this via the cache-hit path that skips
+    /// `buildPackageInput` entirely when the step already has a `PackageContext` in `stepPackageContexts`.
     ///
     /// This also guards that `PackageContext` is a reference type: the mutation at line
     /// `cachedCtx.package = monthly` must be visible through `stepCache` for the cache to work.
@@ -360,12 +361,13 @@ extension WorkflowPaywallViewTests {
         )
 
         // First forward navigation: annual carried forward → step gets annual.
-        let cachedCtx = WorkflowPaywallView.buildPackageContext(
+        let cachedInput = WorkflowPaywallView.buildPackageInput(
             stepId: "step_terminal",
             context: context,
             preferredPackage: annual,
             showZeroDecimalPlacePrices: false
         )
+        let cachedCtx = cachedInput.packageContext
         expect(cachedCtx.package?.identifier) == annual.identifier
 
         // User selects monthly on the step (mutation through the reference stored in stepPackageContexts).
@@ -375,9 +377,9 @@ extension WorkflowPaywallViewTests {
         let stepCache: [String: PackageContext] = ["step_terminal": cachedCtx]
 
         // Second forward navigation would carry annual again — but the step is already cached.
-        // WorkflowPaywallView.renderedPageForStep takes the cache-hit path and skips buildPackageContext.
+        // WorkflowPaywallView.renderedPageForForwardNavigation takes the cache-hit path and skips buildPackageInput.
         // Demonstrate the divergence: carry-forward would produce annual, cache has monthly.
-        let wouldBeWithCarryForward = WorkflowPaywallView.buildPackageContext(
+        let wouldBeWithCarryForward = WorkflowPaywallView.buildPackageInput(
             stepId: "step_terminal",
             context: context,
             preferredPackage: annual,
@@ -387,24 +389,25 @@ extension WorkflowPaywallViewTests {
         // Cache-hit path: user's own selection (monthly) is preserved.
         expect(stepCache["step_terminal"]?.package?.identifier) == monthly.identifier
         // Cache-miss path would have produced annual — confirming cache hit takes precedence.
-        expect(wouldBeWithCarryForward.package?.identifier) == annual.identifier
+        expect(wouldBeWithCarryForward.packageContext.package?.identifier) == annual.identifier
     }
 
-    /// Verifies that `buildPackageContext` returns an empty `PackageContext` for a step that
+    /// Verifies that `buildPackageInput` returns an empty `PackageContext` for a step that
     /// has no package components and no workflow fallback (nil `effectivePackageContext`).
-    func testBuildPackageContextReturnsEmptyContextForPackagelessStepWithNoFallback() throws {
+    func testBuildPackageInputReturnsEmptyContextForPackagelessStepWithNoFallback() throws {
         // No singleStepFallbackId → no global workflow package context.
         let context = try Self.makeContext(singleStepFallbackId: nil)
 
-        let packageContext = WorkflowPaywallView.buildPackageContext(
+        let packageInput = WorkflowPaywallView.buildPackageInput(
             stepId: "step_initial",
             context: context,
             preferredPackage: nil,
             showZeroDecimalPlacePrices: false
         )
 
-        expect(packageContext.package).to(beNil())
-        expect(packageContext.variableContext.mostExpensivePricePerMonth).to(beNil())
+        expect(packageInput.packageContext.package).to(beNil())
+        expect(packageInput.effectiveWorkflowPackageContext).to(beNil())
+        expect(packageInput.packageContext.variableContext.mostExpensivePricePerMonth).to(beNil())
     }
 
 }
