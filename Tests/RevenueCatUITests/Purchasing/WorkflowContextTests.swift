@@ -159,7 +159,7 @@ final class WorkflowContextTests: TestCase {
         expect(context.packageContext(for: "step_terminal")?.selectedPackage.identifier) == "$rc_annual"
     }
 
-    // MARK: - effectivePackageContext(for:)
+    // MARK: - effectivePackageContext(for:preferring: nil)
 
     func testEffectivePackageContextForPackageBearingStepUsesStepContextNotGlobalFallback() throws {
         // Workflow: global fallback = annual (step_fallback), step_own has monthly + weekly.
@@ -170,7 +170,7 @@ final class WorkflowContextTests: TestCase {
             ownStepPackages: [(id: "$rc_monthly", isDefault: true), (id: "$rc_weekly", isDefault: false)]
         )
 
-        let effective = context.effectivePackageContext(for: "step_own")
+        let effective = context.effectivePackageContext(for: "step_own", preferring: nil)
 
         expect(effective?.selectedPackage.identifier) == "$rc_monthly"
         expect(effective?.packages.map(\.identifier)) == ["$rc_monthly", "$rc_weekly"]
@@ -184,7 +184,7 @@ final class WorkflowContextTests: TestCase {
             ownStepPackages: []
         )
 
-        let effective = context.effectivePackageContext(for: "step_own")
+        let effective = context.effectivePackageContext(for: "step_own", preferring: nil)
 
         expect(effective?.selectedPackage.identifier) == "$rc_annual"
     }
@@ -195,8 +195,8 @@ final class WorkflowContextTests: TestCase {
             packages: []
         )
 
-        expect(context.effectivePackageContext(for: "step_terminal")).to(beNil())
-        expect(context.effectivePackageContext(for: "step_initial")).to(beNil())
+        expect(context.effectivePackageContext(for: "step_terminal", preferring: nil)).to(beNil())
+        expect(context.effectivePackageContext(for: "step_initial", preferring: nil)).to(beNil())
     }
 
     func testEffectivePackageContextForFallbackStepMatchesWorkflowPackageContext() throws {
@@ -206,7 +206,7 @@ final class WorkflowContextTests: TestCase {
             singleStepFallbackId: "step_terminal"
         )
 
-        let effective = context.effectivePackageContext(for: "step_terminal")
+        let effective = context.effectivePackageContext(for: "step_terminal", preferring: nil)
 
         expect(effective?.selectedPackage.identifier) == context.workflowPackageContext?.selectedPackage.identifier
     }
