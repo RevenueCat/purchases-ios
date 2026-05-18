@@ -321,8 +321,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     /// ``Purchases/setDefaultInstance(_:dedupingAgainst:)`` to deduplicate subsequent
     /// `configure` calls that pass an equal ``Configuration``.
     ///
-    /// `nil` when the instance is created via legacy/test paths that do not flow through
-    /// a ``Configuration``; those paths opt out of deduplication.
+    /// `nil` when the instance is created via test paths that build `Purchases` directly with
+    /// mocks instead of going through a ``Configuration``; those paths opt out of deduplication.
     internal let currentConfiguration: Configuration?
 
     @_spi(Internal) public let subscriptionHistoryTracker = SubscriptionHistoryTracker()
@@ -882,8 +882,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     /// matches the current instance's configuration, avoiding an unnecessary allocation.
     /// - Parameter configuration: when non-`nil`, and the current instance was configured with an
     /// equal ``Configuration``, the existing instance is returned and ``purchases`` is not invoked.
-    /// Callers that do not have a ``Configuration`` to compare against (e.g. legacy or test paths)
-    /// leave this `nil` and the historical "replace and warn" behavior is preserved.
+    /// Test paths that install a pre-built `Purchases` directly leave this `nil` and the historical
+    /// "replace and warn" behavior is preserved.
     @discardableResult
     static func setDefaultInstance(
         _ purchases: @autoclosure () -> Purchases,
