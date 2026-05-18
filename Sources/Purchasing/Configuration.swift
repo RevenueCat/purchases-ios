@@ -64,10 +64,6 @@ import Foundation
 
     internal let storage: Storage
 
-    /// Resolved at first access: `Signing.verificationMode(with:)` calls
-    /// `Signing.loadPublicKey()`, which parses a binary key embedded in the SDK. Deferring it
-    /// keeps `Configuration` construction free of that work and lets `Storage` use the
-    /// `Hashable` `EntitlementVerificationMode` directly.
     lazy var responseVerificationMode: Signing.ResponseVerificationMode =
         Signing.verificationMode(with: self.storage.entitlementVerificationMode)
 
