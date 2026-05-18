@@ -661,7 +661,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         _ = Purchases.configure(with: configuration)
 
         self.logger.verifyMessageWasLogged(
-            Strings.configure.purchase_instance_already_set_with_same_config,
+            Strings.configure.instance_already_exists_with_same_config,
             level: .info
         )
     }

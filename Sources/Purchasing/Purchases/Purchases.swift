@@ -894,7 +894,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             if let configuration,
                let existingInstance = currentInstance,
                existingInstance.currentConfiguration == configuration {
-                Logger.info(Strings.configure.purchase_instance_already_set_with_same_config)
+                Logger.info(Strings.configure.instance_already_exists_with_same_config)
                 return existingInstance
             }
 
