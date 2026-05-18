@@ -371,4 +371,113 @@ class WorkflowResponseTests: TestCase {
         expect(step.metadata).to(beNil())
     }
 
+    func testDecodePublishedWorkflowWithFeedbackSurveyType() throws {
+        let json = """
+        {
+          "id": "wf_survey",
+          "display_name": "Survey",
+          "initial_step_id": "step_1",
+          "workflow_type": "feedback-survey",
+          "steps": {},
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        expect(workflow.workflowType) == .feedbackSurvey
+    }
+
+    func testDecodePublishedWorkflowWithPaywallType() throws {
+        let json = """
+        {
+          "id": "wf_paywall",
+          "display_name": "Paywall",
+          "initial_step_id": "step_1",
+          "workflow_type": "paywall",
+          "steps": {},
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        expect(workflow.workflowType) == .paywall
+    }
+
+    func testDecodePublishedWorkflowWithWebFunnelType() throws {
+        let json = """
+        {
+          "id": "wf_webfunnel",
+          "display_name": "Web Funnel",
+          "initial_step_id": "step_1",
+          "workflow_type": "web-funnel",
+          "steps": {},
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        expect(workflow.workflowType) == .webFunnel
+    }
+
+    func testDecodePublishedWorkflowWithUnknownTypeDecodesToUnknown() throws {
+        let json = """
+        {
+          "id": "wf_future",
+          "display_name": "Future",
+          "initial_step_id": "step_1",
+          "workflow_type": "some-future-type",
+          "steps": {},
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        expect(workflow.workflowType) == .unknown
+    }
+
+    func testDecodePublishedWorkflowWithMissingTypeIsNil() throws {
+        let json = """
+        {
+          "id": "wf_no_type",
+          "display_name": "No Type",
+          "initial_step_id": "step_1",
+          "steps": {},
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        expect(workflow.workflowType).to(beNil())
+    }
+
 }

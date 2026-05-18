@@ -16,6 +16,22 @@ import Foundation
 
 // MARK: - Detail models
 
+@_spi(Internal) public enum WorkflowType: String, Codable, Equatable, Sendable {
+    case paywall
+    case webFunnel = "web-funnel"
+    case feedbackSurvey = "feedback-survey"
+    case unknown
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let value = try container.decode(String.self)
+        self = WorkflowType(rawValue: value) ?? {
+            Logger.warn(Strings.backendError.unknown_workflow_type(type: value))
+            return .unknown
+        }()
+    }
+}
+
 @_spi(Internal) public enum WorkflowTriggerType: String, Codable, Equatable, Sendable {
     case onPress = "on_press"
     case unknown
@@ -92,6 +108,7 @@ import Foundation
     let displayName: String
     public let initialStepId: String
     public let singleStepFallbackId: String?
+    public let workflowType: WorkflowType?
     public let steps: [String: WorkflowStep]
     public let screens: [String: WorkflowScreen]
     public let uiConfig: UIConfig
