@@ -42,12 +42,6 @@ import Foundation
     static let storeKitRequestTimeoutDefault: TimeInterval = 30
     static let networkTimeoutDefault: TimeInterval = 60
 
-    /// Value-type backing store for `Configuration`'s comparable fields.
-    ///
-    /// Keeping the stored properties in a `Hashable` struct lets the synthesized
-    /// `Equatable`/`Hashable` conformances drive `isEqual(_:)` and `hash`, so adding a new
-    /// field only requires touching `Storage`.
-    ///
     /// `UserDefaults` is included and compared by reference identity (the default `NSObject`
     /// equality). This dedups the common case (both `nil`, both `.standard`, or the same cached
     /// suite) while still rebuilding the SDK if a different `UserDefaults` instance is provided.
