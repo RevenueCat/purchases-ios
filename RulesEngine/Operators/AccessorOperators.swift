@@ -148,9 +148,13 @@ enum AccessorOperators {
     /// Render a `Double` the way JSON Logic / JS would — `1.0` becomes
     /// `"1"`, `1.5` stays `"1.5"`. Used so a numeric path like `var: 1.0`
     /// looks up `"1"` (i.e. array index 1), not `"1.0"`.
+    ///
+    /// `Int64(exactly:)` returns `nil` for non-integer, out-of-range,
+    /// NaN, and ±Infinity inputs, so the fall-through to `String(value)`
+    /// covers each of those without a manual guard.
     private static func formatNumber(_ value: Double) -> String {
-        if value.rounded() == value && value.isFinite {
-            return String(Int64(value))
+        if let intValue = Int64(exactly: value) {
+            return String(intValue)
         }
         return String(value)
     }

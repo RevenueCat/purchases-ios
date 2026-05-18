@@ -91,6 +91,16 @@ final class AccessorOperatorsTests: XCTestCase {
         XCTAssertEqual(out, .string("zero"))
     }
 
+    func testVarWithOversizedFloatPathDoesNotCrash() throws {
+        // `1e19` is a finite whole-number Double whose magnitude exceeds
+        // Int64.max (~9.22e18). A naive `Int64(value)` traps; the path
+        // formatter must round-trip safely so the lookup just misses.
+        let oversized = Value.float(1.0e19)
+        let out = try AccessorOperators.opVar(args: oversized, vars: .null)
+        XCTAssertEqual(out, .null)
+        XCTAssertEqual(logger.warnings.count, 1)
+    }
+
     func testVarDoesNotApplyFlatKeyFallback() throws {
         // The literal key "a.b" exists in the flat map, but our spec-strict
         // lookup walks "a" then "b" and finds nothing. Documents the
