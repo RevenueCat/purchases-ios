@@ -153,6 +153,78 @@ final class AccessorOperatorsTests: XCTestCase {
         XCTAssertTrue(logger.warnings[0].contains("ignoring 2 extra"))
     }
 
+    func testVarRecursivelyEvaluatesSingletonPathExpression() throws {
+        // Per the JSON Logic spec, `{"var": <expr>}` recursively evaluates
+        // <expr> and uses the result as the path. Here the inner `{"var":
+        // "active_path_key"}` resolves to `"subscriber.country"`, which the
+        // outer var then looks up.
+        let vars = Value.object([
+            "active_path_key": .string("subscriber.country"),
+            "subscriber": .object(["country": .string("US")])
+        ])
+        let out = try AccessorOperators.opVar(
+            args: .object(["var": .string("active_path_key")]),
+            vars: vars
+        )
+        XCTAssertEqual(out, .string("US"))
+        XCTAssertTrue(logger.warnings.isEmpty)
+    }
+
+    func testVarRecursivelyEvaluatesArrayFormPathExpression() throws {
+        // Array form: the path argument is itself an expression that
+        // resolves dynamically. Mirrors the json-logic-js per-element
+        // evaluation rule for array args.
+        let vars = Value.object([
+            "key_to_lookup": .string("nested.value"),
+            "nested": .object(["value": .string("found")])
+        ])
+        let out = try AccessorOperators.opVar(
+            args: .array([.object(["var": .string("key_to_lookup")])]),
+            vars: vars
+        )
+        XCTAssertEqual(out, .string("found"))
+        XCTAssertTrue(logger.warnings.isEmpty)
+    }
+
+    func testVarRecursivelyEvaluatesArrayFormDefaultExpression() throws {
+        // The default arg in the array form is also recursively evaluated,
+        // so callers can express dynamic fallbacks like
+        // `{"var": ["missing_key", {"var": "fallback_source"}]}`.
+        let vars = Value.object(["fallback_source": .string("computed_default")])
+        let out = try AccessorOperators.opVar(
+            args: .array([
+                .string("missing_key"),
+                .object(["var": .string("fallback_source")])
+            ]),
+            vars: vars
+        )
+        XCTAssertEqual(out, .string("computed_default"))
+        // No missing-variable warning: the default short-circuited the lookup.
+        XCTAssertTrue(logger.warnings.isEmpty)
+    }
+
+    func testVarSingletonExpressionResolvingToArrayThrows() throws {
+        // json-logic-js JS-stringifies a non-primitive evaluated result
+        // ("x,y") and looks it up; we choose to be strict instead and throw
+        // a typeMismatch so the malformed predicate surfaces loudly.
+        XCTAssertThrowsError(
+            try AccessorOperators.opVar(
+                args: .object([
+                    "if": .array([
+                        .bool(true),
+                        .array([.string("x"), .string("y")]),
+                        .string("z")
+                    ])
+                ]),
+                vars: .null
+            )
+        ) { error in
+            guard case RuleError.typeMismatch = error else {
+                return XCTFail("expected RuleError.typeMismatch, got \(error)")
+            }
+        }
+    }
+
     // MARK: - missing
 
     func testMissingReturnsKeysNotPresent() throws {
@@ -188,5 +260,38 @@ final class AccessorOperatorsTests: XCTestCase {
         let vars = Value.object([:])
         let result = try AccessorOperators.opMissing(args: .string("a"), vars: vars)
         XCTAssertEqual(result, .array([.string("a")]))
+    }
+
+    func testMissingRecursivelyEvaluatesDynamicKeys() throws {
+        // Per the JSON Logic spec, each key arg is recursively evaluated
+        // before lookup. The inner `{"var": "key_name"}` resolves to
+        // `"absent"`, which `missing` then checks against `vars`.
+        let vars = Value.object([
+            "key_name": .string("absent"),
+            "present_only": .int(1)
+        ])
+        let result = try AccessorOperators.opMissing(
+            args: .array([.object(["var": .string("key_name")])]),
+            vars: vars
+        )
+        XCTAssertEqual(result, .array([.string("absent")]))
+    }
+
+    func testMissingUnpacksFirstArgWhenItResolvesToArray() throws {
+        // Spec: if the first (possibly only) evaluated arg is itself an
+        // array, treat its elements as the full key list. Here `if` returns
+        // `["a", "c"]`, which `missing` unpacks before checking each key.
+        let vars = Value.object(["a": .int(1)])
+        let result = try AccessorOperators.opMissing(
+            args: .object([
+                "if": .array([
+                    .bool(true),
+                    .array([.string("a"), .string("c")]),
+                    .array([])
+                ])
+            ]),
+            vars: vars
+        )
+        XCTAssertEqual(result, .array([.string("c")]))
     }
 }

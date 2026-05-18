@@ -14,16 +14,17 @@ enum AccessorOperators {
     /// `default` when the path is missing. `{"var": ""}` returns the entire
     /// data scope.
     ///
-    /// The path argument is treated as a literal — it is NOT recursively
-    /// evaluated as a JSON Logic expression. So a construct like
-    /// `{"var": {"cat": ["subscriber.", {"var": "field_name"}]}}` (which
-    /// some other implementations support) is rejected here.
+    /// Per the JSON Logic spec, the path argument is recursively evaluated
+    /// before lookup, so callers can compute paths dynamically — e.g.
+    /// `{"var": {"var": "active_path_key"}}` resolves `active_path_key`
+    /// first and uses its string value as the actual path. In the array
+    /// form, the default argument is evaluated the same way.
     ///
     /// Variable lookup uses **strict JSON Logic dot-path semantics on
     /// nested objects**. There is no flat-key fallback (i.e. we do not also
     /// try the literal dotted string as a single key in the top-level map).
     static func opVar(args: Value, vars: Value) throws -> Value {
-        let (path, defaultValue) = try parseVarArgs(args)
+        let (path, defaultValue) = try resolveVarArgs(args, vars: vars)
 
         if path.isEmpty {
             return vars
@@ -42,13 +43,31 @@ enum AccessorOperators {
     /// `{"missing": ["a", "b.c"]}` returns the array of keys (as strings)
     /// that are NOT present in the data. Returns `[]` when nothing is
     /// missing.
+    ///
+    /// Per the JSON Logic spec, each key argument is recursively evaluated
+    /// before lookup, so dynamic key lists like
+    /// `{"missing": [{"var": "key_to_check"}]}` work. If the first
+    /// (possibly only) evaluated argument is itself an array (typically the
+    /// output of another operator), its elements are unpacked as the key
+    /// list — this is how `{"missing": {"merge": [["a"], ["b"]]}}` is meant
+    /// to behave.
     static func opMissing(args: Value, vars: Value) throws -> Value {
-        let keys: [Value]
+        let evaluatedArgs: [Value]
         if case .array(let items) = args {
-            keys = items
+            evaluatedArgs = try items.map { try Evaluator.evaluateValue($0, vars: vars) }
         } else {
             // Singleton shorthand: `{"missing": "a"}` ≡ `{"missing": ["a"]}`.
-            keys = [args]
+            evaluatedArgs = [try Evaluator.evaluateValue(args, vars: vars)]
+        }
+
+        // Per JSON Logic spec: if the first arg resolves to an array, treat
+        // its elements as the full key list (lets nested operators feed
+        // `missing` a computed key set).
+        let keys: [Value]
+        if let first = evaluatedArgs.first, case .array(let innerKeys) = first {
+            keys = innerKeys
+        } else {
+            keys = evaluatedArgs
         }
 
         var missing: [Value] = []
@@ -63,25 +82,22 @@ enum AccessorOperators {
 
     // MARK: - Helpers
 
-    /// Normalize `var`'s arg into a `(path, default)` tuple. Accepts a
-    /// string/number literal, `null` (= empty path), or `[path, default?]`.
-    private static func parseVarArgs(_ args: Value) throws -> (String, Value?) {
-        switch args {
-        case .null:
-            return ("", nil)
-        case .string(let value):
-            return (value, nil)
-        case .int(let value):
-            return (String(value), nil)
-        case .float(let value):
-            return (formatNumber(value), nil)
-        case .array(let items):
-            return try parseVarArrayArgs(items)
-        default:
-            throw RuleError.typeMismatch(
-                message: "var arg must be a string, number, or array, got \(args)"
-            )
+    /// Recursively evaluate `var`'s arg(s) per the JSON Logic spec, then
+    /// normalize the result into a `(path, default)` tuple. The array form
+    /// evaluates each element in place; the singleton form evaluates the
+    /// (conceptually wrapped) lone argument so that constructs like
+    /// `{"var": {"var": "key"}}` resolve to a dynamic path string.
+    private static func resolveVarArgs(_ args: Value, vars: Value) throws -> (String, Value?) {
+        if case .array(let items) = args {
+            var evaluated: [Value] = []
+            evaluated.reserveCapacity(items.count)
+            for item in items {
+                evaluated.append(try Evaluator.evaluateValue(item, vars: vars))
+            }
+            return try parseVarArrayArgs(evaluated)
         }
+        let evaluated = try Evaluator.evaluateValue(args, vars: vars)
+        return (try pathSegment(from: evaluated), nil)
     }
 
     private static func parseVarArrayArgs(_ items: [Value]) throws -> (String, Value?) {
