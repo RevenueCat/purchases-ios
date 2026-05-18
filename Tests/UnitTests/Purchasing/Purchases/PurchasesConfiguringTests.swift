@@ -645,7 +645,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     // MARK: - Configuration deduplication
 
-    func testConfigureTwiceWithSameConfigurationReturnsSameInstance() {
+    func testConfigureTwiceWithSameConfigurationReusesInstanceAndLogsDedupMessage() {
         let configuration = Self.dedupConfiguration()
 
         let first = Purchases.configure(with: configuration)
@@ -653,14 +653,6 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         expect(first) === second
         expect(Purchases.shared) === first
-    }
-
-    func testConfigureTwiceWithSameConfigurationLogsDedupMessage() {
-        let configuration = Self.dedupConfiguration()
-
-        _ = Purchases.configure(with: configuration)
-        _ = Purchases.configure(with: configuration)
-
         self.logger.verifyMessageWasLogged(
             Strings.configure.instance_already_exists_with_same_config,
             level: .info
