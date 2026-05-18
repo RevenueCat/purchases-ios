@@ -343,7 +343,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      diagnosticsEnabled: Bool = false,
                      preferredLocale: String?,
                      automaticDeviceIdentifierCollectionEnabled: Bool = true,
-                     currentConfiguration: Configuration? = nil
+                     currentConfiguration: Configuration?
     ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
@@ -753,7 +753,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          virtualCurrencyManager: VirtualCurrencyManagerType,
          healthManager: SDKHealthManager,
          transactionMetadataSyncHelper: TransactionMetadataSyncHelper,
-         currentConfiguration: Configuration? = nil
+         currentConfiguration: Configuration?
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
