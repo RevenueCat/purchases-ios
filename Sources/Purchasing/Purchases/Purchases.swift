@@ -485,7 +485,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
                                               attributeSyncing: subscriberAttributesManager,
-                                              appUserID: appUserID
+                                              appUserID: appUserID,
+                                              iamEnabled: iamEnabled
         )
 
         let eventsManager: EventsManagerType?
@@ -922,9 +923,27 @@ public extension Purchases {
         return DeepLinkParser.parseAsWebPurchaseRedemption(url)
     }
 
-    @objc var appUserID: String { self.identityManager.currentAppUserID }
+    @objc var appUserID: String {
+        if let iamAPI = self.backend.iamAPI {
+            // Claims are populated asynchronously (JWT verification requires a network call).
+            // Fall back to the subject cached in the session so the correct value is available
+            // immediately after a Keychain-restored session.
+            return iamAPI.idTokenClaims?.subject ?? iamAPI.currentSession?.subject ?? ""
+        }
+        return self.identityManager.currentAppUserID
+    }
 
-    @objc var isAnonymous: Bool { self.identityManager.currentUserIsAnonymous }
+    @objc var isAnonymous: Bool {
+        if let iamAPI = self.backend.iamAPI {
+            return iamAPI.isAnonymous
+        }
+        return self.identityManager.currentUserIsAnonymous
+    }
+
+    // Not @objc: IDTokenClaims is a Swift struct and cannot be represented in Objective-C.
+    var idTokenClaims: IDTokenClaims? {
+        return self.backend.iamAPI?.idTokenClaims
+    }
 
     @objc var isSandbox: Bool { return self.systemInfo.isSandbox }
 
@@ -1014,6 +1033,19 @@ public extension Purchases {
             return
        }
 
+        if let iamAPI = self.backend.iamAPI {
+            iamAPI.clearSession()
+            iamAPI.login(method: .anonymous()) { [weak self] result in
+                if case .success = result {
+                    self?.updateAllCaches(completion: nil)
+                }
+                self?.operationDispatcher.dispatchOnMainThread {
+                    completion?(nil, result.error?.asPublicError)
+                }
+            }
+            return
+        }
+
         self.identityManager.logOut { error in
             guard error == nil else {
                 if let completion = completion {
@@ -1037,6 +1069,14 @@ public extension Purchases {
     @objc func initAnonymous(completion: @escaping (PublicError?) -> Void) {
         guard let iamAPI = self.backend.iamAPI else {
             completion(NewErrorUtils.configurationError(message: "IAM is not enabled.").asPublicError)
+            return
+        }
+        // A session may already exist because it was restored from the Keychain on startup.
+        // In that case, skip the network call and proceed directly to cache population so we
+        // don't overwrite a non-anonymous session with a new anonymous one.
+        if iamAPI.hasSession {
+            self.updateAllCaches(completion: nil)
+            self.operationDispatcher.dispatchOnMainThread { completion(nil) }
             return
         }
         iamAPI.login(method: .anonymous()) { [weak self] result in

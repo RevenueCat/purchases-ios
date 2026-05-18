@@ -74,4 +74,9 @@ public struct IAMLoginMethod {
         }
     }
 
+    internal var isAnonymous: Bool {
+        if case .anonymous = self.methodType { return true }
+        return false
+    }
+
 }

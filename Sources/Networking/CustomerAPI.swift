@@ -180,7 +180,8 @@ final class CustomerAPI {
             appTransaction: appTransaction,
             transactionId: associatedTransactionId,
             containsAttributionData: containsAttributionData,
-            sdkOriginated: sdkOriginated
+            sdkOriginated: sdkOriginated,
+            iamEnabled: self.backendConfig.iamEnabled
         )
         let offlineCustomerInfoCreator: OfflineCustomerInfoCreator? =
             self.backendConfig.systemInfo.supportsOfflineEntitlements

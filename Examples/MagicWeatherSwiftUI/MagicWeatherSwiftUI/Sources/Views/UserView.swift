@@ -25,7 +25,7 @@ struct UserView: View {
                 .padding(.bottom, 8.0)
                 .padding(.top, 16.0)
 
-            Text(Purchases.shared.appUserID)
+            Text(model.appUserID)
 
             Text("Subscription Status")
                 .font(.headline)
@@ -34,19 +34,30 @@ struct UserView: View {
             Text(model.subscriptionActive ? "Active" : "Not Active")
                 .foregroundColor(model.subscriptionActive ? .green : .red)
 
+            if let claims = model.idTokenClaims {
+                Text("ID Token Claims")
+                    .font(.headline)
+                    .padding(.top, 8.0)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Subject: \(claims.subject)").font(.footnote)
+                    Text("Issuer: \(claims.issuer)").font(.footnote)
+                    Text("Expires: \(claims.expiration.formatted())").font(.footnote)
+                    if let amr = claims.rawClaims["amr"] as? [String] {
+                        Text("AMR: \(amr.joined(separator: ", "))").font(.footnote)
+                    }
+                    if let appId = claims.rawClaims["rc.app_id"] as? String {
+                        Text("App ID: \(appId)").font(.footnote)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
+            }
+
             Spacer()
 
             /// - Authentication UI
-            if !Purchases.shared.isAnonymous {
-                /// - Logged-in: show logout option
-                Button("Logout") {
-                    Task { await model.logout() }
-                }
-                .foregroundColor(.red)
-                .font(.headline)
-                .frame(maxWidth: .infinity, minHeight: 64.0)
-
-            } else {
+            if model.isAnonymous {
                 /// - Anonymous: Sign in with Apple
                 SignInWithAppleButton(.signIn) { request in
                     request.requestedScopes = [.fullName, .email]
@@ -81,8 +92,14 @@ struct UserView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
-
             }
+
+            Button("Logout") {
+                Task { await model.logout() }
+            }
+            .foregroundColor(.red)
+            .font(.headline)
+            .frame(maxWidth: .infinity, minHeight: 64.0)
 
             /// - You should always give users the option to restore purchases
             Button("Restore Purchases") {

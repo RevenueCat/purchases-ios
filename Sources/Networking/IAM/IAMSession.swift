@@ -14,10 +14,28 @@
 import Foundation
 
 /// Holds the tokens returned by the IAM authentication service.
-struct IAMSession: Equatable {
+struct IAMSession: Equatable, Codable {
 
     let accessToken: String?
     let refreshToken: String?
     let idToken: String?
+    /// Whether the session was established via anonymous login.
+    let isAnonymous: Bool
+    /// The subject claim from the verified ID token.
+    /// Populated after JWT verification completes and persisted to Keychain
+    /// so it is available immediately on subsequent launches.
+    let subject: String?
+
+    init(accessToken: String?,
+         refreshToken: String?,
+         idToken: String?,
+         isAnonymous: Bool,
+         subject: String? = nil) {
+        self.accessToken = accessToken
+        self.refreshToken = refreshToken
+        self.idToken = idToken
+        self.isAnonymous = isAnonymous
+        self.subject = subject
+    }
 
 }

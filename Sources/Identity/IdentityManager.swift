@@ -31,6 +31,7 @@ class IdentityManager: CurrentUserProvider {
     private let backend: Backend
     private let customerInfoManager: CustomerInfoManager
     private let attributeSyncing: AttributeSyncing
+    private let iamEnabled: Bool
 
     private static let anonymousRegex = #"\$RCAnonymousID:([a-z0-9]{32})$"#
 
@@ -40,12 +41,18 @@ class IdentityManager: CurrentUserProvider {
         backend: Backend,
         customerInfoManager: CustomerInfoManager,
         attributeSyncing: AttributeSyncing,
-        appUserID: String?
+        appUserID: String?,
+        iamEnabled: Bool = false
     ) {
         self.deviceCache = deviceCache
         self.backend = backend
         self.customerInfoManager = customerInfoManager
         self.attributeSyncing = attributeSyncing
+        self.iamEnabled = iamEnabled
+
+        // In IAM mode, identity is managed server-side via the IAM access token.
+        // Skip local anonymous ID generation and device cache writes entirely.
+        guard !iamEnabled else { return }
 
         let finalAppUserID: String
         if systemInfo.dangerousSettings.uiPreviewMode {
@@ -70,6 +77,9 @@ class IdentityManager: CurrentUserProvider {
 
     var currentAppUserID: String {
         guard let appUserID = self.deviceCache.cachedAppUserID else {
+            if iamEnabled {
+                return ""
+            }
             fatalError(Strings.identity.null_currentappuserid.description)
         }
 

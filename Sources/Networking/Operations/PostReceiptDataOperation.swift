@@ -18,7 +18,7 @@ import Foundation
 final class PostReceiptDataOperation: CacheableNetworkOperation {
 
     private let postData: PostData
-    private let configuration: AppUserConfiguration
+    private let configuration: NetworkOperation.UserSpecificConfiguration
     private let customerInfoResponseHandler: CustomerInfoResponseHandler
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
 
@@ -80,7 +80,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
     }
 
     private init(
-        configuration: UserSpecificConfiguration,
+        configuration: NetworkOperation.UserSpecificConfiguration,
         postData: PostData,
         customerInfoResponseHandler: CustomerInfoResponseHandler,
         customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>,
@@ -103,7 +103,11 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
     }
 
     private func post(completion: @escaping () -> Void) {
-        let request = HTTPRequest(method: .post(self.postData), path: .postReceiptData, isRetryable: true)
+        let request: HTTPRequest = self.configuration.iamEnabled
+            ? HTTPRequest(method: .post(self.postData), path: HTTPRequest.IAMCustomerPath.postReceiptData,
+                          isRetryable: true)
+            : HTTPRequest(method: .post(self.postData), path: HTTPRequest.Path.postReceiptData,
+                          isRetryable: true)
 
         self.httpClient.perform(
             request
@@ -161,6 +165,54 @@ extension PostReceiptDataOperation {
         let sdkOriginated: Bool
         let metadata: [String: String]?
         let containsAttributionData: Bool
+        /// When `true` the request uses the IAM customer path and omits `app_user_id`
+        /// from the body (the user is identified by the Bearer access token instead).
+        let iamEnabled: Bool
+
+        // swiftlint:disable:next function_parameter_count
+        init(
+            appUserID: String,
+            receipt: EncodedAppleReceipt,
+            isRestore: Bool,
+            productData: ProductRequestData?,
+            presentedOfferingIdentifier: String?,
+            presentedPlacementIdentifier: String?,
+            appliedTargetingRule: AppliedTargetingRule?,
+            paywall: Paywall?,
+            observerMode: Bool,
+            purchaseCompletedBy: PurchasesAreCompletedBy?,
+            initiationSource: PostReceiptSource.InitiationSource,
+            subscriberAttributesByKey: SubscriberAttribute.Dictionary?,
+            aadAttributionToken: String?,
+            testReceiptIdentifier: String?,
+            appTransaction: String?,
+            transactionId: String?,
+            sdkOriginated: Bool,
+            metadata: [String: String]?,
+            containsAttributionData: Bool,
+            iamEnabled: Bool = false
+        ) {
+            self.appUserID = appUserID
+            self.receipt = receipt
+            self.isRestore = isRestore
+            self.productData = productData
+            self.presentedOfferingIdentifier = presentedOfferingIdentifier
+            self.presentedPlacementIdentifier = presentedPlacementIdentifier
+            self.appliedTargetingRule = appliedTargetingRule
+            self.paywall = paywall
+            self.observerMode = observerMode
+            self.purchaseCompletedBy = purchaseCompletedBy
+            self.initiationSource = initiationSource
+            self.subscriberAttributesByKey = subscriberAttributesByKey
+            self.aadAttributionToken = aadAttributionToken
+            self.testReceiptIdentifier = testReceiptIdentifier
+            self.appTransaction = appTransaction
+            self.transactionId = transactionId
+            self.sdkOriginated = sdkOriginated
+            self.metadata = metadata
+            self.containsAttributionData = containsAttributionData
+            self.iamEnabled = iamEnabled
+        }
     }
 
     struct Paywall {
@@ -198,7 +250,8 @@ extension PostReceiptDataOperation.PostData {
         transactionId: String?,
         /// Whether it contains attribution data for `transactionId`. This field is not included in the request
         containsAttributionData: Bool,
-        sdkOriginated: Bool = false
+        sdkOriginated: Bool = false,
+        iamEnabled: Bool = false
     ) {
         self.init(
             appUserID: appUserID,
@@ -221,7 +274,8 @@ extension PostReceiptDataOperation.PostData {
             transactionId: transactionId,
             sdkOriginated: sdkOriginated,
             metadata: data.metadata,
-            containsAttributionData: containsAttributionData
+            containsAttributionData: containsAttributionData,
+            iamEnabled: iamEnabled
         )
     }
 }
@@ -315,7 +369,10 @@ extension PostReceiptDataOperation.PostData: Encodable {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
         try container.encode(Self.payloadVersion, forKey: .payloadVersion)
-        try container.encode(self.appUserID, forKey: .appUserID)
+        // In IAM mode the user is identified by the Bearer access token, not app_user_id.
+        if !self.iamEnabled {
+            try container.encode(self.appUserID, forKey: .appUserID)
+        }
         try container.encode(self.isRestore, forKey: .isRestore)
         try container.encode(self.observerMode, forKey: .observerMode)
         try container.encode(self.initiationSource, forKey: .initiationSource)
@@ -380,7 +437,7 @@ extension PostReceiptDataOperation.PostData: HTTPRequestBody {
 
     var contentForSignature: [(key: String, value: String?)] {
         return [
-            (Self.CodingKeys.appUserID.stringValue, self.appUserID),
+            (Self.CodingKeys.appUserID.stringValue, self.iamEnabled ? nil : self.appUserID),
             (Self.CodingKeys.fetchToken.stringValue, self.fetchToken),
             (Self.CodingKeys.appTransaction.stringValue, self.appTransaction)
         ]

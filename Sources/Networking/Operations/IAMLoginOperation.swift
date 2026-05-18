@@ -19,14 +19,17 @@ final class IAMLoginOperation: NetworkOperation {
     typealias Completion = (Result<IAMSession, BackendError>) -> Void
 
     private let loginMethod: IAMLoginMethod
+    private let linkToId: String?
     private let completion: Completion
 
     init(
         configuration: NetworkConfiguration,
         loginMethod: IAMLoginMethod,
+        linkToId: String? = nil,
         completion: @escaping Completion
     ) {
         self.loginMethod = loginMethod
+        self.linkToId = linkToId
         self.completion = completion
 
         super.init(configuration: configuration)
@@ -44,7 +47,7 @@ extension IAMLoginOperation: @unchecked Sendable {}
 private extension IAMLoginOperation {
 
     func performLogin(completion: @escaping () -> Void) {
-        let body = Body(loginMethod: self.loginMethod)
+        let body = Body(loginMethod: self.loginMethod, linkToId: self.linkToId)
         let request = HTTPRequest(method: .post(body), requestPath: HTTPRequest.IAMAuthPath.login)
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<IAMAuthResponse>.Result) in
@@ -54,7 +57,8 @@ private extension IAMLoginOperation {
                 let session = IAMSession(
                     accessToken: authResponse.accessToken,
                     refreshToken: authResponse.refreshToken,
-                    idToken: authResponse.idToken
+                    idToken: authResponse.idToken,
+                    isAnonymous: self.loginMethod.isAnonymous
                 )
                 self.completion(.success(session))
 
@@ -76,6 +80,9 @@ extension IAMLoginOperation {
     struct Body: Encodable, HTTPRequestBody {
 
         let loginMethod: IAMLoginMethod
+        /// The current session's ID token, forwarded to trigger account linking.
+        /// Only sent for non-anonymous methods when the user is already authenticated.
+        let linkToId: String?
 
         var contentForSignature: [(key: String, value: String?)] { [] }
 
@@ -90,14 +97,17 @@ extension IAMLoginOperation {
             case let .oidc(idToken):
                 try container.encode("oidc", forKey: .method)
                 try container.encode(idToken, forKey: .idToken)
+                try container.encodeIfPresent(linkToId, forKey: .linkToId)
 
             case let .google(idToken):
                 try container.encode("google", forKey: .method)
                 try container.encode(idToken, forKey: .idToken)
+                try container.encodeIfPresent(linkToId, forKey: .linkToId)
 
             case let .apple(idToken):
                 try container.encode("apple", forKey: .method)
                 try container.encode(idToken, forKey: .idToken)
+                try container.encodeIfPresent(linkToId, forKey: .linkToId)
             }
         }
 
@@ -105,6 +115,7 @@ extension IAMLoginOperation {
             case method
             case reference
             case idToken = "id_token"
+            case linkToId = "link_to_id"
         }
 
     }

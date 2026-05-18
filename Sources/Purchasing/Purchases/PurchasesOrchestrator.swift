@@ -1441,6 +1441,13 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         _ listener: StoreKit2TransactionListenerType,
         updatedTransaction transaction: StoreTransactionType
     ) async throws {
+        // In IAM mode, skip transaction handling until a session is established.
+        // StoreKit will redeliver unfinished transactions; they will be handled
+        // once initAnonymous() or loginUser(with:) calls updateAllCaches.
+        if self.backend.iamAPI?.hasSession == false {
+            return
+        }
+
         // Only attribute offering context and paywall data for transactions that are not known
         // to be renewals. When the reason is `nil` (i.e. iOS < 17), we still attempt
         // attribution because the product-ID and date matching in `getAndRemovePresentedOfferingContext`

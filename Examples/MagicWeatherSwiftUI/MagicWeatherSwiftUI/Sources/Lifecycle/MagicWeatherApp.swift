@@ -26,7 +26,7 @@ struct MagicWeatherApp: App {
         Purchases.configure(
             with: Configuration.Builder(withAPIKey: Constants.apiKey)
                 .with(storeKitVersion: .storeKit2)
-//                .with(iamEnabled: true)
+                .with(iamEnabled: true)
                 .with(entitlementVerificationMode: .disabled) 
                 .build()
         )

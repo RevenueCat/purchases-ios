@@ -23,7 +23,8 @@ let project = Project(
             ),
             sources: [
                 "MagicWeatherSwiftUI/Sources/**/*.swift",
-                "MagicWeatherSwiftUI/Constants.swift"
+                "MagicWeatherSwiftUI/Constants.swift",
+                "MagicWeatherSwiftUI/gl-test-app.storekit"
                 ],
             resources: [
                 "MagicWeatherSwiftUI/Resources/**/*.xcassets",

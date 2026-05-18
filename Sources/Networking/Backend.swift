@@ -50,7 +50,9 @@ class Backend {
                                     operationDispatcher: OperationDispatcher.default)
 
         let iamSessionManager: IAMSessionManager? = iamEnabled
-            ? IAMSessionManager(apiKey: apiKey, baseURL: SystemInfo.apiBaseURL)
+            ? IAMSessionManager(apiKey: apiKey,
+                                baseURL: SystemInfo.apiBaseURL,
+                                keychainStorage: IAMKeychainStorage(apiKey: apiKey))
             : nil
 
         // Attach the session manager to the HTTP client so it can refresh tokens on 401.

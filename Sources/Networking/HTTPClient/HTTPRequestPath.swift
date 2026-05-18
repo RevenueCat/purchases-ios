@@ -175,6 +175,7 @@ extension HTTPRequest {
         case appHealthReport
         case getCustomerCenterConfig
         case isPurchaseAllowedByRestoreBehavior
+        case postReceiptData
 
     }
 
@@ -526,6 +527,9 @@ extension HTTPRequest.IAMCustomerPath: HTTPRequestPath {
 
         case .isPurchaseAllowedByRestoreBehavior:
             return "customer/restore/eligibility"
+
+        case .postReceiptData:
+            return "receipts"
         }
     }
 
@@ -557,6 +561,9 @@ extension HTTPRequest.IAMCustomerPath: HTTPRequestPath {
 
         case .isPurchaseAllowedByRestoreBehavior:
             return "iam_post_restore_eligibility"
+
+        case .postReceiptData:
+            return "iam_post_receipt"
         }
     }
 
