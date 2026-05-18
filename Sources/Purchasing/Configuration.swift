@@ -55,32 +55,21 @@ import Foundation
         let networkTimeout: TimeInterval
         let storeKit1Timeout: TimeInterval
         let platformInfo: Purchases.PlatformInfo?
-        let responseVerificationMode: ResponseVerificationModeKey
+        let entitlementVerificationMode: EntitlementVerificationMode
         let showStoreMessagesAutomatically: Bool
         let preferredLocale: String?
         let automaticDeviceIdentifierCollectionEnabled: Bool
         let diagnosticsEnabled: Bool
     }
 
-    /// Case-only proxy for `Signing.ResponseVerificationMode`. The associated `PublicKey` is
-    /// always the same hardcoded value loaded by `Signing.loadPublicKey()`, so case identity is
-    /// sufficient to determine configuration equality.
-    internal enum ResponseVerificationModeKey: Hashable {
-        case disabled
-        case informational
-        case enforced
-
-        init(_ mode: Signing.ResponseVerificationMode) {
-            switch mode {
-            case .disabled: self = .disabled
-            case .informational: self = .informational
-            case .enforced: self = .enforced
-            }
-        }
-    }
-
     internal let storage: Storage
-    let responseVerificationMode: Signing.ResponseVerificationMode
+
+    /// Resolved at first access: `Signing.verificationMode(with:)` calls
+    /// `Signing.loadPublicKey()`, which parses a binary key embedded in the SDK. Deferring it
+    /// keeps `Configuration` construction free of that work and lets `Storage` use the
+    /// `Hashable` `EntitlementVerificationMode` directly.
+    lazy var responseVerificationMode: Signing.ResponseVerificationMode =
+        Signing.verificationMode(with: self.storage.entitlementVerificationMode)
 
     var apiKey: String { self.storage.apiKey }
     var appUserID: String? { self.storage.appUserID }
@@ -99,7 +88,6 @@ import Foundation
     internal var diagnosticsEnabled: Bool { self.storage.diagnosticsEnabled }
 
     private init(with builder: Builder) {
-        self.responseVerificationMode = builder.responseVerificationMode
         self.storage = Storage(
             apiKey: builder.apiKey,
             appUserID: builder.appUserID,
@@ -110,7 +98,7 @@ import Foundation
             networkTimeout: builder.networkTimeout,
             storeKit1Timeout: builder.storeKit1Timeout,
             platformInfo: builder.platformInfo,
-            responseVerificationMode: ResponseVerificationModeKey(builder.responseVerificationMode),
+            entitlementVerificationMode: builder.entitlementVerificationMode,
             showStoreMessagesAutomatically: builder.showStoreMessagesAutomatically,
             preferredLocale: builder.preferredLocale,
             automaticDeviceIdentifierCollectionEnabled: builder.automaticDeviceIdentifierCollectionEnabled,
@@ -162,7 +150,7 @@ import Foundation
         private(set) var networkTimeout = Configuration.networkTimeoutDefault
         private(set) var storeKit1Timeout = Configuration.storeKitRequestTimeoutDefault
         private(set) var platformInfo: Purchases.PlatformInfo?
-        private(set) var responseVerificationMode: Signing.ResponseVerificationMode = .default
+        private(set) var entitlementVerificationMode: EntitlementVerificationMode = .informational
         private(set) var showStoreMessagesAutomatically: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
@@ -324,7 +312,7 @@ import Foundation
         /// - ``Configuration/EntitlementVerificationMode``
         /// - ``VerificationResult``
         @objc public func with(entitlementVerificationMode mode: EntitlementVerificationMode) -> Builder {
-            self.responseVerificationMode = Signing.verificationMode(with: mode)
+            self.entitlementVerificationMode = mode
             return self
         }
 
