@@ -218,6 +218,22 @@ extension WorkflowPaywallViewTests {
         expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_weekly"]
     }
 
+    func testWorkflowPackageContextReturnsDefaultPackageInsideButtonSheet() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            terminalScreenJSON: Self.makeButtonSheetScreenJSON(
+                packages: [
+                    (id: "$rc_monthly", isDefault: true),
+                    (id: "$rc_annual", isDefault: false)
+                ],
+                offeringId: "offering_test"
+            )
+        )
+
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_monthly"
+        expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_monthly", "$rc_annual"]
+    }
+
 }
 
 // MARK: - variableContext population tests
@@ -516,6 +532,53 @@ private extension WorkflowPaywallViewTests {
             "components_config": {
                 "base": {
                     "stack": \(rootStackJSON),
+                    "background": {
+                        "type": "color",
+                        "value": { "light": { "type": "hex", "value": "#220000ff" } }
+                    }
+                }
+            }
+        }
+        """
+    }
+
+    static func makeButtonSheetScreenJSON(
+        packages: [PackageSpec],
+        offeringId: String
+    ) -> String {
+        let packageComponentsJSON = packages
+            .map { packageComponentJSON(id: $0.id, isDefault: $0.isDefault) }
+            .joined(separator: ",")
+        let sheetStackJSON = stackJSON(components: "[\(packageComponentsJSON)]")
+        let buttonStackJSON = stackJSON(components: "[]")
+        let buttonJSON = """
+        {
+            "type": "button",
+            "action": {
+                "type": "navigate_to",
+                "destination": "sheet",
+                "sheet": {
+                    "id": "plans_sheet",
+                    "name": "all_plans_sheet",
+                    "backgroundBlur": false,
+                    "stack": \(sheetStackJSON)
+                }
+            },
+            "stack": \(buttonStackJSON)
+        }
+        """
+
+        return """
+        {
+            "template_name": "template_v2",
+            "asset_base_url": "https://assets.pawwalls.com",
+            "revision": 1,
+            "default_locale": "en_US",
+            "components_localizations": {},
+            "offering_identifier": "\(offeringId)",
+            "components_config": {
+                "base": {
+                    "stack": \(stackJSON(components: "[\(buttonJSON)]")),
                     "background": {
                         "type": "color",
                         "value": { "light": { "type": "hex", "value": "#220000ff" } }

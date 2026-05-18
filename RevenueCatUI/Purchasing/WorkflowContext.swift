@@ -96,6 +96,11 @@ struct WorkflowContext {
                 }
             case .stack(let stack):
                 result += Self.collectPackages(in: stack.components, offering: offering)
+            case .button(let button):
+                result += Self.collectPackages(in: button.stack.components, offering: offering)
+                if case let .navigateTo(.sheet(sheet)) = button.action {
+                    result += Self.collectPackages(in: sheet.stack.components, offering: offering)
+                }
             case .tabs(let tabs):
                 result += Self.collectPackages(
                     in: tabs.tabs.flatMap { $0.stack.components }, offering: offering)
