@@ -63,11 +63,38 @@ final class ComparisonOperatorsTests: XCTestCase {
         )
     }
 
-    func testLtStringComparedNumericallyNotLexicographically() throws {
-        // "10" < "9" lexicographically would be true, but we coerce to
-        // numbers: 10 < 9 → false. Documented deviation from JS reference.
+    func testLtComparesTwoStringsLexicographically() throws {
+        // Per the JSON Logic spec (ECMAScript Abstract Relational
+        // Comparison), two string operands compare lexicographically.
+        // "10" < "9" → true because '1' (0x31) < '9' (0x39).
         XCTAssertEqual(
             try run(ComparisonOperators.opLt, args: arr(.string("10"), .string("9"))),
+            .bool(true)
+        )
+        // Plain alphabetic ordering also flows through.
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.string("apple"), .string("banana"))),
+            .bool(true)
+        )
+        // Empty string is lex-less than any non-empty string.
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.string(""), .string("a"))),
+            .bool(true)
+        )
+    }
+
+    func testLtMixedStringAndNumberCoercesNumerically() throws {
+        // Mixed types fall through to numeric coercion, NOT lex — `"10" < 9`
+        // becomes `10 < 9` → false, while a pure-string compare would have
+        // said true. This is the JS spec's "only lex when BOTH are strings"
+        // branch.
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.string("10"), .int(9))),
+            .bool(false)
+        )
+        // Non-numeric string coerces to NaN → comparison is false.
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.string("abc"), .int(9))),
             .bool(false)
         )
     }
@@ -113,6 +140,19 @@ final class ComparisonOperatorsTests: XCTestCase {
         )
     }
 
+    func testLeComparesTwoStringsLexicographicallyInclusive() throws {
+        // Lex compare under `<=` — equal strings qualify, ordered strings
+        // resolve by spec.
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLe, args: arr(.string("abc"), .string("abc"))),
+            .bool(true)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLe, args: arr(.string("9"), .string("10"))),
+            .bool(false)
+        )
+    }
+
     func testLeBetweenFormInclusive() throws {
         // 1 <= 2 <= 3 → true
         XCTAssertEqual(
@@ -141,6 +181,15 @@ final class ComparisonOperatorsTests: XCTestCase {
         XCTAssertEqual(
             try run(ComparisonOperators.opGt, args: arr(.int(2), .int(2))),
             .bool(false)
+        )
+    }
+
+    func testGtComparesTwoStringsLexicographically() throws {
+        // "9" > "10" → true (lex, '9' > '1'). Mirrors the `<` case in
+        // reverse and confirms the lex/numeric dispatch covers `>` too.
+        XCTAssertEqual(
+            try run(ComparisonOperators.opGt, args: arr(.string("9"), .string("10"))),
+            .bool(true)
         )
     }
 
