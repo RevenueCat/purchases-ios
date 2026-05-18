@@ -48,12 +48,6 @@ import Foundation
         static let `default`: Self = .init()
     }
 
-    /// Value-type backing store for `DangerousSettings`'s comparable fields.
-    ///
-    /// Keeping the stored properties in a `Hashable` struct lets the synthesized
-    /// `Equatable`/`Hashable` conformances drive `isEqual(_:)` and `hash`, so adding a new
-    /// field only requires touching `Storage`.
-    ///
     /// `internalSettings` is intentionally excluded; it is an internal/debug-only mechanism
     /// with no observable effect on the public configuration and contains non-`Hashable`
     /// fields (e.g., closures in `ForceServerErrorStrategy`).

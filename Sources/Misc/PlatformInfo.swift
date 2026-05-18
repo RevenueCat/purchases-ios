@@ -19,11 +19,6 @@ extension Purchases {
     @objc(RCPlatformInfo)
     public final class PlatformInfo: NSObject {
 
-        /// Value-type backing store for `PlatformInfo`'s comparable fields.
-        ///
-        /// Keeping the stored properties in a `Hashable` struct lets the synthesized
-        /// `Equatable`/`Hashable` conformances drive `isEqual(_:)` and `hash`, so adding a new
-        /// field only requires touching `Storage`.
         // swiftlint:disable:next nesting
         internal struct Storage: Hashable {
             let flavor: String
