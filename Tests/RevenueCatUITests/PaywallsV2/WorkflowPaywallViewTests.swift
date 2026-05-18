@@ -754,6 +754,19 @@ private extension WorkflowPaywallViewTests {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowPaywallViewTests {
 
+    func testExitOfferOfferingIsNotStepAware() throws {
+        // context.exitOfferOffering returns non-nil whenever the exit offer is configured,
+        // regardless of which step is current. The binding must therefore use
+        // exitOfferContext(for:currentStepId:) so it is nil on non-triggering steps.
+        let context = try Self.makeContextWithExitOffer(
+            singleStepFallbackId: "step_terminal",
+            exitOfferOfferingId: "exit_offering_a"
+        )
+
+        expect(context.exitOfferOffering).toNot(beNil())
+        expect(WorkflowPaywallView.exitOfferContext(for: context, currentStepId: "step_initial")).to(beNil())
+    }
+
     func testExitOfferContextReturnsNilWhenNotOnTriggeringStep() throws {
         let context = try Self.makeContextWithExitOffer(
             singleStepFallbackId: "step_terminal",
