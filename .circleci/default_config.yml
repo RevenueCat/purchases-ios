@@ -209,7 +209,7 @@ commands:
               "https://api.github.com/repos/${REPO}/issues/${PR_NUMBER}/comments?per_page=100" \
               | ruby -r json -e "
                 JSON.parse(STDIN.read).each do |c|
-                  if c['body'].to_s.include?('<!-- cci-test-failure:${CIRCLE_JOB} -->')
+                  if c['body'].to_s.include?('${MARKER}')
                     puts c['id']
                     break
                   end
