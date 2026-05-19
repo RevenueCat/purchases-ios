@@ -57,85 +57,115 @@ struct InputSingleChoiceComponentView: View {
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct InputSingleChoicePreviewHelper: View {
+
+    let innerStackViewModel: StackComponentViewModel
+    let preselectedOptionId: String?
+
+    @StateObject private var context: InputSingleChoiceContext
+
+    init(innerStackViewModel: StackComponentViewModel, preselectedOptionId: String? = nil) {
+        self.innerStackViewModel = innerStackViewModel
+        self.preselectedOptionId = preselectedOptionId
+        let ctx = InputSingleChoiceContext(fieldId: "plan_type")
+        ctx.selectedOptionId = preselectedOptionId
+        self._context = StateObject(wrappedValue: ctx)
+    }
+
+    var body: some View {
+        StackComponentView(viewModel: innerStackViewModel, onDismiss: {})
+            .environmentObject(context)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct InputSingleChoiceComponentView_Previews: PreviewProvider {
 
-    static let optionStack = PaywallComponent.StackComponent(
+    static func optionStack(labelKey: String) -> PaywallComponent.StackComponent {
+        .init(
+            components: [
+                .text(.init(
+                    text: labelKey,
+                    color: .init(light: .hex("#1c1c1e")),
+                    size: .init(width: .fit, height: .fit),
+                    overrides: [
+                        .init(conditions: [.selected], properties: .init(
+                            color: .init(light: .hex("#ffffff"))
+                        ))
+                    ]
+                ))
+            ],
+            dimension: .horizontal(.center, .center),
+            size: .init(width: .fill, height: .fixed(52)),
+            padding: .init(top: 0, bottom: 0, leading: 16, trailing: 16),
+            shape: .rectangle(.init(topLeading: 10, topTrailing: 10, bottomLeading: 10, bottomTrailing: 10)),
+            border: .init(color: .init(light: .hex("#3d6787")), width: 1.5),
+            overrides: [
+                .init(conditions: [.selected], properties: .init(
+                    backgroundColor: .init(light: .hex("#3d6787"))
+                ))
+            ]
+        )
+    }
+
+    static let innerStack = PaywallComponent.StackComponent(
         components: [
-            .text(.init(
-                text: "option_label",
-                color: .init(light: .hex("#000000")),
-                size: .init(width: .fit, height: .fit),
-                overrides: [
-                    .init(conditions: [.selected], properties: .init(
-                        color: .init(light: .hex("#ffffff"))
-                    ))
-                ]
+            .inputOption(.init(
+                optionId: "monthly", optionValue: "monthly", stack: optionStack(labelKey: "monthly_label")
+            )),
+            .inputOption(.init(
+                optionId: "annual", optionValue: "annual", stack: optionStack(labelKey: "annual_label")
+            )),
+            .inputOption(.init(
+                optionId: "lifetime", optionValue: "lifetime", stack: optionStack(labelKey: "lifetime_label")
             ))
         ],
-        dimension: .horizontal(.center, .center),
-        size: .init(width: .fill, height: .fixed(48)),
-        padding: .init(top: 0, bottom: 0, leading: 16, trailing: 16),
-        shape: .rectangle(.init(topLeading: 8, topTrailing: 8, bottomLeading: 8, bottomTrailing: 8)),
-        border: .init(color: .init(light: .hex("#3d6787")), width: 1),
-        overrides: [
-            .init(conditions: [.selected], properties: .init(
-                backgroundColor: .init(light: .hex("#3d6787"))
-            ))
+        dimension: .vertical(.leading, .start),
+        size: .init(width: .fill, height: .fit),
+        spacing: 12
+    )
+
+    static let localization: LocalizationProvider = .init(
+        locale: Locale.current,
+        localizedStrings: [
+            "monthly_label": .string("Monthly · $4.99 / mo"),
+            "annual_label": .string("Annual · $39.99 / yr"),
+            "lifetime_label": .string("Lifetime · $99.99")
         ]
     )
 
-    static let inputSingleChoice = PaywallComponent.inputSingleChoice(
-        .init(
-            fieldId: "plan_type",
-            stack: .init(
-                components: [
-                    .inputOption(.init(
-                        optionId: "monthly",
-                        optionValue: "monthly",
-                        stack: optionStack
-                    )),
-                    .inputOption(.init(
-                        optionId: "annual",
-                        optionValue: "annual",
-                        stack: optionStack
-                    )),
-                    .inputOption(.init(
-                        optionId: "lifetime",
-                        optionValue: "lifetime",
-                        stack: optionStack
-                    ))
-                ],
-                dimension: .vertical(.leading, .start),
-                size: .init(width: .fill, height: .fit),
-                spacing: 12
-            )
-        )
+    // swiftlint:disable:next force_try
+    static let innerVM = try! StackComponentViewModel(
+        component: innerStack,
+        localizationProvider: localization,
+        colorScheme: .light
+    )
+
+    static let wrapperComponent = PaywallComponent.StackComponent(
+        components: [],
+        dimension: .vertical(.center, .start),
+        size: .init(width: .fill, height: .fill),
+        backgroundColor: .init(light: .hex("#f2f2f7")),
+        padding: .init(top: 24, bottom: 24, leading: 16, trailing: 16)
     )
 
     static var previews: some View {
-        StackComponentView(
-            // swiftlint:disable:next force_try
-            viewModel: try! StackComponentViewModel(
-                component: .init(
-                    components: [inputSingleChoice],
-                    dimension: .vertical(.center, .start),
-                    size: .init(width: .fill, height: .fill),
-                    backgroundColor: .init(light: .hex("#f5f5f5")),
-                    padding: .init(top: 24, bottom: 24, leading: 16, trailing: 16)
-                ),
-                localizationProvider: .init(
-                    locale: Locale.current,
-                    localizedStrings: [
-                        "option_label": .string("Option")
-                    ]
-                ),
-                colorScheme: .light
-            ),
-            onDismiss: {}
-        )
-        .previewRequiredPaywallsV2Properties()
-        .previewLayout(.fixed(width: 390, height: 300))
-        .previewDisplayName("InputSingleChoice - 3 options")
+        // None selected
+        InputSingleChoicePreviewHelper(innerStackViewModel: innerVM)
+            .padding(24)
+            .background(Color(red: 0.95, green: 0.95, blue: 0.97))
+            .previewRequiredPaywallsV2Properties()
+            .previewLayout(.fixed(width: 390, height: 240))
+            .previewDisplayName("None selected")
+
+        // Annual pre-selected
+        InputSingleChoicePreviewHelper(innerStackViewModel: innerVM, preselectedOptionId: "annual")
+            .padding(24)
+            .background(Color(red: 0.95, green: 0.95, blue: 0.97))
+            .previewRequiredPaywallsV2Properties()
+            .previewLayout(.fixed(width: 390, height: 240))
+            .previewDisplayName("Annual selected")
     }
 
 }
