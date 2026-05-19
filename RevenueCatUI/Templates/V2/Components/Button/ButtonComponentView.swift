@@ -33,6 +33,30 @@ struct ButtonComponentView: View {
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
+    @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
+
+    @Environment(\.componentViewState)
+    private var componentViewState
+
+    @Environment(\.screenCondition)
+    private var screenCondition
+
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+
     @Environment(\.componentInteractionLogger) var componentInteractionLogger
     @Environment(\.workflowTriggerAction) private var workflowTriggerAction
     @Environment(\.closeWorkflowAction) private var closeWorkflowAction
@@ -46,6 +70,21 @@ struct ButtonComponentView: View {
                   onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
+    }
+
+    var isVisible: Bool {
+        return self.viewModel.visible(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
+            ),
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables
+        )
     }
 
     /// Show activity indicator only if restore action in purchase handler
@@ -69,7 +108,7 @@ struct ButtonComponentView: View {
     }
 
     var body: some View {
-        if !self.viewModel.hasUnknownAction {
+        if !self.viewModel.hasUnknownAction && self.isVisible {
             AsyncButton {
                 try await performAction()
             } label: {
@@ -317,7 +356,8 @@ fileprivate extension ButtonComponentViewModel {
             component: component,
             localizationProvider: localizationProvider,
             offering: offering,
-            stackViewModel: stackViewModel
+            stackViewModel: stackViewModel,
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
         )
     }
 
