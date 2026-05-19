@@ -216,7 +216,7 @@ class CachingProductsManagerTests: TestCase {
         ])
 
         expect(result) == [baseProduct, monthlyCommitmentProduct]
-        
+
         // Verify only the missing base product request was sent to the underlying manager.
         expect(self.mockManager.invokedProductsCount) == 2
         expect(self.mockManager.invokedProductsParametersList) == [
