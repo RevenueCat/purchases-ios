@@ -104,7 +104,7 @@ private extension PurchasedSK2Product {
            let skBillingPlanType = transaction.billingPlanType,
            let billingPlanType = BillingPlanType.from(storeKitBillingPlanType: skBillingPlanType) {
 
-            return billingPlanType.productPlanIdentifierForCompoundID
+            return billingPlanType.compoundProductIDPlanComponent
 
         } else {
             return nil

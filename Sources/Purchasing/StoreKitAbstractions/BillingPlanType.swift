@@ -34,7 +34,7 @@ public final class BillingPlanType: NSObject, Sendable {
 
 internal extension BillingPlanType {
 
-    var productPlanIdentifierForCompoundID: String? {
+    var compoundProductIDPlanComponent: String? {
         switch self {
         case .monthly:
             return self.rawValue
@@ -45,12 +45,12 @@ internal extension BillingPlanType {
         }
     }
 
-    static func productPlanIdentifierForCompoundID(from rawValue: String?) -> String? {
+    static func compoundProductIDPlanComponent(from rawValue: String?) -> String? {
         switch rawValue {
         case Self.monthly.rawValue:
-            return Self.monthly.productPlanIdentifierForCompoundID
+            return Self.monthly.compoundProductIDPlanComponent
         case Self.upFront.rawValue:
-            return Self.upFront.productPlanIdentifierForCompoundID
+            return Self.upFront.compoundProductIDPlanComponent
         default:
             return rawValue
         }
