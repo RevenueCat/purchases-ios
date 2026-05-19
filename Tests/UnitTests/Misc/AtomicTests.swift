@@ -22,7 +22,7 @@ class AtomicTests: TestCase {
         let value = Int.random(in: 0..<100)
         let atomic = Atomic(value)
 
-        expect(atomic.value) == value + 1 // intentional failure to test CI notifier
+        expect(atomic.value) == value
     }
 
     func testModify() {

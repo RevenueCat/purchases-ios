@@ -192,6 +192,39 @@ commands:
                 "https://api.github.com/repos/${REPO}/issues/${PR_NUMBER}/comments"
             fi
 
+      - run:
+          name: Delete GitHub PR failure comment on success
+          when: on_success
+          command: |
+            [ -z "$CIRCLE_PULL_REQUEST" ] && exit 0
+
+            PR_NUMBER=$(echo "$CIRCLE_PULL_REQUEST" | grep -oE '[0-9]+$')
+            REPO="RevenueCat/purchases-ios"
+            TOKEN="${DANGER_GITHUB_API_TOKEN}"
+
+            EXISTING_ID=$(curl -sf \
+              -H "Authorization: token ${TOKEN}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${REPO}/issues/${PR_NUMBER}/comments?per_page=100" \
+              | ruby -r json -e '
+                JSON.parse(STDIN.read).each do |c|
+                  if c["body"].to_s.include?("<!-- cci-test-failure -->")
+                    puts c["id"]
+                    break
+                  end
+                end
+              ' || true)
+
+            if [ -n "$EXISTING_ID" ]; then
+              echo "Deleting stale failure comment ${EXISTING_ID}"
+              curl -sf -X DELETE \
+                -H "Authorization: token ${TOKEN}" \
+                -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${REPO}/issues/comments/${EXISTING_ID}"
+            else
+              echo "No failure comment to delete."
+            fi
+
   slack-notify-on-fail:
     steps:
       # Map custom variable names to the Slack orb variables, since the default variable names are already used by the Fastlane Slack integration
