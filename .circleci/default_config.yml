@@ -1062,6 +1062,7 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-26
       - slack-notify-on-fail
+      - github-notify-pr-on-fail
 
   # As of May 12, 2026, there is a StoreKit bug that is preventing us from running unit tests
   # when building with Xcode 26.4+. When built with Xcode 26.4+, tests that fetch products
