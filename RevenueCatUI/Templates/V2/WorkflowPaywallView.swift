@@ -235,9 +235,11 @@ struct WorkflowPaywallView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .mask(alignment: .top) {
+                self.transitionClipMask(proxy: proxy)
+            }
         }
         .allowsHitTesting(!self.transitionState.isTransitioning)
-        .clipped()
         // Re-emitted on every step change because navigator is @StateObject with @Published
         // currentStepId. The exit offer is resolved synchronously from allOfferings on the
         // triggering step; when the user navigates away the value becomes nil, clearing
@@ -260,6 +262,18 @@ struct WorkflowPaywallView: View {
     }
 
     // MARK: - Helpers
+
+    // Keep workflow transitions clipped horizontally, but let page backgrounds render into safe areas.
+    // Pages already ignore the bottom safe area, but this GeometryReader is laid out inside the
+    // safe-area bounds. A plain `.clipped()` trims that page overflow and exposes the presenting view.
+    private func transitionClipMask(proxy: GeometryProxy) -> some View {
+        Rectangle()
+            .frame(
+                width: proxy.size.width,
+                height: proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
+            )
+            .offset(y: -proxy.safeAreaInsets.top)
+    }
 
     private var displayedPages: [DisplayedPage] {
         return [
