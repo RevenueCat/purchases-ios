@@ -8,7 +8,7 @@ import XCTest
 
 @_spi(Internal) @testable import RulesEngine
 
-// swiftlint:disable type_body_length
+// swiftlint:disable type_body_length file_length
 final class AccessorOperatorsTests: XCTestCase {
 
     private var logger: CapturingLogger!
@@ -371,6 +371,34 @@ final class AccessorOperatorsTests: XCTestCase {
                 return XCTFail("expected typeMismatch, got \(error)")
             }
         }
+    }
+
+    func testMissingSomeWithNanThresholdTreatsItAsZero() throws {
+        // `Int(Double.nan)` traps, so an unguarded coercion would crash on
+        // a malformed `need_count` (e.g. NaN out of `{"+": ["abc"]}` or a
+        // `.float(.nan)` literal). NaN → 0 → trivially satisfied.
+        let result = try runMissingSome(
+            args: .array([
+                .float(.nan),
+                .array([.string("a"), .string("b")])
+            ]),
+            vars: .object([:])
+        )
+        XCTAssertEqual(result, .array([]))
+    }
+
+    func testMissingSomeWithInfiniteThresholdNeverSatisfies() throws {
+        // `+Infinity` clamps to `Int.max`, so the requirement can never be
+        // met and the operator returns the full missing list. Guards
+        // against the trapping `Int(Double.infinity)` initializer.
+        let result = try runMissingSome(
+            args: .array([
+                .float(.infinity),
+                .array([.string("a"), .string("b")])
+            ]),
+            vars: .object(["a": .int(1)])
+        )
+        XCTAssertEqual(result, .array([.string("b")]))
     }
 
     // MARK: - Helpers

@@ -102,17 +102,19 @@ enum AccessorOperators {
                     + "got \(options)"
             )
         }
-        let total = Int64(items.count)
+        let total = items.count
 
         // Non-numeric `need_count` falls back to 0, mirroring the lenient
-        // coercion of our other operators. With need=0 the condition is
-        // trivially satisfied, so `missing_some` returns `[]`.
-        let need = Int64(needCountValue.asNumber ?? 0)
+        // coercion of our other operators. NaN / ±Infinity / out-of-range
+        // values are clamped by `Operators.clampedInt` instead of trapping
+        // the `Int` initializer (NaN → 0 satisfies trivially; +Infinity
+        // never satisfies; -Infinity always satisfies).
+        let need = Operators.clampedInt(needCountValue.asNumber ?? 0)
 
         let missing = try opMissing(args: options, vars: vars)
-        let missingCount: Int64
+        let missingCount: Int
         if case .array(let entries) = missing {
-            missingCount = Int64(entries.count)
+            missingCount = entries.count
         } else {
             missingCount = 0
         }

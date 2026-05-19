@@ -116,4 +116,20 @@ enum Operators {
         }
         return (evaluated[0], evaluated[1])
     }
+
+    /// Safely truncate a `Double` to `Int` for index / count math. The
+    /// default `Int(_:)` initializer traps on `NaN`, `±Infinity`, and
+    /// out-of-range finite values — and a malformed predicate can easily
+    /// produce any of those (`asNumber` returns raw NaN for `.float(.nan)`,
+    /// for arithmetic on non-numeric operands, or for `Double("nan")` /
+    /// `Double("inf")` parses of `.string`). NaN coerces to `0` (mirroring
+    /// JS `ToInteger`); `±Infinity` and out-of-range values clamp to
+    /// `Int.max` / `Int.min` so downstream `min` / `max` clamping handles
+    /// them naturally.
+    static func clampedInt(_ value: Double) -> Int {
+        if value.isNaN { return 0 }
+        if value >= Double(Int.max) { return .max }
+        if value <= Double(Int.min) { return .min }
+        return Int(value)
+    }
 }

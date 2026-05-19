@@ -75,29 +75,30 @@ enum StringArrayOperators {
         }
 
         let chars = Array(stringify(source))
-        let total = Int64(chars.count)
+        let total = chars.count
 
-        // Non-numeric start coerces to 0 (mirrors JS:
-        // `Number(undefined)` → NaN → treated as 0 by
-        // `String.prototype.substr`).
-        let startN = Int64(start.asNumber ?? 0)
+        // Non-numeric start coerces to 0 (mirrors JS `ToInteger`, which
+        // maps NaN → 0). `Operators.clampedInt` also saturates ±Infinity
+        // and out-of-range finite values so the `Int(_:)` initializer
+        // can't trap on a malformed predicate.
+        let startN = Operators.clampedInt(start.asNumber ?? 0)
         let begin: Int
         if startN < 0 {
-            begin = Int(max(total + startN, 0))
+            begin = max(total + startN, 0)
         } else {
-            begin = Int(min(startN, total))
+            begin = min(startN, total)
         }
 
         let afterStart = Array(chars[begin...])
 
         let result: String
         if let length = length {
-            let lenN = Int64(length.asNumber ?? 0)
+            let lenN = Operators.clampedInt(length.asNumber ?? 0)
             let count: Int
             if lenN < 0 {
-                count = Int(max(Int64(afterStart.count) + lenN, 0))
+                count = max(afterStart.count + lenN, 0)
             } else {
-                count = min(Int(lenN), afterStart.count)
+                count = min(lenN, afterStart.count)
             }
             result = String(afterStart[..<count])
         } else {

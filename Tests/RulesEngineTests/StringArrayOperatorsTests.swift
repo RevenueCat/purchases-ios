@@ -8,6 +8,7 @@ import XCTest
 
 @testable import RulesEngine
 
+// swiftlint:disable type_body_length
 final class StringArrayOperatorsTests: XCTestCase {
 
     // MARK: - in
@@ -249,6 +250,68 @@ final class StringArrayOperatorsTests: XCTestCase {
                 return XCTFail("expected typeMismatch, got \(error)")
             }
         }
+    }
+
+    func testSubstrWithNanStartTreatsItAsZero() throws {
+        // `Int(Double.nan)` traps, so an unguarded coercion would crash for
+        // any expression that produces NaN (`.float(.nan)` directly, an
+        // arithmetic-on-non-numeric chain, etc.). Spec semantics: NaN → 0.
+        let out = try StringArrayOperators.opSubstr(
+            args: arr(.string("abcd"), .float(.nan)),
+            vars: .null
+        )
+        XCTAssertEqual(out, .string("abcd"))
+    }
+
+    func testSubstrWithInfiniteStartClampsToTotal() throws {
+        // `+Infinity` start → empty substring (start is at/past the end).
+        let outPositive = try StringArrayOperators.opSubstr(
+            args: arr(.string("abcd"), .float(.infinity)),
+            vars: .null
+        )
+        XCTAssertEqual(outPositive, .string(""))
+
+        // `-Infinity` start → clamp to 0, return the whole string.
+        let outNegative = try StringArrayOperators.opSubstr(
+            args: arr(.string("abcd"), .float(-.infinity)),
+            vars: .null
+        )
+        XCTAssertEqual(outNegative, .string("abcd"))
+    }
+
+    func testSubstrWithOversizedStartClampsToTotal() throws {
+        // Finite Double well beyond `Int.max` would trap the Int init;
+        // clamp to total length and return empty.
+        let out = try StringArrayOperators.opSubstr(
+            args: arr(.string("abcd"), .float(1.0e20)),
+            vars: .null
+        )
+        XCTAssertEqual(out, .string(""))
+    }
+
+    func testSubstrWithNanLengthTreatsItAsZero() throws {
+        // NaN length → 0 → empty result, mirroring JS `ToInteger`.
+        let out = try StringArrayOperators.opSubstr(
+            args: arr(.string("abcd"), .int(0), .float(.nan)),
+            vars: .null
+        )
+        XCTAssertEqual(out, .string(""))
+    }
+
+    func testSubstrWithInfiniteLengthReturnsRemaining() throws {
+        // `+Infinity` length → clamp to remaining; `-Infinity` → clamp to 0
+        // → empty.
+        let outPositive = try StringArrayOperators.opSubstr(
+            args: arr(.string("abcd"), .int(1), .float(.infinity)),
+            vars: .null
+        )
+        XCTAssertEqual(outPositive, .string("bcd"))
+
+        let outNegative = try StringArrayOperators.opSubstr(
+            args: arr(.string("abcd"), .int(1), .float(-.infinity)),
+            vars: .null
+        )
+        XCTAssertEqual(outNegative, .string(""))
     }
 
     // MARK: - merge
