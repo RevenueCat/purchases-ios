@@ -117,7 +117,7 @@ commands:
 
             PR_NUMBER=$(echo "$CIRCLE_PULL_REQUEST" | grep -oE '[0-9]+$')
             REPO="RevenueCat/purchases-ios"
-            MARKER="<!-- cci-test-failure -->"
+            MARKER="<!-- cci-test-failure:${CIRCLE_JOB} -->"
             TOKEN="${DANGER_GITHUB_API_TOKEN}"
 
             echo "PR_NUMBER=${PR_NUMBER}"
@@ -165,14 +165,14 @@ commands:
               -H "Authorization: token ${TOKEN}" \
               -H "Accept: application/vnd.github.v3+json" \
               "https://api.github.com/repos/${REPO}/issues/${PR_NUMBER}/comments?per_page=100" \
-              | ruby -r json -e '
+              | ruby -r json -e "
                 JSON.parse(STDIN.read).each do |c|
-                  if c["body"].to_s.include?("<!-- cci-test-failure -->")
-                    puts c["id"]
+                  if c['body'].to_s.include?('${MARKER}')
+                    puts c['id']
                     break
                   end
                 end
-              ' || true)
+              " || true)
 
             if [ -n "$EXISTING_ID" ]; then
               echo "Updating existing comment ${EXISTING_ID}"
@@ -200,20 +200,21 @@ commands:
 
             PR_NUMBER=$(echo "$CIRCLE_PULL_REQUEST" | grep -oE '[0-9]+$')
             REPO="RevenueCat/purchases-ios"
+            MARKER="<!-- cci-test-failure:${CIRCLE_JOB} -->"
             TOKEN="${DANGER_GITHUB_API_TOKEN}"
 
             EXISTING_ID=$(curl -sf \
               -H "Authorization: token ${TOKEN}" \
               -H "Accept: application/vnd.github.v3+json" \
               "https://api.github.com/repos/${REPO}/issues/${PR_NUMBER}/comments?per_page=100" \
-              | ruby -r json -e '
+              | ruby -r json -e "
                 JSON.parse(STDIN.read).each do |c|
-                  if c["body"].to_s.include?("<!-- cci-test-failure -->")
-                    puts c["id"]
+                  if c['body'].to_s.include?('<!-- cci-test-failure:${CIRCLE_JOB} -->')
+                    puts c['id']
                     break
                   end
                 end
-              ' || true)
+              " || true)
 
             if [ -n "$EXISTING_ID" ]; then
               echo "Deleting stale failure comment ${EXISTING_ID}"
