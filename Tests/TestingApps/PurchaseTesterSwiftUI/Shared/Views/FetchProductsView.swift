@@ -115,10 +115,7 @@ struct FetchProductsView: View {
 
                 Button {
                     Task(priority: .userInitiated) {
-                        let customerInfo = try! await Purchases.shared.purchase(product: storeProduct)
-                        customerInfo.entitlements.active[""]!.
-                        print(customerInfo)
-                        print("Debug")
+                        _ = try! await Purchases.shared.purchase(product: storeProduct)
                     }
                 } label: {
                     Text("Purchase with RC")
