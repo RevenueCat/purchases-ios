@@ -45,6 +45,8 @@ struct CarouselComponentView: View {
     private var selectedPackageId
     @Environment(\.componentInteractionLogger)
     private var componentInteractionLogger
+    @Environment(\.paywallStateStore)
+    private var paywallStateStore
 
     let viewModel: CarouselComponentViewModel
     let onDismiss: () -> Void
@@ -90,6 +92,7 @@ struct CarouselComponentView: View {
                                 destinationPageIndex: destinationPageIndex,
                                 defaultPageIndex: style.initialPageIndex
                             )
+                            self.dispatchStateUpdates(destinationPageIndex: destinationPageIndex)
                         }
                     ).clipped()
                 }
@@ -137,6 +140,13 @@ struct CarouselComponentView: View {
                 destinationContextName: destinationContextName
             )
         ))
+    }
+
+    /// Dispatch declarative state-store updates declared on the carousel. The destination page index
+    /// is exposed via the `"$value"` payload reference.
+    private func dispatchStateUpdates(destinationPageIndex: Int) {
+        guard let updates = self.viewModel.stateUpdates, !updates.isEmpty else { return }
+        self.paywallStateStore.apply(updates, payload: .int(destinationPageIndex))
     }
 
 }

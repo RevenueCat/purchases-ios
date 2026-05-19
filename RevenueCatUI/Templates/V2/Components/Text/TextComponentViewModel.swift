@@ -62,12 +62,14 @@ class TextComponentViewModel {
         promoOffer: PromotionalOffer?,
         countdownTime: CountdownTime? = nil,
         customVariables: [String: CustomVariableValue] = [:],
+        paywallStateValues: [String: PaywallComponent.ConditionValue] = [:],
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let isEligibleForPromoOffer = promoOffer != nil
         let conditionContext = uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables
+            customVariables: customVariables,
+            state: paywallStateValues
         )
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,

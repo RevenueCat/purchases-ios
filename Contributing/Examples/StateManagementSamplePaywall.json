@@ -1,0 +1,357 @@
+{
+  "templateName": "components",
+  "assetBaseUrl": "https://assets.pawwalls.com",
+  "revision": 1,
+  "defaultLocale": "en_US",
+
+  "state": {
+    "comparisonOpen": false,
+    "currentSlide":   0,
+    "activeTab":      "monthly"
+  },
+
+  "componentsConfig": {
+    "base": {
+      "background": {
+        "type": "color",
+        "value": { "light": { "type": "hex", "value": "#FFFFFF" } }
+      },
+      "stack": {
+        "type": "stack",
+        "components": [
+          {
+            "type": "text",
+            "textLid": "id_title",
+            "fontWeight": "black",
+            "fontSize": 24,
+            "color": { "light": { "type": "hex", "value": "#000000" } },
+            "horizontalAlignment": "center",
+            "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+            "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+            "margin":  { "top": 0, "bottom": 16, "leading": 0, "trailing": 0 }
+          },
+
+          { "type": "text", "textLid": "id_section_button", "fontWeight": "bold", "fontSize": 12,
+            "color": { "light": { "type": "hex", "value": "#888888" } },
+            "horizontalAlignment": "leading",
+            "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+            "margin":  { "top": 24, "bottom": 8, "leading": 0, "trailing": 0 } },
+
+          {
+            "type": "text",
+            "textLid": "id_status_off",
+            "fontWeight": "semibold",
+            "fontSize": 18,
+            "color":           { "light": { "type": "hex", "value": "#000000" } },
+            "backgroundColor": { "light": { "type": "hex", "value": "#F0F0F0" } },
+            "horizontalAlignment": "center",
+            "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+            "padding": { "top": 12, "bottom": 12, "leading": 16, "trailing": 16 },
+            "margin":  { "top": 0,  "bottom": 16, "leading": 0,  "trailing": 0 },
+
+            "overrides": [
+              {
+                "conditions": [
+                  { "type": "state_condition", "operator": "=", "name": "comparisonOpen", "value": true }
+                ],
+                "properties": {
+                  "textLid": "id_status_on",
+                  "color":           { "light": { "type": "hex", "value": "#FFFFFF" } },
+                  "backgroundColor": { "light": { "type": "hex", "value": "#0078D4" } }
+                }
+              }
+            ]
+          },
+
+          {
+            "type": "button",
+            "action": { "type": "workflow" },
+            "stateUpdates": [
+              { "set": "comparisonOpen", "to": true }
+            ],
+            "stack": {
+              "type": "stack",
+              "components": [
+                { "type": "text", "textLid": "id_btn_on", "fontWeight": "semibold", "fontSize": 16,
+                  "color": { "light": { "type": "hex", "value": "#FFFFFF" } },
+                  "horizontalAlignment": "center",
+                  "size": { "width": { "type": "fit" }, "height": { "type": "fit" } },
+                  "padding": { "top": 12, "bottom": 12, "leading": 24, "trailing": 24 },
+                  "margin":  { "top": 0,  "bottom": 0,  "leading": 0,  "trailing": 0 } }
+              ],
+              "size": { "width": { "type": "fit" }, "height": { "type": "fit" } },
+              "backgroundColor": { "light": { "type": "hex", "value": "#22AA66" } },
+              "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+              "margin":  { "top": 0, "bottom": 8, "leading": 0, "trailing": 0 },
+              "shape": { "type": "rectangle",
+                         "corners": { "topLeading": 12, "topTrailing": 12, "bottomLeading": 12, "bottomTrailing": 12 } }
+            }
+          },
+
+          {
+            "type": "button",
+            "action": { "type": "workflow" },
+            "stateUpdates": [
+              { "set": "comparisonOpen", "to": false }
+            ],
+            "stack": {
+              "type": "stack",
+              "components": [
+                { "type": "text", "textLid": "id_btn_off", "fontWeight": "semibold", "fontSize": 16,
+                  "color": { "light": { "type": "hex", "value": "#FFFFFF" } },
+                  "horizontalAlignment": "center",
+                  "size": { "width": { "type": "fit" }, "height": { "type": "fit" } },
+                  "padding": { "top": 12, "bottom": 12, "leading": 24, "trailing": 24 },
+                  "margin":  { "top": 0,  "bottom": 0,  "leading": 0,  "trailing": 0 } }
+              ],
+              "size": { "width": { "type": "fit" }, "height": { "type": "fit" } },
+              "backgroundColor": { "light": { "type": "hex", "value": "#AA2222" } },
+              "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+              "margin":  { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+              "shape": { "type": "rectangle",
+                         "corners": { "topLeading": 12, "topTrailing": 12, "bottomLeading": 12, "bottomTrailing": 12 } }
+            }
+          },
+
+          { "type": "text", "textLid": "id_section_carousel", "fontWeight": "bold", "fontSize": 12,
+            "color": { "light": { "type": "hex", "value": "#888888" } },
+            "horizontalAlignment": "leading",
+            "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+            "margin":  { "top": 24, "bottom": 8, "leading": 0, "trailing": 0 } },
+
+          {
+            "type": "carousel",
+            "size": { "width": { "type": "fill" }, "height": { "type": "fixed", "value": 120 } },
+            "pageAlignment": "center",
+            "pageSpacing": 8,
+            "pagePeek": 20,
+            "initialPageIndex": 0,
+            "loop": false,
+            "stateUpdates": [
+              { "set": "currentSlide", "to": "$value" }
+            ],
+            "pages": [
+              { "type": "stack",
+                "components": [
+                  { "type": "text", "textLid": "id_slide_1", "fontWeight": "bold", "fontSize": 18,
+                    "color": { "light": { "type": "hex", "value": "#FFFFFF" } },
+                    "horizontalAlignment": "center",
+                    "padding": { "top": 16, "bottom": 16, "leading": 16, "trailing": 16 },
+                    "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 } }
+                ],
+                "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                "size": { "width": { "type": "fill" }, "height": { "type": "fixed", "value": 80 } },
+                "backgroundColor": { "light": { "type": "hex", "value": "#4287F5" } },
+                "shape": { "type": "rectangle",
+                           "corners": { "topLeading": 12, "topTrailing": 12, "bottomLeading": 12, "bottomTrailing": 12 } } },
+              { "type": "stack",
+                "components": [
+                  { "type": "text", "textLid": "id_slide_2", "fontWeight": "bold", "fontSize": 18,
+                    "color": { "light": { "type": "hex", "value": "#FFFFFF" } },
+                    "horizontalAlignment": "center",
+                    "padding": { "top": 16, "bottom": 16, "leading": 16, "trailing": 16 },
+                    "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 } }
+                ],
+                "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                "size": { "width": { "type": "fill" }, "height": { "type": "fixed", "value": 80 } },
+                "backgroundColor": { "light": { "type": "hex", "value": "#42B27D" } },
+                "shape": { "type": "rectangle",
+                           "corners": { "topLeading": 12, "topTrailing": 12, "bottomLeading": 12, "bottomTrailing": 12 } } },
+              { "type": "stack",
+                "components": [
+                  { "type": "text", "textLid": "id_slide_3", "fontWeight": "bold", "fontSize": 18,
+                    "color": { "light": { "type": "hex", "value": "#FFFFFF" } },
+                    "horizontalAlignment": "center",
+                    "padding": { "top": 16, "bottom": 16, "leading": 16, "trailing": 16 },
+                    "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 } }
+                ],
+                "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                "size": { "width": { "type": "fill" }, "height": { "type": "fixed", "value": 80 } },
+                "backgroundColor": { "light": { "type": "hex", "value": "#E0823F" } },
+                "shape": { "type": "rectangle",
+                           "corners": { "topLeading": 12, "topTrailing": 12, "bottomLeading": 12, "bottomTrailing": 12 } } }
+            ]
+          },
+
+          {
+            "type": "text",
+            "textLid": "id_slide_label_0",
+            "fontWeight": "medium",
+            "fontSize": 14,
+            "color": { "light": { "type": "hex", "value": "#444444" } },
+            "horizontalAlignment": "center",
+            "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+            "margin":  { "top": 8, "bottom": 0, "leading": 0, "trailing": 0 },
+            "overrides": [
+              { "conditions": [
+                  { "type": "state_condition", "operator": "=", "name": "currentSlide", "value": 1 }
+                ],
+                "properties": { "textLid": "id_slide_label_1" } },
+              { "conditions": [
+                  { "type": "state_condition", "operator": "=", "name": "currentSlide", "value": 2 }
+                ],
+                "properties": { "textLid": "id_slide_label_2" } }
+            ]
+          },
+
+          { "type": "text", "textLid": "id_section_tabs", "fontWeight": "bold", "fontSize": 12,
+            "color": { "light": { "type": "hex", "value": "#888888" } },
+            "horizontalAlignment": "leading",
+            "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+            "margin":  { "top": 24, "bottom": 8, "leading": 0, "trailing": 0 } },
+
+          {
+            "type": "tabs",
+            "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+            "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+            "margin":  { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+            "defaultTabId": "monthly",
+            "stateUpdates": [
+              { "set": "activeTab", "to": "$value" }
+            ],
+            "control": {
+              "type": "buttons",
+              "stack": {
+                "type": "stack",
+                "components": [
+                  { "type": "tab_control_button",
+                    "tabId": "monthly",
+                    "stack": {
+                      "type": "stack",
+                      "components": [
+                        { "type": "text", "textLid": "id_tab_monthly", "fontWeight": "semibold", "fontSize": 14,
+                          "color": { "light": { "type": "hex", "value": "#FFFFFF" } },
+                          "horizontalAlignment": "center",
+                          "padding": { "top": 8, "bottom": 8, "leading": 16, "trailing": 16 },
+                          "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 } }
+                      ],
+                      "size": { "width": { "type": "fit" }, "height": { "type": "fit" } },
+                      "backgroundColor": { "light": { "type": "hex", "value": "#666666" } },
+                      "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                      "margin":  { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                      "shape": { "type": "rectangle",
+                                 "corners": { "topLeading": 8, "topTrailing": 8, "bottomLeading": 8, "bottomTrailing": 8 } }
+                    } },
+                  { "type": "tab_control_button",
+                    "tabId": "yearly",
+                    "stack": {
+                      "type": "stack",
+                      "components": [
+                        { "type": "text", "textLid": "id_tab_yearly", "fontWeight": "semibold", "fontSize": 14,
+                          "color": { "light": { "type": "hex", "value": "#FFFFFF" } },
+                          "horizontalAlignment": "center",
+                          "padding": { "top": 8, "bottom": 8, "leading": 16, "trailing": 16 },
+                          "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 } }
+                      ],
+                      "size": { "width": { "type": "fit" }, "height": { "type": "fit" } },
+                      "backgroundColor": { "light": { "type": "hex", "value": "#666666" } },
+                      "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                      "margin":  { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                      "shape": { "type": "rectangle",
+                                 "corners": { "topLeading": 8, "topTrailing": 8, "bottomLeading": 8, "bottomTrailing": 8 } }
+                    } }
+                ],
+                "dimension": { "type": "horizontal", "alignment": "center", "distribution": "center" },
+                "size": { "width": { "type": "fit" }, "height": { "type": "fit" } },
+                "spacing": 8,
+                "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                "margin":  { "top": 0, "bottom": 8, "leading": 0, "trailing": 0 }
+              }
+            },
+            "tabs": [
+              { "id": "monthly",
+                "stack": {
+                  "type": "stack",
+                  "components": [
+                    { "type": "tab_control" },
+                    { "type": "text", "textLid": "id_tab_monthly_body", "fontWeight": "regular", "fontSize": 14,
+                      "color":           { "light": { "type": "hex", "value": "#000000" } },
+                      "backgroundColor": { "light": { "type": "hex", "value": "#F0F0F0" } },
+                      "horizontalAlignment": "center",
+                      "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+                      "padding": { "top": 12, "bottom": 12, "leading": 16, "trailing": 16 },
+                      "margin":  { "top": 8,  "bottom": 0,  "leading": 0,  "trailing": 0 } }
+                  ],
+                  "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+                  "spacing": 0,
+                  "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                  "margin":  { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+                } },
+              { "id": "yearly",
+                "stack": {
+                  "type": "stack",
+                  "components": [
+                    { "type": "tab_control" },
+                    { "type": "text", "textLid": "id_tab_yearly_body", "fontWeight": "regular", "fontSize": 14,
+                      "color":           { "light": { "type": "hex", "value": "#000000" } },
+                      "backgroundColor": { "light": { "type": "hex", "value": "#F0F0F0" } },
+                      "horizontalAlignment": "center",
+                      "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+                      "padding": { "top": 12, "bottom": 12, "leading": 16, "trailing": 16 },
+                      "margin":  { "top": 8,  "bottom": 0,  "leading": 0,  "trailing": 0 } }
+                  ],
+                  "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+                  "spacing": 0,
+                  "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                  "margin":  { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+                } }
+            ]
+          },
+
+          {
+            "type": "text",
+            "textLid": "id_tab_label_monthly",
+            "fontWeight": "medium",
+            "fontSize": 14,
+            "color": { "light": { "type": "hex", "value": "#444444" } },
+            "horizontalAlignment": "center",
+            "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+            "margin":  { "top": 8, "bottom": 0, "leading": 0, "trailing": 0 },
+            "overrides": [
+              { "conditions": [
+                  { "type": "state_condition", "operator": "=", "name": "activeTab", "value": "yearly" }
+                ],
+                "properties": { "textLid": "id_tab_label_yearly" } }
+            ]
+          }
+        ],
+        "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+        "dimension": { "type": "vertical", "alignment": "center", "distribution": "start" },
+        "spacing": 4,
+        "padding": { "top": 40, "bottom": 40, "leading": 24, "trailing": 24 },
+        "margin":  { "top": 0,  "bottom": 0,  "leading": 0,  "trailing": 0 }
+      }
+    }
+  },
+
+  "componentsLocalizations": {
+    "en_US": {
+      "id_title": "State Management Demo",
+
+      "id_section_button":   "BUTTONS → BOOL STATE",
+      "id_section_carousel": "CAROUSEL → INT STATE",
+      "id_section_tabs":     "TABS → STRING STATE",
+
+      "id_status_off": "Comparison is OFF",
+      "id_status_on":  "Comparison is ON",
+      "id_btn_on":     "Turn ON",
+      "id_btn_off":    "Turn OFF",
+
+      "id_slide_1":       "Slide 1",
+      "id_slide_2":       "Slide 2",
+      "id_slide_3":       "Slide 3",
+      "id_slide_label_0": "Active slide: 0",
+      "id_slide_label_1": "Active slide: 1",
+      "id_slide_label_2": "Active slide: 2",
+
+      "id_tab_monthly":       "Monthly",
+      "id_tab_yearly":        "Yearly",
+      "id_tab_monthly_body":  "Pay $9.99 per month.",
+      "id_tab_yearly_body":   "Pay $79.99 per year (save 33%).",
+      "id_tab_label_monthly": "Active tab: monthly",
+      "id_tab_label_yearly":  "Active tab: yearly"
+    }
+  },
+
+  "zeroDecimalPlaceCountries": { "apple": [] }
+}

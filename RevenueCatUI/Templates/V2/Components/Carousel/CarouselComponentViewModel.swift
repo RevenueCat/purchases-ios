@@ -50,6 +50,12 @@ class CarouselComponentViewModel {
         self.component.name
     }
 
+    /// Declarative state-store mutations to apply on user-initiated page change.
+    /// `nil` when the JSON didn't declare any.
+    var stateUpdates: [PaywallComponent.StateUpdate]? {
+        self.component.stateUpdates
+    }
+
     func pageContextName(at index: Int) -> String? {
         guard self.pageContextNames.indices.contains(index) else { return nil }
 

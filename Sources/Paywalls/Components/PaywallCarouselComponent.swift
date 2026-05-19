@@ -136,6 +136,11 @@ import Foundation
 
         public let overrides: ComponentOverrides<PartialCarouselComponent>?
 
+        /// State-store mutations applied when the user changes the active page
+        /// (via swipe or page-indicator tap). The destination page index is available
+        /// as the `"$value"` payload reference.
+        @_spi(Internal) public let stateUpdates: [PaywallComponent.StateUpdate]?
+
         public init(
             name: String? = nil,
             visible: Bool? = nil,
@@ -154,7 +159,8 @@ import Foundation
             loop: Bool = false,
             autoAdvance: PaywallComponent.CarouselComponent.AutoAdvanceSlides? = nil,
             pageControl: PageControl? = nil,
-            overrides: ComponentOverrides<PartialCarouselComponent>? = nil
+            overrides: ComponentOverrides<PartialCarouselComponent>? = nil,
+            stateUpdates: [PaywallComponent.StateUpdate]? = nil
         ) {
             self.type = .carousel
 
@@ -176,6 +182,7 @@ import Foundation
             self.autoAdvance = autoAdvance
             self.pageControl = pageControl
             self.overrides = overrides
+            self.stateUpdates = stateUpdates
         }
 
         public static func == (lhs: CarouselComponent, rhs: CarouselComponent) -> Bool {
@@ -197,7 +204,8 @@ import Foundation
                 lhs.loop == rhs.loop &&
                 lhs.autoAdvance == rhs.autoAdvance &&
                 lhs.pageControl == rhs.pageControl &&
-                lhs.overrides == rhs.overrides
+                lhs.overrides == rhs.overrides &&
+                lhs.stateUpdates == rhs.stateUpdates
         }
 
         // MARK: - Hashable
@@ -221,6 +229,7 @@ import Foundation
             hasher.combine(autoAdvance)
             hasher.combine(pageControl)
             hasher.combine(overrides)
+            hasher.combine(stateUpdates)
         }
 
     }

@@ -31,6 +31,9 @@ struct TextComponentView: View {
     @EnvironmentObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
 
+    @EnvironmentObject
+    private var paywallStateStore: PaywallStateStore
+
     @Environment(\.componentViewState)
     private var componentViewState
 
@@ -70,7 +73,8 @@ struct TextComponentView: View {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             promoOffer: promoOffer,
             countdownTime: countdownTime,
-            customVariables: self.customVariables
+            customVariables: self.customVariables,
+            paywallStateValues: self.paywallStateStore.values
         ) { style in
             if style.visible {
                 NonLocalizedMarkdownText(

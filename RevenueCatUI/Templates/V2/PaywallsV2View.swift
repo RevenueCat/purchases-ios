@@ -214,6 +214,7 @@ struct PaywallsV2View: View {
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)
+        .environmentObject(self.paywallStateStore)
         .environment(\.paywallStateStore, self.paywallStateStore)
     }
 
