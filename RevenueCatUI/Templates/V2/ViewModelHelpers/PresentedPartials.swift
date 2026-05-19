@@ -390,6 +390,12 @@ extension PaywallComponent {
             return component.containsUnsupportedConditions()
         case .fallbackHeader:
             return false
+        case .inputSingleChoice(let component):
+            return component.overrides?.hasUnsupportedCondition() == true ||
+                   component.stack.containsUnsupportedConditions()
+        case .inputOption(let component):
+            return component.overrides?.hasUnsupportedCondition() == true ||
+                   component.stack.containsUnsupportedConditions()
         }
     }
 
