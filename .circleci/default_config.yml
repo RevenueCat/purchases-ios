@@ -106,6 +106,83 @@ aliases:
         only: main
   swiftinterface-xcode-version: &swiftinterface-xcode-version "26.3"
 commands:
+  github-notify-pr-on-fail:
+    steps:
+      - run:
+          name: Post GitHub PR failure comment
+          when: on_fail
+          command: |
+            [ -z "$CIRCLE_PULL_REQUEST" ] && exit 0
+
+            PR_NUMBER=$(echo "$CIRCLE_PULL_REQUEST" | grep -oE '[0-9]+$')
+            REPO="RevenueCat/purchases-ios"
+            MARKER="<!-- cci-test-failure -->"
+
+            FAILED_TESTS=$(ruby -r rexml/document -e '
+              failed = []
+              Dir.glob("fastlane/test_output/**/*.{junit,xml}").each do |f|
+                begin
+                  doc = REXML::Document.new(File.read(f))
+                  REXML::XPath.each(doc, "//testcase[failure]") do |tc|
+                    classname = tc.attributes["classname"].to_s
+                    name = tc.attributes["name"].to_s
+                    label = classname.empty? ? name : "#{classname}/#{name}"
+                    failed << label
+                  end
+                rescue
+                end
+              end
+              puts failed.uniq.sort
+            ')
+
+            if [ -n "$FAILED_TESTS" ]; then
+              FAILED_LIST=$(echo "$FAILED_TESTS" | sed 's/^/- /')
+              COMMENT_BODY="${MARKER}
+            ## ❌ CI Tests Failed — \`${CIRCLE_JOB}\`
+
+            [View Build](${CIRCLE_BUILD_URL})
+
+            **Failed Tests**
+
+            ${FAILED_LIST}"
+            else
+              COMMENT_BODY="${MARKER}
+            ## ❌ CI Tests Failed — \`${CIRCLE_JOB}\`
+
+            [View Build](${CIRCLE_BUILD_URL})"
+            fi
+
+            BODY_JSON=$(ruby -r json -e 'print JSON.generate(STDIN.read)' <<< "$COMMENT_BODY")
+
+            EXISTING_ID=$(curl -sf \
+              -H "Authorization: token ${GITHUB_TOKEN_RC_OPS}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${REPO}/issues/${PR_NUMBER}/comments?per_page=100" \
+              | ruby -r json -e '
+                JSON.parse(STDIN.read).each do |c|
+                  if c["body"].to_s.include?("<!-- cci-test-failure -->")
+                    puts c["id"]
+                    break
+                  end
+                end
+              ' || true)
+
+            if [ -n "$EXISTING_ID" ]; then
+              curl -sf -X PATCH \
+                -H "Authorization: token ${GITHUB_TOKEN_RC_OPS}" \
+                -H "Accept: application/vnd.github.v3+json" \
+                -H "Content-Type: application/json" \
+                -d "{\"body\": ${BODY_JSON}}" \
+                "https://api.github.com/repos/${REPO}/issues/comments/${EXISTING_ID}"
+            else
+              curl -sf -X POST \
+                -H "Authorization: token ${GITHUB_TOKEN_RC_OPS}" \
+                -H "Accept: application/vnd.github.v3+json" \
+                -H "Content-Type: application/json" \
+                -d "{\"body\": ${BODY_JSON}}" \
+                "https://api.github.com/repos/${REPO}/issues/${PR_NUMBER}/comments"
+            fi
+
   slack-notify-on-fail:
     steps:
       # Map custom variable names to the Slack orb variables, since the default variable names are already used by the Fastlane Slack integration
@@ -1755,6 +1832,7 @@ jobs:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output
+      - github-notify-pr-on-fail
 
   danger:
     docker:
@@ -2188,7 +2266,9 @@ workflows:
       # =============================================================
       # Reduced Test Suite: Auto-run on every push
       # =============================================================
-      - lint
+      - lint:
+          context:
+            - slack-secrets
       - check-api-changes-revenuecat:
           context:
             - slack-secrets-ios
