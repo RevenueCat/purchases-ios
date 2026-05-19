@@ -21,9 +21,7 @@ import Foundation
 /// that the Python `json-logic` library also honors; pinned by tests.
 /// The RevenueCat backend (`khepri`) currently returns `true` for the
 /// same case — we deliberately follow the spec instead so the SDK stays
-/// consistent with the wider JSON Logic ecosystem. The divergence is
-/// expected to surface as a documented gap when the khepri conformance
-/// fixture is wired up (SDK-4333).
+/// consistent with the wider JSON Logic ecosystem.
 enum IterationOperators {
 
     /// `{"some": [arrayExpr, predicate]}` — `true` iff `predicate` is

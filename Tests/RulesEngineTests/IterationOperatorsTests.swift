@@ -141,7 +141,7 @@ final class IterationOperatorsTests: XCTestCase {
     /// Pinned spec quirk: json-logic-js returns `false` (not vacuous
     /// truth) for `all` over an empty array. The Python `json-logic`
     /// library agrees. The RevenueCat backend (`khepri`) currently
-    /// returns `true` for this case — see the doc comment on
+    /// returns `true` for this case; see the doc comment on
     /// `IterationOperators` for why we follow the spec instead.
     func testAllReturnsFalseForEmptyArrayPerJsonLogicSpec() throws {
         let out = try IterationOperators.opAll(
