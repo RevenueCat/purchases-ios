@@ -127,7 +127,7 @@ commands:
                     classname = tc.attributes["classname"].to_s
                     name = tc.attributes["name"].to_s
                     label = classname.empty? ? name : "#{classname}/#{name}"
-                    failed << label
+                    failed \<< label
                   end
                 rescue
                 end
@@ -152,7 +152,7 @@ commands:
             [View Build](${CIRCLE_BUILD_URL})"
             fi
 
-            BODY_JSON=$(ruby -r json -e 'print JSON.generate(STDIN.read)' <<< "$COMMENT_BODY")
+            BODY_JSON=$(echo "$COMMENT_BODY" | ruby -r json -e 'print JSON.generate(STDIN.read)')
 
             EXISTING_ID=$(curl -sf \
               -H "Authorization: token ${GITHUB_TOKEN_RC_OPS}" \
