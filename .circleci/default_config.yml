@@ -112,11 +112,16 @@ commands:
           name: Post GitHub PR failure comment
           when: on_fail
           command: |
-            [ -z "$CIRCLE_PULL_REQUEST" ] && exit 0
+            echo "CIRCLE_PULL_REQUEST=${CIRCLE_PULL_REQUEST}"
+            [ -z "$CIRCLE_PULL_REQUEST" ] && echo "Not a PR build, skipping." && exit 0
 
             PR_NUMBER=$(echo "$CIRCLE_PULL_REQUEST" | grep -oE '[0-9]+$')
             REPO="RevenueCat/purchases-ios"
             MARKER="<!-- cci-test-failure -->"
+            TOKEN="${DANGER_GITHUB_API_TOKEN}"
+
+            echo "PR_NUMBER=${PR_NUMBER}"
+            echo "TOKEN set: $([ -n "$TOKEN" ] && echo yes || echo no)"
 
             FAILED_TESTS=$(ruby -r rexml/document -e '
               failed = []
@@ -134,6 +139,8 @@ commands:
               end
               puts failed.uniq.sort
             ')
+
+            echo "Failed tests found: $(echo "$FAILED_TESTS" | grep -c . || echo 0)"
 
             if [ -n "$FAILED_TESTS" ]; then
               FAILED_LIST=$(echo "$FAILED_TESTS" | sed 's/^/- /')
@@ -155,7 +162,7 @@ commands:
             BODY_JSON=$(echo "$COMMENT_BODY" | ruby -r json -e 'print JSON.generate(STDIN.read)')
 
             EXISTING_ID=$(curl -sf \
-              -H "Authorization: token ${GITHUB_TOKEN_RC_OPS}" \
+              -H "Authorization: token ${TOKEN}" \
               -H "Accept: application/vnd.github.v3+json" \
               "https://api.github.com/repos/${REPO}/issues/${PR_NUMBER}/comments?per_page=100" \
               | ruby -r json -e '
@@ -168,15 +175,17 @@ commands:
               ' || true)
 
             if [ -n "$EXISTING_ID" ]; then
+              echo "Updating existing comment ${EXISTING_ID}"
               curl -sf -X PATCH \
-                -H "Authorization: token ${GITHUB_TOKEN_RC_OPS}" \
+                -H "Authorization: token ${TOKEN}" \
                 -H "Accept: application/vnd.github.v3+json" \
                 -H "Content-Type: application/json" \
                 -d "{\"body\": ${BODY_JSON}}" \
                 "https://api.github.com/repos/${REPO}/issues/comments/${EXISTING_ID}"
             else
+              echo "Creating new comment"
               curl -sf -X POST \
-                -H "Authorization: token ${GITHUB_TOKEN_RC_OPS}" \
+                -H "Authorization: token ${TOKEN}" \
                 -H "Accept: application/vnd.github.v3+json" \
                 -H "Content-Type: application/json" \
                 -d "{\"body\": ${BODY_JSON}}" \
