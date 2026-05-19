@@ -221,7 +221,7 @@ commands:
               curl -sf -X DELETE \
                 -H "Authorization: token ${TOKEN}" \
                 -H "Accept: application/vnd.github.v3+json" \
-                "https://api.github.com/repos/${REPO}/issues/comments/${EXISTING_ID}"
+                "https://api.github.com/repos/${REPO}/issues/comments/${EXISTING_ID}" || true
             else
               echo "No failure comment to delete."
             fi
