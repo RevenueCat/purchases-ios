@@ -72,16 +72,10 @@ class ProductsManager: NSObject, ProductsManagerType {
                     return nil
                 }
 
-                // Don't return products with billing plans if running on <iOS 26.4, where they aren't supported
-                if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
-                    return compoundIdentifier
+                if compoundIdentifier.productPlanIdentifier == nil {
+                    return compoundIdentifier   // Basic product with no billing plan
                 } else {
-                    guard compoundIdentifier.productPlanIdentifier == nil else {
-                        Logger.warn(
-                            StoreKitStrings.sk2_billing_plans_are_unavailable_on_this_os_version(
-                                compoundProductIdentifier: compoundIdentifier
-                            )
-                        )
+                    guard self.areProductsWithBillingPlansSupported(compoundIdentifier: compoundIdentifier) else {
                         return nil
                     }
 
@@ -295,6 +289,31 @@ private extension ProductsManager {
         }
     }
 
+}
+
+// MARK: - Products w/ Billing Plans
+private extension ProductsManager {
+    private func areProductsWithBillingPlansSupported(compoundIdentifier: CompoundProductIdentifier) -> Bool {
+        guard self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable else {
+            Logger.warn(
+                StoreKitStrings.sk1_does_not_support_billing_plans(
+                    compoundProductIdentifier: compoundIdentifier
+                )
+            )
+            return false
+        }
+
+        if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
+            return true
+        } else {
+            Logger.warn(
+                StoreKitStrings.sk2_billing_plans_are_unavailable_on_this_os_version(
+                    compoundProductIdentifier: compoundIdentifier
+                )
+            )
+            return false
+        }
+    }
 }
 
 // MARK: - ProductsManagerType async
