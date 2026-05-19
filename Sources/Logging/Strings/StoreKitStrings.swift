@@ -63,6 +63,8 @@ enum StoreKitStrings {
 
     case sk1_finish_transaction_called_with_existing_completion(SKPaymentTransaction)
 
+    case sk1_does_not_support_billing_plans(compoundProductIdentifier: CompoundProductIdentifier)
+
     case sk1_product_request_too_slow
 
     case sk2_product_request_too_slow
@@ -114,6 +116,8 @@ enum StoreKitStrings {
     case sk2_no_pricing_terms_found(compoundProductIdentifier: CompoundProductIdentifier)
 
     case sk2_user_not_eligible_for_billing_plan(compoundProductIdentifier: CompoundProductIdentifier)
+
+    case sk2_billing_plans_are_unavailable_on_this_os_version(compoundProductIdentifier: CompoundProductIdentifier)
 
     case sk2_applying_billing_plan(billingPlanType: String)
 
@@ -204,6 +208,10 @@ extension StoreKitStrings: LogMessage {
             return "StoreKit1Wrapper.finishTransaction was called for '\(transaction.productIdentifier ?? "")' " +
             "but found an existing completion block."
 
+        case .sk1_does_not_support_billing_plans(let compoundProductIdentifier):
+            return "Products with billing plans are not supported when using StoreKit 1. Will not return " +
+            "a product for \(compoundProductIdentifier.compoundProductIdentifier)"
+
         case .sk1_product_request_too_slow:
             return "StoreKit 1 product request took longer than expected"
 
@@ -293,6 +301,10 @@ extension StoreKitStrings: LogMessage {
                 "billing plan. Will not return a product " +
                 "for \(compoundProductIdentifier.compoundProductIdentifier)"
             }
+
+        case .sk2_billing_plans_are_unavailable_on_this_os_version(let compoundProductIdentifier):
+            return "Products with billing plans are only supported on iOS 26.4+. Will not return " +
+            "a product for \(compoundProductIdentifier.compoundProductIdentifier)"
 
         case .sk2_applying_billing_plan(let billingPlanType):
             return "Applying billing plan of type \(billingPlanType) to the purchase."

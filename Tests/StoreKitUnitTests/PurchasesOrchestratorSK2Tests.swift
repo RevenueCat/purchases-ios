@@ -2038,74 +2038,82 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testSyncPurchasesSK2UsesStoredLocalTransactionMetadata() async throws {
-        let transaction = try await createTransaction(finished: true)
-        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = transaction
+        for productID in ["stored_product_from_purchase", "stored_product_from_purchase:monthly"] {
+            self.backend.invokedPostReceiptData = false
+            self.backend.invokedPostReceiptDataCount = 0
+            self.backend.invokedPostReceiptDataParameters = nil
+            self.backend.invokedPostReceiptDataParametersList = []
 
-        // Store metadata for this transaction
-        let storedProductData = ProductRequestData(
-            productIdentifier: "stored_product_from_purchase",
-            paymentMode: nil,
-            currencyCode: "EUR",
-            storeCountry: "DE",
-            price: 19.99,
-            normalDuration: nil,
-            introDuration: nil,
-            introDurationType: nil,
-            introPrice: nil,
-            subscriptionGroup: nil,
-            discounts: nil
-        )
-        let storedTransactionData = PurchasedTransactionData(
-            presentedOfferingContext: .init(
-                offeringIdentifier: "stored_offering",
-                placementIdentifier: "stored_placement",
-                targetingContext: nil
+            let transaction = try await createTransaction(finished: true)
+            self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = transaction
+
+            // Store metadata for this transaction
+            let storedProductData = ProductRequestData(
+                productIdentifier: productID,
+                paymentMode: nil,
+                currencyCode: "EUR",
+                storeCountry: "DE",
+                price: 19.99,
+                normalDuration: nil,
+                introDuration: nil,
+                introDurationType: nil,
+                introPrice: nil,
+                subscriptionGroup: nil,
+                discounts: nil
             )
-        )
-        let storedMetadata = LocalTransactionMetadata(
-            transactionId: transaction.transactionIdentifier,
-            productData: storedProductData,
-            transactionData: storedTransactionData,
-            encodedAppleReceipt: .receipt("test_receipt".asData),
-            originalPurchasesAreCompletedBy: .myApp,
-            sdkOriginated: true
-        )
+            let storedTransactionData = PurchasedTransactionData(
+                presentedOfferingContext: .init(
+                    offeringIdentifier: "stored_offering",
+                    placementIdentifier: "stored_placement",
+                    targetingContext: nil
+                )
+            )
+            let storedMetadata = LocalTransactionMetadata(
+                transactionId: transaction.transactionIdentifier,
+                productData: storedProductData,
+                transactionData: storedTransactionData,
+                encodedAppleReceipt: .receipt("test_receipt".asData),
+                originalPurchasesAreCompletedBy: .myApp,
+                sdkOriginated: true
+            )
 
-        self.mockLocalTransactionMetadataStore.storeMetadata(
-            storedMetadata,
-            forTransactionId: transaction.transactionIdentifier
-        )
+            self.mockLocalTransactionMetadataStore.storeMetadata(
+                storedMetadata,
+                forTransactionId: transaction.transactionIdentifier
+            )
 
-        self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+            self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
-        let customerInfo = try await self.orchestrator.syncPurchases(
-            receiptRefreshPolicy: .always,
-            isRestore: false,
-            initiationSource: .queue
-        )
+            let customerInfo = try await self.orchestrator.syncPurchases(
+                receiptRefreshPolicy: .always,
+                isRestore: false,
+                initiationSource: .queue
+            )
 
-        expect(self.backend.invokedPostReceiptData).to(beTrue())
-        expect(self.backend.invokedPostReceiptDataCount) == 1
+            expect(self.backend.invokedPostReceiptData).to(beTrue())
+            expect(self.backend.invokedPostReceiptDataCount) == 1
 
-        // Verify that stored metadata was used
-        expect(
-            self.backend.invokedPostReceiptDataParameters?.productData?.productIdentifier
-        ) == "stored_product_from_purchase"
-        expect(self.backend.invokedPostReceiptDataParameters?.productData?.currencyCode) == "EUR"
-        expect(self.backend.invokedPostReceiptDataParameters?.productData?.price) == 19.99
-        expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
-        ) == "stored_offering"
-        expect(self.backend.invokedPostReceiptDataParameters?.originalPurchaseCompletedBy) == .myApp
-        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == true
+            // Verify that stored metadata was used
+            expect(
+                self.backend.invokedPostReceiptDataParameters?.productData?.productIdentifier
+            ) == productID
+            expect(self.backend.invokedPostReceiptDataParameters?.productData?.currencyCode) == "EUR"
+            expect(self.backend.invokedPostReceiptDataParameters?.productData?.price) == 19.99
+            expect(
+                self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?
+                    .offeringIdentifier
+            ) == "stored_offering"
+            expect(self.backend.invokedPostReceiptDataParameters?.originalPurchaseCompletedBy) == .myApp
+            expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == true
 
-        // Verify metadata was cleared after successful post
-        expect(self.mockLocalTransactionMetadataStore.invokedRemoveMetadata.value) == true
-        expect(
-            self.mockLocalTransactionMetadataStore.invokedRemoveMetadataTransactionId.value
-        ) == transaction.transactionIdentifier
+            // Verify metadata was cleared after successful post
+            expect(self.mockLocalTransactionMetadataStore.invokedRemoveMetadata.value) == true
+            expect(
+                self.mockLocalTransactionMetadataStore.invokedRemoveMetadataTransactionId.value
+            ) == transaction.transactionIdentifier
 
-        expect(customerInfo) == mockCustomerInfo
+            expect(customerInfo) == mockCustomerInfo
+        }
     }
 
     func testSyncPurchasesDoesntPostReceiptAndReturnsCustomerInfoIfNoTransactionsAndOriginalPurchaseDatePresent()
