@@ -50,15 +50,21 @@ struct ConditionContext {
     /// Custom variables for condition evaluation (developer-provided merged with dashboard defaults).
     let customVariables: [String: CustomVariableValue]
 
+    /// Paywall-scoped mutable state values. Empty when the paywall declares no state or when
+    /// no per-paywall store is injected into the environment.
+    let state: [String: PaywallComponent.ConditionValue]
+
     /// Creates a context with the given parameters.
     /// Developer-provided `customVariables` take priority over `defaultCustomVariables` from the dashboard.
     init(
         selectedPackageId: String? = nil,
         customVariables: [String: CustomVariableValue] = [:],
-        defaultCustomVariables: [String: CustomVariableValue] = [:]
+        defaultCustomVariables: [String: CustomVariableValue] = [:],
+        state: [String: PaywallComponent.ConditionValue] = [:]
     ) {
         self.selectedPackageId = selectedPackageId
         self.customVariables = defaultCustomVariables.merging(customVariables) { _, developer in developer }
+        self.state = state
     }
 
 }
@@ -187,8 +193,64 @@ extension PresentedPartial {
                 selectedPackageId: conditionContext.selectedPackageId
             )
 
+        // Paywall state condition
+        case .state(let conditionOperator, let name, let value):
+            return evaluateStateCondition(
+                name: name,
+                expectedValue: value,
+                operator: conditionOperator,
+                state: conditionContext.state
+            )
+
         // Unknown/unsupported conditions never match
         case .unsupported:
+            return false
+        }
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    private static func evaluateStateCondition(
+        name: String,
+        expectedValue: PaywallComponent.ConditionValue,
+        operator conditionOperator: PaywallComponent.EqualityOperator,
+        state: [String: PaywallComponent.ConditionValue]
+    ) -> Bool {
+        guard let actualValue = state[name] else {
+            // Treat missing state key as "not equal to anything." Mirrors the variable-condition behavior.
+            return conditionOperator == .notEquals
+        }
+
+        let matches = matchesStateValue(actualValue: actualValue, expectedValue: expectedValue)
+
+        switch conditionOperator {
+        case .equals:
+            return matches
+        case .notEquals:
+            return !matches
+        }
+    }
+
+    /// Type-strict comparison for state values, with epsilon-based equality for doubles.
+    /// State values share the same `ConditionValue` type as expected values, so this is straightforward.
+    private static func matchesStateValue(
+        actualValue: PaywallComponent.ConditionValue,
+        expectedValue: PaywallComponent.ConditionValue
+    ) -> Bool {
+        switch (actualValue, expectedValue) {
+        case let (.string(actual), .string(expected)):
+            return actual == expected
+        case let (.bool(actual), .bool(expected)):
+            return actual == expected
+        case let (.int(actual), .int(expected)):
+            return actual == expected
+        case let (.double(actual), .double(expected)):
+            return doublesMatch(actual, expected)
+        // Allow int/double cross-comparison to tolerate JSON-number coercion ambiguities.
+        case let (.int(actual), .double(expected)):
+            return doublesMatch(Double(actual), expected)
+        case let (.double(actual), .int(expected)):
+            return doublesMatch(actual, Double(expected))
+        default:
             return false
         }
     }

@@ -115,6 +115,12 @@ import Foundation
     /// When `false`, paywall text will not respect Dynamic Type and would use fixed sizing. Otherwise it will scale.
     public var automaticallyScaleFontSize: Bool
 
+    /// Initial values for the paywall's state-management store. Keys are state identifiers; values are
+    /// their initial `ConditionValue`s. State is paywall-instance-scoped: it is created when the paywall
+    /// opens, mutated by component-declared `stateUpdates`, and discarded when the paywall closes.
+    /// Absent in legacy paywalls; an empty dictionary disables the feature for this paywall.
+    @_spi(Internal) public var state: [String: PaywallComponent.ConditionValue]
+
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
 
@@ -131,6 +137,7 @@ import Foundation
         case zeroDecimalPlaceCountries
         case exitOffers
         case automaticallyScaleFontSize
+        case state
     }
 
     public init(id: String? = nil,
@@ -142,7 +149,8 @@ import Foundation
                 defaultLocaleIdentifier: String,
                 zeroDecimalPlaceCountries: [String] = [],
                 exitOffers: ExitOffers? = nil,
-                automaticallyScaleFontSize: Bool = true) {
+                automaticallyScaleFontSize: Bool = true,
+                state: [String: PaywallComponent.ConditionValue] = [:]) {
         self.id = id
         self.templateName = templateName
         self.assetBaseURL = assetBaseURL
@@ -153,6 +161,7 @@ import Foundation
         self.zeroDecimalPlaceCountries = zeroDecimalPlaceCountries
         self.exitOffers = exitOffers
         self.automaticallyScaleFontSize = automaticallyScaleFontSize
+        self.state = state
     }
 
 }
@@ -232,6 +241,12 @@ import Foundation
             zeroDecimalPlaceCountries = []
         }
 
+        // State is optional and absent on legacy paywalls; default to an empty dictionary.
+        state = (try? container.decodeIfPresent(
+            [String: PaywallComponent.ConditionValue].self,
+            forKey: .state
+        )) ?? [:]
+
         if !errors.isEmpty {
             errorInfo = errors
         }
@@ -254,6 +269,9 @@ import Foundation
         )
         try container.encodeIfPresent(exitOffers, forKey: .exitOffers)
         try container.encode(automaticallyScaleFontSize, forKey: .automaticallyScaleFontSize)
+        if !state.isEmpty {
+            try container.encode(state, forKey: .state)
+        }
     }
 
 }

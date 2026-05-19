@@ -27,13 +27,18 @@ import Foundation
         public let transition: PaywallComponent.Transition?
         /// Preserves the backend-only `close_workflow` action without growing the public enum surface.
         @_spi(Internal) public let isCloseWorkflowAction: Bool
+        /// Declarative state-store mutations to apply when this button is tapped. Optional and absent
+        /// on legacy buttons. Each entry is decoded as `PaywallComponent.StateUpdate`; unknown shapes
+        /// fall through as `.unsupported` and are silently skipped at apply time.
+        @_spi(Internal) public let stateUpdates: [PaywallComponent.StateUpdate]?
 
         public init(
             name: String? = nil,
             id: String? = nil,
             action: Action,
             stack: PaywallComponent.StackComponent,
-            transition: PaywallComponent.Transition? = nil
+            transition: PaywallComponent.Transition? = nil,
+            stateUpdates: [PaywallComponent.StateUpdate]? = nil
         ) {
             self.type = .button
             self.name = name
@@ -42,6 +47,7 @@ import Foundation
             self.stack = stack
             self.transition = transition
             self.isCloseWorkflowAction = false
+            self.stateUpdates = stateUpdates
         }
 
         private enum CodingKeys: String, CodingKey {
@@ -51,6 +57,7 @@ import Foundation
             case action
             case stack
             case transition
+            case stateUpdates
         }
 
         private enum ActionCodingKeys: String, CodingKey {
@@ -73,6 +80,10 @@ import Foundation
             }
             self.stack = try container.decode(PaywallComponent.StackComponent.self, forKey: .stack)
             self.transition = try container.decodeIfPresent(PaywallComponent.Transition.self, forKey: .transition)
+            self.stateUpdates = try container.decodeIfPresent(
+                [PaywallComponent.StateUpdate].self,
+                forKey: .stateUpdates
+            )
         }
 
         public func encode(to encoder: Encoder) throws {
@@ -88,6 +99,7 @@ import Foundation
             }
             try container.encode(stack, forKey: .stack)
             try container.encodeIfPresent(transition, forKey: .transition)
+            try container.encodeIfPresent(stateUpdates, forKey: .stateUpdates)
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -98,6 +110,7 @@ import Foundation
             hasher.combine(isCloseWorkflowAction)
             hasher.combine(stack)
             hasher.combine(transition)
+            hasher.combine(stateUpdates)
         }
 
         public static func == (lhs: ButtonComponent, rhs: ButtonComponent) -> Bool {
@@ -107,7 +120,8 @@ import Foundation
                    lhs.action == rhs.action &&
                    lhs.isCloseWorkflowAction == rhs.isCloseWorkflowAction &&
                    lhs.stack == rhs.stack &&
-                   lhs.transition == rhs.transition
+                   lhs.transition == rhs.transition &&
+                   lhs.stateUpdates == rhs.stateUpdates
 
         }
 

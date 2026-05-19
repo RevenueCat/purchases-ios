@@ -72,14 +72,19 @@ final class UIConfigProvider {
     }
 
     /// Creates a `ConditionContext` by merging developer-provided custom variables with dashboard defaults.
+    /// Paywall-scoped mutable `state` (from `PaywallStateStore.values`) is folded in as well so that
+    /// `.state(...)` conditions can be evaluated. Callers that do not have a paywall state store
+    /// available may omit `state` for the legacy behavior.
     func conditionContext(
         selectedPackageId: String?,
-        customVariables: [String: CustomVariableValue]
+        customVariables: [String: CustomVariableValue],
+        state: [String: PaywallComponent.ConditionValue] = [:]
     ) -> ConditionContext {
         ConditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
-            defaultCustomVariables: self.defaultCustomVariables
+            defaultCustomVariables: self.defaultCustomVariables,
+            state: state
         )
     }
 

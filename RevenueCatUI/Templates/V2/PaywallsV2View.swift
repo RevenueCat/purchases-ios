@@ -81,6 +81,12 @@ struct PaywallsV2View: View {
     @StateObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
 
+    /// Paywall-instance-scoped mutable state store. Seeded from `paywallComponentsData.state` and
+    /// injected into the view environment so any interactive component can dispatch state updates
+    /// and any view can observe state changes for override re-evaluation.
+    @StateObject
+    private var paywallStateStore: PaywallStateStore
+
     public init(
         paywallComponents: Offering.PaywallComponents,
         offering: Offering,
@@ -140,6 +146,9 @@ struct PaywallsV2View: View {
         )
         self._paywallStateManager = .init(
             wrappedValue: .init(state: initialState)
+        )
+        self._paywallStateStore = .init(
+            wrappedValue: PaywallStateStore(initialValues: paywallComponents.data.state)
         )
 
         let selectedPackageContext: PackageContext
@@ -205,6 +214,7 @@ struct PaywallsV2View: View {
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)
+        .environment(\.paywallStateStore, self.paywallStateStore)
     }
 
     @ViewBuilder
