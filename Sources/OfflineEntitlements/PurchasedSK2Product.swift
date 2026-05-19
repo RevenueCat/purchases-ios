@@ -104,14 +104,7 @@ private extension PurchasedSK2Product {
            let skBillingPlanType = transaction.billingPlanType,
            let billingPlanType = BillingPlanType.from(storeKitBillingPlanType: skBillingPlanType) {
 
-            switch billingPlanType {
-            case .monthly:
-                return billingPlanType.rawValue
-            case .upFront:
-                return nil
-            default:
-                return nil
-            }
+            return billingPlanType.productPlanIdentifierForCompoundID
 
         } else {
             return nil

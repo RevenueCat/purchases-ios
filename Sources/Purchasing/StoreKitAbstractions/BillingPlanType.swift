@@ -32,6 +32,32 @@ public final class BillingPlanType: NSObject, Sendable {
     }
 }
 
+internal extension BillingPlanType {
+
+    var productPlanIdentifierForCompoundID: String? {
+        switch self {
+        case .monthly:
+            return self.rawValue
+        case .upFront:
+            return nil
+        default:
+            return nil
+        }
+    }
+
+    static func productPlanIdentifierForCompoundID(from rawValue: String?) -> String? {
+        switch rawValue {
+        case Self.monthly.rawValue:
+            return Self.monthly.productPlanIdentifierForCompoundID
+        case Self.upFront.rawValue:
+            return Self.upFront.productPlanIdentifierForCompoundID
+        default:
+            return rawValue
+        }
+    }
+
+}
+
 #if compiler(>=6.3.2)
 internal extension BillingPlanType {
     @available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *)

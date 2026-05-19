@@ -154,7 +154,7 @@ extension PeriodType: DefaultValueProvider {
     @objc public var productIdentifier: String { self.contents.productIdentifier }
 
     /**
-     The product plan identifier that unlocked this entitlement (for a Google Play subscription purchase)
+     The product plan identifier that unlocked this entitlement (for a Google Play subscription purchase and Apple purchases with non-upFront billing plans)
      */
     @objc public var productPlanIdentifier: String? { self.contents.productPlanIdentifier }
 

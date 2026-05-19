@@ -41,7 +41,7 @@ extension ProductEntitlementMappingResponse {
         let entitlementsByProduct = self.products.values.dictionaryAllowingDuplicateKeys { product in
             CompoundProductIdentifier(
                 productIdentifier: product.identifier,
-                productPlanIdentifier: product.basePlanId
+                productPlanIdentifier: BillingPlanType.productPlanIdentifierForCompoundID(from: product.basePlanId)
             )?.compoundProductIdentifier ?? product.identifier
         }
         .mapValues(\.entitlements)

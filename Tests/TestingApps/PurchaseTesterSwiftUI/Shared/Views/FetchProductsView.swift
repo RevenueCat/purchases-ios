@@ -11,7 +11,7 @@ import RevenueCat
 
 struct FetchProductsView: View {
 
-    @State private var productID = "com.revenuecat.sampleapp.monthly.12mocommitment"
+    @State private var productID = "com.revenuecat.sampleapp.monthly.12mocommitment:monthly"
     @State private var isLoading = false
     @State private var results: [StoreProduct]?
 
@@ -115,7 +115,10 @@ struct FetchProductsView: View {
 
                 Button {
                     Task(priority: .userInitiated) {
-                        try! await Purchases.shared.purchase(product: storeProduct)
+                        let customerInfo = try! await Purchases.shared.purchase(product: storeProduct)
+                        customerInfo.entitlements.active[""]!.
+                        print(customerInfo)
+                        print("Debug")
                     }
                 } label: {
                     Text("Purchase with RC")
