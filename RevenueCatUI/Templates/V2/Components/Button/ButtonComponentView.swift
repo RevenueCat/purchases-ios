@@ -80,6 +80,7 @@ struct ButtonComponentView: View {
                 )
             }
             .withTransition(viewModel.component.transition)
+            .backportGlassEffect(self.viewModel.stackViewModel.component.glassEffect, in: self.viewModel.stackViewModel.component.shape)
             .disabled(self.shouldBeDisabled)
             .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
             .offset(x: self.isWorkflowHeader ? -self.workflowPageTransitionContext.pageOffset : 0)
@@ -266,7 +267,8 @@ struct ButtonComponentView_Previews: PreviewProvider {
                                     )
                                 )
                             ],
-                            backgroundColor: nil
+                            backgroundColor: nil,
+                            glassEffect: .clear
                         )
                     ),
                     localizationProvider: .init(
@@ -287,6 +289,8 @@ struct ButtonComponentView_Previews: PreviewProvider {
             )
         }
         .previewRequiredPaywallsV2Properties()
+        .frame(maxHeight: .infinity)
+        .background(.blue)
         .environmentObject(PurchaseHandler.default())
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Default")
@@ -326,3 +330,39 @@ fileprivate extension ButtonComponentViewModel {
 #endif
 
 #endif
+
+extension PaywallComponent.StackComponent.GlassEffect {
+    @available(macOS 26.0, iOS 26.0, *)
+    var swiftuiValue: Glass {
+        switch self {
+            case .clear: return .clear
+            case .regular: return .regular
+            default: return .identity
+        }
+    }
+}
+
+extension PaywallComponent.Shape {
+    @available(macOS 26.0, iOS 26.0, *)
+    var swiftuiValue: AnyShape {
+        switch self {
+        case .pill: return AnyShape(.capsule)
+        case .rectangle(let radii):
+            if let radii {
+                return AnyShape(UnevenRoundedRectangle(cornerRadii: .init(topLeading: radii.topLeading ?? 0, bottomLeading: radii.bottomLeading ?? 0, bottomTrailing: radii.bottomTrailing ?? 0, topTrailing: radii.topTrailing ?? 0)))
+            } else {
+                return AnyShape(.rect)
+            }
+        }
+    }
+}
+
+extension View {
+    @ViewBuilder func backportGlassEffect(_ effect: PaywallComponent.StackComponent.GlassEffect?, in shape: PaywallComponent.Shape?) -> some View {
+        if #available(macOS 26.0, iOS 26.0, *) {
+            self.glassEffect(effect?.swiftuiValue ?? .identity, in: shape?.swiftuiValue ?? AnyShape(DefaultGlassEffectShape()))
+        } else {
+            self
+        }
+    }
+}
