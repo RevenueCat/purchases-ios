@@ -5,6 +5,7 @@
 //  Created by Nacho Soto on 7/27/23.
 //
 
+import Foundation
 @_spi(Internal) import RevenueCat
 #if DEBUG
 @testable import RevenueCatUI
@@ -259,6 +260,14 @@ struct APIKeyDashboardList: View {
                     }
                 }
             }
+
+            Section {
+                NavigationLink {
+                    AppRecommendationsView()
+                } label: {
+                    Label("App Recommendations", systemImage: "sparkles")
+                }
+            }
         }
         .searchable(text: $searchText, prompt: "Search offerings")
         .sheet(item: self.$presentedPaywall) { paywall in
@@ -410,6 +419,271 @@ struct APIKeyDashboardList: View {
             }
             .buttonStyle(.plain)
         }
+    }
+
+    private struct AppRecommendationsView: View {
+
+        private enum LoadingState {
+            case loading
+            case loaded(RecommendationsResponse)
+            case failed(String)
+        }
+
+        private struct RecommendationsResponse: Decodable {
+            let placementID: String
+            let title: String
+            let subtitle: String
+            let layout: String
+            let items: [RecommendationItem]
+
+            enum CodingKeys: String, CodingKey {
+                case placementID = "placement_id"
+                case title
+                case subtitle
+                case layout
+                case items
+            }
+        }
+
+        fileprivate struct RecommendationItem: Decodable, Identifiable {
+            let id: String
+            let name: String
+            let headline: String
+            let body: String
+            let iconURL: URL?
+            let appStoreID: String
+            let appStoreURL: URL?
+            let cta: String
+
+            enum CodingKeys: String, CodingKey {
+                case id
+                case name
+                case headline
+                case body
+                case iconURL = "icon_url"
+                case appStoreID = "app_store_id"
+                case appStoreURL = "app_store_url"
+                case cta
+            }
+        }
+
+        @Environment(\.openURL)
+        private var openURL
+
+        @State
+        private var state: LoadingState = .loading
+
+        var body: some View {
+            Group {
+                switch state {
+                case .loading:
+                    SwiftUI.ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                case let .loaded(response):
+                    if response.items.isEmpty {
+                        EmptyStateView(
+                            title: "No recommendations available",
+                            systemImage: "sparkles"
+                        )
+                    } else {
+                        recommendationsList(response)
+                    }
+
+                case let .failed(message):
+                    VStack(spacing: 16) {
+                        EmptyStateView(
+                            title: "Couldn’t load recommendations",
+                            systemImage: "exclamationmark.triangle",
+                            description: message
+                        )
+
+                        Button {
+                            Task {
+                                await fetchRecommendations()
+                            }
+                        } label: {
+                            Label("Retry", systemImage: "arrow.clockwise")
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
+            .navigationTitle("App Recommendations")
+            .task {
+                await fetchRecommendations()
+            }
+        }
+
+        private func recommendationsList(_ response: RecommendationsResponse) -> some View {
+            List {
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(response.title)
+                            .font(.title2.bold())
+                        Text(response.subtitle)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 6)
+                }
+
+                Section {
+                    ForEach(response.items) { item in
+                        RecommendationCard(item: item) {
+                            if let url = item.appStoreURL {
+                                openURL(url)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        @MainActor
+        private func fetchRecommendations() async {
+            state = .loading
+
+            do {
+                let request = try makeRequest()
+                let (data, response) = try await URLSession.shared.data(for: request)
+
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    throw URLError(.badServerResponse)
+                }
+
+                guard (200..<300).contains(httpResponse.statusCode) else {
+                    throw RecommendationsError.requestFailed(httpResponse.statusCode)
+                }
+
+                let decoder = JSONDecoder()
+                let recommendations = try decoder.decode(RecommendationsResponse.self, from: data)
+                state = .loaded(recommendations)
+            } catch {
+                state = .failed(error.localizedDescription)
+            }
+        }
+
+        private func makeRequest() throws -> URLRequest {
+            guard var components = URLComponents(string: Constants.proxyURL ?? "https://api.revenuecat.com") else {
+                throw RecommendationsError.invalidURL
+            }
+
+            components.path = "/v1/subscribers/$RCAnonymousID:paywalls-tester/recommendations"
+            components.queryItems = [
+                URLQueryItem(name: "placement", value: "paywall_dismissed")
+            ]
+
+            guard let url = components.url else {
+                throw RecommendationsError.invalidURL
+            }
+
+            var request = URLRequest(url: url)
+            request.setValue("Bearer \(Constants.apiKey)", forHTTPHeaderField: "Authorization")
+            request.setValue("iOS", forHTTPHeaderField: "X-Platform")
+            return request
+        }
+
+    }
+
+    private struct RecommendationCard: View {
+
+        let item: AppRecommendationsView.RecommendationItem
+        let open: () -> Void
+
+        var body: some View {
+            Button(action: open) {
+                HStack(alignment: .top, spacing: 14) {
+                    AsyncImage(url: item.iconURL) { phase in
+                        switch phase {
+                        case let .success(image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        default:
+                            Image(systemName: "app.fill")
+                                .font(.title2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(width: 54, height: 54)
+                    .background(Color.secondary.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(item.name)
+                            .font(.headline)
+
+                        Text(item.headline)
+                            .font(.subheadline)
+                            .foregroundStyle(.primary)
+
+                        Text(item.body)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        HStack(spacing: 4) {
+                            Text(item.cta)
+                                .font(.caption.bold())
+                            Image(systemName: "arrow.up.right")
+                                .font(.caption.bold())
+                        }
+                        .foregroundColor(.accentColor)
+                    }
+
+                    Spacer(minLength: 0)
+                }
+                .padding(.vertical, 6)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(item.appStoreURL == nil)
+        }
+
+    }
+
+    private struct EmptyStateView: View {
+
+        let title: String
+        let systemImage: String
+        var description: String?
+
+        var body: some View {
+            VStack(spacing: 12) {
+                Image(systemName: systemImage)
+                    .font(.largeTitle)
+                    .foregroundStyle(.secondary)
+
+                Text(title)
+                    .font(.headline)
+
+                if let description {
+                    Text(description)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+            }
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+
+    }
+
+    private enum RecommendationsError: LocalizedError {
+
+        case invalidURL
+        case requestFailed(Int)
+
+        var errorDescription: String? {
+            switch self {
+            case .invalidURL:
+                return "The recommendations URL is invalid."
+            case let .requestFailed(statusCode):
+                return "The server returned status code \(statusCode)."
+            }
+        }
+
     }
 
     #if targetEnvironment(macCatalyst)
