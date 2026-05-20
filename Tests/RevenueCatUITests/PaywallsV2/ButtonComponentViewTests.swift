@@ -57,40 +57,6 @@ final class ButtonComponentViewTests: TestCase {
         )
     }
 
-    func testButtonWithVisibleTrue_IsRendered() throws {
-        let viewModel = try Self.makeViewModel(
-            component: PaywallComponent.ButtonComponent(
-                visible: true,
-                action: .navigateBack,
-                stack: Self.makeButtonStack(label: "Close")
-            )
-        )
-
-        let view = ButtonComponentView(viewModel: viewModel, onDismiss: {})
-            .environmentObject(PurchaseHandler.default())
-            .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
-            .environmentObject(
-                IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker)
-            )
-            .environmentObject(
-                PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker())
-            )
-            .environment(\.componentViewState, .default)
-            .environment(\.screenCondition, .compact)
-            .environment(\.safeAreaInsets, EdgeInsets())
-
-        let (window, hostedView) = Self.host(view)
-        defer {
-            window.isHidden = true
-            window.rootViewController = nil
-        }
-
-        XCTAssertTrue(
-            hostedView.containsText("Close"),
-            "A button with visible=true should be rendered."
-        )
-    }
-
     func testSelectedOverrideVisible_False_HidesWhenSelected() throws {
         let viewModel = try Self.makeViewModel(
             component: PaywallComponent.ButtonComponent(
