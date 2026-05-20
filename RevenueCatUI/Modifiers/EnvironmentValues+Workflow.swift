@@ -66,6 +66,10 @@ extension EnvironmentValues {
     /// Called when a button with a component `id` is tapped inside a workflow paywall.
     /// Returns `true` if the workflow consumed the trigger (navigator found a matching step),
     /// `false` if not — in which case the button falls through to its normal action.
+    ///
+    /// Passed via the environment rather than as a direct parameter so any leaf component
+    /// (button, input option, etc.) can access it regardless of nesting depth, without every
+    /// intermediate view having to forward it.
     var workflowTriggerAction: ((String) -> Bool)? {
         get { self[WorkflowTriggerActionKey.self] }
         set { self[WorkflowTriggerActionKey.self] = newValue }

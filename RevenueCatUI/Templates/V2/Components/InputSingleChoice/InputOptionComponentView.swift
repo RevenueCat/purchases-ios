@@ -44,6 +44,7 @@ struct InputOptionComponentView: View {
         self.onDismiss = onDismiss
     }
 
+    /// Drives the `.selected` condition on this option's child components (border, background, text color overrides).
     private var selectedState: ComponentViewState {
         inputSingleChoiceContext.selectedOptionId == viewModel.component.optionId ? .selected : .default
     }
