@@ -10,7 +10,6 @@ import Foundation
 
 enum PredicateConformanceFixtureError: Error, CustomStringConvertible {
 
-    case missingFixturePath
     case fixtureNotFound(path: String)
     case invalidEnvelope
     case invalidCase(id: String?)
@@ -18,8 +17,6 @@ enum PredicateConformanceFixtureError: Error, CustomStringConvertible {
 
     var description: String {
         switch self {
-        case .missingFixturePath:
-            return "Predicate conformance fixture path is not configured"
         case let .fixtureNotFound(path):
             return "Predicate conformance fixture not found at \(path)"
         case .invalidEnvelope:
