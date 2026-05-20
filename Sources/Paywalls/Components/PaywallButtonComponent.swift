@@ -11,7 +11,7 @@
 //
 //  Created by Jay Shortway on 02/10/2024.
 //
-// swiftlint:disable missing_docs nesting
+// swiftlint:disable missing_docs nesting type_body_length
 
 import Foundation
 
@@ -22,25 +22,31 @@ import Foundation
         let type: ComponentType
         public let name: String?
         public let id: String?
+        public let visible: Bool?
         public let action: Action
         public let stack: PaywallComponent.StackComponent
         public let transition: PaywallComponent.Transition?
+        public let overrides: ComponentOverrides<PartialButtonComponent>?
         /// Preserves the backend-only `close_workflow` action without growing the public enum surface.
         @_spi(Internal) public let isCloseWorkflowAction: Bool
 
         public init(
             name: String? = nil,
             id: String? = nil,
+            visible: Bool? = nil,
             action: Action,
             stack: PaywallComponent.StackComponent,
-            transition: PaywallComponent.Transition? = nil
+            transition: PaywallComponent.Transition? = nil,
+            overrides: ComponentOverrides<PartialButtonComponent>? = nil
         ) {
             self.type = .button
             self.name = name
             self.id = id
+            self.visible = visible
             self.action = action
             self.stack = stack
             self.transition = transition
+            self.overrides = overrides
             self.isCloseWorkflowAction = false
         }
 
@@ -48,9 +54,11 @@ import Foundation
             case type
             case name
             case id
+            case visible
             case action
             case stack
             case transition
+            case overrides
         }
 
         private enum ActionCodingKeys: String, CodingKey {
@@ -62,6 +70,7 @@ import Foundation
             self.type = try container.decode(ComponentType.self, forKey: .type)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
             self.id = try container.decodeIfPresent(String.self, forKey: .id)
+            self.visible = try container.decodeIfPresent(Bool.self, forKey: .visible)
             let actionContainer = try container.nestedContainer(keyedBy: ActionCodingKeys.self, forKey: .action)
             let rawActionType = try actionContainer.decode(String.self, forKey: .type)
             if rawActionType == "close_workflow" {
@@ -73,6 +82,10 @@ import Foundation
             }
             self.stack = try container.decode(PaywallComponent.StackComponent.self, forKey: .stack)
             self.transition = try container.decodeIfPresent(PaywallComponent.Transition.self, forKey: .transition)
+            self.overrides = try container.decodeIfPresent(
+                ComponentOverrides<PartialButtonComponent>.self,
+                forKey: .overrides
+            )
         }
 
         public func encode(to encoder: Encoder) throws {
@@ -80,6 +93,7 @@ import Foundation
             try container.encode(type, forKey: .type)
             try container.encodeIfPresent(name, forKey: .name)
             try container.encodeIfPresent(id, forKey: .id)
+            try container.encodeIfPresent(visible, forKey: .visible)
             if self.isCloseWorkflowAction {
                 var actionContainer = container.nestedContainer(keyedBy: ActionCodingKeys.self, forKey: .action)
                 try actionContainer.encode("close_workflow", forKey: .type)
@@ -88,26 +102,31 @@ import Foundation
             }
             try container.encode(stack, forKey: .stack)
             try container.encodeIfPresent(transition, forKey: .transition)
+            try container.encodeIfPresent(overrides, forKey: .overrides)
         }
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
             hasher.combine(name)
             hasher.combine(id)
+            hasher.combine(visible)
             hasher.combine(action)
             hasher.combine(isCloseWorkflowAction)
             hasher.combine(stack)
             hasher.combine(transition)
+            hasher.combine(overrides)
         }
 
         public static func == (lhs: ButtonComponent, rhs: ButtonComponent) -> Bool {
             return lhs.type == rhs.type &&
                    lhs.name == rhs.name &&
                    lhs.id == rhs.id &&
+                   lhs.visible == rhs.visible &&
                    lhs.action == rhs.action &&
                    lhs.isCloseWorkflowAction == rhs.isCloseWorkflowAction &&
                    lhs.stack == rhs.stack &&
-                   lhs.transition == rhs.transition
+                   lhs.transition == rhs.transition &&
+                   lhs.overrides == rhs.overrides
 
         }
 
@@ -281,4 +300,23 @@ import Foundation
             }
         }
     }
+
+    final class PartialButtonComponent: PaywallPartialComponent {
+
+        public let visible: Bool?
+
+        public init(visible: Bool? = nil) {
+            self.visible = visible
+        }
+
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(visible)
+        }
+
+        public static func == (lhs: PartialButtonComponent, rhs: PartialButtonComponent) -> Bool {
+            return lhs.visible == rhs.visible
+        }
+
+    }
+
 }
