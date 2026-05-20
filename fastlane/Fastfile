@@ -2441,7 +2441,7 @@ platform :ios do
     marker = "<!-- cci-test-failure:#{job} -->"
 
     failed = []
-    Dir.glob("fastlane/test_output/**/*.{junit,xml}").each do |f|
+    Dir.glob("test_output/**/*.{junit,xml}").each do |f|
       begin
         doc = REXML::Document.new(File.read(f))
         REXML::XPath.each(doc, "//testcase[failure or error]") do |tc|
@@ -2491,16 +2491,16 @@ platform :ios do
     job = ENV["CIRCLE_JOB"]
     marker = "<!-- cci-test-failure:#{job} -->"
 
-    existing_id = find_pr_comment_with_marker(repo, pr_number, token, marker)
-    if existing_id
-      UI.message("Deleting stale failure comment #{existing_id}")
-      begin
+    begin
+      existing_id = find_pr_comment_with_marker(repo, pr_number, token, marker)
+      if existing_id
+        UI.message("Deleting stale failure comment #{existing_id}")
         github_api_call("DELETE", "/repos/#{repo}/issues/comments/#{existing_id}", token)
-      rescue => e
-        UI.important("Failed to delete comment: #{e.message}")
+      else
+        UI.message("No failure comment to delete.")
       end
-    else
-      UI.message("No failure comment to delete.")
+    rescue => e
+      UI.important("Failed to clear PR failure comment: #{e.message}")
     end
   end
 
