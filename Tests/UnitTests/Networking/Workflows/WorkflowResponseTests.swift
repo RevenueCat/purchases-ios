@@ -459,6 +459,32 @@ class WorkflowResponseTests: TestCase {
         expect(workflow.workflowType) == .unknown
     }
 
+    func testDecodePublishedWorkflowWithLiteralUnknownTypeLogsWarning() throws {
+        let json = """
+        {
+          "id": "wf_unknown_literal",
+          "display_name": "Unknown Literal",
+          "initial_step_id": "step_1",
+          "workflow_type": "unknown",
+          "steps": {},
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        expect(workflow.workflowType) == .unknown
+        self.logger.verifyMessageWasLogged(
+            Strings.backendError.unknown_workflow_type(type: "unknown"),
+            level: .warn
+        )
+    }
+
     func testDecodePublishedWorkflowWithMissingTypeIsNil() throws {
         let json = """
         {

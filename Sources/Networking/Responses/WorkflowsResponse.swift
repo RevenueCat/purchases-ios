@@ -25,10 +25,17 @@ import Foundation
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let value = try container.decode(String.self)
-        self = WorkflowType(rawValue: value) ?? {
+        switch value {
+        case "paywall":
+            self = .paywall
+        case "web-funnel":
+            self = .webFunnel
+        case "feedback-survey":
+            self = .feedbackSurvey
+        default:
             Logger.warn(Strings.backendError.unknown_workflow_type(type: value))
-            return .unknown
-        }()
+            self = .unknown
+        }
     }
 }
 
