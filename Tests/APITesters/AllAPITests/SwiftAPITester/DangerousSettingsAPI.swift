@@ -14,5 +14,11 @@
 @_spi(Internal) import RevenueCat
 
 func checkDangerousSettingsAPI() {
-    let _: DangerousSettings = DangerousSettings(uiPreviewMode: true)
+    let _: DangerousSettings = DangerousSettings()
+    let _: DangerousSettings = DangerousSettings(autoSyncPurchases: true)
+    let settings: DangerousSettings = DangerousSettings(uiPreviewMode: true)
+
+    let _: Bool = settings.autoSyncPurchases
+    let _: Bool = settings.customEntitlementComputation
+    let _: Bool = settings.uiPreviewMode
 }
