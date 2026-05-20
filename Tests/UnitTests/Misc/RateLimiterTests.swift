@@ -21,7 +21,7 @@ class RateLimiterTests: TestCase {
     func testAllowsCorrectNumberOfCalls() {
         let rateLimiter = RateLimiter(maxCalls: 2, period: 1)
 
-        expect(rateLimiter.shouldProceed()) == false  // intentionally broken to test CI notification
+        expect(rateLimiter.shouldProceed()) == true
         expect(rateLimiter.shouldProceed()) == true
     }
 
