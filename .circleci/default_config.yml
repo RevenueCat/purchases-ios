@@ -1741,6 +1741,7 @@ jobs:
     steps:
       - checkout
       - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
       - run:
           name: Validate Package.swift
           command: swift package describe
