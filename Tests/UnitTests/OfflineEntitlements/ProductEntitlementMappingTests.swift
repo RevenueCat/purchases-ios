@@ -80,6 +80,32 @@ class ProductEntitlementMappingTests: TestCase {
         expect(mapping.entitlements(for: "product_1")).to(beEmpty())
     }
 
+    func testResponseToMappingDoesNotUseUpFrontBasePlanIdForCompoundProductIdentifier() {
+        let response = ProductEntitlementMappingResponse(products: [
+            "product_1": .init(identifier: "product_1", basePlanId: "upFront", entitlements: ["pro_1"])
+        ])
+
+        let mapping = response.toMapping()
+
+        expect(mapping.entitlements(for: "product_1")) == ["pro_1"]
+        expect(mapping.entitlements(for: "product_1:upFront")).to(beEmpty())
+    }
+
+    func testResponseToMappingUsesUnknownBasePlanIdForCompoundProductIdentifier() {
+        let response = ProductEntitlementMappingResponse(products: [
+            "product_1:unknownBillingPlan": .init(
+                identifier: "product_1",
+                basePlanId: "unknownBillingPlan",
+                entitlements: ["pro_1"]
+            )
+        ])
+
+        let mapping = response.toMapping()
+
+        expect(mapping.entitlements(for: "product_1:unknownBillingPlan")) == ["pro_1"]
+        expect(mapping.entitlements(for: "product_1")).to(beEmpty())
+    }
+
     func testResponseToMappingUsesPayloadProductIdentifierInsteadOfOuterKey() {
         let response = ProductEntitlementMappingResponse(products: [
             "product_1:monthly": .init(identifier: "product_1", entitlements: ["pro_1"])

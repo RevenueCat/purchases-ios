@@ -105,4 +105,22 @@ class ProductEntitlementMappingDecodingTests: BaseHTTPResponseTest {
         ]
     }
 
+    func testDecodesFixtureWithBasePlanIdAndConvertsToCompoundMapping() throws {
+        let response: ProductEntitlementMappingResponse = try Self.decodeFixture("ProductsEntitlementsWithBasePlanId")
+        let product = response.products["com.revenuecat.foo_1:monthly"]
+
+        expect(product?.identifier) == "com.revenuecat.foo_1"
+        expect(product?.basePlanId) == "monthly"
+        expect(product?.entitlements) == ["pro_1"]
+
+        expect(response.toMapping().entitlementsByProduct) == [
+            "com.revenuecat.foo_1:monthly": [
+                "pro_1"
+            ],
+            "com.revenuecat.foo_2": [
+                "pro_2"
+            ]
+        ]
+    }
+
 }

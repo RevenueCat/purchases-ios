@@ -164,6 +164,45 @@ class CustomerInfoOfflineEntitlementsStoreKitTest: StoreKitConfigTestCase {
         expect(customerInfo.entitlements[entitlementID]?.productPlanIdentifier) == productPlanIdentifier
     }
 
+    func testProductsWithSameProductIdentifierAndDifferentProductIDsMapToSeparateEntitlements() throws {
+        let productIdentifier = "com.revenuecat.product"
+        let monthlyProductID = "\(productIdentifier):monthly"
+        let monthlyProductPlanIdentifier = "monthly"
+        let baseEntitlementID = "pro_base"
+        let monthlyEntitlementID = "pro_monthly"
+
+        let baseProduct = PurchasedSK2Product(
+            productIdentifier: productIdentifier,
+            id: productIdentifier,
+            productPlanIdentifier: nil,
+            subscription: .init(purchaseDate: Date()),
+            entitlement: .init(productIdentifier: productIdentifier, rawData: [:])
+        )
+        let monthlyProduct = PurchasedSK2Product(
+            productIdentifier: productIdentifier,
+            id: monthlyProductID,
+            productPlanIdentifier: monthlyProductPlanIdentifier,
+            subscription: .init(purchaseDate: Date(), productPlanIdentifier: monthlyProductPlanIdentifier),
+            entitlement: .init(productIdentifier: productIdentifier, rawData: [:])
+        )
+        let mapping = ProductEntitlementMapping(entitlementsByProduct: [
+            productIdentifier: [baseEntitlementID],
+            monthlyProductID: [monthlyEntitlementID]
+        ])
+
+        let customerInfo = CustomerInfo(
+            from: [baseProduct, monthlyProduct],
+            mapping: mapping,
+            userID: Self.userID,
+            sandboxEnvironmentDetector: self.sandboxDetector
+        )
+
+        expect(customerInfo.activeSubscriptions) == [monthlyProductID]
+        expect(customerInfo.entitlements.all).to(haveCount(2))
+        expect(customerInfo.entitlements[baseEntitlementID]).toNot(beNil())
+        expect(customerInfo.entitlements[monthlyEntitlementID]).toNot(beNil())
+    }
+
     func testEmptyMapping() async throws {
         let transaction = try await self.createTransactionWithPurchase()
         let mapping: ProductEntitlementMapping = .empty
