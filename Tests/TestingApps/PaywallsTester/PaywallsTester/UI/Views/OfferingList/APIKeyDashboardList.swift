@@ -533,6 +533,9 @@ struct APIKeyDashboardList: View {
                     ForEach(response.items) { item in
                         RecommendationCard(item: item) {
                             if let url = item.appStoreURL {
+                                Task {
+                                    await trackRecommendationClick(item)
+                                }
                                 openURL(url)
                             }
                         }
@@ -592,6 +595,42 @@ struct APIKeyDashboardList: View {
             request.setValue("iOS", forHTTPHeaderField: "X-Platform")
             request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
             request.setValue("no-cache", forHTTPHeaderField: "Pragma")
+            return request
+        }
+
+        private func trackRecommendationClick(_ item: RecommendationItem) async {
+            do {
+                let request = try makeClickRequest(item)
+                _ = try await URLSession.shared.data(for: request)
+            } catch {
+                // Best effort analytics; opening the app should not depend on tracking.
+            }
+        }
+
+        private func makeClickRequest(_ item: RecommendationItem) throws -> URLRequest {
+            guard var components = URLComponents(string: Constants.proxyURL ?? "https://api.revenuecat.com") else {
+                throw RecommendationsError.invalidURL
+            }
+
+            components.path = "/v1/subscribers/$RCAnonymousID:paywalls-tester/recommendations/clicks"
+
+            guard let url = components.url else {
+                throw RecommendationsError.invalidURL
+            }
+
+            var request = URLRequest(
+                url: url,
+                cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
+                timeoutInterval: 30
+            )
+            request.httpMethod = "POST"
+            request.setValue("Bearer \(Constants.apiKey)", forHTTPHeaderField: "Authorization")
+            request.setValue("iOS", forHTTPHeaderField: "X-Platform")
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try JSONSerialization.data(withJSONObject: [
+                "recommendation_id": item.id,
+                "placement": "paywall_dismissed"
+            ])
             return request
         }
 
