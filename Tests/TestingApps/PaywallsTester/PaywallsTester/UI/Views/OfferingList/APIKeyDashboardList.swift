@@ -514,21 +514,22 @@ struct APIKeyDashboardList: View {
             .task {
                 await fetchRecommendations()
             }
+            .refreshable {
+                await fetchRecommendations()
+            }
         }
 
         private func recommendationsList(_ response: RecommendationsResponse) -> some View {
-            List {
-                Section {
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 16) {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(response.title)
                             .font(.title2.bold())
                         Text(response.subtitle)
                             .foregroundStyle(.secondary)
                     }
-                    .padding(.vertical, 6)
-                }
+                    .padding(.top, 16)
 
-                Section {
                     ForEach(response.items) { item in
                         RecommendationCard(item: item) {
                             if let url = item.appStoreURL {
@@ -537,7 +538,10 @@ struct APIKeyDashboardList: View {
                         }
                     }
                 }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 24)
             }
+            .background(Color(.systemGroupedBackground))
         }
 
         @MainActor
@@ -571,16 +575,23 @@ struct APIKeyDashboardList: View {
 
             components.path = "/v1/subscribers/$RCAnonymousID:paywalls-tester/recommendations"
             components.queryItems = [
-                URLQueryItem(name: "placement", value: "paywall_dismissed")
+                URLQueryItem(name: "placement", value: "paywall_dismissed"),
+                URLQueryItem(name: "cache_buster", value: UUID().uuidString)
             ]
 
             guard let url = components.url else {
                 throw RecommendationsError.invalidURL
             }
 
-            var request = URLRequest(url: url)
+            var request = URLRequest(
+                url: url,
+                cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
+                timeoutInterval: 30
+            )
             request.setValue("Bearer \(Constants.apiKey)", forHTTPHeaderField: "Authorization")
             request.setValue("iOS", forHTTPHeaderField: "X-Platform")
+            request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+            request.setValue("no-cache", forHTTPHeaderField: "Pragma")
             return request
         }
 
