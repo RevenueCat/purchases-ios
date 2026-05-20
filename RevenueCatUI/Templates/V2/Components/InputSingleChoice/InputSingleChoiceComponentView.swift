@@ -30,7 +30,7 @@ struct InputSingleChoiceComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
-    @StateObject
+    @State
     private var inputContext: InputSingleChoiceContext
 
     private let viewModel: InputSingleChoiceComponentViewModel
@@ -39,7 +39,7 @@ struct InputSingleChoiceComponentView: View {
     init(viewModel: InputSingleChoiceComponentViewModel, onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
-        self._inputContext = StateObject(
+        self._inputContext = State(
             wrappedValue: InputSingleChoiceContext(fieldId: viewModel.component.fieldId)
         )
     }
@@ -62,14 +62,14 @@ private struct InputSingleChoicePreviewHelper: View {
     let innerStackViewModel: StackComponentViewModel
     let preselectedOptionId: String?
 
-    @StateObject private var context: InputSingleChoiceContext
+    @State private var context: InputSingleChoiceContext
 
     init(innerStackViewModel: StackComponentViewModel, preselectedOptionId: String? = nil) {
         self.innerStackViewModel = innerStackViewModel
         self.preselectedOptionId = preselectedOptionId
         let ctx = InputSingleChoiceContext(fieldId: "plan_type")
         ctx.selectedOptionId = preselectedOptionId
-        self._context = StateObject(wrappedValue: ctx)
+        self._context = State(wrappedValue: ctx)
     }
 
     var body: some View {
