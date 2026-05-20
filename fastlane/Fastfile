@@ -11,6 +11,9 @@
 #
 
 require_relative 'api_diff_helper'
+require 'rexml/document'
+require 'net/http'
+require 'json'
 
 default_platform(:ios)
 
@@ -2419,6 +2422,88 @@ platform :ios do
     end
   end
 
+  lane :notify_pr_ci_failure do
+    pr_number = detect_pr_number
+    unless pr_number
+      UI.message("Not a PR build, skipping.")
+      next
+    end
+
+    token = ENV["DANGER_GITHUB_API_TOKEN"]
+    unless token && !token.empty?
+      UI.message("DANGER_GITHUB_API_TOKEN not set, skipping.")
+      next
+    end
+
+    repo = "RevenueCat/purchases-ios"
+    job = ENV["CIRCLE_JOB"]
+    build_url = ENV["CIRCLE_BUILD_URL"]
+    marker = "<!-- cci-test-failure:#{job} -->"
+
+    failed = []
+    Dir.glob("fastlane/test_output/**/*.{junit,xml}").each do |f|
+      begin
+        doc = REXML::Document.new(File.read(f))
+        REXML::XPath.each(doc, "//testcase[failure or error]") do |tc|
+          classname = tc.attributes["classname"].to_s
+          name = tc.attributes["name"].to_s
+          label = classname.empty? ? name : "#{classname}/#{name}"
+          failed << label
+        end
+      rescue => e
+        UI.important("Skipping #{f}: #{e.message}")
+      end
+    end
+    failed = failed.uniq.sort
+    UI.message("Failed/errored tests: #{failed.size}")
+
+    comment_body = if failed.any?
+      failed_list = failed.map { |t| "- #{t}" }.join("\n")
+      "#{marker}\n## ❌ CI Job Failed — `#{job}`\n\n[View Build](#{build_url})\n\n**Failed Tests**\n\n#{failed_list}"
+    else
+      "#{marker}\n## ❌ CI Job Failed — `#{job}`\n\n[View Build](#{build_url})"
+    end
+
+    existing_id = find_pr_comment_with_marker(repo, pr_number, token, marker)
+    if existing_id
+      UI.message("Updating existing comment #{existing_id}")
+      github_api_call("PATCH", "/repos/#{repo}/issues/comments/#{existing_id}", token, body: { body: comment_body })
+    else
+      UI.message("Creating new comment")
+      github_api_call("POST", "/repos/#{repo}/issues/#{pr_number}/comments", token, body: { body: comment_body })
+    end
+  end
+
+  lane :clear_pr_ci_failure do
+    pr_number = detect_pr_number
+    unless pr_number
+      UI.message("Not a PR build, skipping.")
+      next
+    end
+
+    token = ENV["DANGER_GITHUB_API_TOKEN"]
+    unless token && !token.empty?
+      UI.message("DANGER_GITHUB_API_TOKEN not set, skipping.")
+      next
+    end
+
+    repo = "RevenueCat/purchases-ios"
+    job = ENV["CIRCLE_JOB"]
+    marker = "<!-- cci-test-failure:#{job} -->"
+
+    existing_id = find_pr_comment_with_marker(repo, pr_number, token, marker)
+    if existing_id
+      UI.message("Deleting stale failure comment #{existing_id}")
+      begin
+        github_api_call("DELETE", "/repos/#{repo}/issues/comments/#{existing_id}", token)
+      rescue => e
+        UI.important("Failed to delete comment: #{e.message}")
+      end
+    else
+      UI.message("No failure comment to delete.")
+    end
+  end
+
 end
 
 platform :mac do
@@ -2503,4 +2588,41 @@ def current_paywall_preview_resources_commit
 end
 def update_paywall_preview_resources_commit(hash)
   File.write(paywall_preview_resources_commit_file, hash)
+end
+
+def find_pr_comment_with_marker(repo, pr_number, token, marker)
+  response = github_api_call("GET", "/repos/#{repo}/issues/#{pr_number}/comments?per_page=100", token)
+  return nil unless response.is_a?(Net::HTTPSuccess)
+
+  comments = JSON.parse(response.body)
+  comment = comments.find { |c| c["body"].to_s.include?(marker) }
+  comment ? comment["id"] : nil
+end
+
+def github_api_call(method, path, token, body: nil)
+  uri = URI("https://api.github.com#{path}")
+  http = Net::HTTP.new(uri.hostname, uri.port)
+  http.use_ssl = true
+
+  request = case method
+  when "GET" then Net::HTTP::Get.new(uri)
+  when "POST" then Net::HTTP::Post.new(uri)
+  when "PATCH" then Net::HTTP::Patch.new(uri)
+  when "DELETE" then Net::HTTP::Delete.new(uri)
+  end
+
+  request["Authorization"] = "token #{token}"
+  request["Accept"] = "application/vnd.github.v3+json"
+  if body
+    request["Content-Type"] = "application/json"
+    request.body = JSON.generate(body)
+  end
+
+  response = http.request(request)
+
+  unless response.is_a?(Net::HTTPSuccess) || response.is_a?(Net::HTTPNoContent)
+    UI.important("Warning: GitHub API #{method} #{path} returned #{response.code}: #{response.body[0..200]}")
+  end
+
+  response
 end

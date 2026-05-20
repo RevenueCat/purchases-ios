@@ -111,120 +111,11 @@ commands:
       - run:
           name: Post GitHub PR failure comment
           when: on_fail
-          command: |
-            echo "CIRCLE_PULL_REQUEST=${CIRCLE_PULL_REQUEST}"
-            [ -z "$CIRCLE_PULL_REQUEST" ] && echo "Not a PR build, skipping." && exit 0
-
-            PR_NUMBER=$(echo "$CIRCLE_PULL_REQUEST" | grep -oE '[0-9]+$')
-            REPO="RevenueCat/purchases-ios"
-            MARKER="<!-- cci-test-failure:${CIRCLE_JOB} -->"
-            TOKEN="${DANGER_GITHUB_API_TOKEN}"
-
-            echo "PR_NUMBER=${PR_NUMBER}"
-            echo "TOKEN set: $([ -n "$TOKEN" ] && echo yes || echo no)"
-
-            FAILED_TESTS=$(ruby -r rexml/document -e '
-              failed = []
-              Dir.glob("fastlane/test_output/**/*.{junit,xml}").each do |f|
-                begin
-                  doc = REXML::Document.new(File.read(f))
-                  REXML::XPath.each(doc, "//testcase[failure]") do |tc|
-                    classname = tc.attributes["classname"].to_s
-                    name = tc.attributes["name"].to_s
-                    label = classname.empty? ? name : "#{classname}/#{name}"
-                    failed \<< label
-                  end
-                rescue
-                end
-              end
-              puts failed.uniq.sort
-            ')
-
-            echo "Failed tests found: $(echo "$FAILED_TESTS" | grep -c . || echo 0)"
-
-            if [ -n "$FAILED_TESTS" ]; then
-              FAILED_LIST=$(echo "$FAILED_TESTS" | sed 's/^/- /')
-              COMMENT_BODY="${MARKER}
-            ## ❌ CI Tests Failed — \`${CIRCLE_JOB}\`
-
-            [View Build](${CIRCLE_BUILD_URL})
-
-            **Failed Tests**
-
-            ${FAILED_LIST}"
-            else
-              COMMENT_BODY="${MARKER}
-            ## ❌ CI Tests Failed — \`${CIRCLE_JOB}\`
-
-            [View Build](${CIRCLE_BUILD_URL})"
-            fi
-
-            BODY_JSON=$(echo "$COMMENT_BODY" | ruby -r json -e 'print JSON.generate(STDIN.read)')
-
-            EXISTING_ID=$(curl -sf \
-              -H "Authorization: token ${TOKEN}" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/${REPO}/issues/${PR_NUMBER}/comments?per_page=100" \
-              | ruby -r json -e "
-                JSON.parse(STDIN.read).each do |c|
-                  if c['body'].to_s.include?('${MARKER}')
-                    puts c['id']
-                    break
-                  end
-                end
-              " || true)
-
-            if [ -n "$EXISTING_ID" ]; then
-              echo "Updating existing comment ${EXISTING_ID}"
-              curl -sf -X PATCH \
-                -H "Authorization: token ${TOKEN}" \
-                -H "Accept: application/vnd.github.v3+json" \
-                -H "Content-Type: application/json" \
-                -d "{\"body\": ${BODY_JSON}}" \
-                "https://api.github.com/repos/${REPO}/issues/comments/${EXISTING_ID}"
-            else
-              echo "Creating new comment"
-              curl -sf -X POST \
-                -H "Authorization: token ${TOKEN}" \
-                -H "Accept: application/vnd.github.v3+json" \
-                -H "Content-Type: application/json" \
-                -d "{\"body\": ${BODY_JSON}}" \
-                "https://api.github.com/repos/${REPO}/issues/${PR_NUMBER}/comments"
-            fi
-
+          command: bundle exec fastlane notify_pr_ci_failure
       - run:
           name: Delete GitHub PR failure comment on success
           when: on_success
-          command: |
-            [ -z "$CIRCLE_PULL_REQUEST" ] && exit 0
-
-            PR_NUMBER=$(echo "$CIRCLE_PULL_REQUEST" | grep -oE '[0-9]+$')
-            REPO="RevenueCat/purchases-ios"
-            MARKER="<!-- cci-test-failure:${CIRCLE_JOB} -->"
-            TOKEN="${DANGER_GITHUB_API_TOKEN}"
-
-            EXISTING_ID=$(curl -sf \
-              -H "Authorization: token ${TOKEN}" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/${REPO}/issues/${PR_NUMBER}/comments?per_page=100" \
-              | ruby -r json -e "
-                JSON.parse(STDIN.read).each do |c|
-                  if c['body'].to_s.include?('${MARKER}')
-                    puts c['id']
-                    break
-                  end
-                end
-              " || true)
-
-            if [ -n "$EXISTING_ID" ]; then
-              echo "Deleting stale failure comment ${EXISTING_ID}"
-              curl -sf -X DELETE \
-                -H "Authorization: token ${TOKEN}" \
-                -H "Accept: application/vnd.github.v3+json" \
-                "https://api.github.com/repos/${REPO}/issues/comments/${EXISTING_ID}" || true
-            else
-              echo "No failure comment to delete."
-            fi
+          command: bundle exec fastlane clear_pr_ci_failure
 
   slack-notify-on-fail:
     steps:
@@ -2783,7 +2674,9 @@ workflows:
       - emerge_binary_size_analysis:
           context:
             - slack-secrets
-      - lint
+      - lint:
+          context:
+            - slack-secrets
       - run-test-ios-26:
           context:
             - slack-secrets
