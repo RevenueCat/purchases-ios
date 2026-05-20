@@ -141,6 +141,7 @@ let package = Package(
                 swiftSettings: ciCompilerFlags + additionalCompilerFlags),
         .testTarget(name: "RulesEngineTests",
                     dependencies: ["RulesEngine"],
-                    path: "Tests/RulesEngineTests")
+                    path: "Tests/RulesEngineTests",
+                    exclude: ["Fixtures"])
     ]
 )

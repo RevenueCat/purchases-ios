@@ -718,6 +718,24 @@ platform :ios do
     )
   end
 
+  desc "Runs RulesEngine khepri predicate conformance tests"
+  lane :test_rules_engine_conformance do
+    scan(
+      step_name: "scan - RulesEngine conformance",
+      device: ENV['SCAN_DEVICE'] || "iPhone 16 (18.4)",
+      ensure_devices_found: true,
+      scheme: "RulesEngine",
+      prelaunch_simulator: true,
+      output_types: 'junit',
+      result_bundle: true,
+      only_testing: ['RulesEngineTests/PredicateConformanceTests'],
+      configuration: 'Debug',
+      output_directory: "fastlane/test_output/xctest/rules-engine-conformance",
+      number_of_retries: 0,
+      fail_build: true
+    )
+  end
+
   desc "Runs all the tvOS tests"
   lane :test_tvos do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"

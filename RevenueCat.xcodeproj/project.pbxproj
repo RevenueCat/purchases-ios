@@ -1135,6 +1135,8 @@
 		88DE93E12C211CBC0086B6D8 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; };
 		88E679472C7503C1007E69D5 /* PaywallStackComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */; };
 		8E4C7806739C1F49E522D5F3 /* StringArrayOperatorsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F576269BC7130E5B553FB5A /* StringArrayOperatorsTests.swift */; };
+		A1B2C3D4E5F6789012345671 /* PredicateConformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E2D3C4B5A6978812345678 /* PredicateConformanceTests.swift */; };
+		B1C2D3E4F5A6789012345672 /* PredicateConformanceFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D2C3B4A596878812345679 /* PredicateConformanceFixture.swift */; };
 		900D26F82F96927E00D32EDF /* RewardVerificationPollStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900D26F52F96927E00D32EDF /* RewardVerificationPollStatus.swift */; };
 		900D26F92F96927E00D32EDF /* RewardVerificationStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900D26F22F96927E00D32EDF /* RewardVerificationStatusResponse.swift */; };
 		900D26FA2F96927E00D32EDF /* GetRewardVerificationStatusOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900D26F32F96927E00D32EDF /* GetRewardVerificationStatusOperation.swift */; };
@@ -2769,6 +2771,8 @@
 		9D09F3CB2E3A859A0002840F /* sr_Latn */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sr_Latn; path = sr_Latn.lproj/Localizable.strings; sourceTree = "<group>"; };
 		9E174FCB9B889D4CACED0088 /* Value.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Value.swift; sourceTree = "<group>"; };
 		9F576269BC7130E5B553FB5A /* StringArrayOperatorsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StringArrayOperatorsTests.swift; sourceTree = "<group>"; };
+		E1D2C3B4A596878812345679 /* PredicateConformanceFixture.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PredicateConformanceFixture.swift; sourceTree = "<group>"; };
+		F1E2D3C4B5A6978812345678 /* PredicateConformanceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PredicateConformanceTests.swift; sourceTree = "<group>"; };
 		A0C4BF8C5116F4DC73C116C0 /* ComparisonOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ComparisonOperators.swift; sourceTree = "<group>"; };
 		A1E0F0012F297A0100000001 /* EventsManagerStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsManagerStrings.swift; sourceTree = "<group>"; };
 		A1E1FA673B0F0D49304400D3 /* StringArrayOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StringArrayOperators.swift; sourceTree = "<group>"; };
@@ -5927,6 +5931,7 @@
 				6A5F7844775CC2D836BC617C /* ComparisonOperatorsTests.swift */,
 				9F576269BC7130E5B553FB5A /* StringArrayOperatorsTests.swift */,
 				15C99D58E5A86E8E1659D928 /* MinMaxOperatorsTests.swift */,
+				F1E2D3C4B5A6978812345678 /* PredicateConformanceTests.swift */,
 			);
 			name = RulesEngineTests;
 			path = Tests/RulesEngineTests;
@@ -6230,6 +6235,7 @@
 				B72848B4B4D101F1B94E228E /* Value+JSON.swift */,
 				02886F2673E4452BA325685C /* Rules+WithLogger.swift */,
 				E51CFC7D19BE49D2BA1A79CC /* CapturingLogger.swift */,
+				E1D2C3B4A596878812345679 /* PredicateConformanceFixture.swift */,
 			);
 			name = Helpers;
 			path = Helpers;
@@ -8025,6 +8031,8 @@
 				2947E000516A83523FF21B0D /* ComparisonOperatorsTests.swift in Sources */,
 				8E4C7806739C1F49E522D5F3 /* StringArrayOperatorsTests.swift in Sources */,
 				A052C28EF43597E04840B73A /* MinMaxOperatorsTests.swift in Sources */,
+				A1B2C3D4E5F6789012345671 /* PredicateConformanceTests.swift in Sources */,
+				B1C2D3E4F5A6789012345672 /* PredicateConformanceFixture.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
