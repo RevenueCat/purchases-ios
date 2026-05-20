@@ -1759,17 +1759,11 @@ jobs:
           environment:
             KHEPRI_PREDICATE_CONFORMANCE_FIXTURE_PATH: Tests/RulesEngineTests/Fixtures/predicate_conformance_v1.json
             SCAN_DEVICE: iPhone 17 (26.2)
-      - run:
-          name: Prepare conformance test results for CircleCI
-          command: cp fastlane/test_output/xctest/rules-engine-conformance/report.junit fastlane/test_output/xctest/rules-engine-conformance/tests.xml
-          when: always
       - store_test_results:
-          path: fastlane/test_output/xctest/rules-engine-conformance/tests.xml
-          when: always
+          path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output/xctest/rules-engine-conformance
           destination: rules-engine-conformance
-          when: always
       - slack-notify-on-fail
 
   lint:
