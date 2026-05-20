@@ -722,7 +722,7 @@ platform :ios do
   lane :test_rules_engine_conformance do
     scan(
       step_name: "scan - RulesEngine conformance",
-      device: ENV['SCAN_DEVICE'] || "iPhone 16 (18.5)",
+      device: ENV['SCAN_DEVICE'] || "iPhone 17 (26.2)",
       ensure_devices_found: true,
       scheme: "RulesEngine",
       prelaunch_simulator: true,

@@ -1735,7 +1735,7 @@ jobs:
   run-rules-engine-conformance-tests:
     executor:
       name: macos-executor
-      xcode_version: "16.4.0"
+      xcode_version: "26.3"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -1758,7 +1758,7 @@ jobs:
           no_output_timeout: 10m
           environment:
             KHEPRI_PREDICATE_CONFORMANCE_FIXTURE_PATH: Tests/RulesEngineTests/Fixtures/predicate_conformance_v1.json
-            SCAN_DEVICE: iPhone 16 (18.5)
+            SCAN_DEVICE: iPhone 17 (26.2)
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
