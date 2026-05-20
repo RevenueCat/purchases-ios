@@ -298,6 +298,7 @@ struct ButtonComponentView_Previews: PreviewProvider {
             webCheckoutUrl: nil
         )
 
+        // Default: button renders normally
         VStack {
             ButtonComponentView(
                 viewModel: try! .init(
@@ -324,77 +325,125 @@ struct ButtonComponentView_Previews: PreviewProvider {
         }
         .previewRequiredPaywallsV2Properties()
         .environmentObject(PurchaseHandler.default())
-        .previewLayout(.fixed(width: 400, height: 400))
+        .previewLayout(.fixed(width: 400, height: 100))
         .previewDisplayName("Default")
 
-        VStack {
-            Text("Button below is hidden (visible=false):")
-                .font(.caption)
-            ButtonComponentView(
-                viewModel: try! .init(
-                    component: .init(
-                        visible: false,
-                        action: .navigateBack,
-                        stack: .init(
-                            components: [
-                                PaywallComponent.text(
-                                    PaywallComponent.TextComponent(
-                                        text: "buttonText",
-                                        color: .init(light: .hex("#000000"))
+        // visible=true vs visible=false side by side
+        VStack(spacing: 16) {
+            HStack {
+                Text("visible=true →").font(.caption).frame(width: 120, alignment: .trailing)
+                ButtonComponentView(
+                    viewModel: try! .init(
+                        component: .init(
+                            visible: true,
+                            action: .navigateBack,
+                            stack: .init(
+                                components: [
+                                    PaywallComponent.text(
+                                        PaywallComponent.TextComponent(
+                                            text: "buttonText",
+                                            color: .init(light: .hex("#000000"))
+                                        )
                                     )
-                                )
-                            ],
-                            backgroundColor: nil
-                        )
+                                ],
+                                backgroundColor: nil
+                            )
+                        ),
+                        localizationProvider: localizationProvider,
+                        offering: offering,
+                        colorScheme: .light
                     ),
-                    localizationProvider: localizationProvider,
-                    offering: offering,
-                    colorScheme: .light
-                ),
-                onDismiss: { }
-            )
+                    onDismiss: { }
+                )
+            }
+            HStack {
+                Text("visible=false →").font(.caption).frame(width: 120, alignment: .trailing)
+                ButtonComponentView(
+                    viewModel: try! .init(
+                        component: .init(
+                            visible: false,
+                            action: .navigateBack,
+                            stack: .init(
+                                components: [
+                                    PaywallComponent.text(
+                                        PaywallComponent.TextComponent(
+                                            text: "buttonText",
+                                            color: .init(light: .hex("#000000"))
+                                        )
+                                    )
+                                ],
+                                backgroundColor: nil
+                            )
+                        ),
+                        localizationProvider: localizationProvider,
+                        offering: offering,
+                        colorScheme: .light
+                    ),
+                    onDismiss: { }
+                )
+                Spacer()
+                Text("(hidden)").font(.caption).foregroundColor(.secondary)
+            }
         }
+        .padding()
         .previewRequiredPaywallsV2Properties()
         .environmentObject(PurchaseHandler.default())
-        .previewLayout(.fixed(width: 400, height: 400))
-        .previewDisplayName("Hidden (visible=false)")
+        .previewLayout(.fixed(width: 400, height: 120))
+        .previewDisplayName("visible=true vs visible=false")
 
-        VStack {
-            Text("Button below is hidden when state=selected:")
-                .font(.caption)
-            ButtonComponentView(
-                viewModel: try! .init(
-                    component: .init(
-                        action: .navigateBack,
-                        stack: .init(
-                            components: [
-                                PaywallComponent.text(
-                                    PaywallComponent.TextComponent(
-                                        text: "buttonText",
-                                        color: .init(light: .hex("#000000"))
-                                    )
-                                )
-                            ],
-                            backgroundColor: nil
-                        ),
-                        overrides: [
-                            .init(
-                                conditions: [.selected],
-                                properties: .init(visible: false)
-                            )
-                        ]
+        // Override: hide when selected — show default (visible) vs selected (hidden)
+        let selectedOverrideComponent = PaywallComponent.ButtonComponent(
+            action: .navigateBack,
+            stack: .init(
+                components: [
+                    PaywallComponent.text(
+                        PaywallComponent.TextComponent(
+                            text: "buttonText",
+                            color: .init(light: .hex("#000000"))
+                        )
+                    )
+                ],
+                backgroundColor: nil
+            ),
+            overrides: [
+                .init(conditions: [.selected], properties: .init(visible: false))
+            ]
+        )
+        VStack(spacing: 16) {
+            HStack {
+                Text("state=default →").font(.caption).frame(width: 120, alignment: .trailing)
+                ButtonComponentView(
+                    viewModel: try! .init(
+                        component: selectedOverrideComponent,
+                        localizationProvider: localizationProvider,
+                        offering: offering,
+                        colorScheme: .light
                     ),
-                    localizationProvider: localizationProvider,
-                    offering: offering,
-                    colorScheme: .light
-                ),
-                onDismiss: { }
-            )
+                    onDismiss: { }
+                )
+                .environment(\.componentViewState, .default)
+            }
+            HStack {
+                Text("state=selected →").font(.caption).frame(width: 120, alignment: .trailing)
+                ButtonComponentView(
+                    viewModel: try! .init(
+                        component: selectedOverrideComponent,
+                        localizationProvider: localizationProvider,
+                        offering: offering,
+                        colorScheme: .light
+                    ),
+                    onDismiss: { }
+                )
+                .environment(\.componentViewState, .selected)
+                Spacer()
+                Text("(hidden)").font(.caption).foregroundColor(.secondary)
+            }
         }
-        .previewRequiredPaywallsV2Properties(componentViewState: .selected)
+        .padding()
+        .previewRequiredPaywallsV2Properties()
         .environmentObject(PurchaseHandler.default())
-        .previewLayout(.fixed(width: 400, height: 400))
-        .previewDisplayName("Hidden when selected")
+        .previewLayout(.fixed(width: 400, height: 120))
+        .previewDisplayName("Override: hide when selected")
         // swiftlint:enable force_try
     }
 }
