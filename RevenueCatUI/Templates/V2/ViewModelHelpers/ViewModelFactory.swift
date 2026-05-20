@@ -188,7 +188,9 @@ struct ViewModelFactory {
                     localizationProvider: localizationProvider,
                     offering: offering,
                     stackViewModel: stackViewModel,
-                    sheetStackViewModel: sheetStackViewModel
+                    sheetStackViewModel: sheetStackViewModel,
+                    uiConfigProvider: uiConfigProvider,
+                    discardRules: discardRules
                 )
             )
         case .package(let component):
