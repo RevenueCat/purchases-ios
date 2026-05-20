@@ -12,7 +12,6 @@
 
 require_relative 'api_diff_helper'
 require 'rexml/document'
-require 'net/http'
 require 'json'
 
 default_platform(:ios)
@@ -2467,10 +2466,22 @@ platform :ios do
     existing_id = find_pr_comment_with_marker(repo, pr_number, token, marker)
     if existing_id
       UI.message("Updating existing comment #{existing_id}")
-      github_api_call("PATCH", "/repos/#{repo}/issues/comments/#{existing_id}", token, body: { body: comment_body })
+      github_api(
+        server_url: 'https://api.github.com',
+        api_token: token,
+        http_method: 'PATCH',
+        path: "/repos/#{repo}/issues/comments/#{existing_id}",
+        body: { body: comment_body }
+      )
     else
       UI.message("Creating new comment")
-      github_api_call("POST", "/repos/#{repo}/issues/#{pr_number}/comments", token, body: { body: comment_body })
+      github_api(
+        server_url: 'https://api.github.com',
+        api_token: token,
+        http_method: 'POST',
+        path: "/repos/#{repo}/issues/#{pr_number}/comments",
+        body: { body: comment_body }
+      )
     end
   end
 
@@ -2495,7 +2506,12 @@ platform :ios do
       existing_id = find_pr_comment_with_marker(repo, pr_number, token, marker)
       if existing_id
         UI.message("Deleting stale failure comment #{existing_id}")
-        github_api_call("DELETE", "/repos/#{repo}/issues/comments/#{existing_id}", token)
+        github_api(
+          server_url: 'https://api.github.com',
+          api_token: token,
+          http_method: 'DELETE',
+          path: "/repos/#{repo}/issues/comments/#{existing_id}"
+        )
       else
         UI.message("No failure comment to delete.")
       end
@@ -2591,38 +2607,12 @@ def update_paywall_preview_resources_commit(hash)
 end
 
 def find_pr_comment_with_marker(repo, pr_number, token, marker)
-  response = github_api_call("GET", "/repos/#{repo}/issues/#{pr_number}/comments?per_page=100", token)
-  return nil unless response.is_a?(Net::HTTPSuccess)
-
-  comments = JSON.parse(response.body)
-  comment = comments.find { |c| c["body"].to_s.include?(marker) }
+  resp = github_api(
+    server_url: 'https://api.github.com',
+    api_token: token,
+    http_method: 'GET',
+    path: "/repos/#{repo}/issues/#{pr_number}/comments?per_page=100"
+  )
+  comment = resp[:json].find { |c| c["body"].to_s.include?(marker) }
   comment ? comment["id"] : nil
-end
-
-def github_api_call(method, path, token, body: nil)
-  uri = URI("https://api.github.com#{path}")
-  http = Net::HTTP.new(uri.hostname, uri.port)
-  http.use_ssl = true
-
-  request = case method
-  when "GET" then Net::HTTP::Get.new(uri)
-  when "POST" then Net::HTTP::Post.new(uri)
-  when "PATCH" then Net::HTTP::Patch.new(uri)
-  when "DELETE" then Net::HTTP::Delete.new(uri)
-  end
-
-  request["Authorization"] = "token #{token}"
-  request["Accept"] = "application/vnd.github.v3+json"
-  if body
-    request["Content-Type"] = "application/json"
-    request.body = JSON.generate(body)
-  end
-
-  response = http.request(request)
-
-  unless response.is_a?(Net::HTTPSuccess) || response.is_a?(Net::HTTPNoContent)
-    UI.important("Warning: GitHub API #{method} #{path} returned #{response.code}: #{response.body[0..200]}")
-  end
-
-  response
 end
