@@ -26,7 +26,7 @@ import Foundation
 
         private enum CodingKeys: String, CodingKey {
             case type
-            case fieldId = "field_id"
+            case fieldId
             case required
             case stack
             case overrides
@@ -82,7 +82,7 @@ import Foundation
         }
 
         private enum CodingKeys: String, CodingKey {
-            case fieldId = "field_id"
+            case fieldId
             case required
         }
 
@@ -131,8 +131,8 @@ import Foundation
 
         private enum CodingKeys: String, CodingKey {
             case type
-            case optionId = "option_id"
-            case optionValue = "option_value"
+            case optionId
+            case optionValue
             case stack
             case triggers
             case overrides
@@ -198,8 +198,8 @@ import Foundation
         }
 
         private enum CodingKeys: String, CodingKey {
-            case optionId = "option_id"
-            case optionValue = "option_value"
+            case optionId
+            case optionValue
             case triggers
         }
 
