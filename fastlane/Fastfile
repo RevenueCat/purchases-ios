@@ -731,6 +731,7 @@ platform :ios do
       only_testing: ['RulesEngineTests/PredicateConformanceTests'],
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/rules-engine-conformance",
+      parallel_testing: false,
       number_of_retries: 0,
       fail_build: true
     )

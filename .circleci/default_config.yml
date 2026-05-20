@@ -1761,9 +1761,11 @@ jobs:
             SCAN_DEVICE: iPhone 17 (26.2)
       - store_test_results:
           path: fastlane/test_output
+          when: always
       - store_artifacts:
           path: fastlane/test_output/xctest/rules-engine-conformance
           destination: rules-engine-conformance
+          when: always
       - slack-notify-on-fail
 
   lint:

@@ -154,6 +154,14 @@ Upload V1 template snapshots to Emerge using BYOS
 
 Runs all the iOS tests
 
+### ios test_rules_engine_conformance
+
+```sh
+[bundle exec] fastlane ios test_rules_engine_conformance
+```
+
+Runs RulesEngine khepri predicate conformance tests
+
 ### ios test_tvos
 
 ```sh
@@ -278,14 +286,6 @@ Release to CocoaPods
 
 ```sh
 [bundle exec] fastlane ios push_revenuecatui_pod
-```
-
-Release to CocoaPods
-
-### ios push_rules_engine_pod
-
-```sh
-[bundle exec] fastlane ios push_rules_engine_pod
 ```
 
 Release to CocoaPods
