@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 7/13/23.
 
 import Combine
+import Foundation
 @_spi(Internal) import RevenueCat
 import StoreKit
 import SwiftUI
@@ -78,6 +79,11 @@ final class PurchaseHandler: ObservableObject {
     /// potential future exit offer triggers (e.g., based on specific products).
     @Published
     fileprivate(set) var sessionPurchaseResult: PurchaseResultData?
+
+    /// Unique identifier for the latest `sessionPurchaseResult`.
+    /// This allows SwiftUI preference listeners to receive consecutive identical results.
+    @Published
+    fileprivate(set) var sessionPurchaseResultID: UUID?
 
     /// Whether a purchase was successfully completed in the current session.
     /// Convenience property for checking if we should skip exit offers.
@@ -220,6 +226,7 @@ final class PurchaseHandler: ObservableObject {
             self.paywallEventTracker.discardSession(sessionID: sessionID)
         }
         self.sessionPurchaseResult = nil
+        self.sessionPurchaseResultID = nil
         self.purchaseResult = nil
         self.activePaywallSessionID = nil
     }
@@ -492,6 +499,7 @@ extension PurchaseHandler {
             // onPurchaseCompleted and onPurchaseCancelled modifiers both work correctly.
             withAnimation(Constants.defaultAnimation) {
                 self.sessionPurchaseResult = result
+                self.sessionPurchaseResultID = UUID()
             }
 
             self.setResult(result)
@@ -555,6 +563,7 @@ extension PurchaseHandler {
         // onPurchaseCompleted and onPurchaseCancelled modifiers both work correctly.
         withAnimation(Constants.defaultAnimation) {
             self.sessionPurchaseResult = resultInfo
+            self.sessionPurchaseResultID = UUID()
         }
 
         self.setResult(resultInfo)
@@ -863,19 +872,21 @@ struct RestoreInProgressPreferenceKey: PreferenceKey {
 struct PurchasedResultPreferenceKey: PreferenceKey {
 
     struct PurchaseResult: Equatable {
+        var id: UUID
         var transaction: StoreTransaction?
         var customerInfo: CustomerInfo
         var userCancelled: Bool
 
-        init(data: PurchaseResultData) {
+        init(data: PurchaseResultData, id: UUID) {
+            self.id = id
             self.transaction = data.transaction
             self.customerInfo = data.customerInfo
             self.userCancelled = data.userCancelled
         }
 
-        init?(data: PurchaseResultData?) {
-            guard let data else { return nil }
-            self.init(data: data)
+        init?(data: PurchaseResultData?, id: UUID?) {
+            guard let data, let id else { return nil }
+            self.init(data: data, id: id)
         }
     }
 
