@@ -720,21 +720,32 @@ platform :ios do
 
   desc "Runs RulesEngine khepri predicate conformance tests"
   lane :test_rules_engine_conformance do
-    scan(
-      step_name: "scan - RulesEngine conformance",
-      device: ENV['SCAN_DEVICE'] || "iPhone 17 (26.2)",
-      ensure_devices_found: true,
-      scheme: "RulesEngine",
-      prelaunch_simulator: true,
-      output_types: 'junit',
-      result_bundle: true,
-      only_testing: ['RulesEngineTests/PredicateConformanceTests'],
-      configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/rules-engine-conformance",
-      parallel_testing: false,
-      number_of_retries: 0,
-      fail_build: true
-    )
+    conformance_output_dir = "fastlane/test_output/xctest/rules-engine-conformance"
+    conformance_junit_source = File.join(conformance_output_dir, "report.junit")
+    conformance_junit_destination = File.join(conformance_output_dir, "tests.xml")
+
+    begin
+      scan(
+        step_name: "scan - RulesEngine conformance",
+        device: ENV['SCAN_DEVICE'] || "iPhone 17 (26.2)",
+        ensure_devices_found: true,
+        scheme: "RulesEngine",
+        prelaunch_simulator: true,
+        output_types: 'junit',
+        result_bundle: true,
+        only_testing: ['RulesEngineTests/PredicateConformanceTests'],
+        configuration: 'Debug',
+        output_directory: conformance_output_dir,
+        xcodebuild_formatter: "xcpretty",
+        parallel_testing: false,
+        number_of_retries: 0,
+        fail_build: true
+      )
+    ensure
+      if File.exist?(conformance_junit_source)
+        FileUtils.cp(conformance_junit_source, conformance_junit_destination)
+      end
+    end
   end
 
   desc "Runs all the tvOS tests"
