@@ -8,8 +8,10 @@ import Testing
 
 @testable import RulesEngine
 
-/// Runs the khepri-generated audience predicate conformance fixtures as
-/// individually-addressable test cases.
+/// Runs khepri-generated audience predicate conformance fixtures.
+///
+/// Uses Swift Testing `@Test(arguments:)` so each fixture is reported as its own
+/// test case in CI (CircleCI Tests tab / JUnit from the xcresult bundle).
 ///
 /// Download fixtures first:
 /// `./scripts/rules_engine/download_predicate_conformance_fixtures.sh`

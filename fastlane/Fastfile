@@ -728,7 +728,6 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: 'junit',
       result_bundle: true,
-      # Swift Testing output is not parsed by xcpretty; trainer generates JUnit from the xcresult.
       xcodebuild_formatter: '',
       only_testing: ['RulesEngineTests/PredicateConformanceTests'],
       configuration: 'Debug',
