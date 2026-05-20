@@ -172,7 +172,8 @@ struct PaywallsV2View: View {
     }
 
     public var body: some View {
-        self.addPaywallModifiers(to:
+		let _ = Self._printChanges()
+		self.addPaywallModifiers(to:
             VStack(spacing: 0) {
                 if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
                     self.defaultPaywallView(

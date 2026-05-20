@@ -23,7 +23,9 @@ import SwiftUI
 
 #if DEBUG
 
-private enum StateManagementPreview {
+/// Internal (not `private`) so the PaywallsTester app target can reach `.paywallComponents` / `.data`
+/// via `@testable import RevenueCatUI` in DEBUG, and present this paywall on a simulator.
+enum StateManagementPreview {
 
     // MARK: - Components
 
@@ -101,6 +103,112 @@ private enum StateManagementPreview {
         ),
         stateUpdates: [
             .set(key: "comparisonOpen", value: .literal(.bool(false)))
+        ]
+    )
+
+    // MARK: - Collapsible details panel
+    //
+    // Demonstrates a *visibility-driven* override: an entire stack disappears/reappears
+    // depending on state, not just text content. The base `visible: false` hides the panel by
+    // default; the override flips it to `visible: true` whenever `comparisonOpen == true`.
+
+    static let detailsPanel = PaywallComponent.StackComponent(
+        visible: false,
+        components: [
+            .text(.init(
+                text: "id_details_heading",
+                fontWeight: .bold,
+                color: .init(light: .hex("#FFFFFF")),
+                padding: .init(top: 0, bottom: 8, leading: 0, trailing: 0),
+                margin: .zero,
+                fontSize: 14,
+                horizontalAlignment: .leading
+            )),
+            .text(.init(
+                text: "id_details_body",
+                color: .init(light: .hex("#FFFFFF")),
+                padding: .zero,
+                margin: .zero,
+                fontSize: 13,
+                horizontalAlignment: .leading
+            ))
+        ],
+        dimension: .vertical(.leading, .start),
+        size: .init(width: .fill, height: .fit),
+        backgroundColor: .init(light: .hex("#0078D4")),
+        padding: .init(top: 12, bottom: 12, leading: 16, trailing: 16),
+        margin: .init(top: 8, bottom: 8, leading: 0, trailing: 0),
+        shape: .rectangle(.init(topLeading: 10, topTrailing: 10, bottomLeading: 10, bottomTrailing: 10)),
+        overrides: [
+            .init(
+                extendedConditions: [.state(operator: .equals, name: "comparisonOpen", value: .bool(true))],
+                properties: .init(visible: true)
+            )
+        ]
+    )
+
+    // MARK: - Color-driven indicator stack (cross-section observer)
+    //
+    // This stack lives near the title — far from the carousel — but reads `currentSlide` and
+    // changes its `backgroundColor` based on which slide is active. Demonstrates two things:
+    //   1. State can drive *non-text* properties (here: backgroundColor).
+    //   2. State is paywall-wide; the carousel can mutate a value that an unrelated component
+    //      somewhere else in the tree observes.
+
+    static let slideColorIndicator = PaywallComponent.StackComponent(
+        components: [
+            .text(.init(
+                text: "id_color_indicator_label",
+                fontWeight: .semibold,
+                color: .init(light: .hex("#FFFFFF")),
+                padding: .init(top: 6, bottom: 6, leading: 12, trailing: 12),
+                margin: .zero,
+                fontSize: 12,
+                horizontalAlignment: .center
+            ))
+        ],
+        size: .init(width: .fit, height: .fit),
+        backgroundColor: .init(light: .hex("#4287F5")), // matches slide 0
+        padding: .zero,
+        margin: .init(top: 0, bottom: 8, leading: 0, trailing: 0),
+        shape: .rectangle(.init(topLeading: 6, topTrailing: 6, bottomLeading: 6, bottomTrailing: 6)),
+        overrides: [
+            .init(
+                extendedConditions: [.state(operator: .equals, name: "currentSlide", value: .int(1))],
+                properties: .init(backgroundColor: .init(light: .hex("#42B27D")))
+            ),
+            .init(
+                extendedConditions: [.state(operator: .equals, name: "currentSlide", value: .int(2))],
+                properties: .init(backgroundColor: .init(light: .hex("#E0823F")))
+            )
+        ]
+    )
+
+    // MARK: - Composite (ANDed) condition text
+    //
+    // The override's `conditions` array is ANDed — every condition must match for the override
+    // to fire. This text shows a default tip, but switches to a special message when BOTH
+    // `comparisonOpen == true` AND `activeTab == "yearly"`.
+
+    static let comboMessageText = PaywallComponent.TextComponent(
+        text: "id_combo_default",
+        fontWeight: .regular,
+        color: .init(light: .hex("#444444")),
+        padding: .init(top: 8, bottom: 8, leading: 12, trailing: 12),
+        margin: .init(top: 16, bottom: 0, leading: 0, trailing: 0),
+        fontSize: 13,
+        horizontalAlignment: .center,
+        overrides: [
+            .init(
+                extendedConditions: [
+                    .state(operator: .equals, name: "comparisonOpen", value: .bool(true)),
+                    .state(operator: .equals, name: "activeTab",      value: .string("yearly"))
+                ],
+                properties: .init(
+                    text: "id_combo_match",
+                    color: .init(light: .hex("#22AA66"))
+                )
+            )
         ]
     )
 
@@ -302,11 +410,16 @@ private enum StateManagementPreview {
     static let rootStack = PaywallComponent.StackComponent(
         components: [
             .text(titleText),
+            // Cross-section observer: backgroundColor of this stack is driven by `currentSlide`,
+            // even though the carousel that sets `currentSlide` is far below in the tree.
+            .stack(slideColorIndicator),
 
             .text(sectionHeader("id_section_button")),
             .text(statusText),
             .button(turnOnButton),
             .button(turnOffButton),
+            // Whole panel toggles visibility via a `.state` override on `comparisonOpen`.
+            .stack(detailsPanel),
 
             .text(sectionHeader("id_section_carousel")),
             .carousel(carousel),
@@ -314,7 +427,11 @@ private enum StateManagementPreview {
 
             .text(sectionHeader("id_section_tabs")),
             .tabs(tabs),
-            .text(tabIndicatorText)
+            .text(tabIndicatorText),
+
+            // Composite-condition observer: only matches when BOTH `comparisonOpen == true`
+            // AND `activeTab == "yearly"`. Demonstrates that the `conditions` array is ANDed.
+            .text(comboMessageText)
         ],
         dimension: .vertical(.center, .start),
         size: .init(width: .fill, height: .fill),
@@ -354,6 +471,14 @@ private enum StateManagementPreview {
             "id_status_on":  .string("Comparison is ON"),
             "id_btn_on":     .string("Turn ON"),
             "id_btn_off":    .string("Turn OFF"),
+
+            "id_details_heading":      .string("Plan comparison"),
+            "id_details_body":         .string("Yearly saves you 33% vs. monthly. " +
+                                               "Includes all features in the standard plan."),
+            "id_color_indicator_label": .string("Carousel colour"),
+
+            "id_combo_default": .string("Tip: try opening comparison and switching to the yearly tab."),
+            "id_combo_match":   .string("Excellent choice — yearly with comparison open."),
 
             "id_slide_1": .string("Slide 1"),
             "id_slide_2": .string("Slide 2"),

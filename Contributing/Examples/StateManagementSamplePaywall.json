@@ -31,6 +31,30 @@
             "margin":  { "top": 0, "bottom": 16, "leading": 0, "trailing": 0 }
           },
 
+          {
+            "_comment": "Cross-section observer: backgroundColor is driven by `currentSlide` even though the carousel that mutates it lives below.",
+            "type": "stack",
+            "components": [
+              { "type": "text", "textLid": "id_color_indicator_label", "fontWeight": "semibold", "fontSize": 12,
+                "color": { "light": { "type": "hex", "value": "#FFFFFF" } },
+                "horizontalAlignment": "center",
+                "padding": { "top": 6, "bottom": 6, "leading": 12, "trailing": 12 },
+                "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 } }
+            ],
+            "size": { "width": { "type": "fit" }, "height": { "type": "fit" } },
+            "backgroundColor": { "light": { "type": "hex", "value": "#4287F5" } },
+            "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+            "margin":  { "top": 0, "bottom": 8, "leading": 0, "trailing": 0 },
+            "shape": { "type": "rectangle",
+                       "corners": { "topLeading": 6, "topTrailing": 6, "bottomLeading": 6, "bottomTrailing": 6 } },
+            "overrides": [
+              { "conditions": [ { "type": "state_condition", "operator": "=", "name": "currentSlide", "value": 1 } ],
+                "properties": { "backgroundColor": { "light": { "type": "hex", "value": "#42B27D" } } } },
+              { "conditions": [ { "type": "state_condition", "operator": "=", "name": "currentSlide", "value": 2 } ],
+                "properties": { "backgroundColor": { "light": { "type": "hex", "value": "#E0823F" } } } }
+            ]
+          },
+
           { "type": "text", "textLid": "id_section_button", "fontWeight": "bold", "fontSize": 12,
             "color": { "light": { "type": "hex", "value": "#888888" } },
             "horizontalAlignment": "leading",
@@ -111,6 +135,37 @@
               "shape": { "type": "rectangle",
                          "corners": { "topLeading": 12, "topTrailing": 12, "bottomLeading": 12, "bottomTrailing": 12 } }
             }
+          },
+
+          {
+            "_comment": "Visibility-driven override — entire stack appears only when comparisonOpen == true.",
+            "type": "stack",
+            "visible": false,
+            "components": [
+              { "type": "text", "textLid": "id_details_heading", "fontWeight": "bold", "fontSize": 14,
+                "color": { "light": { "type": "hex", "value": "#FFFFFF" } },
+                "horizontalAlignment": "leading",
+                "padding": { "top": 0, "bottom": 8, "leading": 0, "trailing": 0 },
+                "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 } },
+              { "type": "text", "textLid": "id_details_body", "fontWeight": "regular", "fontSize": 13,
+                "color": { "light": { "type": "hex", "value": "#FFFFFF" } },
+                "horizontalAlignment": "leading",
+                "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 } }
+            ],
+            "dimension": { "type": "vertical", "alignment": "leading", "distribution": "start" },
+            "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+            "backgroundColor": { "light": { "type": "hex", "value": "#0078D4" } },
+            "padding": { "top": 12, "bottom": 12, "leading": 16, "trailing": 16 },
+            "margin":  { "top": 8, "bottom": 8, "leading": 0, "trailing": 0 },
+            "shape": { "type": "rectangle",
+                       "corners": { "topLeading": 10, "topTrailing": 10, "bottomLeading": 10, "bottomTrailing": 10 } },
+            "overrides": [
+              { "conditions": [
+                  { "type": "state_condition", "operator": "=", "name": "comparisonOpen", "value": true }
+                ],
+                "properties": { "visible": true } }
+            ]
           },
 
           { "type": "text", "textLid": "id_section_carousel", "fontWeight": "bold", "fontSize": 12,
@@ -313,6 +368,28 @@
                 ],
                 "properties": { "textLid": "id_tab_label_yearly" } }
             ]
+          },
+
+          {
+            "_comment": "Composite (ANDed) condition — override fires only when BOTH state keys match.",
+            "type": "text",
+            "textLid": "id_combo_default",
+            "fontWeight": "regular",
+            "fontSize": 13,
+            "color": { "light": { "type": "hex", "value": "#444444" } },
+            "horizontalAlignment": "center",
+            "padding": { "top": 8, "bottom": 8, "leading": 12, "trailing": 12 },
+            "margin":  { "top": 16, "bottom": 0, "leading": 0, "trailing": 0 },
+            "overrides": [
+              { "conditions": [
+                  { "type": "state_condition", "operator": "=", "name": "comparisonOpen", "value": true },
+                  { "type": "state_condition", "operator": "=", "name": "activeTab",      "value": "yearly" }
+                ],
+                "properties": {
+                  "textLid": "id_combo_match",
+                  "color": { "light": { "type": "hex", "value": "#22AA66" } }
+                } }
+            ]
           }
         ],
         "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
@@ -336,6 +413,14 @@
       "id_status_on":  "Comparison is ON",
       "id_btn_on":     "Turn ON",
       "id_btn_off":    "Turn OFF",
+
+      "id_details_heading":       "Plan comparison",
+      "id_details_body":          "Yearly saves you 33% vs. monthly. Includes all features in the standard plan.",
+      "id_color_indicator_label": "Carousel colour",
+
+      "id_combo_default": "Tip: try opening comparison and switching to the yearly tab.",
+      "id_combo_match":   "Excellent choice — yearly with comparison open.",
+
 
       "id_slide_1":       "Slide 1",
       "id_slide_2":       "Slide 2",

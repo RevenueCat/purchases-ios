@@ -45,10 +45,23 @@ final class SamplePaywallLoader {
 
     #if !os(tvOS) // For Paywalls V2
     func offering(with components: PaywallComponentsData) -> Offering {
+        // Attach the components-data to the offering as `paywallComponents` so PaywallView
+        // recognises this as a V2 paywall and renders it. Without this, the offering looks
+        // empty and PaywallView falls back to the "no paywall configured" screen.
+        let paywallComponents = Offering.PaywallComponents(
+            uiConfig: .init(
+                app: .init(colors: [:], fonts: [:]),
+                localizations: [:],
+                variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+            ),
+            data: components
+        )
         return .init(
             identifier: Self.offeringIdentifier,
             serverDescription: Self.offeringIdentifier,
             metadata: [:],
+            paywall: nil,
+            paywallComponents: paywallComponents,
             availablePackages: self.packages,
             webCheckoutUrl: nil
         )

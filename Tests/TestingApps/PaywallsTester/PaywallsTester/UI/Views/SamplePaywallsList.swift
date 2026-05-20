@@ -182,6 +182,15 @@ struct SamplePaywallsList: View {
                 } label: {
                     TemplateLabel(name: "Unrecognized paywall", icon: "exclamationmark.triangle")
                 }
+
+                if #available(iOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                    Button {
+                        self.display = .componentPaywall(StateManagementPreview.data)
+                    } label: {
+                        TemplateLabel(name: "State management demo",
+                                      icon: "rectangle.stack.badge.play")
+                    }
+                }
             }
             #endif
 
