@@ -106,6 +106,17 @@ aliases:
         only: main
   swiftinterface-xcode-version: &swiftinterface-xcode-version "26.3"
 commands:
+  github-notify-pr-on-fail:
+    steps:
+      - run:
+          name: Post GitHub PR failure comment
+          when: on_fail
+          command: bundle exec fastlane notify_pr_ci_failure
+      - run:
+          name: Delete GitHub PR failure comment on success
+          when: on_success
+          command: bundle exec fastlane clear_pr_ci_failure
+
   slack-notify-on-fail:
     steps:
       # Map custom variable names to the Slack orb variables, since the default variable names are already used by the Fastlane Slack integration
@@ -985,6 +996,7 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-26
       - slack-notify-on-fail
+      - github-notify-pr-on-fail
 
   # As of May 12, 2026, there is a StoreKit bug that is preventing us from running unit tests
   # when building with Xcode 26.4+. When built with Xcode 26.4+, tests that fetch products
@@ -1767,6 +1779,7 @@ jobs:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output
+      - github-notify-pr-on-fail
 
   danger:
     docker:
@@ -2200,7 +2213,9 @@ workflows:
       # =============================================================
       # Reduced Test Suite: Auto-run on every push
       # =============================================================
-      - lint
+      - lint:
+          context:
+            - slack-secrets
       - check-api-changes-revenuecat:
           context:
             - slack-secrets-ios
@@ -2674,7 +2689,9 @@ workflows:
       - emerge_binary_size_analysis:
           context:
             - slack-secrets
-      - lint
+      - lint:
+          context:
+            - slack-secrets
       - run-test-ios-26:
           context:
             - slack-secrets

@@ -7,12 +7,20 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RulesEngine.swift
+//  RCDangerousSettingsAPI.h
+//  ObjCAPITester
 //
-//  Created by Antonio Pallares.
+//  Created by Antonio Pallares on 17/5/26.
 //
 
-import Foundation
+#import <Foundation/Foundation.h>
 
-/// Namespace for the RevenueCat rules engine.
-@_spi(Internal) public enum RulesEngine {}
+NS_ASSUME_NONNULL_BEGIN
+
+@interface RCDangerousSettingsAPI : NSObject
+
++ (void)checkAPI;
+
+@end
+
+NS_ASSUME_NONNULL_END
