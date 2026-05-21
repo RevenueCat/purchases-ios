@@ -883,21 +883,21 @@ struct RestoreInProgressPreferenceKey: PreferenceKey {
 struct PurchasedResultPreferenceKey: PreferenceKey {
 
     struct PurchaseResult: Equatable {
-        var id: UUID?
+        private var diffKey: String?
         var transaction: StoreTransaction?
         var customerInfo: CustomerInfo
         var userCancelled: Bool
 
-        init(data: PurchaseResultData, id: UUID?) {
-            self.id = id
+        init(data: PurchaseResultData, diffKey: UUID? = nil) {
+            self.diffKey = diffKey?.uuidString ?? data.transaction?.id
             self.transaction = data.transaction
             self.customerInfo = data.customerInfo
             self.userCancelled = data.userCancelled
         }
 
-        init?(data: PurchaseResultData?, id: UUID?) {
+        init?(data: PurchaseResultData?, diffKey: UUID? = nil) {
             guard let data else { return nil }
-            self.init(data: data, id: id)
+            self.init(data: data, diffKey: diffKey)
         }
     }
 

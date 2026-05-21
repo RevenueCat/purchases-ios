@@ -501,7 +501,7 @@ struct LoadedOfferingPaywallView: View {
             .preference(key: PurchasedResultPreferenceKey.self,
                         value: .init(
                             data: self.purchaseHandler.sessionPurchaseResult,
-                            id: (self.purchaseHandler.sessionPurchaseResult?.userCancelled == true) ?
+                            diffKey: (self.purchaseHandler.sessionPurchaseResult?.userCancelled == true) ?
                             self.purchaseHandler.consecutiveCancellationRequestID : nil
                         ))
             .preference(key: RestoredCustomerInfoPreferenceKey.self,
