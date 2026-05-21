@@ -105,7 +105,7 @@ custom_rules:
     included: ".*\\.swift"
     name: "No leaking `import RulesEngine`"
     regex: '^[ \t]*(@_exported\s+)?(public\s+|package\s+)?import\s+RulesEngine\b'
-    message: "`import RulesEngine` (plain, `@_exported`, `public`, or `package`) is not allowed because it re-exports RulesEngine's public APIs into the SDK's public API surface. Use `#if compiler(>=6)\\n    internal import RulesEngine\\n#else\\n    @_implementationOnly import RulesEngine\\n#endif` (or `private import RulesEngine` / `fileprivate import RulesEngine`)."
+    message: "`import RulesEngine` (plain, `@_exported`, `public`, or `package`) is not allowed because it re-exports RulesEngine's public APIs into the SDK's public API surface.\nUse the canonical form:\n#if compiler(>=6)\n    internal import RulesEngine\n#else\n    @_implementationOnly import RulesEngine\n#endif\nOr `private import RulesEngine` / `fileprivate import RulesEngine`."
     severity: error
 
 identifier_name:
