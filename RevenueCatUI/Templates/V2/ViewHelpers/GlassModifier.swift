@@ -5,8 +5,8 @@
 //  Created by Dave DeLong on 5/20/26.
 //
 
-import SwiftUI
 @_spi(Internal) import RevenueCat
+import SwiftUI
 
 extension View {
 
@@ -29,17 +29,18 @@ private struct GlassEffectModifier: ViewModifier {
 
     @Environment(\.colorScheme) var colorScheme
 
-    @available(macOS 26.0, iOS 26.0, tvOS 26.0, watchOS 26.0, *)
+    @available(macOS 26.0, iOS 26.0, *)
     var resolvedGlassEffect: Glass {
         var glass: Glass
         switch effect?.effect {
-            case .none: glass = .identity
-            case .clear: glass = .clear
-            case .glassy: glass = .regular
+        case .none: glass = .identity
+        case .clear: glass = .clear
+        case .glassy: glass = .regular
         }
 
         if effect != nil {
-            if let tint = effect?.tint, let resolved = try? DisplayableColorScheme.from(colorScheme: tint, uiConfigProvider: uiConfigProvider) {
+            if let tint = effect?.tint,
+                let resolved = try? DisplayableColorScheme.from(colorScheme: tint, uiConfigProvider: uiConfigProvider) {
                 let color = resolved.toDynamicColor(with: colorScheme)
                 glass = glass.tint(color)
             }
@@ -52,29 +53,29 @@ private struct GlassEffectModifier: ViewModifier {
         return glass
     }
 
-    @available(macOS 26.0, iOS 26.0, tvOS 26.0, watchOS 26.0, *)
+    @available(macOS 26.0, iOS 26.0, *)
     var resolvedShape: AnyShape {
         switch shape {
-            case .none:
-                return AnyShape(.rect)
-            case .pill:
-                return AnyShape(.capsule)
-            case .rectangle(let radii):
-                if let radii {
-                    let uneven = UnevenRoundedRectangle(topLeadingRadius: radii.topLeading ?? 0,
-                                                        bottomLeadingRadius: radii.bottomLeading ?? 0,
-                                                        bottomTrailingRadius: radii.bottomTrailing ?? 0,
-                                                        topTrailingRadius: radii.topTrailing ?? 0)
+        case .none:
+            return AnyShape(.rect)
+        case .pill:
+            return AnyShape(.capsule)
+        case .rectangle(let radii):
+            if let radii {
+                let uneven = UnevenRoundedRectangle(topLeadingRadius: radii.topLeading ?? 0,
+                                                    bottomLeadingRadius: radii.bottomLeading ?? 0,
+                                                    bottomTrailingRadius: radii.bottomTrailing ?? 0,
+                                                    topTrailingRadius: radii.topTrailing ?? 0)
 
-                    return AnyShape(uneven)
-                } else {
-                    return AnyShape(.rect)
-                }
+                return AnyShape(uneven)
+            } else {
+                return AnyShape(.rect)
+            }
         }
     }
 
     func body(content: Content) -> some View {
-        if #available(macOS 26.0, iOS 26.0, tvOS 26.0, watchOS 26.0, *) {
+        if #available(macOS 26.0, iOS 26.0, *) {
             content
                 .glassEffect(resolvedGlassEffect, in: resolvedShape)
         } else {

@@ -654,7 +654,7 @@ import Foundation
         }
 
     }
-    
+
     struct GlassEffect: PaywallComponentBase {
         public static var clear: Self { .init(effect: .clear, tint: nil, interactive: nil) }
         public static var glassy: Self { .init(effect: .glassy, tint: nil, interactive: nil) }
@@ -667,7 +667,7 @@ import Foundation
             .init(effect: .glassy, tint: tint, interactive: interactive)
         }
 
-        // swiftlint:disable:this nesting
+        // swiftlint:disable:next nesting
         public enum Effect: String, PaywallComponentBase {
             case clear
             case glassy
