@@ -2031,21 +2031,6 @@ jobs:
           destination: revenuecatui-api-visionos.swiftinterface
       - slack-notify-on-fail
 
-  check-rules-engine-public-api:
-    executor:
-      name: macos-executor
-      xcode_version: *swiftinterface-xcode-version
-    steps:
-      - checkout
-      - install-dependencies
-      - tuist-generate-workspace:
-          query: "RulesEngine"
-      - run:
-          name: Assert RulesEngine has no non-@_spi(Internal) public API
-          command: |
-            bundle exec fastlane ios check_rules_engine_no_public_api
-      - slack-notify-on-fail
-
   generate-swiftinterface:
     executor:
       name: macos-executor
@@ -2208,9 +2193,6 @@ workflows:
           context:
             - slack-secrets-ios
       - check-api-changes-revenuecatui:
-          context:
-            - slack-secrets-ios
-      - check-rules-engine-public-api:
           context:
             - slack-secrets-ios
       - run-test-ios-26:
@@ -2383,7 +2365,6 @@ workflows:
             - lint
             - check-api-changes-revenuecat
             - check-api-changes-revenuecatui
-            - check-rules-engine-public-api
             - run-test-ios-26
             - build-xcode-265
             - pod-lib-lint
@@ -2601,9 +2582,6 @@ workflows:
       - check-api-changes-revenuecatui:
           context:
             - slack-secrets-ios
-      - check-rules-engine-public-api:
-          context:
-            - slack-secrets-ios
       - run-all-maestro-e2e-tests:
           context:
             - e2e-tests
@@ -2705,7 +2683,6 @@ workflows:
           requires:
             - check-api-changes-revenuecat
             - check-api-changes-revenuecatui
-            - check-rules-engine-public-api
             - run-all-maestro-e2e-tests
             - lint
             - run-test-ios-26

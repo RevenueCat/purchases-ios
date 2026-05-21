@@ -101,6 +101,13 @@ custom_rules:
     message: "Use Bundle.revenueCatUI instead of Bundle.module for Compose Resources compatibility"
     severity: error
 
+  no_plain_rules_engine_import:
+    included: ".*\\.swift"
+    name: "No plain `import RulesEngine`"
+    regex: '^[ \t]*import\s+RulesEngine\b'
+    message: "Plain `import RulesEngine` is not allowed because it can leak RulesEngine's public APIs into the SDK's public API surface. Use `#if compiler(>=6)\\n    internal import RulesEngine\\n#else\\n    @_implementationOnly import RulesEngine\\n#endif` (or `private import RulesEngine` / `fileprivate import RulesEngine`)."
+    severity: error
+
 identifier_name:
   max_length:
     warning: 60

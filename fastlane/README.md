@@ -474,14 +474,6 @@ Clones or updates paywall-preview-resources repo
 
 Generate Swift interface files for API change detection
 
-### ios check_rules_engine_no_public_api
-
-```sh
-[bundle exec] fastlane ios check_rules_engine_no_public_api
-```
-
-Assert RulesEngine has no public, non-@_spi(Internal) API
-
 ### ios check_api_changes
 
 ```sh
