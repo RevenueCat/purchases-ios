@@ -290,8 +290,6 @@ struct ButtonComponentView_Previews: PreviewProvider {
             )
         }
         .previewRequiredPaywallsV2Properties()
-        .frame(maxHeight: .infinity)
-        .background(.blue)
         .environmentObject(PurchaseHandler.default())
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Default")
