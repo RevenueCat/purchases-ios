@@ -91,6 +91,23 @@ struct APIKeyDashboardList: View {
                 }
                 .padding(.horizontal, 24)
 
+                NavigationLink {
+                    InlineDiscoveryDemoView()
+                } label: {
+                    HStack {
+                        Label("Inline Discovery Placement", systemImage: "rectangle.leadinghalf.inset.filled")
+                            .font(.headline)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption.bold())
+                    }
+                    .padding()
+                    .foregroundStyle(Color.accentColor)
+                    .background(Color(.secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                }
+                .padding(.horizontal, 24)
+
                 Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -510,50 +527,246 @@ struct APIKeyDashboardList: View {
 
     }
 
+    private struct InlineDiscoveryDemoView: View {
+
+        private enum LoadingState {
+            case loading
+            case loaded(RecommendationItem?)
+            case failed
+        }
+
+        @Environment(\.openURL)
+        private var openURL
+
+        @State
+        private var state: LoadingState = .loading
+
+        var body: some View {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Habit Journal")
+                            .font(.largeTitle.bold())
+                        Text("A compact app surface with one embedded Discovery recommendation.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Morning check-in")
+                            .font(.headline)
+                        Text("You are 4 days into your hydration streak.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        ProgressView(value: 0.8)
+                    }
+                    .padding()
+                    .background(Color(.secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+
+                    inlineRecommendation
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Today’s habits")
+                            .font(.headline)
+                        fakeHabit("Drink water", complete: true)
+                        fakeHabit("Walk outside", complete: true)
+                        fakeHabit("Read for 10 minutes", complete: false)
+                    }
+                    .padding()
+                    .background(Color(.secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                }
+                .padding()
+            }
+            .background(Color(.systemGroupedBackground))
+            .task {
+                await fetchInlineRecommendation()
+            }
+            .refreshable {
+                await fetchInlineRecommendation()
+            }
+        }
+
+        @ViewBuilder
+        private var inlineRecommendation: some View {
+            switch state {
+            case .loading:
+                HStack(spacing: 12) {
+                    SwiftUI.ProgressView()
+                    Text("Loading partner deal")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+                .padding()
+                .background(Color(.secondarySystemGroupedBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+            case let .loaded(item):
+                if let item {
+                    CompactRecommendationRow(item: item) {
+                        if let url = item.appStoreURL {
+                            Task {
+                                await RecommendationsClient.trackRecommendationClick(item)
+                            }
+                            openURL(url)
+                        }
+                    }
+                }
+
+            case .failed:
+                EmptyView()
+            }
+        }
+
+        private func fetchInlineRecommendation() async {
+            state = .loading
+            do {
+                let response = try await RecommendationsClient.fetchRecommendations()
+                state = .loaded(response.items.dropFirst().first ?? response.items.first)
+            } catch {
+                state = .failed
+            }
+        }
+
+        private func fakeHabit(_ title: String, complete: Bool) -> some View {
+            HStack {
+                Image(systemName: complete ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(complete ? .green : .secondary)
+                Text(title)
+                Spacer()
+            }
+        }
+
+    }
+
+    private struct RecommendationsResponse: Decodable {
+        let placementID: String
+        let title: String
+        let subtitle: String
+        let layout: String
+        let items: [RecommendationItem]
+
+        enum CodingKeys: String, CodingKey {
+            case placementID = "placement_id"
+            case title
+            case subtitle
+            case layout
+            case items
+        }
+    }
+
+    private struct RecommendationItem: Decodable, Identifiable {
+        let id: String
+        let name: String
+        let headline: String
+        let body: String
+        let iconURL: URL?
+        let appStoreID: String
+        let appStoreURL: URL?
+        let cta: String
+
+        enum CodingKeys: String, CodingKey {
+            case id
+            case name
+            case headline
+            case body
+            case iconURL = "icon_url"
+            case appStoreID = "app_store_id"
+            case appStoreURL = "app_store_url"
+            case cta
+        }
+    }
+
+    private enum RecommendationsClient {
+
+        static func fetchRecommendations() async throws -> RecommendationsResponse {
+            let request = try makeRequest()
+            let (data, response) = try await URLSession.shared.data(for: request)
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw URLError(.badServerResponse)
+            }
+
+            guard (200..<300).contains(httpResponse.statusCode) else {
+                throw RecommendationsError.requestFailed(httpResponse.statusCode)
+            }
+
+            return try JSONDecoder().decode(RecommendationsResponse.self, from: data)
+        }
+
+        static func trackRecommendationClick(_ item: RecommendationItem) async {
+            do {
+                let request = try makeClickRequest(item)
+                _ = try await URLSession.shared.data(for: request)
+            } catch {
+                // Best effort analytics; opening the app should not depend on tracking.
+            }
+        }
+
+        private static func makeRequest() throws -> URLRequest {
+            guard var components = URLComponents(string: Constants.proxyURL ?? "https://api.revenuecat.com") else {
+                throw RecommendationsError.invalidURL
+            }
+
+            components.path = "/v1/subscribers/$RCAnonymousID:paywalls-tester/recommendations"
+            components.queryItems = [
+                URLQueryItem(name: "placement", value: "paywall_dismissed"),
+                URLQueryItem(name: "cache_buster", value: UUID().uuidString)
+            ]
+
+            guard let url = components.url else {
+                throw RecommendationsError.invalidURL
+            }
+
+            var request = URLRequest(
+                url: url,
+                cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
+                timeoutInterval: 30
+            )
+            request.setValue("Bearer \(Constants.apiKey)", forHTTPHeaderField: "Authorization")
+            request.setValue("iOS", forHTTPHeaderField: "X-Platform")
+            request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+            request.setValue("no-cache", forHTTPHeaderField: "Pragma")
+            return request
+        }
+
+        private static func makeClickRequest(_ item: RecommendationItem) throws -> URLRequest {
+            guard var components = URLComponents(string: Constants.proxyURL ?? "https://api.revenuecat.com") else {
+                throw RecommendationsError.invalidURL
+            }
+
+            components.path = "/v1/subscribers/$RCAnonymousID:paywalls-tester/recommendations/clicks"
+
+            guard let url = components.url else {
+                throw RecommendationsError.invalidURL
+            }
+
+            var request = URLRequest(
+                url: url,
+                cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
+                timeoutInterval: 30
+            )
+            request.httpMethod = "POST"
+            request.setValue("Bearer \(Constants.apiKey)", forHTTPHeaderField: "Authorization")
+            request.setValue("iOS", forHTTPHeaderField: "X-Platform")
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try JSONSerialization.data(withJSONObject: [
+                "recommendation_id": item.id,
+                "placement": "paywall_dismissed"
+            ])
+            return request
+        }
+
+    }
+
     private struct AppRecommendationsView: View {
 
         private enum LoadingState {
             case loading
             case loaded(RecommendationsResponse)
             case failed(String)
-        }
-
-        private struct RecommendationsResponse: Decodable {
-            let placementID: String
-            let title: String
-            let subtitle: String
-            let layout: String
-            let items: [RecommendationItem]
-
-            enum CodingKeys: String, CodingKey {
-                case placementID = "placement_id"
-                case title
-                case subtitle
-                case layout
-                case items
-            }
-        }
-
-        fileprivate struct RecommendationItem: Decodable, Identifiable {
-            let id: String
-            let name: String
-            let headline: String
-            let body: String
-            let iconURL: URL?
-            let appStoreID: String
-            let appStoreURL: URL?
-            let cta: String
-
-            enum CodingKeys: String, CodingKey {
-                case id
-                case name
-                case headline
-                case body
-                case iconURL = "icon_url"
-                case appStoreID = "app_store_id"
-                case appStoreURL = "app_store_url"
-                case cta
-            }
         }
 
         @Environment(\.openURL)
@@ -623,7 +836,7 @@ struct APIKeyDashboardList: View {
                         RecommendationCard(item: item) {
                             if let url = item.appStoreURL {
                                 Task {
-                                    await trackRecommendationClick(item)
+                                    await RecommendationsClient.trackRecommendationClick(item)
                                 }
                                 openURL(url)
                             }
@@ -641,93 +854,73 @@ struct APIKeyDashboardList: View {
             state = .loading
 
             do {
-                let request = try makeRequest()
-                let (data, response) = try await URLSession.shared.data(for: request)
-
-                guard let httpResponse = response as? HTTPURLResponse else {
-                    throw URLError(.badServerResponse)
-                }
-
-                guard (200..<300).contains(httpResponse.statusCode) else {
-                    throw RecommendationsError.requestFailed(httpResponse.statusCode)
-                }
-
-                let decoder = JSONDecoder()
-                let recommendations = try decoder.decode(RecommendationsResponse.self, from: data)
-                state = .loaded(recommendations)
+                state = .loaded(try await RecommendationsClient.fetchRecommendations())
             } catch {
                 state = .failed(error.localizedDescription)
             }
         }
 
-        private func makeRequest() throws -> URLRequest {
-            guard var components = URLComponents(string: Constants.proxyURL ?? "https://api.revenuecat.com") else {
-                throw RecommendationsError.invalidURL
+    }
+
+    private struct CompactRecommendationRow: View {
+
+        let item: RecommendationItem
+        let open: () -> Void
+
+        var body: some View {
+            Button(action: open) {
+                HStack(spacing: 10) {
+                    AsyncImage(url: item.iconURL) { phase in
+                        switch phase {
+                        case let .success(image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        default:
+                            Image(systemName: "app.fill")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(width: 34, height: 34)
+                    .background(Color.secondary.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Partner pick")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                        Text(item.name)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.primary)
+                            .lineLimit(1)
+                    }
+
+                    Spacer(minLength: 8)
+
+                    HStack(spacing: 4) {
+                        Text(item.cta)
+                            .font(.caption.weight(.semibold))
+                        Image(systemName: "arrow.up.right")
+                            .font(.caption2.weight(.bold))
+                    }
+                    .foregroundStyle(Color.accentColor)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(Color(.secondarySystemGroupedBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .contentShape(Rectangle())
             }
-
-            components.path = "/v1/subscribers/$RCAnonymousID:paywalls-tester/recommendations"
-            components.queryItems = [
-                URLQueryItem(name: "placement", value: "paywall_dismissed"),
-                URLQueryItem(name: "cache_buster", value: UUID().uuidString)
-            ]
-
-            guard let url = components.url else {
-                throw RecommendationsError.invalidURL
-            }
-
-            var request = URLRequest(
-                url: url,
-                cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
-                timeoutInterval: 30
-            )
-            request.setValue("Bearer \(Constants.apiKey)", forHTTPHeaderField: "Authorization")
-            request.setValue("iOS", forHTTPHeaderField: "X-Platform")
-            request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
-            request.setValue("no-cache", forHTTPHeaderField: "Pragma")
-            return request
-        }
-
-        private func trackRecommendationClick(_ item: RecommendationItem) async {
-            do {
-                let request = try makeClickRequest(item)
-                _ = try await URLSession.shared.data(for: request)
-            } catch {
-                // Best effort analytics; opening the app should not depend on tracking.
-            }
-        }
-
-        private func makeClickRequest(_ item: RecommendationItem) throws -> URLRequest {
-            guard var components = URLComponents(string: Constants.proxyURL ?? "https://api.revenuecat.com") else {
-                throw RecommendationsError.invalidURL
-            }
-
-            components.path = "/v1/subscribers/$RCAnonymousID:paywalls-tester/recommendations/clicks"
-
-            guard let url = components.url else {
-                throw RecommendationsError.invalidURL
-            }
-
-            var request = URLRequest(
-                url: url,
-                cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
-                timeoutInterval: 30
-            )
-            request.httpMethod = "POST"
-            request.setValue("Bearer \(Constants.apiKey)", forHTTPHeaderField: "Authorization")
-            request.setValue("iOS", forHTTPHeaderField: "X-Platform")
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpBody = try JSONSerialization.data(withJSONObject: [
-                "recommendation_id": item.id,
-                "placement": "paywall_dismissed"
-            ])
-            return request
+            .buttonStyle(.plain)
+            .disabled(item.appStoreURL == nil)
         }
 
     }
 
     private struct RecommendationCard: View {
 
-        let item: AppRecommendationsView.RecommendationItem
+        let item: RecommendationItem
         let open: () -> Void
 
         var body: some View {
