@@ -6,7 +6,7 @@
 
 import XCTest
 
-@testable import RulesEngine
+@testable import RulesEngineInternal
 
 // swiftlint:disable type_body_length
 final class StringArrayOperatorsTests: XCTestCase {
