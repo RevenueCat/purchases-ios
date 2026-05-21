@@ -640,6 +640,7 @@ private struct PresentingPaywallModifier: ViewModifier {
                 promoOfferCache: self.promoOfferCacheOwner.cache
             )
         )
+        .environment(\.workflowExitOfferOfferingBinding, self.$exitOfferOffering)
         .onPurchaseStarted {
             self.purchaseStarted?($0)
         }
