@@ -21,28 +21,17 @@ struct WebViewComponentView: View {
 
     init(viewModel: WebViewComponentViewModel) {
         self.viewModel = viewModel
-        #if canImport(UIKit)
-        self._displayURL = .init(initialValue: viewModel.displayURL)
-        #endif
     }
 
     #if canImport(UIKit)
     @State private var dynamicHeight: CGFloat?
-    @State private var displayURL: URL?
     #endif
 
     var body: some View {
         #if canImport(UIKit)
-        WebViewRepresentable(url: displayURL ?? viewModel.url, height: $dynamicHeight)
+        WebViewRepresentable(url: viewModel.displayURL ?? viewModel.url, height: $dynamicHeight)
             .frame(height: dynamicHeight)
             .background(Color.clear)
-            .task(id: viewModel.url) {
-                let resolvedURL = viewModel.displayURL
-                if resolvedURL != displayURL {
-                    dynamicHeight = Self.initialHeight
-                    displayURL = resolvedURL
-                }
-            }
         #else
         EmptyView()
         #endif
@@ -307,10 +296,12 @@ private final class InMemoryHTMLURLSchemeHandler: NSObject, WKURLSchemeHandler {
 
 }
 
+/// PaywallWebViewPool
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 public enum PaywallWebViewPool {
 
+    /// Warms the pool so it's ready. This should be invoked well before the paywall goes to render.
     public static func warmUp() {
         WebViewPool.shared.warmUp()
     }
