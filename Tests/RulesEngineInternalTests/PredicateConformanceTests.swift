@@ -13,8 +13,10 @@ import Testing
 /// Uses Swift Testing `@Test(arguments:)` so each fixture is reported as its own
 /// test case in CI (CircleCI Tests tab / JUnit from the xcresult bundle).
 ///
-/// Download fixtures first:
-/// `./scripts/rules_engine/download_predicate_conformance_fixtures.sh`
+/// Fixtures are downloaded automatically when building or testing
+/// `RulesEngineInternalTests`. To refresh: delete the file under
+/// `Tests/RulesEngineInternalTests/Fixtures/` or set
+/// `KHEPRI_FORCE_PREDICATE_CONFORMANCE_FIXTURE_DOWNLOAD=1`.
 @Suite("Khepri Predicate Conformance")
 struct PredicateConformanceTests {
 

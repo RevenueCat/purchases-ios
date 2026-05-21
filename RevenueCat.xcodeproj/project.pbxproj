@@ -6626,6 +6626,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A0F8AE32D4C3A7766A8654B3 /* Build configuration list for PBXNativeTarget "RulesEngineInternalTests" */;
 			buildPhases = (
+				B2C3D4E5F6A7890123456789 /* Download khepri conformance fixtures */,
 				57D70DFC39D89F6222292D94 /* Sources */,
 				0A65949DAA91444FE9B3FBBA /* Frameworks */,
 				0D8E3F24C00F8055B1F6894B /* Resources */,
@@ -6969,6 +6970,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		B2C3D4E5F6A7890123456789 /* Download khepri conformance fixtures */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download khepri conformance fixtures";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "\"${SRCROOT}/scripts/rules_engine/download_predicate_conformance_fixtures.sh\"\n";
+		};
 		B3C302D926D8066F002B72D1 /* SwiftLint */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;

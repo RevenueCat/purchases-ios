@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 #
 # Downloads the khepri-generated audience predicate conformance fixtures from
-# RevenueCat/khepri main.
+# RevenueCat/khepri main. Invoked automatically when building or testing
+# RulesEngineInternalTests (Xcode build phase and scheme pre-action).
 #
 # Override KHEPRI_PREDICATE_CONFORMANCE_REF to pin a different git ref.
+# Set KHEPRI_FORCE_PREDICATE_CONFORMANCE_FIXTURE_DOWNLOAD=1 to re-download.
 #
 set -euo pipefail
 
@@ -17,6 +19,11 @@ KHEPRI_REPO_URL="git@github.com:RevenueCat/khepri.git"
 API_URL="https://api.github.com/repos/RevenueCat/khepri/contents/${KHEPRI_FIXTURE_PATH}?ref=${KHEPRI_REF}"
 
 mkdir -p "$(dirname "${OUTPUT_PATH}")"
+
+if [[ -f "${OUTPUT_PATH}" && "${KHEPRI_FORCE_PREDICATE_CONFORMANCE_FIXTURE_DOWNLOAD:-}" != "1" ]]; then
+  echo "Predicate conformance fixtures already present at ${OUTPUT_PATH}; skipping download"
+  exit 0
+fi
 
 decode_fixture_content() {
   tr -d '\n' | base64 --decode > "${OUTPUT_PATH}"
