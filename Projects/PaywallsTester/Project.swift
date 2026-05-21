@@ -132,7 +132,9 @@ if hasCustomStoreKit {
 let project = Project(
     name: "PaywallsTester",
     organizationName: .revenueCatOrgName,
-    packages: .projectPackages,
+    packages: .projectPackages + [
+        .package(path: .relativeToRoot("Tests/TestingApps/PaywallsTester/SnapshotTestingStub"))
+    ],
     settings: .appProject,
     targets: [
         .target(
@@ -163,10 +165,11 @@ let project = Project(
             deploymentTargets: allDeploymentTargets,
             infoPlist: .default,
             sources: [
-                "../../Tests/TestingApps/PaywallsTester/PaywallsTesterTests/LocalPaywallOfferingsOverrideTests.swift"
+                "../../Tests/TestingApps/PaywallsTester/PaywallsTesterTests/**/*.swift"
             ],
             dependencies: [
-                .target(name: "PaywallsTester")
+                .target(name: "PaywallsTester"),
+                .external(name: "SnapshotTestingStub")
             ]
         )
     ],
