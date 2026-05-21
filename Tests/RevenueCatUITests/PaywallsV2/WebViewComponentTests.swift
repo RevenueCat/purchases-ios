@@ -62,20 +62,16 @@ final class WebViewComponentTests: TestCase {
         let originalURL = URL(string: "https://example.com/paywall.html")!
         let cachedURL = URL(string: "purchaseshtml://cached/paywall.html")!
         let repository = MockInMemoryHTMLFileRepository()
-        await repository.stubCachedFileURL(cachedURL, for: originalURL)
+        repository.stubCachedFileURL(cachedURL, for: originalURL)
 
         let viewModel = WebViewComponentViewModel(
             component: .init(url: originalURL),
             htmlFileRepository: repository
         )
 
-        let displayURL = await viewModel.displayURL()
-        let cachedFileURLRequests = await repository.cachedFileURLRequests
-        let generatedURLs = await repository.generatedURLs
-
-        XCTAssertEqual(displayURL, cachedURL)
-        XCTAssertEqual(cachedFileURLRequests, [originalURL])
-        XCTAssertEqual(generatedURLs, [])
+        XCTAssertEqual(viewModel.displayURL, cachedURL)
+        XCTAssertEqual(repository.cachedFileURLRequests, [originalURL])
+        XCTAssertEqual(repository.generatedURLs, [])
     }
 
     func testDisplayURLFallsBackToOriginalURLWhenNoCachedHTMLFileExists() async {
@@ -86,13 +82,9 @@ final class WebViewComponentTests: TestCase {
             htmlFileRepository: repository
         )
 
-        let displayURL = await viewModel.displayURL()
-        let cachedFileURLRequests = await repository.cachedFileURLRequests
-        let generatedURLs = await repository.generatedURLs
-
-        XCTAssertEqual(displayURL, originalURL)
-        XCTAssertEqual(cachedFileURLRequests, [originalURL])
-        XCTAssertEqual(generatedURLs, [])
+        XCTAssertNil(viewModel.displayURL)
+        XCTAssertEqual(repository.cachedFileURLRequests, [originalURL])
+        XCTAssertEqual(repository.generatedURLs, [])
     }
 
     func testPaywallComponentsDataCollectsWebViewURLsForPrewarming() {
@@ -128,24 +120,39 @@ final class WebViewComponentTests: TestCase {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
-private final actor MockInMemoryHTMLFileRepository: InMemoryHTMLFileRepositoryType {
+private final class MockInMemoryHTMLFileRepository: InMemoryHTMLFileRepositoryType, @unchecked Sendable {
 
-    private(set) var generatedURLs: [URL] = []
-    private(set) var cachedFileURLRequests: [URL] = []
+    private let lock = NSLock()
+    private var _generatedURLs: [URL] = []
+    private var _cachedFileURLRequests: [URL] = []
     private var cachedFileURLs: [URL: URL] = [:]
 
-    func generateOrGetCachedFileURL(for url: URL) async throws -> URL {
-        self.generatedURLs.append(url)
-        return self.cachedFileURLs[url] ?? url
+    var generatedURLs: [URL] {
+        self.lock.withLock { self._generatedURLs }
     }
 
-    func getCachedFileURL(for url: URL) async -> URL? {
-        self.cachedFileURLRequests.append(url)
-        return self.cachedFileURLs[url]
+    var cachedFileURLRequests: [URL] {
+        self.lock.withLock { self._cachedFileURLRequests }
+    }
+
+    func generateOrGetCachedFileURL(for url: URL) async throws -> URL {
+        return self.lock.withLock {
+            self._generatedURLs.append(url)
+            return self.cachedFileURLs[url] ?? url
+        }
+    }
+
+    func getCachedFileURL(for url: URL) -> URL? {
+        return self.lock.withLock {
+            self._cachedFileURLRequests.append(url)
+            return self.cachedFileURLs[url]
+        }
     }
 
     func stubCachedFileURL(_ cachedURL: URL, for url: URL) {
-        self.cachedFileURLs[url] = cachedURL
+        self.lock.withLock {
+            self.cachedFileURLs[url] = cachedURL
+        }
     }
 
 }

@@ -72,8 +72,8 @@ import Foundation
     }
 
     /// Get the in-memory cached HTML URL if it exists.
-    @_spi(Internal) public func getCachedFileURL(for url: InputURL) async -> OutputURL? {
-        return await InMemoryHTMLURLProtocol.cachedURL(for: url)
+    @_spi(Internal) public func getCachedFileURL(for url: InputURL) -> OutputURL? {
+        return InMemoryHTMLURLProtocol.cachedURL(for: url)
     }
 
     private func cacheHTML(at url: URL) async throws -> URL {
@@ -84,7 +84,7 @@ import Foundation
             return try? await self.cacheAsset(at: assetURL, kind: kind)
         }.rewrite(html)
 
-        return await InMemoryHTMLURLProtocol.store(
+        return InMemoryHTMLURLProtocol.store(
             data: rewrittenHTML.asData,
             mimeType: "text/html",
             for: url
@@ -96,7 +96,7 @@ import Foundation
             throw Error.invalidURLScheme
         }
 
-        if let cachedURL = await InMemoryHTMLURLProtocol.cachedURL(for: url) {
+        if let cachedURL = InMemoryHTMLURLProtocol.cachedURL(for: url) {
             return cachedURL
         }
 
@@ -119,7 +119,7 @@ import Foundation
                     cachedData = data
                 }
 
-                let cachedURL = await InMemoryHTMLURLProtocol.store(
+                let cachedURL = InMemoryHTMLURLProtocol.store(
                     data: cachedData,
                     mimeType: kind.mimeType(for: url),
                     for: url
@@ -155,7 +155,7 @@ import Foundation
     func generateOrGetCachedFileURL(for url: InputURL) async throws -> OutputURL
 
     /// Get the in-memory cached HTML URL if it exists.
-    func getCachedFileURL(for url: InputURL) async -> OutputURL?
+    func getCachedFileURL(for url: InputURL) -> OutputURL?
 
 }
 

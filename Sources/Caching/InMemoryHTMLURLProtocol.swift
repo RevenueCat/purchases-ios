@@ -62,49 +62,58 @@ final class InMemoryHTMLURLProtocol: URLProtocol {
         self.loadingTask?.cancel()
     }
 
-    static func cachedURL(for originalURL: URL) async -> URL? {
-        return await self.store.cachedURL(for: originalURL)
+    static func cachedURL(for originalURL: URL) -> URL? {
+        return self.store.cachedURL(for: originalURL)
     }
 
-    static func store(data: Data, mimeType: String?, for originalURL: URL) async -> URL {
-        return await self.store.store(data: data, mimeType: mimeType, for: originalURL)
+    static func store(data: Data, mimeType: String?, for originalURL: URL) -> URL {
+        return self.store.store(data: data, mimeType: mimeType, for: originalURL)
     }
 
     static func clear() async {
-        await self.store.clear()
+        self.store.clear()
     }
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
-private actor InMemoryHTMLURLStore {
+private class InMemoryHTMLURLStore: @unchecked Sendable {
 
     private var entries: [URL: Entry] = [:]
     private var cachedURLsByOriginalURL: [URL: URL] = [:]
+    let lock = NSLock()
 
     func entry(for url: URL) -> Entry? {
-        return self.entries[url]
+        return lock.withLock {
+            return self.entries[url]
+        }
     }
 
     func cachedURL(for originalURL: URL) -> URL? {
-        return self.cachedURLsByOriginalURL[originalURL]
+        return lock.withLock {
+            return self.cachedURLsByOriginalURL[originalURL]
+        }
     }
 
     func store(data: Data, mimeType: String?, for originalURL: URL) -> URL {
-        if let cachedURL = self.cachedURLsByOriginalURL[originalURL] {
+        return lock.withLock {
+            if let cachedURL = self.cachedURLsByOriginalURL[originalURL] {
+                return cachedURL
+            }
+
+            let cachedURL = Self.cachedURL(for: originalURL)
+            self.entries[cachedURL] = Entry(data: data, mimeType: mimeType)
+            self.cachedURLsByOriginalURL[originalURL] = cachedURL
+
             return cachedURL
         }
-
-        let cachedURL = Self.cachedURL(for: originalURL)
-        self.entries[cachedURL] = Entry(data: data, mimeType: mimeType)
-        self.cachedURLsByOriginalURL[originalURL] = cachedURL
-
-        return cachedURL
     }
 
     func clear() {
-        self.entries = [:]
-        self.cachedURLsByOriginalURL = [:]
+        return lock.withLock {
+            self.entries = [:]
+            self.cachedURLsByOriginalURL = [:]
+        }
     }
 
     private static func cachedURL(for originalURL: URL) -> URL {

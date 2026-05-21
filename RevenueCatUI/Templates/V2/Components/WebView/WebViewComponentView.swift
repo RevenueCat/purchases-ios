@@ -19,6 +19,13 @@ struct WebViewComponentView: View {
 
     let viewModel: WebViewComponentViewModel
 
+    init(viewModel: WebViewComponentViewModel) {
+        self.viewModel = viewModel
+        #if canImport(UIKit)
+        self._displayURL = .init(initialValue: viewModel.displayURL)
+        #endif
+    }
+
     #if canImport(UIKit)
     @State private var dynamicHeight: CGFloat?
     @State private var displayURL: URL?
@@ -30,7 +37,7 @@ struct WebViewComponentView: View {
             .frame(height: dynamicHeight)
             .background(Color.clear)
             .task(id: viewModel.url) {
-                let resolvedURL = await viewModel.displayURL()
+                let resolvedURL = viewModel.displayURL
                 if resolvedURL != displayURL {
                     dynamicHeight = Self.initialHeight
                     displayURL = resolvedURL
@@ -76,6 +83,11 @@ private struct WebViewRepresentable: UIViewRepresentable {
         webView.scrollView.alwaysBounceVertical = false
         webView.scrollView.alwaysBounceHorizontal = false
         webView.scrollView.contentInset = .zero
+        webView.scrollView.bouncesZoom = false
+        webView.scrollView.minimumZoomScale = 1.0
+        webView.scrollView.maximumZoomScale = 1.0
+        webView.scrollView.pinchGestureRecognizer?.isEnabled = false
+        webView.scrollView.delegate = context.coordinator
 
         context.coordinator.observeHeightChanges(in: webView.scrollView)
 
@@ -94,6 +106,7 @@ private struct WebViewRepresentable: UIViewRepresentable {
     static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
         coordinator.contentSizeObservation = nil
         uiView.navigationDelegate = nil
+        uiView.scrollView.delegate = nil
 
         if let webView = uiView as? AutoSizingWebView {
             WebViewPool.shared.return(webView)
@@ -104,7 +117,7 @@ private struct WebViewRepresentable: UIViewRepresentable {
         Coordinator(height: $height)
     }
 
-    final class Coordinator: NSObject, WKNavigationDelegate {
+    final class Coordinator: NSObject, WKNavigationDelegate, UIScrollViewDelegate {
 
         @Binding var height: CGFloat?
         var currentURL: URL?
@@ -148,13 +161,20 @@ private struct WebViewRepresentable: UIViewRepresentable {
             self.updateHeight(from: webView.scrollView)
         }
 
+        func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+            return nil
+        }
+
+        func scrollViewDidZoom(_ scrollView: UIScrollView) {
+            scrollView.zoomScale = 1.0
+        }
+
     }
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@MainActor
-private final class WebViewPool {
+final class WebViewPool {
 
     static let shared = WebViewPool(capacity: 3)
 
@@ -164,7 +184,6 @@ private final class WebViewPool {
 
     init(capacity: Int) {
         self.capacity = max(1, capacity)
-        warmUp()
     }
 
     func warmUp() {
@@ -184,6 +203,8 @@ private final class WebViewPool {
     func `return`(_ webView: AutoSizingWebView) {
         webView.stopLoading()
         webView.navigationDelegate = nil
+        webView.scrollView.delegate = nil
+        webView.scrollView.zoomScale = 1.0
         webView.loadHTMLString("<!doctype html><html></html>", baseURL: nil)
 
         if self.pool.count < self.capacity {
@@ -199,12 +220,13 @@ private final class WebViewPool {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class AutoSizingWebView: WKWebView {
+final class AutoSizingWebView: WKWebView {
 
     init(processPool: WKProcessPool) {
         let config = WKWebViewConfiguration()
         config.processPool = processPool
         config.allowsInlineMediaPlayback = true
+        config.userContentController.addUserScript(Self.disableZoomUserScript)
         config.setURLSchemeHandler(InMemoryHTMLURLSchemeHandler(), forURLScheme: "purchaseshtml")
         super.init(frame: .zero, configuration: config)
         isOpaque = false
@@ -213,6 +235,23 @@ private final class AutoSizingWebView: WKWebView {
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    private static let disableZoomUserScript: WKUserScript = {
+        let source = """
+        (function() {
+          var content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+          var viewport = document.querySelector('meta[name="viewport"]');
+          if (!viewport) {
+            viewport = document.createElement('meta');
+            viewport.name = 'viewport';
+            document.head.appendChild(viewport);
+          }
+          viewport.setAttribute('content', content);
+        })();
+        """
+
+        return WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
+    }()
 
 }
 
@@ -264,6 +303,16 @@ private final class InMemoryHTMLURLSchemeHandler: NSObject, WKURLSchemeHandler {
         self.lock.lock()
         self.loadingTasks.removeValue(forKey: identifier)
         self.lock.unlock()
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
+public enum PaywallWebViewPool {
+
+    public static func warmUp() {
+        WebViewPool.shared.warmUp()
     }
 
 }
