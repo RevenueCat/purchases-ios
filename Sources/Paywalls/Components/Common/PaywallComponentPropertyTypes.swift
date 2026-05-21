@@ -668,7 +668,7 @@ import Foundation
         }
 
         // swiftlint:disable:next nesting
-        public enum Effect: String, PaywallComponentBase {
+        @_spi(Internal) public enum Effect: String, PaywallComponentBase {
             case clear
             case glassy
 
