@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 8/22/23.
 
 import Nimble
-import RevenueCat
+@testable import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 import XCTest
@@ -67,6 +67,59 @@ class PaywallFooterTests: TestCase {
         }
 
         expect(customerInfo).toEventually(be(TestData.customerInfo))
+    }
+
+    func testPresentWithPurchaseHandlerWithTransaction() throws {
+        let expectedTransaction = StoreTransaction(MockStoreTransaction())
+        let handler: PurchaseHandler = .mock(transaction: expectedTransaction)
+
+        var result: (transaction: StoreTransaction?, customerInfo: CustomerInfo)?
+
+        _ = try Text("")
+            .originalTemplatePaywallFooter(
+                offering: Self.offering,
+                customerInfo: TestData.customerInfo,
+                introEligibility: .producing(eligibility: .eligible),
+                purchaseHandler: handler,
+                purchaseCompletedWithTransaction: { transaction, customerInfo in
+                    result = (transaction, customerInfo)
+                }
+            )
+            .addToHierarchy()
+
+        Task {
+            _ = try await handler.purchase(package: Self.package)
+        }
+
+        expect(result).toEventuallyNot(beNil())
+        expect(result?.customerInfo) === TestData.customerInfo
+        expect(result?.transaction?.transactionIdentifier)
+            .toEventually(equal(expectedTransaction.transactionIdentifier))
+    }
+
+    func testPresentPrefersPurchaseCompletedWithTransactionOverPurchaseCompleted() throws {
+        let handler: PurchaseHandler = .mock(transaction: StoreTransaction(MockStoreTransaction()))
+
+        var legacyCalled = false
+        var transactionCalled = false
+
+        _ = try Text("")
+            .originalTemplatePaywallFooter(
+                offering: Self.offering,
+                customerInfo: TestData.customerInfo,
+                introEligibility: .producing(eligibility: .eligible),
+                purchaseHandler: handler,
+                purchaseCompleted: { _ in legacyCalled = true },
+                purchaseCompletedWithTransaction: { _, _ in transactionCalled = true }
+            )
+            .addToHierarchy()
+
+        Task {
+            _ = try await handler.purchase(package: Self.package)
+        }
+
+        expect(transactionCalled).toEventually(beTrue())
+        expect(legacyCalled).toEventually(beFalse())
     }
 
     func testPresentWithPurchaseFailureHandler() throws {
