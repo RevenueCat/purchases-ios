@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
 #
-# Downloads the khepri-generated audience predicate conformance fixtures.
+# Downloads the khepri-generated audience predicate conformance fixtures from
+# RevenueCat/khepri main.
 #
-# By default this pulls from the khepri PR branch that introduced the fixtures.
-# Override KHEPRI_PREDICATE_CONFORMANCE_REF to pin a different git ref once the
-# fixtures land on main.
+# Override KHEPRI_PREDICATE_CONFORMANCE_REF to pin a different git ref.
 #
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-KHEPRI_REF="${KHEPRI_PREDICATE_CONFORMANCE_REF:-codex/audience-predicate-fixtures}"
+KHEPRI_REF="${KHEPRI_PREDICATE_CONFORMANCE_REF:-main}"
 OUTPUT_PATH="${KHEPRI_PREDICATE_CONFORMANCE_FIXTURE_PATH:-${REPO_ROOT}/Tests/RulesEngineTests/Fixtures/predicate_conformance_v1.json}"
 KHEPRI_FIXTURE_PATH="khepri/services/audience/fixtures/predicate_conformance_v1.json"
 KHEPRI_REPO_URL="git@github.com:RevenueCat/khepri.git"
