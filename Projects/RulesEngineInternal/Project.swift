@@ -2,20 +2,20 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 
 let project = Project(
-    name: "RulesEngine",
+    name: "RulesEngineInternal",
     organizationName: .revenueCatOrgName,
     packages: .projectPackages,
     settings: .framework,
     targets: [
         .target(
-            name: "RulesEngine",
+            name: "RulesEngineInternal",
             destinations: .allRevenueCat,
             product: .framework,
-            bundleId: "com.revenuecat.RulesEngine",
+            bundleId: "com.revenuecat.RulesEngineInternal",
             deploymentTargets: .allRevenueCat,
             infoPlist: .default,
             sources: [
-                "../../RulesEngine/**/*.swift"
+                "../../RulesEngineInternal/**/*.swift"
             ],
             settings: .settings(
                 base: ([
@@ -24,27 +24,27 @@ let project = Project(
             )
         ),
         .target(
-            name: "RulesEngineTests",
+            name: "RulesEngineInternalTests",
             destinations: .allRevenueCat,
             product: .unitTests,
-            bundleId: "com.revenuecat.RulesEngineTests",
+            bundleId: "com.revenuecat.RulesEngineInternalTests",
             deploymentTargets: .allRevenueCat,
             infoPlist: .default,
             sources: [
-                "../../Tests/RulesEngineTests/**/*.swift"
+                "../../Tests/RulesEngineInternalTests/**/*.swift"
             ],
             dependencies: [
-                .target(name: "RulesEngine")
+                .target(name: "RulesEngineInternal")
             ]
         )
     ],
     schemes: [
         .scheme(
-            name: "RulesEngine",
+            name: "RulesEngineInternal",
             shared: true,
-            buildAction: .buildAction(targets: ["RulesEngine"]),
+            buildAction: .buildAction(targets: ["RulesEngineInternal"]),
             testAction: .targets([
-                .testableTarget(target: "RulesEngineTests")
+                .testableTarget(target: "RulesEngineInternalTests")
             ]),
             runAction: .runAction(configuration: "Debug"),
             archiveAction: .archiveAction(configuration: "Release"),
