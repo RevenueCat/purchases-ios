@@ -14,10 +14,9 @@
 
 import XCTest
 
-// TEMP: deliberate violations of `no_leaking_rules_engine_import` to verify
+// TEMP: deliberate violation of `no_leaking_rules_engine_import` to verify
 // the SwiftLint rule fails CI. Revert before merging.
 import RulesEngine
-@_exported import RulesEngine
 
 @testable import RulesEngine
 
