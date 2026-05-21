@@ -79,15 +79,24 @@ final class PurchaseHandler: ObservableObject {
     /// potential future exit offer triggers (e.g., based on specific products).
     @Published
     fileprivate(set) var sessionPurchaseResult: PurchaseResultData? {
-        didSet {
-            self.sessionPurchaseResultID = UUID()
+        willSet {
+            if haveBothBeenCanceled(lhs: newValue, rhs: sessionPurchaseResult) {
+                self.consecutiveCancellationRequestID = UUID()
+            }
         }
     }
 
-    /// Unique identifier for the latest `sessionPurchaseResult`.
+    private func haveBothBeenCanceled(lhs: PurchaseResultData?, rhs: PurchaseResultData?) -> Bool {
+        switch (lhs, rhs) {
+        case let (left, right):
+            return left?.userCancelled == right?.userCancelled
+        }
+    }
+
+    /// Unique identifier for the latest `consecutiveCancellationRequestID`.
     /// This allows SwiftUI preference listeners to receive consecutive identical results.
     @Published
-    fileprivate(set) var sessionPurchaseResultID: UUID?
+    fileprivate(set) var consecutiveCancellationRequestID: UUID?
 
     /// Whether a purchase was successfully completed in the current session.
     /// Convenience property for checking if we should skip exit offers.
@@ -230,7 +239,7 @@ final class PurchaseHandler: ObservableObject {
             self.paywallEventTracker.discardSession(sessionID: sessionID)
         }
         self.sessionPurchaseResult = nil
-        self.sessionPurchaseResultID = nil
+        self.consecutiveCancellationRequestID = nil
         self.purchaseResult = nil
         self.activePaywallSessionID = nil
     }
