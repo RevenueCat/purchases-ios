@@ -38,13 +38,15 @@ private struct GlassEffectModifier: ViewModifier {
             case .glassy: glass = .regular
         }
         
-        if let tint = effect?.tint, let resolved = try? DisplayableColorScheme.from(colorScheme: tint, uiConfigProvider: uiConfigProvider) {
-            let color = resolved.toDynamicColor(with: colorScheme)
-            glass = glass.tint(color)
-        }
-        
-        if let interactive = effect?.interactive {
-            glass = glass.interactive(interactive)
+        if effect != nil {
+            if let tint = effect?.tint, let resolved = try? DisplayableColorScheme.from(colorScheme: tint, uiConfigProvider: uiConfigProvider) {
+                let color = resolved.toDynamicColor(with: colorScheme)
+                glass = glass.tint(color)
+            }
+            
+            if let interactive = effect?.interactive {
+                glass = glass.interactive(interactive)
+            }
         }
         
         return glass
