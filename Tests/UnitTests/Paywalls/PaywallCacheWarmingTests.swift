@@ -181,6 +181,36 @@ final class PaywallCacheWarmingTests: TestCase {
 
 #if !os(tvOS) // For Paywalls V2
 
+    func testWarmUpPaywallImagesCacheWarmsUpWebViewHTMLFiles() async throws {
+        let webViewURL = URL(string: "https://example.com/paywall.html")!
+        let htmlFileRepository = MockInMemoryHTMLFileRepository()
+        let paywallComponents = Offering.PaywallComponents(
+            uiConfig: try Self.createUIConfig(),
+            data: Self.createPaywallComponentsData(
+                stack: .init(components: [.webView(.init(url: webViewURL))])
+            )
+        )
+
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            htmlFileRepository: htmlFileRepository
+        )
+
+        let offerings = try Self.createOfferings([
+            Self.createOffering(
+                identifier: Self.offeringIdentifier,
+                paywall: nil,
+                paywallComponents: paywallComponents,
+                products: []
+            )
+        ])
+
+        await cache.warmUpPaywallImagesCache(offerings: offerings)
+
+        let generatedURLs = await htmlFileRepository.generatedURLs
+        expect(generatedURLs) == [webViewURL]
+    }
+
     func testTriggerFontDownload_DeduplicatesConcurrentDownloads() async throws {
         let font = DownloadableFont(
             name: "MockFont",
@@ -334,12 +364,14 @@ private extension PaywallCacheWarmingTests {
     static func createOffering(
         identifier: String,
         paywall: PaywallData?,
+        paywallComponents: Offering.PaywallComponents? = nil,
         products: [(PackageType, String)]
     ) throws -> Offering {
         return Offering(
             identifier: identifier,
             serverDescription: identifier,
             paywall: paywall,
+            paywallComponents: paywallComponents,
             availablePackages: products.map { packageType, productID in
                     .init(
                         identifier: Package.string(from: packageType)!,
@@ -378,6 +410,43 @@ private extension PaywallCacheWarmingTests {
 
         return try PaywallData.create(with: XCTUnwrap(Data(contentsOf: paywallURL)))
     }
+
+    #if !os(tvOS) // For Paywalls V2
+
+    static func createPaywallComponentsData(
+        stack: PaywallComponent.StackComponent
+    ) -> PaywallComponentsData {
+        return PaywallComponentsData(
+            templateName: "components_test",
+            assetBaseURL: URL(string: "https://example.com/assets")!,
+            componentsConfig: .init(
+                base: .init(
+                    stack: stack,
+                    stickyFooter: nil,
+                    background: .color(.init(light: .hex("#FFFFFF")))
+                )
+            ),
+            componentsLocalizations: [:],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
+    static func createUIConfig() throws -> UIConfig {
+        let json = """
+        {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {}
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+
+        return try decoder.decode(UIConfig.self, from: data)
+    }
+
+    #endif
 
     static let bundle = Bundle(for: PaywallCacheWarmingTests.self)
     static let offeringIdentifier = "offering"
@@ -455,4 +524,27 @@ final actor MockFontsManager: PaywallFontManagerType {
         let duration = UInt64(installDelayInSeconds * 1_000_000_000)
         try await Task.sleep(nanoseconds: duration)
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
+private final actor MockInMemoryHTMLFileRepository: InMemoryHTMLFileRepositoryType {
+
+    private(set) var generatedURLs: [URL] = []
+    private(set) var cachedFileURLRequests: [URL] = []
+    private var cachedFileURLs: [URL: URL] = [:]
+
+    func generateOrGetCachedFileURL(for url: URL) async throws -> URL {
+        self.generatedURLs.append(url)
+        return self.cachedFileURLs[url] ?? url
+    }
+
+    func getCachedFileURL(for url: URL) async -> URL? {
+        self.cachedFileURLRequests.append(url)
+        return self.cachedFileURLs[url]
+    }
+
+    func stubCachedFileURL(_ cachedURL: URL, for url: URL) {
+        self.cachedFileURLs[url] = cachedURL
+    }
+
 }

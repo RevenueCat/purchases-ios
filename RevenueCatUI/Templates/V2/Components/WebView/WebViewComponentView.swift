@@ -21,14 +21,30 @@ struct WebViewComponentView: View {
 
     #if canImport(UIKit)
     @State private var dynamicHeight: CGFloat = .zero
+    @State private var displayURL: URL?
     #endif
 
     var body: some View {
         #if canImport(UIKit)
-        WebViewRepresentable(url: viewModel.url, height: $dynamicHeight)
-            .frame(height: dynamicHeight)
-            .background(Color.clear)
-            .accessibilityHidden(dynamicHeight == .zero)
+        Group {
+            if let displayURL {
+                WebViewRepresentable(url: displayURL, height: $dynamicHeight)
+                    .frame(height: dynamicHeight)
+                    .background(Color.clear)
+                    .accessibilityHidden(dynamicHeight == .zero)
+            } else {
+                Color.clear
+                    .frame(height: .zero)
+                    .accessibilityHidden(true)
+            }
+        }
+        .task(id: viewModel.url) {
+            let resolvedURL = await viewModel.displayURL()
+            if resolvedURL != displayURL {
+                dynamicHeight = .zero
+                displayURL = resolvedURL
+            }
+        }
         #else
         EmptyView()
         #endif
@@ -59,10 +75,7 @@ private struct WebViewRepresentable: UIViewRepresentable {
         webView.scrollView.alwaysBounceHorizontal = false
         webView.scrollView.contentInset = .zero
 
-        webView.scrollView.addObserver(context.coordinator,
-                                       forKeyPath: #keyPath(UIScrollView.contentSize),
-                                       options: [.new, .initial],
-                                       context: nil)
+        context.coordinator.observeHeightChanges(in: webView.scrollView)
 
         context.coordinator.currentURL = url
         webView.load(URLRequest(url: url))
@@ -77,7 +90,7 @@ private struct WebViewRepresentable: UIViewRepresentable {
     }
 
     static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
-        uiView.scrollView.removeObserver(coordinator, forKeyPath: #keyPath(UIScrollView.contentSize))
+        coordinator.contentSizeObservation = nil
         uiView.navigationDelegate = nil
     }
 
@@ -89,9 +102,17 @@ private struct WebViewRepresentable: UIViewRepresentable {
 
         @Binding var height: CGFloat
         var currentURL: URL?
+        var contentSizeObservation: NSKeyValueObservation?
 
         init(height: Binding<CGFloat>) {
             _height = height
+        }
+
+        func observeHeightChanges(in scrollView: UIScrollView) {
+            let options: NSKeyValueObservingOptions = [.new, .initial]
+            contentSizeObservation = scrollView.observe(\.contentSize, options: options) { [weak self] scrollView, _ in
+                self?.updateHeight(from: scrollView)
+            }
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
@@ -100,26 +121,20 @@ private struct WebViewRepresentable: UIViewRepresentable {
                 if let webView { self?.updateHeight(from: webView) }
             }
             // Re-check after all resources finish loading
-            let js = """
+            let javaScript = """
             new Promise(r => {
               if (document.readyState === 'complete') { r(); return; }
               window.addEventListener('load', () => r(), { once: true });
             }).then(() => 0);
             """
-            webView.evaluateJavaScript(js) { [weak self, weak webView] _, _ in
+            webView.evaluateJavaScript(javaScript) { [weak self, weak webView] _, _ in
                 if let webView { self?.updateHeight(from: webView) }
             }
         }
 
-        override func observeValue(
-            forKeyPath keyPath: String?,
-            of object: Any?,
-            change: [NSKeyValueChangeKey: Any]?,
-            context: UnsafeMutableRawPointer?
-        ) {
-            guard keyPath == #keyPath(UIScrollView.contentSize),
-                  let scrollView = object as? UIScrollView,
-                  scrollView.frame.width > 0 else { return }
+        private func updateHeight(from scrollView: UIScrollView) {
+            guard scrollView.frame.width > 0 else { return }
+
             let newHeight = scrollView.contentSize.height
             if abs(newHeight - height) > 0.5 {
                 DispatchQueue.main.async { self.height = newHeight }
@@ -127,21 +142,20 @@ private struct WebViewRepresentable: UIViewRepresentable {
         }
 
         private func updateHeight(from webView: WKWebView) {
-            let newHeight = webView.scrollView.contentSize.height
-            if abs(newHeight - height) > 0.5 {
-                height = newHeight
-            }
+            self.updateHeight(from: webView.scrollView)
         }
 
     }
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class AutoSizingWebView: WKWebView {
 
     init() {
         let config = WKWebViewConfiguration()
         config.allowsInlineMediaPlayback = true
+        config.setURLSchemeHandler(InMemoryHTMLURLSchemeHandler(), forURLScheme: "purchaseshtml")
         super.init(frame: .zero, configuration: config)
         isOpaque = false
         backgroundColor = .clear
@@ -149,6 +163,57 @@ private final class AutoSizingWebView: WKWebView {
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class InMemoryHTMLURLSchemeHandler: NSObject, WKURLSchemeHandler {
+
+    private let session = URLSession(
+        configuration: InMemoryHTMLFileRepository.makeURLSessionConfiguration()
+    )
+    private let lock = NSLock()
+    private var loadingTasks: [ObjectIdentifier: Task<Void, Never>] = [:]
+
+    func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
+        let identifier = ObjectIdentifier(urlSchemeTask)
+        let task = Task { [weak self, session] in
+            defer {
+                self?.removeLoadingTask(identifier)
+            }
+
+            do {
+                let (data, response) = try await session.data(for: urlSchemeTask.request)
+                guard !Task.isCancelled else { return }
+                urlSchemeTask.didReceive(response)
+                urlSchemeTask.didReceive(data)
+                urlSchemeTask.didFinish()
+            } catch {
+                guard !Task.isCancelled else { return }
+                urlSchemeTask.didFailWithError(error)
+            }
+        }
+
+        self.lock.lock()
+        self.loadingTasks[identifier] = task
+        self.lock.unlock()
+    }
+
+    func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) {
+        let identifier = ObjectIdentifier(urlSchemeTask)
+
+        self.lock.lock()
+        let task = self.loadingTasks.removeValue(forKey: identifier)
+        self.lock.unlock()
+
+        task?.cancel()
+    }
+
+    private func removeLoadingTask(_ identifier: ObjectIdentifier) {
+        self.lock.lock()
+        self.loadingTasks.removeValue(forKey: identifier)
+        self.lock.unlock()
+    }
 
 }
 
