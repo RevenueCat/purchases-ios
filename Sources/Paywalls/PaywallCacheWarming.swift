@@ -56,6 +56,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private let introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType
     private let fontsManager: PaywallFontManagerType
     private let fileRepository: FileRepositoryType
+    private let htmlFileRepository: InMemoryHTMLFileRepositoryType
 
     private var hasLoadedEligibility = false
     private var hasLoadedImages = false
@@ -66,11 +67,13 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
         fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession),
-        fileRepository: FileRepositoryType = FileRepository.shared
+        fileRepository: FileRepositoryType = FileRepository.shared,
+        htmlFileRepository: InMemoryHTMLFileRepositoryType = InMemoryHTMLFileRepository.shared
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
         self.fontsManager = fontsManager
         self.fileRepository = fileRepository
+        self.htmlFileRepository = htmlFileRepository
     }
 
     func warmUpEligibilityCache(offerings: Offerings) {
@@ -89,9 +92,16 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         self.hasLoadedImages = true
 
         let imageURLs = offerings.allImagesInPaywalls
-        guard !imageURLs.isEmpty else { return }
+        #if !os(tvOS)
+        let webViewURLs = offerings.allWebViewURLsInPaywalls
+        #else
+        let webViewURLs: Set<URL> = []
+        #endif
+        guard !imageURLs.isEmpty || !webViewURLs.isEmpty else { return }
 
-        Logger.verbose(Strings.paywalls.warming_up_images(imageURLs: imageURLs))
+        if !imageURLs.isEmpty {
+            Logger.verbose(Strings.paywalls.warming_up_images(imageURLs: imageURLs))
+        }
 
         await withTaskGroup(of: Void.self) { group in
             for url in imageURLs {
@@ -101,6 +111,14 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
                     _ = try? await self.fileRepository.generateOrGetCachedFileURL(for: url, withChecksum: nil)
                 }
             }
+            #if !os(tvOS)
+            for url in webViewURLs {
+                group.addTask { [weak self] in
+                    guard let self = self else { return }
+                    _ = try? await self.htmlFileRepository.generateOrGetCachedFileURL(for: url)
+                }
+            }
+            #endif
         }
     }
 
@@ -155,6 +173,9 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         let imageURLs = Set(screens.flatMap(\.allImageURLs))
         let videoURLs = Set(screens.flatMap(\.allLowResVideoUrls))
         #if !os(tvOS)
+        let webViewURLs = Set(screens.flatMap(\.allWebViewURLs))
+        #endif
+        #if !os(tvOS)
         let fonts = workflow.uiConfig.app.allDownloadableFonts
         #endif
 
@@ -174,6 +195,14 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
                     )
                 }
             }
+            #if !os(tvOS)
+            for url in webViewURLs {
+                group.addTask { [weak self] in
+                    guard let self = self else { return }
+                    _ = try? await self.htmlFileRepository.generateOrGetCachedFileURL(for: url)
+                }
+            }
+            #endif
             #if !os(tvOS)
             for font in fonts {
                 group.addTask { [weak self] in
@@ -352,6 +381,21 @@ private extension Offerings {
                 .lazy
                 .compactMap(\.paywallComponents)
                 .flatMap(\.data.allImageURLs)
+        )
+    }
+
+    #endif
+
+    #if !os(tvOS) // For Paywalls V2
+
+    var allWebViewURLsInPaywalls: Set<URL> {
+        return .init(
+            self
+                .all
+                .values
+                .lazy
+                .compactMap(\.paywallComponents)
+                .flatMap(\.data.allWebViewURLs)
         )
     }
 

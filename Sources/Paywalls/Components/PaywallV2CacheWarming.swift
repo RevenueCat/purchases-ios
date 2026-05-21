@@ -11,6 +11,8 @@
 //
 //  Created by Josh Holtz on 1/13/25.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 extension PaywallComponentsData {
@@ -23,6 +25,10 @@ extension PaywallComponentsData {
         return self.componentsConfig.base.allLowResVideoUrls
     }
 
+    var allWebViewURLs: [URL] {
+        return self.componentsConfig.base.allWebViewURLs
+    }
+
 }
 
 extension WorkflowScreen {
@@ -33,6 +39,10 @@ extension WorkflowScreen {
 
     var allLowResVideoUrls: [URLWithValidation] {
         return self.componentsConfig.base.allLowResVideoUrls
+    }
+
+    var allWebViewURLs: [URL] {
+        return self.componentsConfig.base.allWebViewURLs
     }
 
 }
@@ -75,6 +85,14 @@ extension PaywallComponentsData.PaywallComponentsConfig {
         let stickFooterVideoURLs = self.stickyFooter.flatMap { self.collectAllVideoURLs(in: $0.stack) } ?? []
 
         return rootStackVideoURLs + headerVideoURLs + stickFooterVideoURLs + self.background.lowResVideoUrls
+    }
+
+    var allWebViewURLs: [URL] {
+        let rootStackWebViewURLs = self.collectAllWebViewURLs(in: self.stack)
+        let headerWebViewURLs = self.header.flatMap { self.collectAllWebViewURLs(in: $0.stack) } ?? []
+        let stickyFooterWebViewURLs = self.stickyFooter.flatMap { self.collectAllWebViewURLs(in: $0.stack) } ?? []
+
+        return rootStackWebViewURLs + headerWebViewURLs + stickyFooterWebViewURLs
     }
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
@@ -267,6 +285,77 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 }
             case .webView:
                 break
+            case .fallbackHeader:
+                break
+            }
+        }
+
+        return urls
+    }
+
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
+    private func collectAllWebViewURLs(in stack: PaywallComponent.StackComponent) -> [URL] {
+
+        var urls: [URL] = []
+        for component in stack.components {
+            switch component {
+            case .text:
+                break
+            case .icon:
+                break
+            case .image:
+                break
+            case .stack(let stack):
+                urls += self.collectAllWebViewURLs(in: stack)
+            case .button(let button):
+                urls += self.collectAllWebViewURLs(in: button.stack)
+
+                switch button.action {
+                case .navigateTo(let destination):
+                    switch destination {
+                    case .sheet(sheet: let sheet):
+                        urls += self.collectAllWebViewURLs(in: sheet.stack)
+                    case .customerCenter, .offerCode, .privacyPolicy, .terms, .webPaywallLink, .url, .unknown:
+                        break
+                    }
+                case .restorePurchases, .navigateBack, .workflowTrigger, .unknown:
+                    break
+                }
+            case .package(let package):
+                urls += self.collectAllWebViewURLs(in: package.stack)
+            case .purchaseButton(let purchaseButton):
+                urls += self.collectAllWebViewURLs(in: purchaseButton.stack)
+            case .stickyFooter(let stickyFooter):
+                urls += self.collectAllWebViewURLs(in: stickyFooter.stack)
+            case .timeline:
+                break
+            case .tabs(let tabs):
+                urls += self.collectAllWebViewURLs(in: tabs.control.stack)
+                for tab in tabs.tabs {
+                    urls += self.collectAllWebViewURLs(in: tab.stack)
+                }
+            case .tabControl:
+                break
+            case .tabControlButton(let controlButton):
+                urls += self.collectAllWebViewURLs(in: controlButton.stack)
+            case .tabControlToggle:
+                break
+            case .carousel(let carousel):
+                urls += carousel.pages.flatMap { stack in
+                    self.collectAllWebViewURLs(in: stack)
+                }
+            case .video:
+                break
+            case .countdown(let countdown):
+                urls += self.collectAllWebViewURLs(in: countdown.countdownStack)
+                if let endStack = countdown.endStack {
+                    urls += self.collectAllWebViewURLs(in: endStack)
+                }
+                if let fallback = countdown.fallback {
+                    urls += self.collectAllWebViewURLs(in: fallback)
+                }
+            case .webView(let webView):
+                urls.append(webView.url)
             case .fallbackHeader:
                 break
             }
