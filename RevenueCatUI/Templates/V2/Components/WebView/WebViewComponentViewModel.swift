@@ -29,7 +29,8 @@ class WebViewComponentViewModel {
     }
 
     func displayURL() async -> URL {
-        return await self.htmlFileRepository.getCachedFileURL(for: self.url) ?? self.url
+        let cachedURL = await self.htmlFileRepository.getCachedFileURL(for: self.url)
+        return cachedURL ?? self.url
     }
 
 }
