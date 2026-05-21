@@ -202,7 +202,7 @@ struct StackComponentStyle {
     let border: ShapeModifier.BorderInfo?
     let shadow: ShadowModifier.ShadowInfo?
     let badge: BadgeModifier.BadgeInfo?
-    let glassEffect: PaywallComponent.StackComponent.GlassEffect
+    let glassEffect: PaywallComponent.GlassEffect?
     let scrollable: Bool?
 
     init(
@@ -221,7 +221,7 @@ struct StackComponentStyle {
         shadow: PaywallComponent.Shadow?,
         badge: PaywallComponent.Badge?,
         overflow: PaywallComponent.StackComponent.Overflow?,
-        glassEffect: PaywallComponent.StackComponent.GlassEffect,
+        glassEffect: PaywallComponent.GlassEffect?,
         colorScheme: ColorScheme
     ) {
         self.visible = visible

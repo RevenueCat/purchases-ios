@@ -28,18 +28,6 @@ import Foundation
                 self = Overflow(rawValue: rawValue ?? "") ?? .default
             }
         }
-        
-        public enum GlassEffect: String, PaywallComponentBase {
-            case none
-            case clear
-            case regular
-            
-            public init(from decoder: Decoder) throws {
-                let container = try decoder.singleValueContainer()
-                let rawValue = try? container.decode(String.self)
-                self = GlassEffect(rawValue: rawValue ?? "") ?? .none
-            }
-        }
 
         let type: ComponentType
         public let name: String?
@@ -57,7 +45,7 @@ import Foundation
         public let shadow: Shadow?
         public let badge: Badge?
         public let overflow: Overflow?
-        public let glassEffect: GlassEffect
+        public let glassEffect: GlassEffect?
 
         public let overrides: ComponentOverrides<PartialStackComponent>?
 
@@ -77,7 +65,7 @@ import Foundation
             shadow: Shadow? = nil,
             badge: Badge? = nil,
             overflow: Overflow? = nil,
-            glassEffect: GlassEffect = .none,
+            glassEffect: GlassEffect? = nil,
             overrides: ComponentOverrides<PartialStackComponent>? = nil
         ) {
             self.name = name
@@ -157,7 +145,7 @@ import Foundation
         public let border: Border?
         public let shadow: Shadow?
         public let overflow: PaywallComponent.StackComponent.Overflow?
-        public let glassEffect: PaywallComponent.StackComponent.GlassEffect?
+        public let glassEffect: PaywallComponent.GlassEffect?
         public let badge: Badge?
 
         public init(
@@ -174,7 +162,7 @@ import Foundation
             border: Border? = nil,
             shadow: Shadow? = nil,
             overflow: PaywallComponent.StackComponent.Overflow? = nil,
-            glassEffect: PaywallComponent.StackComponent.GlassEffect? = nil,
+            glassEffect: PaywallComponent.GlassEffect? = nil,
             badge: Badge? = nil
         ) {
             self.name = name
