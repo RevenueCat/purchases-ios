@@ -145,6 +145,20 @@ let project = Project(
                 .storeKit
             ],
             settings: .appTarget(including: ([:] as SettingsDictionary).appendingTuistSwiftConditions())
+        ),
+        .target(
+            name: "PaywallsTesterTests",
+            destinations: [.iPhone, .iPad, .macCatalyst],
+            product: .unitTests,
+            bundleId: "com.revenuecat.PaywallsTesterTests",
+            deploymentTargets: allDeploymentTargets,
+            infoPlist: .default,
+            sources: [
+                "../../Tests/TestingApps/PaywallsTester/PaywallsTesterTests/LocalPaywallOfferingsOverrideTests.swift"
+            ],
+            dependencies: [
+                .target(name: "PaywallsTester")
+            ]
         )
     ],
     schemes: schemes,

@@ -22,6 +22,10 @@ enum Configuration {
     static func configure() {
         Purchases.logLevel = .verbose
         Purchases.proxyURL = Constants.proxyURL.flatMap { URL(string: $0) }
+        #if canImport(ObjectiveC) && (os(iOS) || targetEnvironment(macCatalyst))
+        // Keep the protocol in the SDK session and let it no-op until a local JSON draft exists.
+        LocalPaywallOfferingsInterceptor.install()
+        #endif
 
         Purchases.configure(
             with: .init(withAPIKey: Constants.apiKey)
