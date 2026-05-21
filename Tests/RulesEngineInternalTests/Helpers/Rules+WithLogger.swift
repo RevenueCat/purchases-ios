@@ -6,7 +6,7 @@
 
 import Foundation
 
-@_spi(Internal) @testable import RulesEngine
+@testable import RulesEngineInternal
 
 /// Test-only convenience for scoping a `Rules.logger` override to a single
 /// expression. Tests that install a logger globally via `setUp` /
