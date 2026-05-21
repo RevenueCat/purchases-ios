@@ -6,7 +6,7 @@
 
 import XCTest
 
-@_spi(Internal) @testable import RulesEngine
+@testable import RulesEngineInternal
 
 final class EvaluatorTests: XCTestCase {
 
