@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "521BC74E9D1E8CDF27F52D50"
-               BuildableName = "RulesEngine.framework"
-               BlueprintName = "RulesEngine"
+               BuildableName = "RulesEngineInternal.framework"
+               BlueprintName = "RulesEngineInternal"
                ReferencedContainer = "container:RevenueCat.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -35,8 +35,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "9F10CFD131109088B9D1C655"
-               BuildableName = "RulesEngineTests.xctest"
-               BlueprintName = "RulesEngineTests"
+               BuildableName = "RulesEngineInternalTests.xctest"
+               BlueprintName = "RulesEngineInternalTests"
                ReferencedContainer = "container:RevenueCat.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -63,8 +63,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "521BC74E9D1E8CDF27F52D50"
-            BuildableName = "RulesEngine.framework"
-            BlueprintName = "RulesEngine"
+            BuildableName = "RulesEngineInternal.framework"
+            BlueprintName = "RulesEngineInternal"
             ReferencedContainer = "container:RevenueCat.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

@@ -6,7 +6,7 @@
 
 import Foundation
 
-@testable import RulesEngine
+@testable import RulesEngineInternal
 
 /// Test-only convenience for converting a JSON literal into a `Value`. Lets
 /// the tests express predicates the same way they appear in rule artifacts

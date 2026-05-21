@@ -866,6 +866,25 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
     }
 
+    func testAutoRenewableSubscriptionDoesNotShowChangePlansIfExpired() {
+        let purchase = PurchaseInformation.mock(
+            store: .appStore,
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isExpired: true
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Expired subscriptions should not show change plans
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beFalse())
+    }
+
     func testAutoRenewableSubscriptionDoesNotShowChangePlansIfLifetime() {
         let purchase = PurchaseInformation.mock(
             store: .appStore,
