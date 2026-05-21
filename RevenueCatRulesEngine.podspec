@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "RevenueCatRulesEngine"
-  s.module_name      = "RulesEngine"
+  s.module_name      = "RulesEngineInternal"
   s.version          = "5.74.0-SNAPSHOT"
   s.summary          = "Rules engine used internally by the RevenueCat SDK."
 
@@ -24,5 +24,5 @@ Pod::Spec.new do |s|
 
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 
-  s.source_files = 'RulesEngine/**/*.swift'
+  s.source_files = 'RulesEngineInternal/**/*.swift'
 end
