@@ -50,8 +50,8 @@ let project = Project(
             name: "RulesEngineInternal",
             shared: true,
             buildAction: .buildAction(targets: ["RulesEngineInternal"]),
-            testAction: .testAction(
-                targets: [
+            testAction: .targets(
+                [
                     .testableTarget(target: "RulesEngineInternalTests")
                 ],
                 preActions: [
