@@ -57,7 +57,7 @@ import Foundation
             return cachedURL
         }
 
-        return try await self.htmlStore.getOrPut(
+        let cachedURL = try await self.htmlStore.getOrPut(
             Task { [weak self] in
                 guard let self else {
                     throw Error.failedToCacheHTML
@@ -67,6 +67,8 @@ import Foundation
             },
             forKey: url
         ).value
+
+        return cachedURL
     }
 
     /// Get the in-memory cached HTML URL if it exists.
@@ -117,11 +119,13 @@ import Foundation
                     cachedData = data
                 }
 
-                return await InMemoryHTMLURLProtocol.store(
+                let cachedURL = await InMemoryHTMLURLProtocol.store(
                     data: cachedData,
                     mimeType: kind.mimeType(for: url),
                     for: url
                 )
+
+                return cachedURL
             },
             forKey: url
         ).value
@@ -197,6 +201,7 @@ private struct HTMLAssetRewriter {
         replacements += await self.replacements(in: html, tag: "img", attribute: "src") { _ in .image }
         replacements += await self.srcsetReplacements(in: html, tag: "img")
         replacements += await self.srcsetReplacements(in: html, tag: "source")
+        replacements += await self.quotedJSONReplacements(in: html)
 
         return html.applying(replacements)
     }
@@ -269,6 +274,25 @@ private struct HTMLAssetRewriter {
         }
 
         return candidates.joined(separator: ",")
+    }
+
+    private func quotedJSONReplacements(in html: String) async -> [StringReplacement] {
+        let matches = html.matches(
+            pattern: #"(?is)(?:"([^"]+\.json(?:[?#][^"]*)?)"|'([^']+\.json(?:[?#][^']*)?)')"#
+        )
+
+        var replacements: [StringReplacement] = []
+        for match in matches {
+            guard let value = match.firstCapture(in: html),
+                  let assetURL = value.value.resolvedHTTPSURL(relativeTo: self.baseURL),
+                  let cachedURL = await self.cacheAsset(assetURL, .asset) else {
+                continue
+            }
+
+            replacements.append(.init(range: value.range, replacement: cachedURL.absoluteString))
+        }
+
+        return replacements
     }
 
 }
@@ -380,6 +404,7 @@ private enum AssetKind: Sendable {
         case "gif": return "image/gif"
         case "webp": return "image/webp"
         case "svg": return "image/svg+xml"
+        case "json": return "application/json"
         case "woff": return "font/woff"
         case "woff2": return "font/woff2"
         case "ttf": return "font/ttf"

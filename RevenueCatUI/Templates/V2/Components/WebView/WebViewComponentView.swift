@@ -177,6 +177,7 @@ private final class InMemoryHTMLURLSchemeHandler: NSObject, WKURLSchemeHandler {
 
     func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
         let identifier = ObjectIdentifier(urlSchemeTask)
+
         let task = Task { [weak self, session] in
             defer {
                 self?.removeLoadingTask(identifier)
