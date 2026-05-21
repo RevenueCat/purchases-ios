@@ -98,6 +98,9 @@ struct PaywallPresenter: View {
                 purchaseHandler: .default()
             ))
 
+        case .presentWorkflow:
+            fatalError()
+
         }
     }
 
