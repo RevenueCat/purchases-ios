@@ -7,16 +7,16 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RulesEngineTests.swift
+//  RulesEngineInternalTests.swift
 //
 //  Created by Antonio Pallares.
 //
 
 import XCTest
 
-@testable import RulesEngine
+@testable import RulesEngineInternal
 
-final class RulesEngineTests: XCTestCase {
+final class RulesEngineInternalTests: XCTestCase {
 
     /// Smoke test: confirms the module is wired up and the test runner
     /// picks it up. Real evaluation tests will land alongside the JSON

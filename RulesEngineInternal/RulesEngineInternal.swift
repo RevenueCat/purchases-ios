@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RulesEngine.swift
+//  RulesEngineInternal.swift
 //
 //  Created by Antonio Pallares.
 //

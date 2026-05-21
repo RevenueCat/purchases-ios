@@ -136,11 +136,11 @@ let package = Package(
                         .copy("Resources/background.heic"),
                         .copy("PaywallsV2/__PreviewResources__")
                     ]),
-        .target(name: "RulesEngine",
-                path: "RulesEngine",
+        .target(name: "RulesEngineInternal",
+                path: "RulesEngineInternal",
                 swiftSettings: ciCompilerFlags + additionalCompilerFlags),
-        .testTarget(name: "RulesEngineTests",
-                    dependencies: ["RulesEngine"],
-                    path: "Tests/RulesEngineTests")
+        .testTarget(name: "RulesEngineInternalTests",
+                    dependencies: ["RulesEngineInternal"],
+                    path: "Tests/RulesEngineInternalTests")
     ]
 )

@@ -34,7 +34,7 @@ custom_rules:
     included: ".*\\.swift"
     excluded:
       - Tests/ReceiptParserTests
-      - Tests/RulesEngineTests
+      - Tests/RulesEngineInternalTests
       - Tests/v3LoadShedderIntegration
       - Tests/v4LoadShedderIntegration
     regex: "\\: XCTestCase \\{"
