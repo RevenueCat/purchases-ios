@@ -883,12 +883,12 @@ struct RestoreInProgressPreferenceKey: PreferenceKey {
 struct PurchasedResultPreferenceKey: PreferenceKey {
 
     struct PurchaseResult: Equatable {
-        var id: UUID
+        var id: UUID?
         var transaction: StoreTransaction?
         var customerInfo: CustomerInfo
         var userCancelled: Bool
 
-        init(data: PurchaseResultData, id: UUID) {
+        init(data: PurchaseResultData, id: UUID?) {
             self.id = id
             self.transaction = data.transaction
             self.customerInfo = data.customerInfo
@@ -896,7 +896,7 @@ struct PurchasedResultPreferenceKey: PreferenceKey {
         }
 
         init?(data: PurchaseResultData?, id: UUID?) {
-            guard let data, let id else { return nil }
+            guard let data else { return nil }
             self.init(data: data, id: id)
         }
     }
