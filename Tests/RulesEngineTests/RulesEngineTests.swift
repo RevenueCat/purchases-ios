@@ -14,7 +14,7 @@
 
 import XCTest
 
-@_spi(Internal) @testable import RulesEngine
+@testable import RulesEngine
 
 final class RulesEngineTests: XCTestCase {
 

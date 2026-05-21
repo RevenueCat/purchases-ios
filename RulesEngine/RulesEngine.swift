@@ -15,4 +15,4 @@
 import Foundation
 
 /// Namespace for the RevenueCat rules engine.
-@_spi(Internal) public enum Rules {}
+public enum Rules {}
