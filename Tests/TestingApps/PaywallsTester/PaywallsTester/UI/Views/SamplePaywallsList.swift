@@ -61,6 +61,9 @@ struct SamplePaywallsList: View {
             case .workflow:
                 fatalError()
 
+            case .presentWorkflow:
+                fatalError()
+
             #if !os(watchOS) && !os(macOS)
             case .footer, .condensedFooter:
                 CustomPaywall(offering: Self.loader.offering(for: template),

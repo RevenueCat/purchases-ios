@@ -6,7 +6,7 @@
 
 import XCTest
 
-@testable import RulesEngine
+@testable import RulesEngineInternal
 
 final class EqualityOperatorsTests: XCTestCase {
 

@@ -6,7 +6,7 @@
 
 import XCTest
 
-@_spi(Internal) @testable import RulesEngine
+@testable import RulesEngineInternal
 
 // swiftlint:disable type_body_length file_length
 final class AccessorOperatorsTests: XCTestCase {

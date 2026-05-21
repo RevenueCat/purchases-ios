@@ -86,10 +86,10 @@ let package = Package(
                     ],
                     exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans"],
                     resources: [.copy("Resources/header.heic"), .copy("Resources/background.heic")]),
-        .target(name: "RulesEngine",
-                path: "RulesEngine"),
-        .testTarget(name: "RulesEngineTests",
-                    dependencies: ["RulesEngine"],
-                    path: "Tests/RulesEngineTests")
+        .target(name: "RulesEngineInternal",
+                path: "RulesEngineInternal"),
+        .testTarget(name: "RulesEngineInternalTests",
+                    dependencies: ["RulesEngineInternal"],
+                    path: "Tests/RulesEngineInternalTests")
     ]
 )
