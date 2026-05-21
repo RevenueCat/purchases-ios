@@ -20,37 +20,39 @@ struct WebViewComponentView: View {
     let viewModel: WebViewComponentViewModel
 
     #if canImport(UIKit)
-    @State private var dynamicHeight: CGFloat = .zero
+    @State private var dynamicHeight: CGFloat?
     @State private var displayURL: URL?
     #endif
 
     var body: some View {
         #if canImport(UIKit)
-        Group {
-            if let displayURL {
-                WebViewRepresentable(url: displayURL, height: $dynamicHeight)
-                    .frame(height: dynamicHeight)
-                    .background(Color.clear)
-                    .accessibilityHidden(dynamicHeight == .zero)
-            } else {
-                Color.clear
-                    .frame(height: .zero)
-                    .accessibilityHidden(true)
+        WebViewRepresentable(url: displayURL ?? viewModel.url, height: $dynamicHeight)
+            .frame(height: dynamicHeight)
+            .background(Color.clear)
+            .task(id: viewModel.url) {
+                let resolvedURL = await viewModel.displayURL()
+                if resolvedURL != displayURL {
+                    dynamicHeight = Self.initialHeight
+                    displayURL = resolvedURL
+                }
             }
-        }
-        .task(id: viewModel.url) {
-            let resolvedURL = await viewModel.displayURL()
-            if resolvedURL != displayURL {
-                dynamicHeight = .zero
-                displayURL = resolvedURL
-            }
-        }
         #else
         EmptyView()
         #endif
     }
 
 }
+
+#if canImport(UIKit)
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension WebViewComponentView {
+
+    static let initialHeight: CGFloat = 100
+
+}
+
+#endif
 
 #if canImport(UIKit)
 
@@ -61,10 +63,10 @@ import WebKit
 private struct WebViewRepresentable: UIViewRepresentable {
 
     let url: URL
-    @Binding var height: CGFloat
+    @Binding var height: CGFloat?
 
     func makeUIView(context: Context) -> WKWebView {
-        let webView = AutoSizingWebView()
+        let webView = WebViewPool.shared.acquire()
         webView.navigationDelegate = context.coordinator
         webView.scrollView.isScrollEnabled = false
         webView.scrollView.backgroundColor = .clear
@@ -92,6 +94,10 @@ private struct WebViewRepresentable: UIViewRepresentable {
     static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
         coordinator.contentSizeObservation = nil
         uiView.navigationDelegate = nil
+
+        if let webView = uiView as? AutoSizingWebView {
+            WebViewPool.shared.return(webView)
+        }
     }
 
     func makeCoordinator() -> Coordinator {
@@ -100,11 +106,11 @@ private struct WebViewRepresentable: UIViewRepresentable {
 
     final class Coordinator: NSObject, WKNavigationDelegate {
 
-        @Binding var height: CGFloat
+        @Binding var height: CGFloat?
         var currentURL: URL?
         var contentSizeObservation: NSKeyValueObservation?
 
-        init(height: Binding<CGFloat>) {
+        init(height: Binding<CGFloat?>) {
             _height = height
         }
 
@@ -117,9 +123,6 @@ private struct WebViewRepresentable: UIViewRepresentable {
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             updateHeight(from: webView)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self, weak webView] in
-                if let webView { self?.updateHeight(from: webView) }
-            }
             // Re-check after all resources finish loading
             let javaScript = """
             new Promise(r => {
@@ -136,7 +139,7 @@ private struct WebViewRepresentable: UIViewRepresentable {
             guard scrollView.frame.width > 0 else { return }
 
             let newHeight = scrollView.contentSize.height
-            if abs(newHeight - height) > 0.5 {
+            if abs(newHeight - (height ?? 0)) > 0.5 {
                 DispatchQueue.main.async { self.height = newHeight }
             }
         }
@@ -150,10 +153,57 @@ private struct WebViewRepresentable: UIViewRepresentable {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
+private final class WebViewPool {
+
+    static let shared = WebViewPool(capacity: 3)
+
+    private let processPool = WKProcessPool()
+    private var pool: [AutoSizingWebView] = []
+    private let capacity: Int
+
+    init(capacity: Int) {
+        self.capacity = max(1, capacity)
+        warmUp()
+    }
+
+    func warmUp() {
+        guard self.pool.isEmpty else { return }
+
+        for _ in 0..<self.capacity {
+            let webView = self.makeWebView()
+            webView.loadHTMLString("<!doctype html><html></html>", baseURL: nil)
+            self.pool.append(webView)
+        }
+    }
+
+    func acquire() -> AutoSizingWebView {
+        return self.pool.popLast() ?? self.makeWebView()
+    }
+
+    func `return`(_ webView: AutoSizingWebView) {
+        webView.stopLoading()
+        webView.navigationDelegate = nil
+        webView.loadHTMLString("<!doctype html><html></html>", baseURL: nil)
+
+        if self.pool.count < self.capacity {
+            self.pool.append(webView)
+        }
+    }
+
+    private func makeWebView() -> AutoSizingWebView {
+        print("Web View Count was \(pool.count) adding 1")
+        return AutoSizingWebView(processPool: self.processPool)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class AutoSizingWebView: WKWebView {
 
-    init() {
+    init(processPool: WKProcessPool) {
         let config = WKWebViewConfiguration()
+        config.processPool = processPool
         config.allowsInlineMediaPlayback = true
         config.setURLSchemeHandler(InMemoryHTMLURLSchemeHandler(), forURLScheme: "purchaseshtml")
         super.init(frame: .zero, configuration: config)
