@@ -8,21 +8,26 @@
 import SwiftUI
 @_spi(Internal) import RevenueCat
 
+extension View {
+    
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func withGlassEffect(from stackViewModel: StackComponentViewModel) -> some View {
+        modifier(GlassEffectModifier(effect: stackViewModel.component.glassEffect,
+                                     shape: stackViewModel.component.shape,
+                                     uiConfigProvider: stackViewModel.uiConfigProvider))
+    }
+    
+}
+
 // this availability matches that of UIConfigProvider, etc
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct GlassEffectModifier: ViewModifier {
+private struct GlassEffectModifier: ViewModifier {
     
     var effect: PaywallComponent.GlassEffect?
     var shape: PaywallComponent.Shape?
     var uiConfigProvider: UIConfigProvider
     
     @Environment(\.colorScheme) var colorScheme
-    
-    init(stackViewModel: StackComponentViewModel) {
-        self.effect = stackViewModel.component.glassEffect
-        self.shape = stackViewModel.component.shape
-        self.uiConfigProvider = stackViewModel.uiConfigProvider
-    }
     
     @available(macOS 26.0, iOS 26.0, tvOS 26.0, watchOS 26.0, *)
     var resolvedGlassEffect: Glass {
