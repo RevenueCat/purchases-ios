@@ -106,6 +106,17 @@ aliases:
         only: main
   swiftinterface-xcode-version: &swiftinterface-xcode-version "26.3"
 commands:
+  github-notify-pr-on-fail:
+    steps:
+      - run:
+          name: Post GitHub PR failure comment
+          when: on_fail
+          command: bundle exec fastlane notify_pr_ci_failure
+      - run:
+          name: Delete GitHub PR failure comment on success
+          when: on_success
+          command: bundle exec fastlane clear_pr_ci_failure
+
   slack-notify-on-fail:
     steps:
       # Map custom variable names to the Slack orb variables, since the default variable names are already used by the Fastlane Slack integration
@@ -985,6 +996,7 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-26
       - slack-notify-on-fail
+      - github-notify-pr-on-fail
 
   # As of May 12, 2026, there is a StoreKit bug that is preventing us from running unit tests
   # when building with Xcode 26.4+. When built with Xcode 26.4+, tests that fetch products
@@ -1753,11 +1765,11 @@ jobs:
           name: Download khepri predicate conformance fixtures
           command: ./scripts/rules_engine/download_predicate_conformance_fixtures.sh
       - run:
-          name: Run RulesEngine predicate conformance tests
+          name: Run RulesEngineInternal predicate conformance tests
           command: bundle exec fastlane test_rules_engine_conformance
           no_output_timeout: 10m
           environment:
-            KHEPRI_PREDICATE_CONFORMANCE_FIXTURE_PATH: Tests/RulesEngineTests/Fixtures/predicate_conformance_v1.json
+            KHEPRI_PREDICATE_CONFORMANCE_FIXTURE_PATH: Tests/RulesEngineInternalTests/Fixtures/predicate_conformance_v1.json
             SCAN_DEVICE: iPhone 17 (26.5)
       - store_test_results:
           path: fastlane/test_output
@@ -1789,6 +1801,7 @@ jobs:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output
+      - github-notify-pr-on-fail
 
   danger:
     docker:
@@ -2065,21 +2078,6 @@ jobs:
           destination: revenuecatui-api-visionos.swiftinterface
       - slack-notify-on-fail
 
-  check-rules-engine-public-api:
-    executor:
-      name: macos-executor
-      xcode_version: *swiftinterface-xcode-version
-    steps:
-      - checkout
-      - install-dependencies
-      - tuist-generate-workspace:
-          query: "RulesEngine"
-      - run:
-          name: Assert RulesEngine has no non-@_spi(Internal) public API
-          command: |
-            bundle exec fastlane ios check_rules_engine_no_public_api
-      - slack-notify-on-fail
-
   generate-swiftinterface:
     executor:
       name: macos-executor
@@ -2237,14 +2235,13 @@ workflows:
       # =============================================================
       # Reduced Test Suite: Auto-run on every push
       # =============================================================
-      - lint
+      - lint:
+          context:
+            - slack-secrets
       - check-api-changes-revenuecat:
           context:
             - slack-secrets-ios
       - check-api-changes-revenuecatui:
-          context:
-            - slack-secrets-ios
-      - check-rules-engine-public-api:
           context:
             - slack-secrets-ios
       - run-test-ios-26:
@@ -2417,7 +2414,6 @@ workflows:
             - lint
             - check-api-changes-revenuecat
             - check-api-changes-revenuecatui
-            - check-rules-engine-public-api
             - run-test-ios-26
             - build-xcode-265
             - pod-lib-lint
@@ -2635,9 +2631,6 @@ workflows:
       - check-api-changes-revenuecatui:
           context:
             - slack-secrets-ios
-      - check-rules-engine-public-api:
-          context:
-            - slack-secrets-ios
       - run-all-maestro-e2e-tests:
           context:
             - e2e-tests
@@ -2715,7 +2708,9 @@ workflows:
       - emerge_binary_size_analysis:
           context:
             - slack-secrets
-      - lint
+      - lint:
+          context:
+            - slack-secrets
       - run-test-ios-26:
           context:
             - slack-secrets
@@ -2739,7 +2734,6 @@ workflows:
           requires:
             - check-api-changes-revenuecat
             - check-api-changes-revenuecatui
-            - check-rules-engine-public-api
             - run-all-maestro-e2e-tests
             - lint
             - run-test-ios-26

@@ -6,7 +6,7 @@
 
 import Testing
 
-@testable import RulesEngine
+@testable import RulesEngineInternal
 
 /// Runs khepri-generated audience predicate conformance fixtures.
 ///

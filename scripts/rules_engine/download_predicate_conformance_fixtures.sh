@@ -12,7 +12,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 KHEPRI_REF="${KHEPRI_PREDICATE_CONFORMANCE_REF:-codex/audience-predicate-fixtures}"
-OUTPUT_PATH="${KHEPRI_PREDICATE_CONFORMANCE_FIXTURE_PATH:-${REPO_ROOT}/Tests/RulesEngineTests/Fixtures/predicate_conformance_v1.json}"
+OUTPUT_PATH="${KHEPRI_PREDICATE_CONFORMANCE_FIXTURE_PATH:-${REPO_ROOT}/Tests/RulesEngineInternalTests/Fixtures/predicate_conformance_v1.json}"
 KHEPRI_FIXTURE_PATH="khepri/services/audience/fixtures/predicate_conformance_v1.json"
 KHEPRI_REPO_URL="git@github.com:RevenueCat/khepri.git"
 API_URL="https://api.github.com/repos/RevenueCat/khepri/contents/${KHEPRI_FIXTURE_PATH}?ref=${KHEPRI_REF}"

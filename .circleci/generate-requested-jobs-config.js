@@ -28,7 +28,7 @@ const JOBS = {
   "installation-tests-all-but-carthage": ["slack-secrets"],
   "installation-tests-carthage": ["slack-secrets"],
   "integration-tests-all": ["slack-secrets"],
-  "lint": [],
+  "lint": ["slack-secrets"],
   "pod-lib-lint": ["slack-secrets"],
   "revenuecat-admob-tests": ["slack-secrets"],
   "run-all-maestro-e2e-tests": ["e2e-tests", "slack-secrets"],
