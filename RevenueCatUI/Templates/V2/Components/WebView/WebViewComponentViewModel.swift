@@ -18,21 +18,15 @@ import Foundation
 class WebViewComponentViewModel {
 
     let url: URL
-    private let htmlFileRepository: InMemoryHTMLFileRepositoryType
+    let displayURL: URL?
 
     init(
         component: PaywallComponent.WebViewComponent,
         htmlFileRepository: InMemoryHTMLFileRepositoryType = InMemoryHTMLFileRepository.shared
     ) {
         self.url = component.url
-        self.htmlFileRepository = htmlFileRepository
+        self.displayURL = htmlFileRepository.getCachedFileURL(for: component.url)
     }
-
-    func displayURL() async -> URL {
-        let cachedURL = await self.htmlFileRepository.getCachedFileURL(for: self.url)
-        return cachedURL ?? self.url
-    }
-
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
