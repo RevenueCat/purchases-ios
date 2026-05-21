@@ -27,11 +27,17 @@ struct WebViewComponentView: View {
     @State private var dynamicHeight: CGFloat?
     #endif
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
     var body: some View {
         #if canImport(UIKit)
-        WebViewRepresentable(url: viewModel.displayURL ?? viewModel.url, height: $dynamicHeight)
-            .frame(height: dynamicHeight)
-            .background(Color.clear)
+        if let resolvedURL = viewModel.resolvedURL(customVariables: customVariables) {
+            let urlToLoad = viewModel.cachedURL(for: resolvedURL) ?? resolvedURL
+            WebViewRepresentable(url: urlToLoad, height: $dynamicHeight)
+                .frame(height: dynamicHeight)
+                .background(Color.clear)
+        }
         #else
         EmptyView()
         #endif
