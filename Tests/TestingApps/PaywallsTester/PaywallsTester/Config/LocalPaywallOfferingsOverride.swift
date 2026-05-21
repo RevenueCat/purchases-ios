@@ -28,6 +28,14 @@ struct LocalPaywallOfferingsOverrideSettings: Codable, Equatable {
         }
     }
 
+    var appUserID: String? {
+        guard self.isActive else {
+            return nil
+        }
+
+        return "paywalls-tester-local-override-\(self.cacheKey)"
+    }
+
     static let `default`: Self = .init(
         paywallComponentsJSON: "",
         productIdentifiersByPackageIdentifier: Self.defaultProductIdentifiersByPackageIdentifier,
@@ -62,6 +70,33 @@ struct LocalPaywallOfferingsOverrideSettings: Codable, Equatable {
       }
     }
     """
+
+}
+
+private extension LocalPaywallOfferingsOverrideSettings {
+
+    var cacheKey: String {
+        var hash: UInt64 = 14_695_981_039_346_656_037
+
+        func append(_ string: String) {
+            for byte in string.utf8 {
+                hash ^= UInt64(byte)
+                hash = hash &* 1_099_511_628_211
+            }
+        }
+
+        append(self.paywallComponentsJSON)
+        append(self.uiConfigJSON)
+
+        for packageIdentifier in self.productIdentifiersByPackageIdentifier.keys.sorted() {
+            append(packageIdentifier)
+            append("\n")
+            append(self.productIdentifiersByPackageIdentifier[packageIdentifier] ?? "")
+            append("\n")
+        }
+
+        return String(hash, radix: 16)
+    }
 
 }
 

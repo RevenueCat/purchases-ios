@@ -86,6 +86,32 @@ final class LocalPaywallOfferingsOverrideTests: XCTestCase {
         )
     }
 
+    func testAppUserIDIsNilWhenInactiveAndChangesWithOverrideSettings() {
+        let inactiveSettings = LocalPaywallOfferingsOverrideSettings(
+            paywallComponentsJSON: "",
+            productIdentifiersByPackageIdentifier: [:],
+            uiConfigJSON: ""
+        )
+        let firstActiveSettings = LocalPaywallOfferingsOverrideSettings(
+            paywallComponentsJSON: Self.paywallComponentsJSON,
+            productIdentifiersByPackageIdentifier: [
+                "$rc_monthly": "monthly_from_editor"
+            ],
+            uiConfigJSON: Self.uiConfigJSON
+        )
+        let secondActiveSettings = LocalPaywallOfferingsOverrideSettings(
+            paywallComponentsJSON: Self.paywallComponentsWithoutPackagesJSON,
+            productIdentifiersByPackageIdentifier: [
+                "$rc_monthly": "monthly_from_editor"
+            ],
+            uiConfigJSON: Self.uiConfigJSON
+        )
+
+        XCTAssertNil(inactiveSettings.appUserID)
+        XCTAssertNotNil(firstActiveSettings.appUserID)
+        XCTAssertNotEqual(firstActiveSettings.appUserID, secondActiveSettings.appUserID)
+    }
+
     private static let paywallComponentsJSON = """
     {
       "offering_id": "local_editor_offering",

@@ -98,6 +98,15 @@ let schemes: [Scheme] = [
             )
         )
     ),
+    .scheme(
+        name: "PaywallsTesterTests",
+        shared: true,
+        buildAction: .buildAction(targets: ["PaywallsTesterTests"]),
+        testAction: .targets([
+            .testableTarget(target: .init(stringLiteral: "PaywallsTesterTests"))
+        ]),
+        runAction: .runAction(configuration: "Debug")
+    ),
     // hack to avoid having `PaywallsTester` visible in the scheme list (hidden: true)
     .scheme(
         name: "PaywallsTester",
