@@ -70,53 +70,31 @@ struct APIKeyDashboardList: View {
     private var searchText = Constants.sandboxPaywallSearch
 
     var body: some View {
-        ZStack {
-            NavigationView {
-                self.content
-                    .navigationTitle("Live Paywalls")
-                    #if !os(macOS)
-                    .navigationBarTitleDisplayMode(.inline)
-                    #endif
-                    .toolbar {
-                        ToolbarItem(placement: .automatic) {
-                            HStack(spacing: 16) {
-                                Button {
-                                    isShowingVariablesEditor = true
-                                } label: {
-                                    Image(systemName: "curlybraces")
-                                }
+        NavigationView {
+            VStack {
+                Spacer()
 
-                                Button {
-                                    Task {
-                                        await fetchOfferings()
-                                    }
-                                } label: {
-                                    Image(systemName: "arrow.clockwise")
-                                }
-                                #if !os(watchOS)
-                                .keyboardShortcut("r", modifiers: .shift)
-                                #endif
-                            }
-                        }
+                NavigationLink {
+                    RevenueCatDiscoveryDemoView()
+                } label: {
+                    HStack {
+                        Label("RevenueCat Discovery", systemImage: "sparkles")
+                            .font(.headline)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption.bold())
                     }
-                    .sheet(isPresented: $isShowingVariablesEditor) {
-                        CustomVariablesEditorView(variables: $customVariables)
-                    }
+                    .padding()
+                    .foregroundStyle(.white)
+                    .background(Color.accentColor)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                }
+                .padding(.horizontal, 24)
+
+                Spacer()
             }
-            .task {
-                await fetchOfferings()
-            }
-            .refreshable {
-                await fetchOfferings()
-            }
-            
-            if isLoadingPaywall {
-                Color.black.opacity(0.3)
-                    .edgesIgnoringSafeArea(.all)
-                SwiftUI.ProgressView()
-                    .scaleEffect(1.5)
-                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(.systemGroupedBackground))
         }
     }
 
@@ -263,9 +241,9 @@ struct APIKeyDashboardList: View {
 
             Section {
                 NavigationLink {
-                    AppRecommendationsView()
+                    RevenueCatDiscoveryDemoView()
                 } label: {
-                    Label("App Recommendations", systemImage: "sparkles")
+                    Label("RevenueCat Discovery", systemImage: "sparkles")
                 }
             }
         }
@@ -419,6 +397,117 @@ struct APIKeyDashboardList: View {
             }
             .buttonStyle(.plain)
         }
+    }
+
+    private struct RevenueCatDiscoveryDemoView: View {
+
+        var body: some View {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Focus Timer")
+                            .font(.largeTitle.bold())
+                        Text("A tiny fake productivity app surface for testing RevenueCat Discovery.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Today")
+                                    .font(.headline)
+                                Text("3 sessions completed")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Image(systemName: "timer")
+                                .font(.title2)
+                                .foregroundStyle(.blue)
+                        }
+
+                        ProgressView(value: 0.68)
+
+                        HStack(spacing: 12) {
+                            stat(title: "Focus", value: "2h 12m")
+                            stat(title: "Streak", value: "8 days")
+                        }
+                    }
+                    .padding()
+                    .background(Color(.secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Partner perks")
+                            .font(.headline)
+                        Text("Discover apps that pair well with your routine.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                        NavigationLink {
+                            AppRecommendationsView()
+                        } label: {
+                            HStack {
+                                Label("Get deals from our partners", systemImage: "gift.fill")
+                                    .font(.headline)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.bold())
+                            }
+                            .padding()
+                            .foregroundStyle(.white)
+                            .background(Color.accentColor)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        }
+                    }
+                    .padding()
+                    .background(Color(.secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Upcoming")
+                            .font(.headline)
+
+                        fakeTask("Deep work session", detail: "25 minutes")
+                        fakeTask("Stretch break", detail: "5 minutes")
+                        fakeTask("Evening review", detail: "10 minutes")
+                    }
+                    .padding()
+                    .background(Color(.secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                }
+                .padding()
+            }
+            .background(Color(.systemGroupedBackground))
+        }
+
+        private func stat(title: String, value: String) -> some View {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(value)
+                    .font(.headline)
+                Text(title)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .background(Color(.tertiarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+
+        private func fakeTask(_ title: String, detail: String) -> some View {
+            HStack {
+                Image(systemName: "circle")
+                    .foregroundStyle(.secondary)
+                Text(title)
+                Spacer()
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+
     }
 
     private struct AppRecommendationsView: View {
