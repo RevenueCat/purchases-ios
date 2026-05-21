@@ -19,6 +19,72 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class ButtonComponentViewModelMappingTests: TestCase {
 
+    // MARK: - visible
+
+    func testDefaultVisibility_IsTrue() throws {
+        let component = try self.decodeButton(actionType: "navigate_back")
+        let viewModel = try self.makeViewModel(for: component)
+
+        XCTAssertTrue(viewModel.visible(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            selectedPackageId: nil,
+            customVariables: [:]
+        ))
+    }
+
+    func testComponentVisible_False_ReturnsNotVisible() throws {
+        let component = try self.decodeButton(actionType: "navigate_back", visible: false)
+        let viewModel = try self.makeViewModel(for: component)
+
+        XCTAssertFalse(viewModel.visible(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            selectedPackageId: nil,
+            customVariables: [:]
+        ))
+    }
+
+    func testSelectedOverrideVisible_False_HidesWhenSelected() throws {
+        let component = try self.decodeButton(
+            actionType: "navigate_back",
+            overrideConditions: ["selected"],
+            overrideVisible: false
+        )
+        let viewModel = try self.makeViewModel(for: component)
+
+        XCTAssertFalse(viewModel.visible(
+            state: .selected,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            selectedPackageId: nil,
+            customVariables: [:]
+        ))
+    }
+
+    func testSelectedOverrideVisible_False_StillVisibleWhenNotSelected() throws {
+        let component = try self.decodeButton(
+            actionType: "navigate_back",
+            overrideConditions: ["selected"],
+            overrideVisible: false
+        )
+        let viewModel = try self.makeViewModel(for: component)
+
+        XCTAssertTrue(viewModel.visible(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            selectedPackageId: nil,
+            customVariables: [:]
+        ))
+    }
+
     // MARK: - close_workflow → .closeWorkflow mapping
 
     func testCloseWorkflowDecodedComponentMapsToCloseWorkflowAction() throws {
@@ -40,10 +106,27 @@ final class ButtonComponentViewModelMappingTests: TestCase {
 
     // MARK: - Helpers
 
-    private func decodeButton(actionType: String) throws -> PaywallComponent.ButtonComponent {
+    private func decodeButton(
+        actionType: String,
+        visible: Bool? = nil,
+        overrideConditions: [String]? = nil,
+        overrideVisible: Bool? = nil
+    ) throws -> PaywallComponent.ButtonComponent {
+        var visibleField = ""
+        if let visible {
+            visibleField = "\"visible\": \(visible),"
+        }
+        var overridesField = ""
+        if let overrideConditions, let overrideVisible {
+            let conditions = overrideConditions.map { "{\"type\": \"\($0)\"}" }.joined(separator: ",")
+            overridesField = """
+            ,"overrides": [{"conditions": [\(conditions)], "properties": {"visible": \(overrideVisible)}}]
+            """
+        }
         let json = """
         {
             "type": "button",
+            \(visibleField)
             "action": { "type": "\(actionType)" },
             "stack": {
                 "type": "stack",
@@ -53,6 +136,7 @@ final class ButtonComponentViewModelMappingTests: TestCase {
                 "margin": {"top": 0, "bottom": 0, "leading": 0, "trailing": 0},
                 "components": []
             }
+            \(overridesField)
         }
         """
         return try JSONDecoder.default.decode(
@@ -81,7 +165,8 @@ final class ButtonComponentViewModelMappingTests: TestCase {
                 availablePackages: [],
                 webCheckoutUrl: nil
             ),
-            stackViewModel: stackViewModel
+            stackViewModel: stackViewModel,
+            uiConfigProvider: uiConfigProvider
         )
     }
 

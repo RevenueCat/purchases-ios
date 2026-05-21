@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RulesEngine.swift
+//  RulesEngineInternal.swift
 //
 //  Created by Antonio Pallares.
 //
@@ -15,7 +15,7 @@
 import Foundation
 
 /// Namespace for the RevenueCat rules engine.
-@_spi(Internal) public enum Rules {}
+public enum Rules {}
 
 extension Rules {
 

@@ -6,7 +6,7 @@
 
 import Foundation
 
-@testable import RulesEngine
+@testable import RulesEngineInternal
 
 enum PredicateConformanceFixtureError: Error, CustomStringConvertible {
 
