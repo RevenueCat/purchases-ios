@@ -901,270 +901,96 @@ class DeviceCacheTests: TestCase {
 
     // MARK: - Migration Tests
 
-    func testMigratesOfferingsFromOldDocumentsDirectory() throws {
-        let appUserID1 = "test-user1"
-        let appUserID2 = "test-user2"
+    // MARK: Lazy migration (offline first launch after update)
 
-        // Create old directory in documents
-        let documentsURL = fileManager.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        )[0]
-        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
-        let oldFileURL1 = oldDirectory.appendingPathComponent(DeviceCache.CacheKey.offerings(appUserID1).rawValue)
-        let oldFileURL2 = oldDirectory.appendingPathComponent(DeviceCache.CacheKey.offerings(appUserID2).rawValue)
-
-        // Create old documents directory and file
-        try fileManager.createDirectory(
-            at: oldDirectory,
-            withIntermediateDirectories: true,
-            attributes: nil
-        )
-
-        let testOfferings = try Self.createSampleOfferings()
-        let offeringsData = try JSONEncoder.default.encode(testOfferings.contents)
-        try offeringsData.write(to: oldFileURL1)
-        try offeringsData.write(to: oldFileURL2)
-
-        // Verify old files exist
-        XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL1.path))
-        XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL2.path))
-
-        // swiftlint:disable:next line_length
-        let newDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent("device-cache"))
-
-        // Verify new directory does not exist yet
-        XCTAssertFalse(fileManager.fileExists(atPath: newDirectoryURL.path))
-
-        // Create local DeviceCache with FileManager
-        let deviceCache = DeviceCache(
-            systemInfo: self.systemInfo,
-            userDefaults: self.makeIsolatedUserDefaults(),
-            cache: fileManager
-        )
-
-        // Verify new directory is created on init of DeviceCache
-        XCTAssertTrue(fileManager.fileExists(atPath: newDirectoryURL.path))
-
-        // Retrieve cached offerings 1, old file should be removed but directory should still exist
-        var cachedOfferings1: Offerings.Contents? = deviceCache.cachedOfferingsContents(appUserID: appUserID1)
-        expect(cachedOfferings1).toNot(beNil())
-        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL1.path))
-        XCTAssertTrue(fileManager.fileExists(atPath: oldDirectory.path))
-
-        // Retrieve cached offerings 2, old file should be removed and old directory should be removed now
-        var cachedOfferings2: Offerings.Contents? = deviceCache.cachedOfferingsContents(appUserID: appUserID2)
-        expect(cachedOfferings2).toNot(beNil())
-        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL2.path))
-        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
-
-        // Try fetching them from the new location
-        cachedOfferings1 = deviceCache.cachedOfferingsContents(appUserID: appUserID1)
-        cachedOfferings2 = deviceCache.cachedOfferingsContents(appUserID: appUserID2)
-        expect(cachedOfferings1).toNot(beNil())
-        expect(cachedOfferings2).toNot(beNil())
-    }
-
-    func testMigratesProductEntitlementMappingFromOldDocumentsDirectory() throws {
-        // Create old directory in documents
-        let documentsURL = fileManager.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        )[0]
-        let oldDirectoryURL = documentsURL.appendingPathComponent("RevenueCat")
-
-        // swiftlint:disable:next line_length
-        let oldFileURL = oldDirectoryURL.appendingPathComponent(DeviceCache.CacheKeys.productEntitlementMapping.rawValue)
-
-        // Create directory and file
-        try fileManager.createDirectory(
-            at: oldDirectoryURL,
-            withIntermediateDirectories: true,
-            attributes: nil
-        )
-
-        let testMapping = ProductEntitlementMapping(entitlementsByProduct: ["product1": ["entitlement1"]])
-        let mappingData = try JSONEncoder.default.encode(testMapping)
-        try mappingData.write(to: oldFileURL)
-
-        // Verify old file exists
-        XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL.path))
-
-        // swiftlint:disable:next line_length
-        let newDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent("device-cache"))
-
-        // Verify new directory does not exist yet
-        XCTAssertFalse(fileManager.fileExists(atPath: newDirectoryURL.path))
-
-        // Create local DeviceCache with FileManager
-        let deviceCache = DeviceCache(
-            systemInfo: self.systemInfo,
-            userDefaults: self.makeIsolatedUserDefaults(),
-            cache: fileManager
-        )
-
-        // Verify new directory is created on init of DeviceCache
-        XCTAssertTrue(fileManager.fileExists(atPath: newDirectoryURL.path))
-
-        // Access product entitlement mapping - should trigger migration
-        let cachedMapping = deviceCache.cachedProductEntitlementMapping
-
-        // Verify mapping was migrated and can be read
-        expect(cachedMapping).toNot(beNil())
-        expect(cachedMapping?.entitlementsByProduct) == testMapping.entitlementsByProduct
-
-        // Verify old file and directory is removed since it's empty
-        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL.path))
-        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectoryURL.path))
-    }
-
-    func testWritingOfferingsDeletesOldFileFromDocumentsDirectory() throws {
+    func testLazyMigrationWorksForOfferingsOnCacheMiss() throws {
         let appUserID = "test-user"
 
-        // Create old directory in documents
-        let documentsURL = fileManager.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        )[0]
-        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
-        let oldFileURL = oldDirectory.appendingPathComponent(DeviceCache.CacheKey.offerings(appUserID).rawValue)
-
-        // Create directory and file
-        try fileManager.createDirectory(
-            at: oldDirectory,
-            withIntermediateDirectories: true,
-            attributes: nil
+        let documentsURL = try XCTUnwrap(
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first
         )
-
-        let oldOfferings = try Self.createSampleOfferings()
-        let oldOfferingsData = try JSONEncoder.default.encode(oldOfferings.contents)
-        try oldOfferingsData.write(to: oldFileURL)
-
-        // Verify old file exists
-        XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL.path))
-
-        // Create local DeviceCache with fileManager
-        let deviceCache = DeviceCache(
-            systemInfo: self.systemInfo,
-            userDefaults: self.makeIsolatedUserDefaults(),
-            cache: fileManager
-        )
-
-        // Write new offerings, should delete old file
-        let newOfferings = try Self.createSampleOfferings()
-        deviceCache.cache(offerings: newOfferings, preferredLocales: ["en-US"], appUserID: appUserID)
-
-        // Verify old file and directory is removed since it's empty
-        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL.path))
-        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
-    }
-
-    func testClearCachesDeletesOldOfferingsFileIfExists() throws {
-        let appUserID = "test_user"
-        let newUserID = "new_user"
-
-        // Create old documents directory structure
-        let documentsURL = try XCTUnwrap(fileManager.urls(for: .documentDirectory, in: .userDomainMask).first)
         let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
-
-        // Create offerings file for this user and another file to ensure we only delete the offerings
-        let offeringsKey = DeviceCache.CacheKey.offerings(appUserID).rawValue
-        let offeringsFile = oldDirectory.appendingPathComponent(offeringsKey)
-        let otherFile = oldDirectory.appendingPathComponent("other-file.txt")
+        let oldFileURL = oldDirectory.appendingPathComponent(
+            DeviceCache.CacheKey.offerings(appUserID).rawValue
+        )
 
         try fileManager.createDirectory(at: oldDirectory, withIntermediateDirectories: true, attributes: nil)
-        try "offerings data".write(to: offeringsFile, atomically: true, encoding: .utf8)
-        try "other data".write(to: otherFile, atomically: true, encoding: .utf8)
-
-        // Verify files exist
-        XCTAssertTrue(fileManager.fileExists(atPath: offeringsFile.path))
-        XCTAssertTrue(fileManager.fileExists(atPath: otherFile.path))
-
-        // Call clearCaches
-        let deviceCache = DeviceCache(
-            systemInfo: self.systemInfo,
-            userDefaults: self.makeIsolatedUserDefaults(),
-            cache: fileManager
-        )
-        deviceCache.clearCaches(oldAppUserID: appUserID, andSaveWithNewUserID: newUserID)
-
-        // Verify only the offerings file is deleted, other file remains
-        XCTAssertFalse(fileManager.fileExists(atPath: offeringsFile.path))
-        XCTAssertTrue(fileManager.fileExists(atPath: otherFile.path))
-    }
-
-    func testClearOfferingsCacheDeletesOldOfferingsFileIfExists() throws {
-        let appUserID = "test_user"
-
-        // Create old documents directory structure
-        let documentsURL = try XCTUnwrap(fileManager.urls(for: .documentDirectory, in: .userDomainMask).first)
-        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
-
-        // Create offerings file for this user and another file to ensure we only delete the offerings
-        let offeringsKey = DeviceCache.CacheKey.offerings(appUserID).rawValue
-        let offeringsFile = oldDirectory.appendingPathComponent(offeringsKey)
-        let otherFile = oldDirectory.appendingPathComponent("other-file.txt")
-
-        try fileManager.createDirectory(at: oldDirectory, withIntermediateDirectories: true, attributes: nil)
-        try "offerings data".write(to: offeringsFile, atomically: true, encoding: .utf8)
-        try "other data".write(to: otherFile, atomically: true, encoding: .utf8)
-
-        // Verify files exist
-        XCTAssertTrue(fileManager.fileExists(atPath: offeringsFile.path))
-        XCTAssertTrue(fileManager.fileExists(atPath: otherFile.path))
-
-        // Call clearOfferingsCache
-        let deviceCache = DeviceCache(
-            systemInfo: self.systemInfo,
-            userDefaults: self.makeIsolatedUserDefaults(),
-            cache: fileManager
-        )
-        deviceCache.clearOfferingsCache(appUserID: appUserID)
-
-        // Verify only the offerings file is deleted, other file remains
-        XCTAssertFalse(fileManager.fileExists(atPath: offeringsFile.path))
-        XCTAssertTrue(fileManager.fileExists(atPath: otherFile.path))
-    }
-
-    func testMigrationOnConcurrentReadsIsThreadSafe() throws {
-        let appUserID = "test_user"
-
-        // Create old directory in documents
-        let documentsURL = try XCTUnwrap(fileManager.urls(for: .documentDirectory, in: .userDomainMask).first)
-        let oldDirectoryURL = documentsURL.appendingPathComponent("RevenueCat")
-        let oldFileURL = oldDirectoryURL.appendingPathComponent(DeviceCache.CacheKey.offerings(appUserID).rawValue)
-
-        // Create directory and file
-        try fileManager.createDirectory(
-            at: oldDirectoryURL,
-            withIntermediateDirectories: true,
-            attributes: nil
-        )
 
         let testOfferings = try Self.createSampleOfferings()
         let offeringsData = try JSONEncoder.default.encode(testOfferings.contents)
         try offeringsData.write(to: oldFileURL)
 
-        // Verify old file exists
         XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL.path))
 
-        // Create DeviceCache instance
         let deviceCache = DeviceCache(
             systemInfo: self.systemInfo,
             userDefaults: self.makeIsolatedUserDefaults(),
             cache: fileManager
         )
 
-        let newDirectoryURL = try XCTUnwrap(
-            DirectoryHelper.baseUrl(for: .cache)?.appendingPathComponent("device-cache")
+        // Reading from cache should trigger lazy migration
+        let cachedOfferings = deviceCache.cachedOfferingsContents(appUserID: appUserID)
+        expect(cachedOfferings).toNot(beNil())
+
+        // Old file should be removed after migration
+        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
+    }
+
+    func testLazyMigrationWorksForProductEntitlementMapping() throws {
+        let documentsURL = try XCTUnwrap(
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first
         )
-        let newFileURL = newDirectoryURL.appendingPathComponent(DeviceCache.CacheKey.offerings(appUserID).rawValue)
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+        let oldFileURL = oldDirectory.appendingPathComponent(
+            DeviceCache.CacheKeys.productEntitlementMapping.rawValue
+        )
 
-        // Verify new directory exists but file doesn't yet
-        XCTAssertTrue(fileManager.fileExists(atPath: newDirectoryURL.path))
-        XCTAssertFalse(fileManager.fileExists(atPath: newFileURL.path))
+        try fileManager.createDirectory(at: oldDirectory, withIntermediateDirectories: true, attributes: nil)
 
-        // Trigger concurrent concurrent reads from multiple threads
+        let testMapping = ProductEntitlementMapping(entitlementsByProduct: ["product1": ["entitlement1"]])
+        let mappingData = try JSONEncoder.default.encode(testMapping)
+        try mappingData.write(to: oldFileURL)
+
+        XCTAssertTrue(fileManager.fileExists(atPath: oldFileURL.path))
+
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.makeIsolatedUserDefaults(),
+            cache: fileManager
+        )
+
+        let cachedMapping = deviceCache.cachedProductEntitlementMapping
+        expect(cachedMapping).toNot(beNil())
+        expect(cachedMapping?.entitlementsByProduct) == testMapping.entitlementsByProduct
+
+        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
+    }
+
+    func testMigrationOnConcurrentReadsIsThreadSafe() throws {
+        let appUserID = "test_user"
+
+        let documentsURL = try XCTUnwrap(
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first
+        )
+        let oldDirectoryURL = documentsURL.appendingPathComponent("RevenueCat")
+        let oldFileURL = oldDirectoryURL.appendingPathComponent(
+            DeviceCache.CacheKey.offerings(appUserID).rawValue
+        )
+
+        try fileManager.createDirectory(at: oldDirectoryURL, withIntermediateDirectories: true, attributes: nil)
+
+        let testOfferings = try Self.createSampleOfferings()
+        let offeringsData = try JSONEncoder.default.encode(testOfferings.contents)
+        try offeringsData.write(to: oldFileURL)
+
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.makeIsolatedUserDefaults(),
+            cache: fileManager
+        )
+
         let expectation = XCTestExpectation(description: "All concurrent migrations complete")
         expectation.expectedFulfillmentCount = 10
 
@@ -1173,30 +999,297 @@ class DeviceCacheTests: TestCase {
         for _ in 0..<10 {
             dispatchGroup.enter()
             DispatchQueue.global(qos: .userInitiated).async {
-                // Each thread tries to access the cached offerings, triggering migration (but should only migrate once)
                 let cachedOfferings = deviceCache.cachedOfferingsContents(appUserID: appUserID)
-
-                // Verify we got valid data
                 expect(cachedOfferings).toNot(beNil())
-
                 expectation.fulfill()
                 dispatchGroup.leave()
             }
         }
 
-        // Wait for all concurrent operations to complete
         let result = dispatchGroup.wait(timeout: .now() + 5.0)
         XCTAssertEqual(result, .success, "Concurrent migrations should complete within timeout")
-
         wait(for: [expectation], timeout: 5.0)
 
-        // Verify migration succeeded
-        XCTAssertTrue(fileManager.fileExists(atPath: newFileURL.path))
         XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL.path))
 
-        // Verify we can still read the migrated data
         let finalOfferings = deviceCache.cachedOfferingsContents(appUserID: appUserID)
         expect(finalOfferings).toNot(beNil())
+    }
+
+    // MARK: Old file cleanup on write
+
+    func testCacheOfferingsDeletesAllOldOfferingsFilesForAllUserIDs() throws {
+        let documentsURL = try XCTUnwrap(
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first
+        )
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+
+        // Create offerings files for multiple user IDs
+        let offeringsFileA = oldDirectory.appendingPathComponent(
+            DeviceCache.CacheKey.offerings("user-A").rawValue
+        )
+        let offeringsFileB = oldDirectory.appendingPathComponent(
+            DeviceCache.CacheKey.offerings("user-B").rawValue
+        )
+        let offeringsFileC = oldDirectory.appendingPathComponent(
+            DeviceCache.CacheKey.offerings("user-C").rawValue
+        )
+        // Also create a product entitlement mapping file that should NOT be deleted
+        let pemFile = oldDirectory.appendingPathComponent(
+            DeviceCache.CacheKeys.productEntitlementMapping.rawValue
+        )
+
+        try fileManager.createDirectory(at: oldDirectory, withIntermediateDirectories: true, attributes: nil)
+        try "offerings-A".write(to: offeringsFileA, atomically: true, encoding: .utf8)
+        try "offerings-B".write(to: offeringsFileB, atomically: true, encoding: .utf8)
+        try "offerings-C".write(to: offeringsFileC, atomically: true, encoding: .utf8)
+        try "pem-data".write(to: pemFile, atomically: true, encoding: .utf8)
+
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.makeIsolatedUserDefaults(),
+            cache: fileManager
+        )
+
+        // Cache offerings for user-A — should delete ALL old offerings files
+        let offerings = try Self.createSampleOfferings()
+        deviceCache.cache(offerings: offerings, preferredLocales: ["en-US"], appUserID: "user-A")
+
+        // All offerings files should be deleted
+        XCTAssertFalse(fileManager.fileExists(atPath: offeringsFileA.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: offeringsFileB.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: offeringsFileC.path))
+
+        // Product entitlement mapping file should still exist
+        XCTAssertTrue(fileManager.fileExists(atPath: pemFile.path))
+
+        // Old directory should still exist (PEM file remains)
+        XCTAssertTrue(fileManager.fileExists(atPath: oldDirectory.path))
+    }
+
+    func testStoreProductEntitlementMappingDeletesOldFileAndDirectory() throws {
+        let documentsURL = try XCTUnwrap(
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first
+        )
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+        let pemFile = oldDirectory.appendingPathComponent(
+            DeviceCache.CacheKeys.productEntitlementMapping.rawValue
+        )
+
+        try fileManager.createDirectory(at: oldDirectory, withIntermediateDirectories: true, attributes: nil)
+        try "pem-data".write(to: pemFile, atomically: true, encoding: .utf8)
+
+        XCTAssertTrue(fileManager.fileExists(atPath: pemFile.path))
+
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.makeIsolatedUserDefaults(),
+            cache: fileManager
+        )
+
+        let mapping = ProductEntitlementMapping(entitlementsByProduct: ["product1": ["entitlement1"]])
+        deviceCache.store(productEntitlementMapping: mapping)
+
+        // Old file should be deleted
+        XCTAssertFalse(fileManager.fileExists(atPath: pemFile.path))
+
+        // Old directory should be deleted (was the last file)
+        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
+    }
+
+    func testCacheOfferingsForNewUserDeletesOrphanedOldUserFilesAndDirectory() throws {
+        let documentsURL = try XCTUnwrap(
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first
+        )
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+
+        // Old directory only contains offerings for user-A
+        let orphanedFile = oldDirectory.appendingPathComponent(
+            DeviceCache.CacheKey.offerings("user-A").rawValue
+        )
+
+        try fileManager.createDirectory(at: oldDirectory, withIntermediateDirectories: true, attributes: nil)
+        try "old-offerings".write(to: orphanedFile, atomically: true, encoding: .utf8)
+
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.makeIsolatedUserDefaults(),
+            cache: fileManager
+        )
+
+        // Cache offerings for a different user (user-B)
+        let offerings = try Self.createSampleOfferings()
+        deviceCache.cache(offerings: offerings, preferredLocales: ["en-US"], appUserID: "user-B")
+
+        // Orphaned file for user-A should be deleted
+        XCTAssertFalse(fileManager.fileExists(atPath: orphanedFile.path))
+
+        // Old directory should be deleted (was the last file)
+        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
+    }
+
+    func testCacheOfferingsDeletesOldDirectoryWhenLastFile() throws {
+        let documentsURL = try XCTUnwrap(
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first
+        )
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+        let offeringsFile = oldDirectory.appendingPathComponent(
+            DeviceCache.CacheKey.offerings("test-user").rawValue
+        )
+
+        try fileManager.createDirectory(at: oldDirectory, withIntermediateDirectories: true, attributes: nil)
+        try "offerings-data".write(to: offeringsFile, atomically: true, encoding: .utf8)
+
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.makeIsolatedUserDefaults(),
+            cache: fileManager
+        )
+
+        let offerings = try Self.createSampleOfferings()
+        deviceCache.cache(offerings: offerings, preferredLocales: ["en-US"], appUserID: "test-user")
+
+        // Both file and directory should be gone
+        XCTAssertFalse(fileManager.fileExists(atPath: offeringsFile.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
+    }
+
+    func testOnlineWriteCleansUpOldFilesThenOfflineReadWorksFromNewLocation() throws {
+        let appUserID = "test-user"
+
+        let documentsURL = try XCTUnwrap(
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first
+        )
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+        let oldOfferingsFile = oldDirectory.appendingPathComponent(
+            DeviceCache.CacheKey.offerings(appUserID).rawValue
+        )
+
+        // Simulate state after SDK update: old files exist in Documents
+        try fileManager.createDirectory(at: oldDirectory, withIntermediateDirectories: true, attributes: nil)
+
+        let staleOfferings = try Self.createSampleOfferings()
+        let staleData = try JSONEncoder.default.encode(staleOfferings.contents)
+        try staleData.write(to: oldOfferingsFile)
+
+        XCTAssertTrue(fileManager.fileExists(atPath: oldOfferingsFile.path))
+
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.makeIsolatedUserDefaults(),
+            cache: fileManager
+        )
+
+        // Simulate online: network fetch succeeds, writes fresh data to new location
+        let freshOfferings = try Self.createSampleOfferings()
+        deviceCache.cache(offerings: freshOfferings, preferredLocales: ["en-US"], appUserID: appUserID)
+
+        // Old files should be cleaned up by the write path
+        XCTAssertFalse(fileManager.fileExists(atPath: oldOfferingsFile.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
+
+        // Simulate offline: read from cache — should return data from new location
+        let cachedOfferings = deviceCache.cachedOfferingsContents(appUserID: appUserID)
+        expect(cachedOfferings).toNot(beNil())
+    }
+
+    func testCacheOfferingsDoesNotFailWhenNoOldDirectory() throws {
+        let documentsURL = try XCTUnwrap(
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first
+        )
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+
+        // Verify no old directory exists
+        XCTAssertFalse(fileManager.fileExists(atPath: oldDirectory.path))
+
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.makeIsolatedUserDefaults(),
+            cache: fileManager
+        )
+
+        // Should not crash or fail
+        let offerings = try Self.createSampleOfferings()
+        deviceCache.cache(offerings: offerings, preferredLocales: ["en-US"], appUserID: "test-user")
+    }
+
+    func testClearCachesDeletesAllOldOfferingsFiles() throws {
+        let appUserID = "test_user"
+        let newUserID = "new_user"
+
+        let documentsURL = try XCTUnwrap(
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first
+        )
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+
+        // Create offerings files for current and a different user ID
+        let offeringsFile = oldDirectory.appendingPathComponent(
+            DeviceCache.CacheKey.offerings(appUserID).rawValue
+        )
+        let otherOfferingsFile = oldDirectory.appendingPathComponent(
+            DeviceCache.CacheKey.offerings("other-user").rawValue
+        )
+        // Non-offerings file should not be deleted
+        let pemFile = oldDirectory.appendingPathComponent(
+            DeviceCache.CacheKeys.productEntitlementMapping.rawValue
+        )
+
+        try fileManager.createDirectory(at: oldDirectory, withIntermediateDirectories: true, attributes: nil)
+        try "offerings data".write(to: offeringsFile, atomically: true, encoding: .utf8)
+        try "other offerings".write(to: otherOfferingsFile, atomically: true, encoding: .utf8)
+        try "pem data".write(to: pemFile, atomically: true, encoding: .utf8)
+
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.makeIsolatedUserDefaults(),
+            cache: fileManager
+        )
+        deviceCache.clearCaches(oldAppUserID: appUserID, andSaveWithNewUserID: newUserID)
+
+        // All offerings files should be deleted
+        XCTAssertFalse(fileManager.fileExists(atPath: offeringsFile.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: otherOfferingsFile.path))
+
+        // PEM file should remain
+        XCTAssertTrue(fileManager.fileExists(atPath: pemFile.path))
+    }
+
+    func testClearOfferingsCacheDeletesAllOldOfferingsFiles() throws {
+        let appUserID = "test_user"
+
+        let documentsURL = try XCTUnwrap(
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first
+        )
+        let oldDirectory = documentsURL.appendingPathComponent("RevenueCat")
+
+        let offeringsFile = oldDirectory.appendingPathComponent(
+            DeviceCache.CacheKey.offerings(appUserID).rawValue
+        )
+        let otherOfferingsFile = oldDirectory.appendingPathComponent(
+            DeviceCache.CacheKey.offerings("other-user").rawValue
+        )
+        let pemFile = oldDirectory.appendingPathComponent(
+            DeviceCache.CacheKeys.productEntitlementMapping.rawValue
+        )
+
+        try fileManager.createDirectory(at: oldDirectory, withIntermediateDirectories: true, attributes: nil)
+        try "offerings data".write(to: offeringsFile, atomically: true, encoding: .utf8)
+        try "other offerings".write(to: otherOfferingsFile, atomically: true, encoding: .utf8)
+        try "pem data".write(to: pemFile, atomically: true, encoding: .utf8)
+
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.makeIsolatedUserDefaults(),
+            cache: fileManager
+        )
+        deviceCache.clearOfferingsCache(appUserID: appUserID)
+
+        // All offerings files should be deleted
+        XCTAssertFalse(fileManager.fileExists(atPath: offeringsFile.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: otherOfferingsFile.path))
+
+        // PEM file should remain
+        XCTAssertTrue(fileManager.fileExists(atPath: pemFile.path))
     }
 }
 

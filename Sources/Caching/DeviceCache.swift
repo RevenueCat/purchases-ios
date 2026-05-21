@@ -158,8 +158,8 @@ class DeviceCache {
         // Clear offerings cache from large item cache
         self.largeItemCache.removeObject(forKey: CacheKey.offerings(oldAppUserID).rawValue)
 
-        // Delete old offerings file from documents directory if it exists
-        self.deleteOldFileIfNeeded(for: CacheKey.offerings(oldAppUserID).rawValue)
+        // Delete all old offerings files from documents directory if they exist
+        self.deleteAllOldOfferingsFiles()
     }
 
     // MARK: - CustomerInfo
@@ -228,8 +228,8 @@ class DeviceCache {
         let key = CacheKey.offerings(appUserID).rawValue
         if self.largeItemCache.set(codable: offerings.contents, forKey: key) {
 
-            // Delete old file from documents directory if it exists
-            self.deleteOldFileIfNeeded(for: key)
+            // Delete all old offerings files from documents directory if they exist
+            self.deleteAllOldOfferingsFiles()
         }
     }
 
@@ -246,8 +246,8 @@ class DeviceCache {
         self.offeringsCachePreferredLocales.value = []
         self.largeItemCache.removeObject(forKey: CacheKey.offerings(appUserID).rawValue)
 
-        // Delete old offerings file from documents directory if it exists
-        self.deleteOldFileIfNeeded(for: CacheKey.offerings(appUserID).rawValue)
+        // Delete all old offerings files from documents directory if they exist
+        self.deleteAllOldOfferingsFiles()
     }
 
     func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
@@ -428,7 +428,7 @@ class DeviceCache {
             }
 
             // Delete old file if it still exists
-            self.deleteOldFileIfNeeded(for: productEntitlementMappingKey)
+            self.deleteOldFile(for: productEntitlementMappingKey)
         }
     }
 
@@ -927,19 +927,39 @@ private extension DeviceCache {
         }
     }
 
-    private func deleteOldFileIfNeeded(for key: String) {
-        guard let oldDirectoryURL = self.oldDocumentsDirectoryURL() else {
+    /// Deletes all old offerings files from the old documents directory,
+    /// regardless of which user ID they belong to.
+    private func deleteAllOldOfferingsFiles() {
+        guard let oldDirectoryURL = self.oldDocumentsDirectoryURL(),
+              fileManager.fileExists(atPath: oldDirectoryURL.path) else {
+            return
+        }
+
+        let offeringsPrefix = CacheKey.base + "offerings."
+
+        do {
+            let contents = try fileManager.contentsOfDirectory(atPath: oldDirectoryURL.path)
+            for fileName in contents where fileName.hasPrefix(offeringsPrefix) {
+                let fileURL = oldDirectoryURL.appendingPathComponent(fileName)
+                try? fileManager.removeItem(at: fileURL)
+            }
+            self.deleteOldDocumentsDirectoryIfEmpty()
+        } catch {
+            Logger.error(Strings.cache.failed_to_delete_old_cache_directory(error))
+        }
+    }
+
+    private func deleteOldFile(for key: String) {
+        guard let oldDirectoryURL = self.oldDocumentsDirectoryURL(),
+              fileManager.fileExists(atPath: oldDirectoryURL.path) else {
             return
         }
 
         let oldFileURL = oldDirectoryURL.appendingPathComponent(key)
-
-        // Use fileManager directly for file operations since LargeItemCacheType doesn't provide fileExists
         guard fileManager.fileExists(atPath: oldFileURL.path) else {
             return
         }
 
-        // Delete old file if it exists
         do {
             try fileManager.removeItem(at: oldFileURL)
             self.deleteOldDocumentsDirectoryIfEmpty()
