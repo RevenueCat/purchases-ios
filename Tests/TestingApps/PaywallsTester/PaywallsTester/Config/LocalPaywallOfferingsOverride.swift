@@ -33,7 +33,7 @@ struct LocalPaywallOfferingsOverrideSettings: Codable, Equatable {
             return nil
         }
 
-        return "paywalls-tester-local-override-\(self.cacheKey)"
+        return Self.localOverrideAppUserIDPrefix + self.cacheKey
     }
 
     static let `default`: Self = .init(
@@ -48,6 +48,8 @@ struct LocalPaywallOfferingsOverrideSettings: Codable, Equatable {
         "$rc_annual": "com.revenuecat.simpleapp.yearly",
         "$rc_lifetime": "com.revenuecat.simpleapp.lifetime"
     ]
+
+    static let localOverrideAppUserIDPrefix = "paywalls-tester-local-override-"
 
     static let defaultUIConfigJSON = """
     {
@@ -103,6 +105,8 @@ private extension LocalPaywallOfferingsOverrideSettings {
 enum LocalPaywallOfferingsOverrideStore {
 
     private static let userDefaultsKey = "com.revenuecat.PaywallsTester.localPaywallOfferingsOverride"
+    private static let normalAppUserIDKey = "com.revenuecat.PaywallsTester.normalAppUserID"
+    private static let defaultAppUserID = "paywalls-tester-default"
 
     static var settings: LocalPaywallOfferingsOverrideSettings {
         get {
@@ -124,6 +128,29 @@ enum LocalPaywallOfferingsOverrideStore {
 
     static var isActive: Bool {
         return Self.settings.isActive
+    }
+
+    static var configurationAppUserID: String {
+        return Self.appUserID(for: Self.settings, normalAppUserID: Self.normalAppUserID)
+    }
+
+    static func appUserID(
+        for settings: LocalPaywallOfferingsOverrideSettings,
+        normalAppUserID: String?
+    ) -> String {
+        return settings.appUserID ?? normalAppUserID ?? Self.defaultAppUserID
+    }
+
+    static func rememberNormalAppUserIDIfNeeded(_ appUserID: String) {
+        guard !appUserID.hasPrefix(LocalPaywallOfferingsOverrideSettings.localOverrideAppUserIDPrefix) else {
+            return
+        }
+
+        UserDefaults.standard.set(appUserID, forKey: Self.normalAppUserIDKey)
+    }
+
+    private static var normalAppUserID: String? {
+        return UserDefaults.standard.string(forKey: Self.normalAppUserIDKey)
     }
 
 }

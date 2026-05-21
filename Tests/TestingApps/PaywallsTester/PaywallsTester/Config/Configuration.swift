@@ -41,13 +41,14 @@ enum Configuration {
 private extension Configuration {
 
     static func configurationBuilder() -> RevenueCat.Configuration.Builder {
-        let builder = RevenueCat.Configuration.Builder(withAPIKey: Constants.apiKey)
-
-        if let appUserID = LocalPaywallOfferingsOverrideStore.settings.appUserID {
-            _ = builder.with(appUserID: appUserID)
+        if LocalPaywallOfferingsOverrideStore.isActive, Purchases.isConfigured {
+            LocalPaywallOfferingsOverrideStore.rememberNormalAppUserIDIfNeeded(Purchases.shared.appUserID)
         }
 
-        return builder
+        return RevenueCat.Configuration.Builder(
+            withAPIKey: Constants.apiKey,
+            appUserID: LocalPaywallOfferingsOverrideStore.configurationAppUserID
+        )
     }
 
 }
