@@ -78,7 +78,11 @@ final class PurchaseHandler: ObservableObject {
     /// More extensible than a boolean - gives access to full result data for
     /// potential future exit offer triggers (e.g., based on specific products).
     @Published
-    fileprivate(set) var sessionPurchaseResult: PurchaseResultData?
+    fileprivate(set) var sessionPurchaseResult: PurchaseResultData? {
+        didSet {
+            self.sessionPurchaseResultID = UUID()
+        }
+    }
 
     /// Unique identifier for the latest `sessionPurchaseResult`.
     /// This allows SwiftUI preference listeners to receive consecutive identical results.
@@ -499,7 +503,6 @@ extension PurchaseHandler {
             // onPurchaseCompleted and onPurchaseCancelled modifiers both work correctly.
             withAnimation(Constants.defaultAnimation) {
                 self.sessionPurchaseResult = result
-                self.sessionPurchaseResultID = UUID()
             }
 
             self.setResult(result)
@@ -563,7 +566,6 @@ extension PurchaseHandler {
         // onPurchaseCompleted and onPurchaseCancelled modifiers both work correctly.
         withAnimation(Constants.defaultAnimation) {
             self.sessionPurchaseResult = resultInfo
-            self.sessionPurchaseResultID = UUID()
         }
 
         self.setResult(resultInfo)
