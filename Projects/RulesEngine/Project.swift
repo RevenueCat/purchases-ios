@@ -18,7 +18,9 @@ let project = Project(
                 "../../RulesEngine/**/*.swift"
             ],
             settings: .settings(
-                base: ([:] as SettingsDictionary).appendingTuistSwiftConditions()
+                base: ([
+                    "APPLICATION_EXTENSION_API_ONLY": "YES"
+                ] as SettingsDictionary).appendingTuistSwiftConditions()
             )
         ),
         .target(

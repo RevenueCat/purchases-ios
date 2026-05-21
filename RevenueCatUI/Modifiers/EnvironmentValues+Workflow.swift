@@ -9,6 +9,7 @@
 //
 //  EnvironmentValues+Workflow.swift
 
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS)
@@ -56,6 +57,11 @@ private struct WorkflowPackageContextKey: EnvironmentKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct WorkflowExitOfferOfferingBindingKey: EnvironmentKey {
+    static let defaultValue: Binding<Offering?> = .constant(nil)
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension EnvironmentValues {
     /// Called when a button with a component `id` is tapped inside a workflow paywall.
     /// Returns `true` if the workflow consumed the trigger (navigator found a matching step),
@@ -86,6 +92,14 @@ extension EnvironmentValues {
     var closeWorkflowAction: (() -> Void)? {
         get { self[CloseWorkflowActionKey.self] }
         set { self[CloseWorkflowActionKey.self] = newValue }
+    }
+
+    /// A binding injected by `PresentingPaywallModifier` so `WorkflowPaywallView` can write the
+    /// resolved exit offer offering directly, bypassing the preference-key path which does not
+    /// propagate reliably across the sheet boundary.
+    var workflowExitOfferOfferingBinding: Binding<Offering?> {
+        get { self[WorkflowExitOfferOfferingBindingKey.self] }
+        set { self[WorkflowExitOfferOfferingBindingKey.self] = newValue }
     }
 }
 

@@ -36,7 +36,7 @@ extension Bundle {
         let composeResourcesPath = findComposeResourcesPath()
         let path = composeResourcesPath
             .appending("/composeResources")
-            .appending("/swiftPMImport.com.revenuecat.purchases.kn.ui.resources")
+            .appending("/com.revenuecat.purchases.kn.ui.resources")
             .appending("/files")
         let bundle = Bundle(path: path)
         guard let bundle else {
