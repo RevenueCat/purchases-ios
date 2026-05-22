@@ -1311,7 +1311,7 @@ public extension Purchases {
 
         return Set(packages)
             .dictionaryWithValues { (package: Package) in
-                result[package.storeProduct.productIdentifier] ?? .init(eligibilityStatus: .unknown)
+                result[package.storeProduct.id] ?? .init(eligibilityStatus: .unknown)
             }
     }
 
