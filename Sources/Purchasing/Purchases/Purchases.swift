@@ -1984,6 +1984,44 @@ public extension Purchases {
 
     #endif
 
+    // swiftlint:disable:next function_parameter_count
+    @discardableResult internal static func configure(
+        withAPIKey apiKey: String,
+        appUserID: String?,
+        observerMode: Bool,
+        userDefaults: UserDefaults?,
+        applicationSupportDirectory: URL? = nil,
+        platformInfo: PlatformInfo?,
+        responseVerificationMode: Signing.ResponseVerificationMode,
+        storeKitVersion: StoreKitVersion,
+        storeKitTimeout: TimeInterval,
+        networkTimeout: TimeInterval,
+        dangerousSettings: DangerousSettings?,
+        showStoreMessagesAutomatically: Bool,
+        diagnosticsEnabled: Bool,
+        preferredLocale: String?,
+        automaticDeviceIdentifierCollectionEnabled: Bool = true
+    ) -> Purchases {
+        return self.setDefaultInstance(
+            .init(apiKey: apiKey,
+                  appUserID: appUserID,
+                  userDefaults: userDefaults,
+                  applicationSupportDirectory: applicationSupportDirectory,
+                  observerMode: observerMode,
+                  platformInfo: platformInfo,
+                  responseVerificationMode: responseVerificationMode,
+                  storeKitVersion: storeKitVersion,
+                  storeKitTimeout: storeKitTimeout,
+                  networkTimeout: networkTimeout,
+                  dangerousSettings: dangerousSettings,
+                  showStoreMessagesAutomatically: showStoreMessagesAutomatically,
+                  diagnosticsEnabled: diagnosticsEnabled,
+                  preferredLocale: preferredLocale,
+                  automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled,
+                  currentConfiguration: nil)
+        )
+    }
+
 }
 
 // MARK: Delegate implementation
