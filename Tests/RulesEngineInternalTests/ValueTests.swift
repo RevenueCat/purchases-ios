@@ -105,6 +105,10 @@ final class ValueTests: XCTestCase {
     }
 
     func testLooseEqArraysStructural() {
+        // Deliberate divergence from JS: in JS, `[1] == [1]` is `false`
+        // (object reference identity). We compare structurally because
+        // rule authors comparing a `var` lookup against a literal list
+        // expect "exact same contents" to mean "equal".
         XCTAssertTrue(
             looseEq(
                 .array([.int(1), .int(2)]),
@@ -115,6 +119,114 @@ final class ValueTests: XCTestCase {
             looseEq(
                 .array([.int(1)]),
                 .array([.int(1), .int(2)])
+            )
+        )
+    }
+
+    func testLooseEqObjectsStructural() {
+        // Same deliberate structural rule as for arrays: same keys + same
+        // values (loosely) → equal, regardless of insertion order.
+        XCTAssertTrue(
+            looseEq(
+                .object(["a": .int(1), "b": .string("x")]),
+                .object(["b": .string("x"), "a": .float(1.0)])
+            )
+        )
+        XCTAssertFalse(
+            looseEq(
+                .object(["a": .int(1)]),
+                .object(["a": .int(1), "b": .int(2)])
+            )
+        )
+        XCTAssertFalse(
+            looseEq(
+                .object(["a": .int(1)]),
+                .object(["a": .int(2)])
+            )
+        )
+    }
+
+    // MARK: - Loose equality: JS array/object stringify coercion
+
+    func testLooseEqArrayCoercesToJSStringAgainstString() {
+        // JS abstract equality: `Array.prototype.toString()` is invoked,
+        // then the comparison falls through to string-vs-string.
+        // Reference: `[1] == "1"` → true, `[1, 2] == "1,2"` → true.
+        XCTAssertTrue(looseEq(.array([.int(1)]), .string("1")))
+        XCTAssertTrue(looseEq(.string("1"), .array([.int(1)])))
+        XCTAssertTrue(looseEq(.array([.int(1), .int(2)]), .string("1,2")))
+        XCTAssertTrue(looseEq(.array([.string("a"), .string("b")]), .string("a,b")))
+        XCTAssertTrue(looseEq(.array([]), .string("")))
+        // Non-matching content still compares unequal.
+        XCTAssertFalse(looseEq(.array([.int(1)]), .string("2")))
+    }
+
+    func testLooseEqArrayElementsRenderJSNullAsEmptyString() {
+        // `[null].toString()` is `""` (not `"null"`), and
+        // `[null, 1].toString()` is `",1"`. The element-stringify rule
+        // is JS-specific; pin it directly.
+        XCTAssertTrue(looseEq(.array([.null]), .string("")))
+        XCTAssertTrue(looseEq(.array([.null, .int(1)]), .string(",1")))
+        XCTAssertTrue(looseEq(.array([.null, .null]), .string(",")))
+    }
+
+    func testLooseEqArrayRecursesIntoNestedArrays() {
+        // `[[1, 2], 3].toString()` flattens to `"1,2,3"` — children
+        // recurse through the same join.
+        XCTAssertTrue(
+            looseEq(
+                .array([.array([.int(1), .int(2)]), .int(3)]),
+                .string("1,2,3")
+            )
+        )
+    }
+
+    func testLooseEqArrayCoercesThroughNumericFallback() {
+        // After ToPrimitive, the recursion may hit the
+        // string-vs-number numeric fallback. Reference:
+        // `[1] == 1` → true, `[] == 0` → true, `[0] == false` → true.
+        XCTAssertTrue(looseEq(.array([.int(1)]), .int(1)))
+        XCTAssertTrue(looseEq(.array([]), .int(0)))
+        XCTAssertTrue(looseEq(.array([.int(0)]), .bool(false)))
+        XCTAssertTrue(looseEq(.array([.float(1.5)]), .float(1.5)))
+        // No spurious matches when the stringified array isn't numeric.
+        XCTAssertFalse(looseEq(.array([.string("hello")]), .int(0)))
+    }
+
+    func testLooseEqArrayRendersJSSpecificFloatsCorrectly() {
+        // `String(1.0)` is `"1"` (no decimal), `String(NaN)` is `"NaN"`,
+        // `String(Infinity)` is `"Infinity"`. These show up only via the
+        // array stringify path — `==` against a bare `Double.nan` would
+        // still be `false` because NaN isn't equal to itself.
+        XCTAssertTrue(looseEq(.array([.float(1.0)]), .string("1")))
+        XCTAssertTrue(looseEq(.array([.float(.nan)]), .string("NaN")))
+        XCTAssertTrue(looseEq(.array([.float(.infinity)]), .string("Infinity")))
+        XCTAssertTrue(looseEq(.array([.float(-.infinity)]), .string("-Infinity")))
+    }
+
+    func testLooseEqObjectCoercesToObjectObjectString() {
+        // JS `Object.prototype.toString.call({a: 1})` is
+        // `"[object Object]"`, so any object compared against that
+        // exact string is loosely equal.
+        XCTAssertTrue(
+            looseEq(.object(["a": .int(1), "b": .int(2)]), .string("[object Object]"))
+        )
+        XCTAssertTrue(
+            looseEq(.string("[object Object]"), .object([:]))
+        )
+        XCTAssertFalse(
+            looseEq(.object(["a": .int(1), "b": .int(2)]), .string("{a:1,b:2}"))
+        )
+    }
+
+    func testLooseEqArrayVsObjectIsAlwaysFalse() {
+        // Two compound operands of different shape: JS uses reference
+        // identity (false). Both ToPrimitive results are strings that
+        // can't ever match (`"1,2"` vs `"[object Object]"`).
+        XCTAssertFalse(
+            looseEq(
+                .array([.int(1), .int(2)]),
+                .object(["a": .int(1), "b": .int(2)])
             )
         )
     }

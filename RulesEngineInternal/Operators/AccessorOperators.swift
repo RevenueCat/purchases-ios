@@ -41,8 +41,11 @@ enum AccessorOperators {
     }
 
     /// `{"missing": ["a", "b.c"]}` returns the array of keys (as strings)
-    /// that are NOT present in the data. Returns `[]` when nothing is
-    /// missing.
+    /// whose `var` lookup resolves to `null` (key absent OR leaf is `null`)
+    /// or to the empty string — mirrors the json-logic-js reference's
+    /// `value === null || value === ""` check. Falsy non-empty values like
+    /// `0`, `false`, or `[]` are NOT reported as missing. Returns `[]` when
+    /// nothing is missing.
     ///
     /// Per the JSON Logic spec, each key argument is recursively evaluated
     /// before lookup, so dynamic key lists like
@@ -73,7 +76,7 @@ enum AccessorOperators {
         var missing: [Value] = []
         for key in keys {
             guard let path = keyAsPath(key) else { continue }
-            if lookupPath(in: vars, path: path) == nil {
+            if isMissingValue(varLookup(in: vars, path: path)) {
                 missing.append(.string(path))
             }
         }
@@ -138,6 +141,33 @@ enum AccessorOperators {
             return formatNumber(value)
         default:
             return nil
+        }
+    }
+
+    /// Resolve `path` the way `var` does, without warning on misses.
+    /// Empty path returns the entire data scope (matching `var("")`); a
+    /// non-resolving path returns `.null` (matching `var`'s default
+    /// `not_found`). Used by `missing`, which is a check rather than a
+    /// read.
+    private static func varLookup(in vars: Value, path: String) -> Value {
+        if path.isEmpty {
+            return vars
+        }
+        return lookupPath(in: vars, path: path) ?? .null
+    }
+
+    /// `missing` reports a key when its `var` lookup resolves to `null`
+    /// or to the empty string — the json-logic-js reference's exact
+    /// `value === null || value === ""` check. Falsy non-empty values
+    /// (e.g. `0`, `false`, `[]`) are NOT missing.
+    private static func isMissingValue(_ value: Value) -> Bool {
+        switch value {
+        case .null:
+            return true
+        case .string(let stringValue):
+            return stringValue.isEmpty
+        default:
+            return false
         }
     }
 
