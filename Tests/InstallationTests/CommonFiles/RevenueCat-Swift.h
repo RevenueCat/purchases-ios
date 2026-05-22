@@ -1181,6 +1181,8 @@ SWIFT_CLASS("_TtC10RevenueCat25CacheableNetworkOperation")
 /// \endcode
 SWIFT_CLASS_NAMED("Configuration")
 @interface RCConfiguration : NSObject
+- (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
+@property (nonatomic, readonly) NSUInteger hash;
 /// Factory method for the <code>Configuration/Builder</code> object that is required to create a <code>Configuration</code>
 + (RCConfigurationBuilder * _Nonnull)builderWithAPIKey:(NSString * _Nonnull)apiKey SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -1404,6 +1406,8 @@ SWIFT_CLASS_NAMED("DangerousSettings")
 /// this is <code>internal</code> only so the only <code>public</code> way to enable <code>customEntitlementComputation</code>
 /// is through <code>Purchases/configureInCustomEntitlementsComputationMode(apiKey:appUserID:)</code>.
 - (nonnull instancetype)initWithAutoSyncPurchases:(BOOL)autoSyncPurchases customEntitlementComputation:(BOOL)customEntitlementComputation;
+- (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
+@property (nonatomic, readonly) NSUInteger hash;
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat24DiagnosticsPostOperation")
@@ -3287,6 +3291,8 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, strong) RCPlatformInfo * _Null
 SWIFT_CLASS_NAMED("PlatformInfo")
 @interface RCPlatformInfo : NSObject
 - (nonnull instancetype)initWithFlavor:(NSString * _Nonnull)flavor version:(NSString * _Nonnull)version OBJC_DESIGNATED_INITIALIZER;
+- (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
+@property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
