@@ -88,8 +88,10 @@ final class PurchaseHandler: ObservableObject {
 
     private func haveBothBeenCanceled(lhs: PurchaseResultData?, rhs: PurchaseResultData?) -> Bool {
         switch (lhs, rhs) {
+        case (nil, nil):
+            return false
         case let (left, right):
-            return left?.userCancelled == right?.userCancelled
+            return left?.userCancelled == true && right?.userCancelled == true
         }
     }
 
