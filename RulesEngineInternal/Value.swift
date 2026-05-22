@@ -76,9 +76,26 @@ extension Value {
     }
 }
 
-/// JSON Logic loose equality (`==`). Best-effort JS-style coercion for the
-/// common primitive cases. Arrays/objects compare structurally (deviates
-/// from JS reference identity but is more useful for rule authors).
+/// JSON Logic loose equality (`==`). Best-effort JS-style coercion:
+///
+/// - Same-type primitive comparisons are direct value equality.
+/// - Cross-numeric (`int` ↔ `float`) bridges as one number type.
+/// - **Same-compound**: arrays/objects compare structurally. This
+///   deliberately diverges from JS's reference identity (which would
+///   make two distinct array literals always unequal); structural
+///   equality is what rule authors actually need when comparing a
+///   `var` lookup against a literal list.
+/// - **Compound vs primitive**: mirrors JS abstract equality's
+///   `ToPrimitive(string-hint)` step. Arrays render via
+///   `Array.prototype.toString()` (recursive comma-join, with
+///   `null` / `undefined` elements rendered as the empty string);
+///   objects render as `"[object Object]"`. So `[1] == "1"`, `[1, 2]
+///   == "1,2"`, `[null, 1] == ",1"`, and `[] == 0` all return `true`,
+///   matching json-logic-js. The recursive call falls through to the
+///   primitive arms (string-vs-string or the numeric fallback).
+/// - **Last-resort numeric fallback**: when two primitives don't share
+///   a type, both sides are coerced to `Double` (JS `ToNumber`) and
+///   compared. Returns `false` if either coercion fails.
 // swiftlint:disable:next cyclomatic_complexity
 func looseEq(_ lhs: Value, _ rhs: Value) -> Bool {
     switch (lhs, rhs) {
@@ -110,6 +127,19 @@ func looseEq(_ lhs: Value, _ rhs: Value) -> Bool {
         }
         return true
 
+    // JS abstract-equality coercion: when one side is a compound (Array
+    // or Object) and the other is a primitive, ToPrimitive(string-hint)
+    // the compound and re-compare. Order matters — same-compound cases
+    // above must match first so `[1] == [1]` stays structural.
+    case (.array(let items), _):
+        return looseEq(.string(jsArrayJoin(items)), rhs)
+    case (_, .array(let items)):
+        return looseEq(lhs, .string(jsArrayJoin(items)))
+    case (.object, _):
+        return looseEq(.string(jsObjectString), rhs)
+    case (_, .object):
+        return looseEq(lhs, .string(jsObjectString))
+
     default:
         if let leftNumber = lhs.asNumber, let rightNumber = rhs.asNumber {
             return leftNumber == rightNumber
@@ -117,6 +147,52 @@ func looseEq(_ lhs: Value, _ rhs: Value) -> Bool {
         return false
     }
 }
+
+// MARK: - JS coercion helpers (used by looseEq)
+
+/// `Array.prototype.toString()` ≡ `Array.prototype.join(",")`. Renders
+/// each element via `jsArrayElementString`, then comma-joins.
+private func jsArrayJoin(_ items: [Value]) -> String {
+    items.map(jsArrayElementString).joined(separator: ",")
+}
+
+/// JS `String(value)` semantics with the array-element twist: `null` /
+/// `undefined` render as the empty string (not `"null"`); nested arrays
+/// recurse; everything else uses standard JS `String()`.
+private func jsArrayElementString(_ value: Value) -> String {
+    switch value {
+    case .null:
+        return ""
+    case .bool(let value):
+        return value ? "true" : "false"
+    case .int(let value):
+        return String(value)
+    case .float(let value):
+        return jsNumberString(value)
+    case .string(let value):
+        return value
+    case .array(let items):
+        return jsArrayJoin(items)
+    case .object:
+        return jsObjectString
+    }
+}
+
+/// JS `String(number)` for the cases that show up in real rule data:
+/// whole-number doubles render without a decimal (`String(1.0) === "1"`),
+/// `NaN` / `±Infinity` keep their JS spellings, fractional doubles use
+/// Swift's default rendering (matches JS for non-pathological values).
+private func jsNumberString(_ value: Double) -> String {
+    if value.isNaN { return "NaN" }
+    if value.isInfinite { return value > 0 ? "Infinity" : "-Infinity" }
+    if let int64 = Int64(exactly: value) { return String(int64) }
+    return String(value)
+}
+
+/// JS `Object.prototype.toString.call(plainObject)` for any non-Array
+/// object. JSON Logic only ever encounters plain objects, so the
+/// fallback `"[object Object]"` is the only spelling we need.
+private let jsObjectString = "[object Object]"
 
 /// JSON Logic strict equality (`===`). Same type, same value. Numeric
 /// strict-eq treats `int(1)` and `float(1.0)` as equal — they represent the

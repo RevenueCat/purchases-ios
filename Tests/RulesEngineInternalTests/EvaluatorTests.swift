@@ -271,7 +271,11 @@ final class EvaluatorTests: XCTestCase {
     // MARK: - Multi-key object treated as data, not operator
 
     func testMultiKeyObjectIsLiteralDataValue() throws {
-        // An object literal with two keys isn't an operator.
+        // Mirrors json-logic-js's `is_logic`, which only treats an object
+        // as an operator when `Object.keys(logic).length === 1`. A two-key
+        // object falls back to `apply`'s "not logic, return as-is" branch,
+        // i.e. literal data — so two structurally-equal multi-key objects
+        // compare equal under our structural `looseEq`.
         let predicateEq = """
             {"==": [
                 {"a": 1, "b": 2},
@@ -290,6 +294,53 @@ final class EvaluatorTests: XCTestCase {
             ]}
             """
         XCTAssertFalse(try run(predicateNe))
+    }
+
+    func testSingleKeyObjectOperandIsDispatchedAsOperator() throws {
+        // Pins the contrast with `testMultiKeyObjectIsLiteralDataValue`:
+        // single-key objects flow through `Evaluator.evaluateValue` like
+        // any other expression and get dispatched as operators (the
+        // `is_logic` → `apply` path in json-logic-js). An unknown op name
+        // surfaces as `RuleError.unsupportedOperator`, mirroring the JS
+        // reference's `Unrecognized operation a` throw — so even though
+        // the multi-key case `{a:1,b:2} == {a:1,b:2}` returns `true` in
+        // our engine and `false` in JS (deliberate structural-vs-reference
+        // divergence), the literal `{a:1} == {a:1}` does NOT diverge: both
+        // engines fail to evaluate it.
+        let predicate = #"{"==": [{"a": 1}, {"a": 1}]}"#
+        XCTAssertThrowsError(try run(predicate)) { error in
+            guard case RuleError.unsupportedOperator(let name) = error else {
+                return XCTFail("expected RuleError.unsupportedOperator, got \(error)")
+            }
+            XCTAssertEqual(name, "a")
+        }
+    }
+
+    // MARK: - Equality with JS-style array/object coercion
+
+    func testLooseEqualityCoercesArrayToJSStringEndToEnd() throws {
+        // Pins the spec-aligned coercion path (Array.prototype.toString)
+        // through the full evaluator, not just the looseEq helper:
+        // `{"==": [[1, 2], "1,2"]}` → true, mirroring json-logic-js.
+        XCTAssertTrue(try run(#"{"==": [[1, 2], "1,2"]}"#))
+        // Numeric fallback after ToPrimitive: `[1] == 1`.
+        XCTAssertTrue(try run(#"{"==": [[1], 1]}"#))
+        // Empty array stringifies to "" which numerically coerces to 0.
+        XCTAssertTrue(try run(#"{"==": [[], 0]}"#))
+    }
+
+    func testLooseEqualityCoercesObjectToJSStringEndToEnd() throws {
+        // A multi-key object (so it isn't dispatched as an operator)
+        // coerces to "[object Object]" against a string operand. Pins
+        // the rare-but-real case where a payload field gets accidentally
+        // serialized through `String(value)` upstream.
+        let predicate = """
+            {"==": [
+                {"a": 1, "b": 2},
+                "[object Object]"
+            ]}
+            """
+        XCTAssertTrue(try run(predicate))
     }
 
     // MARK: - Helpers
