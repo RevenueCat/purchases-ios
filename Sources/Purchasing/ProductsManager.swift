@@ -61,63 +61,28 @@ class ProductsManager: NSObject, ProductsManagerType {
     func products(withIdentifiers identifiers: Set<String>, completion: @escaping Completion) {
         let startTime = self.dateProvider.now()
 
-        // It's possible for developers to request compound product identifiers that represent both
-        // a product and a billing plan, like com.rc.sub:monthly. However, StoreKit doesn't recognize
-        // these product IDs, so here, we convert them to product IDs that StoreKit can recognize.
-        var invalidProductIdentifiers: Set<String> = []
-        let compoundProductIdentifiers: Set<CompoundProductIdentifier> = Set(
-            identifiers.compactMap { identifier in
-                guard let compoundIdentifier = CompoundProductIdentifier(compoundProductIdentifier: identifier) else {
-                    invalidProductIdentifiers.insert(identifier)
-                    return nil
-                }
-
-                if compoundIdentifier.productPlanIdentifier == nil {
-                    return compoundIdentifier   // Basic product with no billing plan
-                } else {
-                    guard self.areProductsWithBillingPlansSupported(compoundIdentifier: compoundIdentifier) else {
-                        return nil
-                    }
-
-                    return compoundIdentifier
-                }
-            }
-        )
-        if !invalidProductIdentifiers.isEmpty {
-            Logger.warn(Strings.storeKit.invalid_product_identifiers(identifiers: invalidProductIdentifiers))
-        }
-
-        let storeKitIdentifiers: Set<String> = Set(
-            compoundProductIdentifiers.map(\.storeKitProductIdentifier)
-        )
-
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
-            self.sk2Products(withIdentifiers: storeKitIdentifiers) { result in
-                let notFoundProducts = storeKitIdentifiers.subtracting(result.value?.map(\.productIdentifier) ?? [])
+            self.sk2Products(withIdentifiers: identifiers) { result in
+                let notFoundProducts = identifiers.subtracting(result.value?.map(\.productIdentifier) ?? [])
                 self.trackProductsRequestIfNeeded(startTime,
-                                                  requestedProductIds: storeKitIdentifiers,
+                                                  requestedProductIds: identifiers,
                                                   notFoundProductIds: notFoundProducts,
                                                   storeKitVersion: .storeKit2,
                                                   error: result.error)
 
                 switch result {
                 case .success(let storeProductsFromStoreKit):
-                    let productsTakingBillingPlansIntoAccount = self.populateSK2CompoundProductsIfSupported(
-                        requestedIdentifiers: compoundProductIdentifiers,
-                        products: storeProductsFromStoreKit
-                    )
-                    let storeProducts = Set(productsTakingBillingPlansIntoAccount.map(StoreProduct.from(product:)))
-                    completion(.success(storeProducts))
+                    completion(.success(Set(storeProductsFromStoreKit.map(StoreProduct.from(product:)))))
                 case .failure(let error):
                     completion(.failure(error))
                 }
             }
         } else {
-            self.sk1Products(withIdentifiers: storeKitIdentifiers) { result in
-                let notFoundProducts = storeKitIdentifiers.subtracting(result.value?.map(\.productIdentifier) ?? [])
+            self.sk1Products(withIdentifiers: identifiers) { result in
+                let notFoundProducts = identifiers.subtracting(result.value?.map(\.productIdentifier) ?? [])
                 self.trackProductsRequestIfNeeded(startTime,
-                                                  requestedProductIds: storeKitIdentifiers,
+                                                  requestedProductIds: identifiers,
                                                   notFoundProductIds: notFoundProducts,
                                                   storeKitVersion: .storeKit1,
                                                   error: result.error)
@@ -130,10 +95,43 @@ class ProductsManager: NSObject, ProductsManagerType {
     func sk2Products(withIdentifiers identifiers: Set<String>, completion: @escaping SK2Completion) {
         Async.call(with: completion) {
             do {
-                let products = try await self.productsFetcherSK2.products(identifiers: identifiers)
+                // It's possible for developers to request compound product identifiers that represent both
+                // a product and a billing plan, like com.rc.sub:monthly. However, StoreKit doesn't recognize
+                // these product IDs, so here, we convert them to product IDs that StoreKit can recognize.
+                var invalidProductIdentifiers: Set<String> = []
+                let compoundProductIdentifiers: Set<CompoundProductIdentifier> = Set(
+                    identifiers.compactMap { identifier in
+                        guard let compoundIdentifier = CompoundProductIdentifier(compoundProductIdentifier: identifier) else {
+                            invalidProductIdentifiers.insert(identifier)
+                            return nil
+                        }
+
+                        if compoundIdentifier.productPlanIdentifier == nil {
+                            return compoundIdentifier   // Basic product with no billing plan
+                        } else {
+                            guard self.areProductsWithBillingPlansSupported(compoundIdentifier: compoundIdentifier) else {
+                                return nil
+                            }
+
+                            return compoundIdentifier
+                        }
+                    }
+                )
+                if !invalidProductIdentifiers.isEmpty {
+                    Logger.warn(Strings.storeKit.invalid_product_identifiers(identifiers: invalidProductIdentifiers))
+                }
+
+                let storeKitIdentifiers: Set<String> = Set(
+                    compoundProductIdentifiers.map(\.storeKitProductIdentifier)
+                )
+
+                let products = try await self.productsFetcherSK2.products(identifiers: storeKitIdentifiers)
+                let productsTakingBillingPlansIntoAccount = self.populateSK2CompoundProductsIfSupported(
+                    requestedIdentifiers: compoundProductIdentifiers, products: products
+                )
 
                 Logger.debug(Strings.storeKit.store_product_request_finished)
-                return Set(products)
+                return productsTakingBillingPlansIntoAccount
             } catch let error as NSError {
                 Logger.debug(Strings.storeKit.store_products_request_failed(error))
                 throw ErrorUtils.storeProblemError(error: error)
