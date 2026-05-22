@@ -31,7 +31,7 @@ private struct GlassEffectModifier: ViewModifier {
 
     @Environment(\.colorScheme) var colorScheme
 
-    @available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, visionOS 26.0, *)
+    @available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, *)
     var resolvedGlassEffect: Glass {
         var glass: Glass
         switch effect?.effect {
@@ -55,7 +55,7 @@ private struct GlassEffectModifier: ViewModifier {
         return glass
     }
 
-    @available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, visionOS 26.0, *)
+    @available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, *)
     var resolvedShape: AnyShape {
         switch shape {
         case .none:
@@ -77,7 +77,7 @@ private struct GlassEffectModifier: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        if #available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, visionOS 26.0, *) {
+        if #available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, *) {
             content
                 .glassEffect(resolvedGlassEffect, in: resolvedShape)
         } else {
