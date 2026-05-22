@@ -63,7 +63,7 @@ class ProductsManager: NSObject, ProductsManagerType {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
             self.sk2Products(withIdentifiers: identifiers) { result in
-                let notFoundProducts = identifiers.subtracting(result.value?.map(\.productIdentifier) ?? [])
+                let notFoundProducts = identifiers.subtracting(result.value?.map(\.id) ?? [])
                 self.trackProductsRequestIfNeeded(startTime,
                                                   requestedProductIds: identifiers,
                                                   notFoundProductIds: notFoundProducts,
