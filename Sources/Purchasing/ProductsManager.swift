@@ -57,7 +57,6 @@ class ProductsManager: NSObject, ProductsManagerType {
         }
     }
 
-    // swiftlint:disable:next function_body_length
     func products(withIdentifiers identifiers: Set<String>, completion: @escaping Completion) {
         let startTime = self.dateProvider.now()
 
@@ -101,7 +100,9 @@ class ProductsManager: NSObject, ProductsManagerType {
                 var invalidProductIdentifiers: Set<String> = []
                 let compoundProductIdentifiers: Set<CompoundProductIdentifier> = Set(
                     identifiers.compactMap { identifier in
-                        guard let compoundIdentifier = CompoundProductIdentifier(compoundProductIdentifier: identifier) else {
+                        guard let compoundIdentifier = CompoundProductIdentifier(
+                            compoundProductIdentifier: identifier
+                        ) else {
                             invalidProductIdentifiers.insert(identifier)
                             return nil
                         }
@@ -109,7 +110,9 @@ class ProductsManager: NSObject, ProductsManagerType {
                         if compoundIdentifier.productPlanIdentifier == nil {
                             return compoundIdentifier   // Basic product with no billing plan
                         } else {
-                            guard self.areProductsWithBillingPlansSupported(compoundIdentifier: compoundIdentifier) else {
+                            guard self.areProductsWithBillingPlansSupported(
+                                compoundIdentifier: compoundIdentifier
+                            ) else {
                                 return nil
                             }
 
