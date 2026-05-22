@@ -296,6 +296,70 @@ final class AccessorOperatorsTests: XCTestCase {
         XCTAssertEqual(result, .array([.string("c")]))
     }
 
+    func testMissingReportsKeyWhoseLeafValueIsNull() throws {
+        // json-logic-js routes `missing` through `var`, which returns the
+        // actual `null` leaf value, then matches `value === null`. So a
+        // present-but-null key is reported as missing — a backend payload
+        // with explicitly cleared fields (`{"country": null}`) should still
+        // hit the `{"missing": ["country"]}` branch.
+        let vars = Value.object(["a": .null, "b": .int(1)])
+        let result = try AccessorOperators.opMissing(
+            args: .array([.string("a"), .string("b")]),
+            vars: vars
+        )
+        XCTAssertEqual(result, .array([.string("a")]))
+    }
+
+    func testMissingReportsKeyWhoseLeafValueIsEmptyString() throws {
+        // Spec parity: `value === ""` also counts as missing (mirrors how
+        // form / API payloads treat empty fields as unset).
+        let vars = Value.object([
+            "a": .string(""),
+            "b": .string("x")
+        ])
+        let result = try AccessorOperators.opMissing(
+            args: .array([.string("a"), .string("b")]),
+            vars: vars
+        )
+        XCTAssertEqual(result, .array([.string("a")]))
+    }
+
+    func testMissingDoesNotReportKeysWithFalsyNonEmptyValues() throws {
+        // The reference checks `=== null || === ""`, NOT truthiness. Pin
+        // the contrast so a future "use truthiness" simplification can't
+        // silently flip 0/false/[] into the missing list.
+        let vars = Value.object([
+            "zero": .int(0),
+            "flag": .bool(false),
+            "empty_array": .array([])
+        ])
+        let result = try AccessorOperators.opMissing(
+            args: .array([
+                .string("zero"),
+                .string("flag"),
+                .string("empty_array")
+            ]),
+            vars: vars
+        )
+        XCTAssertEqual(result, .array([]))
+    }
+
+    func testMissingReportsDotPathLeafThatIsNull() throws {
+        // Same null-leaf rule applies through dot-paths: an existing
+        // nested key whose leaf is null counts as missing.
+        let vars = Value.object([
+            "user": .object([
+                "name": .null,
+                "email": .string("a@b.com")
+            ])
+        ])
+        let result = try AccessorOperators.opMissing(
+            args: .array([.string("user.name"), .string("user.email")]),
+            vars: vars
+        )
+        XCTAssertEqual(result, .array([.string("user.name")]))
+    }
+
     // MARK: - missing_some
 
     func testMissingSomeReturnsEmptyWhenThresholdMet() throws {
