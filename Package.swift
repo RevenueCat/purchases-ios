@@ -50,6 +50,10 @@ var dependencies: [Package.Dependency] = [
     .package(
         url: "https://github.com/pointfreeco/swift-snapshot-testing",
         exact: "1.18.9"
+    ),
+    .package(
+        url: "https://github.com/apple/swift-protobuf",
+        from: "1.28.1"
     )
 ]
 if shouldIncludeDocCPlugin {
@@ -88,6 +92,9 @@ let package = Package(
     dependencies: dependencies,
     targets: [
         .target(name: "RevenueCat",
+                dependencies: [
+                    .product(name: "SwiftProtobuf", package: "swift-protobuf")
+                ],
                 path: "Sources",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
                 resources: [
@@ -95,6 +102,9 @@ let package = Package(
                 ],
                 swiftSettings: [visionOSSetting] + ciCompilerFlags + additionalCompilerFlags),
         .target(name: "RevenueCat_CustomEntitlementComputation",
+                dependencies: [
+                    .product(name: "SwiftProtobuf", package: "swift-protobuf")
+                ],
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
                 resources: [
@@ -135,6 +145,9 @@ let package = Package(
                         .copy("Resources/header.heic"),
                         .copy("Resources/background.heic"),
                         .copy("PaywallsV2/__PreviewResources__")
-                    ])
+                    ]),
+        .testTarget(name: "ProtobufTests",
+                    dependencies: ["RevenueCat"],
+                    path: "Tests/UnitTests/Protobuf")
     ]
 )
