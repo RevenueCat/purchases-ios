@@ -172,20 +172,13 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
 
         #if compiler(>=6.3.2)
         if let installmentsInfo = sk2StoreProduct.installmentsInfo,
-           let subscription = sk2Product.subscription,
-            #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
-            // Check to make sure that an intro offer is available on the billing plan
-            guard let applicablePricingTerms = subscription.pricingTerms.first(where: {
-                $0.billingPlanType == installmentsInfo.billingPlanType.skBillingPlanType
-            }) else {
-                return .unknown
-            }
+           let subscription = sk2Product.subscription {
+            let billingPlanContainsIntroOffer = sk2StoreProduct.contains(
+                subscriptionOfferType: .introductory,
+                on: installmentsInfo.billingPlanType
+            )
 
-            let containsIntroOffer = applicablePricingTerms.subscriptionOffers.contains(where: {
-                $0.type == .introductory
-            })
-
-            guard containsIntroOffer else {
+            guard billingPlanContainsIntroOffer else {
                 return .noIntroOfferExists
             }
 
