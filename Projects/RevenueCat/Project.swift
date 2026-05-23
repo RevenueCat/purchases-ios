@@ -27,6 +27,10 @@ let project = Project(
             headers: .headers(
                 public: ["../../Sources/RevenueCat.h"]
             ),
+            scripts: TargetScript.purchasesCoreBuildScripts,
+            dependencies: [
+                .purchasesCore
+            ],
             settings: .settings(
                 base: ([
                     "APPLICATION_EXTENSION_API_ONLY": "YES"
@@ -52,6 +56,10 @@ let project = Project(
             headers: .headers(
                 project: ["../../Sources/RevenueCat.h"]
             ),
+            scripts: TargetScript.purchasesCoreBuildScripts,
+            dependencies: [
+                .purchasesCore
+            ],
             settings: .settings(
                 base: [
                     "APPLICATION_EXTENSION_API_ONLY": "YES",

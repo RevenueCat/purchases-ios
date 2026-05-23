@@ -979,6 +979,7 @@
 		75D9DE072D79FC0E0068554F /* testEncoding.1.json in Resources */ = {isa = PBXBuildFile; fileRef = 75D9DE022D79FC0E0068554F /* testEncoding.1.json */; };
 		75D9DE082D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9DE052D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift */; };
 		75E61CB62E2F9EF30034B41C /* MockTestStorePurchaseHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7581A92C2E2EB27100D0C3DE /* MockTestStorePurchaseHandler.swift */; };
+		75EAB6DE2FB30E0B009193C8 /* PurchasesCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA000002AABBCCDD00000002 /* PurchasesCore */; };
 		75FCD4CE2E37FBE100036C02 /* SimulatedStoreMockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FCD4CC2E37FBE100036C02 /* SimulatedStoreMockData.swift */; };
 		75FCD4CF2E37FBE100036C02 /* SimulatedStoreProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FCD4CD2E37FBE100036C02 /* SimulatedStoreProductsManagerTests.swift */; };
 		7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */; };
@@ -2944,6 +2945,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				75EAB6DE2FB30E0B009193C8 /* PurchasesCore in Frameworks */,
 				4F5A62AC2A9AD18E0096067E /* SwiftUI.framework in Frameworks */,
 				A5B6CDD8280F3843007629D5 /* AdServices.framework in Frameworks */,
 			);
@@ -6292,6 +6294,9 @@
 			dependencies = (
 			);
 			name = RevenueCat;
+			packageProductDependencies = (
+				AA000002AABBCCDD00000002 /* PurchasesCore */,
+			);
 			productName = Purchases;
 			productReference = 2DC5621624EC63420031F69B /* RevenueCat.framework */;
 			productType = "com.apple.product-type.framework";
@@ -6505,10 +6510,6 @@
 					887A5FB92C1D036200E1A461 = {
 						CreatedOnToolsVersion = 15.4;
 					};
-					887A63202C1D174200E1A461 = {
-						CreatedOnToolsVersion = 15.4;
-						TestTargetID = 2DEAC2D926EFE46E006914ED;
-					};
 				};
 			};
 			buildConfigurationList = 352629F81F7C4B9100C04F2C /* Build configuration list for PBXProject "RevenueCat" */;
@@ -6574,6 +6575,7 @@
 				2D803F6126F144830069D717 /* XCRemoteSwiftPackageReference "nimble" */,
 				2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */,
 				57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+				AA000001AABBCCDD00000001 /* XCRemoteSwiftPackageReference "purchases-core" */,
 			);
 			productRefGroup = 352629FF1F7C4B9100C04F2C /* Products */;
 			projectDirPath = "";
@@ -9578,6 +9580,14 @@
 				minimumVersion = 1.11.0;
 			};
 		};
+		AA000001AABBCCDD00000001 /* XCRemoteSwiftPackageReference "purchases-core" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:RevenueCat/purchases-core.git";
+			requirement = {
+				branch = rust;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -9650,6 +9660,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
 			productName = SnapshotTesting;
+		};
+		AA000002AABBCCDD00000002 /* PurchasesCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA000001AABBCCDD00000001 /* XCRemoteSwiftPackageReference "purchases-core" */;
+			productName = PurchasesCore;
 		};
 		FD2E6C9E2C480FF000CB4BD7 /* OHHTTPStubs */ = {
 			isa = XCSwiftPackageProductDependency;

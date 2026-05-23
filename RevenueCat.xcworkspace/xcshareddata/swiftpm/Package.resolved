@@ -46,6 +46,15 @@
       }
     },
     {
+      "identity" : "purchases-core",
+      "kind" : "remoteSourceControl",
+      "location" : "git@github.com:RevenueCat/purchases-core.git",
+      "state" : {
+        "branch" : "rust",
+        "revision" : "b6deedea8a950e42d33bce499db1b3380a04030e"
+      }
+    },
+    {
       "identity" : "simpledebugger",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/EmergeTools/SimpleDebugger.git",

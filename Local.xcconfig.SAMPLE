@@ -46,3 +46,16 @@
 // The following configuration options can be used when running the E2E tests through the Tuist generated Maestro project
 // REVENUECAT_FORCE_SERVER_ERROR_STRATEGY = primary_backend_down / never
 // REVENUECAT_API_HOST = custom-api-host.revenuecat.com
+
+// Point PurchasesCore at a local purchases-core checkout for development.
+// When set, Package.swift swaps the published dep for .package(path:) and
+// `tuist generate` adds a pre-build script phase to the RevenueCat target
+// that rebuilds the xcframework whenever Rust sources change (Xcode skips
+// the phase when inputs are unchanged; cargo is internally incremental).
+// The path may be absolute or relative to this repo root.
+//
+// After flipping this value, run `tuist clean && tuist generate` to pick it
+// up. For CLI `swift build` users, SPM's manifest cache may need to be
+// invalidated — touch Package.swift (`touch Package.swift`) or remove
+// `~/Library/Caches/org.swift.swiftpm/manifests/manifest.db*`.
+// PURCHASES_CORE_LOCAL_PATH = ../purchases-core

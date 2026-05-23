@@ -19,6 +19,7 @@
 // swiftlint:disable missing_docs
 
 import Foundation
+import PurchasesCore
 import StoreKit
 
 // MARK: Block definitions

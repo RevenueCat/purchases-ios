@@ -121,4 +121,41 @@ extension Environment {
         let value = ProcessInfo.processInfo.environment["TUIST_SWIFT_CONDITIONS"] ?? ""
         return value.split(separator: " ").map(String.init).filter { !$0.isEmpty }
     }
+
+    /// Returns the path to a local `purchases-core` checkout if the developer
+    /// has configured one. Reads `PURCHASES_CORE_LOCAL_PATH` from the environment
+    /// first, then falls back to parsing `Local.xcconfig` at the repo root.
+    /// When set, Package.swift swaps the published dep for the local path and
+    /// the RevenueCat target gets a pre-build script phase that rebuilds the
+    /// xcframework whenever Rust sources change.
+    ///
+    /// Example usage (Local.xcconfig):
+    /// ```
+    /// PURCHASES_CORE_LOCAL_PATH = ../purchases-core
+    /// ```
+    public static var purchasesCoreLocalPath: String? {
+        if let env = ProcessInfo.processInfo.environment["PURCHASES_CORE_LOCAL_PATH"],
+           !env.isEmpty {
+            return env
+        }
+        let repoRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent() // ProjectDescriptionHelpers
+            .deletingLastPathComponent() // Tuist
+            .deletingLastPathComponent() // repo root
+        let xcconfig = repoRoot.appendingPathComponent("Local.xcconfig")
+        guard let contents = try? String(contentsOf: xcconfig, encoding: .utf8) else {
+            return nil
+        }
+        for rawLine in contents.components(separatedBy: .newlines) {
+            let line = rawLine.trimmingCharacters(in: .whitespaces)
+            guard line.hasPrefix("PURCHASES_CORE_LOCAL_PATH"),
+                  let eqIdx = line.firstIndex(of: "=") else {
+                continue
+            }
+            let value = line[line.index(after: eqIdx)...]
+                .trimmingCharacters(in: .whitespaces)
+            return value.isEmpty ? nil : value
+        }
+        return nil
+    }
 }
