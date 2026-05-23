@@ -264,11 +264,13 @@ private extension ProductsManager {
     func sk1Products(withIdentifiers identifiers: Set<String>,
                      completion: @escaping (Result<Set<SK1StoreProduct>, PurchasesError>) -> Void) {
         // Filter out compound product identifiers
+        var invalidProductIdentifiers: Set<String> = []
         let storeKitProductIDs: Set<String> = Set(
             identifiers.compactMap { identifier in
                 guard let compoundIdentifier = CompoundProductIdentifier(
                     compoundProductIdentifier: identifier
                 ) else {
+                    invalidProductIdentifiers.insert(identifier)
                     return nil
                 }
 
@@ -284,6 +286,9 @@ private extension ProductsManager {
                 }
             }
         )
+        if !invalidProductIdentifiers.isEmpty {
+            Logger.warn(Strings.storeKit.invalid_product_identifiers(identifiers: invalidProductIdentifiers))
+        }
 
         return self.productsFetcherSK1.products(
             withIdentifiers: storeKitProductIDs,
