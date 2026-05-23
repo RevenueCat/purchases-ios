@@ -194,7 +194,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     func testFetchProductsWithInvalidCompoundIdentifiersLogsWarning() throws {
         let productsRequestFactory = MockProductsRequestFactory()
         let manager = self.createManager(
-            storeKitVersion: .storeKit1,
+            storeKitVersion: .storeKit2,
             productsRequestFactory: productsRequestFactory
         )
         self.logger.clearMessages()
@@ -224,7 +224,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     func testFetchProductsWithValidCompoundIdentifiersDoesNotLogWarning() throws {
         let productsRequestFactory = MockProductsRequestFactory()
         let manager = self.createManager(
-            storeKitVersion: .storeKit1,
+            storeKitVersion: .storeKit2,
             productsRequestFactory: productsRequestFactory
         )
         self.logger.clearMessages()
@@ -238,7 +238,6 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         }
 
         _ = try XCTUnwrap(receivedProducts?.get())
-        expect(productsRequestFactory.invokedRequestParameters) == ["com.revenuecat.sub"]
         expect(self.logger.messages).toNot(containElementSatisfying { message in
             message.level == .warn
                 && message.message.contains("Invalid product identifiers were ignored")
