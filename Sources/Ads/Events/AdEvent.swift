@@ -648,6 +648,295 @@ extension AdRevenue {
 
 }
 
+/// Data for ad reward earned (unverified) events.
+@_spi(Experimental) @objc(RCAdRewardEarnedUnverified) public final class AdRewardEarnedUnverified: NSObject,
+                                                                                              AdImpressionEventData,
+                                                                                              Codable,
+                                                                                              @unchecked Sendable {
+
+    // swiftlint:disable missing_docs
+    @objc public private(set) var networkName: String?
+    @objc public private(set) var mediatorName: MediatorName
+    @objc public private(set) var adFormat: AdFormat
+    @objc public private(set) var placement: String?
+    @objc public private(set) var adUnitId: String
+    @objc public private(set) var impressionId: String
+    @objc public private(set) var rewardVerificationEnabled: Bool
+    @objc public private(set) var rewardItem: String?
+    private let rewardAmountRawValue: Int?
+    @objc public var rewardAmount: NSNumber? {
+        return self.rewardAmountRawValue.map(NSNumber.init(value:))
+    }
+    public var rewardAmountValue: Int? {
+        return self.rewardAmountRawValue
+    }
+
+    @objc public init(
+        networkName: String?,
+        mediatorName: MediatorName,
+        adFormat: AdFormat,
+        placement: String?,
+        adUnitId: String,
+        impressionId: String,
+        rewardVerificationEnabled: Bool,
+        rewardItem: String?,
+        rewardAmount: NSNumber?
+    ) {
+        self.networkName = networkName
+        self.mediatorName = mediatorName
+        self.adFormat = adFormat
+        self.placement = placement
+        self.adUnitId = adUnitId
+        self.impressionId = impressionId
+        self.rewardVerificationEnabled = rewardVerificationEnabled
+        self.rewardItem = rewardItem
+        self.rewardAmountRawValue = rewardAmount?.intValue
+        super.init()
+    }
+
+    public convenience init(
+        networkName: String?,
+        mediatorName: MediatorName,
+        adFormat: AdFormat,
+        placement: String?,
+        adUnitId: String,
+        impressionId: String,
+        rewardVerificationEnabled: Bool,
+        rewardItem: String?,
+        rewardAmount: Int?
+    ) {
+        self.init(
+            networkName: networkName,
+            mediatorName: mediatorName,
+            adFormat: adFormat,
+            placement: placement,
+            adUnitId: adUnitId,
+            impressionId: impressionId,
+            rewardVerificationEnabled: rewardVerificationEnabled,
+            rewardItem: rewardItem,
+            rewardAmount: rewardAmount.map(NSNumber.init(value:))
+        )
+    }
+    // swiftlint:enable missing_docs
+
+    // MARK: - NSObject overrides for equality
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? AdRewardEarnedUnverified else { return false }
+        return self.networkName == other.networkName &&
+               self.mediatorName == other.mediatorName &&
+               self.adFormat == other.adFormat &&
+               self.placement == other.placement &&
+               self.adUnitId == other.adUnitId &&
+               self.impressionId == other.impressionId &&
+               self.rewardVerificationEnabled == other.rewardVerificationEnabled &&
+               self.rewardItem == other.rewardItem &&
+               self.rewardAmountRawValue == other.rewardAmountRawValue
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(networkName)
+        hasher.combine(mediatorName)
+        hasher.combine(adFormat)
+        hasher.combine(placement)
+        hasher.combine(adUnitId)
+        hasher.combine(impressionId)
+        hasher.combine(rewardVerificationEnabled)
+        hasher.combine(rewardItem)
+        hasher.combine(rewardAmountRawValue)
+        return hasher.finalize()
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case networkName
+        case mediatorName
+        case adFormat
+        case placement
+        case adUnitId
+        case impressionId
+        case rewardVerificationEnabled
+        case rewardItem
+        case rewardAmountRawValue = "rewardAmount"
+    }
+
+}
+
+/// Data for ad reward verified events.
+@_spi(Experimental) @objc(RCAdRewardVerified) public final class AdRewardVerified: NSObject,
+                                                                                          AdImpressionEventData,
+                                                                                          Codable,
+                                                                                          @unchecked Sendable {
+
+    // swiftlint:disable missing_docs
+    @objc public private(set) var networkName: String?
+    @objc public private(set) var mediatorName: MediatorName
+    @objc public private(set) var adFormat: AdFormat
+    @objc public private(set) var placement: String?
+    @objc public private(set) var adUnitId: String
+    @objc public private(set) var impressionId: String
+    @objc public private(set) var rewardType: AdRewardType
+    @objc public private(set) var rewardCurrencyCode: String?
+    private let rewardCurrencyAmountRawValue: Int?
+    @objc public var rewardCurrencyAmount: NSNumber? {
+        return self.rewardCurrencyAmountRawValue.map(NSNumber.init(value:))
+    }
+    public var rewardCurrencyAmountValue: Int? {
+        return self.rewardCurrencyAmountRawValue
+    }
+
+    @objc public init(
+        networkName: String?,
+        mediatorName: MediatorName,
+        adFormat: AdFormat,
+        placement: String?,
+        adUnitId: String,
+        impressionId: String,
+        rewardType: AdRewardType,
+        rewardCurrencyCode: String?,
+        rewardCurrencyAmount: NSNumber?
+    ) {
+        self.networkName = networkName
+        self.mediatorName = mediatorName
+        self.adFormat = adFormat
+        self.placement = placement
+        self.adUnitId = adUnitId
+        self.impressionId = impressionId
+        self.rewardType = rewardType
+        self.rewardCurrencyCode = rewardCurrencyCode
+        self.rewardCurrencyAmountRawValue = rewardCurrencyAmount?.intValue
+        super.init()
+    }
+
+    public convenience init(
+        networkName: String?,
+        mediatorName: MediatorName,
+        adFormat: AdFormat,
+        placement: String?,
+        adUnitId: String,
+        impressionId: String,
+        rewardType: AdRewardType,
+        rewardCurrencyCode: String?,
+        rewardCurrencyAmount: Int?
+    ) {
+        self.init(
+            networkName: networkName,
+            mediatorName: mediatorName,
+            adFormat: adFormat,
+            placement: placement,
+            adUnitId: adUnitId,
+            impressionId: impressionId,
+            rewardType: rewardType,
+            rewardCurrencyCode: rewardCurrencyCode,
+            rewardCurrencyAmount: rewardCurrencyAmount.map(NSNumber.init(value:))
+        )
+    }
+    // swiftlint:enable missing_docs
+
+    // MARK: - NSObject overrides for equality
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? AdRewardVerified else { return false }
+        return self.networkName == other.networkName &&
+               self.mediatorName == other.mediatorName &&
+               self.adFormat == other.adFormat &&
+               self.placement == other.placement &&
+               self.adUnitId == other.adUnitId &&
+               self.impressionId == other.impressionId &&
+               self.rewardType == other.rewardType &&
+               self.rewardCurrencyCode == other.rewardCurrencyCode &&
+               self.rewardCurrencyAmountRawValue == other.rewardCurrencyAmountRawValue
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(networkName)
+        hasher.combine(mediatorName)
+        hasher.combine(adFormat)
+        hasher.combine(placement)
+        hasher.combine(adUnitId)
+        hasher.combine(impressionId)
+        hasher.combine(rewardType)
+        hasher.combine(rewardCurrencyCode)
+        hasher.combine(rewardCurrencyAmountRawValue)
+        return hasher.finalize()
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case networkName
+        case mediatorName
+        case adFormat
+        case placement
+        case adUnitId
+        case impressionId
+        case rewardType
+        case rewardCurrencyCode
+        case rewardCurrencyAmountRawValue = "rewardCurrencyAmount"
+    }
+
+}
+
+/// Data for ad reward failed-to-verify events.
+@_spi(Experimental)
+@objc(RCAdRewardFailedToVerify)
+public final class AdRewardFailedToVerify: NSObject, AdImpressionEventData, Codable, @unchecked Sendable {
+
+    // swiftlint:disable missing_docs
+    @objc public private(set) var networkName: String?
+    @objc public private(set) var mediatorName: MediatorName
+    @objc public private(set) var adFormat: AdFormat
+    @objc public private(set) var placement: String?
+    @objc public private(set) var adUnitId: String
+    @objc public private(set) var impressionId: String
+    @objc public private(set) var failureReason: AdRewardFailureReason
+
+    @objc public init(
+        networkName: String?,
+        mediatorName: MediatorName,
+        adFormat: AdFormat,
+        placement: String?,
+        adUnitId: String,
+        impressionId: String,
+        failureReason: AdRewardFailureReason
+    ) {
+        self.networkName = networkName
+        self.mediatorName = mediatorName
+        self.adFormat = adFormat
+        self.placement = placement
+        self.adUnitId = adUnitId
+        self.impressionId = impressionId
+        self.failureReason = failureReason
+        super.init()
+    }
+    // swiftlint:enable missing_docs
+
+    // MARK: - NSObject overrides for equality
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? AdRewardFailedToVerify else { return false }
+        return self.networkName == other.networkName &&
+               self.mediatorName == other.mediatorName &&
+               self.adFormat == other.adFormat &&
+               self.placement == other.placement &&
+               self.adUnitId == other.adUnitId &&
+               self.impressionId == other.impressionId &&
+               self.failureReason == other.failureReason
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(networkName)
+        hasher.combine(mediatorName)
+        hasher.combine(adFormat)
+        hasher.combine(placement)
+        hasher.combine(adUnitId)
+        hasher.combine(impressionId)
+        hasher.combine(failureReason)
+        return hasher.finalize()
+    }
+
+}
+
 // MARK: - Internal Event Enum
 
 /// Internal event enum for type-safe routing through the events system.
@@ -674,6 +963,15 @@ internal enum AdEvent: Equatable, Codable, Sendable {
 
     /// An ad impression generated revenue.
     case revenue(CreationData, AdRevenue)
+
+    /// An ad SDK reported a user-earned reward, prior to server-side verification.
+    case rewardEarnedUnverified(CreationData, AdRewardEarnedUnverified)
+
+    /// Server-side verification confirmed the reward delivered by the ad SDK.
+    case rewardVerified(CreationData, AdRewardVerified)
+
+    /// Server-side verification terminally failed.
+    case rewardFailedToVerify(CreationData, AdRewardFailedToVerify)
 
 }
 
@@ -707,6 +1005,9 @@ extension AdEvent {
         case let .displayed(creationData, _): return creationData
         case let .opened(creationData, _): return creationData
         case let .revenue(creationData, _): return creationData
+        case let .rewardEarnedUnverified(creationData, _): return creationData
+        case let .rewardVerified(creationData, _): return creationData
+        case let .rewardFailedToVerify(creationData, _): return creationData
         }
     }
 
@@ -723,20 +1024,60 @@ extension AdEvent {
             return opened
         case let .revenue(_, revenue):
             return revenue
+        case let .rewardEarnedUnverified(_, unverified):
+            return unverified
+        case let .rewardVerified(_, verified):
+            return verified
+        case let .rewardFailedToVerify(_, failedToVerify):
+            return failedToVerify
         }
     }
 
     /// - Returns: the underlying ``AdRevenue`` for revenue events.
     internal var revenueData: AdRevenue? {
         switch self {
-        case .failedToLoad, .loaded, .displayed, .opened:
+        case .failedToLoad, .loaded, .displayed, .opened,
+             .rewardEarnedUnverified, .rewardVerified, .rewardFailedToVerify:
             return nil
         case let .revenue(_, revenueData):
             return revenueData
         }
     }
 
-    /// - Returns: the network name for impression events, nil for failed to load events.
+    /// - Returns: the underlying ``AdRewardEarnedUnverified`` for unverified reward events.
+    internal var rewardEarnedUnverifiedData: AdRewardEarnedUnverified? {
+        switch self {
+        case .failedToLoad, .loaded, .displayed, .opened, .revenue,
+             .rewardVerified, .rewardFailedToVerify:
+            return nil
+        case let .rewardEarnedUnverified(_, data):
+            return data
+        }
+    }
+
+    /// - Returns: the underlying ``AdRewardVerified`` for verified reward events.
+    internal var rewardVerifiedData: AdRewardVerified? {
+        switch self {
+        case .failedToLoad, .loaded, .displayed, .opened, .revenue,
+             .rewardEarnedUnverified, .rewardFailedToVerify:
+            return nil
+        case let .rewardVerified(_, data):
+            return data
+        }
+    }
+
+    /// - Returns: the underlying ``AdRewardFailedToVerify`` for failed-to-verify reward events.
+    internal var rewardFailedToVerifyData: AdRewardFailedToVerify? {
+        switch self {
+        case .failedToLoad, .loaded, .displayed, .opened, .revenue,
+             .rewardEarnedUnverified, .rewardVerified:
+            return nil
+        case let .rewardFailedToVerify(_, data):
+            return data
+        }
+    }
+
+    /// - Returns: the network name for impression and reward events, nil for failed to load events.
     internal var networkName: String? {
         switch self {
         case .failedToLoad:
@@ -748,6 +1089,12 @@ extension AdEvent {
         case let .opened(_, data):
             return data.networkName
         case let .revenue(_, data):
+            return data.networkName
+        case let .rewardEarnedUnverified(_, data):
+            return data.networkName
+        case let .rewardVerified(_, data):
+            return data.networkName
+        case let .rewardFailedToVerify(_, data):
             return data.networkName
         }
     }
@@ -765,6 +1112,12 @@ extension AdEvent {
             return data.impressionId
         case let .revenue(_, data):
             return data.impressionId
+        case let .rewardEarnedUnverified(_, data):
+            return data.impressionId
+        case let .rewardVerified(_, data):
+            return data.impressionId
+        case let .rewardFailedToVerify(_, data):
+            return data.impressionId
         }
     }
 
@@ -773,7 +1126,8 @@ extension AdEvent {
         switch self {
         case let .failedToLoad(_, data):
             return data.mediatorErrorCode?.intValue
-        case .loaded, .displayed, .opened, .revenue:
+        case .loaded, .displayed, .opened, .revenue,
+             .rewardEarnedUnverified, .rewardVerified, .rewardFailedToVerify:
             return nil
         }
     }

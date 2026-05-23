@@ -75,6 +75,9 @@ extension AdEventsRequest.AdEventRequest {
         case displayed = "rc_ads_ad_displayed"
         case opened = "rc_ads_ad_opened"
         case revenue = "rc_ads_ad_revenue"
+        case rewardEarnedUnverified = "rc_ads_ad_reward_sdk_unverified"
+        case rewardVerified = "rc_ads_ad_reward_sdk_verified"
+        case rewardFailedToVerify = "rc_ads_ad_reward_sdk_failed_to_verify"
 
     }
 
@@ -127,6 +130,9 @@ private extension AdEvent {
         case .displayed: return .displayed
         case .opened: return .opened
         case .revenue: return .revenue
+        case .rewardEarnedUnverified: return .rewardEarnedUnverified
+        case .rewardVerified: return .rewardVerified
+        case .rewardFailedToVerify: return .rewardFailedToVerify
         }
 
     }
