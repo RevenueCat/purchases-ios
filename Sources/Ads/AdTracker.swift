@@ -195,4 +195,83 @@ public final class AdTracker: NSObject {
         }
     }
 
+    /**
+     Tracks when the ad SDK reports a user-earned reward, before server-side verification has completed.
+
+     - Parameter data: The earned (unverified) reward event data
+
+     ## Example:
+     ```swift
+     Purchases.shared.adTracker.trackAdRewardEarnedUnverified(.init(
+         networkName: "AdMob",
+         mediatorName: .adMob,
+         adFormat: .rewarded,
+         placement: "home_screen",
+         adUnitId: "ca-app-pub-123",
+         impressionId: "impression-456",
+         rewardVerificationEnabled: true,
+         rewardItem: "coins",
+         rewardAmount: 10
+     ))
+     ```
+     */
+    @_spi(Experimental) @objc public func trackAdRewardEarnedUnverified(_ data: AdRewardEarnedUnverified) {
+        Task {
+            let event = AdEvent.rewardEarnedUnverified(.init(id: UUID(), date: Date()), data)
+            await self.eventsManager?.track(adEvent: event)
+        }
+    }
+
+    /**
+     Tracks when server-side verification confirms the reward delivered by the ad SDK.
+
+     - Parameter data: The verified reward event data
+
+     ## Example:
+     ```swift
+     Purchases.shared.adTracker.trackAdRewardVerified(.init(
+         networkName: "AdMob",
+         mediatorName: .adMob,
+         adFormat: .rewarded,
+         placement: "home_screen",
+         adUnitId: "ca-app-pub-123",
+         impressionId: "impression-456",
+         rewardType: .virtualCurrency,
+         rewardCurrencyCode: "GOLD",
+         rewardCurrencyAmount: 100
+     ))
+     ```
+     */
+    @_spi(Experimental) @objc public func trackAdRewardVerified(_ data: AdRewardVerified) {
+        Task {
+            let event = AdEvent.rewardVerified(.init(id: UUID(), date: Date()), data)
+            await self.eventsManager?.track(adEvent: event)
+        }
+    }
+
+    /**
+     Tracks when server-side reward verification terminally fails.
+
+     - Parameter data: The failed-to-verify reward event data
+
+     ## Example:
+     ```swift
+     Purchases.shared.adTracker.trackAdRewardFailedToVerify(.init(
+         networkName: "AdMob",
+         mediatorName: .adMob,
+         adFormat: .rewarded,
+         placement: "home_screen",
+         adUnitId: "ca-app-pub-123",
+         impressionId: "impression-456",
+         failureReason: .timeout
+     ))
+     ```
+     */
+    @_spi(Experimental) @objc public func trackAdRewardFailedToVerify(_ data: AdRewardFailedToVerify) {
+        Task {
+            let event = AdEvent.rewardFailedToVerify(.init(id: UUID(), date: Date()), data)
+            await self.eventsManager?.track(adEvent: event)
+        }
+    }
+
 }
