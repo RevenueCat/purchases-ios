@@ -60,6 +60,16 @@ extension AdEventsRequest {
         var precision: String?
         // For failed to load events only:
         var mediatorErrorCode: Int?
+        // For reward earned (unverified) events only:
+        var rewardVerificationEnabled: Bool?
+        var rewardItem: String?
+        var rewardAmount: Int?
+        // For reward verified events only:
+        var rewardType: String?
+        var rewardCurrencyCode: String?
+        var rewardCurrencyAmount: Int?
+        // For reward failed-to-verify events only:
+        var failureReason: String?
 
     }
 
@@ -108,7 +118,14 @@ extension AdEventsRequest.AdEventRequest {
                 revenueMicros: adEvent.revenueData?.revenueMicros,
                 currency: adEvent.revenueData?.currency,
                 precision: adEvent.revenueData?.precision.rawValue,
-                mediatorErrorCode: adEvent.mediatorErrorCode
+                mediatorErrorCode: adEvent.mediatorErrorCode,
+                rewardVerificationEnabled: adEvent.rewardEarnedUnverifiedData?.rewardVerificationEnabled,
+                rewardItem: adEvent.rewardEarnedUnverifiedData?.rewardItem,
+                rewardAmount: adEvent.rewardEarnedUnverifiedData?.rewardAmountValue,
+                rewardType: adEvent.rewardVerifiedData?.rewardType.rawValue,
+                rewardCurrencyCode: adEvent.rewardVerifiedData?.rewardCurrencyCode,
+                rewardCurrencyAmount: adEvent.rewardVerifiedData?.rewardCurrencyAmountValue,
+                failureReason: adEvent.rewardFailedToVerifyData?.failureReason.rawValue
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -165,6 +182,13 @@ extension AdEventsRequest.AdEventRequest: Encodable {
         case currency
         case precision
         case mediatorErrorCode
+        case rewardVerificationEnabled
+        case rewardItem
+        case rewardAmount
+        case rewardType
+        case rewardCurrencyCode
+        case rewardCurrencyAmount
+        case failureReason
 
     }
 
