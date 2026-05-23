@@ -116,6 +116,83 @@ internal protocol AdImpressionEventData: AdEventData {
 
 }
 
+/// Type representing the kind of reward delivered by a verified rewarded ad.
+///
+/// Use the predefined static properties for known reward kinds, or create custom values
+/// for reward kinds added in the future.
+@_spi(Experimental) @objc(RCAdRewardType) public final class AdRewardType: NSObject, Codable {
+
+    /// The raw string value of the reward type
+    @objc public let rawValue: String
+
+    /// Creates a reward type with the specified raw value
+    @objc public init(rawValue: String) {
+        self.rawValue = rawValue
+        super.init()
+    }
+
+    /// Reward is a virtual currency line item with a code and amount.
+    @objc public static let virtualCurrency = AdRewardType(rawValue: "virtual_currency")
+
+    /// Verification succeeded but the ad granted no reward.
+    @objc public static let noReward = AdRewardType(rawValue: "no_reward")
+
+    /// Verification succeeded with a reward type that the SDK does not currently model.
+    @objc public static let unsupportedReward = AdRewardType(rawValue: "unsupported_reward")
+
+    // MARK: - NSObject overrides for equality
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? AdRewardType else { return false }
+        return self.rawValue == other.rawValue
+    }
+
+    public override var hash: Int {
+        return self.rawValue.hash
+    }
+
+}
+
+/// Type representing the reason a rewarded-ad verification failed.
+///
+/// Use the predefined static properties for known failure reasons, or create custom values
+/// for reasons added in the future.
+@_spi(Experimental) @objc(RCAdRewardFailureReason) public final class AdRewardFailureReason: NSObject, Codable {
+
+    /// The raw string value of the failure reason
+    @objc public let rawValue: String
+
+    /// Creates a failure reason with the specified raw value
+    @objc public init(rawValue: String) {
+        self.rawValue = rawValue
+        super.init()
+    }
+
+    /// Verification did not complete within the allowed polling window.
+    @objc public static let timeout = AdRewardFailureReason(rawValue: "timeout")
+
+    /// Verification failed due to a network-level error.
+    @objc public static let networkError = AdRewardFailureReason(rawValue: "network_error")
+
+    /// The backend explicitly declined to verify the reward.
+    @objc public static let backendError = AdRewardFailureReason(rawValue: "backend_error")
+
+    /// Verification failed for an unspecified reason.
+    @objc public static let unknown = AdRewardFailureReason(rawValue: "unknown")
+
+    // MARK: - NSObject overrides for equality
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? AdRewardFailureReason else { return false }
+        return self.rawValue == other.rawValue
+    }
+
+    public override var hash: Int {
+        return self.rawValue.hash
+    }
+
+}
+
 /// Data for ad failed to load events.
 @_spi(Experimental) @objc(RCAdFailedToLoad) public final class AdFailedToLoad: NSObject,
                                                                                 AdEventData,
