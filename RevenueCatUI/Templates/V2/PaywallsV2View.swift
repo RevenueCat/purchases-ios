@@ -95,7 +95,8 @@ struct PaywallsV2View: View {
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
         colorScheme: ColorScheme,
         promoOfferCache: PaywallPromoOfferCache? = nil,
-        introEligibilityContext: IntroOfferEligibilityContext? = nil
+        introEligibilityContext: IntroOfferEligibilityContext? = nil,
+        selectedPackageContextOverride: PackageContext? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
@@ -143,7 +144,9 @@ struct PaywallsV2View: View {
         )
 
         let selectedPackageContext: PackageContext
-        if case .success(let paywallState) = initialState {
+        if let override = selectedPackageContextOverride {
+            selectedPackageContext = override
+        } else if case .success(let paywallState) = initialState {
             selectedPackageContext = Self.makeSelectedPackageContext(
                 from: paywallState,
                 defaultPackage: Self.effectiveDefaultPackage(
