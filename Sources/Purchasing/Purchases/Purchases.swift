@@ -957,7 +957,11 @@ public extension Purchases {
     ) {
         self.offeringsManager.offerings(appUserID: self.appUserID,
                                         fetchPolicy: fetchPolicy,
-                                        fetchCurrent: fetchCurrent) { @Sendable result in
+                                        fetchCurrent: fetchCurrent) { [weak self] result in
+            if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
+               let offerings = result.value {
+                self?.warmUpCaches(offerings: offerings)
+            }
             completion(result.value, result.error?.asPublicError)
         }
     }
@@ -2407,6 +2411,13 @@ private extension Purchases {
         if old != nil {
             self.trialOrIntroPriceEligibilityChecker.clearCache()
             self.purchasedProductsFetcher?.clearCache()
+
+            if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
+               let cache = self.paywallCache {
+                self.operationDispatcher.dispatchOnWorkerThread {
+                    await cache.clearEligibilityCache()
+                }
+            }
         }
 
         self.delegate?.purchases?(self, receivedUpdated: new)
