@@ -110,11 +110,21 @@ extension WinBackOfferEligibilityCalculator {
 
         #if compiler(>=6.3.2)
         if #available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, *) {
-            let billingPlan = product.installmentsInfo?.billingPlanType ?? BillingPlanType.default
+            let availableOfferIDs: Set<String>
+            if let billingPlan = product.installmentsInfo?.billingPlanType {
+                availableOfferIDs = availableWinBackOfferIDs(
+                    forBillingPlan: billingPlan,
+                    subscriptionInfo: subscriptionInfo
+                )
+            } else {
+                availableOfferIDs = Set(
+                    subscriptionInfo.winBackOffers.compactMap({ $0.id })
+                )
+            }
+
             eligibleWinBackOfferIDs = filterWinBackOfferIDs(
                 eligibleWinBackOfferIDs,
-                toBillingPlan: billingPlan,
-                subscriptionInfo: subscriptionInfo
+                availableWinBackOfferIDs: availableOfferIDs
             )
         }
         #endif
@@ -179,11 +189,10 @@ extension StoreKit.Product.SubscriptionInfo.Status {
 
 @available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, *)
 private extension WinBackOfferEligibilityCalculator {
-    private func filterWinBackOfferIDs(
-        _ allWinbackOfferIDs: [String],
-        toBillingPlan billingPlanType: BillingPlanType,
+    private func availableWinBackOfferIDs(
+        forBillingPlan billingPlanType: BillingPlanType,
         subscriptionInfo: Product.SubscriptionInfo
-    ) -> [String] {
+    ) -> Set<String> {
         #if compiler(>=6.3.2)
         let skBillingPlanType = billingPlanType.skBillingPlanType
         guard let applicablePricingTerms = subscriptionInfo.pricingTerms.first(where: {
@@ -194,18 +203,25 @@ private extension WinBackOfferEligibilityCalculator {
             return []
         }
 
-        let winbackOfferIDsForBillingPlan = Set(
+        return Set(
             applicablePricingTerms.subscriptionOffers
                 .filter({ $0.type == .winBack })
                 .compactMap({ $0.id })
         )
-
-        if winbackOfferIDsForBillingPlan.isEmpty { return [] }
-
-        return allWinbackOfferIDs.filter({ winbackOfferID in winbackOfferIDsForBillingPlan.contains(winbackOfferID) })
         #else
         // Billing plans are not available
-        return allWinbackOfferIDs
+        return []
         #endif
+    }
+
+    private func filterWinBackOfferIDs(
+        _ allWinbackOfferIDs: [String],
+        availableWinBackOfferIDs: Set<String>
+    ) -> [String] {
+        guard !availableWinBackOfferIDs.isEmpty else { return [] }
+
+        return allWinbackOfferIDs.filter({ winbackOfferID in
+            availableWinBackOfferIDs.contains(winbackOfferID)
+        })
     }
 }

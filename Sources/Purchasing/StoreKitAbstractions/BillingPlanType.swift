@@ -57,8 +57,5 @@ internal extension BillingPlanType {
             return nil
         }
     }
-
-    /// The default billing plan for products
-    static var `default`: BillingPlanType = BillingPlanType.upFront
 }
 #endif
