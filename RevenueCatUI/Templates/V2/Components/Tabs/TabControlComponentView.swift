@@ -44,7 +44,6 @@ struct TabControlComponentView: View {
     }
 
     var body: some View {
-		let _ = Self._printChanges()
         StackComponentView(
             viewModel: self.tabControlContext.controlStackViewModel,
             onDismiss: self.onDismiss

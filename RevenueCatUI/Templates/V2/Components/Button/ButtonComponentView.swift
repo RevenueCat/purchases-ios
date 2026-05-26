@@ -70,7 +70,6 @@ struct ButtonComponentView: View {
     }
 
     var body: some View {
-		let _ = Self._printChanges()
         if !self.viewModel.hasUnknownAction {
             AsyncButton {
                 try await performAction()
