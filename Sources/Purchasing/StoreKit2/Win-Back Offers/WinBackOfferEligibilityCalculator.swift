@@ -58,20 +58,8 @@ extension WinBackOfferEligibilityCalculator {
         let eligibleWinBackOfferIDs: [String] = await self.calculateEligibleWinBackOfferIDs(forProduct: product)
         guard !eligibleWinBackOfferIDs.isEmpty else { return [] }
 
-        guard let allWinBackOffersForThisProduct: [
-            Product.SubscriptionOffer
-        ] = product.sk2Product?.subscription?.winBackOffers else {
-            // StoreKit.Product.SubscriptionInfo is nil if the product is not a subscription
-            return []
-        }
-
-        let winbackOffersByID = allWinBackOffersForThisProduct
-            .reduce(into: [String: Product.SubscriptionOffer]()
-        ) { dict, offer in
-            if let id = offer.id {
-                dict[id] = offer
-            }
-        }
+        let winbackOffersByID: [String: Product.SubscriptionOffer] = self.winbackOffersByID(for: product)
+        guard !winbackOffersByID.isEmpty else { return [] }
 
         let eligibleWinBackOffers: [WinBackOffer] = eligibleWinBackOfferIDs
             // Convert the eligible offer IDs to StoreProductDiscounts for us to use
@@ -93,8 +81,12 @@ extension WinBackOfferEligibilityCalculator {
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     private func calculateEligibleWinBackOfferIDs(forProduct product: StoreProduct) async -> [String] {
         #if compiler(>=6.0)
-        guard let statuses = try? await product.sk2Product?.subscription?.status, !statuses.isEmpty else {
+        guard let subscriptionInfo = product.sk2Product?.subscription else {
             // If StoreKit.Product.subscription is nil, then the product isn't a subscription
+            return []
+        }
+
+        guard let statuses = try? await subscriptionInfo.status, !statuses.isEmpty else {
             // If statuses is empty, the subscriber was never subscribed to a product in the subscription group.
             return []
         }
@@ -113,10 +105,58 @@ extension WinBackOfferEligibilityCalculator {
         }
 
         // StoreKit sorts eligibleWinBackOfferIDs by the "best" win-back offer first.
-        return renewalInfo.eligibleWinBackOfferIDs
+        // Note that renewalInfo.eligibleWinBackOfferIDs contains the eligible winback offers across all billing plans.
+        var eligibleWinBackOfferIDs = renewalInfo.eligibleWinBackOfferIDs
+
+        #if compiler(>=6.3.2)
+        if #available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, *) {
+            let billingPlan = product.installmentsInfo?.billingPlanType ?? BillingPlanType.default
+            eligibleWinBackOfferIDs = filterWinBackOfferIDs(
+                eligibleWinBackOfferIDs,
+                toBillingPlan: billingPlan,
+                subscriptionInfo: subscriptionInfo
+            )
+        }
+        #endif
+
+        return eligibleWinBackOfferIDs
         #else
         return []
         #endif
+    }
+
+    private func winbackOffersByID(
+        for product: StoreProduct
+    ) -> [String: Product.SubscriptionOffer] {
+        var winbackOffersByID: [String: Product.SubscriptionOffer] = [:]
+
+        guard let subscriptionInfo = product.sk2Product?.subscription else {
+            return winbackOffersByID
+        }
+
+        // First, get the winbacks on the product itself
+        for winbackOffer in subscriptionInfo.winBackOffers {
+            if let winbackID = winbackOffer.id {
+                winbackOffersByID[winbackID] = winbackOffer
+            }
+        }
+
+        #if compiler(>=6.3.2)
+        if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
+            // Get the winbacks that might only be available on one set of pricing terms
+            for pricingTerms in subscriptionInfo.pricingTerms {
+                let winbackOffers = pricingTerms.subscriptionOffers.filter({ $0.type == .winBack })
+                for winbackOffer in winbackOffers {
+                    if let winbackID = winbackOffer.id,
+                       !winbackOffersByID.keys.contains(winbackID) {
+                        winbackOffersByID[winbackID] = winbackOffer
+                    }
+                }
+            }
+        }
+        #endif
+
+        return winbackOffersByID
     }
 }
 
@@ -134,5 +174,38 @@ extension StoreKit.Product.SubscriptionInfo.Status {
         case .verified(let status):
             return status
         }
+    }
+}
+
+@available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, *)
+private extension WinBackOfferEligibilityCalculator {
+    private func filterWinBackOfferIDs(
+        _ allWinbackOfferIDs: [String],
+        toBillingPlan billingPlanType: BillingPlanType,
+        subscriptionInfo: Product.SubscriptionInfo
+    ) -> [String] {
+        #if compiler(>=6.3.2)
+        let skBillingPlanType = billingPlanType.skBillingPlanType
+        guard let applicablePricingTerms = subscriptionInfo.pricingTerms.first(where: {
+            $0.billingPlanType == skBillingPlanType
+        }) else {
+            // The user is not eligible for pricing terms with the requested billing plan. Therefore, they are
+            // not eligible for winback offers on that given billing plan type.
+            return []
+        }
+
+        let winbackOfferIDsForBillingPlan = Set(
+            applicablePricingTerms.subscriptionOffers
+                .filter({ $0.type == .winBack })
+                .compactMap({ $0.id })
+        )
+
+        if winbackOfferIDsForBillingPlan.isEmpty { return [] }
+
+        return allWinbackOfferIDs.filter({ winbackOfferID in winbackOfferIDsForBillingPlan.contains(winbackOfferID) })
+        #else
+        // Billing plans are not available
+        return allWinbackOfferIDs
+        #endif
     }
 }
