@@ -202,19 +202,13 @@ internal extension GoogleMobileAds.RewardedAd {
         )
     }
 
-    /// Presents the rewarded ad and overrides the placement used for RevenueCat analytics.
-    ///
-    /// Call this instead of `present(from:userDidEarnRewardHandler:)` when you want to specify or override
-    /// the placement at show time. The placement passed here takes precedence over any placement provided at load time.
-    ///
-    /// Fires `AdRewardEarnedUnverified` (with `rewardVerificationEnabled: false`) before invoking the handler.
+    /// Presents the rewarded ad and fires `AdRewardEarnedUnverified` (with `rewardVerificationEnabled: false`)
+    /// before invoking the handler.
     @MainActor
-    func present(
+    func presentAndTrack(
         from viewController: UIViewController,
-        placement: String?,
         userDidEarnRewardHandler: @escaping () -> Void
     ) {
-        Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
         self.present(from: viewController, userDidEarnRewardHandler: { [weak self] in
             if let self {
                 self.fireEarnedUnverifiedEvent(
@@ -225,6 +219,20 @@ internal extension GoogleMobileAds.RewardedAd {
             }
             userDidEarnRewardHandler()
         })
+    }
+
+    /// Presents the rewarded ad, overrides the placement used for RevenueCat analytics, and fires
+    /// `AdRewardEarnedUnverified` (with `rewardVerificationEnabled: false`) before invoking the handler.
+    ///
+    /// The placement passed here takes precedence over any placement provided at load time.
+    @MainActor
+    func presentAndTrack(
+        from viewController: UIViewController,
+        placement: String?,
+        userDidEarnRewardHandler: @escaping () -> Void
+    ) {
+        Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
+        self.presentAndTrack(from: viewController, userDidEarnRewardHandler: userDidEarnRewardHandler)
     }
 }
 
@@ -284,19 +292,13 @@ internal extension GoogleMobileAds.RewardedInterstitialAd {
         )
     }
 
-    /// Presents the rewarded interstitial ad and overrides the placement used for RevenueCat analytics.
-    ///
-    /// Call this instead of `present(from:userDidEarnRewardHandler:)` when you want to specify or override
-    /// the placement at show time. The placement passed here takes precedence over any placement provided at load time.
-    ///
-    /// Fires `AdRewardEarnedUnverified` (with `rewardVerificationEnabled: false`) before invoking the handler.
+    /// Presents the rewarded interstitial ad and fires `AdRewardEarnedUnverified`
+    /// (with `rewardVerificationEnabled: false`) before invoking the handler.
     @MainActor
-    func present(
+    func presentAndTrack(
         from viewController: UIViewController,
-        placement: String?,
         userDidEarnRewardHandler: @escaping () -> Void
     ) {
-        Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
         self.present(from: viewController, userDidEarnRewardHandler: { [weak self] in
             if let self {
                 self.fireEarnedUnverifiedEvent(
@@ -307,6 +309,20 @@ internal extension GoogleMobileAds.RewardedInterstitialAd {
             }
             userDidEarnRewardHandler()
         })
+    }
+
+    /// Presents the rewarded interstitial ad, overrides the placement used for RevenueCat analytics,
+    /// and fires `AdRewardEarnedUnverified` (with `rewardVerificationEnabled: false`) before invoking the handler.
+    ///
+    /// The placement passed here takes precedence over any placement provided at load time.
+    @MainActor
+    func presentAndTrack(
+        from viewController: UIViewController,
+        placement: String?,
+        userDidEarnRewardHandler: @escaping () -> Void
+    ) {
+        Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
+        self.presentAndTrack(from: viewController, userDidEarnRewardHandler: userDidEarnRewardHandler)
     }
 }
 

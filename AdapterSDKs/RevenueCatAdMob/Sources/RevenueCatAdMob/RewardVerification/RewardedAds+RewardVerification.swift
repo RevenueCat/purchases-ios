@@ -33,10 +33,10 @@ import GoogleMobileAds
     ///   When verification returns `.verified(.virtualCurrency(...))`, this API automatically invalidates
     ///   RevenueCat virtual currencies cache before delivering the callback.
     ///
-    /// To override the placement used for RevenueCat analytics at show time, use
-    /// ``present(from:placement:rewardVerificationStarted:rewardVerificationCompleted:)`` instead of this method.
+    /// To override the placement used for RevenueCat analytics at show time, use the
+    /// `placement:` variant of `presentAndTrack(from:...)` instead.
     @MainActor
-    func present(
+    func presentAndTrack(
         from viewController: UIViewController,
         rewardVerificationStarted: (@MainActor () -> Void)? = nil,
         rewardVerificationCompleted: @escaping @MainActor (RewardVerificationResult) -> Void
@@ -65,7 +65,7 @@ import GoogleMobileAds
     ///   When verification returns `.verified(.virtualCurrency(...))`, this API automatically invalidates
     ///   RevenueCat virtual currencies cache before delivering the callback.
     @MainActor
-    func present(
+    func presentAndTrack(
         from viewController: UIViewController,
         placement: String?,
         rewardVerificationStarted: (@MainActor () -> Void)? = nil,
@@ -106,10 +106,10 @@ import GoogleMobileAds
     ///   When verification returns `.verified(.virtualCurrency(...))`, this API automatically invalidates
     ///   RevenueCat virtual currencies cache before delivering the callback.
     ///
-    /// To override the placement used for RevenueCat analytics at show time, use
-    /// ``present(from:placement:rewardVerificationStarted:rewardVerificationCompleted:)`` instead of this method.
+    /// To override the placement used for RevenueCat analytics at show time, use the
+    /// `placement:` variant of `presentAndTrack(from:...)` instead.
     @MainActor
-    func present(
+    func presentAndTrack(
         from viewController: UIViewController,
         rewardVerificationStarted: (@MainActor () -> Void)? = nil,
         rewardVerificationCompleted: @escaping @MainActor (RewardVerificationResult) -> Void
@@ -138,7 +138,7 @@ import GoogleMobileAds
     ///   When verification returns `.verified(.virtualCurrency(...))`, this API automatically invalidates
     ///   RevenueCat virtual currencies cache before delivering the callback.
     @MainActor
-    func present(
+    func presentAndTrack(
         from viewController: UIViewController,
         placement: String?,
         rewardVerificationStarted: (@MainActor () -> Void)? = nil,

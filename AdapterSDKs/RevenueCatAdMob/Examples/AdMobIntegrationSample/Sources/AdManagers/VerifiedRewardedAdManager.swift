@@ -59,7 +59,7 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
         self.presentingAdObjectID = presentingAdObjectID
         self.shouldReportDismissedBeforeReward = true
         self.message = Message.Rewarded.waitingForReward
-        loadedAd.present(
+        loadedAd.presentAndTrack(
             from: viewController,
             placement: "rewarded_reward_verification_main",
             rewardVerificationStarted: { [weak self] in
