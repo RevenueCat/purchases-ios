@@ -177,4 +177,105 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.precision) == .exact
     }
 
+    func testTrackAdRewardEarnedUnverifiedStoresEvent() async throws {
+        let data = AdRewardEarnedUnverified(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            rewardVerificationEnabled: true,
+            rewardItem: "coins",
+            rewardAmount: 10
+        )
+
+        self.purchases.adTracker.trackAdRewardEarnedUnverified(data)
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
+
+        guard case let .rewardEarnedUnverified(_, eventData) = trackedEvents.first else {
+            fail("Expected AdEvent.rewardEarnedUnverified but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(eventData.networkName) == "AdMob"
+        expect(eventData.mediatorName) == .adMob
+        expect(eventData.adFormat) == .rewarded
+        expect(eventData.placement) == "home_screen"
+        expect(eventData.adUnitId) == "ca-app-pub-123"
+        expect(eventData.impressionId) == "impression-123"
+        expect(eventData.rewardVerificationEnabled) == true
+        expect(eventData.rewardItem) == "coins"
+        expect(eventData.rewardAmount?.intValue) == 10
+    }
+
+    func testTrackAdRewardVerifiedStoresEvent() async throws {
+        let data = AdRewardVerified(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            rewardType: .virtualCurrency,
+            rewardCurrencyCode: "GOLD",
+            rewardCurrencyAmount: 100
+        )
+
+        self.purchases.adTracker.trackAdRewardVerified(data)
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
+
+        guard case let .rewardVerified(_, eventData) = trackedEvents.first else {
+            fail("Expected AdEvent.rewardVerified but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(eventData.networkName) == "AdMob"
+        expect(eventData.mediatorName) == .adMob
+        expect(eventData.adFormat) == .rewarded
+        expect(eventData.placement) == "home_screen"
+        expect(eventData.adUnitId) == "ca-app-pub-123"
+        expect(eventData.impressionId) == "impression-123"
+        expect(eventData.rewardType) == .virtualCurrency
+        expect(eventData.rewardCurrencyCode) == "GOLD"
+        expect(eventData.rewardCurrencyAmount?.intValue) == 100
+    }
+
+    func testTrackAdRewardFailedToVerifyStoresEvent() async throws {
+        let data = AdRewardFailedToVerify(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            failureReason: .backendError
+        )
+
+        self.purchases.adTracker.trackAdRewardFailedToVerify(data)
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
+
+        guard case let .rewardFailedToVerify(_, eventData) = trackedEvents.first else {
+            fail("Expected AdEvent.rewardFailedToVerify but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(eventData.networkName) == "AdMob"
+        expect(eventData.mediatorName) == .adMob
+        expect(eventData.adFormat) == .rewarded
+        expect(eventData.placement) == "home_screen"
+        expect(eventData.adUnitId) == "ca-app-pub-123"
+        expect(eventData.impressionId) == "impression-123"
+        expect(eventData.failureReason) == .backendError
+    }
+
 }
