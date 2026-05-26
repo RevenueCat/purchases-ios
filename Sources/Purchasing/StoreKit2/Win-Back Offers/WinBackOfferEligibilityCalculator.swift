@@ -171,7 +171,7 @@ extension WinBackOfferEligibilityCalculator {
         return winbackOffersByID
         #else
         // Winback offers are not supported with compiler <6.0
-        return []
+        return [:]
         #endif
     }
 }
