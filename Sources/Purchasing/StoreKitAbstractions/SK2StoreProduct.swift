@@ -111,7 +111,7 @@ internal struct SK2StoreProduct: StoreProductType {
                     $0.subscriptionOffers.filter({ $0.type == .promotional })
                         .compactMap { StoreProductDiscount(sk2Discount: $0, currencyCode: self.currencyCode) }
                 }) ?? []
-            
+
             return promotionalOffersOnApplicablePricingTerms
         } else {
             return self.promotionalOffersOnSubscriptionInfo
