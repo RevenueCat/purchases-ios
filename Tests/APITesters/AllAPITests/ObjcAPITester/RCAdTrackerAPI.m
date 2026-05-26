@@ -159,6 +159,81 @@
         NSString *currency __unused = revenueWithPlacement.currency;
         RCAdRevenuePrecision *precision __unused = revenueWithPlacement.precision;
 
+        // AdRewardType API
+        RCAdRewardType *rewardTypeFromRaw __unused = [[RCAdRewardType alloc] initWithRawValue:@"custom_reward"];
+        RCAdRewardType *virtualCurrency __unused = RCAdRewardType.virtualCurrency;
+        RCAdRewardType *noReward __unused = RCAdRewardType.noReward;
+        RCAdRewardType *unsupportedReward __unused = RCAdRewardType.unsupportedReward;
+        NSString *rewardTypeRawValue __unused = virtualCurrency.rawValue;
+
+        // AdRewardFailureReason API
+        RCAdRewardFailureReason *failureReasonFromRaw __unused =
+            [[RCAdRewardFailureReason alloc] initWithRawValue:@"custom_reason"];
+        RCAdRewardFailureReason *timeout __unused = RCAdRewardFailureReason.timeout;
+        RCAdRewardFailureReason *networkError __unused = RCAdRewardFailureReason.networkError;
+        RCAdRewardFailureReason *backendError __unused = RCAdRewardFailureReason.backendError;
+        RCAdRewardFailureReason *unknownReason __unused = RCAdRewardFailureReason.unknown;
+        NSString *failureReasonRawValue __unused = timeout.rawValue;
+
+        // AdRewardEarnedUnverified API
+        RCAdRewardEarnedUnverified *earnedUnverified __unused =
+            [[RCAdRewardEarnedUnverified alloc] initWithNetworkName:@"AdMob"
+                                                       mediatorName:RCMediatorName.adMob
+                                                           adFormat:RCAdFormat.rewarded
+                                                          placement:@"home_screen"
+                                                           adUnitId:@"ca-app-pub-123"
+                                                       impressionId:@"impression-123"
+                                          rewardVerificationEnabled:YES
+                                                         rewardItem:@"coins"
+                                                       rewardAmount:@10];
+        NSString *earnedNetworkName __unused = earnedUnverified.networkName;
+        RCMediatorName *earnedMediator __unused = earnedUnverified.mediatorName;
+        RCAdFormat *earnedFormat __unused = earnedUnverified.adFormat;
+        NSString *earnedPlacement __unused = earnedUnverified.placement;
+        NSString *earnedAdUnitId __unused = earnedUnverified.adUnitId;
+        NSString *earnedImpressionId __unused = earnedUnverified.impressionId;
+        BOOL earnedVerificationEnabled __unused = earnedUnverified.rewardVerificationEnabled;
+        NSString *earnedRewardItem __unused = earnedUnverified.rewardItem;
+        NSNumber *earnedRewardAmount __unused = earnedUnverified.rewardAmount;
+
+        // AdRewardVerified API
+        RCAdRewardVerified *verified __unused =
+            [[RCAdRewardVerified alloc] initWithNetworkName:@"AdMob"
+                                               mediatorName:RCMediatorName.adMob
+                                                   adFormat:RCAdFormat.rewarded
+                                                  placement:@"home_screen"
+                                                   adUnitId:@"ca-app-pub-123"
+                                               impressionId:@"impression-123"
+                                                 rewardType:RCAdRewardType.virtualCurrency
+                                         rewardCurrencyCode:@"GOLD"
+                                       rewardCurrencyAmount:@100];
+        NSString *verifiedNetworkName __unused = verified.networkName;
+        RCMediatorName *verifiedMediator __unused = verified.mediatorName;
+        RCAdFormat *verifiedFormat __unused = verified.adFormat;
+        NSString *verifiedPlacement __unused = verified.placement;
+        NSString *verifiedAdUnitId __unused = verified.adUnitId;
+        NSString *verifiedImpressionId __unused = verified.impressionId;
+        RCAdRewardType *verifiedRewardType __unused = verified.rewardType;
+        NSString *verifiedRewardCurrencyCode __unused = verified.rewardCurrencyCode;
+        NSNumber *verifiedRewardCurrencyAmount __unused = verified.rewardCurrencyAmount;
+
+        // AdRewardFailedToVerify API
+        RCAdRewardFailedToVerify *failedToVerify __unused =
+            [[RCAdRewardFailedToVerify alloc] initWithNetworkName:@"AdMob"
+                                                     mediatorName:RCMediatorName.adMob
+                                                         adFormat:RCAdFormat.rewarded
+                                                        placement:@"home_screen"
+                                                         adUnitId:@"ca-app-pub-123"
+                                                     impressionId:@"impression-123"
+                                                    failureReason:RCAdRewardFailureReason.timeout];
+        NSString *failedNetworkName2 __unused = failedToVerify.networkName;
+        RCMediatorName *failedMediator2 __unused = failedToVerify.mediatorName;
+        RCAdFormat *failedFormat2 __unused = failedToVerify.adFormat;
+        NSString *failedPlacement2 __unused = failedToVerify.placement;
+        NSString *failedAdUnitId2 __unused = failedToVerify.adUnitId;
+        NSString *failedImpressionId __unused = failedToVerify.impressionId;
+        RCAdRewardFailureReason *failedReason __unused = failedToVerify.failureReason;
+
         // AdTracker API
         RCAdTracker *adTracker __unused = RCPurchases.sharedPurchases.adTracker;
 
@@ -168,6 +243,9 @@
         [adTracker trackAdDisplayed:displayedWithPlacement];
         [adTracker trackAdOpened:openedWithPlacement];
         [adTracker trackAdRevenue:revenueWithPlacement];
+        [adTracker trackAdRewardEarnedUnverified:earnedUnverified];
+        [adTracker trackAdRewardVerified:verified];
+        [adTracker trackAdRewardFailedToVerify:failedToVerify];
     }
 }
 
