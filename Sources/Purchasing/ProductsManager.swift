@@ -120,35 +120,8 @@ private extension ProductsManager {
 
     func sk1Products(withIdentifiers identifiers: Set<String>,
                      completion: @escaping (Result<Set<SK1StoreProduct>, PurchasesError>) -> Void) {
-        // Filter out compound product identifiers
-        var invalidProductIdentifiers: Set<String> = []
-        let storeKitProductIDs: Set<String> = Set(
-            identifiers.compactMap { identifier in
-                guard let compoundIdentifier = CompoundProductIdentifier(
-                    compoundProductIdentifier: identifier
-                ) else {
-                    invalidProductIdentifiers.insert(identifier)
-                    return nil
-                }
-
-                if compoundIdentifier.productPlanIdentifier == nil {
-                    return compoundIdentifier.productIdentifier
-                } else {
-                    Logger.warn(
-                        StoreKitStrings.sk1_does_not_support_billing_plans(
-                            compoundProductIdentifier: compoundIdentifier
-                        )
-                    )
-                    return nil
-                }
-            }
-        )
-        if !invalidProductIdentifiers.isEmpty {
-            Logger.warn(Strings.storeKit.invalid_product_identifiers(identifiers: invalidProductIdentifiers))
-        }
-
         return self.productsFetcherSK1.products(
-            withIdentifiers: storeKitProductIDs,
+            withIdentifiers: identifiers,
             completion: completion
         )
     }

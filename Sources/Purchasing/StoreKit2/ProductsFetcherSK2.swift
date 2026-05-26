@@ -31,14 +31,14 @@ actor ProductsFetcherSK2 {
 
     /// - Throws: `ProductsFetcherSK2.Error`
     func products(identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
-        let compoundProductIdentifiers = self.compoundProductIdentifiers(from: identifiers)
-        let storeKitIdentifiers: Set<String> = Set(
-            compoundProductIdentifiers.map(\.storeKitProductIdentifier)
+        let resolvedIdentifiers = CompoundProductIdentifierResolver.resolve(
+            identifiers,
+            supportsBillingPlans: Self.areProductsWithBillingPlansSupported
         )
 
-        let products = try await self.storeKitProducts(identifiers: storeKitIdentifiers)
+        let products = try await self.storeKitProducts(identifiers: resolvedIdentifiers.storeKitProductIdentifiers)
         return self.populateSK2CompoundProductsIfSupported(
-            requestedIdentifiers: compoundProductIdentifiers,
+            requestedIdentifiers: resolvedIdentifiers.compoundProductIdentifiers,
             products: products
         )
     }
@@ -62,40 +62,6 @@ private extension ProductsFetcherSK2 {
         } catch {
             throw Error.productsRequestError(innerError: error)
         }
-    }
-
-    func compoundProductIdentifiers(from identifiers: Set<String>) -> Set<CompoundProductIdentifier> {
-        // It's possible for developers to request compound product identifiers that represent both
-        // a product and a billing plan, like com.rc.sub:monthly. However, StoreKit doesn't recognize
-        // these product IDs, so here, we convert them to product IDs that StoreKit can recognize.
-        var invalidProductIdentifiers: Set<String> = []
-        let compoundProductIdentifiers: Set<CompoundProductIdentifier> = Set(
-            identifiers.compactMap { identifier in
-                guard let compoundIdentifier = CompoundProductIdentifier(
-                    compoundProductIdentifier: identifier
-                ) else {
-                    invalidProductIdentifiers.insert(identifier)
-                    return nil
-                }
-
-                if compoundIdentifier.productPlanIdentifier == nil {
-                    return compoundIdentifier   // Basic product with no billing plan
-                } else {
-                    guard Self.areProductsWithBillingPlansSupported(
-                        compoundIdentifier: compoundIdentifier
-                    ) else {
-                        return nil
-                    }
-
-                    return compoundIdentifier
-                }
-            }
-        )
-        if !invalidProductIdentifiers.isEmpty {
-            Logger.warn(Strings.storeKit.invalid_product_identifiers(identifiers: invalidProductIdentifiers))
-        }
-
-        return compoundProductIdentifiers
     }
 
     static func areProductsWithBillingPlansSupported(compoundIdentifier: CompoundProductIdentifier) -> Bool {
