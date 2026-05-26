@@ -139,6 +139,7 @@ extension WinBackOfferEligibilityCalculator {
     private func winbackOffersByID(
         for product: StoreProduct
     ) -> [String: Product.SubscriptionOffer] {
+        #if compiler(>=6.0)
         var winbackOffersByID: [String: Product.SubscriptionOffer] = [:]
 
         guard let subscriptionInfo = product.sk2Product?.subscription else {
@@ -168,6 +169,10 @@ extension WinBackOfferEligibilityCalculator {
         #endif
 
         return winbackOffersByID
+        #else
+        // Winback offers are not supported with compiler <6.0
+        return []
+        #endif
     }
 }
 
