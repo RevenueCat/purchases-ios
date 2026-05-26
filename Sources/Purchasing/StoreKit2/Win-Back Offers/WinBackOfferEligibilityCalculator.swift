@@ -109,7 +109,7 @@ extension WinBackOfferEligibilityCalculator {
         var eligibleWinBackOfferIDs = renewalInfo.eligibleWinBackOfferIDs
 
         #if compiler(>=6.3.2)
-        if #available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, *) {
+        if #available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, visionOS 26.4, *) {
             let availableOfferIDs: Set<String>
             if let billingPlan = product.installmentsInfo?.billingPlanType {
                 availableOfferIDs = availableWinBackOfferIDs(
@@ -135,6 +135,7 @@ extension WinBackOfferEligibilityCalculator {
         #endif
     }
 
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     private func winbackOffersByID(
         for product: StoreProduct
     ) -> [String: Product.SubscriptionOffer] {
