@@ -136,10 +136,10 @@ import Foundation
 
         public let overrides: ComponentOverrides<PartialCarouselComponent>?
 
-        /// State-store mutations applied when the user changes the active page
+        /// Variable-store mutations applied when the user changes the active page
         /// (via swipe or page-indicator tap). The destination page index is available
         /// as the `"$value"` payload reference.
-        @_spi(Internal) public let stateUpdates: [PaywallComponent.StateUpdate]?
+        @_spi(Internal) public let variableUpdates: [PaywallComponent.VariableUpdate]?
 
         public init(
             name: String? = nil,
@@ -160,7 +160,7 @@ import Foundation
             autoAdvance: PaywallComponent.CarouselComponent.AutoAdvanceSlides? = nil,
             pageControl: PageControl? = nil,
             overrides: ComponentOverrides<PartialCarouselComponent>? = nil,
-            stateUpdates: [PaywallComponent.StateUpdate]? = nil
+            variableUpdates: [PaywallComponent.VariableUpdate]? = nil
         ) {
             self.type = .carousel
 
@@ -182,7 +182,7 @@ import Foundation
             self.autoAdvance = autoAdvance
             self.pageControl = pageControl
             self.overrides = overrides
-            self.stateUpdates = stateUpdates
+            self.variableUpdates = variableUpdates
         }
 
         public static func == (lhs: CarouselComponent, rhs: CarouselComponent) -> Bool {
@@ -205,7 +205,7 @@ import Foundation
                 lhs.autoAdvance == rhs.autoAdvance &&
                 lhs.pageControl == rhs.pageControl &&
                 lhs.overrides == rhs.overrides &&
-                lhs.stateUpdates == rhs.stateUpdates
+                lhs.variableUpdates == rhs.variableUpdates
         }
 
         // MARK: - Hashable
@@ -229,7 +229,7 @@ import Foundation
             hasher.combine(autoAdvance)
             hasher.combine(pageControl)
             hasher.combine(overrides)
-            hasher.combine(stateUpdates)
+            hasher.combine(variableUpdates)
         }
 
     }

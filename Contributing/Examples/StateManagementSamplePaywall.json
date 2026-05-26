@@ -48,9 +48,9 @@
             "shape": { "type": "rectangle",
                        "corners": { "topLeading": 6, "topTrailing": 6, "bottomLeading": 6, "bottomTrailing": 6 } },
             "overrides": [
-              { "conditions": [ { "type": "state_condition", "operator": "=", "name": "currentSlide", "value": 1 } ],
+              { "conditions": [ { "type": "variable_condition", "operator": "=", "variable": "currentSlide", "value": 1 } ],
                 "properties": { "backgroundColor": { "light": { "type": "hex", "value": "#42B27D" } } } },
-              { "conditions": [ { "type": "state_condition", "operator": "=", "name": "currentSlide", "value": 2 } ],
+              { "conditions": [ { "type": "variable_condition", "operator": "=", "variable": "currentSlide", "value": 2 } ],
                 "properties": { "backgroundColor": { "light": { "type": "hex", "value": "#E0823F" } } } }
             ]
           },
@@ -76,7 +76,7 @@
             "overrides": [
               {
                 "conditions": [
-                  { "type": "state_condition", "operator": "=", "name": "comparisonOpen", "value": true }
+                  { "type": "variable_condition", "operator": "=", "variable": "comparisonOpen", "value": true }
                 ],
                 "properties": {
                   "textLid": "id_status_on",
@@ -90,7 +90,7 @@
           {
             "type": "button",
             "action": { "type": "workflow" },
-            "stateUpdates": [
+            "variable_updates": [
               { "set": "comparisonOpen", "to": true }
             ],
             "stack": {
@@ -115,7 +115,7 @@
           {
             "type": "button",
             "action": { "type": "workflow" },
-            "stateUpdates": [
+            "variable_updates": [
               { "set": "comparisonOpen", "to": false }
             ],
             "stack": {
@@ -162,7 +162,7 @@
                        "corners": { "topLeading": 10, "topTrailing": 10, "bottomLeading": 10, "bottomTrailing": 10 } },
             "overrides": [
               { "conditions": [
-                  { "type": "state_condition", "operator": "=", "name": "comparisonOpen", "value": true }
+                  { "type": "variable_condition", "operator": "=", "variable": "comparisonOpen", "value": true }
                 ],
                 "properties": { "visible": true } }
             ]
@@ -182,7 +182,7 @@
             "pagePeek": 20,
             "initialPageIndex": 0,
             "loop": false,
-            "stateUpdates": [
+            "variable_updates": [
               { "set": "currentSlide", "to": "$value" }
             ],
             "pages": [
@@ -239,11 +239,11 @@
             "margin":  { "top": 8, "bottom": 0, "leading": 0, "trailing": 0 },
             "overrides": [
               { "conditions": [
-                  { "type": "state_condition", "operator": "=", "name": "currentSlide", "value": 1 }
+                  { "type": "variable_condition", "operator": "=", "variable": "currentSlide", "value": 1 }
                 ],
                 "properties": { "textLid": "id_slide_label_1" } },
               { "conditions": [
-                  { "type": "state_condition", "operator": "=", "name": "currentSlide", "value": 2 }
+                  { "type": "variable_condition", "operator": "=", "variable": "currentSlide", "value": 2 }
                 ],
                 "properties": { "textLid": "id_slide_label_2" } }
             ]
@@ -261,7 +261,7 @@
             "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
             "margin":  { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
             "defaultTabId": "monthly",
-            "stateUpdates": [
+            "variable_updates": [
               { "set": "activeTab", "to": "$value" }
             ],
             "control": {
@@ -364,7 +364,7 @@
             "margin":  { "top": 8, "bottom": 0, "leading": 0, "trailing": 0 },
             "overrides": [
               { "conditions": [
-                  { "type": "state_condition", "operator": "=", "name": "activeTab", "value": "yearly" }
+                  { "type": "variable_condition", "operator": "=", "variable": "activeTab", "value": "yearly" }
                 ],
                 "properties": { "textLid": "id_tab_label_yearly" } }
             ]
@@ -382,8 +382,8 @@
             "margin":  { "top": 16, "bottom": 0, "leading": 0, "trailing": 0 },
             "overrides": [
               { "conditions": [
-                  { "type": "state_condition", "operator": "=", "name": "comparisonOpen", "value": true },
-                  { "type": "state_condition", "operator": "=", "name": "activeTab",      "value": "yearly" }
+                  { "type": "variable_condition", "operator": "=", "variable": "comparisonOpen", "value": true },
+                  { "type": "variable_condition", "operator": "=", "variable": "activeTab",      "value": "yearly" }
                 ],
                 "properties": {
                   "textLid": "id_combo_match",

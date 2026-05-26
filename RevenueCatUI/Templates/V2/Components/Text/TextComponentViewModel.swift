@@ -69,7 +69,7 @@ class TextComponentViewModel {
         let conditionContext = uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
-            state: paywallStateValues
+            mutatedVariables: paywallStateValues
         )
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,

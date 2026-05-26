@@ -38,7 +38,7 @@ struct ButtonComponentView: View {
     @Environment(\.closeWorkflowAction) private var closeWorkflowAction
     @Environment(\.workflowPageTransitionContext) private var workflowPageTransitionContext
     @Environment(\.isWorkflowHeader) private var isWorkflowHeader
-    @Environment(\.paywallStateStore) private var paywallStateStore
+    @Environment(\.paywallVariablesStore) private var paywallVariablesStore
 
     private let viewModel: ButtonComponentViewModel
     private let onDismiss: () -> Void
@@ -103,7 +103,7 @@ struct ButtonComponentView: View {
            let triggerWorkflow = workflowTriggerAction,
            triggerWorkflow(id) {
             trackButtonComponentInteraction()
-            self.dispatchStateUpdates()
+            self.dispatchVariableUpdates()
             return
         }
 
@@ -111,9 +111,9 @@ struct ButtonComponentView: View {
         // These should be excluded from product funnel analytics by filtering componentValue == "unknown".
         self.trackButtonComponentInteraction()
 
-        // Dispatch declarative state updates before branching. Buttons have no interaction payload,
+        // Dispatch declarative variable updates before branching. Buttons have no interaction payload,
         // so `$value` references are skipped silently if any happen to be declared.
-        self.dispatchStateUpdates()
+        self.dispatchVariableUpdates()
 
         switch viewModel.action {
         case .restorePurchases:
@@ -160,9 +160,9 @@ struct ButtonComponentView: View {
         ))
     }
 
-    private func dispatchStateUpdates() {
-        guard let updates = self.viewModel.component.stateUpdates, !updates.isEmpty else { return }
-        self.paywallStateStore.apply(updates, payload: nil)
+    private func dispatchVariableUpdates() {
+        guard let updates = self.viewModel.component.variableUpdates, !updates.isEmpty else { return }
+        self.paywallVariablesStore.apply(updates, payload: nil)
     }
 
     private func restorePurchases() async throws {

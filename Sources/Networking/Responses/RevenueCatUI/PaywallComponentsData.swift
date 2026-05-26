@@ -115,10 +115,14 @@ import Foundation
     /// When `false`, paywall text will not respect Dynamic Type and would use fixed sizing. Otherwise it will scale.
     public var automaticallyScaleFontSize: Bool
 
-    /// Initial values for the paywall's state-management store. Keys are state identifiers; values are
-    /// their initial `ConditionValue`s. State is paywall-instance-scoped: it is created when the paywall
-    /// opens, mutated by component-declared `stateUpdates`, and discarded when the paywall closes.
-    /// Absent in legacy paywalls; an empty dictionary disables the feature for this paywall.
+    /// Initial values for the paywall's variables store. Keys are variable identifiers; values are
+    /// their initial `ConditionValue`s. Variables are paywall-instance-scoped: they are created when
+    /// the paywall opens, mutated by component-declared `variableUpdates`, and discarded when the
+    /// paywall closes. Absent in legacy paywalls; an empty dictionary disables the feature for this
+    /// paywall.
+    ///
+    /// Note: this field will be subsumed by `UIConfig.customVariables` in a future revision. It is
+    /// kept here during the migration to preserve POC behaviour.
     @_spi(Internal) public var state: [String: PaywallComponent.ConditionValue]
 
     @DefaultDecodable.Zero

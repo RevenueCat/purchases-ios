@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallStateUpdate.swift
+//  PaywallVariableUpdate.swift
 //
 //  Created for paywall state management.
 //
@@ -17,21 +17,21 @@ import Foundation
 
 @_spi(Internal) public extension PaywallComponent {
 
-    /// A declarative state-store mutation applied when an interactive component's primary event fires.
+    /// A declarative variable-store mutation applied when an interactive component's primary event fires.
     ///
     /// JSON shape (current operations):
     /// ```
-    /// { "set": "key_name", "to": <literal value | "$value"> }
+    /// { "set": "variable_name", "to": <literal value | "$value"> }
     /// ```
     ///
     /// The `"$value"` token instructs the runtime to substitute the interaction's payload
     /// (e.g. selected tab id, carousel destination page index, selected package id).
     /// Unknown shapes decode as `.unsupported` so newer JSON remains safe on older SDKs.
-    enum StateUpdate: Codable, Sendable, Hashable, Equatable {
+    enum VariableUpdate: Codable, Sendable, Hashable, Equatable {
 
-        case set(key: String, value: StateUpdateValue)
+        case set(key: String, value: VariableUpdateValue)
 
-        /// Fallback for state-update shapes this SDK version does not understand.
+        /// Fallback for variable-update shapes this SDK version does not understand.
         case unsupported
 
         // swiftlint:disable:next nesting
@@ -43,7 +43,7 @@ import Foundation
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             if let key = try container.decodeIfPresent(String.self, forKey: .set) {
-                let value = try container.decode(StateUpdateValue.self, forKey: .to)
+                let value = try container.decode(VariableUpdateValue.self, forKey: .to)
                 self = .set(key: key, value: value)
                 return
             }
@@ -63,9 +63,9 @@ import Foundation
 
     }
 
-    /// The value of a `StateUpdate.set` operation. Either a literal `ConditionValue` or a reference
+    /// The value of a `VariableUpdate.set` operation. Either a literal `ConditionValue` or a reference
     /// to the firing component's interaction payload (`"$value"` in JSON).
-    enum StateUpdateValue: Codable, Sendable, Hashable, Equatable {
+    enum VariableUpdateValue: Codable, Sendable, Hashable, Equatable {
 
         case literal(ConditionValue)
         case payloadReference
@@ -75,7 +75,7 @@ import Foundation
 
         public init(from decoder: Decoder) throws {
             let conditionValue = try ConditionValue(from: decoder)
-            if case .string(let str) = conditionValue, str == StateUpdateValue.payloadReferenceToken {
+            if case .string(let str) = conditionValue, str == VariableUpdateValue.payloadReferenceToken {
                 self = .payloadReference
             } else {
                 self = .literal(conditionValue)
@@ -88,7 +88,7 @@ import Foundation
             case .literal(let value):
                 try container.encode(value)
             case .payloadReference:
-                try container.encode(StateUpdateValue.payloadReferenceToken)
+                try container.encode(VariableUpdateValue.payloadReferenceToken)
             }
         }
 

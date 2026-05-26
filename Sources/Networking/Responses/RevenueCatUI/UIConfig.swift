@@ -121,9 +121,16 @@ import Foundation
         /// The default value for this variable (always stored as a string).
         public let defaultValue: String
 
-        public init(type: String, defaultValue: String) {
+        /// Whether this variable can be mutated at runtime by interactive component actions
+        /// (e.g. a button's `variableUpdates`). Optional; defaults to `false`. Variables that
+        /// are not mutable behave as today — set once from the default (or developer override)
+        /// and read by text interpolation and `.variable(...)` rule conditions.
+        public let mutable: Bool?
+
+        public init(type: String, defaultValue: String, mutable: Bool? = nil) {
             self.type = type
             self.defaultValue = defaultValue
+            self.mutable = mutable
         }
 
         // Note: Using camelCase rawValues because JSONDecoder.default uses .convertFromSnakeCase
@@ -132,6 +139,7 @@ import Foundation
         private enum CodingKeys: String, CodingKey {
             case type
             case defaultValue
+            case mutable
         }
 
     }

@@ -11,8 +11,8 @@
 //
 //  Demonstrates paywall state management end-to-end:
 //   - A top-level `state` dictionary declares an initial value.
-//   - Two buttons declare `stateUpdates` that mutate the state on tap.
-//   - A Text component has overrides keyed on `.state(...)` conditions, so its
+//   - Two buttons declare `variableUpdates` that mutate the variable on tap.
+//   - A Text component has overrides keyed on `.variable(...)` conditions, so its
 //     content changes in real time when the buttons are tapped.
 
 import Foundation
@@ -52,7 +52,7 @@ enum StateManagementPreview {
         overrides: [
             .init(
                 extendedConditions: [
-                    .state(operator: .equals, name: "comparisonOpen", value: .bool(true))
+                    .variable(operator: .equals, variable: "comparisonOpen", value: .bool(true))
                 ],
                 properties: .init(
                     text: "id_status_on",
@@ -86,7 +86,7 @@ enum StateManagementPreview {
             margin: .init(top: 0, bottom: 8, leading: 0, trailing: 0),
             shape: .rectangle(.init(topLeading: 12, topTrailing: 12, bottomLeading: 12, bottomTrailing: 12))
         ),
-        stateUpdates: [
+        variableUpdates: [
             .set(key: "comparisonOpen", value: .literal(.bool(true)))
         ]
     )
@@ -101,7 +101,7 @@ enum StateManagementPreview {
             margin: .zero,
             shape: .rectangle(.init(topLeading: 12, topTrailing: 12, bottomLeading: 12, bottomTrailing: 12))
         ),
-        stateUpdates: [
+        variableUpdates: [
             .set(key: "comparisonOpen", value: .literal(.bool(false)))
         ]
     )
@@ -141,7 +141,7 @@ enum StateManagementPreview {
         shape: .rectangle(.init(topLeading: 10, topTrailing: 10, bottomLeading: 10, bottomTrailing: 10)),
         overrides: [
             .init(
-                extendedConditions: [.state(operator: .equals, name: "comparisonOpen", value: .bool(true))],
+                extendedConditions: [.variable(operator: .equals, variable: "comparisonOpen", value: .bool(true))],
                 properties: .init(visible: true)
             )
         ]
@@ -174,11 +174,11 @@ enum StateManagementPreview {
         shape: .rectangle(.init(topLeading: 6, topTrailing: 6, bottomLeading: 6, bottomTrailing: 6)),
         overrides: [
             .init(
-                extendedConditions: [.state(operator: .equals, name: "currentSlide", value: .int(1))],
+                extendedConditions: [.variable(operator: .equals, variable: "currentSlide", value: .int(1))],
                 properties: .init(backgroundColor: .init(light: .hex("#42B27D")))
             ),
             .init(
-                extendedConditions: [.state(operator: .equals, name: "currentSlide", value: .int(2))],
+                extendedConditions: [.variable(operator: .equals, variable: "currentSlide", value: .int(2))],
                 properties: .init(backgroundColor: .init(light: .hex("#E0823F")))
             )
         ]
@@ -201,8 +201,8 @@ enum StateManagementPreview {
         overrides: [
             .init(
                 extendedConditions: [
-                    .state(operator: .equals, name: "comparisonOpen", value: .bool(true)),
-                    .state(operator: .equals, name: "activeTab",      value: .string("yearly"))
+                    .variable(operator: .equals, variable: "comparisonOpen", value: .bool(true)),
+                    .variable(operator: .equals, variable: "activeTab",      value: .string("yearly"))
                 ],
                 properties: .init(
                     text: "id_combo_match",
@@ -248,7 +248,7 @@ enum StateManagementPreview {
         pagePeek: 20,
         initialPageIndex: 0,
         loop: false,
-        stateUpdates: [
+        variableUpdates: [
             .set(key: "currentSlide", value: .payloadReference)
         ]
     )
@@ -264,11 +264,11 @@ enum StateManagementPreview {
         horizontalAlignment: .center,
         overrides: [
             .init(
-                extendedConditions: [.state(operator: .equals, name: "currentSlide", value: .int(1))],
+                extendedConditions: [.variable(operator: .equals, variable: "currentSlide", value: .int(1))],
                 properties: .init(text: "id_slide_label_1")
             ),
             .init(
-                extendedConditions: [.state(operator: .equals, name: "currentSlide", value: .int(2))],
+                extendedConditions: [.variable(operator: .equals, variable: "currentSlide", value: .int(2))],
                 properties: .init(text: "id_slide_label_2")
             )
         ]
@@ -371,7 +371,7 @@ enum StateManagementPreview {
         control: tabsControl,
         tabs: [tabMonthly, tabYearly],
         defaultTabId: "monthly",
-        stateUpdates: [
+        variableUpdates: [
             .set(key: "activeTab", value: .payloadReference)
         ]
     )
@@ -387,7 +387,7 @@ enum StateManagementPreview {
         horizontalAlignment: .center,
         overrides: [
             .init(
-                extendedConditions: [.state(operator: .equals, name: "activeTab", value: .string("yearly"))],
+                extendedConditions: [.variable(operator: .equals, variable: "activeTab", value: .string("yearly"))],
                 properties: .init(text: "id_tab_label_yearly")
             )
         ]

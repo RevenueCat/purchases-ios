@@ -183,10 +183,6 @@ extension PaywallComponent {
         case variable(operator: EqualityOperator, variable: String, value: ConditionValue)
         case selectedPackage(operator: ArrayOperator, packages: [String])
 
-        // MARK: - Paywall state condition (V1 state management)
-        /// Compares a paywall-scoped state value (mutated by component interactions) against an expected value.
-        case state(operator: EqualityOperator, name: String, value: ConditionValue)
-
         // MARK: - Fallback for unknown conditions
         case unsupported
 
@@ -201,7 +197,7 @@ extension PaywallComponent {
             case .compact, .medium, .expanded, .selected, .introOffer, .promoOffer,
                  .multipleIntroOffers, .unsupported:
                 return false
-            case .introOfferCondition, .promoOfferCondition, .variable, .selectedPackage, .state:
+            case .introOfferCondition, .promoOfferCondition, .variable, .selectedPackage:
                 return true
             }
         }
@@ -216,7 +212,7 @@ extension PaywallComponent {
             case .selected: return .selected
             case .introOffer, .introOfferCondition: return .introOffer
             case .promoOffer, .promoOfferCondition: return .promoOffer
-            case .multipleIntroOffers, .variable, .selectedPackage, .state, .unsupported: return .unsupported
+            case .multipleIntroOffers, .variable, .selectedPackage, .unsupported: return .unsupported
             }
         }
 
@@ -270,11 +266,6 @@ extension PaywallComponent {
                 try container.encode(ConditionType.selectedPackageCondition.rawValue, forKey: .type)
                 try container.encode(condOp, forKey: .operator)
                 try container.encode(packages, forKey: .packages)
-            case .state(let condOp, let name, let value):
-                try container.encode(ConditionType.stateCondition.rawValue, forKey: .type)
-                try container.encode(condOp, forKey: .operator)
-                try container.encode(name, forKey: .name)
-                try container.encode(value, forKey: .value)
             case .unsupported:
                 try container.encode("unsupported", forKey: .type)
             }
@@ -324,11 +315,6 @@ extension PaywallComponent {
                     let condOp = try container.decode(ArrayOperator.self, forKey: .operator)
                     let packages = try container.decode([String].self, forKey: .packages)
                     self = .selectedPackage(operator: condOp, packages: packages)
-                case .stateCondition:
-                    let condOp = try container.decode(EqualityOperator.self, forKey: .operator)
-                    let name = try container.decode(String.self, forKey: .name)
-                    let value = try container.decode(ConditionValue.self, forKey: .value)
-                    self = .state(operator: condOp, name: name, value: value)
                 }
             } catch {
                 let rawType = (try? decoder.container(keyedBy: CodingKeys.self)
@@ -346,7 +332,6 @@ extension PaywallComponent {
             case value
             case variable
             case packages
-            case name
 
         }
 
@@ -364,7 +349,6 @@ extension PaywallComponent {
             case selected
             case variableCondition = "variable_condition"
             case selectedPackageCondition = "selected_package_condition"
-            case stateCondition = "state_condition"
 
         }
 

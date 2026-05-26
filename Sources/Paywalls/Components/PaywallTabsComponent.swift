@@ -174,9 +174,9 @@ import Foundation
 
         public let overrides: ComponentOverrides<PartialTabsComponent>?
 
-        /// State-store mutations applied whenever a different tab becomes selected
+        /// Variable-store mutations applied whenever a different tab becomes selected
         /// (via toggle or button). The selected tab id is available as the `"$value"` payload reference.
-        @_spi(Internal) public let stateUpdates: [PaywallComponent.StateUpdate]?
+        @_spi(Internal) public let variableUpdates: [PaywallComponent.VariableUpdate]?
 
         public init(
             name: String? = nil,
@@ -194,7 +194,7 @@ import Foundation
             defaultTabId: String? = nil,
 
             overrides: ComponentOverrides<PartialTabsComponent>? = nil,
-            stateUpdates: [PaywallComponent.StateUpdate]? = nil
+            variableUpdates: [PaywallComponent.VariableUpdate]? = nil
         ) {
             self.type = .stack
             self.name = name
@@ -212,7 +212,7 @@ import Foundation
             self.defaultTabId = defaultTabId
 
             self.overrides = overrides
-            self.stateUpdates = stateUpdates
+            self.variableUpdates = variableUpdates
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -230,7 +230,7 @@ import Foundation
             hasher.combine(tabs)
             hasher.combine(defaultTabId)
             hasher.combine(overrides)
-            hasher.combine(stateUpdates)
+            hasher.combine(variableUpdates)
         }
 
         public static func == (lhs: TabsComponent, rhs: TabsComponent) -> Bool {
@@ -248,7 +248,7 @@ import Foundation
                    lhs.tabs == rhs.tabs &&
                    lhs.defaultTabId == rhs.defaultTabId &&
                    lhs.overrides == rhs.overrides &&
-                   lhs.stateUpdates == rhs.stateUpdates
+                   lhs.variableUpdates == rhs.variableUpdates
         }
     }
 

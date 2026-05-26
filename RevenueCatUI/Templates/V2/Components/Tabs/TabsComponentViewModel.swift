@@ -57,10 +57,10 @@ class TabsComponentViewModel {
         self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
-    /// Declarative state-store mutations to apply when the user selects a different tab.
+    /// Declarative variables-store mutations to apply when the user selects a different tab.
     /// `nil` when the JSON didn't declare any.
-    var stateUpdates: [PaywallComponent.StateUpdate]? {
-        self.component.stateUpdates
+    var variableUpdates: [PaywallComponent.VariableUpdate]? {
+        self.component.variableUpdates
     }
 
     // swiftlint:disable:next function_parameter_count

@@ -50,6 +50,17 @@ final class UIConfigProvider {
         }
     }
 
+    /// Returns the set of custom-variable names that are flagged as mutable in the dashboard.
+    /// Interactive components (Button, Carousel, Tabs, …) are only allowed to write to
+    /// variables in this set; writes to non-mutable variables no-op at apply time.
+    var mutableVariableKeys: Set<String> {
+        var keys: Set<String> = []
+        for (name, definition) in self.uiConfig.customVariables where definition.mutable == true {
+            keys.insert(name)
+        }
+        return keys
+    }
+
     /// Parses a custom variable definition into a typed `CustomVariableValue`.
     /// The backend sends types: "string", "number", "boolean" with validated default values.
     private static func parseCustomVariableValue(type: String, defaultValue: String) -> CustomVariableValue? {
@@ -71,20 +82,23 @@ final class UIConfigProvider {
         }
     }
 
-    /// Creates a `ConditionContext` by merging developer-provided custom variables with dashboard defaults.
-    /// Paywall-scoped mutable `state` (from `PaywallStateStore.values`) is folded in as well so that
-    /// `.state(...)` conditions can be evaluated. Callers that do not have a paywall state store
-    /// available may omit `state` for the legacy behavior.
+    /// Creates a `ConditionContext` by layering paywall variable values:
+    ///   1. Dashboard defaults (from `UIConfig.customVariables`).
+    ///   2. Developer-provided overrides (passed via `customVariables` here, sourced from
+    ///      the `.customPaywallVariables(...)` modifier).
+    ///   3. Runtime mutations (passed via `mutatedVariables`, sourced from `PaywallVariablesStore`).
+    /// Mutations are the highest-priority layer. `.variable(...)` rule conditions read the merged dict.
     func conditionContext(
         selectedPackageId: String?,
         customVariables: [String: CustomVariableValue],
-        state: [String: PaywallComponent.ConditionValue] = [:]
+        mutatedVariables: [String: PaywallComponent.ConditionValue] = [:]
     ) -> ConditionContext {
-        ConditionContext(
+        let mutated = mutatedVariables.mapValues { $0.asCustomVariableValue }
+        return ConditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
             defaultCustomVariables: self.defaultCustomVariables,
-            state: state
+            mutatedVariables: mutated
         )
     }
 

@@ -112,8 +112,8 @@ struct LoadedTabsComponentView: View {
     private var customVariables
     @Environment(\.selectedPackageId)
     private var selectedPackageId
-    @Environment(\.paywallStateStore)
-    private var paywallStateStore
+    @Environment(\.paywallVariablesStore)
+    private var paywallVariablesStore
 
     private let viewModel: TabsComponentViewModel
     private let workflowDefaultPackage: Package?
@@ -291,7 +291,7 @@ struct LoadedTabsComponentView: View {
             .onChangeOf(self.tabControlContext.selectedTabId) { newTabId in
                 // Dispatch declarative state-store updates first so observers re-evaluate before
                 // any package-context propagation runs.
-                self.dispatchStateUpdates(selectedTabId: newTabId)
+                self.dispatchVariableUpdates(selectedTabId: newTabId)
 
                 guard let newTabViewModel = self.viewModel.tabViewModels[newTabId],
                       let newTierPackageContext = self.tierPackageContexts[newTabId] else {
@@ -372,13 +372,13 @@ struct LoadedTabsComponentView: View {
         }
     }
 
-    /// Dispatch declarative state-store updates declared on the tabs component. The newly selected
-    /// tab id is exposed via the `"$value"` payload reference. Centralized here so every tab UI
-    /// variant (toggle, button, future styles) fires updates uniformly via the
+    /// Dispatch declarative variables-store updates declared on the tabs component. The newly
+    /// selected tab id is exposed via the `"$value"` payload reference. Centralized here so every
+    /// tab UI variant (toggle, button, future styles) fires updates uniformly via the
     /// `TabControlContext.selectedTabId` observation.
-    private func dispatchStateUpdates(selectedTabId: String) {
-        guard let updates = self.viewModel.stateUpdates, !updates.isEmpty else { return }
-        self.paywallStateStore.apply(updates, payload: .string(selectedTabId))
+    private func dispatchVariableUpdates(selectedTabId: String) {
+        guard let updates = self.viewModel.variableUpdates, !updates.isEmpty else { return }
+        self.paywallVariablesStore.apply(updates, payload: .string(selectedTabId))
     }
 
 }
