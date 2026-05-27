@@ -100,18 +100,16 @@ final class IterationOperatorsTests: XCTestCase {
         XCTAssertEqual(out, .bool(true))
     }
 
-    func testSomeArityMismatchIsTypeError() {
-        XCTAssertThrowsError(
-            try IterationOperators.opSome(
-                args: arr(.array([])),
-                vars: .null
-            )
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                XCTFail("expected typeMismatch, got \(error)")
-                return
-            }
-        }
+    /// `json-logic-js` declares `some` as `function(scopedData,
+    /// scopedLogic)`: a missing predicate evaluates to `undefined`
+    /// per item (never truthy), so an array-shaped source returns
+    /// `false`.
+    func testSomeMissingPredicateReturnsFalse() throws {
+        let out = try IterationOperators.opSome(
+            args: arr(arr(.int(1), .int(2))),
+            vars: .null
+        )
+        XCTAssertEqual(out, .bool(false))
     }
 
     // MARK: - all
@@ -186,18 +184,16 @@ final class IterationOperatorsTests: XCTestCase {
         XCTAssertEqual(out, .bool(true))
     }
 
-    func testAllArityMismatchIsTypeError() {
-        XCTAssertThrowsError(
-            try IterationOperators.opAll(
-                args: arr(.array([]), gtZero, .int(1)),
-                vars: .null
-            )
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                XCTFail("expected typeMismatch, got \(error)")
-                return
-            }
-        }
+    /// `json-logic-js` discards arguments past the second. With three
+    /// args, `all` evaluates `gtZero` against the (empty) source and
+    /// returns `false` (empty arrays are not vacuously true in JSON
+    /// Logic).
+    func testAllIgnoresArgsBeyondSecond() throws {
+        let out = try IterationOperators.opAll(
+            args: arr(arr(.int(1), .int(2)), gtZero, .int(999)),
+            vars: .null
+        )
+        XCTAssertEqual(out, .bool(true))
     }
 
     // MARK: - Scope semantics
@@ -393,18 +389,15 @@ final class IterationOperatorsTests: XCTestCase {
         XCTAssertEqual(out, .bool(true))
     }
 
-    func testNoneArityMismatchIsTypeError() {
-        XCTAssertThrowsError(
-            try IterationOperators.opNone(
-                args: arr(.array([])),
-                vars: .null
-            )
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                XCTFail("expected typeMismatch, got \(error)")
-                return
-            }
-        }
+    /// With only the source argument, a missing predicate evaluates
+    /// to `.null` (never truthy) per item, so `none` returns `true`
+    /// for any non-empty source.
+    func testNoneMissingPredicateReturnsTrue() throws {
+        let out = try IterationOperators.opNone(
+            args: arr(arr(.int(1), .int(2))),
+            vars: .null
+        )
+        XCTAssertEqual(out, .bool(true))
     }
 
     // MARK: - map
@@ -473,18 +466,14 @@ final class IterationOperatorsTests: XCTestCase {
         XCTAssertEqual(out, .array([.int(10), .int(20)]))
     }
 
-    func testMapArityMismatchIsTypeError() {
-        XCTAssertThrowsError(
-            try IterationOperators.opMap(
-                args: arr(.array([])),
-                vars: .null
-            )
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                XCTFail("expected typeMismatch, got \(error)")
-                return
-            }
-        }
+    /// With only the source argument, a missing predicate evaluates
+    /// to `.null` for every item.
+    func testMapMissingPredicateMapsEachItemToNull() throws {
+        let out = try IterationOperators.opMap(
+            args: arr(arr(.int(1), .int(2), .int(3))),
+            vars: .null
+        )
+        XCTAssertEqual(out, .array([.null, .null, .null]))
     }
 
     // MARK: - filter
@@ -556,18 +545,14 @@ final class IterationOperatorsTests: XCTestCase {
         XCTAssertEqual(out, .array([]))
     }
 
-    func testFilterArityMismatchIsTypeError() {
-        XCTAssertThrowsError(
-            try IterationOperators.opFilter(
-                args: arr(.array([])),
-                vars: .null
-            )
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                XCTFail("expected typeMismatch, got \(error)")
-                return
-            }
-        }
+    /// A missing predicate evaluates to `.null` (falsy) for each
+    /// item, so `filter` retains nothing.
+    func testFilterMissingPredicateReturnsEmptyArray() throws {
+        let out = try IterationOperators.opFilter(
+            args: arr(arr(.int(1), .int(2), .int(3))),
+            vars: .null
+        )
+        XCTAssertEqual(out, .array([]))
     }
 
     // MARK: - reduce
