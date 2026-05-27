@@ -67,22 +67,30 @@ final class MinMaxOperatorsTests: XCTestCase {
         )
     }
 
-    func testMaxNonNumericPropagatesNan() throws {
-        // Object operand → NaN
+    /// Each operand goes through `Value.asNumber` (JS `Number()` =
+    /// `ToNumber`). Single-element arrays bridge to a number via
+    /// `toString` (`[2]` → `"2"` → 2), so they're spec-valid `max`
+    /// inputs. Multi-element arrays, objects, and unparseable strings
+    /// don't parse as a whole-string number and short-circuit to NaN.
+    func testMaxOperandCoercion() throws {
+        // [2] → "2" → 2 (matches JS Math.max(1, [2]) === 2).
+        XCTAssertEqual(
+            try run(MinMaxOperators.opMax, args: arr(.int(1), .array([.int(2)]))),
+            .float(2.0)
+        )
+        // Object operand → NaN ("[object Object]" can't parse).
         let withObject = try run(
             MinMaxOperators.opMax,
             args: arr(.int(1), .object([:]))
         )
         XCTAssertTrue(unwrapFloat(withObject).isNaN)
-
-        // Array operand → NaN
-        let withArray = try run(
+        // [1,2] → "1,2" → NaN (whole-string parse fails).
+        let withMultiArray = try run(
             MinMaxOperators.opMax,
-            args: arr(.int(1), .array([.int(2)]))
+            args: arr(.int(1), .array([.int(1), .int(2)]))
         )
-        XCTAssertTrue(unwrapFloat(withArray).isNaN)
-
-        // Unparseable string → NaN
+        XCTAssertTrue(unwrapFloat(withMultiArray).isNaN)
+        // Unparseable string → NaN.
         let withBadString = try run(
             MinMaxOperators.opMax,
             args: arr(.int(1), .string("abc"))
@@ -154,19 +162,24 @@ final class MinMaxOperatorsTests: XCTestCase {
         )
     }
 
-    func testMinNonNumericPropagatesNan() throws {
+    /// Mirror of `testMaxOperandCoercion` for `min`. Same coercion path,
+    /// same single-vs-multi-element-array distinction.
+    func testMinOperandCoercion() throws {
+        // [2] → "2" → 2 (matches JS Math.min(5, [2]) === 2).
+        XCTAssertEqual(
+            try run(MinMaxOperators.opMin, args: arr(.int(5), .array([.int(2)]))),
+            .float(2.0)
+        )
         let withObject = try run(
             MinMaxOperators.opMin,
             args: arr(.int(1), .object([:]))
         )
         XCTAssertTrue(unwrapFloat(withObject).isNaN)
-
-        let withArray = try run(
+        let withMultiArray = try run(
             MinMaxOperators.opMin,
-            args: arr(.int(1), .array([.int(2)]))
+            args: arr(.int(1), .array([.int(1), .int(2)]))
         )
-        XCTAssertTrue(unwrapFloat(withArray).isNaN)
-
+        XCTAssertTrue(unwrapFloat(withMultiArray).isNaN)
         let withBadString = try run(
             MinMaxOperators.opMin,
             args: arr(.int(1), .string("abc"))

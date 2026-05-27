@@ -15,11 +15,15 @@ import Foundation
 /// scalar arithmetic operators `+` / `*`.
 ///
 /// Reference behavior is JS `Math.max` / `Math.min` applied to the
-/// evaluated arguments. Operands that can't be coerced to a number
-/// (`.object`, `.array`, unparseable strings) become `Double.nan` and
-/// poison the result so a malformed predicate fails closed in the
-/// expected comparison (`>= 4`, `<= 0`, etc., where any comparison
-/// against NaN returns `false`).
+/// evaluated arguments. Each operand goes through `Value.asNumber`
+/// (JS `Number()` = `ToNumber`), so single-element arrays bridge to a
+/// number via `toString` (`[2]` → `"2"` → 2 — matches
+/// `Math.max(1, [2]) === 2`), while operands that can't be coerced as
+/// a whole-string number — `.object`, multi-element arrays (which
+/// stringify to a comma-joined list), unparseable strings — become
+/// `Double.nan` and poison the result so a malformed predicate fails
+/// closed in the expected comparison (`>= 4`, `<= 0`, etc., where any
+/// comparison against NaN returns `false`).
 ///
 /// Empty input mirrors `Math.max()` / `Math.min()`: `max` → `-∞`,
 /// `min` → `+∞`. The fixed-empty values are picked so chaining a
