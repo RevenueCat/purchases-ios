@@ -235,7 +235,7 @@ struct WorkflowPaywallView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .mask {
+            .mask(alignment: .top) {
                 self.transitionClipMask(proxy: proxy)
             }
         }
@@ -266,6 +266,7 @@ struct WorkflowPaywallView: View {
     // Keep workflow transitions clipped horizontally, but let page backgrounds render into safe areas.
     // Pages already ignore the bottom safe area, but this GeometryReader is laid out inside the
     // safe-area bounds. A plain `.clipped()` trims that page overflow and exposes the presenting view.
+    // alignment: .top in the mask call site is required: the offset(y:) anchors from the top edge.
     private func transitionClipMask(proxy: GeometryProxy) -> some View {
         Rectangle()
             .frame(
@@ -273,7 +274,6 @@ struct WorkflowPaywallView: View {
                 height: proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
             )
             .offset(y: -proxy.safeAreaInsets.top)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private var displayedPages: [DisplayedPage] {
