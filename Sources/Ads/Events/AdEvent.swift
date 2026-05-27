@@ -154,8 +154,7 @@ internal protocol AdImpressionEventData: AdEventData {
 
 /// Type representing the reason a rewarded-ad verification failed.
 ///
-/// Use the predefined static properties for known failure reasons, or create custom values
-/// for reasons added in the future.
+/// The predefined static properties contain the known failure reasons.
 @_spi(Experimental) @objc(RCAdRewardFailureReason) public final class AdRewardFailureReason: NSObject, Codable {
 
     /// The raw string value of the failure reason
