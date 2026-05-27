@@ -213,10 +213,12 @@ final class EvaluatorTests: XCTestCase {
         XCTAssertTrue(try run(predicate, vars: vars))
     }
 
-    func testDivideByZeroReturnsNullWhichIsFalsy() throws {
-        // {"/": [10, 0]} → null → predicate is falsy
-        let predicate = "{\"/\": [10, 0]}"
-        XCTAssertFalse(try run(predicate))
+    /// `n / 0` follows IEEE 754 (matches `json-logic-js`, no
+    /// short-circuit). `{"/": [10, 0]}` → `+Infinity` → truthy;
+    /// `{"/": [0, 0]}` → `NaN` → falsy.
+    func testDivideByZeroProducesIeee754ValuesThatFlowThroughTruthiness() throws {
+        XCTAssertTrue(try run("{\"/\": [10, 0]}"))
+        XCTAssertFalse(try run("{\"/\": [0, 0]}"))
     }
 
     // MARK: - Multi-key object treated as data, not operator

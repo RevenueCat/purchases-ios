@@ -54,13 +54,8 @@ extension Value {
     /// → `ToPrimitive("number")` → `toString` → recurse on the resulting
     /// string. So `[]` → `""` → 0, `[1]` → `"1"` → 1, `[1,2]` → `"1,2"` →
     /// `nil` (whole-string parse fails), `{}` → `"[object Object]"` →
-    /// `nil`.
-    ///
-    /// Returning `nil` rather than `Double.nan` lets `looseEq`'s numeric
-    /// fallback distinguish "no comparable number" from "the number NaN"
-    /// (NaN compares unequal to itself, so a `nil` short-circuit avoids an
-    /// accidental `false` masking a genuine spec match). Arithmetic
-    /// callers wrap with `?? .nan` to get the JS arithmetic propagation.
+    /// `nil`. Arithmetic callers wrap the `nil` return with `?? .nan` to
+    /// get JS arithmetic propagation.
     var asNumber: Double? {
         switch self {
         case .null:
@@ -155,8 +150,7 @@ func looseEq(_ lhs: Value, _ rhs: Value) -> Bool {
 /// JS `String(value)` for top-level conversion. Differs from
 /// `jsArrayElementString` only in `null` handling: `String(null) === "null"`,
 /// but `Array.prototype.join` renders `null` / `undefined` array elements
-/// as the empty string. Use this for callers that need the top-level
-/// toString (numeric coercion, `parseFloat`-style stringification).
+/// as the empty string.
 func jsString(_ value: Value) -> String {
     switch value {
     case .null:
@@ -179,11 +173,9 @@ func jsString(_ value: Value) -> String {
 /// JS `parseFloat(value)`. Stringifies via `jsString`, strips leading
 /// whitespace, then parses the longest valid prefix as a JS
 /// `StringNumericLiteral` (optional sign, digits with optional decimal,
-/// optional decimal exponent, plus the `Infinity` literal). Anything else
-/// — including `null` ("null"), bools ("true" / "false"), and the empty
-/// string — yields `NaN`. Lenient about trailing junk (`"3.14abc"` → 3.14)
-/// to match JS's prefix-parsing behavior, which is what `+` / `*` use in
-/// `json-logic-js`.
+/// optional decimal exponent, plus the `Infinity` literal). `null`
+/// ("null"), bools ("true" / "false"), and the empty string yield `NaN`;
+/// trailing junk is allowed (`"3.14abc"` → 3.14).
 func jsParseFloat(_ value: Value) -> Double {
     if case .int(let value) = value { return Double(value) }
     if case .float(let value) = value { return value }
