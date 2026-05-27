@@ -37,20 +37,14 @@ final class OutcomeTests: AdapterTestCase {
         }
     }
 
-    func testFailedIsConstructible() {
-        let outcome = RewardVerification.Outcome.failed
-
-        guard case .failed = outcome else {
-            return XCTFail("Expected .failed, got \(outcome)")
-        }
-    }
-
     func testAllCasesAreConstructibleAndExhaustiveInSwitch() {
         let cases: [RewardVerification.Outcome] = [
             .verified(.virtualCurrency(VirtualCurrencyReward(code: "coins", amount: 1))),
             .verified(.noReward),
             .verified(.unsupportedReward),
-            .failed
+            .failed(.timeout),
+            .failed(.backendError),
+            .failed(.unknown)
         ]
 
         for outcome in cases {
@@ -59,7 +53,7 @@ final class OutcomeTests: AdapterTestCase {
             case .failed: continue
             }
         }
-        XCTAssertEqual(cases.count, 4)
+        XCTAssertEqual(cases.count, 6)
     }
 }
 

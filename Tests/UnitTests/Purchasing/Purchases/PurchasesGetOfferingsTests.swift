@@ -164,6 +164,32 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         expect(self.paywallCache.invokedWarmUpPaywallImagesCacheOfferings) == offerings
     }
 
+    func testGetOfferingsWarmsUpEligibilityCache() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.setupPurchases()
+
+        let offerings = try XCTUnwrap(
+            self.offeringsFactory.createOfferings(from: [:],
+                                                  contents: .mockContents,
+                                                  loadedFromDiskCache: false)
+        )
+        self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(offerings)
+
+        // Reset any warm-up that may have been triggered during configure.
+        self.paywallCache.invokedWarmUpEligibilityCache = false
+        self.paywallCache.invokedWarmUpEligibilityCacheOfferings = nil
+
+        waitUntil { completed in
+            self.purchases.getOfferings { _, _ in
+                completed()
+            }
+        }
+
+        expect(self.paywallCache.invokedWarmUpEligibilityCache).toEventually(beTrue())
+        expect(self.paywallCache.invokedWarmUpEligibilityCacheOfferings) === offerings
+    }
+
     // MARK: - overridePreferredUILocale
 
     func testOverridePreferredUILocaleInvalidatesInMemoryCache() {
