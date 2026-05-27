@@ -49,25 +49,14 @@ enum StringArrayOperators {
     /// Negative `start` counts from the end. A negative `length` drops
     /// that many characters from the right of the substring that starts
     /// at `start`. Code-point-based, not byte-based — see type docs.
+    /// `json-logic-js` declares `substr` as
+    /// `function(source, start, end)`, so a missing `start` defaults
+    /// to `0` and arguments past the third are silently ignored.
     static func opSubstr(args: Value, vars: Value) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
-        let source: Value
-        let start: Value
-        let length: Value?
-        switch evaluated.count {
-        case 2:
-            source = evaluated[0]
-            start = evaluated[1]
-            length = nil
-        case 3:
-            source = evaluated[0]
-            start = evaluated[1]
-            length = evaluated[2]
-        default:
-            throw RuleError.typeMismatch(
-                message: "operator 'substr' expects 2 or 3 arguments, got \(evaluated.count)"
-            )
-        }
+        let source = evaluated.first ?? .null
+        let start = evaluated.indices.contains(1) ? evaluated[1] : .null
+        let length: Value? = evaluated.indices.contains(2) ? evaluated[2] : nil
 
         let chars = Array(stringify(source))
         let total = chars.count

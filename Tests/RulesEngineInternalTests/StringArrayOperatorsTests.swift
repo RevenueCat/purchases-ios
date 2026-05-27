@@ -238,27 +238,24 @@ final class StringArrayOperatorsTests: XCTestCase {
         XCTAssertEqual(out, .string("234"))
     }
 
-    func testSubstrArityMismatchIsTypeError() {
-        XCTAssertThrowsError(
-            try StringArrayOperators.opSubstr(
-                args: arr(.string("hello")),
-                vars: .null
-            )
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                return XCTFail("expected typeMismatch, got \(error)")
-            }
-        }
-        XCTAssertThrowsError(
-            try StringArrayOperators.opSubstr(
-                args: arr(.string("hello"), .int(0), .int(0), .int(0)),
-                vars: .null
-            )
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                return XCTFail("expected typeMismatch, got \(error)")
-            }
-        }
+    /// `json-logic-js` declares `substr` as
+    /// `function(source, start, end)`, so a missing `start` defaults
+    /// to `0` (whole string from the start) and arguments past the
+    /// third are silently ignored.
+    func testSubstrMissingStartReturnsEntireString() throws {
+        let out = try StringArrayOperators.opSubstr(
+            args: arr(.string("hello")),
+            vars: .null
+        )
+        XCTAssertEqual(out, .string("hello"))
+    }
+
+    func testSubstrIgnoresArgsBeyondThird() throws {
+        let out = try StringArrayOperators.opSubstr(
+            args: arr(.string("hello"), .int(1), .int(3), .int(999)),
+            vars: .null
+        )
+        XCTAssertEqual(out, .string("ell"))
     }
 
     func testSubstrWithNanStartTreatsItAsZero() throws {
