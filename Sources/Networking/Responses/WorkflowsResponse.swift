@@ -189,13 +189,6 @@ extension PublishedWorkflow: HTTPResponseBody {}
 
 extension WorkflowSummary: Codable, Equatable, Sendable {
 
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case displayName = "display_name"
-        case offeringId = "offering_id"
-        case prefetch
-    }
-
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(String.self, forKey: .id)
@@ -208,8 +201,4 @@ extension WorkflowSummary: Codable, Equatable, Sendable {
 
 extension WorkflowsListResponse: Codable, Equatable, Sendable {}
 
-extension WorkflowsListResponse: HTTPResponseBody {
-    public static func create(with data: Data) throws -> Self {
-        return try JSONDecoder.default.decode(Self.self, from: data)
-    }
-}
+extension WorkflowsListResponse: HTTPResponseBody {}
