@@ -18,6 +18,10 @@ enum AccessorOperators {
     /// recursively evaluated before lookup (e.g.
     /// `{"var": {"var": "active_path_key"}}` resolves `active_path_key`
     /// first and uses its string value as the path).
+    ///
+    /// - Parameter vars: The JSON Logic data scope — one evaluated `Value`
+    ///   (usually an object) that `var` reads from. The name mirrors the
+    ///   spec's "data" argument passed through recursive evaluation.
     static func opVar(args: Value, vars: Value) throws -> Value {
         let (path, defaultValue) = try resolveVarArgs(args, vars: vars)
 
