@@ -118,8 +118,7 @@ internal protocol AdImpressionEventData: AdEventData {
 
 /// Type representing the kind of reward delivered by a verified rewarded ad.
 ///
-/// Use the predefined static properties for known reward kinds, or create custom values
-/// for reward kinds added in the future.
+/// The predefined static properties contain the known reward kinds.
 @_spi(Experimental) @objc(RCAdRewardType) public final class AdRewardType: NSObject, Codable {
 
     /// The raw string value of the reward type
