@@ -73,7 +73,15 @@ struct PaywallsV2View: View {
     private let onDismiss: () -> Void
     private let closeWorkflowAction: (() -> Void)?
     @State
-    private var didFinishEligibilityCheck: Bool = false
+    private var didFinishEligibilityCheck: Bool = {
+        #if DEBUG
+        // In Xcode Previews and Emerge snapshot runs, the async eligibility check never
+        // completes, so default to finished to avoid capturing permanently-redacted snapshots.
+        return ProcessInfo.isRunningForPreviews
+        #else
+        return false
+        #endif
+    }()
 
     @State
     private var paywallSessionID: PaywallEvent.SessionID = .init()
