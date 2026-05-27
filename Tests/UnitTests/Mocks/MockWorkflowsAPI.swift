@@ -36,4 +36,19 @@ class MockWorkflowsAPI: WorkflowsAPI, @unchecked Sendable {
         completion(self.stubbedGetWorkflowResult ?? .failure(.missingAppUserID()))
     }
 
+    var invokedGetWorkflows = false
+    var invokedGetWorkflowsCount = 0
+    var invokedGetWorkflowsParameters: (appUserID: String, isAppBackgrounded: Bool)?
+    var stubbedGetWorkflowsResult: Result<WorkflowsListResponse, BackendError>?
+
+    override func getWorkflows(appUserID: String,
+                               isAppBackgrounded: Bool,
+                               completion: @escaping WorkflowsListResponseHandler) {
+        self.invokedGetWorkflows = true
+        self.invokedGetWorkflowsCount += 1
+        self.invokedGetWorkflowsParameters = (appUserID, isAppBackgrounded)
+
+        completion(self.stubbedGetWorkflowsResult ?? .failure(.missingAppUserID()))
+    }
+
 }

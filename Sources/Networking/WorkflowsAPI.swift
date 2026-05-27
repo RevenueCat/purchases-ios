@@ -16,8 +16,10 @@ import Foundation
 class WorkflowsAPI {
 
     typealias WorkflowDetailResponseHandler = Backend.ResponseHandler<WorkflowDataResult>
+    typealias WorkflowsListResponseHandler = Backend.ResponseHandler<WorkflowsListResponse>
 
     private let workflowDetailCallbackCache: CallbackCache<WorkflowDetailCallback>
+    private let workflowsListCallbackCache: CallbackCache<WorkflowsListCallback>
     private let backendConfig: BackendConfiguration
     private let detailProcessor: WorkflowDetailProcessor
 
@@ -25,6 +27,7 @@ class WorkflowsAPI {
          cdnFetch: WorkflowCdnFetch? = nil) {
         self.backendConfig = backendConfig
         self.workflowDetailCallbackCache = .init()
+        self.workflowsListCallbackCache = .init()
         self.detailProcessor = WorkflowDetailProcessor(
             cdnFetch: cdnFetch ?? Self.defaultCdnFetch(httpClient: backendConfig.httpClient)
         )
@@ -74,6 +77,26 @@ class WorkflowsAPI {
             }
             httpClient.fetchRawData(from: url, completion: completion)
         }
+    }
+
+    func getWorkflows(appUserID: String,
+                      isAppBackgrounded: Bool,
+                      completion: @escaping WorkflowsListResponseHandler) {
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+                                                                appUserID: appUserID)
+        let factory = GetWorkflowsListOperation.createFactory(
+            configuration: config,
+            callbackCache: self.workflowsListCallbackCache
+        )
+
+        let callback = WorkflowsListCallback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.workflowsListCallbackCache.add(callback)
+
+        self.backendConfig.addCacheableOperation(
+            with: factory,
+            delay: .default(forBackgroundedApp: isAppBackgrounded),
+            cacheStatus: cacheStatus
+        )
     }
 
     func getWorkflow(appUserID: String,
