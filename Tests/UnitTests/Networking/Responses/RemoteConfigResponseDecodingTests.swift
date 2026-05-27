@@ -36,7 +36,7 @@ final class RemoteConfigResponseDecodingTests: TestCase {
           "manifest": {
             "topics": {
               "product_entitlement_mapping": {
-                "DEFAULT": {
+                "default": {
                   "blob_ref": "abc123"
                 }
               }
@@ -60,7 +60,7 @@ final class RemoteConfigResponseDecodingTests: TestCase {
         expect(response.blobSources[0].weight) == 100
 
         let pem = try XCTUnwrap(response.manifest.topics[.productEntitlementMapping])
-        expect(pem["DEFAULT"]?.blobRef) == "abc123"
+        expect(pem["default"]?.blobRef) == "abc123"
     }
 
     // MARK: - Default values
@@ -110,7 +110,7 @@ final class RemoteConfigResponseDecodingTests: TestCase {
             "future_manifest_field": [],
             "topics": {
               "product_entitlement_mapping": {
-                "DEFAULT": {
+                "default": {
                   "blob_ref": "abc",
                   "future_per_entry": 7
                 }
@@ -126,7 +126,7 @@ final class RemoteConfigResponseDecodingTests: TestCase {
         expect(response.apiSources[0].id) == "primary"
         expect(response.blobSources).to(haveCount(1))
         expect(response.blobSources[0].id) == "primary"
-        expect(response.manifest.topics[.productEntitlementMapping]?["DEFAULT"]?.blobRef) == "abc"
+        expect(response.manifest.topics[.productEntitlementMapping]?["default"]?.blobRef) == "abc"
     }
 
     // MARK: - Unknown topic keys dropped
@@ -136,9 +136,9 @@ final class RemoteConfigResponseDecodingTests: TestCase {
         {
           "manifest": {
             "topics": {
-              "product_entitlement_mapping": {"DEFAULT": {"blob_ref": "abc"}},
-              "future_topic": {"DEFAULT": {"blob_ref": "def"}},
-              "another_unknown": {"DEFAULT": {"blob_ref": "ghi"}}
+              "product_entitlement_mapping": {"default": {"blob_ref": "abc"}},
+              "future_topic": {"default": {"blob_ref": "def"}},
+              "another_unknown": {"default": {"blob_ref": "ghi"}}
             }
           }
         }
@@ -152,7 +152,7 @@ final class RemoteConfigResponseDecodingTests: TestCase {
 
     func testAllUnknownTopicsProducesEmptyMap() throws {
         let payload = """
-        {"manifest": {"topics": {"future_topic": {"DEFAULT": {"blob_ref": "abc"}}}}}
+        {"manifest": {"topics": {"future_topic": {"default": {"blob_ref": "abc"}}}}}
         """.asData
 
         let response = try JSONDecoder.default.decode(RemoteConfigResponse.self, from: payload)
@@ -175,7 +175,7 @@ final class RemoteConfigResponseDecodingTests: TestCase {
           "manifest": {
             "topics": {
               "product_entitlement_mapping": {
-                "DEFAULT": {"blob_ref": "default-blob"},
+                "default": {"blob_ref": "default-blob"},
                 "EXPERIMENT_A": {"blob_ref": "experiment-blob"}
               }
             }
@@ -187,7 +187,7 @@ final class RemoteConfigResponseDecodingTests: TestCase {
 
         let variants = try XCTUnwrap(response.manifest.topics[.productEntitlementMapping])
         expect(variants).to(haveCount(2))
-        expect(variants["DEFAULT"]?.blobRef) == "default-blob"
+        expect(variants["default"]?.blobRef) == "default-blob"
         expect(variants["EXPERIMENT_A"]?.blobRef) == "experiment-blob"
     }
 
@@ -195,7 +195,7 @@ final class RemoteConfigResponseDecodingTests: TestCase {
 
     func testTopicsEncodeBackToWireKey() throws {
         let manifest = RemoteConfigResponse.Manifest(
-            topics: [.productEntitlementMapping: ["DEFAULT": .init(blobRef: "abc")]]
+            topics: [.productEntitlementMapping: ["default": .init(blobRef: "abc")]]
         )
 
         let encoded = try JSONEncoder().encode(manifest)
@@ -209,7 +209,7 @@ final class RemoteConfigResponseDecodingTests: TestCase {
         let original = RemoteConfigResponse(
             apiSources: [.init(id: "primary", url: "https://api.revenuecat.com/", priority: 0, weight: 100)],
             blobSources: [.init(id: "cdn", urlFormat: "https://assets.example/{blob_ref}", priority: 0, weight: 100)],
-            manifest: .init(topics: [.productEntitlementMapping: ["DEFAULT": .init(blobRef: "abc")]])
+            manifest: .init(topics: [.productEntitlementMapping: ["default": .init(blobRef: "abc")]])
         )
 
         let encoded = try JSONEncoder().encode(original)
