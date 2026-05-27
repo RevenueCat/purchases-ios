@@ -41,6 +41,7 @@ import Foundation
     /// Reward is a virtual-currency line item with the given code and amount. `amount` must be greater than zero.
     public static func virtualCurrency(code: String, amount: Int) -> AdReward {
         if amount <= 0 {
+            Logger.error(AdsStrings.invalid_virtual_currency_amount(amount: amount))
             assertionFailure(Self.Strings.virtualCurrencyAmountMustBeGreaterThanZero)
             return .unsupportedReward
         }
