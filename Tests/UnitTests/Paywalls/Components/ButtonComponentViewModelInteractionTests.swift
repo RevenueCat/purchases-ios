@@ -34,7 +34,6 @@ final class ButtonComponentViewModelInteractionTests: TestCase {
         expect(action.paywallComponentInteractionValue).to(beNil())
     }
 
-
 }
 
 #endif
