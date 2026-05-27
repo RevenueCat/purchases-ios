@@ -136,10 +136,17 @@ enum StringArrayOperators {
         case .string(let value):
             return value
         case .array(let items):
-            return items.map(stringify).joined(separator: ",")
+            // `Array.prototype.join` renders `null`/`undefined` elements
+            // as empty strings (e.g. `String([1, null, 2])` is `"1,,2"`).
+            return items.map(stringifyArrayElement).joined(separator: ",")
         case .object:
             return "[object Object]"
         }
+    }
+
+    private static func stringifyArrayElement(_ value: Value) -> String {
+        if case .null = value { return "" }
+        return stringify(value)
     }
 
     /// Render a `Double` the way JS would — `1.0` becomes `"1"`, `1.5`
