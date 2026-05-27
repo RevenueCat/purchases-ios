@@ -35,7 +35,9 @@ struct WebViewComponentView: View {
         if let resolvedURL = viewModel.resolvedURL(customVariables: customVariables) {
             let urlToLoad = viewModel.cachedURL(for: resolvedURL) ?? resolvedURL
             WebViewRepresentable(url: urlToLoad, height: $dynamicHeight)
+                .frame(maxWidth: .infinity)
                 .frame(height: dynamicHeight)
+                .clipped()
                 .background(Color.clear)
         }
         #else
@@ -84,7 +86,7 @@ private struct WebViewRepresentable: UIViewRepresentable {
         webView.scrollView.pinchGestureRecognizer?.isEnabled = false
         webView.scrollView.delegate = context.coordinator
 
-        context.coordinator.observeHeightChanges(in: webView.scrollView)
+        context.coordinator.registerHeightReporting(on: webView)
 
         context.coordinator.currentURL = url
         webView.load(URLRequest(url: url))
@@ -96,10 +98,16 @@ private struct WebViewRepresentable: UIViewRepresentable {
             context.coordinator.currentURL = url
             uiView.load(URLRequest(url: url))
         }
+
+        if let height, let autoSizingWebView = uiView as? AutoSizingWebView {
+            autoSizingWebView.setContentHeight(height)
+        }
+
+        context.coordinator.reportHeightIfNeeded(in: uiView)
     }
 
     static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
-        coordinator.contentSizeObservation = nil
+        coordinator.unregisterHeightReporting(from: uiView)
         uiView.navigationDelegate = nil
         uiView.scrollView.delegate = nil
 
@@ -112,25 +120,62 @@ private struct WebViewRepresentable: UIViewRepresentable {
         Coordinator(height: $height)
     }
 
-    final class Coordinator: NSObject, WKNavigationDelegate, UIScrollViewDelegate {
+    final class Coordinator: NSObject, WKNavigationDelegate, UIScrollViewDelegate, WKScriptMessageHandler {
+
+        static let heightMessageHandlerName = "rcWebViewHeight"
 
         @Binding var height: CGFloat?
         var currentURL: URL?
-        var contentSizeObservation: NSKeyValueObservation?
+        private var heightMessageHandler: WeakScriptMessageHandler?
+        private weak var webView: WKWebView?
+        private var heightMeasurementGeneration = 0
 
         init(height: Binding<CGFloat?>) {
             _height = height
         }
 
-        func observeHeightChanges(in scrollView: UIScrollView) {
-            let options: NSKeyValueObservingOptions = [.new, .initial]
-            contentSizeObservation = scrollView.observe(\.contentSize, options: options) { [weak self] scrollView, _ in
-                self?.updateHeight(from: scrollView)
+        func reportHeightIfNeeded(in webView: WKWebView) {
+            webView.evaluateJavaScript("window.__rcReportHeight && window.__rcReportHeight()")
+        }
+
+        func registerHeightReporting(on webView: WKWebView) {
+            self.webView = webView
+            let handler = WeakScriptMessageHandler(delegate: self)
+            self.heightMessageHandler = handler
+            webView.configuration.userContentController.add(handler, name: Self.heightMessageHandlerName)
+        }
+
+        func unregisterHeightReporting(from webView: WKWebView) {
+            webView.configuration.userContentController.removeScriptMessageHandler(
+                forName: Self.heightMessageHandlerName
+            )
+            self.heightMessageHandler = nil
+            self.webView = nil
+        }
+
+        func userContentController(
+            _ userContentController: WKUserContentController,
+            didReceive message: WKScriptMessage
+        ) {
+            guard message.name == Self.heightMessageHandlerName else { return }
+
+            let reportedHeight: CGFloat?
+            if let number = message.body as? NSNumber {
+                reportedHeight = CGFloat(number.doubleValue)
+            } else if let double = message.body as? Double {
+                reportedHeight = CGFloat(double)
+            } else {
+                reportedHeight = nil
+            }
+
+            if let reportedHeight {
+                self.applyHeight(reportedHeight, to: self.webView)
             }
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            updateHeight(from: webView)
+            webView.evaluateJavaScript(Self.installHeightReportingJavaScript)
+            self.measureHeight(in: webView)
             // Re-check after all resources finish loading
             let javaScript = """
             new Promise(r => {
@@ -139,22 +184,61 @@ private struct WebViewRepresentable: UIViewRepresentable {
             }).then(() => 0);
             """
             webView.evaluateJavaScript(javaScript) { [weak self, weak webView] _, _ in
-                if let webView { self?.updateHeight(from: webView) }
+                guard let self, let webView else { return }
+                webView.evaluateJavaScript(Self.installHeightReportingJavaScript)
+                self.measureHeight(in: webView)
+                self.scheduleDelayedMeasurements(in: webView)
             }
         }
 
-        private func updateHeight(from scrollView: UIScrollView) {
-            guard scrollView.frame.width > 0 else { return }
+        private func measureHeight(in webView: WKWebView) {
+            guard webView.scrollView.frame.width > 0 else { return }
 
-            let newHeight = scrollView.contentSize.height
-            if abs(newHeight - (height ?? 0)) > 0.5 {
-                DispatchQueue.main.async { self.height = newHeight }
+            self.heightMeasurementGeneration += 1
+            let generation = self.heightMeasurementGeneration
+
+            webView.evaluateJavaScript(Self.measureHeightJavaScript) { [weak self] result, _ in
+                guard let self, generation == self.heightMeasurementGeneration else { return }
+
+                let measuredHeight: CGFloat?
+                if let number = result as? NSNumber {
+                    measuredHeight = CGFloat(number.doubleValue)
+                } else if let double = result as? Double {
+                    measuredHeight = CGFloat(double)
+                } else {
+                    measuredHeight = nil
+                }
+
+                if let measuredHeight {
+                    self.applyHeight(measuredHeight, to: webView)
+                }
             }
         }
 
-        private func updateHeight(from webView: WKWebView) {
-            self.updateHeight(from: webView.scrollView)
+        private func scheduleDelayedMeasurements(in webView: WKWebView) {
+            let delays: [TimeInterval] = [0.05, 0.15, 0.35]
+            for delay in delays {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self, weak webView] in
+                    guard let self, let webView else { return }
+                    self.measureHeight(in: webView)
+                }
+            }
         }
+
+        private func applyHeight(_ newHeight: CGFloat, to webView: WKWebView?) {
+            guard newHeight >= 0 else { return }
+            guard abs(newHeight - (height ?? 0)) > 0.5 else { return }
+
+            DispatchQueue.main.async {
+                self.height = newHeight
+                (webView as? AutoSizingWebView)?.setContentHeight(newHeight)
+            }
+        }
+
+        private static let measureHeightJavaScript = "window.__rcMeasureHeight && window.__rcMeasureHeight()"
+
+        private static let installHeightReportingJavaScript = WebViewRepresentable.Coordinator
+            .heightReportingJavaScriptSource
 
         func viewForZooming(in scrollView: UIScrollView) -> UIView? {
             return nil
@@ -200,6 +284,10 @@ final class WebViewPool {
         webView.navigationDelegate = nil
         webView.scrollView.delegate = nil
         webView.scrollView.zoomScale = 1.0
+        webView.setContentHeight(0)
+        webView.configuration.userContentController.removeScriptMessageHandler(
+            forName: WebViewRepresentable.Coordinator.heightMessageHandlerName
+        )
         webView.loadHTMLString("<!doctype html><html></html>", baseURL: nil)
 
         if self.pool.count < self.capacity {
@@ -217,11 +305,24 @@ final class WebViewPool {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class AutoSizingWebView: WKWebView {
 
+    private var contentHeight: CGFloat = 0
+
+    override var intrinsicContentSize: CGSize {
+        CGSize(width: UIView.noIntrinsicMetric, height: self.contentHeight)
+    }
+
+    func setContentHeight(_ height: CGFloat) {
+        guard abs(self.contentHeight - height) > 0.5 else { return }
+        self.contentHeight = height
+        self.invalidateIntrinsicContentSize()
+    }
+
     init(processPool: WKProcessPool) {
         let config = WKWebViewConfiguration()
         config.processPool = processPool
         config.allowsInlineMediaPlayback = true
         config.userContentController.addUserScript(Self.disableZoomUserScript)
+        config.userContentController.addUserScript(Self.heightReportingUserScript)
         config.setURLSchemeHandler(InMemoryHTMLURLSchemeHandler(), forURLScheme: "purchaseshtml")
         super.init(frame: .zero, configuration: config)
         isOpaque = false
@@ -247,6 +348,106 @@ final class AutoSizingWebView: WKWebView {
 
         return WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
     }()
+
+    private static let heightReportingUserScript: WKUserScript = {
+        WKUserScript(
+            source: WebViewRepresentable.Coordinator.heightReportingJavaScriptSource,
+            injectionTime: .atDocumentEnd,
+            forMainFrameOnly: true
+        )
+    }()
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension WebViewRepresentable.Coordinator {
+
+    static let heightReportingJavaScriptSource = """
+    (function() {
+      function measureHeight() {
+        var body = document.body;
+        var html = document.documentElement;
+        var bodyRect = body.getBoundingClientRect();
+        var height = Math.max(bodyRect.height, html.getBoundingClientRect().height);
+
+        var children = body.children;
+        for (var i = 0; i < children.length; i++) {
+          var child = children[i];
+          var style = window.getComputedStyle(child);
+          if (style.display === 'none' || style.visibility === 'hidden') { continue; }
+          var rect = child.getBoundingClientRect();
+          if (rect.height > 0) {
+            height = Math.max(height, rect.bottom - bodyRect.top);
+          }
+        }
+
+        return Math.ceil(height);
+      }
+
+      window.__rcMeasureHeight = measureHeight;
+
+      function reportHeight() {
+        var height = measureHeight();
+        if (window.webkit && window.webkit.messageHandlers.rcWebViewHeight) {
+          window.webkit.messageHandlers.rcWebViewHeight.postMessage(height);
+        }
+      }
+
+      window.__rcReportHeight = reportHeight;
+
+      if (!window.__rcHeightObserverInstalled) {
+        window.__rcHeightObserverInstalled = true;
+
+        if (window.ResizeObserver) {
+          var resizeObserver = new ResizeObserver(reportHeight);
+          resizeObserver.observe(document.documentElement);
+          if (document.body) { resizeObserver.observe(document.body); }
+        }
+
+        new MutationObserver(reportHeight).observe(document.documentElement, {
+          subtree: true,
+          childList: true,
+          attributes: true,
+          characterData: true
+        });
+
+        document.addEventListener('click', function() {
+          reportHeight();
+          setTimeout(reportHeight, 50);
+          setTimeout(reportHeight, 150);
+          setTimeout(reportHeight, 350);
+        }, true);
+
+        document.addEventListener('transitionend', reportHeight, true);
+        document.addEventListener('animationend', reportHeight, true);
+        window.addEventListener('load', reportHeight);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', reportHeight, { once: true });
+      } else {
+        reportHeight();
+      }
+    })();
+    """
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class WeakScriptMessageHandler: NSObject, WKScriptMessageHandler {
+
+    private weak var delegate: WKScriptMessageHandler?
+
+    init(delegate: WKScriptMessageHandler) {
+        self.delegate = delegate
+    }
+
+    func userContentController(
+        _ userContentController: WKUserContentController,
+        didReceive message: WKScriptMessage
+    ) {
+        self.delegate?.userContentController(userContentController, didReceive: message)
+    }
 
 }
 
