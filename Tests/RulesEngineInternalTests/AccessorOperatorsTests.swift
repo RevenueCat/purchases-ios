@@ -344,19 +344,22 @@ final class AccessorOperatorsTests: XCTestCase {
     }
 
     func testMissingDoesNotReportKeysWithFalsyNonEmptyValues() throws {
-        // The reference checks `=== null || === ""`, NOT truthiness. Pin
-        // the contrast so a future "use truthiness" simplification can't
-        // silently flip 0/false/[] into the missing list.
+        // Pinning the negative side of the spec: only `null` and `""` qualify.
+        // `0`, `false`, `[]`, `{}` are present-and-defined, hence not missing.
         let vars = Value.object([
             "zero": .int(0),
-            "flag": .bool(false),
-            "empty_array": .array([])
+            "false_val": .bool(false),
+            "empty_array": .array([]),
+            "empty_object": .object([:]),
+            "zero_string": .string("0")
         ])
         let result = try AccessorOperators.opMissing(
             args: .array([
                 .string("zero"),
-                .string("flag"),
-                .string("empty_array")
+                .string("false_val"),
+                .string("empty_array"),
+                .string("empty_object"),
+                .string("zero_string")
             ]),
             vars: vars
         )
