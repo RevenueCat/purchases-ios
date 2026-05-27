@@ -8,26 +8,21 @@ import Foundation
 
 /// String + array operators: `in`, `cat`, `substr`, `merge`.
 ///
-/// Behavior follows the JSON Logic JS reference (`json-logic-js`) with two
-/// deliberate, documented deviations:
+/// Behavior follows the JSON Logic JS reference (`json-logic-js`) with
+/// two documented deviations:
 ///
-/// - **`in` array membership uses `looseEq`** (so `{"in": [5, ["5"]]}` is
-///   true) instead of the JS reference's strict `===`. Rule authors
-///   typically write integer literals against backend-supplied string
-///   lists, and loose equality is more forgiving for that workflow.
-///   Pure-string and pure-numeric comparisons are unaffected.
+/// - **`in` array membership uses `looseEq`** (so `{"in": [5, ["5"]]}`
+///   is true) instead of the JS reference's strict `===`.
 /// - **`substr` slices by Unicode code points**, not UTF-16 code units.
-///   Matches Swift's default `String.Character` semantics and gives the
-///   intuitive answer for multibyte strings; differs from JS only for
-///   surrogate-pair characters (rare in real rule data).
+///   Matches Swift's `String.Character` semantics; differs from JS only
+///   for surrogate-pair characters.
 enum StringArrayOperators {
 
     /// `{"in": [needle, haystack]}` — substring or array-membership test.
     /// For a `.string` haystack, the needle must also be a string and the
     /// test is substring containment. For an `.array` haystack, the test
     /// is element membership via `looseEq`. Any other haystack type
-    /// returns `false` (mirrors JS, where a non-`indexOf`-able haystack
-    /// short-circuits to false).
+    /// returns `false`.
     static func opIn(args: Value, vars: Value) throws -> Value {
         let (needle, haystack) = try Operators.evalTwo(args, vars: vars, opName: "in")
         switch (needle, haystack) {
@@ -52,8 +47,7 @@ enum StringArrayOperators {
     /// `{"substr": [source, start, length]}`. `source` is stringified.
     /// Negative `start` counts from the end. A negative `length` drops
     /// that many characters from the right of the substring that starts
-    /// at `start` (matches the JS reference). Code-point-based, not
-    /// byte-based — see type docs.
+    /// at `start`. Code-point-based, not byte-based — see type docs.
     static func opSubstr(args: Value, vars: Value) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
         let source: Value
@@ -77,10 +71,7 @@ enum StringArrayOperators {
         let chars = Array(stringify(source))
         let total = chars.count
 
-        // Non-numeric start coerces to 0 (mirrors JS `ToInteger`, which
-        // maps NaN → 0). `Operators.clampedInt` also saturates ±Infinity
-        // and out-of-range finite values so the `Int(_:)` initializer
-        // can't trap on a malformed predicate.
+        // Non-numeric start coerces to 0 (matches JS `ToInteger`).
         let startN = Operators.clampedInt(start.asNumber ?? 0)
         let begin: Int
         if startN < 0 {
@@ -128,13 +119,10 @@ enum StringArrayOperators {
     /// - `.null` → `"null"`
     /// - `.bool` → `"true"` / `"false"`
     /// - `.int` / `.float` → numeric repr (integers render without a
-    ///   trailing `.0`, matching JS)
+    ///   trailing `.0`)
     /// - `.string` → unchanged
-    /// - `.array` → comma-joined recursive stringify (JS
-    ///   `Array.prototype.toString`)
-    /// - `.object` → `"[object Object]"` (matches JS; concatenating an
-    ///   object is almost always a rule-authoring bug, but the result
-    ///   is at least defined)
+    /// - `.array` → comma-joined recursive stringify
+    /// - `.object` → `"[object Object]"`
     private static func stringify(_ value: Value) -> String {
         switch value {
         case .null:
@@ -156,10 +144,6 @@ enum StringArrayOperators {
 
     /// Render a `Double` the way JS would — `1.0` becomes `"1"`, `1.5`
     /// stays `"1.5"`.
-    ///
-    /// `Int64(exactly:)` returns `nil` for non-integer, out-of-range,
-    /// NaN, and ±Infinity inputs, so the fall-through to `String(value)`
-    /// covers each of those without a manual guard.
     private static func formatNumber(_ value: Double) -> String {
         if let intValue = Int64(exactly: value) {
             return String(intValue)

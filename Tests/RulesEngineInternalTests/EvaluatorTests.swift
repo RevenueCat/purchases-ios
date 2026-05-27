@@ -215,8 +215,7 @@ final class EvaluatorTests: XCTestCase {
 
     /// `n / 0` follows IEEE 754 (matches `json-logic-js`, no
     /// short-circuit). `{"/": [10, 0]}` → `+Infinity` → truthy;
-    /// `{"/": [0, 0]}` → `NaN` → falsy (NaN is the one float that
-    /// `isTruthy` reports as `false`).
+    /// `{"/": [0, 0]}` → `NaN` → falsy.
     func testDivideByZeroProducesIeee754ValuesThatFlowThroughTruthiness() throws {
         XCTAssertTrue(try run("{\"/\": [10, 0]}"))
         XCTAssertFalse(try run("{\"/\": [0, 0]}"))

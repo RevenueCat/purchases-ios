@@ -14,15 +14,10 @@ enum AccessorOperators {
     /// `default` when the path is missing. `{"var": ""}` returns the entire
     /// data scope.
     ///
-    /// Per the JSON Logic spec, the path argument is recursively evaluated
-    /// before lookup, so callers can compute paths dynamically — e.g.
+    /// Per the JSON Logic spec, the path and default arguments are
+    /// recursively evaluated before lookup (e.g.
     /// `{"var": {"var": "active_path_key"}}` resolves `active_path_key`
-    /// first and uses its string value as the actual path. In the array
-    /// form, the default argument is evaluated the same way.
-    ///
-    /// Variable lookup uses **strict JSON Logic dot-path semantics on
-    /// nested objects**. There is no flat-key fallback (i.e. we do not also
-    /// try the literal dotted string as a single key in the top-level map).
+    /// first and uses its string value as the path).
     static func opVar(args: Value, vars: Value) throws -> Value {
         let (path, defaultValue) = try resolveVarArgs(args, vars: vars)
 
@@ -40,20 +35,14 @@ enum AccessorOperators {
         return .null
     }
 
-    /// `{"missing": ["a", "b.c"]}` returns the array of keys (as strings)
-    /// whose `var` lookup resolves to `null` (key absent OR leaf is `null`)
-    /// or to the empty string — mirrors the json-logic-js reference's
-    /// `value === null || value === ""` check. Falsy non-empty values like
-    /// `0`, `false`, or `[]` are NOT reported as missing. Returns `[]` when
-    /// nothing is missing.
+    /// `{"missing": ["a", "b.c"]}` returns the array of keys whose `var`
+    /// lookup resolves to `null` (absent or `null` leaf) or to the empty
+    /// string. Falsy non-empty values like `0`, `false`, or `[]` are NOT
+    /// reported as missing. Returns `[]` when nothing is missing.
     ///
-    /// Per the JSON Logic spec, each key argument is recursively evaluated
-    /// before lookup, so dynamic key lists like
-    /// `{"missing": [{"var": "key_to_check"}]}` work. If the first
-    /// (possibly only) evaluated argument is itself an array (typically the
-    /// output of another operator), its elements are unpacked as the key
-    /// list — this is how `{"missing": {"merge": [["a"], ["b"]]}}` is meant
-    /// to behave.
+    /// Each key argument is recursively evaluated before lookup. If the
+    /// first evaluated argument is itself an array, its elements are
+    /// unpacked as the key list (e.g. `{"missing": {"merge": [...]}}`).
     static func opMissing(args: Value, vars: Value) throws -> Value {
         let evaluatedArgs: [Value]
         if case .array(let items) = args {
@@ -63,9 +52,8 @@ enum AccessorOperators {
             evaluatedArgs = [try Evaluator.evaluateValue(args, vars: vars)]
         }
 
-        // Per JSON Logic spec: if the first arg resolves to an array, treat
-        // its elements as the full key list (lets nested operators feed
-        // `missing` a computed key set).
+        // Per JSON Logic spec: if the first arg resolves to an array,
+        // treat its elements as the full key list.
         let keys: [Value]
         if let first = evaluatedArgs.first, case .array(let innerKeys) = first {
             keys = innerKeys
@@ -86,9 +74,7 @@ enum AccessorOperators {
     /// `{"missing_some": [min_required, [path, ...]]}` returns the
     /// missing-keys array (same shape as `missing`) IF fewer than
     /// `min_required` of the requested paths are present. Otherwise
-    /// returns `[]` (the rule's required-data condition is satisfied).
-    /// Used to express "any 2 of these 5 fields must be present" style
-    /// requirements.
+    /// returns `[]`.
     static func opMissingSome(args: Value, vars: Value) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
         guard evaluated.count == 2 else {
@@ -107,11 +93,9 @@ enum AccessorOperators {
         }
         let total = items.count
 
-        // Non-numeric `need_count` falls back to 0, mirroring the lenient
-        // coercion of our other operators. NaN / ±Infinity / out-of-range
-        // values are clamped by `Operators.clampedInt` instead of trapping
-        // the `Int` initializer (NaN → 0 satisfies trivially; +Infinity
-        // never satisfies; -Infinity always satisfies).
+        // Non-numeric `need_count` coerces to 0 (NaN → 0 satisfies
+        // trivially; +Infinity never satisfies; -Infinity always
+        // satisfies).
         let need = Operators.clampedInt(needCountValue.asNumber ?? 0)
 
         let missing = try opMissing(args: options, vars: vars)
@@ -131,10 +115,7 @@ enum AccessorOperators {
     // MARK: - Helpers
 
     /// Recursively evaluate `var`'s arg(s) per the JSON Logic spec, then
-    /// normalize the result into a `(path, default)` tuple. The array form
-    /// evaluates each element in place; the singleton form evaluates the
-    /// (conceptually wrapped) lone argument so that constructs like
-    /// `{"var": {"var": "key"}}` resolve to a dynamic path string.
+    /// normalize the result into a `(path, default)` tuple.
     private static func resolveVarArgs(_ args: Value, vars: Value) throws -> (String, Value?) {
         if case .array(let items) = args {
             var evaluated: [Value] = []
@@ -190,10 +171,8 @@ enum AccessorOperators {
     }
 
     /// Resolve `path` the way `var` does, without warning on misses.
-    /// Empty path returns the entire data scope (matching `var("")`); a
-    /// non-resolving path returns `.null` (matching `var`'s default
-    /// `not_found`). Used by `missing`, which is a check rather than a
-    /// read.
+    /// Empty path returns the entire data scope; a non-resolving path
+    /// returns `.null`.
     private static func varLookup(in vars: Value, path: String) -> Value {
         if path.isEmpty {
             return vars
@@ -202,9 +181,8 @@ enum AccessorOperators {
     }
 
     /// `missing` reports a key when its `var` lookup resolves to `null`
-    /// or to the empty string — the json-logic-js reference's exact
-    /// `value === null || value === ""` check. Falsy non-empty values
-    /// (e.g. `0`, `false`, `[]`) are NOT missing.
+    /// or to the empty string. Falsy non-empty values (`0`, `false`,
+    /// `[]`) are NOT missing.
     private static func isMissingValue(_ value: Value) -> Bool {
         switch value {
         case .null:
@@ -236,13 +214,9 @@ enum AccessorOperators {
         return current
     }
 
-    /// Render a `Double` the way JSON Logic / JS would — `1.0` becomes
-    /// `"1"`, `1.5` stays `"1.5"`. Used so a numeric path like `var: 1.0`
-    /// looks up `"1"` (i.e. array index 1), not `"1.0"`.
-    ///
-    /// `Int64(exactly:)` returns `nil` for non-integer, out-of-range,
-    /// NaN, and ±Infinity inputs, so the fall-through to `String(value)`
-    /// covers each of those without a manual guard.
+    /// Render a `Double` the way JS would — `1.0` becomes `"1"`, `1.5`
+    /// stays `"1.5"` — so a numeric path like `var: 1.0` looks up `"1"`,
+    /// not `"1.0"`.
     private static func formatNumber(_ value: Double) -> String {
         if let intValue = Int64(exactly: value) {
             return String(intValue)
