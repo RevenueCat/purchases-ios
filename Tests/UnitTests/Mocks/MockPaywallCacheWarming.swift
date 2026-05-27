@@ -35,6 +35,25 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
 
     // MARK: -
 
+    private let _invokedClearEligibilityCache: Atomic<Bool> = false
+    private let _invokedClearEligibilityCacheCount: Atomic<Int> = .init(0)
+
+    var invokedClearEligibilityCache: Bool {
+        get { return self._invokedClearEligibilityCache.value }
+        set { self._invokedClearEligibilityCache.value = newValue }
+    }
+    var invokedClearEligibilityCacheCount: Int {
+        get { return self._invokedClearEligibilityCacheCount.value }
+        set { self._invokedClearEligibilityCacheCount.value = newValue }
+    }
+
+    func clearEligibilityCache() {
+        self.invokedClearEligibilityCache = true
+        self._invokedClearEligibilityCacheCount.modify { $0 += 1 }
+    }
+
+    // MARK: -
+
     private let _invokedWarmUpPaywallImagesCache: Atomic<Bool> = false
     private let _invokedWarmUpPaywallImagesCacheOfferings: Atomic<Offerings?> = nil
 

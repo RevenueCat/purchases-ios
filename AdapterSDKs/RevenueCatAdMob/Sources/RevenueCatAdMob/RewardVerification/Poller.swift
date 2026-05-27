@@ -84,7 +84,7 @@ internal extension RewardVerification {
 
                 if Task.isCancelled {
                     Logger.debug(RewardVerificationStrings.poll_cancelled(transactionID: clientTransactionID))
-                    return .failed
+                    return .failed(.unknown)
                 }
                 if attempt > 0 {
                     try? await self.sleeper.sleep(seconds: self.jitter.sample())
@@ -98,7 +98,7 @@ internal extension RewardVerification {
                     ))
                     switch status {
                     case .verified(let reward): return .verified(reward)
-                    case .failed: return .failed
+                    case .failed: return .failed(.backendError)
                     case .pending, .unknown: continue
                     }
                 } catch let code as ErrorCode where code.isTransientPolling {
@@ -112,7 +112,9 @@ internal extension RewardVerification {
                         error: error,
                         transactionID: clientTransactionID
                     ))
-                    return .failed
+                    // Non-transient ErrorCode is a backend rejection; everything else (CancellationError,
+                    // custom error types) is unclassifiable and surfaces as .unknown.
+                    return .failed(error is ErrorCode ? .backendError : .unknown)
                 }
             }
 
@@ -120,7 +122,7 @@ internal extension RewardVerification {
                 maxAttempts: self.maxAttempts,
                 transactionID: clientTransactionID
             ))
-            return .failed
+            return .failed(.timeout)
         }
     }
 

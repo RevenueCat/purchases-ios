@@ -1049,6 +1049,100 @@ final class TabsPackageInheritanceTests: TestCase {
     }
 }
 
+// MARK: - Workflow Revisit Tests
+//
+// These tests cover the interaction between WorkflowPaywallView's per-step PackageContext cache
+// and LoadedTabsComponentView's tab initialization.
+//
+// Bug: on a workflow step revisit, effectiveWorkflowPackageContext always carries the authored
+// default (static config). It reaches LoadedTabsComponentView as workflowDefaultPackage.
+// The tab init used `workflowDefaultPackage ?? tabViewModel.defaultSelectedPackage`, ignoring
+// the parent PackageContext that already holds the user's cached selection. The onAppear then
+// propagated the authored default back up through the shared PackageContext reference,
+// overwriting the user's choice.
+//
+// Fix: prefer parentPackageContext.package when it is present in the tab's package list.
+// This is expressed as LoadedTabsComponentView.initialPackage(parentPackage:tabPackages:
+// workflowDefaultPackage:tabDefaultPackage:) so it can be unit-tested without constructing
+// the full SwiftUI view.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension TabsPackageInheritanceTests {
+
+    func testInitialPackagePrefersParentCachedSelectionWhenAvailableInTab() {
+        // Scenario: user selected A (monthly) on this step before navigating away.
+        // WorkflowPaywallView restores the cached PackageContext (package = A), but
+        // effectiveWorkflowPackageContext still has the authored default (B / annual).
+        // The tab offers both A and B, so A should win over the authored default.
+        let result = LoadedTabsComponentView.initialPackage(
+            parentPackage: self.parentPackageA,
+            tabPackages: [self.parentPackageA, self.parentPackageB],
+            workflowDefaultPackage: self.parentPackageB,
+            tabDefaultPackage: self.parentPackageB
+        )
+
+        expect(result?.identifier) == self.parentPackageA.identifier
+    }
+
+    func testInitialPackageFallsBackToWorkflowDefaultWhenParentPackageAbsentFromTab() {
+        // Scenario: parent holds C (weekly) but this tab only has A and B.
+        // Since C is not in the tab's package list, fall back to workflowDefaultPackage (B).
+        let result = LoadedTabsComponentView.initialPackage(
+            parentPackage: self.tabPackageC,
+            tabPackages: [self.parentPackageA, self.parentPackageB],
+            workflowDefaultPackage: self.parentPackageB,
+            tabDefaultPackage: self.parentPackageA
+        )
+
+        expect(result?.identifier) == self.parentPackageB.identifier
+    }
+
+    func testInitialPackageUsesTabDefaultWhenNoWorkflowDefaultAndParentAbsent() {
+        // Scenario: no workflow context (singleStepFallbackId not set) and parent
+        // package is nil (packageless step). Tab's own default (A) should be used.
+        let result = LoadedTabsComponentView.initialPackage(
+            parentPackage: nil,
+            tabPackages: [self.parentPackageA, self.parentPackageB],
+            workflowDefaultPackage: nil,
+            tabDefaultPackage: self.parentPackageA
+        )
+
+        expect(result?.identifier) == self.parentPackageA.identifier
+    }
+
+    @MainActor
+    func testOnAppearDoesNotOverwriteCachedSelectionWhenTabSeededFromParent() {
+        // Scenario: with the fix in place the tab is seeded from parentPackageContext.package (A).
+        // onAppear propagates the tab package back up to packageContext — same reference as the
+        // cached context. Since both have A, this is a no-op and the cache is preserved.
+
+        // Given: cached PackageContext holds A (user's selection)
+        let parentContext = PackageContext(
+            package: self.parentPackageA,
+            variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
+        )
+
+        // Given: tab was seeded with A (fixed behaviour — prefers parent's cached selection)
+        let tabContext = PackageContext(
+            package: LoadedTabsComponentView.initialPackage(
+                parentPackage: self.parentPackageA,
+                tabPackages: [self.parentPackageA, self.parentPackageB],
+                workflowDefaultPackage: self.parentPackageB,
+                tabDefaultPackage: self.parentPackageB
+            ),
+            variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
+        )
+
+        // When: simulating onAppear (wasConfigured = false on new view identity):
+        if let pkg = tabContext.package {
+            parentContext.update(package: pkg, variableContext: tabContext.variableContext)
+        }
+
+        // Then: cached selection A survives — onAppear is effectively a no-op.
+        expect(parentContext.package?.identifier) == self.parentPackageA.identifier
+    }
+
+}
+
 // MARK: - Test Helpers
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
