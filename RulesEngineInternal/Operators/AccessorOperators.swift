@@ -18,6 +18,10 @@ enum AccessorOperators {
     /// recursively evaluated before lookup (e.g.
     /// `{"var": {"var": "active_path_key"}}` resolves `active_path_key`
     /// first and uses its string value as the path).
+    ///
+    /// - Parameter vars: The JSON Logic data scope — one evaluated `Value`
+    ///   (usually an object) that `var` reads from. The name mirrors the
+    ///   spec's "data" argument passed through recursive evaluation.
     static func opVar(args: Value, vars: Value) throws -> Value {
         let (path, defaultValue) = try resolveVarArgs(args, vars: vars)
 
@@ -31,7 +35,7 @@ enum AccessorOperators {
         if let defaultValue = defaultValue {
             return defaultValue
         }
-        Rules.logger.warn("missing variable: \(path)")
+        RulesEngine.logger.warn("missing variable: \(path)")
         return .null
     }
 
@@ -82,17 +86,17 @@ enum AccessorOperators {
             for item in items {
                 evaluated.append(try Evaluator.evaluateValue(item, vars: vars))
             }
-            return try parseVarArrayArgs(evaluated)
+            return parseVarArrayArgs(evaluated)
         }
         let evaluated = try Evaluator.evaluateValue(args, vars: vars)
-        return (try pathSegment(from: evaluated), nil)
+        return (pathSegment(from: evaluated), nil)
     }
 
-    private static func parseVarArrayArgs(_ items: [Value]) throws -> (String, Value?) {
-        let path = try pathSegment(from: items.first)
+    private static func parseVarArrayArgs(_ items: [Value]) -> (String, Value?) {
+        let path = pathSegment(from: items.first)
         let defaultValue: Value? = items.count >= 2 ? items[1] : nil
         if items.count > 2 {
-            Rules.logger.warn(
+            RulesEngine.logger.warn(
                 "var: ignoring \(items.count - 2) extra arg(s); expected [path] or [path, default]"
             )
         }
@@ -103,7 +107,7 @@ enum AccessorOperators {
     /// `json-logic-js`'s `String(a).split(".")`. `nil`, `.null`, and
     /// `""` are treated as the empty path, which signals the caller
     /// to return the entire data scope.
-    private static func pathSegment(from value: Value?) throws -> String {
+    private static func pathSegment(from value: Value?) -> String {
         switch value {
         case .none, .some(.null):
             return ""

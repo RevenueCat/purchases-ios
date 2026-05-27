@@ -2231,6 +2231,9 @@ workflows:
       - build-tv-watch-mac-and-visionos:
           context:
             - slack-secrets
+      - revenuecat-admob-tests:
+          context:
+            - slack-secrets
 
       # =============================================================
       # Hold gate for the Full Test Suite
@@ -2344,11 +2347,6 @@ workflows:
           context:
             - slack-secrets
       - spm-receipt-parser:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
-      - revenuecat-admob-tests:
           requires:
             - approve-full-tests
           context:
