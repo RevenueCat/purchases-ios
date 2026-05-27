@@ -7,12 +7,13 @@
 import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
+@_spi(Experimental) import RevenueCat
 
 /// Result delivered to the app after reward verification polling for a presented rewarded ad.
 @_spi(Experimental) public struct RewardVerificationResult: Sendable, Equatable {
 
     private enum Storage: Equatable, Sendable {
-        case verified(VerifiedReward)
+        case verified(AdReward)
         case failed
     }
 
@@ -23,7 +24,7 @@ import Foundation
     }
 
     /// Server verification succeeded for this ad’s transaction.
-    public static func verified(_ reward: VerifiedReward) -> RewardVerificationResult {
+    public static func verified(_ reward: AdReward) -> RewardVerificationResult {
         RewardVerificationResult(storage: .verified(reward))
     }
 
@@ -31,7 +32,7 @@ import Foundation
     public static let failed = RewardVerificationResult(storage: .failed)
 
     /// Non-`nil` when verification succeeded.
-    public var verifiedReward: VerifiedReward? {
+    public var reward: AdReward? {
         guard case .verified(let reward) = self.storage else { return nil }
         return reward
     }

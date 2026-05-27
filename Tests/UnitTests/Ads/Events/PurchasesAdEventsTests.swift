@@ -220,9 +220,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            rewardType: .virtualCurrency,
-            rewardCurrencyCode: "GOLD",
-            rewardCurrencyAmount: 100
+            reward: .virtualCurrency(code: "GOLD", amount: 100)
         )
 
         self.purchases.adTracker.trackAdRewardVerified(data)
@@ -242,9 +240,9 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
         expect(eventData.impressionId) == "impression-123"
-        expect(eventData.rewardType) == .virtualCurrency
-        expect(eventData.rewardCurrencyCode) == "GOLD"
-        expect(eventData.rewardCurrencyAmount?.intValue) == 100
+        expect(eventData.reward.kindRawValue) == "virtual_currency"
+        expect(eventData.reward.virtualCurrency?.code) == "GOLD"
+        expect(eventData.reward.virtualCurrency?.amount) == 100
     }
 
     func testTrackAdRewardFailedToVerifyStoresEvent() async throws {

@@ -116,42 +116,6 @@ internal protocol AdImpressionEventData: AdEventData {
 
 }
 
-/// Type representing the kind of reward delivered by a verified rewarded ad.
-///
-/// The predefined static properties contain the known reward kinds.
-@_spi(Experimental) @objc(RCAdRewardType) public final class AdRewardType: NSObject, Codable {
-
-    /// The raw string value of the reward type
-    @objc public let rawValue: String
-
-    /// Creates a reward type with the specified raw value
-    @objc public init(rawValue: String) {
-        self.rawValue = rawValue
-        super.init()
-    }
-
-    /// Reward is a virtual currency line item with a code and amount.
-    @objc public static let virtualCurrency = AdRewardType(rawValue: "virtual_currency")
-
-    /// Verification succeeded but the ad granted no reward.
-    @objc public static let noReward = AdRewardType(rawValue: "no_reward")
-
-    /// Verification succeeded with a reward type that the SDK does not currently model.
-    @objc public static let unsupportedReward = AdRewardType(rawValue: "unsupported_reward")
-
-    // MARK: - NSObject overrides for equality
-
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? AdRewardType else { return false }
-        return self.rawValue == other.rawValue
-    }
-
-    public override var hash: Int {
-        return self.rawValue.hash
-    }
-
-}
-
 /// Type representing the reason a rewarded-ad verification failed.
 ///
 /// The predefined static properties contain the known failure reasons.
@@ -773,26 +737,29 @@ extension AdRevenue {
     @objc public private(set) var placement: String?
     @objc public private(set) var adUnitId: String
     @objc public private(set) var impressionId: String
-    @objc public private(set) var rewardType: AdRewardType
-    @objc public private(set) var rewardCurrencyCode: String?
-    private let rewardCurrencyAmountRawValue: Int?
-    @objc public var rewardCurrencyAmount: NSNumber? {
-        return self.rewardCurrencyAmountRawValue.map(NSNumber.init(value:))
-    }
-    public var rewardCurrencyAmountValue: Int? {
-        return self.rewardCurrencyAmountRawValue
+
+    /// The verified reward payload.
+    public private(set) var reward: AdReward
+
+    /// Stable raw value for the reward kind (e.g. `"virtual_currency"`). Provided for ObjC consumers.
+    @objc public var rewardKindRawValue: String { return self.reward.kindRawValue }
+
+    /// Virtual-currency code when ``reward`` is a virtual-currency line item. Provided for ObjC consumers.
+    @objc public var virtualCurrencyCode: String? { return self.reward.virtualCurrency?.code }
+
+    /// Virtual-currency amount when ``reward`` is a virtual-currency line item. Provided for ObjC consumers.
+    @objc public var virtualCurrencyAmount: NSNumber? {
+        return self.reward.virtualCurrency.map { NSNumber(value: $0.amount) }
     }
 
-    @objc public init(
+    public init(
         networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
         placement: String?,
         adUnitId: String,
         impressionId: String,
-        rewardType: AdRewardType,
-        rewardCurrencyCode: String?,
-        rewardCurrencyAmount: NSNumber?
+        reward: AdReward
     ) {
         self.networkName = networkName
         self.mediatorName = mediatorName
@@ -800,22 +767,21 @@ extension AdRevenue {
         self.placement = placement
         self.adUnitId = adUnitId
         self.impressionId = impressionId
-        self.rewardType = rewardType
-        self.rewardCurrencyCode = rewardCurrencyCode
-        self.rewardCurrencyAmountRawValue = rewardCurrencyAmount?.intValue
+        self.reward = reward
         super.init()
     }
 
-    public convenience init(
+    /// ObjC-compatible initializer. Construct the reward payload from the flat reward fields.
+    @objc public convenience init(
         networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
         placement: String?,
         adUnitId: String,
         impressionId: String,
-        rewardType: AdRewardType,
-        rewardCurrencyCode: String?,
-        rewardCurrencyAmount: Int?
+        rewardKindRawValue: String,
+        virtualCurrencyCode: String?,
+        virtualCurrencyAmount: NSNumber?
     ) {
         self.init(
             networkName: networkName,
@@ -824,12 +790,32 @@ extension AdRevenue {
             placement: placement,
             adUnitId: adUnitId,
             impressionId: impressionId,
-            rewardType: rewardType,
-            rewardCurrencyCode: rewardCurrencyCode,
-            rewardCurrencyAmount: rewardCurrencyAmount.map(NSNumber.init(value:))
+            reward: Self.makeReward(
+                kindRawValue: rewardKindRawValue,
+                virtualCurrencyCode: virtualCurrencyCode,
+                virtualCurrencyAmount: virtualCurrencyAmount?.intValue
+            )
         )
     }
     // swiftlint:enable missing_docs
+
+    private static func makeReward(
+        kindRawValue: String,
+        virtualCurrencyCode: String?,
+        virtualCurrencyAmount: Int?
+    ) -> AdReward {
+        switch kindRawValue {
+        case AdReward.Kind.virtualCurrency:
+            if let code = virtualCurrencyCode, let amount = virtualCurrencyAmount, amount > 0 {
+                return .virtualCurrency(VirtualCurrencyReward(code: code, amount: amount))
+            }
+            return .unsupportedReward
+        case AdReward.Kind.noReward:
+            return .noReward
+        default:
+            return .unsupportedReward
+        }
+    }
 
     // MARK: - NSObject overrides for equality
 
@@ -841,9 +827,7 @@ extension AdRevenue {
                self.placement == other.placement &&
                self.adUnitId == other.adUnitId &&
                self.impressionId == other.impressionId &&
-               self.rewardType == other.rewardType &&
-               self.rewardCurrencyCode == other.rewardCurrencyCode &&
-               self.rewardCurrencyAmountRawValue == other.rewardCurrencyAmountRawValue
+               self.reward == other.reward
     }
 
     public override var hash: Int {
@@ -854,12 +838,16 @@ extension AdRevenue {
         hasher.combine(placement)
         hasher.combine(adUnitId)
         hasher.combine(impressionId)
-        hasher.combine(rewardType)
-        hasher.combine(rewardCurrencyCode)
-        hasher.combine(rewardCurrencyAmountRawValue)
+        hasher.combine(self.reward.kindRawValue)
+        hasher.combine(self.reward.virtualCurrency?.code)
+        hasher.combine(self.reward.virtualCurrency?.amount)
         return hasher.finalize()
     }
 
+    // MARK: - Codable
+
+    /// Wire-format keys. ``reward`` is encoded as flat `rewardType` / `rewardCurrencyCode` /
+    /// `rewardCurrencyAmount` fields so the backend schema remains unchanged.
     private enum CodingKeys: String, CodingKey {
         case networkName
         case mediatorName
@@ -869,7 +857,42 @@ extension AdRevenue {
         case impressionId
         case rewardType
         case rewardCurrencyCode
-        case rewardCurrencyAmountRawValue = "rewardCurrencyAmount"
+        case rewardCurrencyAmount
+    }
+
+    // swiftlint:disable:next missing_docs
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(self.networkName, forKey: .networkName)
+        try container.encode(self.mediatorName, forKey: .mediatorName)
+        try container.encode(self.adFormat, forKey: .adFormat)
+        try container.encodeIfPresent(self.placement, forKey: .placement)
+        try container.encode(self.adUnitId, forKey: .adUnitId)
+        try container.encode(self.impressionId, forKey: .impressionId)
+        try container.encode(self.reward.kindRawValue, forKey: .rewardType)
+        try container.encodeIfPresent(self.reward.virtualCurrency?.code, forKey: .rewardCurrencyCode)
+        try container.encodeIfPresent(self.reward.virtualCurrency?.amount, forKey: .rewardCurrencyAmount)
+    }
+
+    // swiftlint:disable:next missing_docs
+    public convenience init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let rewardKind = try container.decode(String.self, forKey: .rewardType)
+        let code = try container.decodeIfPresent(String.self, forKey: .rewardCurrencyCode)
+        let amount = try container.decodeIfPresent(Int.self, forKey: .rewardCurrencyAmount)
+        self.init(
+            networkName: try container.decodeIfPresent(String.self, forKey: .networkName),
+            mediatorName: try container.decode(MediatorName.self, forKey: .mediatorName),
+            adFormat: try container.decode(AdFormat.self, forKey: .adFormat),
+            placement: try container.decodeIfPresent(String.self, forKey: .placement),
+            adUnitId: try container.decode(String.self, forKey: .adUnitId),
+            impressionId: try container.decode(String.self, forKey: .impressionId),
+            reward: Self.makeReward(
+                kindRawValue: rewardKind,
+                virtualCurrencyCode: code,
+                virtualCurrencyAmount: amount
+            )
+        )
     }
 
 }

@@ -159,13 +159,6 @@
         NSString *currency __unused = revenueWithPlacement.currency;
         RCAdRevenuePrecision *precision __unused = revenueWithPlacement.precision;
 
-        // AdRewardType API
-        RCAdRewardType *rewardTypeFromRaw __unused = [[RCAdRewardType alloc] initWithRawValue:@"custom_reward"];
-        RCAdRewardType *virtualCurrency __unused = RCAdRewardType.virtualCurrency;
-        RCAdRewardType *noReward __unused = RCAdRewardType.noReward;
-        RCAdRewardType *unsupportedReward __unused = RCAdRewardType.unsupportedReward;
-        NSString *rewardTypeRawValue __unused = virtualCurrency.rawValue;
-
         // AdRewardFailureReason API
         RCAdRewardFailureReason *failureReasonFromRaw __unused =
             [[RCAdRewardFailureReason alloc] initWithRawValue:@"custom_reason"];
@@ -204,18 +197,18 @@
                                                   placement:@"home_screen"
                                                    adUnitId:@"ca-app-pub-123"
                                                impressionId:@"impression-123"
-                                                 rewardType:RCAdRewardType.virtualCurrency
-                                         rewardCurrencyCode:@"GOLD"
-                                       rewardCurrencyAmount:@100];
+                                         rewardKindRawValue:@"virtual_currency"
+                                        virtualCurrencyCode:@"GOLD"
+                                      virtualCurrencyAmount:@100];
         NSString *verifiedNetworkName __unused = verified.networkName;
         RCMediatorName *verifiedMediator __unused = verified.mediatorName;
         RCAdFormat *verifiedFormat __unused = verified.adFormat;
         NSString *verifiedPlacement __unused = verified.placement;
         NSString *verifiedAdUnitId __unused = verified.adUnitId;
         NSString *verifiedImpressionId __unused = verified.impressionId;
-        RCAdRewardType *verifiedRewardType __unused = verified.rewardType;
-        NSString *verifiedRewardCurrencyCode __unused = verified.rewardCurrencyCode;
-        NSNumber *verifiedRewardCurrencyAmount __unused = verified.rewardCurrencyAmount;
+        NSString *verifiedRewardKindRawValue __unused = verified.rewardKindRawValue;
+        NSString *verifiedVirtualCurrencyCode __unused = verified.virtualCurrencyCode;
+        NSNumber *verifiedVirtualCurrencyAmount __unused = verified.virtualCurrencyAmount;
 
         // AdRewardFailedToVerify API
         RCAdRewardFailedToVerify *failedToVerify __unused =

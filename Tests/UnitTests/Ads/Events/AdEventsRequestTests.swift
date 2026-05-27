@@ -347,9 +347,7 @@ private extension AdFeatureEventsRequestTests {
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
         impressionId: "impression-123",
-        rewardType: .virtualCurrency,
-        rewardCurrencyCode: "GOLD",
-        rewardCurrencyAmount: 100
+        reward: .virtualCurrency(code: "GOLD", amount: 100)
     )
 
     static let rewardFailedToVerifyData: AdRewardFailedToVerify = .init(

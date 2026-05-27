@@ -74,7 +74,7 @@ final class VerifiedRewardedAdManager: NSObject, ObservableObject {
                 self.shouldReportDismissedBeforeReward = false
                 self.rewardedAd = nil
                 self.message = Message.forVerificationResult(result)
-                print("✅ Rewarded verification finished: \(String(describing: result.verifiedReward))")
+                print("✅ Rewarded verification finished: \(String(describing: result.reward))")
             }
         )
     }

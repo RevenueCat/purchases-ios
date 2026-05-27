@@ -10,7 +10,7 @@ final class RewardVerificationResultTests: AdapterTestCase {
         let result = RewardVerificationResult.verified(.noReward)
 
         XCTAssertFalse(result.isFailed)
-        XCTAssertEqual(result.verifiedReward, .noReward)
+        XCTAssertEqual(result.reward, .noReward)
         XCTAssertEqual(result, .verified(.noReward))
     }
 
@@ -18,13 +18,13 @@ final class RewardVerificationResultTests: AdapterTestCase {
         let result = RewardVerificationResult.failed
 
         XCTAssertTrue(result.isFailed)
-        XCTAssertNil(result.verifiedReward)
+        XCTAssertNil(result.reward)
         XCTAssertEqual(result, .failed)
     }
 
     func testUnsupportedRewardResult() {
         let result = RewardVerificationResult.verified(.unsupportedReward)
-        XCTAssertEqual(result.verifiedReward, .unsupportedReward)
+        XCTAssertEqual(result.reward, .unsupportedReward)
     }
 }
 

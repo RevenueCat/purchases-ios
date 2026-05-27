@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@_spi(Internal) @testable import RevenueCat
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 
 // swiftlint:disable:next type_name
 final class RewardVerificationStatusResponseDecodingTests: TestCase {

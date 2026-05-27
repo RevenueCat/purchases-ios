@@ -188,14 +188,14 @@ rewardedAd?.present(
         // Reward verification started
     },
     rewardVerificationCompleted: { result in
-        guard let verifiedReward = result.verifiedReward else {
+        guard let reward = result.reward else {
             print("Reward verification failed")
             return
         }
 
-        if let virtualCurrency = verifiedReward.virtualCurrency {
+        if let virtualCurrency = reward.virtualCurrency {
             print("Granted \(virtualCurrency.amount) \(virtualCurrency.code)")
-        } else if verifiedReward == .noReward {
+        } else if reward == .noReward {
             print("Verified with no reward to grant")
         } else {
             print("Verified reward type is not supported in this SDK version")
@@ -269,14 +269,14 @@ rewardedInterstitialAd?.present(
         // Reward verification started
     },
     rewardVerificationCompleted: { result in
-        guard let verifiedReward = result.verifiedReward else {
+        guard let reward = result.reward else {
             print("Reward verification failed")
             return
         }
 
-        if let virtualCurrency = verifiedReward.virtualCurrency {
+        if let virtualCurrency = reward.virtualCurrency {
             print("Granted \(virtualCurrency.amount) \(virtualCurrency.code)")
-        } else if verifiedReward == .noReward {
+        } else if reward == .noReward {
             print("Verified with no reward to grant")
         } else {
             print("Verified reward type is not supported in this SDK version")

@@ -63,11 +63,11 @@ struct Message: Equatable {
     }
 
     static func forVerificationResult(_ result: RewardVerificationResult) -> Message {
-        guard let verifiedReward = result.verifiedReward else {
+        guard let reward = result.reward else {
             return Self.verificationFailed
         }
 
-        if let virtualCurrency = verifiedReward.virtualCurrency {
+        if let virtualCurrency = reward.virtualCurrency {
             return .init(
                 text: String(
                     format: Self.verificationRewardGrantedTemplate,
@@ -77,13 +77,13 @@ struct Message: Equatable {
                 severity: .success,
                 isLoading: false
             )
-        } else if verifiedReward == .noReward {
+        } else if reward == .noReward {
             return .init(
                 text: Self.verificationNoRewardText,
                 severity: .success,
                 isLoading: false
             )
-        } else if verifiedReward == .unsupportedReward {
+        } else if reward == .unsupportedReward {
             return .init(
                 text: Self.verificationUnsupportedRewardText,
                 severity: .warning,

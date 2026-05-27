@@ -236,9 +236,7 @@ public final class AdTracker: NSObject {
          placement: "home_screen",
          adUnitId: "ca-app-pub-123",
          impressionId: "impression-456",
-         rewardType: .virtualCurrency,
-         rewardCurrencyCode: "GOLD",
-         rewardCurrencyAmount: 100
+         reward: .virtualCurrency(code: "GOLD", amount: 100)
      ))
      ```
      */

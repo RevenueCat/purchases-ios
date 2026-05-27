@@ -3,7 +3,7 @@ import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @_spi(Experimental) import RevenueCat
 @_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
@@ -51,9 +51,9 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         self.wait(for: [expectation], timeout: 2.0)
 
         let result = try XCTUnwrap(receivedResult)
-        XCTAssertNotNil(result.verifiedReward)
-        XCTAssertEqual(result.verifiedReward?.virtualCurrency?.code, "coins")
-        XCTAssertEqual(result.verifiedReward?.virtualCurrency?.amount, 4)
+        XCTAssertNotNil(result.reward)
+        XCTAssertEqual(result.reward?.virtualCurrency?.code, "coins")
+        XCTAssertEqual(result.reward?.virtualCurrency?.amount, 4)
     }
 
     func testCreateUserDidEarnRewardHandlerWithStateDeliversFailedWhenPollerFails() throws {

@@ -122,9 +122,9 @@ extension AdEventsRequest.AdEventRequest {
                 rewardVerificationEnabled: adEvent.rewardEarnedUnverifiedData?.rewardVerificationEnabled,
                 rewardItem: adEvent.rewardEarnedUnverifiedData?.rewardItem,
                 rewardAmount: adEvent.rewardEarnedUnverifiedData?.rewardAmountValue,
-                rewardType: adEvent.rewardVerifiedData?.rewardType.rawValue,
-                rewardCurrencyCode: adEvent.rewardVerifiedData?.rewardCurrencyCode,
-                rewardCurrencyAmount: adEvent.rewardVerifiedData?.rewardCurrencyAmountValue,
+                rewardType: adEvent.rewardVerifiedData?.reward.kindRawValue,
+                rewardCurrencyCode: adEvent.rewardVerifiedData?.reward.virtualCurrency?.code,
+                rewardCurrencyAmount: adEvent.rewardVerifiedData?.reward.virtualCurrency?.amount,
                 failureReason: adEvent.rewardFailedToVerifyData?.failureReason.rawValue
             )
         } catch {

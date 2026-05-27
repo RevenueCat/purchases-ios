@@ -348,9 +348,7 @@ class AdEventTests: TestCase {
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            rewardType: .virtualCurrency,
-            rewardCurrencyCode: "GOLD",
-            rewardCurrencyAmount: 100
+            reward: .virtualCurrency(code: "GOLD", amount: 100)
         )
 
         let event2 = AdRewardVerified(
@@ -360,9 +358,7 @@ class AdEventTests: TestCase {
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            rewardType: .noReward,
-            rewardCurrencyCode: nil,
-            rewardCurrencyAmount: nil as Int?
+            reward: .noReward
         )
 
         expect(event1) != event2
@@ -376,9 +372,7 @@ class AdEventTests: TestCase {
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            rewardType: .virtualCurrency,
-            rewardCurrencyCode: "GOLD",
-            rewardCurrencyAmount: 100
+            reward: .virtualCurrency(code: "GOLD", amount: 100)
         )
 
         let event2 = AdRewardVerified(
@@ -388,15 +382,13 @@ class AdEventTests: TestCase {
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            rewardType: .virtualCurrency,
-            rewardCurrencyCode: "GOLD",
-            rewardCurrencyAmount: 100
+            reward: .virtualCurrency(code: "GOLD", amount: 100)
         )
 
         expect(event1) == event2
     }
 
-    func testAdRewardVerifiedAllowsNilCurrencyFieldsForNonVirtualCurrencyTypes() {
+    func testAdRewardVerifiedNoRewardHasNoVirtualCurrencyPayload() {
         let event = AdRewardVerified(
             networkName: "AdMob",
             mediatorName: .adMob,
@@ -404,14 +396,11 @@ class AdEventTests: TestCase {
             placement: nil,
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            rewardType: .noReward,
-            rewardCurrencyCode: nil,
-            rewardCurrencyAmount: nil as Int?
+            reward: .noReward
         )
 
-        expect(event.rewardCurrencyCode).to(beNil())
-        expect(event.rewardCurrencyAmount).to(beNil())
-        expect(event.rewardType) == AdRewardType.noReward
+        expect(event.reward.virtualCurrency).to(beNil())
+        expect(event.reward) == AdReward.noReward
     }
 
     // MARK: - AdRewardFailedToVerify Equality
@@ -464,12 +453,12 @@ class AdEventTests: TestCase {
         expect(event1) == event2
     }
 
-    // MARK: - AdRewardType / AdRewardFailureReason rawValue stability
+    // MARK: - AdReward / AdRewardFailureReason rawValue stability
 
-    func testAdRewardTypeStaticConstantsHaveStableRawValues() {
-        expect(AdRewardType.virtualCurrency.rawValue) == "virtual_currency"
-        expect(AdRewardType.noReward.rawValue) == "no_reward"
-        expect(AdRewardType.unsupportedReward.rawValue) == "unsupported_reward"
+    func testAdRewardKindRawValuesAreStable() {
+        expect(AdReward.virtualCurrency(code: "x", amount: 1).kindRawValue) == "virtual_currency"
+        expect(AdReward.noReward.kindRawValue) == "no_reward"
+        expect(AdReward.unsupportedReward.kindRawValue) == "unsupported_reward"
     }
 
     func testAdRewardFailureReasonStaticConstantsHaveStableRawValues() {
@@ -508,9 +497,7 @@ class AdEventTests: TestCase {
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            rewardType: .virtualCurrency,
-            rewardCurrencyCode: "GOLD",
-            rewardCurrencyAmount: 100
+            reward: .virtualCurrency(code: "GOLD", amount: 100)
         )
 
         let data = try JSONEncoder.default.encode(original)

@@ -8,7 +8,7 @@ import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @_spi(Experimental) import RevenueCat
 
 @available(iOS 15.0, *)
 @_spi(Experimental) public extension GoogleMobileAds.RewardedAd {
@@ -199,7 +199,7 @@ internal extension RewardVerification.CapableAd {
                 state: state,
                 poller: resolvedPoller,
                 outcomeHandler: { internalOutcome in
-                    if case .verified(.virtualCurrency) = internalOutcome {
+                    if case .verified(let reward) = internalOutcome, reward.virtualCurrency != nil {
                         invalidateVirtualCurrenciesCache()
                     }
                     rewardVerificationCompleted(RewardVerification.mapOutcome(internalOutcome))
@@ -213,21 +213,10 @@ internal extension RewardVerification.CapableAd {
 
 @available(iOS 15.0, *)
 internal extension RewardVerification {
-    static func mapVerifiedReward(_ reward: RevenueCat.VerifiedReward) -> RevenueCatAdMob.VerifiedReward {
-        switch reward {
-        case .virtualCurrency(let item):
-            return .virtualCurrency(code: item.code, amount: item.amount)
-        case .noReward:
-            return .noReward
-        case .unsupportedReward:
-            return .unsupportedReward
-        }
-    }
-
     static func mapOutcome(_ outcome: Outcome) -> RewardVerificationResult {
         switch outcome {
         case .verified(let reward):
-            return .verified(self.mapVerifiedReward(reward))
+            return .verified(reward)
         case .failed:
             return .failed
         }

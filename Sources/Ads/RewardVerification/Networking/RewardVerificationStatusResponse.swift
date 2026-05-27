@@ -19,7 +19,7 @@ struct RewardVerificationStatusResponse: Equatable {
 
     enum Status: Equatable {
 
-        case verified(VerifiedReward)
+        case verified(AdReward)
         case pending
         case failed
         case unknown
@@ -69,7 +69,7 @@ extension RewardVerificationStatusResponse: Decodable {
 
     private static func decodeVerifiedReward(
         from container: KeyedDecodingContainer<CodingKeys>
-    ) -> VerifiedReward {
+    ) -> AdReward {
         guard container.contains(.reward),
               (try? container.decodeNil(forKey: .reward)) != true else {
             return .noReward
