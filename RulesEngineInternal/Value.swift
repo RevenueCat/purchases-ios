@@ -76,7 +76,10 @@ extension Value {
 ///
 /// - Same-type primitive comparisons are direct value equality.
 /// - Cross-numeric (`int` ↔ `float`) bridges as one number type.
-/// - **Same-compound**: arrays/objects compare structurally.
+/// - **Compound vs compound**: always `false`. JS uses reference
+///   identity for arrays/objects; we have no references, so we mirror
+///   the literal-vs-literal result (`[1] == [1]` → `false`,
+///   `{a:1} == {a:1}` → `false`).
 /// - **Compound vs primitive**: applies JS abstract equality's
 ///   `ToPrimitive(string-hint)` step. Arrays render via
 ///   `Array.prototype.toString()` (recursive comma-join, with
@@ -107,20 +110,16 @@ func looseEq(_ lhs: Value, _ rhs: Value) -> Bool {
          (.float(let floatValue), .int(let intValue)):
         return Double(intValue) == floatValue
 
-    case (.array(let left), .array(let right)):
-        return left.count == right.count && zip(left, right).allSatisfy { looseEq($0, $1) }
-
-    case (.object(let left), .object(let right)):
-        guard left.count == right.count else { return false }
-        for (key, value) in left {
-            guard let other = right[key], looseEq(value, other) else { return false }
-        }
-        return true
+    // Compound-vs-compound is reference equality in JS; without
+    // references the only spec-aligned answer for two distinct
+    // operands is `false`.
+    case (.array, .array), (.object, .object), (.array, .object), (.object, .array):
+        return false
 
     // JS abstract-equality coercion: when one side is a compound (Array
     // or Object) and the other is a primitive, ToPrimitive(string-hint)
-    // the compound and re-compare. Order matters — same-compound cases
-    // above must match first so `[1] == [1]` stays structural.
+    // the compound and re-compare. Order matters — compound-vs-compound
+    // cases above must match first.
     case (.array(let items), _):
         return looseEq(.string(jsArrayJoin(items)), rhs)
     case (_, .array(let items)):
@@ -197,7 +196,8 @@ let jsObjectString = "[object Object]"
 
 /// JSON Logic strict equality (`===`). Same type, same value. `int(1)`
 /// and `float(1.0)` compare equal — they represent the same JS `Number`.
-// swiftlint:disable:next cyclomatic_complexity
+/// Arrays and objects always compare unequal (JS reference identity;
+/// see `looseEq` for the same rationale).
 func strictEq(_ lhs: Value, _ rhs: Value) -> Bool {
     switch (lhs, rhs) {
     case (.null, .null):
@@ -213,14 +213,6 @@ func strictEq(_ lhs: Value, _ rhs: Value) -> Bool {
         return Double(intValue) == floatValue
     case (.string(let left), .string(let right)):
         return left == right
-    case (.array(let left), .array(let right)):
-        return left.count == right.count && zip(left, right).allSatisfy { strictEq($0, $1) }
-    case (.object(let left), .object(let right)):
-        guard left.count == right.count else { return false }
-        for (key, value) in left {
-            guard let other = right[key], strictEq(value, other) else { return false }
-        }
-        return true
     default:
         return false
     }
