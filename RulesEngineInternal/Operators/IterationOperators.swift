@@ -51,20 +51,20 @@ enum IterationOperators {
     /// argument is evaluated in the outer scope; the predicate template
     /// is returned unevaluated so the caller can re-evaluate it per
     /// item with the item as scope. A non-array source resolves to an
-    /// empty `items` list, which the caller turns into `false`.
+    /// empty `items` list, which the caller turns into `false`. A
+    /// missing predicate defaults to `.null` and arguments past the
+    /// second are ignored, matching `json-logic-js`'s
+    /// `function(scopedData, scopedLogic)` signature.
     private static func parseIterationArgs(
         _ args: Value,
         vars: Value,
         opName: String
     ) throws -> ([Value], Value) {
         let raw = Operators.argsAsList(args)
-        guard raw.count == 2 else {
-            throw RuleError.typeMismatch(
-                message: "operator '\(opName)' expects 2 arguments, got \(raw.count)"
-            )
-        }
-        let source = try Evaluator.evaluateValue(raw[0], vars: vars)
-        guard case .array(let items) = source else { return ([], raw[1]) }
-        return (items, raw[1])
+        let sourceArg: Value = raw.indices.contains(0) ? raw[0] : .null
+        let predicate: Value = raw.indices.contains(1) ? raw[1] : .null
+        let source = try Evaluator.evaluateValue(sourceArg, vars: vars)
+        guard case .array(let items) = source else { return ([], predicate) }
+        return (items, predicate)
     }
 }

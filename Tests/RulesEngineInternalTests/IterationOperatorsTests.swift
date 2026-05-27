@@ -100,18 +100,16 @@ final class IterationOperatorsTests: XCTestCase {
         XCTAssertEqual(out, .bool(true))
     }
 
-    func testSomeArityMismatchIsTypeError() {
-        XCTAssertThrowsError(
-            try IterationOperators.opSome(
-                args: arr(.array([])),
-                vars: .null
-            )
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                XCTFail("expected typeMismatch, got \(error)")
-                return
-            }
-        }
+    /// `json-logic-js` declares `some` as `function(scopedData,
+    /// scopedLogic)`: a missing predicate evaluates to `undefined`
+    /// per item (never truthy), so an array-shaped source returns
+    /// `false`.
+    func testSomeMissingPredicateReturnsFalse() throws {
+        let out = try IterationOperators.opSome(
+            args: arr(arr(.int(1), .int(2))),
+            vars: .null
+        )
+        XCTAssertEqual(out, .bool(false))
     }
 
     // MARK: - all
@@ -186,18 +184,16 @@ final class IterationOperatorsTests: XCTestCase {
         XCTAssertEqual(out, .bool(true))
     }
 
-    func testAllArityMismatchIsTypeError() {
-        XCTAssertThrowsError(
-            try IterationOperators.opAll(
-                args: arr(.array([]), gtZero, .int(1)),
-                vars: .null
-            )
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                XCTFail("expected typeMismatch, got \(error)")
-                return
-            }
-        }
+    /// `json-logic-js` discards arguments past the second. With three
+    /// args, `all` evaluates `gtZero` against the (empty) source and
+    /// returns `false` (empty arrays are not vacuously true in JSON
+    /// Logic).
+    func testAllIgnoresArgsBeyondSecond() throws {
+        let out = try IterationOperators.opAll(
+            args: arr(arr(.int(1), .int(2)), gtZero, .int(999)),
+            vars: .null
+        )
+        XCTAssertEqual(out, .bool(true))
     }
 
     // MARK: - Scope semantics
