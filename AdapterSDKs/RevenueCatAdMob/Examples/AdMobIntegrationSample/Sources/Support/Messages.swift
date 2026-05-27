@@ -1,4 +1,5 @@
 import Foundation
+@_spi(Experimental) import RevenueCat
 @_spi(Experimental) import RevenueCatAdMob
 
 struct Message: Equatable {
