@@ -29,6 +29,10 @@ import Foundation
         public let overrides: ComponentOverrides<PartialButtonComponent>?
         /// Preserves the backend-only `close_workflow` action without growing the public enum surface.
         @_spi(Internal) public let isCloseWorkflowAction: Bool
+        /// Declarative variable-store mutations to apply when this button is tapped. Optional and
+        /// absent on legacy buttons. Each entry is decoded as `PaywallComponent.VariableUpdate`;
+        /// unknown shapes fall through as `.unsupported` and are silently skipped at apply time.
+        @_spi(Internal) public let variableUpdates: [PaywallComponent.VariableUpdate]?
 
         public init(
             name: String? = nil,
@@ -37,7 +41,8 @@ import Foundation
             action: Action,
             stack: PaywallComponent.StackComponent,
             transition: PaywallComponent.Transition? = nil,
-            overrides: ComponentOverrides<PartialButtonComponent>? = nil
+            overrides: ComponentOverrides<PartialButtonComponent>? = nil,
+            variableUpdates: [PaywallComponent.VariableUpdate]? = nil
         ) {
             self.type = .button
             self.name = name
@@ -48,6 +53,7 @@ import Foundation
             self.transition = transition
             self.overrides = overrides
             self.isCloseWorkflowAction = false
+            self.variableUpdates = variableUpdates
         }
 
         private enum CodingKeys: String, CodingKey {
@@ -59,6 +65,7 @@ import Foundation
             case stack
             case transition
             case overrides
+            case variableUpdates
         }
 
         private enum ActionCodingKeys: String, CodingKey {
@@ -86,6 +93,10 @@ import Foundation
                 ComponentOverrides<PartialButtonComponent>.self,
                 forKey: .overrides
             )
+            self.variableUpdates = try container.decodeIfPresent(
+                [PaywallComponent.VariableUpdate].self,
+                forKey: .variableUpdates
+            )
         }
 
         public func encode(to encoder: Encoder) throws {
@@ -103,6 +114,7 @@ import Foundation
             try container.encode(stack, forKey: .stack)
             try container.encodeIfPresent(transition, forKey: .transition)
             try container.encodeIfPresent(overrides, forKey: .overrides)
+            try container.encodeIfPresent(variableUpdates, forKey: .variableUpdates)
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -115,6 +127,7 @@ import Foundation
             hasher.combine(stack)
             hasher.combine(transition)
             hasher.combine(overrides)
+            hasher.combine(variableUpdates)
         }
 
         public static func == (lhs: ButtonComponent, rhs: ButtonComponent) -> Bool {
@@ -126,7 +139,8 @@ import Foundation
                    lhs.isCloseWorkflowAction == rhs.isCloseWorkflowAction &&
                    lhs.stack == rhs.stack &&
                    lhs.transition == rhs.transition &&
-                   lhs.overrides == rhs.overrides
+                   lhs.overrides == rhs.overrides &&
+                   lhs.variableUpdates == rhs.variableUpdates
 
         }
 

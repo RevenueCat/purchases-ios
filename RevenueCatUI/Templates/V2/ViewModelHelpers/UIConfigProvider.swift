@@ -71,15 +71,23 @@ final class UIConfigProvider {
         }
     }
 
-    /// Creates a `ConditionContext` by merging developer-provided custom variables with dashboard defaults.
+    /// Creates a `ConditionContext` by layering paywall variable values:
+    ///   1. Dashboard defaults (from `UIConfig.customVariables`).
+    ///   2. Developer-provided overrides (passed via `customVariables` here, sourced from
+    ///      the `.customPaywallVariables(...)` modifier).
+    ///   3. Runtime mutations (passed via `mutatedVariables`, sourced from `PaywallVariablesStore`).
+    /// Mutations are the highest-priority layer. `.variable(...)` rule conditions read the merged dict.
     func conditionContext(
         selectedPackageId: String?,
-        customVariables: [String: CustomVariableValue]
+        customVariables: [String: CustomVariableValue],
+        mutatedVariables: [String: PaywallComponent.ConditionValue] = [:]
     ) -> ConditionContext {
-        ConditionContext(
+        let mutated = mutatedVariables.mapValues { $0.asCustomVariableValue }
+        return ConditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
-            defaultCustomVariables: self.defaultCustomVariables
+            defaultCustomVariables: self.defaultCustomVariables,
+            mutatedVariables: mutated
         )
     }
 
