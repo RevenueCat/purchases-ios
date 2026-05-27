@@ -59,15 +59,19 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
         self.presentingAdObjectID = presentingAdObjectID
         self.shouldReportDismissedBeforeReward = true
         self.message = Message.Rewarded.waitingForReward
-        loadedAd.present(from: viewController, userDidEarnRewardHandler: { [weak self] in
-            guard let self else { return }
-            guard self.presentingAdObjectID == presentingAdObjectID else { return }
-            let reward = loadedAd.adReward
-            self.presentingAdObjectID = nil
-            self.shouldReportDismissedBeforeReward = false
-            self.message = Message.Rewarded.rewardGranted(amount: reward.amount, type: reward.type)
-            print("✅ User earned reward (rewarded interstitial)")
-        })
+        loadedAd.present(
+            from: viewController,
+            placement: "rewarded_interstitial_main",
+            userDidEarnRewardHandler: { [weak self] in
+                guard let self else { return }
+                guard self.presentingAdObjectID == presentingAdObjectID else { return }
+                let reward = loadedAd.adReward
+                self.presentingAdObjectID = nil
+                self.shouldReportDismissedBeforeReward = false
+                self.message = Message.Rewarded.rewardGranted(amount: reward.amount, type: reward.type)
+                print("✅ User earned reward (rewarded interstitial)")
+            }
+        )
     }
 
 }

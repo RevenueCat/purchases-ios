@@ -2,7 +2,7 @@ import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @_spi(Experimental) import RevenueCat
 @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
@@ -151,9 +151,21 @@ final class SetupTests: AdapterTestCase {
 // MARK: - Test doubles
 
 @available(iOS 15.0, *)
-private final class FakeRewardedAd: RewardVerification.CapableAd {
+private final class FakeRewardedAd: NSObject, RewardVerification.CapableAd {
     var serverSideVerificationOptions: GoogleMobileAds.ServerSideVerificationOptions?
-    let responseInfo = GoogleMobileAds.ResponseInfo()
+    let responseInfo: GoogleMobileAds.ResponseInfo = unsafeBitCast(
+        FakeResponseInfo(),
+        to: GoogleMobileAds.ResponseInfo.self
+    )
+    var adUnitID: String = "fake-ad-unit"
+    var adReward: GoogleMobileAds.AdReward = .init()
+    var rewardedAdFormat: RevenueCat.AdFormat = .rewarded
+}
+
+@available(iOS 15.0, *)
+private final class FakeResponseInfo: NSObject {
+    @objc var responseIdentifier: String? { nil }
+    @objc var loadedAdNetworkResponseInfo: AnyObject? { nil }
 }
 
 #endif

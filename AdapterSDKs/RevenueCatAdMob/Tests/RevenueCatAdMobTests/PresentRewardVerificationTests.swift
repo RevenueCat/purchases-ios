@@ -258,9 +258,21 @@ final class PresentRewardVerificationTests: AdapterTestCase {
 // MARK: - Test doubles
 
 @available(iOS 15.0, *)
-private final class FakeCapableAd: RewardVerification.CapableAd {
+private final class FakeCapableAd: NSObject, RewardVerification.CapableAd {
     var serverSideVerificationOptions: GoogleMobileAds.ServerSideVerificationOptions?
-    let responseInfo = GoogleMobileAds.ResponseInfo()
+    let responseInfo: GoogleMobileAds.ResponseInfo = unsafeBitCast(
+        FakeResponseInfo(),
+        to: GoogleMobileAds.ResponseInfo.self
+    )
+    var adUnitID: String = "fake-ad-unit"
+    var adReward: GoogleMobileAds.AdReward = .init()
+    var rewardedAdFormat: RevenueCat.AdFormat = .rewarded
+}
+
+@available(iOS 15.0, *)
+private final class FakeResponseInfo: NSObject {
+    @objc var responseIdentifier: String? { nil }
+    @objc var loadedAdNetworkResponseInfo: AnyObject? { nil }
 }
 
 #endif

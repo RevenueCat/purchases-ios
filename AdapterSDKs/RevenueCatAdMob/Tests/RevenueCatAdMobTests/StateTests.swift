@@ -10,7 +10,7 @@ final class StateTests: AdapterTestCase {
     // MARK: - Storage
 
     func testStoresClientTransactionID() {
-        let state = RewardVerification.State(clientTransactionID: "tx-42")
+        let state = RewardVerification.State(clientTransactionID: "tx-42", impressionId: "")
 
         XCTAssertEqual(state.clientTransactionID, "tx-42")
     }
@@ -18,7 +18,7 @@ final class StateTests: AdapterTestCase {
     // MARK: - One-shot guard
 
     func testFirstConsumeFireTokenReturnsTrueAndSubsequentReturnFalse() {
-        let state = RewardVerification.State(clientTransactionID: "tx-1")
+        let state = RewardVerification.State(clientTransactionID: "tx-1", impressionId: "")
 
         XCTAssertTrue(state.consumeFireToken())
         XCTAssertFalse(state.consumeFireToken())

@@ -163,11 +163,14 @@ internal extension RewardVerification.CapableAd {
     /// RevenueCat reward-verification polling results.
     ///
     /// - Parameter poller: For unit tests; pass `nil` in production to use ``RewardVerification.Poller/makeDefault()``.
+    /// - Parameter tracker: For unit tests; defaults to the shared adapter tracker.
     @MainActor
+    // swiftlint:disable:next function_body_length cyclomatic_complexity
     func createUserDidEarnRewardHandler(
         rewardVerificationStarted: (@MainActor () -> Void)?,
         rewardVerificationCompleted: (@MainActor (RewardVerificationResult) -> Void)?,
         poller: RewardVerification.Poller? = nil,
+        tracker: Tracking.Tracker = Tracking.Adapter.shared.tracker,
         invalidateVirtualCurrenciesCache: @escaping @MainActor () -> Void
             = RewardVerification.SideEffects.invalidateVirtualCurrenciesCacheIfConfigured
     ) -> (() -> Void) {
@@ -181,7 +184,17 @@ internal extension RewardVerification.CapableAd {
             )
         }
 
-        return {
+        let rewardVerificationEnabled = (state != nil)
+
+        return { [weak self] in
+            guard let self else { return }
+            let impressionId = state?.impressionId ?? self.impressionId
+            self.fireEarnedUnverifiedEvent(
+                tracker: tracker,
+                impressionId: impressionId,
+                rewardVerificationEnabled: rewardVerificationEnabled
+            )
+
             rewardVerificationStarted?()
 
             guard let rewardVerificationCompleted else {
@@ -193,12 +206,46 @@ internal extension RewardVerification.CapableAd {
                 return
             }
 
+            let networkName = self.responseInfo.loadedAdNetworkResponseInfo?.adNetworkClassName
+            let placement = Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement
+            let adFormat = self.rewardedAdFormat
+            let adUnitId = self.adUnitID
             let resolvedPoller = poller ?? .makeDefault()
             RewardVerification.Dispatcher.dispatch(
                 clientTransactionID: state.clientTransactionID,
                 state: state,
                 poller: resolvedPoller,
                 outcomeHandler: { internalOutcome in
+                    if tracker.isConfigured {
+                        switch internalOutcome {
+                        case .verified(let reward):
+                            tracker.trackAdRewardVerified(.init(
+                                networkName: networkName,
+                                mediatorName: .adMob,
+                                adFormat: adFormat,
+                                placement: placement,
+                                adUnitId: adUnitId,
+                                impressionId: impressionId,
+                                reward: reward
+                            ))
+                        case .failed(let reason):
+                            let failureReason: RevenueCat.AdRewardFailureReason
+                            switch reason {
+                            case .timeout: failureReason = .timeout
+                            case .backendError: failureReason = .backendError
+                            case .unknown: failureReason = .unknown
+                            }
+                            tracker.trackAdRewardFailedToVerify(.init(
+                                networkName: networkName,
+                                mediatorName: .adMob,
+                                adFormat: adFormat,
+                                placement: placement,
+                                adUnitId: adUnitId,
+                                impressionId: impressionId,
+                                failureReason: failureReason
+                            ))
+                        }
+                    }
                     if case .verified(let reward) = internalOutcome, reward.virtualCurrency != nil {
                         invalidateVirtualCurrenciesCache()
                     }
@@ -213,6 +260,7 @@ internal extension RewardVerification.CapableAd {
 
 @available(iOS 15.0, *)
 internal extension RewardVerification {
+
     static func mapOutcome(_ outcome: Outcome) -> RewardVerificationResult {
         switch outcome {
         case .verified(let reward):
