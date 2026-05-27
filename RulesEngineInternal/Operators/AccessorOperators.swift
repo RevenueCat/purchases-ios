@@ -74,9 +74,7 @@ enum AccessorOperators {
     /// `{"missing_some": [min_required, [path, ...]]}` returns the
     /// missing-keys array (same shape as `missing`) IF fewer than
     /// `min_required` of the requested paths are present. Otherwise
-    /// returns `[]` (the rule's required-data condition is satisfied).
-    /// Used to express "any 2 of these 5 fields must be present" style
-    /// requirements.
+    /// returns `[]`.
     static func opMissingSome(args: Value, vars: Value) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
         guard evaluated.count == 2 else {
@@ -95,11 +93,9 @@ enum AccessorOperators {
         }
         let total = items.count
 
-        // Non-numeric `need_count` falls back to 0, mirroring the lenient
-        // coercion of our other operators. NaN / ±Infinity / out-of-range
-        // values are clamped by `Operators.clampedInt` instead of trapping
-        // the `Int` initializer (NaN → 0 satisfies trivially; +Infinity
-        // never satisfies; -Infinity always satisfies).
+        // Non-numeric `need_count` coerces to 0 (NaN → 0 satisfies
+        // trivially; +Infinity never satisfies; -Infinity always
+        // satisfies).
         let need = Operators.clampedInt(needCountValue.asNumber ?? 0)
 
         let missing = try opMissing(args: options, vars: vars)
