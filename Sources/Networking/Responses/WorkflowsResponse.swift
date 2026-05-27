@@ -52,6 +52,8 @@ import Foundation
     public let id: String
     let type: String
     public let screenId: String?
+    @DefaultDecodable.EmptyArray
+    var screenType: [String]
     @DefaultDecodable.EmptyDictionary
     var paramValues: [String: AnyDecodable]
     @DefaultDecodable.EmptyArray

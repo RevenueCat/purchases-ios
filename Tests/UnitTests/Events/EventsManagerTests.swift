@@ -466,6 +466,21 @@ class EventsManagerTests: TestCase {
         await self.verifyEmptyStore()
     }
 
+    // MARK: - trackEvent (WorkflowEvent)
+
+    func testTrackWorkflowEventStoresWithWorkflowsFeature() async throws {
+        let event = WorkflowEvent.stepStarted(
+            .init(),
+            .init(workflowId: "wfl_abc", stepId: "step-1", entryReason: "start", isFirstStep: true)
+        )
+
+        await self.manager.track(featureEvent: event)
+
+        let events = await self.store.storedEvents
+        expect(events).to(haveCount(1))
+        expect(events.first?.feature) == .workflows
+    }
+
     // MARK: - flushAllEvents
 
     func testFlushEmptyStore() async throws {
