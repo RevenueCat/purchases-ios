@@ -153,7 +153,7 @@ final class SetupTests: AdapterTestCase {
 @available(iOS 15.0, *)
 private final class FakeRewardedAd: RewardVerification.CapableAd {
     var serverSideVerificationOptions: GoogleMobileAds.ServerSideVerificationOptions?
-    var responseInfo: GoogleMobileAds.ResponseInfo?
+    let responseInfo = GoogleMobileAds.ResponseInfo()
 }
 
 #endif
