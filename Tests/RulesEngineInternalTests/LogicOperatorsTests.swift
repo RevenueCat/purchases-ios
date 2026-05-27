@@ -98,6 +98,17 @@ final class LogicOperatorsTests: XCTestCase {
         XCTAssertEqual(try LogicOperators.opOr(args: .array([]), vars: .null), .null)
     }
 
+    func testEmptyOrInsideIfTakesElseBranch() throws {
+        // Mirror of `testEmptyAndInsideIfTakesElseBranch`: empty `or`
+        // returns `.null` (falsy), so the surrounding `if` takes `else`.
+        let args = Value.array([
+            .object(["or": .array([])]),
+            .string("yes"),
+            .string("no")
+        ])
+        XCTAssertEqual(try LogicOperators.opIf(args: args, vars: .null), .string("no"))
+    }
+
     // MARK: - if
 
     func testIfThreeArgForm() throws {
