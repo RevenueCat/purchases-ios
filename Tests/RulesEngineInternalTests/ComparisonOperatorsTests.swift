@@ -107,19 +107,21 @@ final class ComparisonOperatorsTests: XCTestCase {
         )
     }
 
-    func testLtWrongArityIsTypeError() {
-        XCTAssertThrowsError(try run(ComparisonOperators.opLt, args: arr(.int(1)))) { error in
-            guard case RuleError.typeMismatch = error else {
-                return XCTFail("expected typeMismatch, got \(error)")
-            }
-        }
-        XCTAssertThrowsError(
-            try run(ComparisonOperators.opLt, args: arr(.int(1), .int(2), .int(3), .int(4)))
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                return XCTFail("expected typeMismatch, got \(error)")
-            }
-        }
+    /// `json-logic-js` declares `<` as `function(a, b, c)` so missing
+    /// operands resolve to `undefined`, which coerces to `NaN`; any
+    /// comparison against `NaN` is `false`.
+    func testLtMissingOperandsCompareAgainstNaN() throws {
+        XCTAssertEqual(try run(ComparisonOperators.opLt, args: arr(.int(1))), .bool(false))
+        XCTAssertEqual(try run(ComparisonOperators.opLt, args: arr()), .bool(false))
+    }
+
+    /// `json-logic-js`'s `<` ignores arguments past the third (JS
+    /// silently drops named parameters' overflow).
+    func testLtIgnoresArgsBeyondThird() throws {
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.int(1), .int(2), .int(3), .int(0))),
+            .bool(true)
+        )
     }
 
     // MARK: - <=
@@ -193,23 +195,20 @@ final class ComparisonOperatorsTests: XCTestCase {
         )
     }
 
-    func testGtThreeArgsIsTypeErrorNoBetweenForm() {
-        // `>` doesn't support a 3-arg between form (matches JS reference).
-        XCTAssertThrowsError(
-            try run(ComparisonOperators.opGt, args: arr(.int(3), .int(2), .int(1)))
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                return XCTFail("expected typeMismatch, got \(error)")
-            }
-        }
+    /// `>` is `function(a, b)` in `json-logic-js`, so extras are
+    /// silently discarded — there is no 3-arg between form.
+    func testGtIgnoresArgsBeyondSecond() throws {
+        XCTAssertEqual(
+            try run(ComparisonOperators.opGt, args: arr(.int(3), .int(2), .int(1))),
+            .bool(true)
+        )
     }
 
-    func testGtOneArgIsTypeError() {
-        XCTAssertThrowsError(try run(ComparisonOperators.opGt, args: arr(.int(1)))) { error in
-            guard case RuleError.typeMismatch = error else {
-                return XCTFail("expected typeMismatch, got \(error)")
-            }
-        }
+    /// Missing second operand resolves to `undefined`, coerces to
+    /// `NaN`, and any comparison against `NaN` is `false`.
+    func testGtMissingOperandsCompareAgainstNaN() throws {
+        XCTAssertEqual(try run(ComparisonOperators.opGt, args: arr(.int(1))), .bool(false))
+        XCTAssertEqual(try run(ComparisonOperators.opGt, args: arr()), .bool(false))
     }
 
     // MARK: - >=
@@ -230,14 +229,13 @@ final class ComparisonOperatorsTests: XCTestCase {
         )
     }
 
-    func testGeThreeArgsIsTypeErrorNoBetweenForm() {
-        XCTAssertThrowsError(
-            try run(ComparisonOperators.opGe, args: arr(.int(3), .int(2), .int(1)))
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                return XCTFail("expected typeMismatch, got \(error)")
-            }
-        }
+    /// `>=` is `function(a, b)` in `json-logic-js`, so extras are
+    /// silently discarded — there is no 3-arg between form.
+    func testGeIgnoresArgsBeyondSecond() throws {
+        XCTAssertEqual(
+            try run(ComparisonOperators.opGe, args: arr(.int(3), .int(2), .int(1))),
+            .bool(true)
+        )
     }
 
     // MARK: - Helpers
