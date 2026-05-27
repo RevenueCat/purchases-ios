@@ -68,12 +68,13 @@ final class ArithmeticOperatorsTests: XCTestCase {
         XCTAssertTrue(unwrapFloat(result).isNaN)
     }
 
-    func testAddZeroArgsIsTypeError() {
-        XCTAssertThrowsError(try run(ArithmeticOperators.opAdd, args: arr())) { error in
-            guard case RuleError.typeMismatch = error else {
-                return XCTFail("expected typeMismatch, got \(error)")
-            }
-        }
+    /// `{"+": []}` returns `0` per `json-logic-js`
+    /// (`Array.prototype.reduce(fn, 0)` with no operands returns the seed).
+    func testAddZeroArgsIsZero() throws {
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opAdd, args: arr()),
+            .float(0.0)
+        )
     }
 
     // MARK: - *
@@ -88,10 +89,21 @@ final class ArithmeticOperatorsTests: XCTestCase {
         )
     }
 
-    func testMulOneArgReturnsValueAsFloat() throws {
+    /// `{"*": [a]}` returns `a` unchanged per `json-logic-js` (single-arg
+    /// `Array.prototype.reduce` without seed returns the lone element
+    /// without invoking the reducer, so `parseFloat` is never applied).
+    func testMulOneArgReturnsValueUnchanged() throws {
         XCTAssertEqual(
             try run(ArithmeticOperators.opMul, args: arr(.int(5))),
-            .float(5.0)
+            .int(5)
+        )
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opMul, args: arr(.string("3.14abc"))),
+            .string("3.14abc")
+        )
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opMul, args: arr(.null)),
+            .null
         )
     }
 
@@ -139,22 +151,20 @@ final class ArithmeticOperatorsTests: XCTestCase {
         )
     }
 
-    func testSubThreeOrMoreArgsIsTypeError() {
-        XCTAssertThrowsError(
-            try run(ArithmeticOperators.opSub, args: arr(.int(1), .int(2), .int(3)))
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                return XCTFail("expected typeMismatch, got \(error)")
-            }
-        }
+    /// `{"-": [a, b, c, ...]}` ignores everything past the first two
+    /// operands per `json-logic-js` (`function(a, b)` only references the
+    /// first two `arguments`).
+    func testSubExtraArgsIgnored() throws {
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opSub, args: arr(.int(10), .int(3), .int(99))),
+            .float(7.0)
+        )
     }
 
-    func testSubZeroArgsIsTypeError() {
-        XCTAssertThrowsError(try run(ArithmeticOperators.opSub, args: arr())) { error in
-            guard case RuleError.typeMismatch = error else {
-                return XCTFail("expected typeMismatch, got \(error)")
-            }
-        }
+    /// `{"-": []}` returns `NaN` per `json-logic-js` (`a` is undefined,
+    /// `b === undefined` falls into the unary path → `-undefined` → NaN).
+    func testSubZeroArgsIsNan() throws {
+        assertNaN(try run(ArithmeticOperators.opSub, args: arr()))
     }
 
     // MARK: - /
@@ -201,12 +211,17 @@ final class ArithmeticOperatorsTests: XCTestCase {
         assertNaN(try run(ArithmeticOperators.opDiv, args: arr(.int(0), .int(0))))
     }
 
-    func testDivWrongArityIsTypeError() {
-        XCTAssertThrowsError(try run(ArithmeticOperators.opDiv, args: arr(.int(1)))) { error in
-            guard case RuleError.typeMismatch = error else {
-                return XCTFail("expected typeMismatch, got \(error)")
-            }
-        }
+    /// `{"/": [a]}` and `{"/": [a, b, c, ...]}` mirror `json-logic-js`,
+    /// which uses `function(a, b) { return a / b; }`. Missing operands are
+    /// `undefined`, so `a / undefined` → `NaN`; extra operands are
+    /// ignored.
+    func testDivOnlyUsesFirstTwoOperands() throws {
+        assertNaN(try run(ArithmeticOperators.opDiv, args: arr(.int(1))))
+        assertNaN(try run(ArithmeticOperators.opDiv, args: arr()))
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opDiv, args: arr(.int(10), .int(2), .int(99))),
+            .float(5.0)
+        )
     }
 
     // MARK: - %
@@ -228,14 +243,14 @@ final class ArithmeticOperatorsTests: XCTestCase {
         assertNaN(try run(ArithmeticOperators.opMod, args: arr(.int(0), .int(0))))
     }
 
-    func testModWrongArityIsTypeError() {
-        XCTAssertThrowsError(
-            try run(ArithmeticOperators.opMod, args: arr(.int(1), .int(2), .int(3)))
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                return XCTFail("expected typeMismatch, got \(error)")
-            }
-        }
+    /// Mirror of `testDivOnlyUsesFirstTwoOperands` for `%`.
+    func testModOnlyUsesFirstTwoOperands() throws {
+        assertNaN(try run(ArithmeticOperators.opMod, args: arr(.int(1))))
+        assertNaN(try run(ArithmeticOperators.opMod, args: arr()))
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opMod, args: arr(.int(7), .int(3), .int(99))),
+            .float(1.0)
+        )
     }
 
     // MARK: - Coercion semantics (`+`/`*` use parseFloat, others use Number)
