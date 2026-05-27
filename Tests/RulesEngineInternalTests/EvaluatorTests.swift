@@ -226,27 +226,26 @@ final class EvaluatorTests: XCTestCase {
     func testMultiKeyObjectIsLiteralDataValue() throws {
         // Mirrors json-logic-js's `is_logic`, which only treats an object
         // as an operator when `Object.keys(logic).length === 1`. A two-key
-        // object falls back to `apply`'s "not logic, return as-is" branch,
-        // i.e. literal data — so two structurally-equal multi-key objects
-        // compare equal under our structural `looseEq`.
+        // object falls back to `apply`'s "not logic, return as-is" branch
+        // and reaches `==` as a literal data value. JS abstract equality
+        // then uses reference identity for the two objects → `false`.
         let predicateEq = """
             {"==": [
                 {"a": 1, "b": 2},
                 {"a": 1, "b": 2}
             ]}
             """
-        XCTAssertTrue(try run(predicateEq))
+        XCTAssertFalse(try run(predicateEq))
 
-        // Same two literals through `!=` should evaluate to false (they are
-        // equal as data, so the inequality is unsatisfied). Confirms the
-        // literal-vs-operator handling is symmetric across operators.
+        // Symmetric `!=`: distinct object references are unequal, so
+        // the inequality holds.
         let predicateNe = """
             {"!=": [
                 {"a": 1, "b": 2},
                 {"a": 1, "b": 2}
             ]}
             """
-        XCTAssertFalse(try run(predicateNe))
+        XCTAssertTrue(try run(predicateNe))
     }
 
     func testSingleKeyObjectOperandIsDispatchedAsOperator() throws {
@@ -255,11 +254,7 @@ final class EvaluatorTests: XCTestCase {
         // any other expression and get dispatched as operators (the
         // `is_logic` → `apply` path in json-logic-js). An unknown op name
         // surfaces as `RuleError.unsupportedOperator`, mirroring the JS
-        // reference's `Unrecognized operation a` throw — so even though
-        // the multi-key case `{a:1,b:2} == {a:1,b:2}` returns `true` in
-        // our engine and `false` in JS (deliberate structural-vs-reference
-        // divergence), the literal `{a:1} == {a:1}` does NOT diverge: both
-        // engines fail to evaluate it.
+        // reference's `Unrecognized operation a` throw.
         let predicate = #"{"==": [{"a": 1}, {"a": 1}]}"#
         XCTAssertThrowsError(try run(predicate)) { error in
             guard case RuleError.unsupportedOperator(let name) = error else {
