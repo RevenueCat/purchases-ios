@@ -235,7 +235,7 @@ struct WorkflowPaywallView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .mask(alignment: .top) {
+            .mask {
                 self.transitionClipMask(proxy: proxy)
             }
         }
@@ -273,6 +273,7 @@ struct WorkflowPaywallView: View {
                 height: proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
             )
             .offset(y: -proxy.safeAreaInsets.top)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private var displayedPages: [DisplayedPage] {
