@@ -204,26 +204,44 @@ final class AccessorOperatorsTests: XCTestCase {
         XCTAssertTrue(logger.warnings.isEmpty)
     }
 
-    func testVarSingletonExpressionResolvingToArrayThrows() throws {
-        // json-logic-js JS-stringifies a non-primitive evaluated result
-        // ("x,y") and looks it up; we choose to be strict instead and throw
-        // a typeMismatch so the malformed predicate surfaces loudly.
-        XCTAssertThrowsError(
-            try AccessorOperators.opVar(
-                args: .object([
-                    "if": .array([
-                        .bool(true),
-                        .array([.string("x"), .string("y")]),
-                        .string("z")
-                    ])
-                ]),
-                vars: .null
-            )
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                return XCTFail("expected RuleError.typeMismatch, got \(error)")
-            }
-        }
+    /// `json-logic-js` stringifies any non-primitive evaluated path
+    /// via `String(value).split(".")`; for arrays that yields a
+    /// comma-joined key (so `["x", "y"]` looks up the `"x,y"` field).
+    /// The key isn't present here, so the lookup misses and `var`
+    /// returns `.null`.
+    func testVarSingletonExpressionResolvingToArrayStringifiesPath() throws {
+        let out = try AccessorOperators.opVar(
+            args: .object([
+                "if": .array([
+                    .bool(true),
+                    .array([.string("x"), .string("y")]),
+                    .string("z")
+                ])
+            ]),
+            vars: .object(["x,y": .string("found")])
+        )
+        XCTAssertEqual(out, .string("found"))
+    }
+
+    /// Boolean paths follow the same `String(value).split(".")` rule,
+    /// so `{"var": true}` looks up the `"true"` key.
+    func testVarBooleanPathLooksUpStringifiedKey() throws {
+        let out = try AccessorOperators.opVar(
+            args: .bool(true),
+            vars: .object(["true": .int(42)])
+        )
+        XCTAssertEqual(out, .int(42))
+    }
+
+    /// Object paths stringify to `"[object Object]"` and never match a
+    /// real key, so `var` returns `.null` and warns.
+    func testVarObjectPathStringifiesAndMisses() throws {
+        let out = try AccessorOperators.opVar(
+            args: .array([.object(["foo": .int(1), "bar": .int(2)])]),
+            vars: .object(["x": .int(1)])
+        )
+        XCTAssertEqual(out, .null)
+        XCTAssertEqual(logger.warnings.count, 1)
     }
 
     // MARK: - missing

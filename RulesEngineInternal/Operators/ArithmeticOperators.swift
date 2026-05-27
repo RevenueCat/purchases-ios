@@ -25,61 +25,63 @@ import Foundation
 /// `json-logic-js`.
 enum ArithmeticOperators {
 
-    /// `{"+": [a, b, ...]}` — variadic sum. Each operand is coerced via
-    /// JS `parseFloat`. The 1-arg form acts as a numeric cast
-    /// (`{"+": ["3.14"]}` → `3.14`, but `{"+": [true]}` → `NaN` because
-    /// `parseFloat("true")` is `NaN`). 0 arguments is a `.typeMismatch`.
+    /// `{"+": [a, b, ...]}` — variadic sum, seeded with `0`. 0 arguments
+    /// returns `0`. Each operand is coerced via JS `parseFloat`.
     static func opAdd(args: Value, vars: Value) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
-        guard !evaluated.isEmpty else {
-            throw RuleError.typeMismatch(message: "operator '+' requires at least 1 argument")
-        }
         let sum = evaluated.reduce(0.0) { $0 + jsParseFloat($1) }
         return .float(sum)
     }
 
-    /// `{"*": [a, b, ...]}` — variadic product. Each operand is coerced
-    /// via JS `parseFloat` (same rules as `+`). 0 arguments is a
-    /// `.typeMismatch`.
+    /// `{"*": [a, b, ...]}` — variadic product, no seed (matches
+    /// `Array.prototype.reduce` without an initial value). The 1-arg form
+    /// returns the operand unchanged (no `parseFloat` coercion). 0
+    /// arguments is a `.typeMismatch` to mirror `[].reduce(fn)` throwing.
     static func opMul(args: Value, vars: Value) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
-        guard !evaluated.isEmpty else {
+        guard let head = evaluated.first else {
             throw RuleError.typeMismatch(message: "operator '*' requires at least 1 argument")
         }
-        let product = evaluated.reduce(1.0) { $0 * jsParseFloat($1) }
+        guard evaluated.count > 1 else { return head }
+        let product = evaluated.dropFirst().reduce(jsParseFloat(head)) { $0 * jsParseFloat($1) }
         return .float(product)
     }
 
     /// `{"-": [a]}` — unary negation. `{"-": [a, b]}` — subtraction.
-    /// Operands are coerced via JS `Number()` (`asNumber`). Other arities
-    /// are a `.typeMismatch`.
+    /// `{"-": [a, b, ...]}` ignores extra operands. `{"-": []}` returns
+    /// `NaN` (mirroring JS `-undefined`). Operands are coerced via JS
+    /// `Number()` (`asNumber`).
     static func opSub(args: Value, vars: Value) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
-        switch evaluated.count {
-        case 1:
-            return .float(-asDouble(evaluated[0]))
-        case 2:
-            return .float(asDouble(evaluated[0]) - asDouble(evaluated[1]))
-        default:
-            throw RuleError.typeMismatch(
-                message: "operator '-' expects 1 or 2 arguments, got \(evaluated.count)"
-            )
+        let lhs = evaluated.first.map(asDouble) ?? .nan
+        if evaluated.count >= 2 {
+            return .float(lhs - asDouble(evaluated[1]))
         }
+        return .float(-lhs)
     }
 
-    /// `{"/": [a, b]}` — division. Operands are coerced via JS `Number()`
-    /// (`asNumber`). Division by zero follows IEEE 754: `n / 0` is
-    /// `±Infinity` (sign matches the dividend), `0 / 0` is `NaN`.
+    /// `{"/": [a, b]}` — division. Extra operands are ignored; missing
+    /// operands resolve to `NaN` (mirroring JS `undefined / x`). Division
+    /// by zero follows IEEE 754: `n / 0` is `±Infinity`, `0 / 0` is `NaN`.
     static func opDiv(args: Value, vars: Value) throws -> Value {
-        let (lhs, rhs) = try Operators.evalTwo(args, vars: vars, opName: "/")
-        return .float(asDouble(lhs) / asDouble(rhs))
+        let (lhs, rhs) = try evalDivisorPair(args, vars: vars)
+        return .float(lhs / rhs)
     }
 
-    /// `{"%": [a, b]}` — modulo. Operands are coerced via JS `Number()`
-    /// (`asNumber`). `n % 0` follows IEEE 754 and is `NaN`.
+    /// `{"%": [a, b]}` — modulo. Same arity / coercion rules as `/`;
+    /// `n % 0` follows IEEE 754 and is `NaN`.
     static func opMod(args: Value, vars: Value) throws -> Value {
-        let (lhs, rhs) = try Operators.evalTwo(args, vars: vars, opName: "%")
-        return .float(asDouble(lhs).truncatingRemainder(dividingBy: asDouble(rhs)))
+        let (lhs, rhs) = try evalDivisorPair(args, vars: vars)
+        return .float(lhs.truncatingRemainder(dividingBy: rhs))
+    }
+
+    /// Evaluate two operands into `Double`, defaulting missing operands
+    /// to `NaN` (mirroring JS `undefined`). Extra operands are ignored.
+    private static func evalDivisorPair(_ args: Value, vars: Value) throws -> (Double, Double) {
+        let evaluated = try Operators.evalArgs(args, vars: vars)
+        let lhs = evaluated.first.map(asDouble) ?? .nan
+        let rhs = evaluated.count >= 2 ? asDouble(evaluated[1]) : .nan
+        return (lhs, rhs)
     }
 
     /// `Number(value)`-style coercion for `-`, `/`, `%`. Falls back to
