@@ -34,13 +34,13 @@ import Foundation
 
         private enum CodingKeys: String, CodingKey {
             case set
-            case to
+            case toValue = "to"
         }
 
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             if let key = try container.decodeIfPresent(String.self, forKey: .set) {
-                let value = try container.decode(VariableUpdateValue.self, forKey: .to)
+                let value = try container.decode(VariableUpdateValue.self, forKey: .toValue)
                 self = .set(key: key, value: value)
                 return
             }
@@ -52,7 +52,7 @@ import Foundation
             switch self {
             case .set(let key, let value):
                 try container.encode(key, forKey: .set)
-                try container.encode(value, forKey: .to)
+                try container.encode(value, forKey: .toValue)
             case .unsupported:
                 break
             }
