@@ -140,34 +140,53 @@ enum AccessorOperators {
         return (path, defaultValue)
     }
 
+    /// Coerce the evaluated path argument to a string per
+    /// `json-logic-js`'s `String(a).split(".")`. `nil`, `.null`, and
+    /// `""` are treated as the empty path, which signals the caller
+    /// to return the entire data scope.
     private static func pathSegment(from value: Value?) throws -> String {
         switch value {
         case .none, .some(.null):
             return ""
-        case .some(.string(let value)):
-            return value
-        case .some(.int(let value)):
-            return String(value)
-        case .some(.float(let value)):
-            return formatNumber(value)
         case .some(let other):
-            throw RuleError.typeMismatch(
-                message: "var path must be a string or number, got \(other)"
-            )
+            return jsStringCoerce(other)
         }
     }
 
     private static func keyAsPath(_ value: Value) -> String? {
+        if case .null = value { return nil }
+        return jsStringCoerce(value)
+    }
+
+    /// JS `String(value)`: `true`/`false` for booleans, numeric repr
+    /// for numbers (whole-valued doubles render without a decimal),
+    /// strings unchanged, arrays via `Array.prototype.join(",")`
+    /// (null elements render as the empty string), objects as
+    /// `"[object Object]"`.
+    private static func jsStringCoerce(_ value: Value) -> String {
         switch value {
-        case .string(let value):
-            return value
-        case .int(let value):
-            return String(value)
-        case .float(let value):
-            return formatNumber(value)
-        default:
-            return nil
+        case .null:
+            return "null"
+        case .bool(let bool):
+            return bool ? "true" : "false"
+        case .int(let int):
+            return String(int)
+        case .float(let double):
+            return formatNumber(double)
+        case .string(let string):
+            return string
+        case .array(let items):
+            return items.map(jsArrayElementString).joined(separator: ",")
+        case .object:
+            return "[object Object]"
         }
+    }
+
+    /// `Array.prototype.join` renders `null` and `undefined` elements
+    /// as the empty string, not `"null"`.
+    private static func jsArrayElementString(_ value: Value) -> String {
+        if case .null = value { return "" }
+        return jsStringCoerce(value)
     }
 
     /// Resolve `path` the way `var` does, without warning on misses.
