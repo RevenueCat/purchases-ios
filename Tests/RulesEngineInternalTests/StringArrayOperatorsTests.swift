@@ -146,6 +146,17 @@ final class StringArrayOperatorsTests: XCTestCase {
         XCTAssertEqual(out, .string("vals=1,2"))
     }
 
+    /// `Array.prototype.join` (which `String([...])` uses) renders
+    /// `null` and `undefined` elements as empty strings:
+    /// `String([1, null, 2])` is `"1,,2"` in JS, not `"1,null,2"`.
+    func testCatStringifiesNullElementsInArrayAsEmpty() throws {
+        let out = try StringArrayOperators.opCat(
+            args: arr(arr(.int(1), .null, .int(2))),
+            vars: .null
+        )
+        XCTAssertEqual(out, .string("1,,2"))
+    }
+
     // MARK: - substr
 
     func testSubstrTwoArgsExtractsToEnd() throws {
