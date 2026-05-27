@@ -17,7 +17,7 @@ final class AccessorOperatorsTests: XCTestCase {
     override func setUp() {
         super.setUp()
         logger = CapturingLogger()
-        Rules.logger = logger
+        RulesEngine.logger = logger
     }
 
     override func tearDown() {

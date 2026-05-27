@@ -13,7 +13,7 @@ import Foundation
 /// treated as literal data. Operators handle their own short-circuit /
 /// arity logic.
 ///
-/// Diagnostic warnings are routed through `Rules.logger`.
+/// Diagnostic warnings are routed through `RulesEngine.logger`.
 enum Evaluator {
 
     /// - Parameters:

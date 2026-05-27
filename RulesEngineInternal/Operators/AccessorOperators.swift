@@ -35,7 +35,7 @@ enum AccessorOperators {
         if let defaultValue = defaultValue {
             return defaultValue
         }
-        Rules.logger.warn("missing variable: \(path)")
+        RulesEngine.logger.warn("missing variable: \(path)")
         return .null
     }
 
@@ -96,7 +96,7 @@ enum AccessorOperators {
         let path = pathSegment(from: items.first)
         let defaultValue: Value? = items.count >= 2 ? items[1] : nil
         if items.count > 2 {
-            Rules.logger.warn(
+            RulesEngine.logger.warn(
                 "var: ignoring \(items.count - 2) extra arg(s); expected [path] or [path, default]"
             )
         }

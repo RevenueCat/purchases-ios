@@ -15,9 +15,9 @@
 import Foundation
 
 /// Namespace for the RevenueCat rules engine.
-public enum Rules {}
+enum RulesEngine {}
 
-extension Rules {
+extension RulesEngine {
 
     static var logger: RulesEngineLogger {
         get { loggerStorage.value }
@@ -27,7 +27,7 @@ extension Rules {
     private static let loggerStorage = LoggerStorage()
 }
 
-/// Locked storage for `Rules.logger`. A reference type so the enclosing
+/// Locked storage for `RulesEngine.logger`. A reference type so the enclosing
 /// namespace's `static let loggerStorage` can be a stored property.
 private final class LoggerStorage {
 
