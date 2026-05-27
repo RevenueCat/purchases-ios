@@ -109,6 +109,8 @@ extension HTTPRequest {
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
+        // WIP: endpoint path and signing requirements subject to change
+        case getRemoteConfig
 
     }
 
@@ -203,6 +205,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .health,
              .appHealthReportAvailability:
             return false
+
+        case .getRemoteConfig:
+            return true
         }
     }
 
@@ -229,7 +234,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .rewardVerificationStatus:
             return true
         case .health,
-             .appHealthReportAvailability:
+             .appHealthReportAvailability,
+             .getRemoteConfig:
             return false
         }
     }
@@ -256,7 +262,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
                 .getCustomerCenterConfig,
-                .postCreateTicket:
+                .postCreateTicket,
+                .getRemoteConfig:
             return false
         case .rewardVerificationStatus:
             return true
@@ -286,13 +293,19 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .appHealthReport,
-                .postCreateTicket:
+                .postCreateTicket,
+                .getRemoteConfig:
             return false
         }
     }
 
     var relativePath: String {
-        return "/v1/\(self.pathComponent)"
+        switch self {
+        case .getRemoteConfig:
+            return "/v2/config"
+        default:
+            return "/v1/\(self.pathComponent)"
+        }
     }
 
     var pathComponent: String {
@@ -362,6 +375,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case let .rewardVerificationStatus(appUserID, clientTransactionID):
             return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
+
+        case .getRemoteConfig:
+            return "config"
         }
     }
 
@@ -428,6 +444,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .rewardVerificationStatus:
             return "get_reward_verification_status"
+
+        case .getRemoteConfig:
+            return "get_remote_config"
         }
     }
 
