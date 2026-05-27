@@ -11,8 +11,6 @@
 //
 //  Created by RevenueCat.
 
-import Foundation
-
 struct WorkflowsListCallback: CacheKeyProviding {
 
     let cacheKey: String

@@ -38,15 +38,16 @@ class MockWorkflowsAPI: WorkflowsAPI, @unchecked Sendable {
 
     var invokedGetWorkflows = false
     var invokedGetWorkflowsCount = 0
-    var invokedGetWorkflowsParameters: (appUserID: String, isAppBackgrounded: Bool)?
+    var invokedGetWorkflowsParameters: (appUserID: String, isAppBackgrounded: Bool, type: String?)?
     var stubbedGetWorkflowsResult: Result<WorkflowsListResponse, BackendError>?
 
     override func getWorkflows(appUserID: String,
                                isAppBackgrounded: Bool,
+                               type: String? = nil,
                                completion: @escaping WorkflowsListResponseHandler) {
         self.invokedGetWorkflows = true
         self.invokedGetWorkflowsCount += 1
-        self.invokedGetWorkflowsParameters = (appUserID, isAppBackgrounded)
+        self.invokedGetWorkflowsParameters = (appUserID, isAppBackgrounded, type)
 
         completion(self.stubbedGetWorkflowsResult ?? .failure(.missingAppUserID()))
     }

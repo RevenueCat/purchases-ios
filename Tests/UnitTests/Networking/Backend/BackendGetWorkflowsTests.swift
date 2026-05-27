@@ -159,7 +159,7 @@ class BackendGetWorkflowsListTests: BaseBackendTests {
 
     func testGetWorkflowsCallsHTTPMethod() {
         self.httpClient.mock(
-            requestPath: .getWorkflows(appUserID: Self.userID),
+            requestPath: .getWorkflows(appUserID: Self.userID, type: nil),
             response: .init(statusCode: .success, response: Self.twoWorkflowsResponse)
         )
 
@@ -177,7 +177,7 @@ class BackendGetWorkflowsListTests: BaseBackendTests {
 
     func testGetWorkflowsCallsHTTPMethodWithRandomDelayWhenBackgrounded() {
         self.httpClient.mock(
-            requestPath: .getWorkflows(appUserID: Self.userID),
+            requestPath: .getWorkflows(appUserID: Self.userID, type: nil),
             response: .init(statusCode: .success, response: Self.twoWorkflowsResponse)
         )
 
@@ -195,7 +195,7 @@ class BackendGetWorkflowsListTests: BaseBackendTests {
 
     func testGetWorkflowsCachesForSameUserID() {
         self.httpClient.mock(
-            requestPath: .getWorkflows(appUserID: Self.userID),
+            requestPath: .getWorkflows(appUserID: Self.userID, type: nil),
             response: .init(statusCode: .success,
                             response: Self.twoWorkflowsResponse,
                             delay: .milliseconds(10))
@@ -210,7 +210,7 @@ class BackendGetWorkflowsListTests: BaseBackendTests {
 
     func testGetWorkflowsReturnsWorkflows() throws {
         self.httpClient.mock(
-            requestPath: .getWorkflows(appUserID: Self.userID),
+            requestPath: .getWorkflows(appUserID: Self.userID, type: nil),
             response: .init(statusCode: .success, response: Self.twoWorkflowsResponse)
         )
 
@@ -238,7 +238,7 @@ class BackendGetWorkflowsListTests: BaseBackendTests {
         let mockedError: NetworkError = .unexpectedResponse(nil)
 
         self.httpClient.mock(
-            requestPath: .getWorkflows(appUserID: Self.userID),
+            requestPath: .getWorkflows(appUserID: Self.userID, type: nil),
             response: .init(error: mockedError)
         )
 
@@ -263,6 +263,25 @@ class BackendGetWorkflowsListTests: BaseBackendTests {
         }
 
         expect(self.httpClient.calls).to(beEmpty())
+    }
+
+    func testGetWorkflowsWithTypePassesQueryParameter() {
+        self.httpClient.mock(
+            requestPath: .getWorkflows(appUserID: Self.userID, type: "paywall"),
+            response: .init(statusCode: .success, response: Self.twoWorkflowsResponse)
+        )
+
+        let result = waitUntilValue { completed in
+            self.workflowsAPI.getWorkflows(
+                appUserID: Self.userID,
+                isAppBackgrounded: false,
+                type: "paywall",
+                completion: completed
+            )
+        }
+
+        expect(result).to(beSuccess())
+        expect(self.httpClient.calls).to(haveCount(1))
     }
 
 }
@@ -333,5 +352,37 @@ private extension BackendGetWorkflowTests {
         "action": "use_cdn",
         "url": "https://cdn.example/wf.json"
     ]
+
+}
+
+// MARK: - WorkflowSummary deserialization unit tests
+
+class WorkflowSummaryDecodingTests: TestCase {
+
+    private let decoder = JSONDecoder.default
+
+    func testDecodeWorkflowSummaryWithExplicitNullOfferingId() throws {
+        let json = #"{"workflows": [{"id": "wf_1", "display_name": "Flow A", "offering_id": null, "prefetch": false}]}"#
+        let result = try decoder.decode(WorkflowsListResponse.self, from: Data(json.utf8))
+        expect(result.workflows[0].offeringId).to(beNil())
+    }
+
+    func testDecodeWorkflowSummaryDefaultsPrefetchToFalseWhenAbsent() throws {
+        let json = #"{"workflows": [{"id": "wf_1", "display_name": "Flow A"}]}"#
+        let result = try decoder.decode(WorkflowsListResponse.self, from: Data(json.utf8))
+        expect(result.workflows[0].prefetch) == false
+    }
+
+    func testDecodeWorkflowSummaryIgnoresUnknownFields() throws {
+        let json = #"{"workflows": [{"id": "wf_1", "display_name": "Flow A", "unknown_future_field": "value"}]}"#
+        let result = try decoder.decode(WorkflowsListResponse.self, from: Data(json.utf8))
+        expect(result.workflows[0].id) == "wf_1"
+    }
+
+    func testDecodeWorkflowsListResponseIgnoresUnknownTopLevelFields() throws {
+        let json = #"{"workflows": [], "extra_future_key": {}, "another_key": 42}"#
+        let result = try decoder.decode(WorkflowsListResponse.self, from: Data(json.utf8))
+        expect(result.workflows).to(beEmpty())
+    }
 
 }

@@ -17,28 +17,33 @@ final class GetWorkflowsListOperation: CacheableNetworkOperation {
 
     private let workflowsListCallbackCache: CallbackCache<WorkflowsListCallback>
     private let configuration: AppUserConfiguration
+    private let type: String?
 
     static func createFactory(
         configuration: UserSpecificConfiguration,
-        callbackCache: CallbackCache<WorkflowsListCallback>
+        callbackCache: CallbackCache<WorkflowsListCallback>,
+        type: String? = nil
     ) -> CacheableNetworkOperationFactory<GetWorkflowsListOperation> {
         return .init({ cacheKey in
                 .init(
                     configuration: configuration,
                     workflowsListCallbackCache: callbackCache,
+                    type: type,
                     cacheKey: cacheKey
                 )
         },
-                     individualizedCacheKeyPart: configuration.appUserID)
+                     individualizedCacheKeyPart: configuration.appUserID + (type ?? ""))
     }
 
     private init(
         configuration: UserSpecificConfiguration,
         workflowsListCallbackCache: CallbackCache<WorkflowsListCallback>,
+        type: String?,
         cacheKey: String
     ) {
         self.configuration = configuration
         self.workflowsListCallbackCache = workflowsListCallbackCache
+        self.type = type
 
         super.init(configuration: configuration, cacheKey: cacheKey)
     }
@@ -67,7 +72,7 @@ private extension GetWorkflowsListOperation {
             return
         }
 
-        let request = HTTPRequest(method: .get, path: .getWorkflows(appUserID: appUserID))
+        let request = HTTPRequest(method: .get, path: .getWorkflows(appUserID: appUserID, type: self.type))
 
         httpClient.perform(request) { (response: VerifiedHTTPResponse<WorkflowsListResponse>.Result) in
             defer {

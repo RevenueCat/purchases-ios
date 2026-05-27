@@ -81,12 +81,14 @@ class WorkflowsAPI {
 
     func getWorkflows(appUserID: String,
                       isAppBackgrounded: Bool,
+                      type: String? = nil,
                       completion: @escaping WorkflowsListResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let factory = GetWorkflowsListOperation.createFactory(
             configuration: config,
-            callbackCache: self.workflowsListCallbackCache
+            callbackCache: self.workflowsListCallbackCache,
+            type: type
         )
 
         let callback = WorkflowsListCallback(cacheKey: factory.cacheKey, completion: completion)
