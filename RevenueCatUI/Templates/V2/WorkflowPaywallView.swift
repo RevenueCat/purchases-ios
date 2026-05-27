@@ -235,9 +235,7 @@ struct WorkflowPaywallView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .mask(alignment: .top) {
-                self.transitionClipMask(proxy: proxy)
-            }
+            .transitionClipMask(proxy: proxy)
         }
         .allowsHitTesting(!self.transitionState.isTransitioning)
         // Re-emitted on every step change because navigator is @StateObject with @Published
@@ -262,19 +260,6 @@ struct WorkflowPaywallView: View {
     }
 
     // MARK: - Helpers
-
-    // Keep workflow transitions clipped horizontally, but let page backgrounds render into safe areas.
-    // Pages already ignore the bottom safe area, but this GeometryReader is laid out inside the
-    // safe-area bounds. A plain `.clipped()` trims that page overflow and exposes the presenting view.
-    // alignment: .top in the mask call site is required: the offset(y:) anchors from the top edge.
-    private func transitionClipMask(proxy: GeometryProxy) -> some View {
-        Rectangle()
-            .frame(
-                width: proxy.size.width,
-                height: proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
-            )
-            .offset(y: -proxy.safeAreaInsets.top)
-    }
 
     private var displayedPages: [DisplayedPage] {
         return [
@@ -596,6 +581,25 @@ private struct CurrentStepContent {
 struct RenderedPagePackageInput {
     let packageContext: PackageContext
     let effectiveWorkflowPackageContext: WorkflowPackageContext?
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension View {
+
+    // Keep workflow transitions clipped horizontally, but let page backgrounds render into safe areas.
+    // Pages already ignore the bottom safe area, but this GeometryReader is laid out inside the
+    // safe-area bounds. A plain `.clipped()` trims that page overflow and exposes the presenting view.
+    func transitionClipMask(proxy: GeometryProxy) -> some View {
+        self.mask(alignment: .top) {
+            Rectangle()
+                .frame(
+                    width: proxy.size.width,
+                    height: proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
+                )
+                .offset(y: -proxy.safeAreaInsets.top)
+        }
+    }
+
 }
 
 #endif
