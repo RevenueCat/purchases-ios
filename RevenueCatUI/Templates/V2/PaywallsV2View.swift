@@ -51,6 +51,11 @@ struct PaywallsV2View: View {
     @Environment(\.workflowPackageContext)
     private var workflowPackageContext
 
+    #if DEBUG
+    @Environment(\.paywallLoadingOverride)
+    private var paywallLoadingOverride: Bool?
+    #endif
+
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -210,7 +215,12 @@ struct PaywallsV2View: View {
             onDismiss: self.onDismiss,
             closeWorkflowAction: self.closeWorkflowAction
         )
-        .environment(\.isPaywallLoading, !self.didFinishEligibilityCheck)
+        .environment(\.isPaywallLoading, {
+            #if DEBUG
+            if let override = self.paywallLoadingOverride { return override }
+            #endif
+            return !self.didFinishEligibilityCheck
+        }())
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))

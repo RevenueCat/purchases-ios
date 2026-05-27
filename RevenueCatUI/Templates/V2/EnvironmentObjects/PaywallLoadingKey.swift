@@ -30,4 +30,24 @@ extension EnvironmentValues {
 
 }
 
+#if DEBUG
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct PaywallLoadingOverrideKey: EnvironmentKey {
+    static let defaultValue: Bool? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+
+    /// Overrides `isPaywallLoading` from outside `PaywallsV2View` for preview and test contexts.
+    var paywallLoadingOverride: Bool? {
+        get { self[PaywallLoadingOverrideKey.self] }
+        set { self[PaywallLoadingOverrideKey.self] = newValue }
+    }
+
+}
+
+#endif
+
 #endif
