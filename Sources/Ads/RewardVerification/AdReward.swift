@@ -19,7 +19,7 @@ import Foundation
 /// - ``virtualCurrency(code:amount:)`` for a virtual-currency line item.
 /// - ``noReward`` when verification succeeded but no reward was granted.
 /// - ``unsupportedReward`` when verification succeeded with a shape the SDK does not currently model.
-@_spi(Experimental) public struct AdReward: Sendable, Equatable {
+public struct AdReward: Sendable, Equatable {
 
     private enum Storage: Sendable, Equatable {
         case virtualCurrency(VirtualCurrencyReward)
