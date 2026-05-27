@@ -18,9 +18,12 @@ import Foundation
     final class WebViewComponent: PaywallComponentBase {
 
         let type: ComponentType
-        public let url: URL
 
-        public init(url: URL) {
+        /// The URL or URL template for the web view.
+        /// May contain `{{ custom.variable }}` tokens that are resolved at display time.
+        public let url: String
+
+        public init(url: String) {
             self.type = .webView
             self.url = url
         }

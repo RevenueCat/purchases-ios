@@ -355,7 +355,12 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                     urls += self.collectAllWebViewURLs(in: fallback)
                 }
             case .webView(let webView):
-                urls.append(webView.url)
+                // Skip template URLs — they contain {{ }} tokens and resolve at runtime.
+                // Only static URLs can be pre-warmed.
+                guard !webView.url.contains("{{") else { break }
+                if let url = URL(string: webView.url) {
+                    urls.append(url)
+                }
             case .fallbackHeader:
                 break
             }
