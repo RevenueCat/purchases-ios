@@ -58,17 +58,20 @@ enum ComparisonOperators {
     }
 
     /// Two-string operands → lex. Otherwise → numeric coercion (JS
-    /// Abstract Relational Comparison).
-    private static func compare(_ lhs: Value, _ rhs: Value, using cmp: Comparator) -> Bool {
+    /// Abstract Relational Comparison). A missing operand stands in
+    /// for JS `undefined`, which `Number(undefined)` reports as `NaN`.
+    private static func compare(_ lhs: Value?, _ rhs: Value?, using cmp: Comparator) -> Bool {
         if case .string(let left) = lhs, case .string(let right) = rhs {
             return cmp.apply(left, right)
         }
         return cmp.apply(asDouble(lhs), asDouble(rhs))
     }
 
-    /// Shared 2-or-3 arg "chain" evaluator used by `<` and `<=`. The
-    /// 3-arg form is the JSON Logic between-form (each adjacent pair
-    /// must satisfy `cmp`).
+    /// Shared 2-or-3 arg "chain" evaluator used by `<` and `<=`.
+    /// `json-logic-js` declares the operator as `function(a, b, c)`:
+    /// missing operands resolve to `undefined` (NaN comparisons are
+    /// always `false`); the 3-arg form is the between-form
+    /// (`a < b AND b < c`); arguments past the third are dropped.
     private static func evalChain(
         _ args: Value,
         vars: Value,
@@ -76,23 +79,19 @@ enum ComparisonOperators {
         using cmp: Comparator
     ) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
-        switch evaluated.count {
-        case 2:
-            return .bool(compare(evaluated[0], evaluated[1], using: cmp))
-        case 3:
-            return .bool(
-                compare(evaluated[0], evaluated[1], using: cmp)
-                    && compare(evaluated[1], evaluated[2], using: cmp)
-            )
-        default:
-            throw RuleError.typeMismatch(
-                message: "operator '\(opName)' expects 2 or 3 arguments, got \(evaluated.count)"
-            )
+        let lhs = evaluated.first
+        let mid = evaluated.indices.contains(1) ? evaluated[1] : nil
+        if evaluated.count >= 3 {
+            let rhs = evaluated[2]
+            return .bool(compare(lhs, mid, using: cmp) && compare(mid, rhs, using: cmp))
         }
+        return .bool(compare(lhs, mid, using: cmp))
     }
 
-    /// Shared 2-arg evaluator used by `>` and `>=`. No between-form per
-    /// the JSON Logic spec.
+    /// Shared 2-arg evaluator used by `>` and `>=`. `json-logic-js`
+    /// declares them as `function(a, b)`: extras are silently dropped
+    /// and a missing operand becomes NaN (which makes any comparison
+    /// `false`).
     private static func evalBinary(
         _ args: Value,
         vars: Value,
@@ -100,17 +99,16 @@ enum ComparisonOperators {
         using cmp: Comparator
     ) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
-        guard evaluated.count == 2 else {
-            throw RuleError.typeMismatch(
-                message: "operator '\(opName)' expects 2 arguments, got \(evaluated.count)"
-            )
-        }
-        return .bool(compare(evaluated[0], evaluated[1], using: cmp))
+        let lhs = evaluated.first
+        let rhs = evaluated.indices.contains(1) ? evaluated[1] : nil
+        return .bool(compare(lhs, rhs, using: cmp))
     }
 
     /// Coerce to `Double`, falling back to `nan` for non-numeric
-    /// operands.
-    private static func asDouble(_ value: Value) -> Double {
-        value.asNumber ?? .nan
+    /// operands. A missing operand is treated as JS `undefined`, which
+    /// also coerces to `nan`.
+    private static func asDouble(_ value: Value?) -> Double {
+        guard let value = value else { return .nan }
+        return value.asNumber ?? .nan
     }
 }
