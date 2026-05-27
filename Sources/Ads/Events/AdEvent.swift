@@ -790,7 +790,7 @@ extension AdRevenue {
             placement: placement,
             adUnitId: adUnitId,
             impressionId: impressionId,
-            reward: Self.makeReward(
+            reward: Self.rewardForObjCInit(
                 kindRawValue: rewardKindRawValue,
                 virtualCurrencyCode: virtualCurrencyCode,
                 virtualCurrencyAmount: virtualCurrencyAmount?.intValue
@@ -799,6 +799,31 @@ extension AdRevenue {
     }
     // swiftlint:enable missing_docs
 
+    /// Developer-input path: validates and logs invalid inputs.
+    /// `AdReward.virtualCurrency(code:amount:)` already logs and asserts when `amount <= 0`,
+    /// so this helper only needs to catch the missing-fields case.
+    private static func rewardForObjCInit(
+        kindRawValue: String,
+        virtualCurrencyCode: String?,
+        virtualCurrencyAmount: Int?
+    ) -> AdReward {
+        switch kindRawValue {
+        case AdReward.Kind.virtualCurrency:
+            guard let code = virtualCurrencyCode, let amount = virtualCurrencyAmount else {
+                Logger.error(AdsStrings.missing_virtual_currency_reward_fields)
+                assertionFailure("virtual_currency reward requires non-nil code and amount")
+                return .unsupportedReward
+            }
+            return .virtualCurrency(code: code, amount: amount)
+        case AdReward.Kind.noReward:
+            return .noReward
+        default:
+            return .unsupportedReward
+        }
+    }
+
+    /// Decoder-input path: silent fallback. Backend wire data that doesn't match the schema
+    /// must not trigger `assertionFailure` — malformed data is not a programming bug.
     private static func makeReward(
         kindRawValue: String,
         virtualCurrencyCode: String?,
