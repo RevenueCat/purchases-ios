@@ -677,15 +677,11 @@ final class IterationOperatorsTests: XCTestCase {
     /// A `var` lookup against a nonexistent key in the reduce scope
     /// resolves to `null`, not the parent scope's value of that key.
     func testReducePredicateCannotReachParentScope() throws {
-        // Outer has `multiplier = 10`. Predicate references {"var":
-        // "multiplier"}, which lives only in the outer scope. The reducer
-        // rebinds `vars` to `{current, accumulator}` with no parent
-        // fallback, so the lookup resolves to `.null`. We verify that by
-        // comparing `multiplier === null` inside the predicate and using
-        // the result to decide what to emit — keeping the assertion
-        // independent of how `null` coerces in arithmetic (which under
-        // the json-logic-js spec is `parseFloat("null")` → `NaN` for
-        // `+` / `*`).
+        // Outer has `multiplier = 10`. The reducer rebinds `vars` to
+        // `{current, accumulator}` with no parent fallback, so
+        // `{"var": "multiplier"}` inside the predicate resolves to
+        // `.null`. We verify that by comparing `multiplier === null`
+        // and using the result to decide what to emit.
         let predicate = Value.object([
             "if": arr(
                 .object([
@@ -695,10 +691,9 @@ final class IterationOperatorsTests: XCTestCase {
                 .int(-999)
             )
         ])
-        // Each iteration: multiplier resolves to null → condition true →
-        // accumulator becomes the current item. After [1, 2, 3] →
-        // accumulator = 3. If parent scope leaked through, accumulator
-        // would be -999.
+        // Each iteration: multiplier resolves to null → condition
+        // true → accumulator becomes current. For [1, 2, 3] →
+        // final = 3. A scope leak would land at -999.
         let out = try IterationOperators.opReduce(
             args: arr(
                 arr(.int(1), .int(2), .int(3)),

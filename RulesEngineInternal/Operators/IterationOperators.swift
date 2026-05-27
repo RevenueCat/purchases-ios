@@ -18,23 +18,15 @@ import Foundation
 ///   the current item, with no parent-scope inheritance.
 /// - **Shape** (`reduce`):
 ///   `{"reduce": [arrayExpr, predicateExpr, initialAccumulator]}`. Both
-///   the first and third arguments are evaluated in the outer scope. The
-///   predicate is evaluated per-item with `vars` rebound to the *fixed*
-///   object `{"current": <item>, "accumulator": <acc>}`, again with no
-///   parent-scope inheritance. This per-item scope is the major
-///   asymmetry vs. the other iteration ops (which rebind to the item
-///   itself).
+///   the first and third arguments are evaluated in the outer scope.
+///   The predicate is evaluated per-item with `vars` rebound to
+///   `{"current": <item>, "accumulator": <acc>}`, with no parent-scope
+///   inheritance.
 ///
-/// **Empty- and non-array sources**:
-/// - `some` returns `false`.
-/// - `all` returns `false` (deliberate JSON Logic JS spec quirk, not
-///   vacuous truth — the Python `json-logic` library agrees; the
-///   RevenueCat backend `khepri` returns `true` for the same case, but
-///   we follow the spec to stay consistent with the wider JSON Logic
-///   ecosystem). Pinned by tests.
-/// - `none` returns `true` (vacuous truth: the JS reference implements
-///   `none` in terms of `filter`, which yields `[]` for non-arrays, and
-///   `[].length === 0` is `true`). Pinned by tests.
+/// **Empty- and non-array sources** per the JSON Logic JS spec:
+/// - `some` / `all` return `false`. (`all` is not vacuous truth.)
+/// - `none` returns `true` (the JS reference implements `none` in terms
+///   of `filter`, and `[].length === 0`).
 /// - `map` / `filter` return `[]`.
 /// - `reduce` returns the initial accumulator unchanged.
 enum IterationOperators {
@@ -53,9 +45,9 @@ enum IterationOperators {
     }
 
     /// `{"all": [arrayExpr, predicate]}` — `true` iff `predicate` is
-    /// truthy for every item. Empty array returns `false` (deliberate
-    /// JSON Logic JS spec quirk, not vacuous truth). Non-array source
-    /// returns `false`. Short-circuits on the first non-truthy result.
+    /// truthy for every item. Empty array returns `false` per the JSON
+    /// Logic JS spec, not vacuous truth. Non-array source returns
+    /// `false`. Short-circuits on the first non-truthy result.
     static func opAll(args: Value, vars: Value) throws -> Value {
         let (items, predicate) = try parseIterationArgs(args, vars: vars, opName: "all")
         guard !items.isEmpty else { return .bool(false) }
@@ -68,14 +60,9 @@ enum IterationOperators {
 
     /// `{"none": [arrayExpr, predicate]}` — `true` iff `predicate` is
     /// falsy for every item. Inverse of `some`. Short-circuits on the
-    /// first truthy item.
-    ///
-    /// Note the deliberate asymmetry with `some`/`all` for non-array
-    /// sources: the JS reference implements `none` in terms of `filter`,
-    /// which yields `[]` for non-arrays, and `[].length === 0` is
-    /// `true`. So `none(null, …)` and `none("abc", …)` both return
-    /// `true`, while `some`/`all` of those return `false`. Pinned by
-    /// tests.
+    /// first truthy item. Non-array source returns `true` (the JS
+    /// reference implements `none` in terms of `filter`, which yields
+    /// `[]` for non-arrays).
     static func opNone(args: Value, vars: Value) throws -> Value {
         let (items, predicate) = try parseIterationArgs(args, vars: vars, opName: "none")
         for item in items {
@@ -113,13 +100,11 @@ enum IterationOperators {
     }
 
     /// `{"reduce": [arrayExpr, predicate, initialAccumulator]}` — fold
-    /// over the array.
-    ///
-    /// The third argument is evaluated in the outer scope to seed the
-    /// accumulator, then the predicate is evaluated once per item with
-    /// `vars` rebound to `{"current": item, "accumulator": acc}` — the
-    /// item itself is *not* the entire scope, unlike `none`/`map`/
-    /// `filter`. A non-array source returns the seed unchanged.
+    /// over the array. The third argument is evaluated in the outer
+    /// scope to seed the accumulator, then the predicate is evaluated
+    /// once per item with `vars` rebound to
+    /// `{"current": item, "accumulator": acc}`. A non-array source
+    /// returns the seed unchanged.
     static func opReduce(args: Value, vars: Value) throws -> Value {
         let raw = Operators.argsAsList(args)
         guard raw.count == 3 else {
@@ -141,14 +126,11 @@ enum IterationOperators {
         return accumulator
     }
 
-    /// Parse `(items, predicate)` for an iteration operator that uses
-    /// the *item-as-scope* convention (`some`, `all`, `none`, `map`,
-    /// `filter`). The source argument is evaluated in the outer scope;
-    /// the predicate template is returned unevaluated so the caller can
-    /// re-evaluate it per item. A non-array source resolves to an empty
-    /// `items` list, which the caller turns into the operator's
-    /// non-array fallback (`false` for `some`/`all`, `true` for `none`,
-    /// `[]` for `map`/`filter`).
+    /// Parse `(items, predicate)` for the item-as-scope iteration
+    /// operators (`some`, `all`, `none`, `map`, `filter`). The source
+    /// argument is evaluated in the outer scope; the predicate template
+    /// is returned unevaluated so the caller can re-evaluate it per
+    /// item. A non-array source yields an empty `items` list.
     private static func parseIterationArgs(
         _ args: Value,
         vars: Value,
