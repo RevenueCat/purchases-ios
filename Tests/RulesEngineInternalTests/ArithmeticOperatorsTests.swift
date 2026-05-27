@@ -179,22 +179,26 @@ final class ArithmeticOperatorsTests: XCTestCase {
         )
     }
 
-    func testDivByZeroReturnsNull() throws {
-        // Both .int(0) and .float(0.0) divisors → .null
-        XCTAssertEqual(
-            try run(ArithmeticOperators.opDiv, args: arr(.int(1), .int(0))),
-            .null
+    /// `n / 0` follows IEEE 754: positive dividend → `+Infinity`, negative
+    /// dividend → `-Infinity`, `0 / 0` → `NaN`. Matches `json-logic-js`,
+    /// which delegates to native JS `/` (no short-circuit).
+    func testDivByZeroFollowsIeee754() throws {
+        // 1 / 0 → +Infinity (covers both .int(0) and .float(0.0) divisors).
+        let posIntZero = unwrapFloat(
+            try run(ArithmeticOperators.opDiv, args: arr(.int(1), .int(0)))
         )
-        XCTAssertEqual(
-            try run(ArithmeticOperators.opDiv, args: arr(.int(1), .float(0.0))),
-            .null
+        XCTAssertEqual(posIntZero, .infinity)
+        let posFloatZero = unwrapFloat(
+            try run(ArithmeticOperators.opDiv, args: arr(.int(1), .float(0.0)))
         )
-        // Even 0/0 returns .null (not NaN) — explicit short-circuit before
-        // arithmetic.
-        XCTAssertEqual(
-            try run(ArithmeticOperators.opDiv, args: arr(.int(0), .int(0))),
-            .null
+        XCTAssertEqual(posFloatZero, .infinity)
+        // -1 / 0 → -Infinity.
+        let neg = unwrapFloat(
+            try run(ArithmeticOperators.opDiv, args: arr(.int(-1), .int(0)))
         )
+        XCTAssertEqual(neg, -.infinity)
+        // 0 / 0 → NaN.
+        assertNaN(try run(ArithmeticOperators.opDiv, args: arr(.int(0), .int(0))))
     }
 
     func testDivWrongArityIsTypeError() {
@@ -217,11 +221,11 @@ final class ArithmeticOperatorsTests: XCTestCase {
         )
     }
 
-    func testModByZeroReturnsNull() throws {
-        XCTAssertEqual(
-            try run(ArithmeticOperators.opMod, args: arr(.int(7), .int(0))),
-            .null
-        )
+    /// `n % 0` is always `NaN` per IEEE 754. Matches `json-logic-js`,
+    /// which delegates to native JS `%` (no short-circuit).
+    func testModByZeroIsNan() throws {
+        assertNaN(try run(ArithmeticOperators.opMod, args: arr(.int(7), .int(0))))
+        assertNaN(try run(ArithmeticOperators.opMod, args: arr(.int(0), .int(0))))
     }
 
     func testModWrongArityIsTypeError() {
@@ -297,16 +301,14 @@ final class ArithmeticOperatorsTests: XCTestCase {
             .float(0.0)
         )
 
-        // 1 / null and 1 % null → divisor coerces to 0 → null (engine's
-        // intentional div/mod-by-zero short-circuit; see type docs).
+        // 1 / null → divisor coerces to 0 → +Infinity (IEEE 754, see
+        // testDivByZeroFollowsIeee754 for the broader pinning).
         XCTAssertEqual(
-            try run(ArithmeticOperators.opDiv, args: arr(.int(1), .null)),
-            .null
+            unwrapFloat(try run(ArithmeticOperators.opDiv, args: arr(.int(1), .null))),
+            .infinity
         )
-        XCTAssertEqual(
-            try run(ArithmeticOperators.opMod, args: arr(.int(1), .null)),
-            .null
-        )
+        // 1 % null → divisor coerces to 0 → NaN.
+        assertNaN(try run(ArithmeticOperators.opMod, args: arr(.int(1), .null)))
 
         // Bools coerce to 0 / 1 (Number(true) === 1, Number(false) === 0).
         XCTAssertEqual(

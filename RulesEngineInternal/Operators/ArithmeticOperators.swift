@@ -33,11 +33,10 @@ import Foundation
 /// become `Double.nan` and propagate naturally — the final result is
 /// `.float(nan)`, which `isTruthy` reports as falsy.
 ///
-/// Division and modulo by zero return `.null` instead of `infinity` /
-/// `nan`. JSON Logic JS produces the IEEE values, but for rule authoring
-/// `null` is friendlier: it short-circuits comparisons in a predictable
-/// way and matches the engine's "missing value" convention. This is the
-/// one intentional deviation from the spec in this file.
+/// Division and modulo by zero produce the IEEE 754 values (`±Infinity`
+/// for `n / 0` with `n ≠ 0`, `NaN` for `0 / 0` and any `n % 0`), matching
+/// `json-logic-js` exactly. Result is wrapped in `.float`, which means
+/// `isTruthy` correctly reports `Infinity` as truthy and `NaN` as falsy.
 enum ArithmeticOperators {
 
     /// `{"+": [a, b, ...]}` — variadic sum. Each operand is coerced via
@@ -83,25 +82,18 @@ enum ArithmeticOperators {
     }
 
     /// `{"/": [a, b]}` — division. Operands are coerced via JS `Number()`
-    /// (`asNumber`). Division by zero returns `.null` (see type docs).
+    /// (`asNumber`). Division by zero follows IEEE 754: `n / 0` is
+    /// `±Infinity` (sign matches the dividend), `0 / 0` is `NaN`.
     static func opDiv(args: Value, vars: Value) throws -> Value {
         let (lhs, rhs) = try Operators.evalTwo(args, vars: vars, opName: "/")
-        let divisor = asDouble(rhs)
-        if divisor == 0.0 {
-            return .null
-        }
-        return .float(asDouble(lhs) / divisor)
+        return .float(asDouble(lhs) / asDouble(rhs))
     }
 
     /// `{"%": [a, b]}` — modulo. Operands are coerced via JS `Number()`
-    /// (`asNumber`). Modulo by zero returns `.null` (see type docs).
+    /// (`asNumber`). `n % 0` follows IEEE 754 and is `NaN`.
     static func opMod(args: Value, vars: Value) throws -> Value {
         let (lhs, rhs) = try Operators.evalTwo(args, vars: vars, opName: "%")
-        let divisor = asDouble(rhs)
-        if divisor == 0.0 {
-            return .null
-        }
-        return .float(asDouble(lhs).truncatingRemainder(dividingBy: divisor))
+        return .float(asDouble(lhs).truncatingRemainder(dividingBy: asDouble(rhs)))
     }
 
     /// `Number(value)`-style coercion for `-`, `/`, `%`. Falls back to
