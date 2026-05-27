@@ -233,6 +233,70 @@ final class ArithmeticOperatorsTests: XCTestCase {
         }
     }
 
+    // MARK: - null operand handling
+
+    /// `null` coerces to `0` for every arithmetic operator, mirroring
+    /// `Value.asNumber`'s "missing numeric value → 0" convention.
+    ///
+    /// This deliberately deviates from `json-logic-js` for `+` and `*`,
+    /// which use `parseFloat(value)` instead of native arithmetic.
+    /// `parseFloat` first stringifies its argument, so `parseFloat(null)`
+    /// is `parseFloat("null")` which is `NaN`, and any `+` / `*` chain
+    /// containing a `null` returns `NaN` in JS. The other three ops
+    /// (`-`, `/`, `%`) use native JS arithmetic where `Number(null) === 0`,
+    /// so for those we already match the spec exactly. Picking the
+    /// symmetric "null → 0" interpretation across all five ops is friendlier
+    /// for rule authors who use `null` to model a missing numeric field.
+    func testNullOperandIsTreatedAsZero() throws {
+        // null + 1 = 1   (JS: NaN — parseFloat quirk)
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opAdd, args: arr(.null, .int(1))),
+            .float(1.0)
+        )
+        // {"+": [null]} = 0   (numeric-cast form)
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opAdd, args: arr(.null)),
+            .float(0.0)
+        )
+        // null * 1 = 0   (JS: NaN — parseFloat quirk)
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opMul, args: arr(.null, .int(1))),
+            .float(0.0)
+        )
+        // null - 1 = -1   (matches JS)
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opSub, args: arr(.null, .int(1))),
+            .float(-1.0)
+        )
+        // {"-": [null]} = 0   (unary negation; -0.0 == 0.0 in IEEE 754)
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opSub, args: arr(.null)),
+            .float(0.0)
+        )
+        // null / 1 = 0   (matches JS)
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opDiv, args: arr(.null, .int(1))),
+            .float(0.0)
+        )
+        // 1 / null → divisor coerces to 0 → null (already covered by
+        // testDivByZeroReturnsNull semantically; pinned again here for
+        // the explicit `.null` divisor variant)
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opDiv, args: arr(.int(1), .null)),
+            .null
+        )
+        // null % 1 = 0   (matches JS)
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opMod, args: arr(.null, .int(1))),
+            .float(0.0)
+        )
+        // 1 % null → divisor=0 → null
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opMod, args: arr(.int(1), .null)),
+            .null
+        )
+    }
+
     // MARK: - Helpers
 
     private typealias Operation = (Value, Value) throws -> Value
