@@ -22,6 +22,9 @@ protocol PaywallCacheWarmingType: Sendable {
     func warmUpEligibilityCache(offerings: Offerings) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func clearEligibilityCache() async
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpPaywallImagesCache(offerings: Offerings) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -57,7 +60,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private let fontsManager: PaywallFontManagerType
     private let fileRepository: FileRepositoryType
 
-    private var hasLoadedEligibility = false
+    private var warmedEligibilityProductIdentifiers: Set<String> = []
     private var hasLoadedImages = false
     private var hasLoadedVideos = false
     private var warmedWorkflowIDs: Set<String> = []
@@ -73,15 +76,51 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         self.fileRepository = fileRepository
     }
 
-    func warmUpEligibilityCache(offerings: Offerings) {
-        guard !self.hasLoadedEligibility else { return }
-        self.hasLoadedEligibility = true
+    /// Warms up the intro eligibility cache for products across all offerings.
+    ///
+    /// To avoid penalizing the current offering's warm-up with the cost of fetching eligibility for
+    /// the rest of the offerings, the work is staggered: the current offering's products are
+    /// warmed up first, and only after that completes are the remaining offerings warmed up.
+    ///
+    /// Products that have already been warmed up are skipped on subsequent calls.
+    /// Call ``clearEligibilityCache()`` to reset the tracking (e.g. when `CustomerInfo` changes).
+    func warmUpEligibilityCache(offerings: Offerings) async {
+        let currentProducts = offerings.productIdentifiersInCurrentOffering
+            .subtracting(self.warmedEligibilityProductIdentifiers)
 
-        let productIdentifiers = offerings.allProductIdentifiersInPaywalls
-        guard !productIdentifiers.isEmpty else { return }
+        if !currentProducts.isEmpty {
+            self.warmedEligibilityProductIdentifiers.formUnion(currentProducts)
+            await Self.checkEligibility(productIdentifiers: currentProducts, checker: self.introEligibiltyChecker)
+        }
 
+        let remainingProducts = offerings.allProductIdentifiers
+            .subtracting(self.warmedEligibilityProductIdentifiers)
+
+        if !remainingProducts.isEmpty {
+            self.warmedEligibilityProductIdentifiers.formUnion(remainingProducts)
+            await Self.checkEligibility(productIdentifiers: remainingProducts, checker: self.introEligibiltyChecker)
+        }
+    }
+
+    /// Resets the set of product identifiers that have been warmed up for intro eligibility.
+    ///
+    /// Should be called whenever the underlying eligibility cache is cleared (e.g. on
+    /// `CustomerInfo` changes) so that the next call to ``warmUpEligibilityCache(offerings:)``
+    /// re-populates the cache.
+    func clearEligibilityCache() {
+        self.warmedEligibilityProductIdentifiers.removeAll(keepingCapacity: false)
+    }
+
+    private static func checkEligibility(
+        productIdentifiers: Set<String>,
+        checker: TrialOrIntroPriceEligibilityCheckerType
+    ) async {
         Logger.debug(Strings.paywalls.warming_up_eligibility_cache(products: productIdentifiers))
-        self.introEligibiltyChecker.checkEligibility(productIdentifiers: productIdentifiers) { _ in }
+        _ = await Async.call { completion in
+            checker.checkEligibility(productIdentifiers: productIdentifiers) { result in
+                completion(result)
+            }
+        }
     }
 
     func warmUpPaywallImagesCache(offerings: Offerings) async {
@@ -278,12 +317,16 @@ private extension Offerings {
         return self.current.map { [$0] } ?? []
     }
 
-    var allProductIdentifiersInPaywalls: Set<String> {
-        return .init(
-            self
-                .offeringsToPreWarm
-                .lazy
-                .flatMap(\.productIdentifiersInPaywall)
+    var productIdentifiersInCurrentOffering: Set<String> {
+        guard let current = self.current else { return [] }
+        return Set(current.availablePackages.lazy.map(\.storeProduct.productIdentifier))
+    }
+
+    var allProductIdentifiers: Set<String> {
+        return Set(
+            self.all.values.lazy
+                .flatMap(\.availablePackages)
+                .map(\.storeProduct.productIdentifier)
         )
     }
 
@@ -357,21 +400,6 @@ private extension Offerings {
 
     #endif
 
-}
-
-private extension Offering {
-
-    var productIdentifiersInPaywall: Set<String> {
-        guard let paywall = self.paywall else { return [] }
-
-        let packageTypes = Set(paywall.config.packages)
-        return Set(
-            self.availablePackages
-                .lazy
-                .filter { packageTypes.contains($0.identifier) }
-                .map(\.storeProduct.productIdentifier)
-        )
-    }
 }
 
 private extension PaywallData.Configuration.Images {
