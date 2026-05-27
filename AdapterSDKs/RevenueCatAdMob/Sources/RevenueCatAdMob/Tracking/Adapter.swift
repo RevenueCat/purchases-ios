@@ -222,14 +222,18 @@ internal extension Tracking {
             }
         }
 
-        // MARK: - Private helpers
+        // MARK: - Helpers
 
         private static func networkName(from responseInfo: GoogleMobileAds.ResponseInfo?) -> String {
             responseInfo?.loadedAdNetworkResponseInfo?.adNetworkClassName ?? self.fallbackValue
         }
 
-        private static func impressionID(from responseInfo: GoogleMobileAds.ResponseInfo?) -> String {
+        static func impressionID(from responseInfo: GoogleMobileAds.ResponseInfo?) -> String {
             responseInfo?.responseIdentifier ?? self.fallbackValue
+        }
+
+        static func impressionID(from responseInfo: GoogleMobileAds.ResponseInfo) -> String {
+            responseInfo.responseIdentifier ?? self.fallbackValue
         }
 
         private static func adUnitID(_ adUnitID: String?) -> String {
