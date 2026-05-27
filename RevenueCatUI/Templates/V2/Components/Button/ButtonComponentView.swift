@@ -137,8 +137,9 @@ struct ButtonComponentView: View {
             return
         }
 
-        // Intentionally track before branching so unknown actions are surfaced as diagnostic telemetry.
-        // These should be excluded from product funnel analytics by filtering componentValue == "unknown".
+        // Intentionally track before branching so .unknown actions are surfaced as diagnostic telemetry.
+        // Events with componentValue == "unknown" should be excluded from product funnel analytics.
+        // Note: .workflowTrigger actions are intentionally not tracked — paywallComponentInteractionValue returns nil.
         self.trackButtonComponentInteraction()
 
         switch viewModel.action {
