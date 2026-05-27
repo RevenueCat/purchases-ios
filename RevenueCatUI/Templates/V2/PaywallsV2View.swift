@@ -78,7 +78,15 @@ struct PaywallsV2View: View {
     /// `nil` keeps the standalone-paywall behavior of tracking on `onAppear` / `onDisappear`.
     private let isActiveWorkflowPage: Bool?
     @State
-    private var didFinishEligibilityCheck: Bool = false
+    private var didFinishEligibilityCheck: Bool = {
+        #if DEBUG
+        // In Xcode Previews and Emerge snapshot runs, the async eligibility check never
+        // completes, so default to finished to avoid capturing permanently-redacted snapshots.
+        return ProcessInfo.isRunningForPreviews
+        #else
+        return false
+        #endif
+    }()
 
     @State
     private var paywallSessionID: PaywallEvent.SessionID = .init()

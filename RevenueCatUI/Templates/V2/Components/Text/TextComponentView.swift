@@ -249,6 +249,14 @@ struct TextComponentView_Previews: PreviewProvider {
         platformPreview
         .previewDisplayName("Detected Platform")
 
+        defaultPreview
+        .environment(\.isPaywallLoading, true)
+        .previewDisplayName("Default (Loading)")
+
+        platformPreview
+        .environment(\.isPaywallLoading, true)
+        .previewDisplayName("Detected Platform (Loading)")
+
         // Markdown
         TextComponentView(
             // swiftlint:disable:next force_try
