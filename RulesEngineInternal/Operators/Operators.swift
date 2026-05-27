@@ -82,17 +82,18 @@ enum Operators {
 
     /// Evaluate exactly two arguments. Used by binary operators (`==`,
     /// `!=`, `===`, `!==`).
+    /// Evaluate args and return the first two operands. Missing
+    /// operands default to `.null` (standing in for JS `undefined`)
+    /// and extras are silently discarded — matches `json-logic-js`'s
+    /// `function(a, b)` operator signatures.
     static func evalTwo(
         _ args: Value,
         vars: Value,
         opName: String
     ) throws -> (Value, Value) {
         let evaluated = try evalArgs(args, vars: vars)
-        guard evaluated.count == 2 else {
-            throw RuleError.typeMismatch(
-                message: "operator '\(opName)' expects 2 arguments, got \(evaluated.count)"
-            )
-        }
-        return (evaluated[0], evaluated[1])
+        let lhs = evaluated.first ?? .null
+        let rhs = evaluated.indices.contains(1) ? evaluated[1] : .null
+        return (lhs, rhs)
     }
 }

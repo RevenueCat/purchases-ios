@@ -188,15 +188,15 @@ final class EvaluatorTests: XCTestCase {
         }
     }
 
-    func testArityErrorOnBinaryOperatorSurfacesTypeMismatch() throws {
+    /// `json-logic-js` declares binary operators (`==`, `===`, `!=`,
+    /// `!==`, `in`, etc.) as `function(a, b)`, so a missing second
+    /// operand stands in for JS `undefined`. The loose-equality path
+    /// then matches our `null` ↔ `undefined` behavior and returns
+    /// `false` for `1 == undefined`.
+    func testBinaryOperatorMissingOperandComparesAgainstNull() throws {
         let predicate = try Value.fromJSONString("{\"==\": [1]}")
-        XCTAssertThrowsError(
-            try Evaluator.evaluate(predicate: predicate, variables: [:])
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                return XCTFail("expected RuleError.typeMismatch, got \(error)")
-            }
-        }
+        let result = try Evaluator.evaluate(predicate: predicate, variables: [:])
+        XCTAssertEqual(result, false)
     }
 
     // MARK: - Arithmetic dispatched through evaluator
