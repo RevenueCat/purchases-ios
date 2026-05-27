@@ -28,7 +28,7 @@ enum StringArrayOperators {
         let haystack = evaluated.indices.contains(1) ? evaluated[1] : .null
         switch haystack {
         case .string(let haystackString):
-            return .bool(haystackString.contains(stringify(needle)))
+            return .bool(haystackString.contains(jsString(needle)))
         case .array(let items):
             return .bool(items.contains { strictEq(needle, $0) })
         default:
@@ -37,10 +37,10 @@ enum StringArrayOperators {
     }
 
     /// `{"cat": [a, b, ...]}` — variadic string concatenation. Each
-    /// operand is stringified via [`stringify`]. 0 args returns `""`.
+    /// operand is stringified via [`jsString`]. 0 args returns `""`.
     static func opCat(args: Value, vars: Value) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
-        let joined = evaluated.map(stringify).joined()
+        let joined = evaluated.map(jsString).joined()
         return .string(joined)
     }
 
@@ -58,7 +58,7 @@ enum StringArrayOperators {
         let start = evaluated.indices.contains(1) ? evaluated[1] : .null
         let length: Value? = evaluated.indices.contains(2) ? evaluated[2] : nil
 
-        let chars = Array(stringify(source))
+        let chars = Array(jsString(source))
         let total = chars.count
 
         // Non-numeric start coerces to 0 (matches JS `ToInteger`).
@@ -102,49 +102,5 @@ enum StringArrayOperators {
             }
         }
         return .array(merged)
-    }
-
-    /// Coerce a `Value` to a `String` for `cat` / `substr`. Mirrors
-    /// JavaScript's `String(value)`:
-    /// - `.null` → `"null"`
-    /// - `.bool` → `"true"` / `"false"`
-    /// - `.int` / `.float` → numeric repr (integers render without a
-    ///   trailing `.0`)
-    /// - `.string` → unchanged
-    /// - `.array` → comma-joined recursive stringify
-    /// - `.object` → `"[object Object]"`
-    private static func stringify(_ value: Value) -> String {
-        switch value {
-        case .null:
-            return "null"
-        case .bool(let value):
-            return value ? "true" : "false"
-        case .int(let value):
-            return String(value)
-        case .float(let value):
-            return formatNumber(value)
-        case .string(let value):
-            return value
-        case .array(let items):
-            // `Array.prototype.join` renders `null`/`undefined` elements
-            // as empty strings (e.g. `String([1, null, 2])` is `"1,,2"`).
-            return items.map(stringifyArrayElement).joined(separator: ",")
-        case .object:
-            return "[object Object]"
-        }
-    }
-
-    private static func stringifyArrayElement(_ value: Value) -> String {
-        if case .null = value { return "" }
-        return stringify(value)
-    }
-
-    /// Render a `Double` the way JS would — `1.0` becomes `"1"`, `1.5`
-    /// stays `"1.5"`.
-    private static func formatNumber(_ value: Double) -> String {
-        if let intValue = Int64(exactly: value) {
-            return String(intValue)
-        }
-        return String(value)
     }
 }
