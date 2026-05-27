@@ -10,13 +10,9 @@ import Foundation
 /// and as the resolved variable map handed in by callers.
 ///
 /// Maps directly onto the JSON data model with one tweak: numbers are split
-/// into `int(Int64)` and `float(Double)` so callers can preserve type
-/// intent. Cross-type numeric comparisons / arithmetic still work — see
-/// `looseEq`, `strictEq`, and the comparison helpers below.
-///
-/// JSON parsing intentionally lives only in tests (see the `Value+JSON.swift`
-/// test helper). Production callers will cross the FFI with a typed `Value`
-/// tree they construct from the host SDK's JSON parser.
+/// into `int(Int64)` and `float(Double)` to preserve type intent.
+/// Cross-type numeric comparisons / arithmetic still work — see `looseEq`,
+/// `strictEq`, and the comparison helpers below.
 enum Value: Equatable {
 
     case null
@@ -88,23 +84,17 @@ extension Value {
     }
 }
 
-/// JSON Logic loose equality (`==`). Best-effort JS-style coercion:
+/// JSON Logic loose equality (`==`). Mirrors JS abstract equality:
 ///
 /// - Same-type primitive comparisons are direct value equality.
 /// - Cross-numeric (`int` ↔ `float`) bridges as one number type.
-/// - **Same-compound**: arrays/objects compare structurally. This
-///   deliberately diverges from JS's reference identity (which would
-///   make two distinct array literals always unequal); structural
-///   equality is what rule authors actually need when comparing a
-///   `var` lookup against a literal list.
-/// - **Compound vs primitive**: mirrors JS abstract equality's
+/// - **Same-compound**: arrays/objects compare structurally.
+/// - **Compound vs primitive**: applies JS abstract equality's
 ///   `ToPrimitive(string-hint)` step. Arrays render via
 ///   `Array.prototype.toString()` (recursive comma-join, with
 ///   `null` / `undefined` elements rendered as the empty string);
 ///   objects render as `"[object Object]"`. So `[1] == "1"`, `[1, 2]
-///   == "1,2"`, `[null, 1] == ",1"`, and `[] == 0` all return `true`,
-///   matching json-logic-js. The recursive call falls through to the
-///   primitive arms (string-vs-string or the numeric fallback).
+///   == "1,2"`, `[null, 1] == ",1"`, and `[] == 0` all return `true`.
 /// - **Last-resort numeric fallback**: when two primitives don't share
 ///   a type, both sides are coerced to `Double` (JS `ToNumber`) and
 ///   compared. Returns `false` if either coercion fails.
@@ -259,9 +249,8 @@ private func jsNumberString(_ value: Double) -> String {
 /// fallback `"[object Object]"` is the only spelling we need.
 private let jsObjectString = "[object Object]"
 
-/// JSON Logic strict equality (`===`). Same type, same value. Numeric
-/// strict-eq treats `int(1)` and `float(1.0)` as equal — they represent the
-/// same JS `Number`, and our split is an internal modeling choice.
+/// JSON Logic strict equality (`===`). Same type, same value. `int(1)`
+/// and `float(1.0)` compare equal — they represent the same JS `Number`.
 // swiftlint:disable:next cyclomatic_complexity
 func strictEq(_ lhs: Value, _ rhs: Value) -> Bool {
     switch (lhs, rhs) {
