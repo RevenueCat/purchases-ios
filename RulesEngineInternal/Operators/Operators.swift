@@ -100,9 +100,8 @@ enum Operators {
         try argsAsList(args).map { try Evaluator.evaluateValue($0, vars: vars) }
     }
 
-    /// Evaluate exactly two arguments. Used by binary operators (`==`, `!=`,
-    /// `===`, `!==`, and the comparison operators a future iteration will
-    /// add).
+    /// Evaluate exactly two arguments. Used by binary operators (`==`,
+    /// `!=`, `===`, `!==`).
     static func evalTwo(
         _ args: Value,
         vars: Value,

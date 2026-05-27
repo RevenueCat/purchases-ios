@@ -8,24 +8,17 @@ import Foundation
 
 /// Top-level evaluator for JSON Logic predicates.
 ///
-/// The evaluator is intentionally simple: literals evaluate to themselves,
-/// arrays evaluate element-wise, single-key objects dispatch to an operator,
-/// multi-key objects are treated as literal data. Operators handle their
-/// own short-circuit / arity logic.
+/// Literals evaluate to themselves, arrays evaluate element-wise,
+/// single-key objects dispatch to an operator, multi-key objects are
+/// treated as literal data. Operators handle their own short-circuit /
+/// arity logic.
 ///
-/// Diagnostic warnings (missing variables, malformed args, ignored extras)
-/// are routed through `Rules.logger`; assign it (typically once at
-/// startup) to capture or silence output.
+/// Diagnostic warnings are routed through `Rules.logger`.
 enum Evaluator {
 
-    /// Module-internal entry point. A future iteration will surface this via
-    /// the SDK-facing API.
-    ///
     /// - Parameters:
     ///   - predicate: The inner `predicate` field of a rule artifact, already
-    ///     parsed into a typed `Value` tree by the caller (the engine never
-    ///     sees the JSON wire format — see module-level docs in `Value.swift`
-    ///     for why).
+    ///     parsed into a typed `Value` tree by the caller.
     ///   - variables: The resolved variable map — typically a nested object
     ///     mirroring the namespace hierarchy (`subscriber.*`, `session.*`,
     ///     etc.).
