@@ -134,7 +134,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(response.blobSources[0].id) == "cloudfront-primary"
 
         let pem = response.manifest.topics[.productEntitlementMapping]
-        expect(pem?["DEFAULT"]?.blobRef) == "6a4d0f53d9f6b8e2f4dca0fd1c7c4f5e3e1b1ef0"
+        expect(pem?["default"]?.blobRef) == "6a4d0f53d9f6b8e2f4dca0fd1c7c4f5e3e1b1ef0"
     }
 
     func testGetRemoteConfigParsesEmptyResponse() throws {
@@ -208,7 +208,7 @@ private extension BackendGetRemoteConfigTests {
         "manifest": [
             "topics": [
                 "product_entitlement_mapping": [
-                    "DEFAULT": [
+                    "default": [
                         "blob_ref": "6a4d0f53d9f6b8e2f4dca0fd1c7c4f5e3e1b1ef0"
                     ]
                 ]
