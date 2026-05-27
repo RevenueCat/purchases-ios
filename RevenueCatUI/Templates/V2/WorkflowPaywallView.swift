@@ -136,6 +136,7 @@ struct WorkflowPaywallView: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.workflowExitOfferOfferingBinding) private var exitOfferOfferingBinding
 
     enum DismissalAction: Equatable {
         case dismissWorkflow
@@ -153,12 +154,14 @@ struct WorkflowPaywallView: View {
     private let displayCloseButton: Bool
     private let promoOfferCache: PaywallPromoOfferCache?
     private let onDismiss: () -> Void
-    private let workflowPackageContext: WorkflowPackageContext?
 
     @StateObject private var navigator: WorkflowNavigator
     @State private var hasLoggedInvalidState = false
     @State private var transitionState: WorkflowPageTransitionState<RenderedPage>
     @State private var activeTransitionID: UUID?
+    /// PackageContext is intentionally cached by reference: PaywallsV2View mutates the same
+    /// instance, so user selections persist when revisiting a workflow step.
+    @State private var stepPackageContexts: [String: PackageContext]
 
     init(
         context: WorkflowContext,
@@ -176,15 +179,23 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.promoOfferCache = promoOfferCache
         self.onDismiss = onDismiss
-        self.workflowPackageContext = context.workflowPackageContext
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
+        let initialStepId = context.workflow.initialStepId
+        let initialPackageInput = Self.buildPackageInput(
+            stepId: initialStepId,
+            context: context,
+            preferredPackage: nil,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        )
+        self._stepPackageContexts = .init(wrappedValue: [initialStepId: initialPackageInput.packageContext])
         self._transitionState = .init(
             wrappedValue: .init(
                 currentPage: Self.renderedPage(
                     from: context,
-                    stepId: context.workflow.initialStepId,
+                    stepId: initialStepId,
                     canNavigateBack: false,
-                    displayCloseButton: displayCloseButton
+                    displayCloseButton: displayCloseButton,
+                    packageInput: initialPackageInput
                 )
             )
         )
@@ -235,6 +246,17 @@ struct WorkflowPaywallView: View {
             key: WorkflowExitOfferPreferenceKey.self,
             value: Self.exitOfferContext(for: self.context, currentStepId: self.navigator.currentStepId)
         )
+        // Write the exit offer directly via the binding injected by PresentingPaywallModifier.
+        // This is more reliable than the preference key when the workflow is inside a sheet,
+        // since preferences don't always propagate across presentation boundaries.
+        // Must use exitOfferContext(for:currentStepId:), not context.exitOfferOffering, because
+        // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
+        .onAppear {
+            self.syncExitOfferBinding()
+        }
+        .onChangeOf(self.navigator.currentStepId) { _ in
+            self.syncExitOfferBinding()
+        }
     }
 
     // MARK: - Helpers
@@ -254,16 +276,17 @@ struct WorkflowPaywallView: View {
             purchaseHandler: self.purchaseHandler,
             introEligibilityChecker: self.introEligibilityChecker,
             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
-            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage,
-            workflowPackages: self.workflowPackageContext?.packages,
+            workflowDefaultPackage: page.effectiveWorkflowPackageContext?.selectedPackage,
+            workflowPackages: page.effectiveWorkflowPackageContext?.packages,
             displayCloseButton: page.showCloseButton,
             onDismiss: self.handleDismiss,
             closeWorkflowAction: self.onDismiss,
             failedToLoadFont: self.failedToLoadFont,
             colorScheme: self.colorScheme,
-            promoOfferCache: self.promoOfferCache
+            promoOfferCache: self.promoOfferCache,
+            selectedPackageContextOverride: page.packageContext
         )
-        .environment(\.workflowPackageContext, self.workflowPackageContext)
+        .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
         .environment(\.workflowTriggerAction, { componentId in
             return self.handleTriggeredNavigation(componentId: componentId)
         })
@@ -287,20 +310,26 @@ struct WorkflowPaywallView: View {
         case .dismissWorkflow:
             self.onDismiss()
         case .navigateBack:
-            guard let previousStep = self.navigator.navigateBack() else {
+            guard let destination = self.navigator.backNavigationDestination,
+                  let page = self.renderedPageForBackNavigation(
+                      stepId: destination.step.id,
+                      canNavigateBack: destination.canNavigateBackAfterNavigation
+                  ) else {
                 return
             }
 
+            self.navigator.navigateBack()
             self.startTransition(
-                to: Self.renderedPage(
-                    from: self.context,
-                    stepId: previousStep.id,
-                    canNavigateBack: self.navigator.canNavigateBack,
-                    displayCloseButton: self.displayCloseButton
-                ),
+                to: page,
                 direction: .back
             )
         }
+    }
+
+    private func syncExitOfferBinding() {
+        self.exitOfferOfferingBinding.wrappedValue = Self.exitOfferContext(
+            for: self.context, currentStepId: self.navigator.currentStepId
+        )?.exitOfferOffering
     }
 
     static func exitOfferContext(
@@ -331,11 +360,10 @@ struct WorkflowPaywallView: View {
         }
 
         self.startTransition(
-            to: Self.renderedPage(
-                from: self.context,
+            to: self.renderedPageForForwardNavigation(
                 stepId: nextStep.id,
                 canNavigateBack: self.navigator.canNavigateBack,
-                displayCloseButton: self.displayCloseButton
+                carryForwardPackage: self.transitionState.currentPage?.packageContext.package
             ),
             direction: .forward
         )
@@ -395,7 +423,8 @@ struct WorkflowPaywallView: View {
         from context: WorkflowContext,
         stepId: String,
         canNavigateBack: Bool,
-        displayCloseButton: Bool
+        displayCloseButton: Bool,
+        packageInput: RenderedPagePackageInput
     ) -> RenderedPage? {
         guard let step = context.workflow.steps[stepId],
               let screenId = step.screenId,
@@ -411,7 +440,101 @@ struct WorkflowPaywallView: View {
 
         return .init(
             content: .init(paywallComponents: paywallComponents, offering: offering),
-            showCloseButton: !canNavigateBack && displayCloseButton
+            showCloseButton: !canNavigateBack && displayCloseButton,
+            packageContext: packageInput.packageContext,
+            effectiveWorkflowPackageContext: packageInput.effectiveWorkflowPackageContext
+        )
+    }
+
+    static func buildPackageInput(
+        stepId: String,
+        context: WorkflowContext,
+        preferredPackage: Package?,
+        showZeroDecimalPlacePrices: Bool
+    ) -> RenderedPagePackageInput {
+        let effective = context.effectivePackageContext(for: stepId, preferring: preferredPackage)
+
+        guard let effective else {
+            return .init(
+                packageContext: .init(
+                    package: nil,
+                    variableContext: .init(packages: [], showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+                ),
+                effectiveWorkflowPackageContext: nil
+            )
+        }
+
+        return .init(
+            packageContext: .init(
+                package: effective.selectedPackage,
+                variableContext: .init(
+                    packages: effective.packages,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
+            ),
+            effectiveWorkflowPackageContext: effective
+        )
+    }
+
+    private func renderedPageForBackNavigation(
+        stepId: String,
+        canNavigateBack: Bool
+    ) -> RenderedPage? {
+        guard let packageContext = self.stepPackageContexts[stepId] else {
+            Logger.error(
+                Strings.workflow_paywall_invalid_state(
+                    currentStepId: stepId,
+                    screenId: self.context.workflow.steps[stepId]?.screenId
+                )
+            )
+            return nil
+        }
+
+        return Self.renderedPage(
+            from: self.context,
+            stepId: stepId,
+            canNavigateBack: canNavigateBack,
+            displayCloseButton: self.displayCloseButton,
+            packageInput: .init(
+                packageContext: packageContext,
+                effectiveWorkflowPackageContext: self.context.effectivePackageContext(
+                    for: stepId,
+                    preferring: packageContext.package
+                )
+            )
+        )
+    }
+
+    private func renderedPageForForwardNavigation(
+        stepId: String,
+        canNavigateBack: Bool,
+        carryForwardPackage: Package?
+    ) -> RenderedPage? {
+        let packageInput: RenderedPagePackageInput
+        if let cached = self.stepPackageContexts[stepId] {
+            packageInput = .init(
+                packageContext: cached,
+                effectiveWorkflowPackageContext: self.context.effectivePackageContext(
+                    for: stepId,
+                    preferring: cached.package
+                )
+            )
+        } else {
+            packageInput = Self.buildPackageInput(
+                stepId: stepId,
+                context: self.context,
+                preferredPackage: carryForwardPackage,
+                showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices
+            )
+            self.stepPackageContexts[stepId] = packageInput.packageContext
+        }
+
+        return Self.renderedPage(
+            from: self.context,
+            stepId: stepId,
+            canNavigateBack: canNavigateBack,
+            displayCloseButton: self.displayCloseButton,
+            packageInput: packageInput
         )
     }
 
@@ -436,6 +559,8 @@ private struct RenderedPage: Identifiable {
     let id = UUID()
     let content: CurrentStepContent
     let showCloseButton: Bool
+    let packageContext: PackageContext
+    let effectiveWorkflowPackageContext: WorkflowPackageContext?
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -450,6 +575,12 @@ private struct DisplayedPage: Identifiable {
 private struct CurrentStepContent {
     let paywallComponents: Offering.PaywallComponents
     let offering: Offering
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct RenderedPagePackageInput {
+    let packageContext: PackageContext
+    let effectiveWorkflowPackageContext: WorkflowPackageContext?
 }
 
 #endif

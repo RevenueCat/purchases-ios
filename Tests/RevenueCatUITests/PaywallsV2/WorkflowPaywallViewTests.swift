@@ -218,6 +218,198 @@ extension WorkflowPaywallViewTests {
         expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_weekly"]
     }
 
+    func testPageWorkflowPackageContextUsesScreenPackagesInsteadOfFallbackPackages() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            workflowPackages: [(id: "$rc_monthly", isDefault: true)],
+            initialScreenJSON: Self.makeScreenJSON(
+                packages: [(id: "$rc_annual", isDefault: true)],
+                offeringId: "offering_test"
+            )
+        )
+        let pagePackageContext = context.packageContext(for: "step_initial")
+
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_monthly"
+        expect(pagePackageContext?.selectedPackage.identifier) == "$rc_annual"
+        expect(pagePackageContext?.packages.map(\.identifier)) == ["$rc_annual"]
+    }
+
+    func testPageWorkflowPackageContextReturnsNilForPackagelessScreen() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            workflowPackages: [(id: "$rc_monthly", isDefault: true)]
+        )
+
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_monthly"
+        expect(context.packageContext(for: "step_initial")).to(beNil())
+    }
+
+}
+
+// MARK: - packageContext(for:) via WorkflowContext
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPaywallViewTests {
+
+    func testPackageContextForStepWithOwnPackagesReturnsStepLocalPackages() throws {
+        // Package-bearing step: step has its own package components.
+        // packageContext(for:) must return the step's own packages, not the workflow fallback.
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            workflowPackages: [(id: "$rc_monthly", isDefault: false), (id: "$rc_annual", isDefault: true)]
+        )
+
+        // step_terminal has the terminal screen with $rc_annual as default
+        let result = context.packageContext(for: "step_terminal")
+
+        expect(result?.selectedPackage.identifier) == "$rc_annual"
+        expect(result?.packages.map(\.identifier)) == ["$rc_monthly", "$rc_annual"]
+    }
+
+    func testPackageContextForPackagelessStepReturnsNil() throws {
+        // Packageless step: step_initial has no package components.
+        // packageContext(for:) must return nil so callers can fall back to the workflow context.
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            workflowPackages: [(id: "$rc_annual", isDefault: true)]
+        )
+
+        // step_initial uses screen_initial which has no packages
+        let result = context.packageContext(for: "step_initial")
+
+        expect(result).to(beNil())
+    }
+
+    func testPackageContextForMissingStepReturnsNil() throws {
+        let context = try Self.makeContext(singleStepFallbackId: nil)
+
+        expect(context.packageContext(for: "nonexistent_step")).to(beNil())
+    }
+
+}
+
+// MARK: - Step package context cache
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPaywallViewTests {
+
+    func testPackageContextRemainsReferenceType() {
+        func requiresReferenceType<T: AnyObject>(_: T.Type) {}
+
+        requiresReferenceType(PackageContext.self)
+    }
+
+    func testCachedPackageContextMutationsPropagateThroughReference() {
+        let cached = PackageContext(
+            package: TestData.monthlyPackage,
+            variableContext: .init(packages: [TestData.monthlyPackage, TestData.annualPackage])
+        )
+        let stepCache: [String: PackageContext] = ["step_terminal": cached]
+
+        cached.package = TestData.annualPackage
+
+        expect(stepCache["step_terminal"]?.package?.identifier) == TestData.annualPackage.identifier
+    }
+
+    /// Verifies that `buildPackageInput` carries the user's current selection forward when
+    /// the preferred package exists in the next step's available packages.
+    /// This is the forward-navigation path: user picks annual on step 1, navigates to step 2
+    /// which also offers annual — step 2 should pre-select annual, not fall back to its own default.
+    func testBuildPackageInputCarriesForwardPreferredPackageWhenAvailableInStep() throws {
+        // step_terminal has annual (default) and monthly.
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            workflowPackages: [(id: "$rc_annual", isDefault: true), (id: "$rc_monthly", isDefault: false)]
+        )
+        let monthly = try XCTUnwrap(
+            context.packageContext(for: "step_terminal")?.packages.first { $0.identifier == "$rc_monthly" }
+        )
+
+        let packageInput = WorkflowPaywallView.buildPackageInput(
+            stepId: "step_terminal",
+            context: context,
+            preferredPackage: monthly,
+            showZeroDecimalPlacePrices: false
+        )
+
+        expect(packageInput.packageContext.package?.identifier) == "$rc_monthly"
+        expect(packageInput.effectiveWorkflowPackageContext?.selectedPackage.identifier) == "$rc_monthly"
+        expect(packageInput.packageContext.variableContext.mostExpensivePricePerMonth).toNot(beNil())
+    }
+
+    /// Verifies that once a step's `PackageContext` is cached, subsequent navigations to that step
+    /// reuse the cached instance (preserving any user mutations) rather than re-applying carry-forward.
+    ///
+    /// Scenario: user navigates step1 → step2 (annual carried forward), selects monthly on step2,
+    /// returns to step1, then navigates forward to step2 again.
+    /// Step2 must show monthly (the user's own previous selection), not annual (the new carry-forward).
+    /// `WorkflowPaywallView.renderedPageForForwardNavigation` implements this via the cache-hit path that skips
+    /// `buildPackageInput` entirely when the step already has a `PackageContext` in `stepPackageContexts`.
+    ///
+    /// This also guards that `PackageContext` is a reference type: the mutation at line
+    /// `cachedCtx.package = monthly` must be visible through `stepCache` for the cache to work.
+    func testCachedStepContextTakesPrecedenceOverCarryForwardOnRevisit() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            workflowPackages: [(id: "$rc_annual", isDefault: true), (id: "$rc_monthly", isDefault: false)]
+        )
+        let annual = try XCTUnwrap(
+            context.packageContext(for: "step_terminal")?.packages.first { $0.identifier == "$rc_annual" }
+        )
+        let monthly = try XCTUnwrap(
+            context.packageContext(for: "step_terminal")?.packages.first { $0.identifier == "$rc_monthly" }
+        )
+
+        // First forward navigation: annual carried forward → step gets annual.
+        let cachedInput = WorkflowPaywallView.buildPackageInput(
+            stepId: "step_terminal",
+            context: context,
+            preferredPackage: annual,
+            showZeroDecimalPlacePrices: false
+        )
+        let cachedCtx = cachedInput.packageContext
+        expect(cachedCtx.package?.identifier) == annual.identifier
+
+        // User selects monthly on the step (mutation through the reference stored in stepPackageContexts).
+        cachedCtx.package = monthly
+
+        // Simulate the per-step cache that WorkflowPaywallView maintains.
+        let stepCache: [String: PackageContext] = ["step_terminal": cachedCtx]
+
+        // Second forward navigation would carry annual again — but the step is already cached.
+        // WorkflowPaywallView.renderedPageForForwardNavigation takes the cache-hit path and skips buildPackageInput.
+        // Demonstrate the divergence: carry-forward would produce annual, cache has monthly.
+        let wouldBeWithCarryForward = WorkflowPaywallView.buildPackageInput(
+            stepId: "step_terminal",
+            context: context,
+            preferredPackage: annual,
+            showZeroDecimalPlacePrices: false
+        )
+
+        // Cache-hit path: user's own selection (monthly) is preserved.
+        expect(stepCache["step_terminal"]?.package?.identifier) == monthly.identifier
+        // Cache-miss path would have produced annual — confirming cache hit takes precedence.
+        expect(wouldBeWithCarryForward.packageContext.package?.identifier) == annual.identifier
+    }
+
+    /// Verifies that `buildPackageInput` returns an empty `PackageContext` for a step that
+    /// has no package components and no workflow fallback (nil `effectivePackageContext`).
+    func testBuildPackageInputReturnsEmptyContextForPackagelessStepWithNoFallback() throws {
+        // No singleStepFallbackId → no global workflow package context.
+        let context = try Self.makeContext(singleStepFallbackId: nil)
+
+        let packageInput = WorkflowPaywallView.buildPackageInput(
+            stepId: "step_initial",
+            context: context,
+            preferredPackage: nil,
+            showZeroDecimalPlacePrices: false
+        )
+
+        expect(packageInput.packageContext.package).to(beNil())
+        expect(packageInput.effectiveWorkflowPackageContext).to(beNil())
+        expect(packageInput.packageContext.variableContext.mostExpensivePricePerMonth).to(beNil())
+    }
+
 }
 
 // MARK: - variableContext population tests
@@ -263,6 +455,7 @@ private extension WorkflowPaywallViewTests {
     static func makeContext(
         singleStepFallbackId: String?,
         workflowPackages: [PackageSpec] = [],
+        initialScreenJSON: String? = nil,
         terminalScreenJSON: String? = nil,
         extraOfferings: [Offering] = []
     ) throws -> WorkflowContext {
@@ -270,6 +463,7 @@ private extension WorkflowPaywallViewTests {
         let workflow = try makeWorkflow(
             singleStepFallbackId: singleStepFallbackId,
             workflowPackages: workflowPackages,
+            initialScreenJSON: initialScreenJSON,
             terminalScreenJSON: terminalScreenJSON,
             offeringId: offeringId
         )
@@ -317,10 +511,13 @@ private extension WorkflowPaywallViewTests {
     static func makeWorkflow(
         singleStepFallbackId: String?,
         workflowPackages: [PackageSpec],
+        initialScreenJSON customInitialScreenJSON: String? = nil,
         terminalScreenJSON customTerminalScreenJSON: String? = nil,
         offeringId: String
     ) throws -> PublishedWorkflow {
         let workflowStepIdJSON = singleStepFallbackId.map { "\"single_step_fallback_id\": \"\($0)\"," } ?? ""
+        let initialScreenJSON = customInitialScreenJSON
+            ?? makeScreenJSON(packages: [], offeringId: offeringId)
 
         let terminalStepJSON: String
         let terminalScreenJSON: String
@@ -350,7 +547,7 @@ private extension WorkflowPaywallViewTests {
             "step_placeholder": { "id": "step_placeholder", "type": "screen" }
           },
           "screens": {
-            "screen_initial": \(makeScreenJSON(packages: [], offeringId: offeringId)),
+            "screen_initial": \(initialScreenJSON),
             \(terminalScreenJSON)
             "screen_placeholder": \(makeScreenJSON(packages: [], offeringId: offeringId))
           },
@@ -556,6 +753,19 @@ private extension WorkflowPaywallViewTests {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowPaywallViewTests {
+
+    func testExitOfferOfferingIsNotStepAware() throws {
+        // context.exitOfferOffering returns non-nil whenever the exit offer is configured,
+        // regardless of which step is current. The binding must therefore use
+        // exitOfferContext(for:currentStepId:) so it is nil on non-triggering steps.
+        let context = try Self.makeContextWithExitOffer(
+            singleStepFallbackId: "step_terminal",
+            exitOfferOfferingId: "exit_offering_a"
+        )
+
+        expect(context.exitOfferOffering).toNot(beNil())
+        expect(WorkflowPaywallView.exitOfferContext(for: context, currentStepId: "step_initial")).to(beNil())
+    }
 
     func testExitOfferContextReturnsNilWhenNotOnTriggeringStep() throws {
         let context = try Self.makeContextWithExitOffer(
