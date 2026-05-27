@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 7/13/23.
 
 import Combine
+import Foundation
 @_spi(Internal) import RevenueCat
 import StoreKit
 import SwiftUI
@@ -77,7 +78,27 @@ final class PurchaseHandler: ObservableObject {
     /// More extensible than a boolean - gives access to full result data for
     /// potential future exit offer triggers (e.g., based on specific products).
     @Published
-    fileprivate(set) var sessionPurchaseResult: PurchaseResultData?
+    fileprivate(set) var sessionPurchaseResult: PurchaseResultData? {
+        willSet {
+            if haveBothBeenCanceled(lhs: newValue, rhs: sessionPurchaseResult) {
+                self.consecutiveCancellationRequestID = UUID()
+            }
+        }
+    }
+
+    private func haveBothBeenCanceled(lhs: PurchaseResultData?, rhs: PurchaseResultData?) -> Bool {
+        switch (lhs, rhs) {
+        case (nil, nil):
+            return false
+        case let (left, right):
+            return left?.userCancelled == true && right?.userCancelled == true
+        }
+    }
+
+    /// Unique identifier for the latest `consecutiveCancellationRequestID`.
+    /// This allows SwiftUI preference listeners to receive consecutive identical results.
+    @Published
+    fileprivate(set) var consecutiveCancellationRequestID: UUID?
 
     /// Whether a purchase was successfully completed in the current session.
     /// Convenience property for checking if we should skip exit offers.
@@ -220,6 +241,7 @@ final class PurchaseHandler: ObservableObject {
             self.paywallEventTracker.discardSession(sessionID: sessionID)
         }
         self.sessionPurchaseResult = nil
+        self.consecutiveCancellationRequestID = nil
         self.purchaseResult = nil
         self.activePaywallSessionID = nil
     }
@@ -863,19 +885,21 @@ struct RestoreInProgressPreferenceKey: PreferenceKey {
 struct PurchasedResultPreferenceKey: PreferenceKey {
 
     struct PurchaseResult: Equatable {
+        private var diffKey: String?
         var transaction: StoreTransaction?
         var customerInfo: CustomerInfo
         var userCancelled: Bool
 
-        init(data: PurchaseResultData) {
+        init(data: PurchaseResultData, diffKey: UUID? = nil) {
+            self.diffKey = diffKey?.uuidString ?? data.transaction?.id
             self.transaction = data.transaction
             self.customerInfo = data.customerInfo
             self.userCancelled = data.userCancelled
         }
 
-        init?(data: PurchaseResultData?) {
+        init?(data: PurchaseResultData?, diffKey: UUID? = nil) {
             guard let data else { return nil }
-            self.init(data: data)
+            self.init(data: data, diffKey: diffKey)
         }
     }
 
