@@ -104,46 +104,29 @@ final class ValueTests: XCTestCase {
         XCTAssertFalse(looseEq(.null, .string("")))
     }
 
-    func testLooseEqArraysStructural() {
-        // Deliberate divergence from JS: in JS, `[1] == [1]` is `false`
-        // (object reference identity). We compare structurally because
-        // rule authors comparing a `var` lookup against a literal list
-        // expect "exact same contents" to mean "equal".
-        XCTAssertTrue(
-            looseEq(
-                .array([.int(1), .int(2)]),
-                .array([.int(1), .float(2.0)])
-            )
-        )
+    func testLooseEqArrayVsArrayIsAlwaysFalse() {
+        // JS abstract equality uses reference identity for arrays —
+        // `[1] == [1]` is `false`. Without reference identity, two
+        // distinct array operands always compare unequal.
         XCTAssertFalse(
             looseEq(
-                .array([.int(1)]),
+                .array([.int(1), .int(2)]),
                 .array([.int(1), .int(2)])
             )
         )
+        XCTAssertFalse(looseEq(.array([]), .array([])))
     }
 
-    func testLooseEqObjectsStructural() {
-        // Same deliberate structural rule as for arrays: same keys + same
-        // values (loosely) → equal, regardless of insertion order.
-        XCTAssertTrue(
+    func testLooseEqObjectVsObjectIsAlwaysFalse() {
+        // Same reference-equality rule as arrays — `{a:1} == {a:1}` is
+        // `false` in JS, regardless of structure.
+        XCTAssertFalse(
             looseEq(
                 .object(["a": .int(1), "b": .string("x")]),
-                .object(["b": .string("x"), "a": .float(1.0)])
+                .object(["a": .int(1), "b": .string("x")])
             )
         )
-        XCTAssertFalse(
-            looseEq(
-                .object(["a": .int(1)]),
-                .object(["a": .int(1), "b": .int(2)])
-            )
-        )
-        XCTAssertFalse(
-            looseEq(
-                .object(["a": .int(1)]),
-                .object(["a": .int(2)])
-            )
-        )
+        XCTAssertFalse(looseEq(.object([:]), .object([:])))
     }
 
     // MARK: - Loose equality: JS array/object stringify coercion
@@ -239,6 +222,16 @@ final class ValueTests: XCTestCase {
         XCTAssertFalse(strictEq(.int(1), .string("1")))
         XCTAssertFalse(strictEq(.bool(true), .int(1)))
         XCTAssertFalse(strictEq(.null, .bool(false)))
+    }
+
+    func testStrictEqArraysAndObjectsAlwaysFalse() {
+        // JS `===` for arrays/objects is reference identity — same
+        // rationale as `looseEq`. Without references, distinct operands
+        // always compare unequal.
+        XCTAssertFalse(strictEq(.array([.int(1)]), .array([.int(1)])))
+        XCTAssertFalse(strictEq(.array([]), .array([])))
+        XCTAssertFalse(strictEq(.object(["a": .int(1)]), .object(["a": .int(1)])))
+        XCTAssertFalse(strictEq(.object([:]), .object([:])))
     }
 
     // MARK: - NaN / Infinity edge cases
