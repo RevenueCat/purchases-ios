@@ -41,14 +41,14 @@ final class EqualityOperatorsTests: XCTestCase {
         XCTAssertEqual(try evalStrictNe(.array([.string("1"), .int(1)])), .bool(true))
     }
 
-    func testArityMismatchIsTypeError() {
-        XCTAssertThrowsError(
-            try EqualityOperators.opLooseEq(args: .array([.int(1)]), vars: .null)
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                return XCTFail("expected RuleError.typeMismatch, got \(error)")
-            }
-        }
+    /// `json-logic-js` declares equality operators as
+    /// `function(a, b)`, so a missing operand stands in for JS
+    /// `undefined`. `1 == undefined` is `false`; equating two missing
+    /// operands collapses to `null == null` which is `true` (mirrors
+    /// JS `null == undefined`).
+    func testMissingOperandsTreatedAsNull() throws {
+        XCTAssertEqual(try evalEq(.array([.int(1)])), .bool(false))
+        XCTAssertEqual(try evalEq(.array([])), .bool(true))
     }
 
     // MARK: - Helpers
