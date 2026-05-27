@@ -489,6 +489,7 @@ extension BasePurchasesTests {
             let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
             let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
             let workflowsAPI = WorkflowsAPI(backendConfig: backendConfig)
+            let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
             self.init(backendConfig: backendConfig,
                       customerAPI: customer,
@@ -501,7 +502,8 @@ extension BasePurchasesTests {
                       redeemWebPurchaseAPI: redeemWebPurchaseAPI,
                       virtualCurrenciesAPI: virtualCurrenciesAPI,
                       workflowsAPI: workflowsAPI,
-                      adsAPI: mockAdsAPI)
+                      adsAPI: mockAdsAPI,
+                      remoteConfigAPI: remoteConfigAPI)
         }
 
         var userID: String?
