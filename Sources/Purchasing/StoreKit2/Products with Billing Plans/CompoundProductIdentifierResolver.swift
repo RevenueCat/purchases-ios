@@ -28,10 +28,12 @@ internal struct CompoundProductIdentifierResolver {
         let compoundProductIdentifiers: Set<CompoundProductIdentifier>
 
         /// Base product identifiers that can be requested from StoreKit.
-        var storeKitProductIdentifiers: Set<String> {
-            return Set(self.compoundProductIdentifiers.map(\.storeKitProductIdentifier))
-        }
+        let storeKitProductIdentifiers: Set<String>
 
+        init(compoundProductIdentifiers: Set<CompoundProductIdentifier>) {
+            self.compoundProductIdentifiers = compoundProductIdentifiers
+            self.storeKitProductIdentifiers = Set(compoundProductIdentifiers.map(\.storeKitProductIdentifier))
+        }
     }
 
     /// Parses and filters SDK-facing product identifiers.
