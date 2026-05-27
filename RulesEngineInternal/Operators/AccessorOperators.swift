@@ -86,14 +86,14 @@ enum AccessorOperators {
             for item in items {
                 evaluated.append(try Evaluator.evaluateValue(item, vars: vars))
             }
-            return try parseVarArrayArgs(evaluated)
+            return parseVarArrayArgs(evaluated)
         }
         let evaluated = try Evaluator.evaluateValue(args, vars: vars)
-        return (try pathSegment(from: evaluated), nil)
+        return (pathSegment(from: evaluated), nil)
     }
 
-    private static func parseVarArrayArgs(_ items: [Value]) throws -> (String, Value?) {
-        let path = try pathSegment(from: items.first)
+    private static func parseVarArrayArgs(_ items: [Value]) -> (String, Value?) {
+        let path = pathSegment(from: items.first)
         let defaultValue: Value? = items.count >= 2 ? items[1] : nil
         if items.count > 2 {
             Rules.logger.warn(
@@ -107,7 +107,7 @@ enum AccessorOperators {
     /// `json-logic-js`'s `String(a).split(".")`. `nil`, `.null`, and
     /// `""` are treated as the empty path, which signals the caller
     /// to return the entire data scope.
-    private static func pathSegment(from value: Value?) throws -> String {
+    private static func pathSegment(from value: Value?) -> String {
         switch value {
         case .none, .some(.null):
             return ""
