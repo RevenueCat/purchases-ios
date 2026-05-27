@@ -34,6 +34,7 @@ end
 files_with_version_number = {
   './RevenueCat.podspec' => ['s.version          = "{x}"'],
   './RevenueCatUI.podspec' => ['s.version          = "{x}"'],
+  './RevenueCatRulesEngine.podspec' => ['s.version          = "{x}"'],
   './Sources/Misc/SystemInfo.swift' => ['return "{x}"'],
   './.version' => ['{x}'],
   './scripts/docs/v4_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v4_api_migration_guide'],
@@ -1226,6 +1227,11 @@ platform :ios do
   desc "Release to CocoaPods"
   lane :push_revenuecatui_pod do |options|
     pod_push_with_error_handling(path: "RevenueCatUI.podspec", synchronous: true)
+  end
+
+  desc "Release to CocoaPods"
+  lane :push_rules_engine_pod do |options|
+    pod_push_with_error_handling(path: "RevenueCatRulesEngine.podspec", synchronous: true)
   end
 
   desc "Tag current branch with current version number"
@@ -2576,6 +2582,12 @@ lane :check_pods do
     verbose: true,
     podspec: 'RevenueCatUI.podspec',
     include_podspecs: 'RevenueCat.podspec',
+    platforms: 'ios,osx,tvos,watchos,visionos',
+    fail_fast: true
+  )
+  pod_lib_lint(
+    verbose: true,
+    podspec: 'RevenueCatRulesEngine.podspec',
     platforms: 'ios,osx,tvos,watchos,visionos',
     fail_fast: true
   )

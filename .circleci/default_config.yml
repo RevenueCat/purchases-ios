@@ -1557,6 +1557,18 @@ jobs:
           command: bundle exec fastlane push_revenuecatui_pod
           no_output_timeout: 30m
 
+  push-rules-engine-pod:
+    executor:
+      name: macos-executor
+    steps:
+      - checkout
+      - install-bundle-dependencies
+      - revenuecat/trust-github-key
+      - run:
+          name: Deploy new version
+          command: bundle exec fastlane push_rules_engine_pod
+          no_output_timeout: 30m
+
   cocoapods-token-keepalive:
     docker:
       - image: cimg/ruby:3.3
@@ -2423,6 +2435,8 @@ workflows:
           requires:
             - push-revenuecat-pod
           <<: *release-tags
+      - push-rules-engine-pod:
+          <<: *release-tags
       - deploy-to-spm:
           <<: *release-tags
       - deploy-to-purchases-ios-admob:
@@ -2438,6 +2452,7 @@ workflows:
       - make-release:
           requires:
             - push-revenuecatui-pod
+            - push-rules-engine-pod
             - deploy-to-spm
             - docs-deploy
           <<: *release-tags
