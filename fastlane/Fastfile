@@ -718,6 +718,74 @@ platform :ios do
     )
   end
 
+  desc "Runs StoreKit unit tests on iOS 26.5 after injecting the StoreKit configuration into the simulator"
+  lane :storekit_unit_tests_ios_265 do
+    device = ENV["DEVICE"] || "iPhone 17,OS=26.5"
+    device_name = device.split(",").first
+    destination = "platform=iOS Simulator,name=#{device}"
+    derived_data_path = "build/storekit-unit-tests-ios-265"
+    test_output_path = "fastlane/test_output/storekit-unit-tests-ios-265"
+    result_bundle_path = "fastlane/test_output/xctest/storekit-unit-tests-ios-265/StoreKitUnitTests.xcresult"
+    host_app_path = "#{derived_data_path}/Build/Products/Debug-iphonesimulator/UnitTestsHostApp.app"
+    host_app_bundle_id = "com.revenuecat.StoreKitUnitTestsHostApp"
+    storekit_config_path = "Tests/StoreKitUnitTests/UnitTestsConfiguration.storekit"
+    previous_storekit_tests_delay = ENV["CIRCLECI_STOREKIT_TESTS_DELAY_SECONDS"]
+
+    FileUtils.mkdir_p(File.dirname(result_bundle_path))
+    FileUtils.mkdir_p(test_output_path)
+
+    sh("xcrun simctl boot '#{device_name}' || true")
+    sh("xcrun", "simctl", "bootstatus", device_name, "-b")
+
+    xcodebuild(
+      project: "Projects/RevenueCatTests/RevenueCatTests.xcodeproj",
+      scheme: "UnitTestsHostApp",
+      destination: destination,
+      configuration: "Debug",
+      derivedDataPath: derived_data_path,
+      build: true,
+      xcargs: "CODE_SIGNING_ALLOWED=NO"
+    )
+
+    sh("xcrun", "simctl", "install", "booted", host_app_path)
+    sh("xcrun simctl launch booted #{host_app_bundle_id} || true")
+
+    watcher_pid = Process.spawn(
+      "ruby",
+      "fastlane/storekit_config_file_watcher.rb",
+      host_app_bundle_id,
+      storekit_config_path
+    )
+
+    begin
+      UI.message("Waiting 30 seconds for StoreKit configuration injection before running StoreKit unit tests...")
+      sleep(30)
+      ENV["CIRCLECI_STOREKIT_TESTS_DELAY_SECONDS"] = "30"
+
+      xcodebuild(
+        project: "Projects/RevenueCatTests/RevenueCatTests.xcodeproj",
+        scheme: "StoreKitUnitTests",
+        destination: destination,
+        configuration: "Debug",
+        derivedDataPath: derived_data_path,
+        result_bundle_path: result_bundle_path,
+        report_formats: [:junit],
+        report_path: "#{test_output_path}/tests.xml",
+        test: true,
+        xcargs: "-only-testing:StoreKitUnitTests"
+      )
+    ensure
+      ENV["CIRCLECI_STOREKIT_TESTS_DELAY_SECONDS"] = previous_storekit_tests_delay
+
+      begin
+        Process.kill("TERM", watcher_pid)
+        Process.wait(watcher_pid)
+      rescue Errno::ESRCH, Errno::ECHILD
+        nil
+      end
+    end
+  end
+
   desc "Runs all the tvOS tests"
   lane :test_tvos do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"

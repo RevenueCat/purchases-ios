@@ -1016,6 +1016,30 @@ jobs:
           no_output_timeout: 30m
       - slack-notify-on-fail
 
+  storekit-unit-tests-ios-265:
+    executor:
+      name: macos-executor
+      xcode_version: "26.5"
+    steps:
+      - checkout
+      - install-dependencies:
+          install_xcbeautify: false
+      - run:
+          name: StoreKit unit tests iOS 26.5
+          command: bundle exec fastlane storekit_unit_tests_ios_265
+          no_output_timeout: 30m
+          environment:
+            DEVICE: iPhone 17,OS=26.5
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/storekit-unit-tests-ios-265
+          bundle_name: StoreKitUnitTests
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest/storekit-unit-tests-ios-265
+          destination: storekit-unit-tests-ios-265
+      - slack-notify-on-fail
+
   run-test-ios-18-and-17:
     executor:
       name: macos-executor
@@ -2201,6 +2225,9 @@ workflows:
       - build-xcode-265:
           context:
             - slack-secrets
+      - storekit-unit-tests-ios-265:
+          context:
+            - slack-secrets
       - pod-lib-lint:
           context:
             - slack-secrets
@@ -2367,6 +2394,7 @@ workflows:
             - check-api-changes-revenuecatui
             - run-test-ios-26
             - build-xcode-265
+            - storekit-unit-tests-ios-265
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
