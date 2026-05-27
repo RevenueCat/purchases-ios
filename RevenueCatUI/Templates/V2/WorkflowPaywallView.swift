@@ -154,7 +154,6 @@ struct WorkflowPaywallView: View {
     private let displayCloseButton: Bool
     private let promoOfferCache: PaywallPromoOfferCache?
     private let onDismiss: () -> Void
-    private let onNavigatorCreated: ((WorkflowNavigator) -> Void)?
 
     @StateObject private var navigator: WorkflowNavigator
     @State private var hasLoggedInvalidState = false
@@ -171,8 +170,7 @@ struct WorkflowPaywallView: View {
         showZeroDecimalPlacePrices: Bool,
         displayCloseButton: Bool,
         promoOfferCache: PaywallPromoOfferCache?,
-        onDismiss: @escaping () -> Void,
-        onNavigatorCreated: ((WorkflowNavigator) -> Void)? = nil
+        onDismiss: @escaping () -> Void
     ) {
         self.context = context
         self.purchaseHandler = purchaseHandler
@@ -181,7 +179,6 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.promoOfferCache = promoOfferCache
         self.onDismiss = onDismiss
-        self.onNavigatorCreated = onNavigatorCreated
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
         let initialStepId = context.workflow.initialStepId
         let initialPackageInput = Self.buildPackageInput(
@@ -241,7 +238,6 @@ struct WorkflowPaywallView: View {
             .transitionClipMask(proxy: proxy)
         }
         .allowsHitTesting(!self.transitionState.isTransitioning)
-        .onAppear { self.onNavigatorCreated?(self.navigator) }
         // Re-emitted on every step change because navigator is @StateObject with @Published
         // currentStepId. The exit offer is resolved synchronously from allOfferings on the
         // triggering step; when the user navigates away the value becomes nil, clearing

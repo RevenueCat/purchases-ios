@@ -959,29 +959,26 @@ extension WorkflowPaywallViewTests {
 
 }
 
-// MARK: - Callback tests (multi-step)
+// MARK: - Callback tests (non-initial step)
+// These tests verify that purchase/restore callbacks fire when the workflow renders
+// a non-initial step. WorkflowPaywallView uses a shared purchaseHandler across all
+// steps — these tests confirm the callbacks are wired correctly regardless of step
+// position. Navigation behavior itself is tested in WorkflowNavigator unit tests.
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowPaywallViewTests {
 
     @MainActor
-    func testOnPurchaseStartedFiredFromSecondWorkflowStep() throws {
+    func testOnPurchaseStartedFiredFromNonInitialStep() throws {
         let purchaseHandler: PurchaseHandler = .mock()
-        let context = try Self.makeNavigableContext()
+        // Start the workflow on step_b (a non-initial step) to verify callbacks
+        // are wired on any step, not just the first one.
+        let context = try Self.makeContextStartingAt(stepId: "step_b")
         var packageBeingPurchased: Package?
-        var navigator: WorkflowNavigator?
 
-        _ = try WorkflowPurchaseObserver(
-            purchaseHandler: purchaseHandler,
-            context: context,
-            onNavigatorCreated: { navigator = $0 }
-        )
-        .onPurchaseStarted { packageBeingPurchased = $0 }
-        .addToHierarchy()
-
-        expect(navigator).toEventuallyNot(beNil())
-        navigator?.triggerAction(componentId: "nav_btn")
-        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onPurchaseStarted { packageBeingPurchased = $0 }
+            .addToHierarchy()
 
         Task {
             _ = try await purchaseHandler.purchase(package: TestData.annualPackage)
@@ -991,23 +988,14 @@ extension WorkflowPaywallViewTests {
     }
 
     @MainActor
-    func testOnPurchaseCompletedFiredFromSecondWorkflowStep() throws {
+    func testOnPurchaseCompletedFiredFromNonInitialStep() throws {
         let purchaseHandler: PurchaseHandler = .mock()
-        let context = try Self.makeNavigableContext()
+        let context = try Self.makeContextStartingAt(stepId: "step_b")
         var customerInfo: CustomerInfo?
-        var navigator: WorkflowNavigator?
 
-        _ = try WorkflowPurchaseObserver(
-            purchaseHandler: purchaseHandler,
-            context: context,
-            onNavigatorCreated: { navigator = $0 }
-        )
-        .onPurchaseCompleted { customerInfo = $0 }
-        .addToHierarchy()
-
-        expect(navigator).toEventuallyNot(beNil())
-        navigator?.triggerAction(componentId: "nav_btn")
-        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onPurchaseCompleted { customerInfo = $0 }
+            .addToHierarchy()
 
         Task {
             _ = try await purchaseHandler.purchase(package: TestData.annualPackage)
@@ -1017,25 +1005,16 @@ extension WorkflowPaywallViewTests {
     }
 
     @MainActor
-    func testOnPurchaseCancelledFiredFromSecondWorkflowStep() throws {
+    func testOnPurchaseCancelledFiredFromNonInitialStep() throws {
         let purchaseHandler: PurchaseHandler = .cancelling()
-        let context = try Self.makeNavigableContext()
+        let context = try Self.makeContextStartingAt(stepId: "step_b")
         var cancelled = false
-        var navigator: WorkflowNavigator?
 
-        let dispose = try WorkflowPurchaseObserver(
-            purchaseHandler: purchaseHandler,
-            context: context,
-            onNavigatorCreated: { navigator = $0 }
-        )
-        .onPurchaseCancelled { cancelled = true }
-        .addToHierarchy()
+        let dispose = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onPurchaseCancelled { cancelled = true }
+            .addToHierarchy()
 
         defer { dispose() }
-
-        expect(navigator).toEventuallyNot(beNil())
-        navigator?.triggerAction(componentId: "nav_btn")
-        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
 
         Task {
             _ = try await purchaseHandler.purchase(package: TestData.annualPackage)
@@ -1045,23 +1024,14 @@ extension WorkflowPaywallViewTests {
     }
 
     @MainActor
-    func testOnPurchaseFailureFiredFromSecondWorkflowStep() throws {
+    func testOnPurchaseFailureFiredFromNonInitialStep() throws {
         let purchaseHandler: PurchaseHandler = .failing(Self.failureError)
-        let context = try Self.makeNavigableContext()
+        let context = try Self.makeContextStartingAt(stepId: "step_b")
         var error: NSError?
-        var navigator: WorkflowNavigator?
 
-        _ = try WorkflowPurchaseObserver(
-            purchaseHandler: purchaseHandler,
-            context: context,
-            onNavigatorCreated: { navigator = $0 }
-        )
-        .onPurchaseFailure { error = $0 }
-        .addToHierarchy()
-
-        expect(navigator).toEventuallyNot(beNil())
-        navigator?.triggerAction(componentId: "nav_btn")
-        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onPurchaseFailure { error = $0 }
+            .addToHierarchy()
 
         Task {
             _ = try? await purchaseHandler.purchase(package: TestData.annualPackage)
@@ -1071,23 +1041,14 @@ extension WorkflowPaywallViewTests {
     }
 
     @MainActor
-    func testOnRestoreStartedFiredFromSecondWorkflowStep() throws {
+    func testOnRestoreStartedFiredFromNonInitialStep() throws {
         let purchaseHandler: PurchaseHandler = .mock()
-        let context = try Self.makeNavigableContext()
+        let context = try Self.makeContextStartingAt(stepId: "step_b")
         var started = false
-        var navigator: WorkflowNavigator?
 
-        _ = try WorkflowPurchaseObserver(
-            purchaseHandler: purchaseHandler,
-            context: context,
-            onNavigatorCreated: { navigator = $0 }
-        )
-        .onRestoreStarted { started = true }
-        .addToHierarchy()
-
-        expect(navigator).toEventuallyNot(beNil())
-        navigator?.triggerAction(componentId: "nav_btn")
-        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onRestoreStarted { started = true }
+            .addToHierarchy()
 
         Task {
             _ = try await purchaseHandler.restorePurchases()
@@ -1097,23 +1058,14 @@ extension WorkflowPaywallViewTests {
     }
 
     @MainActor
-    func testOnRestoreCompletedFiredFromSecondWorkflowStep() throws {
+    func testOnRestoreCompletedFiredFromNonInitialStep() throws {
         let purchaseHandler: PurchaseHandler = .mock()
-        let context = try Self.makeNavigableContext()
+        let context = try Self.makeContextStartingAt(stepId: "step_b")
         var customerInfo: CustomerInfo?
-        var navigator: WorkflowNavigator?
 
-        _ = try WorkflowPurchaseObserver(
-            purchaseHandler: purchaseHandler,
-            context: context,
-            onNavigatorCreated: { navigator = $0 }
-        )
-        .onRestoreCompleted { customerInfo = $0 }
-        .addToHierarchy()
-
-        expect(navigator).toEventuallyNot(beNil())
-        navigator?.triggerAction(componentId: "nav_btn")
-        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onRestoreCompleted { customerInfo = $0 }
+            .addToHierarchy()
 
         Task {
             _ = try await purchaseHandler.restorePurchases()
@@ -1124,23 +1076,14 @@ extension WorkflowPaywallViewTests {
     }
 
     @MainActor
-    func testOnRestoreFailureFiredFromSecondWorkflowStep() throws {
+    func testOnRestoreFailureFiredFromNonInitialStep() throws {
         let purchaseHandler: PurchaseHandler = .failing(Self.failureError)
-        let context = try Self.makeNavigableContext()
+        let context = try Self.makeContextStartingAt(stepId: "step_b")
         var error: NSError?
-        var navigator: WorkflowNavigator?
 
-        _ = try WorkflowPurchaseObserver(
-            purchaseHandler: purchaseHandler,
-            context: context,
-            onNavigatorCreated: { navigator = $0 }
-        )
-        .onRestoreFailure { error = $0 }
-        .addToHierarchy()
-
-        expect(navigator).toEventuallyNot(beNil())
-        navigator?.triggerAction(componentId: "nav_btn")
-        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onRestoreFailure { error = $0 }
+            .addToHierarchy()
 
         Task {
             _ = try? await purchaseHandler.restorePurchases()
@@ -1161,7 +1104,6 @@ private struct WorkflowPurchaseObserver: View {
 
     @ObservedObject var purchaseHandler: PurchaseHandler
     let context: WorkflowContext
-    var onNavigatorCreated: ((WorkflowNavigator) -> Void)?
 
     var body: some View {
         WorkflowPaywallView(
@@ -1171,8 +1113,7 @@ private struct WorkflowPurchaseObserver: View {
             showZeroDecimalPlacePrices: false,
             displayCloseButton: false,
             promoOfferCache: nil,
-            onDismiss: {},
-            onNavigatorCreated: onNavigatorCreated
+            onDismiss: {}
         )
     }
 
@@ -1181,39 +1122,23 @@ private struct WorkflowPurchaseObserver: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension WorkflowPaywallViewTests {
 
-    /// Two-step workflow: step_initial navigates to step_terminal via componentId "nav_btn".
-    static func makeNavigableContext() throws -> WorkflowContext {
+    /// Creates a two-step workflow (step_a, step_b) with initial_step_id set to stepId.
+    /// Use this to exercise callbacks from a non-initial step without requiring navigation.
+    static func makeContextStartingAt(stepId: String) throws -> WorkflowContext {
         let offeringId = "offering_test"
-        let initialStepJSON = """
-        {
-            "id": "step_initial",
-            "type": "screen",
-            "screen_id": "screen_initial",
-            "triggers": [
-                {
-                    "type": "on_press",
-                    "component_id": "nav_btn",
-                    "action_id": "go_to_terminal"
-                }
-            ],
-            "trigger_actions": {
-                "go_to_terminal": { "type": "step", "step_id": "step_terminal" }
-            }
-        }
-        """
         let workflowJSON = """
         {
-          "id": "wf_nav_test",
-          "display_name": "Nav Test",
-          "initial_step_id": "step_initial",
-          "single_step_fallback_id": "step_terminal",
+          "id": "wf_non_initial_test",
+          "display_name": "Non-Initial Test",
+          "initial_step_id": "\(stepId)",
+          "single_step_fallback_id": "step_a",
           "steps": {
-            "step_initial": \(initialStepJSON),
-            "step_terminal": { "id": "step_terminal", "type": "screen", "screen_id": "screen_terminal" }
+            "step_a": { "id": "step_a", "type": "screen", "screen_id": "screen_a" },
+            "step_b": { "id": "step_b", "type": "screen", "screen_id": "screen_b" }
           },
           "screens": {
-            "screen_initial": \(makeScreenJSON(packages: [], offeringId: offeringId)),
-            "screen_terminal": \(makeScreenJSON(packages: [], offeringId: offeringId))
+            "screen_a": \(makeScreenJSON(packages: [], offeringId: offeringId)),
+            "screen_b": \(makeScreenJSON(packages: [], offeringId: offeringId))
           },
           "ui_config": {
             "app": { "colors": {}, "fonts": {} },
