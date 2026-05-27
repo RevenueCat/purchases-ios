@@ -678,21 +678,27 @@ final class IterationOperatorsTests: XCTestCase {
     /// resolves to `null`, not the parent scope's value of that key.
     func testReducePredicateCannotReachParentScope() throws {
         // Outer has `multiplier = 10`. Predicate references {"var":
-        // "multiplier"}, which doesn't exist in the {current, accumulator}
-        // scope, so it resolves to .null and `* null` coerces to 0.
-        // Result: each iteration multiplies acc by 0, plus current = current.
-        // For [1, 2, 3]: 0 * 0 + 1 = 1, 1 * 0 + 2 = 2, 2 * 0 + 3 = 3 → 3
+        // "multiplier"}, which lives only in the outer scope. The reducer
+        // rebinds `vars` to `{current, accumulator}` with no parent
+        // fallback, so the lookup resolves to `.null`. We verify that by
+        // comparing `multiplier === null` inside the predicate and using
+        // the result to decide what to emit — keeping the assertion
+        // independent of how `null` coerces in arithmetic (which under
+        // the json-logic-js spec is `parseFloat("null")` → `NaN` for
+        // `+` / `*`).
         let predicate = Value.object([
-            "+": arr(
-                .object(["var": .string("current")]),
+            "if": arr(
                 .object([
-                    "*": arr(
-                        .object(["var": .string("accumulator")]),
-                        .object(["var": .string("multiplier")])
-                    )
-                ])
+                    "==": arr(.object(["var": .string("multiplier")]), .null)
+                ]),
+                .object(["var": .string("current")]),
+                .int(-999)
             )
         ])
+        // Each iteration: multiplier resolves to null → condition true →
+        // accumulator becomes the current item. After [1, 2, 3] →
+        // accumulator = 3. If parent scope leaked through, accumulator
+        // would be -999.
         let out = try IterationOperators.opReduce(
             args: arr(
                 arr(.int(1), .int(2), .int(3)),
@@ -701,7 +707,7 @@ final class IterationOperatorsTests: XCTestCase {
             ),
             vars: .object(["multiplier": .int(10)])
         )
-        XCTAssertEqual(out.asNumber, 3)
+        XCTAssertEqual(out, .int(3))
     }
 
     func testReduceArityMismatchTwoArgsIsTypeError() {
