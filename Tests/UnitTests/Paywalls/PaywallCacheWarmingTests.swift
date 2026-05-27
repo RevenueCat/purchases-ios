@@ -30,15 +30,13 @@ final class PaywallCacheWarmingTests: TestCase {
         self.cache = PaywallCacheWarming(introEligibiltyChecker: self.eligibilityChecker)
     }
 
-    func testOfferingsWithNoPaywallsDoesNotCheckEligibility() async throws {
+    func testOfferingsWithNoProductsDoesNotCheckEligibility() async throws {
         await self.cache.warmUpEligibilityCache(
             offerings: try Self.createOfferings([
                 Self.createOffering(
                     identifier: Self.offeringIdentifier,
                     paywall: nil,
-                    products: [
-                        (.monthly, "product_1")
-                    ]
+                    products: []
                 )
             ])
         )
@@ -46,12 +44,11 @@ final class PaywallCacheWarmingTests: TestCase {
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore) == false
     }
 
-    func testWarmsUpEligibilityCacheForCurrentOffering() async throws {
-        let paywall = try Self.loadPaywall("PaywallData-Sample1")
+    func testWarmsUpEligibilityCacheForCurrentOfferingFirstThenRest() async throws {
         let offerings = try Self.createOfferings([
             Self.createOffering(
                 identifier: Self.offeringIdentifier,
-                paywall: paywall,
+                paywall: nil,
                 products: [
                     (.monthly, "product_1"),
                     (.weekly, "product_2")
@@ -59,38 +56,42 @@ final class PaywallCacheWarmingTests: TestCase {
             ),
             Self.createOffering(
                 identifier: "offering_2",
-                paywall: paywall,
+                paywall: nil,
                 products: [
                     (.annual, "product_3")
                 ]
             )
         ])
 
-        // Paywall filters packages so only `monthly` and `annual` is used.
-        // `product_3` is not part of the current offering, so that is ignored too.
-        let expectedProducts: Set<String> = ["product_1"]
+        let expectedCurrent: Set<String> = ["product_1", "product_2"]
+        let expectedRemaining: Set<String> = ["product_3"]
 
         await self.cache.warmUpEligibilityCache(offerings: offerings)
 
+        // Two staggered calls: the current offering's products first, then the rest.
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore) == true
-        expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 1
+        expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 2
 
-        expect(
-            self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters
-        ) == expectedProducts
+        let invocations = self.eligibilityChecker
+            .invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList
+        expect(invocations.first) == expectedCurrent
+        expect(invocations.last) == expectedRemaining
 
         self.logger.verifyMessageWasLogged(
-            Strings.paywalls.warming_up_eligibility_cache(products: expectedProducts),
+            Strings.paywalls.warming_up_eligibility_cache(products: expectedCurrent),
+            level: .debug
+        )
+        self.logger.verifyMessageWasLogged(
+            Strings.paywalls.warming_up_eligibility_cache(products: expectedRemaining),
             level: .debug
         )
     }
 
-    func testOnlyWarmsUpEligibilityCacheOnce() async throws {
-        let paywall = try Self.loadPaywall("PaywallData-Sample1")
+    func testWarmsUpEligibilityCacheOnlyOnceForSameOfferings() async throws {
         let offerings = try Self.createOfferings([
             Self.createOffering(
                 identifier: Self.offeringIdentifier,
-                paywall: paywall,
+                paywall: nil,
                 products: [
                     (.monthly, "product_1")
                 ]
@@ -101,6 +102,8 @@ final class PaywallCacheWarmingTests: TestCase {
         await self.cache.warmUpEligibilityCache(offerings: offerings)
 
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore) == true
+        // Only one call for the current offering; the second `warmUpEligibilityCache` is a no-op
+        // because all products are already in the warmed set.
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 1
 
         self.logger.verifyMessageWasLogged(
@@ -108,6 +111,72 @@ final class PaywallCacheWarmingTests: TestCase {
             level: .debug,
             expectedCount: 1
         )
+    }
+
+    func testWarmsUpEligibilityCacheIncrementallyForNewProducts() async throws {
+        let firstOfferings = try Self.createOfferings([
+            Self.createOffering(
+                identifier: Self.offeringIdentifier,
+                paywall: nil,
+                products: [
+                    (.monthly, "product_1")
+                ]
+            )
+        ])
+
+        let secondOfferings = try Self.createOfferings([
+            Self.createOffering(
+                identifier: Self.offeringIdentifier,
+                paywall: nil,
+                products: [
+                    (.monthly, "product_1"),
+                    (.weekly, "product_2")
+                ]
+            ),
+            Self.createOffering(
+                identifier: "offering_2",
+                paywall: nil,
+                products: [
+                    (.annual, "product_3")
+                ]
+            )
+        ])
+
+        await self.cache.warmUpEligibilityCache(offerings: firstOfferings)
+        await self.cache.warmUpEligibilityCache(offerings: secondOfferings)
+
+        // The second call should only warm up products that haven't been warmed yet.
+        // Current offering already had `product_1`, so only `product_2` is new there.
+        // Then the remaining offering's `product_3` is warmed.
+        let invocations = self.eligibilityChecker
+            .invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList
+        expect(invocations) == [
+            ["product_1"],
+            ["product_2"],
+            ["product_3"]
+        ]
+    }
+
+    func testClearEligibilityCacheAllowsRewarming() async throws {
+        let offerings = try Self.createOfferings([
+            Self.createOffering(
+                identifier: Self.offeringIdentifier,
+                paywall: nil,
+                products: [
+                    (.monthly, "product_1")
+                ]
+            )
+        ])
+
+        await self.cache.warmUpEligibilityCache(offerings: offerings)
+        await self.cache.clearEligibilityCache()
+        await self.cache.warmUpEligibilityCache(offerings: offerings)
+
+        expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 2
+
+        let invocations = self.eligibilityChecker
+            .invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList
+        expect(invocations) == [["product_1"], ["product_1"]]
     }
 
 #if !os(tvOS) // For Paywalls V2

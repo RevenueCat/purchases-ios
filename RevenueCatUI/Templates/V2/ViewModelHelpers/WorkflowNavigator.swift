@@ -15,6 +15,12 @@ import Combine
 #if !os(tvOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WorkflowBackNavigationDestination {
+    let step: WorkflowStep
+    let canNavigateBackAfterNavigation: Bool
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WorkflowNavigator: ObservableObject {
 
     @Published private(set) var currentStepId: String
@@ -32,6 +38,18 @@ final class WorkflowNavigator: ObservableObject {
 
     var canNavigateBack: Bool {
         return !backStack.isEmpty
+    }
+
+    var backNavigationDestination: WorkflowBackNavigationDestination? {
+        guard let previousStepId = backStack.last,
+              let previousStep = workflow.steps[previousStepId] else {
+            return nil
+        }
+
+        return .init(
+            step: previousStep,
+            canNavigateBackAfterNavigation: backStack.count > 1
+        )
     }
 
     @discardableResult

@@ -95,7 +95,8 @@ struct PaywallsV2View: View {
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
         colorScheme: ColorScheme,
         promoOfferCache: PaywallPromoOfferCache? = nil,
-        introEligibilityContext: IntroOfferEligibilityContext? = nil
+        introEligibilityContext: IntroOfferEligibilityContext? = nil,
+        selectedPackageContextOverride: PackageContext? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
@@ -143,7 +144,9 @@ struct PaywallsV2View: View {
         )
 
         let selectedPackageContext: PackageContext
-        if case .success(let paywallState) = initialState {
+        if let override = selectedPackageContextOverride {
+            selectedPackageContext = override
+        } else if case .success(let paywallState) = initialState {
             selectedPackageContext = Self.makeSelectedPackageContext(
                 from: paywallState,
                 defaultPackage: Self.effectiveDefaultPackage(
@@ -299,7 +302,11 @@ struct PaywallsV2View: View {
             .preference(key: PurchaseInProgressPreferenceKey.self,
                         value: self.purchaseHandler.packageBeingPurchased)
             .preference(key: PurchasedResultPreferenceKey.self,
-                        value: .init(data: self.purchaseHandler.sessionPurchaseResult))
+                        value: .init(
+                            data: self.purchaseHandler.sessionPurchaseResult,
+                            diffKey: (self.purchaseHandler.sessionPurchaseResult?.userCancelled == true) ?
+                            self.purchaseHandler.consecutiveCancellationRequestID : nil
+                        ))
             .preference(key: RestoredCustomerInfoPreferenceKey.self,
                         value: self.purchaseHandler.restoredCustomerInfo)
             .preference(key: RestoreInProgressPreferenceKey.self,
