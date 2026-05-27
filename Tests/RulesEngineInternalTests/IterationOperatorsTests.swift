@@ -705,32 +705,45 @@ final class IterationOperatorsTests: XCTestCase {
         XCTAssertEqual(out, .int(3))
     }
 
-    func testReduceArityMismatchTwoArgsIsTypeError() {
-        XCTAssertThrowsError(
-            try IterationOperators.opReduce(
-                args: arr(.array([]), addCurrentAndAccumulator),
-                vars: .null
-            )
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                XCTFail("expected typeMismatch, got \(error)")
-                return
-            }
+    /// `{"reduce": [src, pred]}` (no initial accumulator) defaults to
+    /// `null` per `json-logic-js`
+    /// (`initial = typeof values[2] !== "undefined" ? ... : null`).
+    func testReduceMissingInitialDefaultsToNull() throws {
+        // Empty source → return the implicit null seed unchanged.
+        let emptyOut = try IterationOperators.opReduce(
+            args: arr(.array([]), addCurrentAndAccumulator),
+            vars: .null
+        )
+        XCTAssertEqual(emptyOut, .null)
+        // Non-empty source: initial null + items propagates through the
+        // reducer (`null + 1 + 2 + 3` → starts as `parseFloat("null")` =
+        // `NaN`, propagates as NaN forever).
+        let nonEmptyOut = try IterationOperators.opReduce(
+            args: arr(arr(.int(1), .int(2), .int(3)), addCurrentAndAccumulator),
+            vars: .null
+        )
+        switch nonEmptyOut {
+        case .float(let value):
+            XCTAssertTrue(value.isNaN)
+        default:
+            XCTFail("expected NaN-bearing float, got \(nonEmptyOut)")
         }
     }
 
-    func testReduceArityMismatchFourArgsIsTypeError() {
-        XCTAssertThrowsError(
-            try IterationOperators.opReduce(
-                args: arr(.array([]), addCurrentAndAccumulator, .int(0), .int(1)),
-                vars: .null
-            )
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                XCTFail("expected typeMismatch, got \(error)")
-                return
-            }
-        }
+    /// `{"reduce": [src, pred, init, extra...]}` ignores arguments past
+    /// the first three per `json-logic-js`
+    /// (`values[3+]` are never read).
+    func testReduceExtraArgsIgnored() throws {
+        let out = try IterationOperators.opReduce(
+            args: arr(
+                arr(.int(1), .int(2), .int(3)),
+                addCurrentAndAccumulator,
+                .int(10),
+                .int(999)
+            ),
+            vars: .null
+        )
+        XCTAssertEqual(out, .float(16.0))
     }
 
     // MARK: - none / map / filter scope semantics

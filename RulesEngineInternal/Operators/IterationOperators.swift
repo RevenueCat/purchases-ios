@@ -104,17 +104,16 @@ enum IterationOperators {
     /// scope to seed the accumulator, then the predicate is evaluated
     /// once per item with `vars` rebound to
     /// `{"current": item, "accumulator": acc}`. A non-array source
-    /// returns the seed unchanged.
+    /// returns the seed unchanged. A missing initial accumulator
+    /// defaults to `.null` and arguments past the third are ignored.
     static func opReduce(args: Value, vars: Value) throws -> Value {
         let raw = Operators.argsAsList(args)
-        guard raw.count == 3 else {
-            throw RuleError.typeMismatch(
-                message: "operator 'reduce' expects 3 arguments, got \(raw.count)"
-            )
-        }
-        let source = try Evaluator.evaluateValue(raw[0], vars: vars)
-        let predicate = raw[1]
-        var accumulator = try Evaluator.evaluateValue(raw[2], vars: vars)
+        let sourceArg: Value = raw.indices.contains(0) ? raw[0] : .null
+        let predicate: Value = raw.indices.contains(1) ? raw[1] : .null
+        let source = try Evaluator.evaluateValue(sourceArg, vars: vars)
+        var accumulator: Value = raw.indices.contains(2)
+            ? try Evaluator.evaluateValue(raw[2], vars: vars)
+            : .null
         guard case .array(let items) = source else { return accumulator }
         for item in items {
             let scope: Value = .object([
