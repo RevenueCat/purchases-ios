@@ -138,21 +138,18 @@ func looseEq(_ lhs: Value, _ rhs: Value) -> Bool {
     }
 }
 
-// MARK: - JS coercion helpers (used by looseEq)
+// MARK: - JS coercion helpers (used by looseEq and stringifying operators)
 
-/// `Array.prototype.toString()` ≡ `Array.prototype.join(",")`. Renders
-/// each element via `jsArrayElementString`, then comma-joins.
-private func jsArrayJoin(_ items: [Value]) -> String {
-    items.map(jsArrayElementString).joined(separator: ",")
-}
-
-/// JS `String(value)` semantics with the array-element twist: `null` /
-/// `undefined` render as the empty string (not `"null"`); nested arrays
-/// recurse; everything else uses standard JS `String()`.
-private func jsArrayElementString(_ value: Value) -> String {
+/// JS `String(value)`: `null` → `"null"`, booleans → `"true"` /
+/// `"false"`, numbers → numeric repr (whole-valued doubles render
+/// without a decimal, `NaN` / `±Infinity` keep their JS spellings),
+/// strings unchanged, arrays via `Array.prototype.join(",")` (where
+/// `null` elements render as the empty string), objects as
+/// `"[object Object]"`.
+func jsString(_ value: Value) -> String {
     switch value {
     case .null:
-        return ""
+        return "null"
     case .bool(let value):
         return value ? "true" : "false"
     case .int(let value):
@@ -168,11 +165,25 @@ private func jsArrayElementString(_ value: Value) -> String {
     }
 }
 
+/// `Array.prototype.toString()` ≡ `Array.prototype.join(",")`. Renders
+/// each element via `jsArrayElementString`, then comma-joins.
+func jsArrayJoin(_ items: [Value]) -> String {
+    items.map(jsArrayElementString).joined(separator: ",")
+}
+
+/// JS `Array.prototype.join` element rendering: `null` / `undefined`
+/// render as the empty string (not `"null"`); everything else uses
+/// `jsString`.
+func jsArrayElementString(_ value: Value) -> String {
+    if case .null = value { return "" }
+    return jsString(value)
+}
+
 /// JS `String(number)` for the cases that show up in real rule data:
 /// whole-number doubles render without a decimal (`String(1.0) === "1"`),
 /// `NaN` / `±Infinity` keep their JS spellings, fractional doubles use
 /// Swift's default rendering (matches JS for non-pathological values).
-private func jsNumberString(_ value: Double) -> String {
+func jsNumberString(_ value: Double) -> String {
     if value.isNaN { return "NaN" }
     if value.isInfinite { return value > 0 ? "Infinity" : "-Infinity" }
     if let int64 = Int64(exactly: value) { return String(int64) }
@@ -182,7 +193,7 @@ private func jsNumberString(_ value: Double) -> String {
 /// JS `Object.prototype.toString.call(plainObject)` for any non-Array
 /// object. JSON Logic only ever encounters plain objects, so the
 /// fallback `"[object Object]"` is the only spelling we need.
-private let jsObjectString = "[object Object]"
+let jsObjectString = "[object Object]"
 
 /// JSON Logic strict equality (`===`). Same type, same value. `int(1)`
 /// and `float(1.0)` compare equal — they represent the same JS `Number`.
