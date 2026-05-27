@@ -149,44 +149,13 @@ enum AccessorOperators {
         case .none, .some(.null):
             return ""
         case .some(let other):
-            return jsStringCoerce(other)
+            return jsString(other)
         }
     }
 
     private static func keyAsPath(_ value: Value) -> String? {
         if case .null = value { return nil }
-        return jsStringCoerce(value)
-    }
-
-    /// JS `String(value)`: `true`/`false` for booleans, numeric repr
-    /// for numbers (whole-valued doubles render without a decimal),
-    /// strings unchanged, arrays via `Array.prototype.join(",")`
-    /// (null elements render as the empty string), objects as
-    /// `"[object Object]"`.
-    private static func jsStringCoerce(_ value: Value) -> String {
-        switch value {
-        case .null:
-            return "null"
-        case .bool(let bool):
-            return bool ? "true" : "false"
-        case .int(let int):
-            return String(int)
-        case .float(let double):
-            return formatNumber(double)
-        case .string(let string):
-            return string
-        case .array(let items):
-            return items.map(jsArrayElementString).joined(separator: ",")
-        case .object:
-            return "[object Object]"
-        }
-    }
-
-    /// `Array.prototype.join` renders `null` and `undefined` elements
-    /// as the empty string, not `"null"`.
-    private static func jsArrayElementString(_ value: Value) -> String {
-        if case .null = value { return "" }
-        return jsStringCoerce(value)
+        return jsString(value)
     }
 
     /// Resolve `path` the way `var` does, without warning on misses.
@@ -231,15 +200,5 @@ enum AccessorOperators {
             }
         }
         return current
-    }
-
-    /// Render a `Double` the way JS would — `1.0` becomes `"1"`, `1.5`
-    /// stays `"1.5"` — so a numeric path like `var: 1.0` looks up `"1"`,
-    /// not `"1.0"`.
-    private static func formatNumber(_ value: Double) -> String {
-        if let intValue = Int64(exactly: value) {
-            return String(intValue)
-        }
-        return String(value)
     }
 }
