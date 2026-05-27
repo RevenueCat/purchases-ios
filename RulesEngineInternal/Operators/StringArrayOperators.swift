@@ -8,28 +8,29 @@ import Foundation
 
 /// String + array operators: `in`, `cat`, `substr`, `merge`.
 ///
-/// Behavior follows the JSON Logic JS reference (`json-logic-js`) with
-/// two documented deviations:
-///
-/// - **`in` array membership uses `looseEq`** (so `{"in": [5, ["5"]]}`
-///   is true) instead of the JS reference's strict `===`.
-/// - **`substr` slices by Unicode code points**, not UTF-16 code units.
-///   Matches Swift's `String.Character` semantics; differs from JS only
-///   for surrogate-pair characters.
+/// Behavior follows the JSON Logic JS reference (`json-logic-js`).
+/// `substr` slices by Unicode code points, not UTF-16 code units —
+/// matches Swift's `String.Character` semantics; differs from JS only
+/// for surrogate-pair characters.
 enum StringArrayOperators {
 
-    /// `{"in": [needle, haystack]}` — substring or array-membership test.
-    /// For a `.string` haystack, the needle must also be a string and the
-    /// test is substring containment. For an `.array` haystack, the test
-    /// is element membership via `looseEq`. Any other haystack type
-    /// returns `false`.
+    /// `{"in": [needle, haystack]}` — substring or array-membership
+    /// test. For a `.string` haystack, the needle is stringified and
+    /// the test is substring containment (mirrors JS
+    /// `String.prototype.indexOf`). For an `.array` haystack, the test
+    /// is strict element equality (mirrors JS `Array.prototype.indexOf`,
+    /// which uses `===`). Any other haystack type returns `false`.
+    /// `json-logic-js` declares `in` as `function(a, b)`, so missing
+    /// or extra operands short-circuit to `false`.
     static func opIn(args: Value, vars: Value) throws -> Value {
-        let (needle, haystack) = try Operators.evalTwo(args, vars: vars, opName: "in")
-        switch (needle, haystack) {
-        case (.string(let needleString), .string(let haystackString)):
-            return .bool(haystackString.contains(needleString))
-        case (_, .array(let items)):
-            return .bool(items.contains { looseEq(needle, $0) })
+        let evaluated = try Operators.evalArgs(args, vars: vars)
+        let needle = evaluated.first ?? .null
+        let haystack = evaluated.indices.contains(1) ? evaluated[1] : .null
+        switch haystack {
+        case .string(let haystackString):
+            return .bool(haystackString.contains(stringify(needle)))
+        case .array(let items):
+            return .bool(items.contains { strictEq(needle, $0) })
         default:
             return .bool(false)
         }
