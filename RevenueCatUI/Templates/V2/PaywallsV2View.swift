@@ -81,6 +81,9 @@ struct PaywallsV2View: View {
     @StateObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
 
+    @StateObject
+    private var paywallVariablesStore: PaywallVariablesStore
+
     public init(
         paywallComponents: Offering.PaywallComponents,
         offering: Offering,
@@ -141,6 +144,9 @@ struct PaywallsV2View: View {
         )
         self._paywallStateManager = .init(
             wrappedValue: .init(state: initialState)
+        )
+        self._paywallVariablesStore = .init(
+            wrappedValue: PaywallVariablesStore()
         )
 
         let selectedPackageContext: PackageContext
@@ -208,6 +214,8 @@ struct PaywallsV2View: View {
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)
+        .environmentObject(self.paywallVariablesStore)
+        .environment(\.paywallVariablesStore, self.paywallVariablesStore)
     }
 
     @ViewBuilder

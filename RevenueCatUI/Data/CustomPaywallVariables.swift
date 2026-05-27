@@ -11,6 +11,7 @@
 //
 //  Created by Facundo Menzella on 1/22/26.
 
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 /// A value type for custom paywall variables that can be passed to paywalls at runtime.
@@ -124,6 +125,30 @@ public struct CustomVariableValue: Sendable, Equatable, Hashable {
     internal var isBool: Bool {
         if case .bool = storage { return true }
         return false
+    }
+
+}
+
+// MARK: - Bridging from ConditionValue
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PaywallComponent.ConditionValue {
+
+    /// Converts a JSON-decoded `ConditionValue` (used by paywall variable defaults and runtime
+    /// mutations) into the runtime `CustomVariableValue` representation. Numeric values collapse to
+    /// `.number`; the original int/double distinction is preserved by `doubleValue` semantics inside
+    /// `CustomVariableValue` and re-asserted at comparison time in `PresentedPartials`.
+    var asCustomVariableValue: CustomVariableValue {
+        switch self {
+        case .string(let value):
+            return .string(value)
+        case .bool(let value):
+            return .bool(value)
+        case .int(let value):
+            return .number(Double(value))
+        case .double(let value):
+            return .number(value)
+        }
     }
 
 }

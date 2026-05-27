@@ -385,6 +385,89 @@ final class UIConfigProviderTests: TestCase {
         )
     }
 
+    // MARK: - Condition context layering with mutated variables
+
+    func testConditionContextWithoutMutationsMergesDefaultsAndDeveloperOverrides() throws {
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "playerName": UIConfig.CustomVariableDefinition(type: "string", defaultValue: "Player"),
+            "score": UIConfig.CustomVariableDefinition(type: "number", defaultValue: "0")
+        ])
+
+        let context = uiConfigProvider.conditionContext(
+            selectedPackageId: nil,
+            customVariables: ["playerName": .string("Monika")]
+        )
+
+        // Developer override wins for playerName; defaults supply score.
+        expect(context.customVariables["playerName"]) == .string("Monika")
+        expect(context.customVariables["score"]) == .number(0)
+    }
+
+    func testMutatedVariablesWinOverDeveloperOverridesAndDefaults() throws {
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "playerName": UIConfig.CustomVariableDefinition(type: "string", defaultValue: "Player")
+        ])
+
+        let context = uiConfigProvider.conditionContext(
+            selectedPackageId: nil,
+            customVariables: ["playerName": .string("Developer")],
+            mutatedVariables: ["playerName": .string("RuntimeMutation")]
+        )
+
+        expect(context.customVariables["playerName"]) == .string("RuntimeMutation")
+    }
+
+    func testMutatedVariablesContributeNewKeysNotInDefaults() throws {
+        let uiConfigProvider = try createUIConfigProvider()
+
+        let context = uiConfigProvider.conditionContext(
+            selectedPackageId: nil,
+            customVariables: [:],
+            mutatedVariables: ["comparisonOpen": .bool(true)]
+        )
+
+        expect(context.customVariables["comparisonOpen"]) == .bool(true)
+    }
+
+    func testMutatedConditionValueTypesBridgeToCustomVariableValue() throws {
+        let uiConfigProvider = try createUIConfigProvider()
+
+        let context = uiConfigProvider.conditionContext(
+            selectedPackageId: nil,
+            customVariables: [:],
+            mutatedVariables: [
+                "boolVar": .bool(true),
+                "stringVar": .string("hello"),
+                "intVar": .int(42),
+                "doubleVar": .double(3.14)
+            ]
+        )
+
+        expect(context.customVariables["boolVar"]) == .bool(true)
+        expect(context.customVariables["stringVar"]) == .string("hello")
+        // Int collapses to .number per the bridging contract.
+        expect(context.customVariables["intVar"]) == .number(42)
+        expect(context.customVariables["doubleVar"]) == .number(3.14)
+    }
+
+    func testConditionContextWithEmptyMutationsMatchesNoMutationsCall() throws {
+        let uiConfigProvider = try createUIConfigProviderWithCustomVariables([
+            "playerName": UIConfig.CustomVariableDefinition(type: "string", defaultValue: "Player")
+        ])
+
+        let baseline = uiConfigProvider.conditionContext(
+            selectedPackageId: nil,
+            customVariables: [:]
+        )
+        let withEmptyMutations = uiConfigProvider.conditionContext(
+            selectedPackageId: nil,
+            customVariables: [:],
+            mutatedVariables: [:]
+        )
+
+        expect(withEmptyMutations.customVariables) == baseline.customVariables
+    }
+
     // MARK: - Utils
 
     private func createUIConfigProvider() throws -> UIConfigProvider {

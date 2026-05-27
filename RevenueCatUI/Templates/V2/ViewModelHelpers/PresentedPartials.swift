@@ -47,18 +47,25 @@ struct ConditionContext {
     /// The identifier of the currently selected package, or nil if none is selected.
     let selectedPackageId: String?
 
-    /// Custom variables for condition evaluation (developer-provided merged with dashboard defaults).
+    /// Effective variable values for condition evaluation. Built by layering, in order:
+    ///   1. Dashboard defaults (from `UIConfig.customVariables`).
+    ///   2. Developer-provided overrides (from the `.customPaywallVariables(...)` modifier).
+    ///   3. Mutations applied at runtime by interactive components (from `PaywallVariablesStore`).
+    /// Each layer overwrites the previous. Mutations are the highest-priority layer.
     let customVariables: [String: CustomVariableValue]
 
-    /// Creates a context with the given parameters.
-    /// Developer-provided `customVariables` take priority over `defaultCustomVariables` from the dashboard.
+    /// Creates a context by layering dashboard defaults, developer overrides, and runtime mutations.
     init(
         selectedPackageId: String? = nil,
         customVariables: [String: CustomVariableValue] = [:],
-        defaultCustomVariables: [String: CustomVariableValue] = [:]
+        defaultCustomVariables: [String: CustomVariableValue] = [:],
+        mutatedVariables: [String: CustomVariableValue] = [:]
     ) {
         self.selectedPackageId = selectedPackageId
-        self.customVariables = defaultCustomVariables.merging(customVariables) { _, developer in developer }
+        var merged = defaultCustomVariables
+        merged.merge(customVariables) { _, developer in developer }
+        merged.merge(mutatedVariables) { _, mutated in mutated }
+        self.customVariables = merged
     }
 
 }
