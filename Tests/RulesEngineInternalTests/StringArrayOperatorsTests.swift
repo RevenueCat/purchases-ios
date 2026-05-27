@@ -40,23 +40,24 @@ final class StringArrayOperatorsTests: XCTestCase {
         XCTAssertEqual(out, .bool(true))
     }
 
-    func testInArrayMembershipUsesLooseEq() throws {
-        // 5 vs "5" — looseEq says equal. Documented deviation from JS
-        // reference's strict `===` membership.
+    /// `Array.prototype.indexOf` is strict (`===`), so `5` is not in
+    /// `["5"]` — `json-logic-js` defers to that JS reference.
+    func testInArrayMembershipIsStrict() throws {
         let out = try StringArrayOperators.opIn(
             args: arr(.int(5), arr(.string("5"), .string("6"))),
             vars: .null
         )
-        XCTAssertEqual(out, .bool(true))
+        XCTAssertEqual(out, .bool(false))
     }
 
-    func testInNonStringNeedleInStringHaystackIsFalse() throws {
-        // We only support substring search when both sides are strings.
+    /// `String.prototype.indexOf` coerces a non-string needle to a
+    /// string before searching, so `5` is found in `"12345"`.
+    func testInStringHaystackCoercesNonStringNeedle() throws {
         let out = try StringArrayOperators.opIn(
             args: arr(.int(5), .string("12345")),
             vars: .null
         )
-        XCTAssertEqual(out, .bool(false))
+        XCTAssertEqual(out, .bool(true))
     }
 
     func testInUnsupportedHaystackTypeIsFalse() throws {
@@ -72,17 +73,14 @@ final class StringArrayOperatorsTests: XCTestCase {
         }
     }
 
-    func testInArityMismatchIsTypeError() {
-        XCTAssertThrowsError(
-            try StringArrayOperators.opIn(
-                args: arr(.string("only-one")),
-                vars: .null
-            )
-        ) { error in
-            guard case RuleError.typeMismatch = error else {
-                return XCTFail("expected typeMismatch, got \(error)")
-            }
-        }
+    /// `json-logic-js` declares `in` as `function(a, b)`. A missing
+    /// haystack short-circuits to `false`; a missing needle becomes
+    /// JS `undefined`, which `indexOf` won't find.
+    func testInMissingOperandsReturnFalse() throws {
+        let zeroArgs = try StringArrayOperators.opIn(args: arr(), vars: .null)
+        XCTAssertEqual(zeroArgs, .bool(false))
+        let oneArg = try StringArrayOperators.opIn(args: arr(.string("only-one")), vars: .null)
+        XCTAssertEqual(oneArg, .bool(false))
     }
 
     // MARK: - cat
