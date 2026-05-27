@@ -145,12 +145,14 @@ func looseEq(_ lhs: Value, _ rhs: Value) -> Bool {
     }
 }
 
-// MARK: - JS coercion helpers (used by looseEq and arithmetic)
+// MARK: - JS coercion helpers (used by looseEq, arithmetic, and stringifying operators)
 
-/// JS `String(value)` for top-level conversion. Differs from
-/// `jsArrayElementString` only in `null` handling: `String(null) === "null"`,
-/// but `Array.prototype.join` renders `null` / `undefined` array elements
-/// as the empty string.
+/// JS `String(value)`: `null` → `"null"`, booleans → `"true"` /
+/// `"false"`, numbers → numeric repr (whole-valued doubles render
+/// without a decimal, `NaN` / `±Infinity` keep their JS spellings),
+/// strings unchanged, arrays via `Array.prototype.join(",")` (where
+/// `null` elements render as the empty string), objects as
+/// `"[object Object]"`.
 func jsString(_ value: Value) -> String {
     switch value {
     case .null:
@@ -169,6 +171,36 @@ func jsString(_ value: Value) -> String {
         return jsObjectString
     }
 }
+
+/// `Array.prototype.toString()` ≡ `Array.prototype.join(",")`. Renders
+/// each element via `jsArrayElementString`, then comma-joins.
+func jsArrayJoin(_ items: [Value]) -> String {
+    items.map(jsArrayElementString).joined(separator: ",")
+}
+
+/// JS `Array.prototype.join` element rendering: `null` / `undefined`
+/// render as the empty string (not `"null"`); everything else uses
+/// `jsString`.
+func jsArrayElementString(_ value: Value) -> String {
+    if case .null = value { return "" }
+    return jsString(value)
+}
+
+/// JS `String(number)` for the cases that show up in real rule data:
+/// whole-number doubles render without a decimal (`String(1.0) === "1"`),
+/// `NaN` / `±Infinity` keep their JS spellings, fractional doubles use
+/// Swift's default rendering (matches JS for non-pathological values).
+func jsNumberString(_ value: Double) -> String {
+    if value.isNaN { return "NaN" }
+    if value.isInfinite { return value > 0 ? "Infinity" : "-Infinity" }
+    if let int64 = Int64(exactly: value) { return String(int64) }
+    return String(value)
+}
+
+/// JS `Object.prototype.toString.call(plainObject)` for any non-Array
+/// object. JSON Logic only ever encounters plain objects, so the
+/// fallback `"[object Object]"` is the only spelling we need.
+let jsObjectString = "[object Object]"
 
 /// JS `parseFloat(value)`. Stringifies via `jsString`, strips leading
 /// whitespace, then parses the longest valid prefix as a JS
@@ -196,50 +228,6 @@ private func parseFloatPrefix(_ string: String) -> Double {
     }
     return Double(str[match]) ?? .nan
 }
-
-/// `Array.prototype.toString()` ≡ `Array.prototype.join(",")`. Renders
-/// each element via `jsArrayElementString`, then comma-joins.
-private func jsArrayJoin(_ items: [Value]) -> String {
-    items.map(jsArrayElementString).joined(separator: ",")
-}
-
-/// JS `String(value)` semantics with the array-element twist: `null` /
-/// `undefined` render as the empty string (not `"null"`); nested arrays
-/// recurse; everything else uses standard JS `String()`.
-private func jsArrayElementString(_ value: Value) -> String {
-    switch value {
-    case .null:
-        return ""
-    case .bool(let value):
-        return value ? "true" : "false"
-    case .int(let value):
-        return String(value)
-    case .float(let value):
-        return jsNumberString(value)
-    case .string(let value):
-        return value
-    case .array(let items):
-        return jsArrayJoin(items)
-    case .object:
-        return jsObjectString
-    }
-}
-
-/// JS `String(number)` for the cases that show up in real rule data:
-/// whole-number doubles render without a decimal (`String(1.0) === "1"`),
-/// `NaN` / `±Infinity` keep their JS spellings, fractional doubles use
-/// Swift's default rendering (matches JS for non-pathological values).
-private func jsNumberString(_ value: Double) -> String {
-    if value.isNaN { return "NaN" }
-    if value.isInfinite { return value > 0 ? "Infinity" : "-Infinity" }
-    if let int64 = Int64(exactly: value) { return String(int64) }
-    return String(value)
-}
-
-/// JS `Object.prototype.toString.call(plainObject)` for any non-Array
-/// object. JSON Logic only ever encounters plain objects, so the
-/// fallback `"[object Object]"` is the only spelling we need.
-private let jsObjectString = "[object Object]"
 
 /// JSON Logic strict equality (`===`). Same type, same value. `int(1)`
 /// and `float(1.0)` compare equal — they represent the same JS `Number`.
