@@ -27,6 +27,10 @@ import SwiftUI
     /// The current variable-value mutations. Changes trigger SwiftUI invalidation of subscribers.
     @Published public private(set) var values: [String: PaywallComponent.ConditionValue]
 
+    /// Creates a store seeded with the provided initial variable values.
+    /// - Parameter initialValues: Variable values to start the paywall with. Defaults to empty —
+    ///   typical paywalls start with no mutations and let component interactions populate the
+    ///   store via `apply(_:payload:)`.
     public init(initialValues: [String: PaywallComponent.ConditionValue] = [:]) {
         self.values = initialValues
     }

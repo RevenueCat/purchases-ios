@@ -9,7 +9,7 @@
 //
 //  PaywallVariableUpdate.swift
 //
-// swiftlint:disable missing_docs
+// swiftlint:disable missing_docs nesting
 
 import Foundation
 
@@ -32,7 +32,6 @@ import Foundation
         /// Fallback for variable-update shapes this SDK version does not understand.
         case unsupported
 
-        // swiftlint:disable:next nesting
         private enum CodingKeys: String, CodingKey {
             case set
             case to
