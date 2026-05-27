@@ -1266,7 +1266,9 @@
 		D0DA209A2F23BBEC00BA3B77 /* AdEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DA20992F23BBEC00BA3B77 /* AdEventTests.swift */; };
 		DB1FC9512F9A1B23009A95EA /* WorkflowScreenMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB1FC9502F9A1B23009A95EA /* WorkflowScreenMapper.swift */; };
 		DB3395CA2F840A2B0079250C /* WorkflowsCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395C92F840A2B0079250C /* WorkflowsCallback.swift */; };
+		D14C62206D7248D080480FCB /* WorkflowsListCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3752A4A3D77644C8B4BDD44D /* WorkflowsListCallback.swift */; };
 		DB3395D32F840A400079250C /* GetWorkflowOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395D02F840A400079250C /* GetWorkflowOperation.swift */; };
+		8B86BDDA41724A9B86432C2F /* GetWorkflowsListOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC140B430FEE4B5897D7DB00 /* GetWorkflowsListOperation.swift */; };
 		DB3395D52F840A570079250C /* WorkflowsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395D42F840A570079250C /* WorkflowsResponse.swift */; };
 		DB3395DB2F840A790079250C /* WorkflowDetailProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395D82F840A790079250C /* WorkflowDetailProcessor.swift */; };
 		DB3395DD2F840A790079250C /* WorkflowResponseAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3395D92F840A790079250C /* WorkflowResponseAction.swift */; };
@@ -2812,7 +2814,9 @@
 		DB1FC9572F9A1B63009A95EA /* PaywallViewConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewConfigurationTests.swift; sourceTree = "<group>"; };
 		DB1FC9592F9A1B74009A95EA /* WorkflowScreenMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowScreenMapperTests.swift; sourceTree = "<group>"; };
 		DB3395C92F840A2B0079250C /* WorkflowsCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowsCallback.swift; sourceTree = "<group>"; };
+		3752A4A3D77644C8B4BDD44D /* WorkflowsListCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowsListCallback.swift; sourceTree = "<group>"; };
 		DB3395D02F840A400079250C /* GetWorkflowOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetWorkflowOperation.swift; sourceTree = "<group>"; };
+		DC140B430FEE4B5897D7DB00 /* GetWorkflowsListOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetWorkflowsListOperation.swift; sourceTree = "<group>"; };
 		DB3395D42F840A570079250C /* WorkflowsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowsResponse.swift; sourceTree = "<group>"; };
 		DB3395D82F840A790079250C /* WorkflowDetailProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowDetailProcessor.swift; sourceTree = "<group>"; };
 		DB3395D92F840A790079250C /* WorkflowResponseAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowResponseAction.swift; sourceTree = "<group>"; };
@@ -5981,6 +5985,7 @@
 				57045B3B29C51AF7001A5417 /* ProductEntitlementMappingCallback.swift */,
 				FDE57A9D2DF8783000101CE2 /* VirtualCurrenciesCallback.swift */,
 				DB3395C92F840A2B0079250C /* WorkflowsCallback.swift */,
+				3752A4A3D77644C8B4BDD44D /* WorkflowsListCallback.swift */,
 			);
 			path = Caching;
 			sourceTree = "<group>";
@@ -6010,6 +6015,7 @@
 				A55D5D65282ECCC100FA7623 /* PostAdServicesTokenOperation.swift */,
 				A56DFDEF286643BF00EF2E32 /* PostAttributionDataOperation.swift */,
 				DB3395D02F840A400079250C /* GetWorkflowOperation.swift */,
+				DC140B430FEE4B5897D7DB00 /* GetWorkflowsListOperation.swift */,
 			);
 			path = Operations;
 			sourceTree = "<group>";
@@ -7016,6 +7022,7 @@
 				B3852FA026C1ED1F005384F8 /* IdentityManager.swift in Sources */,
 				9A65E03625918B0500DE00B0 /* ConfigureStrings.swift in Sources */,
 				DB3395CA2F840A2B0079250C /* WorkflowsCallback.swift in Sources */,
+				D14C62206D7248D080480FCB /* WorkflowsListCallback.swift in Sources */,
 				4FF6E4B92B069B8C000141ED /* HTTPRequest+Signing.swift in Sources */,
 				57488C7729CB90F90000EE7E /* PurchasedProductsFetcher.swift in Sources */,
 				53E33BBB2E095B8900287158 /* SDKHealthManager.swift in Sources */,
@@ -7120,6 +7127,7 @@
 				4DBF1F362B4D572400D52354 /* LocalReceiptFetcher.swift in Sources */,
 				1D20E1D62EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift in Sources */,
 				DB3395D32F840A400079250C /* GetWorkflowOperation.swift in Sources */,
+				8B86BDDA41724A9B86432C2F /* GetWorkflowsListOperation.swift in Sources */,
 				57488A7F29CA145B0000EE7E /* ProductEntitlementMappingResponse.swift in Sources */,
 				88E679472C7503C1007E69D5 /* PaywallStackComponent.swift in Sources */,
 				B34605BC279A6E380031CA74 /* CallbackCache.swift in Sources */,
