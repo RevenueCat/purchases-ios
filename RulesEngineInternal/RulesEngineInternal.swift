@@ -28,9 +28,7 @@ extension Rules {
 }
 
 /// Locked storage for `Rules.logger`. A reference type so the enclosing
-/// namespace's `static let loggerStorage` can be a stored property
-/// (Swift forbids stored properties on enums, but `static let` of a
-/// class instance is fine).
+/// namespace's `static let loggerStorage` can be a stored property.
 private final class LoggerStorage {
 
     private let lock = NSLock()
