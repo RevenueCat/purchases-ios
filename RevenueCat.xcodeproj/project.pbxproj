@@ -661,6 +661,7 @@
 		57554CC1282AE1E3009A7E58 /* TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57554CC0282AE1E3009A7E58 /* TestCase.swift */; };
 		57554CC2282AE1E3009A7E58 /* TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57554CC0282AE1E3009A7E58 /* TestCase.swift */; };
 		575642B62910116900719219 /* EligibilityStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642B52910116900719219 /* EligibilityStrings.swift */; };
+		AD5000000000000000ADAD02 /* AdsStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD5000000000000000ADAD01 /* AdsStrings.swift */; };
 		5757EDE72DEE08C100AC4BE1 /* StoreKitVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5757EDE62DEE08C100AC4BE1 /* StoreKitVersionTests.swift */; };
 		5757EDF82DEE092900AC4BE1 /* ClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5757EDF72DEE092900AC4BE1 /* ClockTests.swift */; };
 		F2138021CD5445218F7CE984 /* DangerousSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 425B8CF8557E44A4974E502A /* DangerousSettingsTests.swift */; };
@@ -2194,6 +2195,7 @@
 		57554C87282AC293009A7E58 /* PurchaseOwnershipTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseOwnershipTypeTests.swift; sourceTree = "<group>"; };
 		57554CC0282AE1E3009A7E58 /* TestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestCase.swift; sourceTree = "<group>"; };
 		575642B52910116900719219 /* EligibilityStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EligibilityStrings.swift; sourceTree = "<group>"; };
+		AD5000000000000000ADAD01 /* AdsStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsStrings.swift; sourceTree = "<group>"; };
 		5757EDE62DEE08C100AC4BE1 /* StoreKitVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitVersionTests.swift; sourceTree = "<group>"; };
 		5757EDF72DEE092900AC4BE1 /* ClockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockTests.swift; sourceTree = "<group>"; };
 		425B8CF8557E44A4974E502A /* DangerousSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DangerousSettingsTests.swift; sourceTree = "<group>"; };
@@ -3485,6 +3487,7 @@
 		2D11F5DF250FF658005A70E8 /* Strings */ = {
 			isa = PBXGroup;
 			children = (
+				AD5000000000000000ADAD01 /* AdsStrings.swift */,
 				5704CDC82D706E5500C7F01A /* AnalyticsStrings.swift */,
 				2D11F5E0250FF886005A70E8 /* AttributionStrings.swift */,
 				B302206D2728B798008F1A0D /* BackendErrorStrings.swift */,
@@ -7002,6 +7005,7 @@
 				352137322CDBA2AA00FE961B /* FeatureEvent.swift in Sources */,
 				35D159CB2BC4396F004D8061 /* DiagnosticsPostOperation.swift in Sources */,
 				575642B62910116900719219 /* EligibilityStrings.swift in Sources */,
+				AD5000000000000000ADAD02 /* AdsStrings.swift in Sources */,
 				4F87610F2A5C9E490006FA14 /* PaywallData.swift in Sources */,
 				1621701C2EBE5581008ACFE9 /* Locale+Comparison.swift in Sources */,
 				57A0FBF22749CF66009E2FC3 /* SynchronizedUserDefaults.swift in Sources */,
