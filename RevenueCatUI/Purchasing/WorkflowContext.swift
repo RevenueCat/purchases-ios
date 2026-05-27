@@ -21,25 +21,39 @@ struct WorkflowContext {
     let initialOffering: Offering
     /// Preserved so every subsequent step's offering can carry the same placement/targeting metadata.
     let presentedOfferingContext: PresentedOfferingContext?
+    /// Package context from `singleStepFallbackId`, precomputed because it is stable for a workflow.
+    let workflowPackageContext: WorkflowPackageContext?
+
+    init(
+        workflow: PublishedWorkflow,
+        allOfferings: Offerings,
+        initialOffering: Offering,
+        presentedOfferingContext: PresentedOfferingContext?
+    ) {
+        self.workflow = workflow
+        self.allOfferings = allOfferings
+        self.initialOffering = initialOffering
+        self.presentedOfferingContext = presentedOfferingContext
+
+        let workflowPackageContext = Self.workflowPackageContext(
+            workflow: workflow,
+            allOfferings: allOfferings,
+            initialOffering: initialOffering,
+            presentedOfferingContext: presentedOfferingContext
+        )
+        if let singleWorkflowStepFallbackId = workflow.singleStepFallbackId, workflowPackageContext == nil {
+            Logger.warning(Strings.workflow_package_context_unresolvable(stepId: singleWorkflowStepFallbackId))
+        }
+        self.workflowPackageContext = workflowPackageContext
+    }
 
     func offering(for offeringIdentifier: String?) -> Offering? {
-        guard let offeringIdentifier else {
-            return self.initialOffering
-        }
-
-        if self.initialOffering.identifier == offeringIdentifier {
-            return self.initialOffering
-        }
-
-        guard let offering = self.allOfferings.all[offeringIdentifier] else {
-            return nil
-        }
-
-        guard let presentedOfferingContext else {
-            return offering
-        }
-
-        return offering.withPresentedOfferingContext(presentedOfferingContext)
+        return Self.offering(
+            for: offeringIdentifier,
+            allOfferings: self.allOfferings,
+            initialOffering: self.initialOffering,
+            presentedOfferingContext: self.presentedOfferingContext
+        )
     }
 
     /// The step ID from which the exit offer may be triggered.
@@ -86,22 +100,83 @@ struct WorkflowContext {
         return (offeringId: offeringId, triggeringStepId: stepId)
     }
 
-    /// Resolves the package context from the workflow's `singleStepFallbackId` step so that
-    /// packageless early screens can still resolve price/period template variables.
-    var workflowPackageContext: WorkflowPackageContext? {
-        guard let singleWorkflowStepFallbackId = self.workflow.singleStepFallbackId else {
+    /// Returns the effective package context for `stepId`, preferring `preferredPackage` as the
+    /// selection when that package is present in the step's available packages.
+    ///
+    /// Used for forward navigation carry-forward: when the user selected a package on a prior step,
+    /// that selection should seed the next step when the package is available there.
+    /// Falls back to the workflow-global default (`workflowPackageContext`) if `preferredPackage`
+    /// is absent from the step. As a last resort (workflow has no `singleStepFallbackId`), returns
+    /// the step's own authored default from `isSelectedByDefault`.
+    func effectivePackageContext(for stepId: String, preferring preferredPackage: Package?) -> WorkflowPackageContext? {
+        let wfContext = self.workflowPackageContext
+        guard let base = self.packageContext(for: stepId) ?? wfContext else {
             return nil
         }
 
-        guard let step = self.workflow.steps[singleWorkflowStepFallbackId],
+        guard let preferredPackage else {
+            return base
+        }
+
+        if let matched = base.packages.first(where: { $0.identifier == preferredPackage.identifier }) {
+            return .init(selectedPackage: matched, packages: base.packages)
+        }
+
+        if let wfDefault = wfContext?.selectedPackage,
+           let matched = base.packages.first(where: { $0.identifier == wfDefault.identifier }) {
+            return .init(selectedPackage: matched, packages: base.packages)
+        }
+
+        return base
+    }
+
+    /// Resolves the package context for any step by scanning its screen's components.
+    /// Returns `nil` if the step, screen, or offering cannot be resolved, or if the step has no package components.
+    func packageContext(for stepId: String) -> WorkflowPackageContext? {
+        guard let step = self.workflow.steps[stepId],
               let screenId = step.screenId,
               let screen = self.workflow.screens[screenId],
               let offering = self.offering(for: screen.offeringIdentifier) else {
-            Logger.warning(Strings.workflow_package_context_unresolvable(stepId: singleWorkflowStepFallbackId))
             return nil
         }
 
+        return self.workflowPackageContext(for: screen, offering: offering)
+    }
+
+    private func workflowPackageContext(
+        for screen: WorkflowScreen,
+        offering: Offering
+    ) -> WorkflowPackageContext? {
         let base = screen.componentsConfig.base
+        return Self.workflowPackageContext(for: base, offering: offering)
+    }
+
+    private static func workflowPackageContext(
+        workflow: PublishedWorkflow,
+        allOfferings: Offerings,
+        initialOffering: Offering,
+        presentedOfferingContext: PresentedOfferingContext?
+    ) -> WorkflowPackageContext? {
+        guard let singleWorkflowStepFallbackId = workflow.singleStepFallbackId,
+              let step = workflow.steps[singleWorkflowStepFallbackId],
+              let screenId = step.screenId,
+              let screen = workflow.screens[screenId],
+              let offering = Self.offering(
+                  for: screen.offeringIdentifier,
+                  allOfferings: allOfferings,
+                  initialOffering: initialOffering,
+                  presentedOfferingContext: presentedOfferingContext
+              ) else {
+            return nil
+        }
+
+        return Self.workflowPackageContext(for: screen.componentsConfig.base, offering: offering)
+    }
+
+    private static func workflowPackageContext(
+        for base: PaywallComponentsData.PaywallComponentsConfig,
+        offering: Offering
+    ) -> WorkflowPackageContext? {
         let allComponents = base.stack.components
             + (base.stickyFooter?.stack.components ?? [])
         let packages = Self.collectPackages(in: allComponents, offering: offering)
@@ -115,6 +190,31 @@ struct WorkflowContext {
             selectedPackage: selectedPackage,
             packages: packages.map(\.package)
         )
+    }
+
+    private static func offering(
+        for offeringIdentifier: String?,
+        allOfferings: Offerings,
+        initialOffering: Offering,
+        presentedOfferingContext: PresentedOfferingContext?
+    ) -> Offering? {
+        guard let offeringIdentifier else {
+            return initialOffering
+        }
+
+        if initialOffering.identifier == offeringIdentifier {
+            return initialOffering
+        }
+
+        guard let offering = allOfferings.all[offeringIdentifier] else {
+            return nil
+        }
+
+        guard let presentedOfferingContext else {
+            return offering
+        }
+
+        return offering.withPresentedOfferingContext(presentedOfferingContext)
     }
 
     private static func collectPackages(

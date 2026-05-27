@@ -564,6 +564,81 @@ class PurchaseHandlerTests: TestCase {
 
         XCTAssertEqual(count, 2, "setting this should have only ouccured twice from \(job)")
     }
+
+    func test_haveBothBeenCanceled_appliesCorrectly() async throws {
+        let successfulPurchaseResult: PurchaseResultData = (
+            transaction: nil,
+            customerInfo: TestData.customerInfo,
+            userCancelled: false
+        )
+        let cancelledPurchaseResult: PurchaseResultData = (
+            transaction: nil,
+            customerInfo: TestData.customerInfo,
+            userCancelled: true
+        )
+
+        let testCases = [
+            (
+                shouldUpdate: false,
+                currentResultState: nil as PurchaseResultData?,
+                nextResultState: successfulPurchaseResult as PurchaseResultData?,
+                line: #line as UInt
+            ),
+            (false, nil, cancelledPurchaseResult, #line),
+            (false, successfulPurchaseResult, nil, #line),
+            (false, cancelledPurchaseResult, nil, #line),
+            (false, successfulPurchaseResult, successfulPurchaseResult, #line),
+            (false, successfulPurchaseResult, cancelledPurchaseResult, #line),
+            (false, cancelledPurchaseResult, successfulPurchaseResult, #line),
+            (true, cancelledPurchaseResult, cancelledPurchaseResult, #line)
+        ]
+
+        for (shouldUpdate, currentResultState, nextResultState, line) in testCases {
+            // GIVEN
+            let purchaseResult = Atomic<PurchaseResultData>(successfulPurchaseResult)
+            let purchases = MockPurchases { _, _, _ in
+                purchaseResult.value
+            } restorePurchases: {
+                TestData.customerInfo
+            } trackEvent: { event in
+                Logger.debug("Tracking event: \(event)")
+            } customerInfo: {
+                TestData.customerInfo
+            }
+
+            let handler = PurchaseHandler(
+                purchases: purchases,
+                eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
+            )
+
+            var publishedRequestIDs: [UUID?] = []
+
+            let cancellable = handler.$consecutiveCancellationRequestID
+                .sink { publishedRequestIDs.append($0) }
+
+            if let currentResultState {
+                purchaseResult.value = currentResultState
+                try await handler.purchase(package: TestData.packageWithIntroOffer)
+            }
+
+            publishedRequestIDs.removeAll()
+
+            // WHEN
+            if let nextResultState {
+                purchaseResult.value = nextResultState
+                try await handler.purchase(package: TestData.packageWithIntroOffer)
+            } else {
+                handler.resetForNewSession()
+            }
+
+            // THEN
+            let didUpdate = publishedRequestIDs.contains { $0 != nil }
+            XCTAssertEqual(didUpdate, shouldUpdate, line: line)
+
+            // cleanup
+            cancellable.cancel()
+        }
+    }
 }
 
 // MARK: - Private

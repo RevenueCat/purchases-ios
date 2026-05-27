@@ -285,6 +285,28 @@ class ExistingUserPurchasesLogInTests: BasePurchasesLogInTests {
         expect(self.mockPurchasedProductsFetcher.invokedClearCacheCount).toEventually(equal(2))
     }
 
+    func testLogInClearsPaywallEligibilityCache() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        // set up updates customer info, which clears cache once. wait until it's done before checking the rest.
+        expect(self.paywallCache.invokedClearEligibilityCacheCount).toEventually(equal(1))
+
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+        let newAppUserID = "newAppUserID"
+
+        waitUntil { completed in
+            self.purchases.logIn(newAppUserID) { customerInfo, _, _ in
+                // since we're using a mocked identity manager, we need to manually call
+                // customer info manager to update the customer info and trigger an actual
+                // call in the monitorChanges observation
+                self.customerInfoManager.cache(customerInfo: customerInfo!, appUserID: newAppUserID)
+                completed()
+            }
+        }
+
+        expect(self.paywallCache.invokedClearEligibilityCacheCount).toEventually(equal(2))
+    }
+
 }
 
 // MARK: -
