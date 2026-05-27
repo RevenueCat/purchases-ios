@@ -67,11 +67,10 @@ final class MinMaxOperatorsTests: XCTestCase {
         )
     }
 
-    /// Each operand goes through `Value.asNumber` (JS `Number()` =
-    /// `ToNumber`). Single-element arrays bridge to a number via
-    /// `toString` (`[2]` → `"2"` → 2), so they're spec-valid `max`
-    /// inputs. Multi-element arrays, objects, and unparseable strings
-    /// don't parse as a whole-string number and short-circuit to NaN.
+    /// Operands go through `Value.asNumber` (JS `Number()`).
+    /// Single-element arrays bridge to a number via `toString`;
+    /// multi-element arrays, objects, and unparseable strings short-circuit
+    /// to NaN.
     func testMaxOperandCoercion() throws {
         // [2] → "2" → 2 (matches JS Math.max(1, [2]) === 2).
         XCTAssertEqual(
@@ -162,8 +161,7 @@ final class MinMaxOperatorsTests: XCTestCase {
         )
     }
 
-    /// Mirror of `testMaxOperandCoercion` for `min`. Same coercion path,
-    /// same single-vs-multi-element-array distinction.
+    /// Mirror of `testMaxOperandCoercion` for `min`.
     func testMinOperandCoercion() throws {
         // [2] → "2" → 2 (matches JS Math.min(5, [2]) === 2).
         XCTAssertEqual(

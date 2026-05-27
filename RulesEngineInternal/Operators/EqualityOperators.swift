@@ -22,9 +22,8 @@ enum EqualityOperators {
         return .bool(!looseEq(lhs, rhs))
     }
 
-    /// `{"===": [a, b]}` — JSON Logic strict equality. Same type, same value
-    /// (`1 === "1"` is false). See `strictEq` for the numeric subtlety
-    /// around `int` vs `float`.
+    /// `{"===": [a, b]}` — JSON Logic strict equality. Same type, same
+    /// value (`1 === "1"` is false).
     static func opStrictEq(args: Value, vars: Value) throws -> Value {
         let (lhs, rhs) = try Operators.evalTwo(args, vars: vars, opName: "===")
         return .bool(strictEq(lhs, rhs))

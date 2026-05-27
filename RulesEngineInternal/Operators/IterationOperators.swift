@@ -11,17 +11,13 @@ import Foundation
 /// Both follow the JSON Logic JS reference (`json-logic-js`). Shape is
 /// `{"some": [arrayExpr, predicateExpr]}` /
 /// `{"all": [arrayExpr, predicateExpr]}`. The first argument is evaluated
-/// in the current scope and must resolve to an array — anything else
+/// in the current scope and must resolve to an array; anything else
 /// short-circuits to `false`. The second argument is a literal template
 /// that is evaluated per-item with `vars` rebound to the current item,
-/// with no parent-scope inheritance (matches the JS reference).
+/// with no parent-scope inheritance.
 ///
 /// **Empty-array behavior**: `all` over an empty array returns `false`,
-/// not vacuous truth. This is a deliberate JSON Logic JS spec quirk
-/// that the Python `json-logic` library also honors; pinned by tests.
-/// The RevenueCat backend (`khepri`) currently returns `true` for the
-/// same case — we deliberately follow the spec instead so the SDK stays
-/// consistent with the wider JSON Logic ecosystem.
+/// not vacuous truth, per the JSON Logic JS spec.
 enum IterationOperators {
 
     /// `{"some": [arrayExpr, predicate]}` — `true` iff `predicate` is
@@ -38,9 +34,9 @@ enum IterationOperators {
     }
 
     /// `{"all": [arrayExpr, predicate]}` — `true` iff `predicate` is
-    /// truthy for every item. Empty array returns `false` (deliberate
-    /// JSON Logic JS spec quirk, not vacuous truth). Non-array source
-    /// returns `false`. Short-circuits on the first non-truthy result.
+    /// truthy for every item. Empty array returns `false` per the JSON
+    /// Logic JS spec, not vacuous truth. Non-array source returns
+    /// `false`. Short-circuits on the first non-truthy result.
     static func opAll(args: Value, vars: Value) throws -> Value {
         let (items, predicate) = try parseIterationArgs(args, vars: vars, opName: "all")
         guard !items.isEmpty else { return .bool(false) }
