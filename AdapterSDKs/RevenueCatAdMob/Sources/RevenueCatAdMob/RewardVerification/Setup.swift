@@ -16,6 +16,7 @@ internal extension RewardVerification {
     /// AdMob ad types that accept server-side verification options.
     protocol CapableAd: AnyObject {
         var serverSideVerificationOptions: GoogleMobileAds.ServerSideVerificationOptions? { get set }
+        var responseInfo: GoogleMobileAds.ResponseInfo { get }
     }
 
     /// Load-time SSV setup for rewarded AdMob ads.
@@ -48,10 +49,12 @@ internal extension RewardVerification {
             appUserID: String
         ) -> State? {
             let clientTransactionID = UUID().uuidString
+            let impressionId = Tracking.Adapter.impressionID(from: loadedAd.responseInfo)
 
             guard let customRewardText = self.makeCustomRewardText(
                 apiKey: apiKey,
-                clientTransactionID: clientTransactionID
+                clientTransactionID: clientTransactionID,
+                impressionId: impressionId
             ) else {
                 return nil
             }
@@ -73,10 +76,15 @@ internal extension RewardVerification {
 
         /// Encodes the SSV `customRewardString` payload as deterministic JSON
         /// (`.sortedKeys`) so logs and tests are stable.
-        static func makeCustomRewardText(apiKey: String, clientTransactionID: String) -> String? {
+        static func makeCustomRewardText(
+            apiKey: String,
+            clientTransactionID: String,
+            impressionId: String
+        ) -> String? {
             let payload: [String: String] = [
                 "api_key": apiKey,
-                "client_transaction_id": clientTransactionID
+                "client_transaction_id": clientTransactionID,
+                "impression_id": impressionId
             ]
             do {
                 let data = try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])
