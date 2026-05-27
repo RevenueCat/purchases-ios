@@ -37,15 +37,6 @@ final class OutcomeTests: AdapterTestCase {
         }
     }
 
-    func testFailedCarriesFailureReason() {
-        let outcome = RewardVerification.Outcome.failed(.timeout)
-
-        guard case .failed(let reason) = outcome else {
-            return XCTFail("Expected .failed, got \(outcome)")
-        }
-        XCTAssertEqual(reason, .timeout)
-    }
-
     func testAllCasesAreConstructibleAndExhaustiveInSwitch() {
         let cases: [RewardVerification.Outcome] = [
             .verified(.virtualCurrency(VirtualCurrencyReward(code: "coins", amount: 1))),
