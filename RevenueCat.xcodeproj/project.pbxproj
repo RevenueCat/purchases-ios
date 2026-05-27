@@ -1139,6 +1139,8 @@
 		88E679472C7503C1007E69D5 /* PaywallStackComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */; };
 		8E4C7806739C1F49E522D5F3 /* StringArrayOperatorsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F576269BC7130E5B553FB5A /* StringArrayOperatorsTests.swift */; };
 		098178061D9EA23575BB0D00 /* IterationOperatorsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B20DB1382A6B8B45FDBE52 /* IterationOperatorsTests.swift */; };
+		A1B2C3D4E5F6789012345671 /* PredicateConformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E2D3C4B5A6978812345678 /* PredicateConformanceTests.swift */; };
+		B1C2D3E4F5A6789012345672 /* PredicateConformanceFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D2C3B4A596878812345679 /* PredicateConformanceFixture.swift */; };
 		900D26F82F96927E00D32EDF /* RewardVerificationPollStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900D26F52F96927E00D32EDF /* RewardVerificationPollStatus.swift */; };
 		900D26F92F96927E00D32EDF /* RewardVerificationStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900D26F22F96927E00D32EDF /* RewardVerificationStatusResponse.swift */; };
 		900D26FA2F96927E00D32EDF /* GetRewardVerificationStatusOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900D26F32F96927E00D32EDF /* GetRewardVerificationStatusOperation.swift */; };
@@ -2777,6 +2779,8 @@
 		9E174FCB9B889D4CACED0088 /* Value.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Value.swift; sourceTree = "<group>"; };
 		9F576269BC7130E5B553FB5A /* StringArrayOperatorsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StringArrayOperatorsTests.swift; sourceTree = "<group>"; };
 		B8B20DB1382A6B8B45FDBE52 /* IterationOperatorsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IterationOperatorsTests.swift; sourceTree = "<group>"; };
+		E1D2C3B4A596878812345679 /* PredicateConformanceFixture.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PredicateConformanceFixture.swift; sourceTree = "<group>"; };
+		F1E2D3C4B5A6978812345678 /* PredicateConformanceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PredicateConformanceTests.swift; sourceTree = "<group>"; };
 		A0C4BF8C5116F4DC73C116C0 /* ComparisonOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ComparisonOperators.swift; sourceTree = "<group>"; };
 		A1E0F0012F297A0100000001 /* EventsManagerStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsManagerStrings.swift; sourceTree = "<group>"; };
 		A1E1FA673B0F0D49304400D3 /* StringArrayOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StringArrayOperators.swift; sourceTree = "<group>"; };
@@ -5941,6 +5945,7 @@
 				9F576269BC7130E5B553FB5A /* StringArrayOperatorsTests.swift */,
 				B8B20DB1382A6B8B45FDBE52 /* IterationOperatorsTests.swift */,
 				15C99D58E5A86E8E1659D928 /* MinMaxOperatorsTests.swift */,
+				F1E2D3C4B5A6978812345678 /* PredicateConformanceTests.swift */,
 			);
 			name = RulesEngineInternalTests;
 			path = Tests/RulesEngineInternalTests;
@@ -6244,6 +6249,7 @@
 				B72848B4B4D101F1B94E228E /* Value+JSON.swift */,
 				02886F2673E4452BA325685C /* Rules+WithLogger.swift */,
 				E51CFC7D19BE49D2BA1A79CC /* CapturingLogger.swift */,
+				E1D2C3B4A596878812345679 /* PredicateConformanceFixture.swift */,
 			);
 			name = Helpers;
 			path = Helpers;
@@ -6634,6 +6640,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A0F8AE32D4C3A7766A8654B3 /* Build configuration list for PBXNativeTarget "RulesEngineInternalTests" */;
 			buildPhases = (
+				B2C3D4E5F6A7890123456789 /* Download khepri conformance fixtures */,
 				57D70DFC39D89F6222292D94 /* Sources */,
 				0A65949DAA91444FE9B3FBBA /* Frameworks */,
 				0D8E3F24C00F8055B1F6894B /* Resources */,
@@ -6977,6 +6984,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		B2C3D4E5F6A7890123456789 /* Download khepri conformance fixtures */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download khepri conformance fixtures";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "\"${SRCROOT}/scripts/rules_engine/download_predicate_conformance_fixtures.sh\"\n";
+		};
 		B3C302D926D8066F002B72D1 /* SwiftLint */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -8042,6 +8068,8 @@
 				8E4C7806739C1F49E522D5F3 /* StringArrayOperatorsTests.swift in Sources */,
 				098178061D9EA23575BB0D00 /* IterationOperatorsTests.swift in Sources */,
 				A052C28EF43597E04840B73A /* MinMaxOperatorsTests.swift in Sources */,
+				A1B2C3D4E5F6789012345671 /* PredicateConformanceTests.swift in Sources */,
+				B1C2D3E4F5A6789012345672 /* PredicateConformanceFixture.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
