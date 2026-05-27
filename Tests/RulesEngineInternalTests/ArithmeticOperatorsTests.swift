@@ -8,6 +8,7 @@ import XCTest
 
 @testable import RulesEngineInternal
 
+// swiftlint:disable:next type_body_length
 final class ArithmeticOperatorsTests: XCTestCase {
 
     // MARK: - +
@@ -35,26 +36,26 @@ final class ArithmeticOperatorsTests: XCTestCase {
             try run(ArithmeticOperators.opAdd, args: arr(.string("2.5"))),
             .float(2.5)
         )
-        // {"+": [true]} → 1
-        XCTAssertEqual(
-            try run(ArithmeticOperators.opAdd, args: arr(.bool(true))),
-            .float(1.0)
-        )
+        // `{"+": [true]}` → NaN. JS uses `parseFloat(value)`, and
+        // `parseFloat("true")` is `NaN` — bool coercion through arithmetic
+        // is *not* the same as `Number(true) === 1`.
+        let boolResult = try run(ArithmeticOperators.opAdd, args: arr(.bool(true)))
+        XCTAssertTrue(unwrapFloat(boolResult).isNaN)
     }
 
-    func testAddCoercesStringsAndBools() throws {
-        // "1" + 1 → 2
+    func testAddCoercesNumericStrings() throws {
+        // "1" + 1 → 2 — `parseFloat("1")` is 1.
         XCTAssertEqual(
             try run(ArithmeticOperators.opAdd, args: arr(.string("1"), .int(1))),
             .float(2.0)
         )
-        // true + 1 + 1 → 3
+        // "3.14abc" + 0 → 3.14 — `parseFloat` parses the longest numeric
+        // prefix, so trailing junk doesn't poison the result. This is one
+        // of the visible side-effects of `+` using `parseFloat` instead
+        // of `Number()`.
         XCTAssertEqual(
-            try run(
-                ArithmeticOperators.opAdd,
-                args: arr(.bool(true), .int(1), .int(1))
-            ),
-            .float(3.0)
+            try run(ArithmeticOperators.opAdd, args: arr(.string("3.14abc"), .int(0))),
+            .float(3.14)
         )
     }
 
@@ -233,68 +234,107 @@ final class ArithmeticOperatorsTests: XCTestCase {
         }
     }
 
-    // MARK: - null operand handling
+    // MARK: - Coercion semantics (`+`/`*` use parseFloat, others use Number)
 
-    /// `null` coerces to `0` for every arithmetic operator, mirroring
-    /// `Value.asNumber`'s "missing numeric value → 0" convention.
-    ///
-    /// This deliberately deviates from `json-logic-js` for `+` and `*`,
-    /// which use `parseFloat(value)` instead of native arithmetic.
-    /// `parseFloat` first stringifies its argument, so `parseFloat(null)`
-    /// is `parseFloat("null")` which is `NaN`, and any `+` / `*` chain
-    /// containing a `null` returns `NaN` in JS. The other three ops
-    /// (`-`, `/`, `%`) use native JS arithmetic where `Number(null) === 0`,
-    /// so for those we already match the spec exactly. Picking the
-    /// symmetric "null → 0" interpretation across all five ops is friendlier
-    /// for rule authors who use `null` to model a missing numeric field.
-    func testNullOperandIsTreatedAsZero() throws {
-        // null + 1 = 1   (JS: NaN — parseFloat quirk)
+    /// `+` and `*` coerce every operand through JS `parseFloat(value)`.
+    /// `parseFloat` first calls `String(value)`, then parses the longest
+    /// numeric prefix — so `null` becomes the string `"null"` (→ NaN),
+    /// bools become `"true"` / `"false"` (→ NaN), the empty string
+    /// becomes the empty string (→ NaN), and `[1,2]` becomes `"1,2"`
+    /// (parses as `1`). This is asymmetric with `-` / `/` / `%`, which
+    /// use `Number(value)` (see `testSubDivAndModUseToNumberPerSpec`).
+    func testAddAndMulUseParseFloatPerSpec() throws {
+        // null + 1 → NaN (parseFloat("null") is NaN)
+        assertNaN(try run(ArithmeticOperators.opAdd, args: arr(.null, .int(1))))
+        // null * 1 → NaN
+        assertNaN(try run(ArithmeticOperators.opMul, args: arr(.null, .int(1))))
+
+        // true + 1 → NaN, false + 1 → NaN. Bools never bridge through
+        // `+` / `*` even though `Number(true) === 1`.
+        assertNaN(try run(ArithmeticOperators.opAdd, args: arr(.bool(true), .int(1))))
+        assertNaN(try run(ArithmeticOperators.opAdd, args: arr(.bool(false), .int(1))))
+
+        // "" + 1 → NaN (parseFloat("") is NaN, unlike Number("") === 0).
+        assertNaN(try run(ArithmeticOperators.opAdd, args: arr(.string(""), .int(1))))
+
+        // [1] + 1 → 2 — array stringifies to "1", parseFloat → 1.
         XCTAssertEqual(
-            try run(ArithmeticOperators.opAdd, args: arr(.null, .int(1))),
+            try run(ArithmeticOperators.opAdd, args: arr(arr(.int(1)), .int(1))),
+            .float(2.0)
+        )
+        // [1, 2] + 0 → 1 — array stringifies to "1,2", parseFloat parses
+        // the leading "1" prefix and stops at the comma.
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opAdd, args: arr(arr(.int(1), .int(2)), .int(0))),
             .float(1.0)
         )
-        // {"+": [null]} = 0   (numeric-cast form)
-        XCTAssertEqual(
-            try run(ArithmeticOperators.opAdd, args: arr(.null)),
-            .float(0.0)
-        )
-        // null * 1 = 0   (JS: NaN — parseFloat quirk)
-        XCTAssertEqual(
-            try run(ArithmeticOperators.opMul, args: arr(.null, .int(1))),
-            .float(0.0)
-        )
-        // null - 1 = -1   (matches JS)
+        // {} + 1 → NaN — objects stringify to "[object Object]".
+        assertNaN(try run(ArithmeticOperators.opAdd, args: arr(.object([:]), .int(1))))
+    }
+
+    /// `-`, `/`, `%` delegate to native JS arithmetic, which calls
+    /// `Number(value)` on each operand. `Number()` is stricter about
+    /// numeric strings (`"3.14abc"` → NaN) but more permissive about
+    /// `null` / bools / empty strings (all → 0 or 1) than `parseFloat`.
+    /// Arrays / objects coerce via `ToPrimitive("number")` → `toString`
+    /// → recurse, so `[]` → 0, `[1]` → 1, `[1,2]` → NaN.
+    func testSubDivAndModUseToNumberPerSpec() throws {
+        // null is 0 across all three ops.
         XCTAssertEqual(
             try run(ArithmeticOperators.opSub, args: arr(.null, .int(1))),
             .float(-1.0)
         )
-        // {"-": [null]} = 0   (unary negation; -0.0 == 0.0 in IEEE 754)
         XCTAssertEqual(
             try run(ArithmeticOperators.opSub, args: arr(.null)),
-            .float(0.0)
+            .float(0.0)  // unary; -0.0 == 0.0
         )
-        // null / 1 = 0   (matches JS)
         XCTAssertEqual(
             try run(ArithmeticOperators.opDiv, args: arr(.null, .int(1))),
             .float(0.0)
         )
-        // 1 / null → divisor coerces to 0 → null (already covered by
-        // testDivByZeroReturnsNull semantically; pinned again here for
-        // the explicit `.null` divisor variant)
-        XCTAssertEqual(
-            try run(ArithmeticOperators.opDiv, args: arr(.int(1), .null)),
-            .null
-        )
-        // null % 1 = 0   (matches JS)
         XCTAssertEqual(
             try run(ArithmeticOperators.opMod, args: arr(.null, .int(1))),
             .float(0.0)
         )
-        // 1 % null → divisor=0 → null
+
+        // 1 / null and 1 % null → divisor coerces to 0 → null (engine's
+        // intentional div/mod-by-zero short-circuit; see type docs).
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opDiv, args: arr(.int(1), .null)),
+            .null
+        )
         XCTAssertEqual(
             try run(ArithmeticOperators.opMod, args: arr(.int(1), .null)),
             .null
         )
+
+        // Bools coerce to 0 / 1 (Number(true) === 1, Number(false) === 0).
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opSub, args: arr(.bool(true), .bool(false))),
+            .float(1.0)
+        )
+
+        // Empty string coerces to 0.
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opSub, args: arr(.string(""), .int(1))),
+            .float(-1.0)
+        )
+
+        // [] - 1 → -1 (toString → "" → 0).
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opSub, args: arr(arr(), .int(1))),
+            .float(-1.0)
+        )
+        // [1] - 1 → 0 (toString → "1" → 1).
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opSub, args: arr(arr(.int(1)), .int(1))),
+            .float(0.0)
+        )
+        // [1, 2] - 0 → NaN (toString → "1,2" → NaN: whole-string parse
+        // fails because of the comma).
+        assertNaN(try run(ArithmeticOperators.opSub, args: arr(arr(.int(1), .int(2)), .int(0))))
+        // {} - 0 → NaN (toString → "[object Object]" → NaN).
+        assertNaN(try run(ArithmeticOperators.opSub, args: arr(.object([:]), .int(0))))
     }
 
     // MARK: - Helpers
@@ -315,5 +355,21 @@ final class ArithmeticOperatorsTests: XCTestCase {
             return .nan
         }
         return double
+    }
+
+    private func assertNaN(
+        _ expression: @autoclosure () throws -> Value,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        do {
+            let value = try expression()
+            guard case .float(let double) = value else {
+                return XCTFail("expected .float(NaN), got \(value)", file: file, line: line)
+            }
+            XCTAssertTrue(double.isNaN, "expected NaN, got \(double)", file: file, line: line)
+        } catch {
+            XCTFail("threw \(error)", file: file, line: line)
+        }
     }
 }
