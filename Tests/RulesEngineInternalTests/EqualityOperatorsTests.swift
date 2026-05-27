@@ -51,6 +51,17 @@ final class EqualityOperatorsTests: XCTestCase {
         XCTAssertEqual(try evalEq(.array([])), .bool(true))
     }
 
+    func testStrictEqMissingOperandsBothNull() throws {
+        // Two missing operands → `.null` on each side → strict equality holds.
+        XCTAssertEqual(try evalStrictEq(.array([])), .bool(true))
+        XCTAssertEqual(try evalStrictNe(.array([])), .bool(false))
+    }
+
+    func testStrictEqOneMissingOperandDoesNotCoerce() throws {
+        XCTAssertEqual(try evalStrictEq(.array([.int(1)])), .bool(false))
+        XCTAssertEqual(try evalStrictNe(.array([.int(1)])), .bool(true))
+    }
+
     // MARK: - Helpers
 
     private func evalEq(_ args: Value) throws -> Value {

@@ -30,11 +30,21 @@ final class LogicOperatorsTests: XCTestCase {
         )
     }
 
+    func testNotWithEmptyArgsReturnsTrue() throws {
+        // Unary `!` with no operands: missing arg stands in for JS
+        // `undefined`, which is falsy, so negation yields `true`.
+        XCTAssertEqual(try LogicOperators.opNot(args: .array([]), vars: .null), .bool(true))
+    }
+
     // MARK: - !!
 
     func testNotNotCastsToBool() throws {
         XCTAssertEqual(try LogicOperators.opNotNot(args: .int(5), vars: .null), .bool(true))
         XCTAssertEqual(try LogicOperators.opNotNot(args: .string(""), vars: .null), .bool(false))
+    }
+
+    func testNotNotWithEmptyArgsReturnsFalse() throws {
+        XCTAssertEqual(try LogicOperators.opNotNot(args: .array([]), vars: .null), .bool(false))
     }
 
     // MARK: - and

@@ -269,6 +269,25 @@ final class EvaluatorTests: XCTestCase {
         XCTAssertTrue(try run(predicate))
     }
 
+    // MARK: - Literal predicate truthiness
+
+    func testLiteralEmptyArrayPredicateIsFalsy() throws {
+        XCTAssertFalse(try run("[]"))
+    }
+
+    func testLiteralNonEmptyArrayPredicateIsTruthyEvenWithFalsyElements() throws {
+        // Per http://jsonlogic.com/truthy — non-empty arrays are truthy
+        // regardless of element values.
+        XCTAssertTrue(try run("[false]"))
+        XCTAssertTrue(try run("[0]"))
+    }
+
+    func testLiteralObjectPredicateIsTruthyEvenWithFalsyValues() throws {
+        // Multi-key objects are literal data (not operator dispatch) and
+        // objects are always truthy in JSON Logic.
+        XCTAssertTrue(try run(#"{"a": false, "b": 0}"#))
+    }
+
     // MARK: - Helpers
 
     private func run(_ predicateJSON: String, vars: [String: Value] = [:]) throws -> Bool {

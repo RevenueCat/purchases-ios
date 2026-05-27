@@ -80,9 +80,42 @@ final class AccessorOperatorsTests: XCTestCase {
         XCTAssertTrue(logger.warnings.isEmpty)
     }
 
+    /// Default applies only when lookup fails. A present key whose value is
+    /// `null` is returned as-is — json-logic-js distinguishes `undefined`
+    /// (missing) from an explicit `null` leaf.
+    func testVarDefaultNotUsedWhenLeafIsNull() throws {
+        let vars = Value.object(["key": .null])
+        let out = try AccessorOperators.opVar(
+            args: .array([.string("key"), .string("fallback")]),
+            vars: vars
+        )
+        XCTAssertEqual(out, .null)
+        XCTAssertTrue(logger.warnings.isEmpty)
+    }
+
+    /// When descent hits a `null` parent, json-logic-js returns the default
+    /// rather than attempting further segments.
+    func testVarDefaultUsedWhenMidPathBreaksOnNull() throws {
+        let vars = Value.object(["a": .null])
+        let out = try AccessorOperators.opVar(
+            args: .array([.string("a.b"), .string("fallback")]),
+            vars: vars
+        )
+        XCTAssertEqual(out, .string("fallback"))
+        XCTAssertTrue(logger.warnings.isEmpty)
+    }
+
     func testVarEmptyPathReturnsEntireData() throws {
         let vars = Value.object(["x": .int(1)])
         let out = try AccessorOperators.opVar(args: .string(""), vars: vars)
+        XCTAssertEqual(out, vars)
+    }
+
+    /// json-logic-js treats `undefined`, `null`, and `""` as “return the
+    /// whole data object”.
+    func testVarNullPathReturnsEntireData() throws {
+        let vars = Value.object(["x": .int(1)])
+        let out = try AccessorOperators.opVar(args: .null, vars: vars)
         XCTAssertEqual(out, vars)
     }
 
