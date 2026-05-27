@@ -153,7 +153,7 @@ final class EvaluatorTests: XCTestCase {
         // missing, since missing → null and null == null.
         let predicate = "{\"==\": [{\"var\": \"missing\"}, null]}"
         let logger = CapturingLogger()
-        let result = try Rules.withLogger(logger) {
+        let result = try RulesEngine.withLogger(logger) {
             try Evaluator.evaluate(
                 predicate: try Value.fromJSONString(predicate),
                 variables: [:]
@@ -338,6 +338,25 @@ final class EvaluatorTests: XCTestCase {
             ]}
             """
         XCTAssertTrue(try run(predicate))
+    }
+
+    // MARK: - Literal predicate truthiness
+
+    func testLiteralEmptyArrayPredicateIsFalsy() throws {
+        XCTAssertFalse(try run("[]"))
+    }
+
+    func testLiteralNonEmptyArrayPredicateIsTruthyEvenWithFalsyElements() throws {
+        // Per http://jsonlogic.com/truthy — non-empty arrays are truthy
+        // regardless of element values.
+        XCTAssertTrue(try run("[false]"))
+        XCTAssertTrue(try run("[0]"))
+    }
+
+    func testLiteralObjectPredicateIsTruthyEvenWithFalsyValues() throws {
+        // Multi-key objects are literal data (not operator dispatch) and
+        // objects are always truthy in JSON Logic.
+        XCTAssertTrue(try run(#"{"a": false, "b": 0}"#))
     }
 
     // MARK: - Helpers

@@ -13,7 +13,7 @@ import Foundation
 /// into `int(Int64)` and `float(Double)` to preserve type intent.
 /// Cross-type numeric comparisons / arithmetic still work — see `looseEq`,
 /// `strictEq`, and the comparison helpers below.
-enum Value: Equatable {
+enum Value: Equatable, Hashable, Sendable {
 
     case null
     case bool(Bool)

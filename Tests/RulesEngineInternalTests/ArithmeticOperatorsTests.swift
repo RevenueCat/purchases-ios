@@ -8,6 +8,7 @@ import XCTest
 
 @testable import RulesEngineInternal
 
+// swiftlint:disable file_length
 // swiftlint:disable:next type_body_length
 final class ArithmeticOperatorsTests: XCTestCase {
 
@@ -115,6 +116,15 @@ final class ArithmeticOperatorsTests: XCTestCase {
                 args: arr(.string("2"), .string("3"))
             ),
             .float(6.0)
+        )
+        // "3.14abc" * 1 → 3.14 — multi-arg `*` uses `parseFloat`, unlike
+        // the single-arg form which returns the operand unchanged.
+        XCTAssertEqual(
+            try run(
+                ArithmeticOperators.opMul,
+                args: arr(.string("3.14abc"), .int(1))
+            ),
+            .float(3.14)
         )
     }
 
@@ -336,6 +346,9 @@ final class ArithmeticOperatorsTests: XCTestCase {
             try run(ArithmeticOperators.opSub, args: arr(.string(""), .int(1))),
             .float(-1.0)
         )
+        // "3.14abc" - 0 → NaN — `Number()` rejects trailing junk; `parseFloat`
+        // would yield 3.14 (see testAddCoercesNumericStrings).
+        assertNaN(try run(ArithmeticOperators.opSub, args: arr(.string("3.14abc"), .int(0))))
 
         // [] - 1 → -1 (toString → "" → 0).
         XCTAssertEqual(

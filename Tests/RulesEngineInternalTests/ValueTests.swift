@@ -259,4 +259,41 @@ final class ValueTests: XCTestCase {
         // Cross-type: +Infinity never numerically equals a finite int.
         XCTAssertFalse(looseEq(.float(.infinity), .int(.max)))
     }
+
+    // MARK: - jsParseFloat (direct helper coverage)
+
+    /// Pins `jsParseFloat` / `parseFloatPrefix` independently of arithmetic
+    /// operators so two compensating operator bugs can't hide a coercion
+    /// regression in the shared helper.
+    func testJsParseFloatMatchesSpec() {
+        // Numbers pass through without stringification.
+        XCTAssertEqual(jsParseFloat(.int(42)), 42.0)
+        XCTAssertEqual(jsParseFloat(.float(2.5)), 2.5)
+
+        // Valid numeric strings, including scientific notation.
+        XCTAssertEqual(jsParseFloat(.string("2.5")), 2.5)
+        XCTAssertEqual(jsParseFloat(.string("1e3")), 1000.0)
+        XCTAssertEqual(jsParseFloat(.string("1.5e2")), 150.0)
+        XCTAssertEqual(jsParseFloat(.string("-2.5e-1")), -0.25)
+
+        // Leading whitespace and longest-prefix parsing.
+        XCTAssertEqual(jsParseFloat(.string("  7")), 7.0)
+        XCTAssertEqual(jsParseFloat(.string("3.14abc")), 3.14)
+
+        // Infinity literal (distinct from overflow).
+        XCTAssertEqual(jsParseFloat(.string("Infinity")), .infinity)
+        XCTAssertEqual(jsParseFloat(.string("-Infinity")), -.infinity)
+
+        // Stringify-then-parse path for compounds.
+        XCTAssertEqual(jsParseFloat(.array([.int(1)])), 1.0)
+        XCTAssertEqual(jsParseFloat(.array([.int(1), .int(2)])), 1.0)
+
+        // Non-numeric after stringify → NaN.
+        XCTAssertTrue(jsParseFloat(.null).isNaN)
+        XCTAssertTrue(jsParseFloat(.bool(true)).isNaN)
+        XCTAssertTrue(jsParseFloat(.string("")).isNaN)
+        XCTAssertTrue(jsParseFloat(.string("true")).isNaN)
+        XCTAssertTrue(jsParseFloat(.object([:])).isNaN)
+        XCTAssertTrue(jsParseFloat(.string("abc")).isNaN)
+    }
 }
