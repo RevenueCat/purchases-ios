@@ -139,6 +139,33 @@ private extension SK2StoreProduct {
 
 }
 
+#if compiler(>=6.3.2)
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+extension SK2StoreProduct {
+    func contains(
+        subscriptionOfferType: StoreKit.Product.SubscriptionOffer.OfferType,
+        on billingPlanType: BillingPlanType
+    ) -> Bool {
+        if let subscription = self.underlyingSK2Product.subscription,
+            #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
+            // Check to make sure that an intro offer is available on the billing plan
+            guard let applicablePricingTerms = subscription.pricingTerms.first(where: {
+                $0.billingPlanType == billingPlanType.skBillingPlanType
+            }) else {
+                return false
+            }
+
+            return applicablePricingTerms.subscriptionOffers.contains(where: {
+                $0.type == subscriptionOfferType
+            })
+        } else {
+            // Billing plan doesn't exist
+            return false
+        }
+    }
+}
+#endif
+
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 extension SK2StoreProduct: Hashable {
 
