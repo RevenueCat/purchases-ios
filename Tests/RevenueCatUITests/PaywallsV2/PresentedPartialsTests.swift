@@ -1442,6 +1442,37 @@ class PresentedPartialsTests: TestCase {
         expect(result2After?.visible).to(equal(false))
     }
 
+    // MARK: - ConditionContext layering with mutated variables
+
+    func testConditionContextLayersDefaultsThenDeveloperThenMutations() {
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["a": .string("developer"), "shared": .string("developer")],
+            defaultCustomVariables: ["a": .string("default"), "b": .string("default"), "shared": .string("default")],
+            mutatedVariables: ["shared": .string("mutated"), "c": .string("mutated")]
+        )
+
+        // 'a' — developer override wins over default.
+        expect(context.customVariables["a"]) == .string("developer")
+        // 'b' — supplied only by defaults.
+        expect(context.customVariables["b"]) == .string("default")
+        // 'shared' — mutation wins over both developer and default.
+        expect(context.customVariables["shared"]) == .string("mutated")
+        // 'c' — contributed only by mutations.
+        expect(context.customVariables["c"]) == .string("mutated")
+    }
+
+    func testConditionContextWithoutMutationsBehavesAsBefore() {
+        let context = ConditionContext(
+            selectedPackageId: nil,
+            customVariables: ["a": .string("developer")],
+            defaultCustomVariables: ["a": .string("default"), "b": .string("default")]
+        )
+
+        expect(context.customVariables["a"]) == .string("developer")
+        expect(context.customVariables["b"]) == .string("default")
+    }
+
 }
 
 // MARK: - Test Helpers

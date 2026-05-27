@@ -369,6 +369,63 @@ class ButtonComponentCodableTests: TestCase {
         expect(decodedButton.name).to(beNil())
     }
 
+    // MARK: - variableUpdates
+
+    func testVariableUpdatesIsNilWhenFieldAbsent() throws {
+        let jsonString = """
+        {
+            "type": "button",
+            "action": { "type": "restore_purchases" },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
+
+        expect(decodedButton.variableUpdates).to(beNil())
+    }
+
+    func testVariableUpdatesDecodesLiteralAndPayloadReference() throws {
+        let jsonString = """
+        {
+            "type": "button",
+            "action": { "type": "restore_purchases" },
+            "stack": \(jsonStringDefaultStack),
+            "variableUpdates": [
+                { "set": "comparisonOpen", "to": true },
+                { "set": "activeTab", "to": "$value" }
+            ]
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
+
+        let updates = try XCTUnwrap(decodedButton.variableUpdates)
+        XCTAssertEqual(updates.count, 2)
+        XCTAssertEqual(updates[0], .set(key: "comparisonOpen", value: .literal(.bool(true))))
+        XCTAssertEqual(updates[1], .set(key: "activeTab", value: .payloadReference))
+    }
+
+    func testVariableUpdatesRoundTripsThroughEncodeDecode() throws {
+        let button = PaywallComponent.ButtonComponent(
+            action: .restorePurchases,
+            stack: .init(
+                components: [],
+                dimension: .vertical(.center, .start),
+                size: .init(width: .fill, height: .fill)
+            ),
+            variableUpdates: [
+                .set(key: "comparisonOpen", value: .literal(.bool(true))),
+                .set(key: "activeTab", value: .payloadReference)
+            ]
+        )
+
+        let data = try JSONEncoder.default.encode(button)
+        let decoded = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: data)
+
+        XCTAssertEqual(decoded, button)
+    }
+
 }
 
 #endif
