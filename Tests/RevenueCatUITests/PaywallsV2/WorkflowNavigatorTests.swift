@@ -213,6 +213,51 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.canNavigateBack) == false
     }
 
+    func testBackNavigationDestinationIsNilFromInitialStep() throws {
+        let workflow = try Self.makeWorkflow(initialStepId: "step_1")
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        expect(navigator.backNavigationDestination).to(beNil())
+    }
+
+    func testBackNavigationDestinationDoesNotMutateNavigator() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "step_2")]),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+        navigator.triggerAction(componentId: "btn_abc")
+
+        let destination = navigator.backNavigationDestination
+
+        expect(destination?.step.id) == "step_1"
+        expect(destination?.canNavigateBackAfterNavigation) == false
+        expect(navigator.currentStepId) == "step_2"
+        expect(navigator.canNavigateBack) == true
+    }
+
+    func testBackNavigationDestinationReportsCanNavigateBackAfterNavigation() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_1", "btn_1")], triggerActions: [("btn_1", "step_2")]),
+                makeStep(id: "step_2", triggers: [("btn_2", "btn_2")], triggerActions: [("btn_2", "step_3")]),
+                makeStep(id: "step_3")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+        navigator.triggerAction(componentId: "btn_1")
+        navigator.triggerAction(componentId: "btn_2")
+
+        let destination = navigator.backNavigationDestination
+
+        expect(destination?.step.id) == "step_2"
+        expect(destination?.canNavigateBackAfterNavigation) == true
+    }
+
     // MARK: - Multiple navigations
 
     func testMultipleForwardAndBackNavigationsWorkCorrectly() throws {
