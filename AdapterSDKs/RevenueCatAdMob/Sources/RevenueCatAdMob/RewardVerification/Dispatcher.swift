@@ -72,7 +72,7 @@ private extension RewardVerification.Outcome {
     var logDescription: String {
         switch self {
         case .verified: return "verified"
-        case .failed: return "failed"
+        case .failed(let reason): return "failed(\(reason))"
         }
     }
 }
