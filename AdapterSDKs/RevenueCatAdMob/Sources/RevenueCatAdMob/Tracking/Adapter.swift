@@ -232,6 +232,10 @@ internal extension Tracking {
             responseInfo?.responseIdentifier ?? self.fallbackValue
         }
 
+        static func impressionID(from responseInfo: GoogleMobileAds.ResponseInfo) -> String {
+            responseInfo.responseIdentifier ?? self.fallbackValue
+        }
+
         private static func adUnitID(_ adUnitID: String?) -> String {
             adUnitID ?? self.fallbackValue
         }

@@ -16,7 +16,7 @@ internal extension RewardVerification {
     /// AdMob ad types that accept server-side verification options.
     protocol CapableAd: AnyObject {
         var serverSideVerificationOptions: GoogleMobileAds.ServerSideVerificationOptions? { get set }
-        var responseInfo: GoogleMobileAds.ResponseInfo? { get }
+        var responseInfo: GoogleMobileAds.ResponseInfo { get }
     }
 
     /// Load-time SSV setup for rewarded AdMob ads.
