@@ -330,7 +330,7 @@ class AdEventTests: TestCase {
             impressionId: "",
             rewardVerificationEnabled: false,
             rewardItem: nil,
-            rewardAmount: nil
+            rewardAmount: nil as Int?
         )
 
         expect(event.rewardItem).to(beNil())
@@ -362,7 +362,7 @@ class AdEventTests: TestCase {
             impressionId: "impression-123",
             rewardType: .noReward,
             rewardCurrencyCode: nil,
-            rewardCurrencyAmount: nil
+            rewardCurrencyAmount: nil as Int?
         )
 
         expect(event1) != event2
@@ -406,12 +406,12 @@ class AdEventTests: TestCase {
             impressionId: "impression-123",
             rewardType: .noReward,
             rewardCurrencyCode: nil,
-            rewardCurrencyAmount: nil
+            rewardCurrencyAmount: nil as Int?
         )
 
         expect(event.rewardCurrencyCode).to(beNil())
         expect(event.rewardCurrencyAmount).to(beNil())
-        expect(event.rewardType) == .noReward
+        expect(event.rewardType) == AdRewardType.noReward
     }
 
     // MARK: - AdRewardFailedToVerify Equality
