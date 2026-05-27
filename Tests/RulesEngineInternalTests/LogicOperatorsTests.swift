@@ -30,11 +30,21 @@ final class LogicOperatorsTests: XCTestCase {
         )
     }
 
+    func testNotWithEmptyArgsReturnsTrue() throws {
+        // Unary `!` with no operands: missing arg stands in for JS
+        // `undefined`, which is falsy, so negation yields `true`.
+        XCTAssertEqual(try LogicOperators.opNot(args: .array([]), vars: .null), .bool(true))
+    }
+
     // MARK: - !!
 
     func testNotNotCastsToBool() throws {
         XCTAssertEqual(try LogicOperators.opNotNot(args: .int(5), vars: .null), .bool(true))
         XCTAssertEqual(try LogicOperators.opNotNot(args: .string(""), vars: .null), .bool(false))
+    }
+
+    func testNotNotWithEmptyArgsReturnsFalse() throws {
+        XCTAssertEqual(try LogicOperators.opNotNot(args: .array([]), vars: .null), .bool(false))
     }
 
     // MARK: - and
@@ -96,6 +106,17 @@ final class LogicOperatorsTests: XCTestCase {
         // which we map to `.null` (rather than `.bool(false)`). Falsy, so
         // outer truthiness checks behave identically to the old return.
         XCTAssertEqual(try LogicOperators.opOr(args: .array([]), vars: .null), .null)
+    }
+
+    func testEmptyOrInsideIfTakesElseBranch() throws {
+        // Mirror of `testEmptyAndInsideIfTakesElseBranch`: empty `or`
+        // returns `.null` (falsy), so the surrounding `if` takes `else`.
+        let args = Value.array([
+            .object(["or": .array([])]),
+            .string("yes"),
+            .string("no")
+        ])
+        XCTAssertEqual(try LogicOperators.opIf(args: args, vars: .null), .string("no"))
     }
 
     // MARK: - if
