@@ -720,15 +720,18 @@ platform :ios do
 
   desc "Runs StoreKit unit tests on iOS 26.5 after injecting the StoreKit configuration into the simulator"
   lane :storekit_unit_tests_ios_265 do
+    base_path = File.expand_path("..", __dir__)
     device = ENV["DEVICE"] || "iPhone 17,OS=26.5"
     device_name = device.split(",").first
     destination = "platform=iOS Simulator,name=#{device}"
-    derived_data_path = "build/storekit-unit-tests-ios-265"
-    test_output_path = "fastlane/test_output/storekit-unit-tests-ios-265"
-    result_bundle_path = "fastlane/test_output/xctest/storekit-unit-tests-ios-265/StoreKitUnitTests.xcresult"
+    derived_data_path = "#{base_path}/build/storekit-unit-tests-ios-265"
+    test_output_path = "#{base_path}/fastlane/test_output/storekit-unit-tests-ios-265"
+    result_bundle_path = "#{base_path}/fastlane/test_output/xctest/storekit-unit-tests-ios-265/StoreKitUnitTests.xcresult"
     host_app_path = "#{derived_data_path}/Build/Products/Debug-iphonesimulator/UnitTestsHostApp.app"
     host_app_bundle_id = "com.revenuecat.StoreKitUnitTestsHostApp"
-    storekit_config_path = "Tests/StoreKitUnitTests/UnitTestsConfiguration.storekit"
+    revenuecat_tests_project_path = "#{base_path}/Projects/RevenueCatTests/RevenueCatTests.xcodeproj"
+    storekit_config_path = "#{base_path}/Tests/StoreKitUnitTests/UnitTestsConfiguration.storekit"
+    watcher_script = "#{base_path}/fastlane/storekit_config_file_watcher.rb"
     previous_storekit_tests_delay = ENV["CIRCLECI_STOREKIT_TESTS_DELAY_SECONDS"]
 
     FileUtils.mkdir_p(File.dirname(result_bundle_path))
@@ -738,7 +741,7 @@ platform :ios do
     sh("xcrun", "simctl", "bootstatus", device_name, "-b")
 
     xcodebuild(
-      project: "Projects/RevenueCatTests/RevenueCatTests.xcodeproj",
+      project: revenuecat_tests_project_path,
       scheme: "UnitTestsHostApp",
       destination: destination,
       configuration: "Debug",
@@ -752,7 +755,7 @@ platform :ios do
 
     watcher_pid = Process.spawn(
       "ruby",
-      "fastlane/storekit_config_file_watcher.rb",
+      watcher_script,
       host_app_bundle_id,
       storekit_config_path
     )
@@ -763,7 +766,7 @@ platform :ios do
       ENV["CIRCLECI_STOREKIT_TESTS_DELAY_SECONDS"] = "30"
 
       xcodebuild(
-        project: "Projects/RevenueCatTests/RevenueCatTests.xcodeproj",
+        project: revenuecat_tests_project_path,
         scheme: "StoreKitUnitTests",
         destination: destination,
         configuration: "Debug",
