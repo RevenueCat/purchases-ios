@@ -611,52 +611,20 @@ extension AdRevenue {
 }
 
 /// Data for ad reward earned (unverified) events.
-@_spi(Internal) @objc(RCAdRewardEarnedUnverified) public final class AdRewardEarnedUnverified: NSObject,
-                                                                                              AdImpressionEventData,
-                                                                                              Codable,
-                                                                                              @unchecked Sendable {
+@_spi(Internal) public struct AdRewardEarnedUnverified: AdImpressionEventData, Codable, Equatable, @unchecked Sendable {
 
     // swiftlint:disable missing_docs
-    @objc public private(set) var networkName: String?
-    @objc public private(set) var mediatorName: MediatorName
-    @objc public private(set) var adFormat: AdFormat
-    @objc public private(set) var placement: String?
-    @objc public private(set) var adUnitId: String
-    @objc public private(set) var impressionId: String
-    @objc public private(set) var rewardVerificationEnabled: Bool
-    @objc public private(set) var rewardItem: String?
-    private let rewardAmountRawValue: Int?
-    @objc public var rewardAmount: NSNumber? {
-        return self.rewardAmountRawValue.map(NSNumber.init(value:))
-    }
-    public var rewardAmountValue: Int? {
-        return self.rewardAmountRawValue
-    }
+    public let networkName: String?
+    public let mediatorName: MediatorName
+    public let adFormat: AdFormat
+    public let placement: String?
+    public let adUnitId: String
+    public let impressionId: String
+    public let rewardVerificationEnabled: Bool
+    public let rewardItem: String?
+    public let rewardAmount: Int?
 
-    @objc public init(
-        networkName: String?,
-        mediatorName: MediatorName,
-        adFormat: AdFormat,
-        placement: String?,
-        adUnitId: String,
-        impressionId: String,
-        rewardVerificationEnabled: Bool,
-        rewardItem: String?,
-        rewardAmount: NSNumber?
-    ) {
-        self.networkName = networkName
-        self.mediatorName = mediatorName
-        self.adFormat = adFormat
-        self.placement = placement
-        self.adUnitId = adUnitId
-        self.impressionId = impressionId
-        self.rewardVerificationEnabled = rewardVerificationEnabled
-        self.rewardItem = rewardItem
-        self.rewardAmountRawValue = rewardAmount?.intValue
-        super.init()
-    }
-
-    public convenience init(
+    public init(
         networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
@@ -667,60 +635,17 @@ extension AdRevenue {
         rewardItem: String?,
         rewardAmount: Int?
     ) {
-        self.init(
-            networkName: networkName,
-            mediatorName: mediatorName,
-            adFormat: adFormat,
-            placement: placement,
-            adUnitId: adUnitId,
-            impressionId: impressionId,
-            rewardVerificationEnabled: rewardVerificationEnabled,
-            rewardItem: rewardItem,
-            rewardAmount: rewardAmount.map(NSNumber.init(value:))
-        )
+        self.networkName = networkName
+        self.mediatorName = mediatorName
+        self.adFormat = adFormat
+        self.placement = placement
+        self.adUnitId = adUnitId
+        self.impressionId = impressionId
+        self.rewardVerificationEnabled = rewardVerificationEnabled
+        self.rewardItem = rewardItem
+        self.rewardAmount = rewardAmount
     }
     // swiftlint:enable missing_docs
-
-    // MARK: - NSObject overrides for equality
-
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? AdRewardEarnedUnverified else { return false }
-        return self.networkName == other.networkName &&
-               self.mediatorName == other.mediatorName &&
-               self.adFormat == other.adFormat &&
-               self.placement == other.placement &&
-               self.adUnitId == other.adUnitId &&
-               self.impressionId == other.impressionId &&
-               self.rewardVerificationEnabled == other.rewardVerificationEnabled &&
-               self.rewardItem == other.rewardItem &&
-               self.rewardAmountRawValue == other.rewardAmountRawValue
-    }
-
-    public override var hash: Int {
-        var hasher = Hasher()
-        hasher.combine(networkName)
-        hasher.combine(mediatorName)
-        hasher.combine(adFormat)
-        hasher.combine(placement)
-        hasher.combine(adUnitId)
-        hasher.combine(impressionId)
-        hasher.combine(rewardVerificationEnabled)
-        hasher.combine(rewardItem)
-        hasher.combine(rewardAmountRawValue)
-        return hasher.finalize()
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case networkName
-        case mediatorName
-        case adFormat
-        case placement
-        case adUnitId
-        case impressionId
-        case rewardVerificationEnabled
-        case rewardItem
-        case rewardAmountRawValue = "rewardAmount"
-    }
 
 }
 

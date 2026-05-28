@@ -209,7 +209,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.impressionId) == "impression-123"
         expect(eventData.rewardVerificationEnabled) == true
         expect(eventData.rewardItem) == "coins"
-        expect(eventData.rewardAmount?.intValue) == 10
+        expect(eventData.rewardAmount) == 10
     }
 
     func testTrackAdRewardVerifiedStoresEvent() async throws {

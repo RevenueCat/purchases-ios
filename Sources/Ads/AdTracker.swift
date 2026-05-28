@@ -215,7 +215,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Internal) @objc public func trackAdRewardEarnedUnverified(_ data: AdRewardEarnedUnverified) {
+    @_spi(Internal) public func trackAdRewardEarnedUnverified(_ data: AdRewardEarnedUnverified) {
         Task {
             let event = AdEvent.rewardEarnedUnverified(.init(id: UUID(), date: Date()), data)
             await self.eventsManager?.track(adEvent: event)
