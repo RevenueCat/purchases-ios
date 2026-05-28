@@ -1,0 +1,7 @@
+{
+  "type": "web_view",
+  "url": "https://example.com",
+  "sizing": {
+    "mode": "automatic"
+  }
+}
