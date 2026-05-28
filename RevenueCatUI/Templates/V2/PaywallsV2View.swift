@@ -410,11 +410,9 @@ private struct LoadedPaywallsV2View: View {
                     onDismiss: self.onDismiss,
                     defaultPackage: self.defaultPackage
                 )
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .fixMacButtons()
                 .environment(\.closeWorkflowAction, self.closeWorkflowAction ?? self.onDismiss)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             // Used for header image and sticky footer
             .environment(\.safeAreaInsets, proxy.safeAreaInsets)
             .applyIf(
@@ -424,8 +422,17 @@ private struct LoadedPaywallsV2View: View {
                 view
                     .edgesIgnoringSafeArea(.top)
             })
-            .applyIf(paywallState.rootViewModel.stackViewModel.component.size.height == .fill, apply: { view in
-                view.frame(maxHeight: .infinity, alignment: paywallState.rootViewModel.frameAlignment)
+            .applyIf(
+                paywallState.rootViewModel.stickyFooterViewModel != nil
+                    || paywallState.rootViewModel.stackViewModel.component.size.height == .fill,
+                apply: { view in
+                view.frame(
+                    maxWidth: .infinity,
+                    maxHeight: .infinity,
+                    alignment: paywallState.rootViewModel.stickyFooterViewModel != nil
+                        ? .top
+                        : paywallState.rootViewModel.frameAlignment
+                )
             })
             .backgroundStyle(
                 self.paywallState.componentsConfig.background
