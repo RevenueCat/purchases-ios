@@ -16,6 +16,13 @@ import Foundation
 
 // MARK: - Detail models
 
+@_spi(Internal) public enum WorkflowType: String, Codable, Equatable, Sendable {
+    case paywall
+    case webFunnel = "web-funnel"
+    case feedbackSurvey = "feedback-survey"
+    case unknown
+}
+
 @_spi(Internal) public enum WorkflowTriggerType: String, Codable, Equatable, Sendable {
     case onPress = "on_press"
     case unknown
@@ -92,6 +99,7 @@ import Foundation
     let displayName: String
     public let initialStepId: String
     public let singleStepFallbackId: String?
+    public let workflowType: WorkflowType?
     public let steps: [String: WorkflowStep]
     public let screens: [String: WorkflowScreen]
     public let uiConfig: UIConfig
@@ -163,7 +171,45 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
 
 }
 
-extension PublishedWorkflow: Codable, Equatable, Sendable {}
+extension PublishedWorkflow: Codable, Equatable, Sendable {
+
+    private enum CodingKeys: CodingKey {
+        case id
+        case displayName
+        case initialStepId
+        case singleStepFallbackId
+        case workflowType
+        case steps
+        case screens
+        case uiConfig
+        case contentMaxWidth
+        case metadata
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(String.self, forKey: .id)
+        self.displayName = try container.decode(String.self, forKey: .displayName)
+        self.initialStepId = try container.decode(String.self, forKey: .initialStepId)
+        self.singleStepFallbackId = try container.decodeIfPresent(String.self, forKey: .singleStepFallbackId)
+        self.steps = try container.decode([String: WorkflowStep].self, forKey: .steps)
+        self.screens = try container.decode([String: WorkflowScreen].self, forKey: .screens)
+        self.uiConfig = try container.decode(UIConfig.self, forKey: .uiConfig)
+        self.contentMaxWidth = try container.decodeIfPresent(Int.self, forKey: .contentMaxWidth)
+        self.metadata = try container.decodeIfPresent([String: AnyDecodable].self, forKey: .metadata)
+
+        if let rawType = try container.decodeIfPresent(String.self, forKey: .workflowType) {
+            let type = WorkflowType(rawValue: rawType)
+            if type == nil || type == .unknown {
+                Logger.warn(Strings.backendError.unknown_workflow_type(type: rawType))
+            }
+            self.workflowType = type ?? .unknown
+        } else {
+            self.workflowType = nil
+        }
+    }
+
+}
 extension WorkflowDataResult: Equatable, Sendable {}
 
 extension PublishedWorkflow: HTTPResponseBody {}
