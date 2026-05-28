@@ -523,4 +523,63 @@ class AdEventTests: TestCase {
         expect(decoded) == original
     }
 
+    // MARK: - AdRewardVerified Decoder Fallbacks
+
+    func testAdRewardVerifiedDecodingUnknownRewardKindFallsBackToUnsupported() throws {
+        let json = """
+        {
+            "network_name": "AdMob",
+            "mediator_name": { "raw_value": "AdMob" },
+            "ad_format": { "raw_value": "rewarded" },
+            "placement": "home_screen",
+            "ad_unit_id": "ca-app-pub-123",
+            "impression_id": "impression-123",
+            "reward_type": "future_reward_kind"
+        }
+        """.data(using: .utf8)!
+
+        let decoded = try JSONDecoder.default.decode(AdRewardVerified.self, from: json)
+
+        expect(decoded.reward) == .unsupportedReward
+    }
+
+    func testAdRewardVerifiedDecodingVirtualCurrencyWithMissingAmountFallsBackToUnsupported() throws {
+        let json = """
+        {
+            "network_name": "AdMob",
+            "mediator_name": { "raw_value": "AdMob" },
+            "ad_format": { "raw_value": "rewarded" },
+            "placement": "home_screen",
+            "ad_unit_id": "ca-app-pub-123",
+            "impression_id": "impression-123",
+            "reward_type": "virtual_currency",
+            "reward_currency_code": "GOLD"
+        }
+        """.data(using: .utf8)!
+
+        let decoded = try JSONDecoder.default.decode(AdRewardVerified.self, from: json)
+
+        expect(decoded.reward) == .unsupportedReward
+    }
+
+    func testAdRewardVerifiedDecodingVirtualCurrencyWithNonPositiveAmountFallsBackToUnsupported() throws {
+        let json = """
+        {
+            "network_name": "AdMob",
+            "mediator_name": { "raw_value": "AdMob" },
+            "ad_format": { "raw_value": "rewarded" },
+            "placement": "home_screen",
+            "ad_unit_id": "ca-app-pub-123",
+            "impression_id": "impression-123",
+            "reward_type": "virtual_currency",
+            "reward_currency_code": "GOLD",
+            "reward_currency_amount": 0
+        }
+        """.data(using: .utf8)!
+
+        let decoded = try JSONDecoder.default.decode(AdRewardVerified.self, from: json)
+
+        expect(decoded.reward) == .unsupportedReward
+    }
+
 }

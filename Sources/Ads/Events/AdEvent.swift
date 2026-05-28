@@ -660,8 +660,9 @@ extension AdRevenue {
     }
     // swiftlint:enable missing_docs
 
-    /// Decoder-input path: silent fallback. Backend wire data that doesn't match the schema
-    /// must not trigger `assertionFailure` — malformed data is not a programming bug.
+    /// Decoder-input path: log + fallback to `.unsupportedReward`. Backend wire data that
+    /// doesn't match the schema must not trigger `assertionFailure` — malformed data is not
+    /// a programming bug — but a warning helps catch backend/SDK schema drift in production.
     private static func makeReward(
         kindRawValue: String,
         virtualCurrencyCode: String?,
@@ -672,10 +673,17 @@ extension AdRevenue {
             if let code = virtualCurrencyCode, let amount = virtualCurrencyAmount, amount > 0 {
                 return .virtualCurrency(VirtualCurrencyReward(code: code, amount: amount))
             }
+            Logger.warn(AdsStrings.invalid_virtual_currency_payload(
+                code: virtualCurrencyCode,
+                amount: virtualCurrencyAmount
+            ))
             return .unsupportedReward
         case AdReward.Kind.noReward:
             return .noReward
+        case AdReward.Kind.unsupportedReward:
+            return .unsupportedReward
         default:
+            Logger.warn(AdsStrings.unknown_reward_kind(rawValue: kindRawValue))
             return .unsupportedReward
         }
     }
