@@ -205,11 +205,19 @@ private struct StoreKitWinBackPricingTerms: WinBackEligibilityPricingTermsType {
     #endif
 
     var billingPlanType: BillingPlanType? {
+        #if compiler(>=6.3.2)
         return BillingPlanType.from(storeKitBillingPlanType: self.pricingTerms.billingPlanType)
+        #else
+        return nil
+        #endif
     }
 
     var subscriptionOffers: [any WinBackEligibilityOfferType] {
+        #if compiler(>=6.3.2)
         return self.pricingTerms.subscriptionOffers.map(StoreKitWinBackOffer.init)
+        #else
+        return self.subscriptionOffers.map(StoreKitWinBackOffer.init)
+        #endif
     }
 
 }
