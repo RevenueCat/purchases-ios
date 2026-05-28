@@ -213,6 +213,23 @@ final class ComparisonOperatorsTests: XCTestCase {
         )
     }
 
+    /// `json-logic-js` declares `<=` as `function(a, b, c)` so missing
+    /// operands resolve to `undefined`, which coerces to `NaN`; any
+    /// comparison against `NaN` is `false`.
+    func testLeMissingOperandsCompareAgainstNaN() throws {
+        XCTAssertEqual(try run(ComparisonOperators.opLe, args: arr(.int(1))), .bool(false))
+        XCTAssertEqual(try run(ComparisonOperators.opLe, args: arr()), .bool(false))
+    }
+
+    /// `json-logic-js`'s `<=` ignores arguments past the third (JS
+    /// silently drops named parameters' overflow).
+    func testLeIgnoresArgsBeyondThird() throws {
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLe, args: arr(.int(1), .int(2), .int(3), .int(0))),
+            .bool(true)
+        )
+    }
+
     // MARK: - >
 
     func testGtBasicTwoArgs() throws {
@@ -276,6 +293,13 @@ final class ComparisonOperatorsTests: XCTestCase {
             try run(ComparisonOperators.opGe, args: arr(.int(3), .int(2), .int(1))),
             .bool(true)
         )
+    }
+
+    /// Missing second operand resolves to `undefined`, coerces to
+    /// `NaN`, and any comparison against `NaN` is `false`.
+    func testGeMissingOperandsCompareAgainstNaN() throws {
+        XCTAssertEqual(try run(ComparisonOperators.opGe, args: arr(.int(1))), .bool(false))
+        XCTAssertEqual(try run(ComparisonOperators.opGe, args: arr()), .bool(false))
     }
 
     // MARK: - Helpers
