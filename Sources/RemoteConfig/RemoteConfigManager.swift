@@ -66,14 +66,18 @@ private extension RemoteConfigManager {
         guard !tasks.isEmpty else { return nil }
 
         return await withTaskGroup(of: BackendError?.self) { group in
-            for task in tasks {
-                group.addTask {
-                    await self.topicFetcher.fetchTopicIfNeeded(
-                        topic: task.topic,
-                        entryId: task.entryId,
-                        topicEntry: task.entry,
-                        source: source
-                    )
+            var iterator = tasks.makeIterator()
+
+            for _ in 0..<min(Self.maxParallelTopicDownloads, tasks.count) {
+                if let task = iterator.next() {
+                    group.addTask {
+                        await self.topicFetcher.fetchTopicIfNeeded(
+                            topic: task.topic,
+                            entryId: task.entryId,
+                            topicEntry: task.entry,
+                            source: source
+                        )
+                    }
                 }
             }
 
@@ -81,6 +85,16 @@ private extension RemoteConfigManager {
             for await error in group {
                 if let error, firstError == nil {
                     firstError = error
+                }
+                if let task = iterator.next() {
+                    group.addTask {
+                        await self.topicFetcher.fetchTopicIfNeeded(
+                            topic: task.topic,
+                            entryId: task.entryId,
+                            topicEntry: task.entry,
+                            source: source
+                        )
+                    }
                 }
             }
             return firstError
@@ -94,5 +108,6 @@ private extension RemoteConfigManager {
     }
 
     static let defaultEntryID = "default"
+    static let maxParallelTopicDownloads = 4
 
 }

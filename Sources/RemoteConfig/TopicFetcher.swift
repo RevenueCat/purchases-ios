@@ -8,17 +8,41 @@
 import CryptoKit
 import Foundation
 
+protocol FileManaging: AnyObject {
+    func fileExists(atPath path: String) -> Bool
+    func createDirectory(
+        at url: URL,
+        withIntermediateDirectories createIntermediates: Bool,
+        attributes attr: [FileAttributeKey: Any]?
+    ) throws
+    func replaceItemAt(
+        _ originalItemURL: URL,
+        withItemAt newItemURL: URL,
+        backupItemName: String?,
+        options mask: FileManager.ItemReplacementOptions
+    ) throws -> URL?
+    func removeItem(at url: URL) throws
+}
+
+extension FileManager: FileManaging {}
+
 class TopicFetcher {
 
     private static let topicsRoot = "RevenueCat/topics"
     private static let blobRefPlaceholder = "{blob_ref}"
 
-    private let fileManager: FileManager
+    private let fileManager: any FileManaging
     private let urlSession: URLSession
+    private let baseCacheURL: URL?
 
-    init(fileManager: FileManager = .default, urlSession: URLSession = .shared) {
+    init(
+        fileManager: any FileManaging = FileManager.default,
+        urlSession: URLSession = .shared,
+        baseCacheURL: URL? = nil
+    ) {
         self.fileManager = fileManager
         self.urlSession = urlSession
+        self.baseCacheURL = baseCacheURL
     }
 
     func fetchTopicIfNeeded(
@@ -29,23 +53,11 @@ class TopicFetcher {
     ) async -> BackendError? {
         guard self.isValidBlobRef(topicEntry.blobRef) else {
             Logger.error(Strings.remoteConfig.topic_malformed_blob_ref(topic: topic, entryId: entryId))
-            return .networkError(.networkError(
-                NSError(
-                    domain: "com.revenuecat.remoteconfig",
-                    code: -1,
-                    userInfo: [NSLocalizedDescriptionKey: "Malformed blob_ref for topic \(topic) (\(entryId))"]
-                )
-            ))
+            return TopicFetchError.malformedBlobRef.backendError
         }
 
         guard let targetFile = self.topicFile(topic: topic, blobRef: topicEntry.blobRef) else {
-            return .networkError(.networkError(
-                NSError(
-                    domain: "com.revenuecat.remoteconfig",
-                    code: -4,
-                    userInfo: [NSLocalizedDescriptionKey: "Could not resolve caches directory"]
-                )
-            ))
+            return TopicFetchError.cachesDirectoryUnavailable.backendError
         }
 
         if self.fileManager.fileExists(atPath: targetFile.path) {
@@ -58,13 +70,7 @@ class TopicFetcher {
             with: topicEntry.blobRef
         )
         guard let url = URL(string: urlString) else {
-            return .networkError(.networkError(
-                NSError(
-                    domain: "com.revenuecat.remoteconfig",
-                    code: -3,
-                    userInfo: [NSLocalizedDescriptionKey: "Invalid blob URL: \(urlString)"]
-                )
-            ))
+            return TopicFetchError.invalidBlobURL(urlString: urlString).backendError
         }
 
         let error = await self.download(url: url, expectedSHA256: topicEntry.blobRef, targetFile: targetFile)
@@ -82,16 +88,54 @@ class TopicFetcher {
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension TopicFetcher: @unchecked Sendable {}
 
+private enum TopicFetchError {
+
+    case malformedBlobRef
+    case cachesDirectoryUnavailable
+    case invalidBlobURL(urlString: String)
+    case unexpectedHTTPStatus(statusCode: Int)
+    case sha256Mismatch(expected: String, actual: String)
+    case writeFailure(error: Error)
+
+    var backendError: BackendError {
+        switch self {
+        case .malformedBlobRef:
+            return .unexpectedBackendResponse(.remoteConfigMalformedBlobRef)
+        case .cachesDirectoryUnavailable:
+            return Self.make(code: -4, "Could not resolve caches directory")
+        case .invalidBlobURL(let urlString):
+            return Self.make(code: -3, "Invalid blob URL: \(urlString)")
+        case .unexpectedHTTPStatus(let statusCode):
+            return Self.make(code: -5, "Unexpected HTTP status: \(statusCode)")
+        case .sha256Mismatch(let expected, let actual):
+            return Self.make(code: -2, "SHA-256 mismatch: expected \(expected), got \(actual)")
+        case .writeFailure(let error):
+            return .networkError(.networkError(error))
+        }
+    }
+
+    private static func make(code: Int, _ message: String) -> BackendError {
+        .networkError(.networkError(
+            NSError(
+                domain: "com.revenuecat.remoteconfig",
+                code: code,
+                userInfo: [NSLocalizedDescriptionKey: message]
+            )
+        ))
+    }
+
+}
+
 private extension TopicFetcher {
 
     func topicFile(topic: RemoteConfigResponse.Topic, blobRef: String) -> URL? {
-        guard let cachesDir = DirectoryHelper.baseUrl(for: .cache) else { return nil }
+        guard let cachesDir = self.baseCacheURL ?? DirectoryHelper.baseUrl(for: .cache) else { return nil }
         let topicDir = cachesDir
             .appendingPathComponent(Self.topicsRoot)
             .appendingPathComponent(topic.wireKey)
 
         if !self.fileManager.fileExists(atPath: topicDir.path) {
-            try? self.fileManager.createDirectory(at: topicDir, withIntermediateDirectories: true)
+            try? self.fileManager.createDirectory(at: topicDir, withIntermediateDirectories: true, attributes: nil)
         }
 
         return topicDir.appendingPathComponent(blobRef)
@@ -99,9 +143,16 @@ private extension TopicFetcher {
 
     func download(url: URL, expectedSHA256: String, targetFile: URL) async -> BackendError? {
         return await withCheckedContinuation { continuation in
-            self.urlSession.dataTask(with: url) { [self] data, _, error in
+            self.urlSession.dataTask(with: url) { [self] data, response, error in
                 if let error {
                     continuation.resume(returning: .networkError(.networkError(error)))
+                    return
+                }
+
+                let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+                guard statusCode == 200 else {
+                    let error = TopicFetchError.unexpectedHTTPStatus(statusCode: statusCode).backendError
+                    continuation.resume(returning: error)
                     return
                 }
 
@@ -115,14 +166,10 @@ private extension TopicFetcher {
                     .joined()
 
                 guard actualSHA256 == expectedSHA256 else {
-                    continuation.resume(returning: .networkError(.networkError(
-                        NSError(
-                            domain: "com.revenuecat.remoteconfig",
-                            code: -2,
-                            userInfo: [NSLocalizedDescriptionKey:
-                                "SHA-256 mismatch: expected \(expectedSHA256), got \(actualSHA256)"]
-                        )
-                    )))
+                    continuation.resume(returning: TopicFetchError.sha256Mismatch(
+                        expected: expectedSHA256,
+                        actual: actualSHA256
+                    ).backendError)
                     return
                 }
 
@@ -131,11 +178,13 @@ private extension TopicFetcher {
 
                 do {
                     try data.write(to: tempFile, options: .atomic)
-                    _ = try? self.fileManager.replaceItemAt(targetFile, withItemAt: tempFile)
+                    _ = try self.fileManager.replaceItemAt(
+                        targetFile, withItemAt: tempFile, backupItemName: nil, options: []
+                    )
                     continuation.resume(returning: nil)
                 } catch {
                     try? self.fileManager.removeItem(at: tempFile)
-                    continuation.resume(returning: .networkError(.networkError(error)))
+                    continuation.resume(returning: TopicFetchError.writeFailure(error: error).backendError)
                 }
             }.resume()
         }

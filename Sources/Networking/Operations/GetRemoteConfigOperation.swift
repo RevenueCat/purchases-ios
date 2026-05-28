@@ -15,14 +15,16 @@ final class GetRemoteConfigOperation: CacheableNetworkOperation {
         configuration: NetworkConfiguration,
         callbackCache: CallbackCache<RemoteConfigCallback>
     ) -> CacheableNetworkOperationFactory<GetRemoteConfigOperation> {
-        return .init({ cacheKey in
+        return .init(
+            { cacheKey in
                 .init(
                     configuration: configuration,
                     callbackCache: callbackCache,
                     cacheKey: cacheKey
                 )
-        },
-                     individualizedCacheKeyPart: "")
+            },
+            individualizedCacheKeyPart: ""
+        )
     }
 
     private init(
