@@ -117,41 +117,19 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Type representing the reason a rewarded-ad verification failed.
-///
-/// The predefined static properties contain the known failure reasons.
-@_spi(Internal) @objc(RCAdRewardFailureReason) public final class AdRewardFailureReason: NSObject, Codable {
-
-    /// The raw string value of the failure reason
-    @objc public let rawValue: String
-
-    /// Creates a failure reason with the specified raw value
-    @objc public init(rawValue: String) {
-        self.rawValue = rawValue
-        super.init()
-    }
+@_spi(Internal) public enum AdRewardFailureReason: String, Codable, Sendable {
 
     /// Verification did not complete within the allowed polling window.
-    @objc public static let timeout = AdRewardFailureReason(rawValue: "timeout")
+    case timeout
 
     /// Verification failed due to a network-level error.
-    @objc public static let networkError = AdRewardFailureReason(rawValue: "network_error")
+    case networkError = "network_error"
 
     /// The backend explicitly declined to verify the reward.
-    @objc public static let backendError = AdRewardFailureReason(rawValue: "backend_error")
+    case backendError = "backend_error"
 
     /// Verification failed for an unspecified reason.
-    @objc public static let unknown = AdRewardFailureReason(rawValue: "unknown")
-
-    // MARK: - NSObject overrides for equality
-
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? AdRewardFailureReason else { return false }
-        return self.rawValue == other.rawValue
-    }
-
-    public override var hash: Int {
-        return self.rawValue.hash
-    }
+    case unknown
 
 }
 
@@ -758,20 +736,18 @@ extension AdRewardVerified: Codable {
 }
 
 /// Data for ad reward failed-to-verify events.
-@_spi(Internal)
-@objc(RCAdRewardFailedToVerify)
-public final class AdRewardFailedToVerify: NSObject, AdImpressionEventData, Codable, @unchecked Sendable {
+@_spi(Internal) public struct AdRewardFailedToVerify: AdImpressionEventData, Codable, Equatable, @unchecked Sendable {
 
     // swiftlint:disable missing_docs
-    @objc public private(set) var networkName: String?
-    @objc public private(set) var mediatorName: MediatorName
-    @objc public private(set) var adFormat: AdFormat
-    @objc public private(set) var placement: String?
-    @objc public private(set) var adUnitId: String
-    @objc public private(set) var impressionId: String
-    @objc public private(set) var failureReason: AdRewardFailureReason
+    public let networkName: String?
+    public let mediatorName: MediatorName
+    public let adFormat: AdFormat
+    public let placement: String?
+    public let adUnitId: String
+    public let impressionId: String
+    public let failureReason: AdRewardFailureReason
 
-    @objc public init(
+    public init(
         networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
@@ -787,34 +763,8 @@ public final class AdRewardFailedToVerify: NSObject, AdImpressionEventData, Coda
         self.adUnitId = adUnitId
         self.impressionId = impressionId
         self.failureReason = failureReason
-        super.init()
     }
     // swiftlint:enable missing_docs
-
-    // MARK: - NSObject overrides for equality
-
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? AdRewardFailedToVerify else { return false }
-        return self.networkName == other.networkName &&
-               self.mediatorName == other.mediatorName &&
-               self.adFormat == other.adFormat &&
-               self.placement == other.placement &&
-               self.adUnitId == other.adUnitId &&
-               self.impressionId == other.impressionId &&
-               self.failureReason == other.failureReason
-    }
-
-    public override var hash: Int {
-        var hasher = Hasher()
-        hasher.combine(networkName)
-        hasher.combine(mediatorName)
-        hasher.combine(adFormat)
-        hasher.combine(placement)
-        hasher.combine(adUnitId)
-        hasher.combine(impressionId)
-        hasher.combine(failureReason)
-        return hasher.finalize()
-    }
 
 }
 

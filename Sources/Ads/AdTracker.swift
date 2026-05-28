@@ -265,7 +265,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Internal) @objc public func trackAdRewardFailedToVerify(_ data: AdRewardFailedToVerify) {
+    @_spi(Internal) public func trackAdRewardFailedToVerify(_ data: AdRewardFailedToVerify) {
         Task {
             let event = AdEvent.rewardFailedToVerify(.init(id: UUID(), date: Date()), data)
             await self.eventsManager?.track(adEvent: event)
