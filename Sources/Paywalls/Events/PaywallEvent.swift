@@ -176,7 +176,7 @@ extension PaywallEvent {
                 localeIdentifier: locale.identifier,
                 darkMode: darkMode,
                 source: nil,
-                presentedOfferingContext: offering.availablePackages.first?.presentedOfferingContext
+                presentedOfferingContext: offering.presentedOfferingContext
             )
         }
 
@@ -199,7 +199,7 @@ extension PaywallEvent {
                 localeIdentifier: locale.identifier,
                 darkMode: darkMode,
                 source: source,
-                presentedOfferingContext: offering.availablePackages.first?.presentedOfferingContext
+                presentedOfferingContext: offering.presentedOfferingContext
             )
         }
         #endif
@@ -223,7 +223,7 @@ extension PaywallEvent {
                 localeIdentifier: locale.identifier,
                 darkMode: darkMode,
                 source: nil,
-                presentedOfferingContext: offering.availablePackages.first?.presentedOfferingContext
+                presentedOfferingContext: offering.presentedOfferingContext
             )
         }
 
@@ -246,7 +246,7 @@ extension PaywallEvent {
                 localeIdentifier: locale.identifier,
                 darkMode: darkMode,
                 source: source,
-                presentedOfferingContext: offering.availablePackages.first?.presentedOfferingContext
+                presentedOfferingContext: offering.presentedOfferingContext
             )
         }
         // swiftlint:enable missing_docs

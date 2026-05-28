@@ -80,7 +80,7 @@ public final class CustomPaywallImpressionParams: NSObject, Sendable {
         self.init(
             paywallId: paywallId,
             offeringId: offering.identifier,
-            presentedOfferingContext: offering.availablePackages.first?.presentedOfferingContext
+            presentedOfferingContext: offering.presentedOfferingContext
         )
     }
 

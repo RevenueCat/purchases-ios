@@ -2298,11 +2298,11 @@ extension Purchases {
         } else if let offeringId = params.offeringId {
             let resolvedOffering = cachedOfferings?[offeringId]
             resolvedOfferingId = offeringId
-            resolvedPresentedOfferingContext = resolvedOffering?.availablePackages.first?.presentedOfferingContext
+            resolvedPresentedOfferingContext = resolvedOffering?.presentedOfferingContext
         } else {
             let resolvedOffering = cachedOfferings?.current
             resolvedOfferingId = resolvedOffering?.identifier
-            resolvedPresentedOfferingContext = resolvedOffering?.availablePackages.first?.presentedOfferingContext
+            resolvedPresentedOfferingContext = resolvedOffering?.presentedOfferingContext
         }
 
         Task {
