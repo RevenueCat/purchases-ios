@@ -199,23 +199,3 @@ extension WorkflowEventTests {
     }
 
 }
-
-// MARK: - Helpers
-
-private extension WorkflowEvent {
-
-    var creationData: WorkflowEvent.CreationData {
-        switch self {
-        case let .stepStarted(creationData, _): return creationData
-        case let .stepCompleted(creationData, _): return creationData
-        }
-    }
-
-    var data: WorkflowEvent.Data {
-        switch self {
-        case let .stepStarted(_, data): return data
-        case let .stepCompleted(_, data): return data
-        }
-    }
-
-}
