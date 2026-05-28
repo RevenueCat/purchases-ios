@@ -110,11 +110,15 @@ private struct StoreKitWinBackSubscriptionInfo: WinBackEligibilitySubscriptionIn
     }
 
     var winBackOffers: [any WinBackEligibilityOfferType] {
+        #if compiler(>=6.0)
         if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
             return self.subscriptionInfo.winBackOffers.map(StoreKitWinBackOffer.init)
         } else {
             return []
         }
+        #else
+        return []
+        #endif
     }
 
     var pricingTerms: [any WinBackEligibilityPricingTermsType] {
@@ -167,11 +171,15 @@ private struct StoreKitWinBackRenewalInfo: WinBackEligibilityRenewalInfoType {
     }
 
     var eligibleWinBackOfferIDs: [String] {
+        #if compiler(>=6.0)
         if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
             return self.renewalInfo.eligibleWinBackOfferIDs
         } else {
             return []
         }
+        #else
+        return []
+        #endif
     }
 }
 
