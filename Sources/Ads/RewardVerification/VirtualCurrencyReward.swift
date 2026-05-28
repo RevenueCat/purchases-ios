@@ -23,7 +23,7 @@ import Foundation
     public let amount: Int
 
     /// Creates a virtual-currency reward.
-    @_spi(Internal) public init(code: String, amount: Int) {
+    internal init(code: String, amount: Int) {
         self.code = code
         self.amount = amount
     }

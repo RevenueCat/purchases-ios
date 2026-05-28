@@ -4,7 +4,7 @@ import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Internal) @_spi(Experimental) import RevenueCat
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 @testable import RevenueCatAdMob
 
 // swiftlint:disable type_body_length
