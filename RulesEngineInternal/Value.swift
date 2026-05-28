@@ -182,6 +182,14 @@ func jsArrayElementString(_ value: Value) -> String {
 /// whole-number doubles render without a decimal (`String(1.0) === "1"`),
 /// `NaN` / `±Infinity` keep their JS spellings, fractional doubles use
 /// Swift's default rendering (matches JS for non-pathological values).
+///
+/// Known divergence: for `|value|` beyond exact `Int64` range (or any
+/// non-`Int64`-roundtripping double) we fall through to Swift's
+/// `String(Double)`, which uses scientific notation earlier than JS does
+/// (`1e19` → `"1e+19"` here vs `"10000000000000000000"` in JS). Android
+/// has a different but also off-spec rendering for the same input. The
+/// divergence only surfaces through `var` path coercion or `looseEq`'s
+/// compound-vs-primitive arm with pathological magnitudes.
 func jsNumberString(_ value: Double) -> String {
     if value.isNaN { return "NaN" }
     if value.isInfinite { return value > 0 ? "Infinity" : "-Infinity" }

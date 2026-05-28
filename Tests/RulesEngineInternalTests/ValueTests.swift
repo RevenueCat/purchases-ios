@@ -259,4 +259,11 @@ final class ValueTests: XCTestCase {
         // Cross-type: +Infinity never numerically equals a finite int.
         XCTAssertFalse(looseEq(.float(.infinity), .int(.max)))
     }
+
+    func testJsNumberStringFallsThroughToSwiftDoubleStringForOutOfInt64Range() {
+        // Spec-divergence pin: see KDoc on jsNumberString. Three-way divergence
+        // between JS ("10000000000000000000"), Swift ("1e+19"), and Kotlin
+        // ("1.0E19") for `1e19`.
+        XCTAssertEqual(jsString(.float(1e19)), "1e+19")
+    }
 }

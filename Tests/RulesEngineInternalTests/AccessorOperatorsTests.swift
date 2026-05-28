@@ -399,6 +399,18 @@ final class AccessorOperatorsTests: XCTestCase {
         XCTAssertEqual(result, .array([]))
     }
 
+    func testMissingEmptyStringKeyResolvesToEntireScopeAndIsNotMissing() throws {
+        // json-logic-js routes `missing` through `var`; `var` with empty path
+        // returns the full data scope, which is neither null nor empty string,
+        // so the empty key is not missing.
+        let vars = Value.object(["a": .int(1)])
+        let result = try AccessorOperators.opMissing(
+            args: .array([.string("")]),
+            vars: vars
+        )
+        XCTAssertEqual(result, .array([]))
+    }
+
     func testMissingReportsDotPathLeafThatIsNull() throws {
         // Same null-leaf rule applies through dot-paths: an existing
         // nested key whose leaf is null counts as missing.
