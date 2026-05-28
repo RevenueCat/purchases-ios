@@ -24,12 +24,12 @@ import Foundation
     }
 
     /// Server verification succeeded for this ad’s transaction.
-    public static func verified(_ reward: AdReward) -> RewardVerificationResult {
+    internal static func verified(_ reward: AdReward) -> RewardVerificationResult {
         RewardVerificationResult(storage: .verified(reward))
     }
 
     /// Verification did not complete successfully (rejected, exhausted polling, error, etc.).
-    public static let failed = RewardVerificationResult(storage: .failed)
+    internal static let failed = RewardVerificationResult(storage: .failed)
 
     /// Non-`nil` when verification succeeded.
     public var reward: AdReward? {
