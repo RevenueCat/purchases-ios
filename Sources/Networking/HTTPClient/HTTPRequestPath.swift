@@ -244,12 +244,12 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
                 .getWorkflow,
+                .getWorkflows,
                 .appHealthReport,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior:
             return true
-        case .getWorkflows,
-                .getIntroEligibility,
+        case .getIntroEligibility,
                 .postSubscriberAttributes,
                 .postAttributionData,
                 .postAdServicesToken,

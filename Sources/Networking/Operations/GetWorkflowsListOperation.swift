@@ -31,8 +31,8 @@ final class GetWorkflowsListOperation: CacheableNetworkOperation {
                     type: type,
                     cacheKey: cacheKey
                 )
-        },
-                     individualizedCacheKeyPart: configuration.appUserID + (type ?? ""))
+            },
+            individualizedCacheKeyPart: configuration.appUserID + "\n" + (type ?? ""))
     }
 
     private init(
