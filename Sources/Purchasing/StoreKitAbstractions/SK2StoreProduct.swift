@@ -99,11 +99,37 @@ internal struct SK2StoreProduct: StoreProductType {
     }
 
     var discounts: [StoreProductDiscount] {
-        (self.underlyingSK2Product.subscription?.promotionalOffers ?? [])
-            .compactMap { StoreProductDiscount(sk2Discount: $0, currencyCode: self.currencyCode) }
+        #if compiler(>=6.3.2)
+        if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *),
+           let billingPlan = self.installmentsInfo?.billingPlanType {
+            let promotionalOffersOnApplicablePricingTerms = self
+                .underlyingSK2Product
+                .subscription?
+                .pricingTerms
+                .first(where: { $0.billingPlanType == billingPlan.skBillingPlanType })
+                .map({
+                    $0.subscriptionOffers.filter({ $0.type == .promotional })
+                        .compactMap { StoreProductDiscount(sk2Discount: $0, currencyCode: self.currencyCode) }
+                }) ?? []
+
+            return promotionalOffersOnApplicablePricingTerms
+        } else {
+            return self.promotionalOffersOnSubscriptionInfo
+        }
+        #else
+        return self.promotionalOffersOnSubscriptionInfo
+        #endif
     }
 
     var id: String { return self.compoundProductIdentifier.compoundProductIdentifier }
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+private extension SK2StoreProduct {
+    var promotionalOffersOnSubscriptionInfo: [StoreProductDiscount] {
+        (self.underlyingSK2Product.subscription?.promotionalOffers ?? [])
+            .compactMap { StoreProductDiscount(sk2Discount: $0, currencyCode: self.currencyCode) }
+    }
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
