@@ -229,6 +229,7 @@ extension CustomerInfoResponse.Subscription {
         unsubscribeDetectedAt: Date? = nil,
         billingIssuesDetectedAt: Date? = nil,
         ownershipType: PurchaseOwnershipType = .defaultValue,
+        productPlanIdentifier: String? = nil,
         storeTransactionId: String? = nil
     ) {
         self.periodType = periodType
@@ -240,6 +241,7 @@ extension CustomerInfoResponse.Subscription {
         self.unsubscribeDetectedAt = unsubscribeDetectedAt
         self.billingIssuesDetectedAt = billingIssuesDetectedAt
         self.ownershipType = ownershipType
+        self.productPlanIdentifier = productPlanIdentifier
         self.storeTransactionId = storeTransactionId
     }
 

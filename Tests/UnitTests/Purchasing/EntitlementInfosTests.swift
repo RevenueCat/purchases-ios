@@ -351,6 +351,34 @@ class EntitlementInfosTests: TestCase {
         try verifyProduct(expectedIdentifier: "pro")
     }
 
+    func testCreatesEntitlementInfoFromAppleBillingPlan() throws {
+        stubResponse(
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "product_identifier": "com.revenuecat.product",
+                    "purchase_date": "2019-07-26T23:45:40Z"
+                ]
+            ],
+            subscriptions: [
+                "com.revenuecat.product": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "product_plan_identifier": "monthly",
+                    "original_purchase_date": "2019-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "2019-07-26T23:45:40Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": nil
+                ] as [String: Any?]
+            ]
+        )
+
+        try verifyEntitlementActive(productPlanIdentifier: "monthly")
+        try verifyProduct(expectedIdentifier: "com.revenuecat.product")
+    }
+
     func testCreatesEntitlementWithNonSubscriptionsAndSubscription() throws {
         stubResponse(
                 entitlements: [

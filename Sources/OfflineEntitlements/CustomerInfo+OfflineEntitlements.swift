@@ -80,7 +80,7 @@ private extension CustomerInfo {
         var result: [String: CustomerInfoResponse.Entitlement] = .init(minimumCapacity: products.count)
 
         for product in products {
-            for entitlement in mapping.entitlements(for: product.productIdentifier) {
+            for entitlement in mapping.entitlements(for: product.id) {
                 if let priorEntitlement = result[entitlement],
                    !shouldOverride(prior: priorEntitlement, new: product.entitlement) {
                     continue
