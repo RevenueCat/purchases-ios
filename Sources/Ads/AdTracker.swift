@@ -229,6 +229,7 @@ public final class AdTracker: NSObject {
 
      ## Example:
      ```swift
+     // `reward` is the `AdReward` received from the reward-verification pipeline.
      Purchases.shared.adTracker.trackAdRewardVerified(.init(
          networkName: "AdMob",
          mediatorName: .adMob,
@@ -236,7 +237,7 @@ public final class AdTracker: NSObject {
          placement: "home_screen",
          adUnitId: "ca-app-pub-123",
          impressionId: "impression-456",
-         reward: .virtualCurrency(code: "GOLD", amount: 100)
+         reward: reward
      ))
      ```
      */
