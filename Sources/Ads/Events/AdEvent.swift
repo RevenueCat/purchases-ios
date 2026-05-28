@@ -650,32 +650,18 @@ extension AdRevenue {
 }
 
 /// Data for ad reward verified events.
-@_spi(Internal) @objc(RCAdRewardVerified) public final class AdRewardVerified: NSObject,
-                                                                                          AdImpressionEventData,
-                                                                                          Codable,
-                                                                                          @unchecked Sendable {
+@_spi(Internal) public struct AdRewardVerified: AdImpressionEventData, Equatable, @unchecked Sendable {
 
     // swiftlint:disable missing_docs
-    @objc public private(set) var networkName: String?
-    @objc public private(set) var mediatorName: MediatorName
-    @objc public private(set) var adFormat: AdFormat
-    @objc public private(set) var placement: String?
-    @objc public private(set) var adUnitId: String
-    @objc public private(set) var impressionId: String
+    public let networkName: String?
+    public let mediatorName: MediatorName
+    public let adFormat: AdFormat
+    public let placement: String?
+    public let adUnitId: String
+    public let impressionId: String
 
     /// The verified reward payload.
-    public private(set) var reward: AdReward
-
-    /// Stable raw value for the reward kind (e.g. `"virtual_currency"`). Provided for ObjC consumers.
-    @objc public var rewardKindRawValue: String { return self.reward.kindRawValue }
-
-    /// Virtual-currency code when ``reward`` is a virtual-currency line item. Provided for ObjC consumers.
-    @objc public var virtualCurrencyCode: String? { return self.reward.virtualCurrency?.code }
-
-    /// Virtual-currency amount when ``reward`` is a virtual-currency line item. Provided for ObjC consumers.
-    @objc public var virtualCurrencyAmount: NSNumber? {
-        return self.reward.virtualCurrency.map { NSNumber(value: $0.amount) }
-    }
+    public let reward: AdReward
 
     public init(
         networkName: String?,
@@ -693,59 +679,8 @@ extension AdRevenue {
         self.adUnitId = adUnitId
         self.impressionId = impressionId
         self.reward = reward
-        super.init()
-    }
-
-    /// ObjC-compatible initializer. Construct the reward payload from the flat reward fields.
-    @objc public convenience init(
-        networkName: String?,
-        mediatorName: MediatorName,
-        adFormat: AdFormat,
-        placement: String?,
-        adUnitId: String,
-        impressionId: String,
-        rewardKindRawValue: String,
-        virtualCurrencyCode: String?,
-        virtualCurrencyAmount: NSNumber?
-    ) {
-        self.init(
-            networkName: networkName,
-            mediatorName: mediatorName,
-            adFormat: adFormat,
-            placement: placement,
-            adUnitId: adUnitId,
-            impressionId: impressionId,
-            reward: Self.rewardForObjCInit(
-                kindRawValue: rewardKindRawValue,
-                virtualCurrencyCode: virtualCurrencyCode,
-                virtualCurrencyAmount: virtualCurrencyAmount?.intValue
-            )
-        )
     }
     // swiftlint:enable missing_docs
-
-    /// Developer-input path: validates and logs invalid inputs.
-    /// `AdReward.virtualCurrency(code:amount:)` already logs and asserts when `amount <= 0`,
-    /// so this helper only needs to catch the missing-fields case.
-    private static func rewardForObjCInit(
-        kindRawValue: String,
-        virtualCurrencyCode: String?,
-        virtualCurrencyAmount: Int?
-    ) -> AdReward {
-        switch kindRawValue {
-        case AdReward.Kind.virtualCurrency:
-            guard let code = virtualCurrencyCode, let amount = virtualCurrencyAmount else {
-                Logger.error(AdsStrings.missing_virtual_currency_reward_fields)
-                assertionFailure("virtual_currency reward requires non-nil code and amount")
-                return .unsupportedReward
-            }
-            return .virtualCurrency(code: code, amount: amount)
-        case AdReward.Kind.noReward:
-            return .noReward
-        default:
-            return .unsupportedReward
-        }
-    }
 
     /// Decoder-input path: silent fallback. Backend wire data that doesn't match the schema
     /// must not trigger `assertionFailure` — malformed data is not a programming bug.
@@ -767,34 +702,9 @@ extension AdRevenue {
         }
     }
 
-    // MARK: - NSObject overrides for equality
+}
 
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? AdRewardVerified else { return false }
-        return self.networkName == other.networkName &&
-               self.mediatorName == other.mediatorName &&
-               self.adFormat == other.adFormat &&
-               self.placement == other.placement &&
-               self.adUnitId == other.adUnitId &&
-               self.impressionId == other.impressionId &&
-               self.reward == other.reward
-    }
-
-    public override var hash: Int {
-        var hasher = Hasher()
-        hasher.combine(networkName)
-        hasher.combine(mediatorName)
-        hasher.combine(adFormat)
-        hasher.combine(placement)
-        hasher.combine(adUnitId)
-        hasher.combine(impressionId)
-        hasher.combine(self.reward.kindRawValue)
-        hasher.combine(self.reward.virtualCurrency?.code)
-        hasher.combine(self.reward.virtualCurrency?.amount)
-        return hasher.finalize()
-    }
-
-    // MARK: - Codable
+extension AdRewardVerified: Codable {
 
     /// Wire-format keys. ``reward`` is encoded as flat `rewardType` / `rewardCurrencyCode` /
     /// `rewardCurrencyAmount` fields so the backend schema remains unchanged.
@@ -825,7 +735,7 @@ extension AdRevenue {
     }
 
     // swiftlint:disable:next missing_docs
-    public convenience init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let rewardKind = try container.decode(String.self, forKey: .rewardType)
         let code = try container.decodeIfPresent(String.self, forKey: .rewardCurrencyCode)

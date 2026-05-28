@@ -18,7 +18,6 @@ import Foundation
 enum AdsStrings {
 
     case invalid_virtual_currency_amount(amount: Int)
-    case missing_virtual_currency_reward_fields
 
 }
 
@@ -28,9 +27,6 @@ extension AdsStrings: LogMessage {
         switch self {
         case let .invalid_virtual_currency_amount(amount):
             return "Received an invalid virtual currency amount (\(amount)); falling back to unsupportedReward."
-        case .missing_virtual_currency_reward_fields:
-            return "Received a 'virtual_currency' ad reward with a nil currency code or amount; " +
-                "falling back to unsupportedReward."
         }
     }
 

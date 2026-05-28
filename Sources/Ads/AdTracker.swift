@@ -240,7 +240,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Internal) @objc public func trackAdRewardVerified(_ data: AdRewardVerified) {
+    @_spi(Internal) public func trackAdRewardVerified(_ data: AdRewardVerified) {
         Task {
             let event = AdEvent.rewardVerified(.init(id: UUID(), date: Date()), data)
             await self.eventsManager?.track(adEvent: event)
