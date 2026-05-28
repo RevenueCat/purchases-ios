@@ -855,6 +855,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             self.handleCustomerInfoChanged(from: old, to: new)
         }
 
+        self.transactionMetadataSyncHelper.syncIfNeeded(
+            allowSharingAppStoreAccount: purchasesOrchestrator.allowSharingAppStoreAccount
+        )
     }
 
     deinit {
