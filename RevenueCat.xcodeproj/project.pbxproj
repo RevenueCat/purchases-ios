@@ -993,6 +993,8 @@
 		77AABEB82F0C23450018C1D3 /* PurchasesStoreMessagesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77AABEB72F0C23450018C1D3 /* PurchasesStoreMessagesTests.swift */; };
 		77BA1AB12CCBAB80009BF0EA /* RootViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BA1AB02CCBAB80009BF0EA /* RootViewModel.swift */; };
 		77BA1AB32CCBB6EE009BF0EA /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BA1AB22CCBB6EE009BF0EA /* RootView.swift */; };
+		B1A2C3D42FAA3302008E8A11 /* PaywallScrollEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A2C3D42FAA3302008E8A01 /* PaywallScrollEnvironment.swift */; };
+		B1A2C3D42FAA3302008E8A12 /* StackScrollBehavior.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A2C3D42FAA3302008E8A02 /* StackScrollBehavior.swift */; };
 		7DFF88B0441F83F94C8E855F /* VideoAutoplayHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36ECF1E76DAADD986E3D0E5A /* VideoAutoplayHandler.swift */; };
 		805B60C97993B311CEC93EAF /* ProductsFetcherSK2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3628C1F100BB3C1782860D24 /* ProductsFetcherSK2.swift */; };
 		80CDB7B62E69C35100D7DB9E /* CustomerCenterStylingUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CDB7B52E69C35100D7DB9E /* CustomerCenterStylingUtilities.swift */; };
@@ -1600,6 +1602,11 @@
 		16A7F4C22E563B91001F9FC8 /* PaywallAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallAnimation.swift; sourceTree = "<group>"; };
 		16A7F4C52E564B97001F9FC8 /* TransitionModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransitionModifier.swift; sourceTree = "<group>"; };
 		16A9F7B62FAA22D0008E8A4D /* VideoComponentViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentViewTests.swift; sourceTree = "<group>"; };
+		B1A2C3D42FAA3301008E8A02 /* PaywallsV2LayoutFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallsV2LayoutFixtures.swift; sourceTree = "<group>"; };
+		B1A2C3D42FAA3301008E8A03 /* RootViewLayoutSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewLayoutSnapshotTests.swift; sourceTree = "<group>"; };
+		B1A2C3D42FAA3301008E8A01 /* StackScrollBehaviorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackScrollBehaviorTests.swift; sourceTree = "<group>"; };
+		B1A2C3D42FAA3302008E8A01 /* PaywallScrollEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallScrollEnvironment.swift; sourceTree = "<group>"; };
+		B1A2C3D42FAA3302008E8A02 /* StackScrollBehavior.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackScrollBehavior.swift; sourceTree = "<group>"; };
 		16BCA3652E4D9AE400B39E7F /* LargeItemCacheType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeItemCacheType.swift; sourceTree = "<group>"; };
 		16BCA3672E4D9B0C00B39E7F /* FileRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileRepository.swift; sourceTree = "<group>"; };
 		16BCA3692E4D9B2C00B39E7F /* KeyedDeferredValueStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyedDeferredValueStore.swift; sourceTree = "<group>"; };
@@ -3095,6 +3102,9 @@
 				E7EAAD1DC166ABD68E484EAA /* RootViewSheetDismissalTests.swift */,
 				03CCFCE12DE9638F0052B764 /* __PreviewResources__ */,
 				83EE33252E1E20360011CF1C /* PaywallPreviewResourcesLoader.swift */,
+				B1A2C3D42FAA3301008E8A02 /* PaywallsV2LayoutFixtures.swift */,
+				B1A2C3D42FAA3301008E8A03 /* RootViewLayoutSnapshotTests.swift */,
+				B1A2C3D42FAA3301008E8A01 /* StackScrollBehaviorTests.swift */,
 				038EC8222DE7A8AC00786C42 /* TakeScreenshot.swift */,
 				030F918B2D55C9D80085103F /* LocaleFinderTests.swift */,
 				03C06FC42D4553BB00600693 /* PresentedPartialsTests.swift */,
@@ -5389,6 +5399,15 @@
 			path = Root;
 			sourceTree = "<group>";
 		};
+		B1A2C3D42FAA3302008E8A00 /* Layout */ = {
+			isa = PBXGroup;
+			children = (
+				B1A2C3D42FAA3302008E8A01 /* PaywallScrollEnvironment.swift */,
+				B1A2C3D42FAA3302008E8A02 /* StackScrollBehavior.swift */,
+			);
+			path = Layout;
+			sourceTree = "<group>";
+		};
 		778360772CCA85D1000785B8 /* StickyFooter */ = {
 			isa = PBXGroup;
 			children = (
@@ -5817,6 +5836,7 @@
 			isa = PBXGroup;
 			children = (
 				88B1BAE32C813A3C001B7EE5 /* PaywallsV2View.swift */,
+				B1A2C3D42FAA3302008E8A00 /* Layout */,
 				2C7457492CEA6B06004ACE52 /* EnvironmentObjects */,
 				030F91882D55C0FF0085103F /* Localizations */,
 				0308907F2D2B76340069677B /* Variables */,
@@ -8112,6 +8132,8 @@
 				887A60742C1D037000E1A461 /* Strings.swift in Sources */,
 				887A60712C1D037000E1A461 /* PaywallViewConfiguration.swift in Sources */,
 				1699BD5A2EEFBE7D002001FB /* DefaultProductCell.swift in Sources */,
+				B1A2C3D42FAA3302008E8A11 /* PaywallScrollEnvironment.swift in Sources */,
+				B1A2C3D42FAA3302008E8A12 /* StackScrollBehavior.swift in Sources */,
 				88B1BAFA2C813A3C001B7EE5 /* PaywallsV2View.swift in Sources */,
 				887A60C82C1D037000E1A461 /* ProgressView.swift in Sources */,
 				887A60D02C1D037000E1A461 /* View+PurchaseRestoreCompleted.swift in Sources */,

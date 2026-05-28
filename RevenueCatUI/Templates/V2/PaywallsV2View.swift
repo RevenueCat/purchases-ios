@@ -184,7 +184,6 @@ struct PaywallsV2View: View {
                     }
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         )
     }
 
@@ -404,35 +403,40 @@ private struct LoadedPaywallsV2View: View {
 
     var body: some View {
         GeometryReader { proxy in
+            let rootViewModel = paywallState.rootViewModel
+            let shouldExpandToContainer = StackScrollBehavior.shouldExpandPaywallContentToAvailableHeight(
+                stickyFooterPresent: rootViewModel.stickyFooterViewModel != nil,
+                rootHeightIsFill: rootViewModel.stackViewModel.component.size.height == .fill
+            )
+
             VStack(spacing: 0) {
                 ComponentsView(
-                    componentViewModels: [.root(paywallState.rootViewModel)],
+                    componentViewModels: [.root(rootViewModel)],
                     onDismiss: self.onDismiss,
                     defaultPackage: self.defaultPackage
                 )
                 .fixMacButtons()
                 .environment(\.closeWorkflowAction, self.closeWorkflowAction ?? self.onDismiss)
             }
-            // Used for header image and sticky footer
-            .environment(\.safeAreaInsets, proxy.safeAreaInsets)
-            .applyIf(
-                paywallState.rootViewModel.headerViewModel != nil
-                || paywallState.rootViewModel.firstItemIsFullWidthMedia,
-                apply: { view in
-                view
-                    .edgesIgnoringSafeArea(.top)
-            })
-            .applyIf(
-                paywallState.rootViewModel.stickyFooterViewModel != nil
-                    || paywallState.rootViewModel.stackViewModel.component.size.height == .fill,
-                apply: { view in
+            // Bounded containers (sheets): fill offered height so `RootView` can pin sticky footers.
+            .applyIf(shouldExpandToContainer) { view in
                 view.frame(
                     maxWidth: .infinity,
                     maxHeight: .infinity,
-                    alignment: paywallState.rootViewModel.stickyFooterViewModel != nil
-                        ? .top
-                        : paywallState.rootViewModel.frameAlignment
+                    alignment: StackScrollBehavior.paywallContentFrameAlignment(
+                        stickyFooterPresent: rootViewModel.stickyFooterViewModel != nil,
+                        rootFrameAlignment: rootViewModel.frameAlignment
+                    )
                 )
+            }
+            // Used for header image and sticky footer
+            .environment(\.safeAreaInsets, proxy.safeAreaInsets)
+            .applyIf(
+                rootViewModel.headerViewModel != nil
+                || rootViewModel.firstItemIsFullWidthMedia,
+                apply: { view in
+                view
+                    .edgesIgnoringSafeArea(.top)
             })
             .backgroundStyle(
                 self.paywallState.componentsConfig.background
