@@ -11,8 +11,6 @@
 //
 //  Created by Will Taylor on 10/31/24.
 
-import StoreKit
-
 @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
 final class WinBackOfferEligibilityCalculator: Sendable {
 
@@ -55,10 +53,26 @@ extension WinBackOfferEligibilityCalculator {
             throw ErrorUtils.featureNotSupportedWithStoreKit1Error()
         }
 
+        guard let product = self.storeKitWinBackEligibilityProduct(from: product) else {
+            return []
+        }
+
+        return await self.calculateEligibleWinBackOffers(forProduct: product)
+        #else
+        return []
+        #endif
+    }
+
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func calculateEligibleWinBackOffers(
+        forProduct product: any WinBackEligibilityProductType
+    ) async -> [WinBackOffer] {
+
+        #if compiler(>=6.0)
         let eligibleWinBackOfferIDs: [String] = await self.calculateEligibleWinBackOfferIDs(forProduct: product)
         guard !eligibleWinBackOfferIDs.isEmpty else { return [] }
 
-        let winbackOffersByID: [String: Product.SubscriptionOffer] = self.winbackOffersByID(for: product)
+        let winbackOffersByID: [String: any WinBackEligibilityOfferType] = self.winbackOffersByID(for: product)
         guard !winbackOffersByID.isEmpty else { return [] }
 
         let eligibleWinBackOffers: [WinBackOffer] = eligibleWinBackOfferIDs
@@ -67,7 +81,7 @@ extension WinBackOfferEligibilityCalculator {
                 guard let winbackOffer = winbackOffersByID[winbackOfferID] else {
                     return nil
                 }
-                return StoreProductDiscount(sk2Discount: winbackOffer, currencyCode: product.currencyCode)
+                return winbackOffer.storeProductDiscount(currencyCode: product.currencyCode)
             }
             // Convert the StoreProductDiscounts to WinBackOffer objects
             .map { WinBackOffer(discount: $0) }
@@ -79,14 +93,16 @@ extension WinBackOfferEligibilityCalculator {
     }
 
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-    private func calculateEligibleWinBackOfferIDs(forProduct product: StoreProduct) async -> [String] {
+    private func calculateEligibleWinBackOfferIDs(
+        forProduct product: any WinBackEligibilityProductType
+    ) async -> [String] {
         #if compiler(>=6.0)
-        guard let subscriptionInfo = product.sk2Product?.subscription else {
+        guard let subscriptionInfo = product.subscriptionInfo else {
             // If StoreKit.Product.subscription is nil, then the product isn't a subscription
             return []
         }
 
-        guard let statuses = try? await subscriptionInfo.status, !statuses.isEmpty else {
+        guard let statuses = try? await subscriptionInfo.statuses(), !statuses.isEmpty else {
             // If statuses is empty, the subscriber was never subscribed to a product in the subscription group.
             return []
         }
@@ -95,7 +111,7 @@ extension WinBackOfferEligibilityCalculator {
         // Thus, there can be at most 1 renewalInfo that is not a family shared one.
         // See https://developer.apple.com/videos/play/wwdc2024/10110/ for an example.
         guard let purchaseSubscriptionStatus = statuses.first(where: {
-            $0.transaction.unsafePayloadValue.ownershipType == .purchased
+            $0.ownershipType == .purchased
         }) else {
             return []
         }
@@ -111,7 +127,7 @@ extension WinBackOfferEligibilityCalculator {
         #if compiler(>=6.3.2)
         if #available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, visionOS 26.4, *) {
             let availableOfferIDs: Set<String>
-            if let billingPlan = product.installmentsInfo?.billingPlanType {
+            if let billingPlan = product.billingPlanType {
                 availableOfferIDs = availableWinBackOfferIDs(
                     forBillingPlan: billingPlan,
                     subscriptionInfo: subscriptionInfo
@@ -137,12 +153,12 @@ extension WinBackOfferEligibilityCalculator {
 
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     private func winbackOffersByID(
-        for product: StoreProduct
-    ) -> [String: Product.SubscriptionOffer] {
+        for product: any WinBackEligibilityProductType
+    ) -> [String: any WinBackEligibilityOfferType] {
         #if compiler(>=6.0)
-        var winbackOffersByID: [String: Product.SubscriptionOffer] = [:]
+        var winbackOffersByID: [String: any WinBackEligibilityOfferType] = [:]
 
-        guard let subscriptionInfo = product.sk2Product?.subscription else {
+        guard let subscriptionInfo = product.subscriptionInfo else {
             return winbackOffersByID
         }
 
@@ -176,33 +192,15 @@ extension WinBackOfferEligibilityCalculator {
     }
 }
 
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-extension StoreKit.Product.SubscriptionInfo.Status {
-    var verifiedRenewalInfo: StoreKit.Product.SubscriptionInfo.RenewalInfo? {
-        switch self.renewalInfo {
-        case .unverified:
-            Logger.warn(
-                Strings.storeKit.sk2_unverified_renewal_info(
-                    productIdentifier: String(self.transaction.underlyingTransaction.productID)
-                )
-            )
-            return nil
-        case .verified(let status):
-            return status
-        }
-    }
-}
-
 @available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, *)
 private extension WinBackOfferEligibilityCalculator {
     private func availableWinBackOfferIDs(
         forBillingPlan billingPlanType: BillingPlanType,
-        subscriptionInfo: Product.SubscriptionInfo
+        subscriptionInfo: any WinBackEligibilitySubscriptionInfoType
     ) -> Set<String> {
         #if compiler(>=6.3.2)
-        let skBillingPlanType = billingPlanType.skBillingPlanType
         guard let applicablePricingTerms = subscriptionInfo.pricingTerms.first(where: {
-            $0.billingPlanType == skBillingPlanType
+            $0.billingPlanType == billingPlanType
         }) else {
             // The user is not eligible for pricing terms with the requested billing plan. Therefore, they are
             // not eligible for winback offers on that given billing plan type.
