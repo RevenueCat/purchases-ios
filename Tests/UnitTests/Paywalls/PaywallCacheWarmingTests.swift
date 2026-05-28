@@ -469,7 +469,7 @@ private final actor MockInMemoryHTMLFileRepository: InMemoryHTMLFileRepositoryTy
         return self.cachedFileURLs[url] ?? url
     }
 
-    func getCachedFileURL(for url: URL) async -> URL? {
+    func getCachedFileURL(for url: URL) -> URL? {
         self.cachedFileURLRequests.append(url)
         return self.cachedFileURLs[url]
     }
