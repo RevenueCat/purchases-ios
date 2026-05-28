@@ -261,6 +261,10 @@ final class ValueTests: XCTestCase {
     }
 
     func testJsNumberStringFallsThroughToSwiftDoubleStringForOutOfInt64Range() {
+        // Last whole number that still round-trips through Int64 — fast path,
+        // matches JS (`String(1e18) === "1000000000000000000"`).
+        XCTAssertEqual(jsString(.float(1e18)), "1000000000000000000")
+
         // Spec-divergence pin: see KDoc on jsNumberString. Three-way divergence
         // between JS ("10000000000000000000"), Swift ("1e+19"), and Kotlin
         // ("1.0E19") for `1e19`.
