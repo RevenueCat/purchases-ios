@@ -6,13 +6,10 @@
 
 import Foundation
 
-/// A JSON-shaped value. Used both as the parsed JSON Logic predicate tree
-/// and as the resolved variable map handed in by callers.
+/// A JSON-shaped value for JSON Logic predicates and variable data.
 ///
-/// Maps directly onto the JSON data model with one tweak: numbers are split
-/// into `int(Int64)` and `float(Double)` to preserve type intent.
-/// Cross-type numeric comparisons / arithmetic still work — see `looseEq`,
-/// `strictEq`, and the comparison helpers below.
+/// Numbers are split into `int` and `float` cases to preserve type intent.
+/// Cross-type numeric comparisons still work — see `looseEq` and `strictEq`.
 enum Value: Equatable, Hashable, Sendable {
 
     case null
