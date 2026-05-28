@@ -2289,22 +2289,29 @@ extension Purchases {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @objc public func trackCustomPaywallImpression(_ params: CustomPaywallImpressionParams) {
         let cachedOfferings = self.offeringsManager.cachedOfferings
-        let resolvedOffering = params.offering ?? {
-            if let offeringId = params.offeringId {
-                return cachedOfferings?[offeringId]
-            }
-            return cachedOfferings?.current
-        }()
-        let presentedOfferingContext = resolvedOffering?.availablePackages.first?.presentedOfferingContext
-        let offeringId = params.offeringId ?? resolvedOffering?.identifier
+        let resolvedOfferingId: String?
+        let resolvedPresentedOfferingContext: PresentedOfferingContext?
+
+        if let presentedOfferingContext = params.presentedOfferingContext {
+            resolvedOfferingId = params.offeringId
+            resolvedPresentedOfferingContext = presentedOfferingContext
+        } else if let offeringId = params.offeringId {
+            let resolvedOffering = cachedOfferings?[offeringId]
+            resolvedOfferingId = offeringId
+            resolvedPresentedOfferingContext = resolvedOffering?.availablePackages.first?.presentedOfferingContext
+        } else {
+            let resolvedOffering = cachedOfferings?.current
+            resolvedOfferingId = resolvedOffering?.identifier
+            resolvedPresentedOfferingContext = resolvedOffering?.availablePackages.first?.presentedOfferingContext
+        }
 
         Task {
             let event = CustomPaywallEvent.impression(
                 .init(),
                 .init(
                     paywallId: params.paywallId,
-                    offeringId: offeringId,
-                    presentedOfferingContext: presentedOfferingContext
+                    offeringId: resolvedOfferingId,
+                    presentedOfferingContext: resolvedPresentedOfferingContext
                 )
             )
             await self.eventsManager?.track(featureEvent: event)
