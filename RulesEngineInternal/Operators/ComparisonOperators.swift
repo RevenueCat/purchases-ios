@@ -26,22 +26,22 @@ enum ComparisonOperators {
 
     /// `{"<": [a, b]}` — `a < b`. `{"<": [a, b, c]}` — `a < b AND b < c`.
     static func opLt(args: Value, vars: Value) throws -> Value {
-        try evalChain(args, vars: vars, opName: "<", using: .less)
+        try evalChain(args, vars: vars, using: .less)
     }
 
     /// `{"<=": [a, b]}` — `a <= b`. `{"<=": [a, b, c]}` — `a <= b AND b <= c`.
     static func opLe(args: Value, vars: Value) throws -> Value {
-        try evalChain(args, vars: vars, opName: "<=", using: .lessOrEqual)
+        try evalChain(args, vars: vars, using: .lessOrEqual)
     }
 
     /// `{">": [a, b]}` — `a > b`. Strictly binary.
     static func opGt(args: Value, vars: Value) throws -> Value {
-        try evalBinary(args, vars: vars, opName: ">", using: .greater)
+        try evalBinary(args, vars: vars, using: .greater)
     }
 
     /// `{">=": [a, b]}` — `a >= b`. Strictly binary.
     static func opGe(args: Value, vars: Value) throws -> Value {
-        try evalBinary(args, vars: vars, opName: ">=", using: .greaterOrEqual)
+        try evalBinary(args, vars: vars, using: .greaterOrEqual)
     }
 
     private enum Comparator {
@@ -75,7 +75,6 @@ enum ComparisonOperators {
     private static func evalChain(
         _ args: Value,
         vars: Value,
-        opName: String,
         using cmp: Comparator
     ) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
@@ -95,7 +94,6 @@ enum ComparisonOperators {
     private static func evalBinary(
         _ args: Value,
         vars: Value,
-        opName: String,
         using cmp: Comparator
     ) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
