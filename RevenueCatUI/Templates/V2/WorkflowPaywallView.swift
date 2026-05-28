@@ -184,10 +184,10 @@ struct WorkflowPaywallView: View {
         )
     }
 
+    #if DEBUG
     /// Testing-only initializer. Accepts a pre-built `WorkflowNavigator` so tests can
     /// drive step navigation on the same instance held by the view, verifying that
     /// purchase/restore callbacks survive state transitions without UI interaction.
-    /// Accessible via @testable import; not part of the public API.
     init(
         context: WorkflowContext,
         purchaseHandler: PurchaseHandler,
@@ -226,6 +226,7 @@ struct WorkflowPaywallView: View {
             )
         )
     }
+    #endif
 
     var body: some View {
         GeometryReader { proxy in
