@@ -589,7 +589,7 @@ extension AdRevenue {
 }
 
 /// Data for ad reward earned (unverified) events.
-@_spi(Internal) public struct AdRewardEarnedUnverified: AdImpressionEventData, Codable, Equatable, @unchecked Sendable {
+@_spi(Internal) public struct AdRewardEarnedUnverified: AdImpressionEventData, Codable, Equatable, Sendable {
 
     // swiftlint:disable missing_docs
     public let networkName: String?
@@ -628,7 +628,7 @@ extension AdRevenue {
 }
 
 /// Data for ad reward verified events.
-@_spi(Internal) public struct AdRewardVerified: AdImpressionEventData, Equatable, @unchecked Sendable {
+@_spi(Internal) public struct AdRewardVerified: AdImpressionEventData, Equatable, Sendable {
 
     // swiftlint:disable missing_docs
     public let networkName: String?
@@ -736,7 +736,7 @@ extension AdRewardVerified: Codable {
 }
 
 /// Data for ad reward failed-to-verify events.
-@_spi(Internal) public struct AdRewardFailedToVerify: AdImpressionEventData, Codable, Equatable, @unchecked Sendable {
+@_spi(Internal) public struct AdRewardFailedToVerify: AdImpressionEventData, Codable, Equatable, Sendable {
 
     // swiftlint:disable missing_docs
     public let networkName: String?
