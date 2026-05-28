@@ -107,6 +107,46 @@ final class ComparisonOperatorsTests: XCTestCase {
         )
     }
 
+    func testNullOperandsCoerceToZero() throws {
+        // `Number(null)` is 0; object/array operands still hit NaN.
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.null, .null)),
+            .bool(false)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLe, args: arr(.null, .null)),
+            .bool(true)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opGt, args: arr(.null, .null)),
+            .bool(false)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opGe, args: arr(.null, .null)),
+            .bool(true)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.null, .object([:]))),
+            .bool(false)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.object([:]), .null)),
+            .bool(false)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.null, .array([]))),
+            .bool(false)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLe, args: arr(.int(0), .null, .int(1))),
+            .bool(true)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.int(0), .null, .int(1))),
+            .bool(false)
+        )
+    }
+
     /// `json-logic-js` declares `<` as `function(a, b, c)` so missing
     /// operands resolve to `undefined`, which coerces to `NaN`; any
     /// comparison against `NaN` is `false`.
