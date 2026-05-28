@@ -25,6 +25,6 @@
   "request" : {
     "body" : null,
     "method" : "GET",
-    "url" : "https://api.revenuecat.com/v1/subscribers/user/workflows"
+    "url" : "https://api.revenuecat.com/v1/subscribers/user/workflows?type=paywall"
   }
 }

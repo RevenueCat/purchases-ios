@@ -16,8 +16,8 @@
     "X-Platform-Version" : "Version 17.0.0 (Build 21A342)",
     "X-Preferred-Locales" : "en_EN",
     "X-Retry-Count" : "0",
-    "X-StoreKit-Version" : "1",
-    "X-StoreKit2-Enabled" : "false",
+    "X-StoreKit-Version" : "2",
+    "X-StoreKit2-Enabled" : "true",
     "X-Storefront" : "USA",
     "X-Version" : "4.0.0",
     "content-type" : "application/json"
@@ -25,6 +25,6 @@
   "request" : {
     "body" : null,
     "method" : "GET",
-    "url" : "https://api.revenuecat.com/v1/subscribers/user/workflows"
+    "url" : "https://api.revenuecat.com/v1/subscribers/user/workflows?type=paywall"
   }
 }
