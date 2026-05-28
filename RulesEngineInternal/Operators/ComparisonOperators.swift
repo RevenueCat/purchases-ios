@@ -58,8 +58,9 @@ enum ComparisonOperators {
     }
 
     /// Two-string operands → lex. Otherwise → numeric coercion (JS
-    /// Abstract Relational Comparison). A missing operand stands in
-    /// for JS `undefined`, which `Number(undefined)` reports as `NaN`.
+    /// Abstract Relational Comparison). `nil` lhs/rhs means that
+    /// argument was omitted (e.g. `{">": [1]}`); we coerce it to `nan`,
+    /// and any comparison involving `nan` is `false`.
     private static func compare(_ lhs: Value?, _ rhs: Value?, using cmp: Comparator) -> Bool {
         if case .string(let left) = lhs, case .string(let right) = rhs {
             return cmp.apply(left, right)
@@ -103,8 +104,8 @@ enum ComparisonOperators {
     }
 
     /// Coerce to `Double`, falling back to `nan` for non-numeric
-    /// operands. A missing operand is treated as JS `undefined`, which
-    /// also coerces to `nan`.
+    /// operands. `nil` means the argument was omitted → `nan` (not a
+    /// number), matching JS `Number(undefined)`.
     private static func asDouble(_ value: Value?) -> Double {
         guard let value = value else { return .nan }
         return value.asNumber ?? .nan
