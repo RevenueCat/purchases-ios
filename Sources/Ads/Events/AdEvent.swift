@@ -37,7 +37,7 @@ internal protocol AdImpressionEventData: AdEventData {
 ///
 /// Use the predefined static properties for common mediators, or create custom values
 /// for other mediation networks.
-@_spi(Experimental) @objc(RCMediatorName) public final class MediatorName: NSObject, Codable {
+@_spi(Experimental) @objc(RCMediatorName) public final class MediatorName: NSObject, Codable, @unchecked Sendable {
 
     /// The raw string value of the mediator name
     @objc public let rawValue: String
@@ -71,7 +71,7 @@ internal protocol AdImpressionEventData: AdEventData {
 ///
 /// Use the predefined static properties for common ad formats, or create custom values
 /// for other ad format types.
-@_spi(Experimental) @objc(RCAdFormat) public final class AdFormat: NSObject, Codable {
+@_spi(Experimental) @objc(RCAdFormat) public final class AdFormat: NSObject, Codable, @unchecked Sendable {
 
     /// The raw string value of the ad format
     @objc public let rawValue: String
