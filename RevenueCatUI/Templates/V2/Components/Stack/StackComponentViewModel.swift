@@ -202,7 +202,6 @@ struct StackComponentStyle {
     let shadow: ShadowModifier.ShadowInfo?
     let badge: BadgeModifier.BadgeInfo?
     let overflow: PaywallComponent.StackComponent.Overflow?
-    let scrollable: Bool?
 
     init(
         uiConfigProvider: UIConfigProvider,
@@ -238,15 +237,6 @@ struct StackComponentStyle {
                                   badgeViewModels: badgeViewModels,
                                   uiConfigProvider: uiConfigProvider)
         self.overflow = overflow
-
-        self.scrollable = overflow.flatMap({ overflow in
-            switch overflow {
-            case .default:
-                return false
-            case .scroll:
-                return true
-            }
-        })
     }
 
     var vstackStrategy: StackStrategy {
