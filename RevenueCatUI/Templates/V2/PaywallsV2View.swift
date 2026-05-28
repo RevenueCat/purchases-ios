@@ -184,6 +184,7 @@ struct PaywallsV2View: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         )
     }
 
@@ -409,9 +410,11 @@ private struct LoadedPaywallsV2View: View {
                     onDismiss: self.onDismiss,
                     defaultPackage: self.defaultPackage
                 )
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .fixMacButtons()
                 .environment(\.closeWorkflowAction, self.closeWorkflowAction ?? self.onDismiss)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             // Used for header image and sticky footer
             .environment(\.safeAreaInsets, proxy.safeAreaInsets)
             .applyIf(

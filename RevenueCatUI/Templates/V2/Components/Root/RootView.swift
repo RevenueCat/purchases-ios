@@ -57,6 +57,10 @@ struct RootView: View {
         Color.clear.frame(width: 1)
     }
 
+    private var usesOverlayHeaderLayout: Bool {
+        viewModel.headerViewModel != nil && viewModel.shouldOverlayHeader
+    }
+
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
             if let headerViewModel = viewModel.headerViewModel,
@@ -68,30 +72,34 @@ struct RootView: View {
                 .fixedSize(horizontal: false, vertical: true)
             }
 
-            ZStack(alignment: .top) {
-                fillVerticalBounds
+            Group {
+                if self.usesOverlayHeaderLayout {
+                    ZStack(alignment: .top) {
+                        fillVerticalBounds
 
-                StackComponentView(
-                    viewModel: viewModel.stackViewModel,
-                    isScrollableByDefault: true,
-                    onDismiss: onDismiss
-                )
-                .environment(\.overlaidHeaderHeight, overlaidHeaderHeight)
+                        self.mainStackContent
+                            .environment(\.overlaidHeaderHeight, overlaidHeaderHeight)
 
-                if let headerViewModel = viewModel.headerViewModel,
-                   viewModel.shouldOverlayHeader {
-                    HeaderComponentView(
-                        viewModel: headerViewModel,
-                        onDismiss: onDismiss
-                    )
-                    .fixedSize(horizontal: false, vertical: true)
-                    .overlay(GeometryReader { proxy in
-                        Color.clear.preference(
-                            key: OverlaidHeaderHeightKey.self,
-                            value: proxy.size.height
-                        )
-                    })
+                        if let headerViewModel = viewModel.headerViewModel {
+                            HeaderComponentView(
+                                viewModel: headerViewModel,
+                                onDismiss: onDismiss
+                            )
+                            .fixedSize(horizontal: false, vertical: true)
+                            .overlay(GeometryReader { proxy in
+                                Color.clear.preference(
+                                    key: OverlaidHeaderHeightKey.self,
+                                    value: proxy.size.height
+                                )
+                            })
+                        }
+                    }
+                } else {
+                    self.mainStackContent
                 }
+            }
+            .applyIf(self.viewModel.stickyFooterViewModel != nil) { view in
+                view.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
             .onPreferenceChange(OverlaidHeaderHeightKey.self) { height in
                 overlaidHeaderHeight = height
@@ -110,6 +118,9 @@ struct RootView: View {
                 )
                 .fixedSize(horizontal: false, vertical: true)
             }
+        }
+        .applyIf(self.viewModel.stickyFooterViewModel != nil) { view in
+            view.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .environment(\.openSheet, { sheet in
             self.sheetViewModel = sheet
@@ -154,6 +165,14 @@ struct RootView: View {
                 )
             }
         }
+    }
+
+    private var mainStackContent: some View {
+        StackComponentView(
+            viewModel: viewModel.stackViewModel,
+            isScrollableByDefault: true,
+            onDismiss: onDismiss
+        )
     }
 
     /// Returns the package that should be selected after a selection sheet is dismissed.

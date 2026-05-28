@@ -194,8 +194,12 @@ fileprivate extension View {
                         vertical: distribution.verticalFrameAlignment.vertical
                     )
                 )
-            case .zlayer:
-                self
+            case .zlayer(let alignment):
+                self.scrollableIfNecessaryWhenAvailable(
+                    .vertical,
+                    fillContent: size.height == .fill,
+                    alignment: alignment.stackAlignment
+                )
             }
         } else {
             self
