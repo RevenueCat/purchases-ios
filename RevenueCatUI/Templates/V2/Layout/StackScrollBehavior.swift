@@ -53,18 +53,6 @@ enum StackScrollBehavior {
         )
     }
 
-    /// Mirrors Android `shouldWrapMainContentInVerticalScroll`: the root stack should not be wrapped in an
-    /// additional outer vertical scroll when it already scrolls vertically.
-    static func shouldWrapPaywallContentInVerticalScroll(
-        rootStackOverflow: PaywallComponent.StackComponent.Overflow?,
-        rootStackIsScrollableByDefault: Bool
-    ) -> Bool {
-        !self.stackScrollingIsEnabled(
-            overflow: rootStackOverflow,
-            isScrollableByDefault: rootStackIsScrollableByDefault
-        )
-    }
-
     /// Sticky-footer paywalls pin main content to the top so a tall body scrolls above a fixed footer.
     static func paywallContentFrameAlignment(
         stickyFooterPresent: Bool,

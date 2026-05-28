@@ -79,24 +79,6 @@ final class StackScrollBehaviorTests: TestCase {
         ) == false
     }
 
-    func testShouldWrapPaywallContentWhenRootDoesNotScrollVertically() {
-        expect(
-            StackScrollBehavior.shouldWrapPaywallContentInVerticalScroll(
-                rootStackOverflow: .default,
-                rootStackIsScrollableByDefault: false
-            )
-        ) == true
-    }
-
-    func testShouldNotWrapPaywallContentWhenRootScrollsByDefault() {
-        expect(
-            StackScrollBehavior.shouldWrapPaywallContentInVerticalScroll(
-                rootStackOverflow: nil,
-                rootStackIsScrollableByDefault: true
-            )
-        ) == false
-    }
-
     func testPaywallContentFrameAlignmentUsesTopForStickyFooter() {
         expect(
             StackScrollBehavior.paywallContentFrameAlignment(
