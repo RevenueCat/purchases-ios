@@ -187,7 +187,7 @@ struct WorkflowPaywallView: View {
     /// Testing-only initializer. Accepts a pre-built `WorkflowNavigator` so tests can
     /// drive step navigation on the same instance held by the view, verifying that
     /// purchase/restore callbacks survive state transitions without UI interaction.
-    @_spi(Internal)
+    /// Accessible via @testable import; not part of the public API.
     init(
         context: WorkflowContext,
         purchaseHandler: PurchaseHandler,

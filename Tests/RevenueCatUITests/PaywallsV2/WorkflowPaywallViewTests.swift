@@ -1102,7 +1102,7 @@ extension WorkflowPaywallViewTests {
 /// WorkflowPaywallView stores purchaseHandler as a plain `let`, so it needs
 /// an observing parent to trigger re-renders when purchase state changes.
 ///
-/// Pass a `navigator` to drive navigation from tests via the @_spi(Internal) init.
+/// Pass a `navigator` to drive navigation from tests via the testing-only init.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct WorkflowPurchaseObserver: View {
 
