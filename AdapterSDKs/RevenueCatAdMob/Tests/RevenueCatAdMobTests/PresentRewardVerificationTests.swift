@@ -82,7 +82,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         self.wait(for: [expectation], timeout: 2.0)
 
         let result = try XCTUnwrap(receivedResult)
-        XCTAssertTrue(result.isFailed)
+        XCTAssertEqual(result, .failed)
     }
 
     func testCreateUserDidEarnRewardHandlerWithStateInvokesStartedBeforeResult() {

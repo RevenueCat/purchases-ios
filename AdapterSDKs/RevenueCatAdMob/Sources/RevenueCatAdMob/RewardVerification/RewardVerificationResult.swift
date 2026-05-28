@@ -29,18 +29,12 @@ import Foundation
     }
 
     /// Verification did not complete successfully (rejected, exhausted polling, error, etc.).
-    internal static let failed = RewardVerificationResult(storage: .failed)
+    public static let failed = RewardVerificationResult(storage: .failed)
 
     /// Non-`nil` when verification succeeded.
     public var verifiedReward: AdReward? {
         guard case .verified(let reward) = self.storage else { return nil }
         return reward
-    }
-
-    /// Whether this result is ``failed``.
-    public var isFailed: Bool {
-        if case .failed = self.storage { return true }
-        return false
     }
 }
 

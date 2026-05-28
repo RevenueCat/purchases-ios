@@ -26,7 +26,7 @@ final class PresentMappingTests: AdapterTestCase {
 
     func testMapOutcomeFailed() {
         let result = RewardVerification.mapOutcome(.failed(.unknown))
-        XCTAssertTrue(result.isFailed)
+        XCTAssertEqual(result, .failed)
         XCTAssertNil(result.verifiedReward)
     }
 }
