@@ -13,7 +13,7 @@ final class OutcomeTests: AdapterTestCase {
         let reward = VirtualCurrencyReward(code: "coins", amount: 5)
         let outcome = RewardVerification.Outcome.verified(.virtualCurrency(reward))
 
-        guard case .verified(.virtualCurrency(let captured)) = outcome else {
+        guard case .verified(let adReward) = outcome, let captured = adReward.virtualCurrency else {
             return XCTFail("Expected .verified(.virtualCurrency), got \(outcome)")
         }
         XCTAssertEqual(captured, reward)
@@ -24,7 +24,7 @@ final class OutcomeTests: AdapterTestCase {
     func testVerifiedCarriesNoRewardPayload() {
         let outcome = RewardVerification.Outcome.verified(.noReward)
 
-        guard case .verified(.noReward) = outcome else {
+        guard case .verified(let adReward) = outcome, adReward == .noReward else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
         }
     }
@@ -32,7 +32,7 @@ final class OutcomeTests: AdapterTestCase {
     func testVerifiedCarriesUnsupportedRewardPayload() {
         let outcome = RewardVerification.Outcome.verified(.unsupportedReward)
 
-        guard case .verified(.unsupportedReward) = outcome else {
+        guard case .verified(let adReward) = outcome, adReward == .unsupportedReward else {
             return XCTFail("Expected .verified(.unsupportedReward), got \(outcome)")
         }
     }

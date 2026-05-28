@@ -22,7 +22,7 @@ final class PollerTests: AdapterTestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .verified(.virtualCurrency(let earnedReward)) = outcome else {
+        guard case .verified(let adReward) = outcome, let earnedReward = adReward.virtualCurrency else {
             return XCTFail("Expected .verified(.virtualCurrency), got \(outcome)")
         }
         XCTAssertEqual(earnedReward, reward)
