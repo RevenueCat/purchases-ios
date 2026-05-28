@@ -103,9 +103,7 @@ enum ComparisonOperators {
         return .bool(compare(lhs, rhs, using: cmp))
     }
 
-    /// Coerce to `Double`, falling back to `nan` for non-numeric
-    /// operands. `nil` means the argument was omitted → `nan` (not a
-    /// number), matching JS `Number(undefined)`.
+    /// Omitted arg or failed coercion → `nan`; `.null` → 0.
     private static func asDouble(_ value: Value?) -> Double {
         value?.asNumber ?? .nan
     }
