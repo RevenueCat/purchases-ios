@@ -18,9 +18,8 @@ import SwiftUI
 
 /// Scroll decisions for Paywalls V2 stacks.
 ///
-/// Android maps `overflow: scroll` on a z-layer to `scrollOrientation = null` (see `Overflow.toOrientation`),
-/// relying on an ancestor scroll container instead. iOS enables z-layer scrolling only when overflow explicitly
-/// requests scroll and no ancestor already scrolls vertically, avoiding nested vertical `ScrollView`s.
+/// Z-layer stacks scroll only when overflow explicitly requests scroll and no ancestor already
+/// scrolls vertically, avoiding nested vertical `ScrollView`s.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum StackScrollBehavior {
 
