@@ -660,34 +660,6 @@ extension AdRevenue {
     }
     // swiftlint:enable missing_docs
 
-    /// Decoder-input path: log + fallback to `.unsupportedReward`. Backend wire data that
-    /// doesn't match the schema must not trigger `assertionFailure` — malformed data is not
-    /// a programming bug — but a warning helps catch backend/SDK schema drift in production.
-    private static func makeReward(
-        kindRawValue: String,
-        virtualCurrencyCode: String?,
-        virtualCurrencyAmount: Int?
-    ) -> AdReward {
-        switch kindRawValue {
-        case AdReward.Kind.virtualCurrency:
-            if let code = virtualCurrencyCode, let amount = virtualCurrencyAmount, amount > 0 {
-                return .virtualCurrency(VirtualCurrencyReward(code: code, amount: amount))
-            }
-            Logger.warn(AdsStrings.invalid_virtual_currency_payload(
-                code: virtualCurrencyCode,
-                amount: virtualCurrencyAmount
-            ))
-            return .unsupportedReward
-        case AdReward.Kind.noReward:
-            return .noReward
-        case AdReward.Kind.unsupportedReward:
-            return .unsupportedReward
-        default:
-            Logger.warn(AdsStrings.unknown_reward_kind(rawValue: kindRawValue))
-            return .unsupportedReward
-        }
-    }
-
 }
 
 extension AdRewardVerified: Codable {
@@ -715,17 +687,17 @@ extension AdRewardVerified: Codable {
         try container.encodeIfPresent(self.placement, forKey: .placement)
         try container.encode(self.adUnitId, forKey: .adUnitId)
         try container.encode(self.impressionId, forKey: .impressionId)
-        try container.encode(self.reward.kindRawValue, forKey: .rewardType)
-        try container.encodeIfPresent(self.reward.virtualCurrency?.code, forKey: .rewardCurrencyCode)
-        try container.encodeIfPresent(self.reward.virtualCurrency?.amount, forKey: .rewardCurrencyAmount)
+        try self.reward.encode(
+            into: &container,
+            typeKey: .rewardType,
+            codeKey: .rewardCurrencyCode,
+            amountKey: .rewardCurrencyAmount
+        )
     }
 
     // swiftlint:disable:next missing_docs
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let rewardKind = try container.decode(String.self, forKey: .rewardType)
-        let code = try container.decodeIfPresent(String.self, forKey: .rewardCurrencyCode)
-        let amount = try container.decodeIfPresent(Int.self, forKey: .rewardCurrencyAmount)
         self.init(
             networkName: try container.decodeIfPresent(String.self, forKey: .networkName),
             mediatorName: try container.decode(MediatorName.self, forKey: .mediatorName),
@@ -733,10 +705,11 @@ extension AdRewardVerified: Codable {
             placement: try container.decodeIfPresent(String.self, forKey: .placement),
             adUnitId: try container.decode(String.self, forKey: .adUnitId),
             impressionId: try container.decode(String.self, forKey: .impressionId),
-            reward: Self.makeReward(
-                kindRawValue: rewardKind,
-                virtualCurrencyCode: code,
-                virtualCurrencyAmount: amount
+            reward: try AdReward.decode(
+                from: container,
+                typeKey: .rewardType,
+                codeKey: .rewardCurrencyCode,
+                amountKey: .rewardCurrencyAmount
             )
         )
     }

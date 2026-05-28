@@ -87,3 +87,49 @@ import Foundation
         static let virtualCurrencyAmountMustBeGreaterThanZero = "virtualCurrency amount must be greater than zero"
     }
 }
+
+// MARK: - Wire encoding
+
+extension AdReward {
+
+    /// Encodes flat into the parent's container so the backend wire schema is unchanged
+    /// while the kind→wire mapping stays local to ``AdReward``.
+    internal func encode<K: CodingKey>(
+        into container: inout KeyedEncodingContainer<K>,
+        typeKey: K,
+        codeKey: K,
+        amountKey: K
+    ) throws {
+        try container.encode(self.kindRawValue, forKey: typeKey)
+        try container.encodeIfPresent(self.virtualCurrency?.code, forKey: codeKey)
+        try container.encodeIfPresent(self.virtualCurrency?.amount, forKey: amountKey)
+    }
+
+    /// Unknown kinds and malformed payloads log a warning and fall back to ``unsupportedReward``
+    /// — backend wire data not matching the schema is not a programming bug.
+    internal static func decode<K: CodingKey>(
+        from container: KeyedDecodingContainer<K>,
+        typeKey: K,
+        codeKey: K,
+        amountKey: K
+    ) throws -> AdReward {
+        let kindRawValue = try container.decode(String.self, forKey: typeKey)
+        let code = try container.decodeIfPresent(String.self, forKey: codeKey)
+        let amount = try container.decodeIfPresent(Int.self, forKey: amountKey)
+        switch kindRawValue {
+        case Kind.virtualCurrency:
+            guard let code, let amount, amount > 0 else {
+                Logger.warn(AdsStrings.invalid_virtual_currency_payload(code: code, amount: amount))
+                return .unsupportedReward
+            }
+            return .virtualCurrency(VirtualCurrencyReward(code: code, amount: amount))
+        case Kind.noReward:
+            return .noReward
+        case Kind.unsupportedReward:
+            return .unsupportedReward
+        default:
+            Logger.warn(AdsStrings.unknown_reward_kind(rawValue: kindRawValue))
+            return .unsupportedReward
+        }
+    }
+}
