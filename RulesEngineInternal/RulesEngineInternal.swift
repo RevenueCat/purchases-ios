@@ -20,8 +20,11 @@ enum RulesEngine {}
 extension RulesEngine {
 
     static var logger: RulesEngineLogger {
-        get { loggerStorage.value }
-        set { loggerStorage.value = newValue }
+        loggerStorage.value
+    }
+
+    static func setLogger(_ logger: RulesEngineLogger) {
+        loggerStorage.value = logger
     }
 
     private static let loggerStorage = LoggerStorage()
