@@ -825,6 +825,8 @@ extension WorkflowPaywallViewTests {
 
 }
 
+#if !os(watchOS) && !os(macOS)
+
 // MARK: - Callback tests (single step)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -1187,5 +1189,7 @@ private extension WorkflowPaywallViewTests {
     }
 
 }
+
+#endif // !os(watchOS) && !os(macOS)
 
 #endif
