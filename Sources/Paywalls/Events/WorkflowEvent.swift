@@ -46,6 +46,7 @@ extension WorkflowEvent {
 
         public var workflowId: String
         public var stepId: String
+        public var traceId: String?
         /// Not sent to the backend; used for local context only.
         public var workflowType: String?
         /// Not sent to the backend; used for local context only.
@@ -60,10 +61,14 @@ extension WorkflowEvent {
         public var entryReason: String?
         public var isFirstStep: Bool?
         public var isLastStep: Bool?
+        public var experimentId: String?
+        public var experimentVariant: String?
+        public var isLastVariantStep: Bool?
 
         public init(
             workflowId: String,
             stepId: String,
+            traceId: String? = nil,
             workflowType: String? = nil,
             stepType: String? = nil,
             screenType: [String] = [],
@@ -71,10 +76,14 @@ extension WorkflowEvent {
             toStepId: String? = nil,
             entryReason: String? = nil,
             isFirstStep: Bool? = nil,
-            isLastStep: Bool? = nil
+            isLastStep: Bool? = nil,
+            experimentId: String? = nil,
+            experimentVariant: String? = nil,
+            isLastVariantStep: Bool? = nil
         ) {
             self.workflowId = workflowId
             self.stepId = stepId
+            self.traceId = traceId
             self.workflowType = workflowType
             self.stepType = stepType
             self.screenType = screenType
@@ -83,6 +92,9 @@ extension WorkflowEvent {
             self.entryReason = entryReason
             self.isFirstStep = isFirstStep
             self.isLastStep = isLastStep
+            self.experimentId = experimentId
+            self.experimentVariant = experimentVariant
+            self.isLastVariantStep = isLastVariantStep
         }
 
     }

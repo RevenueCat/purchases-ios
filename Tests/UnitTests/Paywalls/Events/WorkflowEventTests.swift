@@ -43,11 +43,15 @@ class WorkflowEventTests: TestCase {
         expect(event.data.workflowType).to(beNil())
         expect(event.data.stepType).to(beNil())
         expect(event.data.screenType).to(beEmpty())
+        expect(event.data.traceId).to(beNil())
         expect(event.data.fromStepId).to(beNil())
         expect(event.data.toStepId).to(beNil())
         expect(event.data.entryReason).to(beNil())
         expect(event.data.isFirstStep).to(beNil())
         expect(event.data.isLastStep).to(beNil())
+        expect(event.data.experimentId).to(beNil())
+        expect(event.data.experimentVariant).to(beNil())
+        expect(event.data.isLastVariantStep).to(beNil())
     }
 
     func testStepStartedOptionalFieldsCanBeSet() {

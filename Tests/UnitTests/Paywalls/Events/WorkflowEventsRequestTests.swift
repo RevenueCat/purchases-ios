@@ -66,6 +66,7 @@ class WorkflowEventsRequestTests: TestCase {
         let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
 
         expect(request.id) == id.uuidString
+        expect(request.version) == 1
         expect(request.appUserID) == Self.userID
         expect(request.timestampMs) == date.millisecondsSince1970
         expect(request.properties.workflowId) == "wfl_abc"
@@ -94,14 +95,14 @@ class WorkflowEventsRequestTests: TestCase {
 
     // MARK: - JSON serialization
 
-    func testDiscriminatorPresentInJSON() throws {
+    func testTypePresentInJSON() throws {
         let event = WorkflowEvent.stepStarted(
             .init(id: id, date: date),
             .init(workflowId: "wfl_abc", stepId: "step-1")
         )
         let json = try encodedJSON(from: event)
 
-        expect(json).to(contain("\"discriminator\":\"workflows\""))
+        expect(json).to(contain("\"type\":\"workflows\""))
     }
 
     func testWorkflowTypeAbsentFromJSON() throws {
@@ -141,11 +142,52 @@ class WorkflowEventsRequestTests: TestCase {
         )
         let json = try encodedJSON(from: event)
 
+        expect(json).toNot(contain("trace_id"))
         expect(json).toNot(contain("from_step_id"))
         expect(json).toNot(contain("to_step_id"))
         expect(json).toNot(contain("entry_reason"))
         expect(json).toNot(contain("is_first_step"))
         expect(json).toNot(contain("is_last_step"))
+        expect(json).toNot(contain("experiment_id"))
+        expect(json).toNot(contain("experiment_variant"))
+        expect(json).toNot(contain("is_last_variant_step"))
+    }
+
+    func testExperimentPropertiesInWireFormat() throws {
+        let event = WorkflowEvent.stepStarted(
+            .init(id: id, date: date),
+            .init(
+                workflowId: "wfl_abc",
+                stepId: "step-1",
+                experimentId: "exp-1",
+                experimentVariant: "variant-a",
+                isLastVariantStep: true
+            )
+        )
+        let stored = try XCTUnwrap(storedEvent(from: event))
+        let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
+
+        expect(request.properties.experimentId) == "exp-1"
+        expect(request.properties.experimentVariant) == "variant-a"
+        expect(request.properties.isLastVariantStep) == true
+    }
+
+    func testExperimentPropertiesInJSON() throws {
+        let event = WorkflowEvent.stepStarted(
+            .init(id: id, date: date),
+            .init(
+                workflowId: "wfl_abc",
+                stepId: "step-1",
+                experimentId: "exp-1",
+                experimentVariant: "variant-a",
+                isLastVariantStep: false
+            )
+        )
+        let json = try encodedJSON(from: event)
+
+        expect(json).to(contain("\"experiment_id\":\"exp-1\""))
+        expect(json).to(contain("\"experiment_variant\":\"variant-a\""))
+        expect(json).to(contain("\"is_last_variant_step\":false"))
     }
 
     func testKhepriCompatibleShapeForStepStarted() throws {
@@ -165,7 +207,8 @@ class WorkflowEventsRequestTests: TestCase {
         encoder.outputFormatting = .sortedKeys
         let json = try String(data: encoder.encode(request), encoding: .utf8)!
 
-        expect(json).to(contain("\"discriminator\":\"workflows\""))
+        expect(json).to(contain("\"type\":\"workflows\""))
+        expect(json).to(contain("\"version\":1"))
         expect(json).to(contain("\"event_name\":\"workflows_step_started\""))
         expect(json).to(contain("\"timestamp_ms\":\(date.millisecondsSince1970)"))
         expect(json).to(contain("\"app_user_id\":\"\(Self.userID)\""))
