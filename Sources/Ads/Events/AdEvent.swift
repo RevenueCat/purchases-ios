@@ -588,7 +588,7 @@ extension AdRevenue {
 
 }
 
-/// Data for ad reward earned (unverified) events.
+/// Data for the moment the ad SDK reports a user-earned reward, prior to backend verification.
 @_spi(Internal) public struct AdRewardEarnedUnverified: AdImpressionEventData, Codable, Equatable, Sendable {
 
     // swiftlint:disable missing_docs
@@ -627,7 +627,7 @@ extension AdRevenue {
 
 }
 
-/// Data for ad reward verified events.
+/// Data for the moment backend verification confirms the reward delivered by the ad SDK.
 @_spi(Internal) public struct AdRewardVerified: AdImpressionEventData, Equatable, Sendable {
 
     // swiftlint:disable missing_docs
@@ -743,7 +743,7 @@ extension AdRewardVerified: Codable {
 
 }
 
-/// Data for ad reward failed-to-verify events.
+/// Data for the moment backend reward verification terminally fails.
 @_spi(Internal) public struct AdRewardFailedToVerify: AdImpressionEventData, Codable, Equatable, Sendable {
 
     // swiftlint:disable missing_docs
