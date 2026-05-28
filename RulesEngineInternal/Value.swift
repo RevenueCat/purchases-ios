@@ -216,6 +216,8 @@ func jsParseFloat(_ value: Value) -> Double {
     return parseFloatPrefix(jsString(value))
 }
 
+private let numericPrefixPattern = #"^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?"#
+
 private func parseFloatPrefix(_ string: String) -> Double {
     let trimmed = string.drop(while: \.isWhitespace)
     guard !trimmed.isEmpty else { return .nan }
@@ -223,8 +225,7 @@ private func parseFloatPrefix(_ string: String) -> Double {
     if str.hasPrefix("Infinity") { return .infinity }
     if str.hasPrefix("-Infinity") { return -.infinity }
     if str.hasPrefix("+Infinity") { return .infinity }
-    let pattern = #"^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?"#
-    guard let match = str.range(of: pattern, options: .regularExpression),
+    guard let match = str.range(of: numericPrefixPattern, options: .regularExpression),
           match.lowerBound == str.startIndex else {
         return .nan
     }
