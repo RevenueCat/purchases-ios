@@ -118,11 +118,11 @@ enum PaywallsV2LayoutFixtures {
                     text: "footer_cta",
                     fontWeight: .semibold,
                     color: .init(light: .hex("#FFFFFF")),
+                    backgroundColor: .init(light: .hex("#111111")),
                     padding: .init(top: 14, bottom: 14, leading: 16, trailing: 16),
                     margin: .zero,
                     fontSize: 16,
-                    horizontalAlignment: .center,
-                    backgroundColor: .init(light: .hex("#111111"))
+                    horizontalAlignment: .center
                 )),
                 .text(.init(
                     text: "footer_restore",
