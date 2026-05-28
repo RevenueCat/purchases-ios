@@ -60,9 +60,11 @@ extension Array<CustomerCenterConfigData.HelpPath> {
                 && $0.refundWindowDuration?.isWithin(purchaseInformation) ?? true
             }
 
-            // can't change plans if it's not a subscription
+            // can't change plans if it's not an active subscription
             if $0.type == .changePlans {
-                if !purchaseInformation.isAppStoreRenewableSubscription || purchaseInformation.isLifetime {
+                if !purchaseInformation.isAppStoreRenewableSubscription
+                    || purchaseInformation.isLifetime
+                    || purchaseInformation.isExpired {
                     return false
                 }
             }

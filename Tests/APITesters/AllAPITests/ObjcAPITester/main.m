@@ -12,6 +12,7 @@
 #import "RCBillingPlanTypeAPI.h"
 #import "RCConfigurationAPI.h"
 #import "RCCustomerInfoAPI.h"
+#import "RCDangerousSettingsAPI.h"
 #import "RCEntitlementInfoAPI.h"
 #import "RCEntitlementInfosAPI.h"
 #import "RCIntroEligibilityAPI.h"
@@ -74,6 +75,8 @@ int main(int argc, const char * argv[]) {
         [RCPurchasesAPI checkEnums];
 
         [RCConfigurationAPI checkAPI];
+
+        [RCDangerousSettingsAPI checkAPI];
 
         [RCPurchasesErrorCodeAPI checkEnums];
 

@@ -348,7 +348,8 @@ class BasePurchasesTests: TestCase {
                                    diagnosticsTracker: self.diagnosticsTracker,
                                    virtualCurrencyManager: self.mockVirtualCurrencyManager,
                                    healthManager: healthManager,
-                                   transactionMetadataSyncHelper: transactionMetadataSyncHelper)
+                                   transactionMetadataSyncHelper: transactionMetadataSyncHelper,
+                                   currentConfiguration: nil)
 
         self.purchasesOrchestrator.delegate = self.purchases
 

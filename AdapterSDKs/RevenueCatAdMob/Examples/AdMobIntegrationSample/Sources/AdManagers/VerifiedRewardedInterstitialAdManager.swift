@@ -68,7 +68,7 @@ final class VerifiedRewardedInterstitialAdManager: NSObject, ObservableObject {
                 self.message = Message.Rewarded.verifyingReward
                 print("⏳ Rewarded interstitial verification started")
             },
-            rewardVerificationResult: { [weak self] result in
+            rewardVerificationCompleted: { [weak self] result in
                 guard let self, self.presentingAdObjectID == presentingAdObjectID else { return }
                 self.presentingAdObjectID = nil
                 self.shouldReportDismissedBeforeReward = false

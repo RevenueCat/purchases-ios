@@ -18,6 +18,7 @@
 		2D4C617B2C5AD31A00A29FD2 /* RCOfferingAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C61592C5AD31600A29FD2 /* RCOfferingAPI.m */; };
 		2D4C617C2C5AD31A00A29FD2 /* RCStoreKitVersionAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C61562C5AD31600A29FD2 /* RCStoreKitVersionAPI.m */; };
 		2D4C617D2C5AD31A00A29FD2 /* RCConfigurationAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C614E2C5AD31500A29FD2 /* RCConfigurationAPI.m */; };
+		A0BBCCDD2E000001AABBCC03 /* RCDangerousSettingsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A0BBCCDD2E000001AABBCC02 /* RCDangerousSettingsAPI.m */; };
 		2D4C617E2C5AD31A00A29FD2 /* RCPromotionalOfferAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C61632C5AD31700A29FD2 /* RCPromotionalOfferAPI.m */; };
 		2D4C617F2C5AD31A00A29FD2 /* RCEntitlementInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C615E2C5AD31700A29FD2 /* RCEntitlementInfoAPI.m */; };
 		2D4C61802C5AD31A00A29FD2 /* RCStoreProductAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C61712C5AD31900A29FD2 /* RCStoreProductAPI.m */; };
@@ -259,6 +260,8 @@
 		2D4C615A2C5AD31600A29FD2 /* RCRefundRequestStatusAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCRefundRequestStatusAPI.h; sourceTree = "<group>"; };
 		2D4C615B2C5AD31700A29FD2 /* RCRefundRequestStatusAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCRefundRequestStatusAPI.m; sourceTree = "<group>"; };
 		2D4C615C2C5AD31700A29FD2 /* RCConfigurationAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCConfigurationAPI.h; sourceTree = "<group>"; };
+		A0BBCCDD2E000001AABBCC01 /* RCDangerousSettingsAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCDangerousSettingsAPI.h; sourceTree = "<group>"; };
+		A0BBCCDD2E000001AABBCC02 /* RCDangerousSettingsAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCDangerousSettingsAPI.m; sourceTree = "<group>"; };
 		2D4C615D2C5AD31700A29FD2 /* RCPackageAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPackageAPI.h; sourceTree = "<group>"; };
 		2D4C615E2C5AD31700A29FD2 /* RCEntitlementInfoAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfoAPI.m; sourceTree = "<group>"; };
 		2D4C615F2C5AD31700A29FD2 /* RCTransactionAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTransactionAPI.m; sourceTree = "<group>"; };
@@ -507,6 +510,8 @@
 				2D4C61572C5AD31600A29FD2 /* RCAttributionNetworkAPI.m */,
 				2D4C615C2C5AD31700A29FD2 /* RCConfigurationAPI.h */,
 				2D4C614E2C5AD31500A29FD2 /* RCConfigurationAPI.m */,
+				A0BBCCDD2E000001AABBCC01 /* RCDangerousSettingsAPI.h */,
+				A0BBCCDD2E000001AABBCC02 /* RCDangerousSettingsAPI.m */,
 				2D4C616C2C5AD31900A29FD2 /* RCCustomerInfoAPI.h */,
 				2D4C614D2C5AD31500A29FD2 /* RCCustomerInfoAPI.m */,
 				2D4C61612C5AD31700A29FD2 /* RCEntitlementInfoAPI.h */,
@@ -1016,6 +1021,7 @@
 			files = (
 				2D4C618E2C5AD31A00A29FD2 /* RCOtherAPI.m in Sources */,
 				2D4C617D2C5AD31A00A29FD2 /* RCConfigurationAPI.m in Sources */,
+				A0BBCCDD2E000001AABBCC03 /* RCDangerousSettingsAPI.m in Sources */,
 				2D4C617E2C5AD31A00A29FD2 /* RCPromotionalOfferAPI.m in Sources */,
 				2D4C61912C5AD31A00A29FD2 /* RCIntroEligibilityAPI.m in Sources */,
 				FD2A4F982D721D2100ED3367 /* RCVirtualCurrencyAPI.m in Sources */,

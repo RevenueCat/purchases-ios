@@ -37,8 +37,8 @@ final class PollerTests: AdapterTestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .failed = outcome else {
-            return XCTFail("Expected .failed, got \(outcome)")
+        guard case .failed(.backendError) = outcome else {
+            return XCTFail("Expected .failed(.backendError), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.receivedIDs, ["tx-1"])
         XCTAssertTrue(sleeper.delays.isEmpty)
@@ -65,8 +65,8 @@ final class PollerTests: AdapterTestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .failed = outcome else {
-            return XCTFail("Expected .failed, got \(outcome)")
+        guard case .failed(.timeout) = outcome else {
+            return XCTFail("Expected .failed(.timeout), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.receivedIDs.count, 10)
         XCTAssertEqual(sleeper.delays.count, 9)
@@ -95,8 +95,8 @@ final class PollerTests: AdapterTestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .failed = outcome else {
-            return XCTFail("Expected .failed, got \(outcome)")
+        guard case .failed(.backendError) = outcome else {
+            return XCTFail("Expected .failed(.backendError), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.receivedIDs.count, 3)
         XCTAssertEqual(sleeper.delays.count, 2)
@@ -160,8 +160,10 @@ final class PollerTests: AdapterTestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .failed = outcome else {
-            return XCTFail("Expected .failed after exhausting the budget on transient throws, got \(outcome)")
+        guard case .failed(.timeout) = outcome else {
+            return XCTFail(
+                "Expected .failed(.timeout) after exhausting the budget on transient throws, got \(outcome)"
+            )
         }
         XCTAssertEqual(statusPoller.callCount, 5,
                        "Every attempt should have been tried; transient throws are not terminal")
@@ -181,8 +183,8 @@ final class PollerTests: AdapterTestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .failed = outcome else {
-            return XCTFail("Expected .failed, got \(outcome)")
+        guard case .failed(.timeout) = outcome else {
+            return XCTFail("Expected .failed(.timeout), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.callCount, 5)
         XCTAssertEqual(sleeper.delays.count, 4)
@@ -215,8 +217,8 @@ final class PollerTests: AdapterTestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .failed = outcome else {
-            return XCTFail("Expected .failed, got \(outcome)")
+        guard case .failed(.backendError) = outcome else {
+            return XCTFail("Expected .failed(.backendError), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.callCount, 1, "Terminal ErrorCode must not be retried")
         XCTAssertTrue(sleeper.delays.isEmpty)
@@ -229,8 +231,8 @@ final class PollerTests: AdapterTestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .failed = outcome else {
-            return XCTFail("Expected .failed, got \(outcome)")
+        guard case .failed(.backendError) = outcome else {
+            return XCTFail("Expected .failed(.backendError), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.callCount, 1)
     }
@@ -243,8 +245,8 @@ final class PollerTests: AdapterTestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .failed = outcome else {
-            return XCTFail("Expected .failed, got \(outcome)")
+        guard case .failed(.backendError) = outcome else {
+            return XCTFail("Expected .failed(.backendError), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.callCount, 1)
     }
@@ -259,8 +261,8 @@ final class PollerTests: AdapterTestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .failed = outcome else {
-            return XCTFail("Expected .failed, got \(outcome)")
+        guard case .failed(.backendError) = outcome else {
+            return XCTFail("Expected .failed(.backendError), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.callCount, 2)
     }
@@ -268,17 +270,16 @@ final class PollerTests: AdapterTestCase {
     // MARK: - Catch-all behaviour
 
     func testCancellationErrorFromPollStatusReturnsFailedWithoutRetrying() async {
-        // `Poller` does not distinguish `CancellationError` from any other non-transient throw —
-        // both collapse to `.failed`. `Dispatcher` is what swallows the delivery when the
-        // surrounding `Task` is actually cancelled.
+        // `CancellationError` is not an `ErrorCode`, so the poller's terminal-ErrorCode path
+        // doesn't apply — it falls through to the catch-all and surfaces `.unknown`.
         let statusPoller = ThrowingStatusPoller(error: CancellationError())
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .failed = outcome else {
-            return XCTFail("Expected .failed, got \(outcome)")
+        guard case .failed(.unknown) = outcome else {
+            return XCTFail("Expected .failed(.unknown), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.callCount, 1, "Cancellation throws are not retried")
         XCTAssertTrue(sleeper.delays.isEmpty)
@@ -291,8 +292,8 @@ final class PollerTests: AdapterTestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .failed = outcome else {
-            return XCTFail("Expected .failed, got \(outcome)")
+        guard case .failed(.unknown) = outcome else {
+            return XCTFail("Expected .failed(.unknown), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.callCount, 1, "Unrecognised throws are not retried")
     }
@@ -308,8 +309,8 @@ final class PollerTests: AdapterTestCase {
         task.cancel()
         let outcome = await task.value
 
-        guard case .failed = outcome else {
-            return XCTFail("Expected .failed after cancellation, got \(outcome)")
+        guard case .failed(.unknown) = outcome else {
+            return XCTFail("Expected .failed(.unknown) after cancellation, got \(outcome)")
         }
         XCTAssertEqual(statusPoller.callCount, 0,
                        "Cancellation must short-circuit before any pollStatus call")
@@ -340,8 +341,8 @@ final class PollerTests: AdapterTestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .failed = outcome else {
-            return XCTFail("Expected .failed, got \(outcome)")
+        guard case .failed(.timeout) = outcome else {
+            return XCTFail("Expected .failed(.timeout), got \(outcome)")
         }
         XCTAssertTrue(statusPoller.receivedIDs.isEmpty)
         XCTAssertTrue(sleeper.delays.isEmpty)
@@ -354,8 +355,8 @@ final class PollerTests: AdapterTestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .failed = outcome else {
-            return XCTFail("Expected .failed, got \(outcome)")
+        guard case .failed(.timeout) = outcome else {
+            return XCTFail("Expected .failed(.timeout), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.receivedIDs, ["tx-1"])
         XCTAssertTrue(sleeper.delays.isEmpty)

@@ -18,7 +18,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         var startedCount = 0
         let handler = fakeAd.createUserDidEarnRewardHandler(
             rewardVerificationStarted: { startedCount += 1 },
-            rewardVerificationResult: nil
+            rewardVerificationCompleted: nil
         )
 
         handler()
@@ -40,7 +40,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         var receivedResult: RewardVerificationResult?
         let handler = fakeAd.createUserDidEarnRewardHandler(
             rewardVerificationStarted: nil,
-            rewardVerificationResult: { result in
+            rewardVerificationCompleted: { result in
                 receivedResult = result
                 expectation.fulfill()
             },
@@ -71,7 +71,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         var receivedResult: RewardVerificationResult?
         let handler = fakeAd.createUserDidEarnRewardHandler(
             rewardVerificationStarted: nil,
-            rewardVerificationResult: { result in
+            rewardVerificationCompleted: { result in
                 receivedResult = result
                 expectation.fulfill()
             },
@@ -102,7 +102,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
             rewardVerificationStarted: {
                 events.append("started")
             },
-            rewardVerificationResult: { _ in
+            rewardVerificationCompleted: { _ in
                 events.append("result")
                 expectation.fulfill()
             },
@@ -120,7 +120,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         expect {
             _ = fakeAd.createUserDidEarnRewardHandler(
                 rewardVerificationStarted: nil,
-                rewardVerificationResult: { _ in }
+                rewardVerificationCompleted: { _ in }
             )
         }.to(throwAssertion())
     }
@@ -145,7 +145,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         let expectation = self.expectation(description: "verification callback")
         let handler = fakeAd.createUserDidEarnRewardHandler(
             rewardVerificationStarted: nil,
-            rewardVerificationResult: { _ in
+            rewardVerificationCompleted: { _ in
                 expectation.fulfill()
             },
             poller: poller,
@@ -177,7 +177,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         let expectation = self.expectation(description: "verification callback")
         let handler = fakeAd.createUserDidEarnRewardHandler(
             rewardVerificationStarted: nil,
-            rewardVerificationResult: { _ in
+            rewardVerificationCompleted: { _ in
                 expectation.fulfill()
             },
             poller: poller,
@@ -209,7 +209,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         let expectation = self.expectation(description: "verification callback")
         let handler = fakeAd.createUserDidEarnRewardHandler(
             rewardVerificationStarted: nil,
-            rewardVerificationResult: { _ in
+            rewardVerificationCompleted: { _ in
                 expectation.fulfill()
             },
             poller: poller,
@@ -241,7 +241,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         let expectation = self.expectation(description: "verification callback")
         let handler = fakeAd.createUserDidEarnRewardHandler(
             rewardVerificationStarted: nil,
-            rewardVerificationResult: { _ in
+            rewardVerificationCompleted: { _ in
                 expectation.fulfill()
             },
             poller: poller,
@@ -260,6 +260,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
 @available(iOS 15.0, *)
 private final class FakeCapableAd: RewardVerification.CapableAd {
     var serverSideVerificationOptions: GoogleMobileAds.ServerSideVerificationOptions?
+    let responseInfo = GoogleMobileAds.ResponseInfo()
 }
 
 #endif

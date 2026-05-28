@@ -85,6 +85,11 @@ let package = Package(
                         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
                     ],
                     exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans"],
-                    resources: [.copy("Resources/header.heic"), .copy("Resources/background.heic")])
+                    resources: [.copy("Resources/header.heic"), .copy("Resources/background.heic")]),
+        .target(name: "RulesEngineInternal",
+                path: "RulesEngineInternal"),
+        .testTarget(name: "RulesEngineInternalTests",
+                    dependencies: ["RulesEngineInternal"],
+                    path: "Tests/RulesEngineInternalTests")
     ]
 )
