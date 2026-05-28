@@ -55,7 +55,9 @@ extension Value {
                 return .bool(number.boolValue)
             }
             // `objCType` reports the NSNumber storage type using Objective-C
-            // type encodings (https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtTypeEncodings.html).
+            // type encodings. See:
+            // swiftlint:disable:next line_length
+            // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtTypeEncodings.html
             // JSONSerialization typically uses 'q' for whole numbers and 'd'
             // for fractional ones — that's how we keep `100` → .int(100) and
             // `100.0` → .float(100.0).
