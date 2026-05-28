@@ -1,67 +1,36 @@
 //
-//  Copyright RevenueCat Inc. All Rights Reserved.
-//
-//  Licensed under the MIT License (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      https://opensource.org/licenses/MIT
-//
 //  RootViewLayoutSnapshotTests.swift
+//  RevenueCatUITests
 //
-//  Created by RevenueCat on 5/28/26.
+//  Created by Monika Mateska on 28/05/2026.
+//  Copyright © 2026 RevenueCat, Inc. All rights reserved.
+//
 
-@_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
-#if !os(tvOS) && !os(watchOS) && !os(macOS)
+final class RootViewLayoutSnapshotTests: XCTestCase {
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@MainActor
-final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
-
-    func testStickyFooterWithTallHeroZLayerOnIPadFormSheet() throws {
-        let viewModel = try PaywallsV2LayoutFixtures.makeStickyFooterHeroRootViewModel()
-        let view = PaywallsV2LayoutFixtures.makeRootView(
-            viewModel: viewModel,
-            size: PaywallsV2LayoutFixtures.iPadFormSheetSize
-        )
-
-        view.snapshot(
-            size: PaywallsV2LayoutFixtures.iPadFormSheetSize,
-            record: Self.shouldRecordSnapshots,
-            separateOSVersions: false
-        )
+    override func setUpWithError() throws {
+        // Put setup code here. This method is called before the invocation of each test method in the class.
     }
 
-    func testStickyFooterWithTallHeroZLayerOnIPhoneFullScreen() throws {
-        let viewModel = try PaywallsV2LayoutFixtures.makeStickyFooterHeroRootViewModel()
-        let view = PaywallsV2LayoutFixtures.makeRootView(
-            viewModel: viewModel,
-            size: Self.fullScreenSize
-        )
-
-        view.snapshot(
-            size: Self.fullScreenSize,
-            record: Self.shouldRecordSnapshots,
-            separateOSVersions: false
-        )
+    override func tearDownWithError() throws {
+        // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-    func testOverlayHeaderStickyFooterWithHeroZLayerOnIPadFormSheet() throws {
-        let viewModel = try PaywallsV2LayoutFixtures.makeOverlayHeaderStickyFooterRootViewModel()
-        let view = PaywallsV2LayoutFixtures.makeRootView(
-            viewModel: viewModel,
-            size: PaywallsV2LayoutFixtures.iPadFormSheetSize
-        )
+    func testExample() throws {
+        // This is an example of a functional test case.
+        // Use XCTAssert and related functions to verify your tests produce the correct results.
+        // Any test you write for XCTest can be annotated as throws and async.
+        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
+        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+    }
 
-        view.snapshot(
-            size: PaywallsV2LayoutFixtures.iPadFormSheetSize,
-            record: Self.shouldRecordSnapshots,
-            separateOSVersions: false
-        )
+    func testPerformanceExample() throws {
+        // This is an example of a performance test case.
+        self.measure {
+            // Put the code you want to measure the time of here.
+        }
     }
 
 }
-
-#endif

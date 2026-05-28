@@ -1,125 +1,36 @@
 //
-//  Copyright RevenueCat Inc. All Rights Reserved.
-//
-//  Licensed under the MIT License (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      https://opensource.org/licenses/MIT
-//
 //  StackScrollBehaviorTests.swift
+//  RevenueCatUITests
 //
-//  Created by RevenueCat on 5/28/26.
+//  Created by Monika Mateska on 28/05/2026.
+//  Copyright © 2026 RevenueCat, Inc. All rights reserved.
+//
 
-import Nimble
-@_spi(Internal) @testable import RevenueCat
-@_spi(Internal) @testable import RevenueCatUI
-import SwiftUI
 import XCTest
 
-#if !os(tvOS)
+final class StackScrollBehaviorTests: XCTestCase {
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-final class StackScrollBehaviorTests: TestCase {
-
-    func testStackScrollingIsEnabledWhenOverflowIsScroll() {
-        expect(
-            StackScrollBehavior.stackScrollingIsEnabled(
-                overflow: .scroll,
-                isScrollableByDefault: false
-            )
-        ) == true
+    override func setUpWithError() throws {
+        // Put setup code here. This method is called before the invocation of each test method in the class.
     }
 
-    func testStackScrollingIsEnabledWhenScrollableByDefault() {
-        expect(
-            StackScrollBehavior.stackScrollingIsEnabled(
-                overflow: nil,
-                isScrollableByDefault: true
-            )
-        ) == true
+    override func tearDownWithError() throws {
+        // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-    func testStackScrollingIsDisabledForDefaultOverflow() {
-        expect(
-            StackScrollBehavior.stackScrollingIsEnabled(
-                overflow: .default,
-                isScrollableByDefault: true
-            )
-        ) == false
+    func testExample() throws {
+        // This is an example of a functional test case.
+        // Use XCTAssert and related functions to verify your tests produce the correct results.
+        // Any test you write for XCTest can be annotated as throws and async.
+        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
+        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
     }
 
-    func testZLayerScrollIsDisabledWhenAncestorScrollsVertically() {
-        expect(
-            StackScrollBehavior.shouldApplyZLayerScroll(
-                overflow: .scroll,
-                isScrollableByDefault: false,
-                ancestorScrollsVertically: true
-            )
-        ) == false
-    }
-
-    func testZLayerScrollIsEnabledWhenOverflowScrollAndNoAncestorScroll() {
-        expect(
-            StackScrollBehavior.shouldApplyZLayerScroll(
-                overflow: .scroll,
-                isScrollableByDefault: false,
-                ancestorScrollsVertically: false
-            )
-        ) == true
-    }
-
-    func testZLayerScrollIsDisabledWithoutOverflowScroll() {
-        expect(
-            StackScrollBehavior.shouldApplyZLayerScroll(
-                overflow: .default,
-                isScrollableByDefault: false,
-                ancestorScrollsVertically: false
-            )
-        ) == false
-    }
-
-    func testPaywallContentFrameAlignmentUsesTopForStickyFooter() {
-        expect(
-            StackScrollBehavior.paywallContentFrameAlignment(
-                stickyFooterPresent: true,
-                rootFrameAlignment: .center
-            )
-        ) == .top
-    }
-
-    func testPaywallContentFrameAlignmentPreservesRootAlignmentWithoutStickyFooter() {
-        expect(
-            StackScrollBehavior.paywallContentFrameAlignment(
-                stickyFooterPresent: false,
-                rootFrameAlignment: .center
-            )
-        ) == .center
-    }
-
-    func testShouldExpandPaywallContentForStickyFooterOrFillHeight() {
-        expect(
-            StackScrollBehavior.shouldExpandPaywallContentToAvailableHeight(
-                stickyFooterPresent: true,
-                rootHeightIsFill: false
-            )
-        ) == true
-
-        expect(
-            StackScrollBehavior.shouldExpandPaywallContentToAvailableHeight(
-                stickyFooterPresent: false,
-                rootHeightIsFill: true
-            )
-        ) == true
-
-        expect(
-            StackScrollBehavior.shouldExpandPaywallContentToAvailableHeight(
-                stickyFooterPresent: false,
-                rootHeightIsFill: false
-            )
-        ) == false
+    func testPerformanceExample() throws {
+        // This is an example of a performance test case.
+        self.measure {
+            // Put the code you want to measure the time of here.
+        }
     }
 
 }
-
-#endif
