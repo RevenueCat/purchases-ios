@@ -24,7 +24,7 @@ final class OutcomeTests: AdapterTestCase {
     func testVerifiedCarriesNoRewardPayload() {
         let outcome = RewardVerification.Outcome.verified(.noReward)
 
-        guard case .verified(let adReward) = outcome, adReward == .noReward else {
+        guard case .verified(.noReward) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
         }
     }
@@ -32,7 +32,7 @@ final class OutcomeTests: AdapterTestCase {
     func testVerifiedCarriesUnsupportedRewardPayload() {
         let outcome = RewardVerification.Outcome.verified(.unsupportedReward)
 
-        guard case .verified(let adReward) = outcome, adReward == .unsupportedReward else {
+        guard case .verified(.unsupportedReward) = outcome else {
             return XCTFail("Expected .verified(.unsupportedReward), got \(outcome)")
         }
     }
