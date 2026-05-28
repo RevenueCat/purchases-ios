@@ -172,6 +172,32 @@ struct WorkflowPaywallView: View {
         promoOfferCache: PaywallPromoOfferCache?,
         onDismiss: @escaping () -> Void
     ) {
+        self.init(
+            context: context,
+            purchaseHandler: purchaseHandler,
+            introEligibilityChecker: introEligibilityChecker,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+            displayCloseButton: displayCloseButton,
+            promoOfferCache: promoOfferCache,
+            onDismiss: onDismiss,
+            navigator: WorkflowNavigator(workflow: context.workflow)
+        )
+    }
+
+    /// Testing-only initializer. Accepts a pre-built `WorkflowNavigator` so tests can
+    /// drive step navigation on the same instance held by the view, verifying that
+    /// purchase/restore callbacks survive state transitions without UI interaction.
+    @_spi(Internal)
+    init(
+        context: WorkflowContext,
+        purchaseHandler: PurchaseHandler,
+        introEligibilityChecker: TrialOrIntroEligibilityChecker,
+        showZeroDecimalPlacePrices: Bool,
+        displayCloseButton: Bool,
+        promoOfferCache: PaywallPromoOfferCache?,
+        onDismiss: @escaping () -> Void,
+        navigator: WorkflowNavigator
+    ) {
         self.context = context
         self.purchaseHandler = purchaseHandler
         self.introEligibilityChecker = introEligibilityChecker
@@ -179,8 +205,8 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.promoOfferCache = promoOfferCache
         self.onDismiss = onDismiss
-        self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
-        let initialStepId = context.workflow.initialStepId
+        self._navigator = .init(wrappedValue: navigator)
+        let initialStepId = navigator.currentStepId
         let initialPackageInput = Self.buildPackageInput(
             stepId: initialStepId,
             context: context,
@@ -193,7 +219,7 @@ struct WorkflowPaywallView: View {
                 currentPage: Self.renderedPage(
                     from: context,
                     stepId: initialStepId,
-                    canNavigateBack: false,
+                    canNavigateBack: navigator.canNavigateBack,
                     displayCloseButton: displayCloseButton,
                     packageInput: initialPackageInput
                 )

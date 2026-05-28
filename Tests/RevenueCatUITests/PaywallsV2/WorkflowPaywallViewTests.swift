@@ -1101,11 +1101,20 @@ extension WorkflowPaywallViewTests {
 /// Mirrors the @StateObject role that PaywallView plays in production:
 /// WorkflowPaywallView stores purchaseHandler as a plain `let`, so it needs
 /// an observing parent to trigger re-renders when purchase state changes.
+///
+/// Pass a `navigator` to drive navigation from tests via the @_spi(Internal) init.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct WorkflowPurchaseObserver: View {
 
     @ObservedObject var purchaseHandler: PurchaseHandler
     let context: WorkflowContext
+    let navigator: WorkflowNavigator
+
+    init(purchaseHandler: PurchaseHandler, context: WorkflowContext, navigator: WorkflowNavigator? = nil) {
+        self._purchaseHandler = ObservedObject(wrappedValue: purchaseHandler)
+        self.context = context
+        self.navigator = navigator ?? WorkflowNavigator(workflow: context.workflow)
+    }
 
     var body: some View {
         WorkflowPaywallView(
@@ -1115,7 +1124,8 @@ private struct WorkflowPurchaseObserver: View {
             showZeroDecimalPlacePrices: false,
             displayCloseButton: false,
             promoOfferCache: nil,
-            onDismiss: {}
+            onDismiss: {},
+            navigator: navigator
         )
     }
 
@@ -1186,6 +1196,153 @@ private extension WorkflowPaywallViewTests {
             initialOffering: offering,
             presentedOfferingContext: nil
         )
+    }
+
+}
+
+// MARK: - Callback tests (after navigation)
+// These tests drive actual step navigation before triggering purchase/restore, verifying
+// that listener wiring survives a step transition rather than being disrupted by the
+// state rebuild. Navigation is driven via the injected WorkflowNavigator, matching the
+// state that exists after a real user navigation without requiring UI interaction.
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPaywallViewTests {
+
+    @MainActor
+    func testOnPurchaseCompletedFiredAfterNavigatingToNextStep() throws {
+        let purchaseHandler: PurchaseHandler = .mock()
+        let (context, navigator) = try Self.makeNavigableContext()
+        var customerInfo: CustomerInfo?
+
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context, navigator: navigator)
+            .onPurchaseCompleted { customerInfo = $0 }
+            .addToHierarchy()
+
+        navigator.triggerAction(componentId: "btn_next")
+
+        Task {
+            _ = try await purchaseHandler.purchase(package: TestData.annualPackage)
+        }
+
+        expect(customerInfo).toEventually(be(TestData.customerInfo))
+    }
+
+    @MainActor
+    func testOnRestoreCompletedFiredAfterNavigatingToNextStep() throws {
+        let purchaseHandler: PurchaseHandler = .mock()
+        let (context, navigator) = try Self.makeNavigableContext()
+        var customerInfo: CustomerInfo?
+
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context, navigator: navigator)
+            .onRestoreCompleted { customerInfo = $0 }
+            .addToHierarchy()
+
+        navigator.triggerAction(componentId: "btn_next")
+
+        Task {
+            _ = try await purchaseHandler.restorePurchases()
+            purchaseHandler.setRestored(TestData.customerInfo, success: false)
+        }
+
+        expect(customerInfo).toEventually(be(TestData.customerInfo))
+    }
+
+    @MainActor
+    func testOnPurchaseCompletedFiredAfterNavigatingForwardAndBack() throws {
+        let purchaseHandler: PurchaseHandler = .mock()
+        let (context, navigator) = try Self.makeNavigableContext()
+        var customerInfo: CustomerInfo?
+
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context, navigator: navigator)
+            .onPurchaseCompleted { customerInfo = $0 }
+            .addToHierarchy()
+
+        navigator.triggerAction(componentId: "btn_next")
+        navigator.navigateBack()
+
+        Task {
+            _ = try await purchaseHandler.purchase(package: TestData.annualPackage)
+        }
+
+        expect(customerInfo).toEventually(be(TestData.customerInfo))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension WorkflowPaywallViewTests {
+
+    /// Two-step workflow where step_a has a "btn_next" trigger to step_b.
+    /// Returns both the context and a fresh navigator so tests can drive navigation
+    /// on the same instance held by WorkflowPaywallView.
+    static func makeNavigableContext() throws -> (context: WorkflowContext, navigator: WorkflowNavigator) {
+        let offeringId = "offering_test"
+        let workflowJSON = """
+        {
+          "id": "wf_navigable_test",
+          "display_name": "Navigable Test",
+          "initial_step_id": "step_a",
+          "single_step_fallback_id": "step_a",
+          "steps": {
+            "step_a": {
+              "id": "step_a",
+              "type": "screen",
+              "screen_id": "screen_a",
+              "triggers": [{"name":"Button","type":"on_press","action_id":"action_next","component_id":"btn_next"}],
+              "trigger_actions": {"action_next":{"type":"step","step_id":"step_b"}}
+            },
+            "step_b": { "id": "step_b", "type": "screen", "screen_id": "screen_b" }
+          },
+          "screens": {
+            "screen_a": \(makeScreenJSON(packages: [], offeringId: offeringId)),
+            "screen_b": \(makeScreenJSON(packages: [], offeringId: offeringId))
+          },
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {}
+          }
+        }
+        """
+        let data = try XCTUnwrap(workflowJSON.data(using: .utf8))
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+
+        let packages = [
+            makePackage(identifier: TestData.annualPackage.identifier, offeringId: offeringId),
+            makePackage(identifier: TestData.monthlyPackage.identifier, offeringId: offeringId)
+        ]
+        let offering = Offering(
+            identifier: offeringId,
+            serverDescription: "Test",
+            metadata: [:],
+            paywall: nil,
+            availablePackages: packages,
+            webCheckoutUrl: nil
+        )
+        let offerings = Offerings(
+            offerings: [offeringId: offering],
+            currentOfferingID: nil,
+            placements: nil,
+            targeting: nil,
+            contents: .init(
+                response: .init(
+                    currentOfferingId: nil,
+                    offerings: [],
+                    placements: nil,
+                    targeting: nil,
+                    uiConfig: nil
+                ),
+                httpResponseOriginalSource: .mainServer
+            ),
+            loadedFromDiskCache: false
+        )
+        let context = WorkflowContext(
+            workflow: workflow,
+            allOfferings: offerings,
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+        return (context, WorkflowNavigator(workflow: workflow))
     }
 
 }
