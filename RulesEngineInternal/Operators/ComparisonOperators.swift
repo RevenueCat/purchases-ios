@@ -8,8 +8,7 @@ import Foundation
 
 /// Comparison operators: `<`, `<=`, `>`, `>=`.
 ///
-/// Mirrors the JSON Logic / ECMAScript Abstract Relational Comparison
-/// rules:
+/// Per JSON Logic:
 ///
 /// - **Both operands are strings** → lexicographic comparison
 ///   (`"10" < "9"` is `true` because `'1' < '9'`).
@@ -57,8 +56,8 @@ enum ComparisonOperators {
         }
     }
 
-    /// Two-string operands → lex. Otherwise → numeric coercion (JS
-    /// Abstract Relational Comparison). `nil` lhs/rhs means that
+    /// Two-string operands → lex. Otherwise → numeric coercion. `nil`
+    /// lhs/rhs means that
     /// argument was omitted (e.g. `{">": [1]}`); we coerce it to `nan`,
     /// and any comparison involving `nan` is `false`.
     private static func compare(_ lhs: Value?, _ rhs: Value?, using cmp: Comparator) -> Bool {
