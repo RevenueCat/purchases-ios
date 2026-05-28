@@ -4,6 +4,7 @@ import ProjectDescriptionHelpers
 let project = Project(
     name: "RevenueCatUI",
     organizationName: .revenueCatOrgName,
+    options: .options(disableBundleAccessors: true),
     packages: .projectPackages,
     settings: .framework,
     targets: [
@@ -17,6 +18,12 @@ let project = Project(
             sources: [
                 "../../RevenueCatUI/**/*.swift"
             ],
+            resources: [
+                "../../RevenueCatUI/Resources/**"
+            ],
+            headers: .headers(
+                public: ["../../RevenueCatUI/RevenueCatUI.h"]
+            ),
             dependencies: [
                 .revenueCat
             ],
@@ -27,7 +34,7 @@ let project = Project(
     ],
     schemes: [
         .scheme(
-            name: "RevenueCatUI",
+            name: "RevenueCatUI-Framework",
             shared: true,
             buildAction: .buildAction(targets: ["RevenueCatUI"]),
             runAction: .runAction(configuration: "Debug"),
