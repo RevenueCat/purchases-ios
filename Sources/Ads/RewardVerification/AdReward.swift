@@ -15,10 +15,18 @@ import Foundation
 
 /// Reward payload describing the outcome of a verified rewarded ad.
 ///
-/// Use the static factories to construct values:
-/// - ``virtualCurrency(code:amount:)`` for a virtual-currency line item.
-/// - ``noReward`` when verification succeeded but no reward was granted.
-/// - ``unsupportedReward`` when verification succeeded with a shape the SDK does not currently model.
+/// Inspect the received reward by checking ``virtualCurrency`` or comparing against
+/// ``noReward`` / ``unsupportedReward``:
+///
+/// ```swift
+/// if let virtualCurrency = adReward.virtualCurrency {
+///     // Reward is a virtual-currency line item.
+/// } else if adReward == .noReward {
+///     // Verification succeeded but no reward was granted.
+/// } else if adReward == .unsupportedReward {
+///     // Verification succeeded with a reward shape the SDK does not currently model.
+/// }
+/// ```
 @_spi(Experimental) public struct AdReward: Sendable, Equatable {
 
     private enum Storage: Sendable, Equatable {
