@@ -918,46 +918,12 @@ extension AdEvent {
 
     /// - Returns: the network name for impression and reward events, nil for failed to load events.
     internal var networkName: String? {
-        switch self {
-        case .failedToLoad:
-            return nil
-        case let .loaded(_, data):
-            return data.networkName
-        case let .displayed(_, data):
-            return data.networkName
-        case let .opened(_, data):
-            return data.networkName
-        case let .revenue(_, data):
-            return data.networkName
-        case let .rewardEarnedUnverified(_, data):
-            return data.networkName
-        case let .rewardVerified(_, data):
-            return data.networkName
-        case let .rewardFailedToVerify(_, data):
-            return data.networkName
-        }
+        (self.eventData as? AdImpressionEventData)?.networkName
     }
 
     /// - Returns: the impression identifier for events that include it.
     internal var impressionIdentifier: String? {
-        switch self {
-        case .failedToLoad:
-            return nil
-        case let .loaded(_, data):
-            return data.impressionId
-        case let .displayed(_, data):
-            return data.impressionId
-        case let .opened(_, data):
-            return data.impressionId
-        case let .revenue(_, data):
-            return data.impressionId
-        case let .rewardEarnedUnverified(_, data):
-            return data.impressionId
-        case let .rewardVerified(_, data):
-            return data.impressionId
-        case let .rewardFailedToVerify(_, data):
-            return data.impressionId
-        }
+        (self.eventData as? AdImpressionEventData)?.impressionId
     }
 
     /// - Returns: the mediator error code for failed to load events.
