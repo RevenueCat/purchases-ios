@@ -29,7 +29,7 @@ extension AdsStrings: LogMessage {
         case let .invalid_virtual_currency_amount(amount):
             return "Received an invalid virtual currency amount (\(amount)); falling back to unsupportedReward."
         case .missing_virtual_currency_reward_fields:
-            return "Received a 'virtual_currency' ad reward without a non-nil currency code and amount; " +
+            return "Received a 'virtual_currency' ad reward with a nil currency code or amount; " +
                 "falling back to unsupportedReward."
         }
     }
