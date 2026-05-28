@@ -14,7 +14,7 @@
 import Nimble
 import XCTest
 
-@_spi(Experimental) @testable import RevenueCat
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class AdEventTests: TestCase {

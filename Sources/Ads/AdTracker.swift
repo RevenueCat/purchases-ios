@@ -215,7 +215,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Experimental) @objc public func trackAdRewardEarnedUnverified(_ data: AdRewardEarnedUnverified) {
+    @_spi(Internal) @objc public func trackAdRewardEarnedUnverified(_ data: AdRewardEarnedUnverified) {
         Task {
             let event = AdEvent.rewardEarnedUnverified(.init(id: UUID(), date: Date()), data)
             await self.eventsManager?.track(adEvent: event)
@@ -240,7 +240,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Experimental) @objc public func trackAdRewardVerified(_ data: AdRewardVerified) {
+    @_spi(Internal) @objc public func trackAdRewardVerified(_ data: AdRewardVerified) {
         Task {
             let event = AdEvent.rewardVerified(.init(id: UUID(), date: Date()), data)
             await self.eventsManager?.track(adEvent: event)
@@ -265,7 +265,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Experimental) @objc public func trackAdRewardFailedToVerify(_ data: AdRewardFailedToVerify) {
+    @_spi(Internal) @objc public func trackAdRewardFailedToVerify(_ data: AdRewardFailedToVerify) {
         Task {
             let event = AdEvent.rewardFailedToVerify(.init(id: UUID(), date: Date()), data)
             await self.eventsManager?.track(adEvent: event)

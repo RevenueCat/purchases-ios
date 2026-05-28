@@ -34,12 +34,12 @@ import Foundation
     }
 
     /// Reward is a virtual-currency line item with a code and amount.
-    public static func virtualCurrency(_ payload: VirtualCurrencyReward) -> AdReward {
+    @_spi(Internal) public static func virtualCurrency(_ payload: VirtualCurrencyReward) -> AdReward {
         AdReward(storage: .virtualCurrency(payload))
     }
 
     /// Reward is a virtual-currency line item with the given code and amount. `amount` must be greater than zero.
-    public static func virtualCurrency(code: String, amount: Int) -> AdReward {
+    @_spi(Internal) public static func virtualCurrency(code: String, amount: Int) -> AdReward {
         if amount <= 0 {
             Logger.error(AdsStrings.invalid_virtual_currency_amount(amount: amount))
             assertionFailure(Self.Strings.virtualCurrencyAmountMustBeGreaterThanZero)
@@ -61,7 +61,7 @@ import Foundation
     }
 
     /// Stable raw value used for wire encoding and ObjC interop.
-    public var kindRawValue: String {
+    @_spi(Internal) public var kindRawValue: String {
         switch self.storage {
         case .virtualCurrency: return Self.Kind.virtualCurrency
         case .noReward: return Self.Kind.noReward

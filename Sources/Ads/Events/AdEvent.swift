@@ -119,7 +119,7 @@ internal protocol AdImpressionEventData: AdEventData {
 /// Type representing the reason a rewarded-ad verification failed.
 ///
 /// The predefined static properties contain the known failure reasons.
-@_spi(Experimental) @objc(RCAdRewardFailureReason) public final class AdRewardFailureReason: NSObject, Codable {
+@_spi(Internal) @objc(RCAdRewardFailureReason) public final class AdRewardFailureReason: NSObject, Codable {
 
     /// The raw string value of the failure reason
     @objc public let rawValue: String
@@ -611,7 +611,7 @@ extension AdRevenue {
 }
 
 /// Data for ad reward earned (unverified) events.
-@_spi(Experimental) @objc(RCAdRewardEarnedUnverified) public final class AdRewardEarnedUnverified: NSObject,
+@_spi(Internal) @objc(RCAdRewardEarnedUnverified) public final class AdRewardEarnedUnverified: NSObject,
                                                                                               AdImpressionEventData,
                                                                                               Codable,
                                                                                               @unchecked Sendable {
@@ -725,7 +725,7 @@ extension AdRevenue {
 }
 
 /// Data for ad reward verified events.
-@_spi(Experimental) @objc(RCAdRewardVerified) public final class AdRewardVerified: NSObject,
+@_spi(Internal) @objc(RCAdRewardVerified) public final class AdRewardVerified: NSObject,
                                                                                           AdImpressionEventData,
                                                                                           Codable,
                                                                                           @unchecked Sendable {
@@ -923,7 +923,7 @@ extension AdRevenue {
 }
 
 /// Data for ad reward failed-to-verify events.
-@_spi(Experimental)
+@_spi(Internal)
 @objc(RCAdRewardFailedToVerify)
 public final class AdRewardFailedToVerify: NSObject, AdImpressionEventData, Codable, @unchecked Sendable {
 

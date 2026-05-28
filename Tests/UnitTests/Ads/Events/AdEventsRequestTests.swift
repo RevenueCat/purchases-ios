@@ -13,7 +13,7 @@
 
 import Foundation
 import Nimble
-@_spi(Experimental) @testable import RevenueCat
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 import SnapshotTesting
 import XCTest
 
