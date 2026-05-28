@@ -14,11 +14,19 @@
 import StoreKit
 
 // This file isolates StoreKit-backed win-back eligibility adapters behind simple internal protocols.
-// That keeps the calculator's core logic easy to unit test with mocks, without instantiating StoreKit
-// types or relying on StoreKit configuration files.
+// That keeps the WinBackEligibilityCalculator's core logic easy to unit test with mocks,
+// without instantiating StoreKit types or relying on StoreKit configuration files.
+//
+// We need to do this to make WinBackEligibilityCalculator testable since there's a bug that
+// prevents us from loading SKConfig files with SKTestSession in iOS 26.4+, and the APIs
+// for evaluating winback offer eligibility on billing plans are only available on Xcode 26.5+.
+// For more information on this bug, refer to:
+//    - https://developer.apple.com/forums/thread/826971
+//    - FB22500243
+// When this issue is resolved, we may be able to replace this dependency inversion
+// and its associated tests with SKTestSession-based tests.
 
 // MARK: - Testable StoreKit-free types
-
 internal enum WinBackEligibilityOwnershipType: Sendable {
     case purchased
     case familyShared
@@ -87,7 +95,6 @@ extension WinBackOfferEligibilityCalculator {
         return nil
         #endif
     }
-
 }
 
 private struct StoreKitWinBackProduct: WinBackEligibilityProductType {
@@ -132,7 +139,6 @@ private struct StoreKitWinBackSubscriptionInfo: WinBackEligibilitySubscriptionIn
         return []
         #endif
     }
-
 }
 
 @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
@@ -158,7 +164,6 @@ private struct StoreKitWinBackStatus: WinBackEligibilityStatusType {
     var verifiedRenewalInfo: (any WinBackEligibilityRenewalInfoType)? {
         return self.status.verifiedRenewalInfo.map(StoreKitWinBackRenewalInfo.init)
     }
-
 }
 
 @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
@@ -203,7 +208,6 @@ private struct StoreKitWinBackOffer: WinBackEligibilityOfferType {
     func storeProductDiscount(currencyCode: String?) -> StoreProductDiscount? {
         return StoreProductDiscount(sk2Discount: self.offer, currencyCode: currencyCode)
     }
-
 }
 
 @available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, visionOS 26.4, *)
@@ -234,7 +238,6 @@ private struct StoreKitWinBackPricingTerms: WinBackEligibilityPricingTermsType {
         return []
         #endif
     }
-
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
