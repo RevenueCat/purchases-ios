@@ -108,6 +108,11 @@
 		16DA8EF42E4F7A2500283940 /* VideoComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DA8EF32E4F7A2500283940 /* VideoComponentTests.swift */; };
 		16DA8F1E2E4FB6E200283940 /* ImageComponent.json in Resources */ = {isa = PBXBuildFile; fileRef = 16DA8F1B2E4FB6E200283940 /* ImageComponent.json */; };
 		16DA8F1F2E4FB6E200283940 /* VideoComponent.json in Resources */ = {isa = PBXBuildFile; fileRef = 16DA8F1C2E4FB6E200283940 /* VideoComponent.json */; };
+		DBAAB0112FA000000000001 /* WebViewComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBAAB0012FA000000000001 /* WebViewComponentView.swift */; };
+		DBAAB0122FA000000000001 /* WebViewComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBAAB0022FA000000000001 /* WebViewComponentViewModel.swift */; };
+		DBAAB0132FA000000000001 /* PaywallWebViewComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBAAB0032FA000000000001 /* PaywallWebViewComponent.swift */; };
+		DBAAB0142FA000000000001 /* WebViewComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBAAB0052FA000000000001 /* WebViewComponentTests.swift */; };
+		DBAAB0152FA000000000001 /* WebViewComponent.json in Resources */ = {isa = PBXBuildFile; fileRef = DBAAB0062FA000000000001 /* WebViewComponent.json */; };
 		16E146AD2E99F3480089B609 /* TransactionNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E146AB2E99F1E20089B609 /* TransactionNotifications.swift */; };
 		16E146B22E99FC7E0089B609 /* PurchaseResultComparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E146B12E99FC7E0089B609 /* PurchaseResultComparator.swift */; };
 		16E2B7F12EA01DFA00F04A7A /* SynchronizedLargeItemCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E2B7F02EA01DFA00F04A7A /* SynchronizedLargeItemCacheTests.swift */; };
@@ -1609,6 +1614,12 @@
 		16DA8EF32E4F7A2500283940 /* VideoComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentTests.swift; sourceTree = "<group>"; };
 		16DA8F1B2E4FB6E200283940 /* ImageComponent.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ImageComponent.json; sourceTree = "<group>"; };
 		16DA8F1C2E4FB6E200283940 /* VideoComponent.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = VideoComponent.json; sourceTree = "<group>"; };
+		DBAAB0012FA000000000001 /* WebViewComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentView.swift; sourceTree = "<group>"; };
+		DBAAB0022FA000000000001 /* WebViewComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentViewModel.swift; sourceTree = "<group>"; };
+		DBAAB0032FA000000000001 /* PaywallWebViewComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallWebViewComponent.swift; sourceTree = "<group>"; };
+		DBAAB0042FA000000000001 /* WebViewComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentTests.swift; sourceTree = "<group>"; };
+		DBAAB0052FA000000000001 /* WebViewComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentTests.swift; sourceTree = "<group>"; };
+		DBAAB0062FA000000000001 /* WebViewComponent.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = WebViewComponent.json; sourceTree = "<group>"; };
 		16E146AB2E99F1E20089B609 /* TransactionNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionNotifications.swift; sourceTree = "<group>"; };
 		16E146B12E99FC7E0089B609 /* PurchaseResultComparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseResultComparator.swift; sourceTree = "<group>"; };
 		16E146B42E99FF640089B609 /* MockStoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreTransaction.swift; sourceTree = "<group>"; };
@@ -3052,6 +3063,7 @@
 			isa = PBXGroup;
 			children = (
 				16A9F7B62FAA22D0008E8A4D /* VideoComponentViewTests.swift */,
+				DBAAB0042FA000000000001 /* WebViewComponentTests.swift */,
 				FACD00012F61A1230073D2DE /* TextComponentLocalizationTests.swift */,
 				FACD00032F61A1230073D2DE /* ViewModelFactoryBadgeTests.swift */,
 				FB5A72012F65F5B9005C64A1 /* ViewModelFactoryTests.swift */,
@@ -3175,6 +3187,15 @@
 			path = Video;
 			sourceTree = "<group>";
 		};
+		DBAAB0072FA000000000001 /* WebView */ = {
+			isa = PBXGroup;
+			children = (
+				DBAAB0012FA000000000001 /* WebViewComponentView.swift */,
+				DBAAB0022FA000000000001 /* WebViewComponentViewModel.swift */,
+			);
+			path = WebView;
+			sourceTree = "<group>";
+		};
 		1699BD5C2EEFBEEC002001FB /* DefaultPaywall */ = {
 			isa = PBXGroup;
 			children = (
@@ -3208,6 +3229,7 @@
 			children = (
 				16DA8F1B2E4FB6E200283940 /* ImageComponent.json */,
 				16DA8F1C2E4FB6E200283940 /* VideoComponent.json */,
+				DBAAB0062FA000000000001 /* WebViewComponent.json */,
 			);
 			path = JSON;
 			sourceTree = "<group>";
@@ -3272,6 +3294,7 @@
 				0387D4AD2EC58AA5008E4A6B /* Countdown */,
 				E1C0A00BBEEF0001CCDD0001 /* Header */,
 				164681CD2E6B577600854AA5 /* Video */,
+				DBAAB0072FA000000000001 /* WebView */,
 				2C7457472CEA66AB004ACE52 /* ComponentsView.swift */,
 				7707A94A2CAD936A006E0313 /* Button */,
 				03C06FC82D479C6300600693 /* Carousel */,
@@ -3357,6 +3380,7 @@
 				2C8EC6DE2CCD27A100D6CCF8 /* PartialComponentTests.swift */,
 				16DA8ECC2E4EE33700283940 /* ImageComponentTests.swift */,
 				16DA8EF32E4F7A2500283940 /* VideoComponentTests.swift */,
+				DBAAB0052FA000000000001 /* WebViewComponentTests.swift */,
 				164933232E5808BE00CE43A9 /* PaywallTransitionTest.swift */,
 			);
 			path = Components;
@@ -5752,6 +5776,7 @@
 				7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */,
 				E1C0A006BEEF0001CCDD0001 /* PaywallHeaderComponent.swift */,
 				88AD01032C740CF400AA1F2B /* PaywallImageComponent.swift */,
+				DBAAB0032FA000000000001 /* PaywallWebViewComponent.swift */,
 				03C72FBD2D34949600297FEC /* PaywallIconComponent.swift */,
 				88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */,
 				4D3BA4CB2D37D15E00668AFC /* PaywallTimelineComponent.swift */,
@@ -6668,6 +6693,7 @@
 				2D4D6AF624F7193700B656BE /* verifyReceiptSample1.txt in Resources */,
 				16DA8F1E2E4FB6E200283940 /* ImageComponent.json in Resources */,
 				16DA8F1F2E4FB6E200283940 /* VideoComponent.json in Resources */,
+				DBAAB0152FA000000000001 /* WebViewComponent.json in Resources */,
 				75D9DE072D79FC0E0068554F /* testEncoding.1.json in Resources */,
 				2D4D6AF724F7193700B656BE /* base64encodedreceiptsample1.txt in Resources */,
 				5774F9BE2805E71100997128 /* Fixtures in Resources */,
@@ -7207,6 +7233,7 @@
 				4F8929192A65EF3000A91EA2 /* EnsureNonEmptyCollectionDecodable.swift in Sources */,
 				757E73CE2F0FE2410066DCDC /* LocalTransactionMetadata.swift in Sources */,
 				16DA8EDF2E4F6A6600283940 /* PaywallVideoComponent.swift in Sources */,
+				DBAAB0132FA000000000001 /* PaywallWebViewComponent.swift in Sources */,
 				35F82BB626A9B8040051DF03 /* AttributionDataMigrator.swift in Sources */,
 				4F5F47082AA91F8A005649D8 /* HealthOperation.swift in Sources */,
 				4FEF41AB2B4F2F3400CD699F /* MapAppStoreDetector.swift in Sources */,
@@ -7645,6 +7672,7 @@
 				57488BEA29CB83540000EE7E /* MockOfflineEntitlementsManager.swift in Sources */,
 				F5BE444726985E7B00254A30 /* AttributionTypeFactoryTests.swift in Sources */,
 				903A05B42EB3B9D4009B9CE4 /* PaywallFeatureEventsRequestTests.swift in Sources */,
+				DBAAB0142FA000000000001 /* WebViewComponentTests.swift in Sources */,
 				AA110006AABB0001CCDD0001 /* CustomPaywallEventTests.swift in Sources */,
 				903A05B52EB3B9D4009B9CE4 /* BackendPaywallEventTests.swift in Sources */,
 				2DDF41EA24F6F844005BC22D /* SKProductSubscriptionDurationExtensions.swift in Sources */,
@@ -7976,6 +8004,8 @@
 				DB1FC9512F9A1B23009A95EA /* WorkflowScreenMapper.swift in Sources */,
 				75CAC2532FA3371C00B2D089 /* RequestSizeCalculation.swift in Sources */,
 				03C06FCC2D479C7C00600693 /* CarouselComponentViewModel.swift in Sources */,
+				DBAAB0112FA000000000001 /* WebViewComponentView.swift in Sources */,
+				DBAAB0122FA000000000001 /* WebViewComponentViewModel.swift in Sources */,
 				1699BC382EEB4EFA002001FB /* AppStyleExtractor.swift in Sources */,
 				887A60742C1D037000E1A461 /* Strings.swift in Sources */,
 				887A60712C1D037000E1A461 /* PaywallViewConfiguration.swift in Sources */,

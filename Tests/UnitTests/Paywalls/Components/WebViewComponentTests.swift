@@ -23,7 +23,7 @@ class WebViewComponentTests: TestCase {
 
         let webView2 = try webView.encodeAndDecode()
 
-        XCTAssertEqual(webView.url.absoluteString, "https://example.com")
+        XCTAssertEqual(webView.url, "https://example.com")
         XCTAssertEqual(webView, webView2)
     }
 
@@ -38,7 +38,7 @@ class WebViewComponentTests: TestCase {
             return
         }
 
-        XCTAssertEqual(webView.url.absoluteString, "https://example.com")
+        XCTAssertEqual(webView.url, "https://example.com")
     }
 
 }

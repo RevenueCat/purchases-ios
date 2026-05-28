@@ -118,7 +118,7 @@ final class PaywallCacheWarmingTests: TestCase {
         let paywallComponents = Offering.PaywallComponents(
             uiConfig: try Self.createUIConfig(),
             data: Self.createPaywallComponentsData(
-                stack: .init(components: [.webView(.init(url: webViewURL))])
+                stack: .init(components: [.webView(.init(url: webViewURL.absoluteString))])
             )
         )
 
