@@ -263,6 +263,23 @@ final class ArithmeticOperatorsTests: XCTestCase {
         )
     }
 
+    /// JS `%` keeps the dividend's sign. Pins `truncatingRemainder(dividingBy:)`
+    /// against Kotlin `%` on the other platform.
+    func testModNegativeOperandsMatchJs() throws {
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opMod, args: arr(.int(-7), .int(3))),
+            .float(-1.0)
+        )
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opMod, args: arr(.int(7), .int(-3))),
+            .float(1.0)
+        )
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opMod, args: arr(.int(-7), .int(-3))),
+            .float(-1.0)
+        )
+    }
+
     // MARK: - Coercion semantics (`+`/`*` use parseFloat, others use Number)
 
     /// `+` and `*` coerce every operand through JS `parseFloat(value)`.
