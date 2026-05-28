@@ -59,6 +59,7 @@ public final class CustomPaywallImpressionParams: NSObject, Sendable {
     ///   Passing only a string identifier prevents the SDK from automatically deriving placement
     ///   and targeting context.
     @available(*, deprecated,
+               // swiftlint:disable:next line_length
                message: "Pass an Offering object instead. Using an offering identifier string prevents the SDK from deriving placement and targeting context automatically.",
                renamed: "init(paywallId:offering:)")
     @objc public convenience init(paywallId: String? = nil, offeringId: String?) {
