@@ -263,8 +263,9 @@ final class ArithmeticOperatorsTests: XCTestCase {
         )
     }
 
-    /// JS `%` keeps the dividend's sign. Pins `truncatingRemainder(dividingBy:)`
-    /// against Kotlin `%` on the other platform.
+    /// JS `%` is IEEE 754 remainder: the result sign matches the dividend,
+    /// not the divisor (`-7 % 3 === -1`, `7 % -3 === 1`). Pins
+    /// `truncatingRemainder(dividingBy:)`.
     func testModNegativeOperandsMatchJs() throws {
         XCTAssertEqual(
             try run(ArithmeticOperators.opMod, args: arr(.int(-7), .int(3))),
