@@ -133,6 +133,25 @@ final class WinBackOfferEligibilityCalculatorTests: TestCase {
         expect(offers.map(\.discount.offerIdentifier)) == ["available_offer"]
     }
 
+    func testReturnsSubscriptionInfoWinBackOfferForNonMonthlyProduct() async {
+        let product = MockWinBackEligibilityProduct(
+            subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .year),
+            subscriptionInfo: MockWinBackEligibilitySubscriptionInfo(
+                statuses: [
+                    MockWinBackEligibilityStatus(
+                        ownershipType: .purchased,
+                        eligibleWinBackOfferIDs: ["annual_offer"]
+                    )
+                ],
+                winBackOffers: [MockWinBackEligibilityOffer.winBack(identifier: "annual_offer")]
+            )
+        )
+
+        let offers = await self.calculator.calculateEligibleWinBackOffers(forProduct: product)
+
+        expect(offers.map(\.discount.offerIdentifier)) == ["annual_offer"]
+    }
+
     func testIgnoresNonWinBackOffersFromPricingTerms() async throws {
         try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
 
@@ -211,11 +230,13 @@ private struct MockWinBackEligibilityProduct: WinBackEligibilityProductType {
     init(
         currencyCode: String = "USD",
         billingPlanType: BillingPlanType? = nil,
+        subscriptionPeriod: SubscriptionPeriod = SubscriptionPeriod(value: 1, unit: .month),
         subscriptionInfo: (any WinBackEligibilitySubscriptionInfoType)? = MockWinBackEligibilitySubscriptionInfo()
     ) {
         self.product = Self.product(
             currencyCode: currencyCode,
-            billingPlanType: billingPlanType
+            billingPlanType: billingPlanType,
+            subscriptionPeriod: subscriptionPeriod
         )
         self.subscriptionInfo = subscriptionInfo
     }
@@ -230,7 +251,8 @@ private struct MockWinBackEligibilityProduct: WinBackEligibilityProductType {
 
     private static func product(
         currencyCode: String,
-        billingPlanType: BillingPlanType?
+        billingPlanType: BillingPlanType?,
+        subscriptionPeriod: SubscriptionPeriod
     ) -> TestStoreProduct {
         return TestStoreProduct(
             localizedTitle: "product",
@@ -240,7 +262,7 @@ private struct MockWinBackEligibilityProduct: WinBackEligibilityProductType {
             productIdentifier: "product",
             productType: .autoRenewableSubscription,
             localizedDescription: "",
-            subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            subscriptionPeriod: subscriptionPeriod,
             locale: Locale(identifier: "en_US"),
             installmentsInfo: billingPlanType.map(Self.installmentsInfo)
         )
