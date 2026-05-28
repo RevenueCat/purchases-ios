@@ -1369,6 +1369,8 @@
 		FDAADFD72BE2C67700BD1659 /* StoreKit2ObserverModePurchaseDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAADFD52BE2C67700BD1659 /* StoreKit2ObserverModePurchaseDetectorTests.swift */; };
 		FDAC7B532CD3D67600DFC0D9 /* WinBackOfferEligibilityCalculatorType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAC7B522CD3D67600DFC0D9 /* WinBackOfferEligibilityCalculatorType.swift */; };
 		FDAC7B552CD3D7A500DFC0D9 /* WinBackOfferEligibilityCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAC7B542CD3D7A200DFC0D9 /* WinBackOfferEligibilityCalculator.swift */; };
+		FDAC7B592CF000000DFC0D9 /* WinBackEligibilityAdapters.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAC7B5A2CF000000DFC0D9 /* WinBackEligibilityAdapters.swift */; };
+		FDAC7B5C2CF100000DFC0D9 /* WinBackOfferEligibilityCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAC7B5B2CF100000DFC0D9 /* WinBackOfferEligibilityCalculatorTests.swift */; };
 		FDAC7B572CD3FD8500DFC0D9 /* MockWinBackOfferEligibilityCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAC7B562CD3FD8500DFC0D9 /* MockWinBackOfferEligibilityCalculator.swift */; };
 		FDAC7B582CD3FD8500DFC0D9 /* MockWinBackOfferEligibilityCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAC7B562CD3FD8500DFC0D9 /* MockWinBackOfferEligibilityCalculator.swift */; };
 		FDAC7B5B2CD4085800DFC0D9 /* PurchasesWinBackOfferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAC7B5A2CD4085800DFC0D9 /* PurchasesWinBackOfferTests.swift */; };
@@ -2925,7 +2927,9 @@
 		FDAADFD52BE2C67700BD1659 /* StoreKit2ObserverModePurchaseDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2ObserverModePurchaseDetectorTests.swift; sourceTree = "<group>"; };
 		FDAC7B522CD3D67600DFC0D9 /* WinBackOfferEligibilityCalculatorType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinBackOfferEligibilityCalculatorType.swift; sourceTree = "<group>"; };
 		FDAC7B542CD3D7A200DFC0D9 /* WinBackOfferEligibilityCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinBackOfferEligibilityCalculator.swift; sourceTree = "<group>"; };
+		FDAC7B5A2CF000000DFC0D9 /* WinBackEligibilityAdapters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinBackEligibilityAdapters.swift; sourceTree = "<group>"; };
 		FDAC7B562CD3FD8500DFC0D9 /* MockWinBackOfferEligibilityCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockWinBackOfferEligibilityCalculator.swift; sourceTree = "<group>"; };
+		FDAC7B5B2CF100000DFC0D9 /* WinBackOfferEligibilityCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinBackOfferEligibilityCalculatorTests.swift; sourceTree = "<group>"; };
 		FDAC7B5A2CD4085800DFC0D9 /* PurchasesWinBackOfferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesWinBackOfferTests.swift; sourceTree = "<group>"; };
 		FDC4BBBC2FB4B904000AC203 /* BillingPlanType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingPlanType.swift; sourceTree = "<group>"; };
 		FDC4BBC32FB4B914000AC203 /* BillingPlanTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingPlanTypeTests.swift; sourceTree = "<group>"; };
@@ -4801,6 +4805,7 @@
 				57E6194F28D291DC0093170C /* StoreKit2CachingProductsManagerTests.swift */,
 				4FD291BD2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift */,
 				FDAADFD52BE2C67700BD1659 /* StoreKit2ObserverModePurchaseDetectorTests.swift */,
+				FDAC7B5D2CF100000DFC0D9 /* Win-Back Offers */,
 			);
 			path = StoreKit2;
 			sourceTree = "<group>";
@@ -6250,7 +6255,16 @@
 			isa = PBXGroup;
 			children = (
 				FDAC7B542CD3D7A200DFC0D9 /* WinBackOfferEligibilityCalculator.swift */,
+				FDAC7B5A2CF000000DFC0D9 /* WinBackEligibilityAdapters.swift */,
 				FDAC7B522CD3D67600DFC0D9 /* WinBackOfferEligibilityCalculatorType.swift */,
+			);
+			path = "Win-Back Offers";
+			sourceTree = "<group>";
+		};
+		FDAC7B5D2CF100000DFC0D9 /* Win-Back Offers */ = {
+			isa = PBXGroup;
+			children = (
+				FDAC7B5B2CF100000DFC0D9 /* WinBackOfferEligibilityCalculatorTests.swift */,
 			);
 			path = "Win-Back Offers";
 			sourceTree = "<group>";
@@ -6878,6 +6892,7 @@
 				2D90F8CC26FD2BA1009B9142 /* StoreKitConfigTestCase.swift in Sources */,
 				2D90F8BC26FD20C2009B9142 /* MockReceiptParser.swift in Sources */,
 				57488C8329CB91D20000EE7E /* CustomerInfoOfflineEntitlementsStoreKitTest.swift in Sources */,
+				FDAC7B5C2CF100000DFC0D9 /* WinBackOfferEligibilityCalculatorTests.swift in Sources */,
 				FD2046812CB8333A00166727 /* StoreKit2PurchaseIntentListenerTests.swift in Sources */,
 				57DE80812807529F008D6C6F /* MockStorefront.swift in Sources */,
 				FD6D87582FAE4CD400CAF0F2 /* MockProductsRequestFactory.swift in Sources */,
@@ -7370,6 +7385,7 @@
 				4F6BEDE02A26B65900CD9322 /* DebugViewSheetPresentation.swift in Sources */,
 				4F6BEDD92A26B55C00CD9322 /* DebugViewModel.swift in Sources */,
 				FDAC7B552CD3D7A500DFC0D9 /* WinBackOfferEligibilityCalculator.swift in Sources */,
+				FDAC7B592CF000000DFC0D9 /* WinBackEligibilityAdapters.swift in Sources */,
 				FDE57AA02DF8785000101CE2 /* VirtualCurrenciesResponse.swift in Sources */,
 				16A7F4C32E563B91001F9FC8 /* PaywallAnimation.swift in Sources */,
 				FDA6F96F2E035544008BF232 /* VirtualCurrencyStrings.swift in Sources */,
