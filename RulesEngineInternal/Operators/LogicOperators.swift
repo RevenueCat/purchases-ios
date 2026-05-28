@@ -26,9 +26,9 @@ enum LogicOperators {
     }
 
     /// `{"and": [a, b, c]}` — short-circuit AND. Returns the first falsy
-    /// value or, if all are truthy, the last value (matches JS / JSON
-    /// Logic: `and` returns the actual value, not a coerced boolean).
-    /// Empty input returns `.null`.
+    /// value or, if all are truthy, the last value (matches JS / JSON Logic:
+    /// `and` returns the actual value, not a coerced boolean). Empty input
+    /// returns `.null`.
     static func opAnd(args: Value, vars: Value) throws -> Value {
         let items = Operators.argsAsList(args)
         var last: Value = .null

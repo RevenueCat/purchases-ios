@@ -54,6 +54,36 @@ final class AccessorOperatorsTests: XCTestCase {
         XCTAssertEqual(out, .string("second"))
     }
 
+    func testVarSplitsDotPathsLikeJsonLogicJsPreservingEmptySegments() throws {
+        // json-logic-js uses `String(path).split(".")`, which keeps empty
+        // segments — e.g. `"a..b"` → `["a", "", "b"]`.
+        let doubleDot = Value.object([
+            "a": .object(["": .object(["b": .string("middle")])])
+        ])
+        XCTAssertEqual(
+            try AccessorOperators.opVar(args: .string("a..b"), vars: doubleDot),
+            .string("middle")
+        )
+
+        let leadingDot = Value.object(["": .object(["a": .string("leading")])])
+        XCTAssertEqual(
+            try AccessorOperators.opVar(args: .string(".a"), vars: leadingDot),
+            .string("leading")
+        )
+
+        let trailingDot = Value.object(["a": .object(["": .string("trailing")])])
+        XCTAssertEqual(
+            try AccessorOperators.opVar(args: .string("a."), vars: trailingDot),
+            .string("trailing")
+        )
+
+        let onlyDots = Value.object(["": .object(["": .string("only-dots")])])
+        XCTAssertEqual(
+            try AccessorOperators.opVar(args: .string("."), vars: onlyDots),
+            .string("only-dots")
+        )
+    }
+
     func testVarMissingKeyReturnsNullAndWarns() throws {
         let vars = Value.object(["a": .int(1)])
         let out = try AccessorOperators.opVar(args: .string("missing_key"), vars: vars)
@@ -394,6 +424,18 @@ final class AccessorOperatorsTests: XCTestCase {
                 .string("empty_object"),
                 .string("zero_string")
             ]),
+            vars: vars
+        )
+        XCTAssertEqual(result, .array([]))
+    }
+
+    func testMissingEmptyStringKeyResolvesToEntireScopeAndIsNotMissing() throws {
+        // json-logic-js routes `missing` through `var`; `var` with empty path
+        // returns the full data scope, which is neither null nor empty string,
+        // so the empty key is not missing.
+        let vars = Value.object(["a": .int(1)])
+        let result = try AccessorOperators.opMissing(
+            args: .array([.string("")]),
             vars: vars
         )
         XCTAssertEqual(result, .array([]))

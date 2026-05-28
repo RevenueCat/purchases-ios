@@ -296,4 +296,14 @@ final class ValueTests: XCTestCase {
         XCTAssertTrue(jsParseFloat(.object([:])).isNaN)
         XCTAssertTrue(jsParseFloat(.string("abc")).isNaN)
     }
+
+    func testJsNumberStringFallsThroughToSwiftDoubleStringForOutOfInt64Range() {
+        // Last whole number that still round-trips through Int64 — fast path,
+        // matches JS (`String(1e18) === "1000000000000000000"`).
+        XCTAssertEqual(jsString(.float(1e18)), "1000000000000000000")
+
+        // Spec-divergence pin: see KDoc on jsNumberString. JS renders `1e19`
+        // as `"10000000000000000000"`; Swift uses `"1e+19"`.
+        XCTAssertEqual(jsString(.float(1e19)), "1e+19")
+    }
 }

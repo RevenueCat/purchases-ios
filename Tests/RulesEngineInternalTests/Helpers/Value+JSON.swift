@@ -54,10 +54,13 @@ extension Value {
             if CFGetTypeID(number) == CFBooleanGetTypeID() {
                 return .bool(number.boolValue)
             }
-            // `objCType` reports the underlying storage. JSONSerialization
-            // uses 'q' (long long / Int64) for whole numbers and 'd'
-            // (double) for fractional numbers — that's how we keep
-            // `100` → .int(100) and `100.0` → .float(100.0).
+            // `objCType` reports the NSNumber storage type using Objective-C
+            // type encodings. See:
+            // swiftlint:disable:next line_length
+            // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtTypeEncodings.html
+            // JSONSerialization typically uses 'q' for whole numbers and 'd'
+            // for fractional ones — that's how we keep `100` → .int(100) and
+            // `100.0` → .float(100.0).
             let type = String(cString: number.objCType)
             switch type {
             case "c", "i", "s", "l", "q", "C", "I", "S", "L", "Q":

@@ -6,13 +6,10 @@
 
 import Foundation
 
-/// A JSON-shaped value. Used both as the parsed JSON Logic predicate tree
-/// and as the resolved variable map handed in by callers.
+/// A JSON-shaped value for JSON Logic predicates and variable data.
 ///
-/// Maps directly onto the JSON data model with one tweak: numbers are split
-/// into `int(Int64)` and `float(Double)` to preserve type intent.
-/// Cross-type numeric comparisons / arithmetic still work — see `looseEq`,
-/// `strictEq`, and the comparison helpers below.
+/// Numbers are split into `int` and `float` cases to preserve type intent.
+/// Cross-type numeric comparisons still work — see `looseEq` and `strictEq`.
 enum Value: Equatable, Hashable, Sendable {
 
     case null
@@ -189,6 +186,12 @@ func jsArrayElementString(_ value: Value) -> String {
 /// whole-number doubles render without a decimal (`String(1.0) === "1"`),
 /// `NaN` / `±Infinity` keep their JS spellings, fractional doubles use
 /// Swift's default rendering (matches JS for non-pathological values).
+///
+/// Known divergence from JS: for values beyond exact integer round-trip range,
+/// we fall through to Swift's `String(Double)`, which may use scientific
+/// notation earlier than JS (`1e19` → `"1e+19"` vs `"10000000000000000000"`).
+/// This only surfaces through `var` path coercion or `looseEq`'s compound-vs-
+/// primitive arm with pathological magnitudes.
 func jsNumberString(_ value: Double) -> String {
     if value.isNaN { return "NaN" }
     if value.isInfinite { return value > 0 ? "Infinity" : "-Infinity" }
