@@ -107,7 +107,6 @@ enum ComparisonOperators {
     /// operands. `nil` means the argument was omitted → `nan` (not a
     /// number), matching JS `Number(undefined)`.
     private static func asDouble(_ value: Value?) -> Double {
-        guard let value = value else { return .nan }
-        return value.asNumber ?? .nan
+        value?.asNumber ?? .nan
     }
 }
