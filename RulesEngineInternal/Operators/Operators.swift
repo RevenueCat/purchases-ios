@@ -78,6 +78,11 @@ enum Operators {
         case "merge":
             return try StringArrayOperators.opMerge(args: args, vars: vars)
 
+        case "some":
+            return try IterationOperators.opSome(args: args, vars: vars)
+        case "all":
+            return try IterationOperators.opAll(args: args, vars: vars)
+
         default:
             throw RuleError.unsupportedOperator(name: operatorName)
         }
