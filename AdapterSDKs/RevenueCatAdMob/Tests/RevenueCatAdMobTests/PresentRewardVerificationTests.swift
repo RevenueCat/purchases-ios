@@ -51,9 +51,9 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         self.wait(for: [expectation], timeout: 2.0)
 
         let result = try XCTUnwrap(receivedResult)
-        XCTAssertNotNil(result.reward)
-        XCTAssertEqual(result.reward?.virtualCurrency?.code, "coins")
-        XCTAssertEqual(result.reward?.virtualCurrency?.amount, 4)
+        XCTAssertNotNil(result.verifiedReward)
+        XCTAssertEqual(result.verifiedReward?.virtualCurrency?.code, "coins")
+        XCTAssertEqual(result.verifiedReward?.virtualCurrency?.amount, 4)
     }
 
     func testCreateUserDidEarnRewardHandlerWithStateDeliversFailedWhenPollerFails() throws {

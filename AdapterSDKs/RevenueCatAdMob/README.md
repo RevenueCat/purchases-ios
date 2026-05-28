@@ -188,7 +188,7 @@ rewardedAd?.present(
         // Reward verification started
     },
     rewardVerificationCompleted: { result in
-        guard let reward = result.reward else {
+        guard let reward = result.verifiedReward else {
             print("Reward verification failed")
             return
         }
@@ -269,7 +269,7 @@ rewardedInterstitialAd?.present(
         // Reward verification started
     },
     rewardVerificationCompleted: { result in
-        guard let reward = result.reward else {
+        guard let reward = result.verifiedReward else {
             print("Reward verification failed")
             return
         }

@@ -32,7 +32,7 @@ import Foundation
     internal static let failed = RewardVerificationResult(storage: .failed)
 
     /// Non-`nil` when verification succeeded.
-    public var reward: AdReward? {
+    public var verifiedReward: AdReward? {
         guard case .verified(let reward) = self.storage else { return nil }
         return reward
     }

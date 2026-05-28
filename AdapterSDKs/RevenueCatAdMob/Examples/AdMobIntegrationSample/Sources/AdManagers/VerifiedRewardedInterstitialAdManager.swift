@@ -74,7 +74,7 @@ final class VerifiedRewardedInterstitialAdManager: NSObject, ObservableObject {
                 self.shouldReportDismissedBeforeReward = false
                 self.rewardedInterstitialAd = nil
                 self.message = Message.forVerificationResult(result)
-                print("✅ Rewarded interstitial verification finished: \(String(describing: result.reward))")
+                print("✅ Rewarded interstitial verification finished: \(String(describing: result.verifiedReward))")
             }
         )
     }
