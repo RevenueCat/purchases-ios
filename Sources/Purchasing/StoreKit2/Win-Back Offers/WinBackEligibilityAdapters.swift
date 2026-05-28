@@ -22,6 +22,7 @@ import StoreKit
 internal enum WinBackEligibilityOwnershipType: Sendable {
     case purchased
     case familyShared
+    case unknown
 }
 
 internal protocol WinBackEligibilityProductType: Sendable {
@@ -142,7 +143,7 @@ private struct StoreKitWinBackStatus: WinBackEligibilityStatusType {
         case .familyShared:
             return .familyShared
         default:
-            return .purchased
+            return .unknown
         }
     }
 
@@ -193,11 +194,15 @@ private struct StoreKitWinBackOffer: WinBackEligibilityOfferType {
 @available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, visionOS 26.4, *)
 private struct StoreKitWinBackPricingTerms: WinBackEligibilityPricingTermsType {
 
+    #if compiler(>=6.3.2)
     private let pricingTerms: Product.SubscriptionInfo.PricingTerms
+    #endif
 
+    #if compiler(>=6.3.2)
     init(_ pricingTerms: Product.SubscriptionInfo.PricingTerms) {
         self.pricingTerms = pricingTerms
     }
+    #endif
 
     var billingPlanType: BillingPlanType? {
         return BillingPlanType.from(storeKitBillingPlanType: self.pricingTerms.billingPlanType)
