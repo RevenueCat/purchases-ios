@@ -172,15 +172,32 @@ struct WorkflowPaywallView: View {
         promoOfferCache: PaywallPromoOfferCache?,
         onDismiss: @escaping () -> Void
     ) {
-        self.init(
+        self.context = context
+        self.purchaseHandler = purchaseHandler
+        self.introEligibilityChecker = introEligibilityChecker
+        self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
+        self.displayCloseButton = displayCloseButton
+        self.promoOfferCache = promoOfferCache
+        self.onDismiss = onDismiss
+        self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
+        let initialStepId = context.workflow.initialStepId
+        let initialPackageInput = Self.buildPackageInput(
+            stepId: initialStepId,
             context: context,
-            purchaseHandler: purchaseHandler,
-            introEligibilityChecker: introEligibilityChecker,
-            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
-            displayCloseButton: displayCloseButton,
-            promoOfferCache: promoOfferCache,
-            onDismiss: onDismiss,
-            navigator: WorkflowNavigator(workflow: context.workflow)
+            preferredPackage: nil,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        )
+        self._stepPackageContexts = .init(wrappedValue: [initialStepId: initialPackageInput.packageContext])
+        self._transitionState = .init(
+            wrappedValue: .init(
+                currentPage: Self.renderedPage(
+                    from: context,
+                    stepId: initialStepId,
+                    canNavigateBack: false,
+                    displayCloseButton: displayCloseButton,
+                    packageInput: initialPackageInput
+                )
+            )
         )
     }
 
