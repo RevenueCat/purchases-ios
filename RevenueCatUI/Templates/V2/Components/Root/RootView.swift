@@ -51,14 +51,22 @@ struct RootView: View {
         self.defaultPackage = defaultPackage
     }
 
-    // enforce filling the height of the screen to ensure headers and footers
-    // appear where they should for all stack dimensions
+    /// Invisible sizing helper for overlay-header mode. A minimal-width view participates in `ZStack`
+    /// layout without forcing vertical expansion (which would fight sticky-footer height constraints).
     private var fillVerticalBounds: some View {
         Color.clear.frame(width: 1)
     }
 
     private var usesOverlayHeaderLayout: Bool {
         viewModel.headerViewModel != nil && viewModel.shouldOverlayHeader
+    }
+
+    /// Layout contract for bounded containers (e.g. iPad form sheets):
+    /// - The root `VStack` fills the offered height so the sticky footer stays at the bottom.
+    /// - The main stack scrolls (`isScrollableByDefault`) inside the remaining space above the footer.
+    /// - Overlay-header paywalls use a `ZStack` only when the header must draw above full-bleed media.
+    private var usesStickyFooterLayout: Bool {
+        viewModel.stickyFooterViewModel != nil
     }
 
     var body: some View {
@@ -98,7 +106,8 @@ struct RootView: View {
                     self.mainStackContent
                 }
             }
-            .applyIf(self.viewModel.stickyFooterViewModel != nil) { view in
+            // Expand the scrollable main region within the bounded root column.
+            .applyIf(self.usesStickyFooterLayout) { view in
                 view.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
             .onPreferenceChange(OverlaidHeaderHeightKey.self) { height in
@@ -119,7 +128,8 @@ struct RootView: View {
                 .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .applyIf(self.viewModel.stickyFooterViewModel != nil) { view in
+        // Fill the paywall container height so the sticky footer pins to the bottom edge.
+        .applyIf(self.usesStickyFooterLayout) { view in
             view.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .environment(\.openSheet, { sheet in
