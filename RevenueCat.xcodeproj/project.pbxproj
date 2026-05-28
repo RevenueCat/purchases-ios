@@ -48,6 +48,13 @@
 		03C7305B2D35985900297FEC /* TextComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C7305A2D35985500297FEC /* TextComponentTests.swift */; };
 		03C730F32D35F14600297FEC /* PaywallV2CacheWarming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C730F22D35F13F00297FEC /* PaywallV2CacheWarming.swift */; };
 		03E37BEA2D30B32200CD9678 /* PaywallTabsComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03E37BE92D30B32200CD9678 /* PaywallTabsComponent.swift */; };
+		AA0001022F0000000000AA02 /* PaywallInputSingleChoiceComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012F0000000000AA01 /* PaywallInputSingleChoiceComponent.swift */; };
+		AA0001042F0000000000AA04 /* InputSingleChoiceContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001032F0000000000AA03 /* InputSingleChoiceContext.swift */; };
+		AA0001062F0000000000AA06 /* InputSingleChoiceComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001052F0000000000AA05 /* InputSingleChoiceComponentViewModel.swift */; };
+		AA0001082F0000000000AA08 /* InputOptionComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001072F0000000000AA07 /* InputOptionComponentViewModel.swift */; };
+		AA00010A2F0000000000AA0A /* InputSingleChoiceComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001092F0000000000AA09 /* InputSingleChoiceComponentView.swift */; };
+		AA00010C2F0000000000AA0C /* InputOptionComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010B2F0000000000AA0B /* InputOptionComponentView.swift */; };
+		AA00010F2F0000000000AA0F /* InputSingleChoiceComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010E2F0000000000AA0E /* InputSingleChoiceComponentTests.swift */; };
 		03F0B6512DD5700D00E82199 /* LocalizationDictionaryExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F0B6502DD5700D00E82199 /* LocalizationDictionaryExtensions.swift */; };
 		03F0B6712DD6364100E82199 /* NavigatetoURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F0B6702DD6363B00E82199 /* NavigatetoURL.swift */; };
 		03F446212D2F73240046129A /* StackComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446202D2F73210046129A /* StackComponentTests.swift */; };
@@ -1556,6 +1563,14 @@
 		03C730F22D35F13F00297FEC /* PaywallV2CacheWarming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallV2CacheWarming.swift; sourceTree = "<group>"; };
 		03CCFC172DE94FF70052B764 /* Paywall-Screenshots.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Paywall-Screenshots.xctestplan"; sourceTree = "<group>"; };
 		03E37BE92D30B32200CD9678 /* PaywallTabsComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTabsComponent.swift; sourceTree = "<group>"; };
+		AA0001012F0000000000AA01 /* PaywallInputSingleChoiceComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallInputSingleChoiceComponent.swift; sourceTree = "<group>"; };
+		AA0001032F0000000000AA03 /* InputSingleChoiceContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputSingleChoiceContext.swift; sourceTree = "<group>"; };
+		AA0001052F0000000000AA05 /* InputSingleChoiceComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputSingleChoiceComponentViewModel.swift; sourceTree = "<group>"; };
+		AA0001072F0000000000AA07 /* InputOptionComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputOptionComponentViewModel.swift; sourceTree = "<group>"; };
+		AA0001092F0000000000AA09 /* InputSingleChoiceComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputSingleChoiceComponentView.swift; sourceTree = "<group>"; };
+		AA00010B2F0000000000AA0B /* InputOptionComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputOptionComponentView.swift; sourceTree = "<group>"; };
+		AA00010D2F0000000000AA0D /* InputSingleChoiceContextTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InputSingleChoiceContextTests.swift; sourceTree = "<group>"; };
+		AA00010E2F0000000000AA0E /* InputSingleChoiceComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputSingleChoiceComponentTests.swift; sourceTree = "<group>"; };
 		03F0B6502DD5700D00E82199 /* LocalizationDictionaryExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationDictionaryExtensions.swift; sourceTree = "<group>"; };
 		03F0B6702DD6363B00E82199 /* NavigatetoURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigatetoURL.swift; sourceTree = "<group>"; };
 		03F446202D2F73210046129A /* StackComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackComponentTests.swift; sourceTree = "<group>"; };
@@ -3107,6 +3122,7 @@
 				B413E59F2F97B3B900B5F0CA /* CarouselTabSwitchTests.swift */,
 				DB1FC9592F9A1B74009A95EA /* WorkflowScreenMapperTests.swift */,
 				F468C7BCEB786BEC80277ECA /* WorkflowNavigatorTests.swift */,
+				AA00010D2F0000000000AA0D /* InputSingleChoiceContextTests.swift */,
 				6EFD5F7BD8404B6E828C4E10 /* WorkflowPaywallViewTests.swift */,
 				0E4CCD8E9E454A2EB3760E06 /* ButtonComponentViewModelMappingTests.swift */,
 				A1D3F80D2D524F51BA60157C /* ButtonComponentViewTests.swift */,
@@ -3137,6 +3153,18 @@
 				0354AA442D4029C300F9E330 /* TabsComponentViewModel.swift */,
 			);
 			path = Tabs;
+			sourceTree = "<group>";
+		};
+		AA0001102F0000000000AA10 /* InputSingleChoice */ = {
+			isa = PBXGroup;
+			children = (
+				AA0001032F0000000000AA03 /* InputSingleChoiceContext.swift */,
+				AA0001052F0000000000AA05 /* InputSingleChoiceComponentViewModel.swift */,
+				AA0001072F0000000000AA07 /* InputOptionComponentViewModel.swift */,
+				AA0001092F0000000000AA09 /* InputSingleChoiceComponentView.swift */,
+				AA00010B2F0000000000AA0B /* InputOptionComponentView.swift */,
+			);
+			path = InputSingleChoice;
 			sourceTree = "<group>";
 		};
 		0387D4AD2EC58AA5008E4A6B /* Countdown */ = {
@@ -3313,6 +3341,7 @@
 				2CC791542CC0452100FBE120 /* Packages */,
 				88B1BAEA2C813A3C001B7EE5 /* Stack */,
 				0354AA452D4029C300F9E330 /* Tabs */,
+				AA0001102F0000000000AA10 /* InputSingleChoice */,
 				4D3BA5B12D47AB4400668AFC /* Timeline */,
 				88B1BADC2C813A3C001B7EE5 /* Text */,
 				778360772CCA85D1000785B8 /* StickyFooter */,
@@ -3382,6 +3411,7 @@
 				03F446222D2FE0B90046129A /* Properties */,
 				E1C0A009BEEF0001CCDD0001 /* HeaderComponentTests.swift */,
 				03F446202D2F73210046129A /* StackComponentTests.swift */,
+				AA00010E2F0000000000AA0E /* InputSingleChoiceComponentTests.swift */,
 				03C7305A2D35985500297FEC /* TextComponentTests.swift */,
 				1D76F25F2F921DB800863AF8 /* ButtonComponentViewModelInteractionTests.swift */,
 				03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */,
@@ -5804,6 +5834,7 @@
 				4D3BA4CB2D37D15E00668AFC /* PaywallTimelineComponent.swift */,
 				03C06FC62D46742600600693 /* PaywallCarouselComponent.swift */,
 				03E37BE92D30B32200CD9678 /* PaywallTabsComponent.swift */,
+				AA0001012F0000000000AA01 /* PaywallInputSingleChoiceComponent.swift */,
 				88AD01072C740CF400AA1F2B /* PaywallTextComponent.swift */,
 				2C2AEB3A2CA7209F00A50F38 /* PaywallPackageComponent.swift */,
 				2C2AEB3E2CA7235300A50F38 /* PaywallPurchaseButtonComponent.swift */,
@@ -7468,6 +7499,7 @@
 				6E38843A0CAFD551013D0A3F /* StoreProduct.swift in Sources */,
 				7542E4E92DEDCC2A002CE340 /* PaywallFontManagerType.swift in Sources */,
 				03E37BEA2D30B32200CD9678 /* PaywallTabsComponent.swift in Sources */,
+				AA0001022F0000000000AA02 /* PaywallInputSingleChoiceComponent.swift in Sources */,
 				FD20467F2CB82F2000166727 /* StoreKit2PurchaseIntentListener.swift in Sources */,
 				16E146AD2E99F3480089B609 /* TransactionNotifications.swift in Sources */,
 				B34605BD279A6E380031CA74 /* CallbackCacheStatus.swift in Sources */,
@@ -7647,6 +7679,7 @@
 				57E2230727500BB1002DB06E /* AtomicTests.swift in Sources */,
 				351B51B826D450E800BD2BD7 /* StoreKit1WrapperTests.swift in Sources */,
 				03F446212D2F73240046129A /* StackComponentTests.swift in Sources */,
+				AA00010F2F0000000000AA0F /* InputSingleChoiceComponentTests.swift in Sources */,
 				A56C2E012819C33500995421 /* BackendPostAdServicesTokenTests.swift in Sources */,
 				5766AAD5283E9B7400FA6091 /* PurchasesRestoreTests.swift in Sources */,
 				FD18ED4E2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift in Sources */,
@@ -8066,6 +8099,11 @@
 				0354AA4E2EEB200000F9E330 /* TabsPackageSelectionResolver.swift in Sources */,
 				0354AA492D4029C300F9E330 /* TabControlButtonComponentView.swift in Sources */,
 				0354AA4A2D4029C300F9E330 /* TabsComponentViewModel.swift in Sources */,
+				AA0001042F0000000000AA04 /* InputSingleChoiceContext.swift in Sources */,
+				AA0001062F0000000000AA06 /* InputSingleChoiceComponentViewModel.swift in Sources */,
+				AA0001082F0000000000AA08 /* InputOptionComponentViewModel.swift in Sources */,
+				AA00010A2F0000000000AA0A /* InputSingleChoiceComponentView.swift in Sources */,
+				AA00010C2F0000000000AA0C /* InputOptionComponentView.swift in Sources */,
 				0354AA4B2D4029C300F9E330 /* TabControlToggleComponentViewModel.swift in Sources */,
 				0354AA4C2D4029C300F9E330 /* TabControlToggleComponentView.swift in Sources */,
 				1DEF758A2ECF0EFE00614CB2 /* CreateTicketView.swift in Sources */,

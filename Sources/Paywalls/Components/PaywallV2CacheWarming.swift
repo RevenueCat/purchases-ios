@@ -10,6 +10,7 @@
 //  PaywallV2CacheWarming.swift
 //
 //  Created by Josh Holtz on 1/13/25.
+// swiftlint:disable file_length
 
 import Foundation
 
@@ -208,6 +209,16 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 }
             case .fallbackHeader:
                 break
+            case .inputSingleChoice(let component):
+                urls += self.collectAllImageURLs(
+                    in: component.stack,
+                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                )
+            case .inputOption(let component):
+                urls += self.collectAllImageURLs(
+                    in: component.stack,
+                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                )
             }
         }
 
@@ -265,6 +276,10 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 }
             case .fallbackHeader:
                 break
+            case .inputSingleChoice(let component):
+                urls += self.collectAllVideoURLs(in: component.stack)
+            case .inputOption(let component):
+                urls += self.collectAllVideoURLs(in: component.stack)
             }
         }
 

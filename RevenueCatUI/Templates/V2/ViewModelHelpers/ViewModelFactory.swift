@@ -517,6 +517,32 @@ struct ViewModelFactory {
             // fallbackHeader is filtered out in toStackViewModel and should never reach here.
             assertionFailure("fallbackHeader should have been filtered before view model creation")
             throw TemplateError.unexpectedComponent
+        case .inputSingleChoice(let component):
+            let stackViewModel = try toStackViewModel(
+                component: component.stack,
+                packageValidator: packageValidator,
+                purchaseButtonCollector: purchaseButtonCollector,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                offering: offering,
+                colorScheme: colorScheme
+            )
+            return .inputSingleChoice(
+                InputSingleChoiceComponentViewModel(component: component, stackViewModel: stackViewModel)
+            )
+        case .inputOption(let component):
+            let stackViewModel = try toStackViewModel(
+                component: component.stack,
+                packageValidator: packageValidator,
+                purchaseButtonCollector: purchaseButtonCollector,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                offering: offering,
+                colorScheme: colorScheme
+            )
+            return .inputOption(
+                InputOptionComponentViewModel(component: component, stackViewModel: stackViewModel)
+            )
         }
     }
 
