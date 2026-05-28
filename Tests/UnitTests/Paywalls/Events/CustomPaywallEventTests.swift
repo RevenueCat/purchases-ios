@@ -312,16 +312,6 @@ class CustomPaywallEventTests: TestCase {
         expect(params.offeringId).to(beNil())
     }
 
-    func testParamsDefaultOfferingIsNil() {
-        let params = CustomPaywallImpressionParams()
-        expect(params.offering).to(beNil())
-    }
-
-    func testParamsWithOfferingIdInitDoesNotStoreOffering() {
-        let params = CustomPaywallImpressionParams(paywallId: "pw", offeringId: "my_offering")
-        expect(params.offering).to(beNil())
-    }
-
     // MARK: - Params: Offering-based init
 
     func testParamsWithOfferingPopulatesOfferingId() {
@@ -331,18 +321,11 @@ class CustomPaywallEventTests: TestCase {
         expect(params.offeringId) == "my_offering"
     }
 
-    func testParamsWithOfferingStoresOffering() {
-        let offering = Self.makeOffering(identifier: "my_offering")
-        let params = CustomPaywallImpressionParams(paywallId: "pw", offering: offering)
-        expect(params.offering) === offering
-    }
-
     func testParamsWithOfferingDefaultPaywallIdIsNil() {
         let offering = Self.makeOffering(identifier: "offering_1")
         let params = CustomPaywallImpressionParams(offering: offering)
         expect(params.paywallId).to(beNil())
         expect(params.offeringId) == "offering_1"
-        expect(params.offering) === offering
     }
 
     // MARK: - Data: Codable round-trip
