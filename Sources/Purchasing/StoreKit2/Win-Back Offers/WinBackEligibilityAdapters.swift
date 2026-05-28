@@ -216,7 +216,7 @@ private struct StoreKitWinBackPricingTerms: WinBackEligibilityPricingTermsType {
         #if compiler(>=6.3.2)
         return self.pricingTerms.subscriptionOffers.map(StoreKitWinBackOffer.init)
         #else
-        return self.subscriptionOffers.map(StoreKitWinBackOffer.init)
+        return []
         #endif
     }
 
