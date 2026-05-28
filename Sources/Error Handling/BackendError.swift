@@ -280,6 +280,9 @@ extension BackendError {
 
         /// A call that is supposed to retrieve a CustomerInfo failed because the json object couldn't be parsed.
         case customerInfoResponseParsing(error: NSError, json: String)
+
+        /// A remote config topic entry contained a malformed blob_ref value.
+        case remoteConfigMalformedBlobRef
     }
 
 }
@@ -302,6 +305,8 @@ extension BackendError.UnexpectedBackendResponseError: DescribableError {
             return "Unable to instantiate a CustomerInfoResponse, CustomerInfo in response was nil."
         case .customerInfoResponseParsing:
             return "Unable to instantiate a CustomerInfoResponse due to malformed json."
+        case .remoteConfigMalformedBlobRef:
+            return "Remote config topic entry contained a malformed blob_ref."
         }
     }
 
