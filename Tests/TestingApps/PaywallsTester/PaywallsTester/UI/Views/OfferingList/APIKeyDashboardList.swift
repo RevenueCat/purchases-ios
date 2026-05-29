@@ -243,6 +243,7 @@ struct APIKeyDashboardList: View {
                                 }
                                 .contextMenu {
                                     self.button(for: .workflow, offering: offering)
+                                    self.button(for: .presentWorkflow, offering: offering)
                                 }
                                 #else
                                 VStack(alignment: .leading) {
