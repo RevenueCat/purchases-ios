@@ -218,6 +218,24 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.topicFetcher.callOrder.value).to(equal([.fetch, .cleanup]))
     }
 
+    func testCleanupReferenceSetIsLowercased() {
+        // Backend may return mixed-case hex; on-disk filenames are lowercase. Cleanup must
+        // match against lowercased blob refs or it would delete freshly-downloaded files.
+        let mixedCase = "ABCDEFabcdef" + String(repeating: "0", count: 52)
+        self.remoteConfigAPI.stubbedResult = .success(makeResponse(
+            sources: [makeSource(id: "primary")],
+            topics: [.productEntitlementMapping: ["default": makeEntry(blobRef: mixedCase)]]
+        ))
+
+        waitUntil { done in
+            self.manager.updateRemoteConfigIfNeeded(isAppBackgrounded: false) { _ in done() }
+        }
+
+        expect(self.topicFetcher.cleanupCalls.value.first).to(equal(
+            [.productEntitlementMapping: [mixedCase.lowercased()]]
+        ))
+    }
+
     func testDoesNotTriggerCleanupWhenTasksFilteredEmpty() {
         // Manifest has a topic, but no `default` entryId — so tasks is empty.
         self.remoteConfigAPI.stubbedResult = .success(makeResponse(

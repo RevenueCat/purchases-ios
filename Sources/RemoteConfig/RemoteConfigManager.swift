@@ -121,8 +121,10 @@ private extension RemoteConfigManager {
     func buildReferenceSet(
         manifest: RemoteConfigResponse.Manifest
     ) -> [RemoteConfigResponse.Topic: Set<String>] {
+        // Normalize to lowercase so the keep-set matches the on-disk filenames produced by
+        // `TopicFetcher.fetchTopicIfNeeded`, which lowercases blob refs before writing.
         manifest.topics.mapValues { entries in
-            Set(entries.values.map { $0.blobRef })
+            Set(entries.values.map { $0.blobRef.lowercased() })
         }
     }
 
