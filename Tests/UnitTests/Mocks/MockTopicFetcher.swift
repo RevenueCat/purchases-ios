@@ -16,8 +16,15 @@ class MockTopicFetcher: TopicFetcher {
         let source: RemoteConfigResponse.BlobSource
     }
 
-    var stubbedFetchResult: BackendError?
-    var fetchCalls: [FetchCall] = []
+    enum Call: Equatable {
+        case fetch
+        case cleanup
+    }
+
+    let stubbedFetchResult: Atomic<BackendError?> = .init(nil)
+    let fetchCalls: Atomic<[FetchCall]> = .init([])
+    let cleanupCalls: Atomic<[[RemoteConfigResponse.Topic: Set<String>]]> = .init([])
+    let callOrder: Atomic<[Call]> = .init([])
 
     convenience init() {
         self.init(fileManager: FileManager.default)
@@ -29,8 +36,16 @@ class MockTopicFetcher: TopicFetcher {
         topicEntry: RemoteConfigResponse.TopicEntry,
         source: RemoteConfigResponse.BlobSource
     ) async -> BackendError? {
-        self.fetchCalls.append(FetchCall(topic: topic, entryId: entryId, topicEntry: topicEntry, source: source))
-        return self.stubbedFetchResult
+        self.fetchCalls.modify {
+            $0.append(FetchCall(topic: topic, entryId: entryId, topicEntry: topicEntry, source: source))
+        }
+        self.callOrder.modify { $0.append(.fetch) }
+        return self.stubbedFetchResult.value
+    }
+
+    override func cleanupUnreferencedTopics(referenced: [RemoteConfigResponse.Topic: Set<String>]) async {
+        self.cleanupCalls.modify { $0.append(referenced) }
+        self.callOrder.modify { $0.append(.cleanup) }
     }
 
 }

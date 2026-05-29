@@ -46,8 +46,8 @@ final class RemoteConfigManagerTests: TestCase {
         }
 
         expect(receivedError).to(beNil())
-        expect(self.topicFetcher.fetchCalls).to(haveCount(1))
-        let call = self.topicFetcher.fetchCalls.first
+        expect(self.topicFetcher.fetchCalls.value).to(haveCount(1))
+        let call = self.topicFetcher.fetchCalls.value.first
         expect(call?.topic).to(equal(.productEntitlementMapping))
         expect(call?.entryId).to(equal("default"))
         expect(call?.topicEntry).to(equal(entry))
@@ -71,7 +71,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
 
         expect(receivedError).to(beNil())
-        expect(self.topicFetcher.fetchCalls).to(beEmpty())
+        expect(self.topicFetcher.fetchCalls.value).to(beEmpty())
     }
 
     func testEmptyTopicsSkipsTopicFetcherAndCompletesWithNil() {
@@ -89,7 +89,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
 
         expect(receivedError).to(beNil())
-        expect(self.topicFetcher.fetchCalls).to(beEmpty())
+        expect(self.topicFetcher.fetchCalls.value).to(beEmpty())
     }
 
     func testTopicWithoutDefaultEntryIdIsSkipped() {
@@ -107,7 +107,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
 
         expect(receivedError).to(beNil())
-        expect(self.topicFetcher.fetchCalls).to(beEmpty())
+        expect(self.topicFetcher.fetchCalls.value).to(beEmpty())
     }
 
     // MARK: - Source selection
@@ -124,7 +124,7 @@ final class RemoteConfigManagerTests: TestCase {
             self.manager.updateRemoteConfigIfNeeded(isAppBackgrounded: false) { _ in done() }
         }
 
-        expect(self.topicFetcher.fetchCalls.first?.source).to(equal(first))
+        expect(self.topicFetcher.fetchCalls.value.first?.source).to(equal(first))
     }
 
     // MARK: - Error propagation
@@ -137,7 +137,7 @@ final class RemoteConfigManagerTests: TestCase {
             sources: [makeSource(id: "primary")],
             topics: [.productEntitlementMapping: ["default": makeEntry(blobRef: "abc")]]
         ))
-        self.topicFetcher.stubbedFetchResult = fetcherError
+        self.topicFetcher.stubbedFetchResult.value = fetcherError
 
         var receivedError: BackendError?
         waitUntil { done in
@@ -165,7 +165,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
 
         expect(receivedError).toNot(beNil())
-        expect(self.topicFetcher.fetchCalls).to(beEmpty())
+        expect(self.topicFetcher.fetchCalls.value).to(beEmpty())
     }
 
     // MARK: - isAppBackgrounded forwarding
@@ -190,7 +190,118 @@ final class RemoteConfigManagerTests: TestCase {
 
         self.manager.updateRemoteConfigIfNeeded(isAppBackgrounded: false, completion: nil)
 
-        expect(self.topicFetcher.fetchCalls).toEventually(haveCount(1))
+        expect(self.topicFetcher.fetchCalls.value).toEventually(haveCount(1))
+    }
+
+    // MARK: - Cleanup
+
+    func testTriggersCleanupWithAllEntryIdBlobRefsAfterSuccessfulDownload() {
+        let defaultEntry = makeEntry(blobRef: "blob-default")
+        let experimentEntry = makeEntry(blobRef: "blob-experiment")
+        self.remoteConfigAPI.stubbedResult = .success(makeResponse(
+            sources: [makeSource(id: "primary")],
+            topics: [.productEntitlementMapping: [
+                "default": defaultEntry,
+                "EXPERIMENT_A": experimentEntry
+            ]]
+        ))
+
+        waitUntil { done in
+            self.manager.updateRemoteConfigIfNeeded(isAppBackgrounded: false) { _ in done() }
+        }
+
+        expect(self.topicFetcher.cleanupCalls.value).to(haveCount(1))
+        expect(self.topicFetcher.cleanupCalls.value.first).to(equal(
+            [.productEntitlementMapping: ["blob-default", "blob-experiment"]]
+        ))
+        // Cleanup must run after all downloads complete.
+        expect(self.topicFetcher.callOrder.value).to(equal([.fetch, .cleanup]))
+    }
+
+    func testDoesNotTriggerCleanupWhenTasksFilteredEmpty() {
+        // Manifest has a topic, but no `default` entryId — so tasks is empty.
+        self.remoteConfigAPI.stubbedResult = .success(makeResponse(
+            sources: [makeSource(id: "primary")],
+            topics: [.productEntitlementMapping: ["EXPERIMENT_A": makeEntry(blobRef: "abc")]]
+        ))
+
+        waitUntil { done in
+            self.manager.updateRemoteConfigIfNeeded(isAppBackgrounded: false) { _ in done() }
+        }
+
+        expect(self.topicFetcher.cleanupCalls.value).to(beEmpty())
+    }
+
+    func testBackToBackRefreshesEachTriggerCleanup() {
+        self.remoteConfigAPI.stubbedResult = .success(makeResponse(
+            sources: [makeSource(id: "primary")],
+            topics: [.productEntitlementMapping: ["default": makeEntry(blobRef: "abc")]]
+        ))
+
+        waitUntil { done in
+            self.manager.updateRemoteConfigIfNeeded(isAppBackgrounded: false) { _ in done() }
+        }
+        waitUntil { done in
+            self.manager.updateRemoteConfigIfNeeded(isAppBackgrounded: false) { _ in done() }
+        }
+
+        expect(self.topicFetcher.cleanupCalls.value).to(haveCount(2))
+    }
+
+    func testDoesNotTriggerCleanupWhenFetcherDownloadFails() {
+        let fetcherError = BackendError.networkError(.networkError(
+            NSError(domain: "test", code: -1, userInfo: nil)
+        ))
+        self.remoteConfigAPI.stubbedResult = .success(makeResponse(
+            sources: [makeSource(id: "primary")],
+            topics: [.productEntitlementMapping: ["default": makeEntry(blobRef: "abc")]]
+        ))
+        self.topicFetcher.stubbedFetchResult.value = fetcherError
+
+        waitUntil { done in
+            self.manager.updateRemoteConfigIfNeeded(isAppBackgrounded: false) { _ in done() }
+        }
+
+        expect(self.topicFetcher.cleanupCalls.value).to(beEmpty())
+    }
+
+    func testDoesNotTriggerCleanupWhenBackendErrors() {
+        let backendError = BackendError.networkError(.networkError(
+            NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet, userInfo: nil)
+        ))
+        self.remoteConfigAPI.stubbedResult = .failure(backendError)
+
+        waitUntil { done in
+            self.manager.updateRemoteConfigIfNeeded(isAppBackgrounded: false) { _ in done() }
+        }
+
+        expect(self.topicFetcher.cleanupCalls.value).to(beEmpty())
+    }
+
+    func testDoesNotTriggerCleanupWhenManifestHasNoTopics() {
+        self.remoteConfigAPI.stubbedResult = .success(makeResponse(
+            sources: [makeSource(id: "primary")],
+            topics: [:]
+        ))
+
+        waitUntil { done in
+            self.manager.updateRemoteConfigIfNeeded(isAppBackgrounded: false) { _ in done() }
+        }
+
+        expect(self.topicFetcher.cleanupCalls.value).to(beEmpty())
+    }
+
+    func testDoesNotTriggerCleanupWhenSourcesAreEmpty() {
+        self.remoteConfigAPI.stubbedResult = .success(makeResponse(
+            sources: [],
+            topics: [.productEntitlementMapping: ["default": makeEntry(blobRef: "abc")]]
+        ))
+
+        waitUntil { done in
+            self.manager.updateRemoteConfigIfNeeded(isAppBackgrounded: false) { _ in done() }
+        }
+
+        expect(self.topicFetcher.cleanupCalls.value).to(beEmpty())
     }
 
     func testFetchRunsEvenWithNilCompletion() {
@@ -204,7 +315,7 @@ final class RemoteConfigManagerTests: TestCase {
         self.manager.updateRemoteConfigIfNeeded(isAppBackgrounded: false, completion: nil)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount).toEventually(equal(1))
-        expect(self.topicFetcher.fetchCalls).toEventually(haveCount(1))
+        expect(self.topicFetcher.fetchCalls.value).toEventually(haveCount(1))
     }
 
 }

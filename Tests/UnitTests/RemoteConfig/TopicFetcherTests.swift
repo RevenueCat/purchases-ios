@@ -277,6 +277,89 @@ final class TopicFetcherTests: TestCase {
         expect(FileManager.default.fileExists(atPath: escapedTarget.path)).to(beFalse())
     }
 
+    // MARK: - Cleanup
+
+    func testCleanupDeletesFilesWhoseBlobRefIsNotInReferenceSet() async throws {
+        let keptBlob = String(repeating: "a", count: 64)
+        let staleBlob = String(repeating: "b", count: 64)
+        let keptFile = try writeTopicFile(topic: .productEntitlementMapping, blobRef: keptBlob, byte: 1)
+        let staleFile = try writeTopicFile(topic: .productEntitlementMapping, blobRef: staleBlob, byte: 2)
+
+        await makeFetcher().cleanupUnreferencedTopics(
+            referenced: [.productEntitlementMapping: [keptBlob]]
+        )
+
+        // Cleanup is dispatched on a detached task; assertions wait for it to complete.
+        await expect(FileManager.default.fileExists(atPath: staleFile.path)).toEventually(beFalse())
+        expect(FileManager.default.fileExists(atPath: keptFile.path)).to(beTrue())
+    }
+
+    func testCleanupDeletesEveryFileForTopicAbsentFromReferenceSet() async throws {
+        let blobA = String(repeating: "a", count: 64)
+        let blobB = String(repeating: "b", count: 64)
+        let fileA = try writeTopicFile(topic: .productEntitlementMapping, blobRef: blobA, byte: 1)
+        let fileB = try writeTopicFile(topic: .productEntitlementMapping, blobRef: blobB, byte: 2)
+
+        await makeFetcher().cleanupUnreferencedTopics(referenced: [:])
+
+        await expect(FileManager.default.fileExists(atPath: fileA.path)).toEventually(beFalse())
+        await expect(FileManager.default.fileExists(atPath: fileB.path)).toEventually(beFalse())
+    }
+
+    func testCleanupIsNoOpWhenTopicsRootDoesNotExist() async {
+        let topicsRoot = self.tempDir.appendingPathComponent("RevenueCat/topics")
+
+        await makeFetcher().cleanupUnreferencedTopics(
+            referenced: [.productEntitlementMapping: [String(repeating: "a", count: 64)]]
+        )
+
+        // Cleanup must not create the topics root itself.
+        expect(FileManager.default.fileExists(atPath: topicsRoot.path)).to(beFalse())
+    }
+
+    func testCleanupSilentlySkipsTopicWhenContentsOfDirectoryFails() async throws {
+        let blob = String(repeating: "a", count: 64)
+        let file = try writeTopicFile(topic: .productEntitlementMapping, blobRef: blob, byte: 1)
+
+        let fetcher = TopicFetcher(
+            fileManager: ListingFailureFileManager(),
+            baseCacheURL: self.tempDir
+        )
+        await fetcher.cleanupUnreferencedTopics(referenced: [:])
+
+        // Listing failed silently — file is preserved, nothing crashes.
+        expect(FileManager.default.fileExists(atPath: file.path)).to(beTrue())
+    }
+
+    func testCleanupKeepsTempFilesWithRcTopicPrefixUntouched() async throws {
+        let staleBlob = String(repeating: "a", count: 64)
+        let staleFile = try writeTopicFile(topic: .productEntitlementMapping, blobRef: staleBlob, byte: 1)
+        let tempFile = staleFile.deletingLastPathComponent().appendingPathComponent("rc_topic_inflight.tmp")
+        try Data([2]).write(to: tempFile)
+
+        await makeFetcher().cleanupUnreferencedTopics(referenced: [:])
+
+        await expect(FileManager.default.fileExists(atPath: staleFile.path)).toEventually(beFalse())
+        expect(FileManager.default.fileExists(atPath: tempFile.path)).to(beTrue())
+    }
+
+    func testCleanupKeepsReferencedFileWhenOtherFilesInSameDirAreDeleted() async throws {
+        let keptBlob = String(repeating: "c", count: 64)
+        let staleBlob1 = String(repeating: "d", count: 64)
+        let staleBlob2 = String(repeating: "e", count: 64)
+        let kept = try writeTopicFile(topic: .productEntitlementMapping, blobRef: keptBlob, byte: 0)
+        let stale1 = try writeTopicFile(topic: .productEntitlementMapping, blobRef: staleBlob1, byte: 1)
+        let stale2 = try writeTopicFile(topic: .productEntitlementMapping, blobRef: staleBlob2, byte: 2)
+
+        await makeFetcher().cleanupUnreferencedTopics(
+            referenced: [.productEntitlementMapping: [keptBlob]]
+        )
+
+        await expect(FileManager.default.fileExists(atPath: stale1.path)).toEventually(beFalse())
+        await expect(FileManager.default.fileExists(atPath: stale2.path)).toEventually(beFalse())
+        expect(FileManager.default.fileExists(atPath: kept.path)).to(beTrue())
+    }
+
     func testFetchTopicIfNeededAcceptsMixedCaseHexBlobRef() async {
         let mixedCaseHex = "ABCDEFabcdef" + String(repeating: "0", count: 52)
         let normalizedHex = mixedCaseHex.lowercased()
@@ -315,6 +398,20 @@ private extension TopicFetcherTests {
             .appendingPathComponent("RevenueCat/topics")
             .appendingPathComponent(topic.rawValue)
             .appendingPathComponent(blobRef)
+    }
+
+    func writeTopicFile(
+        topic: RemoteConfigResponse.Topic,
+        blobRef: String,
+        byte: UInt8
+    ) throws -> URL {
+        let file = topicFile(topic: topic, blobRef: blobRef)
+        try FileManager.default.createDirectory(
+            at: file.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try Data([byte]).write(to: file)
+        return file
     }
 
     func leftoverTempFiles(in dir: URL) -> [URL] {
@@ -373,6 +470,54 @@ private final class FailingReplaceFileManager: FileManaging {
 
     func removeItem(at url: URL) throws {
         try base.removeItem(at: url)
+    }
+
+    func contentsOfDirectory(at url: URL) throws -> [URL] {
+        try base.contentsOfDirectory(at: url)
+    }
+
+}
+
+private final class ListingFailureFileManager: FileManaging {
+
+    private let base = FileManager.default
+
+    func fileExists(atPath path: String) -> Bool {
+        base.fileExists(atPath: path)
+    }
+
+    func createDirectory(
+        at url: URL,
+        withIntermediateDirectories createIntermediates: Bool,
+        attributes attr: [FileAttributeKey: Any]?
+    ) throws {
+        try base.createDirectory(at: url, withIntermediateDirectories: createIntermediates, attributes: attr)
+    }
+
+    func replaceItemAt(
+        _ originalItemURL: URL,
+        withItemAt newItemURL: URL,
+        backupItemName: String?,
+        options mask: FileManager.ItemReplacementOptions
+    ) throws -> URL? {
+        try base.replaceItemAt(
+            originalItemURL,
+            withItemAt: newItemURL,
+            backupItemName: backupItemName,
+            options: mask
+        )
+    }
+
+    func copyItem(at srcURL: URL, to dstURL: URL) throws {
+        try base.copyItem(at: srcURL, to: dstURL)
+    }
+
+    func removeItem(at url: URL) throws {
+        try base.removeItem(at: url)
+    }
+
+    func contentsOfDirectory(at url: URL) throws -> [URL] {
+        throw NSError(domain: NSCocoaErrorDomain, code: NSFileReadUnknownError)
     }
 
 }

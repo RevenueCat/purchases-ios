@@ -20,6 +20,10 @@ enum RemoteConfigStrings {
     case topic_fetched(topic: RemoteConfigResponse.Topic, entryId: String)
     case topic_fetch_error(topic: RemoteConfigResponse.Topic, entryId: String, error: BackendError)
 
+    case topic_cleanup_deleted(path: String)
+    case topic_cleanup_delete_failed(path: String, error: Error)
+    case topic_cleanup_list_failed(path: String, error: Error)
+
 }
 
 extension RemoteConfigStrings: LogMessage {
@@ -46,6 +50,17 @@ extension RemoteConfigStrings: LogMessage {
 
         case let .topic_fetch_error(topic, entryId, error):
             return "RemoteConfig: failed to fetch topic \(topic) (\(entryId)): \(error.localizedDescription)"
+
+        case let .topic_cleanup_deleted(path):
+            return "RemoteConfig: deleted unreferenced topic file at \(path)."
+
+        case let .topic_cleanup_delete_failed(path, error):
+            return "RemoteConfig: failed to delete unreferenced topic file at \(path): " +
+                "\(error.localizedDescription)"
+
+        case let .topic_cleanup_list_failed(path, error):
+            return "RemoteConfig: failed to list topic files at \(path); skipping cleanup for that " +
+                "topic: \(error.localizedDescription)"
         }
     }
 
