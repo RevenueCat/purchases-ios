@@ -123,12 +123,13 @@ final class StringArrayOperatorsTests: XCTestCase {
         XCTAssertEqual(out, .string("hello"))
     }
 
-    func testCatStringifiesNullAsStringNull() throws {
+    func testCatNullOperandRendersEmpty() throws {
+        // `Array.prototype.join` renders null operands as "", not "null".
         let out = try StringArrayOperators.opCat(
             args: arr(.string("x="), .null),
             vars: .null
         )
-        XCTAssertEqual(out, .string("x=null"))
+        XCTAssertEqual(out, .string("x="))
     }
 
     func testCatStringifiesArrayWithCommaJoin() throws {

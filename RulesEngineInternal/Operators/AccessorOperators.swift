@@ -93,10 +93,10 @@ enum AccessorOperators {
         }
         let total = items.count
 
-        // Non-numeric `need_count` coerces to 0 (NaN → 0 satisfies
-        // trivially; +Infinity never satisfies; -Infinity always
-        // satisfies).
-        let need = Operators.clampedInt(needCountValue.asNumber ?? 0)
+        // Threshold uses JS `ToNumber` + `>=`. `NaN` and unparseable
+        // strings never satisfy; `+Infinity` never satisfies for finite
+        // present counts; `-Infinity` always satisfies.
+        let need = jsToNumber(needCountValue)
 
         let missing = try opMissing(args: options, vars: vars)
         let missingCount: Int
@@ -106,7 +106,7 @@ enum AccessorOperators {
             missingCount = 0
         }
 
-        if total - missingCount >= need {
+        if Double(total - missingCount) >= need {
             return .array([])
         }
         return missing

@@ -37,10 +37,12 @@ enum StringArrayOperators {
     }
 
     /// `{"cat": [a, b, ...]}` — variadic string concatenation. Each
-    /// operand is stringified via [`jsString`]. 0 args returns `""`.
+    /// operand is rendered via [`jsArrayElementString`] (mirrors
+    /// `Array.prototype.join` on the argument list: `null` → `""`).
+    /// 0 args returns `""`.
     static func opCat(args: Value, vars: Value) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
-        let joined = evaluated.map(jsString).joined()
+        let joined = evaluated.map(jsArrayElementString).joined()
         return .string(joined)
     }
 

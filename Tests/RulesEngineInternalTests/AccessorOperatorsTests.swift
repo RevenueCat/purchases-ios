@@ -533,10 +533,9 @@ final class AccessorOperatorsTests: XCTestCase {
         }
     }
 
-    func testMissingSomeWithNanThresholdTreatsItAsZero() throws {
-        // `Int(Double.nan)` traps, so an unguarded coercion would crash on
-        // a malformed `need_count` (e.g. NaN out of `{"+": ["abc"]}` or a
-        // `.float(.nan)` literal). NaN → 0 → trivially satisfied.
+    func testMissingSomeWithNanThresholdNeverSatisfies() throws {
+        // `>=` with a NaN threshold is always false in JS, so the
+        // operator returns the missing list rather than [].
         let result = try runMissingSome(
             args: .array([
                 .float(.nan),
@@ -544,7 +543,18 @@ final class AccessorOperatorsTests: XCTestCase {
             ]),
             vars: .object([:])
         )
-        XCTAssertEqual(result, .array([]))
+        XCTAssertEqual(result, .array([.string("a"), .string("b")]))
+    }
+
+    func testMissingSomeWithNonNumericStringThresholdNeverSatisfies() throws {
+        let result = try runMissingSome(
+            args: .array([
+                .string("abc"),
+                .array([.string("a"), .string("b")])
+            ]),
+            vars: .object([:])
+        )
+        XCTAssertEqual(result, .array([.string("a"), .string("b")]))
     }
 
     func testMissingSomeWithInfiniteThresholdNeverSatisfies() throws {
