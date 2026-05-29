@@ -26,22 +26,53 @@ protocol FileManaging: AnyObject {
 
 extension FileManager: FileManaging {}
 
+protocol BlobDownloader: AnyObject {
+    func fetchRawData(from url: URL, completion: @escaping (Result<Data, Error>) -> Void)
+}
+
+extension HTTPClient: BlobDownloader {}
+
+private final class URLSessionBlobDownloader: BlobDownloader {
+
+    private let session: URLSession
+
+    init(session: URLSession = .shared) {
+        self.session = session
+    }
+
+    func fetchRawData(from url: URL, completion: @escaping (Result<Data, Error>) -> Void) {
+        self.session.dataTask(with: url) { data, response, error in
+            if let error {
+                completion(.failure(error))
+            } else if let httpResponse = response as? HTTPURLResponse,
+                      !(200..<300).contains(httpResponse.statusCode) {
+                completion(.failure(URLError(.badServerResponse)))
+            } else if let data {
+                completion(.success(data))
+            } else {
+                completion(.failure(URLError(.unknown)))
+            }
+        }.resume()
+    }
+
+}
+
 class TopicFetcher {
 
     private static let topicsRoot = "RevenueCat/topics"
     private static let blobRefPlaceholder = "{blob_ref}"
 
     private let fileManager: any FileManaging
-    private let urlSession: URLSession
+    private let downloader: any BlobDownloader
     private let baseCacheURL: URL?
 
     init(
         fileManager: any FileManaging = FileManager.default,
-        urlSession: URLSession = .shared,
+        downloader: any BlobDownloader = URLSessionBlobDownloader(),
         baseCacheURL: URL? = nil
     ) {
         self.fileManager = fileManager
-        self.urlSession = urlSession
+        self.downloader = downloader
         self.baseCacheURL = baseCacheURL
     }
 
@@ -56,7 +87,13 @@ class TopicFetcher {
             return TopicFetchError.malformedBlobRef.backendError
         }
 
-        guard let targetFile = self.topicFile(topic: topic, blobRef: topicEntry.blobRef) else {
+        // Normalize to lowercase so the cache path and SHA-256 comparison are
+        // always consistent regardless of whether the backend sends upper- or
+        // lower-case hex (SHA256.hash produces lowercase via %02x).
+        let blobRef = topicEntry.blobRef.lowercased()
+
+        guard let targetFile = self.topicFile(topic: topic, blobRef: blobRef) else {
+            Logger.error(Strings.remoteConfig.topic_caches_dir_unavailable(topic: topic, entryId: entryId))
             return TopicFetchError.cachesDirectoryUnavailable.backendError
         }
 
@@ -65,15 +102,15 @@ class TopicFetcher {
             return nil
         }
 
-        let urlString = source.urlFormat.replacingOccurrences(
-            of: Self.blobRefPlaceholder,
-            with: topicEntry.blobRef
-        )
+        let urlString = source.urlFormat.replacingOccurrences(of: Self.blobRefPlaceholder, with: blobRef)
         guard let url = URL(string: urlString) else {
-            return TopicFetchError.invalidBlobURL(urlString: urlString).backendError
+            Logger.error(Strings.remoteConfig.topic_invalid_blob_url(
+                topic: topic, entryId: entryId, urlString: urlString
+            ))
+            return TopicFetchError.invalidBlobURL.backendError
         }
 
-        let error = await self.download(url: url, expectedSHA256: topicEntry.blobRef, targetFile: targetFile)
+        let error = await self.download(url: url, expectedSHA256: blobRef, targetFile: targetFile)
         if let error {
             Logger.error(Strings.remoteConfig.topic_fetch_error(topic: topic, entryId: entryId, error: error))
         } else {
@@ -92,8 +129,7 @@ private enum TopicFetchError {
 
     case malformedBlobRef
     case cachesDirectoryUnavailable
-    case invalidBlobURL(urlString: String)
-    case unexpectedHTTPStatus(statusCode: Int)
+    case invalidBlobURL
     case sha256Mismatch(expected: String, actual: String)
     case writeFailure(error: Error)
 
@@ -102,26 +138,14 @@ private enum TopicFetchError {
         case .malformedBlobRef:
             return .unexpectedBackendResponse(.remoteConfigMalformedBlobRef)
         case .cachesDirectoryUnavailable:
-            return Self.make(code: -4, "Could not resolve caches directory")
-        case .invalidBlobURL(let urlString):
-            return Self.make(code: -3, "Invalid blob URL: \(urlString)")
-        case .unexpectedHTTPStatus(let statusCode):
-            return Self.make(code: -5, "Unexpected HTTP status: \(statusCode)")
-        case .sha256Mismatch(let expected, let actual):
-            return Self.make(code: -2, "SHA-256 mismatch: expected \(expected), got \(actual)")
+            return .networkError(.networkError(URLError(.cannotCreateFile)))
+        case .invalidBlobURL:
+            return .networkError(.networkError(URLError(.badURL)))
+        case .sha256Mismatch:
+            return .networkError(.networkError(URLError(.cannotDecodeRawData)))
         case .writeFailure(let error):
             return .networkError(.networkError(error))
         }
-    }
-
-    private static func make(code: Int, _ message: String) -> BackendError {
-        .networkError(.networkError(
-            NSError(
-                domain: "com.revenuecat.remoteconfig",
-                code: code,
-                userInfo: [NSLocalizedDescriptionKey: message]
-            )
-        ))
     }
 
 }
@@ -143,50 +167,39 @@ private extension TopicFetcher {
 
     func download(url: URL, expectedSHA256: String, targetFile: URL) async -> BackendError? {
         return await withCheckedContinuation { continuation in
-            self.urlSession.dataTask(with: url) { [self] data, response, error in
-                if let error {
+            self.downloader.fetchRawData(from: url) { [self] result in
+                switch result {
+                case .failure(let error):
                     continuation.resume(returning: .networkError(.networkError(error)))
-                    return
+
+                case .success(let data):
+                    let actualSHA256 = SHA256.hash(data: data)
+                        .map { String(format: "%02x", $0) }
+                        .joined()
+
+                    guard actualSHA256 == expectedSHA256 else {
+                        continuation.resume(returning: TopicFetchError.sha256Mismatch(
+                            expected: expectedSHA256,
+                            actual: actualSHA256
+                        ).backendError)
+                        return
+                    }
+
+                    let parent = targetFile.deletingLastPathComponent()
+                    let tempFile = parent.appendingPathComponent("rc_topic_\(UUID().uuidString).tmp")
+
+                    do {
+                        try data.write(to: tempFile, options: .atomic)
+                        _ = try self.fileManager.replaceItemAt(
+                            targetFile, withItemAt: tempFile, backupItemName: nil, options: []
+                        )
+                        continuation.resume(returning: nil)
+                    } catch {
+                        try? self.fileManager.removeItem(at: tempFile)
+                        continuation.resume(returning: TopicFetchError.writeFailure(error: error).backendError)
+                    }
                 }
-
-                let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
-                guard statusCode == 200 else {
-                    let error = TopicFetchError.unexpectedHTTPStatus(statusCode: statusCode).backendError
-                    continuation.resume(returning: error)
-                    return
-                }
-
-                guard let data else {
-                    continuation.resume(returning: .networkError(.unexpectedResponse(nil)))
-                    return
-                }
-
-                let actualSHA256 = SHA256.hash(data: data)
-                    .map { String(format: "%02x", $0) }
-                    .joined()
-
-                guard actualSHA256 == expectedSHA256 else {
-                    continuation.resume(returning: TopicFetchError.sha256Mismatch(
-                        expected: expectedSHA256,
-                        actual: actualSHA256
-                    ).backendError)
-                    return
-                }
-
-                let parent = targetFile.deletingLastPathComponent()
-                let tempFile = parent.appendingPathComponent("rc_topic_\(UUID().uuidString).tmp")
-
-                do {
-                    try data.write(to: tempFile, options: .atomic)
-                    _ = try self.fileManager.replaceItemAt(
-                        targetFile, withItemAt: tempFile, backupItemName: nil, options: []
-                    )
-                    continuation.resume(returning: nil)
-                } catch {
-                    try? self.fileManager.removeItem(at: tempFile)
-                    continuation.resume(returning: TopicFetchError.writeFailure(error: error).backendError)
-                }
-            }.resume()
+            }
         }
     }
 
