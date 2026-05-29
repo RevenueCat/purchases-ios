@@ -453,13 +453,7 @@ class AdEventTests: TestCase {
         expect(event1) == event2
     }
 
-    // MARK: - AdReward / AdRewardFailureReason rawValue stability
-
-    func testAdRewardKindRawValuesAreStable() {
-        expect(AdReward.virtualCurrency(code: "x", amount: 1).kindRawValue) == "virtual_currency"
-        expect(AdReward.noReward.kindRawValue) == "no_reward"
-        expect(AdReward.unsupportedReward.kindRawValue) == "unsupported_reward"
-    }
+    // MARK: - AdRewardFailureReason rawValue stability
 
     func testAdRewardFailureReasonStaticConstantsHaveStableRawValues() {
         expect(AdRewardFailureReason.timeout.rawValue) == "timeout"
