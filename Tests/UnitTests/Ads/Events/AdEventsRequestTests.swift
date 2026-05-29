@@ -86,6 +86,22 @@ class AdFeatureEventsRequestTests: TestCase {
         assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
+    func testRewardVerifiedNoRewardEvent() throws {
+        let event = AdEvent.rewardVerified(Self.eventCreationData, Self.rewardVerifiedNoRewardData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
+    func testRewardVerifiedUnsupportedRewardEvent() throws {
+        let event = AdEvent.rewardVerified(Self.eventCreationData, Self.rewardVerifiedUnsupportedRewardData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
     func testRewardFailedToVerifyEvent() throws {
         let event = AdEvent.rewardFailedToVerify(Self.eventCreationData, Self.rewardFailedToVerifyData)
         let storedEvent = try Self.createStoredAdEvent(from: event)
@@ -348,6 +364,26 @@ private extension AdFeatureEventsRequestTests {
         adUnitId: "ca-app-pub-123456789",
         impressionId: "impression-123",
         reward: .virtualCurrency(code: "GOLD", amount: 100)
+    )
+
+    static let rewardVerifiedNoRewardData: AdRewardVerified = .init(
+        networkName: "AdMob",
+        mediatorName: .adMob,
+        adFormat: .rewarded,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        impressionId: "impression-123",
+        reward: .noReward
+    )
+
+    static let rewardVerifiedUnsupportedRewardData: AdRewardVerified = .init(
+        networkName: "AdMob",
+        mediatorName: .adMob,
+        adFormat: .rewarded,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        impressionId: "impression-123",
+        reward: .unsupportedReward
     )
 
     static let rewardFailedToVerifyData: AdRewardFailedToVerify = .init(
