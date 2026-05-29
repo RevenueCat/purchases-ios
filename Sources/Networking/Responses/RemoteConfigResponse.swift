@@ -55,14 +55,14 @@ extension RemoteConfigResponse {
 
         case productEntitlementMapping
 
-        var wireKey: String {
+        var rawValue: String {
             switch self {
             case .productEntitlementMapping: return "product_entitlement_mapping"
             }
         }
 
-        init?(wireKey: String) {
-            switch wireKey {
+        init?(rawValue: String) {
+            switch rawValue {
             case "product_entitlement_mapping": self = .productEntitlementMapping
             default: return nil
             }
@@ -106,7 +106,7 @@ extension RemoteConfigResponse.Manifest: Codable {
             forKey: .topics
         ) ?? [:]
         self.topics = rawTopics.reduce(into: [:]) { result, pair in
-            if let topic = RemoteConfigResponse.Topic(wireKey: pair.key) {
+            if let topic = RemoteConfigResponse.Topic(rawValue: pair.key) {
                 result[topic] = pair.value
             } else {
                 Logger.warn(Strings.backendError.unknown_remote_config_topic(key: pair.key))
@@ -116,7 +116,7 @@ extension RemoteConfigResponse.Manifest: Codable {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        let rawTopics = Dictionary(uniqueKeysWithValues: topics.map { ($0.key.wireKey, $0.value) })
+        let rawTopics = Dictionary(uniqueKeysWithValues: topics.map { ($0.key.rawValue, $0.value) })
         try container.encode(rawTopics, forKey: .topics)
     }
 

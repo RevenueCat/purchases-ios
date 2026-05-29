@@ -193,7 +193,7 @@ final class RemoteConfigResponseDecodingTests: TestCase {
 
     // MARK: - Encoding round-trip
 
-    func testTopicsEncodeBackToWireKey() throws {
+    func testTopicsEncodeBackToRawValue() throws {
         let manifest = RemoteConfigResponse.Manifest(
             topics: [.productEntitlementMapping: ["default": .init(blobRef: "abc")]]
         )
@@ -220,14 +220,14 @@ final class RemoteConfigResponseDecodingTests: TestCase {
 
     // MARK: - Topic init
 
-    func testTopicInitFromKnownWireKey() {
-        expect(RemoteConfigResponse.Topic(wireKey: "product_entitlement_mapping")) == .productEntitlementMapping
+    func testTopicInitFromKnownRawValue() {
+        expect(RemoteConfigResponse.Topic(rawValue: "product_entitlement_mapping")) == .productEntitlementMapping
     }
 
-    func testTopicInitReturnsNilForUnknownWireKey() {
-        expect(RemoteConfigResponse.Topic(wireKey: "future_topic")).to(beNil())
-        expect(RemoteConfigResponse.Topic(wireKey: "PRODUCT_ENTITLEMENT_MAPPING")).to(beNil())
-        expect(RemoteConfigResponse.Topic(wireKey: "")).to(beNil())
+    func testTopicInitReturnsNilForUnknownRawValue() {
+        expect(RemoteConfigResponse.Topic(rawValue: "future_topic")).to(beNil())
+        expect(RemoteConfigResponse.Topic(rawValue: "PRODUCT_ENTITLEMENT_MAPPING")).to(beNil())
+        expect(RemoteConfigResponse.Topic(rawValue: "")).to(beNil())
     }
 
     // MARK: - Type errors are rejected
