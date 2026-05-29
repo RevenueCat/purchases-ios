@@ -125,6 +125,60 @@ final class WebViewComponentTests: TestCase {
         XCTAssertEqual(result?.absoluteString, "https://example.com/bird.html")
     }
 
+    func testResolvedURLRejectsHTTPURL() {
+        let viewModel = Self.makeViewModel(urlTemplate: "http://example.com/page.html")
+
+        let result = viewModel.resolvedURL(customVariables: [:])
+
+        XCTAssertNil(result)
+    }
+
+    func testResolvedURLRejectsFileURL() {
+        let viewModel = Self.makeViewModel(urlTemplate: "file:///tmp/page.html")
+
+        let result = viewModel.resolvedURL(customVariables: [:])
+
+        XCTAssertNil(result)
+    }
+
+    func testResolvedURLRejectsCustomSchemeURL() {
+        let viewModel = Self.makeViewModel(urlTemplate: "custom-scheme://example.com/page.html")
+
+        let result = viewModel.resolvedURL(customVariables: [:])
+
+        XCTAssertNil(result)
+    }
+
+    func testResolvedURLRejectsURLWithoutHost() {
+        let viewModel = Self.makeViewModel(urlTemplate: "https:/page.html")
+
+        let result = viewModel.resolvedURL(customVariables: [:])
+
+        XCTAssertNil(result)
+    }
+
+    func testResolvedURLRejectsCustomVariableSubstitutedHTTPURL() {
+        let viewModel = Self.makeViewModel(
+            urlTemplate: "{{ custom.url }}",
+            customVariableDefinitions: ["url": .init(type: "string", defaultValue: "https://example.com/page.html")]
+        )
+
+        let result = viewModel.resolvedURL(customVariables: ["url": .string("http://example.com/page.html")])
+
+        XCTAssertNil(result)
+    }
+
+    func testDisplayURLDoesNotReadCacheForInvalidResolvedURL() {
+        let repository = MockInMemoryHTMLFileRepository()
+        let viewModel = Self.makeViewModel(
+            urlTemplate: "file:///tmp/paywall.html",
+            htmlFileRepository: repository
+        )
+
+        XCTAssertNil(viewModel.displayURL)
+        XCTAssertEqual(repository.cachedFileURLRequests, [])
+    }
+
     func testResolvedURLReturnsNilForUnresolvableTemplate() {
         // Missing variable with no default → resolves to empty string → invalid URL
         let viewModel = Self.makeViewModel(
@@ -242,6 +296,18 @@ final class WebViewComponentTests: TestCase {
 
         XCTAssertEqual(data.allWebViewURLs, [staticURL])
     }
+
+#if canImport(UIKit)
+
+    func testWebViewPoolCreatesWebViewsWithNonPersistentWebsiteDataStore() {
+        let pool = WebViewPool(capacity: 1)
+
+        let webView = pool.acquire()
+
+        XCTAssertFalse(webView.configuration.websiteDataStore.isPersistent)
+    }
+
+#endif
 
 }
 

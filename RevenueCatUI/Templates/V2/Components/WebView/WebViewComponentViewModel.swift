@@ -53,7 +53,12 @@ class WebViewComponentViewModel {
             localizations: [:],
             isEligibleForIntroOffer: false
         )
-        return URL(string: resolved)
+        guard let url = URL(string: resolved),
+              url.isValidPaywallWebViewURL else {
+            return nil
+        }
+
+        return url
     }
 
     /// Returns the locally-cached file URL for a given resolved URL, or `nil` if not cached.
@@ -78,6 +83,15 @@ extension WebViewComponentViewModel: Hashable {
 
     static func == (lhs: WebViewComponentViewModel, rhs: WebViewComponentViewModel) -> Bool {
         lhs.urlTemplate == rhs.urlTemplate
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension URL {
+
+    var isValidPaywallWebViewURL: Bool {
+        return self.scheme?.lowercased() == "https" && self.host?.isEmpty == false
     }
 
 }
