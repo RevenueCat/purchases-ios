@@ -40,7 +40,7 @@ final class InMemoryHTMLURLProtocol: URLProtocol {
         self.loadingTask = Task { [weak self] in
             guard let self else { return }
 
-            guard let entry = await Self.store.entry(for: url) else {
+            guard let entry = Self.store.entry(for: url) else {
                 self.client?.urlProtocol(self, didFailWithError: URLError(.fileDoesNotExist))
                 return
             }
