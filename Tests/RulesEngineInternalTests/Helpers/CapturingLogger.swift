@@ -23,7 +23,7 @@ final class CapturingLogger: RulesEngineLogger {
         return captured
     }
 
-    func warn(_ message: String) {
+    func warn(_ message: String, tag: String) {
         lock.lock()
         defer { lock.unlock() }
         captured.append(message)

@@ -11,6 +11,11 @@ excluded:
   - .build
   - ./**/Project.swift
 
+# Baseline of pre-existing violations. New violations are not allowed.
+# To accept an intentional new violation, regenerate the baseline:
+#   swiftlint lint --write-baseline swiftlint-baseline.json
+baseline: swiftlint-baseline.json
+
 opt_in_rules:
   - force_unwrapping
   - sorted_imports
@@ -100,6 +105,16 @@ custom_rules:
     regex: '(Bundle\.module|bundle:\s*\.module)'
     message: "Use Bundle.revenueCatUI instead of Bundle.module for Compose Resources compatibility"
     severity: error
+
+  no_new_public_enums:
+    name: "No new public enums in consumer-facing APIs"
+    message: "Adding a new `public enum` to the SDK's consumer-facing surface (including `@_spi(Experimental)`) is not allowed. Adding a case to an existing `public enum` is a source-breaking change for any consumer with an exhaustive `switch`. Use a struct with static constants instead."
+    severity: error
+    included:
+      - "Sources/.*\\.swift"
+      - "RevenueCatUI/.*\\.swift"
+      - "AdapterSDKs/RevenueCatAdMob/Sources/.*\\.swift"
+    regex: '(?s)(?<!@_spi\(Internal\)\s)\bpublic\s+(?:indirect\s+)?enum\s+[A-Z]'
 
   no_leaking_rules_engine_internal_import:
     included: ".*\\.swift"
