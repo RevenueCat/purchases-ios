@@ -39,6 +39,7 @@ custom_rules:
     included: ".*\\.swift"
     excluded:
       - Tests/ReceiptParserTests
+      - Tests/RulesEngineInternalTests
       - Tests/v3LoadShedderIntegration
       - Tests/v4LoadShedderIntegration
     regex: "\\: XCTestCase \\{"
@@ -114,6 +115,17 @@ custom_rules:
       - "RevenueCatUI/.*\\.swift"
       - "AdapterSDKs/RevenueCatAdMob/Sources/.*\\.swift"
     regex: '(?s)(?<!@_spi\(Internal\)\s)\bpublic\s+(?:indirect\s+)?enum\s+[A-Z]'
+
+  no_leaking_rules_engine_internal_import:
+    included: ".*\\.swift"
+    name: "No leaking `import RulesEngineInternal`"
+    regex: '^[ \t]*(@_exported\s+)?(public\s+|package\s+)?import\s+(struct\s+|class\s+|func\s+|enum\s+|protocol\s+|typealias\s+|var\s+|let\s+)?RulesEngineInternal\b'
+    match_kinds:
+      - identifier
+      - keyword
+      - attribute.builtin
+    message: "`import RulesEngineInternal` (plain, kind-qualified e.g. `import struct RulesEngineInternal.X`, `@_exported`, `public`, or `package`) is not allowed because it re-exports RulesEngineInternal's public APIs into the SDK's public API surface.\nUse the canonical form:\n#if compiler(>=6)\n    internal import RulesEngineInternal\n#else\n    @_implementationOnly import RulesEngineInternal\n#endif\nOr `private import RulesEngineInternal` / `fileprivate import RulesEngineInternal`."
+    severity: error
 
 identifier_name:
   max_length:
