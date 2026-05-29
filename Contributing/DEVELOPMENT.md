@@ -47,6 +47,18 @@ tuist generate Maestro  # Generates the Maestro example app
 
 When you generate a specific target (for example, `tuist generate RevenueCat`), Tuist only includes the files necessary to work on that target locally. This keeps the workspace lightweight and focused on what you need.
 
+### Working on Workflows in PaywallsTester
+
+The workflows endpoint is still gated behind the `-EnableWorkflowsEndpoint` launch argument. To work on
+workflows locally, generate PaywallsTester with the launch argument injected into its run action:
+
+```bash
+TUIST_LAUNCH_ARGUMENTS="-EnableWorkflowsEndpoint" tuist generate PaywallsTester
+```
+
+Then run the PaywallsTester scheme from Xcode. The launch argument is only applied when running from
+Xcode, it does not reach archived/TestFlight builds.
+
 ## Using Remote RevenueCat / RevenueCatUI Checkouts
 
 Set the `TUIST_RC_LOCAL` environment variable to `false` to resolve `RevenueCat` and `RevenueCatUI` from their remote sources instead of the local checkout.
