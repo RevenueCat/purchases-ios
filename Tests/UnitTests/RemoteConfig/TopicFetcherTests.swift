@@ -367,6 +367,10 @@ private final class FailingReplaceFileManager: FileManaging {
         throw self.replaceItemAtError
     }
 
+    func copyItem(at srcURL: URL, to dstURL: URL) throws {
+        throw self.replaceItemAtError
+    }
+
     func removeItem(at url: URL) throws {
         try base.removeItem(at: url)
     }
