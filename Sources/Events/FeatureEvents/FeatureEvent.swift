@@ -236,7 +236,8 @@ private extension WorkflowEvent {
             "id": self.creationData.id.uuidString,
             "timestamp": self.creationData.date.millisecondsSince1970,
             "workflow_id": self.data.workflowId,
-            "step_id": self.data.stepId
+            "step_id": self.data.stepId,
+            "locale": self.data.localeIdentifier
         ]
 
         if let traceId = self.data.traceId { result["trace_id"] = traceId }

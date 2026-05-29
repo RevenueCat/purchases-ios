@@ -497,6 +497,7 @@ class EventsManagerTests: TestCase {
         expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
         expect(map["workflow_id"] as? String) == "wfl_abc"
         expect(map["step_id"] as? String) == "step-1"
+        expect(map["locale"] as? String) == "en_US"
     }
 
     func testWorkflowStepCompletedToMap() {
