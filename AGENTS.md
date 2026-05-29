@@ -153,6 +153,7 @@ The project uses **Tuist** for managing the Xcode workspace. See **`Contributing
 | `TUIST_RC_API_KEY=appl_xxxxx` | RevenueCat API key written to `Local.xcconfig` at generation time | — |
 | `TUIST_LAUNCH_ARGUMENTS="-Flag1 -Flag2"` | Space-separated launch arguments injected into PaywallsTester scheme run action (enabled by default) | — |
 | `TUIST_SWIFT_CONDITIONS="FLAG1 FLAG2"` | Space-separated Swift compilation conditions injected into all targets | — |
+| `TUIST_PAYWALLS_TESTER_BUNDLE_ID=com.x.PaywallsTester` | Custom bundle identifier for the PaywallsTester target (e.g. testing against another RevenueCat project) | `com.revenuecat.PaywallsTester` |
 
 Example combining multiple variables:
 ```bash
