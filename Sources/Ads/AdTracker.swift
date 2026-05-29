@@ -199,21 +199,6 @@ public final class AdTracker: NSObject {
      Tracks when the ad SDK reports a user-earned reward, before server-side verification has completed.
 
      - Parameter data: The earned (unverified) reward event data
-
-     ## Example:
-     ```swift
-     Purchases.shared.adTracker.trackAdRewardEarnedUnverified(.init(
-         networkName: "AdMob",
-         mediatorName: .adMob,
-         adFormat: .rewarded,
-         placement: "home_screen",
-         adUnitId: "ca-app-pub-123",
-         impressionId: "impression-456",
-         rewardVerificationEnabled: true,
-         rewardItem: "coins",
-         rewardAmount: 10
-     ))
-     ```
      */
     @_spi(Internal) public func trackAdRewardEarnedUnverified(_ data: AdRewardEarnedUnverified) {
         Task {
@@ -226,20 +211,6 @@ public final class AdTracker: NSObject {
      Tracks when server-side verification confirms the reward delivered by the ad SDK.
 
      - Parameter data: The verified reward event data
-
-     ## Example:
-     ```swift
-     // `reward` is the `AdReward` received from the reward-verification pipeline.
-     Purchases.shared.adTracker.trackAdRewardVerified(.init(
-         networkName: "AdMob",
-         mediatorName: .adMob,
-         adFormat: .rewarded,
-         placement: "home_screen",
-         adUnitId: "ca-app-pub-123",
-         impressionId: "impression-456",
-         reward: reward
-     ))
-     ```
      */
     @_spi(Internal) public func trackAdRewardVerified(_ data: AdRewardVerified) {
         Task {
@@ -252,19 +223,6 @@ public final class AdTracker: NSObject {
      Tracks when server-side reward verification terminally fails.
 
      - Parameter data: The failed-to-verify reward event data
-
-     ## Example:
-     ```swift
-     Purchases.shared.adTracker.trackAdRewardFailedToVerify(.init(
-         networkName: "AdMob",
-         mediatorName: .adMob,
-         adFormat: .rewarded,
-         placement: "home_screen",
-         adUnitId: "ca-app-pub-123",
-         impressionId: "impression-456",
-         failureReason: .timeout
-     ))
-     ```
      */
     @_spi(Internal) public func trackAdRewardFailedToVerify(_ data: AdRewardFailedToVerify) {
         Task {
