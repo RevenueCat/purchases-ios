@@ -99,6 +99,12 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
         await self.trackEventBlock(paywallEvent)
     }
 
+    var trackWorkflowEventBlock: (@Sendable (WorkflowEvent) async -> Void)?
+
+    func track(workflowEvent: WorkflowEvent) async {
+        await self.trackWorkflowEventBlock?(workflowEvent)
+    }
+
     struct CachedPurchaseData {
         let presentedOfferingContext: PresentedOfferingContext
         let paywallEvent: PaywallEvent?

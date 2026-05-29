@@ -43,6 +43,32 @@ class PaywallEventTrackerTests: TestCase {
         }
     }
 
+    func testTrackWorkflowForwardsEventToPurchasesWithoutEmittingPaywallEvents() async throws {
+        // Workflow step events must flow through the same dispatcher to `track(workflowEvent:)`,
+        // and must NOT be tracked as PaywallEvents (paywall_close behavior is unaffected).
+        let trackedPaywallEvents: Atomic<[PaywallEvent]> = .init([])
+        let trackedWorkflowEvents: Atomic<[WorkflowEvent]> = .init([])
+        let mock = MockPurchases(
+            purchase: { _, _, _ in
+                (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+            },
+            restorePurchases: { TestData.customerInfo },
+            trackEvent: { event in trackedPaywallEvents.modify { $0.append(event) } },
+            customerInfo: { TestData.customerInfo }
+        )
+        mock.trackWorkflowEventBlock = { event in trackedWorkflowEvents.modify { $0.append(event) } }
+        let tracker = PaywallEventTracker(
+            purchases: mock,
+            eventDispatcher: PaywallEventTrackerTestDispatcher.value
+        )
+        let event = WorkflowEvent.stepStarted(.init(), .init(workflowId: "wf_1", stepId: "step_1"))
+
+        tracker.trackWorkflow(event)
+
+        await expect(trackedWorkflowEvents.value).toEventually(equal([event]), timeout: .seconds(2))
+        expect(trackedPaywallEvents.value).to(beEmpty())
+    }
+
     func testTrackExitOfferDoesNotPreventTrackPaywallClose() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
         let sessionID = Self.eventData.sessionIdentifier

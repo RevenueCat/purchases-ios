@@ -157,6 +157,11 @@ struct WorkflowPaywallView: View {
 
     @StateObject private var navigator: WorkflowNavigator
     @State private var hasLoggedInvalidState = false
+    /// Trace id for this workflow impression. Stable for the view's lifetime (SwiftUI keeps the first
+    /// `@State` value), matching Android's per-impression `workflowTraceId`.
+    @State private var workflowTraceId = UUID().uuidString
+    @State private var hasTrackedInitialStep = false
+    @State private var hasTrackedTerminalCompletion = false
     @State private var transitionState: WorkflowPageTransitionState<RenderedPage>
     @State private var activeTransitionID: UUID?
     /// PackageContext is intentionally cached by reference: PaywallsV2View mutates the same
@@ -253,6 +258,15 @@ struct WorkflowPaywallView: View {
         // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
             self.syncExitOfferBinding()
+            self.trackInitialStepIfNeeded()
+        }
+        // Terminal `stepCompleted` is anchored here, mirroring how `paywall_close` is tracked on
+        // PaywallsV2View.onDisappear. This is the single dismissal signal that catches every path the
+        // workflow can go away — close button, post-purchase auto-dismiss, swipe-to-dismiss on a sheet,
+        // and programmatic parent dismiss — without firing during inner step transitions (the outer
+        // view stays mounted while pages swap).
+        .onDisappear {
+            self.trackTerminalCompletionIfNeeded()
         }
         .onChangeOf(self.navigator.currentStepId) { _ in
             self.syncExitOfferBinding()
@@ -310,6 +324,7 @@ struct WorkflowPaywallView: View {
         case .dismissWorkflow:
             self.onDismiss()
         case .navigateBack:
+            let fromStep = self.navigator.currentStep
             guard let destination = self.navigator.backNavigationDestination,
                   let page = self.renderedPageForBackNavigation(
                       stepId: destination.step.id,
@@ -319,6 +334,12 @@ struct WorkflowPaywallView: View {
             }
 
             self.navigator.navigateBack()
+            self.trackStepTransition(
+                from: fromStep,
+                to: destination.step,
+                renderedPage: page,
+                entryReason: .back
+            )
             self.startTransition(
                 to: page,
                 direction: .back
@@ -330,6 +351,70 @@ struct WorkflowPaywallView: View {
         self.exitOfferOfferingBinding.wrappedValue = Self.exitOfferContext(
             for: self.context, currentStepId: self.navigator.currentStepId
         )?.exitOfferOffering
+    }
+
+    // MARK: - Workflow step event tracking
+
+    // The event-building logic (field mapping, completed/started ordering, terminal-step detection) lives
+    // in `WorkflowStepEventTracker` and is unit tested in `WorkflowStepEventTrackerTests`. The wiring below
+    // is the SwiftUI lifecycle/navigation plumbing that calls it at the four emission points (initial step,
+    // forward, back, terminal). That plumbing depends on rendering a live `WorkflowPaywallView` and cannot be
+    // exercised in a unit test; it is verified manually in PaywallsTester by driving a multi-step workflow
+    // (open, navigate forward/back, purchase, and dismiss) and confirming the emitted events in the debug log.
+
+    private func makeStepEventTracker() -> WorkflowStepEventTracker {
+        return WorkflowStepEventTracker(
+            workflow: self.context.workflow,
+            traceId: self.workflowTraceId,
+            sink: { [purchaseHandler = self.purchaseHandler] event in
+                purchaseHandler.trackWorkflowEvent(event)
+            }
+        )
+    }
+
+    /// Emits the initial `stepStarted` once, and only if the initial step actually rendered.
+    /// Mirrors Android firing the START event only when the initial workflow state is non-nil.
+    private func trackInitialStepIfNeeded() {
+        guard !self.hasTrackedInitialStep,
+              self.transitionState.currentPage != nil,
+              let step = self.navigator.currentStep else {
+            return
+        }
+
+        self.hasTrackedInitialStep = true
+        self.makeStepEventTracker().trackInitialStep(step)
+    }
+
+    /// Tracks a forward/back step transition. When `renderedPage` is nil the destination failed to build,
+    /// so we complete the step being left without a destination and skip `stepStarted` (Android parity).
+    private func trackStepTransition(
+        from fromStep: WorkflowStep?,
+        to toStep: WorkflowStep,
+        renderedPage: RenderedPage?,
+        entryReason: WorkflowStepEventTracker.EntryReason
+    ) {
+        guard let fromStep else {
+            return
+        }
+
+        let tracker = self.makeStepEventTracker()
+        if renderedPage == nil {
+            tracker.trackStepCompleted(fromStep, toStepId: nil)
+        } else {
+            tracker.trackNavigation(from: fromStep, to: toStep, entryReason: entryReason)
+        }
+    }
+    /// Emits `stepCompleted` (with no destination) for the step the user was on when the workflow is
+    /// dismissed. Driven by `onDisappear` so it fires once for any dismissal path. `paywall_close` is
+    /// tracked independently on PaywallsV2View.onDisappear, so this does not change close behavior.
+    private func trackTerminalCompletionIfNeeded() {
+        guard !self.hasTrackedTerminalCompletion,
+              let step = self.navigator.currentStep else {
+            return
+        }
+
+        self.hasTrackedTerminalCompletion = true
+        self.makeStepEventTracker().trackStepCompleted(step, toStepId: nil)
     }
 
     static func exitOfferContext(
@@ -354,19 +439,29 @@ struct WorkflowPaywallView: View {
     }
 
     private func handleTriggeredNavigation(componentId: String) -> Bool {
-        guard !self.transitionState.isTransitioning,
-              let nextStep = self.navigator.triggerAction(componentId: componentId) else {
+        guard !self.transitionState.isTransitioning else {
             return false
         }
 
-        self.startTransition(
-            to: self.renderedPageForForwardNavigation(
-                stepId: nextStep.id,
-                canNavigateBack: self.navigator.canNavigateBack,
-                carryForwardPackage: self.transitionState.currentPage?.packageContext.package
-            ),
-            direction: .forward
+        // Capture the step we are leaving before triggerAction mutates the navigator.
+        let fromStep = self.navigator.currentStep
+        guard let nextStep = self.navigator.triggerAction(componentId: componentId) else {
+            return false
+        }
+
+        let page = self.renderedPageForForwardNavigation(
+            stepId: nextStep.id,
+            canNavigateBack: self.navigator.canNavigateBack,
+            carryForwardPackage: self.transitionState.currentPage?.packageContext.package
         )
+
+        self.trackStepTransition(
+            from: fromStep,
+            to: nextStep,
+            renderedPage: page,
+            entryReason: .forward
+        )
+        self.startTransition(to: page, direction: .forward)
 
         return true
     }
