@@ -170,3 +170,38 @@ extension PublishedWorkflow: Codable, Equatable, Sendable {}
 extension WorkflowDataResult: Equatable, Sendable {}
 
 extension PublishedWorkflow: HTTPResponseBody {}
+
+// MARK: - List models
+
+@_spi(Internal) public struct WorkflowSummary {
+
+    public let id: String
+    public let displayName: String
+    public let offeringId: String?
+    public let prefetch: Bool
+
+}
+
+@_spi(Internal) public struct WorkflowsListResponse {
+
+    public let workflows: [WorkflowSummary]
+
+}
+
+// MARK: - Codable
+
+extension WorkflowSummary: Codable, Equatable, Sendable {
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(String.self, forKey: .id)
+        self.displayName = try container.decode(String.self, forKey: .displayName)
+        self.offeringId = try container.decodeIfPresent(String.self, forKey: .offeringId)
+        self.prefetch = try container.decodeIfPresent(Bool.self, forKey: .prefetch) ?? false
+    }
+
+}
+
+extension WorkflowsListResponse: Codable, Equatable, Sendable {}
+
+extension WorkflowsListResponse: HTTPResponseBody {}
