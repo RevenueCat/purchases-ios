@@ -263,6 +263,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getCustomerCenterConfig,
                 .postCreateTicket,
+                // WIP: Move to true when we have the final endpoint for remote config, and we can remove the fallback
                 .getRemoteConfig:
             return false
         case .rewardVerificationStatus:
