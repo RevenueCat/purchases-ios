@@ -122,8 +122,14 @@ struct ButtonComponentView: View {
                 SafariView(url: self.inAppBrowserURL!)
             }
             #if os(iOS)
-            .presentCustomerCenter(isPresented: self.$showCustomerCenter, onDismiss: {
-                self.showCustomerCenter = false
+            .applyIf(self.viewModel.opensCustomerCenter, apply: { view in
+                view.presentCustomerCenter(
+                    isPresented: self.$showCustomerCenter,
+                    purchaseHandler: self.purchaseHandler,
+                    onDismiss: {
+                        self.showCustomerCenter = false
+                    }
+                )
             })
             #endif
             #endif
@@ -278,6 +284,21 @@ struct ButtonComponentView: View {
         onDismiss()
     }
 }
+
+#if os(iOS)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension ButtonComponentViewModel {
+
+    var opensCustomerCenter: Bool {
+        guard case .navigateTo(destination: .customerCenter) = self.action else {
+            return false
+        }
+
+        return true
+    }
+
+}
+#endif
 
 #if DEBUG
 
