@@ -1201,10 +1201,11 @@ private extension WorkflowPaywallViewTests {
 }
 
 // MARK: - Callback tests (after navigation)
-// These tests drive actual step navigation before triggering purchase/restore, verifying
-// that listener wiring survives a step transition rather than being disrupted by the
-// state rebuild. Navigation is driven via the injected WorkflowNavigator, matching the
-// state that exists after a real user navigation without requiring UI interaction.
+// These tests pre-navigate the WorkflowNavigator before creating the view so that
+// the #if DEBUG init seeds transitionState from the already-navigated currentStepId.
+// This verifies callbacks work when WorkflowPaywallView starts at a non-initial step.
+// Testing callbacks that survive a live in-flight transition (handleTriggeredNavigation)
+// requires UI automation and is covered by integration tests.
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowPaywallViewTests {
@@ -1215,11 +1216,11 @@ extension WorkflowPaywallViewTests {
         let (context, navigator) = try Self.makeNavigableContext()
         var customerInfo: CustomerInfo?
 
+        navigator.triggerAction(componentId: "btn_next")
+
         _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context, navigator: navigator)
             .onPurchaseCompleted { customerInfo = $0 }
             .addToHierarchy()
-
-        navigator.triggerAction(componentId: "btn_next")
 
         Task {
             _ = try await purchaseHandler.purchase(package: TestData.annualPackage)
@@ -1234,11 +1235,11 @@ extension WorkflowPaywallViewTests {
         let (context, navigator) = try Self.makeNavigableContext()
         var customerInfo: CustomerInfo?
 
+        navigator.triggerAction(componentId: "btn_next")
+
         _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context, navigator: navigator)
             .onRestoreCompleted { customerInfo = $0 }
             .addToHierarchy()
-
-        navigator.triggerAction(componentId: "btn_next")
 
         Task {
             _ = try await purchaseHandler.restorePurchases()
@@ -1254,12 +1255,12 @@ extension WorkflowPaywallViewTests {
         let (context, navigator) = try Self.makeNavigableContext()
         var customerInfo: CustomerInfo?
 
+        navigator.triggerAction(componentId: "btn_next")
+        navigator.navigateBack()
+
         _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context, navigator: navigator)
             .onPurchaseCompleted { customerInfo = $0 }
             .addToHierarchy()
-
-        navigator.triggerAction(componentId: "btn_next")
-        navigator.navigateBack()
 
         Task {
             _ = try await purchaseHandler.purchase(package: TestData.annualPackage)
