@@ -31,6 +31,7 @@ enum Strings {
     static let offlineEntitlements = OfflineEntitlementsStrings.self
     static let paywalls = PaywallsStrings.self
     static let purchase = PurchaseStrings.self
+    static let remoteConfig = RemoteConfigStrings.self
     static let webRedemption = WebRedemptionStrings.self
     static let receipt = ReceiptStrings.self
     static let signing = SigningStrings.self

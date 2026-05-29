@@ -1286,6 +1286,15 @@
 		D62A9C83BFD14E5FA0452CC7 /* RemoteConfigResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = E35BAD07C46D469D8CC7C396 /* RemoteConfigResponse.swift */; };
 		E6A54710537E4AA3810E1CB0 /* BackendGetRemoteConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96BC3A5229194DFB9653FC8C /* BackendGetRemoteConfigTests.swift */; };
 		858195FCF0E04E3CAA99F9BB /* RemoteConfigResponseDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E31E8A264E9F4375A3B29D78 /* RemoteConfigResponseDecodingTests.swift */; };
+		3320C44A004844C1977301AB /* RemoteConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6309AD09B1054DC081B6BF7E /* RemoteConfigManager.swift */; };
+		D50B098A156B454292887410 /* TopicFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CDDBB55FE1847498ECBA0A8 /* TopicFetcher.swift */; };
+		853DE70F5F0845C7A614DE45 /* RemoteConfigStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36224D28EF904B44908841D6 /* RemoteConfigStrings.swift */; };
+		EC22142820C24F59BDBE2D93 /* MockTopicFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26F79D94694476791E8A6AD /* MockTopicFetcher.swift */; };
+		89D9E2DB21A440C78970F299 /* MockTopicFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26F79D94694476791E8A6AD /* MockTopicFetcher.swift */; };
+		3779447DBC634AA68B7E0683 /* MockRemoteConfigAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB2C854303404D8884933ACA /* MockRemoteConfigAPI.swift */; };
+		5481225010164BC5A1579C71 /* MockRemoteConfigAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB2C854303404D8884933ACA /* MockRemoteConfigAPI.swift */; };
+		BFDE126A6ADD4D20B6B6B9B2 /* TopicFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2721FAB8C014743B2DC17C7 /* TopicFetcherTests.swift */; };
+		C5EEF4BD66D44A92832DA167 /* RemoteConfigManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A03E9903DDF426A97720D9D /* RemoteConfigManagerTests.swift */; };
 		DB36994E2F435CDC00B1F049 /* PriceFormatterExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB36994D2F435CDC00B1F049 /* PriceFormatterExtensions.swift */; };
 		DB55E6262ECE012600636909 /* FlexSpacer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB55E6252ECE012600636909 /* FlexSpacer.swift */; };
 		DB7EA7762F964CA200BCC082 /* WorkflowResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB7EA7742F964CA200BCC082 /* WorkflowResponseTests.swift */; };
@@ -2857,6 +2866,13 @@
 		E35BAD07C46D469D8CC7C396 /* RemoteConfigResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigResponse.swift; sourceTree = "<group>"; };
 		96BC3A5229194DFB9653FC8C /* BackendGetRemoteConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendGetRemoteConfigTests.swift; sourceTree = "<group>"; };
 		E31E8A264E9F4375A3B29D78 /* RemoteConfigResponseDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigResponseDecodingTests.swift; sourceTree = "<group>"; };
+		6309AD09B1054DC081B6BF7E /* RemoteConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigManager.swift; sourceTree = "<group>"; };
+		5CDDBB55FE1847498ECBA0A8 /* TopicFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopicFetcher.swift; sourceTree = "<group>"; };
+		36224D28EF904B44908841D6 /* RemoteConfigStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigStrings.swift; sourceTree = "<group>"; };
+		F26F79D94694476791E8A6AD /* MockTopicFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTopicFetcher.swift; sourceTree = "<group>"; };
+		DB2C854303404D8884933ACA /* MockRemoteConfigAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRemoteConfigAPI.swift; sourceTree = "<group>"; };
+		B2721FAB8C014743B2DC17C7 /* TopicFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopicFetcherTests.swift; sourceTree = "<group>"; };
+		9A03E9903DDF426A97720D9D /* RemoteConfigManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigManagerTests.swift; sourceTree = "<group>"; };
 		DB36994D2F435CDC00B1F049 /* PriceFormatterExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceFormatterExtensions.swift; sourceTree = "<group>"; };
 		DB55E6252ECE012600636909 /* FlexSpacer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlexSpacer.swift; sourceTree = "<group>"; };
 		DB7EA7732F964CA200BCC082 /* WorkflowDetailProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowDetailProcessorTests.swift; sourceTree = "<group>"; };
@@ -3556,6 +3572,7 @@
 				57488BE729CB7FB60000EE7E /* OfflineEntitlementsStrings.swift */,
 				4F6ABC7D2A81700900250E63 /* PaywallsStrings.swift */,
 				9A65E0A42591A23500DE00B0 /* PurchaseStrings.swift */,
+				36224D28EF904B44908841D6 /* RemoteConfigStrings.swift */,
 				5791FCF22992D3EC00F1FEDA /* SigningStrings.swift */,
 				F5C0196826E880800005D61E /* StoreKitStrings.swift */,
 				757E73D02F0FE26A0066DCDC /* TransactionMetadataStrings.swift */,
@@ -3654,6 +3671,7 @@
 				57488B7D29CB70DA0000EE7E /* OfflineEntitlements */,
 				4F87610D2A5C9E330006FA14 /* Paywalls */,
 				354235D524C11138008C84EE /* Purchasing */,
+				45E2D46098204ACDB35CCD86 /* RemoteConfig */,
 				57F3C0C929B7A04D0004FD7E /* Security */,
 				354895D0267AE32D001DC5B1 /* SubscriberAttributes */,
 				35E840C1270FB45600899AE2 /* Support */,
@@ -3692,9 +3710,19 @@
 				37E35A5970D1604E8C8011FC /* TestHelpers */,
 				FD8C00452DE79F4000224B78 /* Virtual Currencies */,
 				75A0E78E2E3D1FC300A60BD5 /* SimulatedStore */,
+				E72032998DA642FC86C4364A /* RemoteConfig */,
 				2DC5622524EC63430031F69B /* Info.plist */,
 			);
 			path = UnitTests;
+			sourceTree = "<group>";
+		};
+		E72032998DA642FC86C4364A /* RemoteConfig */ = {
+			isa = PBXGroup;
+			children = (
+				B2721FAB8C014743B2DC17C7 /* TopicFetcherTests.swift */,
+				9A03E9903DDF426A97720D9D /* RemoteConfigManagerTests.swift */,
+			);
+			path = RemoteConfig;
 			sourceTree = "<group>";
 		};
 		2DD02D5924AD128A00419CD9 /* LocalReceiptParsing */ = {
@@ -4170,6 +4198,8 @@
 				FDE57AA62DF892C900101CE2 /* MockVirtualCurrenciesAPI.swift */,
 				75A0E7912E3D205C00A60BD5 /* MockTestStorePurchaseUI.swift */,
 				DBAA1FA72F88EAEB000E8C81 /* MockWorkflowsAPI.swift */,
+				F26F79D94694476791E8A6AD /* MockTopicFetcher.swift */,
+				DB2C854303404D8884933ACA /* MockRemoteConfigAPI.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -4916,6 +4946,15 @@
 				57488C7529CB90F90000EE7E /* PurchasedSK2Product.swift */,
 			);
 			path = OfflineEntitlements;
+			sourceTree = "<group>";
+		};
+		45E2D46098204ACDB35CCD86 /* RemoteConfig */ = {
+			isa = PBXGroup;
+			children = (
+				6309AD09B1054DC081B6BF7E /* RemoteConfigManager.swift */,
+				5CDDBB55FE1847498ECBA0A8 /* TopicFetcher.swift */,
+			);
+			path = RemoteConfig;
 			sourceTree = "<group>";
 		};
 		57488B8929CB75520000EE7E /* OfflineEntitlements */ = {
@@ -6951,6 +6990,8 @@
 				75A3B2B22F16B458001C4CA7 /* MockLargeItemCache.swift in Sources */,
 				3543914526F926D900E669DF /* SKProductSubscriptionDurationExtensions.swift in Sources */,
 				3543913926F90FFB00E669DF /* MockBackend.swift in Sources */,
+				89D9E2DB21A440C78970F299 /* MockTopicFetcher.swift in Sources */,
+				5481225010164BC5A1579C71 /* MockRemoteConfigAPI.swift in Sources */,
 				F5FCD3FC27DA2034003BDC04 /* PriceFormatterProviderTests.swift in Sources */,
 				F5355163286B70E0009CA47A /* OfferingsManagerStoreKitTests.swift in Sources */,
 				35C272A22BC4084C005A0CE8 /* MockDiagnosticsTracker.swift in Sources */,
@@ -7180,6 +7221,9 @@
 				E6B064598F674333A29E0781 /* RemoteConfigCallback.swift in Sources */,
 				A6CC43904EBD4860BFD2BD85 /* GetRemoteConfigOperation.swift in Sources */,
 				D62A9C83BFD14E5FA0452CC7 /* RemoteConfigResponse.swift in Sources */,
+				3320C44A004844C1977301AB /* RemoteConfigManager.swift in Sources */,
+				D50B098A156B454292887410 /* TopicFetcher.swift in Sources */,
+				853DE70F5F0845C7A614DE45 /* RemoteConfigStrings.swift in Sources */,
 				DB3395DD2F840A790079250C /* WorkflowResponseAction.swift in Sources */,
 				2CD72944268A826F00BFC976 /* Date+Extensions.swift in Sources */,
 				57069A5428E3918400B86355 /* AsyncExtensions.swift in Sources */,
@@ -7541,6 +7585,10 @@
 				0368727A2D9DCF7100506BBB /* DefaultEnumTests.swift in Sources */,
 				DB3395E32F840ACD0079250C /* BackendGetWorkflowsTests.swift in Sources */,
 				E6A54710537E4AA3810E1CB0 /* BackendGetRemoteConfigTests.swift in Sources */,
+				BFDE126A6ADD4D20B6B6B9B2 /* TopicFetcherTests.swift in Sources */,
+				C5EEF4BD66D44A92832DA167 /* RemoteConfigManagerTests.swift in Sources */,
+				EC22142820C24F59BDBE2D93 /* MockTopicFetcher.swift in Sources */,
+				3779447DBC634AA68B7E0683 /* MockRemoteConfigAPI.swift in Sources */,
 				03C7305B2D35985900297FEC /* TextComponentTests.swift in Sources */,
 				FDE57B0E2DF8BC1100101CE2 /* VirtualCurrenciesDecodingTests.swift in Sources */,
 				75FCD4CE2E37FBE100036C02 /* SimulatedStoreMockData.swift in Sources */,
