@@ -247,7 +247,7 @@ final class TopicFetcherTests: TestCase {
         expect(downloadAttempted).to(beFalse())
         let topicDir = tempDir
             .appendingPathComponent("RevenueCat/topics")
-            .appendingPathComponent(RemoteConfigResponse.Topic.productEntitlementMapping.wireKey)
+            .appendingPathComponent(RemoteConfigResponse.Topic.productEntitlementMapping.rawValue)
         expect(FileManager.default.fileExists(atPath: topicDir.path) &&
                (try? FileManager.default.contentsOfDirectory(atPath: topicDir.path))?.isEmpty == false
         ).to(beFalse())
@@ -313,7 +313,7 @@ private extension TopicFetcherTests {
     func topicFile(topic: RemoteConfigResponse.Topic, blobRef: String) -> URL {
         self.tempDir
             .appendingPathComponent("RevenueCat/topics")
-            .appendingPathComponent(topic.wireKey)
+            .appendingPathComponent(topic.rawValue)
             .appendingPathComponent(blobRef)
     }
 
