@@ -53,7 +53,7 @@ import Foundation
             throw Error.invalidURLScheme
         }
 
-        if let cachedURL = await InMemoryHTMLURLProtocol.cachedURL(for: url) {
+        if let cachedURL = InMemoryHTMLURLProtocol.cachedURL(for: url) {
             return cachedURL
         }
 
