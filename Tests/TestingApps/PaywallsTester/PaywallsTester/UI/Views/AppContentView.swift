@@ -57,8 +57,6 @@ struct AppContentView: View {
 
 }
 
-/// Lets anyone running PaywallsTester point the app at their own RevenueCat project at runtime.
-/// The entered key is persisted (see `DebugSettingsStore`) so it survives a kill/relaunch.
 private struct DebugSettingsView: View {
 
     @ObservedObject var settings: DebugSettingsStore

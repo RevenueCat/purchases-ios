@@ -37,9 +37,6 @@ enum Configuration {
 /// Runtime debug settings for PaywallsTester, persisted in `UserDefaults` so they survive a
 /// kill/relaunch. Lets anyone running the app point it at their own RevenueCat project without
 /// rebuilding or editing `local.xcconfig`.
-///
-/// Note: PaywallsTester has no unit-test target (its test target is snapshot-only), so this type
-/// and the settings screen are verified manually. See the design doc for the manual checklist.
 final class DebugSettingsStore: ObservableObject {
 
     enum Keys {
