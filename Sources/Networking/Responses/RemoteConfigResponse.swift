@@ -108,6 +108,8 @@ extension RemoteConfigResponse.Manifest: Codable {
         self.topics = rawTopics.reduce(into: [:]) { result, pair in
             if let topic = RemoteConfigResponse.Topic(wireKey: pair.key) {
                 result[topic] = pair.value
+            } else {
+                Logger.warn(Strings.backendError.unknown_remote_config_topic(key: pair.key))
             }
         }
     }
