@@ -33,6 +33,21 @@ final class InMemoryHTMLFileRepositoryTests: TestCase {
         }
     }
 
+    func test_generateOrGetCachedFileURL_rejectsURLsWithoutHost() async throws {
+        let repository = InMemoryHTMLFileRepository(networkService: MockHTMLNetworkService())
+
+        do {
+            _ = try await repository.generateOrGetCachedFileURL(
+                for: URL(string: "https:/index.html").unsafelyUnwrapped
+            )
+            XCTFail("Expected URLs without a host to be rejected")
+        } catch InMemoryHTMLFileRepository.Error.invalidURLScheme {
+            // Expected.
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
     func test_generateOrGetCachedFileURL_rewritesHTMLAndCSSAssetsToPurchasesHTMLURLs() async throws {
         let networkService = MockHTMLNetworkService()
         let htmlURL = Self.htmlURL("index")
@@ -188,6 +203,56 @@ final class InMemoryHTMLFileRepositoryTests: TestCase {
 
         XCTAssertFalse(css.contains(#"url("theme.css")"#))
         XCTAssertTrue(Set(networkService.invocations).contains(nestedImageURL))
+    }
+
+    func test_generateOrGetCachedFileURL_stripsNonHTTPSNestedAssets() async throws {
+        let networkService = MockHTMLNetworkService()
+        let htmlURL = Self.htmlURL("non-https-assets")
+        let stylesheetURL = URL(string: "https://example.com/style.css").unsafelyUnwrapped
+
+        networkService.stub(
+            url: htmlURL,
+            data: """
+            <html>
+              <head>
+                <link rel="stylesheet" href="http://example.com/insecure.css">
+                <link rel="stylesheet" href="/style.css">
+                <script src="file:///tmp/script.js"></script>
+              </head>
+              <body>
+                <img src="custom-scheme://image" srcset="http://example.com/a.png 1x, /secure.png 2x">
+                "http://example.com/config.json"
+              </body>
+            </html>
+            """
+        )
+        networkService.stub(
+            url: stylesheetURL,
+            data: """
+            @import "http://example.com/fonts.css";
+            @import url("custom-scheme://theme.css");
+            body {
+                background-image: url("file:///tmp/bg.png");
+                color: red;
+            }
+            """
+        )
+        networkService.stub(url: URL(string: "https://example.com/secure.png").unsafelyUnwrapped, data: "image-data")
+
+        let repository = InMemoryHTMLFileRepository(networkService: networkService)
+        let cachedURL = try await repository.generateOrGetCachedFileURL(for: htmlURL)
+        let html = try await Self.string(from: cachedURL)
+        let cachedStylesheetURL = try XCTUnwrap(Self.attribute("href", inFirst: "link", html: html))
+        let css = try await Self.string(from: cachedStylesheetURL)
+
+        XCTAssertFalse(html.contains("http://example.com/insecure.css"))
+        XCTAssertFalse(html.contains("file:///tmp/script.js"))
+        XCTAssertFalse(html.contains("custom-scheme://image"))
+        XCTAssertFalse(html.contains("http://example.com/a.png"))
+        XCTAssertFalse(html.contains("http://example.com/config.json"))
+        XCTAssertFalse(css.contains("http://example.com/fonts.css"))
+        XCTAssertFalse(css.contains("custom-scheme://theme.css"))
+        XCTAssertFalse(css.contains("file:///tmp/bg.png"))
     }
 
     func test_generateOrGetCachedFileURL_returnsCachedURLWithoutRecalculating() async throws {

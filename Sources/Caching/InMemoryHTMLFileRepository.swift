@@ -49,7 +49,7 @@ import Foundation
 
     /// Create and/or get the in-memory cached HTML URL.
     @_spi(Internal) public func generateOrGetCachedFileURL(for url: InputURL) async throws -> OutputURL {
-        guard url.isHTTPS else {
+        guard url.isHTTPSWithHost else {
             throw Error.invalidURLScheme
         }
 
@@ -92,7 +92,7 @@ import Foundation
     }
 
     private func cacheAsset(at url: URL, kind: AssetKind) async throws -> URL {
-        guard url.isHTTPS else {
+        guard url.isHTTPSWithHost else {
             throw Error.invalidURLScheme
         }
 
@@ -218,10 +218,20 @@ private struct HTMLAssetRewriter {
         for tagRange in tagRanges {
             let tagText = String(html[tagRange])
             guard let assetKind = kind(tagText),
-                  let attributeValue = tagText.attributeValueAndRange(named: attribute),
-                  let assetURL = attributeValue.value.resolvedHTTPSURL(relativeTo: self.baseURL),
-                  let cachedURL = await self.cacheAsset(assetURL, assetKind),
-                  let valueRange = html.offsetRange(attributeValue.range, in: tagText, at: tagRange) else {
+                  let attributeValue = tagText.attribute(named: attribute),
+                  let assetURL = attributeValue.value.resolvedResourceURL(relativeTo: self.baseURL),
+                  let valueRange = html.offsetRange(attributeValue.valueRange, in: tagText, at: tagRange),
+                  let attributeRange = html.offsetRange(attributeValue.range, in: tagText, at: tagRange) else {
+                continue
+            }
+
+            guard assetURL.isHTTPSWithHost else {
+                let rangeToStrip = assetKind.removesWholeHTMLTagWhenBlocked ? tagRange : attributeRange
+                replacements.append(.init(range: rangeToStrip, replacement: ""))
+                continue
+            }
+
+            guard let cachedURL = await self.cacheAsset(assetURL, assetKind) else {
                 continue
             }
 
@@ -260,8 +270,16 @@ private struct HTMLAssetRewriter {
             let parts = trimmed.split(maxSplits: 1, whereSeparator: \.isWhitespace)
 
             guard let firstPart = parts.first,
-                  let assetURL = String(firstPart).resolvedHTTPSURL(relativeTo: self.baseURL),
-                  let cachedURL = await self.cacheAsset(assetURL, .image) else {
+                  let assetURL = String(firstPart).resolvedResourceURL(relativeTo: self.baseURL) else {
+                candidates.append(candidate)
+                continue
+            }
+
+            guard assetURL.isHTTPSWithHost else {
+                continue
+            }
+
+            guard let cachedURL = await self.cacheAsset(assetURL, .image) else {
                 candidates.append(candidate)
                 continue
             }
@@ -284,8 +302,16 @@ private struct HTMLAssetRewriter {
         var replacements: [StringReplacement] = []
         for match in matches {
             guard let value = match.firstCapture(in: html),
-                  let assetURL = value.value.resolvedHTTPSURL(relativeTo: self.baseURL),
-                  let cachedURL = await self.cacheAsset(assetURL, .asset) else {
+                  let assetURL = value.value.resolvedResourceURL(relativeTo: self.baseURL) else {
+                continue
+            }
+
+            guard assetURL.isHTTPSWithHost else {
+                replacements.append(.init(range: value.range, replacement: ""))
+                continue
+            }
+
+            guard let cachedURL = await self.cacheAsset(assetURL, .asset) else {
                 continue
             }
 
@@ -324,8 +350,16 @@ private struct CSSAssetRewriter {
         for match in matches {
             guard !css.isImportURL(match),
                   let value = match.firstCapture(in: css),
-                  let assetURL = value.value.resolvedHTTPSURL(relativeTo: self.baseURL),
-                  let cachedURL = await self.cacheAsset(assetURL, .asset) else {
+                  let assetURL = value.value.resolvedResourceURL(relativeTo: self.baseURL) else {
+                continue
+            }
+
+            guard assetURL.isHTTPSWithHost else {
+                replacements.append(.init(range: value.range, replacement: Self.blockedURLString))
+                continue
+            }
+
+            guard let cachedURL = await self.cacheAsset(assetURL, .asset) else {
                 continue
             }
 
@@ -343,8 +377,17 @@ private struct CSSAssetRewriter {
         var replacements: [StringReplacement] = []
         for match in matches {
             guard let value = match.firstCapture(in: css),
-                  let assetURL = value.value.resolvedHTTPSURL(relativeTo: self.baseURL),
-                  let cachedURL = await self.cacheAsset(assetURL, .stylesheet) else {
+                  let matchRange = match.ranges.first ?? nil,
+                  let assetURL = value.value.resolvedResourceURL(relativeTo: self.baseURL) else {
+                continue
+            }
+
+            guard assetURL.isHTTPSWithHost else {
+                replacements.append(.init(range: matchRange, replacement: ""))
+                continue
+            }
+
+            guard let cachedURL = await self.cacheAsset(assetURL, .stylesheet) else {
                 continue
             }
 
@@ -362,8 +405,17 @@ private struct CSSAssetRewriter {
         var replacements: [StringReplacement] = []
         for match in matches {
             guard let value = match.firstCapture(in: css),
-                  let assetURL = value.value.resolvedHTTPSURL(relativeTo: self.baseURL),
-                  let cachedURL = await self.cacheAsset(assetURL, .stylesheet) else {
+                  let matchRange = match.ranges.first ?? nil,
+                  let assetURL = value.value.resolvedResourceURL(relativeTo: self.baseURL) else {
+                continue
+            }
+
+            guard assetURL.isHTTPSWithHost else {
+                replacements.append(.init(range: matchRange, replacement: ""))
+                continue
+            }
+
+            guard let cachedURL = await self.cacheAsset(assetURL, .stylesheet) else {
                 continue
             }
 
@@ -373,6 +425,8 @@ private struct CSSAssetRewriter {
         return replacements
     }
 
+    private static let blockedURLString = "data:,"
+
 }
 
 private enum AssetKind: Sendable {
@@ -380,6 +434,15 @@ private enum AssetKind: Sendable {
     case script
     case image
     case asset
+
+    var removesWholeHTMLTagWhenBlocked: Bool {
+        switch self {
+        case .stylesheet, .script:
+            return true
+        case .image, .asset:
+            return false
+        }
+    }
 
     func mimeType(for url: URL) -> String? {
         switch self {
@@ -437,6 +500,12 @@ private struct RegexMatch {
     }
 }
 
+private struct HTMLAttribute {
+    let value: String
+    let range: Range<String.Index>
+    let valueRange: Range<String.Index>
+}
+
 private extension String {
 
     func applying(_ replacements: [StringReplacement]) -> String {
@@ -467,22 +536,31 @@ private extension String {
     }
 
     func attributeValue(named attribute: String) -> String? {
-        return self.attributeValueAndRange(named: attribute)?.value
+        return self.attribute(named: attribute)?.value
     }
 
     func attributeValueAndRange(named attribute: String) -> (value: String, range: Range<String.Index>)? {
+        return self.attribute(named: attribute).map { ($0.value, $0.valueRange) }
+    }
+
+    func attribute(named attribute: String) -> HTMLAttribute? {
         let escapedAttribute = NSRegularExpression.escapedPattern(for: attribute)
         let pattern = #"(?is)(?:^|\s)"# + escapedAttribute + #"\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))"#
 
-        return self.matches(pattern: pattern).first?.firstCapture(in: self)
+        guard let match = self.matches(pattern: pattern).first,
+              let range = match.ranges.first ?? nil,
+              let value = match.firstCapture(in: self) else {
+            return nil
+        }
+
+        return HTMLAttribute(value: value.value, range: range, valueRange: value.range)
     }
 
-    func resolvedHTTPSURL(relativeTo baseURL: URL) -> URL? {
+    func resolvedResourceURL(relativeTo baseURL: URL) -> URL? {
         let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty,
               !trimmed.hasPrefix("#"),
-              let url = URL(string: trimmed, relativeTo: baseURL)?.absoluteURL,
-              url.isHTTPS else {
+              let url = URL(string: trimmed, relativeTo: baseURL)?.absoluteURL else {
             return nil
         }
 
@@ -529,8 +607,8 @@ private extension String {
 
 private extension URL {
 
-    var isHTTPS: Bool {
-        return self.scheme?.lowercased() == "https"
+    var isHTTPSWithHost: Bool {
+        return self.scheme?.lowercased() == "https" && self.host?.isEmpty == false
     }
 
 }

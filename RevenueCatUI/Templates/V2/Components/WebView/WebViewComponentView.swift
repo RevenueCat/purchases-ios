@@ -11,6 +11,15 @@
 
 @_spi(Internal) import RevenueCat
 import SwiftUI
+#if canImport(AppKit)
+import AppKit
+#endif
+#if canImport(UIKit)
+import UIKit
+#endif
+#if canImport(WebKit)
+import WebKit
+#endif
 
 #if !os(tvOS) // For Paywalls V2
 
@@ -23,7 +32,7 @@ struct WebViewComponentView: View {
         self.viewModel = viewModel
     }
 
-    #if canImport(UIKit)
+    #if canImport(UIKit) || os(macOS)
     @State private var dynamicHeight: CGFloat?
     #endif
 
@@ -40,6 +49,15 @@ struct WebViewComponentView: View {
                 .clipped()
                 .background(Color.clear)
         }
+        #elseif os(macOS)
+        if let resolvedURL = viewModel.resolvedURL(customVariables: customVariables) {
+            let urlToLoad = viewModel.cachedURL(for: resolvedURL) ?? resolvedURL
+            MacWebViewRepresentable(url: urlToLoad, height: $dynamicHeight)
+                .frame(maxWidth: .infinity)
+                .frame(height: dynamicHeight ?? Self.initialHeight)
+                .clipped()
+                .background(Color.clear)
+        }
         #else
         EmptyView()
         #endif
@@ -47,7 +65,7 @@ struct WebViewComponentView: View {
 
 }
 
-#if canImport(UIKit)
+#if canImport(UIKit) || os(macOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension WebViewComponentView {
@@ -58,9 +76,110 @@ private extension WebViewComponentView {
 
 #endif
 
-#if canImport(UIKit)
+#if canImport(WebKit)
 
-import WebKit
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private enum PaywallWebViewScripts {
+
+    static let measureHeightJavaScript = "window.__rcMeasureHeight && window.__rcMeasureHeight()"
+
+    static let heightReportingJavaScriptSource = """
+    (function() {
+      function measureHeight() {
+        var body = document.body;
+        var html = document.documentElement;
+        var bodyRect = body.getBoundingClientRect();
+        var height = Math.max(bodyRect.height, html.getBoundingClientRect().height);
+
+        var children = body.children;
+        for (var i = 0; i < children.length; i++) {
+          var child = children[i];
+          var style = window.getComputedStyle(child);
+          if (style.display === 'none' || style.visibility === 'hidden') { continue; }
+          var rect = child.getBoundingClientRect();
+          if (rect.height > 0) {
+            height = Math.max(height, rect.bottom - bodyRect.top);
+          }
+        }
+
+        return Math.ceil(height);
+      }
+
+      window.__rcMeasureHeight = measureHeight;
+
+      function reportHeight() {
+        var height = measureHeight();
+        if (window.webkit && window.webkit.messageHandlers.rcWebViewHeight) {
+          window.webkit.messageHandlers.rcWebViewHeight.postMessage(height);
+        }
+      }
+
+      window.__rcReportHeight = reportHeight;
+
+      if (!window.__rcHeightObserverInstalled) {
+        window.__rcHeightObserverInstalled = true;
+
+        if (window.ResizeObserver) {
+          var resizeObserver = new ResizeObserver(reportHeight);
+          resizeObserver.observe(document.documentElement);
+          if (document.body) { resizeObserver.observe(document.body); }
+        }
+
+        new MutationObserver(reportHeight).observe(document.documentElement, {
+          subtree: true,
+          childList: true,
+          attributes: true,
+          characterData: true
+        });
+
+        document.addEventListener('click', function() {
+          reportHeight();
+          setTimeout(reportHeight, 50);
+          setTimeout(reportHeight, 150);
+          setTimeout(reportHeight, 350);
+        }, true);
+
+        document.addEventListener('transitionend', reportHeight, true);
+        document.addEventListener('animationend', reportHeight, true);
+        window.addEventListener('load', reportHeight);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', reportHeight, { once: true });
+      } else {
+        reportHeight();
+      }
+    })();
+    """
+
+    static let disableZoomUserScript: WKUserScript = {
+        let source = """
+        (function() {
+          var content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+          var viewport = document.querySelector('meta[name="viewport"]');
+          if (!viewport) {
+            viewport = document.createElement('meta');
+            viewport.name = 'viewport';
+            document.head.appendChild(viewport);
+          }
+          viewport.setAttribute('content', content);
+        })();
+        """
+
+        return WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
+    }()
+
+    static let heightReportingUserScript = WKUserScript(
+        source: PaywallWebViewScripts.heightReportingJavaScriptSource,
+        injectionTime: .atDocumentEnd,
+        forMainFrameOnly: true
+    )
+
+}
+
+#endif
+
+#if canImport(UIKit)
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
@@ -235,10 +354,9 @@ private struct WebViewRepresentable: UIViewRepresentable {
             }
         }
 
-        private static let measureHeightJavaScript = "window.__rcMeasureHeight && window.__rcMeasureHeight()"
+        private static let measureHeightJavaScript = PaywallWebViewScripts.measureHeightJavaScript
 
-        private static let installHeightReportingJavaScript = WebViewRepresentable.Coordinator
-            .heightReportingJavaScriptSource
+        private static let installHeightReportingJavaScript = PaywallWebViewScripts.heightReportingJavaScriptSource
 
         func viewForZooming(in scrollView: UIScrollView) -> UIView? {
             return nil
@@ -288,15 +406,22 @@ final class WebViewPool {
         webView.configuration.userContentController.removeScriptMessageHandler(
             forName: WebViewRepresentable.Coordinator.heightMessageHandlerName
         )
-        webView.loadHTMLString("<!doctype html><html></html>", baseURL: nil)
+        webView.configuration.websiteDataStore.removeData(
+            ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
+            modifiedSince: .distantPast
+        ) { [weak self, weak webView] in
+            DispatchQueue.main.async {
+                guard let self, let webView else { return }
+                webView.loadHTMLString("<!doctype html><html></html>", baseURL: nil)
 
-        if self.pool.count < self.capacity {
-            self.pool.append(webView)
+                if self.pool.count < self.capacity {
+                    self.pool.append(webView)
+                }
+            }
         }
     }
 
     private func makeWebView() -> AutoSizingWebView {
-        print("Web View Count was \(pool.count) adding 1")
         return AutoSizingWebView(processPool: self.processPool)
     }
 
@@ -320,9 +445,10 @@ final class AutoSizingWebView: WKWebView {
     init(processPool: WKProcessPool) {
         let config = WKWebViewConfiguration()
         config.processPool = processPool
+        config.websiteDataStore = .nonPersistent()
         config.allowsInlineMediaPlayback = true
-        config.userContentController.addUserScript(Self.disableZoomUserScript)
-        config.userContentController.addUserScript(Self.heightReportingUserScript)
+        config.userContentController.addUserScript(PaywallWebViewScripts.disableZoomUserScript)
+        config.userContentController.addUserScript(PaywallWebViewScripts.heightReportingUserScript)
         config.setURLSchemeHandler(InMemoryHTMLURLSchemeHandler(), forURLScheme: "purchaseshtml")
         super.init(frame: .zero, configuration: config)
         isOpaque = false
@@ -331,105 +457,6 @@ final class AutoSizingWebView: WKWebView {
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-
-    private static let disableZoomUserScript: WKUserScript = {
-        let source = """
-        (function() {
-          var content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
-          var viewport = document.querySelector('meta[name="viewport"]');
-          if (!viewport) {
-            viewport = document.createElement('meta');
-            viewport.name = 'viewport';
-            document.head.appendChild(viewport);
-          }
-          viewport.setAttribute('content', content);
-        })();
-        """
-
-        return WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
-    }()
-
-    private static let heightReportingUserScript: WKUserScript = {
-        WKUserScript(
-            source: WebViewRepresentable.Coordinator.heightReportingJavaScriptSource,
-            injectionTime: .atDocumentEnd,
-            forMainFrameOnly: true
-        )
-    }()
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension WebViewRepresentable.Coordinator {
-
-    static let heightReportingJavaScriptSource = """
-    (function() {
-      function measureHeight() {
-        var body = document.body;
-        var html = document.documentElement;
-        var bodyRect = body.getBoundingClientRect();
-        var height = Math.max(bodyRect.height, html.getBoundingClientRect().height);
-
-        var children = body.children;
-        for (var i = 0; i < children.length; i++) {
-          var child = children[i];
-          var style = window.getComputedStyle(child);
-          if (style.display === 'none' || style.visibility === 'hidden') { continue; }
-          var rect = child.getBoundingClientRect();
-          if (rect.height > 0) {
-            height = Math.max(height, rect.bottom - bodyRect.top);
-          }
-        }
-
-        return Math.ceil(height);
-      }
-
-      window.__rcMeasureHeight = measureHeight;
-
-      function reportHeight() {
-        var height = measureHeight();
-        if (window.webkit && window.webkit.messageHandlers.rcWebViewHeight) {
-          window.webkit.messageHandlers.rcWebViewHeight.postMessage(height);
-        }
-      }
-
-      window.__rcReportHeight = reportHeight;
-
-      if (!window.__rcHeightObserverInstalled) {
-        window.__rcHeightObserverInstalled = true;
-
-        if (window.ResizeObserver) {
-          var resizeObserver = new ResizeObserver(reportHeight);
-          resizeObserver.observe(document.documentElement);
-          if (document.body) { resizeObserver.observe(document.body); }
-        }
-
-        new MutationObserver(reportHeight).observe(document.documentElement, {
-          subtree: true,
-          childList: true,
-          attributes: true,
-          characterData: true
-        });
-
-        document.addEventListener('click', function() {
-          reportHeight();
-          setTimeout(reportHeight, 50);
-          setTimeout(reportHeight, 150);
-          setTimeout(reportHeight, 350);
-        }, true);
-
-        document.addEventListener('transitionend', reportHeight, true);
-        document.addEventListener('animationend', reportHeight, true);
-        window.addEventListener('load', reportHeight);
-      }
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', reportHeight, { once: true });
-      } else {
-        reportHeight();
-      }
-    })();
-    """
 
 }
 
@@ -516,5 +543,251 @@ public enum PaywallWebViewPool {
 }
 
 #endif // canImport(UIKit)
+
+#if os(macOS) && canImport(WebKit)
+
+@available(macOS 12.0, *)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private struct MacWebViewRepresentable: NSViewRepresentable {
+
+    let url: URL
+    @Binding var height: CGFloat?
+
+    func makeNSView(context: Context) -> WKWebView {
+        let webView = WKWebView(frame: .zero, configuration: Self.makeConfiguration())
+        webView.navigationDelegate = context.coordinator
+        context.coordinator.registerHeightReporting(on: webView)
+        context.coordinator.currentURL = url
+        webView.load(URLRequest(url: url))
+
+        return webView
+    }
+
+    func updateNSView(_ nsView: WKWebView, context: Context) {
+        if context.coordinator.currentURL != url {
+            context.coordinator.currentURL = url
+            nsView.load(URLRequest(url: url))
+        }
+
+        context.coordinator.reportHeightIfNeeded(in: nsView)
+    }
+
+    static func dismantleNSView(_ nsView: WKWebView, coordinator: Coordinator) {
+        coordinator.unregisterHeightReporting(from: nsView)
+        nsView.navigationDelegate = nil
+        nsView.stopLoading()
+        nsView.configuration.websiteDataStore.removeData(
+            ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
+            modifiedSince: .distantPast
+        ) {}
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(height: $height)
+    }
+
+    private static func makeConfiguration() -> WKWebViewConfiguration {
+        let config = WKWebViewConfiguration()
+        config.websiteDataStore = .nonPersistent()
+        config.userContentController.addUserScript(PaywallWebViewScripts.heightReportingUserScript)
+        config.setURLSchemeHandler(InMemoryHTMLURLSchemeHandler(), forURLScheme: "purchaseshtml")
+
+        return config
+    }
+
+    final class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
+
+        static let heightMessageHandlerName = "rcWebViewHeight"
+
+        @Binding var height: CGFloat?
+        var currentURL: URL?
+        private var heightMessageHandler: WeakScriptMessageHandler?
+        private weak var webView: WKWebView?
+        private var heightMeasurementGeneration = 0
+
+        init(height: Binding<CGFloat?>) {
+            _height = height
+        }
+
+        func reportHeightIfNeeded(in webView: WKWebView) {
+            webView.evaluateJavaScript("window.__rcReportHeight && window.__rcReportHeight()")
+        }
+
+        func registerHeightReporting(on webView: WKWebView) {
+            self.webView = webView
+            let handler = WeakScriptMessageHandler(delegate: self)
+            self.heightMessageHandler = handler
+            webView.configuration.userContentController.add(handler, name: Self.heightMessageHandlerName)
+        }
+
+        func unregisterHeightReporting(from webView: WKWebView) {
+            webView.configuration.userContentController.removeScriptMessageHandler(
+                forName: Self.heightMessageHandlerName
+            )
+            self.heightMessageHandler = nil
+            self.webView = nil
+        }
+
+        func userContentController(
+            _ userContentController: WKUserContentController,
+            didReceive message: WKScriptMessage
+        ) {
+            guard message.name == Self.heightMessageHandlerName else { return }
+
+            let reportedHeight: CGFloat?
+            if let number = message.body as? NSNumber {
+                reportedHeight = CGFloat(number.doubleValue)
+            } else if let double = message.body as? Double {
+                reportedHeight = CGFloat(double)
+            } else {
+                reportedHeight = nil
+            }
+
+            if let reportedHeight {
+                self.applyHeight(reportedHeight)
+            }
+        }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            webView.evaluateJavaScript(PaywallWebViewScripts.heightReportingJavaScriptSource)
+            self.measureHeight(in: webView)
+            let javaScript = """
+            new Promise(r => {
+              if (document.readyState === 'complete') { r(); return; }
+              window.addEventListener('load', () => r(), { once: true });
+            }).then(() => 0);
+            """
+            webView.evaluateJavaScript(javaScript) { [weak self, weak webView] _, _ in
+                guard let self, let webView else { return }
+                webView.evaluateJavaScript(PaywallWebViewScripts.heightReportingJavaScriptSource)
+                self.measureHeight(in: webView)
+                self.scheduleDelayedMeasurements(in: webView)
+            }
+        }
+
+        private func measureHeight(in webView: WKWebView) {
+            self.heightMeasurementGeneration += 1
+            let generation = self.heightMeasurementGeneration
+
+            webView.evaluateJavaScript(PaywallWebViewScripts.measureHeightJavaScript) { [weak self] result, _ in
+                guard let self, generation == self.heightMeasurementGeneration else { return }
+
+                let measuredHeight: CGFloat?
+                if let number = result as? NSNumber {
+                    measuredHeight = CGFloat(number.doubleValue)
+                } else if let double = result as? Double {
+                    measuredHeight = CGFloat(double)
+                } else {
+                    measuredHeight = nil
+                }
+
+                if let measuredHeight {
+                    self.applyHeight(measuredHeight)
+                }
+            }
+        }
+
+        private func scheduleDelayedMeasurements(in webView: WKWebView) {
+            let delays: [TimeInterval] = [0.05, 0.15, 0.35]
+            for delay in delays {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self, weak webView] in
+                    guard let self, let webView else { return }
+                    self.measureHeight(in: webView)
+                }
+            }
+        }
+
+        private func applyHeight(_ newHeight: CGFloat) {
+            guard newHeight >= 0 else { return }
+            guard abs(newHeight - (height ?? 0)) > 0.5 else { return }
+
+            DispatchQueue.main.async {
+                self.height = newHeight
+            }
+        }
+
+    }
+
+}
+
+@available(macOS 12.0, *)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private final class WeakScriptMessageHandler: NSObject, WKScriptMessageHandler {
+
+    private weak var delegate: WKScriptMessageHandler?
+
+    init(delegate: WKScriptMessageHandler) {
+        self.delegate = delegate
+    }
+
+    func userContentController(
+        _ userContentController: WKUserContentController,
+        didReceive message: WKScriptMessage
+    ) {
+        self.delegate?.userContentController(userContentController, didReceive: message)
+    }
+
+}
+
+@available(macOS 12.0, *)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private final class InMemoryHTMLURLSchemeHandler: NSObject, WKURLSchemeHandler {
+
+    private let session = URLSession(
+        configuration: InMemoryHTMLFileRepository.makeURLSessionConfiguration()
+    )
+    private let lock = NSLock()
+    private var loadingTasks: [ObjectIdentifier: Task<Void, Never>] = [:]
+
+    func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
+        let identifier = ObjectIdentifier(urlSchemeTask)
+
+        let task = Task { [weak self, session] in
+            defer {
+                self?.removeLoadingTask(identifier)
+            }
+
+            do {
+                let (data, response) = try await session.data(for: urlSchemeTask.request)
+                guard !Task.isCancelled else { return }
+                urlSchemeTask.didReceive(response)
+                urlSchemeTask.didReceive(data)
+                urlSchemeTask.didFinish()
+            } catch {
+                guard !Task.isCancelled else { return }
+                urlSchemeTask.didFailWithError(error)
+            }
+        }
+
+        self.lock.lock()
+        self.loadingTasks[identifier] = task
+        self.lock.unlock()
+    }
+
+    func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) {
+        let identifier = ObjectIdentifier(urlSchemeTask)
+
+        self.lock.lock()
+        let task = self.loadingTasks.removeValue(forKey: identifier)
+        self.lock.unlock()
+
+        task?.cancel()
+    }
+
+    private func removeLoadingTask(_ identifier: ObjectIdentifier) {
+        self.lock.lock()
+        self.loadingTasks.removeValue(forKey: identifier)
+        self.lock.unlock()
+    }
+
+}
+
+#endif // os(macOS) && canImport(WebKit)
 
 #endif // !os(tvOS)
