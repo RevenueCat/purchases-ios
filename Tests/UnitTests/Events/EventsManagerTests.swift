@@ -466,6 +466,100 @@ class EventsManagerTests: TestCase {
         await self.verifyEmptyStore()
     }
 
+    // MARK: - trackEvent (WorkflowEvent)
+
+    func testTrackWorkflowEventStoresWithWorkflowsFeature() async throws {
+        let event = WorkflowEvent.stepStarted(
+            .init(),
+            .init(workflowId: "wfl_abc", stepId: "step-1", entryReason: "start", isFirstStep: true)
+        )
+
+        await self.manager.track(featureEvent: event)
+
+        let events = await self.store.storedEvents
+        expect(events).to(haveCount(1))
+        expect(events.first?.feature) == .workflows
+    }
+
+    // MARK: - toMap (WorkflowEvent)
+
+    func testWorkflowStepStartedToMap() {
+        let creationData = WorkflowEvent.CreationData(id: UUID(), date: Date())
+        let event = WorkflowEvent.stepStarted(
+            creationData,
+            .init(workflowId: "wfl_abc", stepId: "step-1", localeIdentifier: "en_US")
+        )
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["discriminator"] as? String) == "workflows"
+        expect(map["type"] as? String) == "workflows_step_started"
+        expect(map["id"] as? String) == creationData.id.uuidString
+        expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
+        expect(map["workflow_id"] as? String) == "wfl_abc"
+        expect(map["step_id"] as? String) == "step-1"
+        expect(map["locale"] as? String) == "en_US"
+    }
+
+    func testWorkflowStepCompletedToMap() {
+        let creationData = WorkflowEvent.CreationData(id: UUID(), date: Date())
+        let event = WorkflowEvent.stepCompleted(
+            creationData,
+            .init(workflowId: "wfl_abc", stepId: "step-1", toStepId: "step-2")
+        )
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["discriminator"] as? String) == "workflows"
+        expect(map["type"] as? String) == "workflows_step_completed"
+        expect(map["to_step_id"] as? String) == "step-2"
+        expect(map["from_step_id"]).to(beNil())
+    }
+
+    func testWorkflowEventToMapIncludesOptionalFields() {
+        let event = WorkflowEvent.stepStarted(
+            .init(),
+            .init(
+                workflowId: "wfl_abc",
+                stepId: "step-1",
+                traceId: "trace-xyz",
+                fromStepId: "step-0",
+                entryReason: "start",
+                isFirstStep: true,
+                isLastStep: false,
+                experimentId: "exp-1",
+                experimentVariant: "variant-a",
+                isLastVariantStep: true
+            )
+        )
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["trace_id"] as? String) == "trace-xyz"
+        expect(map["from_step_id"] as? String) == "step-0"
+        expect(map["entry_reason"] as? String) == "start"
+        expect(map["is_first_step"] as? Bool) == true
+        expect(map["is_last_step"] as? Bool) == false
+        expect(map["experiment_id"] as? String) == "exp-1"
+        expect(map["experiment_variant"] as? String) == "variant-a"
+        expect(map["is_last_variant_step"] as? Bool) == true
+    }
+
+    func testWorkflowEventToMapOmitsNilOptionalFields() {
+        let event = WorkflowEvent.stepStarted(
+            .init(),
+            .init(workflowId: "wfl_abc", stepId: "step-1")
+        )
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["trace_id"]).to(beNil())
+        expect(map["from_step_id"]).to(beNil())
+        expect(map["to_step_id"]).to(beNil())
+        expect(map["entry_reason"]).to(beNil())
+        expect(map["is_first_step"]).to(beNil())
+        expect(map["is_last_step"]).to(beNil())
+        expect(map["experiment_id"]).to(beNil())
+        expect(map["experiment_variant"]).to(beNil())
+        expect(map["is_last_variant_step"]).to(beNil())
+    }
+
     // MARK: - flushAllEvents
 
     func testFlushEmptyStore() async throws {

@@ -134,12 +134,12 @@ struct ButtonComponentView: View {
         if let id = viewModel.id,
            let triggerWorkflow = workflowTriggerAction,
            triggerWorkflow(id) {
-            trackButtonComponentInteraction()
             return
         }
 
-        // Intentionally track before branching so unknown actions are surfaced as diagnostic telemetry.
-        // These should be excluded from product funnel analytics by filtering componentValue == "unknown".
+        // Intentionally track before branching so .unknown actions are surfaced as diagnostic telemetry.
+        // Events with componentValue == "unknown" should be excluded from product funnel analytics.
+        // Note: .workflowTrigger actions are intentionally not tracked — paywallComponentInteractionValue returns nil.
         self.trackButtonComponentInteraction()
 
         switch viewModel.action {
@@ -180,9 +180,10 @@ struct ButtonComponentView: View {
     }
 
     private func trackButtonComponentInteraction() {
+        guard let componentValue = self.viewModel.action.paywallComponentInteractionValue else { return }
         self.componentInteractionLogger(.paywallNonPurchaseButtonAction(
             componentName: self.viewModel.component.name,
-            componentValue: self.viewModel.action.paywallComponentInteractionValue,
+            componentValue: componentValue,
             componentURL: self.viewModel.action.paywallComponentInteractionURL
         ))
     }
