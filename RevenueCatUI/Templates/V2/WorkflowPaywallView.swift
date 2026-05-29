@@ -408,13 +408,29 @@ struct WorkflowPaywallView: View {
     /// dismissed. Driven by `onDisappear` so it fires once for any dismissal path. `paywall_close` is
     /// tracked independently on PaywallsV2View.onDisappear, so this does not change close behavior.
     private func trackTerminalCompletionIfNeeded() {
-        guard !self.hasTrackedTerminalCompletion,
+        guard Self.shouldTrackTerminalCompletion(
+                hasTrackedTerminalCompletion: self.hasTrackedTerminalCompletion,
+                hasRenderedPage: self.transitionState.currentPage != nil
+              ),
               let step = self.navigator.currentStep else {
             return
         }
 
         self.hasTrackedTerminalCompletion = true
         self.makeStepEventTracker().trackStepCompleted(step, toStepId: nil)
+    }
+
+    /// Whether a terminal `stepCompleted` should be emitted on dismissal, given whether terminal
+    /// completion already fired and whether a page is currently rendered. Like `trackInitialStepIfNeeded`,
+    /// it only fires when a page actually rendered: a step that never rendered (initial build failure) or a
+    /// forward/back destination that failed to render (which clears `currentPage`) must not emit a
+    /// `stepCompleted` with no preceding `stepStarted`. Mirrors Android keying terminal completion off
+    /// `_workflowState.value?.currentStepId`, which is null when a step fails to render.
+    static func shouldTrackTerminalCompletion(
+        hasTrackedTerminalCompletion: Bool,
+        hasRenderedPage: Bool
+    ) -> Bool {
+        return !hasTrackedTerminalCompletion && hasRenderedPage
     }
 
     static func exitOfferContext(
