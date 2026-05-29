@@ -46,9 +46,13 @@ extension Value {
         }
     }
 
-    /// Best-effort numeric coercion used by loose comparison. Mirrors JS
-    /// `ToNumber` (partial): bool→0/1, int/float→self, string→parsed (or
-    /// `nil` if unparseable), null→0, everything else→`nil`.
+    /// JS `Number(value)` (`ToNumber`): bool→0/1, int/float→self,
+    /// null→0, string→`""` or whitespace→0 / parsed-or-`nil`, array/object
+    /// → `ToPrimitive("number")` → `toString` → recurse on the resulting
+    /// string. So `[]` → `""` → 0, `[1]` → `"1"` → 1, `[1,2]` → `"1,2"` →
+    /// `nil` (whole-string parse fails), `{}` → `"[object Object]"` →
+    /// `nil`. Arithmetic callers wrap the `nil` return with `?? .nan` to
+    /// get JS arithmetic propagation.
     var asNumber: Double? {
         switch self {
         case .null:
@@ -64,7 +68,10 @@ extension Value {
             if trimmed.isEmpty { return 0.0 }
             return Double(trimmed)
         case .array, .object:
-            return nil
+            let stringified = jsString(self)
+            let trimmed = stringified.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.isEmpty { return 0.0 }
+            return Double(trimmed)
         }
     }
 }
@@ -134,7 +141,7 @@ func looseEq(_ lhs: Value, _ rhs: Value) -> Bool {
     }
 }
 
-// MARK: - JS coercion helpers (used by looseEq and stringifying operators)
+// MARK: - JS coercion helpers (used by looseEq, arithmetic, and stringifying operators)
 
 /// JS `String(value)`: `null` → `"null"`, booleans → `"true"` /
 /// `"false"`, numbers → numeric repr (whole-valued doubles render
@@ -196,6 +203,34 @@ func jsNumberString(_ value: Double) -> String {
 /// object. JSON Logic only ever encounters plain objects, so the
 /// fallback `"[object Object]"` is the only spelling we need.
 let jsObjectString = "[object Object]"
+
+/// JS `parseFloat(value)`. Stringifies via `jsString`, strips leading
+/// whitespace, then parses the longest valid prefix as a JS
+/// `StringNumericLiteral` (optional sign, digits with optional decimal,
+/// optional decimal exponent, plus the `Infinity` literal). `null`
+/// ("null"), bools ("true" / "false"), and the empty string yield `NaN`;
+/// trailing junk is allowed (`"3.14abc"` → 3.14).
+func jsParseFloat(_ value: Value) -> Double {
+    if case .int(let value) = value { return Double(value) }
+    if case .float(let value) = value { return value }
+    return parseFloatPrefix(jsString(value))
+}
+
+private let numericPrefixPattern = #"^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?"#
+
+private func parseFloatPrefix(_ string: String) -> Double {
+    let trimmed = string.drop(while: \.isWhitespace)
+    guard !trimmed.isEmpty else { return .nan }
+    let str = String(trimmed)
+    if str.hasPrefix("Infinity") { return .infinity }
+    if str.hasPrefix("-Infinity") { return -.infinity }
+    if str.hasPrefix("+Infinity") { return .infinity }
+    guard let match = str.range(of: numericPrefixPattern, options: .regularExpression),
+          match.lowerBound == str.startIndex else {
+        return .nan
+    }
+    return Double(str[match]) ?? .nan
+}
 
 /// JSON Logic strict equality (`===`). Same type, same value. `int(1)`
 /// and `float(1.0)` compare equal — they represent the same JS `Number`.

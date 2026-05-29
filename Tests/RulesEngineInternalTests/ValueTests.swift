@@ -260,6 +260,71 @@ final class ValueTests: XCTestCase {
         XCTAssertFalse(looseEq(.float(.infinity), .int(.max)))
     }
 
+    // MARK: - asNumber (direct helper coverage)
+
+    /// Pins `Value.asNumber` (`ToNumber`) independently of arithmetic operators.
+    func testAsNumberMatchesSpec() {
+        // Numbers pass through without stringification.
+        XCTAssertEqual(Value.int(42).asNumber, 42.0)
+        XCTAssertEqual(Value.float(2.5).asNumber, 2.5)
+
+        // null → 0; bools → 0 / 1.
+        XCTAssertEqual(Value.null.asNumber, 0.0)
+        XCTAssertEqual(Value.bool(true).asNumber, 1.0)
+        XCTAssertEqual(Value.bool(false).asNumber, 0.0)
+
+        // Strings: empty / whitespace-only → 0; trim-then-parse otherwise.
+        XCTAssertEqual(Value.string("2.5").asNumber, 2.5)
+        XCTAssertEqual(Value.string("").asNumber, 0.0)
+        XCTAssertEqual(Value.string("   ").asNumber, 0.0)
+        XCTAssertEqual(Value.string("  7").asNumber, 7.0)
+        XCTAssertNil(Value.string("3.14abc").asNumber)
+        XCTAssertNil(Value.string("abc").asNumber)
+
+        // Compounds: toString → recurse on the resulting string.
+        XCTAssertEqual(Value.array([]).asNumber, 0.0)
+        XCTAssertEqual(Value.array([.int(1)]).asNumber, 1.0)
+        XCTAssertNil(Value.array([.int(1), .int(2)]).asNumber)
+        XCTAssertNil(Value.object([:]).asNumber)
+    }
+
+    // MARK: - jsParseFloat (direct helper coverage)
+
+    /// Pins `jsParseFloat` / `parseFloatPrefix` independently of arithmetic
+    /// operators so two compensating operator bugs can't hide a coercion
+    /// regression in the shared helper.
+    func testJsParseFloatMatchesSpec() {
+        // Numbers pass through without stringification.
+        XCTAssertEqual(jsParseFloat(.int(42)), 42.0)
+        XCTAssertEqual(jsParseFloat(.float(2.5)), 2.5)
+
+        // Valid numeric strings, including scientific notation.
+        XCTAssertEqual(jsParseFloat(.string("2.5")), 2.5)
+        XCTAssertEqual(jsParseFloat(.string("1e3")), 1000.0)
+        XCTAssertEqual(jsParseFloat(.string("1.5e2")), 150.0)
+        XCTAssertEqual(jsParseFloat(.string("-2.5e-1")), -0.25)
+
+        // Leading whitespace and longest-prefix parsing.
+        XCTAssertEqual(jsParseFloat(.string("  7")), 7.0)
+        XCTAssertEqual(jsParseFloat(.string("3.14abc")), 3.14)
+
+        // Infinity literal (distinct from overflow).
+        XCTAssertEqual(jsParseFloat(.string("Infinity")), .infinity)
+        XCTAssertEqual(jsParseFloat(.string("-Infinity")), -.infinity)
+
+        // Stringify-then-parse path for compounds.
+        XCTAssertEqual(jsParseFloat(.array([.int(1)])), 1.0)
+        XCTAssertEqual(jsParseFloat(.array([.int(1), .int(2)])), 1.0)
+
+        // Non-numeric after stringify → NaN.
+        XCTAssertTrue(jsParseFloat(.null).isNaN)
+        XCTAssertTrue(jsParseFloat(.bool(true)).isNaN)
+        XCTAssertTrue(jsParseFloat(.string("")).isNaN)
+        XCTAssertTrue(jsParseFloat(.string("true")).isNaN)
+        XCTAssertTrue(jsParseFloat(.object([:])).isNaN)
+        XCTAssertTrue(jsParseFloat(.string("abc")).isNaN)
+    }
+
     func testJsNumberStringFallsThroughToSwiftDoubleStringForOutOfInt64Range() {
         // Last whole number that still round-trips through Int64 — fast path,
         // matches JS (`String(1e18) === "1000000000000000000"`).

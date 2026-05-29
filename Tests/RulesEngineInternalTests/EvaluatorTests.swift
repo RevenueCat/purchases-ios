@@ -201,6 +201,28 @@ final class EvaluatorTests: XCTestCase {
         XCTAssertEqual(result, false)
     }
 
+    // MARK: - Arithmetic dispatched through evaluator
+
+    func testArithmeticPredicateWithVarOperand() throws {
+        // session.app_launch_count * 2 == 6 → true when count is 3
+        let predicate = """
+            {"==": [
+                {"*": [{"var": "session.app_launch_count"}, 2]},
+                6
+            ]}
+            """
+        let vars = ["session": Value.object(["app_launch_count": .int(3)])]
+        XCTAssertTrue(try run(predicate, vars: vars))
+    }
+
+    /// `n / 0` follows IEEE 754 (matches `json-logic-js`, no
+    /// short-circuit). `{"/": [10, 0]}` → `+Infinity` → truthy;
+    /// `{"/": [0, 0]}` → `NaN` → falsy.
+    func testDivideByZeroProducesIeee754ValuesThatFlowThroughTruthiness() throws {
+        XCTAssertTrue(try run("{\"/\": [10, 0]}"))
+        XCTAssertFalse(try run("{\"/\": [0, 0]}"))
+    }
+
     // MARK: - Multi-key object treated as data, not operator
 
     func testMultiKeyObjectIsLiteralDataValue() throws {
