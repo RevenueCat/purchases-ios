@@ -699,6 +699,11 @@ extension PurchaseHandler {
         return self.paywallEventTracker.createPurchaseInitiatedEvent(package: package, sessionID: sessionID)
     }
 
+    /// Tracks a workflow step lifecycle event. Dispatched on the same background path as paywall events.
+    func trackWorkflowEvent(_ event: WorkflowEvent) {
+        self.paywallEventTracker.trackWorkflow(event)
+    }
+
     /// Tracks a purchase error event.
     /// - Parameters:
     ///   - package: The package that was being purchased
@@ -838,6 +843,8 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     }
 
     func track(paywallEvent: PaywallEvent) async {}
+
+    func track(workflowEvent: WorkflowEvent) async {}
 
     func cachePurchaseData(presentedOfferingContext: PresentedOfferingContext,
                            paywallEvent: PaywallEvent?,
