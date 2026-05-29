@@ -566,6 +566,10 @@
 		4FF017C42AB378A7004976EB /* BaseStoreKitIntegrationTests+Verification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FF017C22AB378A7004976EB /* BaseStoreKitIntegrationTests+Verification.swift */; };
 		4FF6E4B92B069B8C000141ED /* HTTPRequest+Signing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FF6E4B82B069B8C000141ED /* HTTPRequest+Signing.swift */; };
 		4FF8464D2A32554300617F00 /* DiagnosticsStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FF8464C2A32554300617F00 /* DiagnosticsStrings.swift */; };
+		DB001002AAAA0001AAAA0001 /* WorkflowEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB001001AAAA0001AAAA0001 /* WorkflowEvent.swift */; };
+		DB001004AAAA0001AAAA0001 /* FeatureEventsRequest+WorkflowEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB001003AAAA0001AAAA0001 /* FeatureEventsRequest+WorkflowEvent.swift */; };
+		DB001006AAAA0001AAAA0001 /* WorkflowEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB001005AAAA0001AAAA0001 /* WorkflowEventTests.swift */; };
+		DB001008AAAA0001AAAA0001 /* WorkflowEventsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB001007AAAA0001AAAA0001 /* WorkflowEventsRequestTests.swift */; };
 		4FFCED882AA941D200118EF4 /* FeatureEventsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFCED852AA941D200118EF4 /* FeatureEventsRequest.swift */; };
 		4FFCED892AA941D200118EF4 /* FeatureEventHTTPRequestPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFCED862AA941D200118EF4 /* FeatureEventHTTPRequestPath.swift */; };
 		4FFFE6C42AA9464100B2955C /* EventsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFFE6C32AA9464100B2955C /* EventsManager.swift */; };
@@ -2714,6 +2718,10 @@
 		903A05AD2EB3B9B1009B9CE4 /* FeatureEventStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureEventStoreTests.swift; sourceTree = "<group>"; };
 		903A05AE2EB3B9B1009B9CE4 /* StoredFeatureEventSerializerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoredFeatureEventSerializerTests.swift; sourceTree = "<group>"; };
 		903A05B22EB3B9D4009B9CE4 /* BackendPaywallEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPaywallEventTests.swift; sourceTree = "<group>"; };
+		DB001001AAAA0001AAAA0001 /* WorkflowEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowEvent.swift; sourceTree = "<group>"; };
+		DB001003AAAA0001AAAA0001 /* FeatureEventsRequest+WorkflowEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FeatureEventsRequest+WorkflowEvent.swift"; sourceTree = "<group>"; };
+		DB001005AAAA0001AAAA0001 /* WorkflowEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowEventTests.swift; sourceTree = "<group>"; };
+		DB001007AAAA0001AAAA0001 /* WorkflowEventsRequestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowEventsRequestTests.swift; sourceTree = "<group>"; };
 		903A05B32EB3B9D4009B9CE4 /* PaywallFeatureEventsRequestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallFeatureEventsRequestTests.swift; sourceTree = "<group>"; };
 		903A05B82EB3D96E009B9CE4 /* PostAdEventsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostAdEventsOperation.swift; sourceTree = "<group>"; };
 		903A065F2EB4B728009B9CE4 /* MockEventsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockEventsManager.swift; sourceTree = "<group>"; };
@@ -4826,6 +4834,7 @@
 			children = (
 				4FFCED842AA941D200118EF4 /* Networking */,
 				4FD3688A2AA7C12600F63354 /* PaywallEvent.swift */,
+				DB001001AAAA0001AAAA0001 /* WorkflowEvent.swift */,
 				AA110001AABB0001CCDD0001 /* CustomPaywallEvent.swift */,
 				1DE37A0F2F61AE08009CA3AC /* CustomPaywallImpressionParams.swift */,
 			);
@@ -4854,6 +4863,8 @@
 				903A05B22EB3B9D4009B9CE4 /* BackendPaywallEventTests.swift */,
 				AA110005AABB0001CCDD0001 /* CustomPaywallEventTests.swift */,
 				903A05B32EB3B9D4009B9CE4 /* PaywallFeatureEventsRequestTests.swift */,
+				DB001005AAAA0001AAAA0001 /* WorkflowEventTests.swift */,
+				DB001007AAAA0001AAAA0001 /* WorkflowEventsRequestTests.swift */,
 				4F4EECE32AAFA8DA0047DE7A /* __Snapshots__ */,
 				4FD7E8652AABC4470055406F /* PurchasesPaywallEventsTests.swift */,
 			);
@@ -5906,6 +5917,7 @@
 			isa = PBXGroup;
 			children = (
 				4FFCED852AA941D200118EF4 /* FeatureEventsRequest.swift */,
+				DB001003AAAA0001AAAA0001 /* FeatureEventsRequest+WorkflowEvent.swift */,
 				4FFCED862AA941D200118EF4 /* FeatureEventHTTPRequestPath.swift */,
 				9025C53C2EA66E2500845BCE /* PostFeatureEventsOperation.swift */,
 			);
@@ -7063,6 +7075,7 @@
 				88AD010F2C740CF400AA1F2B /* PaywallImageComponent.swift in Sources */,
 				FD18BF4E2DF7670200140FD6 /* GetVirtualCurrenciesOperation.swift in Sources */,
 				4FD3688B2AA7C12600F63354 /* PaywallEvent.swift in Sources */,
+				DB001002AAAA0001AAAA0001 /* WorkflowEvent.swift in Sources */,
 				5766AA3E283C750300FA6091 /* Operators+Extensions.swift in Sources */,
 				903A05B92EB3D96E009B9CE4 /* PostAdEventsOperation.swift in Sources */,
 				1ED4CA532CC154E00021AB8F /* WebPurchaseRedemptionHelper.swift in Sources */,
@@ -7333,6 +7346,7 @@
 				F575858D26C088FE00C12B97 /* OfferingsManager.swift in Sources */,
 				B34605CB279A6E380031CA74 /* PostReceiptDataOperation.swift in Sources */,
 				4FFCED882AA941D200118EF4 /* FeatureEventsRequest.swift in Sources */,
+				DB001004AAAA0001AAAA0001 /* FeatureEventsRequest+WorkflowEvent.swift in Sources */,
 				354895D4267AE4B4001DC5B1 /* AttributionKey.swift in Sources */,
 				F5714EA826D7A83A00635477 /* Store+Extensions.swift in Sources */,
 				35F82BAB26A84E130051DF03 /* Dictionary+Extensions.swift in Sources */,
@@ -7762,6 +7776,8 @@
 				57488BEA29CB83540000EE7E /* MockOfflineEntitlementsManager.swift in Sources */,
 				F5BE444726985E7B00254A30 /* AttributionTypeFactoryTests.swift in Sources */,
 				903A05B42EB3B9D4009B9CE4 /* PaywallFeatureEventsRequestTests.swift in Sources */,
+				DB001006AAAA0001AAAA0001 /* WorkflowEventTests.swift in Sources */,
+				DB001008AAAA0001AAAA0001 /* WorkflowEventsRequestTests.swift in Sources */,
 				AA110006AABB0001CCDD0001 /* CustomPaywallEventTests.swift in Sources */,
 				903A05B52EB3B9D4009B9CE4 /* BackendPaywallEventTests.swift in Sources */,
 				2DDF41EA24F6F844005BC22D /* SKProductSubscriptionDurationExtensions.swift in Sources */,
