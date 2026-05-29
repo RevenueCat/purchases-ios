@@ -56,16 +56,33 @@ private extension RemoteConfigManager {
 
     func handleResponse(_ response: RemoteConfigResponse) async -> BackendError? {
         // WIP: pick source by weighted priority once WeightedSource is wired up (#3458 equivalent).
-        guard let source = response.blobSources.first else { return nil }
+        let source = response.blobSources.first
 
         let tasks: [TopicTask] = response.manifest.topics.compactMap { topic, entries in
             guard let entry = entries[Self.defaultEntryID] else { return nil }
             return TopicTask(topic: topic, entryId: Self.defaultEntryID, entry: entry)
         }
 
-        guard !tasks.isEmpty else { return nil }
+        let referenced = self.buildReferenceSet(manifest: response.manifest)
 
-        return await withTaskGroup(of: BackendError?.self) { group in
+        let firstError: BackendError?
+        if let source, !tasks.isEmpty {
+            firstError = await self.downloadTopics(tasks: tasks, source: source)
+        } else {
+            firstError = nil
+        }
+
+        if firstError == nil, source != nil, !tasks.isEmpty {
+            await self.topicFetcher.cleanupUnreferencedTopics(referenced: referenced)
+        }
+        return firstError
+    }
+
+    func downloadTopics(
+        tasks: [TopicTask],
+        source: RemoteConfigResponse.BlobSource
+    ) async -> BackendError? {
+        await withTaskGroup(of: BackendError?.self) { group -> BackendError? in
             var iterator = tasks.makeIterator()
 
             for _ in 0..<min(Self.maxParallelTopicDownloads, tasks.count) {
@@ -98,6 +115,16 @@ private extension RemoteConfigManager {
                 }
             }
             return firstError
+        }
+    }
+
+    func buildReferenceSet(
+        manifest: RemoteConfigResponse.Manifest
+    ) -> [RemoteConfigResponse.Topic: Set<String>] {
+        // Normalize to lowercase so the keep-set matches the on-disk filenames produced by
+        // `TopicFetcher.fetchTopicIfNeeded`, which lowercases blob refs before writing.
+        manifest.topics.mapValues { entries in
+            Set(entries.values.map { $0.blobRef.lowercased() })
         }
     }
 

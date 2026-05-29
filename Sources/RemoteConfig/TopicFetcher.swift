@@ -23,6 +23,7 @@ protocol FileManaging: AnyObject {
     ) throws -> URL?
     func copyItem(at srcURL: URL, to dstURL: URL) throws
     func removeItem(at url: URL) throws
+    func contentsOfDirectory(at url: URL) throws -> [URL]
 }
 
 extension FileManager: FileManaging {}
@@ -62,6 +63,7 @@ class TopicFetcher {
 
     private static let topicsRoot = "RevenueCat/topics"
     private static let blobRefPlaceholder = "{blob_ref}"
+    private static let tempPrefix = "rc_topic_"
 
     private let fileManager: any FileManaging
     private let downloader: any BlobDownloader
@@ -120,6 +122,15 @@ class TopicFetcher {
         return error
     }
 
+    // todo: currently must be called after all `fetchTopicIfNeeded` are completed.
+    // Otherwise we could potentially remove new data we don't know about yet. We could
+    // improve this in the future with a guard of some sort.
+    func cleanupUnreferencedTopics(referenced: [RemoteConfigResponse.Topic: Set<String>]) async {
+        Task.detached(priority: .utility) { [self] in
+            self.deleteUnreferencedTopicFiles(referenced: referenced)
+        }
+    }
+
 }
 
 // @unchecked because:
@@ -153,11 +164,52 @@ private enum TopicFetchError {
 
 private extension TopicFetcher {
 
-    func topicFile(topic: RemoteConfigResponse.Topic, blobRef: String) -> URL? {
+    func topicsRootURL() -> URL? {
         guard let cachesDir = self.baseCacheURL ?? DirectoryHelper.baseUrl(for: .cache) else { return nil }
-        let topicDir = cachesDir
-            .appendingPathComponent(Self.topicsRoot)
-            .appendingPathComponent(topic.rawValue)
+        return cachesDir.appendingPathComponent(Self.topicsRoot)
+    }
+
+    func deleteUnreferencedTopicFiles(referenced: [RemoteConfigResponse.Topic: Set<String>]) {
+        guard let topicsRoot = self.topicsRootURL() else { return }
+        guard self.fileManager.fileExists(atPath: topicsRoot.path) else { return }
+
+        // todo: iterating `Topic.allCases` could leave orphaned files for topics that are
+        // removed from the SDK enum. We could improve this by removing everything not
+        // returned by the api.
+        // Layout assumption: each `topics/<topic>/` dir contains only 64-hex blob files and
+        // `rc_topic_*.tmp` in-flight downloads. Anything else gets wiped.
+        for topic in RemoteConfigResponse.Topic.allCases {
+            let topicDir = topicsRoot.appendingPathComponent(topic.rawValue)
+            guard self.fileManager.fileExists(atPath: topicDir.path) else { continue }
+
+            let files: [URL]
+            do {
+                files = try self.fileManager.contentsOfDirectory(at: topicDir)
+            } catch {
+                Logger.error(Strings.remoteConfig.topic_cleanup_list_failed(path: topicDir.path, error: error))
+                continue
+            }
+
+            let keep = referenced[topic] ?? []
+            for file in files {
+                let name = file.lastPathComponent
+                if name.hasPrefix(Self.tempPrefix) { continue }
+                if keep.contains(name) { continue }
+                do {
+                    try self.fileManager.removeItem(at: file)
+                    Logger.verbose(Strings.remoteConfig.topic_cleanup_deleted(path: file.path))
+                } catch {
+                    Logger.error(
+                        Strings.remoteConfig.topic_cleanup_delete_failed(path: file.path, error: error)
+                    )
+                }
+            }
+        }
+    }
+
+    func topicFile(topic: RemoteConfigResponse.Topic, blobRef: String) -> URL? {
+        guard let topicsRoot = self.topicsRootURL() else { return nil }
+        let topicDir = topicsRoot.appendingPathComponent(topic.rawValue)
 
         if !self.fileManager.fileExists(atPath: topicDir.path) {
             try? self.fileManager.createDirectory(at: topicDir, withIntermediateDirectories: true, attributes: nil)
@@ -187,7 +239,7 @@ private extension TopicFetcher {
                     }
 
                     let parent = targetFile.deletingLastPathComponent()
-                    let tempFile = parent.appendingPathComponent("rc_topic_\(UUID().uuidString).tmp")
+                    let tempFile = parent.appendingPathComponent("\(Self.tempPrefix)\(UUID().uuidString).tmp")
 
                     do {
                         defer { try? self.fileManager.removeItem(at: tempFile) }

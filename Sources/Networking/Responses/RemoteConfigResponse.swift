@@ -51,7 +51,7 @@ extension RemoteConfigResponse {
 
     }
 
-    enum Topic: Hashable {
+    enum Topic: Hashable, CaseIterable {
 
         case productEntitlementMapping
 
