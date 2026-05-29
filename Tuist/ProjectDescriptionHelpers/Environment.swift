@@ -79,6 +79,21 @@ extension Environment {
         return value.isEmpty ? nil : value
     }
 
+    /// Returns a custom bundle identifier for PaywallsTester.
+    /// Useful when testing against a different RevenueCat project / App Store Connect app
+    /// that requires its own bundle ID (e.g. running on a real device with that project's products).
+    /// Defaults to `com.revenuecat.PaywallsTester` when unset.
+    ///
+    /// Example usage:
+    /// ```bash
+    /// # Generate project with a custom bundle ID
+    /// TUIST_PAYWALLS_TESTER_BUNDLE_ID=com.mycompany.PaywallsTester tuist generate PaywallsTester
+    /// ```
+    public static var paywallsTesterBundleId: String {
+        let value = ProcessInfo.processInfo.environment["TUIST_PAYWALLS_TESTER_BUNDLE_ID"] ?? ""
+        return value.isEmpty ? "com.revenuecat.PaywallsTester" : value
+    }
+
     /// Returns the RevenueCat API key for PaywallsTester, if set.
     /// When set, this will be written to Local.xcconfig during project generation.
     ///
