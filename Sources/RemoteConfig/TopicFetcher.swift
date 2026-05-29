@@ -21,6 +21,7 @@ protocol FileManaging: AnyObject {
         backupItemName: String?,
         options mask: FileManager.ItemReplacementOptions
     ) throws -> URL?
+    func copyItem(at srcURL: URL, to dstURL: URL) throws
     func removeItem(at url: URL) throws
 }
 
@@ -45,7 +46,7 @@ private final class URLSessionBlobDownloader: BlobDownloader {
             if let error {
                 completion(.failure(error))
             } else if let httpResponse = response as? HTTPURLResponse,
-                      !(200..<300).contains(httpResponse.statusCode) {
+                      httpResponse.statusCode != 200 {
                 completion(.failure(URLError(.badServerResponse)))
             } else if let data {
                 completion(.success(data))
@@ -189,13 +190,18 @@ private extension TopicFetcher {
                     let tempFile = parent.appendingPathComponent("rc_topic_\(UUID().uuidString).tmp")
 
                     do {
+                        defer { try? self.fileManager.removeItem(at: tempFile) }
                         try data.write(to: tempFile, options: .atomic)
-                        _ = try self.fileManager.replaceItemAt(
-                            targetFile, withItemAt: tempFile, backupItemName: nil, options: []
-                        )
+                        do {
+                            _ = try self.fileManager.replaceItemAt(
+                                targetFile, withItemAt: tempFile, backupItemName: nil, options: []
+                            )
+                        } catch {
+                            try? self.fileManager.removeItem(at: targetFile)
+                            try self.fileManager.copyItem(at: tempFile, to: targetFile)
+                        }
                         continuation.resume(returning: nil)
                     } catch {
-                        try? self.fileManager.removeItem(at: tempFile)
                         continuation.resume(returning: TopicFetchError.writeFailure(error: error).backendError)
                     }
                 }
@@ -204,7 +210,7 @@ private extension TopicFetcher {
     }
 
     func isValidBlobRef(_ blobRef: String) -> Bool {
-        !blobRef.isEmpty && blobRef.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber) }
+        blobRef.range(of: "^[a-fA-F0-9]{64}$", options: .regularExpression) != nil
     }
 
 }
