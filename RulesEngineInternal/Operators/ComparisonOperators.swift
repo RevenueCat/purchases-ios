@@ -10,11 +10,12 @@ import Foundation
 ///
 /// Per JSON Logic:
 ///
-/// - **Both operands are strings** → lexicographic comparison
-///   (`"10" < "9"` is `true` because `'1' < '9'`).
+/// - After `ToPrimitive` (number hint), **both operands are strings**
+///   → lexicographic comparison (`"10" < "9"` is `true`). Arrays and
+///   objects stringify first (`[] < "a"` → `"" < "a"` → `true`).
 /// - **Otherwise** → coerce both operands to `Double` via
-///   `Value.asNumber` and compare numerically. Operands that can't
-///   coerce (`.object`, `.array`, unparseable strings) become
+///   `Value.asNumber` and compare numerically (`"10" < 9` → `false`).
+///   Unparseable strings and objects compared numerically become
 ///   `Double.nan`; per IEEE 754 any comparison against `nan` returns
 ///   `false`.
 ///
@@ -56,15 +57,30 @@ enum ComparisonOperators {
         }
     }
 
-    /// Two-string operands → lex. Otherwise → numeric coercion. `nil`
-    /// lhs/rhs means that
-    /// argument was omitted (e.g. `{">": [1]}`); we coerce it to `nan`,
-    /// and any comparison involving `nan` is `false`.
+    /// Mirrors JS `<`: `ToPrimitive` (number hint), lex when both are
+    /// strings, else numeric. `nil` lhs/rhs is an omitted argument
+    /// (`undefined` → `NaN` → `false`).
     private static func compare(_ lhs: Value?, _ rhs: Value?, using cmp: Comparator) -> Bool {
-        if case .string(let left) = lhs, case .string(let right) = rhs {
-            return cmp.apply(left, right)
+        guard let lhs, let rhs else {
+            return cmp.apply(asDouble(lhs), asDouble(rhs))
         }
-        return cmp.apply(asDouble(lhs), asDouble(rhs))
+        let left = toPrimitiveForComparison(lhs)
+        let right = toPrimitiveForComparison(rhs)
+        if case .string(let leftString) = left, case .string(let rightString) = right {
+            return cmp.apply(leftString, rightString)
+        }
+        return cmp.apply(asDouble(left), asDouble(right))
+    }
+
+    /// `ToPrimitive` with number hint: arrays/objects stringify; other
+    /// primitives pass through unchanged.
+    private static func toPrimitiveForComparison(_ value: Value) -> Value {
+        switch value {
+        case .string, .null, .bool, .int, .float:
+            return value
+        case .array, .object:
+            return .string(jsString(value))
+        }
     }
 
     /// Shared 2-or-3 arg "chain" evaluator used by `<` and `<=`.
