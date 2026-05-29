@@ -28,7 +28,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         let fakeAd = FakeCapableAd()
         RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
 
-        let reward = VirtualCurrencyReward(code: "coins", amount: 4)
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 4))
         let poller = RewardVerification.Poller(
             statusPoller: StubStatusPoller(statuses: [.verified(.virtualCurrency(reward))]),
             sleeper: RecordingSleeper(),
@@ -125,11 +125,11 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         }.to(throwAssertion())
     }
 
-    func testCreateUserDidEarnRewardHandlerWithVerifiedVirtualCurrencyInvalidatesVirtualCurrenciesCache() {
+    func testCreateUserDidEarnRewardHandlerWithVerifiedVirtualCurrencyInvalidatesVirtualCurrenciesCache() throws {
         let fakeAd = FakeCapableAd()
         RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
 
-        let reward = VirtualCurrencyReward(code: "coins", amount: 4)
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 4))
         let poller = RewardVerification.Poller(
             statusPoller: StubStatusPoller(statuses: [.verified(.virtualCurrency(reward))]),
             sleeper: RecordingSleeper(),

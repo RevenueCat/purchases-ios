@@ -87,16 +87,16 @@ extension RewardVerificationStatusResponse: Decodable {
 
         switch rewardType {
         case RewardType.virtualCurrency:
-            guard let code = try? rewardContainer.decode(String.self, forKey: .code),
-                  !code.isEmpty,
-                  let amount = try? rewardContainer.decode(Int.self, forKey: .amount),
-                  amount > 0 else {
+            let code = try? rewardContainer.decode(String.self, forKey: .code)
+            let amount = try? rewardContainer.decode(Int.self, forKey: .amount)
+            guard let code, let amount,
+                  let payload = VirtualCurrencyReward(code: code, amount: amount) else {
                 Logger.warn(
                     Strings.backendError.malformed_reward_verification_reward_payload(type: rewardType)
                 )
                 return .unsupportedReward
             }
-            return .virtualCurrency(VirtualCurrencyReward(code: code, amount: amount))
+            return .virtualCurrency(payload)
         default:
             Logger.warn(
                 Strings.backendError.unsupported_reward_verification_reward_type(type: rewardType)

@@ -19,8 +19,8 @@ import XCTest
 
 final class AdRewardTests: TestCase {
 
-    func testVirtualCurrencyCarriesAssociatedPayload() {
-        let payload = VirtualCurrencyReward(code: "coins", amount: 5)
+    func testVirtualCurrencyCarriesAssociatedPayload() throws {
+        let payload = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
         let reward = AdReward.virtualCurrency(payload)
         expect(reward.virtualCurrency) == payload
         expect(reward.kindRawValue) == "virtual_currency"
@@ -40,9 +40,9 @@ final class AdRewardTests: TestCase {
         expect(AdReward.unsupportedReward.virtualCurrency).to(beNil())
     }
 
-    func testEqualityRequiresMatchingVirtualCurrencyPayload() {
-        let one = VirtualCurrencyReward(code: "coins", amount: 5)
-        let two = VirtualCurrencyReward(code: "coins", amount: 6)
+    func testEqualityRequiresMatchingVirtualCurrencyPayload() throws {
+        let one = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
+        let two = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 6))
         expect(AdReward.virtualCurrency(one)) == AdReward.virtualCurrency(one)
         expect(AdReward.virtualCurrency(one)) != AdReward.virtualCurrency(two)
         expect(AdReward.virtualCurrency(one)) != AdReward.noReward

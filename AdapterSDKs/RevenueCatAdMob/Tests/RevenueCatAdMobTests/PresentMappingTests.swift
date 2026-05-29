@@ -8,8 +8,9 @@ import XCTest
 @available(iOS 15.0, *)
 final class PresentMappingTests: AdapterTestCase {
 
-    func testMapOutcomeVerifiedPassesRewardThrough() {
-        let reward = AdReward.virtualCurrency(VirtualCurrencyReward(code: "c", amount: 2))
+    func testMapOutcomeVerifiedPassesRewardThrough() throws {
+        let payload = try XCTUnwrap(VirtualCurrencyReward(code: "c", amount: 2))
+        let reward = AdReward.virtualCurrency(payload)
         let result = RewardVerification.mapOutcome(.verified(reward))
         XCTAssertEqual(result.verifiedReward, reward)
     }

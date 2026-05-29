@@ -19,17 +19,26 @@ import XCTest
 
 final class VirtualCurrencyRewardTests: TestCase {
 
-    func testStoresCodeAndAmount() {
-        let reward = VirtualCurrencyReward(code: "coins", amount: 5)
+    func testStoresCodeAndAmount() throws {
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
         expect(reward.code) == "coins"
         expect(reward.amount) == 5
     }
 
-    func testEqualityRequiresBothFieldsToMatch() {
-        let lhs = VirtualCurrencyReward(code: "coins", amount: 5)
+    func testEqualityRequiresBothFieldsToMatch() throws {
+        let lhs = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
         expect(lhs) == VirtualCurrencyReward(code: "coins", amount: 5)
         expect(lhs) != VirtualCurrencyReward(code: "gems", amount: 5)
         expect(lhs) != VirtualCurrencyReward(code: "coins", amount: 6)
+    }
+
+    func testInitRejectsEmptyCode() {
+        expect(VirtualCurrencyReward(code: "", amount: 5)).to(beNil())
+    }
+
+    func testInitRejectsNonPositiveAmount() {
+        expect(VirtualCurrencyReward(code: "coins", amount: 0)).to(beNil())
+        expect(VirtualCurrencyReward(code: "coins", amount: -1)).to(beNil())
     }
 
 }

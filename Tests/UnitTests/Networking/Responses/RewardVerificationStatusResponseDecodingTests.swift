@@ -79,7 +79,8 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
                 "amount": 10
             ]
         ])
-        expect(response.status) == .verified(.virtualCurrency(VirtualCurrencyReward(code: "coins", amount: 10)))
+        let payload = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 10))
+        expect(response.status) == .verified(.virtualCurrency(payload))
     }
 
     func testDecodesVerifiedWithVirtualCurrencyRewardWithFractionalAmountAsUnsupportedReward() throws {

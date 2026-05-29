@@ -9,8 +9,8 @@ final class OutcomeTests: AdapterTestCase {
 
     // MARK: - Case construction
 
-    func testVerifiedCarriesVirtualCurrencyRewardPayload() {
-        let reward = VirtualCurrencyReward(code: "coins", amount: 5)
+    func testVerifiedCarriesVirtualCurrencyRewardPayload() throws {
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
         let outcome = RewardVerification.Outcome.verified(.virtualCurrency(reward))
 
         guard case .verified(let adReward) = outcome, let captured = adReward.virtualCurrency else {
@@ -37,9 +37,10 @@ final class OutcomeTests: AdapterTestCase {
         }
     }
 
-    func testAllCasesAreConstructibleAndExhaustiveInSwitch() {
+    func testAllCasesAreConstructibleAndExhaustiveInSwitch() throws {
+        let payload = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 1))
         let cases: [RewardVerification.Outcome] = [
-            .verified(.virtualCurrency(VirtualCurrencyReward(code: "coins", amount: 1))),
+            .verified(.virtualCurrency(payload)),
             .verified(.noReward),
             .verified(.unsupportedReward),
             .failed(.timeout),

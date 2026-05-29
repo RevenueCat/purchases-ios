@@ -46,14 +46,15 @@ import Foundation
         AdReward(storage: .virtualCurrency(payload))
     }
 
-    /// Reward is a virtual-currency line item with the given code and amount. `amount` must be greater than zero.
+    /// Reward is a virtual-currency line item with the given code and amount. Falls back to
+    /// ``unsupportedReward`` when ``VirtualCurrencyReward/init(code:amount:)`` rejects the inputs.
     internal static func virtualCurrency(code: String, amount: Int) -> AdReward {
-        if amount <= 0 {
-            Logger.error(AdsStrings.invalid_virtual_currency_amount(amount: amount))
-            assertionFailure(Self.Strings.virtualCurrencyAmountMustBeGreaterThanZero)
+        guard let payload = VirtualCurrencyReward(code: code, amount: amount) else {
+            Logger.error(AdsStrings.invalid_virtual_currency_payload(code: code, amount: amount))
+            assertionFailure(Self.Strings.invalidVirtualCurrencyPayload)
             return .unsupportedReward
         }
-        return AdReward(storage: .virtualCurrency(VirtualCurrencyReward(code: code, amount: amount)))
+        return .virtualCurrency(payload)
     }
 
     /// Verification succeeded but no reward was granted.
@@ -84,7 +85,7 @@ import Foundation
     }
 
     private enum Strings {
-        static let virtualCurrencyAmountMustBeGreaterThanZero = "virtualCurrency amount must be greater than zero"
+        static let invalidVirtualCurrencyPayload = "virtualCurrency code must be non-empty and amount must be > 0"
     }
 }
 
@@ -118,11 +119,12 @@ extension AdReward {
         let amount = try container.decodeIfPresent(Int.self, forKey: amountKey)
         switch kindRawValue {
         case Kind.virtualCurrency:
-            guard let code, let amount, amount > 0 else {
+            guard let code, let amount,
+                  let payload = VirtualCurrencyReward(code: code, amount: amount) else {
                 Logger.warn(AdsStrings.invalid_virtual_currency_payload(code: code, amount: amount))
                 return .unsupportedReward
             }
-            return .virtualCurrency(VirtualCurrencyReward(code: code, amount: amount))
+            return .virtualCurrency(payload)
         case Kind.noReward:
             return .noReward
         case Kind.unsupportedReward:

@@ -10,8 +10,8 @@ final class DispatcherTests: AdapterTestCase {
 
     // MARK: - run(...) outcomes
 
-    func testRunFiresVerifiedOutcomeWithVirtualCurrencyReward() async {
-        let reward = VirtualCurrencyReward(code: "coins", amount: 5)
+    func testRunFiresVerifiedOutcomeWithVirtualCurrencyReward() async throws {
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
         let state = RewardVerification.State(clientTransactionID: "tx-verified")
         let poller = self.makePoller(statuses: [.verified(.virtualCurrency(reward))])
         let recorder = OutcomeRecorder()
@@ -195,8 +195,8 @@ final class DispatcherTests: AdapterTestCase {
 
     // MARK: - dispatch
 
-    func testDispatchCompletesAndForwardsVerifiedOutcome() async {
-        let reward = VirtualCurrencyReward(code: "coins", amount: 7)
+    func testDispatchCompletesAndForwardsVerifiedOutcome() async throws {
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 7))
         let state = RewardVerification.State(clientTransactionID: "tx-dispatch")
         let poller = self.makePoller(statuses: [.verified(.virtualCurrency(reward))])
         let recorder = OutcomeRecorder()

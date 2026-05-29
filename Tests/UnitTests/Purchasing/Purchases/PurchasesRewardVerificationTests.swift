@@ -45,7 +45,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
     }
 
     func testPollRewardVerificationStatusMapsVerifiedStatusWithVirtualCurrencyReward() async throws {
-        let reward = VirtualCurrencyReward(code: "coins", amount: 10)
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 10))
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
             .init(status: .verified(.virtualCurrency(reward)))
         )

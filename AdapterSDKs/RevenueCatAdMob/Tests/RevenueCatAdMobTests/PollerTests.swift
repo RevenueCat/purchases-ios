@@ -14,8 +14,8 @@ final class PollerTests: AdapterTestCase {
 
     // MARK: - Terminal statuses
 
-    func testVerifiedReturnsImmediatelyOnFirstAttemptForwardingPayload() async {
-        let reward = VirtualCurrencyReward(code: "coins", amount: 3)
+    func testVerifiedReturnsImmediatelyOnFirstAttemptForwardingPayload() async throws {
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 3))
         let statusPoller = StubStatusPoller(statuses: [.verified(.virtualCurrency(reward))])
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)

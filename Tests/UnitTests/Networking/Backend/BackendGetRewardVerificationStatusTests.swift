@@ -68,8 +68,8 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         }
 
         let response = try XCTUnwrap(result?.value)
-        expect(response.status)
-            == .verified(.virtualCurrency(VirtualCurrencyReward(code: "coins", amount: 10)))
+        let payload = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 10))
+        expect(response.status) == .verified(.virtualCurrency(payload))
     }
 
     func testGetRewardVerificationStatusPending() throws {

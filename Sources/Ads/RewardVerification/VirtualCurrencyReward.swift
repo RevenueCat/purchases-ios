@@ -23,7 +23,11 @@ import Foundation
     public let amount: Int
 
     /// Creates a virtual-currency reward.
-    internal init(code: String, amount: Int) {
+    ///
+    /// Returns `nil` if `code` is empty or `amount` is not positive. This is the single source of
+    /// truth for "what counts as a valid virtual-currency reward" across the SDK.
+    internal init?(code: String, amount: Int) {
+        guard !code.isEmpty, amount > 0 else { return nil }
         self.code = code
         self.amount = amount
     }
