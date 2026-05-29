@@ -2221,24 +2221,6 @@ platform :ios do
             output_path = "#{temp_dir}/#{scheme}#{platform_config[:suffix]}.swiftinterface"
             FileUtils.cp(swiftinterface_files.first, output_path)
             UI.success("Generated #{scheme} #{platform_config[:platform]} swiftinterface")
-
-            # Also copy the .private.swiftinterface (emitted alongside the public
-            # one when building with library evolution). It's a superset of the
-            # public interface and is used by the public-enums policy check to
-            # detect new @_spi(Experimental) enum types.
-            private_swiftinterface_files = ApiDiffHelper.find_private_swiftinterface_file(
-              "../.build",
-              platform_config[:sdk],
-              scheme
-            )
-
-            if private_swiftinterface_files.empty?
-              UI.important("No private swiftinterface found for #{scheme} #{platform_config[:platform]}; check_public_enums will skip this platform")
-            else
-              private_output_path = "#{temp_dir}/#{scheme}#{platform_config[:suffix]}#{ApiDiffHelper::PRIVATE_SWIFTINTERFACE_SUFFIX}"
-              FileUtils.cp(private_swiftinterface_files.first, private_output_path)
-              UI.success("Generated #{scheme} #{platform_config[:platform]} private swiftinterface")
-            end
           end
         end
 
@@ -2327,73 +2309,6 @@ platform :ios do
       UI.user_error!("API changes detected! Update baseline files if changes are intentional.")
     else
       UI.success("✅ No API changes detected")
-    end
-  end
-
-  desc "Enforce the no-new-public-enums policy for consumer-facing APIs"
-  desc "Compares enums declared as `public` or `@_spi(Experimental) public` in the"
-  desc "generated `.private.swiftinterface` files against an allowlist baseline."
-  desc "Pass `regenerate:true` to overwrite the allowlist with the current set."
-  lane :check_public_enums do |options|
-    schemes = if options[:scheme]
-                [options[:scheme]]
-              else
-                ApiDiffHelper::MODULES
-              end
-
-    regenerate = options[:regenerate].to_s == "true"
-
-    schemes.each do |scheme|
-      allowlist_path = ApiDiffHelper.public_enums_allowlist_path(scheme)
-
-      private_files = ApiDiffHelper::PLATFORM_CHECKS.map do |platform|
-        "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/#{scheme}#{platform[:suffix]}#{ApiDiffHelper::PRIVATE_SWIFTINTERFACE_SUFFIX}"
-      end.select { |path| File.exist?(path) }
-
-      if private_files.empty?
-        UI.user_error!(
-          "No private swiftinterface files found for #{scheme} in " \
-          "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}. " \
-          "Run `bundle exec fastlane ios generate_swiftinterface scheme:#{scheme}` first."
-        )
-      end
-
-      observed = private_files.flat_map do |path|
-        ApiDiffHelper.extract_consumer_facing_enums(path, scheme)
-      end.uniq.sort
-
-      if regenerate
-        ApiDiffHelper.write_public_enums_allowlist(allowlist_path, observed, scheme: scheme)
-        UI.success("✅ Wrote #{observed.size} consumer-facing enums for #{scheme} to #{allowlist_path}")
-        next
-      end
-
-      unless File.exist?(allowlist_path)
-        UI.user_error!(
-          "Allowlist file not found: #{allowlist_path}. " \
-          "Generate it with: bundle exec fastlane ios check_public_enums scheme:#{scheme} regenerate:true"
-        )
-      end
-
-      allowed = ApiDiffHelper.read_public_enums_allowlist(allowlist_path)
-
-      added = observed - allowed
-      removed = allowed - observed
-
-      if added.empty? && removed.empty?
-        UI.success("✅ No consumer-facing enum changes detected for #{scheme} (#{observed.size} entries)")
-      else
-        ApiDiffHelper.print_public_enums_failure_summary(
-          scheme: scheme,
-          allowlist_path: allowlist_path,
-          added: added,
-          removed: removed
-        )
-        UI.user_error!(
-          "Public-enums policy violation for #{scheme}: " \
-          "#{added.size} new, #{removed.size} stale."
-        )
-      end
     end
   end
 

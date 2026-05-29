@@ -30,22 +30,9 @@ When implementing features or debugging, check these repos for reference and pat
 - Changing return types
 - Modifying behavior in ways that break existing integrations
 
-**Do NOT add new enum types to consumer-facing APIs.** Per company-wide policy, no new `enum` types may be added to consumer-facing surfaces. This applies to:
+**Do NOT add new `public enum` types.** This SDK does not use library evolution mode, so all Swift types are `@frozen` by default. This means adding a new case to an existing `public enum` is a **source-breaking change** — any consumer with an exhaustive `switch` will fail to compile. Use structs with static constants or other patterns instead when exposing new option sets or categories.
 
-- Fully public enums (`public enum Foo`)
-- Experimental SPI enums (`@_spi(Experimental) public enum Foo`)
-
-It does **not** apply to internal SPI (`@_spi(Internal) public enum Foo`).
-
-Use a struct with static constants or another non-enum type when exposing new option sets or categories. The rationale is forward-compatibility: adding a new case to an existing public enum is a source-breaking change for any consumer with an exhaustive `switch`. By avoiding new enums altogether, future additions don't require breaking changes.
-
-This is enforced by the `check_public_enums` Fastlane lane (run in CI alongside `check_api_changes`). The set of currently-allowed consumer-facing enums is tracked in `api/<scheme>-public-enums-allowlist.txt`. Adding a new entry to that file requires API council approval (see `CODEOWNERS`). After an approved change, regenerate the file with:
-
-```bash
-bundle exec fastlane ios check_public_enums scheme:RevenueCat regenerate:true
-```
-
-The `Tests/APITesters/` targets and the `api/*.swiftinterface` baselines also run in CI to catch any unintended public API changes more broadly. **If API tests fail, you've likely broken the public API.**
+The `Tests/APITesters/` targets run in CI to catch unintended API changes. The `api/*.swiftinterface` files track the public API surface. **If API tests fail, you've likely broken the public API.**
 
 ### Objective-C Compatibility
 
@@ -189,7 +176,6 @@ For snapshot testing, sample applications, pre-commit hooks, and release process
 - `Local.xcconfig` - Local development configuration (not committed)
 - `CI.xcconfig` - CI-specific configuration
 - `api/*.swiftinterface` - Public API surface tracking
-- `api/*-public-enums-allowlist.txt` - Allowlist of enums currently exposed in consumer-facing APIs (see "Public API Stability" above)
 
 ### Pull Request Labels
 

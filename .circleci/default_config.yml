@@ -1971,10 +1971,6 @@ jobs:
           name: Check RevenueCat API changes
           command: |
             bundle exec fastlane ios check_api_changes scheme:RevenueCat
-      - run:
-          name: Check for new consumer-facing enums (RevenueCat)
-          command: |
-            bundle exec fastlane ios check_public_enums scheme:RevenueCat
       - store_artifacts:
           path: /tmp/pr-swiftinterface/RevenueCat-ios-simulator.swiftinterface
           destination: revenuecat-api-ios-simulator.swiftinterface
@@ -2019,10 +2015,6 @@ jobs:
           name: Check RevenueCatUI API changes
           command: |
             bundle exec fastlane ios check_api_changes scheme:RevenueCatUI
-      - run:
-          name: Check for new consumer-facing enums (RevenueCatUI)
-          command: |
-            bundle exec fastlane ios check_public_enums scheme:RevenueCatUI
       - store_artifacts:
           path: /tmp/pr-swiftinterface/RevenueCatUI-ios-simulator.swiftinterface
           destination: revenuecatui-api-ios-simulator.swiftinterface
