@@ -32,6 +32,10 @@ extension CustomerInfo {
             originalPurchaseDate: Date(),
             firstSeen: Date(),
             subscriptions: purchasedSK2Products
+                // Keep the raw response keyed by the base StoreKit product identifier.
+                // CustomerInfo.extractExpirationDates later combines this key with
+                // subscription.productPlanIdentifier to expose billing-plan-aware IDs
+                // like "product:plan", matching what we do for offline entitlements in the Android SDK.
                 .dictionaryAllowingDuplicateKeys { $0.productIdentifier }
                 .mapValues { $0.subscription },
             nonSubscriptions: [:],
