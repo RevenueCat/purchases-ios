@@ -109,9 +109,10 @@ custom_rules:
     name: "No new public enums in consumer-facing APIs"
     message: "Adding a new `public enum` to the SDK's consumer-facing surface (including `@_spi(Experimental)`) is not allowed. Adding a case to an existing `public enum` is a source-breaking change for any consumer with an exhaustive `switch`. Use a struct with static constants instead."
     severity: error
-    included: ".*\\.swift"
-    excluded:
-      - Tests/
+    included:
+      - "Sources/.*\\.swift"
+      - "RevenueCatUI/.*\\.swift"
+      - "AdapterSDKs/RevenueCatAdMob/Sources/.*\\.swift"
     regex: '(?s)(?<!@_spi\(Internal\)\s)\bpublic\s+(?:indirect\s+)?enum\s+[A-Z]'
 
 identifier_name:
