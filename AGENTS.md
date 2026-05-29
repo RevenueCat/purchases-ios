@@ -30,15 +30,9 @@ When implementing features or debugging, check these repos for reference and pat
 - Changing return types
 - Modifying behavior in ways that break existing integrations
 
-**Do NOT add new `public enum` types to the SDK's consumer-facing surface** (both fully public APIs and `@_spi(Experimental)` APIs). Adding a case to an existing `public enum` is a **source-breaking change** — any consumer with an exhaustive `switch` will fail to compile. Use structs with static constants or other patterns instead when exposing new option sets or categories. Enums marked `@_spi(Internal)` (on the same line as the declaration) are exempt because they are not part of the SDK's consumer-facing surface.
+**Do NOT add new `public enum` types to the SDK's consumer-facing surface.** Adding a case to an existing `public enum` is a **source-breaking change** — any consumer with an exhaustive `switch` will fail to compile. Use structs with static constants or other patterns instead when exposing new option sets or categories. Enums marked `@_spi(Internal)` (on the same line as the declaration) are exempt because they are not part of the SDK's consumer-facing surface.
 
-This policy is enforced by the `no_new_public_enums` SwiftLint custom rule defined in `.swiftlint.yml`. Pre-existing public enums are grandfathered in `swiftlint-baseline.json`. If you have a genuine reason to add a new public enum (e.g., a net-new `@_spi(Internal)` declaration that the rule does not recognise because of multi-line attributes), regenerate the baseline:
-
-```bash
-swiftlint lint --write-baseline swiftlint-baseline.json
-```
-
-Adding a new entry to the baseline requires an explicit, reviewable change to the JSON file — please justify it in the PR description.
+This policy is enforced by the `no_new_public_enums` SwiftLint custom rule defined in `.swiftlint.yml`. Pre-existing public enums are grandfathered in `swiftlint-baseline.json`. Adding a new entry to the baseline requires an explicit, reviewable change to the JSON file — please justify it in the PR description.
 
 The `Tests/APITesters/` targets run in CI to catch unintended API changes. The `api/*.swiftinterface` files track the public API surface. **If API tests fail, you've likely broken the public API.**
 
