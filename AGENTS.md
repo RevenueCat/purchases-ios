@@ -30,7 +30,9 @@ When implementing features or debugging, check these repos for reference and pat
 - Changing return types
 - Modifying behavior in ways that break existing integrations
 
-**Do NOT add new `public enum` types.** This SDK does not use library evolution mode, so all Swift types are `@frozen` by default. This means adding a new case to an existing `public enum` is a **source-breaking change** — any consumer with an exhaustive `switch` will fail to compile. Use structs with static constants or other patterns instead when exposing new option sets or categories.
+**Do NOT add new `public enum` types to the SDK's consumer-facing surface.** Adding a case to an existing `public enum` is a **source-breaking change** — any consumer with an exhaustive `switch` will fail to compile. Use structs with static constants or other patterns instead when exposing new option sets or categories. Enums marked `@_spi(Internal)` (on the same line as the declaration) are exempt because they are not part of the SDK's consumer-facing surface.
+
+This policy is enforced by the `no_new_public_enums` SwiftLint custom rule defined in `.swiftlint.yml`. Pre-existing public enums are grandfathered in `swiftlint-baseline.json`.
 
 The `Tests/APITesters/` targets run in CI to catch unintended API changes. The `api/*.swiftinterface` files track the public API surface. **If API tests fail, you've likely broken the public API.**
 
@@ -151,6 +153,7 @@ The project uses **Tuist** for managing the Xcode workspace. See **`Contributing
 | `TUIST_RC_API_KEY=appl_xxxxx` | RevenueCat API key written to `Local.xcconfig` at generation time | — |
 | `TUIST_LAUNCH_ARGUMENTS="-Flag1 -Flag2"` | Space-separated launch arguments injected into PaywallsTester scheme run action (enabled by default) | — |
 | `TUIST_SWIFT_CONDITIONS="FLAG1 FLAG2"` | Space-separated Swift compilation conditions injected into all targets | — |
+| `TUIST_PAYWALLS_TESTER_BUNDLE_ID=com.x.PaywallsTester` | Custom bundle identifier for the PaywallsTester target (e.g. testing against another RevenueCat project) | `com.revenuecat.PaywallsTester` |
 
 Example combining multiple variables:
 ```bash
@@ -176,6 +179,7 @@ For snapshot testing, sample applications, pre-commit hooks, and release process
 - `Local.xcconfig` - Local development configuration (not committed)
 - `CI.xcconfig` - CI-specific configuration
 - `api/*.swiftinterface` - Public API surface tracking
+- `swiftlint-baseline.json` - Pre-existing SwiftLint violations grandfathered by the linter (notably for `no_new_public_enums`)
 
 ### Pull Request Labels
 

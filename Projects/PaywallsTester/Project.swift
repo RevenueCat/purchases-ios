@@ -130,7 +130,7 @@ let project = Project(
             name: "PaywallsTester",
             destinations: allDestinations,
             product: .app,
-            bundleId: "com.revenuecat.PaywallsTester",
+            bundleId: Environment.paywallsTesterBundleId,
             deploymentTargets: allDeploymentTargets,
             infoPlist: "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Info.plist",
             sources: [

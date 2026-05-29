@@ -25,11 +25,7 @@ enum AccessorOperators {
     static func opVar(args: Value, vars: Value) throws -> Value {
         let (path, defaultValue) = try resolveVarArgs(args, vars: vars)
 
-        if path.isEmpty {
-            return vars
-        }
-
-        if let found = lookupPath(in: vars, path: path) {
+        if let found = lookupVar(in: vars, path: path) {
             return found
         }
         if let defaultValue = defaultValue {
@@ -162,14 +158,20 @@ enum AccessorOperators {
         return jsString(value)
     }
 
-    /// Resolve `path` the way `var` does, without warning on misses.
-    /// Empty path returns the entire data scope; a non-resolving path
-    /// returns `.null`.
-    private static func varLookup(in vars: Value, path: String) -> Value {
+    /// Resolve `path` the way `var` does. Empty path returns the entire
+    /// data scope; a resolving path returns its value (including explicit
+    /// `.null`); a non-resolving path returns `nil`.
+    private static func lookupVar(in vars: Value, path: String) -> Value? {
         if path.isEmpty {
             return vars
         }
-        return lookupPath(in: vars, path: path) ?? .null
+        return lookupPath(in: vars, path: path)
+    }
+
+    /// Like `lookupVar`, but maps a non-resolving path to `.null`
+    /// instead of `nil` — the shape `missing` needs.
+    private static func varLookup(in vars: Value, path: String) -> Value {
+        lookupVar(in: vars, path: path) ?? .null
     }
 
     /// `missing` reports a key when its `var` lookup resolves to `null`

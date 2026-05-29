@@ -9,7 +9,7 @@ import Foundation
 @testable import RulesEngineInternal
 
 /// Test-only logger that records every warning it receives for later
-/// assertion. `final` because there is no reason to subclass it.
+/// assertion.
 final class CapturingLogger: RulesEngineLogger {
 
     private let lock = NSLock()
@@ -23,7 +23,7 @@ final class CapturingLogger: RulesEngineLogger {
         return captured
     }
 
-    func warn(_ message: String) {
+    func warn(_ message: String, tag: String) {
         lock.lock()
         defer { lock.unlock() }
         captured.append(message)

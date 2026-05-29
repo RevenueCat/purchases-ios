@@ -64,8 +64,7 @@ final class ComparisonOperatorsTests: XCTestCase {
     }
 
     func testLtComparesTwoStringsLexicographically() throws {
-        // Per the JSON Logic spec (ECMAScript Abstract Relational
-        // Comparison), two string operands compare lexicographically.
+        // After ToPrimitive, both strings → lex compare.
         // "10" < "9" → true because '1' (0x31) < '9' (0x39).
         XCTAssertEqual(
             try run(ComparisonOperators.opLt, args: arr(.string("10"), .string("9"))),
@@ -84,10 +83,8 @@ final class ComparisonOperatorsTests: XCTestCase {
     }
 
     func testLtMixedStringAndNumberCoercesNumerically() throws {
-        // Mixed types fall through to numeric coercion, NOT lex — `"10" < 9`
-        // becomes `10 < 9` → false, while a pure-string compare would have
-        // said true. This is the JS spec's "only lex when BOTH are strings"
-        // branch.
+        // Only lex when BOTH operands are strings after ToPrimitive — `"10" < 9`
+        // becomes `10 < 9` → false, not lex `"10" < "9"`.
         XCTAssertEqual(
             try run(ComparisonOperators.opLt, args: arr(.string("10"), .int(9))),
             .bool(false)
@@ -103,6 +100,62 @@ final class ComparisonOperatorsTests: XCTestCase {
         // Object can't coerce → NaN; any compare against NaN is false.
         XCTAssertEqual(
             try run(ComparisonOperators.opLt, args: arr(.object([:]), .int(1))),
+            .bool(false)
+        )
+    }
+
+    func testLtCompoundComparedToStringUsesLex() throws {
+        // json-logic-js: arrays stringify before lex when both sides are strings.
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.array([]), .string("a"))),
+            .bool(true)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.array([.int(10)]), .string("9"))),
+            .bool(true)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.array([.int(1)]), .string("02"))),
+            .bool(false)
+        )
+    }
+
+    func testNullOperandsCoerceToZero() throws {
+        // `Number(null)` is 0; object/array operands still hit NaN.
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.null, .null)),
+            .bool(false)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLe, args: arr(.null, .null)),
+            .bool(true)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opGt, args: arr(.null, .null)),
+            .bool(false)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opGe, args: arr(.null, .null)),
+            .bool(true)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.null, .object([:]))),
+            .bool(false)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.object([:]), .null)),
+            .bool(false)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.null, .array([]))),
+            .bool(false)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLe, args: arr(.int(0), .null, .int(1))),
+            .bool(true)
+        )
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLt, args: arr(.int(0), .null, .int(1))),
             .bool(false)
         )
     }
@@ -173,6 +226,23 @@ final class ComparisonOperatorsTests: XCTestCase {
         )
     }
 
+    /// `json-logic-js` declares `<=` as `function(a, b, c)` so missing
+    /// operands resolve to `undefined`, which coerces to `NaN`; any
+    /// comparison against `NaN` is `false`.
+    func testLeMissingOperandsCompareAgainstNaN() throws {
+        XCTAssertEqual(try run(ComparisonOperators.opLe, args: arr(.int(1))), .bool(false))
+        XCTAssertEqual(try run(ComparisonOperators.opLe, args: arr()), .bool(false))
+    }
+
+    /// `json-logic-js`'s `<=` ignores arguments past the third (JS
+    /// silently drops named parameters' overflow).
+    func testLeIgnoresArgsBeyondThird() throws {
+        XCTAssertEqual(
+            try run(ComparisonOperators.opLe, args: arr(.int(1), .int(2), .int(3), .int(0))),
+            .bool(true)
+        )
+    }
+
     // MARK: - >
 
     func testGtBasicTwoArgs() throws {
@@ -236,6 +306,13 @@ final class ComparisonOperatorsTests: XCTestCase {
             try run(ComparisonOperators.opGe, args: arr(.int(3), .int(2), .int(1))),
             .bool(true)
         )
+    }
+
+    /// Missing second operand resolves to `undefined`, coerces to
+    /// `NaN`, and any comparison against `NaN` is `false`.
+    func testGeMissingOperandsCompareAgainstNaN() throws {
+        XCTAssertEqual(try run(ComparisonOperators.opGe, args: arr(.int(1))), .bool(false))
+        XCTAssertEqual(try run(ComparisonOperators.opGe, args: arr()), .bool(false))
     }
 
     // MARK: - Helpers

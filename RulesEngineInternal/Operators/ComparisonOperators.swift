@@ -8,14 +8,14 @@ import Foundation
 
 /// Comparison operators: `<`, `<=`, `>`, `>=`.
 ///
-/// Mirrors the JSON Logic / ECMAScript Abstract Relational Comparison
-/// rules:
+/// Per JSON Logic:
 ///
-/// - **Both operands are strings** → lexicographic comparison
-///   (`"10" < "9"` is `true` because `'1' < '9'`).
+/// - After `ToPrimitive` (number hint), **both operands are strings**
+///   → lexicographic comparison (`"10" < "9"` is `true`). Arrays and
+///   objects stringify first (`[] < "a"` → `"" < "a"` → `true`).
 /// - **Otherwise** → coerce both operands to `Double` via
-///   `Value.asNumber` and compare numerically. Operands that can't
-///   coerce (`.object`, `.array`, unparseable strings) become
+///   `Value.asNumber` and compare numerically (`"10" < 9` → `false`).
+///   Unparseable strings and objects compared numerically become
 ///   `Double.nan`; per IEEE 754 any comparison against `nan` returns
 ///   `false`.
 ///
@@ -26,22 +26,22 @@ enum ComparisonOperators {
 
     /// `{"<": [a, b]}` — `a < b`. `{"<": [a, b, c]}` — `a < b AND b < c`.
     static func opLt(args: Value, vars: Value) throws -> Value {
-        try evalChain(args, vars: vars, opName: "<", using: .less)
+        try evalChain(args, vars: vars, using: .less)
     }
 
     /// `{"<=": [a, b]}` — `a <= b`. `{"<=": [a, b, c]}` — `a <= b AND b <= c`.
     static func opLe(args: Value, vars: Value) throws -> Value {
-        try evalChain(args, vars: vars, opName: "<=", using: .lessOrEqual)
+        try evalChain(args, vars: vars, using: .lessOrEqual)
     }
 
     /// `{">": [a, b]}` — `a > b`. Strictly binary.
     static func opGt(args: Value, vars: Value) throws -> Value {
-        try evalBinary(args, vars: vars, opName: ">", using: .greater)
+        try evalBinary(args, vars: vars, using: .greater)
     }
 
     /// `{">=": [a, b]}` — `a >= b`. Strictly binary.
     static func opGe(args: Value, vars: Value) throws -> Value {
-        try evalBinary(args, vars: vars, opName: ">=", using: .greaterOrEqual)
+        try evalBinary(args, vars: vars, using: .greaterOrEqual)
     }
 
     private enum Comparator {
@@ -57,14 +57,30 @@ enum ComparisonOperators {
         }
     }
 
-    /// Two-string operands → lex. Otherwise → numeric coercion (JS
-    /// Abstract Relational Comparison). A missing operand stands in
-    /// for JS `undefined`, which `Number(undefined)` reports as `NaN`.
+    /// Mirrors JS `<`: `ToPrimitive` (number hint), lex when both are
+    /// strings, else numeric. `nil` lhs/rhs is an omitted argument
+    /// (`undefined` → `NaN` → `false`).
     private static func compare(_ lhs: Value?, _ rhs: Value?, using cmp: Comparator) -> Bool {
-        if case .string(let left) = lhs, case .string(let right) = rhs {
-            return cmp.apply(left, right)
+        guard let lhs, let rhs else {
+            return cmp.apply(asDouble(lhs), asDouble(rhs))
         }
-        return cmp.apply(asDouble(lhs), asDouble(rhs))
+        let left = toPrimitiveForComparison(lhs)
+        let right = toPrimitiveForComparison(rhs)
+        if case .string(let leftString) = left, case .string(let rightString) = right {
+            return cmp.apply(leftString, rightString)
+        }
+        return cmp.apply(asDouble(left), asDouble(right))
+    }
+
+    /// `ToPrimitive` with number hint: arrays/objects stringify; other
+    /// primitives pass through unchanged.
+    private static func toPrimitiveForComparison(_ value: Value) -> Value {
+        switch value {
+        case .string, .null, .bool, .int, .float:
+            return value
+        case .array, .object:
+            return .string(jsString(value))
+        }
     }
 
     /// Shared 2-or-3 arg "chain" evaluator used by `<` and `<=`.
@@ -75,7 +91,6 @@ enum ComparisonOperators {
     private static func evalChain(
         _ args: Value,
         vars: Value,
-        opName: String,
         using cmp: Comparator
     ) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
@@ -95,7 +110,6 @@ enum ComparisonOperators {
     private static func evalBinary(
         _ args: Value,
         vars: Value,
-        opName: String,
         using cmp: Comparator
     ) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
@@ -104,11 +118,8 @@ enum ComparisonOperators {
         return .bool(compare(lhs, rhs, using: cmp))
     }
 
-    /// Coerce to `Double`, falling back to `nan` for non-numeric
-    /// operands. A missing operand is treated as JS `undefined`, which
-    /// also coerces to `nan`.
+    /// Omitted arg or failed coercion → `nan`; `.null` → 0.
     private static func asDouble(_ value: Value?) -> Double {
-        guard let value = value else { return .nan }
-        return value.asNumber ?? .nan
+        value?.asNumber ?? .nan
     }
 }

@@ -263,6 +263,24 @@ final class ArithmeticOperatorsTests: XCTestCase {
         )
     }
 
+    /// JS `%` is IEEE 754 remainder: the result sign matches the dividend,
+    /// not the divisor (`-7 % 3 === -1`, `7 % -3 === 1`). Pins
+    /// `truncatingRemainder(dividingBy:)`.
+    func testModNegativeOperandsMatchJs() throws {
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opMod, args: arr(.int(-7), .int(3))),
+            .float(-1.0)
+        )
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opMod, args: arr(.int(7), .int(-3))),
+            .float(1.0)
+        )
+        XCTAssertEqual(
+            try run(ArithmeticOperators.opMod, args: arr(.int(-7), .int(-3))),
+            .float(-1.0)
+        )
+    }
+
     // MARK: - Coercion semantics (`+`/`*` use parseFloat, others use Number)
 
     /// `+` and `*` coerce every operand through JS `parseFloat(value)`.

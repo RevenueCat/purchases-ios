@@ -153,12 +153,14 @@ final class EvaluatorTests: XCTestCase {
         // missing, since missing → null and null == null.
         let predicate = "{\"==\": [{\"var\": \"missing\"}, null]}"
         let logger = CapturingLogger()
-        let result = try RulesEngine.withLogger(logger) {
-            try Evaluator.evaluate(
-                predicate: try Value.fromJSONString(predicate),
-                variables: [:]
-            )
-        }
+        let previousLogger = RulesEngine.logger
+        RulesEngine.setLogger(logger)
+        defer { RulesEngine.setLogger(previousLogger) }
+
+        let result = try Evaluator.evaluate(
+            predicate: try Value.fromJSONString(predicate),
+            variables: [:]
+        )
         XCTAssertTrue(result)
         XCTAssertEqual(logger.warnings.count, 1)
         XCTAssertTrue(logger.warnings[0].contains("missing"))

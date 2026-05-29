@@ -108,8 +108,7 @@ enum Operators {
     /// `function(a, b)` operator signatures.
     static func evalTwo(
         _ args: Value,
-        vars: Value,
-        opName: String
+        vars: Value
     ) throws -> (Value, Value) {
         let evaluated = try evalArgs(args, vars: vars)
         let lhs = evaluated.first ?? .null
