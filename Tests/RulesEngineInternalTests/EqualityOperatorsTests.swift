@@ -1,0 +1,79 @@
+//
+//  EqualityOperatorsTests.swift
+//
+//  Created by Antonio Pallares.
+//
+
+import XCTest
+
+@testable import RulesEngineInternal
+
+final class EqualityOperatorsTests: XCTestCase {
+
+    func testLooseEqBasic() throws {
+        XCTAssertEqual(try evalEq(.array([.int(1), .int(1)])), .bool(true))
+        XCTAssertEqual(try evalEq(.array([.int(1), .int(2)])), .bool(false))
+    }
+
+    func testLooseEqDoesTypeCoercion() throws {
+        // "1" == 1
+        XCTAssertEqual(try evalEq(.array([.string("1"), .int(1)])), .bool(true))
+        // true == 1
+        XCTAssertEqual(try evalEq(.array([.bool(true), .int(1)])), .bool(true))
+    }
+
+    func testStrictEqDoesNotCoerce() throws {
+        // "1" !== 1
+        XCTAssertEqual(try evalStrictEq(.array([.string("1"), .int(1)])), .bool(false))
+        // 1 === 1
+        XCTAssertEqual(try evalStrictEq(.array([.int(1), .int(1)])), .bool(true))
+        // 1 === 1.0 (int/float bridge as one number type)
+        XCTAssertEqual(try evalStrictEq(.array([.int(1), .float(1.0)])), .bool(true))
+    }
+
+    func testLooseNeIsNegationOfLooseEq() throws {
+        XCTAssertEqual(try evalNe(.array([.int(1), .int(1)])), .bool(false))
+        XCTAssertEqual(try evalNe(.array([.int(1), .int(2)])), .bool(true))
+    }
+
+    func testStrictNeIsNegationOfStrictEq() throws {
+        XCTAssertEqual(try evalStrictNe(.array([.int(1), .int(1)])), .bool(false))
+        XCTAssertEqual(try evalStrictNe(.array([.string("1"), .int(1)])), .bool(true))
+    }
+
+    /// `json-logic-js` declares equality operators as
+    /// `function(a, b)`, so a missing operand stands in for JS
+    /// `undefined`. `1 == undefined` is `false`; equating two missing
+    /// operands collapses to `null == null` which is `true` (mirrors
+    /// JS `null == undefined`).
+    func testMissingOperandsTreatedAsNull() throws {
+        XCTAssertEqual(try evalEq(.array([.int(1)])), .bool(false))
+        XCTAssertEqual(try evalEq(.array([])), .bool(true))
+    }
+
+    func testStrictEqMissingOperandsBothNull() throws {
+        // Two missing operands → `.null` on each side → strict equality holds.
+        XCTAssertEqual(try evalStrictEq(.array([])), .bool(true))
+        XCTAssertEqual(try evalStrictNe(.array([])), .bool(false))
+    }
+
+    func testStrictEqOneMissingOperandDoesNotCoerce() throws {
+        XCTAssertEqual(try evalStrictEq(.array([.int(1)])), .bool(false))
+        XCTAssertEqual(try evalStrictNe(.array([.int(1)])), .bool(true))
+    }
+
+    // MARK: - Helpers
+
+    private func evalEq(_ args: Value) throws -> Value {
+        try EqualityOperators.opLooseEq(args: args, vars: .null)
+    }
+    private func evalNe(_ args: Value) throws -> Value {
+        try EqualityOperators.opLooseNe(args: args, vars: .null)
+    }
+    private func evalStrictEq(_ args: Value) throws -> Value {
+        try EqualityOperators.opStrictEq(args: args, vars: .null)
+    }
+    private func evalStrictNe(_ args: Value) throws -> Value {
+        try EqualityOperators.opStrictNe(args: args, vars: .null)
+    }
+}
