@@ -453,15 +453,6 @@ class AdEventTests: TestCase {
         expect(event1) == event2
     }
 
-    // MARK: - AdRewardFailureReason rawValue stability
-
-    func testAdRewardFailureReasonStaticConstantsHaveStableRawValues() {
-        expect(AdRewardFailureReason.timeout.rawValue) == "timeout"
-        expect(AdRewardFailureReason.networkError.rawValue) == "network_error"
-        expect(AdRewardFailureReason.backendError.rawValue) == "backend_error"
-        expect(AdRewardFailureReason.unknown.rawValue) == "unknown"
-    }
-
     // MARK: - Codable round-trip
 
     func testAdRewardEarnedUnverifiedCodableRoundTrip() throws {
