@@ -65,6 +65,7 @@ import Foundation
 
     public var stepTriggers: [WorkflowTrigger] { triggers }
     public var stepTriggerActions: [String: WorkflowTriggerAction] { triggerActions }
+    public var stepScreenType: [String] { screenType }
     let metadata: [String: AnyDecodable]?
 
 }

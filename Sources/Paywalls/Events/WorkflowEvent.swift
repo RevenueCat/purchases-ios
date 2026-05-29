@@ -46,6 +46,7 @@ extension WorkflowEvent {
 
         public var workflowId: String
         public var stepId: String
+        public var localeIdentifier: String
         public var traceId: String?
         /// Not sent to the backend; used for local context only.
         public var workflowType: String?
@@ -68,6 +69,7 @@ extension WorkflowEvent {
         public init(
             workflowId: String,
             stepId: String,
+            localeIdentifier: String = Locale.current.identifier,
             traceId: String? = nil,
             workflowType: String? = nil,
             stepType: String? = nil,
@@ -83,6 +85,7 @@ extension WorkflowEvent {
         ) {
             self.workflowId = workflowId
             self.stepId = stepId
+            self.localeIdentifier = localeIdentifier
             self.traceId = traceId
             self.workflowType = workflowType
             self.stepType = stepType

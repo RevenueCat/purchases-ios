@@ -78,6 +78,27 @@ class WorkflowEventsRequestTests: TestCase {
         expect(request.properties.toStepId).to(beNil())
     }
 
+    func testLocaleIsPopulatedInContext() throws {
+        let event = WorkflowEvent.stepStarted(
+            .init(id: id, date: date),
+            .init(workflowId: "wfl_abc", stepId: "step-1", localeIdentifier: "en_US")
+        )
+        let stored = try XCTUnwrap(storedEvent(from: event))
+        let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
+
+        expect(request.context.locale) == "en_US"
+    }
+
+    func testLocaleIsIncludedInJSON() throws {
+        let event = WorkflowEvent.stepStarted(
+            .init(id: id, date: date),
+            .init(workflowId: "wfl_abc", stepId: "step-1", localeIdentifier: "fr_FR")
+        )
+        let json = try encodedJSON(from: event)
+
+        expect(json).to(contain("\"locale\":\"fr_FR\""))
+    }
+
     func testStepCompletedPropertiesIncludeToStepId() throws {
         let event = WorkflowEvent.stepCompleted(
             .init(id: id, date: date),

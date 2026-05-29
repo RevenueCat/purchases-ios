@@ -30,7 +30,7 @@ extension FeatureEventsRequest {
 
         // swiftlint:disable nesting
         struct Context {
-            let locale: String?
+            let locale: String
         }
 
         struct Properties {
@@ -91,7 +91,7 @@ extension FeatureEventsRequest.WorkflowEvent {
                 eventName: eventName,
                 timestampMs: event.creationData.date.millisecondsSince1970,
                 appUserID: storedEvent.userID,
-                context: Context(locale: nil),
+                context: Context(locale: event.data.localeIdentifier),
                 properties: Properties(
                     workflowId: event.data.workflowId,
                     stepId: event.data.stepId,
@@ -142,7 +142,7 @@ extension FeatureEventsRequest.WorkflowEvent.Context: Encodable {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encodeIfPresent(locale, forKey: .locale)
+        try container.encode(locale, forKey: .locale)
     }
 
     private enum CodingKeys: String, CodingKey {
