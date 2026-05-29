@@ -156,7 +156,7 @@ private extension TopicFetcher {
         guard let cachesDir = self.baseCacheURL ?? DirectoryHelper.baseUrl(for: .cache) else { return nil }
         let topicDir = cachesDir
             .appendingPathComponent(Self.topicsRoot)
-            .appendingPathComponent(topic.wireKey)
+            .appendingPathComponent(topic.rawValue)
 
         if !self.fileManager.fileExists(atPath: topicDir.path) {
             try? self.fileManager.createDirectory(at: topicDir, withIntermediateDirectories: true, attributes: nil)
