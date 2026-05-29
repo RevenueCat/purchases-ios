@@ -20,7 +20,7 @@ class MockTopicFetcher: TopicFetcher {
     var fetchCalls: [FetchCall] = []
 
     convenience init() {
-        self.init(fileManager: FileManager.default, urlSession: .shared)
+        self.init(fileManager: FileManager.default)
     }
 
     override func fetchTopicIfNeeded(

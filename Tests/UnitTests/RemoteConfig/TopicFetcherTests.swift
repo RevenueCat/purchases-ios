@@ -279,7 +279,9 @@ final class TopicFetcherTests: TestCase {
 
     func testFetchTopicIfNeededAcceptsMixedCaseHexBlobRef() async {
         let mixedCaseHex = "ABCDEFabcdef" + String(repeating: "0", count: 52)
-        stubDownload(url: "https://assets.example.com/\(mixedCaseHex)", data: Data("ignored".utf8))
+        let normalizedHex = mixedCaseHex.lowercased()
+        // The blob ref is normalized to lowercase before use, so the URL and cache path use normalizedHex.
+        stubDownload(url: "https://assets.example.com/\(normalizedHex)", data: Data("ignored".utf8))
 
         let error = await makeFetcher().fetchTopicIfNeeded(
             topic: .productEntitlementMapping,
@@ -288,10 +290,9 @@ final class TopicFetcherTests: TestCase {
             source: makeSource(urlFormat: "https://assets.example.com/{blob_ref}")
         )
 
-        // Validation passes; download was attempted (SHA-256 will mismatch since "ignored" != mixedCaseHex)
+        // Validation passes; download was attempted (SHA-256 will mismatch since "ignored" != normalizedHex)
         expect(error).toNot(beNil())
-        // Error is SHA-256 mismatch, not validation rejection — meaning the request was made
-        let target = topicFile(topic: .productEntitlementMapping, blobRef: mixedCaseHex)
+        let target = topicFile(topic: .productEntitlementMapping, blobRef: normalizedHex)
         expect(FileManager.default.fileExists(atPath: target.path)).to(beFalse())
     }
 

@@ -11,12 +11,11 @@ import Foundation
 
 enum RemoteConfigStrings {
 
-    case remote_config_cache_hit
-    case remote_config_cache_stale_fetching_from_network
-    case remote_config_fetched_from_network
     case remote_config_fetch_error(BackendError)
 
     case topic_malformed_blob_ref(topic: RemoteConfigResponse.Topic, entryId: String)
+    case topic_caches_dir_unavailable(topic: RemoteConfigResponse.Topic, entryId: String)
+    case topic_invalid_blob_url(topic: RemoteConfigResponse.Topic, entryId: String, urlString: String)
     case topic_cache_hit(topic: RemoteConfigResponse.Topic, entryId: String)
     case topic_fetched(topic: RemoteConfigResponse.Topic, entryId: String)
     case topic_fetch_error(topic: RemoteConfigResponse.Topic, entryId: String, error: BackendError)
@@ -27,20 +26,17 @@ extension RemoteConfigStrings: LogMessage {
 
     var description: String {
         switch self {
-        case .remote_config_cache_hit:
-            return "RemoteConfig: cache is still fresh."
-
-        case .remote_config_cache_stale_fetching_from_network:
-            return "RemoteConfig: cache is stale, fetching from network."
-
-        case .remote_config_fetched_from_network:
-            return "RemoteConfig: fetched from network."
-
         case let .remote_config_fetch_error(error):
             return "RemoteConfig: failed to fetch from network: \(error.localizedDescription)"
 
         case let .topic_malformed_blob_ref(topic, entryId):
             return "RemoteConfig: topic \(topic) (\(entryId)) has a malformed blob_ref; refusing to fetch."
+
+        case let .topic_caches_dir_unavailable(topic, entryId):
+            return "RemoteConfig: topic \(topic) (\(entryId)) could not resolve caches directory; skipping."
+
+        case let .topic_invalid_blob_url(topic, entryId, urlString):
+            return "RemoteConfig: topic \(topic) (\(entryId)) produced an invalid URL '\(urlString)'; skipping."
 
         case let .topic_cache_hit(topic, entryId):
             return "RemoteConfig: topic \(topic) (\(entryId)) already cached, skipping download."
