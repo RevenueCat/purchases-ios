@@ -44,6 +44,9 @@ struct StackComponentView: View {
     @Environment(\.selectedPackageId)
     private var selectedPackageId
 
+    @Environment(\.paywallAncestorScrollsVertically)
+    private var paywallAncestorScrollsVertically
+
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
     private let onDismiss: () -> Void
@@ -141,7 +144,9 @@ struct StackComponentView: View {
         .scrollableIfEnabled(
             style.dimension,
             size: style.size,
-            enabled: style.scrollable ?? self.isScrollableByDefault
+            overflow: style.overflow,
+            isScrollableByDefault: self.isScrollableByDefault,
+            ancestorScrollsVertically: self.paywallAncestorScrollsVertically
         )
         .shape(border: nil,
                shape: style.shape,
@@ -172,11 +177,16 @@ fileprivate extension View {
     func scrollableIfEnabled(
         _ dimension: PaywallComponent.Dimension,
         size: PaywallComponent.Size,
-        enabled: Bool = true
+        overflow: PaywallComponent.StackComponent.Overflow?,
+        isScrollableByDefault: Bool,
+        ancestorScrollsVertically: Bool
     ) -> some View {
-        if enabled {
-            switch dimension {
-            case .horizontal(let verticalAlignment, let distribution):
+        switch dimension {
+        case .horizontal(let verticalAlignment, let distribution):
+            if StackScrollBehavior.stackScrollingIsEnabled(
+                overflow: overflow,
+                isScrollableByDefault: isScrollableByDefault
+            ) {
                 self.scrollableIfNecessaryWhenAvailable(
                     .horizontal,
                     fillContent: size.width == .fill,
@@ -185,7 +195,14 @@ fileprivate extension View {
                         vertical: verticalAlignment.frameAlignment.vertical
                     )
                 )
-            case .vertical(let horizontalAlignment, let distribution):
+            } else {
+                self
+            }
+        case .vertical(let horizontalAlignment, let distribution):
+            if StackScrollBehavior.stackScrollingIsEnabled(
+                overflow: overflow,
+                isScrollableByDefault: isScrollableByDefault
+            ) {
                 self.scrollableIfNecessaryWhenAvailable(
                     .vertical,
                     fillContent: size.height == .fill,
@@ -194,11 +211,23 @@ fileprivate extension View {
                         vertical: distribution.verticalFrameAlignment.vertical
                     )
                 )
-            case .zlayer:
+            } else {
                 self
             }
-        } else {
-            self
+        case .zlayer(let alignment):
+            if StackScrollBehavior.shouldApplyZLayerScroll(
+                overflow: overflow,
+                isScrollableByDefault: isScrollableByDefault,
+                ancestorScrollsVertically: ancestorScrollsVertically
+            ) {
+                self.scrollableIfNecessaryWhenAvailable(
+                    .vertical,
+                    fillContent: size.height == .fill,
+                    alignment: alignment.stackAlignment
+                )
+            } else {
+                self
+            }
         }
     }
 
