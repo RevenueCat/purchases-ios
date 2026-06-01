@@ -18,11 +18,21 @@ import SwiftUI
 struct TransitionModifier: ViewModifier {
     let transition: PaywallComponent.Transition
 
+    #if !os(tvOS)
+    @Environment(\.workflowPageTransitionContext)
+    private var workflowPageTransitionContext
+
+    @Environment(\.isWorkflowHeader)
+    private var isWorkflowHeader
+    #endif
+
     @State var isPresented: Bool = false
 
     func body(content: Content) -> some View {
         ZStack {
-            if isPresented {
+            if self.shouldRenderContentImmediately {
+                content
+            } else if isPresented {
                 content
                     .transition(transition.toTransition)
             } else {
@@ -41,7 +51,13 @@ struct TransitionModifier: ViewModifier {
                 }
                 .transition(transition.toTransition)
             }
-        }.task {
+        }
+        .task(id: self.shouldRenderContentImmediately) {
+            guard !self.shouldRenderContentImmediately else {
+                self.isPresented = true
+                return
+            }
+
             // Delay the state change by msDelay before showing the content
             let delayMs = transition.animation?.msDelay ?? 0
             if delayMs > 0 {
@@ -51,6 +67,14 @@ struct TransitionModifier: ViewModifier {
                 isPresented = true
             }
         }
+    }
+
+    private var shouldRenderContentImmediately: Bool {
+        #if !os(tvOS)
+        return self.workflowPageTransitionContext.isTransitioning && !self.isWorkflowHeader
+        #else
+        return false
+        #endif
     }
 }
 
