@@ -29,6 +29,7 @@ func checkTestStoreProductAPI() {
     let introductoryDiscount: StoreProductDiscount? = testProduct.introductoryDiscount
     let discounts: [StoreProductDiscount] = testProduct.discounts
     let locale: Locale = testProduct.locale
+    let installmentsInfo: InstallmentsInfo? = testProduct.installmentsInfo
 
     // Setters
     testProduct.localizedTitle = localizedTitle

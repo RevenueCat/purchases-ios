@@ -57,9 +57,13 @@ enum StoreKitStrings {
 
     case no_cached_products_starting_store_products_request(identifiers: Set<String>)
 
+    case invalid_product_identifiers(identifiers: Set<String>)
+
     case sk1_payment_queue_too_many_transactions(count: Int, isSandbox: Bool)
 
     case sk1_finish_transaction_called_with_existing_completion(SKPaymentTransaction)
+
+    case sk1_does_not_support_billing_plans(compoundProductIdentifier: CompoundProductIdentifier)
 
     case sk1_product_request_too_slow
 
@@ -104,6 +108,22 @@ enum StoreKitStrings {
     case sk2_sync_purchases_no_transaction_or_apptransaction_found
 
     case sk2_purchase_did_not_error_but_expiration_date_is_in_past(expirationDate: Date)
+
+    case sk2_unrecognized_billing_plan_identifer(billingPlanIdentifier: String)
+
+    case sk2_no_billing_plan_found(compoundProductIdentifier: CompoundProductIdentifier)
+
+    case sk2_no_pricing_terms_found(compoundProductIdentifier: CompoundProductIdentifier)
+
+    case sk2_user_not_eligible_for_billing_plan(compoundProductIdentifier: CompoundProductIdentifier)
+
+    case sk2_billing_plans_are_unavailable_on_this_os_version(compoundProductIdentifier: CompoundProductIdentifier)
+
+    case sk2_applying_billing_plan(billingPlanType: String)
+
+    case sk2_user_not_eligible_for_billing_plan_at_purchase_time(billingPlanType: String)
+
+    case cannot_request_product_with_more_than_one_colon(productIdentifier: String)
 }
 
 extension StoreKitStrings: LogMessage {
@@ -175,6 +195,9 @@ extension StoreKitStrings: LogMessage {
         case .no_cached_products_starting_store_products_request(let identifiers):
             return "No existing products cached, starting store products request for: \(identifiers)"
 
+        case .invalid_product_identifiers(let identifiers):
+            return "Invalid product identifiers were ignored: \(identifiers)"
+
         case let .sk1_payment_queue_too_many_transactions(count, isSandbox):
             let messageSuffix = isSandbox
             ? "This high number is unexpected and is likely due to using an old sandbox account on a new device. " +
@@ -186,6 +209,10 @@ extension StoreKitStrings: LogMessage {
         case let .sk1_finish_transaction_called_with_existing_completion(transaction):
             return "StoreKit1Wrapper.finishTransaction was called for '\(transaction.productIdentifier ?? "")' " +
             "but found an existing completion block."
+
+        case .sk1_does_not_support_billing_plans(let compoundProductIdentifier):
+            return "Products with billing plans are not supported when using StoreKit 1. Will not return " +
+            "a product for \(compoundProductIdentifier.compoundProductIdentifier)"
 
         case .sk1_product_request_too_slow:
             return "StoreKit 1 product request took longer than expected"
@@ -253,6 +280,44 @@ extension StoreKitStrings: LogMessage {
             return "StoreKit did not raise any errors while processing the purchase, but the transaction returned by " +
             "StoreKit contains an expiration date that is in the past. This is likely an issue with " +
             "StoreKit. Expiration date: \(iso8601ExpirationDate)"
+
+        case .sk2_unrecognized_billing_plan_identifer(let billingPlanIdentifier):
+            return "An unrecognized billing plan identifier was detected: \(billingPlanIdentifier)."
+
+        case .sk2_no_billing_plan_found(let compoundProductIdentifier):
+            return "Unrecognized billing plan type. Will not return a product identifier " +
+            "for \(compoundProductIdentifier.compoundProductIdentifier)"
+
+        case .sk2_no_pricing_terms_found(let compoundProductIdentifier):
+            return "No pricing terms were found for product with productIdentifier " +
+            "\(compoundProductIdentifier.storeKitProductIdentifier). Will not return a product " +
+            "for \(compoundProductIdentifier.compoundProductIdentifier)"
+
+        case .sk2_user_not_eligible_for_billing_plan(let compoundProductIdentifier):
+            if let productPlanIdentifier = compoundProductIdentifier.productPlanIdentifier {
+                return "The user is not eligible for the \(productPlanIdentifier) " +
+                "billing plan. Will not return a product " +
+                "for \(compoundProductIdentifier.compoundProductIdentifier)"
+            } else {
+                return "The user is not eligible for the requested " +
+                "billing plan. Will not return a product " +
+                "for \(compoundProductIdentifier.compoundProductIdentifier)"
+            }
+
+        case .sk2_billing_plans_are_unavailable_on_this_os_version(let compoundProductIdentifier):
+            return "Products with billing plans are only supported on iOS 26.4+. Will not return " +
+            "a product for \(compoundProductIdentifier.compoundProductIdentifier)"
+
+        case .sk2_applying_billing_plan(let billingPlanType):
+            return "Applying billing plan of type \(billingPlanType) to the purchase."
+
+        case .sk2_user_not_eligible_for_billing_plan_at_purchase_time(let billingPlanType):
+            return "The user is not eligible for the \(billingPlanType) billing plan and thus " +
+            "is not eligible to make this purchase."
+
+        case .cannot_request_product_with_more_than_one_colon(let productIdentifier):
+            return "Cannot resolve product ID \(productIdentifier) since it contains more " +
+            "than one colon."
         }
     }
 
