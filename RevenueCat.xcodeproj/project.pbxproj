@@ -5918,7 +5918,6 @@
 				2C7457432CEA6470004ACE52 /* Components */,
 				2C7457222CE713DA004ACE52 /* Previews */,
 				800A129055A298C390AED0B5 /* WorkflowPaywallView.swift */,
-				DFFD2AB4468BD9E22B2B2CC7 /* Layout2 */,
 				AB70B73749FDB04A429A0E13 /* Layout */,
 			);
 			path = V2;
@@ -6302,13 +6301,6 @@
 				DB7EA7742F964CA200BCC082 /* WorkflowResponseTests.swift */,
 			);
 			path = Workflows;
-			sourceTree = "<group>";
-		};
-		DFFD2AB4468BD9E22B2B2CC7 /* Layout2 */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Layout2;
 			sourceTree = "<group>";
 		};
 		E1C0A00BBEEF0001CCDD0001 /* Header */ = {
