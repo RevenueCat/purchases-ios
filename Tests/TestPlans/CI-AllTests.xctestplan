@@ -55,6 +55,13 @@
         "identifier" : "5759B330296DF65D002472D5",
         "name" : "ReceiptParserTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:RevenueCat.xcodeproj",
+        "identifier" : "9F10CFD131109088B9D1C655",
+        "name" : "RulesEngineInternalTests"
+      }
     }
   ],
   "version" : 1

@@ -44,8 +44,8 @@ final class DispatcherTests: AdapterTestCase {
         )
 
         let outcomes = recorder.snapshot()
-        guard case .failed = outcomes.first else {
-            return XCTFail("Expected .failed, got \(String(describing: outcomes.first))")
+        guard case .failed(.backendError) = outcomes.first else {
+            return XCTFail("Expected .failed(.backendError), got \(String(describing: outcomes.first))")
         }
     }
 
@@ -61,8 +61,8 @@ final class DispatcherTests: AdapterTestCase {
             outcomeHandler: { recorder.append($0) }
         )
 
-        guard case .failed = recorder.snapshot().first else {
-            return XCTFail("Expected .failed, got \(String(describing: recorder.snapshot().first))")
+        guard case .failed(.timeout) = recorder.snapshot().first else {
+            return XCTFail("Expected .failed(.timeout), got \(String(describing: recorder.snapshot().first))")
         }
     }
 
@@ -82,8 +82,10 @@ final class DispatcherTests: AdapterTestCase {
         )
 
         let outcomes = recorder.snapshot()
-        guard case .failed = outcomes.first else {
-            return XCTFail("Expected .failed for transient-only attempts, got \(String(describing: outcomes.first))")
+        guard case .failed(.timeout) = outcomes.first else {
+            return XCTFail(
+                "Expected .failed(.timeout) for transient-only attempts, got \(String(describing: outcomes.first))"
+            )
         }
         XCTAssertEqual(throwingPoller.callCount, 3,
                        "Transient throws should be retried up to the attempt budget")
@@ -105,8 +107,10 @@ final class DispatcherTests: AdapterTestCase {
         )
 
         let outcomes = recorder.snapshot()
-        guard case .failed = outcomes.first else {
-            return XCTFail("Expected .failed for terminal ErrorCode, got \(String(describing: outcomes.first))")
+        guard case .failed(.backendError) = outcomes.first else {
+            return XCTFail(
+                "Expected .failed(.backendError) for terminal ErrorCode, got \(String(describing: outcomes.first))"
+            )
         }
         XCTAssertEqual(throwingPoller.callCount, 1,
                        "Terminal ErrorCode must surface as .failed without retries")
