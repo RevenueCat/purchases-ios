@@ -29,12 +29,35 @@ public enum PaywallPresentationMode {
     @available(macOS, unavailable)
     case fullScreen
 
+    /// Paywall rendered inline in the modified view hierarchy. The exit offer, if any, is still presented modally.
+    case inline(exitOfferPresentationMode: ExitOfferPresentationMode = .sheet)
+
+}
+
+/// Presentation options to use for exit offers shown after an inline paywall is dismissed.
+public enum ExitOfferPresentationMode {
+
+    /// Exit offer presented using SwiftUI's `.sheet`.
+    case sheet
+
+    /// Exit offer presented using SwiftUI's `.fullScreenCover`. `.fullScreenCover` is unavailable on macOS.
+    @available(macOS, unavailable)
+    case fullScreen
+
 }
 
 extension PaywallPresentationMode {
 
     // swiftlint:disable:next missing_docs
     public static let `default`: Self = .sheet
+
+    fileprivate var isInline: Bool {
+        if case .inline = self {
+            return true
+        }
+
+        return false
+    }
 
 }
 
@@ -83,6 +106,8 @@ extension View {
     /// that it will ignore the offering configured in an active experiment.
     /// - Parameter fonts: An optional ``PaywallFontProvider``.
     /// - Parameter presentationMode: The desired presentation mode of the paywall. Defaults to `.sheet`.
+    /// Use `.inline` to render the main paywall directly in the modified view hierarchy. When using `.inline`,
+    /// the caller is responsible for removing or navigating away from the inline paywall after `onDismiss`.
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
@@ -141,6 +166,8 @@ extension View {
     /// that it will ignore the offering configured in an active experiment.
     /// - Parameter fonts: An optional ``PaywallFontProvider``.
     /// - Parameter presentationMode: The desired presentation mode of the paywall. Defaults to `.sheet`.
+    /// Use `.inline` to render the main paywall directly in the modified view hierarchy. When using `.inline`,
+    /// the caller is responsible for removing or navigating away from the inline paywall after `onDismiss`.
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
@@ -217,6 +244,8 @@ extension View {
     /// that it will ignore the offering configured in an active experiment.
     /// - Parameter fonts: An optional ``PaywallFontProvider``.
     /// - Parameter presentationMode: The desired presentation mode of the paywall. Defaults to `.sheet`.
+    /// Use `.inline` to render the main paywall directly in the modified view hierarchy. When using `.inline`,
+    /// the caller is responsible for removing or navigating away from the inline paywall after `onDismiss`.
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
@@ -301,6 +330,8 @@ extension View {
     /// that it will ignore the offering configured in an active experiment.
     /// - Parameter fonts: An optional ``PaywallFontProvider``.
     /// - Parameter presentationMode: The desired presentation mode of the paywall. Defaults to `.sheet`.
+    /// Use `.inline` to render the main paywall directly in the modified view hierarchy. When using `.inline`,
+    /// the caller is responsible for removing or navigating away from the inline paywall after `onDismiss`.
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
@@ -412,6 +443,7 @@ extension View {
     ///     The binding is set to `nil` when the paywall (and any exit offer) is dismissed.
     ///   - fonts: An optional ``PaywallFontProvider``.
     ///   - presentationMode: The desired presentation mode of the paywall. Defaults to `.sheet`.
+    ///     `.inline` is treated as `.sheet` by this binding-based presentation API.
     ///   - purchaseStarted: Called when a purchase is initiated.
     ///   - purchaseCompleted: Called when a purchase completes successfully.
     ///   - purchaseCancelled: Called when a purchase is cancelled.
@@ -539,6 +571,9 @@ private struct PresentingPaywallModifier: ViewModifier {
     @State
     private var data: Data?
 
+    @State
+    private var didHandleMainPaywallDismiss = false
+
     /// The prefetched exit offer, loaded while the main paywall is showing.
     /// This enables immediate presentation when the main paywall dismisses (no loading delay).
     /// Copied to `presentedExitOffer` when ready to show.
@@ -553,6 +588,20 @@ private struct PresentingPaywallModifier: ViewModifier {
     func body(content: Content) -> some View {
         Group {
             switch presentationMode {
+            case .inline(let exitOfferPresentationMode):
+                Group {
+                    if let data = self.data {
+                        self.paywallView(data)
+                    } else {
+                        content
+                    }
+                }
+                .modifier(ExitOfferPresentationModifier(
+                    offering: self.$presentedExitOffer,
+                    presentationMode: exitOfferPresentationMode,
+                    onDismiss: self.handleExitOfferDismiss,
+                    contentBuilder: self.exitOfferPaywallView
+                ))
             case .sheet:
                 content
                     .sheet(item: self.$data, onDismiss: self.handleMainPaywallDismiss) { data in
@@ -567,26 +616,24 @@ private struct PresentingPaywallModifier: ViewModifier {
                             .frame(height: 667)
                         #endif
                     }
-                    .sheet(item: self.$presentedExitOffer, onDismiss: self.handleExitOfferDismiss) { offering in
-                        self.exitOfferPaywallView(for: offering)
-                        #if targetEnvironment(macCatalyst) || os(macOS)
-                        // this should be minHeight, but for consistency with the first paywall it will be
-                        // like this for now
-                            .frame(height: 667)
-                        #endif
-                    }
+                    .modifier(ExitOfferPresentationModifier(
+                        offering: self.$presentedExitOffer,
+                        presentationMode: .sheet,
+                        onDismiss: self.handleExitOfferDismiss,
+                        contentBuilder: self.exitOfferPaywallView
+                    ))
             #if !os(macOS)
             case .fullScreen:
                 content
                     .fullScreenCover(item: self.$data, onDismiss: self.handleMainPaywallDismiss) { data in
                         self.paywallView(data)
                     }
-                    .fullScreenCover(
-                        item: self.$presentedExitOffer,
-                        onDismiss: self.handleExitOfferDismiss
-                    ) { offering in
-                        self.exitOfferPaywallView(for: offering)
-                    }
+                    .modifier(ExitOfferPresentationModifier(
+                        offering: self.$presentedExitOffer,
+                        presentationMode: .fullScreen,
+                        onDismiss: self.handleExitOfferDismiss,
+                        contentBuilder: self.exitOfferPaywallView
+                    ))
             #endif
             }
         }
@@ -621,6 +668,9 @@ private struct PresentingPaywallModifier: ViewModifier {
         if self.shouldDisplay(info) {
             Logger.debug(Strings.displaying_paywall)
 
+            if self.data == nil || self.presentationMode.isInline {
+                self.didHandleMainPaywallDismiss = false
+            }
             self.data = .init(customerInfo: info)
         } else {
             Logger.debug(Strings.not_displaying_paywall)
@@ -673,6 +723,9 @@ private struct PresentingPaywallModifier: ViewModifier {
             self.restoreFailure?($0)
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
+        .onRequestedDismissal {
+            self.close()
+        }
         .onPreferenceChange(WorkflowExitOfferPreferenceKey.self) { context in
             self.handleWorkflowExitOfferPreferenceChange(context)
         }
@@ -688,6 +741,11 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     private func close() {
         Logger.debug(Strings.dismissing_paywall)
+
+        if case .inline = self.presentationMode {
+            self.handleMainPaywallDismiss()
+            return
+        }
 
         self.data = nil
     }
@@ -705,6 +763,9 @@ private struct PresentingPaywallModifier: ViewModifier {
     /// - If a purchase happened in this session, we use `shouldDisplay` with the result's `CustomerInfo`
     /// - This ensures consistent behavior with how the first paywall decides to show/close
     private func handleMainPaywallDismiss() {
+        guard !self.didHandleMainPaywallDismiss else { return }
+        self.didHandleMainPaywallDismiss = true
+
         // Prevent double processing
         guard self.presentedExitOffer == nil else { return }
 
@@ -893,7 +954,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
     func body(content: Content) -> some View {
         Group {
             switch presentationMode {
-            case .sheet:
+            case .inline, .sheet:
                 content
                     .sheet(item: self.$offering, onDismiss: self.handleMainPaywallDismiss) { offering in
                         self.paywallView(for: offering)
@@ -1056,6 +1117,38 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         self.onDismiss?()
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(tvOS, unavailable)
+private struct ExitOfferPresentationModifier<PresentedContent: View>: ViewModifier {
+
+    @Binding
+    var offering: Offering?
+
+    let presentationMode: ExitOfferPresentationMode
+    let onDismiss: () -> Void
+    let contentBuilder: (Offering) -> PresentedContent
+
+    func body(content: Content) -> some View {
+        switch presentationMode {
+        case .sheet:
+            content
+                .sheet(item: self.$offering, onDismiss: self.onDismiss) { offering in
+                    self.contentBuilder(offering)
+                    #if targetEnvironment(macCatalyst) || os(macOS)
+                        .frame(height: 667)
+                    #endif
+                }
+        #if !os(macOS)
+        case .fullScreen:
+            content
+                .fullScreenCover(item: self.$offering, onDismiss: self.onDismiss) { offering in
+                    self.contentBuilder(offering)
+                }
+        #endif
+        }
+    }
 }
 
 /// A stateful wrapper around the offer cache that has no published properties
