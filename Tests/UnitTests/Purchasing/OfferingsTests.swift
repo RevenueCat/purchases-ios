@@ -56,6 +56,70 @@ class OfferingsTests: TestCase {
         expect(package.packageType) == PackageType.monthly
     }
 
+    func testPackageIsCreatedWithUpFrontProductPlanIdentifier() throws {
+        let productIdentifier = "com.myproduct.subscription"
+        let product = TestStoreProduct(
+            localizedTitle: "Subscription",
+            price: 10.99,
+            currencyCode: "USD",
+            localizedPriceString: "$10.99",
+            productIdentifier: productIdentifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: "Subscription",
+            locale: Locale(identifier: "en_US")
+        ).toStoreProduct()
+        let packageIdentifier = "$rc_monthly"
+        let package = try XCTUnwrap(
+            self.offeringsFactory.createPackage(
+                with: .init(identifier: packageIdentifier,
+                            platformProductIdentifier: productIdentifier,
+                            platformProductPlanIdentifier: "upFront",
+                            webCheckoutUrl: nil),
+                productsByID: [
+                    productIdentifier: product
+                ],
+                offeringIdentifier: "offering"
+            )
+        )
+
+        expect(package.storeProduct) == product
+        expect(package.identifier) == packageIdentifier
+    }
+
+    func testProductIdentifiersNormalizePlatformProductPlanIdentifiers() {
+        let response = OfferingsResponse(
+            currentOfferingId: "offering_a",
+            offerings: [
+                .init(identifier: "offering_a",
+                      description: "This is the base offering",
+                      packages: [
+                        .init(identifier: "$rc_monthly",
+                              platformProductIdentifier: "com.myproduct.monthly",
+                              platformProductPlanIdentifier: "monthly",
+                              webCheckoutUrl: nil),
+                        .init(identifier: "$rc_lifetime",
+                              platformProductIdentifier: "com.myproduct.upfront",
+                              platformProductPlanIdentifier: "upFront",
+                              webCheckoutUrl: nil),
+                        .init(identifier: "unknown_package",
+                              platformProductIdentifier: "com.myproduct.unknown",
+                              platformProductPlanIdentifier: "unknownBillingPlan",
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil)
+            ],
+            placements: nil,
+            targeting: nil,
+            uiConfig: nil
+        )
+
+        expect(response.productIdentifiers) == [
+            "com.myproduct.monthly:monthly",
+            "com.myproduct.upfront",
+            "com.myproduct.unknown:unknownBillingPlan"
+        ]
+    }
+
     func testOfferingIsNotCreatedIfNoValidPackage() {
         let products = ["com.myproduct.bad": StoreProduct(sk1Product: SK1Product())]
         let offering = self.offeringsFactory.createOffering(

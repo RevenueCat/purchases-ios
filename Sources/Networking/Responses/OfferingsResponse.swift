@@ -65,12 +65,7 @@ extension OfferingsResponse {
             self.offerings
                 .lazy
                 .flatMap { $0.packages }
-                .map {
-                    CompoundProductIdentifier(
-                        productIdentifier: $0.platformProductIdentifier,
-                        productPlanIdentifier: $0.platformProductPlanIdentifier
-                    )?.compoundProductIdentifier ?? $0.platformProductIdentifier
-                }
+                .map(\.compoundProductIdentifier)
         )
     }
 
@@ -82,6 +77,19 @@ extension OfferingsResponse {
 
     var packages: [Offering.Package] {
         return self.offerings.flatMap { $0.packages }
+    }
+}
+
+extension OfferingsResponse.Offering.Package {
+    var compoundProductIdentifier: String {
+        let productPlanIdentifier = BillingPlanType.compoundProductIDPlanComponent(
+            from: self.platformProductPlanIdentifier
+        )
+
+        return CompoundProductIdentifier(
+            productIdentifier: self.platformProductIdentifier,
+            productPlanIdentifier: productPlanIdentifier
+        )?.compoundProductIdentifier ?? self.platformProductIdentifier
     }
 }
 
