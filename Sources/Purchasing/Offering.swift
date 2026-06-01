@@ -303,6 +303,11 @@ import Foundation
 @_spi(Internal)
 public extension Offering {
 
+    /// The `PresentedOfferingContext` from the first available package, or `nil` if the offering has no packages.
+    var presentedOfferingContext: PresentedOfferingContext? {
+        return availablePackages.first?.presentedOfferingContext
+    }
+
     /// Copies the Offering and sets the given `presentedOfferingContext` on all `availablePackages`
     func withPresentedOfferingContext(_ presentedOfferingContext: PresentedOfferingContext) -> Self {
         return Self(

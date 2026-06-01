@@ -439,6 +439,37 @@ class EventsManagerTests: TestCase {
         expect(map["paywall_id"]).to(beNil())
     }
 
+    func testCustomPaywallImpressionToMapIncludesPlacementAndTargeting() {
+        let creationData = CustomPaywallEvent.CreationData()
+        let data = CustomPaywallEvent.Data(
+            paywallId: "my_paywall",
+            offeringId: "my_offering",
+            presentedOfferingContext: .init(
+                offeringIdentifier: "my_offering",
+                placementIdentifier: "onboarding",
+                targetingContext: .init(revision: 7, ruleId: "rule_42")
+            )
+        )
+        let event = CustomPaywallEvent.impression(creationData, data)
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["offering_id"] as? String) == "my_offering"
+        expect(map["placement_identifier"] as? String) == "onboarding"
+        expect(map["targeting_revision"] as? Int) == 7
+        expect(map["targeting_rule_id"] as? String) == "rule_42"
+    }
+
+    func testCustomPaywallImpressionToMapOmitsPlacementAndTargetingWhenNil() {
+        let creationData = CustomPaywallEvent.CreationData()
+        let data = CustomPaywallEvent.Data(paywallId: "my_paywall")
+        let event = CustomPaywallEvent.impression(creationData, data)
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["placement_identifier"]).to(beNil())
+        expect(map["targeting_revision"]).to(beNil())
+        expect(map["targeting_rule_id"]).to(beNil())
+    }
+
     // MARK: - trackEvent (Custom Paywall Impression)
 
     func testTrackCustomPaywallImpressionEvent() async throws {

@@ -653,6 +653,36 @@ class OfferingsTests: TestCase {
 
     }
 
+    // MARK: - presentedOfferingContext helper
+
+    func testPresentedOfferingContextReturnsContextFromFirstPackage() {
+        let context = PresentedOfferingContext(offeringIdentifier: "offering_a")
+        let package = Package(
+            identifier: "$rc_monthly",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "monthly")),
+            presentedOfferingContext: context,
+            webCheckoutUrl: nil
+        )
+        let offering = Offering(
+            identifier: "offering_a",
+            serverDescription: "",
+            availablePackages: [package],
+            webCheckoutUrl: nil
+        )
+        expect(offering.presentedOfferingContext) == context
+    }
+
+    func testPresentedOfferingContextIsNilForOfferingWithNoPackages() {
+        let offering = Offering(
+            identifier: "empty-offering",
+            serverDescription: "",
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+        expect(offering.presentedOfferingContext).to(beNil())
+    }
+
     func testLifetimePackage() throws {
         try testPackageType(packageType: PackageType.lifetime)
     }

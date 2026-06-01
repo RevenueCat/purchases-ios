@@ -214,6 +214,18 @@ private extension CustomPaywallEvent {
             result["offering_id"] = offeringId
         }
 
+        if let placementIdentifier = self.data.placementIdentifier {
+            result["placement_identifier"] = placementIdentifier
+        }
+
+        if let targetingRevision = self.data.targetingRevision {
+            result["targeting_revision"] = targetingRevision
+        }
+
+        if let targetingRuleId = self.data.targetingRuleId {
+            result["targeting_rule_id"] = targetingRuleId
+        }
+
         return result
     }
 
