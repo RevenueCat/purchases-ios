@@ -20,8 +20,7 @@ import Foundation
 /// such as `com.revenuecat.subscription:monthly`. StoreKit product lookups only accept the base product ID, so
 /// this resolver centralizes parsing, invalid identifier logging, billing-plan filtering, and conversion to
 /// StoreKit-facing product identifiers.
-// swiftlint:disable:next convenience_type
-internal struct CompoundProductIdentifierResolver {
+internal enum CompoundProductIdentifierResolver {
 
     /// The result of resolving SDK-facing product identifiers.
     internal struct ResolvedIdentifiers {
