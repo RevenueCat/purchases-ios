@@ -60,20 +60,7 @@ internal struct CompoundProductIdentifier: Hashable {
     /// return nil.
     init?(compoundProductIdentifier: String) {
         let components = compoundProductIdentifier.components(separatedBy: ":")
-
-        switch components.count {
-        case 1:
-            self.init(productIdentifier: compoundProductIdentifier, productPlanIdentifier: nil)
-
-        case 2:
-            let productPlanIdentifier = components[1].isEmpty ? nil : components[1]
-
-            self.init(
-                productIdentifier: components[0],
-                productPlanIdentifier: productPlanIdentifier
-            )
-
-        default:
+        guard components.count <= 2 else {
             Logger.warn(
                 StoreKitStrings.cannot_request_product_with_more_than_one_colon(
                     productIdentifier: compoundProductIdentifier
@@ -81,6 +68,10 @@ internal struct CompoundProductIdentifier: Hashable {
             )
             return nil
         }
+        self.init(
+            productIdentifier: components[0],
+            productPlanIdentifier: components[safe: 1]
+        )
     }
 }
 
