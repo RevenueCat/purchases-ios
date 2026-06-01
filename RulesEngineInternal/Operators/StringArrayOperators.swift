@@ -17,17 +17,22 @@ enum StringArrayOperators {
     /// `{"in": [needle, haystack]}` — substring or array-membership
     /// test. For a `.string` haystack, the needle is stringified and
     /// the test is substring containment (mirrors JS
-    /// `String.prototype.indexOf`). For an `.array` haystack, the test
-    /// is strict element equality (mirrors JS `Array.prototype.indexOf`,
-    /// which uses `===`). Any other haystack type returns `false`.
-    /// `json-logic-js` declares `in` as `function(a, b)`, so missing
-    /// or extra operands short-circuit to `false`.
+    /// `String.prototype.indexOf`); an empty haystack is falsy in
+    /// json-logic-js (`if (!b) return false`), so `in` never matches.
+    /// For an `.array` haystack, the test is strict element equality
+    /// (mirrors JS `Array.prototype.indexOf`, which uses `===`). Any
+    /// other haystack type returns `false`. `json-logic-js` declares
+    /// `in` as `function(a, b)`, so missing or extra operands
+    /// short-circuit to `false`.
     static func opIn(args: Value, vars: Value) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
         let needle = evaluated.first ?? .null
         let haystack = evaluated.indices.contains(1) ? evaluated[1] : .null
         switch haystack {
         case .string(let haystackString):
+            // json-logic-js: `if (!b || …) return false` — empty string is
+            // falsy, so `in` never matches regardless of needle.
+            if haystackString.isEmpty { return .bool(false) }
             return .bool(haystackString.contains(jsString(needle)))
         case .array(let items):
             return .bool(items.contains { strictEq(needle, $0) })

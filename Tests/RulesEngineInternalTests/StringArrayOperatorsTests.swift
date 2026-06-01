@@ -83,6 +83,19 @@ final class StringArrayOperatorsTests: XCTestCase {
         XCTAssertEqual(oneArg, .bool(false))
     }
 
+    /// json-logic-js rejects empty-string haystacks before `indexOf`
+    /// (`if (!b) return false`), even though `"".indexOf("") === 0`.
+    func testInEmptyStringHaystackIsFalse() throws {
+        let needles: [Value] = [.string(""), .string("x"), .null, .int(0)]
+        for needle in needles {
+            let out = try StringArrayOperators.opIn(
+                args: arr(needle, .string("")),
+                vars: .null
+            )
+            XCTAssertEqual(out, .bool(false))
+        }
+    }
+
     // MARK: - cat
 
     func testCatConcatenatesStrings() throws {
@@ -154,6 +167,16 @@ final class StringArrayOperatorsTests: XCTestCase {
             vars: .null
         )
         XCTAssertEqual(out, .string("1,,2"))
+    }
+
+    func testCatStringifiesObjectAsObjectObject() throws {
+        // Single-key objects are operator expressions when evaluated; use a
+        // multi-key object so `evalArgs` treats it as literal data.
+        let out = try StringArrayOperators.opCat(
+            args: arr(.object(["a": .int(1), "b": .int(2)])),
+            vars: .null
+        )
+        XCTAssertEqual(out, .string("[object Object]"))
     }
 
     // MARK: - substr
@@ -257,6 +280,15 @@ final class StringArrayOperatorsTests: XCTestCase {
             vars: .null
         )
         XCTAssertEqual(out, .string("ell"))
+    }
+
+    func testSubstrNullLengthReturnsEmpty() throws {
+        // `String.prototype.substr(start, null)` coerces length to 0.
+        let out = try StringArrayOperators.opSubstr(
+            args: arr(.string("hello"), .int(0), .null),
+            vars: .null
+        )
+        XCTAssertEqual(out, .string(""))
     }
 
     func testSubstrWithNanStartTreatsItAsZero() throws {
