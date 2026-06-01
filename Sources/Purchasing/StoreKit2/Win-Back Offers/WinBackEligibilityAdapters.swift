@@ -57,7 +57,7 @@ internal protocol WinBackEligibilityRenewalInfoType: Sendable {
 
 internal protocol WinBackEligibilityOfferType: Sendable {
     var id: String? { get }
-    var type: StoreProductDiscount.DiscountType { get }
+    var type: StoreProductDiscount.DiscountType? { get }
 
     func storeProductDiscount(currencyCode: String?) -> StoreProductDiscount?
 }
@@ -201,8 +201,8 @@ private struct StoreKitWinBackOffer: WinBackEligibilityOfferType {
         return self.offer.id
     }
 
-    var type: StoreProductDiscount.DiscountType {
-        return StoreProductDiscount.DiscountType.from(sk2Discount: self.offer) ?? .promotional
+    var type: StoreProductDiscount.DiscountType? {
+        return StoreProductDiscount.DiscountType.from(sk2Discount: self.offer)
     }
 
     func storeProductDiscount(currencyCode: String?) -> StoreProductDiscount? {

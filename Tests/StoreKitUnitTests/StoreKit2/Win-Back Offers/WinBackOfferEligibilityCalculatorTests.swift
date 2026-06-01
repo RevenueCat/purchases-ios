@@ -353,9 +353,11 @@ private struct MockWinBackEligibilityRenewalInfo: WinBackEligibilityRenewalInfoT
 private struct MockWinBackEligibilityOffer: WinBackEligibilityOfferType {
 
     let id: String?
-    let type: StoreProductDiscount.DiscountType
+    let type: RevenueCat.StoreProductDiscount.DiscountType?
 
     func storeProductDiscount(currencyCode: String?) -> StoreProductDiscount? {
+        guard let type else { return nil }
+
         return TestStoreProductDiscount(
             identifier: self.id ?? "",
             price: 0,
@@ -363,7 +365,7 @@ private struct MockWinBackEligibilityOffer: WinBackEligibilityOfferType {
             paymentMode: .freeTrial,
             subscriptionPeriod: .init(value: 1, unit: .month),
             numberOfPeriods: 1,
-            type: self.type
+            type: type
         ).toStoreProductDiscount()
     }
 
