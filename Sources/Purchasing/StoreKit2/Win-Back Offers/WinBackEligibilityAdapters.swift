@@ -215,9 +215,7 @@ private struct StoreKitWinBackPricingTerms: WinBackEligibilityPricingTermsType {
 
     #if compiler(>=6.3.2)
     private let pricingTerms: Product.SubscriptionInfo.PricingTerms
-    #endif
 
-    #if compiler(>=6.3.2)
     init(_ pricingTerms: Product.SubscriptionInfo.PricingTerms) {
         self.pricingTerms = pricingTerms
     }
