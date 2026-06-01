@@ -60,6 +60,16 @@ extension AdEventsRequest {
         var precision: String?
         // For failed to load events only:
         var mediatorErrorCode: Int?
+        // For reward earned (unverified) events only:
+        var rewardVerificationEnabled: Bool?
+        var rewardItem: String?
+        var rewardAmount: Int?
+        // For reward verified events only:
+        var rewardType: String?
+        var rewardCurrencyCode: String?
+        var rewardCurrencyAmount: Int?
+        // For reward failed-to-verify events only:
+        var failureReason: String?
 
     }
 
@@ -75,6 +85,9 @@ extension AdEventsRequest.AdEventRequest {
         case displayed = "rc_ads_ad_displayed"
         case opened = "rc_ads_ad_opened"
         case revenue = "rc_ads_ad_revenue"
+        case rewardEarnedUnverified = "rc_ads_ad_reward_sdk_unverified"
+        case rewardVerified = "rc_ads_ad_reward_sdk_verified"
+        case rewardFailedToVerify = "rc_ads_ad_reward_sdk_failed_to_verify"
 
     }
 
@@ -105,7 +118,14 @@ extension AdEventsRequest.AdEventRequest {
                 revenueMicros: adEvent.revenueData?.revenueMicros,
                 currency: adEvent.revenueData?.currency,
                 precision: adEvent.revenueData?.precision.rawValue,
-                mediatorErrorCode: adEvent.mediatorErrorCode
+                mediatorErrorCode: adEvent.mediatorErrorCode,
+                rewardVerificationEnabled: adEvent.rewardEarnedUnverifiedData?.rewardVerificationEnabled,
+                rewardItem: adEvent.rewardEarnedUnverifiedData?.rewardItem,
+                rewardAmount: adEvent.rewardEarnedUnverifiedData?.rewardAmount,
+                rewardType: adEvent.rewardVerifiedData?.reward.kindRawValue,
+                rewardCurrencyCode: adEvent.rewardVerifiedData?.reward.virtualCurrency?.code,
+                rewardCurrencyAmount: adEvent.rewardVerifiedData?.reward.virtualCurrency?.amount,
+                failureReason: adEvent.rewardFailedToVerifyData?.failureReason.rawValue
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -127,6 +147,9 @@ private extension AdEvent {
         case .displayed: return .displayed
         case .opened: return .opened
         case .revenue: return .revenue
+        case .rewardEarnedUnverified: return .rewardEarnedUnverified
+        case .rewardVerified: return .rewardVerified
+        case .rewardFailedToVerify: return .rewardFailedToVerify
         }
 
     }
@@ -159,6 +182,13 @@ extension AdEventsRequest.AdEventRequest: Encodable {
         case currency
         case precision
         case mediatorErrorCode
+        case rewardVerificationEnabled
+        case rewardItem
+        case rewardAmount
+        case rewardType
+        case rewardCurrencyCode
+        case rewardCurrencyAmount
+        case failureReason
 
     }
 

@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@_spi(Internal) @testable import RevenueCat
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 
 // swiftlint:disable:next type_name
 final class RewardVerificationStatusResponseDecodingTests: TestCase {
@@ -79,7 +79,8 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
                 "amount": 10
             ]
         ])
-        expect(response.status) == .verified(.virtualCurrency(VirtualCurrencyReward(code: "coins", amount: 10)))
+        let payload = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 10))
+        expect(response.status) == .verified(.virtualCurrency(payload))
     }
 
     func testDecodesVerifiedWithVirtualCurrencyRewardWithFractionalAmountAsUnsupportedReward() throws {
