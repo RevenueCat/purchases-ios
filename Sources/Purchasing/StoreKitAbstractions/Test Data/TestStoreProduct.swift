@@ -166,18 +166,11 @@ extension TestStoreProduct: StoreProductType {
     }
 
     internal var id: String {
-        if let installmentsInfo {
-            switch installmentsInfo.billingPlanType {
-            case .monthly:
-                return "\(self.productIdentifier):\(installmentsInfo.billingPlanType.rawValue)"
-            case .upFront:
-                return self.productIdentifier
-            default:
-                return self.productIdentifier
-            }
-        } else {
-            return self.productIdentifier
-        }
+        guard let installmentsInfo else { return self.productIdentifier }
+        return CompoundProductIdentifier(
+            productIdentifier: self.productIdentifier,
+            productPlanIdentifier: installmentsInfo.billingPlanType.compoundProductIDPlanComponent
+        )?.compoundProductIdentifier ?? self.productIdentifier
     }
 }
 
