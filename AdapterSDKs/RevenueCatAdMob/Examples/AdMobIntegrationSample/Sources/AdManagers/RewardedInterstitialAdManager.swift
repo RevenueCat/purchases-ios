@@ -59,9 +59,8 @@ final class RewardedInterstitialAdManager: NSObject, ObservableObject {
         self.presentingAdObjectID = presentingAdObjectID
         self.shouldReportDismissedBeforeReward = true
         self.message = Message.Rewarded.waitingForReward
-        loadedAd.present(
+        loadedAd.presentAndTrack(
             from: viewController,
-            placement: "rewarded_interstitial_main",
             userDidEarnRewardHandler: { [weak self] in
                 guard let self else { return }
                 guard self.presentingAdObjectID == presentingAdObjectID else { return }

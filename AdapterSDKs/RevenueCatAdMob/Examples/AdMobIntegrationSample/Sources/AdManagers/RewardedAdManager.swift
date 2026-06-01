@@ -59,7 +59,7 @@ final class RewardedAdManager: NSObject, ObservableObject {
         self.presentingAdObjectID = presentingAdObjectID
         self.shouldReportDismissedBeforeReward = true
         self.message = Message.Rewarded.waitingForReward
-        loadedAd.present(from: viewController, placement: "rewarded_main", userDidEarnRewardHandler: { [weak self] in
+        loadedAd.presentAndTrack(from: viewController, userDidEarnRewardHandler: { [weak self] in
             guard let self else { return }
             guard self.presentingAdObjectID == presentingAdObjectID else { return }
             let reward = loadedAd.adReward

@@ -159,8 +159,8 @@ RewardedAd.loadAndTrack(
     self.rewardedAd = ad
 }
 
-// Later, to show (unchanged):
-rewardedAd?.present(from: self, userDidEarnRewardHandler: {
+// Later, to show with reward-earned tracking:
+rewardedAd?.presentAndTrack(from: self, userDidEarnRewardHandler: {
     // User earned reward
 })
 ```
@@ -181,7 +181,7 @@ RewardedAd.loadAndTrack(
     self.rewardedAd = ad
 }
 
-rewardedAd?.present(
+rewardedAd?.presentAndTrack(
     from: self,
     placement: "optional_placement_override",
     rewardVerificationStarted: {
@@ -240,8 +240,8 @@ RewardedInterstitialAd.loadAndTrack(
     self.rewardedInterstitialAd = ad
 }
 
-// Later, to show (unchanged):
-rewardedInterstitialAd?.present(from: self, userDidEarnRewardHandler: {
+// Later, to show with reward-earned tracking:
+rewardedInterstitialAd?.presentAndTrack(from: self, userDidEarnRewardHandler: {
     // User earned reward
 })
 ```
@@ -262,7 +262,7 @@ RewardedInterstitialAd.loadAndTrack(
     self.rewardedInterstitialAd = ad
 }
 
-rewardedInterstitialAd?.present(
+rewardedInterstitialAd?.presentAndTrack(
     from: self,
     placement: "optional_placement_override",
     rewardVerificationStarted: {
