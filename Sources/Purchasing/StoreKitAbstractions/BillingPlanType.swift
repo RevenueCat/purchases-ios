@@ -41,19 +41,14 @@ internal extension BillingPlanType {
         case .upFront:
             return nil
         default:
-            return nil
+            return self.rawValue
         }
     }
 
     static func compoundProductIDPlanComponent(from rawValue: String?) -> String? {
-        switch rawValue {
-        case Self.monthly.rawValue:
-            return Self.monthly.compoundProductIDPlanComponent
-        case Self.upFront.rawValue:
-            return Self.upFront.compoundProductIDPlanComponent
-        default:
-            return rawValue
-        }
+        guard let rawValue else { return nil }
+
+        return BillingPlanType(rawValue: rawValue).compoundProductIDPlanComponent
     }
 
 }

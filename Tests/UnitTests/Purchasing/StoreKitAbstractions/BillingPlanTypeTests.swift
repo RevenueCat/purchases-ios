@@ -57,6 +57,35 @@ extension BillingPlanTypeTests {
     }
 }
 
+// MARK: - Compound Product ID Plan Component
+extension BillingPlanTypeTests {
+
+    func testCompoundProductIDPlanComponentReturnsRawValueForMonthly() {
+        expect(BillingPlanType.monthly.compoundProductIDPlanComponent) == "monthly"
+    }
+
+    func testCompoundProductIDPlanComponentReturnsNilForUpFront() {
+        expect(BillingPlanType.upFront.compoundProductIDPlanComponent).to(beNil())
+    }
+
+    func testCompoundProductIDPlanComponentFromRawValueReturnsNilForNil() {
+        expect(BillingPlanType.compoundProductIDPlanComponent(from: nil)).to(beNil())
+    }
+
+    func testCompoundProductIDPlanComponentFromRawValueReturnsRawValueForMonthly() {
+        expect(BillingPlanType.compoundProductIDPlanComponent(from: "monthly")) == "monthly"
+    }
+
+    func testCompoundProductIDPlanComponentFromRawValueReturnsNilForUpFront() {
+        expect(BillingPlanType.compoundProductIDPlanComponent(from: "upFront")).to(beNil())
+    }
+
+    func testCompoundProductIDPlanComponentFromRawValueReturnsRawValueForUnknownBillingPlan() {
+        expect(BillingPlanType.compoundProductIDPlanComponent(from: "annual")) == "annual"
+    }
+
+}
+
 // MARK: - To/From StoreKit BillingPlanType
 #if compiler(>=6.3.2)
 extension BillingPlanTypeTests {
