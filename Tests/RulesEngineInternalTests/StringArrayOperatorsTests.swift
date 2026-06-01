@@ -73,9 +73,9 @@ final class StringArrayOperatorsTests: XCTestCase {
         }
     }
 
-    /// `json-logic-js` declares `in` as `function(a, b)`. A missing
-    /// haystack short-circuits to `false`; a missing needle becomes
-    /// JS `undefined`, which `indexOf` won't find.
+    /// `json-logic-js` implements `in` as `function(a, b)` (needle,
+    /// haystack). A missing haystack short-circuits to `false`; a missing
+    /// needle becomes JS `undefined`, which `indexOf` won't find.
     func testInMissingOperandsReturnFalse() throws {
         let zeroArgs = try StringArrayOperators.opIn(args: arr(), vars: .null)
         XCTAssertEqual(zeroArgs, .bool(false))
@@ -84,7 +84,7 @@ final class StringArrayOperatorsTests: XCTestCase {
     }
 
     /// json-logic-js rejects empty-string haystacks before `indexOf`
-    /// (`if (!b) return false`), even though `"".indexOf("") === 0`.
+    /// (`if (!haystack) return false`), even though `"".indexOf("") === 0`.
     func testInEmptyStringHaystackIsFalse() throws {
         let needles: [Value] = [.string(""), .string("x"), .null, .int(0)]
         for needle in needles {
