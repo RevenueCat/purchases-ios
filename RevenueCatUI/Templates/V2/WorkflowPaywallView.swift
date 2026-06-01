@@ -201,6 +201,50 @@ struct WorkflowPaywallView: View {
         )
     }
 
+    #if DEBUG
+    /// Testing-only initializer. Accepts a pre-built `WorkflowNavigator` so tests can
+    /// drive step navigation on the same instance held by the view, verifying that
+    /// purchase/restore callbacks survive state transitions without UI interaction.
+    init(
+        context: WorkflowContext,
+        purchaseHandler: PurchaseHandler,
+        introEligibilityChecker: TrialOrIntroEligibilityChecker,
+        showZeroDecimalPlacePrices: Bool,
+        displayCloseButton: Bool,
+        promoOfferCache: PaywallPromoOfferCache?,
+        onDismiss: @escaping () -> Void,
+        navigator: WorkflowNavigator
+    ) {
+        self.context = context
+        self.purchaseHandler = purchaseHandler
+        self.introEligibilityChecker = introEligibilityChecker
+        self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
+        self.displayCloseButton = displayCloseButton
+        self.promoOfferCache = promoOfferCache
+        self.onDismiss = onDismiss
+        self._navigator = .init(wrappedValue: navigator)
+        let initialStepId = navigator.currentStepId
+        let initialPackageInput = Self.buildPackageInput(
+            stepId: initialStepId,
+            context: context,
+            preferredPackage: nil,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        )
+        self._stepPackageContexts = .init(wrappedValue: [initialStepId: initialPackageInput.packageContext])
+        self._transitionState = .init(
+            wrappedValue: .init(
+                currentPage: Self.renderedPage(
+                    from: context,
+                    stepId: initialStepId,
+                    canNavigateBack: navigator.canNavigateBack,
+                    displayCloseButton: displayCloseButton,
+                    packageInput: initialPackageInput
+                )
+            )
+        )
+    }
+    #endif
+
     var body: some View {
         GeometryReader { proxy in
             ZStack {
