@@ -113,6 +113,7 @@ class StackComponentViewModel {
             shadow: partial?.shadow ?? self.component.shadow,
             badge: partial?.badge ?? self.component.badge,
             overflow: partial?.overflow ?? self.component.overflow,
+            glassEffect: partial?.glassEffect ?? self.component.glassEffect,
             colorScheme: colorScheme
         )
     }
@@ -201,6 +202,7 @@ struct StackComponentStyle {
     let border: ShapeModifier.BorderInfo?
     let shadow: ShadowModifier.ShadowInfo?
     let badge: BadgeModifier.BadgeInfo?
+    let glassEffect: PaywallComponent.GlassEffect?
     let scrollable: Bool?
 
     init(
@@ -219,6 +221,7 @@ struct StackComponentStyle {
         shadow: PaywallComponent.Shadow?,
         badge: PaywallComponent.Badge?,
         overflow: PaywallComponent.StackComponent.Overflow?,
+        glassEffect: PaywallComponent.GlassEffect?,
         colorScheme: ColorScheme
     ) {
         self.visible = visible
@@ -245,6 +248,7 @@ struct StackComponentStyle {
                 return true
             }
         })
+        self.glassEffect = glassEffect
     }
 
     var vstackStrategy: StackStrategy {

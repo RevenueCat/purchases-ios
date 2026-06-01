@@ -45,6 +45,7 @@ import Foundation
         public let shadow: Shadow?
         public let badge: Badge?
         public let overflow: Overflow?
+        public let glassEffect: GlassEffect?
 
         public let overrides: ComponentOverrides<PartialStackComponent>?
 
@@ -64,6 +65,7 @@ import Foundation
             shadow: Shadow? = nil,
             badge: Badge? = nil,
             overflow: Overflow? = nil,
+            glassEffect: GlassEffect? = nil,
             overrides: ComponentOverrides<PartialStackComponent>? = nil
         ) {
             self.name = name
@@ -82,6 +84,7 @@ import Foundation
             self.shadow = shadow
             self.badge = badge
             self.overflow = overflow
+            self.glassEffect = glassEffect
             self.overrides = overrides
         }
         public func hash(into hasher: inout Hasher) {
@@ -101,6 +104,7 @@ import Foundation
             hasher.combine(shadow)
             hasher.combine(badge)
             hasher.combine(overflow)
+            hasher.combine(glassEffect)
             hasher.combine(overrides)
         }
 
@@ -121,6 +125,7 @@ import Foundation
                    lhs.shadow == rhs.shadow &&
                    lhs.badge == rhs.badge &&
                    lhs.overflow == rhs.overflow &&
+                   lhs.glassEffect == rhs.glassEffect &&
                    lhs.overrides == rhs.overrides
         }
     }
@@ -140,6 +145,7 @@ import Foundation
         public let border: Border?
         public let shadow: Shadow?
         public let overflow: PaywallComponent.StackComponent.Overflow?
+        public let glassEffect: PaywallComponent.GlassEffect?
         public let badge: Badge?
 
         public init(
@@ -156,6 +162,7 @@ import Foundation
             border: Border? = nil,
             shadow: Shadow? = nil,
             overflow: PaywallComponent.StackComponent.Overflow? = nil,
+            glassEffect: PaywallComponent.GlassEffect? = nil,
             badge: Badge? = nil
         ) {
             self.name = name
@@ -171,6 +178,7 @@ import Foundation
             self.border = border
             self.shadow = shadow
             self.overflow = overflow
+            self.glassEffect = glassEffect
             self.badge = badge
         }
 
@@ -188,6 +196,7 @@ import Foundation
             hasher.combine(border)
             hasher.combine(shadow)
             hasher.combine(overflow)
+            hasher.combine(glassEffect)
             hasher.combine(badge)
         }
 
@@ -205,6 +214,7 @@ import Foundation
                    lhs.border == rhs.border &&
                    lhs.shadow == rhs.shadow &&
                    lhs.overflow == rhs.overflow &&
+                   lhs.glassEffect == rhs.glassEffect &&
                    lhs.badge == rhs.badge
         }
     }
