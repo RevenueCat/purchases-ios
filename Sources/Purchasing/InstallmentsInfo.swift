@@ -18,28 +18,28 @@ import StoreKit
 @objc(RCInstallmentsInfo) public final class InstallmentsInfo: NSObject, Sendable {
 
     /// Number of installments the customer commits to paying.
-    @objc public let commitmentInstallmentsCount: Int
+    @objc public var commitmentInstallmentsCount: Int { self.contents.commitmentInstallmentsCount }
 
     /// The duration for each installment.
-    @objc public let commitmentInstallmentPeriod: SubscriptionPeriod
+    @objc public var commitmentInstallmentPeriod: SubscriptionPeriod { self.contents.commitmentInstallmentPeriod }
 
     /// Price charged for each installment billing period.
-    @objc public let installmentBillingPrice: Decimal
+    @objc public var installmentBillingPrice: Decimal { self.contents.installmentBillingPrice }
 
     /// Localized display price for ``installmentBillingPrice``.
-    @objc public let installmentBillingDisplayPrice: String
+    @objc public var installmentBillingDisplayPrice: String { self.contents.installmentBillingDisplayPrice }
 
     /// Total duration of the customer's installment commitment.
-    @objc public let commitmentTotalPeriod: SubscriptionPeriod
+    @objc public var commitmentTotalPeriod: SubscriptionPeriod { self.contents.commitmentTotalPeriod }
 
     /// Total price the customer commits to paying across all installments.
-    @objc public let commitmentTotalPrice: Decimal
+    @objc public var commitmentTotalPrice: Decimal { self.contents.commitmentTotalPrice }
 
     /// Localized display price for ``commitmentTotalPrice``.
-    @objc public let commitmentTotalDisplayPrice: String
+    @objc public var commitmentTotalDisplayPrice: String { self.contents.commitmentTotalDisplayPrice }
 
     /// The billing plan used for the installments.
-    @objc public let billingPlanType: BillingPlanType
+    @objc public var billingPlanType: BillingPlanType { self.contents.billingPlanType }
 
     /// Creates a new ``InstallmentsInfo``.
     ///
@@ -62,40 +62,47 @@ import StoreKit
         commitmentTotalDisplayPrice: String,
         billingPlanType: BillingPlanType
     ) {
-        self.commitmentInstallmentsCount = commitmentInstallmentsCount
-        self.commitmentInstallmentPeriod = commitmentInstallmentPeriod
-        self.installmentBillingPrice = installmentBillingPrice
-        self.installmentBillingDisplayPrice = installmentBillingDisplayPrice
-        self.commitmentTotalPeriod = commitmentTotalPeriod
-        self.commitmentTotalPrice = commitmentTotalPrice
-        self.commitmentTotalDisplayPrice = commitmentTotalDisplayPrice
-        self.billingPlanType = billingPlanType
+        self.contents = .init(
+            commitmentInstallmentsCount: commitmentInstallmentsCount,
+            commitmentInstallmentPeriod: commitmentInstallmentPeriod,
+            installmentBillingPrice: installmentBillingPrice,
+            installmentBillingDisplayPrice: installmentBillingDisplayPrice,
+            commitmentTotalPeriod: commitmentTotalPeriod,
+            commitmentTotalPrice: commitmentTotalPrice,
+            commitmentTotalDisplayPrice: commitmentTotalDisplayPrice,
+            billingPlanType: billingPlanType
+        )
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
         guard let other = object as? InstallmentsInfo else { return false }
 
-        return self.commitmentInstallmentsCount == other.commitmentInstallmentsCount
-            && self.commitmentInstallmentPeriod == other.commitmentInstallmentPeriod
-            && self.installmentBillingPrice == other.installmentBillingPrice
-            && self.installmentBillingDisplayPrice == other.installmentBillingDisplayPrice
-            && self.commitmentTotalPeriod == other.commitmentTotalPeriod
-            && self.commitmentTotalPrice == other.commitmentTotalPrice
-            && self.commitmentTotalDisplayPrice == other.commitmentTotalDisplayPrice
-            && self.billingPlanType == other.billingPlanType
+        if self === other {
+            return true
+        }
+
+        return self.contents == other.contents
     }
 
     public override var hash: Int {
         var hasher = Hasher()
-        hasher.combine(self.commitmentInstallmentsCount)
-        hasher.combine(self.commitmentInstallmentPeriod)
-        hasher.combine(self.installmentBillingPrice)
-        hasher.combine(self.installmentBillingDisplayPrice)
-        hasher.combine(self.commitmentTotalPeriod)
-        hasher.combine(self.commitmentTotalPrice)
-        hasher.combine(self.commitmentTotalDisplayPrice)
-        hasher.combine(self.billingPlanType)
+        hasher.combine(self.contents)
 
         return hasher.finalize()
+    }
+
+    private let contents: Contents
+}
+
+private extension InstallmentsInfo {
+    struct Contents: Equatable, Hashable {
+        let commitmentInstallmentsCount: Int
+        let commitmentInstallmentPeriod: SubscriptionPeriod
+        let installmentBillingPrice: Decimal
+        let installmentBillingDisplayPrice: String
+        let commitmentTotalPeriod: SubscriptionPeriod
+        let commitmentTotalPrice: Decimal
+        let commitmentTotalDisplayPrice: String
+        let billingPlanType: BillingPlanType
     }
 }
