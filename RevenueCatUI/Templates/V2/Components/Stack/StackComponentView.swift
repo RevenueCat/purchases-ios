@@ -41,7 +41,7 @@ struct StackComponentView: View {
 
     @Environment(\.customPaywallVariables)
     private var customVariables
-    
+
     @Environment(\.selectedPackageId)
     private var selectedPackageId
 
