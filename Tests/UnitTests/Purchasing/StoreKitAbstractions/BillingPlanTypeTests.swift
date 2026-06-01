@@ -26,6 +26,11 @@ class BillingPlanTypeTests: TestCase {
         expect(BillingPlanType.monthly).toNot(equal(BillingPlanType.upFront))
     }
 
+    func testHash() {
+        expect(BillingPlanType.monthly.hash) == BillingPlanType.monthly.rawValue.hashValue
+        expect(BillingPlanType.upFront.hash) == BillingPlanType.upFront.rawValue.hashValue
+    }
+
     func testPatternMatchingOperator() {
         expect(BillingPlanType.monthly ~= BillingPlanType.monthly).to(beTrue())
         expect(BillingPlanType.upFront ~= BillingPlanType.upFront).to(beTrue())

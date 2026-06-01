@@ -30,6 +30,20 @@ public final class BillingPlanType: NSObject, Sendable {
     public static func ~= (lhs: BillingPlanType, rhs: BillingPlanType) -> Bool {
         lhs.rawValue == rhs.rawValue
     }
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? BillingPlanType else { return false }
+
+        if self === other {
+            return true
+        }
+
+        return self.rawValue == other.rawValue
+    }
+
+    public override var hash: Int {
+        return self.rawValue.hashValue
+    }
 }
 
 internal extension BillingPlanType {
