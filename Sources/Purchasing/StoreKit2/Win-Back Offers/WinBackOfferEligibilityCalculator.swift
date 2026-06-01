@@ -192,7 +192,7 @@ extension WinBackOfferEligibilityCalculator {
     }
 }
 
-@available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, *)
+@available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, visionOS 26.4, *)
 private extension WinBackOfferEligibilityCalculator {
     private func availableWinBackOfferIDs(
         forBillingPlan billingPlanType: BillingPlanType,
