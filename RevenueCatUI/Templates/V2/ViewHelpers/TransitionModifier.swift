@@ -21,9 +21,6 @@ struct TransitionModifier: ViewModifier {
     #if !os(tvOS)
     @Environment(\.workflowPageTransitionContext)
     private var workflowPageTransitionContext
-
-    @Environment(\.isWorkflowHeader)
-    private var isWorkflowHeader
     #endif
 
     @State var isPresented: Bool = false
@@ -71,7 +68,7 @@ struct TransitionModifier: ViewModifier {
 
     private var shouldRenderContentImmediately: Bool {
         #if !os(tvOS)
-        return self.workflowPageTransitionContext.isTransitioning && !self.isWorkflowHeader
+        return self.workflowPageTransitionContext.isTransitioning
         #else
         return false
         #endif

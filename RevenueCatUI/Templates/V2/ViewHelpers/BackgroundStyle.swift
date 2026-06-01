@@ -56,7 +56,9 @@ struct BackgroundStyleModifier: ViewModifier {
     }
 
     private var ignoresSafeAreaEdges: Edge.Set {
-        return self.workflowPageTransitionContext.isTransitioning ? [] : .all
+        // Keep workflow page backgrounds stable under the top/bottom safe areas while sliding,
+        // but avoid horizontal safe-area expansion from escaping the page's clipped bounds.
+        return self.workflowPageTransitionContext.isTransitioning ? .vertical : .all
     }
 
 }
