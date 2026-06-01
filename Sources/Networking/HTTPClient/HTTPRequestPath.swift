@@ -199,15 +199,13 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
-                .rewardVerificationStatus:
+                .rewardVerificationStatus,
+                .getRemoteConfig:
             return true
 
         case .health,
              .appHealthReportAvailability:
             return false
-
-        case .getRemoteConfig:
-            return true
         }
     }
 
@@ -231,11 +229,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
-                .rewardVerificationStatus:
+                .rewardVerificationStatus,
+                .getRemoteConfig:
             return true
         case .health,
-             .appHealthReportAvailability,
-             .getRemoteConfig:
+             .appHealthReportAvailability:
             return false
         }
     }
@@ -303,7 +301,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var relativePath: String {
         switch self {
         case .getRemoteConfig:
-            return "/v2/config"
+            return "/v2/\(self.pathComponent)"
         default:
             return "/v1/\(self.pathComponent)"
         }
