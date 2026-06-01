@@ -236,6 +236,7 @@ struct StackComponentStyle {
                                   stackBorder: badge?.stack.border?.border(uiConfigProvider: uiConfigProvider),
                                   badgeViewModels: badgeViewModels,
                                   uiConfigProvider: uiConfigProvider)
+
         self.scrollable = overflow.flatMap({ overflow in
             switch overflow {
             case .default:
