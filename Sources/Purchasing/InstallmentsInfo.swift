@@ -95,6 +95,8 @@ import StoreKit
 }
 
 private extension InstallmentsInfo {
+
+    /// Keeps equality and hashing backed by one synthesized value so new fields cannot drift out of sync.
     struct Contents: Equatable, Hashable {
         let commitmentInstallmentsCount: Int
         let commitmentInstallmentPeriod: SubscriptionPeriod
