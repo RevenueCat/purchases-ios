@@ -909,6 +909,37 @@ jobs:
           destination: scan-test-output
       - slack-notify-on-fail
 
+  # TEMP (debug): hammers the flaky macOS unit tests in isolation to reproduce
+  # intermittent failures. Spawned 20x in parallel via the `debug-flaky` workflow.
+  # Remove this job, the `debug-flaky` workflow, and the `run-all-tests`/`danger`
+  # disables before merging.
+  debug-flaky-macos:
+    parameters:
+      run_index:
+        type: integer
+        default: 0
+    executor:
+      name: macos-executor
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: "Hammer flaky tests (sample << parameters.run_index >>)"
+          no_output_timeout: 30m
+          command: |
+            set -o pipefail
+            xcodebuild \
+              -workspace "RevenueCat.xcworkspace" \
+              -scheme "RevenueCat" \
+              -destination "platform=macOS,arch=arm64" \
+              -testPlan CI-RevenueCat \
+              -only-testing:"UnitTests/PurchasesDelegateTests" \
+              -only-testing:"UnitTests/BackendSubscriberAttributesTests" \
+              -test-iterations 100 \
+              -run-tests-until-failure \
+              test \
+              CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO | xcbeautify
+
   run-test-tvos-and-macos:
     executor:
       name: macos-executor
@@ -2140,6 +2171,15 @@ jobs:
 
 workflows:
 
+  # TEMP (debug): run the flaky macOS unit tests 20x in parallel to reproduce
+  # the intermittent failures. Remove before merging.
+  debug-flaky:
+    jobs:
+      - debug-flaky-macos:
+          matrix:
+            parameters:
+              run_index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
   generate-swiftinterface:
     when: << pipeline.parameters.generate_swiftinterface >>
     jobs:
@@ -2176,6 +2216,8 @@ workflows:
   run-all-tests:
     when:
       and:
+        # TEMP (debug): disabled while reproducing flaky tests via `debug-flaky`. Remove before merging.
+        - equal: ["debug-flaky-disabled", "enabled"]
         - not:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
@@ -2476,15 +2518,8 @@ workflows:
           <<: *only-main-branch
 
   danger:
-    when:
-      or:
-        - not:
-            matches:
-              pattern: "^generated_(snapshots|swiftinterface)/.*"
-              value: << pipeline.git.branch >>
-        - matches:
-            pattern: "^generated_(snapshots|swiftinterface)/main-.*"
-            value: << pipeline.git.branch >>
+    # TEMP (debug): disabled while reproducing flaky tests via `debug-flaky`. Remove before merging.
+    when: false
     jobs:
       - danger
 
