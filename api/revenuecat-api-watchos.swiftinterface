@@ -1172,10 +1172,14 @@ extension RevenueCat.CacheFetchPolicy : Swift.Sendable {
   @objc final public let paywallId: Swift.String?
   @objc final public let offeringId: Swift.String?
   #if compiler(>=5.3) && $NonescapableTypes
-  @objc public init(paywallId: Swift.String? = nil, offeringId: Swift.String?)
+  @objc convenience public init(paywallId: Swift.String? = nil)
   #endif
   #if compiler(>=5.3) && $NonescapableTypes
-  @objc convenience public init(paywallId: Swift.String? = nil)
+  @available(*, deprecated, renamed: "init(paywallId:offering:)", message: "Pass an Offering object instead. Using an offering identifier string prevents the SDK from deriving placement and targeting context automatically.")
+  @objc convenience public init(paywallId: Swift.String? = nil, offeringId: Swift.String?)
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @objc convenience public init(paywallId: Swift.String? = nil, offering: RevenueCat.Offering)
   #endif
   @objc deinit
 }
