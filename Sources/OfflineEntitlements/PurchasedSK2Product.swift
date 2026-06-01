@@ -21,8 +21,9 @@ struct PurchasedSK2Product {
     let productIdentifier: String
 
     /// The product's id.
-    /// When no billing plan is present, or it is an upFront billing plan, it's just the product identifier,  i.e. `com.revenuecat.annual`
-    /// When a billing plan is present, it will contain the billing plan, i.e. `com.revenuecat.annual:monthly`
+    /// When no billing plan is present, or it is an upFront billing plan, it's just the
+    /// product identifier,  i.e. `com.revenuecat.annual`. When a billing plan is present, it will
+    /// contain the billing plan, i.e. `com.revenuecat.annual:monthly`.
     let id: String
 
     /// The billing plan, if a non-upFront one is present.

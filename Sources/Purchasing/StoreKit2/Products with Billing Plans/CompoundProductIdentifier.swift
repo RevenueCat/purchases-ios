@@ -74,6 +74,11 @@ internal struct CompoundProductIdentifier: Hashable {
             )
 
         default:
+            Logger.warn(
+                StoreKitStrings.cannot_request_product_with_more_than_one_colon(
+                    productIdentifier: compoundProductIdentifier
+                )
+            )
             return nil
         }
     }

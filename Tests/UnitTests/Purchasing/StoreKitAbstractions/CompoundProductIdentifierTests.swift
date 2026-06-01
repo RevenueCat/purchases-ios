@@ -237,6 +237,35 @@ extension CompoundProductIdentifierTests {
         expect(CompoundProductIdentifier(compoundProductIdentifier: "::")).to(beNil())
     }
 
+    func testInitWithStringWithMoreThanOneColonLogsWarning() {
+        let productIdentifierWithMoreThanOneColon = "com.revenuecat.subscription:monthly:extra"
+        let expectedMessage = StoreKitStrings.cannot_request_product_with_more_than_one_colon(
+            productIdentifier: productIdentifierWithMoreThanOneColon
+        )
+
+        expect(CompoundProductIdentifier(
+            compoundProductIdentifier: productIdentifierWithMoreThanOneColon
+        )).to(beNil())
+        self.logger.verifyMessageWasLogged(expectedMessage, level: .warn, expectedCount: 1)
+    }
+
+    func testInitWithStringWithOneOrNoColonsDoesNotLogWarning() {
+        for productIdentifier in [
+            "com.revenuecat.subscription",
+            "com.revenuecat.subscription:monthly",
+            "com.revenuecat.subscription:",
+            ":monthly"
+        ] {
+            let expectedMessage = StoreKitStrings.cannot_request_product_with_more_than_one_colon(
+                productIdentifier: productIdentifier
+            )
+            self.logger.clearMessages()
+
+            _ = CompoundProductIdentifier(compoundProductIdentifier: productIdentifier)
+
+            self.logger.verifyMessageWasNotLogged(expectedMessage, level: .warn, allowNoMessages: true)
+        }
+    }
 }
 
 // MARK: - StoreKit 2 Billing Plan Type
