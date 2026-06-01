@@ -17,7 +17,7 @@ import Foundation
 @_spi(Internal) public enum RewardVerificationPollStatus: Sendable, Equatable {
 
     /// Verified by the backend, with the granted reward payload.
-    case verified(VerifiedReward)
+    case verified(AdReward)
 
     /// Verification has not yet completed; the caller should keep polling.
     case pending

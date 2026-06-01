@@ -13,7 +13,7 @@
 
 import Foundation
 import Nimble
-@_spi(Experimental) @testable import RevenueCat
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 import SnapshotTesting
 import XCTest
 
@@ -64,6 +64,46 @@ class AdFeatureEventsRequestTests: TestCase {
 
     func testRevenueEvent() throws {
         let event = AdEvent.revenue(Self.eventCreationData, Self.revenueData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
+    func testRewardEarnedUnverifiedEvent() throws {
+        let event = AdEvent.rewardEarnedUnverified(Self.eventCreationData, Self.rewardEarnedUnverifiedData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
+    func testRewardVerifiedEvent() throws {
+        let event = AdEvent.rewardVerified(Self.eventCreationData, Self.rewardVerifiedData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
+    func testRewardVerifiedNoRewardEvent() throws {
+        let event = AdEvent.rewardVerified(Self.eventCreationData, Self.rewardVerifiedNoRewardData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
+    func testRewardVerifiedUnsupportedRewardEvent() throws {
+        let event = AdEvent.rewardVerified(Self.eventCreationData, Self.rewardVerifiedUnsupportedRewardData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
+    func testRewardFailedToVerifyEvent() throws {
+        let event = AdEvent.rewardFailedToVerify(Self.eventCreationData, Self.rewardFailedToVerifyData)
         let storedEvent = try Self.createStoredAdEvent(from: event)
         let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
 
@@ -302,6 +342,58 @@ private extension AdFeatureEventsRequestTests {
         revenueMicros: 1500000,
         currency: "USD",
         precision: .exact
+    )
+
+    static let rewardEarnedUnverifiedData: AdRewardEarnedUnverified = .init(
+        networkName: "AdMob",
+        mediatorName: .adMob,
+        adFormat: .rewarded,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        impressionId: "impression-123",
+        rewardVerificationEnabled: true,
+        rewardItem: "coins",
+        rewardAmount: 10
+    )
+
+    static let rewardVerifiedData: AdRewardVerified = .init(
+        networkName: "AdMob",
+        mediatorName: .adMob,
+        adFormat: .rewarded,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        impressionId: "impression-123",
+        reward: .virtualCurrency(code: "GOLD", amount: 100)
+    )
+
+    static let rewardVerifiedNoRewardData: AdRewardVerified = .init(
+        networkName: "AdMob",
+        mediatorName: .adMob,
+        adFormat: .rewarded,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        impressionId: "impression-123",
+        reward: .noReward
+    )
+
+    static let rewardVerifiedUnsupportedRewardData: AdRewardVerified = .init(
+        networkName: "AdMob",
+        mediatorName: .adMob,
+        adFormat: .rewarded,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        impressionId: "impression-123",
+        reward: .unsupportedReward
+    )
+
+    static let rewardFailedToVerifyData: AdRewardFailedToVerify = .init(
+        networkName: "AdMob",
+        mediatorName: .adMob,
+        adFormat: .rewarded,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        impressionId: "impression-123",
+        failureReason: .timeout
     )
 
     static let userID = "test-user-id"
