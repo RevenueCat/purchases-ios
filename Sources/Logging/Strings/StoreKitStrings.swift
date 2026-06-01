@@ -117,6 +117,8 @@ enum StoreKitStrings {
 
     case sk2_user_not_eligible_for_billing_plan(compoundProductIdentifier: CompoundProductIdentifier)
 
+    case sk2_could_not_build_installments_info(compoundProductIdentifier: CompoundProductIdentifier)
+
     case sk2_billing_plans_are_unavailable_on_this_os_version(compoundProductIdentifier: CompoundProductIdentifier)
 
     case sk2_applying_billing_plan(billingPlanType: String)
@@ -303,6 +305,10 @@ extension StoreKitStrings: LogMessage {
                 "billing plan. Will not return a product " +
                 "for \(compoundProductIdentifier.compoundProductIdentifier)"
             }
+
+        case .sk2_could_not_build_installments_info(let compoundProductIdentifier):
+            return "Could not build installments info for the requested billing plan. Will not return " +
+            "a product for \(compoundProductIdentifier.compoundProductIdentifier)"
 
         case .sk2_billing_plans_are_unavailable_on_this_os_version(let compoundProductIdentifier):
             return "Products with billing plans are only supported on iOS 26.4+. Will not return " +

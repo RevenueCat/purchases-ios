@@ -130,23 +130,9 @@ private extension ProductsFetcherSK2 {
                     continue
                 }
 
-                if let requestedPricingTerms = pricingTerms.first(
+                guard let requestedPricingTerms = pricingTerms.first(
                     where: { $0.billingPlanType == requestedBillingPlanType }
-                ) {
-                    let installmentsInfo: InstallmentsInfo? = installmentsInfoFactory.buildInstallmentsInfo(
-                        from: productFromStoreKit.underlyingSK2Product,
-                        billingPlanType: requestedBillingPlanType,
-                        pricingTerms: requestedPricingTerms
-                    )
-
-                    let billingPlanProduct = SK2StoreProduct(
-                        sk2Product: productFromStoreKit.underlyingSK2Product,
-                        compoundProductIdentifier: compoundProductIdentifier,
-                        installmentsInfo: installmentsInfo
-                    )
-                    productsIncludingBillingPlanProducts.insert(billingPlanProduct)
-                    removeBaseProductIfNotRequested(productFromStoreKit)
-                } else {
+                ) else {
                     // The requested billing plan isn't available for this user. Return no products for this request.
                     Logger.warn(
                         StoreKitStrings.sk2_user_not_eligible_for_billing_plan(
@@ -154,7 +140,30 @@ private extension ProductsFetcherSK2 {
                         )
                     )
                     removeBaseProductIfNotRequested(productFromStoreKit)
+                    continue
                 }
+
+                guard let installmentsInfo = installmentsInfoFactory.buildInstallmentsInfo(
+                    from: productFromStoreKit.underlyingSK2Product,
+                    billingPlanType: requestedBillingPlanType,
+                    pricingTerms: requestedPricingTerms
+                ) else {
+                    Logger.warn(
+                        StoreKitStrings.sk2_could_not_build_installments_info(
+                            compoundProductIdentifier: compoundProductIdentifier
+                        )
+                    )
+                    removeBaseProductIfNotRequested(productFromStoreKit)
+                    continue
+                }
+
+                let billingPlanProduct = SK2StoreProduct(
+                    sk2Product: productFromStoreKit.underlyingSK2Product,
+                    compoundProductIdentifier: compoundProductIdentifier,
+                    installmentsInfo: installmentsInfo
+                )
+                productsIncludingBillingPlanProducts.insert(billingPlanProduct)
+                removeBaseProductIfNotRequested(productFromStoreKit)
             }
 
             return productsIncludingBillingPlanProducts
