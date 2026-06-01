@@ -27,6 +27,12 @@ struct PaywallViewConfiguration {
     var purchaseHandler: PurchaseHandler
     var promoOfferCache: PaywallPromoOfferCache?
 
+    #if !os(tvOS)
+    /// A pre-resolved workflow context. When set, the paywall renders this workflow directly instead of
+    /// fetching one from the network. Used by previewing/tooling (e.g. the RevenueCat dashboard app).
+    var workflowContext: WorkflowContext?
+    #endif
+
     init(
         content: Content,
         customerInfo: CustomerInfo? = nil,

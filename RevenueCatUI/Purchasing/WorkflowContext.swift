@@ -14,8 +14,11 @@ import Foundation
 
 #if !os(tvOS)
 
+/// Resolved data needed to render a workflow: the workflow definition plus the offerings its screens
+/// reference. Built internally from a network fetch, or via the `preview` factory for tooling that
+/// already holds the data.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct WorkflowContext {
+@_spi(Internal) public struct WorkflowContext {
     let workflow: PublishedWorkflow
     let allOfferings: Offerings
     let initialOffering: Offering
@@ -246,6 +249,37 @@ struct WorkflowContext {
 struct WorkflowPackageContext {
     let selectedPackage: Package
     let packages: [Package]
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@_spi(Internal) public extension WorkflowContext {
+
+    /// Builds a ``WorkflowContext`` from already-resolved workflow data so a workflow can be rendered
+    /// by `PaywallView`'s workflow initializer without performing a network fetch.
+    ///
+    /// Intended for previewing/tooling such as the RevenueCat dashboard app, which already holds the
+    /// workflow definition and builds mock offerings locally (mirroring how it previews paywalls).
+    ///
+    /// - Parameters:
+    ///   - workflow: The decoded workflow definition.
+    ///   - initialOffering: The offering for the workflow's initial screen. Must carry the screen's
+    ///     `paywallComponents` (build it with the SPI `Offering` initializer, as paywall previews do).
+    ///   - additionalOfferings: Any other offerings referenced by the workflow's screens/exit offers.
+    ///   - presentedOfferingContext: Optional placement/targeting context propagated across steps.
+    static func preview(
+        workflow: PublishedWorkflow,
+        initialOffering: Offering,
+        additionalOfferings: [Offering] = [],
+        presentedOfferingContext: PresentedOfferingContext? = nil
+    ) -> WorkflowContext {
+        return WorkflowContext(
+            workflow: workflow,
+            allOfferings: .preview(offerings: [initialOffering] + additionalOfferings),
+            initialOffering: initialOffering,
+            presentedOfferingContext: presentedOfferingContext
+        )
+    }
+
 }
 
 // Temporary launch-argument gate — remove once workflows are fully released.

@@ -145,6 +145,37 @@ public struct PaywallView: View {
         )
     }
 
+    /// Create a view that renders a pre-resolved workflow without performing a network fetch.
+    ///
+    /// Intended for previewing/tooling (e.g. the RevenueCat dashboard app). Build the
+    /// ``WorkflowContext`` with its `preview` factory.
+    // swiftlint:disable:next missing_docs
+    @_spi(Internal) public init(
+        workflowContext: WorkflowContext,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
+    ) {
+        let purchaseHandler = PurchaseHandler.default(
+            performPurchase: performPurchase,
+            performRestore: performRestore
+        )
+
+        var configuration = PaywallViewConfiguration(
+            offering: workflowContext.initialOffering,
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            useDraftPaywall: false,
+            introEligibility: introEligibility,
+            purchaseHandler: purchaseHandler
+        )
+        configuration.workflowContext = workflowContext
+
+        self.init(configuration: configuration)
+    }
+
     init(configuration: PaywallViewConfiguration, paywallViewOwnsPurchaseHandler: Bool = true) {
         self.paywallViewOwnsPurchaseHandler = paywallViewOwnsPurchaseHandler
         if paywallViewOwnsPurchaseHandler {
@@ -164,6 +195,7 @@ public struct PaywallView: View {
                 for: configuration.content
             )
         )
+        self._workflowContext = .init(initialValue: configuration.workflowContext)
         self._customerInfo = .init(
             initialValue: configuration.customerInfo ?? Self.loadCachedCustomerInfoIfPossible()
         )
