@@ -58,16 +58,7 @@ class OfferingsTests: TestCase {
 
     func testPackageIsCreatedWithUpFrontProductPlanIdentifier() throws {
         let productIdentifier = "com.myproduct.subscription"
-        let product = TestStoreProduct(
-            localizedTitle: "Subscription",
-            price: 10.99,
-            currencyCode: "USD",
-            localizedPriceString: "$10.99",
-            productIdentifier: productIdentifier,
-            productType: .autoRenewableSubscription,
-            localizedDescription: "Subscription",
-            locale: Locale(identifier: "en_US")
-        ).toStoreProduct()
+        let product = Self.testStoreProduct(productIdentifier: productIdentifier)
         let packageIdentifier = "$rc_monthly"
         let package = try XCTUnwrap(
             self.offeringsFactory.createPackage(
@@ -84,6 +75,49 @@ class OfferingsTests: TestCase {
 
         expect(package.storeProduct) == product
         expect(package.identifier) == packageIdentifier
+    }
+
+    func testPackageIsCreatedWithMonthlyProductPlanIdentifier() throws {
+        let productIdentifier = "com.myproduct.subscription"
+        let baseProduct = Self.testStoreProduct(productIdentifier: productIdentifier)
+        let monthlyProduct = Self.testStoreProduct(
+            productIdentifier: productIdentifier,
+            installmentsInfo: Self.installmentsInfo(billingPlanType: .monthly)
+        )
+        let packageIdentifier = "$rc_monthly"
+        let package = try XCTUnwrap(
+            self.offeringsFactory.createPackage(
+                with: .init(identifier: packageIdentifier,
+                            platformProductIdentifier: productIdentifier,
+                            platformProductPlanIdentifier: "monthly",
+                            webCheckoutUrl: nil),
+                productsByID: [
+                    productIdentifier: baseProduct,
+                    "\(productIdentifier):monthly": monthlyProduct
+                ],
+                offeringIdentifier: "offering"
+            )
+        )
+
+        expect(package.storeProduct) == monthlyProduct
+        expect(package.storeProduct).toNot(equal(baseProduct))
+        expect(package.identifier) == packageIdentifier
+    }
+
+    func testPackageIsNotCreatedWithUnrecognizedProductPlanIdentifierAndBaseProduct() {
+        let productIdentifier = "com.myproduct.subscription"
+        let package = self.offeringsFactory.createPackage(
+            with: .init(identifier: "$rc_monthly",
+                        platformProductIdentifier: productIdentifier,
+                        platformProductPlanIdentifier: "unknownBillingPlan",
+                        webCheckoutUrl: nil),
+            productsByID: [
+                productIdentifier: Self.testStoreProduct(productIdentifier: productIdentifier)
+            ],
+            offeringIdentifier: "offering"
+        )
+
+        expect(package).to(beNil())
     }
 
     func testProductIdentifiersNormalizePlatformProductPlanIdentifiers() {
@@ -874,6 +908,41 @@ class OfferingsTests: TestCase {
         let contents = Offerings.Contents(response: offeringResp,
                                           httpResponseOriginalSource: .loadShedder)
         expect(contents.originalSource) == .loadShedder
+    }
+
+}
+
+private extension OfferingsTests {
+
+    static func testStoreProduct(
+        productIdentifier: String,
+        installmentsInfo: InstallmentsInfo? = nil
+    ) -> StoreProduct {
+        return TestStoreProduct(
+            localizedTitle: "Subscription",
+            price: 10.99,
+            currencyCode: "USD",
+            localizedPriceString: "$10.99",
+            productIdentifier: productIdentifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: "Subscription",
+            subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            locale: Locale(identifier: "en_US"),
+            installmentsInfo: installmentsInfo
+        ).toStoreProduct()
+    }
+
+    static func installmentsInfo(billingPlanType: BillingPlanType) -> InstallmentsInfo {
+        return InstallmentsInfo(
+            commitmentInstallmentsCount: 3,
+            commitmentInstallmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            installmentBillingPrice: 3.99,
+            installmentBillingDisplayPrice: "$3.99",
+            commitmentTotalPeriod: SubscriptionPeriod(value: 3, unit: .month),
+            commitmentTotalPrice: 11.97,
+            commitmentTotalDisplayPrice: "$11.97",
+            billingPlanType: billingPlanType
+        )
     }
 
 }
