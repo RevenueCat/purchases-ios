@@ -1534,6 +1534,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		019BA4A7731BC93FEC1A74FA /* PaywallScrollEnvironment.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PaywallScrollEnvironment.swift; path = RevenueCatUI/Templates/V2/Layout/PaywallScrollEnvironment.swift; sourceTree = SOURCE_ROOT; };
 		030890802D2B76450069677B /* VariableHandlerV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableHandlerV2.swift; sourceTree = "<group>"; };
 		030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableHandlerV2Tests.swift; sourceTree = "<group>"; };
 		030F91892D55C1AB0085103F /* LocaleFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleFinder.swift; sourceTree = "<group>"; };
@@ -2556,6 +2557,7 @@
 		830004002E261ABE00143F9F /* PlatformImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformImage.swift; sourceTree = "<group>"; };
 		831660B52E3AAA4900855312 /* FixMacButtonsModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixMacButtonsModifier.swift; sourceTree = "<group>"; };
 		8337DD6D2E0A7CFE000798BF /* paywall-preview-resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "paywall-preview-resources"; sourceTree = "<group>"; };
+		834DFBE817EAEDDF0179F323 /* PaywallZLayerScrollPolicyTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PaywallZLayerScrollPolicyTests.swift; path = Tests/RevenueCatUITests/PaywallsV2/PaywallZLayerScrollPolicyTests.swift; sourceTree = SOURCE_ROOT; };
 		839F34382E3BC574006355B0 /* PlatformColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformColor.swift; sourceTree = "<group>"; };
 		839F343A2E3BC5C4006355B0 /* PlatformBezierPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBezierPath.swift; sourceTree = "<group>"; };
 		83EE33252E1E20360011CF1C /* PaywallPreviewResourcesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPreviewResourcesLoader.swift; sourceTree = "<group>"; };
@@ -2791,6 +2793,7 @@
 		A56F9AB026990E9200AFC48F /* CustomerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfo.swift; sourceTree = "<group>"; };
 		A5B6CDD5280F3843007629D5 /* AdServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdServices.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/Library/Frameworks/AdServices.framework; sourceTree = DEVELOPER_DIR; };
 		A5F0104D2717B3150090732D /* BeginRefundRequestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeginRefundRequestHelper.swift; sourceTree = "<group>"; };
+		A8A70274A96D9B2D076CFEAA /* PaywallZLayerScrollPolicy.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PaywallZLayerScrollPolicy.swift; path = RevenueCatUI/Templates/V2/Layout/PaywallZLayerScrollPolicy.swift; sourceTree = SOURCE_ROOT; };
 		A95EB89F2E7AB09C00F1022B /* PaywallDataValidationTests */ = {isa = PBXFileReference; lastKnownFileType = folder; path = PaywallDataValidationTests; sourceTree = "<group>"; };
 		AA110001AABB0001CCDD0001 /* CustomPaywallEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPaywallEvent.swift; sourceTree = "<group>"; };
 		AA110003AABB0001CCDD0001 /* EventsRequest+CustomPaywallImpression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EventsRequest+CustomPaywallImpression.swift"; sourceTree = "<group>"; };
@@ -2868,6 +2871,7 @@
 		B8BCBA1A622A35B377B35254 /* ValueTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ValueTests.swift; sourceTree = "<group>"; };
 		CC1A2B3C2E1234AB00AABBCC /* CustomVariablesEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariablesEditorView.swift; sourceTree = "<group>"; };
 		CDD7D260191B3B9A1FA0C277 /* LogicOperatorsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LogicOperatorsTests.swift; sourceTree = "<group>"; };
+		CF01A0F868569B5E2D5CA465 /* PaywallsV2LayoutFixtures.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PaywallsV2LayoutFixtures.swift; path = Tests/RevenueCatUITests/PaywallsV2/PaywallsV2LayoutFixtures.swift; sourceTree = SOURCE_ROOT; };
 		D0DA20992F23BBEC00BA3B77 /* AdEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventTests.swift; sourceTree = "<group>"; };
 		DB001001AAAA0001AAAA0001 /* WorkflowEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowEvent.swift; sourceTree = "<group>"; };
 		DB001003AAAA0001AAAA0001 /* FeatureEventsRequest+WorkflowEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FeatureEventsRequest+WorkflowEvent.swift"; sourceTree = "<group>"; };
@@ -2894,6 +2898,7 @@
 		DBD243292EBDF4B80066AC6F /* PromotionalOfferViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromotionalOfferViewTests.swift; sourceTree = "<group>"; };
 		DBE7C6542F02D48900A28663 /* StoreProductDiscount+CustomerCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StoreProductDiscount+CustomerCenter.swift"; sourceTree = "<group>"; };
 		DC140B430FEE4B5897D7DB00 /* GetWorkflowsListOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetWorkflowsListOperation.swift; sourceTree = "<group>"; };
+		DD6CFFCCD908DC638C42E150 /* RootViewLayoutSnapshotTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RootViewLayoutSnapshotTests.swift; path = Tests/RevenueCatUITests/PaywallsV2/RootViewLayoutSnapshotTests.swift; sourceTree = SOURCE_ROOT; };
 		E1C0A006BEEF0001CCDD0001 /* PaywallHeaderComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallHeaderComponent.swift; sourceTree = "<group>"; };
 		E1C0A007BEEF0001CCDD0001 /* HeaderComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderComponentViewModel.swift; sourceTree = "<group>"; };
 		E1C0A008BEEF0001CCDD0001 /* HeaderComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderComponentView.swift; sourceTree = "<group>"; };
@@ -3158,6 +3163,9 @@
 				6EFD5F7BD8404B6E828C4E10 /* WorkflowPaywallViewTests.swift */,
 				0E4CCD8E9E454A2EB3760E06 /* ButtonComponentViewModelMappingTests.swift */,
 				A1D3F80D2D524F51BA60157C /* ButtonComponentViewTests.swift */,
+				834DFBE817EAEDDF0179F323 /* PaywallZLayerScrollPolicyTests.swift */,
+				CF01A0F868569B5E2D5CA465 /* PaywallsV2LayoutFixtures.swift */,
+				DD6CFFCCD908DC638C42E150 /* RootViewLayoutSnapshotTests.swift */,
 			);
 			path = PaywallsV2;
 			sourceTree = "<group>";
@@ -5904,6 +5912,7 @@
 				2C7457222CE713DA004ACE52 /* Previews */,
 				800A129055A298C390AED0B5 /* WorkflowPaywallView.swift */,
 				DFFD2AB4468BD9E22B2B2CC7 /* Layout2 */,
+				AB70B73749FDB04A429A0E13 /* Layout */,
 			);
 			path = V2;
 			sourceTree = "<group>";
@@ -6087,6 +6096,15 @@
 				90A1B2C62F96927E00D32EDF /* VerifiedRewardTests.swift */,
 			);
 			path = RewardVerification;
+			sourceTree = "<group>";
+		};
+		AB70B73749FDB04A429A0E13 /* Layout */ = {
+			isa = PBXGroup;
+			children = (
+				019BA4A7731BC93FEC1A74FA /* PaywallScrollEnvironment.swift */,
+				A8A70274A96D9B2D076CFEAA /* PaywallZLayerScrollPolicy.swift */,
+			);
+			path = Layout;
 			sourceTree = "<group>";
 		};
 		B324DC482720C15300103EE9 /* Error Handling */ = {
