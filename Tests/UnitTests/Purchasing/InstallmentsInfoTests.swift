@@ -40,12 +40,13 @@ class InstallmentsInfoTests: TestCase {
     }
 
     func testEquals() {
-        let lhs = Self.installmentsInfo()
-        let rhs = Self.installmentsInfo()
+        let installmentsInfo1 = Self.installmentsInfo()
+        let installmentsInfo2 = Self.installmentsInfo()
         let differentBillingPlanType = Self.installmentsInfo(billingPlanType: .upFront)
 
-        expect(lhs) == rhs
-        expect(lhs) != differentBillingPlanType
+        expect(installmentsInfo1) == installmentsInfo1
+        expect(installmentsInfo1) == installmentsInfo2
+        expect(installmentsInfo1) != differentBillingPlanType
     }
 }
 
