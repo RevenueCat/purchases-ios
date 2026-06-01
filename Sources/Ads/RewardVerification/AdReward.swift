@@ -46,17 +46,6 @@ import Foundation
         AdReward(storage: .virtualCurrency(payload))
     }
 
-    /// Reward is a virtual-currency line item with the given code and amount. Falls back to
-    /// ``unsupportedReward`` when ``VirtualCurrencyReward/init(code:amount:)`` rejects the inputs.
-    internal static func virtualCurrency(code: String, amount: Int) -> AdReward {
-        guard let payload = VirtualCurrencyReward(code: code, amount: amount) else {
-            Logger.error(AdsStrings.invalid_virtual_currency_payload(code: code, amount: amount))
-            assertionFailure(Self.Strings.invalidVirtualCurrencyPayload)
-            return .unsupportedReward
-        }
-        return .virtualCurrency(payload)
-    }
-
     /// Verification succeeded but no reward was granted.
     public static let noReward = AdReward(storage: .noReward)
 
@@ -82,10 +71,6 @@ import Foundation
         static let virtualCurrency = "virtual_currency"
         static let noReward = "no_reward"
         static let unsupportedReward = "unsupported_reward"
-    }
-
-    private enum Strings {
-        static let invalidVirtualCurrencyPayload = "virtualCurrency code must be non-empty and amount must be > 0"
     }
 }
 
