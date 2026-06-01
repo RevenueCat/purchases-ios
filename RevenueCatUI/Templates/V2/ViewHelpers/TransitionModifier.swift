@@ -68,6 +68,10 @@ struct TransitionModifier: ViewModifier {
 
     private var shouldRenderContentImmediately: Bool {
         #if !os(tvOS)
+        // Workflow page transitions animate whole page snapshots. If child components
+        // also run their configured delayed transitions while the page is sliding, they
+        // can flash or appear late inside the preserved outgoing/incoming page trees.
+        // Render them immediately and let WorkflowPaywallView own the page-level motion.
         return self.workflowPageTransitionContext.isTransitioning
         #else
         return false

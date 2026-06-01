@@ -642,6 +642,10 @@ private extension View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct WorkflowAnimationCompletionModifier: AnimatableModifier {
 
+    // SwiftUI sets transitionState.progress to 1 immediately when the animation starts, but the
+    // rendered value reaches 1 only after interpolation completes. Keep the outgoing page alive
+    // until this animatable modifier observes the rendered progress finish; using a fixed delay
+    // can race with animation timing and drop the outgoing subtree early, which causes flashes.
     var progress: CGFloat
     let activeTransitionID: UUID?
     let completion: (UUID) -> Void
