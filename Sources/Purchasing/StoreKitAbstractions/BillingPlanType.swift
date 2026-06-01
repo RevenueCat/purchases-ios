@@ -28,7 +28,7 @@ public final class BillingPlanType: NSObject, Sendable {
 
     /// Pattern matching operator
     public static func ~= (lhs: BillingPlanType, rhs: BillingPlanType) -> Bool {
-        lhs === rhs
+        lhs.rawValue == rhs.rawValue
     }
 }
 
