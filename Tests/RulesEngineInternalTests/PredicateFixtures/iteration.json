@@ -1,0 +1,562 @@
+{
+  "fixtures": [
+    {
+      "id": "some_returns_true_when_at_least_one_item_matches",
+      "predicate": { "some": [[1, 2, 3], { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "some_returns_false_when_no_item_matches",
+      "predicate": { "some": [[-1, -2, -3], { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "some_returns_false_for_empty_array",
+      "predicate": { "some": [[], { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "some_returns_false_for_null_source",
+      "predicate": { "some": [null, { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "some_returns_false_for_object_source",
+      "description": "multi-key objects are returned by the evaluator as literal data (single-key objects would dispatch as an operator), so the array check fails",
+      "predicate": { "some": [{ "foo": 1, "bar": 2 }, { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "some_returns_false_for_string_source",
+      "predicate": { "some": ["abc", { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "some_predicate_sees_current_item_via_empty_var",
+      "description": "{\"var\": \"\"} resolves to the current item",
+      "predicate": { "some": [[false, true, false], { "var": "" }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "some_predicate_accesses_item_fields",
+      "description": "item objects are routed through vars so the evaluator does not dispatch their single key (status) as an operator",
+      "predicate": { "some": [{ "var": "items" }, { "==": [{ "var": "status" }, "active"] }] },
+      "variables": {
+        "items": [{ "status": "expired" }, { "status": "active" }]
+      },
+      "expected": true
+    },
+    {
+      "id": "some_missing_predicate_returns_false",
+      "description": "a missing predicate evaluates to undefined per item (never truthy), so an array source returns false",
+      "predicate": { "some": [[1, 2]] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_returns_true_when_every_item_matches",
+      "predicate": { "all": [[1, 2, 3], { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "all_returns_false_on_first_failure",
+      "predicate": { "all": [[1, 2, -3], { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_returns_false_for_empty_array_per_json_logic_spec",
+      "description": "json-logic-js returns false (not vacuous truth) for all over an empty array; we follow the spec even though the khepri backend returns true",
+      "predicate": { "all": [[], { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_returns_false_for_null_source",
+      "predicate": { "all": [null, { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_returns_false_for_object_source",
+      "predicate": { "all": [{ "foo": 1, "bar": 2 }, { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_returns_false_for_string_source",
+      "predicate": { "all": ["abc", { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_predicate_sees_current_item_via_empty_var",
+      "predicate": { "all": [[true, true, true], { "var": "" }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "all_ignores_args_beyond_second",
+      "description": "json-logic-js discards arguments past the second",
+      "predicate": { "all": [[1, 2], { ">": [{ "var": "" }, 0] }, 999] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "some_predicate_cannot_reach_parent_scope",
+      "description": "inside the predicate only the current item is visible; outer x is unreachable so {\"var\": \"x\"} resolves to null and equality is false for every item",
+      "predicate": {
+        "some": [[{}, {}], { "==": [{ "var": "x" }, "outer"] }]
+      },
+      "variables": { "x": "outer" },
+      "expected": false
+    },
+    {
+      "id": "all_nested_some_inside_all_rebounds_item_scope",
+      "description": "for every customer at least one product must be active; nested iteration rebinds the item scope at each level",
+      "predicate": {
+        "all": [
+          { "var": "customers" },
+          { "some": [{ "var": "products" }, { "==": [{ "var": "status" }, "active"] }] }
+        ]
+      },
+      "variables": {
+        "customers": [
+          { "products": [{ "status": "expired" }, { "status": "active" }] },
+          { "products": [{ "status": "active" }] }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "some_khepri_active_subscription_matching",
+      "description": "mirrors khepri/some_active_subscription/matching to pin parity with the backend oracle",
+      "predicate": {
+        "some": [{ "var": "subscriptions" }, { "==": [{ "var": "status" }, "active"] }]
+      },
+      "variables": {
+        "subscriptions": [
+          { "status": "active" },
+          { "status": "active" },
+          { "status": "trialing" }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "some_khepri_active_subscription_non_matching",
+      "description": "mirrors khepri/some_active_subscription/non_matching",
+      "predicate": {
+        "some": [{ "var": "subscriptions" }, { "==": [{ "var": "status" }, "active"] }]
+      },
+      "variables": {
+        "subscriptions": [
+          { "status": "expired" },
+          { "status": "expired" },
+          { "status": "expired" }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "all_khepri_subscriptions_active_matching",
+      "description": "mirrors khepri/all_subscriptions_active/matching",
+      "predicate": {
+        "all": [{ "var": "subscriptions" }, { "==": [{ "var": "status" }, "active"] }]
+      },
+      "variables": {
+        "subscriptions": [
+          { "status": "active" },
+          { "status": "active" }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "all_khepri_subscriptions_active_non_matching",
+      "description": "mirrors khepri/all_subscriptions_active/non_matching",
+      "predicate": {
+        "all": [{ "var": "subscriptions" }, { "==": [{ "var": "status" }, "active"] }]
+      },
+      "variables": {
+        "subscriptions": [
+          { "status": "active" },
+          { "status": "active" },
+          { "status": "trialing" }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "none_returns_true_when_no_item_matches",
+      "predicate": { "none": [[-1, -2, -3], { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "none_returns_false_on_first_match",
+      "predicate": { "none": [[-1, 2, -3], { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "none_returns_true_for_empty_array",
+      "predicate": { "none": [[], { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "none_returns_true_for_null_source_per_json_logic_spec",
+      "description": "none returns true for a non-array source (unlike some/all) because the JS reference defines none via filter, which yields [] for non-arrays, and [].length === 0 is true",
+      "predicate": { "none": [null, { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "none_returns_true_for_object_source_per_json_logic_spec",
+      "predicate": { "none": [{ "foo": 1, "bar": 2 }, { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "none_returns_true_for_string_source_per_json_logic_spec",
+      "predicate": { "none": ["abc", { ">": [{ "var": "" }, 0] }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "none_predicate_sees_current_item_via_empty_var",
+      "predicate": { "none": [[false, false, false], { "var": "" }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "none_missing_predicate_returns_true",
+      "description": "a missing predicate evaluates to null (never truthy) per item, so none returns true for any non-empty source",
+      "predicate": { "none": [[1, 2]] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "map_applies_predicate_to_each_item",
+      "description": "map produces [2,4,6] (arithmetic widens to float); compared by JS string coercion since loose == is always false for array-vs-array",
+      "predicate": {
+        "==": [
+          { "map": [[1, 2, 3], { "*": [{ "var": "" }, 2] }] },
+          "2,4,6"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "map_preserves_empty_array",
+      "description": "empty-array result compared by string coercion to the empty string",
+      "predicate": { "==": [{ "map": [[], { "var": "" }] }, ""] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "map_returns_empty_array_for_null_source",
+      "description": "empty-array result compared by string coercion to the empty string",
+      "predicate": { "==": [{ "map": [null, { "var": "" }] }, ""] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "map_returns_empty_array_for_object_source",
+      "description": "empty-array result compared by string coercion to the empty string",
+      "predicate": { "==": [{ "map": [{ "foo": 1, "bar": 2 }, { "var": "" }] }, ""] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "map_returns_empty_array_for_string_source",
+      "description": "empty-array result compared by string coercion to the empty string",
+      "predicate": { "==": [{ "map": ["abc", { "var": "" }] }, ""] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "filter_retains_items_where_predicate_is_truthy",
+      "description": "filter retains [2,4]; compared by JS string coercion since loose == is always false for array-vs-array",
+      "predicate": {
+        "==": [
+          { "filter": [[-1, 2, -3, 4], { ">": [{ "var": "" }, 0] }] },
+          "2,4"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "filter_preserves_empty_array",
+      "description": "empty-array result compared by string coercion to the empty string",
+      "predicate": { "==": [{ "filter": [[], { ">": [{ "var": "" }, 0] }] }, ""] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "filter_returns_empty_array_for_null_source",
+      "description": "empty-array result compared by string coercion to the empty string",
+      "predicate": { "==": [{ "filter": [null, { ">": [{ "var": "" }, 0] }] }, ""] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "filter_returns_empty_array_for_object_source",
+      "description": "multi-key object is treated as literal data, so filter yields []; compared by string coercion to the empty string",
+      "predicate": { "==": [{ "filter": [{ "foo": 1, "bar": 2 }, { ">": [{ "var": "" }, 0] }] }, ""] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "filter_returns_empty_array_for_string_source",
+      "description": "empty-array result compared by string coercion to the empty string",
+      "predicate": { "==": [{ "filter": ["abc", { ">": [{ "var": "" }, 0] }] }, ""] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "filter_missing_predicate_returns_empty_array",
+      "description": "a missing predicate evaluates to null (falsy) per item, so filter retains nothing; compared by string coercion to the empty string",
+      "predicate": { "==": [{ "filter": [[1, 2, 3]] }, ""] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "reduce_sums_array",
+      "description": "canonical sum example from the json-logic-js README",
+      "predicate": {
+        "===": [
+          { "reduce": [[1, 2, 3, 4], { "+": [{ "var": "current" }, { "var": "accumulator" }] }, 0] },
+          10
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "reduce_returns_initial_accumulator_for_empty_array",
+      "predicate": {
+        "===": [
+          { "reduce": [[], { "+": [{ "var": "current" }, { "var": "accumulator" }] }, 7] },
+          7
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "reduce_returns_initial_accumulator_for_null_source",
+      "predicate": {
+        "===": [
+          { "reduce": [null, { "+": [{ "var": "current" }, { "var": "accumulator" }] }, 7] },
+          7
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "reduce_returns_initial_accumulator_for_object_source",
+      "description": "multi-key object is treated as literal data rather than dispatched as an operator, so reduce returns the initial accumulator",
+      "predicate": {
+        "===": [
+          { "reduce": [{ "foo": 1, "bar": 2 }, { "+": [{ "var": "current" }, { "var": "accumulator" }] }, 7] },
+          7
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "reduce_returns_initial_accumulator_for_string_source",
+      "predicate": {
+        "===": [
+          { "reduce": ["abc", { "+": [{ "var": "current" }, { "var": "accumulator" }] }, 7] },
+          7
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "reduce_evaluates_initial_accumulator_in_outer_scope",
+      "description": "the initial accumulator is an expression evaluated in the outer scope: seed resolves to 100, result is 100 + 1 + 2 = 103",
+      "predicate": {
+        "===": [
+          { "reduce": [[1, 2], { "+": [{ "var": "current" }, { "var": "accumulator" }] }, { "var": "seed" }] },
+          103
+        ]
+      },
+      "variables": { "seed": 100 },
+      "expected": true
+    },
+    {
+      "id": "reduce_evaluates_source_in_outer_scope",
+      "description": "the source array is also evaluated in the outer scope, so the first argument can be an expression",
+      "predicate": {
+        "===": [
+          { "reduce": [{ "var": "nums" }, { "+": [{ "var": "current" }, { "var": "accumulator" }] }, 0] },
+          6
+        ]
+      },
+      "variables": { "nums": [1, 2, 3] },
+      "expected": true
+    },
+    {
+      "id": "reduce_predicate_scope_is_current_and_accumulator_only",
+      "description": "the predicate sees only {current, accumulator}; outer bonus is not visible, so the result is 1+2+3 = 6",
+      "predicate": {
+        "===": [
+          { "reduce": [[1, 2, 3], { "+": [{ "var": "current" }, { "var": "accumulator" }] }, 0] },
+          6
+        ]
+      },
+      "variables": { "bonus": 1000 },
+      "expected": true
+    },
+    {
+      "id": "reduce_predicate_cannot_reach_parent_scope",
+      "description": "a var lookup against a nonexistent key in the reduce scope resolves to null, not the parent's value; multiplier resolves to null so the accumulator becomes current each step, ending at 3",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              [1, 2, 3],
+              {
+                "if": [
+                  { "==": [{ "var": "multiplier" }, null] },
+                  { "var": "current" },
+                  -999
+                ]
+              },
+              0
+            ]
+          },
+          3
+        ]
+      },
+      "variables": { "multiplier": 10 },
+      "expected": true
+    },
+    {
+      "id": "reduce_missing_initial_empty_source_is_null",
+      "description": "{\"reduce\": [src, pred]} with no initial defaults to null; an empty source returns the implicit null seed unchanged",
+      "predicate": {
+        "===": [
+          { "reduce": [[], { "+": [{ "var": "current" }, { "var": "accumulator" }] }] },
+          null
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "reduce_missing_initial_non_empty_propagates_nan",
+      "description": "with an implicit null seed, null + items starts as parseFloat(\"null\") = NaN and propagates; x != x is true iff x is NaN",
+      "predicate": {
+        "!=": [
+          { "reduce": [[1, 2, 3], { "+": [{ "var": "current" }, { "var": "accumulator" }] }] },
+          { "reduce": [[1, 2, 3], { "+": [{ "var": "current" }, { "var": "accumulator" }] }] }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "reduce_extra_args_ignored",
+      "description": "{\"reduce\": [src, pred, init, extra...]} ignores arguments past the first three",
+      "predicate": {
+        "===": [
+          { "reduce": [[1, 2, 3], { "+": [{ "var": "current" }, { "var": "accumulator" }] }, 10, 999] },
+          16
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "none_map_filter_predicate_cannot_reach_parent_scope__none",
+      "description": "none/map/filter predicates cannot reach the parent scope; outer flag resolves to null inside the per-item evaluation",
+      "predicate": {
+        "none": [[{}, {}], { "==": [{ "var": "flag" }, true] }]
+      },
+      "variables": { "flag": true },
+      "expected": true
+    },
+    {
+      "id": "none_map_filter_predicate_cannot_reach_parent_scope__map",
+      "description": "map predicate cannot reach the parent scope; flag resolves to null so each item yields false, giving [false,false] compared via string coercion",
+      "predicate": {
+        "==": [
+          { "map": [[{}, {}], { "==": [{ "var": "flag" }, true] }] },
+          "false,false"
+        ]
+      },
+      "variables": { "flag": true },
+      "expected": true
+    },
+    {
+      "id": "none_map_filter_predicate_cannot_reach_parent_scope__filter",
+      "description": "filter predicate cannot reach the parent scope; flag resolves to null so nothing is retained, giving [] compared via string coercion to the empty string",
+      "predicate": {
+        "==": [
+          { "filter": [[{}, {}], { "==": [{ "var": "flag" }, true] }] },
+          ""
+        ]
+      },
+      "variables": { "flag": true },
+      "expected": true
+    },
+    {
+      "id": "filter_end_to_end_through_evaluator",
+      "description": "drives filter through the evaluator end-to-end (json-logic-js README example): odds [1,3,5] compared via string coercion",
+      "predicate": {
+        "==": [
+          {
+            "filter": [
+              { "var": "integers" },
+              { "%": [{ "var": "" }, 2] }
+            ]
+          },
+          "1,3,5"
+        ]
+      },
+      "variables": { "integers": [1, 2, 3, 4, 5] },
+      "expected": true
+    },
+    {
+      "id": "map_and_reduce_compose_end_to_end",
+      "description": "chains map then reduce to sum-of-squares end-to-end: 1 + 4 + 9 + 16 = 30",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              {
+                "map": [
+                  { "var": "integers" },
+                  { "*": [{ "var": "" }, { "var": "" }] }
+                ]
+              },
+              { "+": [{ "var": "current" }, { "var": "accumulator" }] },
+              0
+            ]
+          },
+          30
+        ]
+      },
+      "variables": { "integers": [1, 2, 3, 4] },
+      "expected": true
+    }
+  ]
+}

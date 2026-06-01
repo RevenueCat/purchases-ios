@@ -38,19 +38,6 @@ struct PredicateConformanceTests {
             return
         }
 
-        do {
-            let result = try Evaluator.evaluate(
-                predicate: fixtureCase.predicate,
-                variables: fixtureCase.variables
-            )
-            #expect(
-                result == fixtureCase.expected,
-                "Fixture \(fixtureCase.id)"
-            )
-        } catch RuleError.unsupportedOperator(let name) {
-            Issue.record("Fixture \(fixtureCase.id) uses unsupported operator \(name)")
-        } catch {
-            Issue.record("Fixture \(fixtureCase.id) threw \(error)")
-        }
+        try PredicateConformanceRunner.run(fixtureCase)
     }
 }

@@ -1,0 +1,181 @@
+{
+  "fixtures": [
+    {
+      "id": "max_returns_largest_of_many_args",
+      "predicate": { "===": [{ "max": [1, 2, 3] }, 3] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_single_arg_returns_value",
+      "predicate": { "===": [{ "max": [7] }, 7] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_mixes_ints_and_floats",
+      "predicate": { "===": [{ "max": [1, 2.5, 2] }, 2.5] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_works_with_negatives",
+      "predicate": { "===": [{ "max": [-5, -10, -1] }, -1] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_coerces_numeric_strings",
+      "predicate": { "===": [{ "max": ["3", "9", "5"] }, 9] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_coerces_bools",
+      "description": "true coerces to 1",
+      "predicate": { "===": [{ "max": [true, false, 0] }, 1] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_null_coerces_to_zero",
+      "predicate": { "===": [{ "max": [null, -1] }, 0] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_operand_singleton_array_coerces",
+      "description": "[2] stringifies to \"2\" which is Number 2 (matches JS Math.max(1, [2]) === 2)",
+      "predicate": { "===": [{ "max": [1, [2]] }, 2] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_operand_object_is_nan",
+      "description": "an object operand becomes NaN (\"[object Object]\" cannot parse); x != x is true iff x is NaN",
+      "predicate": { "!=": [{ "max": [1, {}] }, { "max": [1, {}] }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_operand_multi_array_is_nan",
+      "description": "[1,2] stringifies to \"1,2\" which is NaN (whole-string parse fails); x != x is true iff x is NaN",
+      "predicate": { "!=": [{ "max": [1, [1, 2]] }, { "max": [1, [1, 2]] }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_operand_unparseable_string_is_nan",
+      "description": "an unparseable string operand becomes NaN; x != x is true iff x is NaN",
+      "predicate": { "!=": [{ "max": [1, "abc"] }, { "max": [1, "abc"] }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_of_empty_args_is_negative_infinity",
+      "description": "{\"max\": []} is -Infinity (matches JS Math.max()); -Infinity is produced via division-by-zero since JSON has no Infinity literal",
+      "predicate": { "===": [{ "max": [] }, { "/": [-10, 0] }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_returns_smallest_of_many_args",
+      "predicate": { "===": [{ "min": [1, 2, 3] }, 1] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_single_arg_returns_value",
+      "predicate": { "===": [{ "min": [7] }, 7] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_mixes_ints_and_floats",
+      "predicate": { "===": [{ "min": [1.5, 2, 3] }, 1.5] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_works_with_negatives",
+      "predicate": { "===": [{ "min": [-5, -10, -1] }, -10] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_coerces_numeric_strings",
+      "predicate": { "===": [{ "min": ["3", "9", "5"] }, 3] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_coerces_bools",
+      "description": "false coerces to 0",
+      "predicate": { "===": [{ "min": [true, false, 5] }, 0] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_null_coerces_to_zero",
+      "predicate": { "===": [{ "min": [null, 1] }, 0] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_operand_singleton_array_coerces",
+      "description": "[2] stringifies to \"2\" which is Number 2 (matches JS Math.min(5, [2]) === 2)",
+      "predicate": { "===": [{ "min": [5, [2]] }, 2] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_operand_object_is_nan",
+      "description": "an object operand becomes NaN; x != x is true iff x is NaN",
+      "predicate": { "!=": [{ "min": [1, {}] }, { "min": [1, {}] }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_operand_multi_array_is_nan",
+      "description": "[1,2] stringifies to \"1,2\" which is NaN; x != x is true iff x is NaN",
+      "predicate": { "!=": [{ "min": [1, [1, 2]] }, { "min": [1, [1, 2]] }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_operand_unparseable_string_is_nan",
+      "description": "an unparseable string operand becomes NaN; x != x is true iff x is NaN",
+      "predicate": { "!=": [{ "min": [1, "abc"] }, { "min": [1, "abc"] }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_of_empty_args_is_positive_infinity",
+      "description": "{\"min\": []} is +Infinity (matches JS Math.min()); +Infinity is produced via division-by-zero since JSON has no Infinity literal",
+      "predicate": { "===": [{ "min": [] }, { "/": [10, 0] }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "minmax_nan_result_fails_closed_against_threshold",
+      "description": "a poisoned max (NaN) makes >= n come out false, the fail-closed behavior for malformed predicates",
+      "predicate": { ">=": [{ "max": [1, {}] }, 0] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "max_single_non_list_arg_wrapped",
+      "description": "{\"max\": 5} is implicitly wrapped as {\"max\": [5]}",
+      "predicate": { "===": [{ "max": 5 }, 5] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_single_non_list_arg_wrapped",
+      "description": "{\"min\": 5} is implicitly wrapped as {\"min\": [5]}",
+      "predicate": { "===": [{ "min": 5 }, 5] },
+      "variables": {},
+      "expected": true
+    }
+  ]
+}
