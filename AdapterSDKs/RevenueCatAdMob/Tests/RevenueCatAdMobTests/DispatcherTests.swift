@@ -12,7 +12,7 @@ final class DispatcherTests: AdapterTestCase {
 
     func testRunFiresVerifiedOutcomeWithVirtualCurrencyReward() async throws {
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
-        let state = RewardVerification.State(clientTransactionID: "tx-verified")
+        let state = RewardVerification.State(clientTransactionID: "tx-verified", impressionId: "")
         let poller = self.makePoller(statuses: [.verified(.virtualCurrency(reward))])
         let recorder = OutcomeRecorder()
 
@@ -33,7 +33,7 @@ final class DispatcherTests: AdapterTestCase {
     }
 
     func testRunFiresFailedOutcomeWhenPollerReportsFailed() async {
-        let state = RewardVerification.State(clientTransactionID: "tx-failed")
+        let state = RewardVerification.State(clientTransactionID: "tx-failed", impressionId: "")
         let poller = self.makePoller(statuses: [.failed])
         let recorder = OutcomeRecorder()
 
@@ -51,7 +51,7 @@ final class DispatcherTests: AdapterTestCase {
     }
 
     func testRunFiresFailedOutcomeWhenAllAttemptsRemainPending() async {
-        let state = RewardVerification.State(clientTransactionID: "tx-pending-budget")
+        let state = RewardVerification.State(clientTransactionID: "tx-pending-budget", impressionId: "")
         let poller = self.makePoller(statuses: Array(repeating: .pending, count: 3), maxAttempts: 3)
         let recorder = OutcomeRecorder()
 
@@ -68,7 +68,7 @@ final class DispatcherTests: AdapterTestCase {
     }
 
     func testRunFiresFailedOutcomeWhenAllAttemptsThrowTransiently() async {
-        let state = RewardVerification.State(clientTransactionID: "tx-transient")
+        let state = RewardVerification.State(clientTransactionID: "tx-transient", impressionId: "")
         let throwingPoller = ThrowingStatusPoller(error: ErrorCode.networkError)
         let poller = RewardVerification.Poller(
             statusPoller: throwingPoller, sleeper: RecordingSleeper(), maxAttempts: 3
@@ -93,7 +93,7 @@ final class DispatcherTests: AdapterTestCase {
     }
 
     func testRunFiresFailedOutcomeWhenPollerThrowsTerminalErrorCode() async {
-        let state = RewardVerification.State(clientTransactionID: "tx-terminal")
+        let state = RewardVerification.State(clientTransactionID: "tx-terminal", impressionId: "")
         let throwingPoller = ThrowingStatusPoller(error: ErrorCode.signatureVerificationFailed)
         let poller = RewardVerification.Poller(
             statusPoller: throwingPoller, sleeper: RecordingSleeper(), maxAttempts: 3
@@ -118,7 +118,7 @@ final class DispatcherTests: AdapterTestCase {
     }
 
     func testRunForwardsNoRewardCaseUnchangedThroughVerifiedOutcome() async {
-        let state = RewardVerification.State(clientTransactionID: "tx-no-reward")
+        let state = RewardVerification.State(clientTransactionID: "tx-no-reward", impressionId: "")
         let poller = self.makePoller(statuses: [.verified(.noReward)])
         let recorder = OutcomeRecorder()
 
@@ -135,7 +135,7 @@ final class DispatcherTests: AdapterTestCase {
     }
 
     func testRunForwardsUnsupportedRewardCaseUnchangedThroughVerifiedOutcome() async {
-        let state = RewardVerification.State(clientTransactionID: "tx-unsupported-reward")
+        let state = RewardVerification.State(clientTransactionID: "tx-unsupported-reward", impressionId: "")
         let poller = self.makePoller(statuses: [.verified(.unsupportedReward)])
         let recorder = OutcomeRecorder()
 
@@ -156,7 +156,7 @@ final class DispatcherTests: AdapterTestCase {
     // MARK: - One-shot guard
 
     func testRunDoesNotFireWhenStateGuardAlreadyConsumed() async {
-        let state = RewardVerification.State(clientTransactionID: "tx-already-fired")
+        let state = RewardVerification.State(clientTransactionID: "tx-already-fired", impressionId: "")
         XCTAssertTrue(state.consumeFireToken(), "Pre-consume the guard before invoking the dispatcher")
         let poller = self.makePoller(statuses: [.verified(.noReward)])
         let recorder = OutcomeRecorder()
@@ -173,7 +173,7 @@ final class DispatcherTests: AdapterTestCase {
     }
 
     func testRunFiresHandlerAtMostOnceForBackToBackCalls() async {
-        let state = RewardVerification.State(clientTransactionID: "tx-once")
+        let state = RewardVerification.State(clientTransactionID: "tx-once", impressionId: "")
         let recorder = OutcomeRecorder()
 
         await RewardVerification.Dispatcher.run(
@@ -197,7 +197,7 @@ final class DispatcherTests: AdapterTestCase {
 
     func testDispatchCompletesAndForwardsVerifiedOutcome() async throws {
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 7))
-        let state = RewardVerification.State(clientTransactionID: "tx-dispatch")
+        let state = RewardVerification.State(clientTransactionID: "tx-dispatch", impressionId: "")
         let poller = self.makePoller(statuses: [.verified(.virtualCurrency(reward))])
         let recorder = OutcomeRecorder()
 
@@ -218,7 +218,7 @@ final class DispatcherTests: AdapterTestCase {
     }
 
     func testDispatchCancellationDoesNotFireHandlerAndPreservesGuard() async {
-        let state = RewardVerification.State(clientTransactionID: "tx-dispatch-cancel")
+        let state = RewardVerification.State(clientTransactionID: "tx-dispatch-cancel", impressionId: "")
         let hangingPoller = HangingStatusPoller()
         let poller = RewardVerification.Poller(
             statusPoller: hangingPoller,
@@ -248,7 +248,7 @@ final class DispatcherTests: AdapterTestCase {
     // MARK: - Threading
 
     func testRunDeliversOutcomeOnMainActor() async {
-        let state = RewardVerification.State(clientTransactionID: "tx-main-actor")
+        let state = RewardVerification.State(clientTransactionID: "tx-main-actor", impressionId: "")
         let poller = self.makePoller(statuses: [.verified(.noReward)])
         let mainActorAssertion = MainActorAssertionRecorder()
 

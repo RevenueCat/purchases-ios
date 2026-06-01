@@ -8,7 +8,7 @@ import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @_spi(Experimental) import RevenueCat
 
 @available(iOS 15.0, *)
 internal extension RewardVerification {
@@ -17,6 +17,9 @@ internal extension RewardVerification {
     protocol CapableAd: AnyObject {
         var serverSideVerificationOptions: GoogleMobileAds.ServerSideVerificationOptions? { get set }
         var responseInfo: GoogleMobileAds.ResponseInfo { get }
+        var adUnitID: String { get }
+        var adReward: GoogleMobileAds.AdReward { get }
+        var rewardedAdFormat: RevenueCat.AdFormat { get }
     }
 
     /// Load-time SSV setup for rewarded AdMob ads.
@@ -69,7 +72,7 @@ internal extension RewardVerification {
             options.customRewardText = customRewardText
             loadedAd.serverSideVerificationOptions = options
 
-            let state = State(clientTransactionID: clientTransactionID)
+            let state = State(clientTransactionID: clientTransactionID, impressionId: impressionId)
             RewardVerification.stateStore.set(state, for: loadedAd)
             return state
         }
@@ -100,9 +103,43 @@ internal extension RewardVerification {
 }
 
 @available(iOS 15.0, *)
-extension GoogleMobileAds.RewardedAd: RewardVerification.CapableAd {}
+extension GoogleMobileAds.RewardedAd: RewardVerification.CapableAd {
+    internal var rewardedAdFormat: RevenueCat.AdFormat { .rewarded }
+}
 
 @available(iOS 15.0, *)
-extension GoogleMobileAds.RewardedInterstitialAd: RewardVerification.CapableAd {}
+extension GoogleMobileAds.RewardedInterstitialAd: RewardVerification.CapableAd {
+    internal var rewardedAdFormat: RevenueCat.AdFormat { .rewardedInterstitial }
+}
+
+@available(iOS 15.0, *)
+internal extension RewardVerification.CapableAd {
+    /// Impression identifier derived from the loaded ad, with the canonical fallback applied.
+    var impressionId: String {
+        Tracking.Adapter.impressionID(from: self.responseInfo)
+    }
+
+    @MainActor
+    func fireEarnedUnverifiedEvent(
+        tracker: Tracking.Tracker,
+        impressionId: String,
+        rewardVerificationEnabled: Bool
+    ) {
+        guard tracker.isConfigured else { return }
+        let placement = Tracking.Adapter.shared.fullScreenDelegateStore
+            .retrieve(for: self)?.placement
+        tracker.trackAdRewardEarnedUnverified(.init(
+            networkName: self.responseInfo.loadedAdNetworkResponseInfo?.adNetworkClassName,
+            mediatorName: .adMob,
+            adFormat: self.rewardedAdFormat,
+            placement: placement,
+            adUnitId: self.adUnitID,
+            impressionId: impressionId,
+            rewardVerificationEnabled: rewardVerificationEnabled,
+            rewardItem: self.adReward.type,
+            rewardAmount: self.adReward.amount.intValue
+        ))
+    }
+}
 
 #endif

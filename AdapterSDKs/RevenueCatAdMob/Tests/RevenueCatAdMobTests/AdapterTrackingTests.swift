@@ -3,7 +3,7 @@ import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Experimental) import RevenueCat
+@_spi(Internal) @_spi(Experimental) import RevenueCat
 @_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
@@ -73,6 +73,40 @@ final class MockAdTracker: Tracking.Tracker {
             adUnitId: data.adUnitId
         ))
         self.failedToLoadData.append(data)
+    }
+
+    private(set) var rewardEarnedUnverifiedData: [AdRewardEarnedUnverified] = []
+    private(set) var rewardVerifiedData: [AdRewardVerified] = []
+    private(set) var rewardFailedToVerifyData: [AdRewardFailedToVerify] = []
+
+    func trackAdRewardEarnedUnverified(_ data: AdRewardEarnedUnverified) {
+        self.calls.append(Call(
+            method: "trackAdRewardEarnedUnverified",
+            adFormat: data.adFormat.rawValue,
+            placement: data.placement,
+            adUnitId: data.adUnitId
+        ))
+        self.rewardEarnedUnverifiedData.append(data)
+    }
+
+    func trackAdRewardVerified(_ data: AdRewardVerified) {
+        self.calls.append(Call(
+            method: "trackAdRewardVerified",
+            adFormat: data.adFormat.rawValue,
+            placement: data.placement,
+            adUnitId: data.adUnitId
+        ))
+        self.rewardVerifiedData.append(data)
+    }
+
+    func trackAdRewardFailedToVerify(_ data: AdRewardFailedToVerify) {
+        self.calls.append(Call(
+            method: "trackAdRewardFailedToVerify",
+            adFormat: data.adFormat.rawValue,
+            placement: data.placement,
+            adUnitId: data.adUnitId
+        ))
+        self.rewardFailedToVerifyData.append(data)
     }
 }
 

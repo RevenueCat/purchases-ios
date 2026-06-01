@@ -4,6 +4,8 @@
 //  Created by RevenueCat on 2/13/26.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
@@ -204,6 +206,8 @@ internal extension GoogleMobileAds.RewardedAd {
     ///
     /// Call this instead of `present(from:userDidEarnRewardHandler:)` when you want to specify or override
     /// the placement at show time. The placement passed here takes precedence over any placement provided at load time.
+    ///
+    /// Fires `AdRewardEarnedUnverified` (with `rewardVerificationEnabled: false`) before invoking the handler.
     @MainActor
     func present(
         from viewController: UIViewController,
@@ -211,7 +215,16 @@ internal extension GoogleMobileAds.RewardedAd {
         userDidEarnRewardHandler: @escaping () -> Void
     ) {
         Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
-        self.present(from: viewController, userDidEarnRewardHandler: userDidEarnRewardHandler)
+        self.present(from: viewController, userDidEarnRewardHandler: { [weak self] in
+            if let self {
+                self.fireEarnedUnverifiedEvent(
+                    tracker: Tracking.Adapter.shared.tracker,
+                    impressionId: self.impressionId,
+                    rewardVerificationEnabled: false
+                )
+            }
+            userDidEarnRewardHandler()
+        })
     }
 }
 
@@ -275,6 +288,8 @@ internal extension GoogleMobileAds.RewardedInterstitialAd {
     ///
     /// Call this instead of `present(from:userDidEarnRewardHandler:)` when you want to specify or override
     /// the placement at show time. The placement passed here takes precedence over any placement provided at load time.
+    ///
+    /// Fires `AdRewardEarnedUnverified` (with `rewardVerificationEnabled: false`) before invoking the handler.
     @MainActor
     func present(
         from viewController: UIViewController,
@@ -282,7 +297,16 @@ internal extension GoogleMobileAds.RewardedInterstitialAd {
         userDidEarnRewardHandler: @escaping () -> Void
     ) {
         Tracking.Adapter.shared.fullScreenDelegateStore.retrieve(for: self)?.placement = placement
-        self.present(from: viewController, userDidEarnRewardHandler: userDidEarnRewardHandler)
+        self.present(from: viewController, userDidEarnRewardHandler: { [weak self] in
+            if let self {
+                self.fireEarnedUnverifiedEvent(
+                    tracker: Tracking.Adapter.shared.tracker,
+                    impressionId: self.impressionId,
+                    rewardVerificationEnabled: false
+                )
+            }
+            userDidEarnRewardHandler()
+        })
     }
 }
 

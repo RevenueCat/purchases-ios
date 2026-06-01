@@ -7,7 +7,7 @@
 import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
-@_spi(Experimental) import RevenueCat
+@_spi(Internal) @_spi(Experimental) import RevenueCat
 
 @available(iOS 15.0, *)
 internal extension Tracking {
@@ -24,6 +24,9 @@ internal extension Tracking {
         func trackAdOpened(_ data: AdOpened)
         func trackAdRevenue(_ data: AdRevenue)
         func trackAdFailedToLoad(_ data: AdFailedToLoad)
+        func trackAdRewardEarnedUnverified(_ data: AdRewardEarnedUnverified)
+        func trackAdRewardVerified(_ data: AdRewardVerified)
+        func trackAdRewardFailedToVerify(_ data: AdRewardFailedToVerify)
     }
 
 }

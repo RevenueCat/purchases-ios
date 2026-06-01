@@ -17,11 +17,13 @@ internal extension RewardVerification {
     final class State {
 
         let clientTransactionID: String
+        let impressionId: String
 
         private var didFire = false
 
-        init(clientTransactionID: String) {
+        init(clientTransactionID: String, impressionId: String) {
             self.clientTransactionID = clientTransactionID
+            self.impressionId = impressionId
         }
 
         /// Returns `true` exactly once per instance; subsequent calls return `false`.
