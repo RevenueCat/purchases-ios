@@ -57,6 +57,13 @@ struct RootView: View {
         Color.clear.frame(width: 1)
     }
 
+    private var paywallRootStackIsZLayer: Bool {
+        if case .zlayer = self.viewModel.stackViewModel.component.dimension {
+            return true
+        }
+        return false
+    }
+
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
             if let headerViewModel = viewModel.headerViewModel,
@@ -111,6 +118,7 @@ struct RootView: View {
                 .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer)
         .environment(\.openSheet, { sheet in
             self.sheetViewModel = sheet
         })
