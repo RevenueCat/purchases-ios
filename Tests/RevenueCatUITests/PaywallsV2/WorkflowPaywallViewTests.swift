@@ -56,30 +56,9 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(action) == .dismissWorkflow
     }
 
-    func testDoesNotEmitTerminalCompletionWhenNoPageRendered() {
-        // A step that never rendered (initial build failure) or a forward/back destination that failed
-        // to render clears `currentPage`. Terminal completion must not fire for such a step, otherwise it
-        // emits a `stepCompleted` with no preceding `stepStarted`. Mirrors Android's `_workflowState`
-        // being null in those cases, which makes its terminal completion a no-op.
-        expect(WorkflowPaywallView.shouldTrackTerminalCompletion(
-            hasTrackedTerminalCompletion: false,
-            hasRenderedPage: false
-        )).to(beFalse())
-    }
-
-    func testEmitsTerminalCompletionWhenPageRenderedAndNotYetTracked() {
-        expect(WorkflowPaywallView.shouldTrackTerminalCompletion(
-            hasTrackedTerminalCompletion: false,
-            hasRenderedPage: true
-        )).to(beTrue())
-    }
-
-    func testDoesNotEmitTerminalCompletionWhenAlreadyTracked() {
-        expect(WorkflowPaywallView.shouldTrackTerminalCompletion(
-            hasTrackedTerminalCompletion: true,
-            hasRenderedPage: true
-        )).to(beFalse())
-    }
+    // Terminal-completion gating (no page -> no emit; page + untracked -> emit; already-tracked -> no emit)
+    // moved to `WorkflowStepEventCoordinatorTests`, which asserts the emitted events directly rather than a
+    // bool decision.
 
     func testTransitionStateStartsWithoutOutgoingPage() {
         let state = WorkflowPageTransitionState(currentPage: "step_1")
