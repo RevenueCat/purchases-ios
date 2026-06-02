@@ -1,0 +1,237 @@
+{
+  "fixtures": [
+    {
+      "id": "none_returns_true_when_no_item_matches",
+      "predicate": {
+        "none": [
+          [
+            -1,
+            -2,
+            -3
+          ],
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "none_returns_false_on_first_match",
+      "predicate": {
+        "none": [
+          [
+            -1,
+            2,
+            -3
+          ],
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "none_returns_true_for_empty_array",
+      "predicate": {
+        "none": [
+          [],
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "none_returns_true_for_null_source_per_json_logic_spec",
+      "description": "none returns true for a non-array source (unlike some/all) because the JS reference defines none via filter, which yields [] for non-arrays, and [].length === 0 is true",
+      "predicate": {
+        "none": [
+          null,
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "none_returns_true_for_object_source_per_json_logic_spec",
+      "predicate": {
+        "none": [
+          {
+            "foo": 1,
+            "bar": 2
+          },
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "none_returns_true_for_string_source_per_json_logic_spec",
+      "predicate": {
+        "none": [
+          "abc",
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "none_predicate_sees_current_item_via_empty_var",
+      "predicate": {
+        "none": [
+          [
+            false,
+            false,
+            false
+          ],
+          {
+            "var": ""
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "none_missing_predicate_returns_true",
+      "description": "a missing predicate evaluates to null (never truthy) per item, so none returns true for any non-empty source",
+      "predicate": {
+        "none": [
+          [
+            1,
+            2
+          ]
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "none_map_filter_predicate_cannot_reach_parent_scope__none",
+      "description": "none/map/filter predicates cannot reach the parent scope; outer flag resolves to null inside the per-item evaluation",
+      "predicate": {
+        "none": [
+          [
+            {},
+            {}
+          ],
+          {
+            "==": [
+              {
+                "var": "flag"
+              },
+              true
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "flag": true
+      },
+      "expected": true
+    },
+    {
+      "id": "none_map_filter_predicate_cannot_reach_parent_scope__map",
+      "description": "map predicate cannot reach the parent scope; flag resolves to null so each item yields false, giving [false,false] compared via string coercion",
+      "predicate": {
+        "==": [
+          {
+            "map": [
+              [
+                {},
+                {}
+              ],
+              {
+                "==": [
+                  {
+                    "var": "flag"
+                  },
+                  true
+                ]
+              }
+            ]
+          },
+          "false,false"
+        ]
+      },
+      "variables": {
+        "flag": true
+      },
+      "expected": true
+    },
+    {
+      "id": "none_map_filter_predicate_cannot_reach_parent_scope__filter",
+      "description": "filter predicate cannot reach the parent scope; flag resolves to null so nothing is retained, giving [] compared via string coercion to the empty string",
+      "predicate": {
+        "==": [
+          {
+            "filter": [
+              [
+                {},
+                {}
+              ],
+              {
+                "==": [
+                  {
+                    "var": "flag"
+                  },
+                  true
+                ]
+              }
+            ]
+          },
+          ""
+        ]
+      },
+      "variables": {
+        "flag": true
+      },
+      "expected": true
+    }
+  ]
+}

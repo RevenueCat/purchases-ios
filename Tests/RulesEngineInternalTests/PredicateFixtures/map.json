@@ -1,0 +1,161 @@
+{
+  "fixtures": [
+    {
+      "id": "map_applies_predicate_to_each_item",
+      "description": "map produces [2,4,6] (arithmetic widens to float); compared by JS string coercion since loose == is always false for array-vs-array",
+      "predicate": {
+        "==": [
+          {
+            "map": [
+              [
+                1,
+                2,
+                3
+              ],
+              {
+                "*": [
+                  {
+                    "var": ""
+                  },
+                  2
+                ]
+              }
+            ]
+          },
+          "2,4,6"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "map_preserves_empty_array",
+      "description": "empty-array result compared by string coercion to the empty string",
+      "predicate": {
+        "==": [
+          {
+            "map": [
+              [],
+              {
+                "var": ""
+              }
+            ]
+          },
+          ""
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "map_returns_empty_array_for_null_source",
+      "description": "empty-array result compared by string coercion to the empty string",
+      "predicate": {
+        "==": [
+          {
+            "map": [
+              null,
+              {
+                "var": ""
+              }
+            ]
+          },
+          ""
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "map_returns_empty_array_for_object_source",
+      "description": "empty-array result compared by string coercion to the empty string",
+      "predicate": {
+        "==": [
+          {
+            "map": [
+              {
+                "foo": 1,
+                "bar": 2
+              },
+              {
+                "var": ""
+              }
+            ]
+          },
+          ""
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "map_returns_empty_array_for_string_source",
+      "description": "empty-array result compared by string coercion to the empty string",
+      "predicate": {
+        "==": [
+          {
+            "map": [
+              "abc",
+              {
+                "var": ""
+              }
+            ]
+          },
+          ""
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "map_and_reduce_compose_end_to_end",
+      "description": "chains map then reduce to sum-of-squares end-to-end: 1 + 4 + 9 + 16 = 30",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              {
+                "map": [
+                  {
+                    "var": "integers"
+                  },
+                  {
+                    "*": [
+                      {
+                        "var": ""
+                      },
+                      {
+                        "var": ""
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "+": [
+                  {
+                    "var": "current"
+                  },
+                  {
+                    "var": "accumulator"
+                  }
+                ]
+              },
+              0
+            ]
+          },
+          30
+        ]
+      },
+      "variables": {
+        "integers": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "expected": true
+    }
+  ]
+}

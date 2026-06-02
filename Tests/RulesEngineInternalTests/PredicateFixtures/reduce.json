@@ -1,0 +1,391 @@
+{
+  "fixtures": [
+    {
+      "id": "reduce_sums_array",
+      "description": "canonical sum example from the json-logic-js README",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              [
+                1,
+                2,
+                3,
+                4
+              ],
+              {
+                "+": [
+                  {
+                    "var": "current"
+                  },
+                  {
+                    "var": "accumulator"
+                  }
+                ]
+              },
+              0
+            ]
+          },
+          10
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "reduce_returns_initial_accumulator_for_empty_array",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              [],
+              {
+                "+": [
+                  {
+                    "var": "current"
+                  },
+                  {
+                    "var": "accumulator"
+                  }
+                ]
+              },
+              7
+            ]
+          },
+          7
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "reduce_returns_initial_accumulator_for_null_source",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              null,
+              {
+                "+": [
+                  {
+                    "var": "current"
+                  },
+                  {
+                    "var": "accumulator"
+                  }
+                ]
+              },
+              7
+            ]
+          },
+          7
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "reduce_returns_initial_accumulator_for_object_source",
+      "description": "multi-key object is treated as literal data rather than dispatched as an operator, so reduce returns the initial accumulator",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              {
+                "foo": 1,
+                "bar": 2
+              },
+              {
+                "+": [
+                  {
+                    "var": "current"
+                  },
+                  {
+                    "var": "accumulator"
+                  }
+                ]
+              },
+              7
+            ]
+          },
+          7
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "reduce_returns_initial_accumulator_for_string_source",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              "abc",
+              {
+                "+": [
+                  {
+                    "var": "current"
+                  },
+                  {
+                    "var": "accumulator"
+                  }
+                ]
+              },
+              7
+            ]
+          },
+          7
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "reduce_evaluates_initial_accumulator_in_outer_scope",
+      "description": "the initial accumulator is an expression evaluated in the outer scope: seed resolves to 100, result is 100 + 1 + 2 = 103",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              [
+                1,
+                2
+              ],
+              {
+                "+": [
+                  {
+                    "var": "current"
+                  },
+                  {
+                    "var": "accumulator"
+                  }
+                ]
+              },
+              {
+                "var": "seed"
+              }
+            ]
+          },
+          103
+        ]
+      },
+      "variables": {
+        "seed": 100
+      },
+      "expected": true
+    },
+    {
+      "id": "reduce_evaluates_source_in_outer_scope",
+      "description": "the source array is also evaluated in the outer scope, so the first argument can be an expression",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              {
+                "var": "nums"
+              },
+              {
+                "+": [
+                  {
+                    "var": "current"
+                  },
+                  {
+                    "var": "accumulator"
+                  }
+                ]
+              },
+              0
+            ]
+          },
+          6
+        ]
+      },
+      "variables": {
+        "nums": [
+          1,
+          2,
+          3
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "reduce_predicate_scope_is_current_and_accumulator_only",
+      "description": "the predicate sees only {current, accumulator}; outer bonus is not visible, so the result is 1+2+3 = 6",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              [
+                1,
+                2,
+                3
+              ],
+              {
+                "+": [
+                  {
+                    "var": "current"
+                  },
+                  {
+                    "var": "accumulator"
+                  }
+                ]
+              },
+              0
+            ]
+          },
+          6
+        ]
+      },
+      "variables": {
+        "bonus": 1000
+      },
+      "expected": true
+    },
+    {
+      "id": "reduce_predicate_cannot_reach_parent_scope",
+      "description": "a var lookup against a nonexistent key in the reduce scope resolves to null, not the parent's value; multiplier resolves to null so the accumulator becomes current each step, ending at 3",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              [
+                1,
+                2,
+                3
+              ],
+              {
+                "if": [
+                  {
+                    "==": [
+                      {
+                        "var": "multiplier"
+                      },
+                      null
+                    ]
+                  },
+                  {
+                    "var": "current"
+                  },
+                  -999
+                ]
+              },
+              0
+            ]
+          },
+          3
+        ]
+      },
+      "variables": {
+        "multiplier": 10
+      },
+      "expected": true
+    },
+    {
+      "id": "reduce_missing_initial_empty_source_is_null",
+      "description": "{\"reduce\": [src, pred]} with no initial defaults to null; an empty source returns the implicit null seed unchanged",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              [],
+              {
+                "+": [
+                  {
+                    "var": "current"
+                  },
+                  {
+                    "var": "accumulator"
+                  }
+                ]
+              }
+            ]
+          },
+          null
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "reduce_missing_initial_non_empty_propagates_nan",
+      "description": "with an implicit null seed, null + items starts as parseFloat(\"null\") = NaN and propagates; x != x is true iff x is NaN",
+      "predicate": {
+        "!=": [
+          {
+            "reduce": [
+              [
+                1,
+                2,
+                3
+              ],
+              {
+                "+": [
+                  {
+                    "var": "current"
+                  },
+                  {
+                    "var": "accumulator"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "reduce": [
+              [
+                1,
+                2,
+                3
+              ],
+              {
+                "+": [
+                  {
+                    "var": "current"
+                  },
+                  {
+                    "var": "accumulator"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "reduce_extra_args_ignored",
+      "description": "{\"reduce\": [src, pred, init, extra...]} ignores arguments past the first three",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              [
+                1,
+                2,
+                3
+              ],
+              {
+                "+": [
+                  {
+                    "var": "current"
+                  },
+                  {
+                    "var": "accumulator"
+                  }
+                ]
+              },
+              10,
+              999
+            ]
+          },
+          16
+        ]
+      },
+      "variables": {},
+      "expected": true
+    }
+  ]
+}
