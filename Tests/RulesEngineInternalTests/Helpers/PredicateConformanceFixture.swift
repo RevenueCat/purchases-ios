@@ -50,10 +50,8 @@ struct ExpectedError: Equatable, Decodable {
 
 struct ExpectedWarnings: Equatable, Decodable {
 
-    /// Substrings that must each appear in some emitted warning. The match is
-    /// count-agnostic on purpose: asserting an exact warning count couples the
-    /// fixtures to engine internals. An empty list asserts that no warning is
-    /// emitted at all.
+    /// Substrings that must each appear in some emitted warning. An empty list
+    /// asserts that no warning is emitted at all.
     let contains: [String]
 
     enum CodingKeys: String, CodingKey {
