@@ -418,6 +418,9 @@ public class PaywallViewController: UIViewController {
     /// Prefetches the exit offer for the current offering.
     @MainActor
     private func prefetchExitOffer() async {
+        // When the workflows endpoint is enabled, exit offers are resolved from WorkflowContext.
+        guard !ProcessInfo.processInfo.workflowsEndpointEnabled else { return }
+
         guard let offering = await self.purchaseHandler.resolveOffering(for: self.configuration.content) else {
             return
         }

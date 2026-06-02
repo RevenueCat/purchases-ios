@@ -282,17 +282,18 @@ extension PurchaseHandler {
 #endif
 
     func cachedInitialOffering(for content: PaywallViewConfiguration.Content) -> Offering? {
+#if !os(tvOS)
+        return self.cachedInitialOffering(
+            for: content,
+            workflowsEndpointEnabled: ProcessInfo.processInfo.workflowsEndpointEnabled
+        )
+#else
         switch content {
         case let .offering(offering):
             return offering
         case .defaultOffering:
             return self.purchases.cachedOfferings?.current
         case let .offeringIdentifier(identifier, presentedOfferingContext):
-            #if !os(tvOS)
-            if ProcessInfo.processInfo.workflowsEndpointEnabled {
-                return nil
-            }
-            #endif
             let offering = self.purchases.cachedOfferings?.offering(identifier: identifier)
 
             if let presentedOfferingContext {
@@ -301,6 +302,7 @@ extension PurchaseHandler {
 
             return offering
         }
+#endif
     }
 
     func resolveOffering(for content: PaywallViewConfiguration.Content) async -> Offering? {
@@ -350,6 +352,30 @@ extension PurchaseHandler {
     }
 
 #if !os(tvOS)
+    func cachedInitialOffering(
+        for content: PaywallViewConfiguration.Content,
+        workflowsEndpointEnabled: Bool
+    ) -> Offering? {
+        if workflowsEndpointEnabled {
+            return nil
+        }
+
+        switch content {
+        case let .offering(offering):
+            return offering
+        case .defaultOffering:
+            return self.purchases.cachedOfferings?.current
+        case let .offeringIdentifier(identifier, presentedOfferingContext):
+            let offering = self.purchases.cachedOfferings?.offering(identifier: identifier)
+
+            if let presentedOfferingContext {
+                return offering?.withPresentedOfferingContext(presentedOfferingContext)
+            }
+
+            return offering
+        }
+    }
+
     func resolvePaywallViewData(
         for content: PaywallViewConfiguration.Content
     ) async throws -> ResolvedPaywallViewData {
@@ -365,9 +391,24 @@ extension PurchaseHandler {
     ) async throws -> ResolvedPaywallViewData {
         switch content {
         case let .offering(offering):
+            if workflowsEndpointEnabled {
+                return try await self.resolveWorkflowPaywallViewData(
+                    for: offering,
+                    workflowsEndpointEnabled: workflowsEndpointEnabled
+                )
+            }
+
             return .init(offering: offering, workflowContext: nil)
         case .defaultOffering:
             let offering = try await self.purchases.offerings().current.orThrow(PaywallError.noCurrentOffering)
+
+            if workflowsEndpointEnabled {
+                return try await self.resolveWorkflowPaywallViewData(
+                    for: offering,
+                    workflowsEndpointEnabled: workflowsEndpointEnabled
+                )
+            }
+
             return .init(offering: offering, workflowContext: nil)
         case let .offeringIdentifier(identifier, presentedOfferingContext):
             return try await self.resolveOfferingIdentifier(
@@ -380,6 +421,19 @@ extension PurchaseHandler {
 #endif
 
 #if !os(tvOS)
+    private func resolveWorkflowPaywallViewData(
+        for offering: Offering,
+        workflowsEndpointEnabled: Bool
+    ) async throws -> ResolvedPaywallViewData {
+        let (context, resolvedOffering) = try await self.resolveWorkflowContext(
+            identifier: offering.identifier,
+            presentedOfferingContext: offering.availablePackages.first?.presentedOfferingContext,
+            workflowsEndpointEnabled: workflowsEndpointEnabled
+        )
+
+        return .init(offering: resolvedOffering, workflowContext: context)
+    }
+
     private func resolveOfferingIdentifier(
         identifier: String,
         presentedOfferingContext: PresentedOfferingContext?,

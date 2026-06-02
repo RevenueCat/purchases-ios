@@ -51,6 +51,159 @@ final class PaywallViewConfigurationTests: TestCase {
     }
 
 #if !os(tvOS)
+    func testCachedInitialOfferingReturnsNilForAllContentWhenWorkflowsEndpointEnabled() {
+        let cachedOffering = TestData.offeringWithNoIntroOffer
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.cachedOfferings = Self.createOfferings(
+            [cachedOffering],
+            currentOfferingID: cachedOffering.identifier
+        )
+
+        expect(handler.cachedInitialOffering(
+            for: .offering(cachedOffering),
+            workflowsEndpointEnabled: true
+        )).to(beNil())
+        expect(handler.cachedInitialOffering(
+            for: .defaultOffering,
+            workflowsEndpointEnabled: true
+        )).to(beNil())
+        expect(handler.cachedInitialOffering(
+            for: .offeringIdentifier(cachedOffering.identifier, presentedOfferingContext: nil),
+            workflowsEndpointEnabled: true
+        )).to(beNil())
+    }
+
+    func testCachedInitialOfferingUsesCachedOfferingsWhenWorkflowsEndpointDisabled() {
+        let cachedOffering = TestData.offeringWithNoIntroOffer
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.cachedOfferings = Self.createOfferings(
+            [cachedOffering],
+            currentOfferingID: cachedOffering.identifier
+        )
+
+        expect(handler.cachedInitialOffering(
+            for: .offering(cachedOffering),
+            workflowsEndpointEnabled: false
+        )) === cachedOffering
+        expect(handler.cachedInitialOffering(
+            for: .defaultOffering,
+            workflowsEndpointEnabled: false
+        )?.identifier) == cachedOffering.identifier
+        expect(handler.cachedInitialOffering(
+            for: .offeringIdentifier(cachedOffering.identifier, presentedOfferingContext: nil),
+            workflowsEndpointEnabled: false
+        )?.identifier) == cachedOffering.identifier
+    }
+
+    func testResolvePaywallViewDataReturnsNilWorkflowContextWhenWorkflowsEndpointDisabled() async throws {
+        let initialOffering = Self.createOffering(identifier: "offering_a")
+            .withPresentedOfferingContext(Self.createPresentedOfferingContext(offeringIdentifier: "offering_a"))
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.offeringsBlock = {
+            Self.createOfferings(
+                [initialOffering],
+                currentOfferingID: initialOffering.identifier
+            )
+        }
+        purchases.workflowBlock = { _ in
+            XCTFail("Workflow endpoint should not be fetched when workflowsEndpointEnabled is false")
+            throw ErrorCode.configurationError
+        }
+
+        let offeringResult = try await handler.resolvePaywallViewData(
+            for: .offering(initialOffering),
+            workflowsEndpointEnabled: false
+        )
+        let defaultOfferingResult = try await handler.resolvePaywallViewData(
+            for: .defaultOffering,
+            workflowsEndpointEnabled: false
+        )
+        let offeringIdentifierResult = try await handler.resolvePaywallViewData(
+            for: .offeringIdentifier(initialOffering.identifier, presentedOfferingContext: nil),
+            workflowsEndpointEnabled: false
+        )
+
+        expect(offeringResult.offering.identifier) == initialOffering.identifier
+        expect(offeringResult.workflowContext).to(beNil())
+        expect(defaultOfferingResult.offering.identifier) == initialOffering.identifier
+        expect(defaultOfferingResult.workflowContext).to(beNil())
+        expect(offeringIdentifierResult.offering.identifier) == initialOffering.identifier
+        expect(offeringIdentifierResult.workflowContext).to(beNil())
+    }
+
+    func testResolvePaywallViewDataReturnsWorkflowContextForWorkflowOfferingContent() async throws {
+        let initialOffering = Self.createOffering(identifier: "offering_a")
+            .withPresentedOfferingContext(Self.createPresentedOfferingContext(offeringIdentifier: "offering_a"))
+        let workflowOffering = Self.createOffering(identifier: "offering_b")
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.offeringsBlock = {
+            Self.createOfferings([initialOffering, workflowOffering])
+        }
+        purchases.workflowBlock = { offeringIdentifier in
+            expect(offeringIdentifier) == initialOffering.identifier
+            return try Self.createWorkflowDataResult(offeringIdentifier: workflowOffering.identifier)
+        }
+
+        let result = try await handler.resolvePaywallViewData(
+            for: .offering(initialOffering),
+            workflowsEndpointEnabled: true
+        )
+
+        expect(result.offering.identifier) == workflowOffering.identifier
+        expect(result.offering.paywallComponents).toNot(beNil())
+        expect(result.workflowContext?.initialOffering.identifier) == workflowOffering.identifier
+        expect(result.workflowContext?.presentedOfferingContext?.offeringIdentifier) == initialOffering.identifier
+
+        let packageContext = try XCTUnwrap(result.offering.availablePackages.first?.presentedOfferingContext)
+        expect(packageContext.offeringIdentifier) == initialOffering.identifier
+        expect(packageContext.placementIdentifier) == "placement_offering_a"
+        expect(packageContext.targetingContext?.revision) == 7
+        expect(packageContext.targetingContext?.ruleId) == "targeting_rule_offering_a"
+    }
+
+    func testResolvePaywallViewDataReturnsWorkflowContextForWorkflowDefaultOffering() async throws {
+        let initialOffering = Self.createOffering(identifier: "offering_a")
+            .withPresentedOfferingContext(.init(offeringIdentifier: "offering_a"))
+        let workflowOffering = Self.createOffering(identifier: "offering_b")
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.offeringsBlock = {
+            Self.createOfferings(
+                [initialOffering, workflowOffering],
+                currentOfferingID: initialOffering.identifier,
+                targeting: .init(revision: 7, ruleId: "targeting_rule_offering_a")
+            )
+        }
+        purchases.workflowBlock = { offeringIdentifier in
+            expect(offeringIdentifier) == initialOffering.identifier
+            return try Self.createWorkflowDataResult(offeringIdentifier: workflowOffering.identifier)
+        }
+
+        let result = try await handler.resolvePaywallViewData(
+            for: .defaultOffering,
+            workflowsEndpointEnabled: true
+        )
+
+        expect(result.offering.identifier) == workflowOffering.identifier
+        expect(result.offering.paywallComponents).toNot(beNil())
+        expect(result.workflowContext?.initialOffering.identifier) == workflowOffering.identifier
+        expect(result.workflowContext?.presentedOfferingContext?.offeringIdentifier) == initialOffering.identifier
+
+        let packageContext = try XCTUnwrap(result.offering.availablePackages.first?.presentedOfferingContext)
+        expect(packageContext.offeringIdentifier) == initialOffering.identifier
+        expect(packageContext.targetingContext?.revision) == 7
+        expect(packageContext.targetingContext?.ruleId) == "targeting_rule_offering_a"
+    }
+
     func testResolvePaywallViewDataReturnsWorkflowContextForWorkflowOfferingIdentifier() async throws {
         let initialOffering = Self.createOffering(identifier: "offering_a")
         let workflowOffering = Self.createOffering(identifier: "offering_b")
@@ -114,15 +267,19 @@ private extension PaywallViewConfigurationTests {
         return self.createOfferings([offering])
     }
 
-    static func createOfferings(_ offerings: [Offering]) -> Offerings {
+    static func createOfferings(
+        _ offerings: [Offering],
+        currentOfferingID: String? = nil,
+        targeting: Offerings.Targeting? = nil
+    ) -> Offerings {
         return Offerings(
             offerings: Dictionary(uniqueKeysWithValues: offerings.map { ($0.identifier, $0) }),
-            currentOfferingID: nil,
+            currentOfferingID: currentOfferingID,
             placements: nil,
-            targeting: nil,
+            targeting: targeting,
             contents: .init(
                 response: .init(
-                    currentOfferingId: nil,
+                    currentOfferingId: currentOfferingID,
                     offerings: [],
                     placements: nil,
                     targeting: nil,
@@ -142,6 +299,17 @@ private extension PaywallViewConfigurationTests {
             paywall: TestData.paywallWithIntroOffer,
             availablePackages: TestData.packages,
             webCheckoutUrl: nil
+        )
+    }
+
+    static func createPresentedOfferingContext(offeringIdentifier: String) -> PresentedOfferingContext {
+        return .init(
+            offeringIdentifier: offeringIdentifier,
+            placementIdentifier: "placement_\(offeringIdentifier)",
+            targetingContext: .init(
+                revision: 7,
+                ruleId: "targeting_rule_\(offeringIdentifier)"
+            )
         )
     }
 
