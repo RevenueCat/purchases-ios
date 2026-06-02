@@ -134,11 +134,16 @@ class WorkflowsCacheTests: TestCase {
         expect(self.cache.workflowId(forOfferingId: "default")) == "wf_2"
     }
 
-    func testWorkflowIdForOfferingIdFallsBackToDiskWhenNotInMemory() {
+    func testWorkflowIdForOfferingIdDoesNotFallBackToDiskWhenNotInMemory() {
+        // The lookup is in-memory only. Restoring the disk copy is the caller's job (via
+        // `cachedWorkflowsListResponseFromDisk()` + `cache(workflowsList:)`), so an uncached list
+        // resolves to nil without touching disk.
         self.deviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
             .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
         ])
-        expect(self.cache.workflowId(forOfferingId: "default")) == "wf_1"
+
+        expect(self.cache.workflowId(forOfferingId: "default")).to(beNil())
+        expect(self.deviceCache.invokedCachedWorkflowsListResponse) == false
     }
 
     func testClearCacheResetsWorkflowsListStalenessAndWorkflowIdLookup() {

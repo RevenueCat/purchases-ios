@@ -31,6 +31,7 @@ final class WorkflowsCache {
 
     private struct CachedList {
         let response: WorkflowsListResponse
+        let offeringIdToWorkflowId: [String: String]
         let lastUpdated: Date
     }
 
@@ -80,7 +81,9 @@ final class WorkflowsCache {
     /// repopulate the cache with the previous user's list (last-write-wins). This is not guarded
     /// here; it self-heals on the next fetch, as the offerings cache does.
     func cache(workflowsList response: WorkflowsListResponse) {
-        self.cachedList.value = CachedList(response: response, lastUpdated: self.dateProvider.now())
+        self.cachedList.value = CachedList(response: response,
+                                           offeringIdToWorkflowId: Self.offeringIdToWorkflowId(from: response),
+                                           lastUpdated: self.dateProvider.now())
         self.deviceCache.cache(workflowsListResponse: response)
     }
 
@@ -90,13 +93,12 @@ final class WorkflowsCache {
         return self.deviceCache.cachedWorkflowsListResponse()
     }
 
-    /// Resolves the workflow id for an offering, derived from ``WorkflowSummary/offeringId`` in the
-    /// cached list. Falls back to the disk copy so it still resolves after a restore, before the
-    /// next fetch repopulates the in-memory cache. If more than one workflow maps to the same
-    /// offering, the last one in the list wins.
+    /// Resolves the workflow id for an offering from the in-memory list, or `nil` when the list
+    /// hasn't been cached this session. Restoring the persisted list after a backend failure is the
+    /// caller's responsibility (via ``cachedWorkflowsListResponseFromDisk()`` + ``cache(workflowsList:)``),
+    /// the same way the offerings cache is hydrated from disk, so this lookup never touches disk.
     func workflowId(forOfferingId offeringId: String) -> String? {
-        let response = self.cachedList.value?.response ?? self.deviceCache.cachedWorkflowsListResponse()
-        return response?.workflows.last { $0.offeringId == offeringId }?.id
+        return self.cachedList.value?.offeringIdToWorkflowId[offeringId]
     }
 
     // MARK: -
@@ -110,6 +112,21 @@ final class WorkflowsCache {
     private func isStale(lastUpdated: Date, isAppBackgrounded: Bool) -> Bool {
         let duration = self.deviceCache.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded)
         return self.dateProvider.now().timeIntervalSince(lastUpdated) >= duration
+    }
+
+    /// Builds the `offeringId → workflowId` lookup from the list. Workflows without an `offeringId`
+    /// are skipped, and when more than one workflow maps to the same offering the last one in the
+    /// list wins.
+    private static func offeringIdToWorkflowId(from response: WorkflowsListResponse) -> [String: String] {
+        var map: [String: String] = [:]
+        for workflow in response.workflows {
+            guard let offeringId = workflow.offeringId else { continue }
+            if map[offeringId] != nil {
+                Logger.warn(Strings.backendError.duplicate_offering_id_in_workflows(offeringId: offeringId))
+            }
+            map[offeringId] = workflow.id
+        }
+        return map
     }
 
 }
