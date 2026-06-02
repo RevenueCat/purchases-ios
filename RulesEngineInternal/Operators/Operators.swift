@@ -59,6 +59,10 @@ enum Operators {
             return try ArithmeticOperators.opDiv(args: args, vars: vars)
         case "%":
             return try ArithmeticOperators.opMod(args: args, vars: vars)
+        case "min":
+            return try MinMaxOperators.opMin(args: args, vars: vars)
+        case "max":
+            return try MinMaxOperators.opMax(args: args, vars: vars)
 
         case "<":
             return try ComparisonOperators.opLt(args: args, vars: vars)
