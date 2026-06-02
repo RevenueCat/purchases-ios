@@ -108,24 +108,43 @@ class WorkflowsCacheTests: TestCase {
 
     func testIsWorkflowsListCacheStaleIsTrueInitiallyAndFalseAfterCaching() {
         expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == true
-        self.cache.cache(workflowsList: .init(workflows: []), workflowIdByOfferingId: [:])
+        self.cache.cache(workflowsList: .init(workflows: []))
         expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == false
     }
 
     func testIsWorkflowsListCacheStaleIsTrueAfterForegroundTTLExpires() {
-        self.cache.cache(workflowsList: .init(workflows: []), workflowIdByOfferingId: [:])
+        self.cache.cache(workflowsList: .init(workflows: []))
         self.dateProvider.advance(by: 6 * 60)
         expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == true
     }
 
-    func testWorkflowIdForOfferingIdReturnsMappedIdOrNil() {
-        self.cache.cache(workflowsList: .init(workflows: []), workflowIdByOfferingId: ["default": "wf_1"])
+    func testWorkflowIdForOfferingIdIsDerivedFromTheCachedList() {
+        self.cache.cache(workflowsList: .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ]))
         expect(self.cache.workflowId(forOfferingId: "default")) == "wf_1"
         expect(self.cache.workflowId(forOfferingId: "premium")).to(beNil())
     }
 
-    func testClearCacheResetsWorkflowsListStalenessAndOfferingIdMap() {
-        self.cache.cache(workflowsList: .init(workflows: []), workflowIdByOfferingId: ["default": "wf_1"])
+    func testWorkflowIdForOfferingIdReturnsLastMatchWhenOfferingIsDuplicated() {
+        self.cache.cache(workflowsList: .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false),
+            .init(id: "wf_2", displayName: "Flow", offeringId: "default", prefetch: false)
+        ]))
+        expect(self.cache.workflowId(forOfferingId: "default")) == "wf_2"
+    }
+
+    func testWorkflowIdForOfferingIdFallsBackToDiskWhenNotInMemory() {
+        self.deviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ])
+        expect(self.cache.workflowId(forOfferingId: "default")) == "wf_1"
+    }
+
+    func testClearCacheResetsWorkflowsListStalenessAndWorkflowIdLookup() {
+        self.cache.cache(workflowsList: .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ]))
         self.cache.clearCache()
         expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == true
         expect(self.cache.workflowId(forOfferingId: "default")).to(beNil())
@@ -134,12 +153,9 @@ class WorkflowsCacheTests: TestCase {
     // MARK: - Disk persistence
 
     func testCacheWorkflowsListPersistsResponseToDisk() {
-        self.cache.cache(
-            workflowsList: .init(workflows: [
-                .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
-            ]),
-            workflowIdByOfferingId: ["default": "wf_1"]
-        )
+        self.cache.cache(workflowsList: .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ]))
         expect(self.deviceCache.cacheWorkflowsListResponseCount) == 1
     }
 

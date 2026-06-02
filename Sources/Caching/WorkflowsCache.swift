@@ -31,7 +31,6 @@ final class WorkflowsCache {
 
     private struct CachedList {
         let response: WorkflowsListResponse
-        let workflowIdByOfferingId: [String: String]
         let lastUpdated: Date
     }
 
@@ -80,10 +79,8 @@ final class WorkflowsCache {
     /// A fetch in flight during an identity transition can complete *after* ``clearCache()`` and
     /// repopulate the cache with the previous user's list (last-write-wins). This is not guarded
     /// here; it self-heals on the next fetch, as the offerings cache does.
-    func cache(workflowsList response: WorkflowsListResponse, workflowIdByOfferingId: [String: String]) {
-        self.cachedList.value = CachedList(response: response,
-                                           workflowIdByOfferingId: workflowIdByOfferingId,
-                                           lastUpdated: self.dateProvider.now())
+    func cache(workflowsList response: WorkflowsListResponse) {
+        self.cachedList.value = CachedList(response: response, lastUpdated: self.dateProvider.now())
         self.deviceCache.cache(workflowsListResponse: response)
     }
 
@@ -93,8 +90,13 @@ final class WorkflowsCache {
         return self.deviceCache.cachedWorkflowsListResponse()
     }
 
+    /// Resolves the workflow id for an offering, derived from ``WorkflowSummary/offeringId`` in the
+    /// cached list. Falls back to the disk copy so it still resolves after a restore, before the
+    /// next fetch repopulates the in-memory cache. If more than one workflow maps to the same
+    /// offering, the last one in the list wins.
     func workflowId(forOfferingId offeringId: String) -> String? {
-        return self.cachedList.value?.workflowIdByOfferingId[offeringId]
+        let response = self.cachedList.value?.response ?? self.deviceCache.cachedWorkflowsListResponse()
+        return response?.workflows.last { $0.offeringId == offeringId }?.id
     }
 
     // MARK: -
