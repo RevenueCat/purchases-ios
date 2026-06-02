@@ -142,21 +142,6 @@ struct WorkflowHeaderTransition {
         return self.mode != .none
     }
 
-    fileprivate var debugName: String {
-        switch self.mode {
-        case .none:
-            return "none"
-        case .entering:
-            return "entering"
-        case .leaving:
-            return "leaving"
-        case .replacing:
-            return "replacing"
-        case .stable:
-            return "stable"
-        }
-    }
-
     init<Header: Equatable>(
         currentHeader: Header?,
         outgoingHeader: Header?
@@ -831,6 +816,7 @@ private struct WorkflowHeaderOverlayPageView: View {
                 onDismiss: self.onDismiss
             )
             .fixedSize(horizontal: false, vertical: true)
+            .fixMacButtons()
             .frame(maxWidth: .infinity, alignment: .top)
             .opacity(self.headerOpacity)
             .environment(\.locale, contentLocale)
