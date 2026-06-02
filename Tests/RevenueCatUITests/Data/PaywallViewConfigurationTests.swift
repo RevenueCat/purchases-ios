@@ -302,6 +302,7 @@ private extension PaywallViewConfigurationTests {
         )
     }
 
+#if !os(tvOS)
     static func createPresentedOfferingContext(offeringIdentifier: String) -> PresentedOfferingContext {
         return .init(
             offeringIdentifier: offeringIdentifier,
@@ -313,7 +314,6 @@ private extension PaywallViewConfigurationTests {
         )
     }
 
-#if !os(tvOS)
     static func createWorkflowDataResult(offeringIdentifier: String) throws -> WorkflowDataResult {
         return .init(
             workflow: try self.createWorkflow(offeringIdentifier: offeringIdentifier),
