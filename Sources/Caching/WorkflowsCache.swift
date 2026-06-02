@@ -31,7 +31,7 @@ import Foundation
 ///
 /// Timestamps are stamped via an injected ``DateProvider`` (rather than reusing `InMemoryCachedObject`,
 /// whose staleness is tied to the real wall clock) so cache-expiry behavior is deterministically
-/// testable, mirroring the Android SDK's `WorkflowsCache`.
+/// testable.
 final class WorkflowsCache {
 
     private struct CachedWorkflow {
@@ -126,6 +126,5 @@ final class WorkflowsCache {
 
 }
 
-// @unchecked because:
-// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+// @unchecked because its mutable state is held in thread-safe `Atomic` containers.
 extension WorkflowsCache: @unchecked Sendable {}
