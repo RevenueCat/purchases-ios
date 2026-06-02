@@ -25,7 +25,7 @@ final class TransactionMetadataSyncHelper {
     private let operationDispatcher: OperationDispatcher
     private let transactionPoster: TransactionPosterType
 
-    private let isSyncing: Atomic<Bool> = .init(false)
+    let isSyncing: Atomic<Bool> = .init(false)
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
 
