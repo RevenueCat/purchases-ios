@@ -16,11 +16,12 @@
     RCInstallmentsInfo *installmentsInfo;
 
     NSInteger commitmentInstallmentsCount __unused = installmentsInfo.commitmentInstallmentsCount;
+    RCSubscriptionPeriod *commitmentInstallmentPeriod __unused = installmentsInfo.commitmentInstallmentPeriod;
+    NSDecimal installmentBillingPrice __unused = installmentsInfo.installmentBillingPrice;
+    NSString *installmentBillingDisplayPrice __unused = installmentsInfo.installmentBillingDisplayPrice;
     RCSubscriptionPeriod *commitmentTotalPeriod __unused = installmentsInfo.commitmentTotalPeriod;
     NSDecimal commitmentTotalPrice __unused = installmentsInfo.commitmentTotalPrice;
     NSString *commitmentTotalDisplayPrice __unused = installmentsInfo.commitmentTotalDisplayPrice;
-    NSDecimal installmentBillingPrice __unused = installmentsInfo.installmentBillingPrice;
-    NSString *installmentBillingDisplayPrice __unused = installmentsInfo.installmentBillingDisplayPrice;
     RCBillingPlanType *billingPlanType __unused = installmentsInfo.billingPlanType;
 }
 
