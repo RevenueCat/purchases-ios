@@ -15,7 +15,7 @@
 import Nimble
 import XCTest
 
-@_spi(Internal) @testable import RevenueCat
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 
 @MainActor
 final class PurchasesRewardVerificationTests: BasePurchasesTests {
@@ -45,7 +45,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
     }
 
     func testPollRewardVerificationStatusMapsVerifiedStatusWithVirtualCurrencyReward() async throws {
-        let reward = VirtualCurrencyReward(code: "coins", amount: 10)
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 10))
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
             .init(status: .verified(.virtualCurrency(reward)))
         )

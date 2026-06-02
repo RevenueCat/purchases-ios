@@ -4,7 +4,7 @@ import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 @testable import RevenueCatAdMob
 
 // swiftlint:disable type_body_length
@@ -14,15 +14,15 @@ final class PollerTests: AdapterTestCase {
 
     // MARK: - Terminal statuses
 
-    func testVerifiedReturnsImmediatelyOnFirstAttemptForwardingPayload() async {
-        let reward = VirtualCurrencyReward(code: "coins", amount: 3)
+    func testVerifiedReturnsImmediatelyOnFirstAttemptForwardingPayload() async throws {
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 3))
         let statusPoller = StubStatusPoller(statuses: [.verified(.virtualCurrency(reward))])
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .verified(.virtualCurrency(let earnedReward)) = outcome else {
+        guard case .verified(let adReward) = outcome, let earnedReward = adReward.virtualCurrency else {
             return XCTFail("Expected .verified(.virtualCurrency), got \(outcome)")
         }
         XCTAssertEqual(earnedReward, reward)
