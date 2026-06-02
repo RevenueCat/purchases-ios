@@ -30,6 +30,7 @@ enum BackendErrorStrings {
     case unexpected_reward_verification_reward_value
     case unknown_workflow_trigger_type(type: String)
     case unknown_workflow_trigger_action_type(type: String)
+    case duplicate_offering_id_in_workflows(offeringId: String)
     case unknown_remote_config_topic(key: String)
 
 }
@@ -60,6 +61,8 @@ extension BackendErrorStrings: LogMessage {
             return "Received unknown workflow trigger type: \(type)"
         case let .unknown_workflow_trigger_action_type(type):
             return "Received unknown workflow trigger action type: \(type)"
+        case let .duplicate_offering_id_in_workflows(offeringId):
+            return "Duplicate offeringId in workflows response: \(offeringId)"
         case let .unknown_remote_config_topic(key):
             return "Received unknown remote config topic: \(key)"
         }
