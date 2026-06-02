@@ -171,11 +171,10 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         let sk2Product = sk2StoreProduct.underlyingSK2Product
 
         #if compiler(>=6.3.2)
-        if let installmentsInfo = sk2StoreProduct.installmentsInfo,
+        if sk2StoreProduct.installmentsInfo != nil,
            let subscription = sk2Product.subscription {
-            let billingPlanContainsIntroOffer = sk2StoreProduct.contains(
-                subscriptionOfferType: .introductory,
-                on: installmentsInfo.billingPlanType
+            let billingPlanContainsIntroOffer = sk2StoreProduct.containsSubscriptionOfferTypeOnBillingPlan(
+                subscriptionOfferType: .introductory
             )
 
             guard billingPlanContainsIntroOffer else {
