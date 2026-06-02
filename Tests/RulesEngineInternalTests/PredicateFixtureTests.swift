@@ -20,9 +20,7 @@ struct PredicateFixtureTests {
 
     @Test
     func fixturesLoadSuccessfully() throws {
-        let directory = PredicateConformanceFixtureLoader.inRepoFixturesDirectoryURL()
-        let cases = try PredicateConformanceFixtureLoader.loadCases(fromDirectory: directory)
-        try #require(!cases.isEmpty, "Expected at least one in-repo predicate fixture")
+        try #require(!Self.fixtures.isEmpty, "Expected at least one in-repo predicate fixture")
     }
 
     @Test(arguments: Self.fixtures)
