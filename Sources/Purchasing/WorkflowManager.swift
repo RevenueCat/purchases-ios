@@ -1,0 +1,157 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  WorkflowManager.swift
+//
+//  Created by RevenueCat.
+
+import Foundation
+
+/// Orchestrates fetching paywall workflows on top of the `WorkflowsAPI` networking layer, mirroring
+/// the role `OfferingsManager` plays for offerings. It serves a fresh cached workflow without a
+/// backend round-trip via ``WorkflowsCache``, and prefetches workflows flagged `prefetch == true`
+/// so they are warm by the time their paywall opens.
+class WorkflowManager {
+
+    private let backend: Backend
+    private let workflowsCache: WorkflowsCache
+    private let paywallCache: PaywallCacheWarmingType?
+    private let operationDispatcher: OperationDispatcher
+
+    init(backend: Backend,
+         workflowsCache: WorkflowsCache,
+         paywallCache: PaywallCacheWarmingType?,
+         operationDispatcher: OperationDispatcher) {
+        self.backend = backend
+        self.workflowsCache = workflowsCache
+        self.paywallCache = paywallCache
+        self.operationDispatcher = operationDispatcher
+    }
+
+    /// Resolves a workflow, serving a fresh cached result without a backend round-trip when possible.
+    /// On a cache miss (or stale entry) it fetches from the backend, caches the result, and warms up
+    /// its assets before delivering it.
+    func getWorkflow(appUserID: String,
+                     workflowId: String,
+                     isAppBackgrounded: Bool,
+                     completion: @escaping (Result<WorkflowDataResult, BackendError>) -> Void) {
+        if let cached = self.workflowsCache.cachedWorkflow(workflowId: workflowId),
+           !self.workflowsCache.isWorkflowCacheStale(workflowId: workflowId, isAppBackgrounded: isAppBackgrounded) {
+            completion(.success(cached))
+            return
+        }
+
+        self.backend.workflowsAPI.getWorkflow(appUserID: appUserID,
+                                              workflowId: workflowId,
+                                              isAppBackgrounded: isAppBackgrounded) { [weak self] result in
+            guard let self else {
+                completion(result)
+                return
+            }
+            if case let .success(dataResult) = result {
+                self.workflowsCache.cache(workflow: dataResult, workflowId: workflowId)
+                self.warmUpAssets(for: dataResult)
+            }
+            completion(result)
+        }
+    }
+
+    /// Fetches the workflows list, persists it, then prefetches every entry flagged `prefetch == true`.
+    /// `onComplete` fires only after the list fetch **and** all prefetch fetches finish (success or
+    /// failure), making it safe to call ``workflowId(forOfferingId:)`` from `onComplete`.
+    ///
+    /// When the in-memory list cache is still fresh, no network request is made and `onComplete` fires
+    /// immediately. On a backend failure `onComplete` still fires (so callers waiting on it, e.g.
+    /// offerings delivery, are never blocked); ``workflowId(forOfferingId:)`` keeps resolving from the
+    /// last list persisted on disk until the next fetch succeeds.
+    func getWorkflowsList(appUserID: String,
+                          isAppBackgrounded: Bool,
+                          onComplete: @escaping () -> Void = {}) {
+        guard self.workflowsCache.isWorkflowsListCacheStale(isAppBackgrounded: isAppBackgrounded) else {
+            onComplete()
+            return
+        }
+
+        self.backend.workflowsAPI.getWorkflows(appUserID: appUserID,
+                                               isAppBackgrounded: isAppBackgrounded,
+                                               type: Self.paywallWorkflowType) { [weak self] result in
+            guard let self else {
+                onComplete()
+                return
+            }
+            switch result {
+            case let .success(response):
+                self.workflowsCache.cache(workflowsList: response)
+                self.prefetchWorkflows(response.workflows,
+                                       appUserID: appUserID,
+                                       isAppBackgrounded: isAppBackgrounded,
+                                       onComplete: onComplete)
+            case let .failure(error):
+                Logger.error(Strings.paywalls.error_fetching_workflows_list(error))
+                onComplete()
+            }
+        }
+    }
+
+    func workflowId(forOfferingId offeringId: String) -> String? {
+        return self.workflowsCache.workflowId(forOfferingId: offeringId)
+    }
+
+}
+
+// MARK: - Private
+
+private extension WorkflowManager {
+
+    static let paywallWorkflowType = "paywall"
+
+    /// Prefetches the workflows flagged `prefetch == true`, calling `onComplete` once every prefetch
+    /// finishes (success or failure). When there is nothing to prefetch, `onComplete` fires right away.
+    func prefetchWorkflows(_ workflows: [WorkflowSummary],
+                           appUserID: String,
+                           isAppBackgrounded: Bool,
+                           onComplete: @escaping () -> Void) {
+        let prefetchWorkflows = workflows.filter { $0.prefetch }
+        guard !prefetchWorkflows.isEmpty else {
+            onComplete()
+            return
+        }
+
+        // Lock-guarded counter so `onComplete` fires exactly once, after the last prefetch lands,
+        // regardless of which thread each completion arrives on.
+        let remaining: Atomic<Int> = .init(prefetchWorkflows.count)
+        for summary in prefetchWorkflows {
+            self.getWorkflow(appUserID: appUserID,
+                             workflowId: summary.id,
+                             isAppBackgrounded: isAppBackgrounded) { _ in
+                let left = remaining.modify { value -> Int in
+                    value -= 1
+                    return value
+                }
+                if left == 0 {
+                    onComplete()
+                }
+            }
+        }
+    }
+
+    func warmUpAssets(for result: WorkflowDataResult) {
+        if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
+           let paywallCache = self.paywallCache {
+            self.operationDispatcher.dispatchOnWorkerThread {
+                await paywallCache.warmUpWorkflowCaches(workflow: result.workflow)
+            }
+        }
+    }
+
+}
+
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension WorkflowManager: @unchecked Sendable {}

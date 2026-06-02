@@ -23,7 +23,14 @@ class MockWorkflowsAPI: WorkflowsAPI, @unchecked Sendable {
     var invokedGetWorkflow = false
     var invokedGetWorkflowCount = 0
     var invokedGetWorkflowParameters: (appUserID: String, workflowId: String, isAppBackgrounded: Bool)?
+    var invokedGetWorkflowParametersList: [(appUserID: String, workflowId: String, isAppBackgrounded: Bool)] = []
     var stubbedGetWorkflowResult: Result<WorkflowDataResult, BackendError>?
+    /// Per-workflowId result, used when set; otherwise falls back to `stubbedGetWorkflowResult`.
+    var stubbedGetWorkflowResults: [String: Result<WorkflowDataResult, BackendError>] = [:]
+    /// When `true`, completions are captured instead of fired so tests can control ordering.
+    var shouldStoreGetWorkflowCompletions = false
+    private(set) var capturedGetWorkflowCompletions:
+        [(workflowId: String, completion: WorkflowDetailResponseHandler)] = []
 
     override func getWorkflow(appUserID: String,
                               workflowId: String,
@@ -32,8 +39,26 @@ class MockWorkflowsAPI: WorkflowsAPI, @unchecked Sendable {
         self.invokedGetWorkflow = true
         self.invokedGetWorkflowCount += 1
         self.invokedGetWorkflowParameters = (appUserID, workflowId, isAppBackgrounded)
+        self.invokedGetWorkflowParametersList.append((appUserID, workflowId, isAppBackgrounded))
 
-        completion(self.stubbedGetWorkflowResult ?? .failure(.missingAppUserID()))
+        if self.shouldStoreGetWorkflowCompletions {
+            self.capturedGetWorkflowCompletions.append((workflowId, completion))
+            return
+        }
+
+        completion(self.stubbedGetWorkflowResults[workflowId]
+                   ?? self.stubbedGetWorkflowResult
+                   ?? .failure(.missingAppUserID()))
+    }
+
+    /// Fires (and removes) the captured completion for `workflowId`. Requires
+    /// `shouldStoreGetWorkflowCompletions == true`.
+    func completeStoredGetWorkflow(workflowId: String,
+                                   with result: Result<WorkflowDataResult, BackendError>) {
+        guard let index = self.capturedGetWorkflowCompletions.firstIndex(where: { $0.workflowId == workflowId })
+        else { return }
+        let entry = self.capturedGetWorkflowCompletions.remove(at: index)
+        entry.completion(result)
     }
 
     var invokedGetWorkflows = false

@@ -1,0 +1,320 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  WorkflowManagerTests.swift
+//
+//  Created by RevenueCat.
+
+import Foundation
+import Nimble
+import XCTest
+
+@_spi(Internal) @testable import RevenueCat
+
+class WorkflowManagerTests: TestCase {
+
+    private let appUserID = "user_1"
+
+    private var dateProvider: MockCurrentDateProvider!
+    private var mockBackend: MockBackend!
+    private var mockWorkflowsAPI: MockWorkflowsAPI!
+    private var mockDeviceCache: MockDeviceCache!
+    private var mockOperationDispatcher: MockOperationDispatcher!
+    private var systemInfo: MockSystemInfo!
+    private var workflowsCache: WorkflowsCache!
+    private var manager: WorkflowManager!
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        self.dateProvider = MockCurrentDateProvider()
+        self.systemInfo = MockSystemInfo(finishTransactions: false)
+        self.systemInfo.stubbedIsSandbox = false
+        self.mockBackend = MockBackend()
+        self.mockWorkflowsAPI = try XCTUnwrap(self.mockBackend.workflowsAPI as? MockWorkflowsAPI)
+        self.mockDeviceCache = MockDeviceCache(systemInfo: self.systemInfo)
+        self.mockOperationDispatcher = MockOperationDispatcher()
+        self.workflowsCache = WorkflowsCache(deviceCache: self.mockDeviceCache, dateProvider: self.dateProvider)
+        self.manager = WorkflowManager(backend: self.mockBackend,
+                                       workflowsCache: self.workflowsCache,
+                                       paywallCache: nil,
+                                       operationDispatcher: self.mockOperationDispatcher)
+    }
+
+    // MARK: - getWorkflow cache
+
+    func testGetWorkflowCachesResultOnSuccess() throws {
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == expected
+    }
+
+    func testGetWorkflowReturnsCachedResultWithoutCallingBackendWhenFresh() throws {
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+
+        // First call populates the cache.
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+
+        // Second call within TTL should hit the cache.
+        var secondResult: WorkflowDataResult?
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) {
+            secondResult = try? $0.get()
+        }
+
+        expect(secondResult) == expected
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 1
+    }
+
+    func testGetWorkflowRefetchesWhenCacheIsStale() throws {
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+
+        // Past the 5-minute foreground TTL.
+        self.dateProvider.advance(by: 6 * 60)
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 2
+    }
+
+    func testGetWorkflowForwardsBackendError() {
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .failure(.missingAppUserID())
+
+        var error: BackendError?
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) {
+            if case let .failure(failure) = $0 { error = failure }
+        }
+
+        expect(error).toNot(beNil())
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
+    }
+
+    // MARK: - getWorkflowsList
+
+    func testGetWorkflowsListCallsBackendAndCachesPayload() {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_1", displayName: "Flow A", offeringId: "default", prefetch: false)
+        ]))
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowsCount) == 1
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowsParameters?.type) == "paywall"
+        expect(self.mockDeviceCache.cacheWorkflowsListResponseCount) == 1
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 0
+    }
+
+    func testGetWorkflowsListSkipsNetworkWhenCacheIsFresh() {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: []))
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+        self.dateProvider.advance(by: 1) // still within TTL
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowsCount) == 1
+    }
+
+    func testGetWorkflowsListTriggersGetWorkflowForEachPrefetchEntryOnly() throws {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_prefetch", displayName: "A", offeringId: nil, prefetch: true),
+            .init(id: "wf_skip", displayName: "B", offeringId: nil, prefetch: false),
+            .init(id: "wf_also_prefetch", displayName: "C", offeringId: nil, prefetch: true)
+        ]))
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(try Self.workflowDataResult(id: "wf"))
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        let prefetchedIds = self.mockWorkflowsAPI.invokedGetWorkflowParametersList.map { $0.workflowId }
+        expect(prefetchedIds).to(contain("wf_prefetch", "wf_also_prefetch"))
+        expect(prefetchedIds).toNot(contain("wf_skip"))
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 2
+    }
+
+    func testGetWorkflowsListDoesNotCacheOnBackendFailure() {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.mockDeviceCache.cacheWorkflowsListResponseCount) == 0
+    }
+
+    func testGetWorkflowsListRestoresOfferingIdMapFromDiskOnBackendFailure() {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
+        self.mockDeviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ])
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.manager.workflowId(forOfferingId: "default")) == "wf_1"
+    }
+
+    func testGetWorkflowsListWithDuplicateOfferingIdKeepsLastEntry() {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_first", displayName: "First", offeringId: "shared", prefetch: false),
+            .init(id: "wf_last", displayName: "Last", offeringId: "shared", prefetch: false)
+        ]))
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.manager.workflowId(forOfferingId: "shared")) == "wf_last"
+    }
+
+    // MARK: - workflowId(forOfferingId:)
+
+    func testWorkflowIdForOfferingIdReturnsNilBeforeListIsFetched() {
+        expect(self.manager.workflowId(forOfferingId: "default")).to(beNil())
+    }
+
+    func testWorkflowIdForOfferingIdReturnsWorkflowIdAfterListIsFetched() {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_abc", displayName: "Flow", offeringId: "default", prefetch: false)
+        ]))
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.manager.workflowId(forOfferingId: "default")) == "wf_abc"
+        expect(self.manager.workflowId(forOfferingId: "premium")).to(beNil())
+    }
+
+    func testWorkflowIdForOfferingIdReturnsNilForWorkflowWithNilOfferingId() {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_no_offering", displayName: "Flow", offeringId: nil, prefetch: false)
+        ]))
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.manager.workflowId(forOfferingId: "default")).to(beNil())
+    }
+
+    // MARK: - onComplete
+
+    func testGetWorkflowsListCallsOnCompleteAfterSuccessWithNoPrefetch() {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ]))
+
+        var completed = false
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
+
+        expect(completed) == true
+    }
+
+    func testGetWorkflowsListCallsOnCompleteImmediatelyWhenCacheIsFresh() {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: []))
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        self.dateProvider.advance(by: 1)
+        var completed = false
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
+
+        expect(completed) == true
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowsCount) == 1
+    }
+
+    func testGetWorkflowsListCallsOnCompleteOnlyAfterAllPrefetchWorkflowsComplete() throws {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_a", displayName: "A", offeringId: nil, prefetch: true),
+            .init(id: "wf_b", displayName: "B", offeringId: nil, prefetch: true)
+        ]))
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+        let result = try Self.workflowDataResult(id: "wf")
+
+        var completed = false
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
+
+        expect(completed) == false
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_a", with: .success(result))
+        expect(completed) == false
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_b", with: .success(result))
+        expect(completed) == true
+    }
+
+    func testGetWorkflowsListCallsOnCompleteEvenIfAPrefetchWorkflowFails() throws {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_a", displayName: "A", offeringId: nil, prefetch: true),
+            .init(id: "wf_b", displayName: "B", offeringId: nil, prefetch: true)
+        ]))
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+
+        var completed = false
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
+
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_a",
+                                                        with: .success(try Self.workflowDataResult(id: "wf_a")))
+        expect(completed) == false
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_b", with: .failure(.missingAppUserID()))
+        expect(completed) == true
+    }
+
+    func testGetWorkflowsListCallsOnCompleteAfterNetworkError() {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
+
+        var completed = false
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
+
+        expect(completed) == true
+    }
+
+    // MARK: - Helpers
+
+    private static func workflowDataResult(id: String) throws -> WorkflowDataResult {
+        return .init(workflow: try self.publishedWorkflow(id: id), enrolledVariants: nil)
+    }
+
+    private static func publishedWorkflow(id: String) throws -> PublishedWorkflow {
+        let json = """
+        {
+          "id": "\(id)",
+          "display_name": "Test",
+          "initial_step_id": "step_1",
+          "steps": {
+            "step_1": { "id": "step_1", "type": "screen", "screen_id": "screen_1" }
+          },
+          "screens": {
+            "screen_1": {
+              "template_name": "tmpl",
+              "asset_base_url": "https://assets.revenuecat.com",
+              "default_locale": "en_US",
+              "components_localizations": {},
+              "components_config": {
+                "base": {
+                  "stack": {
+                    "type": "stack",
+                    "components": [],
+                    "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                    "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+                    "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                    "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+                  },
+                  "background": {
+                    "type": "color",
+                    "value": { "light": { "type": "hex", "value": "#FFFFFF" } }
+                  }
+                }
+              },
+              "offering_identifier": "default"
+            }
+          },
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {}
+          }
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+    }
+
+}

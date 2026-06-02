@@ -281,6 +281,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let notificationCenter: NotificationCenter
     private let offeringsFactory: OfferingsFactory
     private let offeringsManager: OfferingsManager
+    private let workflowManager: WorkflowManager
     private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
@@ -376,6 +377,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let userDefaults = userDefaults ?? UserDefaults.computeDefault()
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
+        let workflowsCache = WorkflowsCache(deviceCache: deviceCache)
 
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
             guard diagnosticsEnabled,
@@ -674,6 +676,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             paywallCache = nil
         }
 
+        let workflowManager = WorkflowManager(backend: backend,
+                                              workflowsCache: workflowsCache,
+                                              paywallCache: paywallCache,
+                                              operationDispatcher: operationDispatcher)
+
         let virtualCurrencyManager = VirtualCurrencyManager(
             identityManager: identityManager,
             deviceCache: deviceCache,
@@ -710,6 +717,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   eventsManager: eventsManager,
                   productsManager: productsManager,
                   offeringsManager: offeringsManager,
+                  workflowManager: workflowManager,
                   offlineEntitlementsManager: offlineEntitlementsManager,
                   purchasesOrchestrator: purchasesOrchestrator,
                   purchasedProductsFetcher: purchasedProductsFetcher,
@@ -744,6 +752,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          eventsManager: EventsManagerType?,
          productsManager: ProductsManagerType,
          offeringsManager: OfferingsManager,
+         workflowManager: WorkflowManager,
          offlineEntitlementsManager: OfflineEntitlementsManager,
          purchasesOrchestrator: PurchasesOrchestrator,
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
@@ -796,6 +805,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.eventsManager = eventsManager
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
+        self.workflowManager = workflowManager
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.purchasesOrchestrator = purchasesOrchestrator
         self.purchasedProductsFetcher = purchasedProductsFetcher
@@ -975,23 +985,20 @@ public extension Purchases {
     }
 
     @_spi(Internal)
-    // The backend uses the offering identifier as the workflow lookup key.
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
-        let result = try await Async.call { completion in
-            self.backend.workflowsAPI.getWorkflow(
+        // Prefer the workflowId resolved from the workflows list (offeringId → workflowId), falling
+        // back to the offering identifier itself, which the backend also accepts as a workflow key.
+        // The map is empty until the workflows list has been fetched, so the fallback preserves the
+        // original behavior. `WorkflowManager` handles caching and asset warm-up.
+        let workflowId = self.workflowManager.workflowId(forOfferingId: offeringID) ?? offeringID
+        return try await Async.call { completion in
+            self.workflowManager.getWorkflow(
                 appUserID: self.appUserID,
-                workflowId: offeringID,
+                workflowId: workflowId,
                 isAppBackgrounded: false,
                 completion: completion
             )
         }
-        if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
-           let cache = self.paywallCache {
-            self.operationDispatcher.dispatchOnWorkerThread {
-                await cache.warmUpWorkflowCaches(workflow: result.workflow)
-            }
-        }
-        return result
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
