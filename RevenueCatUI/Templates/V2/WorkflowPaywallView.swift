@@ -419,7 +419,7 @@ struct WorkflowPaywallView: View {
             .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
             .transitionClipMask(proxy: proxy)
             .environment(\.safeAreaInsets, proxy.safeAreaInsets)
-            .edgesIgnoringSafeArea(.top)
+            .ignoresSafeArea(edges: .top)
             .allowsHitTesting(false)
         }
     }
@@ -730,6 +730,9 @@ private final class WorkflowHeaderOverlayStateManager: ObservableObject {
     }
 }
 
+/// Rebuilds a full `PaywallState` purely to render the page's header in the transition overlay.
+/// This is heavier than reusing the page's own state, but it only lives for the duration of a
+/// page transition, so the cost is bounded and not on the steady-state render path.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct WorkflowHeaderOverlayPageView: View {
 
