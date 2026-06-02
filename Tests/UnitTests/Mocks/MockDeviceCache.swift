@@ -274,7 +274,7 @@ class MockDeviceCache: DeviceCache {
     var invokedClearCustomerInfoCacheParametersList = [(appUserID: String, Void)]()
 
     override func clearCustomerInfoCache(appUserID: String) {
-        cachedCustomerInfo.removeValue(forKey: appUserID)
+        self._cachedCustomerInfo.modify { $0.removeValue(forKey: appUserID) }
         invokedClearCustomerInfoCache = true
         invokedClearCustomerInfoCacheCount += 1
         invokedClearCustomerInfoCacheParameters = (appUserID, ())
