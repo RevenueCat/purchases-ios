@@ -45,6 +45,9 @@ enum OfferingStrings {
     case overriding_package(old: String, new: String)
     case known_issue_ios_18_4_simulator_products_not_found
 
+    case simulated_store_invalid_trial_period(productId: String, periodDuration: String)
+    case simulated_store_invalid_intro_price_period(productId: String, periodDuration: String)
+
     case override_preferred_locale_rate_limited(maxCalls: Int, periodSeconds: Int)
 
     // Custom Variables
@@ -180,6 +183,14 @@ extension OfferingStrings: LogMessage {
             "\nThis issue is widely reported by iOS 18.4 simulator users. Try using a different iOS version with " +
             "your simulator." +
             "\nMore information: https://rev.cat/ios-18-4-simulator-issue"
+
+        case let .simulated_store_invalid_trial_period(productId, periodDuration):
+            return "Skipping free trial for simulated store product '\(productId)': " +
+                "trial period_duration '\(periodDuration)' is not a valid ISO-8601 period."
+
+        case let .simulated_store_invalid_intro_price_period(productId, periodDuration):
+            return "Skipping introductory price for simulated store product '\(productId)': " +
+                "intro_price period_duration '\(periodDuration)' is not a valid ISO-8601 period."
 
         case let .override_preferred_locale_rate_limited(maxCalls, periodSeconds):
             return "Fresh offerings fetch rate limit reached: \(maxCalls) " +
