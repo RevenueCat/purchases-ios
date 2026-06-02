@@ -53,21 +53,36 @@ class MockDeviceCache: DeviceCache {
     }
 
     // MARK: customerInfo
-    var cacheCustomerInfoCount = 0
-    var cachedCustomerInfoCount = 0
+    // Backed by `Atomic` because the SDK reads and writes this state from multiple threads
+    // concurrently (e.g. configuration + foreground-delegate sync), which would otherwise
+    // corrupt the underlying dictionary. Exposed via computed properties so call sites are unchanged.
+    private let _cacheCustomerInfoCount: Atomic<Int> = .init(0)
+    var cacheCustomerInfoCount: Int {
+        get { self._cacheCustomerInfoCount.value }
+        set { self._cacheCustomerInfoCount.value = newValue }
+    }
+    private let _cachedCustomerInfoCount: Atomic<Int> = .init(0)
+    var cachedCustomerInfoCount: Int {
+        get { self._cachedCustomerInfoCount.value }
+        set { self._cachedCustomerInfoCount.value = newValue }
+    }
     var clearCustomerInfoCacheTimestampCount = 0
     var setCustomerInfoCacheTimestampToNowCount = 0
     var stubbedIsCustomerInfoCacheStale = false
-    var cachedCustomerInfo = [String: Data]()
+    private let _cachedCustomerInfo: Atomic<[String: Data]> = .init([:])
+    var cachedCustomerInfo: [String: Data] {
+        get { self._cachedCustomerInfo.value }
+        set { self._cachedCustomerInfo.value = newValue }
+    }
 
     override func cache(customerInfo: Data, appUserID: String) {
-        cacheCustomerInfoCount += 1
-        cachedCustomerInfo[appUserID] = customerInfo as Data?
+        self._cacheCustomerInfoCount.modify { $0 += 1 }
+        self._cachedCustomerInfo.modify { $0[appUserID] = customerInfo }
     }
 
     override func cachedCustomerInfoData(appUserID: String) -> Data? {
-        cachedCustomerInfoCount += 1
-        return cachedCustomerInfo[appUserID]
+        self._cachedCustomerInfoCount.modify { $0 += 1 }
+        return self._cachedCustomerInfo.value[appUserID]
     }
 
     override func isCustomerInfoCacheStale(appUserID: String, isAppBackgrounded: Bool) -> Bool {
