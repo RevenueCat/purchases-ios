@@ -262,7 +262,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               diagnosticsTracker: nil,
                               virtualCurrencyManager: self.mockVirtualCurrencyManager,
                               healthManager: healthManager,
-                              transactionMetadataSyncHelper: transactionMetadataSyncHelper)
+                              transactionMetadataSyncHelper: transactionMetadataSyncHelper,
+                              currentConfiguration: nil)
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)

@@ -437,10 +437,20 @@ public protocol RawDataContainer {
   var rawData: Self.Content { get }
 }
 @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc(RCDangerousSettings) final public class DangerousSettings : ObjectiveC.NSObject {
-  @objc final public let autoSyncPurchases: Swift.Bool
-  @objc final public let customEntitlementComputation: Swift.Bool
+  @objc final public var autoSyncPurchases: Swift.Bool {
+    @objc get
+  }
+  @objc final public var customEntitlementComputation: Swift.Bool {
+    @objc get
+  }
   @objc override convenience dynamic public init()
   @objc convenience public init(autoSyncPurchases: Swift.Bool = true)
+  #if compiler(>=5.3) && $NonescapableTypes
+  @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
+  #endif
+  @objc override final public var hash: Swift.Int {
+    @objc get
+  }
   @objc deinit
 }
 extension RevenueCat.DangerousSettings : Swift.Sendable {
@@ -1112,6 +1122,12 @@ extension RevenueCat.Configuration.Builder {
 extension RevenueCat.Purchases {
   @objc(RCPlatformInfo) final public class PlatformInfo : ObjectiveC.NSObject {
     @objc public init(flavor: Swift.String, version: Swift.String)
+    #if compiler(>=5.3) && $NonescapableTypes
+    @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
+    #endif
+    @objc override final public var hash: Swift.Int {
+      @objc get
+    }
     @objc deinit
   }
   @objc public static var platformInfo: RevenueCat.Purchases.PlatformInfo?
@@ -1155,10 +1171,14 @@ extension RevenueCat.CacheFetchPolicy : Swift.Sendable {
   @objc final public let paywallId: Swift.String?
   @objc final public let offeringId: Swift.String?
   #if compiler(>=5.3) && $NonescapableTypes
-  @objc public init(paywallId: Swift.String? = nil, offeringId: Swift.String?)
+  @objc convenience public init(paywallId: Swift.String? = nil)
   #endif
   #if compiler(>=5.3) && $NonescapableTypes
-  @objc convenience public init(paywallId: Swift.String? = nil)
+  @available(*, deprecated, renamed: "init(paywallId:offering:)", message: "Pass an Offering object instead. Using an offering identifier string prevents the SDK from deriving placement and targeting context automatically.")
+  @objc convenience public init(paywallId: Swift.String? = nil, offeringId: Swift.String?)
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @objc convenience public init(paywallId: Swift.String? = nil, offering: RevenueCat.Offering)
   #endif
   @objc deinit
 }
@@ -1674,6 +1694,12 @@ extension RevenueCat.PaywallViewMode : Swift.Codable {
   public init(from decoder: any Swift.Decoder) throws
 }
 @_hasMissingDesignatedInitializers @objc(RCConfiguration) final public class Configuration : ObjectiveC.NSObject {
+  #if compiler(>=5.3) && $NonescapableTypes
+  @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
+  #endif
+  @objc override final public var hash: Swift.Int {
+    @objc get
+  }
   @objc public static func builder(withAPIKey apiKey: Swift.String) -> RevenueCat.Configuration.Builder
   @objc(RCConfigurationBuilder) public class Builder : ObjectiveC.NSObject {
     @objc public init(withAPIKey apiKey: Swift.String)

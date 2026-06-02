@@ -104,6 +104,7 @@ extension HTTPRequest {
         case getCustomerCenterConfig(appUserID: String)
         case getVirtualCurrencies(appUserID: String)
         case getWorkflow(appUserID: String, workflowId: String)
+        case getWorkflows(appUserID: String, type: String?)
         case postRedeemWebPurchase
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
@@ -181,6 +182,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getCustomerInfo,
                 .getOfferings,
                 .getWorkflow,
+                .getWorkflows,
                 .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
@@ -209,6 +211,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getCustomerInfo,
                 .getOfferings,
                 .getWorkflow,
+                .getWorkflows,
                 .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
@@ -241,6 +244,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
                 .getWorkflow,
+                .getWorkflows,
                 .appHealthReport,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior:
@@ -271,6 +275,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .rewardVerificationStatus:
             return true
         case .getWorkflow,
+                .getWorkflows,
                 .getOfferings,
                 .getIntroEligibility,
                 .postSubscriberAttributes,
@@ -343,6 +348,13 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .getWorkflow(appUserID, workflowId):
             return "subscribers/\(Self.escape(appUserID))/workflows/\(Self.escape(workflowId))"
 
+        case let .getWorkflows(appUserID, type):
+            let base = "subscribers/\(Self.escape(appUserID))/workflows"
+            if let type = type {
+                return "\(base)?type=\(Self.escape(type))"
+            }
+            return base
+
         case .postCreateTicket:
             return "customercenter/support/create-ticket"
         case let .isPurchaseAllowedByRestoreBehavior(appUserID):
@@ -363,6 +375,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .getWorkflow:
             return "get_workflow"
+
+        case .getWorkflows:
+            return "get_workflows"
 
         case .getIntroEligibility:
             return "get_intro_eligibility"

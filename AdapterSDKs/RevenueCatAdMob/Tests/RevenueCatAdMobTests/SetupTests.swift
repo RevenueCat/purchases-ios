@@ -113,21 +113,30 @@ final class SetupTests: AdapterTestCase {
     func testMakeCustomRewardTextProducesValidJSONWithExpectedKeys() throws {
         let text = try XCTUnwrap(RewardVerification.Setup.makeCustomRewardText(
             apiKey: "key_123",
-            clientTransactionID: "txn_456"
+            clientTransactionID: "txn_456",
+            impressionId: "imp_789"
         ))
         let payload = try Self.parseJSONObject(text)
 
-        XCTAssertEqual(payload, ["api_key": "key_123", "client_transaction_id": "txn_456"])
+        XCTAssertEqual(payload, [
+            "api_key": "key_123",
+            "client_transaction_id": "txn_456",
+            "impression_id": "imp_789"
+        ])
     }
 
     func testMakeCustomRewardTextProducesSortedKeys() throws {
         let text = try XCTUnwrap(RewardVerification.Setup.makeCustomRewardText(
             apiKey: "key_123",
-            clientTransactionID: "txn_456"
+            clientTransactionID: "txn_456",
+            impressionId: "imp_789"
         ))
 
         // .sortedKeys guarantees stable byte ordering — keep tests / logs / snapshots deterministic.
-        XCTAssertEqual(text, "{\"api_key\":\"key_123\",\"client_transaction_id\":\"txn_456\"}")
+        XCTAssertEqual(
+            text,
+            "{\"api_key\":\"key_123\",\"client_transaction_id\":\"txn_456\",\"impression_id\":\"imp_789\"}"
+        )
     }
 
     // MARK: - Helpers
@@ -144,6 +153,7 @@ final class SetupTests: AdapterTestCase {
 @available(iOS 15.0, *)
 private final class FakeRewardedAd: RewardVerification.CapableAd {
     var serverSideVerificationOptions: GoogleMobileAds.ServerSideVerificationOptions?
+    let responseInfo = GoogleMobileAds.ResponseInfo()
 }
 
 #endif

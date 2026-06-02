@@ -1,7 +1,7 @@
 import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
@@ -9,11 +9,11 @@ final class OutcomeTests: AdapterTestCase {
 
     // MARK: - Case construction
 
-    func testVerifiedCarriesVirtualCurrencyRewardPayload() {
-        let reward = VirtualCurrencyReward(code: "coins", amount: 5)
+    func testVerifiedCarriesVirtualCurrencyRewardPayload() throws {
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
         let outcome = RewardVerification.Outcome.verified(.virtualCurrency(reward))
 
-        guard case .verified(.virtualCurrency(let captured)) = outcome else {
+        guard case .verified(let adReward) = outcome, let captured = adReward.virtualCurrency else {
             return XCTFail("Expected .verified(.virtualCurrency), got \(outcome)")
         }
         XCTAssertEqual(captured, reward)
@@ -37,20 +37,15 @@ final class OutcomeTests: AdapterTestCase {
         }
     }
 
-    func testFailedIsConstructible() {
-        let outcome = RewardVerification.Outcome.failed
-
-        guard case .failed = outcome else {
-            return XCTFail("Expected .failed, got \(outcome)")
-        }
-    }
-
-    func testAllCasesAreConstructibleAndExhaustiveInSwitch() {
+    func testAllCasesAreConstructibleAndExhaustiveInSwitch() throws {
+        let payload = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 1))
         let cases: [RewardVerification.Outcome] = [
-            .verified(.virtualCurrency(VirtualCurrencyReward(code: "coins", amount: 1))),
+            .verified(.virtualCurrency(payload)),
             .verified(.noReward),
             .verified(.unsupportedReward),
-            .failed
+            .failed(.timeout),
+            .failed(.backendError),
+            .failed(.unknown)
         ]
 
         for outcome in cases {
@@ -59,7 +54,7 @@ final class OutcomeTests: AdapterTestCase {
             case .failed: continue
             }
         }
-        XCTAssertEqual(cases.count, 4)
+        XCTAssertEqual(cases.count, 6)
     }
 }
 

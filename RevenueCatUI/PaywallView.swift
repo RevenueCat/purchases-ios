@@ -499,7 +499,11 @@ struct LoadedOfferingPaywallView: View {
             .preference(key: PurchaseInProgressPreferenceKey.self,
                         value: self.purchaseHandler.packageBeingPurchased)
             .preference(key: PurchasedResultPreferenceKey.self,
-                        value: .init(data: self.purchaseHandler.sessionPurchaseResult))
+                        value: .init(
+                            data: self.purchaseHandler.sessionPurchaseResult,
+                            diffKey: (self.purchaseHandler.sessionPurchaseResult?.userCancelled == true) ?
+                            self.purchaseHandler.consecutiveCancellationRequestID : nil
+                        ))
             .preference(key: RestoredCustomerInfoPreferenceKey.self,
                         value: self.purchaseHandler.restoredCustomerInfo)
             .preference(key: RestoreInProgressPreferenceKey.self,

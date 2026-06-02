@@ -1,7 +1,7 @@
 import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 @testable import RevenueCatAdMob
 
 @MainActor
@@ -10,8 +10,8 @@ final class DispatcherTests: AdapterTestCase {
 
     // MARK: - run(...) outcomes
 
-    func testRunFiresVerifiedOutcomeWithVirtualCurrencyReward() async {
-        let reward = VirtualCurrencyReward(code: "coins", amount: 5)
+    func testRunFiresVerifiedOutcomeWithVirtualCurrencyReward() async throws {
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
         let state = RewardVerification.State(clientTransactionID: "tx-verified")
         let poller = self.makePoller(statuses: [.verified(.virtualCurrency(reward))])
         let recorder = OutcomeRecorder()
@@ -25,7 +25,8 @@ final class DispatcherTests: AdapterTestCase {
 
         let outcomes = recorder.snapshot()
         XCTAssertEqual(outcomes.count, 1)
-        guard case .verified(.virtualCurrency(let earnedReward)) = outcomes.first else {
+        guard case .verified(let adReward) = outcomes.first,
+              let earnedReward = adReward.virtualCurrency else {
             return XCTFail("Expected .verified(.virtualCurrency), got \(String(describing: outcomes.first))")
         }
         XCTAssertEqual(earnedReward, reward)
@@ -44,8 +45,8 @@ final class DispatcherTests: AdapterTestCase {
         )
 
         let outcomes = recorder.snapshot()
-        guard case .failed = outcomes.first else {
-            return XCTFail("Expected .failed, got \(String(describing: outcomes.first))")
+        guard case .failed(.backendError) = outcomes.first else {
+            return XCTFail("Expected .failed(.backendError), got \(String(describing: outcomes.first))")
         }
     }
 
@@ -61,8 +62,8 @@ final class DispatcherTests: AdapterTestCase {
             outcomeHandler: { recorder.append($0) }
         )
 
-        guard case .failed = recorder.snapshot().first else {
-            return XCTFail("Expected .failed, got \(String(describing: recorder.snapshot().first))")
+        guard case .failed(.timeout) = recorder.snapshot().first else {
+            return XCTFail("Expected .failed(.timeout), got \(String(describing: recorder.snapshot().first))")
         }
     }
 
@@ -82,8 +83,10 @@ final class DispatcherTests: AdapterTestCase {
         )
 
         let outcomes = recorder.snapshot()
-        guard case .failed = outcomes.first else {
-            return XCTFail("Expected .failed for transient-only attempts, got \(String(describing: outcomes.first))")
+        guard case .failed(.timeout) = outcomes.first else {
+            return XCTFail(
+                "Expected .failed(.timeout) for transient-only attempts, got \(String(describing: outcomes.first))"
+            )
         }
         XCTAssertEqual(throwingPoller.callCount, 3,
                        "Transient throws should be retried up to the attempt budget")
@@ -105,8 +108,10 @@ final class DispatcherTests: AdapterTestCase {
         )
 
         let outcomes = recorder.snapshot()
-        guard case .failed = outcomes.first else {
-            return XCTFail("Expected .failed for terminal ErrorCode, got \(String(describing: outcomes.first))")
+        guard case .failed(.backendError) = outcomes.first else {
+            return XCTFail(
+                "Expected .failed(.backendError) for terminal ErrorCode, got \(String(describing: outcomes.first))"
+            )
         }
         XCTAssertEqual(throwingPoller.callCount, 1,
                        "Terminal ErrorCode must surface as .failed without retries")
@@ -190,8 +195,8 @@ final class DispatcherTests: AdapterTestCase {
 
     // MARK: - dispatch
 
-    func testDispatchCompletesAndForwardsVerifiedOutcome() async {
-        let reward = VirtualCurrencyReward(code: "coins", amount: 7)
+    func testDispatchCompletesAndForwardsVerifiedOutcome() async throws {
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 7))
         let state = RewardVerification.State(clientTransactionID: "tx-dispatch")
         let poller = self.makePoller(statuses: [.verified(.virtualCurrency(reward))])
         let recorder = OutcomeRecorder()
@@ -205,7 +210,8 @@ final class DispatcherTests: AdapterTestCase {
 
         await task.value
 
-        guard case .verified(.virtualCurrency(let earnedReward)) = recorder.snapshot().first else {
+        guard case .verified(let adReward) = recorder.snapshot().first,
+              let earnedReward = adReward.virtualCurrency else {
             return XCTFail("Expected .verified(.virtualCurrency) from dispatched task")
         }
         XCTAssertEqual(earnedReward, reward)

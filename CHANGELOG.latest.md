@@ -1,13 +1,17 @@
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Warm intro eligibility cache for all offerings (#6839) via Antonio Pallares (@ajpallares)
+
 ## RevenueCatUI SDK
+### ✨ New Features
+* Propagate default package across workflow steps (#6790) via Facundo Menzella (@facumenzella)
 ### Paywallv2
 #### 🐞 Bugfixes
-* Fix workflow exit offer presentation across sheet boundaries (#6804) via Facundo Menzella (@facumenzella)
-### Customer Center
-#### 🐞 Bugfixes
-* Filter changePlans path for expired subscriptions in CustomerCenter (#6814) via Facundo Menzella (@facumenzella)
+* Fix workflow paywall safe area clipping (#6816) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Removes `swiftPMImport` from cinterop package name (#6803) via JayShortway (@JayShortway)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#6819) via RevenueCat Git Bot (@RCGitBot)
-* Rename reward verification completion callback (#6800) via Pol Miro (@polmiro)
-* Open workflow exit offer as a second workflow (#6756) via Facundo Menzella (@facumenzella)
+* ci(admob): run revenuecat-admob-tests on every PR push (#6850) via Pol Miro (@polmiro)
+* fix(ads/admob): update test fakes for non-optional CapableAd.responseInfo (#6849) via Pol Miro (@polmiro)
+* feat(ads/admob): add impression_id to SSV customRewardText payload (#6841) via Pol Miro (@polmiro)
+* refactor(ads/admob): propagate FailureReason through poller and dispatcher (#6842) via Pol Miro (@polmiro)
+* Bump fastlane from 2.234.0 to 2.235.0 (#6844) via dependabot[bot] (@dependabot[bot])
