@@ -1,0 +1,276 @@
+{
+  "fixtures": [
+    {
+      "id": "some_returns_true_when_at_least_one_item_matches",
+      "predicate": {
+        "some": [
+          [
+            1,
+            2,
+            3
+          ],
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "some_returns_false_when_no_item_matches",
+      "predicate": {
+        "some": [
+          [
+            -1,
+            -2,
+            -3
+          ],
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "some_returns_false_for_empty_array",
+      "predicate": {
+        "some": [
+          [],
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "some_returns_false_for_null_source",
+      "predicate": {
+        "some": [
+          null,
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "some_returns_false_for_object_source",
+      "description": "multi-key objects are returned by the evaluator as literal data (single-key objects would dispatch as an operator), so the array check fails",
+      "predicate": {
+        "some": [
+          {
+            "foo": 1,
+            "bar": 2
+          },
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "some_returns_false_for_string_source",
+      "predicate": {
+        "some": [
+          "abc",
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "some_predicate_sees_current_item_via_empty_var",
+      "description": "{\"var\": \"\"} resolves to the current item",
+      "predicate": {
+        "some": [
+          [
+            false,
+            true,
+            false
+          ],
+          {
+            "var": ""
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "some_predicate_accesses_item_fields",
+      "description": "item objects are routed through vars so the evaluator does not dispatch their single key (status) as an operator",
+      "predicate": {
+        "some": [
+          {
+            "var": "items"
+          },
+          {
+            "==": [
+              {
+                "var": "status"
+              },
+              "active"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "items": [
+          {
+            "status": "expired"
+          },
+          {
+            "status": "active"
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "some_missing_predicate_returns_false",
+      "description": "a missing predicate evaluates to undefined per item (never truthy), so an array source returns false",
+      "predicate": {
+        "some": [
+          [
+            1,
+            2
+          ]
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "some_predicate_cannot_reach_parent_scope",
+      "description": "inside the predicate only the current item is visible; outer x is unreachable so {\"var\": \"x\"} resolves to null and equality is false for every item",
+      "predicate": {
+        "some": [
+          [
+            {},
+            {}
+          ],
+          {
+            "==": [
+              {
+                "var": "x"
+              },
+              "outer"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "x": "outer"
+      },
+      "expected": false
+    },
+    {
+      "id": "some_khepri_active_subscription_matching",
+      "description": "mirrors khepri/some_active_subscription/matching to pin parity with the backend oracle",
+      "predicate": {
+        "some": [
+          {
+            "var": "subscriptions"
+          },
+          {
+            "==": [
+              {
+                "var": "status"
+              },
+              "active"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "subscriptions": [
+          {
+            "status": "active"
+          },
+          {
+            "status": "active"
+          },
+          {
+            "status": "trialing"
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "some_khepri_active_subscription_non_matching",
+      "description": "mirrors khepri/some_active_subscription/non_matching",
+      "predicate": {
+        "some": [
+          {
+            "var": "subscriptions"
+          },
+          {
+            "==": [
+              {
+                "var": "status"
+              },
+              "active"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "subscriptions": [
+          {
+            "status": "expired"
+          },
+          {
+            "status": "expired"
+          },
+          {
+            "status": "expired"
+          }
+        ]
+      },
+      "expected": false
+    }
+  ]
+}

@@ -1,0 +1,275 @@
+{
+  "fixtures": [
+    {
+      "id": "all_returns_true_when_every_item_matches",
+      "predicate": {
+        "all": [
+          [
+            1,
+            2,
+            3
+          ],
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "all_returns_false_on_first_failure",
+      "predicate": {
+        "all": [
+          [
+            1,
+            2,
+            -3
+          ],
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_returns_false_for_empty_array_per_json_logic_spec",
+      "description": "json-logic-js returns false (not vacuous truth) for all over an empty array; we follow the spec even though the khepri backend returns true",
+      "predicate": {
+        "all": [
+          [],
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_returns_false_for_null_source",
+      "predicate": {
+        "all": [
+          null,
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_returns_false_for_object_source",
+      "predicate": {
+        "all": [
+          {
+            "foo": 1,
+            "bar": 2
+          },
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_returns_false_for_string_source",
+      "predicate": {
+        "all": [
+          "abc",
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_predicate_sees_current_item_via_empty_var",
+      "predicate": {
+        "all": [
+          [
+            true,
+            true,
+            true
+          ],
+          {
+            "var": ""
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "all_ignores_args_beyond_second",
+      "description": "json-logic-js discards arguments past the second",
+      "predicate": {
+        "all": [
+          [
+            1,
+            2
+          ],
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          },
+          999
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "all_nested_some_inside_all_rebounds_item_scope",
+      "description": "for every customer at least one product must be active; nested iteration rebinds the item scope at each level",
+      "predicate": {
+        "all": [
+          {
+            "var": "customers"
+          },
+          {
+            "some": [
+              {
+                "var": "products"
+              },
+              {
+                "==": [
+                  {
+                    "var": "status"
+                  },
+                  "active"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "customers": [
+          {
+            "products": [
+              {
+                "status": "expired"
+              },
+              {
+                "status": "active"
+              }
+            ]
+          },
+          {
+            "products": [
+              {
+                "status": "active"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "all_khepri_subscriptions_active_matching",
+      "description": "mirrors khepri/all_subscriptions_active/matching",
+      "predicate": {
+        "all": [
+          {
+            "var": "subscriptions"
+          },
+          {
+            "==": [
+              {
+                "var": "status"
+              },
+              "active"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "subscriptions": [
+          {
+            "status": "active"
+          },
+          {
+            "status": "active"
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "all_khepri_subscriptions_active_non_matching",
+      "description": "mirrors khepri/all_subscriptions_active/non_matching",
+      "predicate": {
+        "all": [
+          {
+            "var": "subscriptions"
+          },
+          {
+            "==": [
+              {
+                "var": "status"
+              },
+              "active"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "subscriptions": [
+          {
+            "status": "active"
+          },
+          {
+            "status": "active"
+          },
+          {
+            "status": "trialing"
+          }
+        ]
+      },
+      "expected": false
+    }
+  ]
+}
