@@ -145,6 +145,7 @@ struct WorkflowPaywallView: View {
 
     private enum Constants {
         static let transitionDuration: Double = 0.25
+        static let transitionStartDelayNanoseconds: UInt64 = 16_000_000
     }
 
     private let context: WorkflowContext
@@ -218,9 +219,12 @@ struct WorkflowPaywallView: View {
                             \.workflowPageTransitionContext,
                             .init(
                                 pageOffset: pageOffset,
-                                headerButtonOpacity: self.transitionState.headerButtonOpacity(for: displayedPage.role)
+                                headerButtonOpacity: self.transitionState.headerButtonOpacity(for: displayedPage.role),
+                                isTransitioning: self.transitionState.isTransitioning
                             )
                         )
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                        .transitionClipMask(proxy: proxy)
                         .offset(x: pageOffset)
                         .zIndex(self.transitionState.zIndex(for: displayedPage.role))
                 }
@@ -238,6 +242,18 @@ struct WorkflowPaywallView: View {
             .transitionClipMask(proxy: proxy)
         }
         .allowsHitTesting(!self.transitionState.isTransitioning)
+        .workflowTransitionAnimationCompletion(
+            progress: self.transitionState.progress,
+            activeTransitionID: self.activeTransitionID,
+            completion: self.finishTransition
+        )
+        .task(id: self.activeTransitionID) {
+            guard let activeTransitionID = self.activeTransitionID else {
+                return
+            }
+
+            await self.animateTransition(id: activeTransitionID)
+        }
         // Re-emitted on every step change because navigator is @StateObject with @Published
         // currentStepId. The exit offer is resolved synchronously from allOfferings on the
         // triggering step; when the user navigates away the value becomes nil, clearing
@@ -384,6 +400,14 @@ struct WorkflowPaywallView: View {
 
         let transitionID = UUID()
         self.activeTransitionID = transitionID
+    }
+
+    @MainActor
+    private func animateTransition(id transitionID: UUID) async {
+        guard self.activeTransitionID == transitionID,
+              self.transitionState.isTransitioning else {
+            return
+        }
 
         guard !self.reduceMotion else {
             self.transitionState.advanceAnimation()
@@ -391,22 +415,21 @@ struct WorkflowPaywallView: View {
             return
         }
 
-        DispatchQueue.main.async {
-            guard self.activeTransitionID == transitionID else {
-                return
-            }
+        do {
+            // SwiftUI needs one committed frame with both page snapshots at their
+            // initial offsets. Starting the animation from the tap handler can skip
+            // straight to the final offset, leaving only child component transitions visible.
+            try await Task.sleep(nanoseconds: Constants.transitionStartDelayNanoseconds)
+        } catch {
+            return
+        }
 
-            // Wait one run-loop turn so both pages render at their initial offsets
-            // before animating progress to the final positions.
-            withAnimation(.easeInOut(duration: Constants.transitionDuration)) {
-                self.transitionState.advanceAnimation()
-            }
+        guard self.activeTransitionID == transitionID else {
+            return
+        }
 
-            // Schedule cleanup from here so the deadline is relative to when the
-            // animation actually starts, not when startTransition was called.
-            DispatchQueue.main.asyncAfter(deadline: .now() + Constants.transitionDuration) {
-                self.finishTransition(id: transitionID)
-            }
+        withAnimation(.easeInOut(duration: Constants.transitionDuration)) {
+            self.transitionState.advanceAnimation()
         }
     }
 
@@ -597,6 +620,57 @@ private extension View {
                     height: proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
                 )
                 .offset(y: -proxy.safeAreaInsets.top)
+        }
+    }
+
+    func workflowTransitionAnimationCompletion(
+        progress: CGFloat,
+        activeTransitionID: UUID?,
+        completion: @escaping (UUID) -> Void
+    ) -> some View {
+        self.modifier(
+            WorkflowAnimationCompletionModifier(
+                progress: progress,
+                activeTransitionID: activeTransitionID,
+                completion: completion
+            )
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct WorkflowAnimationCompletionModifier: AnimatableModifier {
+
+    // SwiftUI sets transitionState.progress to 1 immediately when the animation starts, but the
+    // rendered value reaches 1 only after interpolation completes. Keep the outgoing page alive
+    // until this animatable modifier observes the rendered progress finish; using a fixed delay
+    // can race with animation timing and drop the outgoing subtree early, which causes flashes.
+    var progress: CGFloat
+    let activeTransitionID: UUID?
+    let completion: (UUID) -> Void
+
+    var animatableData: CGFloat {
+        get { self.progress }
+        set {
+            self.progress = newValue
+            self.notifyCompletionIfFinished()
+        }
+    }
+
+    func body(content: Content) -> some View {
+        content
+    }
+
+    private func notifyCompletionIfFinished() {
+        guard self.progress >= 1,
+              let activeTransitionID = self.activeTransitionID else {
+            return
+        }
+
+        let completion = self.completion
+        DispatchQueue.main.async {
+            completion(activeTransitionID)
         }
     }
 

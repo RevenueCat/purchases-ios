@@ -23,8 +23,11 @@ struct WorkflowPageTransitionContext {
     /// Opacity for buttons rendered inside workflow headers.
     /// This crossfades outgoing and incoming header buttons during page transitions.
     let headerButtonOpacity: CGFloat
+    /// Whether the page is currently participating in a workflow-level transition.
+    /// Child component entrance transitions and horizontal safe-area bleed should be suppressed while this is true.
+    let isTransitioning: Bool
 
-    static let identity = Self(pageOffset: 0, headerButtonOpacity: 1)
+    static let identity = Self(pageOffset: 0, headerButtonOpacity: 1, isTransitioning: false)
 
 }
 
