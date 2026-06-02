@@ -223,6 +223,22 @@ final class EvaluatorTests: XCTestCase {
         XCTAssertFalse(try run("{\"/\": [0, 0]}"))
     }
 
+    // MARK: - Comparison dispatched through evaluator
+
+    func testComparisonPredicateWithVarOperand() throws {
+        // session.app_launch_count >= 3 → true when count is 3
+        let predicate = "{\">=\": [{\"var\": \"session.app_launch_count\"}, 3]}"
+        let vars = ["session": Value.object(["app_launch_count": .int(3)])]
+        XCTAssertTrue(try run(predicate, vars: vars))
+    }
+
+    func testBetweenFormWithVarOperand() throws {
+        // 1 <= session.app_launch_count <= 10 → true when count is 5
+        let predicate = "{\"<=\": [1, {\"var\": \"session.app_launch_count\"}, 10]}"
+        let vars = ["session": Value.object(["app_launch_count": .int(5)])]
+        XCTAssertTrue(try run(predicate, vars: vars))
+    }
+
     // MARK: - Multi-key object treated as data, not operator
 
     func testMultiKeyObjectIsLiteralDataValue() throws {
