@@ -276,7 +276,7 @@ class DeviceCache {
     }
 
     // MARK: - Workflows list response
-    // The workflows list is persisted under a single, non-user-scoped key (mirroring the Android SDK).
+    // The workflows list is persisted under a single, non-user-scoped key
     // Cross-user safety is handled by clearing it on identity transitions, just like the offerings cache.
 
     func cachedWorkflowsListResponse() -> WorkflowsListResponse? {
