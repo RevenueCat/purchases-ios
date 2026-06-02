@@ -109,6 +109,8 @@ extension HTTPRequest {
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
+        // WIP: endpoint path and signing requirements subject to change
+        case getRemoteConfig
 
     }
 
@@ -197,7 +199,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
-                .rewardVerificationStatus:
+                .rewardVerificationStatus,
+                .getRemoteConfig:
             return true
 
         case .health,
@@ -226,7 +229,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
-                .rewardVerificationStatus:
+                .rewardVerificationStatus,
+                .getRemoteConfig:
             return true
         case .health,
              .appHealthReportAvailability:
@@ -256,7 +260,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
                 .getCustomerCenterConfig,
-                .postCreateTicket:
+                .postCreateTicket,
+                // WIP: Move to true when we have the final endpoint for remote config, and we can remove the fallback
+                .getRemoteConfig:
             return false
         case .rewardVerificationStatus:
             return true
@@ -286,13 +292,19 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .appHealthReport,
-                .postCreateTicket:
+                .postCreateTicket,
+                .getRemoteConfig:
             return false
         }
     }
 
     var relativePath: String {
-        return "/v1/\(self.pathComponent)"
+        switch self {
+        case .getRemoteConfig:
+            return "/v2/\(self.pathComponent)"
+        default:
+            return "/v1/\(self.pathComponent)"
+        }
     }
 
     var pathComponent: String {
@@ -362,6 +374,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case let .rewardVerificationStatus(appUserID, clientTransactionID):
             return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
+
+        case .getRemoteConfig:
+            return "config"
         }
     }
 
@@ -428,6 +443,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .rewardVerificationStatus:
             return "get_reward_verification_status"
+
+        case .getRemoteConfig:
+            return "get_remote_config"
         }
     }
 
