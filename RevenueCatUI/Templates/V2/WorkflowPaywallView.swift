@@ -214,7 +214,6 @@ struct WorkflowPaywallView: View {
     private let onDismiss: () -> Void
 
     @StateObject private var navigator: WorkflowNavigator
-    @StateObject private var introOfferEligibilityContext: IntroOfferEligibilityContext
     @StateObject private var paywallPromoOfferCache: PaywallPromoOfferCache
     @State private var hasLoggedInvalidState = false
     @State private var transitionState: WorkflowPageTransitionState<RenderedPage>
@@ -239,9 +238,6 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
-        self._introOfferEligibilityContext = .init(
-            wrappedValue: .init(introEligibilityChecker: introEligibilityChecker)
-        )
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
         ))
@@ -258,8 +254,8 @@ struct WorkflowPaywallView: View {
                 currentPage: Self.renderedPage(
                     from: context,
                     stepId: initialStepId,
-                    canNavigateBack: false,
-                    displayCloseButton: displayCloseButton,
+                    showCloseButton: displayCloseButton,
+                    introEligibilityChecker: introEligibilityChecker,
                     packageInput: initialPackageInput
                 )
             )
@@ -384,7 +380,7 @@ struct WorkflowPaywallView: View {
             failedToLoadFont: self.failedToLoadFont,
             colorScheme: self.colorScheme,
             promoOfferCache: self.paywallPromoOfferCache,
-            introEligibilityContext: self.introOfferEligibilityContext,
+            introEligibilityContext: page.introOfferEligibilityContext,
             selectedPackageContextOverride: page.packageContext
         )
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
@@ -403,7 +399,7 @@ struct WorkflowPaywallView: View {
                             page: displayedPage.page,
                             purchaseHandler: self.purchaseHandler,
                             introEligibilityChecker: self.introEligibilityChecker,
-                            introOfferEligibilityContext: self.introOfferEligibilityContext,
+                            introOfferEligibilityContext: displayedPage.page.introOfferEligibilityContext,
                             paywallPromoOfferCache: self.paywallPromoOfferCache,
                             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
                             onDismiss: self.handleDismiss,
@@ -565,8 +561,8 @@ struct WorkflowPaywallView: View {
     private static func renderedPage(
         from context: WorkflowContext,
         stepId: String,
-        canNavigateBack: Bool,
-        displayCloseButton: Bool,
+        showCloseButton: Bool,
+        introEligibilityChecker: TrialOrIntroEligibilityChecker,
         packageInput: RenderedPagePackageInput
     ) -> RenderedPage? {
         guard let step = context.workflow.steps[stepId],
@@ -584,7 +580,8 @@ struct WorkflowPaywallView: View {
         return .init(
             content: .init(paywallComponents: paywallComponents, offering: offering),
             headerComponent: screen.componentsConfig.base.header,
-            showCloseButton: !canNavigateBack && displayCloseButton,
+            showCloseButton: showCloseButton,
+            introOfferEligibilityContext: .init(introEligibilityChecker: introEligibilityChecker),
             packageContext: packageInput.packageContext,
             effectiveWorkflowPackageContext: packageInput.effectiveWorkflowPackageContext
         )
@@ -637,8 +634,8 @@ struct WorkflowPaywallView: View {
         return Self.renderedPage(
             from: self.context,
             stepId: stepId,
-            canNavigateBack: canNavigateBack,
-            displayCloseButton: self.displayCloseButton,
+            showCloseButton: !canNavigateBack && self.displayCloseButton,
+            introEligibilityChecker: self.introEligibilityChecker,
             packageInput: .init(
                 packageContext: packageContext,
                 effectiveWorkflowPackageContext: self.context.effectivePackageContext(
@@ -676,8 +673,8 @@ struct WorkflowPaywallView: View {
         return Self.renderedPage(
             from: self.context,
             stepId: stepId,
-            canNavigateBack: canNavigateBack,
-            displayCloseButton: self.displayCloseButton,
+            showCloseButton: !canNavigateBack && self.displayCloseButton,
+            introEligibilityChecker: self.introEligibilityChecker,
             packageInput: packageInput
         )
     }
@@ -704,6 +701,8 @@ private struct RenderedPage: Identifiable {
     let content: CurrentStepContent
     let headerComponent: PaywallComponent.HeaderComponent?
     let showCloseButton: Bool
+    /// Page-scoped so late async eligibility checks cannot overwrite another workflow step.
+    let introOfferEligibilityContext: IntroOfferEligibilityContext
     let packageContext: PackageContext
     let effectiveWorkflowPackageContext: WorkflowPackageContext?
 }
