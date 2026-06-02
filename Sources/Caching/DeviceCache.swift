@@ -276,26 +276,19 @@ class DeviceCache {
     }
 
     // MARK: - Workflows list response
-    // The workflows list is persisted under a single, non-user-scoped key
-    // Cross-user safety is handled by clearing it on identity transitions, just like the offerings cache.
+    // The workflows list is persisted under a single, non-user-scoped key.
+    // Cross-user safety is handled by clearing it on identity transitions.
 
     func cachedWorkflowsListResponse() -> WorkflowsListResponse? {
         return self.value(for: CacheKey.workflowsListResponse)
     }
 
     func cache(workflowsListResponse: WorkflowsListResponse) {
-        let key = CacheKey.workflowsListResponse.rawValue
-        if self.largeItemCache.set(codable: workflowsListResponse, forKey: key) {
-            // Delete old file from documents directory if it exists
-            self.deleteOldFileIfNeeded(for: key)
-        }
+        self.largeItemCache.set(codable: workflowsListResponse, forKey: CacheKey.workflowsListResponse.rawValue)
     }
 
     func clearWorkflowsListResponseCache() {
         self.largeItemCache.removeObject(forKey: CacheKey.workflowsListResponse.rawValue)
-
-        // Delete old workflows list file from documents directory if it exists
-        self.deleteOldFileIfNeeded(for: CacheKey.workflowsListResponse.rawValue)
     }
 
     // MARK: - subscriber attributes
@@ -427,8 +420,6 @@ class DeviceCache {
                                       environment: .init(sandbox: isSandbox))
     }
 
-    /// The same foreground/background cache TTL used by offerings, resolved for the current
-    /// environment. Exposed so other caches (e.g. `WorkflowsCache`) reuse the identical policy.
     func cacheDurationInSeconds(isAppBackgrounded: Bool) -> TimeInterval {
         return self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded,
                                            isSandbox: self.systemInfo.isSandbox)

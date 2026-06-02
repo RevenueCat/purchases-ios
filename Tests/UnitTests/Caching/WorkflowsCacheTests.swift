@@ -108,24 +108,24 @@ class WorkflowsCacheTests: TestCase {
 
     func testIsWorkflowsListCacheStaleIsTrueInitiallyAndFalseAfterCaching() {
         expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == true
-        self.cache.cache(workflowsList: .init(workflows: []), offeringIdMap: [:])
+        self.cache.cache(workflowsList: .init(workflows: []), workflowIdByOfferingId: [:])
         expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == false
     }
 
     func testIsWorkflowsListCacheStaleIsTrueAfterForegroundTTLExpires() {
-        self.cache.cache(workflowsList: .init(workflows: []), offeringIdMap: [:])
+        self.cache.cache(workflowsList: .init(workflows: []), workflowIdByOfferingId: [:])
         self.dateProvider.advance(by: 6 * 60)
         expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == true
     }
 
     func testWorkflowIdForOfferingIdReturnsMappedIdOrNil() {
-        self.cache.cache(workflowsList: .init(workflows: []), offeringIdMap: ["default": "wf_1"])
+        self.cache.cache(workflowsList: .init(workflows: []), workflowIdByOfferingId: ["default": "wf_1"])
         expect(self.cache.workflowId(forOfferingId: "default")) == "wf_1"
         expect(self.cache.workflowId(forOfferingId: "premium")).to(beNil())
     }
 
     func testClearCacheResetsWorkflowsListStalenessAndOfferingIdMap() {
-        self.cache.cache(workflowsList: .init(workflows: []), offeringIdMap: ["default": "wf_1"])
+        self.cache.cache(workflowsList: .init(workflows: []), workflowIdByOfferingId: ["default": "wf_1"])
         self.cache.clearCache()
         expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == true
         expect(self.cache.workflowId(forOfferingId: "default")).to(beNil())
@@ -138,7 +138,7 @@ class WorkflowsCacheTests: TestCase {
             workflowsList: .init(workflows: [
                 .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
             ]),
-            offeringIdMap: ["default": "wf_1"]
+            workflowIdByOfferingId: ["default": "wf_1"]
         )
         expect(self.deviceCache.cacheWorkflowsListResponseCount) == 1
     }

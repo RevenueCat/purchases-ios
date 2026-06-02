@@ -13,25 +13,15 @@
 
 import Foundation
 
-/// In-memory cache for all workflow data: the resolved per-workflow ``WorkflowDataResult``s and the
-/// workflows list (plus its derived offeringId → workflowId map). It is the single owner of this
-/// state so that clearing it on identity transitions wipes everything at once, mirroring how
-/// `DeviceCache` owns the in-memory offerings cache.
+/// In-memory cache for workflow data: the resolved per-workflow ``WorkflowDataResult``s and the
+/// workflows list (plus its `offeringId → workflowId` map). It is the single owner of this state,
+/// so ``clearCache()`` wipes everything at once on identity transitions.
 ///
-/// Why in-memory, like offerings: this layer sits on top of the durable copy that lives on disk in
-/// `DeviceCache`, for the same reason the offerings cache does, to serve already-fetched and
-/// prefetched data synchronously within a session, so opening a paywall reuses a resolved workflow
-/// instead of paying another backend/CDN round-trip. Time-based staleness
-/// (``isWorkflowsListCacheStale(isAppBackgrounded:)`` / ``isWorkflowCacheStale(workflowId:isAppBackgrounded:)``)
-/// then decides when a refetch is due, using the same 5 min / 25 hr foreground/background TTL as offerings.
-///
-/// It also owns the disk copy of the workflows list: ``cache(workflowsList:offeringIdMap:)`` persists
-/// it, ``cachedWorkflowsListResponseFromDisk()`` restores it on backend failure, and ``clearCache()``
-/// wipes it.
-///
-/// Timestamps are stamped via an injected ``DateProvider`` (rather than reusing `InMemoryCachedObject`,
-/// whose staleness is tied to the real wall clock) so cache-expiry behavior is deterministically
-/// testable.
+/// Like the offerings cache, it sits on top of the durable copy in `DeviceCache` and serves
+/// already-fetched data synchronously within a session. Time-based staleness uses the same
+/// foreground/background TTL as offerings, stamped via an injected ``DateProvider`` (rather than
+/// `InMemoryCachedObject`, whose staleness is tied to the real wall clock) so expiry is
+/// deterministically testable.
 final class WorkflowsCache {
 
     private struct CachedWorkflow {
@@ -41,7 +31,7 @@ final class WorkflowsCache {
 
     private struct CachedList {
         let response: WorkflowsListResponse
-        let offeringIdToWorkflowId: [String: String]
+        let workflowIdByOfferingId: [String: String]
         let lastUpdated: Date
     }
 
@@ -85,30 +75,26 @@ final class WorkflowsCache {
         return self.isStale(lastUpdated: cached.lastUpdated, isAppBackgrounded: isAppBackgrounded)
     }
 
-    /// Caches the workflows list in memory and persists it to disk, the same way
-    /// `DeviceCache.cache(offerings:...)` caches offerings.
+    /// Caches the workflows list in memory and persists it to disk.
     ///
-    /// This means workflows share the same accepted appUserID limitation as offerings: a fetch that
-    /// is in flight during an identity transition can complete *after* ``clearCache()`` and repopulate
-    /// the cleared cache with the previous user's list (last-write-wins). It is not guarded here, so
-    /// it self-heals on the next fetch, exactly as the offerings cache does. If we ever decide to
-    /// close that window, it should be done consistently for both caches rather than only here.
-    func cache(workflowsList response: WorkflowsListResponse, offeringIdMap: [String: String]) {
+    /// A fetch in flight during an identity transition can complete *after* ``clearCache()`` and
+    /// repopulate the cache with the previous user's list (last-write-wins). This is not guarded
+    /// here; it self-heals on the next fetch, as the offerings cache does.
+    func cache(workflowsList response: WorkflowsListResponse, workflowIdByOfferingId: [String: String]) {
         self.cachedList.value = CachedList(response: response,
-                                           offeringIdToWorkflowId: offeringIdMap,
+                                           workflowIdByOfferingId: workflowIdByOfferingId,
                                            lastUpdated: self.dateProvider.now())
         self.deviceCache.cache(workflowsListResponse: response)
     }
 
-    /// Reads the last workflows list persisted by ``cache(workflowsList:offeringIdMap:)``, or `nil`
-    /// when nothing is cached or the payload can't be parsed. Used to recover the list after a
-    /// backend failure, mirroring how the offerings response is restored from disk.
+    /// Reads the last persisted workflows list, or `nil` when nothing is cached or the payload
+    /// can't be parsed. Used to recover the list after a backend failure.
     func cachedWorkflowsListResponseFromDisk() -> WorkflowsListResponse? {
         return self.deviceCache.cachedWorkflowsListResponse()
     }
 
     func workflowId(forOfferingId offeringId: String) -> String? {
-        return self.cachedList.value?.offeringIdToWorkflowId[offeringId]
+        return self.cachedList.value?.workflowIdByOfferingId[offeringId]
     }
 
     // MARK: -
