@@ -17,6 +17,7 @@ func checkInstallmentsInfo(installmentsInfo: InstallmentsInfo) {
     let _: SubscriptionPeriod = installmentsInfo.commitmentTotalPeriod
     let _: Decimal = installmentsInfo.commitmentTotalPrice
     let _: String = installmentsInfo.commitmentTotalDisplayPrice
+    let _: BillingPlanType = installmentsInfo.billingPlanType
 }
 
 func checkInstallmentsInfoInit() {
