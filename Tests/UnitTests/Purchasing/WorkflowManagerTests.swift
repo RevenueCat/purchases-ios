@@ -160,6 +160,36 @@ class WorkflowManagerTests: TestCase {
         expect(self.manager.workflowId(forOfferingId: "default")) == "wf_1"
     }
 
+    func testGetWorkflowsListKeepsCacheStaleAfterBackendFailureSoNextCallRetries() {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
+        self.mockDeviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ])
+
+        // First fetch fails and restores the list from disk, but leaves it stale.
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.workflowsCache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == true
+
+        // A second call therefore still hits the backend rather than short-circuiting on the
+        // restored entry.
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowsCount) == 2
+    }
+
+    func testGetWorkflowsListDoesNotRewriteDiskWhenRestoringAfterBackendFailure() {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
+        self.mockDeviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ])
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        // The list was read from disk to restore the in-memory map; it must not be written back.
+        expect(self.mockDeviceCache.cacheWorkflowsListResponseCount) == 0
+    }
+
     func testGetWorkflowsListWithDuplicateOfferingIdKeepsLastEntry() {
         self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
             .init(id: "wf_first", displayName: "First", offeringId: "shared", prefetch: false),

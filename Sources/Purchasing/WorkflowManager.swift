@@ -96,10 +96,9 @@ class WorkflowManager {
                 Logger.error(Strings.paywalls.error_fetching_workflows_list(error))
                 // Restore the in-memory offeringId -> workflowId map from the last list persisted on
                 // disk, so `workflowId(forOfferingId:)` keeps resolving previously-fetched data after
-                // a backend failure instead of returning nil.
-                if let cachedResponse = self.workflowsCache.cachedWorkflowsListResponseFromDisk() {
-                    self.workflowsCache.cache(workflowsList: cachedResponse)
-                }
+                // a backend failure instead of returning nil. The entry stays stale so the next
+                // fetch still retries the backend.
+                self.workflowsCache.restoreWorkflowsListFromDisk()
                 onComplete()
             }
         }
