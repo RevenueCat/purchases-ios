@@ -1645,6 +1645,54 @@ public extension Purchases {
 
 }
 
+// MARK: - Reward Verification (Experimental SPI)
+
+extension Purchases {
+
+    /// Generates a reward verification token for a loaded rewarded ad.
+    ///
+    /// Call after the ad has loaded. Pass `customData` and `appUserID` to your ad network's
+    /// server-side verification options, then stash `transactionId` for use with
+    /// ``pollRewardVerification(transactionId:)`` when the reward callback fires.
+    @_spi(Experimental) public func generateRewardVerificationToken(
+        impressionId: String
+    ) -> (customData: String, transactionId: String, appUserID: String) {
+        let transactionId = UUID().uuidString
+        let payload: [String: String] = [
+            "api_key": self.apiKey,
+            "client_transaction_id": transactionId,
+            "impression_id": impressionId
+        ]
+        // [String: String] is always JSON-serializable and UTF-8 encoded.
+        let customData = String(
+            data: try! JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys]),
+            encoding: .utf8
+        )!
+        return (customData: customData, transactionId: transactionId, appUserID: self.appUserID)
+    }
+
+    /// Polls the backend until reward verification completes or the attempt budget is exhausted.
+    ///
+    /// Call when your ad network's reward callback fires, passing the `transactionId` returned by
+    /// ``generateRewardVerificationToken(impressionId:)``.
+    /// Invalidates the virtual currencies cache automatically on a verified virtual-currency reward.
+    @_spi(Experimental) public func pollRewardVerification(
+        transactionId: String
+    ) async -> RewardVerificationResult {
+        let outcome = await RewardVerification.Poller.makeDefault().run(
+            clientTransactionID: transactionId
+        )
+        if case .verified(let reward) = outcome, reward.virtualCurrency != nil {
+            self.invalidateVirtualCurrenciesCache()
+        }
+        switch outcome {
+        case .verified(let reward): return .verified(reward)
+        case .failed: return .failed
+        }
+    }
+
+}
+
 // MARK: - Reward Verification (Internal SPI)
 
 extension Purchases {
