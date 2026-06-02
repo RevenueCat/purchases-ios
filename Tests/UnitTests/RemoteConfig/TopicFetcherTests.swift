@@ -169,6 +169,7 @@ final class TopicFetcherTests: TestCase {
         let renameError = NSError(domain: NSCocoaErrorDomain, code: NSFileWriteUnknownError)
         let fetcher = TopicFetcher(
             fileManager: FailingReplaceFileManager(replaceItemAtError: renameError),
+            downloader: URLSessionBlobDownloader(),
             baseCacheURL: self.tempDir
         )
 
@@ -303,7 +304,7 @@ final class TopicFetcherTests: TestCase {
 private extension TopicFetcherTests {
 
     func makeFetcher() -> TopicFetcher {
-        TopicFetcher(baseCacheURL: self.tempDir)
+        TopicFetcher(downloader: URLSessionBlobDownloader(), baseCacheURL: self.tempDir)
     }
 
     func makeSource(urlFormat: String = "https://assets.example.com/{blob_ref}") -> RemoteConfigResponse.BlobSource {

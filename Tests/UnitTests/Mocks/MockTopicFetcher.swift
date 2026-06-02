@@ -20,7 +20,8 @@ class MockTopicFetcher: TopicFetcher {
     var fetchCalls: [FetchCall] = []
 
     convenience init() {
-        self.init(fileManager: FileManager.default)
+        // Downloader is never exercised: `fetchTopicIfNeeded` is overridden below.
+        self.init(fileManager: FileManager.default, downloader: URLSessionBlobDownloader())
     }
 
     override func fetchTopicIfNeeded(

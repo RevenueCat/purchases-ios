@@ -33,7 +33,7 @@ protocol BlobDownloader: AnyObject {
 
 extension HTTPClient: BlobDownloader {}
 
-private final class URLSessionBlobDownloader: BlobDownloader {
+final class URLSessionBlobDownloader: BlobDownloader {
 
     private let session: URLSession
 
@@ -69,7 +69,7 @@ class TopicFetcher {
 
     init(
         fileManager: any FileManaging = FileManager.default,
-        downloader: any BlobDownloader = URLSessionBlobDownloader(),
+        downloader: any BlobDownloader,
         baseCacheURL: URL? = nil
     ) {
         self.fileManager = fileManager
