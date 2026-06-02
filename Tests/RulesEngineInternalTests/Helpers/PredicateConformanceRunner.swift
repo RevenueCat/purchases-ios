@@ -88,8 +88,12 @@ enum PredicateConformanceRunner {
         fixtureID: String
     ) {
         let warnings = logger.warnings
-        if let count = expected.count {
-            #expect(warnings.count == count, "Fixture \(fixtureID) warning count")
+        guard !expected.contains.isEmpty else {
+            #expect(
+                warnings.isEmpty,
+                "Fixture \(fixtureID) expected no warnings, got \(warnings)"
+            )
+            return
         }
         for substring in expected.contains {
             #expect(

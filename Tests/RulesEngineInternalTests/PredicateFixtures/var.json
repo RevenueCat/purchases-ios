@@ -5,7 +5,7 @@
       "predicate": { "===": [{ "var": "name" }, "ada"] },
       "variables": { "name": "ada" },
       "expected": true,
-      "expectedWarnings": { "count": 0, "contains": [] }
+      "expectedWarnings": { "contains": [] }
     },
     {
       "id": "var_resolves_dot_path_into_nested_object",
@@ -24,21 +24,21 @@
       "predicate": { "===": [{ "var": "missing_key" }, null] },
       "variables": { "a": 1 },
       "expected": true,
-      "expectedWarnings": { "count": 1, "contains": ["missing_key"] }
+      "expectedWarnings": { "contains": ["missing_key"] }
     },
     {
       "id": "var_missing_dot_path_returns_null_and_warns",
       "predicate": { "===": [{ "var": "a.c" }, null] },
       "variables": { "a": { "b": 1 } },
       "expected": true,
-      "expectedWarnings": { "count": 1, "contains": ["a.c"] }
+      "expectedWarnings": { "contains": ["a.c"] }
     },
     {
       "id": "var_missing_with_default_returns_default_and_does_not_warn",
       "predicate": { "===": [{ "var": ["missing", "fallback"] }, "fallback"] },
       "variables": { "a": 1 },
       "expected": true,
-      "expectedWarnings": { "count": 0, "contains": [] }
+      "expectedWarnings": { "contains": [] }
     },
     {
       "id": "var_oversized_float_path_does_not_crash",
@@ -46,7 +46,7 @@
       "predicate": { "===": [{ "var": 1e19 }, null] },
       "variables": {},
       "expected": true,
-      "expectedWarnings": { "count": 1, "contains": [] }
+      "expectedWarnings": { "contains": ["missing variable"] }
     },
     {
       "id": "var_does_not_apply_flat_key_fallback",
@@ -54,7 +54,7 @@
       "predicate": { "===": [{ "var": "a.b" }, null] },
       "variables": { "a.b": 42 },
       "expected": true,
-      "expectedWarnings": { "count": 1, "contains": [] }
+      "expectedWarnings": { "contains": ["missing variable"] }
     },
     {
       "id": "var_extra_args_are_ignored_with_warning",
@@ -67,7 +67,7 @@
       },
       "variables": { "a": 1 },
       "expected": true,
-      "expectedWarnings": { "count": 1, "contains": ["ignoring 2 extra"] }
+      "expectedWarnings": { "contains": ["ignoring 2 extra"] }
     },
     {
       "id": "var_recursively_evaluates_singleton_path_expression",
@@ -78,7 +78,7 @@
         "subscriber": { "country": "US" }
       },
       "expected": true,
-      "expectedWarnings": { "count": 0, "contains": [] }
+      "expectedWarnings": { "contains": [] }
     },
     {
       "id": "var_recursively_evaluates_array_form_path_expression",
@@ -89,7 +89,7 @@
         "nested": { "value": "found" }
       },
       "expected": true,
-      "expectedWarnings": { "count": 0, "contains": [] }
+      "expectedWarnings": { "contains": [] }
     },
     {
       "id": "var_recursively_evaluates_array_form_default_expression",
@@ -102,7 +102,7 @@
       },
       "variables": { "fallback_source": "computed_default" },
       "expected": true,
-      "expectedWarnings": { "count": 0, "contains": [] }
+      "expectedWarnings": { "contains": [] }
     },
     {
       "id": "var_singleton_expression_resolving_to_array_stringifies_path",
@@ -124,7 +124,7 @@
       "predicate": { "===": [{ "var": [{ "foo": 1, "bar": 2 }] }, null] },
       "variables": { "x": 1 },
       "expected": true,
-      "expectedWarnings": { "count": 1, "contains": [] }
+      "expectedWarnings": { "contains": ["missing variable"] }
     }
   ]
 }

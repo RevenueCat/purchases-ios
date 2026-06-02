@@ -164,7 +164,7 @@
       "predicate": { "==": [{ "var": "missing" }, null] },
       "variables": {},
       "expected": true,
-      "expectedWarnings": { "count": 1, "contains": ["missing"] }
+      "expectedWarnings": { "contains": ["missing"] }
     },
     {
       "id": "evaluator_unsupported_operator_surfaces_error",

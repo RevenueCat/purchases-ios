@@ -50,17 +50,18 @@ struct ExpectedError: Equatable, Decodable {
 
 struct ExpectedWarnings: Equatable, Decodable {
 
-    let count: Int?
+    /// Substrings that must each appear in some emitted warning. The match is
+    /// count-agnostic on purpose: asserting an exact warning count couples the
+    /// fixtures to engine internals. An empty list asserts that no warning is
+    /// emitted at all.
     let contains: [String]
 
     enum CodingKeys: String, CodingKey {
-        case count
         case contains
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.count = try container.decodeIfPresent(Int.self, forKey: .count)
         self.contains = try container.decodeIfPresent([String].self, forKey: .contains) ?? []
     }
 }

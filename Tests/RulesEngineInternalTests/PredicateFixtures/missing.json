@@ -6,7 +6,7 @@
       "predicate": { "==": [{ "missing": ["a", "b", "c"] }, "c"] },
       "variables": { "a": 1, "b": 2 },
       "expected": true,
-      "expectedWarnings": { "count": 0, "contains": [] }
+      "expectedWarnings": { "contains": [] }
     },
     {
       "id": "missing_returns_empty_array_when_all_present",
