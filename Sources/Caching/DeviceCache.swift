@@ -184,10 +184,7 @@ class DeviceCache {
             }
 
             let timeSinceLastCheck = cachesLastUpdated.timeIntervalSinceNow * -1
-            let cacheDurationInSeconds = self.cacheDurationInSeconds(
-                isAppBackgrounded: isAppBackgrounded,
-                isSandbox: self.systemInfo.isSandbox
-            )
+            let cacheDurationInSeconds = self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded)
 
             return timeSinceLastCheck >= cacheDurationInSeconds
         }
@@ -253,8 +250,7 @@ class DeviceCache {
     func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
         // Time-based staleness, or
         return self.offeringsCachedObject.isCacheStale(
-            durationInSeconds: self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded,
-                                                           isSandbox: self.systemInfo.isSandbox)
+            durationInSeconds: self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded)
         ) ||
         // Locale-based staleness
         self.offeringsCachePreferredLocales.value != self.systemInfo.preferredLocales
@@ -415,14 +411,9 @@ class DeviceCache {
         }
     }
 
-    private func cacheDurationInSeconds(isAppBackgrounded: Bool, isSandbox: Bool) -> TimeInterval {
-        return CacheDuration.duration(status: .init(backgrounded: isAppBackgrounded),
-                                      environment: .init(sandbox: isSandbox))
-    }
-
     func cacheDurationInSeconds(isAppBackgrounded: Bool) -> TimeInterval {
-        return self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded,
-                                           isSandbox: self.systemInfo.isSandbox)
+        return CacheDuration.duration(status: .init(backgrounded: isAppBackgrounded),
+                                      environment: .init(sandbox: self.systemInfo.isSandbox))
     }
 
     // MARK: - Products Entitlements
@@ -512,10 +503,7 @@ class DeviceCache {
             }
 
             let timeSinceLastCheck = cachesLastUpdated.timeIntervalSinceNow * -1
-            let cacheDurationInSeconds = self.cacheDurationInSeconds(
-                isAppBackgrounded: isAppBackgrounded,
-                isSandbox: self.systemInfo.isSandbox
-            )
+            let cacheDurationInSeconds = self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded)
 
             return timeSinceLastCheck >= cacheDurationInSeconds
         }
