@@ -118,6 +118,18 @@ class WorkflowsCacheTests: TestCase {
         expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == true
     }
 
+    func testIsWorkflowsListCacheStaleIsFalseAfterForegroundTTLWhenBackgrounded() {
+        self.cache.cache(workflowsList: .init(workflows: []))
+        self.dateProvider.advance(by: 6 * 60)
+        expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: true)) == false
+    }
+
+    func testIsWorkflowsListCacheStaleIsTrueAfterBackgroundTTLExpires() {
+        self.cache.cache(workflowsList: .init(workflows: []))
+        self.dateProvider.advance(by: 26 * 60 * 60)
+        expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: true)) == true
+    }
+
     func testWorkflowIdForOfferingIdIsDerivedFromTheCachedList() {
         self.cache.cache(workflowsList: .init(workflows: [
             .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
@@ -157,7 +169,7 @@ class WorkflowsCacheTests: TestCase {
 
     // MARK: - Disk persistence
 
-    func testCacheWorkflowsListPersistsResponseToDisk() {
+    func testCacheWorkflowsListForwardsResponseToDeviceCache() {
         self.cache.cache(workflowsList: .init(workflows: [
             .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
         ]))
