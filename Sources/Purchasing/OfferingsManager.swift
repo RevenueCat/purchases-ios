@@ -26,6 +26,8 @@ class OfferingsManager {
     private let productsManager: ProductsManagerType
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
+    // Nil when the workflows endpoint is disabled, in which case offerings delivery is unchanged.
+    private let workflowManager: WorkflowManager?
 
     init(deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
@@ -34,7 +36,8 @@ class OfferingsManager {
          offeringsFactory: OfferingsFactory,
          productsManager: ProductsManagerType,
          diagnosticsTracker: DiagnosticsTrackerType?,
-         dateProvider: DateProvider = DateProvider()) {
+         dateProvider: DateProvider = DateProvider(),
+         workflowManager: WorkflowManager? = nil) {
         self.deviceCache = deviceCache
         self.operationDispatcher = operationDispatcher
         self.systemInfo = systemInfo
@@ -43,6 +46,7 @@ class OfferingsManager {
         self.productsManager = productsManager
         self.diagnosticsTracker = diagnosticsTracker
         self.dateProvider = dateProvider
+        self.workflowManager = workflowManager
     }
 
     func offerings(
@@ -94,14 +98,24 @@ class OfferingsManager {
                                                  requestedProductIds: nil,
                                                  notFoundProductIds: nil)
 
-            self.dispatchCompletionOnMainThreadIfPossible(completion,
-                                                          value: .success(memoryCachedOfferings))
-
             if cacheStatus == .stale {
+                // Serve the cached offerings immediately and refresh in the background, preserving the
+                // existing "return fast, update later" behavior. The background update goes through the
+                // same workflows-aware delivery path, so it refreshes the workflows list too. Gating
+                // here as well would both block delivery and double-fetch the list.
+                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(memoryCachedOfferings))
                 self.updateOfferingsCache(appUserID: appUserID,
                                           isAppBackgrounded: isAppBackgrounded,
                                           fetchPolicy: fetchPolicy,
                                           completion: nil)
+            } else {
+                // Fresh offerings (no background refresh coming): ensure the workflows list is fetched
+                // before delivering, so a caller resolving a workflow right after `getOfferings`
+                // succeeds isn't racing a list fetch from another in-flight call. This is a no-op when
+                // the list is already fresh, which it normally is on this path.
+                self.deliverEnsuringWorkflowsList(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) {
+                    self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(memoryCachedOfferings))
+                }
             }
         }
     }
@@ -123,6 +137,7 @@ class OfferingsManager {
             case let .success(contents):
                 self.handleOfferingsBackendResult(with: contents,
                                                   appUserID: appUserID,
+                                                  isAppBackgrounded: isAppBackgrounded,
                                                   fetchPolicy: fetchPolicy,
                                                   preferredLocales: preferredLocales,
                                                   completion: completion)
@@ -134,7 +149,13 @@ class OfferingsManager {
                                                   fetchPolicy: fetchPolicy) { offerings in
                     if let offerings = offerings {
                         Logger.warn(Strings.offering.error_fetching_offerings_using_disk_cache)
-                        self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offerings))
+                        // Deliver via the workflows path too, so an offerings backend failure that
+                        // falls back to disk still fetches the list (restoring the offeringId →
+                        // workflowId map / prefetches) instead of leaving it unresolved.
+                        self.deliverEnsuringWorkflowsList(appUserID: appUserID,
+                                                          isAppBackgrounded: isAppBackgrounded) {
+                            self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offerings))
+                        }
                     } else {
                         self.handleOfferingsUpdateError(.backendError(backendError),
                                                         completion: completion)
@@ -283,9 +304,11 @@ private extension OfferingsManager {
         }
     }
 
+    // swiftlint:disable:next function_parameter_count
     func handleOfferingsBackendResult(
         with contents: Offerings.Contents,
         appUserID: String,
+        isAppBackgrounded: Bool,
         fetchPolicy: FetchPolicy,
         preferredLocales: [String],
         completion: (@MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void)?
@@ -298,7 +321,13 @@ private extension OfferingsManager {
                 self.deviceCache.cache(offerings: offeringsResultData.offerings,
                                        preferredLocales: preferredLocales,
                                        appUserID: appUserID)
-                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offeringsResultData))
+
+                // A fresh network offerings fetch forces the workflows list stale so the two refresh
+                // together, then delivers offerings only once the list (and its prefetches) finish.
+                self.workflowManager?.forceWorkflowsListCacheStale()
+                self.deliverEnsuringWorkflowsList(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) {
+                    self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offeringsResultData))
+                }
 
             case let .failure(error):
                 self.handleOfferingsUpdateError(error, completion: completion)
@@ -338,6 +367,22 @@ private extension OfferingsManager {
                 completion(value)
             }
         }
+    }
+
+    /// Runs `deliver` after ensuring the workflows list is fetched, when the workflows endpoint is
+    /// enabled. `getWorkflowsList` no-ops when the list is fresh and always calls its completion, so
+    /// this never hangs. When the endpoint is disabled (`workflowManager` is nil), `deliver` runs
+    /// immediately, leaving offerings delivery unchanged.
+    private func deliverEnsuringWorkflowsList(appUserID: String,
+                                              isAppBackgrounded: Bool,
+                                              deliver: @escaping () -> Void) {
+        guard let workflowManager = self.workflowManager else {
+            deliver()
+            return
+        }
+        workflowManager.getWorkflowsList(appUserID: appUserID,
+                                         isAppBackgrounded: isAppBackgrounded,
+                                         onComplete: deliver)
     }
 
     private func fetchProducts(
