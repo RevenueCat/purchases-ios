@@ -66,7 +66,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         )
         self.logger.clearMessages()
 
-        let storeKitProductIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        let storeKitProductIdentifier = "com.revenuecat.annual_with_commitment"
         let compoundProductIdentifier = "\(storeKitProductIdentifier):monthly"
         let compoundIdentifier = try XCTUnwrap(
             CompoundProductIdentifier(compoundProductIdentifier: compoundProductIdentifier)
@@ -79,34 +79,18 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         let product = try XCTUnwrap(unwrappedProducts.onlyElement).product
 
         expect(product.productIdentifier) == storeKitProductIdentifier
-        if #available(iOS 16.0, *) {
-            self.logger.verifyMessageWasLogged(
-                Strings.storeKit.sk2_billing_plans_are_unavailable_on_this_os_version(
-                    compoundProductIdentifier: compoundIdentifier
-                ),
-                level: .warn
-            )
-            expect(self.logger.messages).toNot(containElementSatisfying { message in
-                message.level == .warn
-                    && message.message == Strings.storeKit.sk1_does_not_support_billing_plans(
-                        compoundProductIdentifier: compoundIdentifier
-                    ).description
-            })
-        } else {
-            // On iOS 14/15, the StoreKit 1 check happens first, so they'll see the SK1 warning log instead
-            self.logger.verifyMessageWasLogged(
-                Strings.storeKit.sk1_does_not_support_billing_plans(
-                    compoundProductIdentifier: compoundIdentifier
-                ).description,
-                level: .warn
-            )
-            expect(self.logger.messages).toNot(containElementSatisfying { message in
-                message.level == .warn
-                    && message.message == Strings.storeKit.sk2_billing_plans_are_unavailable_on_this_os_version(
-                        compoundProductIdentifier: compoundIdentifier
-                    ).description
-            })
-        }
+        expect(self.logger.messages).toNot(containElementSatisfying { message in
+            message.level == .warn
+            && message.message == Strings.storeKit.sk2_billing_plans_are_unavailable_on_this_os_version(
+                compoundProductIdentifier: compoundIdentifier
+            ).description
+        })
+        expect(self.logger.messages).toNot(containElementSatisfying { message in
+            message.level == .warn
+            && message.message == Strings.storeKit.sk1_does_not_support_billing_plans(
+                compoundProductIdentifier: compoundIdentifier
+            ).description
+        })
     }
 
     func testFetchProductsWithCompoundIdentifierWithBillingPlanDoesNotRequestProductOnUnsupportedOSVersions() throws {
@@ -120,7 +104,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         self.logger.clearMessages()
 
         let compoundProductIdentifier = try XCTUnwrap(
-            CompoundProductIdentifier(compoundProductIdentifier: "com.revenuecat.subscription:monthly")
+            CompoundProductIdentifier(compoundProductIdentifier: "com.revenuecat.annual_with_commitment:monthly")
         )
         let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
             manager.products(

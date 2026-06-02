@@ -559,8 +559,6 @@ extension StoreProductTests {
     }
 
     func testIdAddsMonthlyProductPlanIdentifierForMonthlyInstallmentsInfo() throws {
-        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
-
         let productIdentifier = "com.revenuecat.product"
         let storeProduct = Self.testProduct(
             productIdentifier: productIdentifier,

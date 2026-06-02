@@ -153,8 +153,6 @@ final class WinBackOfferEligibilityCalculatorTests: TestCase {
     }
 
     func testIgnoresNonWinBackOffersFromPricingTerms() async throws {
-        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
-
         let product = MockWinBackEligibilityProduct(
             billingPlanType: .monthly,
             subscriptionInfo: MockWinBackEligibilitySubscriptionInfo(
@@ -182,8 +180,6 @@ final class WinBackOfferEligibilityCalculatorTests: TestCase {
     }
 
     func testFiltersWinBackOffersToProductBillingPlan() async throws {
-        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
-
         let product = MockWinBackEligibilityProduct(
             billingPlanType: .monthly,
             subscriptionInfo: MockWinBackEligibilitySubscriptionInfo(
