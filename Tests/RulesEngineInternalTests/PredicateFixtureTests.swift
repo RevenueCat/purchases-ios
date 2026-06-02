@@ -13,9 +13,9 @@ import Testing
 @Suite("Rules Engine Predicate Fixtures", .serialized)
 struct PredicateFixtureTests {
 
-    private static let fixtureIDs: [String] = {
+    private static let fixtures: [PredicateConformanceFixtureCase] = {
         let directory = PredicateConformanceFixtureLoader.inRepoFixturesDirectoryURL()
-        return (try? PredicateConformanceFixtureLoader.loadCases(fromDirectory: directory).map(\.id)) ?? []
+        return (try? PredicateConformanceFixtureLoader.loadCases(fromDirectory: directory)) ?? []
     }()
 
     @Test
@@ -25,15 +25,13 @@ struct PredicateFixtureTests {
         try #require(!cases.isEmpty, "Expected at least one in-repo predicate fixture")
     }
 
-    @Test(arguments: Self.fixtureIDs)
-    func fixture(fixtureID: String) throws {
-        let directory = PredicateConformanceFixtureLoader.inRepoFixturesDirectoryURL()
-        let cases = try PredicateConformanceFixtureLoader.loadCases(fromDirectory: directory)
-        guard let fixtureCase = cases.first(where: { $0.id == fixtureID }) else {
-            Issue.record("Missing fixture \(fixtureID)")
-            return
-        }
-
+    @Test(arguments: Self.fixtures)
+    func fixture(_ fixtureCase: PredicateConformanceFixtureCase) throws {
         try PredicateConformanceRunner.run(fixtureCase)
     }
+}
+
+extension PredicateConformanceFixtureCase: CustomTestStringConvertible {
+
+    var testDescription: String { id }
 }

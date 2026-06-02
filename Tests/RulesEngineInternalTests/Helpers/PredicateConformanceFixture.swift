@@ -65,7 +65,7 @@ struct ExpectedWarnings: Equatable, Decodable {
     }
 }
 
-struct PredicateConformanceFixtureCase: Equatable, Decodable {
+struct PredicateConformanceFixtureCase: Equatable, Decodable, Identifiable, Sendable {
 
     let id: String
     let description: String?
