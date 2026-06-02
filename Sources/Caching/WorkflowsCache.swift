@@ -76,10 +76,6 @@ final class WorkflowsCache {
     }
 
     /// Caches the workflows list in memory and persists it to disk.
-    ///
-    /// A fetch in flight during an identity transition can complete *after* ``clearCache()`` and
-    /// repopulate the cache with the previous user's list (last-write-wins). This is not guarded
-    /// here; it self-heals on the next fetch, as the offerings cache does.
     func cache(workflowsList response: WorkflowsListResponse) {
         self.cachedList.value = CachedList(response: response,
                                            offeringIdToWorkflowId: Self.offeringIdToWorkflowId(from: response),
@@ -94,9 +90,7 @@ final class WorkflowsCache {
     }
 
     /// Resolves the workflow id for an offering from the in-memory list, or `nil` when the list
-    /// hasn't been cached this session. Restoring the persisted list after a backend failure is the
-    /// caller's responsibility (via ``cachedWorkflowsListResponseFromDisk()`` + ``cache(workflowsList:)``),
-    /// the same way the offerings cache is hydrated from disk, so this lookup never touches disk.
+    /// hasn't been cached this session.
     func workflowId(forOfferingId offeringId: String) -> String? {
         return self.cachedList.value?.offeringIdToWorkflowId[offeringId]
     }
