@@ -123,6 +123,16 @@ enum Strings {
     case paywall_close_workflow_action_not_handled(componentName: String?)
     case paywall_workflow_trigger_not_handled(componentName: String?)
     case workflow_package_context_unresolvable(stepId: String)
+    case workflow_header_transition(
+        stage: String,
+        transitionId: String,
+        mode: String,
+        currentHeader: String,
+        outgoingHeader: String,
+        progress: String,
+        currentOpacity: String,
+        outgoingOpacity: String
+    )
 
 }
 
@@ -399,6 +409,20 @@ extension Strings: CustomStringConvertible {
         case let .workflow_package_context_unresolvable(stepId):
             return "Could not resolve package context for singleStepFallbackId '\(stepId)'. " +
             "Price/period variables may not resolve on packageless screens."
+        case let .workflow_header_transition(
+            stage,
+            transitionId,
+            mode,
+            currentHeader,
+            outgoingHeader,
+            progress,
+            currentOpacity,
+            outgoingOpacity
+        ):
+            return "[RC_WORKFLOW_HEADER_DEBUG] Workflow header transition \(stage): " +
+            "transitionId=\(transitionId), mode=\(mode), currentHeader=\(currentHeader), " +
+            "outgoingHeader=\(outgoingHeader), progress=\(progress), " +
+            "currentOpacity=\(currentOpacity), outgoingOpacity=\(outgoingOpacity)"
         }
     }
 

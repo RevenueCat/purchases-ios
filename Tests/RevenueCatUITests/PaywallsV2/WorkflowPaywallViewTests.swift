@@ -110,6 +110,84 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(state.headerButtonOpacity(for: .outgoing)) == 0
     }
 
+    func testMatchingHeadersStayPinnedWithoutCrossfading() {
+        var state = WorkflowPageTransitionState(currentPage: "step_1")
+        let headerTransition = WorkflowHeaderTransition(
+            currentHeader: "shared_header",
+            outgoingHeader: "shared_header"
+        )
+
+        state.beginTransition(to: "step_2", direction: .forward)
+
+        expect(state.headerButtonOpacity(for: .current, headerTransition: headerTransition)) == 1
+        expect(state.headerButtonOpacity(for: .outgoing, headerTransition: headerTransition)) == 0
+
+        state.advanceAnimation()
+
+        expect(state.headerButtonOpacity(for: .current, headerTransition: headerTransition)) == 1
+        expect(state.headerButtonOpacity(for: .outgoing, headerTransition: headerTransition)) == 0
+    }
+
+    func testHeaderFadesInWhenOnlyIncomingPageHasHeader() {
+        var state = WorkflowPageTransitionState(currentPage: "step_1")
+        let headerTransition = WorkflowHeaderTransition(
+            currentHeader: "incoming_header",
+            outgoingHeader: nil as String?
+        )
+
+        state.beginTransition(to: "step_2", direction: .forward)
+
+        expect(state.headerButtonOpacity(for: .current, headerTransition: headerTransition)) == 0
+        expect(state.headerButtonOpacity(for: .outgoing, headerTransition: headerTransition)) == 0
+
+        state.advanceAnimation()
+
+        expect(state.headerButtonOpacity(for: .current, headerTransition: headerTransition)) == 1
+        expect(state.headerButtonOpacity(for: .outgoing, headerTransition: headerTransition)) == 0
+    }
+
+    func testHeaderFadesOutWhenOnlyOutgoingPageHasHeader() {
+        var state = WorkflowPageTransitionState(currentPage: "step_1")
+        let headerTransition = WorkflowHeaderTransition(
+            currentHeader: nil as String?,
+            outgoingHeader: "outgoing_header"
+        )
+
+        state.beginTransition(to: "step_2", direction: .forward)
+
+        expect(state.headerButtonOpacity(for: .current, headerTransition: headerTransition)) == 0
+        expect(state.headerButtonOpacity(for: .outgoing, headerTransition: headerTransition)) == 1
+
+        state.advanceAnimation()
+
+        expect(state.headerButtonOpacity(for: .current, headerTransition: headerTransition)) == 0
+        expect(state.headerButtonOpacity(for: .outgoing, headerTransition: headerTransition)) == 0
+    }
+
+    func testHeaderOverlayOnlyRendersWhenAtLeastOnePageHasAHeader() {
+        let noHeader = WorkflowHeaderTransition(
+            currentHeader: nil as String?,
+            outgoingHeader: nil as String?
+        )
+        let entering = WorkflowHeaderTransition(
+            currentHeader: "incoming_header",
+            outgoingHeader: nil as String?
+        )
+        let leaving = WorkflowHeaderTransition(
+            currentHeader: nil as String?,
+            outgoingHeader: "outgoing_header"
+        )
+        let stable = WorkflowHeaderTransition(
+            currentHeader: "shared_header",
+            outgoingHeader: "shared_header"
+        )
+
+        expect(noHeader.shouldRenderOverlay) == false
+        expect(entering.shouldRenderOverlay) == true
+        expect(leaving.shouldRenderOverlay) == true
+        expect(stable.shouldRenderOverlay) == true
+    }
+
     func testCompletingTransitionDropsOutgoingPage() {
         var state = WorkflowPageTransitionState(currentPage: "step_1")
 

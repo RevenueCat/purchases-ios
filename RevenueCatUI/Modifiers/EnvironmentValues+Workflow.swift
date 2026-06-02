@@ -21,7 +21,7 @@ struct WorkflowPageTransitionContext {
     /// Header buttons use the inverse value so they stay visually fixed while page content slides.
     let pageOffset: CGFloat
     /// Opacity for buttons rendered inside workflow headers.
-    /// This crossfades outgoing and incoming header buttons during page transitions.
+    /// Header buttons fade when a header enters or leaves, but stay stable when both pages share the same header.
     let headerButtonOpacity: CGFloat
     /// Whether the page is currently participating in a workflow-level transition.
     /// Child component entrance transitions and horizontal safe-area bleed should be suppressed while this is true.
@@ -44,6 +44,13 @@ private struct CloseWorkflowActionKey: EnvironmentKey {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct WorkflowPageTransitionContextKey: EnvironmentKey {
     static let defaultValue = WorkflowPageTransitionContext.identity
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct WorkflowPageHeaderSuppressedKey: EnvironmentKey {
+    /// Hides headers rendered inside page snapshots while the workflow-level header overlay owns the transition.
+    /// The header layout is preserved so body content does not jump when the overlay appears.
+    static let defaultValue = false
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -77,6 +84,11 @@ extension EnvironmentValues {
     var workflowPageTransitionContext: WorkflowPageTransitionContext {
         get { self[WorkflowPageTransitionContextKey.self] }
         set { self[WorkflowPageTransitionContextKey.self] = newValue }
+    }
+
+    var workflowPageHeaderSuppressed: Bool {
+        get { self[WorkflowPageHeaderSuppressedKey.self] }
+        set { self[WorkflowPageHeaderSuppressedKey.self] = newValue }
     }
 
     var isWorkflowHeader: Bool {
