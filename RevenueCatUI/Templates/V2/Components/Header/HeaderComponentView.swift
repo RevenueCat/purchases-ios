@@ -21,6 +21,9 @@ struct HeaderComponentView: View {
     @Environment(\.safeAreaInsets)
     private var safeAreaInsets
 
+    @Environment(\.workflowRenderingContext)
+    private var workflowRenderingContext
+
     private let viewModel: HeaderComponentViewModel
     private let onDismiss: () -> Void
 
@@ -43,7 +46,7 @@ struct HeaderComponentView: View {
                 trailing: 0
             )
         )
-        .environment(\.isWorkflowHeader, true)
+        .environment(\.workflowRenderingContext, self.workflowRenderingContext.markingHeader())
     }
 
 }

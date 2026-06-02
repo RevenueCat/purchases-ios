@@ -31,8 +31,8 @@ struct BackgroundStyleModifier: ViewModifier {
     @Environment(\.colorScheme)
     var colorScheme
 
-    @Environment(\.workflowPageTransitionContext)
-    var workflowPageTransitionContext
+    @Environment(\.workflowRenderingContext)
+    var workflowRenderingContext
 
     @State var size: CGSize?
 
@@ -58,7 +58,7 @@ struct BackgroundStyleModifier: ViewModifier {
     private var ignoresSafeAreaEdges: Edge.Set {
         // Keep workflow page backgrounds stable under the top/bottom safe areas while sliding,
         // but avoid horizontal safe-area expansion from escaping the page's clipped bounds.
-        return self.workflowPageTransitionContext.isTransitioning ? .vertical : .all
+        return self.workflowRenderingContext.pageTransition.isTransitioning ? .vertical : .all
     }
 
 }
