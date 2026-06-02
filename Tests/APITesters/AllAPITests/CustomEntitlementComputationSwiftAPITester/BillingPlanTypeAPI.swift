@@ -15,3 +15,14 @@ func checkBillingPlanType() {
     let _: BillingPlanType = BillingPlanType.upFront
     let _: String = BillingPlanType.upFront.rawValue
 }
+
+func checkSwitch(billingPlanType: BillingPlanType) {
+    switch billingPlanType {
+    case .monthly:
+        return
+    case .upFront:
+        return
+    default:
+        return
+    }
+}
