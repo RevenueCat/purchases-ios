@@ -42,9 +42,7 @@ internal extension PaywallTesterViewMode {
             .footer,
             .condensedFooter,
             .presentIfNeeded,
-            .presentPaywall,
-            .workflow,
-            .presentWorkflow
+            .presentPaywall
         ]
         #endif
     }
