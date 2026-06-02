@@ -66,8 +66,16 @@ class MockDeviceCache: DeviceCache {
         get { self._cachedCustomerInfoCount.value }
         set { self._cachedCustomerInfoCount.value = newValue }
     }
-    var clearCustomerInfoCacheTimestampCount = 0
-    var setCustomerInfoCacheTimestampToNowCount = 0
+    private let _clearCustomerInfoCacheTimestampCount: Atomic<Int> = .init(0)
+    var clearCustomerInfoCacheTimestampCount: Int {
+        get { self._clearCustomerInfoCacheTimestampCount.value }
+        set { self._clearCustomerInfoCacheTimestampCount.value = newValue }
+    }
+    private let _setCustomerInfoCacheTimestampToNowCount: Atomic<Int> = .init(0)
+    var setCustomerInfoCacheTimestampToNowCount: Int {
+        get { self._setCustomerInfoCacheTimestampToNowCount.value }
+        set { self._setCustomerInfoCacheTimestampToNowCount.value = newValue }
+    }
     var stubbedIsCustomerInfoCacheStale = false
     private let _cachedCustomerInfo: Atomic<[String: Data]> = .init([:])
     var cachedCustomerInfo: [String: Data] {
@@ -90,7 +98,7 @@ class MockDeviceCache: DeviceCache {
     }
 
     override func clearCustomerInfoCacheTimestamp(appUserID: String) {
-        clearCustomerInfoCacheTimestampCount += 1
+        self._clearCustomerInfoCacheTimestampCount.modify { $0 += 1 }
     }
 
     // MARK: offerings
