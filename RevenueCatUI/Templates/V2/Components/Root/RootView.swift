@@ -32,6 +32,9 @@ struct RootView: View {
     @Environment(\.workflowPackageContext)
     private var workflowPackageContext
 
+    @Environment(\.workflowRenderingContext)
+    private var workflowRenderingContext
+
     private let viewModel: RootViewModel
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
@@ -57,6 +60,13 @@ struct RootView: View {
         Color.clear.frame(width: 1)
     }
 
+    private var paywallRootStackIsZLayer: Bool {
+        if case .zlayer = self.viewModel.stackViewModel.component.dimension {
+            return true
+        }
+        return false
+    }
+
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
             if let headerViewModel = viewModel.headerViewModel,
@@ -66,6 +76,7 @@ struct RootView: View {
                     onDismiss: onDismiss
                 )
                 .fixedSize(horizontal: false, vertical: true)
+                .opacity(self.workflowRenderingContext.pageHeaderSuppressed ? 0 : 1)
             }
 
             ZStack(alignment: .top) {
@@ -85,6 +96,7 @@ struct RootView: View {
                         onDismiss: onDismiss
                     )
                     .fixedSize(horizontal: false, vertical: true)
+                    .opacity(self.workflowRenderingContext.pageHeaderSuppressed ? 0 : 1)
                     .overlay(GeometryReader { proxy in
                         Color.clear.preference(
                             key: OverlaidHeaderHeightKey.self,
@@ -111,6 +123,7 @@ struct RootView: View {
                 .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer)
         .environment(\.openSheet, { sheet in
             self.sheetViewModel = sheet
         })
