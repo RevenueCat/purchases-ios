@@ -76,6 +76,28 @@ extension Value {
     }
 }
 
+/// JS `ToNumber` for numeric comparisons (`>=`, etc.). Unlike [asNumber],
+/// unparseable strings and compound values yield `NaN` so relational
+/// comparisons fail per the spec (`anything >= NaN` is `false`).
+func jsToNumber(_ value: Value) -> Double {
+    switch value {
+    case .null:
+        return 0
+    case .bool(let value):
+        return value ? 1 : 0
+    case .int(let value):
+        return Double(value)
+    case .float(let value):
+        return value
+    case .string(let value):
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return 0 }
+        return Double(trimmed) ?? .nan
+    case .array, .object:
+        return .nan
+    }
+}
+
 /// JSON Logic loose equality (`==`). Mirrors JS abstract equality:
 ///
 /// - Same-type primitive comparisons are direct value equality.
