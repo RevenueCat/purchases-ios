@@ -275,6 +275,29 @@ class DeviceCache {
         }
     }
 
+    // MARK: - Workflows list response
+    // The workflows list is persisted under a single, non-user-scoped key (mirroring the Android SDK).
+    // Cross-user safety is handled by clearing it on identity transitions, just like the offerings cache.
+
+    func cachedWorkflowsListResponse() -> WorkflowsListResponse? {
+        return self.value(for: CacheKey.workflowsListResponse)
+    }
+
+    func cache(workflowsListResponse: WorkflowsListResponse) {
+        let key = CacheKey.workflowsListResponse.rawValue
+        if self.largeItemCache.set(codable: workflowsListResponse, forKey: key) {
+            // Delete old file from documents directory if it exists
+            self.deleteOldFileIfNeeded(for: key)
+        }
+    }
+
+    func clearWorkflowsListResponseCache() {
+        self.largeItemCache.removeObject(forKey: CacheKey.workflowsListResponse.rawValue)
+
+        // Delete old workflows list file from documents directory if it exists
+        self.deleteOldFileIfNeeded(for: CacheKey.workflowsListResponse.rawValue)
+    }
+
     // MARK: - subscriber attributes
     // Write operations use `lockingUserDefaults` to ensure atomic read-modify-write.
     // Read operations use the lock-free `userDefaults` since they don't modify data.
@@ -402,6 +425,13 @@ class DeviceCache {
     private func cacheDurationInSeconds(isAppBackgrounded: Bool, isSandbox: Bool) -> TimeInterval {
         return CacheDuration.duration(status: .init(backgrounded: isAppBackgrounded),
                                       environment: .init(sandbox: isSandbox))
+    }
+
+    /// The same foreground/background cache TTL used by offerings, resolved for the current
+    /// environment. Exposed so other caches (e.g. `WorkflowsCache`) reuse the identical policy.
+    func cacheDurationInSeconds(isAppBackgrounded: Bool) -> TimeInterval {
+        return self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded,
+                                           isSandbox: self.systemInfo.isSandbox)
     }
 
     // MARK: - Products Entitlements
@@ -541,6 +571,7 @@ class DeviceCache {
         case customerInfo(String)
         case customerInfoLastUpdated(String)
         case offerings(String)
+        case workflowsListResponse
         case legacySubscriberAttributes(String)
         case attributionDataDefaults(String)
         case syncedSK2ObserverModeTransactionIDs
@@ -552,6 +583,7 @@ class DeviceCache {
             case let .customerInfo(userID): return "\(Self.base)purchaserInfo.\(userID)"
             case let .customerInfoLastUpdated(userID): return "\(Self.base)purchaserInfoLastUpdated.\(userID)"
             case let .offerings(userID): return "\(Self.base)offerings.\(userID)"
+            case .workflowsListResponse: return "\(Self.base)workflowsListResponse"
             case let .legacySubscriberAttributes(userID): return "\(Self.legacySubscriberAttributesBase)\(userID)"
             case let .attributionDataDefaults(userID): return "\(Self.base)attribution.\(userID)"
             case .syncedSK2ObserverModeTransactionIDs:

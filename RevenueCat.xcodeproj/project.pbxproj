@@ -424,6 +424,8 @@
 		3DD6C3CC5EC6B69E9DA9571D /* Evaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78483ACCDD62ABD40AF8827 /* Evaluator.swift */; };
 		424117A427E05CDDE5CAB803 /* LogicOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EF5BB0DF2CED359AB0089B4 /* LogicOperators.swift */; };
 		42F1DF385E3C1F9903A07FBF /* ProductsFetcherSK1.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB3CBAA73855779FE828CE2 /* ProductsFetcherSK1.swift */; };
+		461DF6CBD6A73F7081683DC4 /* WorkflowsCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = C41FD75CE31F51BBE614F9B0 /* WorkflowsCache.swift */; };
+		6305B8C113CE294A18FD62BD /* WorkflowsCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A2C402AB81F3C35672B14 /* WorkflowsCacheTests.swift */; };
 		49554883F2D5ED48F0907FB9 /* ExitOfferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D26169F24D341F77345716D /* ExitOfferTests.swift */; };
 		4D21041E2CF548790095D254 /* GradientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D21041D2CF548790095D254 /* GradientView.swift */; };
 		4D2A00682CD1EED3008318CA /* PurchaseParamsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2A00672CD1EED2008318CA /* PurchaseParamsTests.swift */; };
@@ -2875,6 +2877,8 @@
 		B7BA50D5AA17E5D4A5D3E99D /* Operators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Operators.swift; sourceTree = "<group>"; };
 		B807748D6D88B7836EC273ED /* EqualityOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EqualityOperators.swift; sourceTree = "<group>"; };
 		B8BCBA1A622A35B377B35254 /* ValueTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ValueTests.swift; sourceTree = "<group>"; };
+		9D8A2C402AB81F3C35672B14 /* WorkflowsCacheTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowsCacheTests.swift; sourceTree = "<group>"; };
+		C41FD75CE31F51BBE614F9B0 /* WorkflowsCache.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowsCache.swift; sourceTree = "<group>"; };
 		CC1A2B3C2E1234AB00AABBCC /* CustomVariablesEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariablesEditorView.swift; sourceTree = "<group>"; };
 		CDD7D260191B3B9A1FA0C277 /* LogicOperatorsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LogicOperatorsTests.swift; sourceTree = "<group>"; };
 		CF01A0F868569B5E2D5CA465 /* PaywallsV2LayoutFixtures.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PaywallsV2LayoutFixtures.swift; path = Tests/RevenueCatUITests/PaywallsV2/PaywallsV2LayoutFixtures.swift; sourceTree = SOURCE_ROOT; };
@@ -4723,6 +4727,7 @@
 				37E35D87B7E6F91E27E98F42 /* DeviceCacheTests.swift */,
 				37E35E3250FBBB03D92E06EC /* InMemoryCachedObjectTests.swift */,
 				1622D3FA2E900DE000C20E3C /* ChecksumTests.swift */,
+				9D8A2C402AB81F3C35672B14 /* WorkflowsCacheTests.swift */,
 			);
 			path = Caching;
 			sourceTree = "<group>";
@@ -6272,6 +6277,7 @@
 				16BCA3672E4D9B0C00B39E7F /* FileRepository.swift */,
 				B3B5FBBE269E081E00104A0C /* InMemoryCachedObject.swift */,
 				16BCA3692E4D9B2C00B39E7F /* KeyedDeferredValueStore.swift */,
+				C41FD75CE31F51BBE614F9B0 /* WorkflowsCache.swift */,
 			);
 			path = Caching;
 			sourceTree = "<group>";
@@ -7599,6 +7605,7 @@
 				DDD45A15A641C0FF0BEF6178 /* PaywallCountdownComponent.swift in Sources */,
 				51978277F6FF8880DDF3028D /* ExitOffer.swift in Sources */,
 				909114C714204DFB8C4F3F72 /* TransactionReason.swift in Sources */,
+				461DF6CBD6A73F7081683DC4 /* WorkflowsCache.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7959,6 +7966,7 @@
 				5796A38A27D6B96300653165 /* BackendGetCustomerInfoTests.swift in Sources */,
 				49554883F2D5ED48F0907FB9 /* ExitOfferTests.swift in Sources */,
 				2B699E6661ECFB93B146A2D9 /* SynchronizedUserDefaultsTests.swift in Sources */,
+				6305B8C113CE294A18FD62BD /* WorkflowsCacheTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
