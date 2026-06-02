@@ -32,7 +32,7 @@ import Foundation
 /// Timestamps are stamped via an injected ``DateProvider`` (rather than reusing `InMemoryCachedObject`,
 /// whose staleness is tied to the real wall clock) so cache-expiry behavior is deterministically
 /// testable, mirroring the Android SDK's `WorkflowsCache`.
-class WorkflowsCache {
+final class WorkflowsCache {
 
     private struct CachedWorkflow {
         let result: WorkflowDataResult
