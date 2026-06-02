@@ -31,6 +31,9 @@ struct BackgroundStyleModifier: ViewModifier {
     @Environment(\.colorScheme)
     var colorScheme
 
+    @Environment(\.workflowRenderingContext)
+    var workflowRenderingContext
+
     @State var size: CGSize?
 
     var backgroundStyle: BackgroundStyle?
@@ -44,11 +47,18 @@ struct BackgroundStyleModifier: ViewModifier {
                     backgroundStyle: backgroundStyle,
                     colorScheme: colorScheme,
                     alignment: alignment,
+                    ignoresSafeAreaEdges: self.ignoresSafeAreaEdges,
                     size: size
                 )
         } else {
             content
         }
+    }
+
+    private var ignoresSafeAreaEdges: Edge.Set {
+        // Keep workflow page backgrounds stable under the top/bottom safe areas while sliding,
+        // but avoid horizontal safe-area expansion from escaping the page's clipped bounds.
+        return self.workflowRenderingContext.pageTransition.isTransitioning ? .vertical : .all
     }
 
 }
@@ -61,6 +71,7 @@ fileprivate extension View {
         backgroundStyle: BackgroundStyle,
         colorScheme: ColorScheme,
         alignment: Alignment,
+        ignoresSafeAreaEdges: Edge.Set,
         size: CGSize? = nil
     ) -> some View {
         switch backgroundStyle {
@@ -68,7 +79,7 @@ fileprivate extension View {
             self.background(
                 color
                     .toView(colorScheme: colorScheme)
-                    .ignoresSafeArea()
+                    .ignoresSafeAreaIfNeeded(edges: ignoresSafeAreaEdges)
             )
         case let .image(imageInfo, fitMode, colorOverlay):
             self.background(alignment: alignment) {
@@ -99,7 +110,7 @@ fileprivate extension View {
                             .toView(colorScheme: colorScheme)
                     }
                 }
-                .ignoresSafeArea()
+                .ignoresSafeAreaIfNeeded(edges: ignoresSafeAreaEdges)
             }
         case let .video(viewModel, colorOverlay):
             self.background(alignment: alignment) {
@@ -117,8 +128,17 @@ fileprivate extension View {
                             .toView(colorScheme: colorScheme)
                     }
                 }
-                .ignoresSafeArea()
+                .ignoresSafeAreaIfNeeded(edges: ignoresSafeAreaEdges)
             }
+        }
+    }
+
+    @ViewBuilder
+    func ignoresSafeAreaIfNeeded(edges: Edge.Set) -> some View {
+        if edges.isEmpty {
+            self
+        } else {
+            self.ignoresSafeArea(edges: edges)
         }
     }
 

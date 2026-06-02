@@ -9,7 +9,6 @@ import XCTest
 @testable import RulesEngineInternal
 
 // swiftlint:disable type_body_length file_length
-
 final class AccessorOperatorsTests: XCTestCase {
 
     private var logger: CapturingLogger!
@@ -455,5 +454,126 @@ final class AccessorOperatorsTests: XCTestCase {
             vars: vars
         )
         XCTAssertEqual(result, .array([.string("user.name")]))
+    }
+
+    // MARK: - missing_some
+
+    func testMissingSomeReturnsEmptyWhenThresholdMet() throws {
+        // need=1, options=[a, b, c]; b is present → 1 ≥ 1 → satisfied → [].
+        let vars = Value.object(["b": .int(2)])
+        let result = try runMissingSome(
+            args: .array([
+                .int(1),
+                .array([.string("a"), .string("b"), .string("c")])
+            ]),
+            vars: vars
+        )
+        XCTAssertEqual(result, .array([]))
+    }
+
+    func testMissingSomeReturnsMissingListWhenBelowThreshold() throws {
+        // need=2, options=[a, b, c]; only c is present → 1 < 2 → list missing.
+        let vars = Value.object(["c": .int(3)])
+        let result = try runMissingSome(
+            args: .array([
+                .int(2),
+                .array([.string("a"), .string("b"), .string("c")])
+            ]),
+            vars: vars
+        )
+        XCTAssertEqual(result, .array([.string("a"), .string("b")]))
+    }
+
+    func testMissingSomeZeroRequiredAlwaysSatisfied() throws {
+        // need=0 means "any number of these is fine" → always [].
+        let result = try runMissingSome(
+            args: .array([
+                .int(0),
+                .array([.string("a"), .string("b")])
+            ]),
+            vars: .object([:])
+        )
+        XCTAssertEqual(result, .array([]))
+    }
+
+    func testMissingSomeSupportsDotPaths() throws {
+        // Mirrors `missing` semantics — path strings flow through the same
+        // dot-walker.
+        let vars = Value.object(["user": .object(["name": .string("ada")])])
+        let result = try runMissingSome(
+            args: .array([
+                .int(2),
+                .array([.string("user.name"), .string("user.email"), .string("user.age")])
+            ]),
+            vars: vars
+        )
+        XCTAssertEqual(result, .array([.string("user.email"), .string("user.age")]))
+    }
+
+    func testMissingSomeArityMismatchIsTypeError() {
+        XCTAssertThrowsError(
+            try runMissingSome(args: .array([.int(1)]), vars: .object([:]))
+        ) { error in
+            guard case RuleError.typeMismatch = error else {
+                return XCTFail("expected typeMismatch, got \(error)")
+            }
+        }
+    }
+
+    func testMissingSomeNonArrayOptionsIsTypeError() {
+        XCTAssertThrowsError(
+            try runMissingSome(
+                args: .array([.int(1), .string("a")]),
+                vars: .object([:])
+            )
+        ) { error in
+            guard case RuleError.typeMismatch = error else {
+                return XCTFail("expected typeMismatch, got \(error)")
+            }
+        }
+    }
+
+    func testMissingSomeWithNanThresholdNeverSatisfies() throws {
+        // `>=` with a NaN threshold is always false in JS, so the
+        // operator returns the missing list rather than [].
+        let result = try runMissingSome(
+            args: .array([
+                .float(.nan),
+                .array([.string("a"), .string("b")])
+            ]),
+            vars: .object([:])
+        )
+        XCTAssertEqual(result, .array([.string("a"), .string("b")]))
+    }
+
+    func testMissingSomeWithNonNumericStringThresholdNeverSatisfies() throws {
+        let result = try runMissingSome(
+            args: .array([
+                .string("abc"),
+                .array([.string("a"), .string("b")])
+            ]),
+            vars: .object([:])
+        )
+        XCTAssertEqual(result, .array([.string("a"), .string("b")]))
+    }
+
+    func testMissingSomeWithInfiniteThresholdNeverSatisfies() throws {
+        // `+Infinity` clamps to `Int.max`, so the requirement can never be
+        // met and the operator returns the full missing list. Guards
+        // against the trapping `Int(Double.infinity)` initializer.
+        let result = try runMissingSome(
+            args: .array([
+                .float(.infinity),
+                .array([.string("a"), .string("b")])
+            ]),
+            vars: .object(["a": .int(1)])
+        )
+        XCTAssertEqual(result, .array([.string("b")]))
+    }
+
+    // MARK: - Helpers
+
+    private func runMissingSome(args: Value, vars: Value) throws -> Value {
+        try AccessorOperators.opMissingSome(args: args, vars: vars)
     }
 }
