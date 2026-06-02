@@ -173,6 +173,7 @@ extension PaywallPurchasesType {
         mapped.offeringsBlock = { try await self.offerings() }
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
+        mapped.trackWorkflowEventBlock = { await self.track(workflowEvent: $0) }
         #endif
 
         return mapped
@@ -200,6 +201,7 @@ extension PaywallPurchasesType {
         mapped.offeringsBlock = { try await self.offerings() }
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
+        mapped.trackWorkflowEventBlock = { await self.track(workflowEvent: $0) }
         #endif
 
         return mapped

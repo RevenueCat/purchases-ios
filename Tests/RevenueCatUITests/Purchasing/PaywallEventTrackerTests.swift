@@ -69,6 +69,48 @@ class PaywallEventTrackerTests: TestCase {
         expect(trackedPaywallEvents.value).to(beEmpty())
     }
 
+    func testMappedPurchasesTrackEventVariantForwardsWorkflowEvents() async throws {
+        // The `map(trackEvent:)` wrapper must forward workflow events to the original, the same way it
+        // forwards paywall events and the workflow fetch block. Otherwise workflow step events are dropped.
+        let trackedWorkflowEvents: Atomic<[WorkflowEvent]> = .init([])
+        let base = MockPurchases(
+            purchase: { _, _, _ in
+                (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+            },
+            restorePurchases: { TestData.customerInfo },
+            trackEvent: { _ in },
+            customerInfo: { TestData.customerInfo }
+        )
+        base.trackWorkflowEventBlock = { event in trackedWorkflowEvents.modify { $0.append(event) } }
+
+        let mapped = base.map(trackEvent: { $0 })
+        let event = WorkflowEvent.stepStarted(.init(), .init(workflowId: "wf_1", stepId: "step_1"))
+
+        await mapped.track(workflowEvent: event)
+
+        expect(trackedWorkflowEvents.value) == [event]
+    }
+
+    func testMappedPurchasesPurchaseRestoreVariantForwardsWorkflowEvents() async throws {
+        let trackedWorkflowEvents: Atomic<[WorkflowEvent]> = .init([])
+        let base = MockPurchases(
+            purchase: { _, _, _ in
+                (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+            },
+            restorePurchases: { TestData.customerInfo },
+            trackEvent: { _ in },
+            customerInfo: { TestData.customerInfo }
+        )
+        base.trackWorkflowEventBlock = { event in trackedWorkflowEvents.modify { $0.append(event) } }
+
+        let mapped = base.map(purchase: { $0 }, restore: { $0 })
+        let event = WorkflowEvent.stepCompleted(.init(), .init(workflowId: "wf_1", stepId: "step_1"))
+
+        await mapped.track(workflowEvent: event)
+
+        expect(trackedWorkflowEvents.value) == [event]
+    }
+
     func testTrackExitOfferDoesNotPreventTrackPaywallClose() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
         let sessionID = Self.eventData.sessionIdentifier
