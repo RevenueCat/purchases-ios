@@ -1,0 +1,130 @@
+{
+  "fixtures": [
+    {
+      "id": "var_resolves_top_level_key",
+      "predicate": { "===": [{ "var": "name" }, "ada"] },
+      "variables": { "name": "ada" },
+      "expected": true,
+      "expectedWarnings": { "count": 0, "contains": [] }
+    },
+    {
+      "id": "var_resolves_dot_path_into_nested_object",
+      "predicate": { "===": [{ "var": "subscriber.last_seen_country" }, "US"] },
+      "variables": { "subscriber": { "last_seen_country": "US" } },
+      "expected": true
+    },
+    {
+      "id": "var_indexes_into_arrays_via_numeric_segments",
+      "predicate": { "===": [{ "var": "items.1" }, "second"] },
+      "variables": { "items": ["first", "second", "third"] },
+      "expected": true
+    },
+    {
+      "id": "var_missing_key_returns_null_and_warns",
+      "predicate": { "===": [{ "var": "missing_key" }, null] },
+      "variables": { "a": 1 },
+      "expected": true,
+      "expectedWarnings": { "count": 1, "contains": ["missing_key"] }
+    },
+    {
+      "id": "var_missing_dot_path_returns_null_and_warns",
+      "predicate": { "===": [{ "var": "a.c" }, null] },
+      "variables": { "a": { "b": 1 } },
+      "expected": true,
+      "expectedWarnings": { "count": 1, "contains": ["a.c"] }
+    },
+    {
+      "id": "var_missing_with_default_returns_default_and_does_not_warn",
+      "predicate": { "===": [{ "var": ["missing", "fallback"] }, "fallback"] },
+      "variables": { "a": 1 },
+      "expected": true,
+      "expectedWarnings": { "count": 0, "contains": [] }
+    },
+    {
+      "id": "var_oversized_float_path_does_not_crash",
+      "description": "1e19 exceeds Int64.max; the path formatter must round-trip safely so the lookup just misses instead of trapping",
+      "predicate": { "===": [{ "var": 1e19 }, null] },
+      "variables": {},
+      "expected": true,
+      "expectedWarnings": { "count": 1, "contains": [] }
+    },
+    {
+      "id": "var_does_not_apply_flat_key_fallback",
+      "description": "the literal key \"a.b\" exists flat, but the spec-strict lookup walks \"a\" then \"b\" and finds nothing",
+      "predicate": { "===": [{ "var": "a.b" }, null] },
+      "variables": { "a.b": 42 },
+      "expected": true,
+      "expectedWarnings": { "count": 1, "contains": [] }
+    },
+    {
+      "id": "var_extra_args_are_ignored_with_warning",
+      "description": "extra args past [path, default] are ignored but surface a warning; the default still resolves the result",
+      "predicate": {
+        "===": [
+          { "var": ["missing_key", "fallback", "ignored1", "ignored2"] },
+          "fallback"
+        ]
+      },
+      "variables": { "a": 1 },
+      "expected": true,
+      "expectedWarnings": { "count": 1, "contains": ["ignoring 2 extra"] }
+    },
+    {
+      "id": "var_recursively_evaluates_singleton_path_expression",
+      "description": "{\"var\": <expr>} recursively evaluates the path expression; the inner var resolves to \"subscriber.country\"",
+      "predicate": { "===": [{ "var": { "var": "active_path_key" } }, "US"] },
+      "variables": {
+        "active_path_key": "subscriber.country",
+        "subscriber": { "country": "US" }
+      },
+      "expected": true,
+      "expectedWarnings": { "count": 0, "contains": [] }
+    },
+    {
+      "id": "var_recursively_evaluates_array_form_path_expression",
+      "description": "the array-form path argument is itself recursively evaluated before lookup",
+      "predicate": { "===": [{ "var": [{ "var": "key_to_lookup" }] }, "found"] },
+      "variables": {
+        "key_to_lookup": "nested.value",
+        "nested": { "value": "found" }
+      },
+      "expected": true,
+      "expectedWarnings": { "count": 0, "contains": [] }
+    },
+    {
+      "id": "var_recursively_evaluates_array_form_default_expression",
+      "description": "the array-form default argument is also recursively evaluated",
+      "predicate": {
+        "===": [
+          { "var": ["missing_key", { "var": "fallback_source" }] },
+          "computed_default"
+        ]
+      },
+      "variables": { "fallback_source": "computed_default" },
+      "expected": true,
+      "expectedWarnings": { "count": 0, "contains": [] }
+    },
+    {
+      "id": "var_singleton_expression_resolving_to_array_stringifies_path",
+      "description": "a non-primitive evaluated path stringifies via String(value).split(\".\"); an array yields a comma-joined key (\"x,y\")",
+      "predicate": { "===": [{ "var": { "if": [true, ["x", "y"], "z"] } }, "found"] },
+      "variables": { "x,y": "found" },
+      "expected": true
+    },
+    {
+      "id": "var_boolean_path_looks_up_stringified_key",
+      "description": "boolean paths follow String(value).split(\".\"), so {\"var\": true} looks up the \"true\" key",
+      "predicate": { "===": [{ "var": true }, 42] },
+      "variables": { "true": 42 },
+      "expected": true
+    },
+    {
+      "id": "var_object_path_stringifies_and_misses",
+      "description": "object paths stringify to \"[object Object]\" and never match a real key, so var returns null and warns",
+      "predicate": { "===": [{ "var": [{ "foo": 1, "bar": 2 }] }, null] },
+      "variables": { "x": 1 },
+      "expected": true,
+      "expectedWarnings": { "count": 1, "contains": [] }
+    }
+  ]
+}

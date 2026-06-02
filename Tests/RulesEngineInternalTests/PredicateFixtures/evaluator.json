@@ -1,0 +1,307 @@
+{
+  "fixtures": [
+    {
+      "id": "evaluator_literal_true_is_truthy",
+      "predicate": true,
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "evaluator_literal_one_is_truthy",
+      "predicate": 1,
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "evaluator_literal_string_is_truthy",
+      "predicate": "hello",
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "evaluator_literal_false_is_falsy",
+      "predicate": false,
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "evaluator_literal_zero_is_falsy",
+      "predicate": 0,
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "evaluator_literal_empty_string_is_falsy",
+      "predicate": "",
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "evaluator_literal_null_is_falsy",
+      "predicate": null,
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "evaluator_composite_predicate_true",
+      "predicate": {
+        "and": [
+          { "==": [{ "var": "subscriber.last_seen_country" }, "US"] },
+          { "==": [{ "var": "session.app_launch_count" }, 3] }
+        ]
+      },
+      "variables": {
+        "subscriber": { "last_seen_country": "US" },
+        "session": { "app_launch_count": 3 }
+      },
+      "expected": true
+    },
+    {
+      "id": "evaluator_composite_predicate_false_when_country_differs",
+      "predicate": {
+        "and": [
+          { "==": [{ "var": "subscriber.last_seen_country" }, "US"] },
+          { "==": [{ "var": "session.app_launch_count" }, 3] }
+        ]
+      },
+      "variables": {
+        "subscriber": { "last_seen_country": "CA" },
+        "session": { "app_launch_count": 3 }
+      },
+      "expected": false
+    },
+    {
+      "id": "evaluator_nested_or_within_and_true",
+      "description": "models (country in {US,CA}) AND (count == 3) as nested or/and",
+      "predicate": {
+        "and": [
+          {
+            "or": [
+              { "==": [{ "var": "country" }, "US"] },
+              { "==": [{ "var": "country" }, "CA"] }
+            ]
+          },
+          { "==": [{ "var": "count" }, 3] }
+        ]
+      },
+      "variables": { "country": "CA", "count": 3 },
+      "expected": true
+    },
+    {
+      "id": "evaluator_nested_or_within_and_false",
+      "description": "models (country in {US,CA}) AND (count == 3) as nested or/and",
+      "predicate": {
+        "and": [
+          {
+            "or": [
+              { "==": [{ "var": "country" }, "US"] },
+              { "==": [{ "var": "country" }, "CA"] }
+            ]
+          },
+          { "==": [{ "var": "count" }, 3] }
+        ]
+      },
+      "variables": { "country": "MX", "count": 3 },
+      "expected": false
+    },
+    {
+      "id": "evaluator_if_chooses_branch_premium",
+      "description": "literal true/false branches so the assertion can distinguish which branch was taken",
+      "predicate": {
+        "if": [{ "==": [{ "var": "tier" }, "premium"] }, true, false]
+      },
+      "variables": { "tier": "premium" },
+      "expected": true
+    },
+    {
+      "id": "evaluator_if_chooses_branch_free",
+      "description": "literal true/false branches so the assertion can distinguish which branch was taken",
+      "predicate": {
+        "if": [{ "==": [{ "var": "tier" }, "premium"] }, true, false]
+      },
+      "variables": { "tier": "free" },
+      "expected": false
+    },
+    {
+      "id": "evaluator_and_returns_last_truthy_value_order_matters",
+      "description": "and returns the last truthy value, not a coerced bool: left returns true, right returns \"premium\", so true === \"premium\" is false",
+      "predicate": {
+        "===": [
+          { "and": ["premium", 5, true] },
+          { "and": [true, 5, "premium"] }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "evaluator_if_branch_value_flows_into_outer_predicate_true",
+      "description": "the inner if returns the string branch value, which the outer == compares; the engine must not coerce the if result to a bool",
+      "predicate": {
+        "and": [
+          { "==": [{ "var": "active" }, true] },
+          { "==": [{ "if": [{ "var": "is_paid" }, "premium", "free"] }, "premium"] }
+        ]
+      },
+      "variables": { "active": true, "is_paid": true },
+      "expected": true
+    },
+    {
+      "id": "evaluator_if_branch_value_flows_into_outer_predicate_false",
+      "description": "is_paid=false makes the inner if return \"free\", so \"free\" != \"premium\" and the and is false",
+      "predicate": {
+        "and": [
+          { "==": [{ "var": "active" }, true] },
+          { "==": [{ "if": [{ "var": "is_paid" }, "premium", "free"] }, "premium"] }
+        ]
+      },
+      "variables": { "active": true, "is_paid": false },
+      "expected": false
+    },
+    {
+      "id": "evaluator_missing_variable_resolves_to_null_and_warns",
+      "description": "a missing var resolves to null, so {\"==\": [{\"var\": \"missing\"}, null]} is true and a warning is logged",
+      "predicate": { "==": [{ "var": "missing" }, null] },
+      "variables": {},
+      "expected": true,
+      "expectedWarnings": { "count": 1, "contains": ["missing"] }
+    },
+    {
+      "id": "evaluator_unsupported_operator_surfaces_error",
+      "predicate": { "someUnknownOp": [1, 2] },
+      "variables": {},
+      "expected": { "error": "unsupportedOperator" }
+    },
+    {
+      "id": "evaluator_binary_operator_missing_operand_compares_against_null",
+      "description": "binary operators are function(a, b), so a missing second operand stands in for undefined; 1 == undefined is false",
+      "predicate": { "==": [1] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "evaluator_arithmetic_predicate_with_var_operand",
+      "description": "session.app_launch_count * 2 == 6 is true when count is 3",
+      "predicate": {
+        "==": [{ "*": [{ "var": "session.app_launch_count" }, 2] }, 6]
+      },
+      "variables": { "session": { "app_launch_count": 3 } },
+      "expected": true
+    },
+    {
+      "id": "evaluator_divide_by_zero_positive_infinity_is_truthy",
+      "description": "n / 0 follows IEEE 754; {\"/\": [10, 0]} is +Infinity, which is truthy",
+      "predicate": { "/": [10, 0] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "evaluator_divide_by_zero_nan_is_falsy",
+      "description": "{\"/\": [0, 0]} is NaN, which is falsy",
+      "predicate": { "/": [0, 0] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "evaluator_comparison_predicate_with_var_operand",
+      "description": "session.app_launch_count >= 3 is true when count is 3",
+      "predicate": { ">=": [{ "var": "session.app_launch_count" }, 3] },
+      "variables": { "session": { "app_launch_count": 3 } },
+      "expected": true
+    },
+    {
+      "id": "evaluator_between_form_with_var_operand",
+      "description": "1 <= session.app_launch_count <= 10 is true when count is 5",
+      "predicate": { "<=": [1, { "var": "session.app_launch_count" }, 10] },
+      "variables": { "session": { "app_launch_count": 5 } },
+      "expected": true
+    },
+    {
+      "id": "evaluator_in_operator_against_array_with_var_needle_true",
+      "predicate": { "in": [{ "var": "country" }, ["US", "CA", "MX"]] },
+      "variables": { "country": "CA" },
+      "expected": true
+    },
+    {
+      "id": "evaluator_in_operator_against_array_with_var_needle_false",
+      "predicate": { "in": [{ "var": "country" }, ["US", "CA", "MX"]] },
+      "variables": { "country": "FR" },
+      "expected": false
+    },
+    {
+      "id": "evaluator_missing_some_inside_if_sufficient_data",
+      "description": "missing_some used as a guard: two of three fields present, so data is sufficient and the inner check (a == 1) runs",
+      "predicate": {
+        "if": [
+          { "!!": { "missing_some": [2, ["a", "b", "c"]] } },
+          false,
+          { "==": [{ "var": "a" }, 1] }
+        ]
+      },
+      "variables": { "a": 1, "b": 2 },
+      "expected": true
+    },
+    {
+      "id": "evaluator_missing_some_inside_if_insufficient_data",
+      "description": "only one field present, so data is insufficient and the guard falls back to literal false",
+      "predicate": {
+        "if": [
+          { "!!": { "missing_some": [2, ["a", "b", "c"]] } },
+          false,
+          { "==": [{ "var": "a" }, 1] }
+        ]
+      },
+      "variables": { "a": 1 },
+      "expected": false
+    },
+    {
+      "id": "evaluator_multi_key_object_eq_is_false",
+      "description": "a two-key object is treated as literal data, not an operator; JS abstract equality uses reference identity for objects, so == is false",
+      "predicate": { "==": [{ "a": 1, "b": 2 }, { "a": 1, "b": 2 }] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "evaluator_multi_key_object_ne_is_true",
+      "description": "distinct object references are unequal, so != holds",
+      "predicate": { "!=": [{ "a": 1, "b": 2 }, { "a": 1, "b": 2 }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "evaluator_single_key_object_operand_is_dispatched_as_operator",
+      "description": "single-key objects are dispatched as operators; an unknown op name surfaces as unsupportedOperator (\"a\")",
+      "predicate": { "==": [{ "a": 1 }, { "a": 1 }] },
+      "variables": {},
+      "expected": { "error": "unsupportedOperator", "operator": "a" }
+    },
+    {
+      "id": "evaluator_loose_eq_coerces_array_to_js_string",
+      "description": "Array.prototype.toString coercion through the full evaluator: [1,2] == \"1,2\"",
+      "predicate": { "==": [[1, 2], "1,2"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "evaluator_loose_eq_array_numeric_fallback",
+      "description": "numeric fallback after ToPrimitive: [1] == 1",
+      "predicate": { "==": [[1], 1] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "evaluator_loose_eq_empty_array_coerces_to_zero",
+      "description": "empty array stringifies to \"\" which numerically coerces to 0",
+      "predicate": { "==": [[], 0] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "evaluator_loose_eq_coerces_object_to_js_string",
+      "description": "a multi-key object coerces to \"[object Object]\" against a string operand",
+      "predicate": { "==": [{ "a": 1, "b": 2 }, "[object Object]"] },
+      "variables": {},
+      "expected": true
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "fixtures": [
+    {
+      "id": "missing_returns_keys_not_present",
+      "description": "missing is a check, not a read, so it does not warn; the result array is compared via its JS string coercion",
+      "predicate": { "==": [{ "missing": ["a", "b", "c"] }, "c"] },
+      "variables": { "a": 1, "b": 2 },
+      "expected": true,
+      "expectedWarnings": { "count": 0, "contains": [] }
+    },
+    {
+      "id": "missing_returns_empty_array_when_all_present",
+      "description": "the empty result is compared via its JS string coercion (\"\")",
+      "predicate": { "==": [{ "missing": ["a"] }, ""] },
+      "variables": { "a": 1 },
+      "expected": true
+    },
+    {
+      "id": "missing_supports_dot_path_keys",
+      "description": "single-element result compared via its JS string coercion",
+      "predicate": { "==": [{ "missing": ["user.name", "user.email"] }, "user.email"] },
+      "variables": { "user": { "name": "ada" } },
+      "expected": true
+    },
+    {
+      "id": "missing_singleton_shorthand",
+      "description": "{\"missing\": \"a\"} is shorthand for {\"missing\": [\"a\"]}; result compared via its JS string coercion",
+      "predicate": { "==": [{ "missing": "a" }, "a"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "missing_recursively_evaluates_dynamic_keys",
+      "description": "each key arg is recursively evaluated before lookup; the inner var resolves to \"absent\"",
+      "predicate": { "==": [{ "missing": [{ "var": "key_name" }] }, "absent"] },
+      "variables": { "key_name": "absent", "present_only": 1 },
+      "expected": true
+    },
+    {
+      "id": "missing_unpacks_first_arg_when_resolves_to_array",
+      "description": "if the first evaluated arg is itself an array, its elements are the full key list",
+      "predicate": { "==": [{ "missing": { "if": [true, ["a", "c"], []] } }, "c"] },
+      "variables": { "a": 1 },
+      "expected": true
+    },
+    {
+      "id": "missing_reports_key_whose_leaf_value_is_null",
+      "description": "missing routes through var, so a present-but-null leaf is reported as missing",
+      "predicate": { "==": [{ "missing": ["a", "b"] }, "a"] },
+      "variables": { "a": null, "b": 1 },
+      "expected": true
+    },
+    {
+      "id": "missing_reports_key_whose_leaf_value_is_empty_string",
+      "description": "value === \"\" also counts as missing",
+      "predicate": { "==": [{ "missing": ["a", "b"] }, "a"] },
+      "variables": { "a": "", "b": "x" },
+      "expected": true
+    },
+    {
+      "id": "missing_does_not_report_falsy_non_empty_values",
+      "description": "only null or empty-string leaves are missing; 0, false, and [] are not; the empty result is compared via string coercion",
+      "predicate": { "==": [{ "missing": ["zero", "flag", "empty_array"] }, ""] },
+      "variables": { "zero": 0, "flag": false, "empty_array": [] },
+      "expected": true
+    },
+    {
+      "id": "missing_reports_dot_path_leaf_that_is_null",
+      "description": "the null-leaf rule applies through dot-paths too",
+      "predicate": { "==": [{ "missing": ["user.name", "user.email"] }, "user.name"] },
+      "variables": { "user": { "name": null, "email": "a@b.com" } },
+      "expected": true
+    }
+  ]
+}
