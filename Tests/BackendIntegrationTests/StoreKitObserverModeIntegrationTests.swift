@@ -101,9 +101,13 @@ class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegration
     func testPurchaseOutsideTheAppUpdatesCustomerInfoDelegate() async throws {
         try self.testSession.buyProduct(productIdentifier: Self.monthlyNoIntroProductID)
 
+        // In JWS mode, transaction takes a bit longer to be processed after `buyProduct`.
+        // We need to wait so the SDK observes it before expecting the delegate to be notified.
+        try await self.waitUntilUnfinishedTransactions { $0 == 1 }
+
         try await asyncWait(
             description: "Delegate should be notified",
-            timeout: .seconds(4),
+            timeout: .seconds(10),
             pollInterval: .milliseconds(100)
         ) {
             await self.purchasesDelegate.customerInfo?.entitlements.active.isEmpty == false
