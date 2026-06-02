@@ -214,7 +214,10 @@ struct WorkflowPaywallView: View {
     private let onDismiss: () -> Void
 
     @StateObject private var navigator: WorkflowNavigator
-    @StateObject private var paywallPromoOfferCache: PaywallPromoOfferCache
+    // Held via PromoOfferCacheOwner so this view owns one cache shared across all workflow pages
+    // without subscribing to its @Published changes: body only forwards the cache to children.
+    // Observing it directly would re-render the whole page ForEach + header overlay on each update.
+    @StateObject private var promoOfferCacheOwner: PromoOfferCacheOwner
     @State private var hasLoggedInvalidState = false
     @State private var transitionState: WorkflowPageTransitionState<RenderedPage>
     @State private var activeTransitionID: UUID?
@@ -238,8 +241,10 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
-        self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
-            subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
+        self._promoOfferCacheOwner = .init(wrappedValue: PromoOfferCacheOwner(
+            cache: promoOfferCache ?? PaywallPromoOfferCache(
+                subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
+            )
         ))
         let initialStepId = context.workflow.initialStepId
         let initialPackageInput = Self.buildPackageInput(
@@ -379,7 +384,7 @@ struct WorkflowPaywallView: View {
             closeWorkflowAction: self.onDismiss,
             failedToLoadFont: self.failedToLoadFont,
             colorScheme: self.colorScheme,
-            promoOfferCache: self.paywallPromoOfferCache,
+            promoOfferCache: self.promoOfferCacheOwner.cache,
             introEligibilityContext: page.introOfferEligibilityContext,
             selectedPackageContextOverride: page.packageContext
         )
@@ -400,7 +405,7 @@ struct WorkflowPaywallView: View {
                             purchaseHandler: self.purchaseHandler,
                             introEligibilityChecker: self.introEligibilityChecker,
                             introOfferEligibilityContext: displayedPage.page.introOfferEligibilityContext,
-                            paywallPromoOfferCache: self.paywallPromoOfferCache,
+                            paywallPromoOfferCache: self.promoOfferCacheOwner.cache,
                             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
                             onDismiss: self.handleDismiss,
                             closeWorkflowAction: self.onDismiss,

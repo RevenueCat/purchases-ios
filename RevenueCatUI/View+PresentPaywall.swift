@@ -1063,7 +1063,11 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
 /// without notifying the PresentPaywallViewModifier — therefore preventing an entire paywall redraw.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-private final class PromoOfferCacheOwner: ObservableObject {
+/// Holds a `PaywallPromoOfferCache` with a stable, create-once lifetime when stored as a
+/// `@StateObject`, while exposing it as a plain `let` and publishing nothing of its own.
+/// This lets an owning view keep a single shared cache alive without re-rendering on the
+/// cache's `@Published` changes (the view only forwards the cache to its children).
+internal final class PromoOfferCacheOwner: ObservableObject {
     let cache: PaywallPromoOfferCache
     init(cache: PaywallPromoOfferCache) {
         self.cache = cache
