@@ -95,16 +95,73 @@ struct WorkflowPageTransitionState<Page> {
     }
 
     func headerButtonOpacity(for role: PageRole) -> CGFloat {
+        return self.headerButtonOpacity(for: role, headerTransition: .replacing)
+    }
+
+    func headerButtonOpacity(for role: PageRole, headerTransition: WorkflowHeaderTransition) -> CGFloat {
         guard self.isTransitioning else {
             return role == .current ? 1 : 0
         }
 
-        switch role {
-        case .current:
-            return self.progress
-        case .outgoing:
-            return 1 - self.progress
+        switch headerTransition.mode {
+        case .none:
+            return role == .current ? 1 : 0
+        case .stable:
+            return role == .current ? 1 : 0
+        case .entering:
+            return role == .current ? self.progress : 0
+        case .leaving:
+            return role == .outgoing ? 1 - self.progress : 0
+        case .replacing:
+            switch role {
+            case .current:
+                return self.progress
+            case .outgoing:
+                return 1 - self.progress
+            }
         }
+    }
+
+}
+
+struct WorkflowHeaderTransition {
+
+    fileprivate enum Mode {
+        case none
+        case entering
+        case leaving
+        case replacing
+        case stable
+    }
+
+    fileprivate static let replacing = Self(mode: .replacing)
+
+    fileprivate let mode: Mode
+
+    var shouldRenderOverlay: Bool {
+        return self.mode != .none
+    }
+
+    init<Header: Equatable>(
+        currentHeader: Header?,
+        outgoingHeader: Header?
+    ) {
+        switch (currentHeader, outgoingHeader) {
+        case (.none, .none):
+            self.mode = .none
+        case (.some, .none):
+            self.mode = .entering
+        case (.none, .some):
+            self.mode = .leaving
+        case let (.some(current), .some(outgoing)) where current == outgoing:
+            self.mode = .stable
+        case (.some, .some):
+            self.mode = .replacing
+        }
+    }
+
+    private init(mode: Mode) {
+        self.mode = mode
     }
 
 }
@@ -136,6 +193,7 @@ struct WorkflowPaywallView: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.workflowExitOfferOfferingBinding) private var exitOfferOfferingBinding
 
     enum DismissalAction: Equatable {
@@ -153,10 +211,13 @@ struct WorkflowPaywallView: View {
     private let introEligibilityChecker: TrialOrIntroEligibilityChecker
     private let showZeroDecimalPlacePrices: Bool
     private let displayCloseButton: Bool
-    private let promoOfferCache: PaywallPromoOfferCache?
     private let onDismiss: () -> Void
 
     @StateObject private var navigator: WorkflowNavigator
+    // Held via PromoOfferCacheOwner so this view owns one cache shared across all workflow pages
+    // without subscribing to its @Published changes: body only forwards the cache to children.
+    // Observing it directly would re-render the whole page ForEach + header overlay on each update.
+    @StateObject private var promoOfferCacheOwner: PromoOfferCacheOwner
     @State private var hasLoggedInvalidState = false
     @State private var transitionState: WorkflowPageTransitionState<RenderedPage>
     @State private var activeTransitionID: UUID?
@@ -178,9 +239,13 @@ struct WorkflowPaywallView: View {
         self.introEligibilityChecker = introEligibilityChecker
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
-        self.promoOfferCache = promoOfferCache
         self.onDismiss = onDismiss
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
+        self._promoOfferCacheOwner = .init(wrappedValue: PromoOfferCacheOwner(
+            cache: promoOfferCache ?? PaywallPromoOfferCache(
+                subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
+            )
+        ))
         let initialStepId = context.workflow.initialStepId
         let initialPackageInput = Self.buildPackageInput(
             stepId: initialStepId,
@@ -194,8 +259,8 @@ struct WorkflowPaywallView: View {
                 currentPage: Self.renderedPage(
                     from: context,
                     stepId: initialStepId,
-                    canNavigateBack: false,
-                    displayCloseButton: displayCloseButton,
+                    showCloseButton: displayCloseButton,
+                    introEligibilityChecker: introEligibilityChecker,
                     packageInput: initialPackageInput
                 )
             )
@@ -216,11 +281,17 @@ struct WorkflowPaywallView: View {
 
                     self.pageView(for: displayedPage.page)
                         .environment(
-                            \.workflowPageTransitionContext,
-                            .init(
-                                pageOffset: pageOffset,
-                                headerButtonOpacity: self.transitionState.headerButtonOpacity(for: displayedPage.role),
-                                isTransitioning: self.transitionState.isTransitioning
+                            \.workflowRenderingContext,
+                            WorkflowRenderingContext(
+                                pageTransition: .init(
+                                    pageOffset: pageOffset,
+                                    headerButtonOpacity: self.transitionState.headerButtonOpacity(
+                                        for: displayedPage.role,
+                                        headerTransition: self.headerTransition
+                                    ),
+                                    isTransitioning: self.transitionState.isTransitioning
+                                ),
+                                pageHeaderSuppressed: self.shouldRenderWorkflowHeaderOverlay
                             )
                         )
                         .frame(width: proxy.size.width, height: proxy.size.height)
@@ -228,6 +299,9 @@ struct WorkflowPaywallView: View {
                         .offset(x: pageOffset)
                         .zIndex(self.transitionState.zIndex(for: displayedPage.role))
                 }
+
+                self.workflowHeaderOverlay(proxy: proxy)
+                    .zIndex(2)
 
                 if self.transitionState.currentPage == nil {
                     Color.clear
@@ -285,6 +359,17 @@ struct WorkflowPaywallView: View {
         .compactMap { $0 }
     }
 
+    private var headerTransition: WorkflowHeaderTransition {
+        return .init(
+            currentHeader: self.transitionState.currentPage?.headerComponent,
+            outgoingHeader: self.transitionState.outgoingPage?.headerComponent
+        )
+    }
+
+    private var shouldRenderWorkflowHeaderOverlay: Bool {
+        return self.transitionState.isTransitioning && self.headerTransition.shouldRenderOverlay
+    }
+
     private func pageView(for page: RenderedPage) -> some View {
         PaywallsV2View(
             paywallComponents: page.content.paywallComponents,
@@ -299,13 +384,49 @@ struct WorkflowPaywallView: View {
             closeWorkflowAction: self.onDismiss,
             failedToLoadFont: self.failedToLoadFont,
             colorScheme: self.colorScheme,
-            promoOfferCache: self.promoOfferCache,
+            promoOfferCache: self.promoOfferCacheOwner.cache,
+            introEligibilityContext: page.introOfferEligibilityContext,
             selectedPackageContextOverride: page.packageContext
         )
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
         .environment(\.workflowTriggerAction, { componentId in
             return self.handleTriggeredNavigation(componentId: componentId)
         })
+    }
+
+    @ViewBuilder
+    private func workflowHeaderOverlay(proxy: GeometryProxy) -> some View {
+        if self.shouldRenderWorkflowHeaderOverlay {
+            ZStack(alignment: .top) {
+                ForEach(self.displayedPages) { displayedPage in
+                    if displayedPage.page.headerComponent != nil {
+                        WorkflowHeaderOverlayPageView(
+                            page: displayedPage.page,
+                            purchaseHandler: self.purchaseHandler,
+                            introEligibilityChecker: self.introEligibilityChecker,
+                            introOfferEligibilityContext: displayedPage.page.introOfferEligibilityContext,
+                            paywallPromoOfferCache: self.promoOfferCacheOwner.cache,
+                            showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
+                            onDismiss: self.handleDismiss,
+                            closeWorkflowAction: self.onDismiss,
+                            failedToLoadFont: self.failedToLoadFont,
+                            colorScheme: self.colorScheme,
+                            horizontalSizeClass: self.horizontalSizeClass,
+                            headerOpacity: self.transitionState.headerButtonOpacity(
+                                for: displayedPage.role,
+                                headerTransition: self.headerTransition
+                            )
+                        )
+                        .zIndex(displayedPage.role == .current ? 1 : 0)
+                    }
+                }
+            }
+            .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
+            .transitionClipMask(proxy: proxy)
+            .environment(\.safeAreaInsets, proxy.safeAreaInsets)
+            .ignoresSafeArea(edges: .top)
+            .allowsHitTesting(false)
+        }
     }
 
     private func failedToLoadFont(_ fontConfig: UIConfig.FontsConfig) {
@@ -445,8 +566,8 @@ struct WorkflowPaywallView: View {
     private static func renderedPage(
         from context: WorkflowContext,
         stepId: String,
-        canNavigateBack: Bool,
-        displayCloseButton: Bool,
+        showCloseButton: Bool,
+        introEligibilityChecker: TrialOrIntroEligibilityChecker,
         packageInput: RenderedPagePackageInput
     ) -> RenderedPage? {
         guard let step = context.workflow.steps[stepId],
@@ -463,7 +584,9 @@ struct WorkflowPaywallView: View {
 
         return .init(
             content: .init(paywallComponents: paywallComponents, offering: offering),
-            showCloseButton: !canNavigateBack && displayCloseButton,
+            headerComponent: screen.componentsConfig.base.header,
+            showCloseButton: showCloseButton,
+            introOfferEligibilityContext: .init(introEligibilityChecker: introEligibilityChecker),
             packageContext: packageInput.packageContext,
             effectiveWorkflowPackageContext: packageInput.effectiveWorkflowPackageContext
         )
@@ -516,8 +639,8 @@ struct WorkflowPaywallView: View {
         return Self.renderedPage(
             from: self.context,
             stepId: stepId,
-            canNavigateBack: canNavigateBack,
-            displayCloseButton: self.displayCloseButton,
+            showCloseButton: !canNavigateBack && self.displayCloseButton,
+            introEligibilityChecker: self.introEligibilityChecker,
             packageInput: .init(
                 packageContext: packageContext,
                 effectiveWorkflowPackageContext: self.context.effectivePackageContext(
@@ -555,8 +678,8 @@ struct WorkflowPaywallView: View {
         return Self.renderedPage(
             from: self.context,
             stepId: stepId,
-            canNavigateBack: canNavigateBack,
-            displayCloseButton: self.displayCloseButton,
+            showCloseButton: !canNavigateBack && self.displayCloseButton,
+            introEligibilityChecker: self.introEligibilityChecker,
             packageInput: packageInput
         )
     }
@@ -581,7 +704,10 @@ struct WorkflowPaywallView: View {
 private struct RenderedPage: Identifiable {
     let id = UUID()
     let content: CurrentStepContent
+    let headerComponent: PaywallComponent.HeaderComponent?
     let showCloseButton: Bool
+    /// Page-scoped so late async eligibility checks cannot overwrite another workflow step.
+    let introOfferEligibilityContext: IntroOfferEligibilityContext
     let packageContext: PackageContext
     let effectiveWorkflowPackageContext: WorkflowPackageContext?
 }
@@ -598,6 +724,128 @@ private struct DisplayedPage: Identifiable {
 private struct CurrentStepContent {
     let paywallComponents: Offering.PaywallComponents
     let offering: Offering
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class WorkflowHeaderOverlayStateManager: ObservableObject {
+    let state: Result<PaywallState, Error>
+
+    init(state: Result<PaywallState, Error>) {
+        self.state = state
+    }
+}
+
+/// Rebuilds a full `PaywallState` purely to render the page's header in the transition overlay.
+/// This is heavier than reusing the page's own state, but it only lives for the duration of a
+/// page transition, so the cost is bounded and not on the steady-state render path.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct WorkflowHeaderOverlayPageView: View {
+
+    @StateObject private var stateManager: WorkflowHeaderOverlayStateManager
+
+    private let page: RenderedPage
+    private let purchaseHandler: PurchaseHandler
+    private let introOfferEligibilityContext: IntroOfferEligibilityContext
+    private let paywallPromoOfferCache: PaywallPromoOfferCache
+    private let uiConfigProvider: UIConfigProvider
+    private let onDismiss: () -> Void
+    private let closeWorkflowAction: () -> Void
+    private let horizontalSizeClass: UserInterfaceSizeClass?
+    private let headerOpacity: CGFloat
+
+    init(
+        page: RenderedPage,
+        purchaseHandler: PurchaseHandler,
+        introEligibilityChecker: TrialOrIntroEligibilityChecker,
+        introOfferEligibilityContext: IntroOfferEligibilityContext,
+        paywallPromoOfferCache: PaywallPromoOfferCache,
+        showZeroDecimalPlacePrices: Bool,
+        onDismiss: @escaping () -> Void,
+        closeWorkflowAction: @escaping () -> Void,
+        failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
+        colorScheme: ColorScheme,
+        horizontalSizeClass: UserInterfaceSizeClass?,
+        headerOpacity: CGFloat
+    ) {
+        let paywallComponents = page.content.paywallComponents
+        let uiConfigProvider = UIConfigProvider(
+            uiConfig: paywallComponents.uiConfig,
+            failedToLoadFont: failedToLoadFont,
+            automaticallyScaleFontSize: paywallComponents.data.automaticallyScaleFontSize
+        )
+
+        self.page = page
+        self.purchaseHandler = purchaseHandler
+        self.introOfferEligibilityContext = introOfferEligibilityContext
+        self.paywallPromoOfferCache = paywallPromoOfferCache
+        self.uiConfigProvider = uiConfigProvider
+        self.onDismiss = onDismiss
+        self.closeWorkflowAction = closeWorkflowAction
+        self.horizontalSizeClass = horizontalSizeClass
+        self.headerOpacity = headerOpacity
+        self._stateManager = .init(
+            wrappedValue: .init(
+                state: PaywallsV2View.createPaywallState(
+                    componentsConfig: paywallComponents.data.componentsConfig.base,
+                    componentsLocalizations: paywallComponents.data.componentsLocalizations,
+                    preferredLocales: purchaseHandler.preferredLocales,
+                    defaultLocale: paywallComponents.data.defaultLocale,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: page.content.offering,
+                    introEligibilityChecker: introEligibilityChecker,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                    colorScheme: colorScheme
+                )
+            )
+        )
+    }
+
+    var body: some View {
+        switch self.stateManager.state {
+        case .success(let paywallState):
+            self.headerView(paywallState: paywallState)
+        case .failure:
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private func headerView(paywallState: PaywallState) -> some View {
+        if let headerViewModel = paywallState.rootViewModel.headerViewModel {
+            let contentLocale = paywallState.rootViewModel.localizationProvider.locale
+            let defaultPackage = PaywallsV2View.effectiveDefaultPackage(
+                pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+                workflowDefaultPackage: self.page.effectiveWorkflowPackageContext?.selectedPackage
+            )
+
+            HeaderComponentView(
+                viewModel: headerViewModel,
+                onDismiss: self.onDismiss
+            )
+            .fixedSize(horizontal: false, vertical: true)
+            .fixMacButtons()
+            .frame(maxWidth: .infinity, alignment: .top)
+            .opacity(self.headerOpacity)
+            .environment(\.locale, contentLocale)
+            .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
+            .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+            .environment(\.selectedPackageId, self.page.packageContext.package?.identifier)
+            .environment(\.planSelectionDefaultPackage, defaultPackage)
+            .environment(\.workflowPackageContext, self.page.effectiveWorkflowPackageContext)
+            .environment(\.closeWorkflowAction, self.closeWorkflowAction)
+            .environment(
+                \.workflowRenderingContext,
+                WorkflowRenderingContext(
+                    pageTransition: .init(pageOffset: 0, headerButtonOpacity: 1, isTransitioning: true)
+                )
+            )
+            .environmentObject(self.purchaseHandler)
+            .environmentObject(self.introOfferEligibilityContext)
+            .environmentObject(self.paywallPromoOfferCache)
+            .environmentObject(self.page.packageContext)
+        }
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

@@ -19,8 +19,8 @@ struct TransitionModifier: ViewModifier {
     let transition: PaywallComponent.Transition
 
     #if !os(tvOS)
-    @Environment(\.workflowPageTransitionContext)
-    private var workflowPageTransitionContext
+    @Environment(\.workflowRenderingContext)
+    private var workflowRenderingContext
     #endif
 
     @State var isPresented: Bool = false
@@ -72,7 +72,7 @@ struct TransitionModifier: ViewModifier {
         // also run their configured delayed transitions while the page is sliding, they
         // can flash or appear late inside the preserved outgoing/incoming page trees.
         // Render them immediately and let WorkflowPaywallView own the page-level motion.
-        return self.workflowPageTransitionContext.isTransitioning
+        return self.workflowRenderingContext.pageTransition.isTransitioning
         #else
         return false
         #endif
