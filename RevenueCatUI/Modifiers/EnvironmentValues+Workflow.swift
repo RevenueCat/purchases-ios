@@ -32,6 +32,39 @@ struct WorkflowPageTransitionContext {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WorkflowRenderingContext {
+
+    /// Transition state consumed by workflow page bodies and header controls.
+    let pageTransition: WorkflowPageTransitionContext
+    /// Whether page-owned headers should be hidden while a workflow-level header overlay is visible.
+    /// The header layout is preserved so body content does not jump when the overlay appears.
+    let pageHeaderSuppressed: Bool
+    /// Marks the header subtree so only header buttons consume workflow page transition context.
+    let isHeader: Bool
+
+    static let identity = Self()
+
+    init(
+        pageTransition: WorkflowPageTransitionContext = .identity,
+        pageHeaderSuppressed: Bool = false,
+        isHeader: Bool = false
+    ) {
+        self.pageTransition = pageTransition
+        self.pageHeaderSuppressed = pageHeaderSuppressed
+        self.isHeader = isHeader
+    }
+
+    func markingHeader() -> Self {
+        return .init(
+            pageTransition: self.pageTransition,
+            pageHeaderSuppressed: self.pageHeaderSuppressed,
+            isHeader: true
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct WorkflowTriggerActionKey: EnvironmentKey {
     static let defaultValue: ((String) -> Bool)? = nil
 }
@@ -42,21 +75,8 @@ private struct CloseWorkflowActionKey: EnvironmentKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct WorkflowPageTransitionContextKey: EnvironmentKey {
-    static let defaultValue = WorkflowPageTransitionContext.identity
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct WorkflowPageHeaderSuppressedKey: EnvironmentKey {
-    /// Hides headers rendered inside page snapshots while the workflow-level header overlay owns the transition.
-    /// The header layout is preserved so body content does not jump when the overlay appears.
-    static let defaultValue = false
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct IsWorkflowHeaderKey: EnvironmentKey {
-    /// Marks the header subtree so only header buttons consume workflow page transition context.
-    static let defaultValue = false
+private struct WorkflowRenderingContextKey: EnvironmentKey {
+    static let defaultValue = WorkflowRenderingContext.identity
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -81,19 +101,9 @@ extension EnvironmentValues {
         set { self[WorkflowTriggerActionKey.self] = newValue }
     }
 
-    var workflowPageTransitionContext: WorkflowPageTransitionContext {
-        get { self[WorkflowPageTransitionContextKey.self] }
-        set { self[WorkflowPageTransitionContextKey.self] = newValue }
-    }
-
-    var workflowPageHeaderSuppressed: Bool {
-        get { self[WorkflowPageHeaderSuppressedKey.self] }
-        set { self[WorkflowPageHeaderSuppressedKey.self] = newValue }
-    }
-
-    var isWorkflowHeader: Bool {
-        get { self[IsWorkflowHeaderKey.self] }
-        set { self[IsWorkflowHeaderKey.self] = newValue }
+    var workflowRenderingContext: WorkflowRenderingContext {
+        get { self[WorkflowRenderingContextKey.self] }
+        set { self[WorkflowRenderingContextKey.self] = newValue }
     }
 
     var workflowPackageContext: WorkflowPackageContext? {

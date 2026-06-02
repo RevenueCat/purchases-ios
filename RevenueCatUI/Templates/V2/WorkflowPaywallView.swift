@@ -295,14 +295,17 @@ struct WorkflowPaywallView: View {
 
                     self.pageView(for: displayedPage.page)
                         .environment(
-                            \.workflowPageTransitionContext,
-                            .init(
-                                pageOffset: pageOffset,
-                                headerButtonOpacity: self.transitionState.headerButtonOpacity(
-                                    for: displayedPage.role,
-                                    headerTransition: self.headerTransition
+                            \.workflowRenderingContext,
+                            WorkflowRenderingContext(
+                                pageTransition: .init(
+                                    pageOffset: pageOffset,
+                                    headerButtonOpacity: self.transitionState.headerButtonOpacity(
+                                        for: displayedPage.role,
+                                        headerTransition: self.headerTransition
+                                    ),
+                                    isTransitioning: self.transitionState.isTransitioning
                                 ),
-                                isTransitioning: self.transitionState.isTransitioning
+                                pageHeaderSuppressed: self.shouldRenderWorkflowHeaderOverlay
                             )
                         )
                         .frame(width: proxy.size.width, height: proxy.size.height)
@@ -403,7 +406,6 @@ struct WorkflowPaywallView: View {
         .environment(\.workflowTriggerAction, { componentId in
             return self.handleTriggeredNavigation(componentId: componentId)
         })
-        .environment(\.workflowPageHeaderSuppressed, self.shouldRenderWorkflowHeaderOverlay)
     }
 
     @ViewBuilder
@@ -481,29 +483,6 @@ struct WorkflowPaywallView: View {
         )?.exitOfferOffering
     }
 
-    private func logHeaderTransition(stage: String, transitionID: UUID) {
-        let headerTransition = self.headerTransition
-
-        Logger.debug(
-            Strings.workflow_header_transition(
-                stage: stage,
-                transitionId: transitionID.uuidString,
-                mode: headerTransition.debugName,
-                currentHeader: self.transitionState.currentPage?.headerDebugDescription ?? "none",
-                outgoingHeader: self.transitionState.outgoingPage?.headerDebugDescription ?? "none",
-                progress: self.transitionState.progress.workflowDebugDescription,
-                currentOpacity: self.transitionState.headerButtonOpacity(
-                    for: .current,
-                    headerTransition: headerTransition
-                ).workflowDebugDescription,
-                outgoingOpacity: self.transitionState.headerButtonOpacity(
-                    for: .outgoing,
-                    headerTransition: headerTransition
-                ).workflowDebugDescription
-            )
-        )
-    }
-
     static func exitOfferContext(
         for context: WorkflowContext,
         currentStepId: String
@@ -556,7 +535,6 @@ struct WorkflowPaywallView: View {
 
         let transitionID = UUID()
         self.activeTransitionID = transitionID
-        self.logHeaderTransition(stage: "start", transitionID: transitionID)
     }
 
     @MainActor
@@ -595,7 +573,6 @@ struct WorkflowPaywallView: View {
             return
         }
 
-        self.logHeaderTransition(stage: "finish", transitionID: id)
         self.transitionState.completeTransition()
         self.activeTransitionID = nil
     }
@@ -747,29 +724,6 @@ private struct RenderedPage: Identifiable {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension RenderedPage {
-
-    var headerDebugDescription: String {
-        guard let headerComponent else {
-            return "none"
-        }
-
-        let name = headerComponent.stack.name ?? "nil"
-        return "stackName=\(name), components=\(headerComponent.stack.components.count), " +
-            "hash=\(headerComponent.hashValue)"
-    }
-
-}
-
-private extension CGFloat {
-
-    var workflowDebugDescription: String {
-        return "\(self)"
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct DisplayedPage: Identifiable {
     let role: WorkflowPageTransitionState<RenderedPage>.PageRole
     let page: RenderedPage
@@ -887,8 +841,10 @@ private struct WorkflowHeaderOverlayPageView: View {
             .environment(\.workflowPackageContext, self.page.effectiveWorkflowPackageContext)
             .environment(\.closeWorkflowAction, self.closeWorkflowAction)
             .environment(
-                \.workflowPageTransitionContext,
-                .init(pageOffset: 0, headerButtonOpacity: 1, isTransitioning: true)
+                \.workflowRenderingContext,
+                WorkflowRenderingContext(
+                    pageTransition: .init(pageOffset: 0, headerButtonOpacity: 1, isTransitioning: true)
+                )
             )
             .environmentObject(self.purchaseHandler)
             .environmentObject(self.introOfferEligibilityContext)

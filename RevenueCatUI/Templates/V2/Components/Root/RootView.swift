@@ -32,8 +32,8 @@ struct RootView: View {
     @Environment(\.workflowPackageContext)
     private var workflowPackageContext
 
-    @Environment(\.workflowPageHeaderSuppressed)
-    private var workflowPageHeaderSuppressed
+    @Environment(\.workflowRenderingContext)
+    private var workflowRenderingContext
 
     private let viewModel: RootViewModel
     private let onDismiss: () -> Void
@@ -76,7 +76,7 @@ struct RootView: View {
                     onDismiss: onDismiss
                 )
                 .fixedSize(horizontal: false, vertical: true)
-                .opacity(self.workflowPageHeaderSuppressed ? 0 : 1)
+                .opacity(self.workflowRenderingContext.pageHeaderSuppressed ? 0 : 1)
             }
 
             ZStack(alignment: .top) {
@@ -96,7 +96,7 @@ struct RootView: View {
                         onDismiss: onDismiss
                     )
                     .fixedSize(horizontal: false, vertical: true)
-                    .opacity(self.workflowPageHeaderSuppressed ? 0 : 1)
+                    .opacity(self.workflowRenderingContext.pageHeaderSuppressed ? 0 : 1)
                     .overlay(GeometryReader { proxy in
                         Color.clear.preference(
                             key: OverlaidHeaderHeightKey.self,

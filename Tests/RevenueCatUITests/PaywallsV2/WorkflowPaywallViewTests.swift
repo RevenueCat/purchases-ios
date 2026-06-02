@@ -188,6 +188,16 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(stable.shouldRenderOverlay) == true
     }
 
+    func testWorkflowRenderingContextDefaultsToNonTransitioningPageContent() {
+        let context = WorkflowRenderingContext.identity
+
+        expect(context.pageTransition.pageOffset) == 0
+        expect(context.pageTransition.headerButtonOpacity) == 1
+        expect(context.pageTransition.isTransitioning) == false
+        expect(context.pageHeaderSuppressed) == false
+        expect(context.isHeader) == false
+    }
+
     func testCompletingTransitionDropsOutgoingPage() {
         var state = WorkflowPageTransitionState(currentPage: "step_1")
 
