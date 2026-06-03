@@ -1663,7 +1663,6 @@ extension Purchases {
             "client_transaction_id": transactionId,
             "impression_id": impressionId
         ]
-        // [String: String] is always JSON-serializable and UTF-8 encoded.
         let customData = String(
             data: try! JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys]),
             encoding: .utf8
