@@ -127,9 +127,9 @@ class WorkflowManagerTests: TestCase {
 
     func testGetWorkflowsListTriggersGetWorkflowForEachPrefetchEntryOnly() throws {
         self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
-            .init(id: "wf_prefetch", displayName: "A", offeringId: nil, prefetch: true),
-            .init(id: "wf_skip", displayName: "B", offeringId: nil, prefetch: false),
-            .init(id: "wf_also_prefetch", displayName: "C", offeringId: nil, prefetch: true)
+            .init(id: "wf_prefetch", displayName: "A", offeringId: "off_a", prefetch: true),
+            .init(id: "wf_skip", displayName: "B", offeringId: "off_b", prefetch: false),
+            .init(id: "wf_also_prefetch", displayName: "C", offeringId: "off_c", prefetch: true)
         ]))
         self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(try Self.workflowDataResult(id: "wf"))
 
@@ -139,6 +139,21 @@ class WorkflowManagerTests: TestCase {
         expect(prefetchedIds).to(contain("wf_prefetch", "wf_also_prefetch"))
         expect(prefetchedIds).toNot(contain("wf_skip"))
         expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 2
+    }
+
+    func testGetWorkflowsListSkipsPrefetchForWorkflowsWithoutOfferingId() throws {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_with_offering", displayName: "A", offeringId: "off_a", prefetch: true),
+            .init(id: "wf_without_offering", displayName: "B", offeringId: nil, prefetch: true)
+        ]))
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(try Self.workflowDataResult(id: "wf"))
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        let prefetchedIds = self.mockWorkflowsAPI.invokedGetWorkflowParametersList.map { $0.workflowId }
+        expect(prefetchedIds).to(contain("wf_with_offering"))
+        expect(prefetchedIds).toNot(contain("wf_without_offering"))
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 1
     }
 
     func testGetWorkflowsListDoesNotCacheOnBackendFailure() {
@@ -157,7 +172,7 @@ class WorkflowManagerTests: TestCase {
 
         self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
 
-        expect(self.manager.workflowId(forOfferingId: "default")) == "wf_1"
+        expect(self.manager.cachedWorkflowId(forOfferingId: "default")) == "wf_1"
     }
 
     func testGetWorkflowsListKeepsCacheStaleAfterBackendFailureSoNextCallRetries() {
@@ -198,13 +213,13 @@ class WorkflowManagerTests: TestCase {
 
         self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
 
-        expect(self.manager.workflowId(forOfferingId: "shared")) == "wf_last"
+        expect(self.manager.cachedWorkflowId(forOfferingId: "shared")) == "wf_last"
     }
 
-    // MARK: - workflowId(forOfferingId:)
+    // MARK: - cachedWorkflowId(forOfferingId:)
 
     func testWorkflowIdForOfferingIdReturnsNilBeforeListIsFetched() {
-        expect(self.manager.workflowId(forOfferingId: "default")).to(beNil())
+        expect(self.manager.cachedWorkflowId(forOfferingId: "default")).to(beNil())
     }
 
     func testWorkflowIdForOfferingIdReturnsWorkflowIdAfterListIsFetched() {
@@ -214,8 +229,8 @@ class WorkflowManagerTests: TestCase {
 
         self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
 
-        expect(self.manager.workflowId(forOfferingId: "default")) == "wf_abc"
-        expect(self.manager.workflowId(forOfferingId: "premium")).to(beNil())
+        expect(self.manager.cachedWorkflowId(forOfferingId: "default")) == "wf_abc"
+        expect(self.manager.cachedWorkflowId(forOfferingId: "premium")).to(beNil())
     }
 
     func testWorkflowIdForOfferingIdReturnsNilForWorkflowWithNilOfferingId() {
@@ -225,7 +240,7 @@ class WorkflowManagerTests: TestCase {
 
         self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
 
-        expect(self.manager.workflowId(forOfferingId: "default")).to(beNil())
+        expect(self.manager.cachedWorkflowId(forOfferingId: "default")).to(beNil())
     }
 
     // MARK: - onComplete
@@ -255,8 +270,8 @@ class WorkflowManagerTests: TestCase {
 
     func testGetWorkflowsListCallsOnCompleteOnlyAfterAllPrefetchWorkflowsComplete() throws {
         self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
-            .init(id: "wf_a", displayName: "A", offeringId: nil, prefetch: true),
-            .init(id: "wf_b", displayName: "B", offeringId: nil, prefetch: true)
+            .init(id: "wf_a", displayName: "A", offeringId: "off_a", prefetch: true),
+            .init(id: "wf_b", displayName: "B", offeringId: "off_b", prefetch: true)
         ]))
         self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
         let result = try Self.workflowDataResult(id: "wf")
@@ -273,8 +288,8 @@ class WorkflowManagerTests: TestCase {
 
     func testGetWorkflowsListCallsOnCompleteEvenIfAPrefetchWorkflowFails() throws {
         self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
-            .init(id: "wf_a", displayName: "A", offeringId: nil, prefetch: true),
-            .init(id: "wf_b", displayName: "B", offeringId: nil, prefetch: true)
+            .init(id: "wf_a", displayName: "A", offeringId: "off_a", prefetch: true),
+            .init(id: "wf_b", displayName: "B", offeringId: "off_b", prefetch: true)
         ]))
         self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
 

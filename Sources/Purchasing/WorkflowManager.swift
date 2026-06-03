@@ -64,11 +64,11 @@ class WorkflowManager {
 
     /// Fetches the workflows list, persists it, then prefetches every entry flagged `prefetch == true`.
     /// `onComplete` fires only after the list fetch **and** all prefetch fetches finish (success or
-    /// failure), making it safe to call ``workflowId(forOfferingId:)`` from `onComplete`.
+    /// failure), making it safe to call ``cachedWorkflowId(forOfferingId:)`` from `onComplete`.
     ///
     /// When the in-memory list cache is still fresh, no network request is made and `onComplete` fires
     /// immediately. On a backend failure `onComplete` still fires (so callers waiting on it, e.g.
-    /// offerings delivery, are never blocked); ``workflowId(forOfferingId:)`` keeps resolving from the
+    /// offerings delivery, are never blocked); ``cachedWorkflowId(forOfferingId:)`` keeps resolving from the
     /// last list persisted on disk until the next fetch succeeds.
     func getWorkflowsList(appUserID: String,
                           isAppBackgrounded: Bool,
@@ -95,7 +95,7 @@ class WorkflowManager {
             case let .failure(error):
                 Logger.error(Strings.paywalls.error_fetching_workflows_list(error))
                 // Restore the in-memory offeringId -> workflowId map from the last list persisted on
-                // disk, so `workflowId(forOfferingId:)` keeps resolving previously-fetched data after
+                // disk, so `cachedWorkflowId(forOfferingId:)` keeps resolving previously-fetched data after
                 // a backend failure instead of returning nil. The entry stays stale so the next
                 // fetch still retries the backend.
                 self.workflowsCache.restoreWorkflowsListFromDisk()
@@ -104,7 +104,7 @@ class WorkflowManager {
         }
     }
 
-    func workflowId(forOfferingId offeringId: String) -> String? {
+    func cachedWorkflowId(forOfferingId offeringId: String) -> String? {
         return self.workflowsCache.workflowId(forOfferingId: offeringId)
     }
 
@@ -116,13 +116,15 @@ private extension WorkflowManager {
 
     static let paywallWorkflowType = "paywall"
 
-    /// Prefetches the workflows flagged `prefetch == true`, calling `onComplete` once every prefetch
-    /// finishes (success or failure). When there is nothing to prefetch, `onComplete` fires right away.
+    /// Prefetches the workflows flagged `prefetch == true` that are tied to an offering, calling
+    /// `onComplete` once every prefetch finishes (success or failure). Workflows without an
+    /// `offeringId` can't be resolved via ``cachedWorkflowId(forOfferingId:)``, so they're skipped.
+    /// When there is nothing to prefetch, `onComplete` fires right away.
     func prefetchWorkflows(_ workflows: [WorkflowSummary],
                            appUserID: String,
                            isAppBackgrounded: Bool,
                            onComplete: @escaping () -> Void) {
-        let prefetchWorkflows = workflows.filter { $0.prefetch }
+        let prefetchWorkflows = workflows.filter { $0.prefetch && $0.offeringId != nil }
         guard !prefetchWorkflows.isEmpty else {
             onComplete()
             return

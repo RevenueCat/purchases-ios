@@ -990,7 +990,7 @@ public extension Purchases {
         // back to the offering identifier itself, which the backend also accepts as a workflow key.
         // The map is empty until the workflows list has been fetched, so the fallback preserves the
         // original behavior. `WorkflowManager` handles caching and asset warm-up.
-        let workflowId = self.workflowManager.workflowId(forOfferingId: offeringID) ?? offeringID
+        let workflowId = self.workflowManager.cachedWorkflowId(forOfferingId: offeringID) ?? offeringID
         return try await Async.call { completion in
             self.workflowManager.getWorkflow(
                 appUserID: self.appUserID,
