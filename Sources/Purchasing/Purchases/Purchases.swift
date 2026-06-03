@@ -1695,9 +1695,11 @@ extension Purchases {
         poller: RewardVerification.Poller
     ) async -> RewardVerificationResult {
         let outcome = await poller.run(clientTransactionID: transactionId)
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         if case .verified(let reward) = outcome, reward.virtualCurrency != nil {
             self.invalidateVirtualCurrenciesCache()
         }
+        #endif
         switch outcome {
         case .verified(let reward): return .verified(reward)
         case .failed: return .failed
