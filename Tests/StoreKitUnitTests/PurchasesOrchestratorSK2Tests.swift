@@ -2619,3 +2619,88 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
     #endif
 }
+
+// MARK: - Billing Plans
+#if compiler(>=6.3.2)
+@available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+extension PurchasesOrchestratorSK2Tests {
+
+    func testPurchaseSK2UpFrontBillingPlanProductReturnsCorrectValues() async throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let storeProduct = try await ProductsFetcherSK2()
+            .product(withIdentifier: Self.productIDWithBillingPlans)
+        expect(storeProduct.id) == Self.productIDWithBillingPlans
+        expect(storeProduct.productIdentifier) == Self.productIDWithBillingPlans
+        expect(storeProduct.installmentsInfo).to(beNil())
+
+        try await self.verifyPurchaseSK2BillingPlanProduct(
+            storeProduct,
+            expectedProductIdentifier: Self.productIDWithBillingPlans,
+            expectedPrice: storeProduct.price
+        )
+    }
+
+    func testPurchaseSK2MonthlyBillingPlanProductReturnsCorrectValues() async throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let storeProduct = try await ProductsFetcherSK2()
+            .product(withIdentifier: "\(Self.productIDWithBillingPlans):monthly")
+        expect(storeProduct.id) == "\(Self.productIDWithBillingPlans):monthly"
+        expect(storeProduct.productIdentifier) == Self.productIDWithBillingPlans
+
+        let installmentsInfo = try XCTUnwrap(storeProduct.installmentsInfo)
+        expect(installmentsInfo.billingPlanType) == .monthly
+
+        try await self.verifyPurchaseSK2BillingPlanProduct(
+            storeProduct,
+            expectedProductIdentifier: "\(Self.productIDWithBillingPlans):monthly",
+            expectedPrice: installmentsInfo.installmentBillingPrice
+        )
+    }
+
+    private func verifyPurchaseSK2BillingPlanProduct(
+        _ storeProduct: StoreProduct,
+        expectedProductIdentifier: String,
+        expectedPrice: Decimal
+    ) async throws {
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        self.productsManager.stubbedProductsCompletionResult = .success([storeProduct])
+
+        let product = try XCTUnwrap(storeProduct.sk2Product)
+        let package = Package(identifier: "package",
+                              packageType: .annual,
+                              storeProduct: storeProduct,
+                              offeringIdentifier: "offering",
+                              webCheckoutUrl: nil)
+
+        let (transaction, customerInfo, userCancelled) = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: package,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            billingPlanType: storeProduct.installmentsInfo?.billingPlanType,
+            promotionalOfferOptions: nil
+        )
+
+        expect(transaction).toNot(beNil())
+        expect(customerInfo) == self.mockCustomerInfo
+        expect(userCancelled) == false
+
+        expect(self.mockStoreKit2TransactionListener?.invokedHandle) == true
+        expect(self.mockStoreKit2TransactionListener?.invokedHandleCount) == 1
+
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptData).to(beTrue())
+        expect(self.backend.invokedPostReceiptDataParameters?.productData?.productIdentifier)
+            == expectedProductIdentifier
+        expect(self.backend.invokedPostReceiptDataParameters?.productData?.price) == expectedPrice
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
+        ) == "offering"
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .purchase
+    }
+
+}
+#endif

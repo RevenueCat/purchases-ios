@@ -570,7 +570,7 @@ extension StoreProductTests {
     func testRepresentsBillingPlanReturnsTrueForSK2ProductWithProductPlanIdentifier() async throws {
         try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
 
-        let productIdentifier = "com.revenuecat.annual_with_commitment"
+        let productIdentifier = Self.productIDWithBillingPlans
         let compoundProductIdentifier = try XCTUnwrap(CompoundProductIdentifier(
             compoundProductIdentifier: "\(productIdentifier):monthly"
         ))
@@ -608,6 +608,71 @@ extension StoreProductTests {
         expect(storeProduct.id) == productIdentifier
     }
 
+}
+
+// MARK: - Billing Plan Tests
+@available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+extension StoreProductTests {
+    func testLoadsUpFrontProduct() async throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let storeProduct = try await ProductsFetcherSK2().product(withIdentifier: Self.productIDWithBillingPlans)
+        expect(storeProduct.productIdentifier).to(equal(Self.productIDWithBillingPlans))
+        expect(storeProduct.id).to(equal(Self.productIDWithBillingPlans))
+        expect(storeProduct.price).to(equal(11.88))
+        expect(storeProduct.installmentsInfo).to(beNil())
+
+        // Intro offer
+        let introOffer: StoreProductDiscount = try XCTUnwrap(storeProduct.introductoryDiscount)
+        expect(introOffer.paymentMode) == .freeTrial
+        expect(introOffer.price).to(equal(0))
+        expect(introOffer.subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .month)
+
+        // Promo offer
+        let discounts = storeProduct.discounts
+        expect(discounts.count).to(equal(1))
+        let promoOffer: StoreProductDiscount = try XCTUnwrap(discounts.first)
+        expect(promoOffer.paymentMode).to(equal(.freeTrial))
+        expect(promoOffer.type).to(equal(.promotional))
+        expect(promoOffer.subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .month)
+        expect(promoOffer.offerIdentifier).to(equal("upfront.promo.offer"))
+    }
+
+    func testLoadsMonthlyProduct() async throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let storeProduct = try await ProductsFetcherSK2()
+            .product(withIdentifier: "\(Self.productIDWithBillingPlans):monthly")
+        expect(storeProduct.productIdentifier).to(equal(Self.productIDWithBillingPlans))
+        expect(storeProduct.id).to(equal("\(Self.productIDWithBillingPlans):monthly"))
+        expect(storeProduct.price).to(equal(11.88))
+
+        // InstallmentsInfo
+        let installmentsInfo: InstallmentsInfo = try XCTUnwrap(storeProduct.installmentsInfo)
+        expect(installmentsInfo.commitmentInstallmentsCount).to(equal(12))
+        expect(installmentsInfo.commitmentInstallmentPeriod) == SubscriptionPeriod(value: 1, unit: .month)
+        expect(installmentsInfo.installmentBillingPrice).to(equal(0.5))
+        expect(installmentsInfo.installmentBillingDisplayPrice).to(equal("$0.50"))
+        expect(installmentsInfo.commitmentTotalPeriod) == SubscriptionPeriod(value: 1, unit: .year)
+        expect(installmentsInfo.commitmentTotalPrice).to(equal(6))
+        expect(installmentsInfo.commitmentTotalDisplayPrice).to(equal("$6.00"))
+        expect(installmentsInfo.billingPlanType).to(equal(BillingPlanType.monthly))
+
+        // Intro offer
+        let introOffer: StoreProductDiscount = try XCTUnwrap(storeProduct.introductoryDiscount)
+        expect(introOffer.paymentMode) == .freeTrial
+        expect(introOffer.price).to(equal(0))
+        expect(introOffer.subscriptionPeriod) == SubscriptionPeriod(value: 2, unit: .month)
+
+        // Promo offer
+        let discounts = storeProduct.discounts
+        expect(discounts.count).to(equal(1))
+        let promoOffer: StoreProductDiscount = try XCTUnwrap(discounts.first)
+        expect(promoOffer.paymentMode).to(equal(.freeTrial))
+        expect(promoOffer.type).to(equal(.promotional))
+        expect(promoOffer.subscriptionPeriod) == SubscriptionPeriod(value: 2, unit: .month)
+        expect(promoOffer.offerIdentifier).to(equal("12mocommitment.promo.offer"))
+    }
 }
 
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)

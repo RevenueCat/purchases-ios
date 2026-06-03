@@ -149,6 +149,69 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
     }
 }
 
+// MARK: - Billing Plans
+#if compiler(>=6.3.2)
+@available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+extension StoreKit2IntegrationTests {
+
+    func testCanPurchaseUpFrontBillingPlanProduct() async throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        try await self.purchaseBillingPlanProduct(
+            Self.productIDWithBillingPlans,
+            expectedStoreProductIdentifier: Self.productIDWithBillingPlans,
+            expectedEntitlementIdentifier: "almost_pro",
+            shouldCheckEntitlement: true
+        )
+    }
+
+    func testCanPurchaseMonthlyBillingPlanProduct() async throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        try await self.purchaseBillingPlanProduct(
+            "\(Self.productIDWithBillingPlans):monthly",
+            expectedStoreProductIdentifier: "\(Self.productIDWithBillingPlans):monthly",
+            expectedEntitlementIdentifier: "pro_cat",
+
+            // There's a bug when using SKTestSession where if you purchase a monthly
+            // billing plan, the resulting transaction contains the upFront billing plan on it.
+            // Because of this, the backend will unlock the entitlement for the upFront billing plan
+            // instead of the correct billing plan. This can be removed once the bug is resolved.
+            // See Feedback FB22925515.
+            shouldCheckEntitlement: false
+        )
+    }
+
+    private func purchaseBillingPlanProduct(
+        _ productIdentifier: String,
+        expectedStoreProductIdentifier: String,
+        expectedEntitlementIdentifier: String,
+        shouldCheckEntitlement: Bool,
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws {
+        let product = try await self.product(productIdentifier)
+        expect(product.id) == expectedStoreProductIdentifier
+        expect(product.productIdentifier) == Self.productIDWithBillingPlans
+
+        let result = try await self.purchase(product: product, file: file, line: line)
+        let transaction = try XCTUnwrap(result.transaction)
+
+        self.verifyCustomerInfoWasNotComputedOffline(customerInfo: result.customerInfo, file: file, line: line)
+
+        expect(result.customerInfo.allPurchasedProductIdentifiers).to(contain(Self.productIDWithBillingPlans))
+        expect(transaction.productIdentifier) == Self.productIDWithBillingPlans
+
+        if shouldCheckEntitlement {
+            expect(result.customerInfo.entitlements[expectedEntitlementIdentifier]?.isActive) == true
+        }
+
+        self.verifyAnyTransactionWasFinished(count: nil, file: file, line: line)
+    }
+
+}
+#endif
+
 class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit1 }
