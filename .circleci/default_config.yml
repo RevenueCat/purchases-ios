@@ -1020,6 +1020,10 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/catalyst
           bundle_name: RevenueCat
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_snapshots >>
+          job: "create_snapshot_pr"
+          version: "mac-catalyst-26"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -2186,6 +2190,7 @@ workflows:
       - run-test-ios-15-and-14
       - run-test-tvos-and-macos
       - run-test-watchos
+      - run-test-mac-catalyst
       - backend-integration-tests-SK2 # Snapshots from this job are shared with all BackendIntegrationTests
 
 
