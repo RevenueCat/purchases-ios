@@ -206,7 +206,24 @@
         },
         {
           "adHocOffers" : [
-
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "internalID" : "95DE1FD9",
+              "numberOfPeriods" : 1,
+              "offerID" : "upfront.promo.offer",
+              "paymentMode" : "free",
+              "referenceName" : "Upfront Promo Offer",
+              "subscriptionPeriod" : "P1M"
+            },
+            {
+              "billingPlanType" : "MONTHLY",
+              "internalID" : "00C03974",
+              "numberOfPeriods" : 1,
+              "offerID" : "12mocommitment.promo.offer",
+              "paymentMode" : "free",
+              "referenceName" : "12mo Commitment Promo Offer",
+              "subscriptionPeriod" : "P2M"
+            }
           ],
           "billingPlans" : [
             {
@@ -231,8 +248,28 @@
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "3AE07F63",
+          "introductoryOffer" : {
+            "billingPlanType" : "BILLED_UPFRONT",
+            "internalID" : "9EB4AFC5",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1M"
+          },
           "introductoryOffers" : [
-
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "internalID" : "9EB4AFC5",
+              "numberOfPeriods" : 1,
+              "paymentMode" : "free",
+              "subscriptionPeriod" : "P1M"
+            },
+            {
+              "billingPlanType" : "MONTHLY",
+              "internalID" : "1CEEA276",
+              "numberOfPeriods" : 1,
+              "paymentMode" : "free",
+              "subscriptionPeriod" : "P2M"
+            }
           ],
           "localizations" : [
             {

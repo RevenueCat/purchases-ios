@@ -130,6 +130,7 @@ extension StoreKitConfigTestCase {
     static let consumableProductId = "com.revenuecat.consumable"
     static let nonConsumableProductId = "lifetime"
     static let nonRenewableProductId = "com.revenuecat.non_renewable"
+    static let productIDWithBillingPlans = "com.revenuecat.annual_with_commitment"
 
 }
 
