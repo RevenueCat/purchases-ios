@@ -117,7 +117,7 @@ extension PurchasesRewardVerificationTests {
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 3))
         let poller = self.makeStubPoller(statuses: [.verified(.virtualCurrency(reward))])
 
-        let result = await self.purchases.pollRewardVerification(transactionId: "tx-1", poller: poller)
+        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(result.verifiedReward) == .virtualCurrency(reward)
     }
@@ -125,7 +125,7 @@ extension PurchasesRewardVerificationTests {
     func testPollRewardVerificationReturnsVerifiedWithNoReward() async {
         let poller = self.makeStubPoller(statuses: [.verified(.noReward)])
 
-        let result = await self.purchases.pollRewardVerification(transactionId: "tx-1", poller: poller)
+        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(result) == .verified(.noReward)
     }
@@ -133,7 +133,7 @@ extension PurchasesRewardVerificationTests {
     func testPollRewardVerificationReturnsVerifiedWithUnsupportedReward() async {
         let poller = self.makeStubPoller(statuses: [.verified(.unsupportedReward)])
 
-        let result = await self.purchases.pollRewardVerification(transactionId: "tx-1", poller: poller)
+        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(result) == .verified(.unsupportedReward)
     }
@@ -141,7 +141,7 @@ extension PurchasesRewardVerificationTests {
     func testPollRewardVerificationReturnsFailed() async {
         let poller = self.makeStubPoller(statuses: [.failed])
 
-        let result = await self.purchases.pollRewardVerification(transactionId: "tx-1", poller: poller)
+        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(result) == .failed
     }
@@ -150,7 +150,7 @@ extension PurchasesRewardVerificationTests {
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 4))
         let poller = self.makeStubPoller(statuses: [.verified(.virtualCurrency(reward))])
 
-        _ = await self.purchases.pollRewardVerification(transactionId: "tx-1", poller: poller)
+        _ = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 1
     }
@@ -158,7 +158,7 @@ extension PurchasesRewardVerificationTests {
     func testPollRewardVerificationDoesNotInvalidateCacheOnNoReward() async {
         let poller = self.makeStubPoller(statuses: [.verified(.noReward)])
 
-        _ = await self.purchases.pollRewardVerification(transactionId: "tx-1", poller: poller)
+        _ = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 0
     }
@@ -166,7 +166,7 @@ extension PurchasesRewardVerificationTests {
     func testPollRewardVerificationDoesNotInvalidateCacheOnUnsupportedReward() async {
         let poller = self.makeStubPoller(statuses: [.verified(.unsupportedReward)])
 
-        _ = await self.purchases.pollRewardVerification(transactionId: "tx-1", poller: poller)
+        _ = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 0
     }
@@ -174,7 +174,7 @@ extension PurchasesRewardVerificationTests {
     func testPollRewardVerificationDoesNotInvalidateCacheOnFailed() async {
         let poller = self.makeStubPoller(statuses: [.failed])
 
-        _ = await self.purchases.pollRewardVerification(transactionId: "tx-1", poller: poller)
+        _ = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 0
     }
@@ -187,7 +187,7 @@ extension PurchasesRewardVerificationTests {
 
     func testGenerateRewardVerificationTokenReturnsValidUUID() {
         let token = self.purchases.generateRewardVerificationToken(impressionId: "imp-1")
-        expect(UUID(uuidString: token.transactionId)).toNot(beNil())
+        expect(UUID(uuidString: token.clientTransactionID)).toNot(beNil())
     }
 
     func testGenerateRewardVerificationTokenCustomDataContainsExpectedFields() throws {
@@ -198,7 +198,7 @@ extension PurchasesRewardVerificationTests {
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: String])
 
         expect(json["impression_id"]) == impressionId
-        expect(json["client_transaction_id"]) == token.transactionId
+        expect(json["client_transaction_id"]) == token.clientTransactionID
         expect(json["api_key"]?.isEmpty) == false
     }
 
@@ -216,7 +216,7 @@ extension PurchasesRewardVerificationTests {
     func testGenerateRewardVerificationTokenGeneratesUniqueTransactionIds() {
         let first = self.purchases.generateRewardVerificationToken(impressionId: "imp-1")
         let second = self.purchases.generateRewardVerificationToken(impressionId: "imp-1")
-        expect(first.transactionId) != second.transactionId
+        expect(first.clientTransactionID) != second.clientTransactionID
     }
 
 }

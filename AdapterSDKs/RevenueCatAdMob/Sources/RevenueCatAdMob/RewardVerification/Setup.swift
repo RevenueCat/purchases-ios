@@ -42,7 +42,7 @@ internal extension RewardVerification {
 
             Logger.info(RewardVerificationStrings.setup_install(
                 adType: "\(type(of: loadedAd))",
-                transactionID: token.transactionId
+                transactionID: token.clientTransactionID
             ))
 
             let options = GoogleMobileAds.ServerSideVerificationOptions()
@@ -50,7 +50,7 @@ internal extension RewardVerification {
             options.customRewardText = token.customData
             loadedAd.serverSideVerificationOptions = options
 
-            RewardVerification.stateStore.set(State(clientTransactionID: token.transactionId), for: loadedAd)
+            RewardVerification.stateStore.set(State(clientTransactionID: token.clientTransactionID), for: loadedAd)
         }
 
         /// Generates a `client_transaction_id`, wires `ServerSideVerificationOptions` onto the ad,

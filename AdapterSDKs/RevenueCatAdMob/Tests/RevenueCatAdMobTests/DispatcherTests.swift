@@ -15,7 +15,7 @@ final class DispatcherTests: AdapterTestCase {
         let recorder = ResultRecorder()
 
         await RewardVerification.Dispatcher.run(
-            transactionID: state.clientTransactionID,
+            clientTransactionID: state.clientTransactionID,
             state: state,
             pollRewardVerification: { _ in .verified(.unsupportedReward) },
             resultHandler: { recorder.append($0) }
@@ -31,7 +31,7 @@ final class DispatcherTests: AdapterTestCase {
         let recorder = ResultRecorder()
 
         await RewardVerification.Dispatcher.run(
-            transactionID: state.clientTransactionID,
+            clientTransactionID: state.clientTransactionID,
             state: state,
             pollRewardVerification: { _ in .failed },
             resultHandler: { recorder.append($0) }
@@ -46,7 +46,7 @@ final class DispatcherTests: AdapterTestCase {
         let receivedID = TransactionIDRecorder()
 
         await RewardVerification.Dispatcher.run(
-            transactionID: state.clientTransactionID,
+            clientTransactionID: state.clientTransactionID,
             state: state,
             pollRewardVerification: { id in
                 receivedID.set(id)
@@ -66,7 +66,7 @@ final class DispatcherTests: AdapterTestCase {
         let recorder = ResultRecorder()
 
         await RewardVerification.Dispatcher.run(
-            transactionID: state.clientTransactionID,
+            clientTransactionID: state.clientTransactionID,
             state: state,
             pollRewardVerification: { _ in .verified(.noReward) },
             resultHandler: { recorder.append($0) }
@@ -81,13 +81,13 @@ final class DispatcherTests: AdapterTestCase {
         let recorder = ResultRecorder()
 
         await RewardVerification.Dispatcher.run(
-            transactionID: state.clientTransactionID,
+            clientTransactionID: state.clientTransactionID,
             state: state,
             pollRewardVerification: { _ in .verified(.noReward) },
             resultHandler: { recorder.append($0) }
         )
         await RewardVerification.Dispatcher.run(
-            transactionID: state.clientTransactionID,
+            clientTransactionID: state.clientTransactionID,
             state: state,
             pollRewardVerification: { _ in .verified(.noReward) },
             resultHandler: { recorder.append($0) }
@@ -104,7 +104,7 @@ final class DispatcherTests: AdapterTestCase {
         let recorder = ResultRecorder()
 
         let task = RewardVerification.Dispatcher.dispatch(
-            transactionID: state.clientTransactionID,
+            clientTransactionID: state.clientTransactionID,
             state: state,
             pollRewardVerification: { _ in .verified(.unsupportedReward) },
             resultHandler: { recorder.append($0) }
@@ -120,7 +120,7 @@ final class DispatcherTests: AdapterTestCase {
         let recorder = ResultRecorder()
 
         let task = RewardVerification.Dispatcher.dispatch(
-            transactionID: state.clientTransactionID,
+            clientTransactionID: state.clientTransactionID,
             state: state,
             pollRewardVerification: { _ in
                 try? await Task.sleep(nanoseconds: UInt64.max)
@@ -147,7 +147,7 @@ final class DispatcherTests: AdapterTestCase {
         let mainActorAssertion = MainActorAssertionRecorder()
 
         await RewardVerification.Dispatcher.run(
-            transactionID: state.clientTransactionID,
+            clientTransactionID: state.clientTransactionID,
             state: state,
             pollRewardVerification: { _ in .verified(.noReward) },
             resultHandler: { _ in

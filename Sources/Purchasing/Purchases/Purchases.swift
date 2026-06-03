@@ -1652,15 +1652,15 @@ extension Purchases {
     /// Generates a reward verification token for a loaded rewarded ad.
     ///
     /// Call after the ad has loaded. Pass `customData` and `appUserID` to your ad network's
-    /// server-side verification options, then stash `transactionId` for use with
-    /// ``pollRewardVerification(transactionId:)`` when the reward callback fires.
+    /// server-side verification options, then stash `clientTransactionID` for use with
+    /// ``pollRewardVerification(clientTransactionID:)`` when the reward callback fires.
     @_spi(Experimental) public func generateRewardVerificationToken(
         impressionId: String
-    ) -> (customData: String, transactionId: String, appUserID: String) {
-        let transactionId = UUID().uuidString
+    ) -> (customData: String, clientTransactionID: String, appUserID: String) {
+        let clientTransactionID = UUID().uuidString
         let payload: [String: String] = [
             "api_key": self.apiKey,
-            "client_transaction_id": transactionId,
+            "client_transaction_id": clientTransactionID,
             "impression_id": impressionId
         ]
         let customData: String
@@ -1673,28 +1673,28 @@ extension Purchases {
             assertionFailure(message.description)
             customData = "{}"
         }
-        return (customData: customData, transactionId: transactionId, appUserID: self.appUserID)
+        return (customData: customData, clientTransactionID: clientTransactionID, appUserID: self.appUserID)
     }
 
     /// Polls the backend until reward verification completes or the attempt budget is exhausted.
     ///
-    /// Call when your ad network's reward callback fires, passing the `transactionId` returned by
+    /// Call when your ad network's reward callback fires, passing the `clientTransactionID` returned by
     /// ``generateRewardVerificationToken(impressionId:)``.
     /// Invalidates the virtual currencies cache automatically on a verified virtual-currency reward.
     @_spi(Experimental) public func pollRewardVerification(
-        transactionId: String
+        clientTransactionID: String
     ) async -> RewardVerificationResult {
         await self.pollRewardVerification(
-            transactionId: transactionId,
+            clientTransactionID: clientTransactionID,
             poller: RewardVerification.Poller.makeDefault()
         )
     }
 
     internal func pollRewardVerification(
-        transactionId: String,
+        clientTransactionID: String,
         poller: RewardVerification.Poller
     ) async -> RewardVerificationResult {
-        let outcome = await poller.run(clientTransactionID: transactionId)
+        let outcome = await poller.run(clientTransactionID: clientTransactionID)
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         if case .verified(let reward) = outcome, reward.virtualCurrency != nil {
             self.invalidateVirtualCurrenciesCache()

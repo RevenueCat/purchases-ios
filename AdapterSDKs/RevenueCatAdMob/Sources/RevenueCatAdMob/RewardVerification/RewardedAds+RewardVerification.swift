@@ -163,7 +163,7 @@ internal extension RewardVerification.CapableAd {
     /// reward-verification result through the one-shot guard on the main actor.
     ///
     /// - Parameter pollRewardVerification: For unit tests; pass `nil` in production to use
-    ///   `Purchases.shared.pollRewardVerification(transactionId:)`. Virtual-currency cache
+    ///   `Purchases.shared.pollRewardVerification(clientTransactionID:)`. Virtual-currency cache
     ///   invalidation happens inside the core call.
     @MainActor
     func createUserDidEarnRewardHandler(
@@ -193,12 +193,12 @@ internal extension RewardVerification.CapableAd {
                 return
             }
 
-            let poll = pollRewardVerification ?? { transactionId in
-                await Purchases.shared.pollRewardVerification(transactionId: transactionId)
+            let poll = pollRewardVerification ?? { clientTransactionID in
+                await Purchases.shared.pollRewardVerification(clientTransactionID: clientTransactionID)
             }
 
             RewardVerification.Dispatcher.dispatch(
-                transactionID: state.clientTransactionID,
+                clientTransactionID: state.clientTransactionID,
                 state: state,
                 pollRewardVerification: poll,
                 resultHandler: { result in rewardVerificationCompleted(result) }
