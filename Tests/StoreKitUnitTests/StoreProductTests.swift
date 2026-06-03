@@ -614,7 +614,7 @@ extension StoreProductTests {
 @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
 extension StoreProductTests {
     func testLoadsUpFrontProduct() async throws {
-        try AvailabilityChecks.iOS26APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
 
         let storeProduct = try await ProductsFetcherSK2().product(withIdentifier: Self.productIDWithBillingPlans)
         expect(storeProduct.productIdentifier).to(equal(Self.productIDWithBillingPlans))
@@ -639,7 +639,7 @@ extension StoreProductTests {
     }
 
     func testLoadsMonthlyProduct() async throws {
-        try AvailabilityChecks.iOS26APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
 
         let storeProduct = try await ProductsFetcherSK2()
             .product(withIdentifier: "\(Self.productIDWithBillingPlans):monthly")
