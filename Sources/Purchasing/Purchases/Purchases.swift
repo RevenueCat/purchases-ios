@@ -1673,9 +1673,13 @@ extension Purchases {
 
         self.systemInfo.overridePreferredLocale(locale)
 
+        // Always clear the in-memory offerings cache when the locale changes, so the next paywall
+        // presentation reflects the new locale even if the eager re-fetch below is rate-limited.
+        // The rate limiter throttles the network re-fetch only, never cache correctness.
+        self.offeringsManager.clearInMemoryOfferingsCache()
+
         if self.overridePreferredUILocaleRateLimiter.shouldProceed() {
             // Refetches new offerings with preferred locale
-            self.offeringsManager.clearInMemoryOfferingsCache()
             self.getOfferings(fetchPolicy: .default) { _, _ in
                 // No-op
             }

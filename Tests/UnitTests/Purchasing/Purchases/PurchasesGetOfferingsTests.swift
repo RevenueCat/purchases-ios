@@ -229,7 +229,7 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         expect(self.mockOfferingsManager.invokedOfferingsCount) == 0
     }
 
-    func testOverridePreferredUILocaleDoesNotInvalidateOrFetchWhenRateLimited() {
+    func testOverridePreferredUILocaleStillClearsCacheButDoesNotFetchWhenRateLimited() {
         self.setupPurchases()
 
         // Exhaust the rate limiter (maxCalls: 2)
@@ -241,10 +241,12 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         self.mockOfferingsManager.invokedClearInMemoryOfferingsCacheCount = 0
         self.mockOfferingsManager.invokedOfferingsCount = 0
 
-        // Third call should be fully rate-limited
+        // Third call is rate-limited: the in-memory cache is still cleared (so the next paywall
+        // presentation reflects the new locale), but the eager network re-fetch is skipped.
         self.purchases.overridePreferredUILocale("es_ES")
 
-        expect(self.mockOfferingsManager.invokedClearInMemoryOfferingsCache) == false
+        expect(self.mockOfferingsManager.invokedClearInMemoryOfferingsCache) == true
+        expect(self.mockOfferingsManager.invokedClearInMemoryOfferingsCacheCount) == 1
         expect(self.mockOfferingsManager.invokedOfferingsCount) == 0
     }
 
