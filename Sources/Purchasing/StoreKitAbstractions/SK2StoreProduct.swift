@@ -110,7 +110,7 @@ internal struct SK2StoreProduct: StoreProductType {
         }
 
         #if compiler(>=6.3.2)
-        if self.compoundProductIdentifier.productPlanIdentifier != nil,
+        if self.representsBillingPlan,
            #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
 
             return self.pricingTerms?.subscriptionOffers
@@ -127,7 +127,7 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var discounts: [StoreProductDiscount] {
         #if compiler(>=6.3.2)
-        if self.compoundProductIdentifier.productPlanIdentifier != nil,
+        if self.representsBillingPlan,
            #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
             let promotionalOffersOnApplicablePricingTerms = self.pricingTerms
                 .map({
@@ -145,6 +145,11 @@ internal struct SK2StoreProduct: StoreProductType {
     }
 
     var id: String { return self.compoundProductIdentifier.compoundProductIdentifier }
+
+    /// Whether this product represents a specific billing plan rather than the base product.
+    var representsBillingPlan: Bool {
+        self.compoundProductIdentifier.productPlanIdentifier != nil
+    }
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

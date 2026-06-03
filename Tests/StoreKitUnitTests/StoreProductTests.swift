@@ -558,6 +558,30 @@ extension StoreProductTests {
         expect(storeProduct.id) == Self.productID
     }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testRepresentsBillingPlanReturnsFalseForSK2ProductWithoutProductPlanIdentifier() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let storeProduct = try await self.fetchSk2StoreProduct(Self.productID)
+        expect(storeProduct.representsBillingPlan) == false
+    }
+
+    @available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, visionOS 26.4, *)
+    func testRepresentsBillingPlanReturnsTrueForSK2ProductWithProductPlanIdentifier() async throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let productIdentifier = "com.revenuecat.annual_with_commitment"
+        let compoundProductIdentifier = try XCTUnwrap(CompoundProductIdentifier(
+            compoundProductIdentifier: "\(productIdentifier):monthly"
+        ))
+        let storeProduct = SK2StoreProduct(
+            sk2Product: try await self.fetchSk2Product(productIdentifier),
+            compoundProductIdentifier: compoundProductIdentifier
+        )
+
+        expect(storeProduct.representsBillingPlan) == true
+    }
+
     func testIdAddsMonthlyProductPlanIdentifierForMonthlyInstallmentsInfo() throws {
         let productIdentifier = "com.revenuecat.product"
         let storeProduct = Self.testProduct(
