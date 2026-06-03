@@ -1003,7 +1003,7 @@ jobs:
   # The same bug does not appear to reproduce on Mac Catalyst, so this job runs the
   # full iOS test plan (including StoreKit tests) on the Mac Catalyst variant with
   # Xcode 26.5 to confirm this on CI.
-  run-test-mac-catalyst:
+  run-test-mac-catalyst-xcode-26:
     executor:
       name: macos-executor
       xcode_version: "26.5"
@@ -2190,7 +2190,7 @@ workflows:
       - run-test-ios-15-and-14
       - run-test-tvos-and-macos
       - run-test-watchos
-      - run-test-mac-catalyst
+      - run-test-mac-catalyst-xcode-26
       - backend-integration-tests-SK2 # Snapshots from this job are shared with all BackendIntegrationTests
 
 
@@ -2251,7 +2251,7 @@ workflows:
       - build-xcode-265:
           context:
             - slack-secrets
-      - run-test-mac-catalyst:
+      - run-test-mac-catalyst-xcode-26:
           context:
             - slack-secrets
       - pod-lib-lint:
@@ -2418,7 +2418,7 @@ workflows:
             - check-api-changes-revenuecatui
             - run-test-ios-26
             - build-xcode-265
-            - run-test-mac-catalyst
+            - run-test-mac-catalyst-xcode-26
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
@@ -2720,7 +2720,7 @@ workflows:
       - build-xcode-265:
           context:
             - slack-secrets
-      - run-test-mac-catalyst:
+      - run-test-mac-catalyst-xcode-26:
           context:
             - slack-secrets
       - pod-lib-lint:
@@ -2744,7 +2744,7 @@ workflows:
             - lint
             - run-test-ios-26
             - build-xcode-265
-            - run-test-mac-catalyst
+            - run-test-mac-catalyst-xcode-26
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
