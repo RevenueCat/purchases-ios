@@ -534,7 +534,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         // This test relies on that fault-injection API, so it's skipped on Catalyst. The method is kept
         // defined to satisfy the `PurchasesOrchestratorTests` protocol conformance.
         #if targetEnvironment(macCatalyst)
-        throw XCTSkip("SKTestSession.setSimulatedError(_:forAPI:) is unavailable when compiling for Mac Catalyst (Apple bug FB22922982)")
+        throw XCTSkip("SKTestSession.setSimulatedError(_:forAPI:) is unavailable when compiling for Mac Catalyst " +
+                      "(Apple bug FB22922982)")
         #else
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
         #if compiler(>=5.9)
