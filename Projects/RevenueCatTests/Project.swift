@@ -26,6 +26,7 @@ let project = Project(
             ],
             dependencies: [
                 .revenueCat,
+                .revenueCatUI,
                 .nimble,
                 .snapshotTesting,
                 .ohHTTPStubsSwift
@@ -228,7 +229,8 @@ let project = Project(
             dependencies: [
                 .revenueCat,
                 .revenueCatAdMob,
-                .googleMobileAds
+                .googleMobileAds,
+                .nimble
             ],
             metadata: .metadata(tags: ["RevenueCatTests"])
         ),
