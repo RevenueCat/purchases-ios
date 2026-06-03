@@ -2338,6 +2338,11 @@ extension PurchasesOrchestrator {
 
     private func setSK2DelegateAndStartListening() async {
         await storeKit2TransactionListener.set(delegate: self)
+
+        // The Simulated Store ("Test Store") never produces StoreKit transactions,
+        // so there's no point in observing `StoreKit.Transaction.updates`.
+        guard !self.systemInfo.isSimulatedStoreAPIKey else { return }
+
         if systemInfo.storeKitVersion == .storeKit2 {
             await storeKit2TransactionListener.listenForTransactions()
         }

@@ -1968,6 +1968,24 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(transactionListener.invokedListenForTransactionsCount) == 1
     }
 
+    func testSK2DoesNotListenForSK2TransactionsInSimulatedStore() throws {
+        self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
+
+        let transactionListener = MockStoreKit2TransactionListener()
+        let storeKit2ObserverModePurchasesDetector = MockStoreKit2ObserverModePurchaseDetector()
+
+        self.setUpOrchestrator(
+            storeKit2TransactionListener: transactionListener,
+            storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),
+            storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchasesDetector
+        )
+
+        // The delegate is still set, but the listener must never start observing StoreKit transactions.
+        expect(transactionListener.invokedDelegateSetter).toEventually(beTrue())
+        expect(transactionListener.invokedListenForTransactions) == false
+        expect(transactionListener.invokedListenForTransactionsCount) == 0
+    }
+
     // MARK: - Sync Purchases
 
     func verifySyncPurchases(transaction: StoreTransaction) async throws {
