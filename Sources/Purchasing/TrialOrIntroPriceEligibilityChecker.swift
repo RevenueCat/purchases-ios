@@ -78,11 +78,24 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         }
 
         guard !self.systemInfo.isSimulatedStoreAPIKey else {
-            // For now, all products in the Simulated Store are ineligible for trial or intro discount
-            let result = productIdentifiers.reduce(into: [:]) { resultDict, productId in
-                resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.ineligible)
+            // The backend computes intro/trial eligibility for Simulated Store products. If a product
+            // carries an introductory discount (a free trial or an intro price), the user is eligible
+            // for it. Products without an introductory discount have no intro offer to be eligible for.
+            self.productsManager.products(withIdentifiers: productIdentifiers) { result in
+                let productsByID = (result.value ?? []).dictionaryAllowingDuplicateKeys { $0.productIdentifier }
+                let eligibility = productIdentifiers.reduce(into: [String: IntroEligibility]()) { dict, productId in
+                    let status: IntroEligibilityStatus
+                    if let product = productsByID[productId] {
+                        status = product.introductoryDiscount != nil ? .eligible : .noIntroOfferExists
+                    } else {
+                        status = .unknown
+                    }
+                    dict[productId] = IntroEligibility(eligibilityStatus: status)
+                }
+                self.operationDispatcher.dispatchOnMainActor {
+                    completion(eligibility)
+                }
             }
-            completion(result)
             return
         }
 

@@ -252,6 +252,12 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               eventsManager: nil,
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,
+                              workflowManager: WorkflowManager(
+                                backend: mockBackend,
+                                workflowsCache: WorkflowsCache(deviceCache: mockDeviceCache),
+                                paywallCache: MockPaywallCacheWarming(),
+                                operationDispatcher: mockOperationDispatcher
+                              ),
                               offlineEntitlementsManager: mockOfflineEntitlementsManager,
                               purchasesOrchestrator: purchasesOrchestrator,
                               purchasedProductsFetcher: mockPurchasedProductsFetcher,
