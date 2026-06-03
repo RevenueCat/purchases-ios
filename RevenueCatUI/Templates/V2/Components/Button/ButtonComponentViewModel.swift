@@ -16,6 +16,8 @@ import Foundation
 @_spi(Internal) import RevenueCat
 #if !os(tvOS) // For Paywalls V2
 
+typealias PresentedButtonPartial = PaywallComponent.PartialButtonComponent
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class ButtonComponentViewModel {
 
@@ -27,6 +29,7 @@ class ButtonComponentViewModel {
         case sheet(RevenueCat.PaywallComponent.ButtonComponent.Sheet)
         case navigateBack
         case workflowTrigger
+        case closeWorkflow
         case unknown
     }
 
@@ -50,19 +53,28 @@ class ButtonComponentViewModel {
     let stackViewModel: StackComponentViewModel
     let sheetStackViewModel: StackComponentViewModel?
 
+    private let componentVisible: Bool?
+    private let uiConfigProvider: UIConfigProvider
+    private let presentedOverrides: PresentedOverrides<PresentedButtonPartial>?
+
     // swiftlint:disable:next cyclomatic_complexity
     init(
         component: PaywallComponent.ButtonComponent,
         localizationProvider: LocalizationProvider,
         offering: Offering,
         stackViewModel: StackComponentViewModel,
-        sheetStackViewModel: StackComponentViewModel? = nil
+        sheetStackViewModel: StackComponentViewModel? = nil,
+        uiConfigProvider: UIConfigProvider,
+        discardRules: Bool = false
     ) throws {
         self.component = component
         self.id = component.id
         self.localizationProvider = localizationProvider
         self.stackViewModel = stackViewModel
         self.sheetStackViewModel = sheetStackViewModel
+        self.componentVisible = component.visible
+        self.uiConfigProvider = uiConfigProvider
+        self.presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
 
         let localizedStrings = localizationProvider.localizedStrings
 
@@ -99,7 +111,7 @@ class ButtonComponentViewModel {
                 self.action = .sheet(sheet)
             }
         case .navigateBack:
-            self.action = .navigateBack
+            self.action = component.isCloseWorkflowAction ? .closeWorkflow : .navigateBack
         case .workflowTrigger:
             self.action = .workflowTrigger
         case .unknown:
@@ -135,6 +147,8 @@ class ButtonComponentViewModel {
             return false
         case .workflowTrigger:
             return false
+        case .closeWorkflow:
+            return false
         case .unknown:
             return false
         case .sheet:
@@ -142,19 +156,58 @@ class ButtonComponentViewModel {
         }
     }
 
+    // swiftlint:disable:next function_parameter_count
+    func visible(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue]
+    ) -> Bool {
+        let conditionContext = self.uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables
+        )
+
+        let partial = PresentedButtonPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
+            with: self.presentedOverrides
+        )
+
+        return partial?.visible ?? self.componentVisible ?? true
+    }
+
+}
+
+extension PresentedButtonPartial: PresentedPartial {
+
+    static func combine(
+        _ base: PaywallComponent.PartialButtonComponent?,
+        with other: PaywallComponent.PartialButtonComponent?
+    ) -> Self {
+        return .init(visible: other?.visible ?? base?.visible)
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension ButtonComponentViewModel.Action {
 
-    var paywallComponentInteractionValue: String {
+    var paywallComponentInteractionValue: String? {
         switch self {
         case .restorePurchases:
             return "restore_purchases"
         case .navigateBack:
             return "navigate_back"
         case .workflowTrigger:
-            return "workflow_trigger"
+            return nil
+        case .closeWorkflow:
+            return "close_workflow"
         case .unknown:
             return "unknown"
         case .sheet:
@@ -168,7 +221,7 @@ extension ButtonComponentViewModel.Action {
         switch self {
         case .navigateTo(let destination):
             return destination.paywallComponentInteractionURL
-        case .restorePurchases, .navigateBack, .workflowTrigger, .unknown, .sheet:
+        case .restorePurchases, .navigateBack, .workflowTrigger, .closeWorkflow, .unknown, .sheet:
             return nil
         }
     }

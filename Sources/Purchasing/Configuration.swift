@@ -42,37 +42,72 @@ import Foundation
     static let storeKitRequestTimeoutDefault: TimeInterval = 30
     static let networkTimeoutDefault: TimeInterval = 60
 
-    let apiKey: String
-    let appUserID: String?
-    let observerMode: Bool
-    let userDefaults: UserDefaults?
-    let storeKitVersion: StoreKitVersion
-    let dangerousSettings: DangerousSettings?
-    let networkTimeout: TimeInterval
-    let storeKit1Timeout: TimeInterval
-    let platformInfo: Purchases.PlatformInfo?
-    let responseVerificationMode: Signing.ResponseVerificationMode
-    let showStoreMessagesAutomatically: Bool
-    let preferredLocale: String?
-    let automaticDeviceIdentifierCollectionEnabled: Bool
-    internal let diagnosticsEnabled: Bool
+    /// `UserDefaults` is included and compared by reference identity (the default `NSObject`
+    /// equality). This dedups the common case (both `nil`, both `.standard`, or the same cached
+    /// suite) while still rebuilding the SDK if a different `UserDefaults` instance is provided.
+    internal struct Storage: Hashable {
+        let apiKey: String
+        let appUserID: String?
+        let observerMode: Bool
+        let userDefaults: UserDefaults?
+        let storeKitVersion: StoreKitVersion
+        let dangerousSettings: DangerousSettings?
+        let networkTimeout: TimeInterval
+        let storeKit1Timeout: TimeInterval
+        let platformInfo: Purchases.PlatformInfo?
+        let entitlementVerificationMode: EntitlementVerificationMode
+        let showStoreMessagesAutomatically: Bool
+        let preferredLocale: String?
+        let automaticDeviceIdentifierCollectionEnabled: Bool
+        let diagnosticsEnabled: Bool
+    }
+
+    internal let storage: Storage
+
+    lazy var responseVerificationMode: Signing.ResponseVerificationMode =
+        Signing.verificationMode(with: self.storage.entitlementVerificationMode)
+
+    var apiKey: String { self.storage.apiKey }
+    var appUserID: String? { self.storage.appUserID }
+    var observerMode: Bool { self.storage.observerMode }
+    var userDefaults: UserDefaults? { self.storage.userDefaults }
+    var storeKitVersion: StoreKitVersion { self.storage.storeKitVersion }
+    var dangerousSettings: DangerousSettings? { self.storage.dangerousSettings }
+    var networkTimeout: TimeInterval { self.storage.networkTimeout }
+    var storeKit1Timeout: TimeInterval { self.storage.storeKit1Timeout }
+    var platformInfo: Purchases.PlatformInfo? { self.storage.platformInfo }
+    var showStoreMessagesAutomatically: Bool { self.storage.showStoreMessagesAutomatically }
+    var preferredLocale: String? { self.storage.preferredLocale }
+    var automaticDeviceIdentifierCollectionEnabled: Bool {
+        self.storage.automaticDeviceIdentifierCollectionEnabled
+    }
+    internal var diagnosticsEnabled: Bool { self.storage.diagnosticsEnabled }
 
     private init(with builder: Builder) {
-        self.apiKey = builder.apiKey
-        self.appUserID = builder.appUserID
-        self.observerMode = builder.observerMode
-        self.userDefaults = builder.userDefaults
-        self.storeKitVersion = builder.storeKitVersion
-        self.dangerousSettings = builder.dangerousSettings
-        self.storeKit1Timeout = builder.storeKit1Timeout
-        self.networkTimeout = builder.networkTimeout
-        self.platformInfo = builder.platformInfo
-        self.responseVerificationMode = builder.responseVerificationMode
-        self.showStoreMessagesAutomatically = builder.showStoreMessagesAutomatically
-        self.diagnosticsEnabled = builder.diagnosticsEnabled
-        self.preferredLocale = builder.preferredLocale
-        self.automaticDeviceIdentifierCollectionEnabled = builder.automaticDeviceIdentifierCollectionEnabled
+        self.storage = Storage(
+            apiKey: builder.apiKey,
+            appUserID: builder.appUserID,
+            observerMode: builder.observerMode,
+            userDefaults: builder.userDefaults,
+            storeKitVersion: builder.storeKitVersion,
+            dangerousSettings: builder.dangerousSettings,
+            networkTimeout: builder.networkTimeout,
+            storeKit1Timeout: builder.storeKit1Timeout,
+            platformInfo: builder.platformInfo,
+            entitlementVerificationMode: builder.entitlementVerificationMode,
+            showStoreMessagesAutomatically: builder.showStoreMessagesAutomatically,
+            preferredLocale: builder.preferredLocale,
+            automaticDeviceIdentifierCollectionEnabled: builder.automaticDeviceIdentifierCollectionEnabled,
+            diagnosticsEnabled: builder.diagnosticsEnabled
+        )
     }
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? Configuration else { return false }
+        return self.storage == other.storage
+    }
+
+    public override var hash: Int { self.storage.hashValue }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -111,7 +146,7 @@ import Foundation
         private(set) var networkTimeout = Configuration.networkTimeoutDefault
         private(set) var storeKit1Timeout = Configuration.storeKitRequestTimeoutDefault
         private(set) var platformInfo: Purchases.PlatformInfo?
-        private(set) var responseVerificationMode: Signing.ResponseVerificationMode = .default
+        private(set) var entitlementVerificationMode: EntitlementVerificationMode = .informational
         private(set) var showStoreMessagesAutomatically: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
@@ -273,7 +308,7 @@ import Foundation
         /// - ``Configuration/EntitlementVerificationMode``
         /// - ``VerificationResult``
         @objc public func with(entitlementVerificationMode mode: EntitlementVerificationMode) -> Builder {
-            self.responseVerificationMode = Signing.verificationMode(with: mode)
+            self.entitlementVerificationMode = mode
             return self
         }
 
@@ -469,7 +504,12 @@ extension Configuration {
 extension Configuration.APIKeyValidationResult {
 
     func checkForSimulatedStoreAPIKeyInRelease(systemInfo: SystemInfo, apiKey: String) {
-        #if !DEBUG
+        // The `BYPASS_SIMULATED_STORE_RELEASE_CHECK` compilation flag opts out of the Release-build
+        // safeguard. It exists for SDK consumers (e.g. purchases-kmp) that ship the SDK as a
+        // pre-compiled binary always built in Release configuration, where this check would
+        // otherwise crash apps that use a Test Store API key during development. Setting this flag
+        // means apps shipped to production with a Test Store API key won't be caught at runtime.
+        #if !DEBUG && !BYPASS_SIMULATED_STORE_RELEASE_CHECK
         guard self == .simulatedStore, !systemInfo.dangerousSettings.uiPreviewMode else {
             return
         }

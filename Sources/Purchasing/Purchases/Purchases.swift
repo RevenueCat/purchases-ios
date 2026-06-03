@@ -316,6 +316,15 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let virtualCurrencyManager: VirtualCurrencyManagerType
 
+    /// The ``Configuration`` used to configure this instance, if it was created via
+    /// ``Purchases/configure(with:)-3wmd0`` (or one of its overloads). Used by
+    /// ``Purchases/setDefaultInstance(_:dedupingAgainst:)`` to deduplicate subsequent
+    /// `configure` calls that pass an equal ``Configuration``.
+    ///
+    /// `nil` when the instance is created via test paths that build `Purchases` directly with
+    /// mocks instead of going through a ``Configuration``; those paths opt out of deduplication.
+    internal let currentConfiguration: Configuration?
+
     @_spi(Internal) public let subscriptionHistoryTracker = SubscriptionHistoryTracker()
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
@@ -333,7 +342,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      showStoreMessagesAutomatically: Bool,
                      diagnosticsEnabled: Bool = false,
                      preferredLocale: String?,
-                     automaticDeviceIdentifierCollectionEnabled: Bool = true
+                     automaticDeviceIdentifierCollectionEnabled: Bool = true,
+                     currentConfiguration: Configuration?
     ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
@@ -708,7 +718,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   diagnosticsTracker: diagnosticsTracker,
                   virtualCurrencyManager: virtualCurrencyManager,
                   healthManager: healthManager,
-                  transactionMetadataSyncHelper: transactionMetadataSyncHelper
+                  transactionMetadataSyncHelper: transactionMetadataSyncHelper,
+                  currentConfiguration: currentConfiguration
         )
     }
 
@@ -741,7 +752,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          diagnosticsTracker: DiagnosticsTrackerType?,
          virtualCurrencyManager: VirtualCurrencyManagerType,
          healthManager: SDKHealthManager,
-         transactionMetadataSyncHelper: TransactionMetadataSyncHelper
+         transactionMetadataSyncHelper: TransactionMetadataSyncHelper,
+         currentConfiguration: Configuration?
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -793,6 +805,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.virtualCurrencyManager = virtualCurrencyManager
         self.healthManager = healthManager
         self.transactionMetadataSyncHelper = transactionMetadataSyncHelper
+        self.currentConfiguration = currentConfiguration
 
         super.init()
 
@@ -865,10 +878,25 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     }
 
     /// - Parameter purchases: this is an `@autoclosure` to be able to clear the previous instance
-    /// from memory before creating the new one.
+    /// from memory before creating the new one. It is also not evaluated when ``dedupingAgainst``
+    /// matches the current instance's configuration, avoiding an unnecessary allocation.
+    /// - Parameter configuration: when non-`nil`, and the current instance was configured with an
+    /// equal ``Configuration``, the existing instance is returned and ``purchases`` is not invoked.
+    /// Test paths that install a pre-built `Purchases` directly leave this `nil` and the historical
+    /// "replace and warn" behavior is preserved.
     @discardableResult
-    static func setDefaultInstance(_ purchases: @autoclosure () -> Purchases) -> Purchases {
+    static func setDefaultInstance(
+        _ purchases: @autoclosure () -> Purchases,
+        dedupingAgainst configuration: Configuration? = nil
+    ) -> Purchases {
         return self.purchases.modify { currentInstance in
+            if let configuration,
+               let existingInstance = currentInstance,
+               existingInstance.currentConfiguration == configuration {
+                Logger.info(Strings.configure.instance_already_exists_with_same_config)
+                return existingInstance
+            }
+
             if currentInstance != nil {
                 #if DEBUG
                 if ProcessInfo.isRunningRevenueCatTests {
@@ -929,7 +957,11 @@ public extension Purchases {
     ) {
         self.offeringsManager.offerings(appUserID: self.appUserID,
                                         fetchPolicy: fetchPolicy,
-                                        fetchCurrent: fetchCurrent) { @Sendable result in
+                                        fetchCurrent: fetchCurrent) { [weak self] result in
+            if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
+               let offerings = result.value {
+                self?.warmUpCaches(offerings: offerings)
+            }
             completion(result.value, result.error?.asPublicError)
         }
     }
@@ -945,7 +977,7 @@ public extension Purchases {
     @_spi(Internal)
     // The backend uses the offering identifier as the workflow lookup key.
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
-        return try await Async.call { completion in
+        let result = try await Async.call { completion in
             self.backend.workflowsAPI.getWorkflow(
                 appUserID: self.appUserID,
                 workflowId: offeringID,
@@ -953,6 +985,13 @@ public extension Purchases {
                 completion: completion
             )
         }
+        if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
+           let cache = self.paywallCache {
+            self.operationDispatcher.dispatchOnWorkerThread {
+                await cache.warmUpWorkflowCaches(workflow: result.workflow)
+            }
+        }
+        return result
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
@@ -1679,20 +1718,25 @@ public extension Purchases {
      */
     @objc(configureWithConfiguration:)
     @discardableResult static func configure(with configuration: Configuration) -> Purchases {
-        configure(withAPIKey: configuration.apiKey,
-                  appUserID: configuration.appUserID,
-                  observerMode: configuration.observerMode,
-                  userDefaults: configuration.userDefaults,
-                  platformInfo: configuration.platformInfo,
-                  responseVerificationMode: configuration.responseVerificationMode,
-                  storeKitVersion: configuration.storeKitVersion,
-                  storeKitTimeout: configuration.storeKit1Timeout,
-                  networkTimeout: configuration.networkTimeout,
-                  dangerousSettings: configuration.dangerousSettings,
-                  showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
-                  diagnosticsEnabled: configuration.diagnosticsEnabled,
-                  preferredLocale: configuration.preferredLocale,
-                  automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled
+        return self.setDefaultInstance(
+            .init(
+                apiKey: configuration.apiKey,
+                appUserID: configuration.appUserID,
+                userDefaults: configuration.userDefaults,
+                observerMode: configuration.observerMode,
+                platformInfo: configuration.platformInfo,
+                responseVerificationMode: configuration.responseVerificationMode,
+                storeKitVersion: configuration.storeKitVersion,
+                storeKitTimeout: configuration.storeKit1Timeout,
+                networkTimeout: configuration.networkTimeout,
+                dangerousSettings: configuration.dangerousSettings,
+                showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
+                diagnosticsEnabled: configuration.diagnosticsEnabled,
+                preferredLocale: configuration.preferredLocale,
+                automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled,
+                currentConfiguration: configuration
+            ),
+            dedupingAgainst: configuration
         )
     }
 
@@ -1977,7 +2021,8 @@ public extension Purchases {
                   showStoreMessagesAutomatically: showStoreMessagesAutomatically,
                   diagnosticsEnabled: diagnosticsEnabled,
                   preferredLocale: preferredLocale,
-                  automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled)
+                  automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled,
+                  currentConfiguration: nil)
         )
     }
 
@@ -2243,11 +2288,31 @@ extension Purchases {
     /// - Parameter params: Parameters for the custom paywall impression.
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @objc public func trackCustomPaywallImpression(_ params: CustomPaywallImpressionParams) {
-        let offeringId = params.offeringId ?? self.offeringsManager.cachedOfferings?.current?.identifier
+        let cachedOfferings = self.offeringsManager.cachedOfferings
+        let resolvedOfferingId: String?
+        let resolvedPresentedOfferingContext: PresentedOfferingContext?
+
+        if let presentedOfferingContext = params.presentedOfferingContext {
+            resolvedOfferingId = params.offeringId
+            resolvedPresentedOfferingContext = presentedOfferingContext
+        } else if let offeringId = params.offeringId {
+            let resolvedOffering = cachedOfferings?[offeringId]
+            resolvedOfferingId = offeringId
+            resolvedPresentedOfferingContext = resolvedOffering?.presentedOfferingContext
+        } else {
+            let resolvedOffering = cachedOfferings?.current
+            resolvedOfferingId = resolvedOffering?.identifier
+            resolvedPresentedOfferingContext = resolvedOffering?.presentedOfferingContext
+        }
+
         Task {
             let event = CustomPaywallEvent.impression(
                 .init(),
-                .init(paywallId: params.paywallId, offeringId: offeringId)
+                .init(
+                    paywallId: params.paywallId,
+                    offeringId: resolvedOfferingId,
+                    presentedOfferingContext: resolvedPresentedOfferingContext
+                )
             )
             await self.eventsManager?.track(featureEvent: event)
         }
@@ -2366,6 +2431,13 @@ private extension Purchases {
         if old != nil {
             self.trialOrIntroPriceEligibilityChecker.clearCache()
             self.purchasedProductsFetcher?.clearCache()
+
+            if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
+               let cache = self.paywallCache {
+                self.operationDispatcher.dispatchOnWorkerThread {
+                    await cache.clearEligibilityCache()
+                }
+            }
         }
 
         self.delegate?.purchases?(self, receivedUpdated: new)

@@ -29,12 +29,19 @@ struct RootView: View {
     @Environment(\.componentInteractionLogger)
     private var componentInteractionLogger
 
+    @Environment(\.workflowPackageContext)
+    private var workflowPackageContext
+
+    @Environment(\.workflowRenderingContext)
+    private var workflowRenderingContext
+
     private let viewModel: RootViewModel
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
 
     @State private var sheetViewModel: SheetViewModel?
     @State private var packageSelectionSheetComponentName: String?
+    @State private var packageBeforeOpeningSheet: Package?
     @State private var overlaidHeaderHeight: CGFloat = 0
 
     internal init(
@@ -47,6 +54,19 @@ struct RootView: View {
         self.defaultPackage = defaultPackage
     }
 
+    // enforce filling the height of the screen to ensure headers and footers
+    // appear where they should for all stack dimensions
+    private var fillVerticalBounds: some View {
+        Color.clear.frame(width: 1)
+    }
+
+    private var paywallRootStackIsZLayer: Bool {
+        if case .zlayer = self.viewModel.stackViewModel.component.dimension {
+            return true
+        }
+        return false
+    }
+
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
             if let headerViewModel = viewModel.headerViewModel,
@@ -56,9 +76,12 @@ struct RootView: View {
                     onDismiss: onDismiss
                 )
                 .fixedSize(horizontal: false, vertical: true)
+                .opacity(self.workflowRenderingContext.pageHeaderSuppressed ? 0 : 1)
             }
 
             ZStack(alignment: .top) {
+                fillVerticalBounds
+
                 StackComponentView(
                     viewModel: viewModel.stackViewModel,
                     isScrollableByDefault: true,
@@ -73,6 +96,7 @@ struct RootView: View {
                         onDismiss: onDismiss
                     )
                     .fixedSize(horizontal: false, vertical: true)
+                    .opacity(self.workflowRenderingContext.pageHeaderSuppressed ? 0 : 1)
                     .overlay(GeometryReader { proxy in
                         Color.clear.preference(
                             key: OverlaidHeaderHeightKey.self,
@@ -99,6 +123,7 @@ struct RootView: View {
                 .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer)
         .environment(\.openSheet, { sheet in
             self.sheetViewModel = sheet
         })
@@ -118,10 +143,18 @@ struct RootView: View {
         .onChangeOf(sheetViewModel) { newValue in
             if let newValue {
                 self.packageSelectionSheetComponentName = newValue.sheet.name
+                if self.workflowPackageContext != nil {
+                    self.packageBeforeOpeningSheet = self.packageContext.package
+                }
             } else {
                 // Reset package selection when sheet is dismissed; snapshot sheet name before clear for analytics.
                 let selectionInSheetContext = self.packageContext.package
-                self.packageContext.package = self.defaultPackage
+                self.packageContext.package = Self.restoredPackageAfterSheetDismissal(
+                    workflowPackageContext: self.workflowPackageContext,
+                    packageBeforeOpeningSheet: self.packageBeforeOpeningSheet,
+                    defaultPackage: self.defaultPackage
+                )
+                self.packageBeforeOpeningSheet = nil
                 let resultingRootPackage = self.packageContext.package
                 let sheetName = self.packageSelectionSheetComponentName
                 self.packageSelectionSheetComponentName = nil
@@ -134,6 +167,22 @@ struct RootView: View {
                 )
             }
         }
+    }
+
+    /// Returns the package that should be selected after a selection sheet is dismissed.
+    ///
+    /// In a workflow context the view snapshots the pre-sheet selection on open; this restores
+    /// that snapshot so navigating into and out of the sheet is a no-op for the workflow step.
+    /// Outside a workflow the sheet always resets to the step default.
+    static func restoredPackageAfterSheetDismissal(
+        workflowPackageContext: WorkflowPackageContext?,
+        packageBeforeOpeningSheet: Package?,
+        defaultPackage: Package?
+    ) -> Package? {
+        if workflowPackageContext != nil {
+            return packageBeforeOpeningSheet ?? defaultPackage
+        }
+        return defaultPackage
     }
 
 }

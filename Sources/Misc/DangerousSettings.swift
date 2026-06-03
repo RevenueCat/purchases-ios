@@ -48,6 +48,18 @@ import Foundation
         static let `default`: Self = .init()
     }
 
+    /// `internalSettings` is intentionally excluded; it is an internal/debug-only mechanism
+    /// with no observable effect on the public configuration and contains non-`Hashable`
+    /// fields (e.g., closures in `ForceServerErrorStrategy`).
+    internal struct Storage: Hashable {
+        let autoSyncPurchases: Bool
+        let uiPreviewMode: Bool
+        let customEntitlementComputation: Bool
+    }
+
+    internal let storage: Storage
+    internal let internalSettings: InternalDangerousSettingsType
+
     /**
      * Disable or enable subscribing to the StoreKit queue. If this is disabled, RevenueCat won't observe
      * the StoreKit queue, and it will not sync any purchase automatically.
@@ -56,13 +68,13 @@ import Foundation
      * synced before finishing any consumable transaction, otherwise RevenueCat won't register the purchase.
      * Auto syncing of purchases is enabled by default.
      */
-    @objc public let autoSyncPurchases: Bool
+    @objc public var autoSyncPurchases: Bool { self.storage.autoSyncPurchases }
 
     /**
      * if `true`, the SDK will return a set of mock products instead of the
      * products obtained from StoreKit. This is useful for testing or preview purposes.
      */
-    @_spi(Internal) public let uiPreviewMode: Bool
+    @_spi(Internal) public var uiPreviewMode: Bool { self.storage.uiPreviewMode }
 
     /**
      * A property meant for apps that do their own entitlements computation, separated from RevenueCat.
@@ -76,9 +88,7 @@ import Foundation
      * - Important: This is a dangerous setting and should only be used if you intend to do your own entitlement
      * granting, separate from RevenueCat.
      */
-    @objc public let customEntitlementComputation: Bool
-
-    internal let internalSettings: InternalDangerousSettingsType
+    @objc public var customEntitlementComputation: Bool { self.storage.customEntitlementComputation }
 
     @objc public override convenience init() {
         self.init(autoSyncPurchases: true)
@@ -122,11 +132,20 @@ import Foundation
                   customEntitlementComputation: Bool = false,
                   internalSettings: InternalDangerousSettingsType,
                   uiPreviewMode: Bool = false) {
-        self.autoSyncPurchases = autoSyncPurchases
+        self.storage = Storage(
+            autoSyncPurchases: autoSyncPurchases,
+            uiPreviewMode: uiPreviewMode,
+            customEntitlementComputation: customEntitlementComputation
+        )
         self.internalSettings = internalSettings
-        self.customEntitlementComputation = customEntitlementComputation
-        self.uiPreviewMode = uiPreviewMode
     }
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? DangerousSettings else { return false }
+        return self.storage == other.storage
+    }
+
+    public override var hash: Int { self.storage.hashValue }
 
 }
 

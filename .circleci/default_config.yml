@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@3.16.0
+  revenuecat: revenuecat/sdks-common-config@3.20.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -22,6 +22,9 @@ parameters:
     type: boolean
     default: false
   bump_with_fallback_pr_lookup:
+    type: boolean
+    default: false
+  version_file_changed:
     type: boolean
     default: false
   requested_jobs:
@@ -103,6 +106,17 @@ aliases:
         only: main
   swiftinterface-xcode-version: &swiftinterface-xcode-version "26.5"
 commands:
+  github-notify-pr-on-fail:
+    steps:
+      - run:
+          name: Post GitHub PR failure comment
+          when: on_fail
+          command: bundle exec fastlane notify_pr_ci_failure
+      - run:
+          name: Delete GitHub PR failure comment on success
+          when: on_success
+          command: bundle exec fastlane clear_pr_ci_failure
+
   slack-notify-on-fail:
     steps:
       # Map custom variable names to the Slack orb variables, since the default variable names are already used by the Fastlane Slack integration
@@ -503,15 +517,17 @@ commands:
         type: string
         default: ""
         description: "Optional query to pass to Tuist when generating workspace."
+      include_test_dependencies:
+        type: boolean
+        default: false
+        description: "Whether to include test/dev dependencies when generating the workspace."
     steps:
       - revenuecat/install-tuist
       - run:
           name: Generate Tuist workspace
           command: |
             export PATH="$HOME/.local/share/mise/shims:$PATH"
-            # Skip external test/dev dependencies to speed up tuist install.
-            # No CI job currently needs them (tests run via SPM, not Tuist).
-            export TUIST_INCLUDE_TEST_DEPENDENCIES=false
+            export TUIST_INCLUDE_TEST_DEPENDENCIES=<< parameters.include_test_dependencies >>
             if [ -n "<< parameters.query >>" ]; then
               tuist install && tuist generate << parameters.query >> --no-open
             else
@@ -979,6 +995,37 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-26
+      - slack-notify-on-fail
+      - github-notify-pr-on-fail
+
+  # As of May 12, 2026, there is a StoreKit bug that is preventing us from running unit tests
+  # when building with Xcode 26.4+. When built with Xcode 26.4+, tests that fetch products
+  # with StoreKit with a SKConfig file fail to fetch products. Thus, a good chunk of our
+  # tests fail. While we can't run the tests, the least that we can do is ensure that the
+  # SDK builds on Xcode 26.5 with iOS 26.5, so this job does that.
+  build-xcode-265:
+    executor:
+      name: macos-executor
+      xcode_version: "26.5"
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Build RevenueCat with Xcode 26.5
+          command: xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCat -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES build
+          no_output_timeout: 30m
+      - run:
+          name: Build RevenueCat_CustomEntitlementComputation with Xcode 26.5
+          command: xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCat_CustomEntitlementComputation -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES build
+          no_output_timeout: 30m
+      - run:
+          name: Build ReceiptParser with Xcode 26.5
+          command: xcodebuild -workspace RevenueCat.xcworkspace -scheme "ReceiptParser (RevenueCat Workspace)" -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES build
+          no_output_timeout: 30m
+      - run:
+          name: Build RevenueCatUI with Xcode 26.5
+          command: xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCatUI -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES build
+          no_output_timeout: 30m
       - slack-notify-on-fail
 
   run-test-ios-18-and-17:
@@ -1720,6 +1767,7 @@ jobs:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output
+      - github-notify-pr-on-fail
 
   danger:
     docker:
@@ -1881,6 +1929,8 @@ jobs:
       - run:
           name: Fetch paywall-preview-resources
           command: bundle exec fastlane ios fetch_paywall_preview_resources
+      - tuist-generate-workspace:
+          include_test_dependencies: true
       - run:
           name: Clone paywall-rendering-validation repository
           command: git clone git@github.com:RevenueCat/paywall-rendering-validation.git ../Tests/paywall-rendering-validation
@@ -2151,7 +2201,9 @@ workflows:
       # =============================================================
       # Reduced Test Suite: Auto-run on every push
       # =============================================================
-      - lint
+      - lint:
+          context:
+            - slack-secrets
       - check-api-changes-revenuecat:
           context:
             - slack-secrets-ios
@@ -2159,6 +2211,9 @@ workflows:
           context:
             - slack-secrets-ios
       - run-test-ios-26:
+          context:
+            - slack-secrets
+      - build-xcode-265:
           context:
             - slack-secrets
       - pod-lib-lint:
@@ -2174,6 +2229,9 @@ workflows:
           context:
             - slack-secrets
       - build-tv-watch-mac-and-visionos:
+          context:
+            - slack-secrets
+      - revenuecat-admob-tests:
           context:
             - slack-secrets
 
@@ -2293,11 +2351,6 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
-      - revenuecat-admob-tests:
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
       - deploy-purchase-tester:
           dry_run: true
           requires:
@@ -2326,6 +2379,7 @@ workflows:
             - check-api-changes-revenuecat
             - check-api-changes-revenuecatui
             - run-test-ios-26
+            - build-xcode-265
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
@@ -2379,15 +2433,16 @@ workflows:
           <<: *release-tags
       - docs-deploy:
           <<: *release-tags
-      - deploy-purchase-tester:
-          dry_run: false
-          <<: *release-tags
       - make-release:
           requires:
             - push-revenuecatui-pod
             - deploy-to-spm
             - docs-deploy
-            - deploy-purchase-tester
+          <<: *release-tags
+      - deploy-purchase-tester:
+          dry_run: false
+          requires:
+            - make-release
           <<: *release-tags
       - deploy-rct-tester:
           dry_run: false
@@ -2402,8 +2457,10 @@ workflows:
           repo_name: purchases-ios
           requires:
             - make-release
+            - deploy-purchase-tester
             - deploy-rct-tester
             - bump-sdk-in-rc-mobile-app
+            - make-admob-release
           <<: *release-tags
 
   snapshot-bump:
@@ -2413,6 +2470,7 @@ workflows:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
             equal: [bump, << pipeline.parameters.action >>]
+        - equal: [true, << pipeline.parameters.version_file_changed >>]
     jobs:
       - prepare-next-version:
           <<: *only-main-branch
@@ -2614,8 +2672,13 @@ workflows:
       - emerge_binary_size_analysis:
           context:
             - slack-secrets
-      - lint
+      - lint:
+          context:
+            - slack-secrets
       - run-test-ios-26:
+          context:
+            - slack-secrets
+      - build-xcode-265:
           context:
             - slack-secrets
       - pod-lib-lint:
@@ -2638,6 +2701,7 @@ workflows:
             - run-all-maestro-e2e-tests
             - lint
             - run-test-ios-26
+            - build-xcode-265
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests

@@ -77,6 +77,31 @@ class WorkflowResponseTests: TestCase {
 
         expect(workflow.id) == "wf_min"
         expect(workflow.contentMaxWidth).to(beNil())
+        expect(workflow.singleStepFallbackId).to(beNil())
+    }
+
+    func testDecodePublishedWorkflowWithSingleStepFallbackId() throws {
+        let json = """
+        {
+          "id": "wf_fallback",
+          "display_name": "Fallback",
+          "initial_step_id": "step_1",
+          "single_step_fallback_id": "step_1",
+          "steps": {},
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(
+            PublishedWorkflow.self, from: json
+        )
+
+        expect(workflow.singleStepFallbackId) == "step_1"
     }
 
     func testDecodePublishedWorkflowWithMetadata() throws {
@@ -198,6 +223,63 @@ class WorkflowResponseTests: TestCase {
         let screen = try JSONDecoder.default.decode(WorkflowScreen.self, from: json)
 
         expect(screen.offeringIdentifier) == "default"
+    }
+
+    func testDecodeWorkflowScreenWithExitOffers() throws {
+        let json = """
+        {
+          "template_name": "tmpl",
+          "asset_base_url": "https://assets.revenuecat.com",
+          "default_locale": "en_US",
+          "components_localizations": {},
+          "components_config": {
+            "base": {
+              "stack": {
+                "type": "stack", "components": [],
+                "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+                "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+              },
+              "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
+            }
+          },
+          "exit_offers": {
+            "dismiss": { "offering_id": "exit_offering_a" }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let screen = try JSONDecoder.default.decode(WorkflowScreen.self, from: json)
+
+        expect(screen.exitOffers?.dismiss?.offeringId) == "exit_offering_a"
+    }
+
+    func testDecodeWorkflowScreenExitOffersAbsentByDefault() throws {
+        let json = """
+        {
+          "template_name": "tmpl",
+          "asset_base_url": "https://assets.revenuecat.com",
+          "default_locale": "en_US",
+          "components_localizations": {},
+          "components_config": {
+            "base": {
+              "stack": {
+                "type": "stack", "components": [],
+                "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+                "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+              },
+              "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
+            }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let screen = try JSONDecoder.default.decode(WorkflowScreen.self, from: json)
+
+        expect(screen.exitOffers).to(beNil())
     }
 
     func testDecodeWorkflowScreenOfferingFieldsAbsent() throws {

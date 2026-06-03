@@ -1181,6 +1181,8 @@ SWIFT_CLASS("_TtC10RevenueCat25CacheableNetworkOperation")
 /// \endcode
 SWIFT_CLASS_NAMED("Configuration")
 @interface RCConfiguration : NSObject
+- (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
+@property (nonatomic, readonly) NSUInteger hash;
 /// Factory method for the <code>Configuration/Builder</code> object that is required to create a <code>Configuration</code>
 + (RCConfigurationBuilder * _Nonnull)builderWithAPIKey:(NSString * _Nonnull)apiKey SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -1404,6 +1406,8 @@ SWIFT_CLASS_NAMED("DangerousSettings")
 /// this is <code>internal</code> only so the only <code>public</code> way to enable <code>customEntitlementComputation</code>
 /// is through <code>Purchases/configureInCustomEntitlementsComputationMode(apiKey:appUserID:)</code>.
 - (nonnull instancetype)initWithAutoSyncPurchases:(BOOL)autoSyncPurchases customEntitlementComputation:(BOOL)customEntitlementComputation;
+- (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
+@property (nonatomic, readonly) NSUInteger hash;
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat24DiagnosticsPostOperation")
@@ -1637,10 +1641,6 @@ typedef SWIFT_ENUM(NSInteger, FakeTrackingManagerAuthorizationStatus, closed) {
   FakeTrackingManagerAuthorizationStatusAuthorized = 3,
 };
 
-SWIFT_CLASS("_TtC10RevenueCat26GetAdMobSSVStatusOperation")
-@interface GetAdMobSSVStatusOperation : CacheableNetworkOperation
-@end
-
 SWIFT_CLASS("_TtC10RevenueCat32GetCustomerCenterConfigOperation")
 @interface GetCustomerCenterConfigOperation : CacheableNetworkOperation
 @end
@@ -1659,6 +1659,10 @@ SWIFT_CLASS("_TtC10RevenueCat21GetOfferingsOperation")
 
 SWIFT_CLASS("_TtC10RevenueCat37GetProductEntitlementMappingOperation")
 @interface GetProductEntitlementMappingOperation : CacheableNetworkOperation
+@end
+
+SWIFT_CLASS("_TtC10RevenueCat36GetRewardVerificationStatusOperation")
+@interface GetRewardVerificationStatusOperation : CacheableNetworkOperation
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat29GetVirtualCurrenciesOperation")
@@ -2268,6 +2272,13 @@ SWIFT_CLASS_NAMED("Builder")
 /// \param winBackOffer The <code>WinBackOffer</code> to apply to the purchase.
 ///
 - (nonnull instancetype)withWinBackOffer:(RCWinBackOffer * _Nonnull)winBackOffer SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(visionos,introduced=2.0) SWIFT_AVAILABILITY(watchos,introduced=11.0) SWIFT_AVAILABILITY(tvos,introduced=18.0) SWIFT_AVAILABILITY(macos,introduced=15.0) SWIFT_AVAILABILITY(ios,introduced=18.0);
+/// Sets an introductoryOfferEligibility JWS to be included with the purchase. StoreKit 2 only.
+/// Refer to https://developer.apple.com/documentation/storekit/product/purchaseoption/introductoryoffereligibility(compactjws:)
+/// for more information.
+/// Availability: iOS 15.0+, macOS 15.4+, tvOS 18.4+, watchOS 11.4+, visionOS 2.4+
+/// \param introductoryOfferEligibilityJWS The <code>introductoryOfferEligibilityJWS</code> to apply to the purchase.
+///
+- (nonnull instancetype)withIntroductoryOfferEligibilityJWS:(NSString * _Nonnull)introductoryOfferEligibilityJWS SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(visionos,introduced=2.4) SWIFT_AVAILABILITY(watchos,introduced=11.4) SWIFT_AVAILABILITY(tvos,introduced=18.4) SWIFT_AVAILABILITY(macos,introduced=15.4) SWIFT_AVAILABILITY(ios,introduced=15.0);
 /// Generate a <code>Configuration</code> object given the values configured by this builder.
 - (RCPurchaseParams * _Nonnull)build SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -3280,6 +3291,8 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, strong) RCPlatformInfo * _Null
 SWIFT_CLASS_NAMED("PlatformInfo")
 @interface RCPlatformInfo : NSObject
 - (nonnull instancetype)initWithFlavor:(NSString * _Nonnull)flavor version:(NSString * _Nonnull)version OBJC_DESIGNATED_INITIALIZER;
+- (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
+@property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end

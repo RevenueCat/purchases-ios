@@ -30,20 +30,20 @@ import Foundation
 @objc(RCOffering) public final class Offering: NSObject {
 
     /// Initialize a ``PaywallComponents``
-    @_spi(Internal) public struct PaywallComponents {
+    public struct PaywallComponents {
 
         /**
          Paywall components configuration defined in RevenueCat dashboard.
          */
-        public let uiConfig: UIConfig
+        @_spi(Internal) public let uiConfig: UIConfig
 
         /**
          Paywall components configuration defined in RevenueCat dashboard.
          */
-        public let data: PaywallComponentsData
+        @_spi(Internal) public let data: PaywallComponentsData
 
         /// Initialize a ``PaywallComponents``.
-        public init(uiConfig: UIConfig, data: PaywallComponentsData) {
+        @_spi(Internal) public init(uiConfig: UIConfig, data: PaywallComponentsData) {
             self.uiConfig = uiConfig
             self.data = data
         }
@@ -79,7 +79,7 @@ import Foundation
 
      Use ``hasPaywall`` to check if the offering has a paywall.
      */
-    @_spi(Internal) public let paywallComponents: PaywallComponents?
+    public let paywallComponents: PaywallComponents?
 
     /**
      Whether the offering contains a paywall.
@@ -214,7 +214,6 @@ import Foundation
     }
 
     /// Initialize an ``Offering`` given a list of ``Package``s, including paywall components.
-    @_spi(Internal)
     public convenience init(
         identifier: String,
         serverDescription: String,
@@ -303,6 +302,11 @@ import Foundation
 
 @_spi(Internal)
 public extension Offering {
+
+    /// The `PresentedOfferingContext` from the first available package, or `nil` if the offering has no packages.
+    var presentedOfferingContext: PresentedOfferingContext? {
+        return availablePackages.first?.presentedOfferingContext
+    }
 
     /// Copies the Offering and sets the given `presentedOfferingContext` on all `availablePackages`
     func withPresentedOfferingContext(_ presentedOfferingContext: PresentedOfferingContext) -> Self {

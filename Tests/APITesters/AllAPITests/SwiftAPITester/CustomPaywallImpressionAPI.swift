@@ -21,24 +21,27 @@ func checkCustomPaywallImpressionAPI() {
         let paramsDefault: CustomPaywallImpressionParams = CustomPaywallImpressionParams()
         let paramsWithId: CustomPaywallImpressionParams = CustomPaywallImpressionParams(paywallId: "my-paywall")
         let paramsWithNil: CustomPaywallImpressionParams = CustomPaywallImpressionParams(paywallId: nil)
-        let paramsWithOffering: CustomPaywallImpressionParams = CustomPaywallImpressionParams(
-            paywallId: "my-paywall",
-            offeringId: "my-offering"
+        let offering: Offering = Offering(
+            identifier: "my-offering",
+            serverDescription: "",
+            availablePackages: [],
+            webCheckoutUrl: nil
         )
-        let paramsOfferingOnly: CustomPaywallImpressionParams = CustomPaywallImpressionParams(offeringId: "my-offering")
-        let paramsBothNil: CustomPaywallImpressionParams = CustomPaywallImpressionParams(paywallId: nil, offeringId: nil)
-        let paramsIdNilOffering: CustomPaywallImpressionParams = CustomPaywallImpressionParams(
+        let paramsWithOfferingObject: CustomPaywallImpressionParams = CustomPaywallImpressionParams(
             paywallId: "my-paywall",
-            offeringId: nil
+            offering: offering
         )
+        let paramsOfferingObjectOnly: CustomPaywallImpressionParams = CustomPaywallImpressionParams(offering: offering)
 
         // CustomPaywallImpressionParams properties
         let paywallId: String? = paramsWithId.paywallId
-        let offeringId: String? = paramsWithOffering.offeringId
+        let offeringId: String? = paramsWithOfferingObject.offeringId
 
         // trackCustomPaywallImpression API
         purchases.trackCustomPaywallImpression(paramsDefault)
         purchases.trackCustomPaywallImpression(paramsWithId)
+        purchases.trackCustomPaywallImpression(paramsWithOfferingObject)
+        purchases.trackCustomPaywallImpression(paramsOfferingObjectOnly)
         purchases.trackCustomPaywallImpression()
     }
 }

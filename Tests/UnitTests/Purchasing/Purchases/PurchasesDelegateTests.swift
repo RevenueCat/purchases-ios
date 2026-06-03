@@ -85,7 +85,20 @@ class PurchasesDelegateTests: BasePurchasesTests {
 
     // MARK: - Cached Transaction Metadata Sync
 
+    /// `Purchases` starts a cached-metadata sync at configure time. It holds an in-progress guard,
+    /// so a foreground sync triggered while that initial sync is still running is silently skipped.
+    /// Wait for the initial sync to read the store and finish before triggering our own, so these
+    /// tests are deterministic regardless of how the two syncs interleave.
+    private func waitForInitialMetadataSyncToComplete() async {
+        await expect {
+            self.mockLocalTransactionMetadataStore.invokedGetAllStoredMetadataCount.value > 0
+                && !self.transactionMetadataSyncHelper.isSyncing.value
+        }.toEventually(beTrue())
+    }
+
     func testApplicationDidBecomeActiveSyncsCachedTransactionMetadata() async throws {
+        await self.waitForInitialMetadataSyncToComplete()
+
         let transactionId = "cached_transaction_1"
         let metadata = createCachedMetadata(transactionId: transactionId, productIdentifier: "product_1")
 
@@ -103,6 +116,8 @@ class PurchasesDelegateTests: BasePurchasesTests {
     }
 
     func testApplicationDidBecomeActiveSyncsMultipleCachedTransactions() async throws {
+        await self.waitForInitialMetadataSyncToComplete()
+
         let transactionId1 = "cached_transaction_1"
         let transactionId2 = "cached_transaction_2"
         let metadata1 = createCachedMetadata(transactionId: transactionId1, productIdentifier: "product_1")
@@ -127,12 +142,16 @@ class PurchasesDelegateTests: BasePurchasesTests {
 
     func testApplicationDidBecomeActiveDoesNotPostWhenNoCachedMetadata() async {
         // No metadata stored
+        await self.waitForInitialMetadataSyncToComplete()
 
         // Fire the applicationDidBecomeActive notification
         self.notificationCenter.fireNotifications()
 
-        // Give some time for any async operations to complete
-        try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
+        // Wait for the foreground sync to read the (empty) store rather than sleeping a fixed
+        // interval: the initial sync already read it once, so a second read means ours ran too.
+        await expect(
+            self.mockLocalTransactionMetadataStore.invokedGetAllStoredMetadataCount.value
+        ).toEventually(beGreaterThanOrEqualTo(2))
 
         // Backend should not have been called for receipt posting with an associated transaction ID
         let postedWithTransactionId = self.backend.postedAssociatedTransactionIds.compactMap { $0 }

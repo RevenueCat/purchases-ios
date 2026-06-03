@@ -66,6 +66,9 @@ struct TabsComponentView: View {
     @EnvironmentObject
     private var packageContext: PackageContext
 
+    @Environment(\.workflowPackageContext)
+    private var workflowPackageContext
+
     private let viewModel: TabsComponentViewModel
     private let onDismiss: () -> Void
 
@@ -78,6 +81,7 @@ struct TabsComponentView: View {
         LoadedTabsComponentView(
             viewModel: self.viewModel,
             parentPackageContext: self.packageContext,
+            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage,
             onDismiss: self.onDismiss
         )
     }
@@ -110,6 +114,7 @@ struct LoadedTabsComponentView: View {
     private var selectedPackageId
 
     private let viewModel: TabsComponentViewModel
+    private let workflowDefaultPackage: Package?
     private let onDismiss: () -> Void
 
     @StateObject
@@ -164,9 +169,11 @@ struct LoadedTabsComponentView: View {
     /// an external instance to drive tab switches programmatically without UI interaction.
     init(viewModel: TabsComponentViewModel,
          parentPackageContext: PackageContext,
+         workflowDefaultPackage: Package? = nil,
          onDismiss: @escaping () -> Void,
          tabControlContext: TabControlContext? = nil) {
         self.viewModel = viewModel
+        self.workflowDefaultPackage = workflowDefaultPackage
         self.onDismiss = onDismiss
 
         self._tabControlContext = .init(wrappedValue: tabControlContext ?? TabControlContext(
@@ -201,9 +208,14 @@ struct LoadedTabsComponentView: View {
         self._tierPackageContexts = .init(initialValue: Dictionary(
             uniqueKeysWithValues: viewModel.tabViewModels.map { key, tabViewModel -> (String, PackageContext) in
                 if !tabViewModel.packages.isEmpty {
-                    // Tab has its own packages - create context with tab's packages
+                    // Tab has its own packages - create context with tab's packages.
                     let packageContext = PackageContext(
-                        package: tabViewModel.defaultSelectedPackage,
+                        package: Self.initialPackage(
+                            parentPackage: parentPackageContext.package,
+                            tabPackages: tabViewModel.packages,
+                            workflowDefaultPackage: workflowDefaultPackage,
+                            tabDefaultPackage: tabViewModel.defaultSelectedPackage
+                        ),
                         variableContext: .init(
                             packages: tabViewModel.packages,
                             showZeroDecimalPlacePrices: parentPackageContext.variableContext.showZeroDecimalPlacePrices
@@ -217,6 +229,25 @@ struct LoadedTabsComponentView: View {
                 }
             }
         ))
+    }
+
+    /// Determines the initial package selection for a tab that has its own packages.
+    ///
+    /// On a workflow step revisit `parentPackage` already holds the user's cached selection
+    /// (stored in `WorkflowPaywallView.stepPackageContexts`). Prefer it when it is present in
+    /// this tab's package list so that the tab's `onAppear` propagation back to the parent
+    /// is a no-op rather than silently restoring the authored default and destroying the choice.
+    static func initialPackage(
+        parentPackage: Package?,
+        tabPackages: [Package],
+        workflowDefaultPackage: Package?,
+        tabDefaultPackage: Package?
+    ) -> Package? {
+        if let cached = parentPackage,
+           tabPackages.contains(where: { $0.identifier == cached.identifier }) {
+            return cached
+        }
+        return workflowDefaultPackage ?? tabDefaultPackage
     }
 
     var body: some View {
@@ -251,7 +282,10 @@ struct LoadedTabsComponentView: View {
             )
             .environmentObject(self.tabControlContext)
             .environmentObject(tierPackageContext)
-            .environment(\.planSelectionDefaultPackage, activeTabViewModel.defaultSelectedPackage)
+            .environment(
+                \.planSelectionDefaultPackage,
+                self.workflowDefaultPackage ?? activeTabViewModel.defaultSelectedPackage
+            )
             .onAppear {
                 if !wasConfigured {
                     self.wasConfigured = true
@@ -287,7 +321,7 @@ struct LoadedTabsComponentView: View {
                     parentOwnedVariableContext: self.parentOwnedVariableContext,
                     parentCurrentVariableContext: self.packageContext.variableContext,
                     tabPackages: newTabViewModel.packages,
-                    tabDefaultPackage: newTabViewModel.defaultSelectedPackage
+                    tabDefaultPackage: self.workflowDefaultPackage ?? newTabViewModel.defaultSelectedPackage
                 )
                 if let tabUpdate = updatePlan.tabUpdate {
                     newTierPackageContext.update(

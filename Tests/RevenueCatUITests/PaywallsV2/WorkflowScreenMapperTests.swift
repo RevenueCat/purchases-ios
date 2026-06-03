@@ -35,6 +35,7 @@ final class WorkflowScreenMapperTests: TestCase {
         expect(result.data.assetBaseURL) == URL(string: "https://assets.pawwalls.com")
         expect(result.data.revision) == 7
         expect(result.data.defaultLocale) == "en_US"
+        expect(result.data.automaticallyScaleFontSize) == true
     }
 
     func testPassesThroughUiConfig() throws {
@@ -64,6 +65,24 @@ final class WorkflowScreenMapperTests: TestCase {
         expect(result.data.componentsLocalizations) == screen.componentsLocalizations
     }
 
+    func testPassesThroughExitOffers() throws {
+        let screen = try Self.makeScreen(exitOfferOfferingId: "exit_offering_a")
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.exitOffers?.dismiss?.offeringId) == "exit_offering_a"
+    }
+
+    func testExitOffersIsNilWhenAbsent() throws {
+        let screen = try Self.makeScreen()
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.exitOffers).to(beNil())
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -74,8 +93,15 @@ private extension WorkflowScreenMapperTests {
         templateName: String = "componentsTest",
         assetBaseURL: String = "https://assets.pawwalls.com",
         revision: Int = 3,
-        defaultLocale: String = "en_US"
+        defaultLocale: String = "en_US",
+        exitOfferOfferingId: String? = nil
     ) throws -> RevenueCat.WorkflowScreen {
+        var exitOffersJSON = ""
+        if let exitOfferOfferingId {
+            exitOffersJSON = """
+            , "exit_offers": { "dismiss": { "offering_id": "\(exitOfferOfferingId)" } }
+            """
+        }
         let json = """
         {
             "offering_identifier": "\(offeringIdentifier)",
@@ -109,7 +135,7 @@ private extension WorkflowScreenMapperTests {
                         }
                     }
                 }
-            }
+            }\(exitOffersJSON)
         }
         """
         let data = try XCTUnwrap(json.data(using: .utf8))
