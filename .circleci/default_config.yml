@@ -958,8 +958,8 @@ jobs:
   run-test-ios-26:
     executor:
       name: macos-executor
-      # Known issue: FB22500243 (Xcode 26.3+ breaks this job)
-      xcode_version: "26.5"
+      # Not updated: FB22500243 (Xcode 26.3+ breaks this job)
+      xcode_version: "26.3"
 
     steps:
       - checkout
@@ -983,7 +983,7 @@ jobs:
           command: bundle exec fastlane test_ios
           no_output_timeout: 15m
           environment:
-            SCAN_DEVICE: iPhone 17 (26.5)
+            SCAN_DEVICE: iPhone 17 (26.2)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
