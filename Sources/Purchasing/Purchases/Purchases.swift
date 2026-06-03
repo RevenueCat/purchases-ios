@@ -1679,9 +1679,17 @@ extension Purchases {
     @_spi(Experimental) public func pollRewardVerification(
         transactionId: String
     ) async -> RewardVerificationResult {
-        let outcome = await RewardVerification.Poller.makeDefault().run(
-            clientTransactionID: transactionId
+        await self.pollRewardVerification(
+            transactionId: transactionId,
+            poller: RewardVerification.Poller.makeDefault()
         )
+    }
+
+    internal func pollRewardVerification(
+        transactionId: String,
+        poller: RewardVerification.Poller
+    ) async -> RewardVerificationResult {
+        let outcome = await poller.run(clientTransactionID: transactionId)
         if case .verified(let reward) = outcome, reward.virtualCurrency != nil {
             self.invalidateVirtualCurrenciesCache()
         }

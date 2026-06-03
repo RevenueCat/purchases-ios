@@ -1,11 +1,20 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  RewardVerificationResultTests.swift
+//
+
 import XCTest
 
-#if os(iOS) && canImport(GoogleMobileAds)
-@_spi(Experimental) import RevenueCat
-@_spi(Experimental) @testable import RevenueCatAdMob
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 
-@available(iOS 15.0, *)
-final class RewardVerificationResultTests: AdapterTestCase {
+final class RewardVerificationResultTests: XCTestCase {
 
     func testVerifiedProjectionsAndEquality() {
         let result = RewardVerificationResult.verified(.noReward)
@@ -27,5 +36,3 @@ final class RewardVerificationResultTests: AdapterTestCase {
         XCTAssertEqual(result.verifiedReward, .unsupportedReward)
     }
 }
-
-#endif

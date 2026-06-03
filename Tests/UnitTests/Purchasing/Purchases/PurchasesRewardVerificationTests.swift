@@ -104,3 +104,119 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
     }
 
 }
+
+// MARK: - pollRewardVerification
+
+extension PurchasesRewardVerificationTests {
+
+    private func makeStubPoller(statuses: [RewardVerificationPollStatus]) -> RewardVerification.Poller {
+        makePoller(statusPoller: StubStatusPoller(statuses: statuses), sleeper: RecordingSleeper())
+    }
+
+    func testPollRewardVerificationReturnsVerifiedWithVirtualCurrencyReward() async throws {
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 3))
+        let poller = self.makeStubPoller(statuses: [.verified(.virtualCurrency(reward))])
+
+        let result = await self.purchases.pollRewardVerification(transactionId: "tx-1", poller: poller)
+
+        expect(result.verifiedReward) == .virtualCurrency(reward)
+    }
+
+    func testPollRewardVerificationReturnsVerifiedWithNoReward() async {
+        let poller = self.makeStubPoller(statuses: [.verified(.noReward)])
+
+        let result = await self.purchases.pollRewardVerification(transactionId: "tx-1", poller: poller)
+
+        expect(result) == .verified(.noReward)
+    }
+
+    func testPollRewardVerificationReturnsVerifiedWithUnsupportedReward() async {
+        let poller = self.makeStubPoller(statuses: [.verified(.unsupportedReward)])
+
+        let result = await self.purchases.pollRewardVerification(transactionId: "tx-1", poller: poller)
+
+        expect(result) == .verified(.unsupportedReward)
+    }
+
+    func testPollRewardVerificationReturnsFailed() async {
+        let poller = self.makeStubPoller(statuses: [.failed])
+
+        let result = await self.purchases.pollRewardVerification(transactionId: "tx-1", poller: poller)
+
+        expect(result) == .failed
+    }
+
+    func testPollRewardVerificationInvalidatesVirtualCurrenciesCacheOnVirtualCurrencyReward() async throws {
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 4))
+        let poller = self.makeStubPoller(statuses: [.verified(.virtualCurrency(reward))])
+
+        _ = await self.purchases.pollRewardVerification(transactionId: "tx-1", poller: poller)
+
+        expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 1
+    }
+
+    func testPollRewardVerificationDoesNotInvalidateCacheOnNoReward() async {
+        let poller = self.makeStubPoller(statuses: [.verified(.noReward)])
+
+        _ = await self.purchases.pollRewardVerification(transactionId: "tx-1", poller: poller)
+
+        expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 0
+    }
+
+    func testPollRewardVerificationDoesNotInvalidateCacheOnUnsupportedReward() async {
+        let poller = self.makeStubPoller(statuses: [.verified(.unsupportedReward)])
+
+        _ = await self.purchases.pollRewardVerification(transactionId: "tx-1", poller: poller)
+
+        expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 0
+    }
+
+    func testPollRewardVerificationDoesNotInvalidateCacheOnFailed() async {
+        let poller = self.makeStubPoller(statuses: [.failed])
+
+        _ = await self.purchases.pollRewardVerification(transactionId: "tx-1", poller: poller)
+
+        expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 0
+    }
+
+}
+
+// MARK: - generateRewardVerificationToken
+
+extension PurchasesRewardVerificationTests {
+
+    func testGenerateRewardVerificationTokenReturnsValidUUID() {
+        let token = self.purchases.generateRewardVerificationToken(impressionId: "imp-1")
+        expect(UUID(uuidString: token.transactionId)).toNot(beNil())
+    }
+
+    func testGenerateRewardVerificationTokenCustomDataContainsExpectedFields() throws {
+        let impressionId = "imp-123"
+        let token = self.purchases.generateRewardVerificationToken(impressionId: impressionId)
+
+        let data = try XCTUnwrap(token.customData.data(using: .utf8))
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: String])
+
+        expect(json["impression_id"]) == impressionId
+        expect(json["client_transaction_id"]) == token.transactionId
+        expect(json["api_key"]?.isEmpty) == false
+    }
+
+    func testGenerateRewardVerificationTokenCustomDataHasSortedKeys() {
+        let token = self.purchases.generateRewardVerificationToken(impressionId: "imp-789")
+        // api_key < client_transaction_id < impression_id alphabetically
+        expect(token.customData.hasPrefix("{\"api_key\":")) == true
+    }
+
+    func testGenerateRewardVerificationTokenReturnsCurrentAppUserID() {
+        let token = self.purchases.generateRewardVerificationToken(impressionId: "imp-1")
+        expect(token.appUserID) == self.identityManager.currentAppUserID
+    }
+
+    func testGenerateRewardVerificationTokenGeneratesUniqueTransactionIds() {
+        let first = self.purchases.generateRewardVerificationToken(impressionId: "imp-1")
+        let second = self.purchases.generateRewardVerificationToken(impressionId: "imp-1")
+        expect(first.transactionId) != second.transactionId
+    }
+
+}

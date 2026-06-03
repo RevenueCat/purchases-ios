@@ -8,7 +8,7 @@ import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @_spi(Experimental) import RevenueCat
 
 @available(iOS 15.0, *)
 internal extension RewardVerification {
@@ -29,14 +29,28 @@ internal extension RewardVerification {
         }
 
         /// Production entry point. Reads SDK config from `Purchases.shared`; no-ops if not configured.
+        ///
+        /// Delegates token generation to the core SDK so the adapter holds no SSV payload logic.
         @MainActor
         static func install(on loadedAd: some CapableAd) {
             guard Purchases.isConfigured else {
                 Logger.warn(RewardVerificationStrings.setup_purchases_not_configured)
                 return
             }
-            let purchases = Purchases.shared
-            self.install(on: loadedAd, apiKey: purchases.apiKey, appUserID: purchases.appUserID)
+            let impressionId = Tracking.Adapter.impressionID(from: loadedAd.responseInfo)
+            let token = Purchases.shared.generateRewardVerificationToken(impressionId: impressionId)
+
+            Logger.info(RewardVerificationStrings.setup_install(
+                adType: "\(type(of: loadedAd))",
+                transactionID: token.transactionId
+            ))
+
+            let options = GoogleMobileAds.ServerSideVerificationOptions()
+            options.userIdentifier = token.appUserID
+            options.customRewardText = token.customData
+            loadedAd.serverSideVerificationOptions = options
+
+            RewardVerification.stateStore.set(State(clientTransactionID: token.transactionId), for: loadedAd)
         }
 
         /// Generates a `client_transaction_id`, wires `ServerSideVerificationOptions` onto the ad,

@@ -1,13 +1,20 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  RewardVerificationOutcomeTests.swift
+//
+
 import XCTest
 
-#if os(iOS) && canImport(GoogleMobileAds)
 @_spi(Internal) @_spi(Experimental) @testable import RevenueCat
-@testable import RevenueCatAdMob
 
-@available(iOS 15.0, *)
-final class OutcomeTests: AdapterTestCase {
-
-    // MARK: - Case construction
+final class RewardVerificationOutcomeTests: XCTestCase {
 
     func testVerifiedCarriesVirtualCurrencyRewardPayload() throws {
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
@@ -57,5 +64,3 @@ final class OutcomeTests: AdapterTestCase {
         XCTAssertEqual(cases.count, 6)
     }
 }
-
-#endif

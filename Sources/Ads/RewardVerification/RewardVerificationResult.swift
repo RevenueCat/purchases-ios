@@ -27,7 +27,7 @@ import Foundation
     }
 
     /// Server verification succeeded for this ad's transaction.
-    internal static func verified(_ reward: AdReward) -> RewardVerificationResult {
+    @_spi(Internal) public static func verified(_ reward: AdReward) -> RewardVerificationResult {
         RewardVerificationResult(storage: .verified(reward))
     }
 

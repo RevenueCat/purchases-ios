@@ -1,16 +1,22 @@
-// swiftlint:disable file_length
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  RewardVerificationPollerTests.swift
+//
+
+// swiftlint:disable file_length type_body_length
 
 import XCTest
 
-#if os(iOS) && canImport(GoogleMobileAds)
-import GoogleMobileAds
 @_spi(Internal) @_spi(Experimental) @testable import RevenueCat
-@testable import RevenueCatAdMob
 
-// swiftlint:disable type_body_length
-
-@available(iOS 15.0, *)
-final class PollerTests: AdapterTestCase {
+final class RewardVerificationPollerTests: XCTestCase {
 
     // MARK: - Terminal statuses
 
@@ -238,7 +244,6 @@ final class PollerTests: AdapterTestCase {
     }
 
     func testApiEndpointBlockedErrorReturnsFailedWithoutRetrying() async {
-        // DNS blocking — retrying within ~10s won't unblock the user; surface `.failed` immediately.
         let statusPoller = ThrowingStatusPoller(error: ErrorCode.apiEndpointBlockedError)
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
@@ -270,8 +275,6 @@ final class PollerTests: AdapterTestCase {
     // MARK: - Catch-all behaviour
 
     func testCancellationErrorFromPollStatusReturnsFailedWithoutRetrying() async {
-        // `CancellationError` is not an `ErrorCode`, so the poller's terminal-ErrorCode path
-        // doesn't apply — it falls through to the catch-all and surfaces `.unknown`.
         let statusPoller = ThrowingStatusPoller(error: CancellationError())
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
@@ -286,7 +289,7 @@ final class PollerTests: AdapterTestCase {
     }
 
     func testUnrecognisedErrorTypeFromPollStatusReturnsFailedWithoutRetrying() async {
-        let statusPoller = ThrowingStatusPoller(error: SentinelError())
+        let statusPoller = ThrowingStatusPoller(error: PollerSentinelError())
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
@@ -318,9 +321,8 @@ final class PollerTests: AdapterTestCase {
     }
 
     func testSleeperFailureIsSwallowedAndLoopContinuesToNextAttempt() async {
-        // Inter-attempt sleeps use `try?`, so a throwing sleeper does not abort the run.
         let statusPoller = StubStatusPoller(statuses: [.pending, .verified(.noReward)])
-        let sleeper = ThrowingSleeper(error: SentinelError())
+        let sleeper = ThrowingSleeper(error: PollerSentinelError())
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
@@ -403,7 +405,7 @@ final class PollerTests: AdapterTestCase {
     func testJitterIsSampledOncePerInterAttemptSleep() async {
         let statusPoller = StubStatusPoller(statuses: Array(repeating: .pending, count: 5))
         let sleeper = RecordingSleeper()
-        let counter = Counter()
+        let counter = PollerJitterCounter()
         let jitter = RewardVerification.Jitter {
             counter.increment()
             return 1.0
@@ -421,7 +423,3 @@ final class PollerTests: AdapterTestCase {
         XCTAssertEqual(sleeper.delays.count, 4)
     }
 }
-
-// swiftlint:enable type_body_length
-
-#endif
