@@ -570,7 +570,7 @@ extension StoreProductTests {
     func testRepresentsBillingPlanReturnsTrueForSK2ProductWithProductPlanIdentifier() async throws {
         try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
 
-        let productIdentifier = "com.revenuecat.annual_with_commitment"
+        let productIdentifier = Self.productIDWithBillingPlans
         let compoundProductIdentifier = try XCTUnwrap(CompoundProductIdentifier(
             compoundProductIdentifier: "\(productIdentifier):monthly"
         ))
