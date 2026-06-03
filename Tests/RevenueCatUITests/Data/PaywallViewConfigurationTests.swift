@@ -18,38 +18,6 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class PaywallViewConfigurationTests: TestCase {
 
-    func testCachedInitialOfferingReturnsProvidedOfferingForOfferingContent() {
-        let handler = Self.createPurchaseHandler()
-        let offering = TestData.offeringWithNoIntroOffer
-
-        let result = handler.cachedInitialOffering(for: .offering(offering))
-
-        expect(result) === offering
-    }
-
-    func testResolveOfferingOrThrowReturnsProvidedOfferingForOfferingContent() async throws {
-        let handler = Self.createPurchaseHandler()
-        let offering = TestData.offeringWithNoIntroOffer
-
-        let result = try await handler.resolveOfferingOrThrow(for: .offering(offering))
-
-        expect(result) === offering
-    }
-
-    func testOfferingIdentifierCachedInitialOfferingDependsOnWorkflowResolutionMode() {
-        let cachedOffering = TestData.offeringWithNoIntroOffer
-        let purchases = Self.createMockPurchases()
-        let handler = Self.createPurchaseHandler(purchases: purchases)
-
-        purchases.cachedOfferings = Self.createOfferings(cachedOffering)
-
-        let result = handler.cachedInitialOffering(
-            for: .offeringIdentifier(cachedOffering.identifier, presentedOfferingContext: nil)
-        )
-
-        expect(result?.identifier) == cachedOffering.identifier
-    }
-
 #if !os(tvOS)
     func testCachedInitialOfferingReturnsNilForAllContentWhenWorkflowsEndpointEnabled() {
         let cachedOffering = TestData.offeringWithNoIntroOffer

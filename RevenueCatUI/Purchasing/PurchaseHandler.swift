@@ -356,6 +356,12 @@ extension PurchaseHandler {
         for content: PaywallViewConfiguration.Content,
         workflowsEndpointEnabled: Bool
     ) -> Offering? {
+        // Intentionally no synchronous seed when workflows are enabled, even for .offering(offering).
+        // Under workflows the rendered offering is the workflow screen's offering with its
+        // workflow-mapped paywall components, which isn't knowable synchronously from the
+        // passed/cached offering. Seeding it here would briefly render that offering's own
+        // (non-workflow) paywall, then swap once the workflow resolves. Returning nil lets the
+        // async resolve path provide the correct offering instead.
         if workflowsEndpointEnabled {
             return nil
         }
@@ -392,21 +398,16 @@ extension PurchaseHandler {
         switch content {
         case let .offering(offering):
             if workflowsEndpointEnabled {
-                return try await self.resolveWorkflowPaywallViewData(
-                    for: offering,
-                    workflowsEndpointEnabled: workflowsEndpointEnabled
-                )
+                return try await self.resolveWorkflowPaywallViewData(for: offering)
             }
 
             return .init(offering: offering, workflowContext: nil)
         case .defaultOffering:
-            let offering = try await self.purchases.offerings().current.orThrow(PaywallError.noCurrentOffering)
+            let offerings = try await self.purchases.offerings()
+            let offering = try offerings.current.orThrow(PaywallError.noCurrentOffering)
 
             if workflowsEndpointEnabled {
-                return try await self.resolveWorkflowPaywallViewData(
-                    for: offering,
-                    workflowsEndpointEnabled: workflowsEndpointEnabled
-                )
+                return try await self.resolveWorkflowPaywallViewData(for: offering, offerings: offerings)
             }
 
             return .init(offering: offering, workflowContext: nil)
@@ -423,12 +424,12 @@ extension PurchaseHandler {
 #if !os(tvOS)
     private func resolveWorkflowPaywallViewData(
         for offering: Offering,
-        workflowsEndpointEnabled: Bool
+        offerings: Offerings? = nil
     ) async throws -> ResolvedPaywallViewData {
         let (context, resolvedOffering) = try await self.resolveWorkflowContext(
             identifier: offering.identifier,
             presentedOfferingContext: offering.availablePackages.first?.presentedOfferingContext,
-            workflowsEndpointEnabled: workflowsEndpointEnabled
+            offerings: offerings
         )
 
         return .init(offering: resolvedOffering, workflowContext: context)
@@ -442,8 +443,7 @@ extension PurchaseHandler {
         if workflowsEndpointEnabled {
             let (context, offering) = try await self.resolveWorkflowContext(
                 identifier: identifier,
-                presentedOfferingContext: presentedOfferingContext,
-                workflowsEndpointEnabled: workflowsEndpointEnabled
+                presentedOfferingContext: presentedOfferingContext
             )
             return .init(offering: offering, workflowContext: context)
         }
@@ -462,19 +462,26 @@ extension PurchaseHandler {
         return .init(offering: resolvedOffering, workflowContext: nil)
     }
 
+    // Callers gate on workflowsEndpointEnabled before reaching this point, so this assumes
+    // workflows are enabled and always resolves against the workflow endpoint.
     func resolveWorkflowContext(
         identifier: String,
         presentedOfferingContext: PresentedOfferingContext?,
-        workflowsEndpointEnabled: Bool = ProcessInfo.processInfo.workflowsEndpointEnabled
+        offerings: Offerings? = nil
     ) async throws -> (context: WorkflowContext, offering: Offering) {
-        guard workflowsEndpointEnabled else {
-            throw PaywallError.offeringNotFound(identifier: identifier)
+        async let fetchResultTask = self.purchases.workflow(forOfferingIdentifier: identifier)
+
+        // Reuse the caller's offerings snapshot when provided (e.g. the .defaultOffering path
+        // already fetched it) to avoid a redundant offerings() call. Otherwise fetch it
+        // concurrently with the workflow request.
+        let allOfferings: Offerings
+        if let offerings {
+            allOfferings = offerings
+        } else {
+            allOfferings = try await self.purchases.offerings()
         }
 
-        async let fetchResultTask = self.purchases.workflow(forOfferingIdentifier: identifier)
-        async let allOfferingsTask = self.purchases.offerings()
-
-        let (fetchResult, allOfferings) = try await (fetchResultTask, allOfferingsTask)
+        let fetchResult = try await fetchResultTask
         let workflow = fetchResult.workflow
 
         guard let step = workflow.steps[workflow.initialStepId],
