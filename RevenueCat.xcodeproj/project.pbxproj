@@ -1304,6 +1304,14 @@
 		C53CDAA4FC3E6B51CC70D724 /* WorkflowPaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800A129055A298C390AED0B5 /* WorkflowPaywallView.swift */; };
 		C808D299537245E695865C31 /* CapturingLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = E51CFC7D19BE49D2BA1A79CC /* CapturingLogger.swift */; };
 		D072B9ED04C331CA7DF878A5 /* PredicateFixtureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68E47E21986D2C234ADB62E8 /* PredicateFixtureTests.swift */; };
+		D012440C2FD02DC90043B43B /* RewardVerificationResultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D012440B2FD02DC90043B43B /* RewardVerificationResultTests.swift */; };
+		D012440D2FD02DC90043B43B /* RewardVerificationOutcomeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01244082FD02DC90043B43B /* RewardVerificationOutcomeTests.swift */; };
+		D012440E2FD02DC90043B43B /* RewardVerificationPollerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D012440A2FD02DC90043B43B /* RewardVerificationPollerTests.swift */; };
+		D012440F2FD02DC90043B43B /* RewardVerificationPollerTestDoubles.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01244092FD02DC90043B43B /* RewardVerificationPollerTestDoubles.swift */; };
+		D01244192FD02FC30043B43B /* Poller.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01244162FD02FC30043B43B /* Poller.swift */; };
+		D012441A2FD02FC30043B43B /* RewardVerificationResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01244182FD02FC30043B43B /* RewardVerificationResult.swift */; };
+		D012441B2FD02FC30043B43B /* Outcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01244152FD02FC30043B43B /* Outcome.swift */; };
+		D012441C2FD02FC30043B43B /* RewardVerification.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01244172FD02FC30043B43B /* RewardVerification.swift */; };
 		D0DA209A2F23BBEC00BA3B77 /* AdEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DA20992F23BBEC00BA3B77 /* AdEventTests.swift */; };
 		D14C62206D7248D080480FCB /* WorkflowsListCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3752A4A3D77644C8B4BDD44D /* WorkflowsListCallback.swift */; };
 		D62A9C83BFD14E5FA0452CC7 /* RemoteConfigResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = E35BAD07C46D469D8CC7C396 /* RemoteConfigResponse.swift */; };
@@ -2936,6 +2944,14 @@
 		C41FD75CE31F51BBE614F9B0 /* WorkflowsCache.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowsCache.swift; sourceTree = "<group>"; };
 		CC1A2B3C2E1234AB00AABBCC /* CustomVariablesEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariablesEditorView.swift; sourceTree = "<group>"; };
 		CF01A0F868569B5E2D5CA465 /* PaywallsV2LayoutFixtures.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PaywallsV2LayoutFixtures.swift; path = Tests/RevenueCatUITests/PaywallsV2/PaywallsV2LayoutFixtures.swift; sourceTree = SOURCE_ROOT; };
+		D01244082FD02DC90043B43B /* RewardVerificationOutcomeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationOutcomeTests.swift; sourceTree = "<group>"; };
+		D01244092FD02DC90043B43B /* RewardVerificationPollerTestDoubles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationPollerTestDoubles.swift; sourceTree = "<group>"; };
+		D012440A2FD02DC90043B43B /* RewardVerificationPollerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationPollerTests.swift; sourceTree = "<group>"; };
+		D012440B2FD02DC90043B43B /* RewardVerificationResultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationResultTests.swift; sourceTree = "<group>"; };
+		D01244152FD02FC30043B43B /* Outcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Outcome.swift; sourceTree = "<group>"; };
+		D01244162FD02FC30043B43B /* Poller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Poller.swift; sourceTree = "<group>"; };
+		D01244172FD02FC30043B43B /* RewardVerification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerification.swift; sourceTree = "<group>"; };
+		D01244182FD02FC30043B43B /* RewardVerificationResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationResult.swift; sourceTree = "<group>"; };
 		D0DA20992F23BBEC00BA3B77 /* AdEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventTests.swift; sourceTree = "<group>"; };
 		D794960D6EA8C55B44471D40 /* PredicateConformanceRunner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PredicateConformanceRunner.swift; sourceTree = "<group>"; };
 		D92889EDE72E0BC5C030EF03 /* Value+Decodable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Value+Decodable.swift"; sourceTree = "<group>"; };
@@ -6099,6 +6115,10 @@
 		900D26F62F96927E00D32EDF /* RewardVerification */ = {
 			isa = PBXGroup;
 			children = (
+				D01244152FD02FC30043B43B /* Outcome.swift */,
+				D01244162FD02FC30043B43B /* Poller.swift */,
+				D01244172FD02FC30043B43B /* RewardVerification.swift */,
+				D01244182FD02FC30043B43B /* RewardVerificationResult.swift */,
 				900D26F42F96927E00D32EDF /* Networking */,
 				900D26F52F96927E00D32EDF /* RewardVerificationPollStatus.swift */,
 				900D270B2F96A00000D32EDF /* AdReward.swift */,
@@ -6215,6 +6235,10 @@
 		90A1B2C82F96927E00D32EDF /* RewardVerification */ = {
 			isa = PBXGroup;
 			children = (
+				D01244082FD02DC90043B43B /* RewardVerificationOutcomeTests.swift */,
+				D01244092FD02DC90043B43B /* RewardVerificationPollerTestDoubles.swift */,
+				D012440A2FD02DC90043B43B /* RewardVerificationPollerTests.swift */,
+				D012440B2FD02DC90043B43B /* RewardVerificationResultTests.swift */,
 				90A1B2C42F96927E00D32EDF /* VirtualCurrencyRewardTests.swift */,
 				90A1B2C62F96927E00D32EDF /* AdRewardTests.swift */,
 				AD5000000000000000ADAD05 /* AdReward+TestExtensions.swift */,
@@ -7725,6 +7749,10 @@
 				4DC546272AD44BBE005CDB35 /* EncodedAppleReceipt.swift in Sources */,
 				37E350C67712B9E054FEF297 /* AttributionData.swift in Sources */,
 				37E3578711F5FDD5DC6458A8 /* AttributionFetcher.swift in Sources */,
+				D01244192FD02FC30043B43B /* Poller.swift in Sources */,
+				D012441A2FD02FC30043B43B /* RewardVerificationResult.swift in Sources */,
+				D012441B2FD02FC30043B43B /* Outcome.swift in Sources */,
+				D012441C2FD02FC30043B43B /* RewardVerification.swift in Sources */,
 				B302206A27271BCB008F1A0D /* Decoder+Extensions.swift in Sources */,
 				B34605C1279A6E380031CA74 /* NetworkOperation.swift in Sources */,
 				57488C7829CB90F90000EE7E /* PurchasedSK2Product.swift in Sources */,
@@ -7825,6 +7853,10 @@
 				4F2A91D82B05675B00FED622 /* MockStoreMessagesHelper.swift in Sources */,
 				57E9CF11290B2ADC00EE12D1 /* CachingTrialOrIntroPriceEligibilityCheckerTests.swift in Sources */,
 				5757EDF82DEE092900AC4BE1 /* ClockTests.swift in Sources */,
+				D012440C2FD02DC90043B43B /* RewardVerificationResultTests.swift in Sources */,
+				D012440D2FD02DC90043B43B /* RewardVerificationOutcomeTests.swift in Sources */,
+				D012440E2FD02DC90043B43B /* RewardVerificationPollerTests.swift in Sources */,
+				D012440F2FD02DC90043B43B /* RewardVerificationPollerTestDoubles.swift in Sources */,
 				F2138021CD5445218F7CE984 /* DangerousSettingsTests.swift in Sources */,
 				16E4A3C89791426AAD027A49 /* PlatformInfoTests.swift in Sources */,
 				57E415FF28469EAB00EA5460 /* PurchasesGetProductsTests.swift in Sources */,
