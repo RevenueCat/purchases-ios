@@ -201,6 +201,7 @@ class BasePurchasesTests: TestCase {
     var diagnosticsTracker: DiagnosticsTrackerType?
     var mockVirtualCurrencyManager: MockVirtualCurrencyManager!
     var mockLocalTransactionMetadataStore: MockLocalTransactionMetadataStore!
+    var transactionMetadataSyncHelper: TransactionMetadataSyncHelper!
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var mockDiagnosticsTracker: MockDiagnosticsTracker {
@@ -319,6 +320,7 @@ class BasePurchasesTests: TestCase {
             operationDispatcher: self.mockOperationDispatcher,
             transactionPoster: self.transactionPoster
         )
+        self.transactionMetadataSyncHelper = transactionMetadataSyncHelper
 
         self.purchases = Purchases(appUserID: appUserId,
                                    requestFetcher: self.requestFetcher,
@@ -489,6 +491,7 @@ extension BasePurchasesTests {
             let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
             let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
             let workflowsAPI = WorkflowsAPI(backendConfig: backendConfig)
+            let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
             self.init(backendConfig: backendConfig,
                       customerAPI: customer,
@@ -501,7 +504,8 @@ extension BasePurchasesTests {
                       redeemWebPurchaseAPI: redeemWebPurchaseAPI,
                       virtualCurrenciesAPI: virtualCurrenciesAPI,
                       workflowsAPI: workflowsAPI,
-                      adsAPI: mockAdsAPI)
+                      adsAPI: mockAdsAPI,
+                      remoteConfigAPI: remoteConfigAPI)
         }
 
         var userID: String?
@@ -696,6 +700,8 @@ private extension BasePurchasesTests {
         self.paywallCache = nil
         self.eventsManager = nil
         self.webPurchaseRedemptionHelper = nil
+        self.transactionMetadataSyncHelper = nil
+        self.mockLocalTransactionMetadataStore = nil
         self.purchases = nil
     }
 

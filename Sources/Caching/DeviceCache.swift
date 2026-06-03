@@ -184,10 +184,7 @@ class DeviceCache {
             }
 
             let timeSinceLastCheck = cachesLastUpdated.timeIntervalSinceNow * -1
-            let cacheDurationInSeconds = self.cacheDurationInSeconds(
-                isAppBackgrounded: isAppBackgrounded,
-                isSandbox: self.systemInfo.isSandbox
-            )
+            let cacheDurationInSeconds = self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded)
 
             return timeSinceLastCheck >= cacheDurationInSeconds
         }
@@ -253,8 +250,7 @@ class DeviceCache {
     func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
         // Time-based staleness, or
         return self.offeringsCachedObject.isCacheStale(
-            durationInSeconds: self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded,
-                                                           isSandbox: self.systemInfo.isSandbox)
+            durationInSeconds: self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded)
         ) ||
         // Locale-based staleness
         self.offeringsCachePreferredLocales.value != self.systemInfo.preferredLocales
@@ -273,6 +269,22 @@ class DeviceCache {
         } else {
             return .valid
         }
+    }
+
+    // MARK: - Workflows list response
+    // The workflows list is persisted under a single, non-user-scoped key.
+    // Cross-user safety is handled by clearing it on identity transitions.
+
+    func cachedWorkflowsListResponse() -> WorkflowsListResponse? {
+        return self.value(for: CacheKey.workflowsListResponse)
+    }
+
+    func cache(workflowsListResponse: WorkflowsListResponse) {
+        self.largeItemCache.set(codable: workflowsListResponse, forKey: CacheKey.workflowsListResponse.rawValue)
+    }
+
+    func clearWorkflowsListResponseCache() {
+        self.largeItemCache.removeObject(forKey: CacheKey.workflowsListResponse.rawValue)
     }
 
     // MARK: - subscriber attributes
@@ -399,9 +411,9 @@ class DeviceCache {
         }
     }
 
-    private func cacheDurationInSeconds(isAppBackgrounded: Bool, isSandbox: Bool) -> TimeInterval {
+    func cacheDurationInSeconds(isAppBackgrounded: Bool) -> TimeInterval {
         return CacheDuration.duration(status: .init(backgrounded: isAppBackgrounded),
-                                      environment: .init(sandbox: isSandbox))
+                                      environment: .init(sandbox: self.systemInfo.isSandbox))
     }
 
     // MARK: - Products Entitlements
@@ -491,10 +503,7 @@ class DeviceCache {
             }
 
             let timeSinceLastCheck = cachesLastUpdated.timeIntervalSinceNow * -1
-            let cacheDurationInSeconds = self.cacheDurationInSeconds(
-                isAppBackgrounded: isAppBackgrounded,
-                isSandbox: self.systemInfo.isSandbox
-            )
+            let cacheDurationInSeconds = self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded)
 
             return timeSinceLastCheck >= cacheDurationInSeconds
         }
@@ -541,6 +550,7 @@ class DeviceCache {
         case customerInfo(String)
         case customerInfoLastUpdated(String)
         case offerings(String)
+        case workflowsListResponse
         case legacySubscriberAttributes(String)
         case attributionDataDefaults(String)
         case syncedSK2ObserverModeTransactionIDs
@@ -552,6 +562,7 @@ class DeviceCache {
             case let .customerInfo(userID): return "\(Self.base)purchaserInfo.\(userID)"
             case let .customerInfoLastUpdated(userID): return "\(Self.base)purchaserInfoLastUpdated.\(userID)"
             case let .offerings(userID): return "\(Self.base)offerings.\(userID)"
+            case .workflowsListResponse: return "\(Self.base)workflowsListResponse"
             case let .legacySubscriberAttributes(userID): return "\(Self.legacySubscriberAttributesBase)\(userID)"
             case let .attributionDataDefaults(userID): return "\(Self.base)attribution.\(userID)"
             case .syncedSK2ObserverModeTransactionIDs:

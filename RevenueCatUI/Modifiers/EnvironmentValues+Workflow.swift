@@ -21,10 +21,46 @@ struct WorkflowPageTransitionContext {
     /// Header buttons use the inverse value so they stay visually fixed while page content slides.
     let pageOffset: CGFloat
     /// Opacity for buttons rendered inside workflow headers.
-    /// This crossfades outgoing and incoming header buttons during page transitions.
+    /// Header buttons fade when a header enters or leaves, but stay stable when both pages share the same header.
     let headerButtonOpacity: CGFloat
+    /// Whether the page is currently participating in a workflow-level transition.
+    /// Child component entrance transitions and horizontal safe-area bleed should be suppressed while this is true.
+    let isTransitioning: Bool
 
-    static let identity = Self(pageOffset: 0, headerButtonOpacity: 1)
+    static let identity = Self(pageOffset: 0, headerButtonOpacity: 1, isTransitioning: false)
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WorkflowRenderingContext {
+
+    /// Transition state consumed by workflow page bodies and header controls.
+    let pageTransition: WorkflowPageTransitionContext
+    /// Whether page-owned headers should be hidden while a workflow-level header overlay is visible.
+    /// The header layout is preserved so body content does not jump when the overlay appears.
+    let pageHeaderSuppressed: Bool
+    /// Marks the header subtree so only header buttons consume workflow page transition context.
+    let isHeader: Bool
+
+    static let identity = Self()
+
+    init(
+        pageTransition: WorkflowPageTransitionContext = .identity,
+        pageHeaderSuppressed: Bool = false,
+        isHeader: Bool = false
+    ) {
+        self.pageTransition = pageTransition
+        self.pageHeaderSuppressed = pageHeaderSuppressed
+        self.isHeader = isHeader
+    }
+
+    func markingHeader() -> Self {
+        return .init(
+            pageTransition: self.pageTransition,
+            pageHeaderSuppressed: self.pageHeaderSuppressed,
+            isHeader: true
+        )
+    }
 
 }
 
@@ -39,14 +75,8 @@ private struct CloseWorkflowActionKey: EnvironmentKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct WorkflowPageTransitionContextKey: EnvironmentKey {
-    static let defaultValue = WorkflowPageTransitionContext.identity
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct IsWorkflowHeaderKey: EnvironmentKey {
-    /// Marks the header subtree so only header buttons consume workflow page transition context.
-    static let defaultValue = false
+private struct WorkflowRenderingContextKey: EnvironmentKey {
+    static let defaultValue = WorkflowRenderingContext.identity
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -71,14 +101,9 @@ extension EnvironmentValues {
         set { self[WorkflowTriggerActionKey.self] = newValue }
     }
 
-    var workflowPageTransitionContext: WorkflowPageTransitionContext {
-        get { self[WorkflowPageTransitionContextKey.self] }
-        set { self[WorkflowPageTransitionContextKey.self] = newValue }
-    }
-
-    var isWorkflowHeader: Bool {
-        get { self[IsWorkflowHeaderKey.self] }
-        set { self[IsWorkflowHeaderKey.self] = newValue }
+    var workflowRenderingContext: WorkflowRenderingContext {
+        get { self[WorkflowRenderingContextKey.self] }
+        set { self[WorkflowRenderingContextKey.self] = newValue }
     }
 
     var workflowPackageContext: WorkflowPackageContext? {

@@ -497,6 +497,50 @@ class DeviceCacheTests: TestCase {
         expect(self.mockFileCache.saveDataInvocations.count) == 1
     }
 
+    // MARK: - Workflows list response
+
+    func testWorkflowsListResponseIsProperlyCachedToDisk() {
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+
+        expect(self.mockFileCache.saveDataInvocations.count) == 0
+
+        self.deviceCache.cache(workflowsListResponse: .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: true)
+        ]))
+
+        expect(self.mockFileCache.saveDataInvocations.count) == 1
+    }
+
+    func testCachedWorkflowsListResponseRoundTripsThroughDisk() throws {
+        let response = WorkflowsListResponse(workflows: [
+            .init(id: "wf_1", displayName: "Flow A", offeringId: "default", prefetch: true),
+            .init(id: "wf_2", displayName: "Flow B", offeringId: nil, prefetch: false)
+        ])
+
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+        self.mockFileCache.stubCachedContentExists(with: true)
+        self.mockFileCache.stubLoadFile(with: .success(try response.jsonEncodedData))
+
+        self.deviceCache.cache(workflowsListResponse: response)
+
+        let cached = self.deviceCache.cachedWorkflowsListResponse()
+        expect(cached) == response
+    }
+
+    func testCachedWorkflowsListResponseReturnsNilWhenNothingCached() {
+        expect(self.deviceCache.cachedWorkflowsListResponse()).to(beNil())
+    }
+
+    func testWorkflowsListResponseIsNeverSavedToUserDefaults() {
+        let workflowsKey = "com.revenuecat.userdefaults.workflowsListResponse"
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+
+        self.deviceCache.cache(workflowsListResponse: .init(workflows: []))
+
+        expect(self.mockUserDefaults.mockValues[workflowsKey]).to(beNil())
+        expect(self.mockFileCache.saveDataInvocations.count) == 1
+    }
+
     func testSetLatestAdvertisingIdsByNetworkSentMapsAttributionNetworksToStringKeys() {
         let userId = "asdf"
         let token = "token"

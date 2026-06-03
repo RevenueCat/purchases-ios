@@ -2292,11 +2292,31 @@ extension Purchases {
     /// - Parameter params: Parameters for the custom paywall impression.
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @objc public func trackCustomPaywallImpression(_ params: CustomPaywallImpressionParams) {
-        let offeringId = params.offeringId ?? self.offeringsManager.cachedOfferings?.current?.identifier
+        let cachedOfferings = self.offeringsManager.cachedOfferings
+        let resolvedOfferingId: String?
+        let resolvedPresentedOfferingContext: PresentedOfferingContext?
+
+        if let presentedOfferingContext = params.presentedOfferingContext {
+            resolvedOfferingId = params.offeringId
+            resolvedPresentedOfferingContext = presentedOfferingContext
+        } else if let offeringId = params.offeringId {
+            let resolvedOffering = cachedOfferings?[offeringId]
+            resolvedOfferingId = offeringId
+            resolvedPresentedOfferingContext = resolvedOffering?.presentedOfferingContext
+        } else {
+            let resolvedOffering = cachedOfferings?.current
+            resolvedOfferingId = resolvedOffering?.identifier
+            resolvedPresentedOfferingContext = resolvedOffering?.presentedOfferingContext
+        }
+
         Task {
             let event = CustomPaywallEvent.impression(
                 .init(),
-                .init(paywallId: params.paywallId, offeringId: offeringId)
+                .init(
+                    paywallId: params.paywallId,
+                    offeringId: resolvedOfferingId,
+                    presentedOfferingContext: resolvedPresentedOfferingContext
+                )
             )
             await self.eventsManager?.track(featureEvent: event)
         }
