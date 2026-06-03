@@ -278,7 +278,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.revenuecat.annual_with_commitment",
+          "productID" : "com.revenuecat.sampleapp.monthly.12mocommitment",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "sub with 12mo monthly commitment",
           "subscriptionGroupID" : "7096FF06",
