@@ -1345,12 +1345,12 @@ public extension Purchases {
 
     func checkTrialOrIntroDiscountEligibility(packages: [Package]) async -> [Package: IntroEligibility] {
         let result = await self.checkTrialOrIntroDiscountEligibility(
-            productIdentifiers: packages.map(\.storeProduct.productIdentifier)
+            productIdentifiers: packages.map(\.storeProduct.id)
         )
 
         return Set(packages)
             .dictionaryWithValues { (package: Package) in
-                result[package.storeProduct.productIdentifier] ?? .init(eligibilityStatus: .unknown)
+                result[package.storeProduct.id] ?? .init(eligibilityStatus: .unknown)
             }
     }
 

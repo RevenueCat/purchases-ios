@@ -22,6 +22,11 @@ public typealias SK1Product = SKProduct
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 public typealias SK2Product = StoreKit.Product
 
+#if compiler(>=6.3.2)
+@available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *)
+internal typealias SK2BillingPlanType = StoreKit.Product.SubscriptionInfo.BillingPlanType
+#endif
+
 // It's an @objc wrapper of a `StoreProductType`. Swift-only code can use the protocol directly.
 /// Type that provides access to all of `StoreKit`'s product type's properties.
 @objc(RCStoreProduct) public final class StoreProduct: NSObject, StoreProductType {
@@ -48,13 +53,12 @@ public typealias SK2Product = StoreKit.Product
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
-        return self.productIdentifier == (object as? StoreProductType)?.productIdentifier
+        return self.id == (object as? StoreProductType)?.id
     }
 
     public override var hash: Int {
         var hasher = Hasher()
-        hasher.combine(self.productIdentifier)
-
+        hasher.combine(self.id)
         return hasher.finalize()
     }
 
@@ -90,6 +94,11 @@ public typealias SK2Product = StoreKit.Product
     @objc public var introductoryDiscount: StoreProductDiscount? { self.product.introductoryDiscount }
 
     @objc public var discounts: [StoreProductDiscount] { self.product.discounts }
+
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    @objc public var installmentsInfo: InstallmentsInfo? { self.product.installmentsInfo }
+
+    @objc internal var id: String { return product.id }
 
     // switflint:enable missing_docs
 }
@@ -191,6 +200,15 @@ internal protocol StoreProductType: Sendable {
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     var discounts: [StoreProductDiscount] { get }
 
+    /// Describes the billing plan that a user is committing to when they purchase a subscription.
+    /// Always nil when using StoreKit 1. This will be present when a product's billing plan is monthly,
+    /// and will be nil when the billing plan is upFront or when the billing plan is not specified.
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    var installmentsInfo: InstallmentsInfo? { get }
+
+    /// If the product has a billing plan associated with it, this will be "{productIdentifier}:{billingPlanType}".
+    /// Otherwise, it will be "{productIdentifier}"
+    var id: String { get }
 }
 
 public extension StoreProduct {
