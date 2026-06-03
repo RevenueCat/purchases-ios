@@ -19,6 +19,7 @@ enum AdsStrings {
 
     case unknown_reward_kind(rawValue: String)
     case invalid_virtual_currency_payload(code: String?, amount: Int?)
+    case reward_verification_token_encoding_failed(error: Error)
 
     case poll_start(transactionID: String, maxAttempts: Int)
     case poll_attempt(attempt: Int, maxAttempts: Int, transactionID: String)
@@ -40,6 +41,8 @@ extension AdsStrings: LogMessage {
             return "Received an invalid 'virtual_currency' ad reward payload " +
                 "(code: \(code ?? "nil"), amount: \(amount.map(String.init) ?? "nil")); " +
                 "falling back to unsupportedReward."
+        case let .reward_verification_token_encoding_failed(error):
+            return "Reward verification token customData encoding failed: \(error)"
 
         case let .poll_start(transactionID, maxAttempts):
             return "Reward verification poll start transactionID=\(transactionID) maxAttempts=\(maxAttempts)"

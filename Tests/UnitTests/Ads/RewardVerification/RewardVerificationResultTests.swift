@@ -14,7 +14,7 @@ import XCTest
 
 @_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 
-final class RewardVerificationResultTests: XCTestCase {
+final class RewardVerificationResultTests: TestCase {
 
     func testVerifiedProjectionsAndEquality() {
         let result = RewardVerificationResult.verified(.noReward)

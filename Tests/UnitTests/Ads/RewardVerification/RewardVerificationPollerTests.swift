@@ -16,7 +16,7 @@ import XCTest
 
 @_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 
-final class RewardVerificationPollerTests: XCTestCase {
+final class RewardVerificationPollerTests: TestCase {
 
     // MARK: - Terminal statuses
 

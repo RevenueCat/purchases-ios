@@ -14,7 +14,7 @@ import XCTest
 
 @_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 
-final class RewardVerificationOutcomeTests: XCTestCase {
+final class RewardVerificationOutcomeTests: TestCase {
 
     func testVerifiedCarriesVirtualCurrencyRewardPayload() throws {
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))

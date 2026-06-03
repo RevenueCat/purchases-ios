@@ -58,8 +58,6 @@ import Foundation
         return payload
     }
 
-    public var kind: String { self.kindRawValue }
-
     /// Stable raw value used for wire encoding and ObjC interop.
     internal var kindRawValue: String {
         switch self.storage {

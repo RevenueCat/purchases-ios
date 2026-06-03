@@ -1663,10 +1663,16 @@ extension Purchases {
             "client_transaction_id": transactionId,
             "impression_id": impressionId
         ]
-        let customData = String(
-            data: try! JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys]),
-            encoding: .utf8
-        )!
+        let customData: String
+        do {
+            let data = try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])
+            customData = String(data: data, encoding: .utf8) ?? "{}"
+        } catch {
+            let message = AdsStrings.reward_verification_token_encoding_failed(error: error)
+            Logger.error(message)
+            assertionFailure(message.description)
+            customData = "{}"
+        }
         return (customData: customData, transactionId: transactionId, appUserID: self.appUserID)
     }
 
