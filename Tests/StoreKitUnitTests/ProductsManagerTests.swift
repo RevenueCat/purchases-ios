@@ -210,7 +210,9 @@ class SK2ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
         expect(params.storeKitErrorDescription).to(beNil())
     }
 
-    #if swift(>=5.9)
+    // `SKTestSession.setSimulatedError(_:forAPI:)` is part of the StoreKitTest Swift overlay,
+    // which ships no Mac Catalyst (macabi) slice in Xcode 26.5, so it can't be compiled for Catalyst.
+    #if swift(>=5.9) && !targetEnvironment(macCatalyst)
     @available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *)
     func testFetchProductsWithIdentifiersSK2ErrorTracksCorrectly() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
