@@ -84,6 +84,8 @@ extension AnyDecodable: Encodable {
 
 extension AnyDecodable: Hashable {}
 
+extension AnyDecodable: Sendable {}
+
 // MARK: - Expressible by Literal
 
 extension AnyDecodable: ExpressibleByNilLiteral {

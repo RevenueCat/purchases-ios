@@ -398,6 +398,47 @@ class WorkflowDetailProcessorTests: TestCase {
         expect(WorkflowDetailProcessor.verifyCdnHash(invalidData, expectedHash: "anything")) == false
     }
 
+    // MARK: - Experiment pruning
+
+    func testNonEnrolledVariantStepsArePrunedFromWorkflow() throws {
+        let inlineData = try Self.inlineEnvelope(workflowDict: Self.workflowWithExperiment())
+        let enrolledVariants = ["exp_abc": "control"]
+
+        let result = try processSync(inlineData, enrolledVariants: enrolledVariants)
+
+        expect(result.workflow.steps["step_control"]).notTo(beNil())
+        expect(result.workflow.steps["step_variant_b"]).to(beNil())
+    }
+
+    func testEnrolledVariantStepIsRetained() throws {
+        let inlineData = try Self.inlineEnvelope(workflowDict: Self.workflowWithExperiment())
+        let enrolledVariants = ["exp_abc": "variant_b"]
+
+        let result = try processSync(inlineData, enrolledVariants: enrolledVariants)
+
+        expect(result.workflow.steps["step_variant_b"]).notTo(beNil())
+        expect(result.workflow.steps["step_control"]).to(beNil())
+    }
+
+    func testNoEnrolledVariantFallsBackToControlVariant() throws {
+        // Users below enrollment % are not in enrolled_variants. They should see control.
+        let inlineData = try Self.inlineEnvelope(workflowDict: Self.workflowWithExperiment())
+
+        let result = try processSync(inlineData, enrolledVariants: nil)
+
+        expect(result.workflow.steps["step_control"]).notTo(beNil())
+        expect(result.workflow.steps["step_variant_b"]).to(beNil())
+    }
+
+    func testExperimentStepItselfIsNotPruned() throws {
+        let inlineData = try Self.inlineEnvelope(workflowDict: Self.workflowWithExperiment())
+        let enrolledVariants = ["exp_abc": "control"]
+
+        let result = try processSync(inlineData, enrolledVariants: enrolledVariants)
+
+        expect(result.workflow.steps["exp_step"]).notTo(beNil())
+    }
+
 }
 
 // MARK: - Fixtures
@@ -434,6 +475,53 @@ private extension WorkflowDetailProcessorTests {
 
     static func minimalWorkflowData(id: String) -> Data {
         return (try? JSONSerialization.data(withJSONObject: minimalWorkflowDict(id: id))) ?? Data()
+    }
+
+    static func workflowWithExperiment() -> [String: Any] {
+        return [
+            "id": "wf_exp",
+            "display_name": "Experiment Workflow",
+            "initial_step_id": "exp_step",
+            "steps": [
+                "exp_step": [
+                    "id": "exp_step",
+                    "type": "experiment",
+                    "param_values": ["experiment_id": "exp_abc"],
+                    "triggers": [] as [Any],
+                    "trigger_actions": [
+                        "control":   ["type": "step", "step_id": "step_control"],
+                        "variant_b": ["type": "step", "step_id": "step_variant_b"]
+                    ] as [String: Any]
+                ] as [String: Any],
+                "step_control":   ["id": "step_control",   "type": "screen"] as [String: Any],
+                "step_variant_b": ["id": "step_variant_b", "type": "screen"] as [String: Any]
+            ] as [String: Any],
+            "screens": [:] as [String: Any],
+            "ui_config": minimalUiConfig
+        ]
+    }
+
+    static func inlineEnvelope(workflowDict: [String: Any]) throws -> Data {
+        let envelope: [String: Any] = ["action": "inline", "data": workflowDict]
+        return try JSONSerialization.data(withJSONObject: envelope)
+    }
+
+    func processSync(
+        _ data: Data,
+        enrolledVariants: [String: String]?
+    ) throws -> WorkflowDetailProcessingResult {
+        var capturedResult: Result<WorkflowDetailProcessingResult, Error>?
+        let processor = WorkflowDetailProcessor(cdnFetch: { _, _, _ in })
+
+        // Inject enrolled_variants into the envelope JSON so the processor reads them
+        var json = (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
+        if let ev = enrolledVariants {
+            json["enrolled_variants"] = ev
+        }
+        let patchedData = try JSONSerialization.data(withJSONObject: json)
+
+        processor.process(patchedData) { capturedResult = $0 }
+        return try XCTUnwrap(capturedResult).get()
     }
 
 }

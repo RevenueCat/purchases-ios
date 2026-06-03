@@ -85,7 +85,8 @@ final class WorkflowDetailProcessor: Sendable {
     ) {
         do {
             let envelope = try JSONDecoder.default.decode(InlineEnvelope.self, jsonData: rawData)
-            completion(.success(.init(workflow: envelope.data, enrolledVariants: enrolledVariants)))
+            let workflow = envelope.data.pruned(enrolledVariants: enrolledVariants ?? [:])
+            completion(.success(.init(workflow: workflow, enrolledVariants: enrolledVariants)))
         } catch {
             completion(.failure(error))
         }
@@ -111,6 +112,7 @@ final class WorkflowDetailProcessor: Sendable {
                 }
                 do {
                     let workflow = try PublishedWorkflow.create(with: cdnData)
+                        .pruned(enrolledVariants: enrolledVariants ?? [:])
                     completion(.success(.init(workflow: workflow, enrolledVariants: enrolledVariants)))
                 } catch {
                     completion(.failure(error))

@@ -258,6 +258,83 @@ final class WorkflowNavigatorTests: TestCase {
         expect(destination?.canNavigateBackAfterNavigation) == true
     }
 
+    // MARK: - Experiment step resolution
+    // Variant selection is handled by WorkflowDetailProcessor (pruning non-enrolled steps).
+    // Navigator tests cover structural behaviour: auto-advance, back-stack exclusion, chaining.
+
+    func testExperimentStepIsSkippedAndLandsOnContentStep() throws {
+        // After pruning, experiment step has exactly one action — the enrolled variant's.
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeExperimentStep(id: "exp_1", experimentId: "exp_abc", variantActions: [
+                    ("control", "step_control")
+                ]),
+                makeStep(id: "step_control")
+            ],
+            initialStepId: "exp_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        expect(navigator.currentStepId) == "step_control"
+    }
+
+    func testExperimentStepNotInBackStackAfterResolution() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeExperimentStep(id: "exp_1", experimentId: "exp_abc", variantActions: [
+                    ("control", "step_control")
+                ]),
+                makeStep(id: "step_control")
+            ],
+            initialStepId: "exp_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        expect(navigator.currentStepId) == "step_control"
+        expect(navigator.canNavigateBack) == false
+    }
+
+    func testExperimentStepAfterForwardNavigationIsResolvedSilently() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn", "btn")], triggerActions: [("btn", "exp_1")]),
+                makeExperimentStep(id: "exp_1", experimentId: "exp_abc", variantActions: [
+                    ("variant_b", "step_variant_b")
+                ]),
+                makeStep(id: "step_variant_b")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+        navigator.triggerAction(componentId: "btn")
+
+        expect(navigator.currentStepId) == "step_variant_b"
+        expect(navigator.canNavigateBack) == true
+        navigator.navigateBack()
+        expect(navigator.currentStepId) == "step_1"
+    }
+
+    func testChainedExperimentStepsAreResolvedToFirstContentStep() throws {
+        // Chained experiment nodes are not a valid workflow configuration in practice,
+        // but the navigator should handle them gracefully rather than getting stuck.
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeExperimentStep(id: "exp_1", experimentId: "exp_a", variantActions: [
+                    ("v1", "exp_2")
+                ]),
+                makeExperimentStep(id: "exp_2", experimentId: "exp_b", variantActions: [
+                    ("v2", "step_content")
+                ]),
+                makeStep(id: "step_content")
+            ],
+            initialStepId: "exp_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        expect(navigator.currentStepId) == "step_content"
+        expect(navigator.canNavigateBack) == false
+    }
+
     // MARK: - Multiple navigations
 
     func testMultipleForwardAndBackNavigationsWorkCorrectly() throws {
@@ -369,6 +446,28 @@ private extension WorkflowNavigatorTests {
           "type": "screen",
           "triggers": \(triggersJSON),
           "trigger_actions": \(actionsJSON)
+        }
+        """
+        return StepDescriptor(id: id, json: json)
+    }
+
+    /// Creates a `StepDescriptor` for an experiment step with the given variant → target-step-id actions.
+    func makeExperimentStep(
+        id: String,
+        experimentId: String,
+        variantActions: [(variantId: String, targetStepId: String)]
+    ) -> StepDescriptor {
+        let actionsJSON = variantActions
+            .map { #""\#($0.variantId)":{"type":"step","step_id":"\#($0.targetStepId)"}"# }
+            .joined(separator: ",")
+
+        let json = """
+        {
+          "id": "\(id)",
+          "type": "experiment",
+          "param_values": {"experiment_id": "\(experimentId)"},
+          "triggers": [],
+          "trigger_actions": {\(actionsJSON)}
         }
         """
         return StepDescriptor(id: id, json: json)

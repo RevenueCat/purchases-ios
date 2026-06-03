@@ -297,9 +297,11 @@ struct APIKeyDashboardList: View {
                 .sheet(item: self.$presentWorkflowSheetOffering, onDismiss: self.handleWorkflowDismiss) { offering in
                     self.workflowPaywallView(for: offering)
                 }
+#if !os(macOS)
                 .fullScreenCover(item: self.$presentWorkflowFullOffering, onDismiss: self.handleWorkflowDismiss) { offering in
                     self.workflowPaywallView(for: offering)
                 }
+#endif
                 .sheet(item: self.$presentedWorkflowExitOffer) { exitOffering in
                     PaywallView(offering: exitOffering)
                         .customPaywallVariables(self.customVariables)

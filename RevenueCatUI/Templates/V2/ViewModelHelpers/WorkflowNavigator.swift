@@ -29,7 +29,7 @@ final class WorkflowNavigator: ObservableObject {
 
     init(workflow: PublishedWorkflow) {
         self.workflow = workflow
-        self.currentStepId = workflow.initialStepId
+        self.currentStepId = Self.resolveExperimentStep(workflow.initialStepId, in: workflow)
     }
 
     var currentStep: WorkflowStep? {
@@ -66,8 +66,8 @@ final class WorkflowNavigator: ObservableObject {
         }
 
         backStack.append(currentStepId)
-        currentStepId = nextStep.id
-        return nextStep
+        currentStepId = Self.resolveExperimentStep(nextStep.id, in: workflow)
+        return workflow.steps[currentStepId]
     }
 
     @discardableResult
@@ -77,6 +77,34 @@ final class WorkflowNavigator: ObservableObject {
         }
         currentStepId = previousStepId
         return workflow.steps[previousStepId]
+    }
+
+    // MARK: - Experiment resolution
+
+    /// If `stepId` points to an experiment step, follows the enrolled variant's trigger action
+    /// to the real content step. Experiment steps are skipped silently (not added to back stack)
+    /// so the user can never navigate back to them. Safe against cycles — stops after visiting
+    /// each step at most once.
+    // Experiment steps are pruned by WorkflowDetailProcessor before the navigator sees the workflow,
+    // so each experiment step has at most one remaining .step action (the enrolled variant's).
+    private static func resolveExperimentStep(_ stepId: String, in workflow: PublishedWorkflow) -> String {
+        var visitedIds = Set<String>()
+        var resolvedId = stepId
+
+        while true {
+            guard !visitedIds.contains(resolvedId),
+                  let step = workflow.steps[resolvedId],
+                  step.isExperimentStep,
+                  let nextAction = step.stepTriggerActions.values
+                      .first(where: { if case .step = $0 { return true }; return false }),
+                  case .step(let nextStepId) = nextAction else {
+                break
+            }
+            visitedIds.insert(resolvedId)
+            resolvedId = nextStepId
+        }
+
+        return resolvedId
     }
 
 }

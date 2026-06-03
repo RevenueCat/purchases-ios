@@ -68,6 +68,15 @@ import Foundation
     public var stepScreenType: [String] { screenType }
     let metadata: [String: AnyDecodable]?
 
+    /// Whether this step is an experiment node that should be resolved silently without rendering.
+    public var isExperimentStep: Bool { type == "experiment" }
+
+    /// The experiment ID for this step, if it is an experiment node.
+    public var experimentId: String? {
+        guard case .string(let id) = paramValues["experiment_id"] else { return nil }
+        return id
+    }
+
 }
 
 @_spi(Internal) public struct WorkflowScreen {
@@ -166,7 +175,50 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
 
 }
 
-extension PublishedWorkflow: Codable, Equatable, Sendable {}
+extension PublishedWorkflow: Codable, Equatable, Sendable {
+
+    /// Returns a copy with non-enrolled variant target steps removed from `steps`.
+    /// For each experiment step, the enrolled variant is looked up in `enrolledVariants`
+    /// (keyed by experiment_id → variant_id). Any step that is the direct target of a
+    /// non-enrolled trigger action is dropped, leaving only the enrolled path.
+    ///
+    /// When an experiment_id is absent from `enrolledVariants` (user is below enrollment %),
+    /// we fall back to the "control" variant so unenrolled users always see the control experience.
+    /// If no variant is named "control", we fall back to the lexicographically first key.
+    func pruned(enrolledVariants: [String: String]) -> PublishedWorkflow {
+        var prunedSteps = self.steps
+        for step in self.steps.values where step.isExperimentStep {
+            guard let experimentId = step.experimentId else { continue }
+            let enrolledVariant = enrolledVariants[experimentId]
+                ?? Self.controlVariant(for: step)
+            for (variantId, action) in step.stepTriggerActions {
+                guard variantId != enrolledVariant, case .step(let stepId) = action else { continue }
+                prunedSteps.removeValue(forKey: stepId)
+            }
+        }
+
+        return PublishedWorkflow(
+            id: self.id,
+            displayName: self.displayName,
+            initialStepId: self.initialStepId,
+            singleStepFallbackId: self.singleStepFallbackId,
+            steps: prunedSteps,
+            screens: self.screens,
+            uiConfig: self.uiConfig,
+            contentMaxWidth: self.contentMaxWidth,
+            metadata: self.metadata
+        )
+    }
+
+    /// Returns the control variant key for an experiment step — the variant unenrolled users see.
+    /// Prefers a key literally named "control"; falls back to the lexicographically first key.
+    private static func controlVariant(for step: WorkflowStep) -> String? {
+        let keys = step.stepTriggerActions.keys
+        return keys.contains("control") ? "control" : keys.sorted().first
+    }
+
+}
+
 extension WorkflowDataResult: Equatable, Sendable {}
 
 extension PublishedWorkflow: HTTPResponseBody {}
