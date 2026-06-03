@@ -958,6 +958,7 @@ jobs:
   run-test-ios-26:
     executor:
       name: macos-executor
+      # Known issue: FB22500243 (Xcode 26.3+ breaks this job)
       xcode_version: "26.5"
 
     steps:
