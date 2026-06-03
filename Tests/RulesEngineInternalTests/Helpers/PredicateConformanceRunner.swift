@@ -62,9 +62,6 @@ enum PredicateConformanceRunner {
 
     private static func matchesExpected(error: RuleError, expected: ExpectedError) -> Bool {
         switch expected.kind {
-        case "parse":
-            if case .parse = error { return true }
-
         case "typeMismatch":
             if case .typeMismatch = error { return true }
 
