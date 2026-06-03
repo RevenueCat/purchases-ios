@@ -342,6 +342,12 @@ class BasePurchasesTests: TestCase {
                                    eventsManager: self.eventsManager,
                                    productsManager: self.mockProductsManager,
                                    offeringsManager: self.mockOfferingsManager,
+                                   workflowManager: WorkflowManager(
+                                    backend: self.backend,
+                                    workflowsCache: WorkflowsCache(deviceCache: self.deviceCache),
+                                    paywallCache: self.paywallCache,
+                                    operationDispatcher: self.mockOperationDispatcher
+                                   ),
                                    offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                    purchasesOrchestrator: self.purchasesOrchestrator,
                                    purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
@@ -490,7 +496,7 @@ extension BasePurchasesTests {
             let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
             let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
             let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
-            let workflowsAPI = WorkflowsAPI(backendConfig: backendConfig)
+            let workflowsAPI = MockWorkflowsAPI()
             let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
             self.init(backendConfig: backendConfig,
