@@ -28,16 +28,16 @@ extension Purchases {
         let queryItems = parsed.queryItems ?? []
 
         guard queryItems.count == 2 else {
-            Logger.warning(Strings.preview_paywall_invalid_url(queryItemCount: queryItems.count))
+            Logger.warning("Invalid rc-paywall-preview link. Expected 2 query parameters, but found \(queryItems.count)")
             return false
         }
 
         guard let offeringID = queryItems.first(where: { $0.name == "offering_id" })?.value, offeringID.isEmpty == false else {
-            Logger.warning(Strings.preview_paywall_bad_offering_id_parameter)
+            Logger.warning("Invalid rc-paywall-preview link: Bad offering_id parameter")
             return false
         }
         guard let paywallID = queryItems.first(where: { $0.name == "paywall_id" })?.value, paywallID.isEmpty == false else {
-            Logger.warning(Strings.preview_paywall_bad_paywall_id_parameter)
+            Logger.warning("Invalid rc-paywall-preview link: Bad paywall_id parameter")
             return false
         }
 
@@ -50,14 +50,14 @@ extension Purchases {
                 let offerings = try await self.offerings()
 
                 guard let offering = offerings.offering(identifier: offeringID) else {
-                    Logger.warning(Strings.preview_paywall_cannot_locate_offering(offeringID: offeringID))
+                    Logger.warning("Attempting to show paywall for offering \(offeringID), but cannot locate a published offering with that id")
                     return
                 }
 
                 // there's a one-to-one relationship between paywalls and offerings
                 // make sure that our parameters match reality
                 guard offering.paywall?.id == paywallID else {
-                    Logger.warning(Strings.preview_paywall_paywall_id_mismatch(offeringID: offeringID, paywallID: paywallID))
+                    Logger.warning("Attempting to show paywall \(paywallID), but it does not match the paywall associated with \(offeringID)")
                     return
                 }
 
@@ -81,7 +81,7 @@ extension Purchases {
                     let viewController = PaywallViewController(offeringIdentifier: offeringID, presentedOfferingContext: context)
                     presentationContext.show(viewController, sender: self)
                 } else {
-                    Logger.warning(Strings.preview_paywall_missing_presentation_context)
+                    Logger.warning("Unable to locate suitable presentation context for PaywallViewController")
                 }
 
             } catch {

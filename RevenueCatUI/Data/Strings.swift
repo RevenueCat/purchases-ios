@@ -124,14 +124,6 @@ enum Strings {
     case paywall_workflow_trigger_not_handled(componentName: String?)
     case workflow_package_context_unresolvable(stepId: String)
 
-    // Previewing Paywalls
-    case preview_paywall_invalid_url(queryItemCount: Int)
-    case preview_paywall_bad_offering_id_parameter
-    case preview_paywall_bad_paywall_id_parameter
-    case preview_paywall_cannot_locate_offering(offeringID: String)
-    case preview_paywall_paywall_id_mismatch(offeringID: String, paywallID: String)
-    case preview_paywall_missing_presentation_context
-
 }
 
 extension Strings: CustomStringConvertible {
@@ -407,19 +399,6 @@ extension Strings: CustomStringConvertible {
         case let .workflow_package_context_unresolvable(stepId):
             return "Could not resolve package context for singleStepFallbackId '\(stepId)'. " +
             "Price/period variables may not resolve on packageless screens."
-
-        case let .preview_paywall_invalid_url(queryItemCount):
-            return "Invalid rc-paywall-preview link. Expected 2 query parameters, but found \(queryItemCount)"
-        case .preview_paywall_bad_offering_id_parameter:
-            return "Invalid rc-paywall-preview link: Bad offering_id parameter"
-        case .preview_paywall_bad_paywall_id_parameter:
-            return "Invalid rc-paywall-preview link: Bad paywall_id parameter"
-        case let .preview_paywall_cannot_locate_offering(offeringID: offeringID):
-            return "Attempting to show paywall for offering \(offeringID), but cannot locate a published offering with that id"
-        case let .preview_paywall_paywall_id_mismatch(offeringID: offeringID, paywallID: paywallID):
-            return "Attempting to show paywall \(paywallID), but it does not match the paywall associated with \(offeringID)"
-        case .preview_paywall_missing_presentation_context:
-            return "Unable to locate suitable presentation context for PaywallViewController"
         }
     }
 
