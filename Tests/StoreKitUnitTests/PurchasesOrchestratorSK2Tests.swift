@@ -210,6 +210,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     // MARK: - Purchasing, StoreKit 2 only
 
     func testPurchaseSK2IncludesAppUserIdIfUUID() async throws {
+        // `SKTestSession` purchases come back as `userCancelled` on Mac Catalyst (the purchase
+        // dialog can't be suppressed in this environment), so tests that require a real completed
+        // purchase are skipped on Catalyst for now.
+        #if targetEnvironment(macCatalyst)
+        throw XCTSkip("SKTestSession purchases return userCancelled on Mac Catalyst")
+        #endif
+
         let uuid = UUID()
         self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: uuid.uuidString)
         self.setUpOrchestrator()
@@ -232,6 +239,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testPurchaseSK2DoesNotIncludeAppUserIdIfNotUUID() async throws {
+        // `SKTestSession` purchases come back as `userCancelled` on Mac Catalyst (the purchase
+        // dialog can't be suppressed in this environment), so tests that require a real completed
+        // purchase are skipped on Catalyst for now.
+        #if targetEnvironment(macCatalyst)
+        throw XCTSkip("SKTestSession purchases return userCancelled on Mac Catalyst")
+        #endif
+
         self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: "not_a_uuid")
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
@@ -2317,6 +2331,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testSyncPurchasesPassesErrorOnFailure() async throws {
+        // `SKTestSession` purchases come back as `userCancelled` on Mac Catalyst (the purchase
+        // dialog can't be suppressed in this environment), so tests that require a real completed
+        // purchase are skipped on Catalyst for now.
+        #if targetEnvironment(macCatalyst)
+        throw XCTSkip("SKTestSession purchases return userCancelled on Mac Catalyst")
+        #endif
+
         let transaction = try await self.createTransaction(finished: true)
         self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = transaction
 
