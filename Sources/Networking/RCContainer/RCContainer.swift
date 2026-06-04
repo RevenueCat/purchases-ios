@@ -119,12 +119,12 @@ struct RCContainer {
 
         /// Reads a big-endian unsigned 32-bit integer. Assumes 4 bytes remain (callers `require` first).
         mutating func readUInt32() -> UInt32 {
-            let b0 = UInt32(self.data[self.base + self.pos])
-            let b1 = UInt32(self.data[self.base + self.pos + 1])
-            let b2 = UInt32(self.data[self.base + self.pos + 2])
-            let b3 = UInt32(self.data[self.base + self.pos + 3])
+            let byte0 = UInt32(self.data[self.base + self.pos])
+            let byte1 = UInt32(self.data[self.base + self.pos + 1])
+            let byte2 = UInt32(self.data[self.base + self.pos + 2])
+            let byte3 = UInt32(self.data[self.base + self.pos + 3])
             self.pos += Constants.uint32Size
-            return (b0 << 24) | (b1 << 16) | (b2 << 8) | b3
+            return (byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3
         }
 
         /// Returns a zero-copy slice of `size` bytes at the current position, advancing past them.
