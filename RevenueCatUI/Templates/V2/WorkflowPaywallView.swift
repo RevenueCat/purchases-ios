@@ -351,13 +351,14 @@ struct WorkflowPaywallView: View {
     private func seenPageView(for page: RenderedPage, proxy: GeometryProxy) -> some View {
         // current and outgoing animate; every other seen page stays mounted but hidden off-screen
         // so its state is preserved until the user returns to it.
+        let isCurrent = page.id == self.transitionState.currentPage?.id
         let isOutgoing = page.id == self.transitionState.outgoingPage?.id
-        let isHidden = page.id != self.transitionState.currentPage?.id && !isOutgoing
+        let isHidden = !isCurrent && !isOutgoing
         let transitionRole: WorkflowPageTransitionState<RenderedPage>.PageRole =
             isOutgoing ? .outgoing : .current
         let pageOffset = isHidden ? 0 : self.transitionState.offset(for: transitionRole, width: proxy.size.width)
 
-        self.pageView(for: page)
+        self.pageView(for: page, isActive: isCurrent)
             .environment(
                 \.workflowRenderingContext,
                 WorkflowRenderingContext(
@@ -369,7 +370,9 @@ struct WorkflowPaywallView: View {
                                 for: transitionRole,
                                 headerTransition: self.headerTransition
                             ),
-                        isTransitioning: self.transitionState.isTransitioning
+                        // Hidden pages are not part of the animation; only the current/outgoing
+                        // pair should see the transition flag so they don't react to it off-screen.
+                        isTransitioning: isHidden ? false : self.transitionState.isTransitioning
                     ),
                     pageHeaderSuppressed: self.shouldRenderWorkflowHeaderOverlay
                 )
@@ -383,7 +386,7 @@ struct WorkflowPaywallView: View {
             .accessibilityHidden(isHidden)
     }
 
-    private func pageView(for page: RenderedPage) -> some View {
+    private func pageView(for page: RenderedPage, isActive: Bool) -> some View {
         PaywallsV2View(
             paywallComponents: page.content.paywallComponents,
             offering: page.content.offering,
@@ -399,7 +402,9 @@ struct WorkflowPaywallView: View {
             colorScheme: self.colorScheme,
             promoOfferCache: self.promoOfferCacheOwner.cache,
             introEligibilityContext: page.introOfferEligibilityContext,
-            selectedPackageContextOverride: page.packageContext
+            selectedPackageContextOverride: page.packageContext,
+            // Drives per-visit paywall_viewed / paywall_close: this page is the current workflow step.
+            isActiveWorkflowPage: isActive
         )
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
         .environment(\.workflowTriggerAction, { componentId in
