@@ -156,6 +156,13 @@ private struct CarouselItem<Content: View>: Identifiable {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct CarouselView<Content: View>: View {
+    // MARK: - Environment
+
+    /// Workflow pages stay mounted off-screen to preserve their state, so the auto-advance timer
+    /// must pause while the page is inactive. Standalone paywalls get `.identity` (always active).
+    @Environment(\.workflowRenderingContext)
+    private var workflowRenderingContext
+
     // MARK: - Configuration
 
     private let pageAlignment: VerticalAlignment
@@ -349,17 +356,32 @@ private struct CarouselView<Content: View>: View {
         })
         .onAppear {
             setupData()
-            startAutoPlayIfNeeded()
+            if workflowRenderingContext.pageTransition.isPageActive {
+                startAutoPlayIfNeeded()
+            }
 
             DispatchQueue.main.async {
                 self.isInitialized = true
             }
         }
+        .onChangeOf(workflowRenderingContext.pageTransition.isPageActive) { isPageActive in
+            // The page stays mounted when the user navigates to another workflow step, so onDisappear
+            // never fires. Drive the timer off the active flag instead: stop it off-screen, restart on return.
+            if isPageActive {
+                startAutoPlayIfNeeded()
+            } else {
+                stopAutoPlay()
+            }
+        }
         .onDisappear {
             // Stop the timer if view disappears
-            autoTimer?.invalidate()
-            autoTimer = nil
+            stopAutoPlay()
         }
+    }
+
+    private func stopAutoPlay() {
+        autoTimer?.invalidate()
+        autoTimer = nil
     }
 
     // MARK: - Setup
