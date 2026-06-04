@@ -786,7 +786,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         Logger.debug(Strings.configure.sdk_version(Self.frameworkVersion))
         Logger.debug(Strings.configure.bundle_id(SystemInfo.bundleIdentifier))
         Logger.debug(Strings.configure.system_version(SystemInfo.systemVersion))
-        Logger.debug(Strings.configure.is_simulator(SystemInfo.isRunningInSimulator))
+        Logger.debug(Strings.configure.is_simulator(SystemInfo.isRunningInSimulator,
+                                                    apiKeyValidationResult: systemInfo.apiKeyValidationResult))
         Logger.user(Strings.configure.initial_app_user_id(isSet: appUserID != nil))
         Logger.debug(Strings.configure.response_verification_mode(systemInfo.responseVerificationMode))
         Logger.debug(Strings.configure.storekit_version(systemInfo.storeKitVersion))

@@ -51,7 +51,7 @@ enum ConfigureStrings {
 
     case system_version(String)
 
-    case is_simulator(Bool)
+    case is_simulator(Bool, apiKeyValidationResult: Configuration.APIKeyValidationResult)
 
     case simulatedStoreAPIKey
 
@@ -135,12 +135,20 @@ extension ConfigureStrings: LogMessage {
             return "Bundle ID - \(bundleID)"
         case let .system_version(osVersion):
             return "System Version - \(osVersion)"
-        case let .is_simulator(isSimulator):
-            return isSimulator
-                ? "Using a simulator. Ensure you have a StoreKit Config " +
-                "file set up before trying to fetch products or make purchases.\n" +
-                "See https://errors.rev.cat/testing-in-simulator for more details."
-                : "Not using a simulator."
+        case let .is_simulator(isSimulator, apiKeyValidationResult):
+            guard isSimulator else {
+                return "Not using a simulator."
+            }
+
+            if case .simulatedStore = apiKeyValidationResult {
+                return "Using a simulator with a Test Store API key. Test Store products are fetched from " +
+                "RevenueCat's backend, so purchases are simulated and don't rely on StoreKit. " +
+                "No additional simulator configuration is required to fetch products or make purchases."
+            }
+
+            return "Using a simulator. Ensure you have a StoreKit Config " +
+            "file set up before trying to fetch products or make purchases.\n" +
+            "See https://errors.rev.cat/testing-in-simulator for more details."
         case .simulatedStoreAPIKey:
             return "Using a Test Store API key.\n" +
             "The Test Store is for development only. Never use a Test Store API key in production. " +
