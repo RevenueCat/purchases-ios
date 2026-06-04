@@ -17,16 +17,20 @@ import StoreKit
 
 class OfferingsFactory {
 
-    func createOfferings(from storeProductsByID: [String: StoreProduct],
-                         contents: Offerings.Contents,
-                         loadedFromDiskCache: Bool) -> Offerings? {
+    func createOfferings(
+        from storeProductsByID: [String: StoreProduct],
+        contents: Offerings.Contents,
+        loadedFromDiskCache: Bool,
+        apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform
+    ) -> Offerings? {
         let data = contents.response
         let offerings: [String: Offering] = data
             .offerings
             .compactMap { offeringData in
                 createOffering(from: storeProductsByID,
                                offering: offeringData,
-                               uiConfig: data.uiConfig)
+                               uiConfig: data.uiConfig,
+                               apiKeyValidationResult: apiKeyValidationResult)
             }
             .dictionaryAllowingDuplicateKeys { $0.identifier }
 
@@ -45,7 +49,8 @@ class OfferingsFactory {
     func createOffering(
         from storeProductsByID: [String: StoreProduct],
         offering: OfferingsResponse.Offering,
-        uiConfig: UIConfig?
+        uiConfig: UIConfig?,
+        apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform
     ) -> Offering? {
         let availablePackages: [Package] = offering.packages.compactMap { package in
             createPackage(with: package, productsByID: storeProductsByID, offeringIdentifier: offering.identifier)
@@ -53,9 +58,11 @@ class OfferingsFactory {
 
         guard !availablePackages.isEmpty else {
             #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION && !DEBUG
-            Logger.debug(Strings.offering.offering_empty(offeringIdentifier: offering.identifier))
+            Logger.debug(Strings.offering.offering_empty(offeringIdentifier: offering.identifier,
+                                                         apiKeyValidationResult: apiKeyValidationResult))
             #else
-            Logger.warn(Strings.offering.offering_empty(offeringIdentifier: offering.identifier))
+            Logger.warn(Strings.offering.offering_empty(offeringIdentifier: offering.identifier,
+                                                        apiKeyValidationResult: apiKeyValidationResult))
             #endif
             return nil
         }

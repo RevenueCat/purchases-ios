@@ -292,9 +292,12 @@ private extension OfferingsManager {
                 }
             }
 
-            if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID,
-                                                                            contents: contents,
-                                                                            loadedFromDiskCache: loadedFromDiskCache) {
+            if let createdOfferings = self.offeringsFactory.createOfferings(
+                from: productsByID,
+                contents: contents,
+                loadedFromDiskCache: loadedFromDiskCache,
+                apiKeyValidationResult: self.systemInfo.apiKeyValidationResult
+            ) {
                 completion(.success(OfferingsResultData(offerings: createdOfferings,
                                                         requestedProductIds: productIdentifiers,
                                                         notFoundProductIds: missingProductIDs)))

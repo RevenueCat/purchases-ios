@@ -38,7 +38,7 @@ enum OfferingStrings {
     case completion_handlers_waiting_on_products(handlersCount: Int)
     case configuration_error_products_not_found
     case configuration_error_no_products_for_offering(apiKeyValidationResult: Configuration.APIKeyValidationResult)
-    case offering_empty(offeringIdentifier: String)
+    case offering_empty(offeringIdentifier: String, apiKeyValidationResult: Configuration.APIKeyValidationResult)
     case product_details_empty_title(productIdentifier: String)
     case unknown_package_type(Package)
     case custom_package_type(Package)
@@ -152,12 +152,28 @@ extension OfferingStrings: LogMessage {
             "https://rev.cat/how-to-configure-offerings.\nMore information: https://rev.cat/why-are-offerings-empty"
             return description
 
-        case .offering_empty(let offeringIdentifier):
-            return "There's a problem with your configuration. No packages could be found for offering with  " +
-            "identifier \(offeringIdentifier). This could be due to Products not being configured correctly in the " +
-            "RevenueCat dashboard, App Store Connect (or the StoreKit Configuration file " +
-            "if one is being used). \nTo configure products, follow the instructions in " +
-            "https://rev.cat/how-to-configure-offerings. \nMore information: https://rev.cat/why-are-offerings-empty"
+        case let .offering_empty(offeringIdentifier, apiKeyValidationResult):
+            switch apiKeyValidationResult.storeNameForLogging {
+            case "App Store":
+                return "There's a problem with your configuration. No packages could be found for offering with  " +
+                "identifier \(offeringIdentifier). This could be due to Products not being configured correctly in " +
+                "the RevenueCat dashboard, App Store Connect (or the StoreKit Configuration file " +
+                "if one is being used). \nTo configure products, follow the instructions in " +
+                "https://rev.cat/how-to-configure-offerings. " +
+                "\nMore information: https://rev.cat/why-are-offerings-empty"
+            case "Test Store":
+                return "There's a problem with your configuration. No packages could be found for offering with " +
+                "identifier \(offeringIdentifier). This could be due to Test Store products not being configured " +
+                "correctly in the RevenueCat dashboard. \nTo configure products, follow the instructions in " +
+                "https://rev.cat/how-to-configure-offerings. " +
+                "\nMore information: https://rev.cat/why-are-offerings-empty"
+            default:
+                return "There's a problem with your configuration. No packages could be found for offering with " +
+                "identifier \(offeringIdentifier). This could be due to products not being configured correctly in " +
+                "the RevenueCat dashboard. \nTo configure products, follow the instructions in " +
+                "https://rev.cat/how-to-configure-offerings. " +
+                "\nMore information: https://rev.cat/why-are-offerings-empty"
+            }
 
         case let .product_details_empty_title(identifier):
             return "Empty Product titles are not supported. Found in product with identifier: \(identifier)"

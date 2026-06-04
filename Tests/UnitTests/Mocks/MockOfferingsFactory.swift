@@ -13,7 +13,8 @@ class MockOfferingsFactory: OfferingsFactory {
     override func createOfferings(
         from storeProductsByID: [String: StoreProduct],
         contents: Offerings.Contents,
-        loadedFromDiskCache: Bool
+        loadedFromDiskCache: Bool,
+        apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform
     ) -> Offerings? {
         if emptyOfferings {
             let response = OfferingsResponse(currentOfferingId: "base",
