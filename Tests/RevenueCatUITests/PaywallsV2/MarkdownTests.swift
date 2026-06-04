@@ -137,7 +137,7 @@ final class MarkdownTests: TestCase {
 
         // Should preserve italic (emphasized)
         let italicRuns = result.runs.filter {
-            $0.inlinePresentationIntent?.contains(.emphasized) == true
+            $0.inlinePresentationIntent?.contains(InlinePresentationIntent.emphasized) == true
         }
         XCTAssertFalse(italicRuns.isEmpty)
     }
@@ -220,7 +220,7 @@ final class MarkdownTests: TestCase {
 
         // With regular weight, bold should be applied
         let boldRuns = result!.runs.filter { run in
-            if let font = run.font {
+            if run.font != nil {
                 // Check if font has bold weight applied
                 return true // Font attribute exists
             }
@@ -257,7 +257,7 @@ final class MarkdownTests: TestCase {
         XCTAssertEqual(plainText, "Hello world")
 
         let italicRuns = result!.runs.filter {
-            $0.inlinePresentationIntent?.contains(.emphasized) == true
+            $0.inlinePresentationIntent?.contains(InlinePresentationIntent.emphasized) == true
         }
         XCTAssertFalse(italicRuns.isEmpty)
     }
@@ -314,7 +314,7 @@ final class MarkdownTests: TestCase {
         XCTAssertEqual(plainText, "Use print() function")
 
         let codeRuns = result!.runs.filter {
-            $0.inlinePresentationIntent?.contains(.code) == true
+            $0.inlinePresentationIntent?.contains(InlinePresentationIntent.code) == true
         }
         XCTAssertFalse(codeRuns.isEmpty)
     }
@@ -334,7 +334,7 @@ final class MarkdownTests: TestCase {
 
         // Check all formatting types are present
         let italicRuns = result!.runs.filter {
-            $0.inlinePresentationIntent?.contains(.emphasized) == true
+            $0.inlinePresentationIntent?.contains(InlinePresentationIntent.emphasized) == true
         }
         XCTAssertFalse(italicRuns.isEmpty, "Should have italic runs")
 

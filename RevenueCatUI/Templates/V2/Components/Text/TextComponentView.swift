@@ -108,6 +108,18 @@ struct NonLocalizedMarkdownText: View {
     let fontWeight: Font.Weight
     let componentName: String?
 
+    init(
+        text: String,
+        font: Font,
+        fontWeight: Font.Weight,
+        componentName: String? = nil
+    ) {
+        self.text = text
+        self.font = font
+        self.fontWeight = fontWeight
+        self.componentName = componentName
+    }
+
     var markdownText: AttributedString? {
         /*
          The intended behavior is:
