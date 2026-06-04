@@ -154,6 +154,24 @@ final class FileImageLoaderTests: TestCase {
         expect(backToFirstImageData) == firstImageData
     }
 
+    func testConcurrentDecodedImageLoadsComplete() async throws {
+        let url = Self.makeLocalURL(filename: "test-concurrent-\(UUID().uuidString).png")
+        let data = try Self.makeImageData(variant: .red)
+        try Self.writeImageData(data, to: url)
+
+        await withTaskGroup(of: Bool.self) { group in
+            for _ in 0..<64 {
+                group.addTask {
+                    return url.asImageAndSize != nil
+                }
+            }
+
+            for await didLoadImage in group {
+                expect(didLoadImage) == true
+            }
+        }
+    }
+
     // MARK: - Helpers
 
     private func makeFileRepository() -> FileRepository {
