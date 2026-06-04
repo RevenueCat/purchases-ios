@@ -64,16 +64,16 @@ extension OfferingStrings: LogMessage {
     var description: String {
         switch self {
         case let .cannot_find_product_configuration_error(identifiers, apiKeyValidationResult):
-            switch apiKeyValidationResult.storeNameForLogging {
-            case "App Store":
+            switch apiKeyValidationResult {
+            case .validApplePlatform, .legacy:
                 return "Could not find products with identifiers: \(identifiers)." +
                     "\nThere is a problem with your configuration in App Store Connect. " +
                     "\nMore info here: https://errors.rev.cat/configuring-products"
-            case "Test Store":
+            case .simulatedStore:
                 return "Could not find products with identifiers: \(identifiers)." +
                     "\nThere is a problem with your Test Store configuration in the RevenueCat dashboard. " +
                     "\nMore info here: https://errors.rev.cat/configuring-products"
-            default:
+            case .otherPlatforms:
                 return "Could not find products with identifiers: \(identifiers)." +
                     "\nThere is a problem with your product configuration in the RevenueCat dashboard. " +
                     "\nMore info here: https://errors.rev.cat/configuring-products"
@@ -145,16 +145,16 @@ extension OfferingStrings: LogMessage {
             return "\(handlersCount) completion handlers waiting on products"
 
         case let .configuration_error_products_not_found(apiKeyValidationResult):
-            switch apiKeyValidationResult.storeNameForLogging {
-            case "App Store":
+            switch apiKeyValidationResult {
+            case .validApplePlatform, .legacy:
                 return "There's a problem with your configuration. None of the products registered in the " +
                 "RevenueCat dashboard could be fetched from App Store Connect (or the StoreKit Configuration " +
                 "file if one is being used). \nMore information: https://rev.cat/why-are-offerings-empty"
-            case "Test Store":
+            case .simulatedStore:
                 return "There's a problem with your configuration. None of the Test Store products registered in " +
                 "the RevenueCat dashboard could be fetched. " +
                 "\nMore information: https://rev.cat/why-are-offerings-empty"
-            default:
+            case .otherPlatforms:
                 return "There's a problem with your configuration. None of the products registered in the " +
                 "RevenueCat dashboard could be fetched. " +
                 "\nMore information: https://rev.cat/why-are-offerings-empty"
@@ -176,21 +176,21 @@ extension OfferingStrings: LogMessage {
             return description
 
         case let .offering_empty(offeringIdentifier, apiKeyValidationResult):
-            switch apiKeyValidationResult.storeNameForLogging {
-            case "App Store":
+            switch apiKeyValidationResult {
+            case .validApplePlatform, .legacy:
                 return "There's a problem with your configuration. No packages could be found for offering with  " +
                 "identifier \(offeringIdentifier). This could be due to Products not being configured correctly in " +
                 "the RevenueCat dashboard, App Store Connect (or the StoreKit Configuration file " +
                 "if one is being used). \nTo configure products, follow the instructions in " +
                 "https://rev.cat/how-to-configure-offerings. " +
                 "\nMore information: https://rev.cat/why-are-offerings-empty"
-            case "Test Store":
+            case .simulatedStore:
                 return "There's a problem with your configuration. No packages could be found for offering with " +
                 "identifier \(offeringIdentifier). This could be due to Test Store products not being configured " +
                 "correctly in the RevenueCat dashboard. \nTo configure products, follow the instructions in " +
                 "https://rev.cat/how-to-configure-offerings. " +
                 "\nMore information: https://rev.cat/why-are-offerings-empty"
-            default:
+            case .otherPlatforms:
                 return "There's a problem with your configuration. No packages could be found for offering with " +
                 "identifier \(offeringIdentifier). This could be due to products not being configured correctly in " +
                 "the RevenueCat dashboard. \nTo configure products, follow the instructions in " +
@@ -217,19 +217,19 @@ extension OfferingStrings: LogMessage {
             return "Package: \(old) already exists, overwriting with: \(new)"
 
         case let .known_issue_ios_18_4_simulator_products_not_found(apiKeyValidationResult):
-            switch apiKeyValidationResult.storeNameForLogging {
-            case "App Store":
+            switch apiKeyValidationResult {
+            case .validApplePlatform, .legacy:
                 return "None of the products registered in the RevenueCat dashboard could be fetched from App " +
                 "Store Connect (or the StoreKit Configuration file if one is being used)." +
                 "\nThis issue is widely reported by iOS 18.4 simulator users. Try using a different iOS version " +
                 "with your simulator." +
                 "\nMore information: https://rev.cat/ios-18-4-simulator-issue"
-            case "Test Store":
+            case .simulatedStore:
                 return "None of the Test Store products registered in the RevenueCat dashboard could be fetched." +
                 "\nThis issue is widely reported by iOS 18.4 simulator users. Try using a different iOS version " +
                 "with your simulator." +
                 "\nMore information: https://rev.cat/ios-18-4-simulator-issue"
-            default:
+            case .otherPlatforms:
                 return "None of the products registered in the RevenueCat dashboard could be fetched." +
                 "\nThis issue is widely reported by iOS 18.4 simulator users. Try using a different iOS version " +
                 "with your simulator." +

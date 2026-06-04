@@ -427,7 +427,7 @@ private extension CustomerInfoManager {
 
         // The Simulated Store ("Test Store") never touches StoreKit, so skip reading
         // StoreKit transactions and the storefront and fetch CustomerInfo from the backend directly.
-        guard !self.systemInfo.isSimulatedStoreAPIKey else {
+        if self.systemInfo.isSimulatedStoreAPIKey {
             self.requestCustomerInfo(appUserID: appUserID,
                                      isAppBackgrounded: isAppBackgrounded) { result in
                 completion(CustomerInfoDataResult(result: result))
