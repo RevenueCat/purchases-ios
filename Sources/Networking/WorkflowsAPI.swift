@@ -117,10 +117,14 @@ class WorkflowsAPI {
         let callback = WorkflowDetailCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.workflowDetailCallbackCache.add(callback)
 
+        // Detail fetches run on the dedicated workflows queue so their CDN asset downloads overlap
+        // (up to 4) instead of serializing on the single serial backend queue. The list fetch above
+        // stays on the serial queue.
         self.backendConfig.addCacheableOperation(
             with: factory,
             delay: .default(forBackgroundedApp: isAppBackgrounded),
-            cacheStatus: cacheStatus
+            cacheStatus: cacheStatus,
+            queue: self.backendConfig.workflowsQueue
         )
     }
 

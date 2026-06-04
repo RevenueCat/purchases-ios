@@ -147,6 +147,57 @@ class BackendGetWorkflowTests: BaseBackendTests {
         expect(self.httpClient.calls).to(beEmpty())
     }
 
+    func testWorkflowsQueueAllowsFourConcurrentOperations() {
+        let queue = Backend.QueueProvider.createWorkflowsQueue()
+        expect(queue.maxConcurrentOperationCount) == 4
+        expect(queue.name) == "RC Workflows Queue"
+    }
+
+    func testGetWorkflowEnqueuesOnWorkflowsQueueWhileListUsesSerialQueue() {
+        // Build a config whose queues we control and keep suspended, so operations pile up without
+        // executing. This lets us observe *which* queue each request lands on, deterministically. (We
+        // can't observe wall-clock concurrency here because MockHTTPClient delivers every response on
+        // the main thread, serializing the downstream CDN fetches regardless of queue concurrency.)
+        self.httpClient.disableSnapshotTesting()
+
+        let serialQueue = OperationQueue()
+        serialQueue.maxConcurrentOperationCount = 1
+        serialQueue.isSuspended = true
+        let workflowsQueue = Backend.QueueProvider.createWorkflowsQueue()
+        workflowsQueue.isSuspended = true
+
+        let config = BackendConfiguration(
+            httpClient: self.httpClient,
+            operationDispatcher: self.operationDispatcher,
+            operationQueue: serialQueue,
+            diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
+            workflowsQueue: workflowsQueue,
+            systemInfo: self.systemInfo,
+            offlineCustomerInfoCreator: self.mockOfflineCustomerInfoCreator,
+            dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate)
+        )
+        let api = WorkflowsAPI(backendConfig: config)
+
+        // Two distinct detail fetches => two operations, both on the workflows queue.
+        api.getWorkflow(appUserID: Self.userID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+        api.getWorkflow(appUserID: Self.userID, workflowId: "wf_2", isAppBackgrounded: false) { _ in }
+
+        expect(workflowsQueue.operationCount) == 2
+        expect(serialQueue.operationCount) == 0
+
+        // The list fetch stays on the serial queue.
+        api.getWorkflows(appUserID: Self.userID, isAppBackgrounded: false) { _ in }
+
+        expect(serialQueue.operationCount) == 1
+        expect(workflowsQueue.operationCount) == 2
+
+        // Drain so no operation is left un-started at teardown (NetworkOperation asserts on deinit).
+        serialQueue.isSuspended = false
+        workflowsQueue.isSuspended = false
+        expect(workflowsQueue.operationCount).toEventually(equal(0))
+        expect(serialQueue.operationCount).toEventually(equal(0))
+    }
+
 }
 
 // MARK: - List endpoint tests
