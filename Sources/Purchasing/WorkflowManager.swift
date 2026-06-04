@@ -108,6 +108,12 @@ class WorkflowManager {
         return self.workflowsCache.workflowId(forOfferingId: offeringId)
     }
 
+    /// Marks the workflows list stale so the next ``getWorkflowsList(appUserID:isAppBackgrounded:onComplete:)``
+    /// refetches it. Called when offerings are refreshed from the network, to keep both in sync.
+    func forceWorkflowsListCacheStale() {
+        self.workflowsCache.forceWorkflowsListCacheStale()
+    }
+
 }
 
 // MARK: - Private

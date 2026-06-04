@@ -101,6 +101,19 @@ final class WorkflowsCache {
                                            lastUpdated: .distantPast)
     }
 
+    /// Marks the in-memory workflows list stale so the next ``isWorkflowsListCacheStale(isAppBackgrounded:)``
+    /// returns `true` and triggers a refetch, while ``workflowId(forOfferingId:)`` keeps resolving the
+    /// current map until then. Used to refresh the list alongside a network offerings refresh. No-op
+    /// when nothing is cached; the on-disk copy is left untouched.
+    func forceWorkflowsListCacheStale() {
+        self.cachedList.modify { cached in
+            guard let current = cached else { return }
+            cached = CachedList(response: current.response,
+                                offeringIdToWorkflowId: current.offeringIdToWorkflowId,
+                                lastUpdated: .distantPast)
+        }
+    }
+
     /// Resolves the workflow id for an offering from the in-memory list, or `nil` when the list
     /// hasn't been cached this session.
     func workflowId(forOfferingId offeringId: String) -> String? {

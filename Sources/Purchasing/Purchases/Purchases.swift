@@ -495,6 +495,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
                                               attributeSyncing: subscriberAttributesManager,
+                                              workflowsCache: systemInfo.workflowsEndpointEnabled
+                                              ? workflowsCache : nil,
                                               appUserID: appUserID
         )
 
@@ -529,13 +531,42 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                attributionPoster: attributionPoster,
                                                systemInfo: systemInfo)
         let introCalculator = IntroEligibilityCalculator(productsManager: productsManager, receiptParser: receiptParser)
+
+        let trialOrIntroPriceChecker = CachingTrialOrIntroPriceEligibilityChecker.create(
+            with: TrialOrIntroPriceEligibilityChecker(systemInfo: systemInfo,
+                                                      receiptFetcher: receiptFetcher,
+                                                      introEligibilityCalculator: introCalculator,
+                                                      backend: backend,
+                                                      currentUserProvider: identityManager,
+                                                      operationDispatcher: operationDispatcher,
+                                                      productsManager: productsManager,
+                                                      diagnosticsTracker: diagnosticsTracker)
+        )
+
+        let paywallCache: PaywallCacheWarmingType?
+
+        if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
+            paywallCache = PaywallCacheWarming(
+                introEligibiltyChecker: trialOrIntroPriceChecker
+            )
+        } else {
+            paywallCache = nil
+        }
+
+        let workflowManager = WorkflowManager(backend: backend,
+                                              workflowsCache: workflowsCache,
+                                              paywallCache: paywallCache,
+                                              operationDispatcher: operationDispatcher)
+
         let offeringsManager = OfferingsManager(deviceCache: deviceCache,
                                                 operationDispatcher: operationDispatcher,
                                                 systemInfo: systemInfo,
                                                 backend: backend,
                                                 offeringsFactory: offeringsFactory,
                                                 productsManager: productsManager,
-                                                diagnosticsTracker: diagnosticsTracker)
+                                                diagnosticsTracker: diagnosticsTracker,
+                                                workflowManager: systemInfo.workflowsEndpointEnabled
+                                                ? workflowManager : nil)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
                                                          currentUserProvider: identityManager)
@@ -654,32 +685,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 )
             }
         }()
-
-        let trialOrIntroPriceChecker = CachingTrialOrIntroPriceEligibilityChecker.create(
-            with: TrialOrIntroPriceEligibilityChecker(systemInfo: systemInfo,
-                                                      receiptFetcher: receiptFetcher,
-                                                      introEligibilityCalculator: introCalculator,
-                                                      backend: backend,
-                                                      currentUserProvider: identityManager,
-                                                      operationDispatcher: operationDispatcher,
-                                                      productsManager: productsManager,
-                                                      diagnosticsTracker: diagnosticsTracker)
-        )
-
-        let paywallCache: PaywallCacheWarmingType?
-
-        if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
-            paywallCache = PaywallCacheWarming(
-                introEligibiltyChecker: trialOrIntroPriceChecker
-            )
-        } else {
-            paywallCache = nil
-        }
-
-        let workflowManager = WorkflowManager(backend: backend,
-                                              workflowsCache: workflowsCache,
-                                              paywallCache: paywallCache,
-                                              operationDispatcher: operationDispatcher)
 
         let virtualCurrencyManager = VirtualCurrencyManager(
             identityManager: identityManager,
