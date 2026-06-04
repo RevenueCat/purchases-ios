@@ -6207,6 +6207,7 @@
 				6D85396FCCE9A9B7DE30E09B /* RCElement.swift */,
 			);
 			name = RCContainer;
+			path = RCContainer;
 			sourceTree = "<group>";
 		};
 		AB70B73749FDB04A429A0E13 /* Layout */ = {
