@@ -18,6 +18,18 @@ import SwiftUI
 
 extension Purchases {
 
+    /// Attempts to present a paywall from a Preview Paywall deep link.
+    ///
+    /// This method parses the provided `URL` and attempts to extract information that correlates to a known offering and published paywall.
+    /// If successful, this method returns `true` and attempts to present that paywall for previewing.
+    ///
+    /// The `window` parameter is optional. If omitted, the SDK will attempt to locate a suitable foreground and key window for presentation.
+    /// If no window can be found (for example, the app is backgrounded), a warning is logged and the paywall is not shown.
+    ///
+    /// - Parameters:
+    ///   - url: The `URL` received by your application
+    ///   - window: The window to present the paywall from. In unspecified (the default), a suitable window will be chosen automatically.
+    /// - Returns: `true` if the URL is a valid rc-paywall-preview URL and handling has begun; `false` otherwise.
     @available(iOS 15.0, macOS 12.0, *)
     @objc public func presentPaywall(from url: URL, window: UIWindow? = nil) -> Bool {
         // expected format: {customScheme}://rc-paywall-preview?offering_id={OFFERING_ID}&paywall_id={PAYWALL_ID}
