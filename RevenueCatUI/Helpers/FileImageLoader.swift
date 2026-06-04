@@ -112,15 +112,21 @@ final class DecodedImageCache {
 
     static let shared = DecodedImageCache()
 
+    // `NSCache` is already thread-safe, so concurrent reads/writes need no extra synchronization.
+    //
+    // Important: do NOT guard this with a blocking `DispatchQueue.sync` / `.barrier`. `imageAndSize`
+    // is called from `async` image loads (`RemoteImage` / `FileImageLoader`) that run on the Swift
+    // Concurrency cooperative thread pool. A blocking `sync` from those tasks can exhaust and
+    // deadlock that (process-wide) pool when many images decode at once — e.g. an image-heavy
+    // paywall on first render — hanging the host app with no crash. See #6694.
     private let cache = NSCache<NSURL, Entry>()
-    private let queue = DispatchQueue(label: "com.revenuecat.DecodedImageCache", attributes: .concurrent)
 
     private init() {}
 
     func imageAndSize(for url: URL) -> (Image, CGSize)? {
         let key = url as NSURL
 
-        if let hit = self.queue.sync(execute: { self.cache.object(forKey: key) }) {
+        if let hit = self.cache.object(forKey: key) {
             return (hit.image, hit.size)
         }
 
@@ -128,9 +134,7 @@ final class DecodedImageCache {
             return nil
         }
 
-        self.queue.async(flags: .barrier) {
-            self.cache.setObject(Entry(image: decoded.0, size: decoded.1), forKey: key)
-        }
+        self.cache.setObject(Entry(image: decoded.0, size: decoded.1), forKey: key)
 
         return decoded
     }
