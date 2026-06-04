@@ -78,4 +78,20 @@ class SimulatedStoreTransactionFetcherTests: TestCase {
         expect(receivedNonNil) == false
     }
 
+    func testFetchReceiptReturnsEmptyReceiptAndLogsWarning() async throws {
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            let receipt = await self.fetcher.fetchReceipt(containing: MockStoreTransaction())
+
+            expect(receipt.transactions).to(beEmpty())
+            expect(receipt.subscriptionStatusBySubscriptionGroupId).to(beEmpty())
+            expect(receipt.bundleId).to(beEmpty())
+            expect(receipt.originalApplicationVersion).to(beNil())
+            expect(receipt.originalPurchaseDate).to(beNil())
+            self.logger.verifyMessageWasLogged(
+                Strings.purchase.simulated_store_unexpected_receipt_fetch,
+                level: .warn
+            )
+        }
+    }
+
 }

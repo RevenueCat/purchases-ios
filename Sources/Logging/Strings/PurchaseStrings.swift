@@ -94,6 +94,7 @@ enum PurchaseStrings {
     case sync_purchases_simulated_store
     case restore_purchases_simulated_store
     case simulating_purchase_success
+    case simulated_store_unexpected_receipt_fetch
 
     // Cached metadata
     case posting_remaining_cached_metadata(count: Int)
@@ -369,6 +370,9 @@ extension PurchaseStrings: LogMessage {
 
         case .simulating_purchase_success:
             return "[Test Store] Performing test purchase. This purchase won't appear in production."
+
+        case .simulated_store_unexpected_receipt_fetch:
+            return "[Test Store] Unexpectedly fetching a receipt. Returning an empty receipt."
 
         case let .posting_remaining_cached_metadata(count):
             return "Posting \(count) remaining cached transaction metadata entries"

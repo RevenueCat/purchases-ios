@@ -17,7 +17,7 @@ import StoreKit
 /// Implementation of `StoreKit2TransactionFetcherType` for the Simulated Store ("Test Store").
 ///
 /// The Simulated Store never uses StoreKit, so there are never any transactions to fetch. Every
-/// member returns an empty/`nil` result and nothing is logged.
+/// member returns an empty/`nil` result.
 final class SimulatedStoreTransactionFetcher: StoreKit2TransactionFetcherType {
 
     init() {}
@@ -59,6 +59,8 @@ final class SimulatedStoreTransactionFetcher: StoreKit2TransactionFetcherType {
     /// Returns an empty receipt to satisfy the protocol.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func fetchReceipt(containing transaction: StoreTransactionType) async -> StoreKit2Receipt {
+        Logger.warn(Strings.purchase.simulated_store_unexpected_receipt_fetch)
+
         return .init(
             environment: .xcode,
             subscriptionStatusBySubscriptionGroupId: [:],
