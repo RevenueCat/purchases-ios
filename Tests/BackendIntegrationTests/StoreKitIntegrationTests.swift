@@ -606,11 +606,6 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let product = try await self.monthlyPackage.storeProduct
 
-        // Flush any pending network activity from configuration (e.g. a CustomerInfo refresh)
-        // before clearing messages, so a background request doesn't race with the assertion
-        // below and cause a false failure.
-        _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
-
         self.logger.clearMessages()
 
         _ = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
