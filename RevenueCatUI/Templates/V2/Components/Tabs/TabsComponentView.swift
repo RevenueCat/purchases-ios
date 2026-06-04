@@ -13,7 +13,7 @@
 // swiftlint:disable file_length
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -26,16 +26,36 @@ class TabControlContext: ObservableObject {
 
     let controlStackViewModel: StackComponentViewModel
     let tabIds: [String]
+    let name: String?
+    let initialTabId: String
+    let tabContextNamesById: [String: String]
 
     init(controlStackViewModel: StackComponentViewModel,
          tabIds: [String],
-         defaultTabId: String?) {
+         defaultTabId: String?,
+         name: String?,
+         tabContextNamesById: [String: String] = [:]) {
         self.controlStackViewModel = controlStackViewModel
         self.tabIds = tabIds
+        self.name = name
+        self.tabContextNamesById = tabContextNamesById
 
         let calculatedDefaultTabId = defaultTabId ?? tabIds.first ?? ""
+        self.initialTabId = calculatedDefaultTabId
 
         self._selectedTabId = .init(initialValue: calculatedDefaultTabId)
+    }
+
+    var defaultTabIndex: Int? {
+        return self.index(for: self.initialTabId)
+    }
+
+    func index(for tabId: String) -> Int? {
+        return self.tabIds.firstIndex(of: tabId)
+    }
+
+    func contextName(for tabId: String) -> String? {
+        return self.tabContextNamesById[tabId]
     }
 
 }
@@ -45,6 +65,9 @@ struct TabsComponentView: View {
 
     @EnvironmentObject
     private var packageContext: PackageContext
+
+    @Environment(\.workflowPackageContext)
+    private var workflowPackageContext
 
     private let viewModel: TabsComponentViewModel
     private let onDismiss: () -> Void
@@ -58,6 +81,7 @@ struct TabsComponentView: View {
         LoadedTabsComponentView(
             viewModel: self.viewModel,
             parentPackageContext: self.packageContext,
+            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage,
             onDismiss: self.onDismiss
         )
     }
@@ -72,13 +96,25 @@ struct LoadedTabsComponentView: View {
     @EnvironmentObject
     private var packageContext: PackageContext
 
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
+
     @Environment(\.componentViewState)
     private var componentViewState
 
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+
     private let viewModel: TabsComponentViewModel
+    private let workflowDefaultPackage: Package?
     private let onDismiss: () -> Void
 
     @StateObject
@@ -89,42 +125,153 @@ struct LoadedTabsComponentView: View {
 
     @State var wasConfigured: Bool = false
 
+    // MARK: - Parent's Own Selection Tracking
+    //
+    // These track the parent's "own" package selection (before any tab propagation).
+    // When switching to a tab WITHOUT packages, we restore this selection.
+    //
+    // Example:
+    //   1. Parent has Package A selected
+    //   2. User switches to Tab 1 (has Package C) → C is propagated to parent
+    //   3. User switches to Tab 2 (no packages) → restore parent to A (not C)
+    //
+    @State
+    private var parentOwnedPackage: Package?
+
+    @State
+    private var parentOwnedVariableContext: PackageContext.VariableContext
+
+    // Tracks whether the user made an explicit package selection (vs. using initial defaults).
+    // When false, tabs with packages should show their own defaults.
+    // When true, the user's selection should be preserved across tabs if the package exists in the tab.
+    @State
+    private var didUserSelectPackage: Bool = false
+
     var activeTabViewModel: TabViewModel? {
         return self.viewModel.tabViewModels[self.tabControlContext.selectedTabId] ??
             self.viewModel.tabViewModels.values.first
     }
 
+    /// Determines the effective parent-owned package to use when switching tabs.
+    ///
+    /// - Package-less tabs: always use `parentOwnedPackage` for inheritance from parent
+    /// - Tabs with packages + user made selection: preserve user's selection
+    /// - Tabs with packages + no user selection: return nil to use tab's default
+    private func effectiveParentOwnedPackage(for tabViewModel: TabViewModel) -> Package? {
+        if tabViewModel.packages.isEmpty || self.didUserSelectPackage {
+            return self.parentOwnedPackage
+        } else {
+            return nil
+        }
+    }
+
+    /// `tabControlContext` is nil in production (the view owns its context); tests may pass
+    /// an external instance to drive tab switches programmatically without UI interaction.
     init(viewModel: TabsComponentViewModel,
          parentPackageContext: PackageContext,
-         onDismiss: @escaping () -> Void) {
+         workflowDefaultPackage: Package? = nil,
+         onDismiss: @escaping () -> Void,
+         tabControlContext: TabControlContext? = nil) {
         self.viewModel = viewModel
+        self.workflowDefaultPackage = workflowDefaultPackage
         self.onDismiss = onDismiss
 
-        self._tabControlContext = .init(wrappedValue: TabControlContext(
+        self._tabControlContext = .init(wrappedValue: tabControlContext ?? TabControlContext(
             controlStackViewModel: viewModel.controlStackViewModel,
             tabIds: viewModel.tabIds,
-            defaultTabId: viewModel.defaultTabId
+            defaultTabId: viewModel.defaultTabId,
+            name: viewModel.name,
+            tabContextNamesById: viewModel.tabContextNamesById
         ))
 
+        // Store the parent's initial selection for restoration when switching to package-less tabs
+        self._parentOwnedPackage = .init(initialValue: parentPackageContext.package)
+        self._parentOwnedVariableContext = .init(initialValue: parentPackageContext.variableContext)
+
+        // MARK: - Package Context Inheritance for Tabs
+        //
+        // This handles a nuanced scenario where tabs may or may not have their own packages:
+        //
+        // Example structure:
+        //   - Package A (parent scope, default)
+        //   - Package B (parent scope)
+        //   - Tabs Component
+        //       - Tab 1: has Package C (its own package)
+        //       - Tab 2: no packages (should inherit from parent)
+        //
+        // Solution:
+        // - Tabs WITH packages: create their own PackageContext with their packages
+        // - Tabs WITHOUT packages: use parentPackageContext directly (same instance)
+        //   This ensures they always reflect the current parent selection and stay in sync
+        //   automatically when the parent context changes.
+        //
         self._tierPackageContexts = .init(initialValue: Dictionary(
-            uniqueKeysWithValues: viewModel.tabViewModels.map { key, tabViewModel in
-                let packageContext = PackageContext(
-                    package: tabViewModel.defaultSelectedPackage,
-                    variableContext: .init(
-                        packages: tabViewModel.packages,
-                        showZeroDecimalPlacePrices: parentPackageContext.variableContext.showZeroDecimalPlacePrices
+            uniqueKeysWithValues: viewModel.tabViewModels.map { key, tabViewModel -> (String, PackageContext) in
+                if !tabViewModel.packages.isEmpty {
+                    // Tab has its own packages - create context with tab's packages.
+                    let packageContext = PackageContext(
+                        package: Self.initialPackage(
+                            parentPackage: parentPackageContext.package,
+                            tabPackages: tabViewModel.packages,
+                            workflowDefaultPackage: workflowDefaultPackage,
+                            tabDefaultPackage: tabViewModel.defaultSelectedPackage
+                        ),
+                        variableContext: .init(
+                            packages: tabViewModel.packages,
+                            showZeroDecimalPlacePrices: parentPackageContext.variableContext.showZeroDecimalPlacePrices
+                        )
                     )
-                )
-                return (key, packageContext)
+                    return (key, packageContext)
+                } else {
+                    // Tab has no packages - use parent context directly.
+                    // This ensures the tab always shows the current parent selection.
+                    return (key, parentPackageContext)
+                }
             }
         ))
     }
 
+    /// Determines the initial package selection for a tab that has its own packages.
+    ///
+    /// On a workflow step revisit `parentPackage` already holds the user's cached selection
+    /// (stored in `WorkflowPaywallView.stepPackageContexts`). Prefer it when it is present in
+    /// this tab's package list so that the tab's `onAppear` propagation back to the parent
+    /// is a no-op rather than silently restoring the authored default and destroying the choice.
+    static func initialPackage(
+        parentPackage: Package?,
+        tabPackages: [Package],
+        workflowDefaultPackage: Package?,
+        tabDefaultPackage: Package?
+    ) -> Package? {
+        if let cached = parentPackage,
+           tabPackages.contains(where: { $0.identifier == cached.identifier }) {
+            return cached
+        }
+        return workflowDefaultPackage ?? tabDefaultPackage
+    }
+
     var body: some View {
-        if let activeTabViewModel,
+        let style = viewModel.styles(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
+            ),
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
+            colorScheme: self.colorScheme
+        )
+
+        if style.visible,
+            let activeTabViewModel,
             let tierPackageContext = self.tierPackageContexts[self.tabControlContext.selectedTabId] {
             LoadedTabComponentView(
                 stackViewModel: activeTabViewModel.stackViewModel,
+                parentPackageContext: self.packageContext,
+                tabPackageIdentifiers: Set(activeTabViewModel.packages.map(\.identifier)),
                 onChange: { context in
                     self.packageContext.update(
                         package: context.package,
@@ -135,19 +282,109 @@ struct LoadedTabsComponentView: View {
             )
             .environmentObject(self.tabControlContext)
             .environmentObject(tierPackageContext)
+            .environment(
+                \.planSelectionDefaultPackage,
+                self.workflowDefaultPackage ?? activeTabViewModel.defaultSelectedPackage
+            )
             .onAppear {
                 if !wasConfigured {
                     self.wasConfigured = true
-                    // In the event that the tabs components contain unique selected packages, we need to ensure that
-                    // the first selected tab's selected package is propagated up to the purchase button. This sends
-                    // that signal only for the initially rendered tab, then the onChange passed into the loadedTabView
-                    // handles subsequent changes
+                    // Propagate the initial tab's package to parent context for the purchase button.
+                    // Subsequent changes are handled by the onChange callback in LoadedTabComponentView.
                     if let package = tierPackageContext.package {
                         self.packageContext.update(
                             package: package,
                             variableContext: tierPackageContext.variableContext
                         )
                     }
+                }
+            }
+            // MARK: - Tab Switch Handling
+            //
+            // When switching to a tab, we need to determine which package to show:
+            //
+            // 1. If the tab has NO packages → restore parent's "own" selection
+            //    (the selection before any tab propagated its package)
+            //
+            // 2. If the tab HAS packages:
+            //    - If user made an explicit selection AND it's in the tab → keep it
+            //    - Otherwise → use tab's default
+            //
+            .onChangeOf(self.tabControlContext.selectedTabId) { newTabId in
+                guard let newTabViewModel = self.viewModel.tabViewModels[newTabId],
+                      let newTierPackageContext = self.tierPackageContexts[newTabId] else {
+                    return
+                }
+
+                let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+                    parentOwnedPackage: effectiveParentOwnedPackage(for: newTabViewModel),
+                    parentOwnedVariableContext: self.parentOwnedVariableContext,
+                    parentCurrentVariableContext: self.packageContext.variableContext,
+                    tabPackages: newTabViewModel.packages,
+                    tabDefaultPackage: self.workflowDefaultPackage ?? newTabViewModel.defaultSelectedPackage
+                )
+                if let tabUpdate = updatePlan.tabUpdate {
+                    newTierPackageContext.update(
+                        package: tabUpdate.package,
+                        variableContext: tabUpdate.variableContext
+                    )
+                }
+                if let parentUpdate = updatePlan.parentUpdate {
+                    self.packageContext.update(
+                        package: parentUpdate.package,
+                        variableContext: parentUpdate.variableContext
+                    )
+                }
+            }
+            // MARK: - Parent Selection Propagation to Tabs
+            //
+            // When the user selects a package in the parent scope (outside the tabs),
+            // we need to propagate that selection to the current tab so it shows
+            // the correct variable values (e.g., price).
+            //
+            // We track "parentOwnedPackage" for user selections:
+            // - Tab propagation: newPackage == tab's current package → don't track
+            // - User selection: newPackage != tab's current package → track it
+            //
+            .onChangeOf(self.packageContext.package) { newPackage in
+                guard let newPackage = newPackage else {
+                    // Parent selection cleared; track it so package-less tabs restore nil.
+                    self.parentOwnedPackage = nil
+                    self.parentOwnedVariableContext = self.packageContext.variableContext
+                    return
+                }
+
+                // Check if the new package is in the current tab's packages
+                let tabPackageIdentifiers = Set(activeTabViewModel.packages.map(\.identifier))
+                let tabHasNoPackages = tabPackageIdentifiers.isEmpty
+                let packageIsInTab = tabPackageIdentifiers.contains(newPackage.identifier)
+                let isTabPropagation = !tabHasNoPackages &&
+                    newPackage.identifier == tierPackageContext.package?.identifier
+
+                if isTabPropagation {
+                    // This is the tab propagating its own package to parent
+                    // Don't update parentOwnedPackage
+                    return
+                }
+
+                // This is a user selection - track it
+                self.didUserSelectPackage = true
+                self.parentOwnedPackage = newPackage
+                self.parentOwnedVariableContext = self.packageContext.variableContext
+
+                // If the package is in the current tab's packages, also update the tab
+                if packageIsInTab {
+                    tierPackageContext.update(
+                        package: newPackage,
+                        variableContext: self.packageContext.variableContext
+                    )
+                } else if !tabHasNoPackages {
+                    // Root-only selection: clear tab highlight. Parent is not updated here;
+                    // `LoadedTabComponentView` suppresses propagating this nil to the parent.
+                    tierPackageContext.update(
+                        package: nil,
+                        variableContext: tierPackageContext.variableContext
+                    )
                 }
             }
         }
@@ -162,13 +399,21 @@ struct LoadedTabComponentView: View {
     private var tabPackageContext: PackageContext
 
     private let stackViewModel: StackComponentViewModel
+    private let parentPackageContext: PackageContext
+    private let tabPackageIdentifiers: Set<String>
     private let onChange: (PackageContext) -> Void
     private let onDismiss: () -> Void
 
-    init(stackViewModel: StackComponentViewModel,
-         onChange: @escaping (PackageContext) -> Void,
-         onDismiss: @escaping () -> Void) {
+    init(
+        stackViewModel: StackComponentViewModel,
+        parentPackageContext: PackageContext,
+        tabPackageIdentifiers: Set<String>,
+        onChange: @escaping (PackageContext) -> Void,
+        onDismiss: @escaping () -> Void
+    ) {
         self.stackViewModel = stackViewModel
+        self.parentPackageContext = parentPackageContext
+        self.tabPackageIdentifiers = tabPackageIdentifiers
         self.onChange = onChange
         self.onDismiss = onDismiss
     }
@@ -181,9 +426,35 @@ struct LoadedTabComponentView: View {
         .environmentObject(self.tabPackageContext)
         // Comparing on tabPackageContext.package but sending tabPackageContext to parent
         .onChangeOf(self.tabPackageContext.package) { _ in
+            if TabPackageParentPropagation.shouldSuppressNotifyingParent(
+                tabPackage: self.tabPackageContext.package,
+                tabPackageIdentifiers: self.tabPackageIdentifiers,
+                parentPackage: self.parentPackageContext.package
+            ) {
+                return
+            }
             self.onChange(self.tabPackageContext)
         }
     }
+
+}
+
+/// Decides when a tab `PackageContext` change should not overwrite the paywall (parent) selection.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+enum TabPackageParentPropagation {
+
+	/// When the tab clears local selection to `nil` while the parent holds a root-only package,
+	/// do not notify the parent (avoids clearing the purchase selection).
+	static func shouldSuppressNotifyingParent(
+		tabPackage: Package?,
+		tabPackageIdentifiers: Set<String>,
+		parentPackage: Package?
+	) -> Bool {
+		guard tabPackage == nil else { return false }
+		guard !tabPackageIdentifiers.isEmpty else { return false }
+		guard let parentId = parentPackage?.identifier else { return false }
+		return !tabPackageIdentifiers.contains(parentId)
+	}
 
 }
 

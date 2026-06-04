@@ -15,8 +15,8 @@
 
 final class MockStorefront: StorefrontType {
 
-    init(countryCode: String) {
-        self.identifier = countryCode
+    init(identifier: String? = nil, countryCode: String) {
+        self.identifier = identifier ?? countryCode
         self.countryCode = countryCode
     }
 

@@ -17,7 +17,7 @@ import XCTest
 @testable import XcodeDirectInstallation
 #endif
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 class InstallationTests: XCTestCase {
 
@@ -36,5 +36,21 @@ class InstallationTests: XCTestCase {
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: 10.0)
+    }
+
+    func testInstallationMethodIsDetectedCorrectly() throws {
+        #if SPM_INSTALLATION
+        let expected = "spm"
+        #elseif COCOAPODS_INSTALLATION
+        let expected = "cocoapods"
+        #elseif CARTHAGE_INSTALLATION
+        let expected = "unknown"
+        #elseif XCODE_INSTALLATION
+        let expected = "unknown"
+        #else
+        let expected = "unknown"
+        #endif
+
+        XCTAssertEqual(Purchases.installationMethod, expected)
     }
 }

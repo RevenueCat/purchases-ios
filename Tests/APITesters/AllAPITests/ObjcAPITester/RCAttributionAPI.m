@@ -42,6 +42,12 @@
     [a setAirbridgeDeviceID:@""];
     [a setKochavaDeviceID:nil];
     [a setKochavaDeviceID:@""];
+    [a setSolarEngineDistinctId: nil];
+    [a setSolarEngineDistinctId: @""];
+    [a setSolarEngineAccountId: nil];
+    [a setSolarEngineAccountId: @""];
+    [a setSolarEngineVisitorId: nil];
+    [a setSolarEngineVisitorId: @""];
     [a setMixpanelDistinctID: nil];
     [a setMixpanelDistinctID: @""];
     [a setFirebaseAppInstanceID: nil];
@@ -68,6 +74,13 @@
     [a setCreative: @""];
     [a collectDeviceIdentifiers];
     [a enableAdServicesAttributionTokenCollection];
+
+    [a setAppsFlyerConversionData:nil];
+    NSDictionary *dict = @{};
+    [a setAppsFlyerConversionData:dict];
+    [a setAppstackAttributionParams:nil completion:^(RCOfferings *offerings, NSError *error) {}];
+    NSDictionary *appstackDict = @{};
+    [a setAppstackAttributionParams:appstackDict completion:^(RCOfferings *offerings, NSError *error) {}];
 }
 
 @end

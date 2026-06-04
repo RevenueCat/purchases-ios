@@ -22,6 +22,7 @@ struct OfferingsResponse {
 
             let identifier: String
             let platformProductIdentifier: String
+            let platformProductPlanIdentifier: String?
             let webCheckoutUrl: URL?
 
         }
@@ -64,7 +65,7 @@ extension OfferingsResponse {
             self.offerings
                 .lazy
                 .flatMap { $0.packages }
-                .map { $0.platformProductIdentifier }
+                .map(\.compoundProductIdentifier)
         )
     }
 
@@ -76,6 +77,19 @@ extension OfferingsResponse {
 
     var packages: [Offering.Package] {
         return self.offerings.flatMap { $0.packages }
+    }
+}
+
+extension OfferingsResponse.Offering.Package {
+    var compoundProductIdentifier: String {
+        let productPlanIdentifier = BillingPlanType.compoundProductIDPlanComponent(
+            from: self.platformProductPlanIdentifier
+        )
+
+        return CompoundProductIdentifier(
+            productIdentifier: self.platformProductIdentifier,
+            productPlanIdentifier: productPlanIdentifier
+        )?.compoundProductIdentifier ?? self.platformProductIdentifier
     }
 }
 

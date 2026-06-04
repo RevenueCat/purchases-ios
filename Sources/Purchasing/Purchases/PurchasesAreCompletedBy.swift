@@ -29,6 +29,11 @@ extension PurchasesAreCompletedBy {
     var finishTransactions: Bool {
         self == .revenueCat
     }
+
+    var observerMode: Bool {
+        !self.finishTransactions
+    }
 }
 
 extension PurchasesAreCompletedBy: Sendable {}
+extension PurchasesAreCompletedBy: Codable {}

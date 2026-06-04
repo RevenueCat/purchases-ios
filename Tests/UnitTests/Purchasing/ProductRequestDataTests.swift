@@ -1,4 +1,5 @@
 import Nimble
+import SnapshotTesting
 import XCTest
 
 @testable import RevenueCat
@@ -209,6 +210,128 @@ class ProductRequestDataTests: TestCase {
         expect(productData.cacheKey) == "cool_product-49.99-UYU-ESP-1-0-cool_group-P3Y-P3W-2-offerid1-offerid2-offerid3"
     }
 
+    func testInitializesProductIdentifierWithBillingPlan() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let productIdentifier = "cool_product"
+        let product = Self.product(
+            productIdentifier: productIdentifier,
+            price: 11.97,
+            installmentsInfo: Self.installmentsInfo(billingPlanType: .monthly)
+        )
+
+        let productData = ProductRequestData(with: product, storeCountry: "USA")
+
+        expect(productData.productIdentifier) == "\(productIdentifier):monthly"
+    }
+
+    func testInitializesProductIdentifierWithoutBillingPlan() {
+        let productIdentifier = "cool_product"
+        let product = TestStoreProduct(
+            localizedTitle: "Cool product",
+            price: 3.99,
+            currencyCode: "USD",
+            localizedPriceString: "$3.99",
+            productIdentifier: productIdentifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: "A cool product",
+            subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            locale: Locale(identifier: "en_US"),
+            installmentsInfo: nil
+        ).toStoreProduct()
+
+        let productData = ProductRequestData(with: product, storeCountry: "USA")
+
+        expect(productData.productIdentifier) == productIdentifier
+    }
+
+    func testInitializesPriceWithInstallmentBillingPriceForMonthlyBillingPlan() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let product = Self.product(
+            price: 11.97,
+            installmentsInfo: Self.installmentsInfo(
+                billingPlanType: .monthly,
+                installmentBillingPrice: 3.99,
+                commitmentTotalPrice: 11.97
+            )
+        )
+
+        let productData = ProductRequestData(with: product, storeCountry: "USA")
+
+        expect(productData.price) == 3.99
+    }
+
+    func testInitializesPriceWithProductPriceForUpFrontBillingPlan() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let product = Self.product(
+            price: 11.97,
+            installmentsInfo: Self.installmentsInfo(
+                billingPlanType: .upFront,
+                installmentBillingPrice: 3.99,
+                commitmentTotalPrice: 11.97
+            )
+        )
+
+        let productData = ProductRequestData(with: product, storeCountry: "USA")
+
+        expect(productData.price) == 11.97
+    }
+
+    func testInitializesPriceWithProductPriceWithoutInstallmentsInfo() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let product = Self.product(
+            price: 11.97,
+            installmentsInfo: nil
+        )
+
+        let productData = ProductRequestData(with: product, storeCountry: "USA")
+
+        expect(productData.price) == 11.97
+    }
+
+}
+
+private extension ProductRequestDataTests {
+
+    static func product(
+        productIdentifier: String = "cool_product",
+        price: Decimal,
+        installmentsInfo: InstallmentsInfo?
+    ) -> StoreProduct {
+        return TestStoreProduct(
+            localizedTitle: "Cool product",
+            price: price,
+            currencyCode: "USD",
+            localizedPriceString: "$\(price)",
+            productIdentifier: productIdentifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: "A cool product",
+            subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            locale: Locale(identifier: "en_US"),
+            installmentsInfo: installmentsInfo
+        ).toStoreProduct()
+    }
+
+    static func installmentsInfo(
+        billingPlanType: BillingPlanType,
+        installmentBillingPrice: Decimal = 3.99,
+        commitmentTotalPrice: Decimal = 11.97
+    ) -> InstallmentsInfo {
+        return InstallmentsInfo(
+            commitmentInstallmentsCount: 3,
+            commitmentInstallmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            installmentBillingPrice: installmentBillingPrice,
+            installmentBillingDisplayPrice: "$\(installmentBillingPrice)",
+            commitmentTotalPeriod: SubscriptionPeriod(value: 3, unit: .month),
+            commitmentTotalPrice: commitmentTotalPrice,
+            commitmentTotalDisplayPrice: "$\(commitmentTotalPrice)",
+            billingPlanType: billingPlanType
+        )
+    }
+
 }
 
 private extension ProductRequestDataTests {
@@ -217,7 +340,7 @@ private extension ProductRequestDataTests {
                   testName: String = #function,
                   line: UInt = #line) {
         assertSnapshot(
-            matching: data,
+            of: data,
             as: .formattedJson,
             testName: testName,
             line: line

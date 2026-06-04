@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 7/27/23.
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import StoreKit
 
 /// Used for simulating purchases made from outside the SDK.

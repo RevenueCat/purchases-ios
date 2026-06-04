@@ -35,6 +35,10 @@ class SystemInfo {
     }
 
     let storeKitVersion: StoreKitVersion
+
+    /// The public API key used to configure the SDK.
+    let apiKey: String
+
     private var _apiKeyValidationResult: Configuration.APIKeyValidationResult
     var apiKeyValidationResult: Configuration.APIKeyValidationResult {
         get { return self._apiKeyValidationResult }
@@ -89,6 +93,12 @@ class SystemInfo {
         return self._isSandbox
     }
 
+    /// Whether the paywall workflows endpoint is enabled, driven by the `-EnableWorkflowsEndpoint`
+    /// launch argument. Temporary gate while workflows are being rolled out.
+    var workflowsEndpointEnabled: Bool {
+        return ProcessInfo.processInfo.arguments.contains("-EnableWorkflowsEndpoint")
+    }
+
     var isDebugBuild: Bool {
 #if DEBUG
         return true
@@ -102,7 +112,19 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.51.0-SNAPSHOT"
+        return "5.77.0-SNAPSHOT"
+    }
+
+    static var installationMethod: String {
+        #if SWIFT_PACKAGE
+        return "spm"
+        #elseif COCOAPODS
+        return "cocoapods"
+        #elseif RC_XCFRAMEWORK
+        return "xcframework"
+        #else
+        return "unknown"
+        #endif
     }
 
     static var systemVersion: String {
@@ -191,6 +213,7 @@ class SystemInfo {
          sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
          storefrontProvider: StorefrontProviderType = DefaultStorefrontProvider(),
          storeKitVersion: StoreKitVersion = .default,
+         apiKey: String,
          apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
@@ -205,6 +228,7 @@ class SystemInfo {
         self._isAppBackgroundedState = .init(isAppBackgrounded ?? false)
         self.operationDispatcher = operationDispatcher
         self.storeKitVersion = storeKitVersion
+        self.apiKey = apiKey
         self._apiKeyValidationResult = apiKeyValidationResult
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.storefrontProvider = storefrontProvider
@@ -343,6 +367,16 @@ extension SystemInfo {
             NSApplication.willBecomeActiveNotification
         #elseif os(watchOS)
             Notification.Name.NSExtensionHostWillEnterForeground
+        #endif
+    }
+
+    static var applicationWillResignActiveNotification: Notification.Name {
+        #if os(iOS) || os(tvOS) || VISION_OS
+            UIApplication.willResignActiveNotification
+        #elseif os(macOS)
+            NSApplication.willResignActiveNotification
+        #elseif os(watchOS)
+            Notification.Name.NSExtensionHostWillResignActive
         #endif
     }
 

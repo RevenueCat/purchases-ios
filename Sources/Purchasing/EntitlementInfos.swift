@@ -58,9 +58,11 @@ import Foundation
 
     // MARK: -
 
-    init(
-        entitlements: [String: EntitlementInfo],
-        verification: VerificationResult
+    /// Initializes an ``EntitlementInfos`` instance.
+    /// Useful for Unit testing purposes, since the other (internal) initializers require a backend response
+    public init(
+        entitlements: [String: EntitlementInfo] = [:],
+        verification: VerificationResult = .notRequested
     ) {
         self.all = entitlements
         self._verification = verification

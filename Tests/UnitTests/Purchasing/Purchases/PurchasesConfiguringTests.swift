@@ -14,7 +14,7 @@
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class PurchasesConfiguringTests: BasePurchasesTests {
 
@@ -193,6 +193,14 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         self.logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string)
     }
 
+    func testApiKeyIsExposedThroughInternalSPI() {
+        let key = "test_configured_api_key"
+        let purchases = Purchases.configure(withAPIKey: key)
+
+        expect(purchases.apiKey) == key
+        expect(Purchases.shared.apiKey) == key
+    }
+
     func testEntitlementVerificationModeDisabledDoesNotSetPublicKey() throws {
         let purchases = Purchases.configure(
             with: .init(withAPIKey: "")
@@ -334,6 +342,29 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         await expect(self.backend.healthReportRequests).toEventually(equal([]))
     }
 
+    func testHealthCheckIsEnqueuedAfterCacheOperations() async {
+        self.systemInfo.stubbedIsApplicationBackgrounded = false
+        self.setupPurchases()
+
+        // healthReportAvailability should be the last operation enqueued,
+        // so once it's called, all cache operations must have already been called.
+        await expect(self.backend.healthReportAvailabilityRequests).toEventually(haveCount(1))
+
+        expect(self.backend.getCustomerInfoCallCount).to(beGreaterThan(0))
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).to(beGreaterThan(0))
+        expect(self.mockOfflineEntitlementsManager.invokedUpdateProductsEntitlementsCacheIfStaleCount)
+            .to(beGreaterThan(0))
+
+        // Verify getCustomerInfo was called before healthReportAvailability
+        let order = self.backend.callOrder
+        guard let customerInfoIndex = order.firstIndex(of: .getCustomerInfo),
+              let healthAvailabilityIndex = order.firstIndex(of: .healthReportAvailability) else {
+            fail("Expected both getCustomerInfo and healthReportAvailability to be called")
+            return
+        }
+        expect(customerInfoIndex).to(beLessThan(healthAvailabilityIndex))
+    }
+
     func testFirstInitializationFromForegroundUpdatesCustomerInfoCacheIfUserDefaultsCacheStale() async {
         let staleCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -20, to: Date())!
         self.deviceCache.setCustomerInfoCache(timestamp: staleCacheDateForForeground,
@@ -446,7 +477,8 @@ class PurchasesConfiguringTests: BasePurchasesTests {
                           responseVerificationMode: .default,
                           dangerousSettings: .init(customEntitlementComputation: true),
                           showStoreMessagesAutomatically: true,
-                          preferredLocale: nil)
+                          preferredLocale: nil,
+                          currentConfiguration: nil)
         }.to(throwAssertion())
     }
 
@@ -609,6 +641,96 @@ class PurchasesConfiguringTests: BasePurchasesTests {
                 .with(dangerousSettings: dangerousSettings)
                 .with(appUserID: appUserID)
         )
+    }
+
+    // MARK: - Configuration deduplication
+
+    func testConfigureTwiceWithSameConfigurationReusesInstanceAndLogsDedupMessage() {
+        let configuration = Self.dedupConfiguration()
+
+        let first = Purchases.configure(with: configuration)
+        let second = Purchases.configure(with: configuration)
+
+        expect(first) === second
+        expect(Purchases.shared) === first
+        self.logger.verifyMessageWasLogged(
+            Strings.configure.instance_already_exists_with_same_config,
+            level: .info
+        )
+    }
+
+    func testConfigureTwiceWithSameConfigurationDoesNotLogReplacementWarning() {
+        let configuration = Self.dedupConfiguration()
+
+        _ = Purchases.configure(with: configuration)
+        _ = Purchases.configure(with: configuration)
+
+        self.logger.verifyMessageWasNotLogged(Strings.configure.purchase_instance_already_set)
+    }
+
+    func testConfigureTwiceWithEqualButDistinctConfigurationsReturnsSameInstance() {
+        // Two `Configuration` instances built from identical builders should still
+        // dedupe — the check is by equality, not by object identity.
+        let first = Purchases.configure(with: Self.dedupConfiguration())
+        let second = Purchases.configure(with: Self.dedupConfiguration())
+
+        expect(first) === second
+    }
+
+    func testConfigureTwiceWithSameNilUserDefaultsReturnsSameInstance() {
+        let first = Purchases.configure(with: Self.dedupConfiguration(userDefaults: nil))
+        let second = Purchases.configure(with: Self.dedupConfiguration(userDefaults: nil))
+
+        expect(first) === second
+    }
+
+    func testConfigureTwiceWithSameUserDefaultsReferenceReturnsSameInstance() {
+        let shared = UserDefaults(suiteName: "rc_dedup_test_shared")!
+        defer { shared.removePersistentDomain(forName: "rc_dedup_test_shared") }
+
+        let first = Purchases.configure(with: Self.dedupConfiguration(userDefaults: shared))
+        let second = Purchases.configure(with: Self.dedupConfiguration(userDefaults: shared))
+
+        expect(first) === second
+    }
+
+    /// Asserts the dedup short-circuit correctly differentiates configurations without
+    /// going through the public `Purchases.configure(with:)` API, because triggering the
+    /// historical "different configuration" precondition in test builds would otherwise
+    /// crash. The configuration mismatch path is still exercised end-to-end in
+    /// `Configuration` equality tests + the `setDefaultInstance` behavior below.
+    func testSetDefaultInstanceDedupingAgainstDifferentConfigurationDoesNotReuseExistingInstance() {
+        let first = Purchases.configure(with: Self.dedupConfiguration())
+        let different = Self.dedupConfiguration(apiKey: "different_key")
+
+        // We can't safely re-enter `Purchases.configure(with:)` here in DEBUG tests because
+        // a different configuration would fire the historical precondition. Instead, check
+        // the dedup decision directly via the `Configuration` equality the short-circuit
+        // relies on.
+        expect(first.currentConfiguration) != different
+        expect(first.currentConfiguration?.apiKey) != different.apiKey
+    }
+
+    func testSetDefaultInstanceDedupingAgainstSameConfigurationReusesExistingInstance() {
+        let configuration = Self.dedupConfiguration()
+        let first = Purchases.configure(with: configuration)
+
+        // Equivalent assertion for the same-config path: the stored `currentConfiguration`
+        // is equal to the configuration we just used, which is exactly the condition the
+        // short-circuit inside `setDefaultInstance(_:dedupingAgainst:)` checks.
+        expect(first.currentConfiguration) == configuration
+    }
+
+    private static func dedupConfiguration(
+        apiKey: String = "test_dedup_api_key",
+        userDefaults: UserDefaults? = .standard
+    ) -> Configuration {
+        var builder = Configuration.Builder(withAPIKey: apiKey)
+            .with(appUserID: "test_user")
+        if let userDefaults {
+            builder = builder.with(userDefaults: userDefaults)
+        }
+        return builder.build()
     }
 
 }

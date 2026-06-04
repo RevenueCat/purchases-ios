@@ -2,7 +2,7 @@
   "configurations" : [
     {
       "id" : "62C79EF4-8071-439C-B693-34F1E57211FC",
-      "name" : "Configuration 1",
+      "name" : "Default",
       "options" : {
         "testTimeoutsEnabled" : true
       }

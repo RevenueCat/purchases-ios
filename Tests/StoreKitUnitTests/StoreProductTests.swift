@@ -12,7 +12,7 @@
 //  Created by Andrés Boedo on 1/9/21.
 
 import Nimble
-@testable import RevenueCat
+@testable @_spi(Internal) import RevenueCat
 import StoreKitTest
 import XCTest
 
@@ -103,6 +103,7 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         XCTAssertNil(storeProduct.testStoreProduct)
 
+        expect(storeProduct.id) == Self.productID
         expect(storeProduct.productIdentifier) == Self.productID
         expect(storeProduct.productCategory) == .subscription
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
@@ -157,6 +158,7 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         XCTAssertNil(storeProduct.testStoreProduct)
 
+        expect(storeProduct.id) == Self.productID   // No billing plans
         expect(storeProduct.productIdentifier) == Self.productID
         expect(storeProduct.productCategory) == .subscription
         expect(storeProduct.productType) == .autoRenewableSubscription
@@ -376,6 +378,7 @@ class StoreProductTests: StoreKitConfigTestCase {
     func testTestProduct() {
         let title = "Product"
         let price: Decimal = 3.99
+        let currencyCode = "USD"
         let localizedPrice = "$3.99"
         let identifier = "com.revenuecat.product"
         let type: StoreProduct.ProductType = .autoRenewableSubscription
@@ -388,6 +391,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let product = TestStoreProduct(
             localizedTitle: title,
             price: price,
+            currencyCode: currencyCode,
             localizedPriceString: localizedPrice,
             productIdentifier: identifier,
             productType: type,
@@ -396,11 +400,13 @@ class StoreProductTests: StoreKitConfigTestCase {
             subscriptionPeriod: period,
             isFamilyShareable: isFamilyShareable,
             introductoryDiscount: nil,
-            discounts: []
+            discounts: [],
+            locale: expectedLocale
         )
         let storeProduct = product.toStoreProduct()
 
         XCTAssertNotNil(storeProduct.testStoreProduct)
+        expect(storeProduct.id) == "com.revenuecat.product"
         expect(storeProduct.localizedTitle) == title
         expect(storeProduct.price) == price
         expect(storeProduct.localizedPriceString) == localizedPrice
@@ -410,18 +416,57 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.localizedDescription) == description
         expect(storeProduct.subscriptionGroupIdentifier) == subscriptionGroup
         expect(storeProduct.subscriptionPeriod) == period
-        expect(storeProduct.currencyCode) == expectedLocale.rc_currencyCode
+        expect(storeProduct.currencyCode) == currencyCode
         expect(storeProduct.priceFormatter?.locale) == expectedLocale
-        expect(storeProduct.priceFormatter?.currencyCode) == expectedLocale.rc_currencyCode
+        expect(storeProduct.priceFormatter?.currencyCode) == currencyCode
         expect(storeProduct.isFamilyShareable) == isFamilyShareable
     }
 
+    // Legacy behavior: if no currencyCode is passed it will take the currencyCode from the locale
     func testTestProductWithCustomLocale() {
         let locale: Locale = .init(identifier: "es_ES")
         let product = TestStoreProduct(
             localizedTitle: "product",
             price: 3.99,
             localizedPriceString: "$3.99",
+            productIdentifier: "identifier",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "",
+            locale: locale
+        )
+        let storeProduct = product.toStoreProduct()
+
+        expect(storeProduct.currencyCode) == locale.rc_currencyCode
+        expect(storeProduct.priceFormatter?.locale) == locale
+        expect(storeProduct.priceFormatter?.currencyCode) == locale.rc_currencyCode
+    }
+
+    func testTestProductWithCustomLocaleAndCurrency() {
+        let locale: Locale = .init(identifier: "en_ES")
+        let product = TestStoreProduct(
+            localizedTitle: "product",
+            price: 3.99,
+            currencyCode: "USD",
+            localizedPriceString: "$3.99",
+            productIdentifier: "identifier",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "",
+            locale: locale
+        )
+        let storeProduct = product.toStoreProduct()
+
+        expect(storeProduct.currencyCode) == "USD"
+        expect(storeProduct.priceFormatter?.locale) == locale
+        expect(storeProduct.priceFormatter?.currencyCode) == "USD"
+    }
+
+    func testTestProductWithCustomCurrency() {
+        let locale: Locale = .init(identifier: "en_US")
+        let product = TestStoreProduct(
+            localizedTitle: "product",
+            price: 3.99,
+            currencyCode: "EUR",
+            localizedPriceString: "€3.99",
             productIdentifier: "identifier",
             productType: .autoRenewableSubscription,
             localizedDescription: "",
@@ -457,6 +502,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let product = TestStoreProduct(
             localizedTitle: "product",
             price: 3.98999999999,
+            currencyCode: "USD",
             localizedPriceString: "$3.99",
             productIdentifier: "identifier",
             productType: .autoRenewableSubscription,
@@ -469,6 +515,97 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.localizedPricePerWeek) == "$3.98"
         expect(storeProduct.localizedPricePerMonth) == "$17.33"
         expect(storeProduct.localizedPricePerYear) == "$208.04"
+    }
+
+}
+
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
+extension StoreProductTests {
+
+    func testIdReturnsProductIdentifierForSK1Product() {
+        let productIdentifier = "com.revenuecat.product"
+        let storeProduct = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productIdentifier))
+
+        expect(storeProduct.id) == productIdentifier
+    }
+
+    func testIdReturnsProductIdentifierForTestProductWithoutInstallmentsInfo() {
+        let productIdentifier = "com.revenuecat.product"
+        let storeProduct = Self.testProduct(
+            productIdentifier: productIdentifier,
+            installmentsInfo: nil
+        )
+
+        expect(storeProduct.id) == productIdentifier
+    }
+
+    func testIdPreservesProductIdentifierWithColonWithoutInstallmentsInfo() {
+        let productIdentifier = "com.revenuecat.product:monthly"
+        let storeProduct = Self.testProduct(
+            productIdentifier: productIdentifier,
+            installmentsInfo: nil
+        )
+
+        expect(storeProduct.id) == productIdentifier
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testIdReturnsProductIdentifierForSK2ProductWithoutInstallmentsInfo() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let storeProduct = try await ProductsFetcherSK2().product(withIdentifier: Self.productID)
+
+        expect(storeProduct.id) == Self.productID
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testRepresentsBillingPlanReturnsFalseForSK2ProductWithoutProductPlanIdentifier() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let storeProduct = try await self.fetchSk2StoreProduct(Self.productID)
+        expect(storeProduct.representsBillingPlan) == false
+    }
+
+    @available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, visionOS 26.4, *)
+    func testRepresentsBillingPlanReturnsTrueForSK2ProductWithProductPlanIdentifier() async throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let productIdentifier = "com.revenuecat.annual_with_commitment"
+        let compoundProductIdentifier = try XCTUnwrap(CompoundProductIdentifier(
+            compoundProductIdentifier: "\(productIdentifier):monthly"
+        ))
+        let storeProduct = SK2StoreProduct(
+            sk2Product: try await self.fetchSk2Product(productIdentifier),
+            compoundProductIdentifier: compoundProductIdentifier
+        )
+
+        expect(storeProduct.representsBillingPlan) == true
+    }
+
+    func testIdAddsMonthlyProductPlanIdentifierForMonthlyInstallmentsInfo() throws {
+        let productIdentifier = "com.revenuecat.product"
+        let storeProduct = Self.testProduct(
+            productIdentifier: productIdentifier,
+            installmentsInfo: Self.installmentsInfo(
+                commitmentInstallmentsCount: 3,
+                billingPlanType: .monthly
+            )
+        )
+
+        expect(storeProduct.id) == "\(productIdentifier):monthly"
+    }
+
+    func testIdReturnsProductIdentifierForUpFrontInstallmentsInfo() {
+        let productIdentifier = "com.revenuecat.product"
+        let storeProduct = Self.testProduct(
+            productIdentifier: productIdentifier,
+            installmentsInfo: Self.installmentsInfo(
+                commitmentInstallmentsCount: 1,
+                billingPlanType: .upFront
+            )
+        )
+
+        expect(storeProduct.id) == productIdentifier
     }
 
 }
@@ -505,6 +642,40 @@ private extension StoreProductTests {
         } else {
             expect(productA.subscriptionGroupIdentifier) == productB.subscriptionGroupIdentifier
         }
+    }
+
+    static func testProduct(
+        productIdentifier: String,
+        installmentsInfo: InstallmentsInfo?
+    ) -> StoreProduct {
+        return TestStoreProduct(
+            localizedTitle: "product",
+            price: 3.99,
+            currencyCode: "USD",
+            localizedPriceString: "$3.99",
+            productIdentifier: productIdentifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: "",
+            subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            locale: Locale(identifier: "en_US"),
+            installmentsInfo: installmentsInfo
+        ).toStoreProduct()
+    }
+
+    static func installmentsInfo(
+        commitmentInstallmentsCount: Int,
+        billingPlanType: BillingPlanType = .monthly
+    ) -> InstallmentsInfo {
+        return InstallmentsInfo(
+            commitmentInstallmentsCount: commitmentInstallmentsCount,
+            commitmentInstallmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            installmentBillingPrice: 3.99,
+            installmentBillingDisplayPrice: "$3.99",
+            commitmentTotalPeriod: SubscriptionPeriod(value: commitmentInstallmentsCount, unit: .month),
+            commitmentTotalPrice: Decimal(commitmentInstallmentsCount) * 3.99,
+            commitmentTotalDisplayPrice: "$\(commitmentInstallmentsCount * 399 / 100).99",
+            billingPlanType: billingPlanType
+        )
     }
 
 }

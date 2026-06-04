@@ -23,6 +23,7 @@ struct SimulatedStoreTransaction: StoreTransactionType, Equatable {
     let jwsRepresentation: String?
 
     let environment: StoreEnvironment? = nil
+    let reason: TransactionReason? = nil
 
     func finish(_ wrapper: any PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
         // no-op

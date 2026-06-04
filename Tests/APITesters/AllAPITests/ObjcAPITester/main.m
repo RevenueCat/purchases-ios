@@ -9,11 +9,14 @@
 #import "RCAdTrackerAPI.h"
 #import "RCAttributionAPI.h"
 #import "RCAttributionNetworkAPI.h"
+#import "RCBillingPlanTypeAPI.h"
 #import "RCConfigurationAPI.h"
 #import "RCCustomerInfoAPI.h"
+#import "RCDangerousSettingsAPI.h"
 #import "RCEntitlementInfoAPI.h"
 #import "RCEntitlementInfosAPI.h"
 #import "RCIntroEligibilityAPI.h"
+#import "RCInstallmentsInfoAPI.h"
 #import "RCNonSubscriptionTransactionAPI.h"
 #import "RCOfferingAPI.h"
 #import "RCOfferingsAPI.h"
@@ -30,15 +33,15 @@
 #import "RCSubscriptionPeriodAPI.h"
 #import "RCTransactionAPI.h"
 #import "RCVerificationResultAPI.h"
+#import "RCPaywallViewControllerAPI.h"
+#import "RCCustomPaywallImpressionAPI.h"
 
 @import StoreKit;
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
 
-        #ifdef ENABLE_AD_EVENTS_TRACKING
         [RCAdTrackerAPI checkAPI];
-        #endif
 
         [RCAttributionAPI checkAPI];
         [RCAttributionNetworkAPI checkEnums];
@@ -51,6 +54,9 @@ int main(int argc, const char * argv[]) {
 
         [RCIntroEligibilityAPI checkAPI];
         [RCIntroEligibilityAPI checkEnums];
+
+        [RCInstallmentsInfoAPI checkAPI];
+        [RCInstallmentsInfoAPI checkInit];
 
         [RCNonSubscriptionTransactionAPI checkAPI];
 
@@ -69,6 +75,8 @@ int main(int argc, const char * argv[]) {
         [RCPurchasesAPI checkEnums];
 
         [RCConfigurationAPI checkAPI];
+
+        [RCDangerousSettingsAPI checkAPI];
 
         [RCPurchasesErrorCodeAPI checkEnums];
 
@@ -89,6 +97,13 @@ int main(int argc, const char * argv[]) {
         [RCTransactionAPI checkAPI];
 
         [RCVerificationResultAPI checkAPI];
+
+        if (@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)) {
+            [RCPaywallViewControllerAPI checkAPI];
+            [RCCustomPaywallImpressionAPI checkAPI];
+        }
+
+        [RCBillingPlanTypeAPI checkAPI];
     }
     return 0;
 }

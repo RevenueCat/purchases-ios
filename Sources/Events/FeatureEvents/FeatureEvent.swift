@@ -16,4 +16,278 @@ protocol FeatureEvent: Encodable, Sendable {
     var feature: Feature { get }
     var eventDiscriminator: String? { get }
 
+    /// Whether this event should be stored and sent to the backend.
+    /// WIP: Some PaywallEvents are not yet supported by the backend.
+    /// We should implement support for these events in the backend first
+    /// and then we can remove this `shouldStoreEvent` (as it will be always `true`)
+    var shouldStoreEvent: Bool { get }
+
+    /// Whether tracking this event should trigger an immediate flush to the backend.
+    var isPriorityEvent: Bool { get }
+
+}
+
+extension FeatureEvent {
+
+    /// By default, all events should be stored.
+    var shouldStoreEvent: Bool { true }
+
+    /// By default, events are not priority events.
+    var isPriorityEvent: Bool { false }
+
+}
+
+// MARK: - Dictionary Mapping
+
+extension FeatureEvent {
+
+    /// Converts this event into a dictionary suitable for hybrid SDK consumption.
+    func toMap() -> [String: Any] {
+        switch self {
+        case let event as PaywallEvent:
+            return event.paywallMap()
+        case let event as CustomerCenterEvent:
+            return event.customerCenterImpressionMap()
+        case let event as CustomerCenterAnswerSubmittedEvent:
+            return event.customerCenterAnswerSubmittedMap()
+        case let event as CustomPaywallEvent:
+            return event.customPaywallEventMap()
+        case let event as WorkflowEvent:
+            return event.workflowEventMap()
+        default:
+            return [
+                "discriminator": "unknown",
+                "type": "unknown",
+                "class_name": String(describing: type(of: self))
+            ]
+        }
+    }
+
+}
+
+private extension PaywallEvent {
+
+    func paywallMap() -> [String: Any] {
+        let typeName: String = {
+            switch self {
+            case .impression: return "paywall_impression"
+            case .cancel: return "paywall_cancel"
+            case .close: return "paywall_close"
+            case .exitOffer: return "paywall_exit_offer"
+            case .purchaseInitiated: return "paywall_purchase_initiated"
+            case .purchaseError: return "paywall_purchase_error"
+            case .componentInteraction: return "paywall_component_interacted"
+            }
+        }()
+
+        var result: [String: Any] = [
+            "discriminator": "paywalls",
+            "type": typeName,
+            "id": self.creationData.id.uuidString,
+            "timestamp": self.creationData.date.millisecondsSince1970,
+            "offering_id": self.data.offeringIdentifier,
+            "paywall_revision": self.data.paywallRevision,
+            "session_id": self.data.sessionIdentifier.uuidString,
+            "display_mode": self.data.displayMode.identifier,
+            "locale": self.data.localeIdentifier,
+            "dark_mode": self.data.darkMode
+        ]
+
+        if let interaction = self.componentInteractionData {
+            interaction.mergeIntoPaywallFeatureMap(&result)
+        }
+
+        return result
+    }
+
+}
+
+private extension PaywallEvent.ComponentInteractionData {
+
+    func mergeIntoPaywallFeatureMap(_ result: inout [String: Any]) {
+        self.mergeCoreFields(into: &result)
+        self.mergePackageIdentifiers(into: &result)
+        self.mergeProductIdentifiers(into: &result)
+    }
+
+    func mergeCoreFields(into result: inout [String: Any]) {
+        result["component_type"] = self.componentType.rawValue
+        result["component_value"] = self.componentValue
+        if let name = self.componentName {
+            result["component_name"] = name
+        }
+        if let url = self.componentURL {
+            result["component_url"] = url.absoluteString
+        }
+        if let originIndex = self.originIndex {
+            result["origin_index"] = originIndex
+        }
+        if let destinationIndex = self.destinationIndex {
+            result["destination_index"] = destinationIndex
+        }
+        if let originContextName = self.originContextName {
+            result["origin_context_name"] = originContextName
+        }
+        if let destinationContextName = self.destinationContextName {
+            result["destination_context_name"] = destinationContextName
+        }
+        if let defaultIndex = self.defaultIndex {
+            result["default_index"] = defaultIndex
+        }
+    }
+
+    func mergePackageIdentifiers(into result: inout [String: Any]) {
+        if let originPackageIdentifier = self.originPackageIdentifier {
+            result["origin_package_id"] = originPackageIdentifier
+        }
+        if let destinationPackageIdentifier = self.destinationPackageIdentifier {
+            result["destination_package_id"] = destinationPackageIdentifier
+        }
+        if let defaultPackageIdentifier = self.defaultPackageIdentifier {
+            result["default_package_id"] = defaultPackageIdentifier
+        }
+        if let currentPackageIdentifier = self.currentPackageIdentifier {
+            result["current_package_id"] = currentPackageIdentifier
+        }
+        if let resultingPackageIdentifier = self.resultingPackageIdentifier {
+            result["resulting_package_id"] = resultingPackageIdentifier
+        }
+    }
+
+    func mergeProductIdentifiers(into result: inout [String: Any]) {
+        if let originProductIdentifier = self.originProductIdentifier {
+            result["origin_product_id"] = originProductIdentifier
+        }
+        if let destinationProductIdentifier = self.destinationProductIdentifier {
+            result["destination_product_id"] = destinationProductIdentifier
+        }
+        if let defaultProductIdentifier = self.defaultProductIdentifier {
+            result["default_product_id"] = defaultProductIdentifier
+        }
+        if let currentProductIdentifier = self.currentProductIdentifier {
+            result["current_product_id"] = currentProductIdentifier
+        }
+        if let resultingProductIdentifier = self.resultingProductIdentifier {
+            result["resulting_product_id"] = resultingProductIdentifier
+        }
+    }
+
+}
+
+private extension CustomerCenterEvent {
+
+    func customerCenterImpressionMap() -> [String: Any] {
+        return [
+            "discriminator": "customer_center",
+            "type": "customer_center_impression",
+            "id": self.creationData.id.uuidString,
+            "timestamp": self.creationData.date.millisecondsSince1970,
+            "dark_mode": self.data.darkMode,
+            "locale": self.data.localeIdentifier,
+            "display_mode": self.data.displayMode.identifier
+        ]
+    }
+
+}
+
+private extension CustomPaywallEvent {
+
+    func customPaywallEventMap() -> [String: Any] {
+        let typeName: String = {
+            switch self {
+            case .impression: return "custom_paywall_impression"
+            }
+        }()
+
+        var result: [String: Any] = [
+            "discriminator": "custom_paywall_event",
+            "type": typeName,
+            "id": self.creationData.id.uuidString,
+            "timestamp": self.creationData.date.millisecondsSince1970
+        ]
+
+        if let paywallId = self.data.paywallId {
+            result["paywall_id"] = paywallId
+        }
+
+        if let offeringId = self.data.offeringId {
+            result["offering_id"] = offeringId
+        }
+
+        if let placementIdentifier = self.data.placementIdentifier {
+            result["placement_identifier"] = placementIdentifier
+        }
+
+        if let targetingRevision = self.data.targetingRevision {
+            result["targeting_revision"] = targetingRevision
+        }
+
+        if let targetingRuleId = self.data.targetingRuleId {
+            result["targeting_rule_id"] = targetingRuleId
+        }
+
+        return result
+    }
+
+}
+
+private extension WorkflowEvent {
+
+    // swiftlint:disable:next cyclomatic_complexity
+    func workflowEventMap() -> [String: Any] {
+        let typeName: String = {
+            switch self {
+            case .stepStarted: return "workflows_step_started"
+            case .stepCompleted: return "workflows_step_completed"
+            }
+        }()
+
+        var result: [String: Any] = [
+            "discriminator": "workflows",
+            "type": typeName,
+            "id": self.creationData.id.uuidString,
+            "timestamp": self.creationData.date.millisecondsSince1970,
+            "workflow_id": self.data.workflowId,
+            "step_id": self.data.stepId,
+            "locale": self.data.localeIdentifier
+        ]
+
+        if let traceId = self.data.traceId { result["trace_id"] = traceId }
+        if let fromStepId = self.data.fromStepId { result["from_step_id"] = fromStepId }
+        if let toStepId = self.data.toStepId { result["to_step_id"] = toStepId }
+        if let entryReason = self.data.entryReason { result["entry_reason"] = entryReason }
+        if let isFirstStep = self.data.isFirstStep { result["is_first_step"] = isFirstStep }
+        if let isLastStep = self.data.isLastStep { result["is_last_step"] = isLastStep }
+        if let experimentId = self.data.experimentId { result["experiment_id"] = experimentId }
+        if let experimentVariant = self.data.experimentVariant { result["experiment_variant"] = experimentVariant }
+        if let isLastVariantStep = self.data.isLastVariantStep { result["is_last_variant_step"] = isLastVariantStep }
+
+        return result
+    }
+
+}
+
+private extension CustomerCenterAnswerSubmittedEvent {
+
+    func customerCenterAnswerSubmittedMap() -> [String: Any] {
+        var result: [String: Any] = [
+            "discriminator": "customer_center",
+            "type": "customer_center_survey_option_chosen",
+            "id": self.creationData.id.uuidString,
+            "timestamp": self.creationData.date.millisecondsSince1970,
+            "dark_mode": self.data.darkMode,
+            "locale": self.data.localeIdentifier,
+            "display_mode": self.data.displayMode.identifier,
+            "survey_option_id": self.data.surveyOptionID,
+            "path": self.data.path.rawValue,
+            "revision_id": self.data.revisionID
+        ]
+
+        if let url = self.data.url {
+            result["url"] = url.absoluteString
+        }
+
+        return result
+    }
+
 }

@@ -13,6 +13,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 class SubscriberAttributesManager {
 
     private let backend: Backend
@@ -75,6 +77,10 @@ class SubscriberAttributesManager {
         setAttributionID(appsflyerID, forNetworkID: .appsFlyerID, appUserID: appUserID)
     }
 
+    func setAppstackID(_ appstackID: String?, appUserID: String) {
+        setAttributionID(appstackID, forNetworkID: .appstackID, appUserID: appUserID)
+    }
+
     func setFBAnonymousID(_ fBAnonymousID: String?, appUserID: String) {
         setAttributionID(fBAnonymousID, forNetworkID: .fBAnonID, appUserID: appUserID)
     }
@@ -105,6 +111,18 @@ class SubscriberAttributesManager {
 
     func setKochavaDeviceID(_ kochavaDeviceID: String?, appUserID: String) {
         setAttributionID(kochavaDeviceID, forNetworkID: .kochavaDeviceID, appUserID: appUserID)
+    }
+
+    func setSolarEngineDistinctId(_ solarEngineDistinctId: String?, appUserID: String) {
+        setAttributionID(solarEngineDistinctId, forNetworkID: .solarEngineDistinctId, appUserID: appUserID)
+    }
+
+    func setSolarEngineAccountId(_ solarEngineAccountId: String?, appUserID: String) {
+        setAttributionID(solarEngineAccountId, forNetworkID: .solarEngineAccountId, appUserID: appUserID)
+    }
+
+    func setSolarEngineVisitorId(_ solarEngineVisitorId: String?, appUserID: String) {
+        setAttributionID(solarEngineVisitorId, forNetworkID: .solarEngineVisitorId, appUserID: appUserID)
     }
 
     func setMixpanelDistinctID(_ mixpanelDistinctID: String?, appUserID: String) {
@@ -156,6 +174,45 @@ class SubscriberAttributesManager {
         setReservedAttribute(.creative, value: creative, appUserID: appUserID)
     }
 
+    func setAppsFlyerConversionData(_ data: [AnyHashable: Any]?, appUserID: String) {
+        guard let data = data else {
+            return
+        }
+
+        let mediaSource = stringValueForPrimitive(from: data, forKey: "media_source") ?? (
+            stringValueForPrimitive(from: data, forKey: "af_status")?.caseInsensitiveCompare("Organic") == .orderedSame
+                ? "Organic" : nil
+        )
+        if let mediaSource = mediaSource {
+            setMediaSource(mediaSource, appUserID: appUserID)
+        }
+
+        if let campaign = stringValueForPrimitive(from: data, forKey: "campaign") {
+            setCampaign(campaign, appUserID: appUserID)
+        }
+
+        if let adGroup = stringValueForPrimitive(from: data, forKey: "adgroup")
+            ?? stringValueForPrimitive(from: data, forKey: "adset") {
+            setAdGroup(adGroup, appUserID: appUserID)
+        }
+
+        // swiftlint:disable:next identifier_name
+        if let ad = stringValueForPrimitive(from: data, forKey: "af_ad")
+            ?? stringValueForPrimitive(from: data, forKey: "ad_id") {
+            setAd(ad, appUserID: appUserID)
+        }
+
+        if let keyword = stringValueForPrimitive(from: data, forKey: "af_keywords")
+            ?? stringValueForPrimitive(from: data, forKey: "keyword") {
+            setKeyword(keyword, appUserID: appUserID)
+        }
+
+        if let creative = stringValueForPrimitive(from: data, forKey: "creative")
+            ?? stringValueForPrimitive(from: data, forKey: "af_creative") {
+            setCreative(creative, appUserID: appUserID)
+        }
+    }
+
     func collectDeviceIdentifiers(forAppUserID appUserID: String) {
         let identifierForAdvertisers = attributionFetcher.identifierForAdvertisers
         let identifierForVendor = attributionFetcher.identifierForVendor
@@ -166,6 +223,15 @@ class SubscriberAttributesManager {
         setReservedAttribute(.deviceVersion, value: "true", appUserID: appUserID)
     }
 
+    /// Caches the current ATT consent status as a subscriber attribute.
+    /// Called from `Attribution.setATTConsentStatus` which is invoked by
+    /// `PurchasesOrchestrator.refreshATTStatusAndGetUnsyncedAttributes` (receipt posts)
+    /// and by `syncAttributesForAllUsers` (foreground/background/login/logout).
+    func setATTConsentStatus(forAppUserID appUserID: String) {
+        let status = attributionFetcher.authorizationStatus
+        setReservedAttribute(.consentStatus, value: status.description, appUserID: appUserID)
+    }
+
     /// - Parameter syncedAttribute: will be called for every attribute that is updated
     /// - Parameter completion: will be called once all attributes have completed syncing
     /// - Returns: the number of attributes that will be synced
@@ -173,6 +239,7 @@ class SubscriberAttributesManager {
     func syncAttributesForAllUsers(currentAppUserID: String,
                                    syncedAttribute: (@Sendable (PurchasesError?) -> Void)? = nil,
                                    completion: (@Sendable () -> Void)? = nil) -> Int {
+        setATTConsentStatus(forAppUserID: currentAppUserID)
         let unsyncedAttributesForAllUsers = unsyncedAttributesByKeyForAllUsers()
         let total = unsyncedAttributesForAllUsers.count
 
@@ -276,6 +343,18 @@ extension SubscriberAttributesManager: AttributeSyncing {
 }
 
 private extension SubscriberAttributesManager {
+
+    func stringValueForPrimitive(from data: [AnyHashable: Any], forKey key: String) -> String? {
+        guard let value = data[key as AnyHashable] else { return nil }
+        if let stringValue = value as? String {
+            return stringValue.isEmpty ? nil : stringValue
+        }
+        if let boolValue = value as? Bool { return String(boolValue) }
+        if let number = value as? NSNumber {
+            return number.stringValue
+        }
+        return nil
+    }
 
     func storeAttributeLocallyIfNeeded(key: String, value: String?, appUserID: String) {
         let currentValue = currentValueForAttribute(key: key, appUserID: appUserID)

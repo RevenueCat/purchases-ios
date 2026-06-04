@@ -14,6 +14,7 @@ class IdentityManagerTests: TestCase {
     private let mockBackend = MockBackend()
     private var mockCustomerInfoManager: MockCustomerInfoManager!
     private var mockAttributeSyncing: MockAttributeSyncing!
+    private var workflowsCache: WorkflowsCache!
 
     private var mockIdentityAPI: MockIdentityAPI!
     private var mockCustomerInfo: CustomerInfo!
@@ -26,6 +27,7 @@ class IdentityManagerTests: TestCase {
                                backend: self.mockBackend,
                                customerInfoManager: self.mockCustomerInfoManager,
                                attributeSyncing: self.mockAttributeSyncing,
+                               workflowsCache: self.workflowsCache,
                                appUserID: appUserID)
     }
 
@@ -38,6 +40,7 @@ class IdentityManagerTests: TestCase {
         self.mockSystemInfo = MockSystemInfo(finishTransactions: false)
 
         self.mockDeviceCache = MockDeviceCache(systemInfo: self.mockSystemInfo)
+        self.workflowsCache = WorkflowsCache(deviceCache: self.mockDeviceCache)
         self.mockCustomerInfoManager = MockCustomerInfoManager(
             offlineEntitlementsManager: MockOfflineEntitlementsManager(),
             operationDispatcher: MockOperationDispatcher(),
@@ -340,6 +343,41 @@ class IdentityManagerTests: TestCase {
         expect(self.mockBackend.invokedClearHTTPClientCachesCount) == 1
     }
 
+    func testLogInClearsWorkflowsCache() {
+        self.mockDeviceCache.stubbedAppUserID = "anonymous"
+        let manager = self.create(appUserID: nil)
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
+        expect(self.mockDeviceCache.clearWorkflowsListResponseCacheCount) == 0
+
+        waitUntil { completed in
+            manager.logIn(appUserID: "myUser") { _ in completed() }
+        }
+
+        expect(self.mockDeviceCache.clearWorkflowsListResponseCacheCount) == 1
+    }
+
+    func testLogOutClearsWorkflowsCache() {
+        let manager = self.create(appUserID: nil)
+        self.mockDeviceCache.stubbedAppUserID = "myUser"
+        expect(self.mockDeviceCache.clearWorkflowsListResponseCacheCount) == 0
+
+        waitUntil { completed in
+            manager.logOut { _ in completed() }
+        }
+
+        expect(self.mockDeviceCache.clearWorkflowsListResponseCacheCount) == 1
+    }
+
+    func testSwitchUserClearsWorkflowsCache() {
+        let manager = self.create(appUserID: nil)
+        self.mockDeviceCache.stubbedAppUserID = "myUser"
+        expect(self.mockDeviceCache.clearWorkflowsListResponseCacheCount) == 0
+
+        manager.switchUser(to: "newUser")
+
+        expect(self.mockDeviceCache.clearWorkflowsListResponseCacheCount) == 1
+    }
+
     func testLogInSyncsAttributes() {
         let manager = self.create(appUserID: "old_user")
 
@@ -532,6 +570,22 @@ class IdentityManagerTests: TestCase {
         }
 
         expect(receivedError?.code) == ErrorCode.unsupportedError.rawValue
+    }
+
+    func testSwitchUserBlockedInUIPreviewMode() {
+        let dangerousSettings = DangerousSettings(uiPreviewMode: true)
+        self.mockSystemInfo = MockSystemInfo(
+            platformInfo: nil,
+            finishTransactions: false,
+            dangerousSettings: dangerousSettings
+        )
+
+        let manager = create(appUserID: nil)
+        let originalUserID = manager.currentAppUserID
+
+        manager.switchUser(to: "other-user")
+
+        expect(manager.currentAppUserID) == originalUserID
     }
 
 }

@@ -240,6 +240,10 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
         let _: CustomerInfo = try await purchases.restorePurchases()
 
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            let _: Bool = try await purchases.isPurchaseAllowedByRestoreBehavior()
+        }
+
         if #available(iOS 15.0, *) {
 #if os(iOS)
             try await purchases.showManageSubscriptions()
@@ -264,6 +268,10 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
         purchases.beginRefundRequest(forEntitlement: "") { (_: Result<RefundRequestStatus, PublicError>) in }
         purchases.beginRefundRequestForActiveEntitlement { (_: Result<RefundRequestStatus, PublicError>) in }
 #endif
+    }
+
+    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+        purchases.isPurchaseAllowedByRestoreBehavior { (_: Bool?, _: PublicError?) in }
     }
 
     purchases.checkTrialOrIntroDiscountEligibility(

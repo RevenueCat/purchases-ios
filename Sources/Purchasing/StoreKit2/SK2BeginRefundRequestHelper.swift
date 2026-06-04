@@ -40,18 +40,18 @@ final class SK2BeginRefundRequestHelper: SK2BeginRefundRequestHelperType {
     func verifyTransaction(productID: String) async throws -> UInt64 {
         let result = await StoreKit.Transaction.latest(for: productID)
         guard let nonNilResult = result else {
-            let errorMessage = Strings.purchase.product_unpurchased_or_missing.description
+            let errorMessage = Strings.purchase.product_unpurchased_or_missing
             Logger.error(errorMessage)
-            throw ErrorUtils.beginRefundRequestError(withMessage: errorMessage)
+            throw ErrorUtils.beginRefundRequestError(withMessage: errorMessage.description)
         }
 
         switch nonNilResult {
         case .unverified(_, let verificationError):
             let message = Strings.purchase.transaction_unverified(
                 productID: productID,
-                errorMessage: verificationError.localizedDescription).description
+                errorMessage: verificationError.localizedDescription)
             Logger.error(message)
-            throw ErrorUtils.beginRefundRequestError(withMessage: message)
+            throw ErrorUtils.beginRefundRequestError(withMessage: message.description)
         case .verified(let transaction): return transaction.id
         }
     }
@@ -123,10 +123,10 @@ private extension SK2BeginRefundRequestHelperType {
         switch sk2Result {
         case .success(let sk2Status):
             guard let rcStatus = RefundRequestStatus.from(sk2RefundRequestStatus: sk2Status) else {
-                let message = Strings.purchase.unknown_refund_request_status.description
+                let message = Strings.purchase.unknown_refund_request_status
                 Logger.error(message)
                 throw ErrorUtils.beginRefundRequestError(
-                    withMessage: message)
+                    withMessage: message.description)
             }
             return rcStatus
         case .failure(let error):

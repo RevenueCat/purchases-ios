@@ -31,10 +31,8 @@ extension StoreKitError: PurchasesErrorConvertible {
         case .notAvailableInStorefront:
             return ErrorUtils.productNotAvailableForPurchaseError(error: self)
 
-#if swift(>=5.6)
         case .notEntitled:
             return ErrorUtils.storeProblemError(error: self)
-#endif
 
         #if compiler(>=6.1)
         // StoreKitError.unsupported was introduced in iOS 18.4, which shipped with Xcode 16.3 beta 1 / Swift 6.1
@@ -105,6 +103,11 @@ extension Product.PurchaseError: PurchasesErrorConvertible {
                 .missingOfferParameters:
             return ErrorUtils.invalidPromotionalOfferError(error: self)
 
+        #if compiler(>=6.3.2)
+        case .paymentMethodBindingConfigurationRequired:
+            // paymentMethodBindingConfigurationRequired introduced in Xcode 26.5
+            return ErrorUtils.storeProblemError(error: self)
+        #endif
         @unknown default:
             return ErrorUtils.unknownError(error: self)
         }
@@ -128,6 +131,11 @@ extension Product.PurchaseError: PurchasesErrorConvertible {
             return "invalid_offer_signature"
         case .missingOfferParameters:
             return "missing_offer_parameters"
+        #if compiler(>=6.3.2)
+        case .paymentMethodBindingConfigurationRequired:
+            // paymentMethodBindingConfigurationRequired introduced in Xcode 26.5
+            return "payment_method_binding_configuration_required"
+        #endif
         @unknown default:
             return "unknown_store_kit_error"
         }

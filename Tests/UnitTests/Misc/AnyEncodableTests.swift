@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 3/2/22.
 
 import Nimble
+import SnapshotTesting
 import XCTest
 
 @testable import RevenueCat
@@ -21,7 +22,7 @@ class AnyEncodableTests: TestCase {
     func testEmptyDictionary() {
         let empty: [String: Any] = [:]
 
-        assertSnapshot(matching: AnyEncodable(empty), as: .json)
+        assertSnapshot(of: AnyEncodable(empty), as: .json)
     }
 
     func testHomogenousDictionary() {
@@ -31,7 +32,7 @@ class AnyEncodableTests: TestCase {
             "c": "3"
         ]
 
-        assertSnapshot(matching: AnyEncodable(dictionary), as: .json)
+        assertSnapshot(of: AnyEncodable(dictionary), as: .json)
     }
 
     func testDictionaryWithDifferentValues() {
@@ -42,7 +43,7 @@ class AnyEncodableTests: TestCase {
             "d": nil
         ]
 
-        assertSnapshot(matching: AnyEncodable(dictionary), as: .json)
+        assertSnapshot(of: AnyEncodable(dictionary), as: .json)
     }
 
     func testNestedDictionary() throws {
@@ -64,7 +65,7 @@ class AnyEncodableTests: TestCase {
         ]
 
         assertSnapshot(
-            matching: AnyEncodable(dictionary),
+            of: AnyEncodable(dictionary),
             as: .json,
             // Formatting `Double`s changed in iOS 17
             testName: CurrentTestCaseTracker.osVersionAndTestName

@@ -15,6 +15,12 @@ class MockAttributionFetcher: AttributionFetcher {
         return "rc_idfv"
     }
 
+    var stubbedAuthorizationStatus: FakeTrackingManagerAuthorizationStatus = .notDetermined
+
+    override var authorizationStatus: FakeTrackingManagerAuthorizationStatus {
+        return stubbedAuthorizationStatus
+    }
+
     var adServicesTokenCollectionCalled = false
     var adServicesTokenToReturn: String? = "mockAdServicesToken"
 

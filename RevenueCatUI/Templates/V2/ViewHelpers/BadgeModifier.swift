@@ -13,7 +13,7 @@
 
 // swiftlint:disable file_length
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2

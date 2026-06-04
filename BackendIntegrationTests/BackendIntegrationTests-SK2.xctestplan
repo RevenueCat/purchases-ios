@@ -2,8 +2,33 @@
   "configurations" : [
     {
       "id" : "62C79EF4-8071-439C-B693-34F1E57211FC",
-      "name" : "Configuration 1",
+      "name" : "Default",
       "options" : {
+        "testTimeoutsEnabled" : true
+      }
+    },
+    {
+      "id" : "3366BEA4-FDF3-4E21-BD25-3F8916FB4A12",
+      "name" : "GenerateSnapshots",
+      "options" : {
+        "environmentVariableEntries" : [
+          {
+            "key" : "RCMockAdServicesToken",
+            "value" : "G9i5hC8lQJeGOfmS+MFycll"
+          },
+          {
+            "key" : "CIRCLECI_TESTS_GENERATE_SNAPSHOTS",
+            "value" : "1"
+          },
+          {
+            "key" : "RCRunningTests",
+            "value" : "1"
+          },
+          {
+            "key" : "RCRunningIntegrationTests",
+            "value" : "1"
+          }
+        ],
         "testTimeoutsEnabled" : true
       }
     }
@@ -98,7 +123,7 @@
       ],
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "4B547C7901622A3858C2D9BC",
+        "identifier" : "2DE20B6B264087FB004C597D",
         "name" : "BackendIntegrationTests"
       }
     }

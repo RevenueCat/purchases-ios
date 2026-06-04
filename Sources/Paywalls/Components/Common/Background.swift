@@ -14,7 +14,7 @@
 
 import Foundation
 
-public extension PaywallComponent {
+@_spi(Internal) public extension PaywallComponent {
 
     enum Background: Codable, Sendable, Hashable {
 
@@ -95,7 +95,7 @@ public extension PaywallComponent {
 
 }
 
-public extension PaywallComponent.Background {
+@_spi(Internal) public extension PaywallComponent.Background {
     typealias Loop = Bool
     typealias MuteAudio = Bool
 }

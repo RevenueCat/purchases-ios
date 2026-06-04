@@ -42,6 +42,8 @@ enum IdentityStrings {
 
     case switching_user_same_app_user_id(newUserID: String)
 
+    case operation_not_supported_in_preview_mode
+
     case sync_attributes_and_offerings_rate_limit_reached(maxCalls: Int, period: Int)
 
 }
@@ -81,6 +83,8 @@ extension IdentityStrings: LogMessage {
         case let .switching_user_same_app_user_id(newUserID):
             return "switchUser(to:) called with the same appUserID as the current user (\(newUserID)). " +
             "This has no effect."
+        case .operation_not_supported_in_preview_mode:
+            return "Operation not supported in UI preview mode."
         case let .sync_attributes_and_offerings_rate_limit_reached(maxCalls, period):
             return "Sync attributes and offerings rate limit reached:\(maxCalls) per \(period) seconds. " +
             "Returning offerings from cache."

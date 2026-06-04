@@ -16,20 +16,7 @@ import Foundation
 extension PaywallComponentsData {
 
     var allImageURLs: [URL] {
-        var imageUrls = self.componentsConfig.base.allImageURLs
-
-        for (_, localeValues) in self.componentsLocalizations {
-            for (_, value) in localeValues {
-                switch value {
-                case .string:
-                    break
-                case .image(let image):
-                    imageUrls += image.imageUrls
-                }
-            }
-        }
-
-        return imageUrls
+        return imageURLs(from: self.componentsConfig, localizations: self.componentsLocalizations)
     }
 
     var allLowResVideoUrls: [URLWithValidation] {
@@ -38,22 +25,56 @@ extension PaywallComponentsData {
 
 }
 
+extension WorkflowScreen {
+
+    var allImageURLs: [URL] {
+        return imageURLs(from: self.componentsConfig, localizations: self.componentsLocalizations)
+    }
+
+    var allLowResVideoUrls: [URLWithValidation] {
+        return self.componentsConfig.base.allLowResVideoUrls
+    }
+
+}
+
+private func imageURLs(
+    from componentsConfig: PaywallComponentsData.ComponentsConfig,
+    localizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
+) -> [URL] {
+    var imageUrls = componentsConfig.base.allImageURLs
+    for (_, localeValues) in localizations {
+        for (_, value) in localeValues {
+            switch value {
+            case .string:
+                break
+            case .image(let image):
+                imageUrls += image.imageUrls
+            }
+        }
+    }
+    return imageUrls
+}
+
 extension PaywallComponentsData.PaywallComponentsConfig {
 
     var allImageURLs: [URL] {
         let rootStackImageURLs = self.collectAllImageURLs(in: self.stack)
+        let headerImageURLs = self.header.flatMap {
+            self.collectAllImageURLs(in: $0.stack)
+        } ?? []
         let stickFooterImageURLs = self.stickyFooter.flatMap {
             self.collectAllImageURLs(in: $0.stack)
         } ?? []
 
-        return rootStackImageURLs + stickFooterImageURLs + self.background.allImageURLS
+        return rootStackImageURLs + headerImageURLs + stickFooterImageURLs + self.background.allImageURLS
     }
 
     var allLowResVideoUrls: [URLWithValidation] {
         let rootStackVideoURLs = self.collectAllVideoURLs(in: self.stack)
+        let headerVideoURLs = self.header.flatMap { self.collectAllVideoURLs(in: $0.stack) } ?? []
         let stickFooterVideoURLs = self.stickyFooter.flatMap { self.collectAllVideoURLs(in: $0.stack) } ?? []
 
-        return rootStackVideoURLs + stickFooterVideoURLs + self.background.lowResVideoUrls
+        return rootStackVideoURLs + headerVideoURLs + stickFooterVideoURLs + self.background.lowResVideoUrls
     }
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
@@ -116,7 +137,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                     case .customerCenter, .offerCode, .privacyPolicy, .terms, .webPaywallLink, .url, .unknown:
                         break
                     }
-                case .restorePurchases, .navigateBack, .unknown:
+                case .restorePurchases, .navigateBack, .workflowTrigger, .unknown:
                     break
                 }
             case .package(let package):
@@ -139,6 +160,10 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                     urls += item.icon.imageUrls
                 }
             case .tabs(let tabs):
+                urls += self.collectAllImageURLs(
+                    in: tabs.control.stack,
+                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                )
                 for tab in tabs.tabs {
                     urls += self.collectAllImageURLs(
                         in: tab.stack,
@@ -181,13 +206,15 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                         includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
                     )
                 }
+            case .fallbackHeader:
+                break
             }
         }
 
         return urls
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     private func collectAllVideoURLs(in stack: PaywallComponent.StackComponent) -> [URLWithValidation] {
 
         var urls: [URLWithValidation] = []
@@ -236,6 +263,8 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 if let fallback = countdown.fallback {
                     urls += self.collectAllVideoURLs(in: fallback)
                 }
+            case .fallbackHeader:
+                break
             }
         }
 

@@ -1,0 +1,60 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret",
+    "content-type" : "application/json",
+    "X-Apple-Device-Identifier" : "5D7C0074-07E4-4564-AAA4-4008D0640881",
+    "X-Client-Build-Version" : "12345",
+    "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
+    "X-Client-Version" : "17.0.0",
+    "X-Installation-Method" : "unknown",
+    "X-Is-Backgrounded" : "false",
+    "X-Is-Debug-Build" : "true",
+    "X-Is-Sandbox" : "true",
+    "X-Observer-Mode-Enabled" : "false",
+    "X-Platform" : "iOS",
+    "X-Platform-Device" : "arm64",
+    "X-Platform-Flavor" : "native",
+    "X-Platform-Version" : "Version 17.0.0 (Build 21A342)",
+    "X-Preferred-Locales" : "en_EN",
+    "X-Retry-Count" : "0",
+    "X-Storefront" : "USA",
+    "X-StoreKit-Version" : "2",
+    "X-StoreKit2-Enabled" : "true",
+    "X-Version" : "4.0.0"
+  },
+  "request" : {
+    "body" : {
+      "app_user_id" : "user",
+      "attributes" : {
+        "$attConsentStatus" : {
+          "updated_at_ms" : 1678307200000,
+          "value" : "authorized"
+        }
+      },
+      "currency" : "BFD",
+      "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
+      "initiation_source" : "purchase",
+      "is_restore" : false,
+      "observer_mode" : false,
+      "payload_version" : 1,
+      "paywall" : {
+        "dark_mode" : true,
+        "display_mode" : "full_screen",
+        "locale" : "en_US",
+        "paywall_id" : "test_paywall_id",
+        "revision" : 5,
+        "session_id" : "73616D70-6C65-2073-7472-696E67000000",
+        "source" : "customer_center"
+      },
+      "presented_offering_identifier" : "a_offering",
+      "price" : "10.98",
+      "product_id" : "a_great_product",
+      "purchase_completed_by" : "revenuecat",
+      "sdk_originated" : true,
+      "store_country" : "ESP",
+      "subscription_group_id" : "sub_group"
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/receipts"
+  }
+}

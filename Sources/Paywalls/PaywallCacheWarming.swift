@@ -12,13 +12,17 @@
 
 //  Created by Nacho Soto on 8/7/23.
 
+// swiftlint:disable file_length
+
 import Foundation
 
-// swiftlint:disable file_length
 protocol PaywallCacheWarmingType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpEligibilityCache(offerings: Offerings) async
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func clearEligibilityCache() async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpPaywallImagesCache(offerings: Offerings) async
@@ -29,19 +33,15 @@ protocol PaywallCacheWarmingType: Sendable {
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpPaywallFontsCache(offerings: Offerings) async
 
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func warmUpWorkflowCaches(workflow: PublishedWorkflow) async
+
 #if !os(tvOS) // For Paywalls
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async
 
 #endif
-}
-
-protocol PaywallImageFetcherType: Sendable {
-
-    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func downloadImage(_ url: URL) async throws
-
 }
 
 protocol PaywallFontManagerType: Sendable {
@@ -57,36 +57,70 @@ protocol PaywallFontManagerType: Sendable {
 actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     private let introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType
-    private let imageFetcher: PaywallImageFetcherType
     private let fontsManager: PaywallFontManagerType
     private let fileRepository: FileRepositoryType
 
-    private var hasLoadedEligibility = false
+    private var warmedEligibilityProductIdentifiers: Set<String> = []
     private var hasLoadedImages = false
     private var hasLoadedVideos = false
+    private var warmedWorkflowIDs: Set<String> = []
     private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
 
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
-        imageFetcher: PaywallImageFetcherType = DefaultPaywallImageFetcher(),
         fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession),
         fileRepository: FileRepositoryType = FileRepository.shared
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
-        self.imageFetcher = imageFetcher
         self.fontsManager = fontsManager
         self.fileRepository = fileRepository
     }
 
-    func warmUpEligibilityCache(offerings: Offerings) {
-        guard !self.hasLoadedEligibility else { return }
-        self.hasLoadedEligibility = true
+    /// Warms up the intro eligibility cache for products across all offerings.
+    ///
+    /// To avoid penalizing the current offering's warm-up with the cost of fetching eligibility for
+    /// the rest of the offerings, the work is staggered: the current offering's products are
+    /// warmed up first, and only after that completes are the remaining offerings warmed up.
+    ///
+    /// Products that have already been warmed up are skipped on subsequent calls.
+    /// Call ``clearEligibilityCache()`` to reset the tracking (e.g. when `CustomerInfo` changes).
+    func warmUpEligibilityCache(offerings: Offerings) async {
+        let currentProducts = offerings.productIdentifiersInCurrentOffering
+            .subtracting(self.warmedEligibilityProductIdentifiers)
 
-        let productIdentifiers = offerings.allProductIdentifiersInPaywalls
-        guard !productIdentifiers.isEmpty else { return }
+        if !currentProducts.isEmpty {
+            self.warmedEligibilityProductIdentifiers.formUnion(currentProducts)
+            await Self.checkEligibility(productIdentifiers: currentProducts, checker: self.introEligibiltyChecker)
+        }
 
+        let remainingProducts = offerings.allProductIdentifiers
+            .subtracting(self.warmedEligibilityProductIdentifiers)
+
+        if !remainingProducts.isEmpty {
+            self.warmedEligibilityProductIdentifiers.formUnion(remainingProducts)
+            await Self.checkEligibility(productIdentifiers: remainingProducts, checker: self.introEligibiltyChecker)
+        }
+    }
+
+    /// Resets the set of product identifiers that have been warmed up for intro eligibility.
+    ///
+    /// Should be called whenever the underlying eligibility cache is cleared (e.g. on
+    /// `CustomerInfo` changes) so that the next call to ``warmUpEligibilityCache(offerings:)``
+    /// re-populates the cache.
+    func clearEligibilityCache() {
+        self.warmedEligibilityProductIdentifiers.removeAll(keepingCapacity: false)
+    }
+
+    private static func checkEligibility(
+        productIdentifiers: Set<String>,
+        checker: TrialOrIntroPriceEligibilityCheckerType
+    ) async {
         Logger.debug(Strings.paywalls.warming_up_eligibility_cache(products: productIdentifiers))
-        self.introEligibiltyChecker.checkEligibility(productIdentifiers: productIdentifiers) { _ in }
+        _ = await Async.call { completion in
+            checker.checkEligibility(productIdentifiers: productIdentifiers) { result in
+                completion(result)
+            }
+        }
     }
 
     func warmUpPaywallImagesCache(offerings: Offerings) async {
@@ -104,13 +138,6 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
                     guard let self = self else { return }
                     // Preferred method - load with FileRepository
                     _ = try? await self.fileRepository.generateOrGetCachedFileURL(for: url, withChecksum: nil)
-
-                    // Legacy method - load with URLSession
-                    do {
-                        try await self.imageFetcher.downloadImage(url)
-                    } catch {
-                        Logger.error(Strings.paywalls.error_prefetching_image(url, error))
-                    }
                 }
             }
         }
@@ -147,6 +174,53 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
                     await self?.installFont(from: font)
                 }
             }
+        }
+    }
+
+    func warmUpWorkflowCaches(workflow: PublishedWorkflow) async {
+        guard !self.warmedWorkflowIDs.contains(workflow.id) else { return }
+        self.warmedWorkflowIDs.insert(workflow.id)
+
+        // Intentionally prewarming all screens, not just those reachable from
+        // `initialStepId`. This trades off potentially downloading assets for
+        // unreachable screens against the simpler implementation. For workflows
+        // with many screens or complex branching, switch to a bounded graph walk
+        // from `initialStepId` via `WorkflowStep.stepTriggerActions` to limit
+        // data, battery, and connection usage.
+        let screens = Array(workflow.screens.values)
+
+        Logger.verbose(Strings.paywalls.warming_up_workflow(screenCount: screens.count))
+
+        let imageURLs = Set(screens.flatMap(\.allImageURLs))
+        let videoURLs = Set(screens.flatMap(\.allLowResVideoUrls))
+        #if !os(tvOS)
+        let fonts = workflow.uiConfig.app.allDownloadableFonts
+        #endif
+
+        await withTaskGroup(of: Void.self) { group in
+            for url in imageURLs {
+                group.addTask { [weak self] in
+                    guard let self = self else { return }
+                    _ = try? await self.fileRepository.generateOrGetCachedFileURL(for: url, withChecksum: nil)
+                }
+            }
+            for source in videoURLs {
+                group.addTask { [weak self] in
+                    guard let self = self else { return }
+                    _ = try? await self.fileRepository.generateOrGetCachedFileURL(
+                        for: source.url,
+                        withChecksum: source.checksum
+                    )
+                }
+            }
+            #if !os(tvOS)
+            for font in fonts {
+                group.addTask { [weak self] in
+                    guard let self = self else { return }
+                    await self.installFont(from: font)
+                }
+            }
+            #endif
         }
     }
 
@@ -208,17 +282,6 @@ extension PaywallCacheWarming {
                                            diskCapacity: 200_000_000) // 200MB
 }
 
-// MARK: -
-
-private final class DefaultPaywallImageFetcher: PaywallImageFetcherType {
-
-    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func downloadImage(_ url: URL) async throws {
-        _ = try await PaywallCacheWarming.downloadSession.data(from: url)
-    }
-
-}
-
 // MARK: - Extensions
 
 internal extension PaywallData {
@@ -254,12 +317,16 @@ private extension Offerings {
         return self.current.map { [$0] } ?? []
     }
 
-    var allProductIdentifiersInPaywalls: Set<String> {
-        return .init(
-            self
-                .offeringsToPreWarm
-                .lazy
-                .flatMap(\.productIdentifiersInPaywall)
+    var productIdentifiersInCurrentOffering: Set<String> {
+        guard let current = self.current else { return [] }
+        return Set(current.availablePackages.lazy.map(\.storeProduct.productIdentifier))
+    }
+
+    var allProductIdentifiers: Set<String> {
+        return Set(
+            self.all.values.lazy
+                .flatMap(\.availablePackages)
+                .map(\.storeProduct.productIdentifier)
         )
     }
 
@@ -333,21 +400,6 @@ private extension Offerings {
 
     #endif
 
-}
-
-private extension Offering {
-
-    var productIdentifiersInPaywall: Set<String> {
-        guard let paywall = self.paywall else { return [] }
-
-        let packageTypes = Set(paywall.config.packages)
-        return Set(
-            self.availablePackages
-                .lazy
-                .filter { packageTypes.contains($0.identifier) }
-                .map(\.storeProduct.productIdentifier)
-        )
-    }
 }
 
 private extension PaywallData.Configuration.Images {

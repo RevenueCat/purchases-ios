@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 9/6/23.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class MockInternalAPI: InternalAPI {
 
@@ -55,7 +55,6 @@ class MockInternalAPI: InternalAPI {
         completion(self.stubbedPostDiagnosticsEventsCompletionResult)
     }
 
-    #if ENABLE_AD_EVENTS_TRACKING
     var invokedPostAdEvents: Bool = false
     var invokedPostAdEventsParameters: [[StoredAdEvent]] = []
     var stubbedPostAdEventsCompletionResult: BackendError?
@@ -75,7 +74,6 @@ class MockInternalAPI: InternalAPI {
             completion(self.stubbedPostAdEventsCompletionResult)
         }
     }
-    #endif
 
 }
 

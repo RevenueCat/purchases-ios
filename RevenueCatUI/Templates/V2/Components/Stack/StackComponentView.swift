@@ -11,7 +11,7 @@
 //
 //  Created by James Borthwick on 2024-08-20.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 // swiftlint:disable file_length
@@ -39,6 +39,18 @@ struct StackComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+
+    @Environment(\.paywallRootStackIsZLayer)
+    private var paywallRootStackIsZLayer
+
+    @Environment(\.paywallAncestorScrollsVertically)
+    private var paywallAncestorScrollsVertically
+
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
     private let onDismiss: () -> Void
@@ -62,15 +74,19 @@ struct StackComponentView: View {
     }
 
     var body: some View {
+        let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
+            package: self.packageContext.package
+        )
+        let isEligibleForPromoOffer = self.paywallPromoOfferCache.isMostLikelyEligible(
+            for: self.packageContext.package
+        )
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                for: self.packageContext.package
-            ),
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
             colorScheme: colorScheme
         ) { style in
             if style.visible {
@@ -113,7 +129,7 @@ struct StackComponentView: View {
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(
                         componentViewModels: self.viewModel.viewModels,
-                        ignoreSafeArea: self.viewModel.shouldApplySafeAreaInset,
+                        pushNonFirstChildrenBelowSafeArea: self.viewModel.firstChildIsFullWidthMedia,
                         onDismiss: self.onDismiss
                     )
                 }
@@ -132,7 +148,9 @@ struct StackComponentView: View {
         .scrollableIfEnabled(
             style.dimension,
             size: style.size,
-            enabled: style.scrollable ?? self.isScrollableByDefault
+            enabled: style.scrollable ?? self.isScrollableByDefault,
+            paywallRootStackIsZLayer: self.paywallRootStackIsZLayer,
+            ancestorScrollsVertically: self.paywallAncestorScrollsVertically
         )
         .shape(border: nil,
                shape: style.shape,
@@ -159,15 +177,16 @@ private extension Axis {
 fileprivate extension View {
 
     @ViewBuilder
-
     func scrollableIfEnabled(
         _ dimension: PaywallComponent.Dimension,
         size: PaywallComponent.Size,
-        enabled: Bool = true
+        enabled: Bool = true,
+        paywallRootStackIsZLayer: Bool = false,
+        ancestorScrollsVertically: Bool = false
     ) -> some View {
-        if enabled {
-            switch dimension {
-            case .horizontal(let verticalAlignment, let distribution):
+        switch dimension {
+        case .horizontal(let verticalAlignment, let distribution):
+            if enabled {
                 self.scrollableIfNecessaryWhenAvailable(
                     .horizontal,
                     fillContent: size.width == .fill,
@@ -176,7 +195,11 @@ fileprivate extension View {
                         vertical: verticalAlignment.frameAlignment.vertical
                     )
                 )
-            case .vertical(let horizontalAlignment, let distribution):
+            } else {
+                self
+            }
+        case .vertical(let horizontalAlignment, let distribution):
+            if enabled {
                 self.scrollableIfNecessaryWhenAvailable(
                     .vertical,
                     fillContent: size.height == .fill,
@@ -185,11 +208,23 @@ fileprivate extension View {
                         vertical: distribution.verticalFrameAlignment.vertical
                     )
                 )
-            case .zlayer:
+            } else {
                 self
             }
-        } else {
-            self
+        case .zlayer(let alignment):
+            if PaywallZLayerScrollPolicy.shouldApplyScroll(
+                stackScrollingEnabled: enabled,
+                paywallRootStackIsZLayer: paywallRootStackIsZLayer,
+                ancestorScrollsVertically: ancestorScrollsVertically
+            ) {
+                self.scrollableIfNecessaryWhenAvailable(
+                    .vertical,
+                    fillContent: true,
+                    alignment: alignment.stackAlignment
+                )
+            } else {
+                self
+            }
         }
     }
 
@@ -288,7 +323,10 @@ struct HorizontalStack: View {
                 alignment: verticalAlignment.stackAlignment,
                 spacing: style.spacing
             ) {
-                ComponentsView(componentViewModels: self.viewModels, onDismiss: self.onDismiss)
+                ComponentsView(
+                    componentViewModels: self.viewModels,
+                    onDismiss: self.onDismiss
+                )
             }
         case .flex:
             FlexHStack(
@@ -784,7 +822,6 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
@@ -796,7 +833,6 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,

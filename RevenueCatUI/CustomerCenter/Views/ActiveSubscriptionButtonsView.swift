@@ -31,13 +31,15 @@ struct ActiveSubscriptionButtonsView: View {
 
     @ObservedObject
     var viewModel: BaseManageSubscriptionViewModel
+
+    var activePurchaseIdentifier: String?
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(self.viewModel.relevantPathsForPurchase, id: \.id) { path in
                 AsyncButton(action: {
-                    await self.viewModel.handleHelpPath(
-                        path,
-                        withActiveProductId: viewModel.purchaseInformation?.productIdentifier)
+                    let activeProductId = activePurchaseIdentifier ?? viewModel.purchaseInformation?.productIdentifier
+                    await self.viewModel.handleHelpPath(path, withActiveProductId: activeProductId)
                 }, label: {
                     if self.viewModel.loadingPath?.id == path.id {
                         if #available(iOS 26.0, *) {

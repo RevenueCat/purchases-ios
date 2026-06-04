@@ -13,7 +13,7 @@
 // swiftlint:disable type_name
 
 import Nimble
-import RevenueCat
+@_spi(Internal) import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 import XCTest
@@ -56,6 +56,7 @@ class BasePaywallViewEventsTests: TestCase {
 
     private var impressionEventExpectation: XCTestExpectation!
     private var closeEventExpectation: XCTestExpectation!
+    private var exitOfferEventExpectation: XCTestExpectation!
 
     override func setUp() {
         super.setUp()
@@ -71,6 +72,7 @@ class BasePaywallViewEventsTests: TestCase {
             }
         self.impressionEventExpectation = XCTestExpectation(description: "Impression event")
         self.closeEventExpectation = .init(description: "Close event")
+        self.exitOfferEventExpectation = .init(description: "Exit offer event")
     }
 
     func testPaywallImpressionEvent() async throws {
@@ -119,8 +121,8 @@ class BasePaywallViewEventsTests: TestCase {
 
         await self.waitForCloseEvent()
 
-        expect(self.events).to(haveCount(3))
-        expect(self.events.map(\.eventType)).to(contain([.impression, .cancel, .close]))
+        expect(self.events).to(haveCount(4))
+        expect(self.events.map(\.eventType)).to(contain([.impression, .purchaseInitiated, .cancel, .close]))
         expect(Set(self.events.map(\.data.sessionIdentifier))).to(haveCount(1))
 
         let data = try XCTUnwrap(self.events.first { $0.eventType == .cancel }).data
@@ -142,6 +144,36 @@ class BasePaywallViewEventsTests: TestCase {
         await expect(self.events).toEventually(haveCount(4))
         expect(self.events.map(\.eventType)) == [.impression, .close, .impression, .close]
         expect(Set(self.events.map(\.data.sessionIdentifier))).to(haveCount(2))
+    }
+
+    func testExitOfferDismissEvent() async throws {
+        try await self.runDuringViewLifetime {
+            self.handler.trackExitOffer(exitOfferType: .dismiss, exitOfferingIdentifier: "exit_offering")
+        }
+
+        await self.fulfillment(of: [exitOfferEventExpectation], timeout: 3)
+        await self.waitForCloseEvent()
+
+        expect(self.events).to(containElementSatisfying { $0.eventType == .exitOffer })
+
+        let event = try XCTUnwrap(self.events.first { $0.eventType == .exitOffer })
+        self.verifyEventData(event.data)
+
+        let exitOfferData = try XCTUnwrap(event.exitOfferData)
+        expect(exitOfferData.exitOfferType) == .dismiss
+        expect(exitOfferData.exitOfferingIdentifier) == "exit_offering"
+    }
+
+    func testExitOfferEventHasSameSessionID() async throws {
+        try await self.runDuringViewLifetime {
+            self.handler.trackExitOffer(exitOfferType: .dismiss, exitOfferingIdentifier: "exit_offering")
+        }
+
+        await self.fulfillment(of: [exitOfferEventExpectation], timeout: 3)
+        await self.waitForCloseEvent()
+
+        expect(self.events.map(\.eventType)).to(contain([.impression, .exitOffer, .close]))
+        expect(Set(self.events.map(\.data.sessionIdentifier))).to(haveCount(1))
     }
 
     private static let offering = TestData.offeringWithNoIntroOffer
@@ -177,6 +209,10 @@ private extension BasePaywallViewEventsTests {
         case .impression: self.impressionEventExpectation.fulfill()
         case .cancel: break
         case .close: self.closeEventExpectation.fulfill()
+        case .exitOffer: self.exitOfferEventExpectation.fulfill()
+        case .purchaseInitiated: break
+        case .purchaseError: break
+        case .componentInteraction: break
         }
     }
 
@@ -222,6 +258,10 @@ private extension PaywallEvent {
         case impression
         case cancel
         case close
+        case exitOffer
+        case purchaseInitiated
+        case purchaseError
+        case componentInteraction
 
     }
 
@@ -230,6 +270,10 @@ private extension PaywallEvent {
         case .impression: return .impression
         case .cancel: return .cancel
         case .close: return .close
+        case .exitOffer: return .exitOffer
+        case .purchaseInitiated: return .purchaseInitiated
+        case .purchaseError: return .purchaseError
+        case .componentInteraction: return .componentInteraction
         }
     }
 

@@ -11,7 +11,7 @@
 //
 //  Created by Jay Shortway on 24/10/2024.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -19,26 +19,23 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class RootViewModel {
 
-    struct FirstItemShouldIgnoreSafeAreaInfo {
-        let imageComponent: PaywallComponent.ImageComponent?
-        let videoComponent: PaywallComponent.VideoComponent?
-        let parentZStack: PaywallComponent.StackComponent?
-    }
-
+    let headerViewModel: HeaderComponentViewModel?
     let stackViewModel: StackComponentViewModel
     let stickyFooterViewModel: StickyFooterComponentViewModel?
-    let firstItemIgnoresSafeAreaInfo: FirstItemShouldIgnoreSafeAreaInfo?
+    let firstItemIsFullWidthMedia: Bool
     let localizationProvider: LocalizationProvider
 
     init(
+        headerViewModel: HeaderComponentViewModel?,
         stackViewModel: StackComponentViewModel,
         stickyFooterViewModel: StickyFooterComponentViewModel?,
-        firstItemIgnoresSafeAreaInfo: FirstItemShouldIgnoreSafeAreaInfo?,
+        firstItemIsFullWidthMedia: Bool,
         localizationProvider: LocalizationProvider
     ) {
+        self.headerViewModel = headerViewModel
         self.stackViewModel = stackViewModel
         self.stickyFooterViewModel = stickyFooterViewModel
-        self.firstItemIgnoresSafeAreaInfo = firstItemIgnoresSafeAreaInfo
+        self.firstItemIsFullWidthMedia = firstItemIsFullWidthMedia
         self.localizationProvider = localizationProvider
     }
 
@@ -57,6 +54,14 @@ class RootViewModel {
         case .zlayer(let alignment):
             return alignment.stackAlignment
         }
+    }
+
+    var shouldOverlayHeader: Bool {
+        guard let headerViewModel else {
+            return false
+        }
+
+        return headerViewModel.firstItemIgnoresSafeArea || self.firstItemIsFullWidthMedia
     }
 
 }

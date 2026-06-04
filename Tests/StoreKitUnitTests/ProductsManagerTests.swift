@@ -56,6 +56,178 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         expect(product.productIdentifier) == identifier
     }
 
+    func testFetchProductsWithCompoundIdentifierOnlyRequestsStoreKitProductIdentifier() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let productsRequestFactory = MockProductsRequestFactory()
+        let manager = self.createManager(
+            storeKitVersion: .storeKit2,
+            productsRequestFactory: productsRequestFactory
+        )
+        self.logger.clearMessages()
+
+        let storeKitProductIdentifier = "com.revenuecat.annual_with_commitment"
+        let compoundProductIdentifier = "\(storeKitProductIdentifier):monthly"
+        let compoundIdentifier = try XCTUnwrap(
+            CompoundProductIdentifier(compoundProductIdentifier: compoundProductIdentifier)
+        )
+        let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
+            manager.products(withIdentifiers: Set([compoundProductIdentifier]), completion: completed)
+        }
+
+        let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
+        let product = try XCTUnwrap(unwrappedProducts.onlyElement).product
+
+        expect(product.productIdentifier) == storeKitProductIdentifier
+        expect(self.logger.messages).toNot(containElementSatisfying { message in
+            message.level == .warn
+            && message.message == Strings.storeKit.sk2_billing_plans_are_unavailable_on_this_os_version(
+                compoundProductIdentifier: compoundIdentifier
+            ).description
+        })
+        expect(self.logger.messages).toNot(containElementSatisfying { message in
+            message.level == .warn
+            && message.message == Strings.storeKit.sk1_does_not_support_billing_plans(
+                compoundProductIdentifier: compoundIdentifier
+            ).description
+        })
+    }
+
+    func testFetchProductsWithCompoundIdentifierWithBillingPlanDoesNotRequestProductOnUnsupportedOSVersions() throws {
+        try AvailabilityChecks.iOS264APINotAvailableOrSkipTest()
+
+        let productsRequestFactory = MockProductsRequestFactory()
+        let manager = self.createManager(
+            storeKitVersion: .storeKit2,
+            productsRequestFactory: productsRequestFactory
+        )
+        self.logger.clearMessages()
+
+        let compoundProductIdentifier = try XCTUnwrap(
+            CompoundProductIdentifier(compoundProductIdentifier: "com.revenuecat.annual_with_commitment:monthly")
+        )
+        let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
+            manager.products(
+                withIdentifiers: Set([compoundProductIdentifier.compoundProductIdentifier]),
+                completion: completed
+            )
+        }
+
+        let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
+        expect(unwrappedProducts).to(beEmpty())
+        expect(productsRequestFactory.invokedRequest) == false
+        if #available(iOS 16.0, *) {
+            self.logger.verifyMessageWasLogged(
+                Strings.storeKit.sk2_billing_plans_are_unavailable_on_this_os_version(
+                    compoundProductIdentifier: compoundProductIdentifier
+                ),
+                level: .warn
+            )
+            expect(self.logger.messages).toNot(containElementSatisfying { message in
+                message.level == .warn
+                    && message.message == Strings.storeKit.sk1_does_not_support_billing_plans(
+                        compoundProductIdentifier: compoundProductIdentifier
+                    ).description
+            })
+        } else {
+            // On iOS 14/15, the StoreKit 1 check happens first, so they'll see the SK1 warning log instead
+            self.logger.verifyMessageWasLogged(
+                Strings.storeKit.sk1_does_not_support_billing_plans(
+                    compoundProductIdentifier: compoundProductIdentifier
+                ).description,
+                level: .warn
+            )
+            expect(self.logger.messages).toNot(containElementSatisfying { message in
+                message.level == .warn
+                    && message.message == Strings.storeKit.sk2_billing_plans_are_unavailable_on_this_os_version(
+                        compoundProductIdentifier: compoundProductIdentifier
+                    ).description
+            })
+        }
+    }
+
+    func testFetchProductsWithCompoundIdentifierWithBillingPlanDoesNotRequestProductWithStoreKit1() throws {
+        let productsRequestFactory = MockProductsRequestFactory()
+        let manager = self.createManager(
+            storeKitVersion: .storeKit1,
+            productsRequestFactory: productsRequestFactory
+        )
+        self.logger.clearMessages()
+
+        let compoundProductIdentifier = try XCTUnwrap(
+            CompoundProductIdentifier(compoundProductIdentifier: "com.revenuecat.subscription:monthly")
+        )
+        let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
+            manager.products(
+                withIdentifiers: Set([compoundProductIdentifier.compoundProductIdentifier]),
+                completion: completed
+            )
+        }
+
+        let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
+        expect(unwrappedProducts).to(beEmpty())
+        expect(productsRequestFactory.invokedRequest) == false
+        self.logger.verifyMessageWasLogged(
+            Strings.storeKit.sk1_does_not_support_billing_plans(
+                compoundProductIdentifier: compoundProductIdentifier
+            ),
+            level: .warn
+        )
+    }
+
+    func testFetchProductsWithInvalidCompoundIdentifiersLogsWarning() throws {
+        let productsRequestFactory = MockProductsRequestFactory()
+        let manager = self.createManager(
+            storeKitVersion: .storeKit2,
+            productsRequestFactory: productsRequestFactory
+        )
+        self.logger.clearMessages()
+
+        let invalidIdentifiers: Set<String> = [
+            "",
+            "com.revenuecat.subscription:monthly:extra"
+        ]
+        let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
+            manager.products(withIdentifiers: invalidIdentifiers, completion: completed)
+        }
+
+        let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
+        expect(unwrappedProducts).to(beEmpty())
+        expect(productsRequestFactory.invokedRequest) == false
+
+        self.logger.verifyMessageWasLogged(
+            regexPattern: "Invalid product identifiers were ignored: .*com\\.revenuecat\\.subscription:monthly:extra",
+            level: .warn
+        )
+        self.logger.verifyMessageWasLogged(
+            regexPattern: "Invalid product identifiers were ignored: .*\"\"",
+            level: .warn
+        )
+    }
+
+    func testFetchProductsWithValidCompoundIdentifiersDoesNotLogWarning() throws {
+        let productsRequestFactory = MockProductsRequestFactory()
+        let manager = self.createManager(
+            storeKitVersion: .storeKit2,
+            productsRequestFactory: productsRequestFactory
+        )
+        self.logger.clearMessages()
+
+        let validIdentifiers: Set<String> = [
+            "com.revenuecat.sub",
+            "com.revenuecat.sub:monthly"
+        ]
+        let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
+            manager.products(withIdentifiers: validIdentifiers, completion: completed)
+        }
+
+        _ = try XCTUnwrap(receivedProducts?.get())
+        expect(self.logger.messages).toNot(containElementSatisfying { message in
+            message.level == .warn
+                && message.message.contains("Invalid product identifiers were ignored")
+        })
+    }
+
     func testClearCacheAfterStorefrontChangesSK1() async throws {
         let manager = self.createManager(storeKitVersion: .storeKit1)
 
@@ -114,6 +286,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     }
 
     fileprivate func createManager(storeKitVersion: StoreKitVersion,
+                                   productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(),
                                    storefront: StorefrontType? = nil,
                                    diagnosticsTracker: DiagnosticsTrackerType? = nil) -> ProductsManager {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
@@ -124,12 +297,12 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         )
         systemInfo.stubbedStorefront = storefront
         return ProductsManager(
+            productsRequestFactory: productsRequestFactory,
             diagnosticsTracker: diagnosticsTracker,
             systemInfo: systemInfo,
             requestTimeout: Self.requestTimeout
         )
     }
-
 }
 
 // swiftlint:disable type_name
@@ -214,6 +387,12 @@ class SK2ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
     @available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *)
     func testFetchProductsWithIdentifiersSK2ErrorTracksCorrectly() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
+        // SKTestSession.setSimulatedError() doesn't work for .loadProducts API in iOS 26.2
+        // https://developer.apple.com/forums/thread/808030
+        // This makes the test assertion `expect(params?.wasSuccessful) == false` fail.
+        // So we skip the test in iOS 26.
+        try AvailabilityChecks.iOS26APINotAvailableOrSkipTest()
 
         try await self.testSession.setSimulatedError(.generic(.unknown), forAPI: .loadProducts)
         let manager = self.createManager(storeKitVersion: .storeKit2,

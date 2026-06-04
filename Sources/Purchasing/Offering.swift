@@ -11,6 +11,7 @@
 //
 //  Created by Joshua Liebowitz on 7/9/21.
 //
+// swiftlint:disable file_length
 
 import Foundation
 
@@ -34,15 +35,15 @@ import Foundation
         /**
          Paywall components configuration defined in RevenueCat dashboard.
          */
-        public let uiConfig: UIConfig
+        @_spi(Internal) public let uiConfig: UIConfig
 
         /**
          Paywall components configuration defined in RevenueCat dashboard.
          */
-        public let data: PaywallComponentsData
+        @_spi(Internal) public let data: PaywallComponentsData
 
         /// Initialize a ``PaywallComponents``.
-        public init(uiConfig: UIConfig, data: PaywallComponentsData) {
+        @_spi(Internal) public init(uiConfig: UIConfig, data: PaywallComponentsData) {
             self.uiConfig = uiConfig
             self.data = data
         }
@@ -203,21 +204,29 @@ import Foundation
         identifier: String,
         serverDescription: String,
         metadata: [String: Any] = [:],
-        paywall: PaywallData? = nil,
-        paywallComponents: PaywallComponents? = nil,
+        paywall: PaywallData?,
         availablePackages: [Package],
         webCheckoutUrl: URL?
     ) {
-        self.init(
-            identifier: identifier,
-            serverDescription: serverDescription,
-            metadata: metadata,
-            paywall: paywall,
-            paywallComponents: paywallComponents,
-            draftPaywallComponents: nil,
-            availablePackages: availablePackages,
-            webCheckoutUrl: webCheckoutUrl
-        )
+        self.init(identifier: identifier, serverDescription: serverDescription, metadata: metadata,
+                  paywall: paywall, paywallComponents: nil, draftPaywallComponents: nil,
+                  availablePackages: availablePackages, webCheckoutUrl: webCheckoutUrl)
+    }
+
+    /// Initialize an ``Offering`` given a list of ``Package``s, including paywall components.
+    public convenience init(
+        identifier: String,
+        serverDescription: String,
+        metadata: [String: Any] = [:],
+        paywall: PaywallData? = nil,
+        paywallComponents: PaywallComponents?,
+        availablePackages: [Package],
+        webCheckoutUrl: URL?
+    ) {
+        self.init(identifier: identifier, serverDescription: serverDescription, metadata: metadata,
+                  paywall: paywall, paywallComponents: paywallComponents,
+                  draftPaywallComponents: nil, availablePackages: availablePackages,
+                  webCheckoutUrl: webCheckoutUrl)
     }
 
     init(
@@ -294,6 +303,11 @@ import Foundation
 @_spi(Internal)
 public extension Offering {
 
+    /// The `PresentedOfferingContext` from the first available package, or `nil` if the offering has no packages.
+    var presentedOfferingContext: PresentedOfferingContext? {
+        return availablePackages.first?.presentedOfferingContext
+    }
+
     /// Copies the Offering and sets the given `presentedOfferingContext` on all `availablePackages`
     func withPresentedOfferingContext(_ presentedOfferingContext: PresentedOfferingContext) -> Self {
         return Self(
@@ -304,6 +318,20 @@ public extension Offering {
             paywallComponents: paywallComponents,
             draftPaywallComponents: draftPaywallComponents,
             availablePackages: availablePackages.map { $0.withPresentedOfferingContext(presentedOfferingContext) },
+            webCheckoutUrl: webCheckoutUrl
+        )
+    }
+
+    /// Copies the Offering, replacing `paywallComponents` with the provided value.
+    func withPaywallComponents(_ paywallComponents: PaywallComponents) -> Self {
+        return Self(
+            identifier: identifier,
+            serverDescription: serverDescription,
+            metadata: metadata,
+            paywall: paywall,
+            paywallComponents: paywallComponents,
+            draftPaywallComponents: draftPaywallComponents,
+            availablePackages: availablePackages,
             webCheckoutUrl: webCheckoutUrl
         )
     }

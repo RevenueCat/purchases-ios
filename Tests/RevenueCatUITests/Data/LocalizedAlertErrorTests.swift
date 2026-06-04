@@ -19,7 +19,7 @@ class LocalizedAlertGenericErrorTests: TestCase {
     )
 
     func testErrorDescription() {
-        expect(Self.error.errorDescription) == "StoreKit.StoreKitError 0"
+        expect(Self.error.errorDescription) == "Error"
     }
 
     func testFailureReason() {

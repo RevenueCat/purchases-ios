@@ -100,11 +100,10 @@ private extension PurchaseHistoryViewModel {
                 self.nonSubscriptions = nonSubscriptions
             }
         } catch {
-            self.activeSubscriptions = []
-            self.inactiveSubscriptions = []
-            self.nonSubscriptions = []
-
             await MainActor.run {
+                self.activeSubscriptions = []
+                self.inactiveSubscriptions = []
+                self.nonSubscriptions = []
                 self.errorMessage = error.localizedDescription
             }
         }

@@ -32,8 +32,7 @@ internal enum CustomerCenterInternalAction {
 
     // New internal-only actions that don't exist in the public legacy CustomerCenterAction
     case buttonTapped(action: CustomerCenterActionable)
-    // Internal action for when a promotional offer succeeds
-    case promotionalOfferSuccess
+    case promotionalOfferSucceeded(CustomerInfo, StoreTransaction, String)
     case customActionSelected(CustomActionData)
 
     /// Converts this internal action to the corresponding legacy action if one exists
@@ -55,7 +54,7 @@ internal enum CustomerCenterInternalAction {
         case .feedbackSurveyCompleted(let optionId):
             return .feedbackSurveyCompleted(optionId)
         case .buttonTapped,
-                .promotionalOfferSuccess,
+                .promotionalOfferSucceeded,
                 .showingChangePlans,
                 .customActionSelected:
             return nil // No public equivalent
@@ -82,6 +81,7 @@ final class CustomerCenterActionWrapper {
     let managementOptionSelected = PassthroughSubject<CustomerCenterActionable, Never>()
     let customActionSelected = PassthroughSubject<(String, String?), Never>()
     let promotionalOfferSuccess = PassthroughSubject<Void, Never>()
+    let promotionalOfferSucceeded = PassthroughSubject<(CustomerInfo, StoreTransaction, String), Never>()
 
     init(legacyActionHandler: DeprecatedCustomerCenterActionHandler? = nil) {
         self.legacyActionHandler = legacyActionHandler
@@ -121,7 +121,8 @@ final class CustomerCenterActionWrapper {
         case .customActionSelected(let customActionData):
             customActionSelected.send((customActionData.actionIdentifier, customActionData.purchaseIdentifier))
 
-        case .promotionalOfferSuccess:
+        case .promotionalOfferSucceeded(let customerInfo, let transaction, let offerId):
+            promotionalOfferSucceeded.send((customerInfo, transaction, offerId))
             promotionalOfferSuccess.send(())
 
         case .showingChangePlans(let subscriptionGroupID):
@@ -158,6 +159,9 @@ extension CustomerCenterActionWrapper {
     }
     var promotionalOfferSuccessPublisher: AnyPublisher<Void, Never> {
         promotionalOfferSuccess.eraseToAnyPublisher()
+    }
+    var promotionalOfferSucceededPublisher: AnyPublisher<(CustomerInfo, StoreTransaction, String), Never> {
+        promotionalOfferSucceeded.eraseToAnyPublisher()
     }
 }
 

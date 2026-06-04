@@ -12,9 +12,9 @@
 //  Created by Nacho Soto on 8/19/22.
 
 #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-@testable import RevenueCat_CustomEntitlementComputation
+@_spi(Internal) @testable import RevenueCat_CustomEntitlementComputation
 #else
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 #endif
 
 import Foundation
@@ -258,7 +258,7 @@ extension TestLogHandler {
     }
 
     private static func regexEntryCondition(pattern: String, level: LogLevel?) -> EntryCondition {
-        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators]) else {
             fail("Invalid regular expression: \(pattern)")
             return { _ in false }
         }

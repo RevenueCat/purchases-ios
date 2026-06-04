@@ -142,7 +142,7 @@ private extension UIViewController {
 
 private extension DefaultSimulatedStorePurchaseUI {
 
-    static let purchaseAlertTitle = "Test Purchase"
+    static let purchaseAlertTitle = "Test Store Purchase"
     static let purchaseActionTitle = "Test valid purchase"
     static let cancelActionTitle = "Cancel"
     static let failureActionTitle = "Test failed purchase"
@@ -175,8 +175,11 @@ private extension SimulatedStoreProduct {
             message += subscriptionPeriod.debugDescription + "\n"
         }
 
-        if !self.discounts.isEmpty {
-            message += "Offers:\n" + self.discounts.map { $0.testPurchaseDescription }.joined(separator: "\n")
+        // The introductory offer (free trial / intro price) lives in `introductoryDiscount`, while
+        // `discounts` holds promotional offers. List both so the test purchase alert reflects the offer.
+        let offers = [self.introductoryDiscount].compactMap { $0 } + self.discounts
+        if !offers.isEmpty {
+            message += "Offers:\n" + offers.map { $0.testPurchaseDescription }.joined(separator: "\n")
         }
 
         return message
@@ -187,8 +190,14 @@ private extension SimulatedStoreProduct {
 private extension StoreProductDiscount {
 
     var testPurchaseDescription: String {
-        return "\(self.type.testPurchaseTitle): \(self.localizedPriceString) for " +
-        "\(self.numberOfPeriods * self.subscriptionPeriod.value) \(self.subscriptionPeriod.unit.debugDescription)(s)"
+        let duration = "\(self.numberOfPeriods * self.subscriptionPeriod.value) " +
+        "\(self.subscriptionPeriod.unit.debugDescription)(s)"
+
+        if self.paymentMode == .freeTrial {
+            return "Free trial: \(duration)"
+        }
+
+        return "\(self.type.testPurchaseTitle): \(self.localizedPriceString) for \(duration)"
     }
 }
 

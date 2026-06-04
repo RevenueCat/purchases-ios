@@ -908,6 +908,7 @@ private extension OfferingsManagerTests {
                           packages: [
                             .init(identifier: "$rc_monthly",
                                   platformProductIdentifier: "monthly_freetrial",
+                                  platformProductPlanIdentifier: nil,
                                   webCheckoutUrl: nil)
                           ],
                           webCheckoutUrl: nil)
@@ -927,9 +928,11 @@ private extension OfferingsManagerTests {
                           packages: [
                             .init(identifier: "$rc_monthly",
                                   platformProductIdentifier: "monthly_freetrial",
+                                  platformProductPlanIdentifier: nil,
                                   webCheckoutUrl: nil),
                             .init(identifier: "$rc_yearly",
                                   platformProductIdentifier: "yearly_freetrial",
+                                  platformProductPlanIdentifier: nil,
                                   webCheckoutUrl: nil)
                           ],
                           webCheckoutUrl: nil)
@@ -986,6 +989,149 @@ private extension OfferingsManagerTests {
             contents: MockData.anyBackendOfferingsContents,
             loadedFromDiskCache: false
         )
+    }
+
+}
+
+// MARK: - WorkflowManager integration
+
+extension OfferingsManagerTests {
+
+    func testGetOfferingsDeliversImmediatelyWhenWorkflowManagerIsNil() {
+        // The default `offeringsManager` is built without a workflow manager (workflows disabled),
+        // so offerings delivery must be unchanged.
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
+        }
+
+        expect(result).to(beSuccess())
+    }
+
+    func testGetOfferingsDoesNotDeliverUntilGetWorkflowsListCompletes() {
+        let mockWorkflowManager = MockWorkflowManager()
+        mockWorkflowManager.shouldStoreOnComplete = true
+        let manager = self.makeOfferingsManager(workflowManager: mockWorkflowManager)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let delivered: Atomic<Bool> = false
+        manager.offerings(appUserID: MockData.anyAppUserID) { _ in delivered.value = true }
+
+        // The workflows list fetch was triggered, but its completion is held, so offerings must wait.
+        expect(mockWorkflowManager.invokedGetWorkflowsList).toEventually(beTrue())
+        expect(delivered.value) == false
+
+        mockWorkflowManager.completeStoredOnComplete()
+        expect(delivered.value).toEventually(beTrue())
+    }
+
+    func testGetOfferingsDeliversEvenWhenWorkflowsListFetchFails() throws {
+        // A real WorkflowManager whose workflows-list fetch fails must still call onComplete,
+        // so offerings delivery can never hang.
+        let mockWorkflowsAPI = try XCTUnwrap(self.mockBackend.workflowsAPI as? MockWorkflowsAPI)
+        mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
+        let workflowManager = WorkflowManager(
+            backend: self.mockBackend,
+            workflowsCache: WorkflowsCache(deviceCache: self.mockDeviceCache),
+            paywallCache: nil,
+            operationDispatcher: self.mockOperationDispatcher
+        )
+        let manager = self.makeOfferingsManager(workflowManager: workflowManager)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let result = waitUntilValue { completed in
+            manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
+        }
+
+        expect(result).to(beSuccess())
+    }
+
+    func testGetOfferingsFromMemoryCacheWaitsForGetWorkflowsList() {
+        let mockWorkflowManager = MockWorkflowManager()
+        mockWorkflowManager.shouldStoreOnComplete = true
+        let manager = self.makeOfferingsManager(workflowManager: mockWorkflowManager)
+        // Serve offerings straight from the in-memory cache (the fast path) and keep it fresh so no
+        // background refresh runs.
+        self.mockDeviceCache.stubbedOfferings = MockData.sampleOfferings
+        self.mockDeviceCache.stubbedOfferingCacheStatus = .valid
+
+        let delivered: Atomic<Bool> = false
+        manager.offerings(appUserID: MockData.anyAppUserID) { _ in delivered.value = true }
+
+        // Even on the cached path, the workflows list is fetched before offerings are delivered.
+        expect(mockWorkflowManager.invokedGetWorkflowsList).toEventually(beTrue())
+        expect(delivered.value) == false
+        // The cached path must not force the list stale; that's only for network refreshes.
+        expect(mockWorkflowManager.invokedForceWorkflowsListCacheStale) == false
+
+        mockWorkflowManager.completeStoredOnComplete()
+        expect(delivered.value).toEventually(beTrue())
+    }
+
+    func testGetOfferingsFromStaleMemoryCacheDeliversImmediatelyAndFetchesWorkflowsOnceInBackground() {
+        let mockWorkflowManager = MockWorkflowManager()
+        // Hold any workflows completion so a foreground gate, if present, would block delivery.
+        mockWorkflowManager.shouldStoreOnComplete = true
+        let manager = self.makeOfferingsManager(workflowManager: mockWorkflowManager)
+        // Cached but stale, so the background refresh runs.
+        self.mockDeviceCache.stubbedOfferings = MockData.sampleOfferings
+        self.mockDeviceCache.stubbedOfferingCacheStatus = .stale
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let delivered: Atomic<Bool> = false
+        manager.offerings(appUserID: MockData.anyAppUserID) { _ in delivered.value = true }
+
+        // Cached offerings are delivered immediately, not blocked on the held workflows completion.
+        expect(delivered.value).toEventually(beTrue())
+        // Only the background refresh fetches the list (no duplicate foreground fetch).
+        expect(mockWorkflowManager.invokedGetWorkflowsListCount) == 1
+        expect(mockWorkflowManager.invokedForceWorkflowsListCacheStale) == true
+    }
+
+    func testGetOfferingsNetworkFetchForcesWorkflowsListStaleBeforeFetching() {
+        let mockWorkflowManager = MockWorkflowManager()
+        let manager = self.makeOfferingsManager(workflowManager: mockWorkflowManager)
+        self.mockDeviceCache.stubbedOfferings = nil // force a network fetch
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let result = waitUntilValue { completed in
+            manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(mockWorkflowManager.invokedForceWorkflowsListCacheStale) == true
+        expect(mockWorkflowManager.invokedGetWorkflowsList) == true
+    }
+
+    func testGetOfferingsServedFromDiskOnFailureStillFetchesWorkflowsList() throws {
+        let mockWorkflowManager = MockWorkflowManager()
+        let manager = self.makeOfferingsManager(workflowManager: mockWorkflowManager)
+        // Offerings backend fails and falls back to the disk cache.
+        self.mockDeviceCache.stubbedOfferings = nil
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(.networkError(.serverDown()))
+        self.mockDeviceCache.stubbedCachedOfferingsData = try MockData.anyBackendOfferingsContents.jsonEncodedData
+
+        let result: Result<Offerings, OfferingsManager.Error>? = waitUntilValue { completed in
+            manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
+        }
+
+        // Offerings are still delivered from disk, and the workflows list is fetched so the
+        // offeringId → workflowId map gets restored rather than left unresolved.
+        expect(result).to(beSuccess())
+        expect(result?.value?.loadedFromDiskCache) == true
+        expect(mockWorkflowManager.invokedGetWorkflowsList) == true
+    }
+
+    private func makeOfferingsManager(workflowManager: WorkflowManager?) -> OfferingsManager {
+        return OfferingsManager(deviceCache: self.mockDeviceCache,
+                                operationDispatcher: self.mockOperationDispatcher,
+                                systemInfo: self.mockSystemInfo,
+                                backend: self.mockBackend,
+                                offeringsFactory: self.mockOfferingsFactory,
+                                productsManager: self.mockProductsManager,
+                                diagnosticsTracker: self.mockDiagnosticsTracker,
+                                workflowManager: workflowManager)
     }
 
 }

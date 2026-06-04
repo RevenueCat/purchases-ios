@@ -13,7 +13,7 @@
 
 import CoreGraphics
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
 import SnapshotTesting
 import SwiftUI

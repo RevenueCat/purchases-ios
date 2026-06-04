@@ -13,6 +13,7 @@ import SwiftUI
 #endif
 
 func checkPaywallData(_ data: PaywallData) {
+    let id: String? = data.id
     let templateName: String = data.templateName
     let config: PaywallData.Configuration = data.config
     let _: PaywallData.LocalizedConfiguration? = data.config(for: Locale.current)
@@ -24,6 +25,12 @@ func checkPaywallData(_ data: PaywallData) {
     let _: [String] = data.zeroDecimalPlaceCountries
 
     let _: PaywallData = .init(templateName: templateName,
+                               config: config,
+                               localization: localization!,
+                               assetBaseURL: assetBaseURL,
+                               revision: revision)
+    let _: PaywallData = .init(id: id,
+                               templateName: templateName,
                                config: config,
                                localization: localization!,
                                assetBaseURL: assetBaseURL,
@@ -191,65 +198,15 @@ func checkPaywallViewMode(_ mode: PaywallViewMode) {
     }
 }
 
-func checkPaywallEvent(_ event: PaywallEvent) {
-    let _: PaywallEvent.SessionID = UUID()
+func checkExitOffer(_ exitOffer: ExitOffer) {
+    let offeringId: String = exitOffer.offeringId
 
-    switch event {
-    case let .impression(creationData, data):
-        checkPaywallEventCreationData(creationData)
-        checkPaywallEventData(data)
-    case let .cancel(creationData, data):
-        checkPaywallEventCreationData(creationData)
-        checkPaywallEventData(data)
-    case let .close(creationData, data):
-        checkPaywallEventCreationData(creationData)
-        checkPaywallEventData(data)
-    @unknown default: break
-    }
-
-    let _: PaywallEvent.Data = event.data
+    let _: ExitOffer = ExitOffer(offeringId: offeringId)
 }
 
-func checkPaywallEventCreationData(_ creationData: PaywallEvent.CreationData) {
-    let _: PaywallEvent.ID = creationData.id
-    let _: Date = creationData.date
+func checkExitOffers(_ exitOffers: ExitOffers) {
+    let dismiss: ExitOffer? = exitOffers.dismiss
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func create(
-        id: PaywallEvent.ID,
-        date: Date
-    ) {
-        _ = PaywallEvent.CreationData(
-            id: id,
-            date: date
-        )
-    }
-}
-
-func checkPaywallEventData(_ data: PaywallEvent.Data) {
-    let _: String = data.offeringIdentifier
-    let _: Int = data.paywallRevision
-    let _: PaywallEvent.SessionID = data.sessionIdentifier
-    let _: PaywallViewMode = data.displayMode
-    let _: String = data.localeIdentifier
-    let _: Bool = data.darkMode
-
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func create(
-        offering: Offering,
-        paywall: PaywallData,
-        sessionID: PaywallEvent.SessionID,
-        displayMode: PaywallViewMode,
-        locale: Locale,
-        darkMode: Bool
-    ) {
-        _ = PaywallEvent.Data(
-            offering: offering,
-            paywall: paywall,
-            sessionID: sessionID,
-            displayMode: displayMode,
-            locale: locale,
-            darkMode: darkMode
-        )
-    }
+    let _: ExitOffers = ExitOffers()
+    let _: ExitOffers = ExitOffers(dismiss: dismiss)
 }

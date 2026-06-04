@@ -83,7 +83,8 @@ struct GradientView: View {
         GeometryReader { geometry in
             switch gradientStyle {
             case .linear(let degrees):
-                let points = calculatePoints(angle: .degrees(Double(degrees)), rect: geometry.frame(in: .local))
+                let frame = geometry.frame(in: .local)
+                let points = calculatePoints(angle: .degrees(Double(degrees)), rect: frame)
                 LinearGradient(
                     gradient: gradient,
                     startPoint: points.start,

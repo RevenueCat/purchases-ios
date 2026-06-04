@@ -12,6 +12,10 @@ import Foundation
 #if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+// Note: CountdownComponent has an `overrides` property in its data model, but condition evaluation
+// is not wired here. Overrides are handled by the child stack view models (countdownStack, endStack,
+// fallbackStack), which each support conditional configurability independently.
+// This is consistent with the Android SDK.
 class CountdownComponentViewModel {
 
     let component: PaywallComponent.CountdownComponent

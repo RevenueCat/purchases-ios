@@ -21,6 +21,7 @@ class OfferingsTests: TestCase {
         let package = self.offeringsFactory.createPackage(
             with: .init(identifier: "$rc_monthly",
                         platformProductIdentifier: "com.myproduct.monthly",
+                        platformProductPlanIdentifier: nil,
                         webCheckoutUrl: nil),
             productsByID: [
                 "com.myproduct.annual": StoreProduct(sk1Product: SK1Product())
@@ -39,6 +40,7 @@ class OfferingsTests: TestCase {
             self.offeringsFactory.createPackage(
                 with: .init(identifier: packageIdentifier,
                             platformProductIdentifier: productIdentifier,
+                            platformProductPlanIdentifier: nil,
                             webCheckoutUrl: nil),
                 productsByID: [
                     productIdentifier: StoreProduct(sk1Product: product)
@@ -54,6 +56,104 @@ class OfferingsTests: TestCase {
         expect(package.packageType) == PackageType.monthly
     }
 
+    func testPackageIsCreatedWithUpFrontProductPlanIdentifier() throws {
+        let productIdentifier = "com.myproduct.subscription"
+        let product = Self.testStoreProduct(productIdentifier: productIdentifier)
+        let packageIdentifier = "$rc_monthly"
+        let package = try XCTUnwrap(
+            self.offeringsFactory.createPackage(
+                with: .init(identifier: packageIdentifier,
+                            platformProductIdentifier: productIdentifier,
+                            platformProductPlanIdentifier: "upFront",
+                            webCheckoutUrl: nil),
+                productsByID: [
+                    productIdentifier: product
+                ],
+                offeringIdentifier: "offering"
+            )
+        )
+
+        expect(package.storeProduct) == product
+        expect(package.identifier) == packageIdentifier
+    }
+
+    func testPackageIsCreatedWithMonthlyProductPlanIdentifier() throws {
+        let productIdentifier = "com.myproduct.subscription"
+        let baseProduct = Self.testStoreProduct(productIdentifier: productIdentifier)
+        let monthlyProduct = Self.testStoreProduct(
+            productIdentifier: productIdentifier,
+            installmentsInfo: Self.installmentsInfo(billingPlanType: .monthly)
+        )
+        let packageIdentifier = "$rc_monthly"
+        let package = try XCTUnwrap(
+            self.offeringsFactory.createPackage(
+                with: .init(identifier: packageIdentifier,
+                            platformProductIdentifier: productIdentifier,
+                            platformProductPlanIdentifier: "monthly",
+                            webCheckoutUrl: nil),
+                productsByID: [
+                    productIdentifier: baseProduct,
+                    "\(productIdentifier):monthly": monthlyProduct
+                ],
+                offeringIdentifier: "offering"
+            )
+        )
+
+        expect(package.storeProduct) == monthlyProduct
+        expect(package.storeProduct).toNot(equal(baseProduct))
+        expect(package.identifier) == packageIdentifier
+    }
+
+    func testPackageIsNotCreatedWithUnrecognizedProductPlanIdentifierAndBaseProduct() {
+        let productIdentifier = "com.myproduct.subscription"
+        let package = self.offeringsFactory.createPackage(
+            with: .init(identifier: "$rc_monthly",
+                        platformProductIdentifier: productIdentifier,
+                        platformProductPlanIdentifier: "unknownBillingPlan",
+                        webCheckoutUrl: nil),
+            productsByID: [
+                productIdentifier: Self.testStoreProduct(productIdentifier: productIdentifier)
+            ],
+            offeringIdentifier: "offering"
+        )
+
+        expect(package).to(beNil())
+    }
+
+    func testProductIdentifiersNormalizePlatformProductPlanIdentifiers() {
+        let response = OfferingsResponse(
+            currentOfferingId: "offering_a",
+            offerings: [
+                .init(identifier: "offering_a",
+                      description: "This is the base offering",
+                      packages: [
+                        .init(identifier: "$rc_monthly",
+                              platformProductIdentifier: "com.myproduct.monthly",
+                              platformProductPlanIdentifier: "monthly",
+                              webCheckoutUrl: nil),
+                        .init(identifier: "$rc_lifetime",
+                              platformProductIdentifier: "com.myproduct.upfront",
+                              platformProductPlanIdentifier: "upFront",
+                              webCheckoutUrl: nil),
+                        .init(identifier: "unknown_package",
+                              platformProductIdentifier: "com.myproduct.unknown",
+                              platformProductPlanIdentifier: "unknownBillingPlan",
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil)
+            ],
+            placements: nil,
+            targeting: nil,
+            uiConfig: nil
+        )
+
+        expect(response.productIdentifiers) == [
+            "com.myproduct.monthly:monthly",
+            "com.myproduct.upfront",
+            "com.myproduct.unknown:unknownBillingPlan"
+        ]
+    }
+
     func testOfferingIsNotCreatedIfNoValidPackage() {
         let products = ["com.myproduct.bad": StoreProduct(sk1Product: SK1Product())]
         let offering = self.offeringsFactory.createOffering(
@@ -64,9 +164,11 @@ class OfferingsTests: TestCase {
                 packages: [
                     .init(identifier: "$rc_monthly",
                           platformProductIdentifier: "com.myproduct.monthly",
+                          platformProductPlanIdentifier: nil,
                           webCheckoutUrl: nil),
                     .init(identifier: "$rc_annual",
                           platformProductIdentifier: "com.myproduct.annual",
+                          platformProductPlanIdentifier: nil,
                           webCheckoutUrl: nil)
                 ],
                 webCheckoutUrl: nil),
@@ -94,12 +196,15 @@ class OfferingsTests: TestCase {
                     packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: "com.myproduct.monthly",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil),
                         .init(identifier: "$rc_annual",
                               platformProductIdentifier: "com.myproduct.annual",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil),
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.sixMonth",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                     ],
                     webCheckoutUrl: nil),
@@ -124,6 +229,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.sixMonth",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil),
@@ -132,6 +238,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: "com.myproduct.monthly",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil)
@@ -167,6 +274,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.annual",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil),
@@ -175,9 +283,11 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: "com.myproduct.monthly",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil),
                         .init(identifier: "custom_package",
                               platformProductIdentifier: "com.myproduct.custom",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil)
@@ -226,6 +336,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.annual",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ], webCheckoutUrl: nil),
                 .init(identifier: "offering_b",
@@ -233,9 +344,11 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: "com.myproduct.monthly",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil),
                         .init(identifier: "custom_package",
                               platformProductIdentifier: "com.myproduct.custom",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ], webCheckoutUrl: nil),
                 .init(identifier: "offering_c",
@@ -243,9 +356,11 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: "com.myproduct.monthly",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil),
                         .init(identifier: "custom_package",
                               platformProductIdentifier: "com.myproduct.custom",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ], webCheckoutUrl: nil)
             ],
@@ -318,6 +433,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.annual",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil),
@@ -326,9 +442,11 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: "com.myproduct.monthly",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil),
                         .init(identifier: "custom_package",
                               platformProductIdentifier: "com.myproduct.custom",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil)
@@ -375,6 +493,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.annual",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ], webCheckoutUrl: nil)
             ],
@@ -446,6 +565,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.annual",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       metadata: .init(
@@ -457,6 +577,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: "com.myproduct.monthly",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil)
@@ -530,6 +651,36 @@ class OfferingsTests: TestCase {
                                           expectedCount: 1)
         }
 
+    }
+
+    // MARK: - presentedOfferingContext helper
+
+    func testPresentedOfferingContextReturnsContextFromFirstPackage() {
+        let context = PresentedOfferingContext(offeringIdentifier: "offering_a")
+        let package = Package(
+            identifier: "$rc_monthly",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "monthly")),
+            presentedOfferingContext: context,
+            webCheckoutUrl: nil
+        )
+        let offering = Offering(
+            identifier: "offering_a",
+            serverDescription: "",
+            availablePackages: [package],
+            webCheckoutUrl: nil
+        )
+        expect(offering.presentedOfferingContext) == context
+    }
+
+    func testPresentedOfferingContextIsNilForOfferingWithNoPackages() {
+        let offering = Offering(
+            identifier: "empty-offering",
+            serverDescription: "",
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+        expect(offering.presentedOfferingContext).to(beNil())
     }
 
     func testLifetimePackage() throws {
@@ -611,6 +762,7 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.annual",
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil)
@@ -792,6 +944,41 @@ class OfferingsTests: TestCase {
 
 private extension OfferingsTests {
 
+    static func testStoreProduct(
+        productIdentifier: String,
+        installmentsInfo: InstallmentsInfo? = nil
+    ) -> StoreProduct {
+        return TestStoreProduct(
+            localizedTitle: "Subscription",
+            price: 10.99,
+            currencyCode: "USD",
+            localizedPriceString: "$10.99",
+            productIdentifier: productIdentifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: "Subscription",
+            subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            locale: Locale(identifier: "en_US"),
+            installmentsInfo: installmentsInfo
+        ).toStoreProduct()
+    }
+
+    static func installmentsInfo(billingPlanType: BillingPlanType) -> InstallmentsInfo {
+        return InstallmentsInfo(
+            commitmentInstallmentsCount: 3,
+            commitmentInstallmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            installmentBillingPrice: 3.99,
+            installmentBillingDisplayPrice: "$3.99",
+            commitmentTotalPeriod: SubscriptionPeriod(value: 3, unit: .month),
+            commitmentTotalPrice: 11.97,
+            commitmentTotalDisplayPrice: "$11.97",
+            billingPlanType: billingPlanType
+        )
+    }
+
+}
+
+private extension OfferingsTests {
+
     func testPackageType(packageType: PackageType, product: StoreProduct? = nil) throws {
         let defaultIdentifier: String = {
             if packageType == PackageType.unknown {
@@ -815,6 +1002,7 @@ private extension OfferingsTests {
                       packages: [
                         .init(identifier: identifier,
                               platformProductIdentifier: productIdentifier,
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil)

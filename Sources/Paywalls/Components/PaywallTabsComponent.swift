@@ -14,45 +14,54 @@
 
 import Foundation
 
-public extension PaywallComponent {
+@_spi(Internal) public extension PaywallComponent {
 
     final class TabControlButtonComponent: Codable, Sendable, Hashable, Equatable {
 
         let type: ComponentType
         public let tabId: String
+        public let name: String?
         public let stack: StackComponent
 
-        public init(tabId: String, stack: StackComponent) {
+        public init(tabId: String, stack: StackComponent, name: String? = nil) {
             self.type = .tabControlButton
             self.tabId = tabId
+            self.name = name
             self.stack = stack
         }
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
             hasher.combine(tabId)
+            hasher.combine(name)
             hasher.combine(stack)
         }
 
         public static func == (lhs: TabControlButtonComponent, rhs: TabControlButtonComponent) -> Bool {
-            return lhs.type == rhs.type && lhs.tabId == rhs.tabId && lhs.stack == rhs.stack
+            return lhs.type == rhs.type &&
+                lhs.tabId == rhs.tabId &&
+                lhs.name == rhs.name &&
+                lhs.stack == rhs.stack
         }
     }
 
     final class TabControlToggleComponent: Codable, Sendable, Hashable, Equatable {
 
         let type: ComponentType
+        public let name: String?
         public let thumbColorOn: ColorScheme
         public let thumbColorOff: ColorScheme
         public let trackColorOn: ColorScheme
         public let trackColorOff: ColorScheme
 
         public init(defaultValue: Bool,
+                    name: String? = nil,
                     thumbColorOn: ColorScheme,
                     thumbColorOff: ColorScheme,
                     trackColorOn: ColorScheme,
                     trackColorOff: ColorScheme) {
             self.type = .tabControlToggle
+            self.name = name
             self.thumbColorOn = thumbColorOn
             self.thumbColorOff = thumbColorOff
             self.trackColorOn = trackColorOn
@@ -61,6 +70,7 @@ public extension PaywallComponent {
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(name)
             hasher.combine(thumbColorOn)
             hasher.combine(thumbColorOff)
             hasher.combine(trackColorOn)
@@ -69,6 +79,7 @@ public extension PaywallComponent {
 
         public static func == (lhs: TabControlToggleComponent, rhs: TabControlToggleComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.name == rhs.name &&
                    lhs.thumbColorOn == rhs.thumbColorOn &&
                    lhs.thumbColorOff == rhs.thumbColorOff &&
                    lhs.trackColorOn == rhs.trackColorOn &&
@@ -98,20 +109,25 @@ public extension PaywallComponent {
         final public class Tab: Codable, Sendable, Hashable, Equatable {
 
             public let id: String
+            public let name: String?
             public let stack: StackComponent
 
-            public init(id: String, stack: PaywallComponent.StackComponent) {
+            public init(id: String, name: String? = nil, stack: PaywallComponent.StackComponent) {
                 self.id = id
+                self.name = name
                 self.stack = stack
             }
 
             public func hash(into hasher: inout Hasher) {
                 hasher.combine(id)
+                hasher.combine(name)
                 hasher.combine(stack)
             }
 
             public static func == (lhs: Tab, rhs: Tab) -> Bool {
-                return lhs.id == rhs.id && lhs.stack == rhs.stack
+                return lhs.id == rhs.id &&
+                    lhs.name == rhs.name &&
+                    lhs.stack == rhs.stack
             }
         }
 
@@ -142,6 +158,7 @@ public extension PaywallComponent {
         }
 
         let type: ComponentType
+        public let name: String?
         public let visible: Bool?
         public let size: Size
         public let padding: Padding
@@ -158,6 +175,7 @@ public extension PaywallComponent {
         public let overrides: ComponentOverrides<PartialTabsComponent>?
 
         public init(
+            name: String? = nil,
             visible: Bool? = nil,
             size: Size = .init(width: .fill, height: .fit),
             padding: Padding = .zero,
@@ -174,6 +192,7 @@ public extension PaywallComponent {
             overrides: ComponentOverrides<PartialTabsComponent>? = nil
         ) {
             self.type = .stack
+            self.name = name
             self.visible = visible
             self.size = size
             self.padding = padding
@@ -192,6 +211,7 @@ public extension PaywallComponent {
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(name)
             hasher.combine(visible)
             hasher.combine(size)
             hasher.combine(padding)
@@ -208,6 +228,7 @@ public extension PaywallComponent {
 
         public static func == (lhs: TabsComponent, rhs: TabsComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.name == rhs.name &&
                    lhs.visible == rhs.visible &&
                    lhs.size == rhs.size &&
                    lhs.padding == rhs.padding &&

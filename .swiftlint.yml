@@ -11,6 +11,11 @@ excluded:
   - .build
   - ./**/Project.swift
 
+# Baseline of pre-existing violations. New violations are not allowed.
+# To accept an intentional new violation, regenerate the baseline:
+#   swiftlint lint --write-baseline swiftlint-baseline.json
+baseline: swiftlint-baseline.json
+
 opt_in_rules:
   - force_unwrapping
   - sorted_imports
@@ -34,6 +39,7 @@ custom_rules:
     included: ".*\\.swift"
     excluded:
       - Tests/ReceiptParserTests
+      - Tests/RulesEngineInternalTests
       - Tests/v3LoadShedderIntegration
       - Tests/v4LoadShedderIntegration
     regex: "\\: XCTestCase \\{"
@@ -59,10 +65,66 @@ custom_rules:
     message: "In older versions of xcode build tools, this is not supported and will fail in CI"
     severity: error
 
+  no_direct_state_assignment_in_init:
+    included: ".*\\.swift"
+    name: "No direct @State assignment in init"
+    regex: '(?s)@State(?:\s*\([^)]*\))?\s+(?:private\s+)?var\s+([A-Za-z_][A-Za-z0-9_]*)\b(?:[^{}]|\{[^{}]*\})*?init\s*\([^{}]*\)\s*\{(?:[^{}]|\{[^{}]*\})*?\bself\.\1\s*='
+    message: "Initialize @State in init using backing storage: self._property = .init(initialValue: ...)"
+    severity: error
+
+  no_direct_state_assignment_in_init_reverse_order:
+    included: ".*\\.swift"
+    name: "No direct @State assignment in init (reverse order)"
+    regex: '(?s)init\s*\([^{}]*\)\s*\{(?:[^{}]|\{[^{}]*\})*?\bself\.([A-Za-z_][A-Za-z0-9_]*)\s*=(?:[^{}]|\{[^{}]*\})*?\}(?:[^{}]|\{[^{}]*\})*?@State(?:\s*\([^)]*\))?\s+(?:private\s+)?var\s+\1\b'
+    message: "Initialize @State in init using backing storage: self._property = .init(initialValue: ...)"
+    severity: error
+
   no_trailing_comma_multiline:
     name: "No Trailing Commas"
     regex: ',\s*\n\s*\)'
     message: "Trailing commas are not allowed"
+    severity: error
+
+  avoid_using_directory_apis_directly:
+    name: "Avoid Using Directory APIs Directly"
+    regex: '\b(URL\.(cachesDirectory|applicationDirectory|libraryDirectory|userDirectory|documentsDirectory|desktopDirectory|applicationSupportDirectory|downloadsDirectory|moviesDirectory|musicDirectory|picturesDirectory|sharedPublicDirectory|trashDirectory|homeDirectory|temporaryDirectory)|URL\.(currentDirectory\(\)|homeDirectory\(forUser:)|FileManager\.default\.(urls?)\s*\(|(?<!FileManager\.)(?!default\.)[a-zA-Z_][a-zA-Z0-9_]*\.(urls?)\s*\(\s*for\s*:\s*\.)'
+    match_kinds:
+      - identifier
+      - keyword
+    message: "Use DirectoryHelper.baseUrl(for:) instead of FileManager or URL directory APIs."
+    severity: error
+    excluded:
+      - Sources/Caching/DirectoryHelper.swift
+      - Tests/
+
+  no_bundle_module:
+    included: "RevenueCatUI/.*\\.swift"
+    excluded:
+      - RevenueCatUI/Helpers/Bundle\+Extensions.swift
+    name: "No Bundle.module"
+    regex: '(Bundle\.module|bundle:\s*\.module)'
+    message: "Use Bundle.revenueCatUI instead of Bundle.module for Compose Resources compatibility"
+    severity: error
+
+  no_new_public_enums:
+    name: "No new public enums in consumer-facing APIs"
+    message: "Adding a new `public enum` to the SDK's consumer-facing surface (including `@_spi(Experimental)`) is not allowed. Adding a case to an existing `public enum` is a source-breaking change for any consumer with an exhaustive `switch`. Use a struct with static constants instead."
+    severity: error
+    included:
+      - "Sources/.*\\.swift"
+      - "RevenueCatUI/.*\\.swift"
+      - "AdapterSDKs/RevenueCatAdMob/Sources/.*\\.swift"
+    regex: '(?s)(?<!@_spi\(Internal\)\s)\bpublic\s+(?:indirect\s+)?enum\s+[A-Z]'
+
+  no_leaking_rules_engine_internal_import:
+    included: ".*\\.swift"
+    name: "No leaking `import RulesEngineInternal`"
+    regex: '^[ \t]*(@_exported\s+)?(public\s+|package\s+)?import\s+(struct\s+|class\s+|func\s+|enum\s+|protocol\s+|typealias\s+|var\s+|let\s+)?RulesEngineInternal\b'
+    match_kinds:
+      - identifier
+      - keyword
+      - attribute.builtin
+    message: "`import RulesEngineInternal` (plain, kind-qualified e.g. `import struct RulesEngineInternal.X`, `@_exported`, `public`, or `package`) is not allowed because it re-exports RulesEngineInternal's public APIs into the SDK's public API surface.\nUse the canonical form:\n#if compiler(>=6)\n    internal import RulesEngineInternal\n#else\n    @_implementationOnly import RulesEngineInternal\n#endif\nOr `private import RulesEngineInternal` / `fileprivate import RulesEngineInternal`."
     severity: error
 
 identifier_name:

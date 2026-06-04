@@ -108,15 +108,11 @@ extension View {
 
     @ViewBuilder
     func scrollBounceBehaviorBasedOnSize() -> some View {
-        #if swift(>=5.8)
         if #available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *) {
             self.scrollBounceBehavior(.basedOnSize)
         } else {
             self
         }
-        #else
-        self
-        #endif
     }
 
     @ViewBuilder
@@ -164,14 +160,18 @@ extension View {
 
                     // When content is too long: scroll it
                     ScrollView(axis.scrollViewAxis) {
-                        self
+                        self.paywallMarkingVerticalScrollContainer(axis: axis) {
+                            self
+                        }
                     }
                     .scrollBounceBehaviorBasedOnSize()
                 }
             } else {
                 // For FIT content: just use ScrollView (sizes naturally, scrolls if needed)
                 ScrollView(axis.scrollViewAxis) {
-                    self
+                    self.paywallMarkingVerticalScrollContainer(axis: axis) {
+                        self
+                    }
                 }
                 .scrollBounceBehaviorBasedOnSize()
             }

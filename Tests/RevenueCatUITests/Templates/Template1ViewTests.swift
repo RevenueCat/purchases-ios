@@ -22,7 +22,7 @@ class Template1ViewTests: BaseSnapshotTest {
 
     func testSamplePaywall() {
         Self.createPaywall(offering: Self.offeringWithNoIntroOffer)
-            .snapshot(size: Self.fullScreenSize)
+            .recordSnapshot(size: Self.fullScreenSize)
     }
 
     func testTabletPaywall() {
@@ -38,30 +38,30 @@ class Template1ViewTests: BaseSnapshotTest {
     func testCustomFont() {
         Self.createPaywall(offering: Self.offeringWithNoIntroOffer,
                            fonts: Self.fonts)
-        .snapshot(size: Self.fullScreenSize)
+        .recordSnapshot(size: Self.fullScreenSize)
     }
 
     func testFooterPaywall() {
         Self.createPaywall(offering: Self.offeringWithNoIntroOffer,
                            mode: .footer)
-        .snapshot(size: Self.footerSize)
+        .recordSnapshot(size: Self.footerSize)
     }
 
     func testCondensedFooterPaywall() {
         Self.createPaywall(offering: Self.offeringWithNoIntroOffer,
                            mode: .condensedFooter)
-        .snapshot(size: Self.footerSize)
+        .recordSnapshot(size: Self.footerSize)
     }
 
     func testSamplePaywallWithIntroOffer() {
         Self.createPaywall(offering: Self.offeringWithIntroOffer)
-            .snapshot(size: Self.fullScreenSize)
+            .recordSnapshot(size: Self.fullScreenSize)
     }
 
     func testSamplePaywallWithIneligibleIntroOffer() {
         Self.createPaywall(offering: Self.offeringWithIntroOffer,
                            introEligibility: Self.ineligibleChecker)
-            .snapshot(size: Self.fullScreenSize)
+            .recordSnapshot(size: Self.fullScreenSize)
     }
 
     // This test _should_ pass but its only matches 84% for unknown mystical reasons
@@ -75,14 +75,14 @@ class Template1ViewTests: BaseSnapshotTest {
 //            purchaseHandler: Self.purchaseHandler
 //        )
 //
-//        view.snapshot(size: Self.fullScreenSize)
+//        view.recordSnapshot(size: Self.fullScreenSize)
 //    }
 
     func testDarkMode() {
         Self.createPaywall(offering: Self.offeringWithIntroOffer,
                            introEligibility: Self.ineligibleChecker)
             .environment(\.colorScheme, .dark)
-            .snapshot(size: Self.fullScreenSize)
+            .recordSnapshot(size: Self.fullScreenSize)
     }
 
     private static let offeringWithIntroOffer = TestData.offeringWithIntroOffer.withLocalImages

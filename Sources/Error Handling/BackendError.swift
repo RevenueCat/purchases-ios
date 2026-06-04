@@ -20,6 +20,7 @@ enum BackendError: Error, Equatable {
 
     case networkError(NetworkError)
     case missingAppUserID(Source)
+    case missingClientTransactionID(Source)
     case emptySubscriberAttributes(Source)
     case missingReceiptFile(URL?, Source)
     case missingTransactionProductIdentifier(Source)
@@ -30,6 +31,7 @@ enum BackendError: Error, Equatable {
     case purchaseBelongsToOtherUser
     case expiredWebRedemptionToken(obfuscatedEmail: String)
     case unsupportedInUIPreviewMode(Source)
+    case missingTransactionJWS(Source)
 
 }
 
@@ -39,6 +41,18 @@ extension BackendError {
         file: String = #fileID, function: String = #function, line: UInt = #line
     ) -> Self {
         return .missingAppUserID(.init(file: file, function: function, line: line))
+    }
+
+    static func missingClientTransactionID(
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .missingClientTransactionID(.init(file: file, function: function, line: line))
+    }
+
+    static func missingTransactionJWS(
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .missingTransactionJWS(.init(file: file, function: function, line: line))
     }
 
     static func emptySubscriberAttributes(
@@ -95,6 +109,17 @@ extension BackendError: PurchasesErrorConvertible {
             return ErrorUtils.missingAppUserIDError(fileName: source.file,
                                                     functionName: source.function,
                                                     line: source.line)
+
+        case let .missingClientTransactionID(source):
+            return ErrorUtils.configurationError(message: "Missing client transaction ID.",
+                                                 fileName: source.file,
+                                                 functionName: source.function,
+                                                 line: source.line)
+
+        case let .missingTransactionJWS(source):
+            return ErrorUtils.storeProblemError(fileName: source.file,
+                                                functionName: source.function,
+                                                line: source.line)
 
         case let .emptySubscriberAttributes(source):
             return ErrorUtils.emptySubscriberAttributesError(fileName: source.file,
@@ -185,6 +210,7 @@ extension BackendError {
             return networkError
 
         case .missingAppUserID,
+             .missingClientTransactionID,
              .emptySubscriberAttributes,
              .missingReceiptFile,
              .invalidAppleSubscriptionKey,
@@ -194,7 +220,8 @@ extension BackendError {
              .invalidWebRedemptionToken,
              .purchaseBelongsToOtherUser,
              .expiredWebRedemptionToken,
-             .unsupportedInUIPreviewMode:
+             .unsupportedInUIPreviewMode,
+             .missingTransactionJWS:
             return nil
         }
     }
@@ -209,6 +236,7 @@ extension BackendError {
             return error
 
         case .missingAppUserID,
+                .missingClientTransactionID,
                 .emptySubscriberAttributes,
                 .missingReceiptFile,
                 .invalidAppleSubscriptionKey,
@@ -217,7 +245,8 @@ extension BackendError {
                 .invalidWebRedemptionToken,
                 .purchaseBelongsToOtherUser,
                 .expiredWebRedemptionToken,
-                .unsupportedInUIPreviewMode:
+                .unsupportedInUIPreviewMode,
+                .missingTransactionJWS:
             return nil
 
         case let .unexpectedBackendResponse(error, _, _):

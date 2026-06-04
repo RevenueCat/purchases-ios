@@ -116,7 +116,6 @@ class InternalAPI {
         self.backendConfig.addDiagnosticsOperation(operation, delay: .long)
     }
 
-    #if ENABLE_AD_EVENTS_TRACKING
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func postAdEvents(events: [StoredAdEvent], completion: @escaping ResponseHandler) {
         guard !events.isEmpty else {
@@ -134,7 +133,6 @@ class InternalAPI {
 
         self.backendConfig.operationQueue.addOperation(operation)
     }
-    #endif
 
 }
 
@@ -159,7 +157,6 @@ extension InternalAPI {
         if let error { throw error }
     }
 
-    #if ENABLE_AD_EVENTS_TRACKING
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func postAdEvents(events: [StoredAdEvent]) async throws {
         let error = await Async.call { completion in
@@ -168,7 +165,6 @@ extension InternalAPI {
 
         if let error { throw error }
     }
-    #endif
 
 }
 

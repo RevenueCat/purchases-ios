@@ -24,6 +24,7 @@ class SubscriberAttributesManagerIntegrationTests: BaseStoreKitIntegrationTests 
     private var syncedAttributes: [(userID: String, attributes: [String: String])] = []
 
     private static let testEmail = "test@revenuecat.com"
+    private static let attKey = ReservedSubscriberAttribute.consentStatus.rawValue
 
     @MainActor
     override func setUp() {
@@ -33,19 +34,18 @@ class SubscriberAttributesManagerIntegrationTests: BaseStoreKitIntegrationTests 
         self.attribution.delegate = self
 
         self.userID = Purchases.shared.appUserID
+
         self.syncedAttributes = []
     }
 
     // MARK: -
 
-    func testNothingToSync() {
-        waitUntil { completion in
-            let parameters = Purchases.shared.syncSubscriberAttributes(completion: {
-                completion()
-            })
+    func testNothingToSyncBesidesATTConsentStatus() async throws {
+        _ = try await self.syncAttributes()
 
-            expect(parameters) == 0
-        }
+        // No user-set attributes should have been synced
+        let synced = self.syncedAttributesExcludingATT
+        expect(synced).to(beEmpty())
     }
 
     func testSyncOneAttribute() async throws {
@@ -67,7 +67,8 @@ class SubscriberAttributesManagerIntegrationTests: BaseStoreKitIntegrationTests 
         self.attribution.setEmail(Self.testEmail)
         errors = try await self.syncAttributes()
         self.verifyAttributesSyncedWithNoErrors(errors, 0)
-        expect(self.syncedAttributes)
+        let syncedExcludingATT = self.syncedAttributesExcludingATT
+        expect(syncedExcludingATT)
             .to(
                 haveCount(1),
                 description: "Attribute should not have synced again"
@@ -228,6 +229,16 @@ extension SubscriberAttributesManagerIntegrationTests: AttributionDelegate {
 
 private extension SubscriberAttributesManagerIntegrationTests {
 
+    /// Synced attributes excluding ATT consent status, which is tested separately
+    /// in ``ATTConsentStatusIntegrationTests``.
+    var syncedAttributesExcludingATT: [(userID: String, attributes: [String: String])] {
+        self.syncedAttributes.compactMap { entry in
+            let filtered = entry.attributes.filter { $0.key != Self.attKey }
+            guard !filtered.isEmpty else { return nil }
+            return (userID: entry.userID, attributes: filtered)
+        }
+    }
+
     func reserved(_ attribute: ReservedSubscriberAttribute) -> String {
         return attribute.rawValue
     }
@@ -273,14 +284,16 @@ private extension SubscriberAttributesManagerIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) {
+        let synced = self.syncedAttributesExcludingATT
         expect(
             file: file, line: line,
-            self.syncedAttributes
+            synced
         ).to(
             containElementSatisfying {
                 $0.userID == userID && $0.attributes == attributes
             },
-            description: "Attribute request not found. Synced attributes: \(self.syncedAttributes)"
+            description: "Attribute request not found. "
+                + "Synced attributes (excluding ATT): \(synced)"
         )
     }
 

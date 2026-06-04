@@ -98,7 +98,7 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
 
         expect(receivedOfferings.all).toNot(beEmpty())
 
-        assertSnapshot(matching: receivedOfferings.response, as: .formattedJson)
+        assertSnapshot(of: receivedOfferings.response, as: .formattedJson)
 
         self.logger.verifyMessageWasLogged(
             Strings.network.request_handled_by_load_shedder(

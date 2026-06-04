@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 11/20/24.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -31,6 +31,9 @@ struct BackgroundStyleModifier: ViewModifier {
     @Environment(\.colorScheme)
     var colorScheme
 
+    @Environment(\.workflowRenderingContext)
+    var workflowRenderingContext
+
     @State var size: CGSize?
 
     var backgroundStyle: BackgroundStyle?
@@ -44,11 +47,18 @@ struct BackgroundStyleModifier: ViewModifier {
                     backgroundStyle: backgroundStyle,
                     colorScheme: colorScheme,
                     alignment: alignment,
+                    ignoresSafeAreaEdges: self.ignoresSafeAreaEdges,
                     size: size
                 )
         } else {
             content
         }
+    }
+
+    private var ignoresSafeAreaEdges: Edge.Set {
+        // Keep workflow page backgrounds stable under the top/bottom safe areas while sliding,
+        // but avoid horizontal safe-area expansion from escaping the page's clipped bounds.
+        return self.workflowRenderingContext.pageTransition.isTransitioning ? .vertical : .all
     }
 
 }
@@ -61,6 +71,7 @@ fileprivate extension View {
         backgroundStyle: BackgroundStyle,
         colorScheme: ColorScheme,
         alignment: Alignment,
+        ignoresSafeAreaEdges: Edge.Set,
         size: CGSize? = nil
     ) -> some View {
         switch backgroundStyle {
@@ -68,55 +79,66 @@ fileprivate extension View {
             self.background(
                 color
                     .toView(colorScheme: colorScheme)
-                    .edgesIgnoringSafeArea(.all)
+                    .ignoresSafeAreaIfNeeded(edges: ignoresSafeAreaEdges)
             )
         case let .image(imageInfo, fitMode, colorOverlay):
             self.background(alignment: alignment) {
-                RemoteImage(
-                    url: imageInfo.light.heic,
-                    lowResUrl: imageInfo.light.heicLowRes,
-                    darkUrl: imageInfo.dark?.heic,
-                    darkLowResUrl: imageInfo.dark?.heicLowRes
-                ) { (image, _) in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: fitMode.contentMode)
-                        .ignoresSafeArea()
-                }.overlay {
-                    ZStack {
-                        HStack { Spacer() }
-                        VStack { Spacer() }
-                        if let colorOverlay {
-                            colorOverlay
-                                .toView(colorScheme: colorScheme)
-                        }
+                ZStack(alignment: .top) {
+                    RemoteImage(
+                        url: imageInfo.light.heic,
+                        lowResUrl: imageInfo.light.heicLowRes,
+                        darkUrl: imageInfo.dark?.heic,
+                        darkLowResUrl: imageInfo.dark?.heicLowRes
+                    ) { (image, _) in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: fitMode.contentMode)
                     }
-                    .edgesIgnoringSafeArea(.all)
+                    // Align image to top so it overlaps with the transparent portion of the gradient.
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    // Enforces image clipping to the exact bounds of the view where .clipped does not.
+                    // This prevents the background image from influencing the parent view's size,
+                    // which was causing the footer to enlarge when using "fill" fit mode with tall images.
+                    .mask(self.overlay(content: {
+                        Color.black
+                    }))
+
+                    // Color overlay fills the full container, not just the image bounds.
+                    // This matches the web builder behavior where overlays cover 100% of the viewport.
+                    if let colorOverlay {
+                        colorOverlay
+                            .toView(colorScheme: colorScheme)
+                    }
                 }
-                .edgesIgnoringSafeArea(.all)
+                .ignoresSafeAreaIfNeeded(edges: ignoresSafeAreaEdges)
             }
         case let .video(viewModel, colorOverlay):
             self.background(alignment: alignment) {
                 ZStack {
                     VideoComponentView(viewModel: viewModel)
-                        .overlay {
-                            ZStack {
-                                HStack { Spacer() }
-                                VStack { Spacer() }
-                                if let colorOverlay {
-                                    colorOverlay
-                                        .toView(colorScheme: colorScheme)
-                                }
-                            }
-                            .edgesIgnoringSafeArea(.all)
-                        }
-                        // enforces video clipping to the exact bounds of the view where .clipped does not
+                        // Enforces video clipping to the exact bounds of the view where .clipped does not
                         .mask(self.overlay(content: {
                             Color.black
                         }))
-                        .edgesIgnoringSafeArea(.all)
+
+                    // Color overlay fills the full container, not just the video bounds.
+                    // This matches the web builder behavior where overlays cover 100% of the viewport.
+                    if let colorOverlay {
+                        colorOverlay
+                            .toView(colorScheme: colorScheme)
+                    }
                 }
+                .ignoresSafeAreaIfNeeded(edges: ignoresSafeAreaEdges)
             }
+        }
+    }
+
+    @ViewBuilder
+    func ignoresSafeAreaIfNeeded(edges: Edge.Set) -> some View {
+        if edges.isEmpty {
+            self
+        } else {
+            self.ignoresSafeArea(edges: edges)
         }
     }
 

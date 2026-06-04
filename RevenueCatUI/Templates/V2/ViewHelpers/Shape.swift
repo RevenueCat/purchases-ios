@@ -14,7 +14,7 @@
 // swiftlint:disable nesting
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2

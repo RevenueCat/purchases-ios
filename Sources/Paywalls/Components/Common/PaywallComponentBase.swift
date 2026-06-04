@@ -7,9 +7,9 @@
 // swiftlint:disable missing_docs
 import Foundation
 
-public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable {}
+@_spi(Internal) public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable {}
 
-public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
+@_spi(Internal) public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
 
     case text(TextComponent)
     case image(ImageComponent)
@@ -32,6 +32,8 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
 
     case countdown(CountdownComponent)
 
+    case fallbackHeader
+
     public enum ComponentType: String, Codable, Sendable {
 
         case text
@@ -52,19 +54,20 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
         case carousel
         case video
         case countdown
+        case fallbackHeader = "fallback_header"
 
     }
 
 }
 
-public extension PaywallComponent {
+@_spi(Internal) public extension PaywallComponent {
     typealias LocaleID = String
     typealias LocalizationDictionary = [String: PaywallComponentsData.LocalizationData]
     typealias LocalizationKey = String
     typealias ColorHex = String
 }
 
-extension PaywallComponent {
+@_spi(Internal) extension PaywallComponent {
 
     enum CodingKeys: String, CodingKey {
 
@@ -126,6 +129,8 @@ extension PaywallComponent {
         case .countdown(let component):
             try container.encode(ComponentType.countdown, forKey: .type)
             try component.encode(to: encoder)
+        case .fallbackHeader:
+            try container.encode(ComponentType.fallbackHeader, forKey: .type)
         }
     }
 
@@ -211,6 +216,8 @@ extension PaywallComponent {
             return .video(try VideoComponent(from: decoder))
         case .countdown:
             return .countdown(try CountdownComponent(from: decoder))
+        case .fallbackHeader:
+            return .fallbackHeader
         }
     }
 
