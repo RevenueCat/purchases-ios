@@ -17,11 +17,16 @@ import StoreKit
 
 class OfferingsFactory {
 
+    private let systemInfo: SystemInfo
+
+    init(systemInfo: SystemInfo) {
+        self.systemInfo = systemInfo
+    }
+
     func createOfferings(
         from storeProductsByID: [String: StoreProduct],
         contents: Offerings.Contents,
-        loadedFromDiskCache: Bool,
-        apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform
+        loadedFromDiskCache: Bool
     ) -> Offerings? {
         let data = contents.response
         let offerings: [String: Offering] = data
@@ -29,8 +34,7 @@ class OfferingsFactory {
             .compactMap { offeringData in
                 createOffering(from: storeProductsByID,
                                offering: offeringData,
-                               uiConfig: data.uiConfig,
-                               apiKeyValidationResult: apiKeyValidationResult)
+                               uiConfig: data.uiConfig)
             }
             .dictionaryAllowingDuplicateKeys { $0.identifier }
 
@@ -49,14 +53,14 @@ class OfferingsFactory {
     func createOffering(
         from storeProductsByID: [String: StoreProduct],
         offering: OfferingsResponse.Offering,
-        uiConfig: UIConfig?,
-        apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform
+        uiConfig: UIConfig?
     ) -> Offering? {
         let availablePackages: [Package] = offering.packages.compactMap { package in
             createPackage(with: package, productsByID: storeProductsByID, offeringIdentifier: offering.identifier)
         }
 
         guard !availablePackages.isEmpty else {
+            let apiKeyValidationResult = self.systemInfo.apiKeyValidationResult
             #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION && !DEBUG
             Logger.debug(Strings.offering.offering_empty(offeringIdentifier: offering.identifier,
                                                          apiKeyValidationResult: apiKeyValidationResult))

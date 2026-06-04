@@ -429,7 +429,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let simulatedStorePurchaseHandler = SimulatedStorePurchaseHandler(systemInfo: systemInfo)
 
-        let offeringsFactory = OfferingsFactory()
+        let offeringsFactory = OfferingsFactory(systemInfo: systemInfo)
         let receiptParser = PurchasesReceiptParser.default
         let transactionsManager = TransactionsManager(receiptParser: receiptParser)
 

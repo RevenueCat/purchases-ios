@@ -300,8 +300,7 @@ private extension OfferingsManager {
             if let createdOfferings = self.offeringsFactory.createOfferings(
                 from: productsByID,
                 contents: contents,
-                loadedFromDiskCache: loadedFromDiskCache,
-                apiKeyValidationResult: self.systemInfo.apiKeyValidationResult
+                loadedFromDiskCache: loadedFromDiskCache
             ) {
                 completion(.success(OfferingsResultData(offerings: createdOfferings,
                                                         requestedProductIds: productIdentifiers,
