@@ -57,8 +57,7 @@ struct ButtonComponentView: View {
     @Environment(\.componentInteractionLogger) var componentInteractionLogger
     @Environment(\.workflowTriggerAction) private var workflowTriggerAction
     @Environment(\.closeWorkflowAction) private var closeWorkflowAction
-    @Environment(\.workflowPageTransitionContext) private var workflowPageTransitionContext
-    @Environment(\.isWorkflowHeader) private var isWorkflowHeader
+    @Environment(\.workflowRenderingContext) private var workflowRenderingContext
 
     private let viewModel: ButtonComponentViewModel
     private let onDismiss: () -> Void
@@ -115,19 +114,33 @@ struct ButtonComponentView: View {
             .withTransition(viewModel.component.transition)
             .disabled(self.shouldBeDisabled)
             .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
-            .offset(x: self.isWorkflowHeader ? -self.workflowPageTransitionContext.pageOffset : 0)
-            .opacity(self.isWorkflowHeader ? self.workflowPageTransitionContext.headerButtonOpacity : 1)
+            .offset(x: self.workflowRenderingContext.isHeader ? -self.headerPageOffset : 0)
+            .opacity(self.workflowRenderingContext.isHeader ? self.headerButtonOpacity : 1)
             #if canImport(SafariServices) && canImport(UIKit)
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
                 SafariView(url: self.inAppBrowserURL!)
             }
             #if os(iOS)
-            .presentCustomerCenter(isPresented: self.$showCustomerCenter, onDismiss: {
-                self.showCustomerCenter = false
+            .applyIf(self.viewModel.opensCustomerCenter, apply: { view in
+                view.presentCustomerCenter(
+                    isPresented: self.$showCustomerCenter,
+                    purchaseHandler: self.purchaseHandler,
+                    onDismiss: {
+                        self.showCustomerCenter = false
+                    }
+                )
             })
             #endif
             #endif
         }
+    }
+
+    private var headerPageOffset: CGFloat {
+        return self.workflowRenderingContext.pageTransition.pageOffset
+    }
+
+    private var headerButtonOpacity: CGFloat {
+        return self.workflowRenderingContext.pageTransition.headerButtonOpacity
     }
 
     private func performAction() async throws {
@@ -278,6 +291,21 @@ struct ButtonComponentView: View {
         onDismiss()
     }
 }
+
+#if os(iOS)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension ButtonComponentViewModel {
+
+    var opensCustomerCenter: Bool {
+        guard case .navigateTo(destination: .customerCenter) = self.action else {
+            return false
+        }
+
+        return true
+    }
+
+}
+#endif
 
 #if DEBUG
 

@@ -1,0 +1,154 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  WorkflowsCache.swift
+//
+//  Created by RevenueCat.
+
+import Foundation
+
+/// In-memory cache for workflow data: the resolved per-workflow ``WorkflowDataResult``s and the
+/// workflows list (plus its `offeringId → workflowId` map). It is the single owner of this state,
+/// so ``clearCache()`` wipes everything at once on identity transitions.
+///
+/// Like the offerings cache, it sits on top of the durable copy in `DeviceCache` and serves
+/// already-fetched data synchronously within a session. Time-based staleness uses the same
+/// foreground/background TTL as offerings, stamped via an injected ``DateProvider`` (rather than
+/// `InMemoryCachedObject`, whose staleness is tied to the real wall clock) so expiry is
+/// deterministically testable.
+final class WorkflowsCache {
+
+    private struct CachedWorkflow {
+        let result: WorkflowDataResult
+        let lastUpdated: Date
+    }
+
+    private struct CachedList {
+        let response: WorkflowsListResponse
+        let offeringIdToWorkflowId: [String: String]
+        let lastUpdated: Date
+    }
+
+    private let deviceCache: DeviceCache
+    private let dateProvider: DateProvider
+
+    private let cachedWorkflows: Atomic<[String: CachedWorkflow]> = .init([:])
+    private let cachedList: Atomic<CachedList?> = .init(nil)
+
+    init(deviceCache: DeviceCache,
+         dateProvider: DateProvider = DateProvider()) {
+        self.deviceCache = deviceCache
+        self.dateProvider = dateProvider
+    }
+
+    // MARK: - Workflow detail cache
+
+    func cachedWorkflow(workflowId: String) -> WorkflowDataResult? {
+        return self.cachedWorkflows.value[workflowId]?.result
+    }
+
+    func isWorkflowCacheStale(workflowId: String, isAppBackgrounded: Bool) -> Bool {
+        guard let cached = self.cachedWorkflows.value[workflowId] else {
+            return true
+        }
+        return self.isStale(lastUpdated: cached.lastUpdated, isAppBackgrounded: isAppBackgrounded)
+    }
+
+    func cache(workflow: WorkflowDataResult, workflowId: String) {
+        self.cachedWorkflows.modify {
+            $0[workflowId] = CachedWorkflow(result: workflow, lastUpdated: self.dateProvider.now())
+        }
+    }
+
+    // MARK: - Workflows list cache
+
+    func isWorkflowsListCacheStale(isAppBackgrounded: Bool) -> Bool {
+        guard let cached = self.cachedList.value else {
+            return true
+        }
+        return self.isStale(lastUpdated: cached.lastUpdated, isAppBackgrounded: isAppBackgrounded)
+    }
+
+    /// Caches the workflows list in memory and persists it to disk.
+    func cache(workflowsList response: WorkflowsListResponse) {
+        self.cachedList.value = CachedList(response: response,
+                                           offeringIdToWorkflowId: Self.offeringIdToWorkflowId(from: response),
+                                           lastUpdated: self.dateProvider.now())
+        self.deviceCache.cache(workflowsListResponse: response)
+    }
+
+    /// Reads the last persisted workflows list, or `nil` when nothing is cached or the payload
+    /// can't be parsed.
+    func cachedWorkflowsListResponseFromDisk() -> WorkflowsListResponse? {
+        return self.deviceCache.cachedWorkflowsListResponse()
+    }
+
+    /// Restores the in-memory `offeringId → workflowId` map from the last list persisted on disk,
+    /// keeping the entry stale so the next fetch still hits the backend. Used to recover after a
+    /// backend failure: it keeps ``workflowId(forOfferingId:)`` resolving previously-fetched data
+    /// without suppressing the next refresh, mirroring how the offerings cache serves its disk copy
+    /// while staying stale. No-op when nothing is persisted, and the on-disk copy is left untouched.
+    func restoreWorkflowsListFromDisk() {
+        guard let response = self.cachedWorkflowsListResponseFromDisk() else { return }
+        self.cachedList.value = CachedList(response: response,
+                                           offeringIdToWorkflowId: Self.offeringIdToWorkflowId(from: response),
+                                           lastUpdated: .distantPast)
+    }
+
+    /// Marks the in-memory workflows list stale so the next ``isWorkflowsListCacheStale(isAppBackgrounded:)``
+    /// returns `true` and triggers a refetch, while ``workflowId(forOfferingId:)`` keeps resolving the
+    /// current map until then. Used to refresh the list alongside a network offerings refresh. No-op
+    /// when nothing is cached; the on-disk copy is left untouched.
+    func forceWorkflowsListCacheStale() {
+        self.cachedList.modify { cached in
+            guard let current = cached else { return }
+            cached = CachedList(response: current.response,
+                                offeringIdToWorkflowId: current.offeringIdToWorkflowId,
+                                lastUpdated: .distantPast)
+        }
+    }
+
+    /// Resolves the workflow id for an offering from the in-memory list, or `nil` when the list
+    /// hasn't been cached this session.
+    func workflowId(forOfferingId offeringId: String) -> String? {
+        return self.cachedList.value?.offeringIdToWorkflowId[offeringId]
+    }
+
+    // MARK: -
+
+    func clearCache() {
+        self.cachedWorkflows.value = [:]
+        self.cachedList.value = nil
+        self.deviceCache.clearWorkflowsListResponseCache()
+    }
+
+    private func isStale(lastUpdated: Date, isAppBackgrounded: Bool) -> Bool {
+        let duration = self.deviceCache.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded)
+        return self.dateProvider.now().timeIntervalSince(lastUpdated) >= duration
+    }
+
+    /// Builds the `offeringId → workflowId` lookup from the list. Workflows without an `offeringId`
+    /// are skipped, and when more than one workflow maps to the same offering the last one in the
+    /// list wins.
+    private static func offeringIdToWorkflowId(from response: WorkflowsListResponse) -> [String: String] {
+        var map: [String: String] = [:]
+        for workflow in response.workflows {
+            guard let offeringId = workflow.offeringId else { continue }
+            if map[offeringId] != nil {
+                Logger.warn(Strings.backendError.duplicate_offering_id_in_workflows(offeringId: offeringId))
+            }
+            map[offeringId] = workflow.id
+        }
+        return map
+    }
+
+}
+
+// @unchecked because its mutable state is held in thread-safe `Atomic` containers.
+extension WorkflowsCache: @unchecked Sendable {}

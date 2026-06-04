@@ -16,6 +16,7 @@ class MockSystemInfo: SystemInfo {
     var stubbedIsApplicationBackgrounded: Bool?
     var stubbedIsSandbox: Bool?
     var stubbedIsDebugBuild: Bool?
+    var stubbedWorkflowsEndpointEnabled: Bool?
     var stubbedStorefront: StorefrontType?
     var stubbedApiKeyValidationResult: Configuration.APIKeyValidationResult?
 
@@ -99,6 +100,10 @@ class MockSystemInfo: SystemInfo {
 
     override var isSandbox: Bool {
         return self.stubbedIsSandbox ?? super.isSandbox
+    }
+
+    override var workflowsEndpointEnabled: Bool {
+        return self.stubbedWorkflowsEndpointEnabled ?? super.workflowsEndpointEnabled
     }
 
     override var isDebugBuild: Bool {

@@ -71,6 +71,47 @@ enum AccessorOperators {
         return .array(missing)
     }
 
+    /// `{"missing_some": [min_required, [path, ...]]}` returns the
+    /// missing-keys array (same shape as `missing`) IF fewer than
+    /// `min_required` of the requested paths are present. Otherwise
+    /// returns `[]`.
+    static func opMissingSome(args: Value, vars: Value) throws -> Value {
+        let evaluated = try Operators.evalArgs(args, vars: vars)
+        guard evaluated.count == 2 else {
+            throw RuleError.typeMismatch(
+                message: "operator 'missing_some' expects 2 arguments, got \(evaluated.count)"
+            )
+        }
+        let needCountValue = evaluated[0]
+        let options = evaluated[1]
+
+        guard case .array(let items) = options else {
+            throw RuleError.typeMismatch(
+                message: "operator 'missing_some': second argument must be an array of paths, "
+                    + "got \(options)"
+            )
+        }
+        let total = items.count
+
+        // Threshold uses JS `ToNumber` + `>=`. `NaN` and unparseable
+        // strings never satisfy; `+Infinity` never satisfies for finite
+        // present counts; `-Infinity` always satisfies.
+        let need = jsToNumber(needCountValue)
+
+        let missing = try opMissing(args: options, vars: vars)
+        let missingCount: Int
+        if case .array(let entries) = missing {
+            missingCount = entries.count
+        } else {
+            missingCount = 0
+        }
+
+        if Double(total - missingCount) >= need {
+            return .array([])
+        }
+        return missing
+    }
+
     // MARK: - Helpers
 
     /// Recursively evaluate `var`'s arg(s) per the JSON Logic spec, then
