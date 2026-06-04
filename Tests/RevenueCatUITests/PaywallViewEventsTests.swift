@@ -213,6 +213,7 @@ private extension BasePaywallViewEventsTests {
         case .purchaseInitiated: break
         case .purchaseError: break
         case .componentInteraction: break
+        case .webCheckoutOpened: break
         }
     }
 
@@ -262,6 +263,7 @@ private extension PaywallEvent {
         case purchaseInitiated
         case purchaseError
         case componentInteraction
+        case webCheckoutOpened
 
     }
 
@@ -274,6 +276,7 @@ private extension PaywallEvent {
         case .purchaseInitiated: return .purchaseInitiated
         case .purchaseError: return .purchaseError
         case .componentInteraction: return .componentInteraction
+        case .webCheckoutOpened: return .webCheckoutOpened
         }
     }
 

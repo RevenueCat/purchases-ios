@@ -74,7 +74,7 @@ import Foundation
         switch self {
         case .purchaseInitiated, .purchaseError:
             return false
-        case .impression, .cancel, .close, .exitOffer, .componentInteraction:
+        case .impression, .cancel, .close, .exitOffer, .componentInteraction, .webCheckoutOpened:
             return true
         }
     }
@@ -83,7 +83,8 @@ import Foundation
         switch self {
         case .impression:
             return true
-        case .cancel, .close, .exitOffer, .componentInteraction, .purchaseInitiated, .purchaseError:
+        case .cancel, .close, .exitOffer, .componentInteraction,
+             .purchaseInitiated, .purchaseError, .webCheckoutOpened:
             return false
         }
     }
@@ -108,6 +109,11 @@ import Foundation
 
     /// User interacted with a paywall control (tabs, carousel, non-purchase button, etc.).
     case componentInteraction(CreationData, Data, ComponentInteractionData)
+
+    /// The user tapped a web checkout CTA and left the app to complete payment externally.
+    /// Emitted for `webCheckout`, `webProductSelection`, and `customWebCheckout` button methods.
+    /// This does not indicate a completed purchase — use ``impression`` / purchase completion events for that.
+    case webCheckoutOpened(CreationData, Data)
 
 }
 
@@ -416,6 +422,7 @@ extension PaywallEvent {
         case let .purchaseInitiated(creationData, _): return creationData
         case let .purchaseError(creationData, _): return creationData
         case let .componentInteraction(creationData, _, _): return creationData
+        case let .webCheckoutOpened(creationData, _): return creationData
         }
     }
 
@@ -429,13 +436,15 @@ extension PaywallEvent {
         case let .purchaseInitiated(_, data): return data
         case let .purchaseError(_, data): return data
         case let .componentInteraction(_, data, _): return data
+        case let .webCheckoutOpened(_, data): return data
         }
     }
 
     /// - Returns: the underlying ``PaywallEvent/ExitOfferData-swift.struct`` for exit offer events, nil otherwise.
     @_spi(Internal) public var exitOfferData: ExitOfferData? {
         switch self {
-        case .impression, .cancel, .close, .purchaseInitiated, .purchaseError, .componentInteraction: return nil
+        case .impression, .cancel, .close, .purchaseInitiated, .purchaseError,
+             .componentInteraction, .webCheckoutOpened: return nil
         case let .exitOffer(_, _, exitOfferData): return exitOfferData
         }
     }
@@ -443,7 +452,8 @@ extension PaywallEvent {
     /// - Returns: control interaction payload for ``PaywallEvent/componentInteraction(_:_:_:)``, nil for other events.
     @_spi(Internal) public var componentInteractionData: ComponentInteractionData? {
         switch self {
-        case .impression, .cancel, .close, .exitOffer, .purchaseInitiated, .purchaseError: return nil
+        case .impression, .cancel, .close, .exitOffer, .purchaseInitiated,
+             .purchaseError, .webCheckoutOpened: return nil
         case let .componentInteraction(_, _, interactionData): return interactionData
         }
     }

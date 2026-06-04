@@ -38,6 +38,48 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.actionInProgress) == false
         expect(handler.purchaseError).to(beNil())
         expect(handler.restoreError).to(beNil())
+        expect(handler.webCheckoutOpened).to(beNil())
+    }
+
+    func testSignalWebCheckoutOpenedSetsUUID() {
+        let handler: PurchaseHandler = .mock()
+
+        expect(handler.webCheckoutOpened).to(beNil())
+        handler.signalWebCheckoutOpened(package: nil)
+        expect(handler.webCheckoutOpened).toNot(beNil())
+    }
+
+    func testSignalWebCheckoutOpenedProducesDistinctUUIDsOnConsecutiveTaps() {
+        let handler: PurchaseHandler = .mock()
+
+        handler.signalWebCheckoutOpened(package: nil)
+        let firstID = handler.webCheckoutOpened
+
+        handler.signalWebCheckoutOpened(package: nil)
+        let secondID = handler.webCheckoutOpened
+
+        expect(firstID).toNot(beNil())
+        expect(secondID).toNot(beNil())
+        expect(firstID) != secondID
+    }
+
+    func testWebCheckoutOpenedIsResetOnNewSession() {
+        let handler: PurchaseHandler = .mock()
+
+        handler.signalWebCheckoutOpened(package: nil)
+        expect(handler.webCheckoutOpened).toNot(beNil())
+
+        handler.resetForNewSession()
+        expect(handler.webCheckoutOpened).to(beNil())
+    }
+
+    func testWebCheckoutOpenedDoesNotAffectHasPurchasedInSession() {
+        let handler: PurchaseHandler = .mock()
+
+        handler.signalWebCheckoutOpened(package: nil)
+
+        expect(handler.hasPurchasedInSession) == false
+        expect(handler.purchaseResult).to(beNil())
     }
 
     func testPurchaseSetsCustomerInfo() async throws {

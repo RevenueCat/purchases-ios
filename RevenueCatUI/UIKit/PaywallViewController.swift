@@ -691,6 +691,12 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     optional func paywallViewController(_ controller: PaywallViewController,
                                         willPresentExitOfferController exitOfferController: PaywallViewController)
 
+    /// Notifies that the user tapped a web checkout CTA and has left the app to complete payment externally.
+    /// This is distinct from ``paywallViewControllerDidCancelPurchase(_:)`` — the user has not cancelled;
+    /// they have initiated a purchase flow outside of the app.
+    @objc(paywallViewControllerDidOpenWebCheckout:)
+    optional func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController)
+
     /// Notifies that a purchase is about to be initiated, before the payment sheet is displayed.
     /// This allows the delegate to gate the purchase flow (e.g., requiring authentication).
     /// The `resume` closure **must** be called to either proceed (`true`) or cancel (`false`) the purchase.
@@ -739,6 +745,10 @@ private extension PaywallViewController {
             purchaseCancelled: { [weak self] in
                 guard let self else { return }
                 self.delegate?.paywallViewControllerDidCancelPurchase?(self)
+            },
+            webCheckoutOpened: { [weak self] in
+                guard let self else { return }
+                self.delegate?.paywallViewControllerDidOpenWebCheckout?(self)
             },
             restoreCompleted: { [weak self] customerInfo in
                 guard let self else { return }
@@ -870,6 +880,7 @@ private struct PaywallContainerView: View {
     let purchaseStarted: PurchaseOfPackageStartedHandler
     let purchaseCompleted: PurchaseCompletedHandler
     let purchaseCancelled: PurchaseCancelledHandler
+    let webCheckoutOpened: WebCheckoutOpenedHandler
     let restoreCompleted: PurchaseOrRestoreCompletedHandler
     let purchaseFailure: PurchaseFailureHandler
     let restoreStarted: RestoreStartedHandler
@@ -887,6 +898,7 @@ private struct PaywallContainerView: View {
             .onPurchaseStarted(self.purchaseStarted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
+            .onWebCheckoutOpened(self.webCheckoutOpened)
             .onPurchaseFailure(self.purchaseFailure)
             .onRestoreStarted(self.restoreStarted)
             .onRestoreCompleted(self.restoreCompleted)

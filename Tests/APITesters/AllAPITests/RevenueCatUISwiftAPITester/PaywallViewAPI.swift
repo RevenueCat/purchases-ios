@@ -21,6 +21,7 @@ struct App: View {
     private var purchaseOfPackageStarted: PurchaseOfPackageStartedHandler = { (_: Package) in }
     private var purchaseCompleted: PurchaseCompletedHandler = { (_: StoreTransaction?, _: CustomerInfo) in }
     private var purchaseCancelled: PurchaseCancelledHandler = { () in }
+    private var webCheckoutOpened: WebCheckoutOpenedHandler = { }
     private var restoreStarted: RestoreStartedHandler = { }
     private var failureHandler: PurchaseFailureHandler = { (_: NSError) in }
 
@@ -793,6 +794,7 @@ struct App: View {
             .onPurchaseCompleted(self.purchaseOrRestoreCompleted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
+            .onWebCheckoutOpened(self.webCheckoutOpened)
             .onRestoreStarted(self.restoreStarted)
             .onRestoreCompleted(self.purchaseOrRestoreCompleted)
             .onRequestedDismissal(self.requestedDismissal)
