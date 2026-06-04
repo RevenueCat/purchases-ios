@@ -37,7 +37,7 @@ final class RewardVerificationPollerTests: TestCase {
     }
 
     func testFailedReturnsAfterFirstAttempt() async {
-        let statusPoller = StubStatusPoller(statuses: [.failed])
+        let statusPoller = StubStatusPoller(statuses: [.failed(reason: nil, message: nil)])
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
@@ -95,7 +95,7 @@ final class RewardVerificationPollerTests: TestCase {
     }
 
     func testFailedOnLaterAttemptReturnsFailedWithoutAdditionalPolls() async {
-        let statusPoller = StubStatusPoller(statuses: [.pending, .pending, .failed])
+        let statusPoller = StubStatusPoller(statuses: [.pending, .pending, .failed(reason: nil, message: nil)])
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 10)
 

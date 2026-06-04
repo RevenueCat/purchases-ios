@@ -1762,8 +1762,8 @@ extension Purchases {
             return .verified(reward)
         case .pending:
             return .pending
-        case .failed:
-            return .failed
+        case let .failed(failure):
+            return .failed(reason: failure.reason, message: failure.message)
         case .unknown:
             return .unknown
         }

@@ -23,7 +23,12 @@ import Foundation
     case pending
 
     /// The reward postback was rejected by the backend.
-    case failed
+    ///
+    /// - Parameters:
+    ///   - reason: Raw `failure_reason` wire value (e.g. `no_access`), or `nil` when the backend
+    ///     didn't provide one. Kept as a string for forward compatibility.
+    ///   - message: Human-readable cause provided by the backend, logged verbatim, or `nil`.
+    case failed(reason: String?, message: String?)
 
     /// The backend returned an unrecognized status value.
     case unknown

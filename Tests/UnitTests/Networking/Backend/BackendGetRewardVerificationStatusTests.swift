@@ -111,7 +111,7 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         }
 
         let response = try XCTUnwrap(result?.value)
-        expect(response.status) == .failed
+        expect(response.status) == .failed(.init(reason: nil, message: nil))
     }
 
     func testGetRewardVerificationStatusUnknownStatusDecodesAsUnknown() throws {
