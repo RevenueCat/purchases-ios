@@ -55,6 +55,7 @@
 		57ED6A80290886B6009580C6 /* ConfigurationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57ED6A7F290886B6009580C6 /* ConfigurationView.swift */; };
 		57ED6A8229089111009580C6 /* Identifiable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57ED6A8129089111009580C6 /* Identifiable.swift */; };
 		57ED6A86290893B6009580C6 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57ED6A85290893B6009580C6 /* Extensions.swift */; };
+		FD6D875D2FAE6BB800CAF0F2 /* FetchProductsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD6D875C2FAE6BB800CAF0F2 /* FetchProductsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -165,6 +166,7 @@
 		757594DC2D64AB8C001B06F5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		773C13482CB58A6100219E42 /* Global.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Global.xcconfig; path = ../../../Global.xcconfig; sourceTree = "<group>"; };
 		773C13492CB58A7400219E42 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Local.xcconfig; path = ../../../Local.xcconfig; sourceTree = "<group>"; };
+		FD6D875C2FAE6BB800CAF0F2 /* FetchProductsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchProductsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -200,6 +202,7 @@
 		2C10F18727A9952B0078444D /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				FD6D875C2FAE6BB800CAF0F2 /* FetchProductsView.swift */,
 				2CD2C4EF278C9B01005D1CC2 /* ContentView.swift */,
 				57ED6A7F290886B6009580C6 /* ConfigurationView.swift */,
 				2C10F18427A995150078444D /* HomeView.swift */,
@@ -510,6 +513,7 @@
 				2C10F19127AC31610078444D /* TransactionsView.swift in Sources */,
 				57B5795429536B8C003EAA40 /* PurchasesOrchestrator.swift in Sources */,
 				2C10F18B27A997570078444D /* CustomerView.swift in Sources */,
+				FD6D875D2FAE6BB800CAF0F2 /* FetchProductsView.swift in Sources */,
 				5759B472296F9B3B002472D5 /* LocalReceiptView.swift in Sources */,
 				4F1F5E992A18124500C4EB88 /* ProxyManager.swift in Sources */,
 				2C10F19A27AC32840078444D /* SubscriberAttributesView.swift in Sources */,
