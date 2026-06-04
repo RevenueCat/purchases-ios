@@ -225,15 +225,9 @@ extension OfferingStrings: LogMessage {
                 "with your simulator." +
                 "\nMore information: https://rev.cat/ios-18-4-simulator-issue"
             case .simulatedStore:
-                return "None of the Test Store products registered in the RevenueCat dashboard could be fetched." +
-                "\nThis issue is widely reported by iOS 18.4 simulator users. Try using a different iOS version " +
-                "with your simulator." +
-                "\nMore information: https://rev.cat/ios-18-4-simulator-issue"
+                return "None of the Test Store products registered in the RevenueCat dashboard could be fetched."
             case .otherPlatforms:
-                return "None of the products registered in the RevenueCat dashboard could be fetched." +
-                "\nThis issue is widely reported by iOS 18.4 simulator users. Try using a different iOS version " +
-                "with your simulator." +
-                "\nMore information: https://rev.cat/ios-18-4-simulator-issue"
+                return "None of the products registered in the RevenueCat dashboard could be fetched."
             }
 
         case let .simulated_store_invalid_trial_period(productId, periodDuration):
