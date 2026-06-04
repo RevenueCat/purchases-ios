@@ -101,9 +101,6 @@ class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegration
     func testPurchaseOutsideTheAppUpdatesCustomerInfoDelegate() async throws {
         try self.testSession.buyProduct(productIdentifier: Self.monthlyNoIntroProductID)
 
-        // In observer mode the purchase is made outside the SDK, so it's only observed
-        // asynchronously via StoreKit's transaction updates. In SK2 this can take a bit
-        // longer, so we poll with a generous timeout to avoid flaking under CI load.
         try await asyncWait(
             description: "Delegate should be notified",
             timeout: .seconds(10),
