@@ -1980,8 +1980,9 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchasesDetector
         )
 
-        // The delegate is still set, but the listener must never start observing StoreKit transactions.
-        expect(transactionListener.invokedDelegateSetter).toEventually(beTrue())
+        // In Simulated Store mode the delegate is never set and the listener never starts
+        // observing StoreKit transactions.
+        expect(transactionListener.invokedDelegateSetter) == false
         expect(transactionListener.invokedListenForTransactions) == false
         expect(transactionListener.invokedListenForTransactionsCount) == 0
     }

@@ -27,6 +27,18 @@ class CustomerInfoManagerSimulatedStoreTests: BaseCustomerInfoManagerTests {
         )
 
         try super.setUpWithError()
+
+        // Mirror production: in Simulated Store mode the `SimulatedStoreTransactionFetcher` is
+        // injected, which never returns any StoreKit transactions.
+        self.customerInfoManager = CustomerInfoManager(
+            offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
+            operationDispatcher: self.mockOperationDispatcher,
+            deviceCache: self.mockDeviceCache,
+            backend: self.mockBackend,
+            transactionFetcher: SimulatedStoreTransactionFetcher(),
+            transactionPoster: self.mockTransactionPoster,
+            systemInfo: self.mockSystemInfo
+        )
     }
 
     func testFetchCustomerInfoReachesBackendInSimulatedStoreMode() async throws {
@@ -40,7 +52,7 @@ class CustomerInfoManagerSimulatedStoreTests: BaseCustomerInfoManagerTests {
         expect(self.mockBackend.invokedGetSubscriberData) == true
     }
 
-    func testFetchCustomerInfoDoesNotReadStoreKitTransactionsInSimulatedStoreMode() async throws {
+    func testSimulatedStoreFetcherReturnsNoTransactionsSoCustomerInfoComesFromBackend() async throws {
         self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockCustomerInfo)
 
         _ = try await self.customerInfoManager.fetchAndCacheCustomerInfo(
@@ -48,32 +60,9 @@ class CustomerInfoManagerSimulatedStoreTests: BaseCustomerInfoManagerTests {
             isAppBackgrounded: false
         )
 
-        expect(self.mockTransationFetcher.invokedUnfinishedVerifiedTransactions.value) == false
-    }
-
-    func testUnfinishedTransactionsIgnoredInSimulatedStoreMode() async throws {
-        self.mockTransationFetcher.stubbedUnfinishedTransactions = [
-            Self.createTransaction(),
-            Self.createTransaction()
-        ]
-        self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockCustomerInfo)
-
-        _ = try await self.customerInfoManager.fetchAndCacheCustomerInfo(
-            appUserID: "any_user",
-            isAppBackgrounded: false
-        )
-
-        expect(self.mockTransationFetcher.invokedUnfinishedVerifiedTransactions.value) == false
+        // The `SimulatedStoreTransactionFetcher` returns no transactions, so CustomerInfo is
+        // fetched from the backend and no transaction is posted.
         expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == false
         expect(self.mockBackend.invokedGetSubscriberData) == true
     }
-}
-
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private extension CustomerInfoManagerSimulatedStoreTests {
-
-    static func createTransaction() -> StoreTransaction {
-        return .init(sk1Transaction: MockTransaction())
-    }
-
 }

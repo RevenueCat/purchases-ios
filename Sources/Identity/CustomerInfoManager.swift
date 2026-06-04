@@ -425,16 +425,6 @@ private extension CustomerInfoManager {
             return
         }
 
-        // The Simulated Store ("Test Store") never touches StoreKit, so skip reading
-        // StoreKit transactions and the storefront and fetch CustomerInfo from the backend directly.
-        if self.systemInfo.isSimulatedStoreAPIKey {
-            self.requestCustomerInfo(appUserID: appUserID,
-                                     isAppBackgrounded: isAppBackgrounded) { result in
-                completion(CustomerInfoDataResult(result: result))
-            }
-            return
-        }
-
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             _ = Task<Void, Never> {
                 let transactions = await self.transactionFetcher.unfinishedVerifiedTransactions
