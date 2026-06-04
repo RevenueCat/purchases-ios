@@ -1077,6 +1077,7 @@ final class PurchasesOrchestrator {
     ) {
         // We can't inject StoreKit2PurchaseIntentListener in the constructor since
         // it has different availability requirements than the constructor.
+        guard !self.systemInfo.isSimulatedStoreAPIKey else { return }
 
         if systemInfo.storeKitVersion == .storeKit2 {
             self._storeKit2PurchaseIntentListener = storeKit2PurchaseIntentListener
