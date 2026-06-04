@@ -549,6 +549,49 @@ extension StoreProductTests {
         expect(storeProduct.id) == productIdentifier
     }
 
+    func testPriceUsesProductPriceWhenInstallmentsInfoIsNil() throws {
+        let storeProduct = Self.testProduct(
+            productIdentifier: "com.revenuecat.product",
+            price: 3.99,
+            installmentsInfo: nil
+        )
+
+        expect(storeProduct.price) == 3.99
+    }
+
+    func testPriceUsesProductPriceBelowIOS264EvenWithInstallmentsInfo() throws {
+        // InstallmentsInfo shouldn't be populated below iOS 26.4, but it's a good thing to check
+        // just in case.
+        try AvailabilityChecks.iOS264APINotAvailableOrSkipTest()
+
+        let storeProduct = Self.testProduct(
+            productIdentifier: "com.revenuecat.product",
+            price: 3.99,
+            installmentsInfo: Self.installmentsInfo(
+                commitmentInstallmentsCount: 12,
+                commitmentTotalPrice: 11.97
+            )
+        )
+
+        expect(storeProduct.price) == 3.99
+    }
+
+    @available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, visionOS 26.4, *)
+    func testPriceUsesCommitmentTotalPriceOnIOS264WhenInstallmentsInfoIsPresent() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+
+        let storeProduct = Self.testProduct(
+            productIdentifier: "com.revenuecat.product",
+            price: 3.99,
+            installmentsInfo: Self.installmentsInfo(
+                commitmentInstallmentsCount: 12,
+                commitmentTotalPrice: 11.97
+            )
+        )
+
+        expect(storeProduct.price) == 11.97
+    }
+
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testIdReturnsProductIdentifierForSK2ProductWithoutInstallmentsInfo() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
@@ -646,11 +689,12 @@ private extension StoreProductTests {
 
     static func testProduct(
         productIdentifier: String,
+        price: Decimal = 3.99,
         installmentsInfo: InstallmentsInfo?
     ) -> StoreProduct {
         return TestStoreProduct(
             localizedTitle: "product",
-            price: 3.99,
+            price: price,
             currencyCode: "USD",
             localizedPriceString: "$3.99",
             productIdentifier: productIdentifier,
@@ -664,6 +708,7 @@ private extension StoreProductTests {
 
     static func installmentsInfo(
         commitmentInstallmentsCount: Int,
+        commitmentTotalPrice: Decimal? = nil,
         billingPlanType: BillingPlanType = .monthly
     ) -> InstallmentsInfo {
         return InstallmentsInfo(
@@ -672,7 +717,7 @@ private extension StoreProductTests {
             installmentBillingPrice: 3.99,
             installmentBillingDisplayPrice: "$3.99",
             commitmentTotalPeriod: SubscriptionPeriod(value: commitmentInstallmentsCount, unit: .month),
-            commitmentTotalPrice: Decimal(commitmentInstallmentsCount) * 3.99,
+            commitmentTotalPrice: commitmentTotalPrice ?? Decimal(commitmentInstallmentsCount) * 3.99,
             commitmentTotalDisplayPrice: "$\(commitmentInstallmentsCount * 399 / 100).99",
             billingPlanType: billingPlanType
         )
