@@ -4,7 +4,7 @@
 //
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class MockDeviceCache: DeviceCache {
 
@@ -124,6 +124,26 @@ class MockDeviceCache: DeviceCache {
 
     override func offeringsCacheStatus(isAppBackgrounded: Bool) -> CacheStatus {
         return self.stubbedOfferingCacheStatus ?? super.offeringsCacheStatus(isAppBackgrounded: isAppBackgrounded)
+    }
+
+    // MARK: Workflows list response
+
+    var cacheWorkflowsListResponseCount = 0
+    var clearWorkflowsListResponseCacheCount = 0
+    var stubbedCachedWorkflowsListResponse: WorkflowsListResponse?
+    var invokedCachedWorkflowsListResponse = false
+
+    override func cache(workflowsListResponse: WorkflowsListResponse) {
+        self.cacheWorkflowsListResponseCount += 1
+    }
+
+    override func cachedWorkflowsListResponse() -> WorkflowsListResponse? {
+        self.invokedCachedWorkflowsListResponse = true
+        return self.stubbedCachedWorkflowsListResponse
+    }
+
+    override func clearWorkflowsListResponseCache() {
+        self.clearWorkflowsListResponseCacheCount += 1
     }
 
     // MARK: SubscriberAttributes
