@@ -298,12 +298,12 @@ extension PurchaseHandler {
         for content: PaywallViewConfiguration.Content,
         workflowsEndpointEnabled: Bool
     ) -> Offering? {
-        // Intentionally no synchronous seed when workflows are enabled, even for .offering(offering).
-        // Under workflows the rendered offering is the workflow screen's offering with its
-        // workflow-mapped paywall components, which isn't knowable synchronously from the
-        // passed/cached offering. Seeding it here would briefly render that offering's own
-        // (non-workflow) paywall, then swap once the workflow resolves. Returning nil lets the
-        // async resolve path provide the correct offering instead.
+        // The passed/cached offering alone can't drive a workflow paywall: under workflows the
+        // rendered offering is the workflow screen's offering with its workflow-mapped components,
+        // and it needs a WorkflowContext the offering doesn't carry. Workflow seeding therefore goes
+        // through cachedInitialWorkflowContext(for:workflowsEndpointEnabled:) (which can build the
+        // context from a warm cache); this overload returns nil so callers don't seed a non-workflow
+        // paywall that would then swap once the workflow resolves.
         if workflowsEndpointEnabled {
             return nil
         }
@@ -371,6 +371,47 @@ extension PurchaseHandler {
     }
 
 #if !os(tvOS)
+    /// Synchronously builds the workflow ``WorkflowContext`` for `content` from already-cached
+    /// workflow + offerings data, so a warm cache can seed the paywall without a loading state.
+    /// Returns `nil` when workflows are disabled, when the cache is cold/stale, or on any partial
+    /// hit (workflow cached but its base offering absent), in which case the async resolve path runs.
+    func cachedInitialWorkflowContext(
+        for content: PaywallViewConfiguration.Content,
+        workflowsEndpointEnabled: Bool
+    ) -> WorkflowContext? {
+        guard workflowsEndpointEnabled else { return nil }
+
+        // Resolve the lookup identifier and presented-offering context the same way the async
+        // resolvePaywallViewData(for:) dispatch does for each content type.
+        let identifier: String
+        let presentedOfferingContext: PresentedOfferingContext?
+        switch content {
+        case let .offering(offering):
+            identifier = offering.identifier
+            presentedOfferingContext = offering.availablePackages.first?.presentedOfferingContext
+        case .defaultOffering:
+            guard let current = self.purchases.cachedOfferings?.current else { return nil }
+            identifier = current.identifier
+            presentedOfferingContext = current.availablePackages.first?.presentedOfferingContext
+        case let .offeringIdentifier(offeringIdentifier, context):
+            identifier = offeringIdentifier
+            presentedOfferingContext = context
+        }
+
+        // Both the offerings snapshot and a fresh cached workflow must be present; any miss returns
+        // nil so the async resolve path runs instead of seeding a partial paywall.
+        guard let allOfferings = self.purchases.cachedOfferings,
+              let workflowResult = self.purchases.cachedWorkflow(forOfferingIdentifier: identifier) else {
+            return nil
+        }
+
+        return Self.makeWorkflowContext(
+            workflow: workflowResult.workflow,
+            allOfferings: allOfferings,
+            presentedOfferingContext: presentedOfferingContext
+        )?.context
+    }
+
     func resolvePaywallViewData(
         for content: PaywallViewConfiguration.Content
     ) async throws -> ResolvedPaywallViewData {
@@ -471,18 +512,34 @@ extension PurchaseHandler {
         }
 
         let fetchResult = try await fetchResultTask
-        let workflow = fetchResult.workflow
 
-        guard let step = workflow.steps[workflow.initialStepId],
-              let screenID = step.screenId,
-              let screen = workflow.screens[screenID] else {
+        guard let resolved = Self.makeWorkflowContext(
+            workflow: fetchResult.workflow,
+            allOfferings: allOfferings,
+            presentedOfferingContext: presentedOfferingContext
+        ) else {
             throw PaywallError.offeringNotFound(identifier: identifier)
         }
 
-        let resolvedOfferingId = screen.offeringIdentifier
-        let baseOffering = try allOfferings
-            .offering(identifier: resolvedOfferingId)
-            .orThrow(PaywallError.offeringNotFound(identifier: resolvedOfferingId ?? identifier))
+        return resolved
+    }
+
+    /// Builds a ``WorkflowContext`` (and its initial offering, with the workflow screen's mapped
+    /// paywall components applied) from already-resolved `workflow` + `allOfferings`. Pure and
+    /// non-throwing so both the async resolve path and the synchronous cache seed share it: it
+    /// returns `nil` when the workflow has no initial screen or when that screen's offering is
+    /// absent from `allOfferings`, letting each caller decide how to surface the miss.
+    static func makeWorkflowContext(
+        workflow: PublishedWorkflow,
+        allOfferings: Offerings,
+        presentedOfferingContext: PresentedOfferingContext?
+    ) -> (context: WorkflowContext, offering: Offering)? {
+        guard let step = workflow.steps[workflow.initialStepId],
+              let screenID = step.screenId,
+              let screen = workflow.screens[screenID],
+              let baseOffering = allOfferings.offering(identifier: screen.offeringIdentifier) else {
+            return nil
+        }
 
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
             screen: screen,
@@ -867,6 +924,10 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 #if !os(tvOS)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
         throw ErrorCode.configurationError
+    }
+
+    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
+        return nil
     }
 #endif
 

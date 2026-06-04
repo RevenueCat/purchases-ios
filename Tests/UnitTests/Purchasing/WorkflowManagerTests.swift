@@ -216,6 +216,47 @@ class WorkflowManagerTests: TestCase {
         expect(self.manager.cachedWorkflowId(forOfferingId: "shared")) == "wf_last"
     }
 
+    // MARK: - cachedWorkflow(forOfferingId:)
+
+    func testCachedWorkflowReturnsFreshCachedWorkflowResolvedViaOfferingIdMap() throws {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_abc", displayName: "Flow", offeringId: "default", prefetch: false)
+        ]))
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        let expected = try Self.workflowDataResult(id: "wf_abc")
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_abc", isAppBackgrounded: false) { _ in }
+
+        expect(self.manager.cachedWorkflow(forOfferingId: "default")) == expected
+    }
+
+    func testCachedWorkflowFallsBackToOfferingIdWhenNoListMappingExists() throws {
+        let expected = try Self.workflowDataResult(id: "default")
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+        // No workflows list fetched, so cachedWorkflowId returns nil and the offering id is used as
+        // the workflow key directly, matching the async workflow(forOfferingIdentifier:) fallback.
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "default", isAppBackgrounded: false) { _ in }
+
+        expect(self.manager.cachedWorkflow(forOfferingId: "default")) == expected
+    }
+
+    func testCachedWorkflowReturnsNilWhenNothingCached() {
+        expect(self.manager.cachedWorkflow(forOfferingId: "default")).to(beNil())
+    }
+
+    func testCachedWorkflowReturnsNilWhenCachedWorkflowIsStale() throws {
+        let expected = try Self.workflowDataResult(id: "default")
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "default", isAppBackgrounded: false) { _ in }
+
+        // Past the 5-minute foreground TTL: a stale entry must not be served synchronously, so the
+        // async resolve path refetches instead.
+        self.dateProvider.advance(by: 6 * 60)
+
+        expect(self.manager.cachedWorkflow(forOfferingId: "default")).to(beNil())
+    }
+
     // MARK: - cachedWorkflowId(forOfferingId:)
 
     func testWorkflowIdForOfferingIdReturnsNilBeforeListIsFetched() {

@@ -1006,6 +1006,14 @@ public extension Purchases {
         }
     }
 
+    /// Synchronously returns the cached workflow for `offeringID` when one is present and fresh,
+    /// otherwise `nil`. Used to seed the workflow paywall without a backend round-trip; callers fall
+    /// back to the async ``workflow(forOfferingIdentifier:)`` when this returns `nil`.
+    @_spi(Internal)
+    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
+        return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
+    }
+
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
         return try await self.offeringsAsync(fetchPolicy: fetchPolicy)
     }

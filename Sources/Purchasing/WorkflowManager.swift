@@ -108,6 +108,21 @@ class WorkflowManager {
         return self.workflowsCache.workflowId(forOfferingId: offeringId)
     }
 
+    /// Returns the cached workflow for `offeringId` only when it is present **and** fresh, so a
+    /// synchronous seed never serves a stale workflow. This mirrors the freshness contract of
+    /// ``getWorkflow(appUserID:workflowId:isAppBackgrounded:completion:)``: a stale (or missing)
+    /// entry returns `nil`, falling through to the async resolve path which refetches. The
+    /// `offeringId → workflowId` resolution falls back to the offering id itself when the list
+    /// hasn't been fetched, matching the async ``Purchases/workflow(forOfferingIdentifier:)`` path.
+    func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
+        let workflowId = self.workflowsCache.workflowId(forOfferingId: offeringId) ?? offeringId
+        guard let cached = self.workflowsCache.cachedWorkflow(workflowId: workflowId),
+              !self.workflowsCache.isWorkflowCacheStale(workflowId: workflowId, isAppBackgrounded: false) else {
+            return nil
+        }
+        return cached
+    }
+
     /// Marks the workflows list stale so the next ``getWorkflowsList(appUserID:isAppBackgrounded:onComplete:)``
     /// refetches it. Called when offerings are refreshed from the network, to keep both in sync.
     func forceWorkflowsListCacheStale() {
