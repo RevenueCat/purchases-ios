@@ -283,11 +283,31 @@ extension PurchaseHandler {
 
     func cachedInitialOffering(for content: PaywallViewConfiguration.Content) -> Offering? {
 #if !os(tvOS)
-        return self.cachedInitialOffering(
-            for: content,
-            workflowsEndpointEnabled: ProcessInfo.processInfo.workflowsEndpointEnabled
-        )
+        let workflowsEndpointEnabled = ProcessInfo.processInfo.workflowsEndpointEnabled
 #else
+        // The workflows endpoint isn't available on tvOS, so always fall through to the cached switch.
+        let workflowsEndpointEnabled = false
+#endif
+
+        return self.cachedInitialOffering(for: content, workflowsEndpointEnabled: workflowsEndpointEnabled)
+    }
+
+    // Exposes the workflow flag so tests can cover both states deterministically without relying on the
+    // `-EnableWorkflowsEndpoint` launch argument being present in the scheme.
+    func cachedInitialOffering(
+        for content: PaywallViewConfiguration.Content,
+        workflowsEndpointEnabled: Bool
+    ) -> Offering? {
+        // Intentionally no synchronous seed when workflows are enabled, even for .offering(offering).
+        // Under workflows the rendered offering is the workflow screen's offering with its
+        // workflow-mapped paywall components, which isn't knowable synchronously from the
+        // passed/cached offering. Seeding it here would briefly render that offering's own
+        // (non-workflow) paywall, then swap once the workflow resolves. Returning nil lets the
+        // async resolve path provide the correct offering instead.
+        if workflowsEndpointEnabled {
+            return nil
+        }
+
         switch content {
         case let .offering(offering):
             return offering
@@ -302,7 +322,6 @@ extension PurchaseHandler {
 
             return offering
         }
-#endif
     }
 
     func resolveOffering(for content: PaywallViewConfiguration.Content) async -> Offering? {
@@ -352,36 +371,6 @@ extension PurchaseHandler {
     }
 
 #if !os(tvOS)
-    func cachedInitialOffering(
-        for content: PaywallViewConfiguration.Content,
-        workflowsEndpointEnabled: Bool
-    ) -> Offering? {
-        // Intentionally no synchronous seed when workflows are enabled, even for .offering(offering).
-        // Under workflows the rendered offering is the workflow screen's offering with its
-        // workflow-mapped paywall components, which isn't knowable synchronously from the
-        // passed/cached offering. Seeding it here would briefly render that offering's own
-        // (non-workflow) paywall, then swap once the workflow resolves. Returning nil lets the
-        // async resolve path provide the correct offering instead.
-        if workflowsEndpointEnabled {
-            return nil
-        }
-
-        switch content {
-        case let .offering(offering):
-            return offering
-        case .defaultOffering:
-            return self.purchases.cachedOfferings?.current
-        case let .offeringIdentifier(identifier, presentedOfferingContext):
-            let offering = self.purchases.cachedOfferings?.offering(identifier: identifier)
-
-            if let presentedOfferingContext {
-                return offering?.withPresentedOfferingContext(presentedOfferingContext)
-            }
-
-            return offering
-        }
-    }
-
     func resolvePaywallViewData(
         for content: PaywallViewConfiguration.Content
     ) async throws -> ResolvedPaywallViewData {
