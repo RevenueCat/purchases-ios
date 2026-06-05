@@ -25,7 +25,8 @@ enum IterationOperators {
     /// non-array source returns `false`. Short-circuits on the first
     /// truthy result.
     static func opSome(args: Value, vars: Value) throws -> Value {
-        let (items, predicate) = try parseIterationArgs(args, vars: vars, opName: "some")
+        let (items, predicate) = try parseIterationArgs(args, vars: vars)
+        guard let items else { return .bool(false) }
         for item in items {
             let result = try Evaluator.evaluateValue(predicate, vars: item)
             if result.isTruthy { return .bool(true) }
@@ -38,8 +39,8 @@ enum IterationOperators {
     /// Logic JS spec, not vacuous truth. Non-array source returns
     /// `false`. Short-circuits on the first non-truthy result.
     static func opAll(args: Value, vars: Value) throws -> Value {
-        let (items, predicate) = try parseIterationArgs(args, vars: vars, opName: "all")
-        guard !items.isEmpty else { return .bool(false) }
+        let (items, predicate) = try parseIterationArgs(args, vars: vars)
+        guard let items, !items.isEmpty else { return .bool(false) }
         for item in items {
             let result = try Evaluator.evaluateValue(predicate, vars: item)
             if !result.isTruthy { return .bool(false) }
@@ -50,21 +51,22 @@ enum IterationOperators {
     /// Parse `(items, predicate)` for an iteration operator. The source
     /// argument is evaluated in the outer scope; the predicate template
     /// is returned unevaluated so the caller can re-evaluate it per
-    /// item with the item as scope. A non-array source resolves to an
-    /// empty `items` list, which the caller turns into `false`. A
-    /// missing predicate defaults to `.null` and arguments past the
-    /// second are ignored, matching `json-logic-js`'s
+    /// item with the item as scope. `items` is `nil` when the source
+    /// does not resolve to an array, so callers can distinguish a
+    /// non-array source from a genuinely empty one (`some`/`all` treat
+    /// both as `false`, but `none`/`map`/`filter`/`reduce` need the
+    /// distinction). A missing predicate defaults to `.null` and
+    /// arguments past the second are ignored, matching `json-logic-js`'s
     /// `function(scopedData, scopedLogic)` signature.
     private static func parseIterationArgs(
         _ args: Value,
-        vars: Value,
-        opName: String
-    ) throws -> ([Value], Value) {
+        vars: Value
+    ) throws -> (items: [Value]?, predicate: Value) {
         let raw = Operators.argsAsList(args)
         let sourceArg: Value = raw.indices.contains(0) ? raw[0] : .null
         let predicate: Value = raw.indices.contains(1) ? raw[1] : .null
         let source = try Evaluator.evaluateValue(sourceArg, vars: vars)
-        guard case .array(let items) = source else { return ([], predicate) }
+        guard case .array(let items) = source else { return (nil, predicate) }
         return (items, predicate)
     }
 }
