@@ -181,7 +181,21 @@ For snapshot testing, sample applications, pre-commit hooks, and release process
 - `api/*.swiftinterface` - Public API surface tracking
 - `swiftlint-baseline.json` - Pre-existing SwiftLint violations grandfathered by the linter (notably for `no_new_public_enums`)
 
-### Pull Request Labels
+## Pull Requests
+
+### Size & Structure
+
+- **Prefer smaller, self-contained stacked PRs** when possible. "Self-contained" means the PR compiles, passes tests, and is reviewable on its own. As a rule of thumb, aim to keep the diff under ~500 lines of hand-written source — excluding generated, serialized, or non-reviewed files (e.g. JSON, snapshots, lockfiles, `api/*.swiftinterface`). For larger tasks, plan the PR breakdown up front and stack interdependent changes instead of bundling everything into one large PR.
+
+### Description
+
+- **Keep PR descriptions concise and easy to read.** The description answers one question: *what does the reviewer need that the diff doesn't already show?* Concretely:
+  - **Motivation: 1–2 sentences.** State why the change exists; don't recap the whole backstory.
+  - **Don't restate the diff** — no file-by-file or change-by-change enumeration.
+  - **No "Commits" section**.
+  - **Testing: only mention what the diff doesn't show**. Don't enumerate added test cases.
+
+### Labels
 
 When creating a pull request, **always add one of these labels** to categorize the change. These labels determine automatic version bumps and changelog generation:
 
@@ -225,9 +239,3 @@ When reviewing a pull request:
 - **Check Android SDK** when unsure about cross-platform implementation details — new features should follow existing patterns across SDKs
 - **Never commit Claude-related files** — do not stage or commit `.claude/` directory, `settings.local.json`, or any AI tool configuration files
 - **Never commit API keys or secrets** — do not stage or commit API keys, tokens, credentials, or any sensitive data
-- **Prefer smaller, self-contained stacked PRs** when possible. "Self-contained" means the PR compiles, passes tests, and is reviewable on its own. As a rule of thumb, aim to keep the diff under ~500 lines of hand-written source — excluding generated, serialized, or non-reviewed files (e.g. JSON, snapshots, lockfiles, `api/*.swiftinterface`). When changes depend on each other, stack them instead of bundling everything into one large PR.
-- **Keep PR descriptions concise and easy to read.** The description answers one question: *what does the reviewer need that the diff doesn't already show?* Concretely:
-  - **Motivation: 1–2 sentences.** State why the change exists; don't recap the whole backstory.
-  - **Don't restate the diff** — no file-by-file or change-by-change enumeration. If a bullet just describes a code change visible in the diff, cut it.
-  - **No "Commits" section** — the commit list is already on the PR.
-  - **Testing: only mention what the diff doesn't show** (e.g. "tested manually", "ran in the sample app"). Don't enumerate added test cases — the test files are in the diff.
