@@ -118,6 +118,19 @@ public class PaywallViewController: UIViewController {
     /// The prefetched exit offer, loaded while the main paywall is showing.
     private var exitOfferOffering: Offering?
 
+    // MARK: - Testing Hooks
+
+    /// Override in tests to simulate workflows being enabled without a scheme launch argument.
+    var workflowsEndpointEnabled: Bool { ProcessInfo.processInfo.workflowsEndpointEnabled }
+
+    @_spi(Internal)
+    public var exitOfferOfferingForTesting: Offering? { self.exitOfferOffering }
+
+    @_spi(Internal)
+    public func simulateWorkflowExitOfferUpdate(_ offering: Offering?) {
+        self.updateWorkflowExitOffer(offering)
+    }
+
     /// Whether we're currently showing an exit offer (to prevent multiple presentations).
     private var isShowingExitOffer: Bool = false
 
@@ -425,7 +438,7 @@ public class PaywallViewController: UIViewController {
     private func prefetchExitOffer() async {
         // Under workflows the exit offer comes from the embedded paywall (see updateWorkflowExitOffer),
         // so skip this legacy prefetch.
-        guard !ProcessInfo.processInfo.workflowsEndpointEnabled else { return }
+        guard !self.workflowsEndpointEnabled else { return }
 
         guard let offering = await self.purchaseHandler.resolveOffering(for: self.configuration.content) else {
             return
@@ -437,7 +450,7 @@ public class PaywallViewController: UIViewController {
     /// surface it. Render-dependent, so verified manually like `prefetchExitOffer`.
     private func updateWorkflowExitOffer(_ offering: Offering?) {
         // The legacy prefetch owns the offer when workflows are off; don't clobber it.
-        guard ProcessInfo.processInfo.workflowsEndpointEnabled else { return }
+        guard self.workflowsEndpointEnabled else { return }
 
         // Keep the offer once we're presenting it, even if a late nil arrives mid-dismiss.
         guard offering != nil || !self.isShowingExitOffer else { return }
