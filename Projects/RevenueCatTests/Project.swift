@@ -26,7 +26,6 @@ let project = Project(
             ],
             dependencies: [
                 .revenueCat,
-                .revenueCatUI,
                 .nimble,
                 .snapshotTesting,
                 .ohHTTPStubsSwift
