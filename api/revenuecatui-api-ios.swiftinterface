@@ -327,8 +327,18 @@ open class CustomPaywallFontProvider : RevenueCatUI.PaywallFontProvider {
 extension RevenueCat.Purchases {
   #if compiler(>=5.3) && $NonescapableTypes
   @available(iOS 15.0, macOS 12.0, *)
-  @_Concurrency.MainActor @objc final public func presentPaywall(from url: Foundation.URL, window: UIKit.UIWindow? = nil) -> Swift.Bool
+  @_Concurrency.MainActor @objc final public func presentPaywall(from url: Foundation.URL, viewController: UIKit.UIViewController?) -> Swift.Bool
   #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @available(iOS 15.0, macOS 12.0, *)
+  @_Concurrency.MainActor @objc final public func presentPaywall(from url: Foundation.URL, window: UIKit.UIWindow?) -> Swift.Bool
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @available(iOS 15.0, macOS 12.0, *)
+  @_Concurrency.MainActor @objc final public func presentPaywall(from url: Foundation.URL, scene: UIKit.UIWindowScene?) -> Swift.Bool
+  #endif
+  @available(iOS 15.0, macOS 12.0, *)
+  @_Concurrency.MainActor @objc final public func presentPaywall(from url: Foundation.URL) -> Swift.Bool
 }
 @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @objc(RCPaywallFooterViewController) @_Concurrency.MainActor @preconcurrency final public class PaywallFooterViewController : RevenueCatUI.PaywallViewController {
