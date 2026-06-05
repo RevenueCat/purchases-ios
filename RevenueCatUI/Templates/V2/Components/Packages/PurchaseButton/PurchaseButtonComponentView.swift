@@ -191,6 +191,8 @@ struct PurchaseButtonComponentView: View {
                            openURL: self.openURL,
                            inAppBrowserURL: self.$inAppBrowserURL)
 
+        self.purchaseHandler.signalWebCheckoutOpened(package: self.packageContext.package)
+
         if launchWebCheckout.autoDismiss {
             self.onDismiss()
         }

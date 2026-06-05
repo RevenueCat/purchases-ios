@@ -96,6 +96,7 @@ extension FeatureEventsRequest.PaywallEvent {
         case purchaseInitiated = "paywall_purchase_initiated"
         case purchaseError = "paywall_purchase_error"
         case componentInteraction = "paywall_component_interacted"
+        case webCheckoutOpened = "paywall_web_checkout_opened"
 
     }
 
@@ -185,6 +186,7 @@ private extension PaywallEvent {
         case .purchaseInitiated: return .purchaseInitiated
         case .purchaseError: return .purchaseError
         case .componentInteraction: return .componentInteraction
+        case .webCheckoutOpened: return .webCheckoutOpened
         }
 
     }

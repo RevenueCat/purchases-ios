@@ -100,6 +100,12 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var consecutiveCancellationRequestID: UUID?
 
+    /// Set to a new UUID each time the user taps a web checkout CTA.
+    /// Used to propagate the ``WebCheckoutOpenedPreferenceKey`` so callers can distinguish
+    /// "web checkout opened" from a regular cancellation.
+    @Published
+    fileprivate(set) var webCheckoutOpened: UUID?
+
     /// Whether a purchase was successfully completed in the current session.
     /// Convenience property for checking if we should skip exit offers.
     var hasPurchasedInSession: Bool {
@@ -243,6 +249,7 @@ final class PurchaseHandler: ObservableObject {
         self.sessionPurchaseResult = nil
         self.consecutiveCancellationRequestID = nil
         self.purchaseResult = nil
+        self.webCheckoutOpened = nil
         self.activePaywallSessionID = nil
     }
 
@@ -759,6 +766,24 @@ extension PurchaseHandler {
         return self.paywallEventTracker.createPurchaseInitiatedEvent(package: package, sessionID: sessionID)
     }
 
+    /// Signals that the user tapped a web checkout CTA and the paywall was dismissed to open the browser.
+    /// Sets a new UUID on ``webCheckoutOpened`` so the ``WebCheckoutOpenedPreferenceKey`` fires,
+    /// and tracks a ``PaywallEvent/webCheckoutOpened(_:_:)`` analytics event.
+    /// - Parameter package: The package associated with the web checkout CTA, if known.
+    func signalWebCheckoutOpened(package: Package?) {
+        self.webCheckoutOpened = UUID()
+        self.trackWebCheckoutOpened(package: package)
+    }
+
+    /// - Returns: whether the event was tracked
+    @discardableResult
+    fileprivate func trackWebCheckoutOpened(package: Package?) -> Bool {
+        guard let sessionID = self.activePaywallSessionID else {
+            return false
+        }
+        return self.paywallEventTracker.trackWebCheckoutOpened(package: package, sessionID: sessionID)
+    }
+
     /// Tracks a purchase error event.
     /// - Parameters:
     ///   - package: The package that was being purchased
@@ -1020,6 +1045,19 @@ struct RestoreErrorPreferenceKey: PreferenceKey {
     static var defaultValue: NSError?
 
     static func reduce(value: inout NSError?, nextValue: () -> NSError?) {
+        value = nextValue()
+    }
+
+}
+
+/// Preference key emitted whenever the user taps a web checkout CTA.
+/// Each new UUID represents a distinct tap, allowing consecutive taps to both fire the callback.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WebCheckoutOpenedPreferenceKey: PreferenceKey {
+
+    static var defaultValue: UUID?
+
+    static func reduce(value: inout UUID?, nextValue: () -> UUID?) {
         value = nextValue()
     }
 

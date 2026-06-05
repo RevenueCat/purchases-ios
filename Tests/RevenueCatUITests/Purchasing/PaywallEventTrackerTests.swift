@@ -407,6 +407,56 @@ class PaywallEventTrackerTests: TestCase {
         }
     }
 
+    func testTrackWebCheckoutOpenedAddsPurchaseInfoFromSession() async throws {
+        let (tracker, trackedEvents) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
+
+        expect(tracker.trackWebCheckoutOpened(package: TestData.packageWithIntroOffer, sessionID: sessionID)) == false
+
+        tracker.trackPaywallImpression(Self.eventData)
+
+        expect(tracker.trackWebCheckoutOpened(package: TestData.packageWithIntroOffer, sessionID: sessionID)) == true
+
+        await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
+
+        let webCheckoutEvent = try XCTUnwrap(trackedEvents.value.first(where: {
+            if case .webCheckoutOpened = $0 { return true }
+            return false
+        }))
+
+        if case .webCheckoutOpened = webCheckoutEvent {
+            expect(webCheckoutEvent.data.packageId) == TestData.packageWithIntroOffer.identifier
+            expect(webCheckoutEvent.data.productId) == TestData.packageWithIntroOffer.storeProduct.productIdentifier
+            expect(webCheckoutEvent.data.errorCode).to(beNil())
+            expect(webCheckoutEvent.data.errorMessage).to(beNil())
+            expect(webCheckoutEvent.data.sessionIdentifier) == Self.eventData.sessionIdentifier
+        } else {
+            fail("Expected webCheckoutOpened event")
+        }
+    }
+
+    func testTrackWebCheckoutOpenedWithNilPackageOmitsPackageInfo() async throws {
+        let (tracker, trackedEvents) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
+
+        tracker.trackPaywallImpression(Self.eventData)
+        expect(tracker.trackWebCheckoutOpened(package: nil, sessionID: sessionID)) == true
+
+        await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
+
+        let webCheckoutEvent = try XCTUnwrap(trackedEvents.value.first(where: {
+            if case .webCheckoutOpened = $0 { return true }
+            return false
+        }))
+
+        if case .webCheckoutOpened = webCheckoutEvent {
+            expect(webCheckoutEvent.data.packageId).to(beNil())
+            expect(webCheckoutEvent.data.productId).to(beNil())
+        } else {
+            fail("Expected webCheckoutOpened event")
+        }
+    }
+
     func testTrackComponentInteraction_IncludesPurchaseButtonMetadataWhenProvided() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
         let sessionID = Self.eventData.sessionIdentifier

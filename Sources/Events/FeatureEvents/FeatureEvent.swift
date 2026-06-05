@@ -77,6 +77,7 @@ private extension PaywallEvent {
             case .purchaseInitiated: return "paywall_purchase_initiated"
             case .purchaseError: return "paywall_purchase_error"
             case .componentInteraction: return "paywall_component_interacted"
+            case .webCheckoutOpened: return "paywall_web_checkout_opened"
             }
         }()
 

@@ -157,6 +157,27 @@ final class PaywallEventTracker: @unchecked Sendable {
         return true
     }
 
+    /// Tracks a web checkout opened event.
+    /// - Parameters:
+    ///   - package: The package associated with the web checkout CTA, if known.
+    /// - Returns: whether the event was tracked
+    @discardableResult
+    func trackWebCheckoutOpened(package: Package?, sessionID: SessionID) -> Bool {
+        guard let data = self.stateLock.withLock({ self.sessions[sessionID]?.eventData }) else {
+            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+            return false
+        }
+
+        let eventData = data.withPurchaseInfo(
+            packageId: package?.identifier,
+            productId: package?.storeProduct.productIdentifier,
+            errorCode: nil,
+            errorMessage: nil
+        )
+        self.track(.webCheckoutOpened(.init(), eventData))
+        return true
+    }
+
     /// Drops stored paywall state for `sessionID` (e.g. when the host resets purchase session state).
     func discardSession(sessionID: SessionID) {
         _ = self.stateLock.withLock {
