@@ -189,7 +189,7 @@ For snapshot testing, sample applications, pre-commit hooks, and release process
 
 ### Description
 
-- **Use the repo's PR template** (`.github/PULL_REQUEST_TEMPLATE.md`) — fill in its sections, applying the rules below.
+- **Use the repo's PR template** (`.github/PULL_REQUEST_TEMPLATE.md`), applying the rules below.
 - **Keep PR descriptions concise and easy to read.** The description answers one question: *what does the reviewer need that the diff doesn't already show?* Concretely:
   - **Motivation: 1–2 sentences.** State why the change exists; don't recap the whole backstory.
   - **Don't restate the diff** — no file-by-file or change-by-change enumeration.
