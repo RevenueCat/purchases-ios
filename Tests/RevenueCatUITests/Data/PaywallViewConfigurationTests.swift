@@ -202,6 +202,32 @@ final class PaywallViewConfigurationTests: TestCase {
         expect(packageContext.offeringIdentifier) == initialOffering.identifier
     }
 
+    func testResolvePaywallViewDataThrowsWithScreenOfferingIdWhenScreenOfferingMissing() async throws {
+        // The workflow screen resolves to "offering_b", but the offerings snapshot only contains the
+        // trigger offering "offering_a". The error must report the screen's offering id that was
+        // actually missing, not the trigger offering used to look up the workflow.
+        let initialOffering = Self.createOffering(identifier: "offering_a")
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.offeringsBlock = {
+            Self.createOfferings([initialOffering], currentOfferingID: initialOffering.identifier)
+        }
+        purchases.workflowBlock = { _ in
+            try Self.createWorkflowDataResult(offeringIdentifier: "offering_b")
+        }
+
+        do {
+            _ = try await handler.resolvePaywallViewData(
+                for: .offering(initialOffering),
+                workflowsEndpointEnabled: true
+            )
+            XCTFail("Expected resolvePaywallViewData to throw")
+        } catch let PaywallError.offeringNotFound(identifier) {
+            expect(identifier) == "offering_b"
+        }
+    }
+
     func testCachedInitialWorkflowContextReturnsNilWhenWorkflowsEndpointDisabled() throws {
         let initialOffering = Self.createOffering(identifier: "offering_a")
         let workflowOffering = Self.createOffering(identifier: "offering_b")

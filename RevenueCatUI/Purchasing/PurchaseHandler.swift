@@ -410,10 +410,13 @@ extension PurchaseHandler {
             return nil
         }
 
-        return Self.makeWorkflowContext(
+        // A throw here (no initial screen, or the screen's offering missing from the cached
+        // offerings) is treated as a cache miss: return nil so the async resolve path runs.
+        return try? Self.makeWorkflowContext(
             workflow: workflowResult.workflow,
             allOfferings: allOfferings,
-            presentedOfferingContext: presentedOfferingContext
+            presentedOfferingContext: presentedOfferingContext,
+            triggerOfferingIdentifier: identifier
         )
     }
 
@@ -518,33 +521,36 @@ extension PurchaseHandler {
 
         let fetchResult = try await fetchResultTask
 
-        guard let resolved = Self.makeWorkflowContext(
+        return try Self.makeWorkflowContext(
             workflow: fetchResult.workflow,
             allOfferings: allOfferings,
-            presentedOfferingContext: presentedOfferingContext
-        ) else {
-            throw PaywallError.offeringNotFound(identifier: identifier)
-        }
-
-        return resolved
+            presentedOfferingContext: presentedOfferingContext,
+            triggerOfferingIdentifier: identifier
+        )
     }
 
     /// Builds a ``WorkflowContext`` from already-resolved `workflow` + `allOfferings`. The context's
     /// `initialOffering` carries the workflow screen's offering with its mapped paywall components
     /// applied, so callers can read `context.initialOffering` instead of receiving it separately.
-    /// Pure and non-throwing so both the async resolve path and the synchronous cache seed share it:
-    /// it returns `nil` when the workflow has no initial screen or when that screen's offering is
-    /// absent from `allOfferings`, letting each caller decide how to surface the miss.
+    /// Shared by the async resolve path and the synchronous cache seed: the async path lets the thrown
+    /// error propagate, while the seed treats any throw as a miss (via `try?`) and falls through.
+    /// Throws ``PaywallError/offeringNotFound(identifier:)`` when the workflow has no initial screen
+    /// (reporting `triggerOfferingIdentifier`) or when that screen's offering is absent from
+    /// `allOfferings` (reporting the screen's own offering identifier that was actually missing).
     static func makeWorkflowContext(
         workflow: PublishedWorkflow,
         allOfferings: Offerings,
-        presentedOfferingContext: PresentedOfferingContext?
-    ) -> WorkflowContext? {
+        presentedOfferingContext: PresentedOfferingContext?,
+        triggerOfferingIdentifier: String
+    ) throws -> WorkflowContext {
         guard let step = workflow.steps[workflow.initialStepId],
               let screenID = step.screenId,
-              let screen = workflow.screens[screenID],
-              let baseOffering = allOfferings.offering(identifier: screen.offeringIdentifier) else {
-            return nil
+              let screen = workflow.screens[screenID] else {
+            throw PaywallError.offeringNotFound(identifier: triggerOfferingIdentifier)
+        }
+
+        guard let baseOffering = allOfferings.offering(identifier: screen.offeringIdentifier) else {
+            throw PaywallError.offeringNotFound(identifier: screen.offeringIdentifier ?? triggerOfferingIdentifier)
         }
 
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
