@@ -77,7 +77,7 @@ enum PredicateConformanceFixtureLoader {
         let fixtures: [PredicateConformanceFixtureCase]
     }
 
-    static func inRepoFixturesDirectoryURL() -> URL {
+    static func repoFixturesDirectoryURL() -> URL {
         URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent() // Helpers
             .deletingLastPathComponent() // RulesEngineInternalTests

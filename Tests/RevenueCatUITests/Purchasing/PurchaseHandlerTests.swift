@@ -489,6 +489,38 @@ class PurchaseHandlerTests: TestCase {
 
     }
 
+    func testTrackPaywallCloseBySessionClosesThatSpecificSessionNotJustTheActiveOne() async throws {
+        let handler: PurchaseHandler = .mock()
+
+        func impressionData(_ sessionID: PaywallEvent.SessionID) -> PaywallEvent.Data {
+            return .init(
+                paywallIdentifier: TestData.paywallWithIntroOffer.id,
+                offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+                paywallRevision: TestData.paywallWithIntroOffer.revision,
+                sessionID: sessionID,
+                displayMode: .fullScreen,
+                localeIdentifier: "en_US",
+                darkMode: false,
+                source: nil
+            )
+        }
+
+        let sessionA: PaywallEvent.SessionID = .init()
+        let sessionB: PaywallEvent.SessionID = .init()
+
+        // Two paywall pages are impressed (as in a workflow). `activePaywallSessionID` now points at B.
+        handler.trackPaywallImpression(impressionData(sessionA))
+        handler.trackPaywallImpression(impressionData(sessionB))
+
+        // The earlier session (A) must still be closeable by id, even though it is not the active one.
+        // `trackPaywallClose()` (no arg) would only ever close B, leaving A dangling open.
+        expect(handler.trackPaywallClose(sessionID: sessionA)) == true
+        expect(handler.trackPaywallClose(sessionID: sessionB)) == true
+
+        // Closing an already-closed session is a no-op.
+        expect(handler.trackPaywallClose(sessionID: sessionA)) == false
+    }
+
     func testPaywallSourceIsPropagatedToTrackedEvents() async throws {
         let source = PaywallSource.customerCenter
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])

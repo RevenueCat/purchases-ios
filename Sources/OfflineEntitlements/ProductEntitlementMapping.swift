@@ -38,7 +38,15 @@ extension ProductEntitlementMapping {
 extension ProductEntitlementMappingResponse {
 
     func toMapping() -> ProductEntitlementMapping {
-        return .init(entitlementsByProduct: self.products.mapValues { $0.entitlements })
+        let entitlementsByProduct = self.products.values.dictionaryAllowingDuplicateKeys { product in
+            CompoundProductIdentifier(
+                productIdentifier: product.identifier,
+                productPlanIdentifier: BillingPlanType.compoundProductIDPlanComponent(from: product.basePlanId)
+            )?.compoundProductIdentifier ?? product.identifier
+        }
+        .mapValues(\.entitlements)
+
+        return .init(entitlementsByProduct: entitlementsByProduct)
     }
 
 }

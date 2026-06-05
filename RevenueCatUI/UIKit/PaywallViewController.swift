@@ -418,6 +418,14 @@ public class PaywallViewController: UIViewController {
     /// Prefetches the exit offer for the current offering.
     @MainActor
     private func prefetchExitOffer() async {
+        // When the workflows endpoint is enabled, the workflow exit offer is step-aware and
+        // emitted by the embedded SwiftUI WorkflowPaywallView, so this legacy up-front prefetch
+        // is skipped. Today only the SwiftUI presentation layer (View+PresentPaywall) consumes it;
+        // this UIKit controller does not yet bridge it, so swipe-to-dismiss here won't surface the
+        // workflow exit offer. A follow-up will bridge it into this controller (feeding
+        // exitOfferOffering from the WorkflowContext binding) so swipe-to-dismiss surfaces it.
+        guard !ProcessInfo.processInfo.workflowsEndpointEnabled else { return }
+
         guard let offering = await self.purchaseHandler.resolveOffering(for: self.configuration.content) else {
             return
         }
