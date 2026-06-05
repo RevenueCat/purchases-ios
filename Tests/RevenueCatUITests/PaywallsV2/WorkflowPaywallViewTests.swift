@@ -431,8 +431,9 @@ extension WorkflowPaywallViewTests {
     /// Scenario: user navigates step1 → step2 (annual carried forward), selects monthly on step2,
     /// returns to step1, then navigates forward to step2 again.
     /// Step2 must show monthly (the user's own previous selection), not annual (the new carry-forward).
-    /// `WorkflowPaywallView.renderedPageForForwardNavigation` implements this via the cache-hit path that skips
-    /// `buildPackageInput` entirely when the step already has a `PackageContext` in `stepPackageContexts`.
+    /// `WorkflowPaywallView.renderedPageForForwardNavigation` implements this by returning the step's
+    /// already-mounted page from `seenPages` (whose `PackageContext` holds the user's selection),
+    /// skipping `buildPackageInput` entirely on a revisit.
     ///
     /// This also guards that `PackageContext` is a reference type: the mutation at line
     /// `cachedCtx.package = monthly` must be visible through `stepCache` for the cache to work.
@@ -458,14 +459,15 @@ extension WorkflowPaywallViewTests {
         let cachedCtx = cachedInput.packageContext
         expect(cachedCtx.package?.identifier) == annual.identifier
 
-        // User selects monthly on the step (mutation through the reference stored in stepPackageContexts).
+        // User selects monthly on the step (mutation through the PackageContext reference the
+        // step's mounted page holds in seenPages).
         cachedCtx.package = monthly
 
-        // Simulate the per-step cache that WorkflowPaywallView maintains.
+        // Simulate the per-step cache that WorkflowPaywallView maintains (the page kept in seenPages).
         let stepCache: [String: PackageContext] = ["step_terminal": cachedCtx]
 
-        // Second forward navigation would carry annual again — but the step is already cached.
-        // WorkflowPaywallView.renderedPageForForwardNavigation takes the cache-hit path and skips buildPackageInput.
+        // Second forward navigation would carry annual again — but the step is already in seenPages.
+        // WorkflowPaywallView.renderedPageForForwardNavigation returns that page and skips buildPackageInput.
         // Demonstrate the divergence: carry-forward would produce annual, cache has monthly.
         let wouldBeWithCarryForward = WorkflowPaywallView.buildPackageInput(
             stepId: "step_terminal",

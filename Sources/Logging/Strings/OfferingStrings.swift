@@ -18,7 +18,8 @@ import StoreKit
 // swiftlint:disable identifier_name
 enum OfferingStrings {
 
-    case cannot_find_product_configuration_error(identifiers: Set<String>)
+    case cannot_find_product_configuration_error(identifiers: Set<String>,
+                                                 apiKeyValidationResult: Configuration.APIKeyValidationResult)
     case fetching_offerings_error(error: OfferingsManager.Error, underlyingError: Error?)
     case error_fetching_offerings_using_disk_cache
     case found_existing_product_request(identifiers: Set<String>)
@@ -36,14 +37,14 @@ enum OfferingStrings {
     case fetching_products_finished
     case fetching_products(identifiers: Set<String>)
     case completion_handlers_waiting_on_products(handlersCount: Int)
-    case configuration_error_products_not_found
+    case configuration_error_products_not_found(apiKeyValidationResult: Configuration.APIKeyValidationResult)
     case configuration_error_no_products_for_offering(apiKeyValidationResult: Configuration.APIKeyValidationResult)
-    case offering_empty(offeringIdentifier: String)
+    case offering_empty(offeringIdentifier: String, apiKeyValidationResult: Configuration.APIKeyValidationResult)
     case product_details_empty_title(productIdentifier: String)
     case unknown_package_type(Package)
     case custom_package_type(Package)
     case overriding_package(old: String, new: String)
-    case known_issue_ios_18_4_simulator_products_not_found
+    case known_issue_ios_18_4_simulator_products_not_found(apiKeyValidationResult: Configuration.APIKeyValidationResult)
 
     case simulated_store_invalid_trial_period(productId: String, periodDuration: String)
     case simulated_store_invalid_intro_price_period(productId: String, periodDuration: String)
@@ -62,10 +63,21 @@ extension OfferingStrings: LogMessage {
 
     var description: String {
         switch self {
-        case .cannot_find_product_configuration_error(let identifiers):
-            return "Could not find products with identifiers: \(identifiers)." +
-                "\nThere is a problem with your configuration in App Store Connect. " +
-                "\nMore info here: https://errors.rev.cat/configuring-products"
+        case let .cannot_find_product_configuration_error(identifiers, apiKeyValidationResult):
+            switch apiKeyValidationResult {
+            case .validApplePlatform, .legacy:
+                return "Could not find products with identifiers: \(identifiers)." +
+                    "\nThere is a problem with your configuration in App Store Connect. " +
+                    "\nMore info here: https://errors.rev.cat/configuring-products"
+            case .simulatedStore:
+                return "Could not find products with identifiers: \(identifiers)." +
+                    "\nThere is a problem with your Test Store configuration in the RevenueCat dashboard. " +
+                    "\nMore info here: https://errors.rev.cat/configuring-products"
+            case .otherPlatforms:
+                return "Could not find products with identifiers: \(identifiers)." +
+                    "\nThere is a problem with your product configuration in the RevenueCat dashboard. " +
+                    "\nMore info here: https://errors.rev.cat/configuring-products"
+            }
 
         case let .fetching_offerings_error(error, underlyingError):
             var result = "Error fetching offerings - \(error.localizedDescription)"
@@ -132,10 +144,21 @@ extension OfferingStrings: LogMessage {
         case .completion_handlers_waiting_on_products(let handlersCount):
             return "\(handlersCount) completion handlers waiting on products"
 
-        case .configuration_error_products_not_found:
-            return "There's a problem with your configuration. None of the products registered in the RevenueCat " +
-            "dashboard could be fetched from App Store Connect (or the StoreKit Configuration file " +
-            "if one is being used). \nMore information: https://rev.cat/why-are-offerings-empty"
+        case let .configuration_error_products_not_found(apiKeyValidationResult):
+            switch apiKeyValidationResult {
+            case .validApplePlatform, .legacy:
+                return "There's a problem with your configuration. None of the products registered in the " +
+                "RevenueCat dashboard could be fetched from App Store Connect (or the StoreKit Configuration " +
+                "file if one is being used). \nMore information: https://rev.cat/why-are-offerings-empty"
+            case .simulatedStore:
+                return "There's a problem with your configuration. None of the Test Store products registered in " +
+                "the RevenueCat dashboard could be fetched. " +
+                "\nMore information: https://rev.cat/why-are-offerings-empty"
+            case .otherPlatforms:
+                return "There's a problem with your configuration. None of the products registered in the " +
+                "RevenueCat dashboard could be fetched. " +
+                "\nMore information: https://rev.cat/why-are-offerings-empty"
+            }
 
         case .configuration_error_no_products_for_offering(let apiKeyValidationResult):
             var description: String
@@ -152,12 +175,28 @@ extension OfferingStrings: LogMessage {
             "https://rev.cat/how-to-configure-offerings.\nMore information: https://rev.cat/why-are-offerings-empty"
             return description
 
-        case .offering_empty(let offeringIdentifier):
-            return "There's a problem with your configuration. No packages could be found for offering with  " +
-            "identifier \(offeringIdentifier). This could be due to Products not being configured correctly in the " +
-            "RevenueCat dashboard, App Store Connect (or the StoreKit Configuration file " +
-            "if one is being used). \nTo configure products, follow the instructions in " +
-            "https://rev.cat/how-to-configure-offerings. \nMore information: https://rev.cat/why-are-offerings-empty"
+        case let .offering_empty(offeringIdentifier, apiKeyValidationResult):
+            switch apiKeyValidationResult {
+            case .validApplePlatform, .legacy:
+                return "There's a problem with your configuration. No packages could be found for offering with  " +
+                "identifier \(offeringIdentifier). This could be due to Products not being configured correctly in " +
+                "the RevenueCat dashboard, App Store Connect (or the StoreKit Configuration file " +
+                "if one is being used). \nTo configure products, follow the instructions in " +
+                "https://rev.cat/how-to-configure-offerings. " +
+                "\nMore information: https://rev.cat/why-are-offerings-empty"
+            case .simulatedStore:
+                return "There's a problem with your configuration. No packages could be found for offering with " +
+                "identifier \(offeringIdentifier). This could be due to Test Store products not being configured " +
+                "correctly in the RevenueCat dashboard. \nTo configure products, follow the instructions in " +
+                "https://rev.cat/how-to-configure-offerings. " +
+                "\nMore information: https://rev.cat/why-are-offerings-empty"
+            case .otherPlatforms:
+                return "There's a problem with your configuration. No packages could be found for offering with " +
+                "identifier \(offeringIdentifier). This could be due to products not being configured correctly in " +
+                "the RevenueCat dashboard. \nTo configure products, follow the instructions in " +
+                "https://rev.cat/how-to-configure-offerings. " +
+                "\nMore information: https://rev.cat/why-are-offerings-empty"
+            }
 
         case let .product_details_empty_title(identifier):
             return "Empty Product titles are not supported. Found in product with identifier: \(identifier)"
@@ -177,12 +216,19 @@ extension OfferingStrings: LogMessage {
         case let .overriding_package(old, new):
             return "Package: \(old) already exists, overwriting with: \(new)"
 
-        case .known_issue_ios_18_4_simulator_products_not_found:
-            return "None of the products registered in the RevenueCat dashboard could be fetched from App Store " +
-            "Connect (or the StoreKit Configuration file if one is being used)." +
-            "\nThis issue is widely reported by iOS 18.4 simulator users. Try using a different iOS version with " +
-            "your simulator." +
-            "\nMore information: https://rev.cat/ios-18-4-simulator-issue"
+        case let .known_issue_ios_18_4_simulator_products_not_found(apiKeyValidationResult):
+            switch apiKeyValidationResult {
+            case .validApplePlatform, .legacy:
+                return "None of the products registered in the RevenueCat dashboard could be fetched from App " +
+                "Store Connect (or the StoreKit Configuration file if one is being used)." +
+                "\nThis issue is widely reported by iOS 18.4 simulator users. Try using a different iOS version " +
+                "with your simulator." +
+                "\nMore information: https://rev.cat/ios-18-4-simulator-issue"
+            case .simulatedStore:
+                return "None of the Test Store products registered in the RevenueCat dashboard could be fetched."
+            case .otherPlatforms:
+                return "None of the products registered in the RevenueCat dashboard could be fetched."
+            }
 
         case let .simulated_store_invalid_trial_period(productId, periodDuration):
             return "Skipping free trial for simulated store product '\(productId)': " +
