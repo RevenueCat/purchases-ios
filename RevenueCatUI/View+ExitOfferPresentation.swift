@@ -14,22 +14,16 @@ import SwiftUI
 
 #if !os(tvOS)
 
-/// Owns the exit-offer lifecycle for a single paywall presentation: how the offer is *sourced*
-/// (workflow step-aware, with a legacy offering-level fallback), the two pieces of state, and the
-/// transitions between them.
-///
-/// This is the single home for logic each `present…` entry point used to re-implement. A present
-/// function creates one and wires it via `workflowExitOfferSource` (onto the main paywall) and
-/// `exitOfferSheet` (onto the presenting view).
+/// Single owner of the exit-offer lifecycle (sourcing, state, present/dismiss/track), so present
+/// functions don't each re-implement it.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 final class ExitOfferPresenter: ObservableObject {
 
-    /// The exit offer resolved for the current step (workflow) or prefetched (legacy). Updated as the
-    /// user navigates; read at dismissal time.
+    /// Resolved exit offer for the current step (or legacy prefetch).
     @Published private var exitOfferOffering: Offering?
 
-    /// The exit offer currently being presented. Drives the sheet/cover.
+    /// The exit offer currently being presented.
     @Published private var presentedExitOffer: Offering?
 
     private let purchaseHandler: PurchaseHandler
@@ -38,13 +32,11 @@ final class ExitOfferPresenter: ObservableObject {
         self.purchaseHandler = purchaseHandler
     }
 
-    /// Whether an exit offer is currently being presented.
     var isPresentingExitOffer: Bool {
         self.presentedExitOffer != nil
     }
 
-    /// Binding handed to `WorkflowPaywallView` (via the environment) so it can write the step-aware
-    /// exit offer directly. This is the reliable path; the preference key below is a fallback.
+    /// Written by `WorkflowPaywallView` via the environment. Primary path; the preference is a fallback.
     var workflowBinding: Binding<Offering?> {
         Binding(
             get: { [weak self] in self?.exitOfferOffering },
@@ -60,23 +52,21 @@ final class ExitOfferPresenter: ObservableObject {
         )
     }
 
-    /// Workflow preference fallback. Mirrors the binding, but guarded so a final `nil` emitted during
-    /// the dismiss animation can't clear the offer after it's already being presented.
+    /// Guarded so a late `nil` during the dismiss animation can't clear an already-presented offer.
     func updateFromWorkflowPreference(_ context: WorkflowExitOfferContext?) {
         guard ProcessInfo.processInfo.workflowsEndpointEnabled else { return }
         guard context != nil || self.presentedExitOffer == nil else { return }
         self.exitOfferOffering = context?.exitOfferOffering
     }
 
-    /// Legacy offering-level prefetch, used only when the workflows endpoint is disabled.
+    /// Legacy offering-level prefetch, used only when workflows are disabled.
     func prefetchLegacyExitOffer(resolveOffering: () async -> Offering?) async {
         guard !ProcessInfo.processInfo.workflowsEndpointEnabled else { return }
         guard let offering = await resolveOffering() else { return }
         self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
     }
 
-    /// Presents the exit offer if one is available. Returns `true` if it took over (the caller should
-    /// not dismiss), `false` if there's nothing to show (the caller should dismiss normally).
+    /// Presents the exit offer if available. Returns `true` if it took over (caller shouldn't dismiss).
     @discardableResult
     func presentIfAvailable() -> Bool {
         guard self.presentedExitOffer == nil else { return true }
@@ -91,13 +81,11 @@ final class ExitOfferPresenter: ObservableObject {
         return true
     }
 
-    /// Dismisses the presented exit offer (e.g. after a successful purchase/restore on it). Clearing
-    /// `presentedExitOffer` fires the sheet's `onDismiss`, which calls `reset()`.
+    /// Dismisses the presented exit offer (fires the sheet's `onDismiss`, which calls `reset()`).
     func dismissPresentedExitOffer() {
         self.presentedExitOffer = nil
     }
 
-    /// Tears down after the exit offer is dismissed (or when the offer should be discarded).
     func reset() {
         self.presentedExitOffer = nil
         self.exitOfferOffering = nil
@@ -110,9 +98,8 @@ final class ExitOfferPresenter: ObservableObject {
 @available(tvOS, unavailable)
 extension View {
 
-    /// Sources the workflow exit offer onto the presenter. Apply to the *main* paywall view so the
-    /// environment binding reaches `WorkflowPaywallView` and its preference is observed without
-    /// crossing a sheet boundary.
+    /// Sources the workflow exit offer onto the presenter. Apply to the main paywall view (keeps the
+    /// binding/preference off the sheet boundary).
     func workflowExitOfferSource(
         presenter: ExitOfferPresenter,
         resolveLegacyOffering: @escaping () async -> Offering?
@@ -127,9 +114,7 @@ extension View {
             }
     }
 
-    /// Attaches the exit-offer sheet/cover driven by the presenter. Apply to the *presenting* view
-    /// (sibling of the main paywall presentation) so the exit offer shows after the main paywall
-    /// dismisses, rather than nested inside it.
+    /// Presents the exit offer as a sibling sheet/cover (after the main paywall dismisses, not nested).
     func exitOfferSheet<ExitOfferView: View>(
         presenter: ExitOfferPresenter,
         presentationMode: PaywallPresentationMode,
