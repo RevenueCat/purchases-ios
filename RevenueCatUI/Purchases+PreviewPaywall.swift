@@ -58,7 +58,6 @@ extension Purchases {
 @available(iOS 15.0, macOS 12.0, *)
 struct PreviewPaywallPresenter {
 
-    @MainActor
     func handle(locateOffering: @escaping (String) async throws -> Offering?,
                 url: URL,
                 viewController: UIViewController?) -> Bool {
@@ -91,7 +90,7 @@ struct PreviewPaywallPresenter {
             return false
         }
 
-        Task {
+        Task { @MainActor in
             // This is done in an async closure, because locating the offering
             // may need to wait for configuration to complete
             do {
