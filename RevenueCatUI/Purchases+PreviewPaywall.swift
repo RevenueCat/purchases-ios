@@ -29,6 +29,7 @@ extension Purchases {
     ///   a suitable window will be chosen automatically.
     /// - Returns: `true` if the URL is a valid rc-paywall-preview URL and handling has begun; `false` otherwise.
     @available(iOS 15.0, macOS 12.0, *)
+    @MainActor
     @objc public func presentPaywall(from url: URL, window: UIWindow? = nil) -> Bool {
 
         // create the paywall view controller and show it off the provided window (if available)
@@ -57,6 +58,7 @@ extension Purchases {
 @available(iOS 15.0, macOS 12.0, *)
 struct PreviewPaywallPresenter {
 
+    @MainActor
     func handle(locateOffering: @escaping (String) async throws -> Offering?,
                 url: URL,
                 viewController: UIViewController?) -> Bool {
@@ -89,7 +91,7 @@ struct PreviewPaywallPresenter {
             return false
         }
 
-        Task { @MainActor in
+        Task {
             // This is done in an async closure, because locating the offering
             // may need to wait for configuration to complete
             do {
