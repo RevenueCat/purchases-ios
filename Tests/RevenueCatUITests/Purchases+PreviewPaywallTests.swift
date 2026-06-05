@@ -42,14 +42,14 @@ class PreviewPaywallTests: TestCase {
 
     func testInvalidNumberOfParameters() throws {
         expect(self.presenter.handle(locateOffering: { _ in return nil },
-                                     url: URL(string: "rc://rc_paywall_preview")!,
+                                     url: URL(string: "rc://rc-paywall-preview")!,
                                      viewController: nil)) == false
 
         expect(self.presenter.handle(locateOffering: { _ in return nil },
-                                     url: URL(string: "rc://rc_paywall_preview?offering_id=1234")!,
+                                     url: URL(string: "rc://rc-paywall-preview?offering_id=1234")!,
                                      viewController: nil)) == false
 
-        let urlWithExtraParam = URL(string: "rc://rc_paywall_preview?offering_id=1234&paywall_id=abcd&extra=0000")!
+        let urlWithExtraParam = URL(string: "rc://rc-paywall-preview?offering_id=1234&paywall_id=abcd&extra=0000")!
         expect(self.presenter.handle(locateOffering: { _ in return nil },
                                      url: urlWithExtraParam,
                                      viewController: nil)) == false
@@ -57,17 +57,17 @@ class PreviewPaywallTests: TestCase {
 
     func testEmptyParameterValues() throws {
         expect(self.presenter.handle(locateOffering: { _ in return nil },
-                                     url: URL(string: "rc://rc_paywall_preview?offering_id=&paywall_id=abcd")!,
+                                     url: URL(string: "rc://rc-paywall-preview?offering_id=&paywall_id=abcd")!,
                                      viewController: nil)) == false
 
         expect(self.presenter.handle(locateOffering: { _ in return nil },
-                                     url: URL(string: "rc://rc_paywall_preview?offering_id=1234&paywall_id=")!,
+                                     url: URL(string: "rc://rc-paywall-preview?offering_id=1234&paywall_id=")!,
                                      viewController: nil)) == false
     }
 
     func testMissingPresentationContext() throws {
         expect(self.presenter.handle(locateOffering: { _ in return nil },
-                                     url: URL(string: "rc://rc_paywall_preview?offering_id=1234&paywall_id=abcd")!,
+                                     url: URL(string: "rc://rc-paywall-preview?offering_id=1234&paywall_id=abcd")!,
                                      viewController: nil)) == false
     }
 
@@ -80,7 +80,7 @@ class PreviewPaywallTests: TestCase {
                 expectation.fulfill()
                 return nil
             },
-            url: URL(string: "rc://rc_paywall_preview?offering_id=1234&paywall_id=abcd")!,
+            url: URL(string: "rc://rc-paywall-preview?offering_id=1234&paywall_id=abcd")!,
             viewController: MockViewController { })
         ) == true
 
@@ -95,7 +95,7 @@ class PreviewPaywallTests: TestCase {
             locateOffering: { _ in
                 throw CocoaError(.userCancelled)
             },
-            url: URL(string: "rc://rc_paywall_preview?offering_id=1234&paywall_id=abcd")!,
+            url: URL(string: "rc://rc-paywall-preview?offering_id=1234&paywall_id=abcd")!,
             viewController: MockViewController { expectation.fulfill() })
         ) == true
 
@@ -110,7 +110,7 @@ class PreviewPaywallTests: TestCase {
             locateOffering: { _ in
                 return nil
             },
-            url: URL(string: "rc://rc_paywall_preview?offering_id=1234&paywall_id=abcd")!,
+            url: URL(string: "rc://rc-paywall-preview?offering_id=1234&paywall_id=abcd")!,
             viewController: MockViewController { expectation.fulfill() })
         ) == true
 
@@ -125,7 +125,7 @@ class PreviewPaywallTests: TestCase {
             locateOffering: { _ in
                 return self.offering
             },
-            url: URL(string: "rc://rc_paywall_preview?offering_id=1234&paywall_id=wxyz")!,
+            url: URL(string: "rc://rc-paywall-preview?offering_id=1234&paywall_id=wxyz")!,
             viewController: MockViewController { expectation.fulfill() })
         ) == true
 
@@ -139,7 +139,7 @@ class PreviewPaywallTests: TestCase {
             locateOffering: { _ in
                 return self.offering
             },
-            url: URL(string: "rc://rc_paywall_preview?offering_id=1234&paywall_id=abcd")!,
+            url: URL(string: "rc://rc-paywall-preview?offering_id=1234&paywall_id=abcd")!,
             viewController: MockViewController { expectation.fulfill() })
         ) == true
 
