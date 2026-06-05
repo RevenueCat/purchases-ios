@@ -953,10 +953,16 @@ private struct PaywallContainerView: View {
                     }
                 }
             }
-            // Binding is the reliable path; preference is a fallback. Both feed `exitOfferOffering`.
+            // Binding is the reliable path; preference is a set-only fallback. Both feed `exitOfferOffering`.
             .environment(\.workflowExitOfferOfferingBinding, self.workflowExitOfferBinding)
             .onPreferenceChange(WorkflowExitOfferPreferenceKey.self) { context in
-                self.workflowExitOfferBinding.wrappedValue = context?.exitOfferOffering
+                // Only forward a non-nil offer. Clears are owned by the direct binding
+                // (WorkflowPaywallView.syncExitOfferBinding fires on step change), so a nil here is
+                // either redundant or a transient default emitted while the host rebuilds (e.g. on
+                // update(with:displayCloseButton:) / updateFont). Forwarding it would momentarily drop
+                // a still-valid exit offer.
+                guard let offering = context?.exitOfferOffering else { return }
+                self.workflowExitOfferBinding.wrappedValue = offering
             }
     }
 
