@@ -989,6 +989,23 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCAttributionNetwork, "AttributionNetwork", 
   RCAttributionNetworkAdServices = 7,
 };
 
+/// Defines different billing plan types that may be purchased on a product.
+SWIFT_CLASS_NAMED("BillingPlanType")
+@interface RCBillingPlanType : NSObject
+/// Upfront billing plan, where the user pays in full when purchasing the product.
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCBillingPlanType * _Nonnull RCUpFront;)
++ (RCBillingPlanType * _Nonnull)RCUpFront SWIFT_WARN_UNUSED_RESULT;
+/// Monthly billing plan, where the user pays in monthly installments.
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCBillingPlanType * _Nonnull RCMonthly;)
++ (RCBillingPlanType * _Nonnull)RCMonthly SWIFT_WARN_UNUSED_RESULT;
+/// String representation of the BillingPlanType.
+@property (nonatomic, readonly, copy) NSString * _Nonnull rawValue;
+- (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
+@property (nonatomic, readonly) NSUInteger hash;
+- (nonnull instancetype)init SWIFT_UNAVAILABLE;
++ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+@end
+
 enum RCPurchasesAreCompletedBy : NSInteger;
 enum RCStoreKitVersion : NSInteger;
 @class NSUserDefaults;
@@ -1113,11 +1130,11 @@ SWIFT_CLASS_NAMED("Builder")
 @end
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
+- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
 @end
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
+- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
 @end
 
 /// Specifies the behavior for a caching API.
@@ -1225,25 +1242,43 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCEntitlementVerificationMode, "EntitlementV
   RCEntitlementVerificationModeEnforced = 2,
 };
 
+@class RCOffering;
 /// Parameters for tracking a custom paywall impression event.
 SWIFT_CLASS_NAMED("CustomPaywallImpressionParams")
 @interface RCCustomPaywallImpressionParams : NSObject
 /// An optional identifier for the custom paywall being shown.
 @property (nonatomic, readonly, copy) NSString * _Nullable paywallId;
 /// An optional identifier for the offering associated with the custom paywall.
-/// If not provided, the SDK will use the current offering identifier from the cache.
+/// If neither this nor an <code>Offering</code> is provided, the SDK will use the current offering
+/// identifier from the cache.
 @property (nonatomic, readonly, copy) NSString * _Nullable offeringId;
-/// Creates parameters for a custom paywall impression.
+/// Creates parameters with only a paywall identifier.
+/// The SDK will use the current offering from the cache to derive the offering identifier
+/// and presented offering context.
+/// \param paywallId An optional identifier for the custom paywall being shown.
+///
+- (nonnull instancetype)initWithPaywallId:(NSString * _Nullable)paywallId;
+/// Creates parameters for a custom paywall impression with a string offering identifier.
+/// important:
+/// Prefer <code>init(paywallId:offering:)</code> when an <code>Offering</code> object is available.
+/// Passing only a string identifier prevents the SDK from automatically deriving placement
+/// and targeting context.
 /// \param paywallId An optional identifier for the custom paywall being shown.
 ///
 /// \param offeringId An optional identifier for the offering associated with the custom paywall.
 /// If <code>nil</code>, the SDK will use the current offering identifier from the cache.
 ///
-- (nonnull instancetype)initWithPaywallId:(NSString * _Nullable)paywallId offeringId:(NSString * _Nullable)offeringId OBJC_DESIGNATED_INITIALIZER;
-/// Creates parameters with only a paywall identifier.
+- (nonnull instancetype)initWithPaywallId:(NSString * _Nullable)paywallId offeringId:(NSString * _Nullable)offeringId SWIFT_DEPRECATED_MSG("Pass an Offering object instead. Using an offering identifier string prevents the SDK from deriving placement and targeting context automatically.", "initWithPaywallId:offering:");
+/// Creates parameters for a custom paywall impression from the offering it was obtained from.
+/// Use this initializer when presenting a paywall for an offering that is not the current
+/// offering (for example, a placement-resolved offering). The SDK will derive both the offering
+/// identifier and the presented offering context (placement and targeting information) from
+/// the provided offering.
 /// \param paywallId An optional identifier for the custom paywall being shown.
 ///
-- (nonnull instancetype)initWithPaywallId:(NSString * _Nullable)paywallId;
+/// \param offering The offering associated with the custom paywall.
+///
+- (nonnull instancetype)initWithPaywallId:(NSString * _Nullable)paywallId offering:(RCOffering * _Nonnull)offering;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -1451,7 +1486,8 @@ SWIFT_CLASS_NAMED("EntitlementInfo")
 @property (nonatomic, readonly) enum RCStore store;
 /// The product identifier that unlocked this entitlement
 @property (nonatomic, readonly, copy) NSString * _Nonnull productIdentifier;
-/// The product plan identifier that unlocked this entitlement (for a Google Play subscription purchase)
+/// The product plan identifier that unlocked this entitlement (for Google Play subscription purchases
+/// and Apple purchases with non-upFront billing plans)
 @property (nonatomic, readonly, copy) NSString * _Nullable productPlanIdentifier;
 /// False if this entitlement is unlocked via a production purchase
 @property (nonatomic, readonly) BOOL isSandbox;
@@ -1661,6 +1697,10 @@ SWIFT_CLASS("_TtC10RevenueCat37GetProductEntitlementMappingOperation")
 @interface GetProductEntitlementMappingOperation : CacheableNetworkOperation
 @end
 
+SWIFT_CLASS("_TtC10RevenueCat24GetRemoteConfigOperation")
+@interface GetRemoteConfigOperation : CacheableNetworkOperation
+@end
+
 SWIFT_CLASS("_TtC10RevenueCat36GetRewardVerificationStatusOperation")
 @interface GetRewardVerificationStatusOperation : CacheableNetworkOperation
 @end
@@ -1681,8 +1721,56 @@ SWIFT_CLASS("_TtC10RevenueCat20GetWorkflowOperation")
 @interface GetWorkflowOperation : CacheableNetworkOperation
 @end
 
+SWIFT_CLASS("_TtC10RevenueCat25GetWorkflowsListOperation")
+@interface GetWorkflowsListOperation : CacheableNetworkOperation
+@end
+
 SWIFT_CLASS("_TtC10RevenueCat15HealthOperation")
 @interface HealthOperation : CacheableNetworkOperation
+@end
+
+@class RCSubscriptionPeriod;
+/// Information about the installments that a subscriber will pay across multiple billing periods
+SWIFT_CLASS_NAMED("InstallmentsInfo")
+@interface RCInstallmentsInfo : NSObject
+/// Number of installments the customer commits to paying.
+@property (nonatomic, readonly) NSInteger commitmentInstallmentsCount;
+/// The duration for each installment.
+@property (nonatomic, readonly, strong) RCSubscriptionPeriod * _Nonnull commitmentInstallmentPeriod;
+/// Price charged for each installment billing period.
+@property (nonatomic, readonly) NSDecimal installmentBillingPrice;
+/// Localized display price for <code>installmentBillingPrice</code>.
+@property (nonatomic, readonly, copy) NSString * _Nonnull installmentBillingDisplayPrice;
+/// Total duration of the customer’s installment commitment.
+@property (nonatomic, readonly, strong) RCSubscriptionPeriod * _Nonnull commitmentTotalPeriod;
+/// Total price the customer commits to paying across all installments.
+@property (nonatomic, readonly) NSDecimal commitmentTotalPrice;
+/// Localized display price for <code>commitmentTotalPrice</code>.
+@property (nonatomic, readonly, copy) NSString * _Nonnull commitmentTotalDisplayPrice;
+/// The billing plan used for the installments.
+@property (nonatomic, readonly, strong) RCBillingPlanType * _Nonnull billingPlanType;
+/// Creates a new <code>InstallmentsInfo</code>.
+/// \param commitmentInstallmentsCount Number of installments the customer commits to paying.
+///
+/// \param commitmentInstallmentPeriod The duration for each installment.
+///
+/// \param installmentBillingPrice Price charged for each installment billing period.
+///
+/// \param installmentBillingDisplayPrice Localized display price for <code>installmentBillingPrice</code>.
+///
+/// \param commitmentTotalPeriod Total duration of the customer’s installment commitment.
+///
+/// \param commitmentTotalPrice Total price the customer commits to paying across all installments.
+///
+/// \param commitmentTotalDisplayPrice Localized display price for <code>commitmentTotalPrice</code>.
+///
+/// \param billingPlanType Billing plan type used for the installments.
+///
+- (nonnull instancetype)initWithCommitmentInstallmentsCount:(NSInteger)commitmentInstallmentsCount commitmentInstallmentPeriod:(RCSubscriptionPeriod * _Nonnull)commitmentInstallmentPeriod installmentBillingPrice:(NSDecimal)installmentBillingPrice installmentBillingDisplayPrice:(NSString * _Nonnull)installmentBillingDisplayPrice commitmentTotalPeriod:(RCSubscriptionPeriod * _Nonnull)commitmentTotalPeriod commitmentTotalPrice:(NSDecimal)commitmentTotalPrice commitmentTotalDisplayPrice:(NSString * _Nonnull)commitmentTotalDisplayPrice billingPlanType:(RCBillingPlanType * _Nonnull)billingPlanType OBJC_DESIGNATED_INITIALIZER;
+- (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
+@property (nonatomic, readonly) NSUInteger hash;
+- (nonnull instancetype)init SWIFT_UNAVAILABLE;
++ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
 enum RCIntroEligibilityStatus : NSInteger;
@@ -3984,7 +4072,6 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStoreMessageType, "StoreMessageType", open
 enum RCStoreProductType : NSInteger;
 enum RCStoreProductCategory : NSInteger;
 @class NSNumberFormatter;
-@class RCSubscriptionPeriod;
 /// Type that provides access to all of <code>StoreKit</code>‘s product type’s properties.
 SWIFT_CLASS_NAMED("StoreProduct")
 @interface RCStoreProduct : NSObject
@@ -4003,6 +4090,8 @@ SWIFT_CLASS_NAMED("StoreProduct")
 @property (nonatomic, readonly, strong) RCSubscriptionPeriod * _Nullable subscriptionPeriod;
 @property (nonatomic, readonly, strong) RCStoreProductDiscount * _Nullable introductoryDiscount;
 @property (nonatomic, readonly, copy) NSArray<RCStoreProductDiscount *> * _Nonnull discounts;
+@property (nonatomic, readonly, strong) RCInstallmentsInfo * _Nullable installmentsInfo SWIFT_AVAILABILITY(visionos,introduced=26.4) SWIFT_AVAILABILITY(macos,introduced=26.4) SWIFT_AVAILABILITY(watchos,introduced=26.4) SWIFT_AVAILABILITY(tvos,introduced=26.4) SWIFT_AVAILABILITY(ios,introduced=26.4);
+@property (nonatomic, readonly, copy) NSString * _Nonnull id;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end

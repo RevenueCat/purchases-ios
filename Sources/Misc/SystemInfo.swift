@@ -93,6 +93,12 @@ class SystemInfo {
         return self._isSandbox
     }
 
+    /// Whether the paywall workflows endpoint is enabled, driven by the `-EnableWorkflowsEndpoint`
+    /// launch argument. Temporary gate while workflows are being rolled out.
+    var workflowsEndpointEnabled: Bool {
+        return ProcessInfo.processInfo.arguments.contains("-EnableWorkflowsEndpoint")
+    }
+
     var isDebugBuild: Bool {
 #if DEBUG
         return true
@@ -106,7 +112,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.76.0-SNAPSHOT"
+        return "5.77.0-SNAPSHOT"
     }
 
     static var installationMethod: String {

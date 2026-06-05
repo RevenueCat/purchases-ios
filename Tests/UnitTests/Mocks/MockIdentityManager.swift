@@ -36,6 +36,7 @@ class MockIdentityManager: IdentityManager {
                     systemInfo: mockSystemInfo
                    ),
                    attributeSyncing: self.mockAttributeSyncing,
+                   workflowsCache: WorkflowsCache(deviceCache: mockDeviceCache),
                    appUserID: mockAppUserID)
     }
 

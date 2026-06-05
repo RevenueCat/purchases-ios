@@ -54,9 +54,14 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         set { self._stubbedAppTransactionJWS.value = newValue }
     }
 
+    let invokedUnfinishedVerifiedTransactions = Atomic<Bool>(false)
+    let invokedUnfinishedVerifiedTransactionsCount = Atomic<Int>(0)
+
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var unfinishedVerifiedTransactions: [StoreTransaction] {
         get async {
+            self.invokedUnfinishedVerifiedTransactions.value = true
+            self.invokedUnfinishedVerifiedTransactionsCount.modify { $0 += 1 }
             return self.stubbedUnfinishedTransactions
         }
     }
