@@ -381,6 +381,12 @@ extension PurchaseHandler {
     ) -> WorkflowContext? {
         guard workflowsEndpointEnabled else { return nil }
 
+        // Snapshot the cached offerings once so the default-offering lookup and the workflow's base
+        // offering are resolved against the same value; `cachedOfferings` can be replaced on a
+        // background thread, and reading it twice could mix two different snapshots. A nil snapshot
+        // means the async resolve path runs instead of seeding a partial paywall.
+        guard let allOfferings = self.purchases.cachedOfferings else { return nil }
+
         // Resolve the lookup identifier and presented-offering context the same way the async
         // resolvePaywallViewData(for:) dispatch does for each content type.
         let identifier: String
@@ -388,20 +394,19 @@ extension PurchaseHandler {
         switch content {
         case let .offering(offering):
             identifier = offering.identifier
-            presentedOfferingContext = offering.availablePackages.first?.presentedOfferingContext
+            presentedOfferingContext = offering.presentedOfferingContext
         case .defaultOffering:
-            guard let current = self.purchases.cachedOfferings?.current else { return nil }
+            guard let current = allOfferings.current else { return nil }
             identifier = current.identifier
-            presentedOfferingContext = current.availablePackages.first?.presentedOfferingContext
+            presentedOfferingContext = current.presentedOfferingContext
         case let .offeringIdentifier(offeringIdentifier, context):
             identifier = offeringIdentifier
             presentedOfferingContext = context
         }
 
-        // Both the offerings snapshot and a fresh cached workflow must be present; any miss returns
-        // nil so the async resolve path runs instead of seeding a partial paywall.
-        guard let allOfferings = self.purchases.cachedOfferings,
-              let workflowResult = self.purchases.cachedWorkflow(forOfferingIdentifier: identifier) else {
+        // A fresh cached workflow must be present; a miss returns nil so the async resolve path runs
+        // instead of seeding a partial paywall.
+        guard let workflowResult = self.purchases.cachedWorkflow(forOfferingIdentifier: identifier) else {
             return nil
         }
 
@@ -409,7 +414,7 @@ extension PurchaseHandler {
             workflow: workflowResult.workflow,
             allOfferings: allOfferings,
             presentedOfferingContext: presentedOfferingContext
-        )?.context
+        )
     }
 
     func resolvePaywallViewData(
@@ -456,13 +461,13 @@ extension PurchaseHandler {
         for offering: Offering,
         offerings: Offerings? = nil
     ) async throws -> ResolvedPaywallViewData {
-        let (context, resolvedOffering) = try await self.resolveWorkflowContext(
+        let context = try await self.resolveWorkflowContext(
             identifier: offering.identifier,
-            presentedOfferingContext: offering.availablePackages.first?.presentedOfferingContext,
+            presentedOfferingContext: offering.presentedOfferingContext,
             offerings: offerings
         )
 
-        return .init(offering: resolvedOffering, workflowContext: context)
+        return .init(offering: context.initialOffering, workflowContext: context)
     }
 
     private func resolveOfferingIdentifier(
@@ -471,11 +476,11 @@ extension PurchaseHandler {
         workflowsEndpointEnabled: Bool
     ) async throws -> ResolvedPaywallViewData {
         if workflowsEndpointEnabled {
-            let (context, offering) = try await self.resolveWorkflowContext(
+            let context = try await self.resolveWorkflowContext(
                 identifier: identifier,
                 presentedOfferingContext: presentedOfferingContext
             )
-            return .init(offering: offering, workflowContext: context)
+            return .init(offering: context.initialOffering, workflowContext: context)
         }
 
         let offering = try await self.purchases.offerings()
@@ -498,7 +503,7 @@ extension PurchaseHandler {
         identifier: String,
         presentedOfferingContext: PresentedOfferingContext?,
         offerings: Offerings? = nil
-    ) async throws -> (context: WorkflowContext, offering: Offering) {
+    ) async throws -> WorkflowContext {
         async let fetchResultTask = self.purchases.workflow(forOfferingIdentifier: identifier)
 
         // Reuse the caller's offerings snapshot when provided (e.g. the .defaultOffering path
@@ -524,16 +529,17 @@ extension PurchaseHandler {
         return resolved
     }
 
-    /// Builds a ``WorkflowContext`` (and its initial offering, with the workflow screen's mapped
-    /// paywall components applied) from already-resolved `workflow` + `allOfferings`. Pure and
-    /// non-throwing so both the async resolve path and the synchronous cache seed share it: it
-    /// returns `nil` when the workflow has no initial screen or when that screen's offering is
+    /// Builds a ``WorkflowContext`` from already-resolved `workflow` + `allOfferings`. The context's
+    /// `initialOffering` carries the workflow screen's offering with its mapped paywall components
+    /// applied, so callers can read `context.initialOffering` instead of receiving it separately.
+    /// Pure and non-throwing so both the async resolve path and the synchronous cache seed share it:
+    /// it returns `nil` when the workflow has no initial screen or when that screen's offering is
     /// absent from `allOfferings`, letting each caller decide how to surface the miss.
     static func makeWorkflowContext(
         workflow: PublishedWorkflow,
         allOfferings: Offerings,
         presentedOfferingContext: PresentedOfferingContext?
-    ) -> (context: WorkflowContext, offering: Offering)? {
+    ) -> WorkflowContext? {
         guard let step = workflow.steps[workflow.initialStepId],
               let screenID = step.screenId,
               let screen = workflow.screens[screenID],
@@ -555,14 +561,12 @@ extension PurchaseHandler {
             offering = initialOffering
         }
 
-        let context = WorkflowContext(
+        return WorkflowContext(
             workflow: workflow,
             allOfferings: allOfferings,
             initialOffering: offering,
             presentedOfferingContext: presentedOfferingContext
         )
-
-        return (context, offering)
     }
     #endif
 

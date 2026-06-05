@@ -115,6 +115,10 @@ class WorkflowManager {
     /// A stale list mapping (or the old offering-id fallback) can resolve the wrong workflow, and a
     /// synchronous seed skips the view's async refresh, so there'd be no correction.
     func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
+        // `isAppBackgrounded: false` is intentional: this synchronous seed only runs while a paywall
+        // is being presented, i.e. the app is in the foreground. The foreground TTL is the shorter,
+        // stricter one, so the worst case is treating a borderline-fresh entry as stale and falling
+        // through to the async refetch, never seeding something the background TTL would reject.
         guard !self.workflowsCache.isWorkflowsListCacheStale(isAppBackgrounded: false),
               let workflowId = self.workflowsCache.workflowId(forOfferingId: offeringId) else {
             return nil
