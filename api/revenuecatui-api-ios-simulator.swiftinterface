@@ -324,6 +324,12 @@ open class CustomPaywallFontProvider : RevenueCatUI.PaywallFontProvider {
   @available(tvOS, unavailable, introduced: 15.0, message: "RevenueCatUI does not support tvOS yet")
   public typealias Body = @_opaqueReturnTypeOf("$s12RevenueCatUI11PaywallViewV4bodyQrvp", 0) __
 }
+extension RevenueCat.Purchases {
+  #if compiler(>=5.3) && $NonescapableTypes
+  @available(iOS 15.0, macOS 12.0, *)
+  @_Concurrency.MainActor @objc final public func presentPaywall(from url: Foundation.URL, window: UIKit.UIWindow? = nil) -> Swift.Bool
+  #endif
+}
 @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @objc(RCPaywallFooterViewController) @_Concurrency.MainActor @preconcurrency final public class PaywallFooterViewController : RevenueCatUI.PaywallViewController {
   #if compiler(>=5.3) && $NonescapableTypes
