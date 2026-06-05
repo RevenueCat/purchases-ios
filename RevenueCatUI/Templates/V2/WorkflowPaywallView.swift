@@ -221,9 +221,11 @@ struct WorkflowPaywallView: View {
     @State private var hasLoggedInvalidState = false
     @State private var transitionState: WorkflowPageTransitionState<RenderedPage>
     @State private var activeTransitionID: UUID?
-    /// PackageContext is intentionally cached by reference: PaywallsV2View mutates the same
-    /// instance, so user selections persist when revisiting a workflow step.
-    @State private var stepPackageContexts: [String: PackageContext]
+    /// Every step the user has seen, in first-seen order. Each page is kept mounted so its subtree,
+    /// and the state it owns (a tab/toggle selection, the `PackageContext` that `PaywallsV2View`
+    /// mutates by reference), survives navigating away and back. Also the per-step page cache:
+    /// revisiting a step reuses its existing instance, preserving its SwiftUI identity.
+    @State private var seenPages: [RenderedPage]
 
     init(
         context: WorkflowContext,
@@ -253,51 +255,26 @@ struct WorkflowPaywallView: View {
             preferredPackage: nil,
             showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
         )
-        self._stepPackageContexts = .init(wrappedValue: [initialStepId: initialPackageInput.packageContext])
-        self._transitionState = .init(
-            wrappedValue: .init(
-                currentPage: Self.renderedPage(
-                    from: context,
-                    stepId: initialStepId,
-                    showCloseButton: displayCloseButton,
-                    introEligibilityChecker: introEligibilityChecker,
-                    packageInput: initialPackageInput
-                )
-            )
+        let initialPage = Self.renderedPage(
+            from: context,
+            stepId: initialStepId,
+            showCloseButton: displayCloseButton,
+            introEligibilityChecker: introEligibilityChecker,
+            packageInput: initialPackageInput
         )
+        self._seenPages = .init(wrappedValue: initialPage.map { [$0] } ?? [])
+        self._transitionState = .init(wrappedValue: .init(currentPage: initialPage))
     }
 
     var body: some View {
         GeometryReader { proxy in
             ZStack {
-                // Keep each rendered page keyed by its snapshot ID so SwiftUI preserves
-                // the outgoing subtree when it changes role from current -> outgoing.
-                // Recreating that subtree at transition start caused visible flashing.
-                ForEach(self.displayedPages) { displayedPage in
-                    let pageOffset = self.transitionState.offset(
-                        for: displayedPage.role,
-                        width: proxy.size.width
-                    )
-
-                    self.pageView(for: displayedPage.page)
-                        .environment(
-                            \.workflowRenderingContext,
-                            WorkflowRenderingContext(
-                                pageTransition: .init(
-                                    pageOffset: pageOffset,
-                                    headerButtonOpacity: self.transitionState.headerButtonOpacity(
-                                        for: displayedPage.role,
-                                        headerTransition: self.headerTransition
-                                    ),
-                                    isTransitioning: self.transitionState.isTransitioning
-                                ),
-                                pageHeaderSuppressed: self.shouldRenderWorkflowHeaderOverlay
-                            )
-                        )
-                        .frame(width: proxy.size.width, height: proxy.size.height)
-                        .transitionClipMask(proxy: proxy)
-                        .offset(x: pageOffset)
-                        .zIndex(self.transitionState.zIndex(for: displayedPage.role))
+                // Render every seen page keyed by its stable per-step snapshot ID so SwiftUI
+                // preserves each subtree's identity (and the state it owns) across navigation.
+                // The current and outgoing pages animate; the rest stay mounted but hidden
+                // off-screen, non-interactive.
+                ForEach(self.seenPages) { page in
+                    self.seenPageView(for: page, proxy: proxy)
                 }
 
                 self.workflowHeaderOverlay(proxy: proxy)
@@ -370,7 +347,46 @@ struct WorkflowPaywallView: View {
         return self.transitionState.isTransitioning && self.headerTransition.shouldRenderOverlay
     }
 
-    private func pageView(for page: RenderedPage) -> some View {
+    @ViewBuilder
+    private func seenPageView(for page: RenderedPage, proxy: GeometryProxy) -> some View {
+        // current and outgoing animate; every other seen page stays mounted but hidden off-screen
+        // so its state is preserved until the user returns to it.
+        let isCurrent = page.id == self.transitionState.currentPage?.id
+        let isOutgoing = page.id == self.transitionState.outgoingPage?.id
+        let isHidden = !isCurrent && !isOutgoing
+        let transitionRole: WorkflowPageTransitionState<RenderedPage>.PageRole =
+            isOutgoing ? .outgoing : .current
+        let pageOffset = isHidden ? 0 : self.transitionState.offset(for: transitionRole, width: proxy.size.width)
+
+        self.pageView(for: page, isActive: isCurrent)
+            .environment(
+                \.workflowRenderingContext,
+                WorkflowRenderingContext(
+                    pageTransition: .init(
+                        pageOffset: pageOffset,
+                        headerButtonOpacity: isHidden
+                            ? 0
+                            : self.transitionState.headerButtonOpacity(
+                                for: transitionRole,
+                                headerTransition: self.headerTransition
+                            ),
+                        // Hidden pages are not part of the animation; only the current/outgoing
+                        // pair should see the transition flag so they don't react to it off-screen.
+                        isTransitioning: isHidden ? false : self.transitionState.isTransitioning
+                    ),
+                    pageHeaderSuppressed: self.shouldRenderWorkflowHeaderOverlay
+                )
+            )
+            .frame(width: proxy.size.width, height: proxy.size.height)
+            .transitionClipMask(proxy: proxy)
+            .opacity(isHidden ? 0 : 1)
+            .offset(x: pageOffset)
+            .zIndex(isHidden ? -1 : self.transitionState.zIndex(for: transitionRole))
+            .allowsHitTesting(!isHidden)
+            .accessibilityHidden(isHidden)
+    }
+
+    private func pageView(for page: RenderedPage, isActive: Bool) -> some View {
         PaywallsV2View(
             paywallComponents: page.content.paywallComponents,
             offering: page.content.offering,
@@ -386,7 +402,9 @@ struct WorkflowPaywallView: View {
             colorScheme: self.colorScheme,
             promoOfferCache: self.promoOfferCacheOwner.cache,
             introEligibilityContext: page.introOfferEligibilityContext,
-            selectedPackageContextOverride: page.packageContext
+            selectedPackageContextOverride: page.packageContext,
+            // Drives per-visit paywall_viewed / paywall_close: this page is the current workflow step.
+            isActiveWorkflowPage: isActive
         )
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
         .environment(\.workflowTriggerAction, { componentId in
@@ -448,10 +466,7 @@ struct WorkflowPaywallView: View {
             self.onDismiss()
         case .navigateBack:
             guard let destination = self.navigator.backNavigationDestination,
-                  let page = self.renderedPageForBackNavigation(
-                      stepId: destination.step.id,
-                      canNavigateBack: destination.canNavigateBackAfterNavigation
-                  ) else {
+                  let page = self.renderedPageForBackNavigation(stepId: destination.step.id) else {
                 return
             }
 
@@ -512,6 +527,9 @@ struct WorkflowPaywallView: View {
         to page: RenderedPage?,
         direction: WorkflowPageTransitionState<RenderedPage>.Direction
     ) {
+        if let page, !self.seenPages.contains(where: { $0.stepId == page.stepId }) {
+            self.seenPages.append(page)
+        }
         self.transitionState.beginTransition(to: page, direction: direction)
 
         guard self.transitionState.isTransitioning else {
@@ -583,6 +601,7 @@ struct WorkflowPaywallView: View {
         )
 
         return .init(
+            stepId: stepId,
             content: .init(paywallComponents: paywallComponents, offering: offering),
             headerComponent: screen.componentsConfig.base.header,
             showCloseButton: showCloseButton,
@@ -622,11 +641,10 @@ struct WorkflowPaywallView: View {
         )
     }
 
-    private func renderedPageForBackNavigation(
-        stepId: String,
-        canNavigateBack: Bool
-    ) -> RenderedPage? {
-        guard let packageContext = self.stepPackageContexts[stepId] else {
+    private func renderedPageForBackNavigation(stepId: String) -> RenderedPage? {
+        // Back navigation always targets a previously-seen step, so its page is already mounted.
+        // Returning that same instance keeps its subtree (and the state it owns) intact.
+        guard let seenPage = self.seenPages.first(where: { $0.stepId == stepId }) else {
             Logger.error(
                 Strings.workflow_paywall_invalid_state(
                     currentStepId: stepId,
@@ -636,19 +654,7 @@ struct WorkflowPaywallView: View {
             return nil
         }
 
-        return Self.renderedPage(
-            from: self.context,
-            stepId: stepId,
-            showCloseButton: !canNavigateBack && self.displayCloseButton,
-            introEligibilityChecker: self.introEligibilityChecker,
-            packageInput: .init(
-                packageContext: packageContext,
-                effectiveWorkflowPackageContext: self.context.effectivePackageContext(
-                    for: stepId,
-                    preferring: packageContext.package
-                )
-            )
-        )
+        return seenPage
     }
 
     private func renderedPageForForwardNavigation(
@@ -656,23 +662,10 @@ struct WorkflowPaywallView: View {
         canNavigateBack: Bool,
         carryForwardPackage: Package?
     ) -> RenderedPage? {
-        let packageInput: RenderedPagePackageInput
-        if let cached = self.stepPackageContexts[stepId] {
-            packageInput = .init(
-                packageContext: cached,
-                effectiveWorkflowPackageContext: self.context.effectivePackageContext(
-                    for: stepId,
-                    preferring: cached.package
-                )
-            )
-        } else {
-            packageInput = Self.buildPackageInput(
-                stepId: stepId,
-                context: self.context,
-                preferredPackage: carryForwardPackage,
-                showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices
-            )
-            self.stepPackageContexts[stepId] = packageInput.packageContext
+        // Revisiting a seen step reuses its existing page so SwiftUI keeps the subtree (and the
+        // state it owns, e.g. a tab/toggle selection) instead of rebuilding it.
+        if let seenPage = self.seenPages.first(where: { $0.stepId == stepId }) {
+            return seenPage
         }
 
         return Self.renderedPage(
@@ -680,7 +673,12 @@ struct WorkflowPaywallView: View {
             stepId: stepId,
             showCloseButton: !canNavigateBack && self.displayCloseButton,
             introEligibilityChecker: self.introEligibilityChecker,
-            packageInput: packageInput
+            packageInput: Self.buildPackageInput(
+                stepId: stepId,
+                context: self.context,
+                preferredPackage: carryForwardPackage,
+                showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices
+            )
         )
     }
 
@@ -703,6 +701,7 @@ struct WorkflowPaywallView: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct RenderedPage: Identifiable {
     let id = UUID()
+    let stepId: String
     let content: CurrentStepContent
     let headerComponent: PaywallComponent.HeaderComponent?
     let showCloseButton: Bool
