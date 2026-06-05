@@ -213,6 +213,108 @@ class WorkflowsCacheTests: TestCase {
         expect(self.cache.cachedWorkflowsListResponseFromDisk()).to(beNil())
     }
 
+    // MARK: - Workflow detail disk persistence
+
+    func testCacheWorkflowDetailPersistsKeyedByWorkflowId() throws {
+        let result = try Self.workflowDataResult(id: "wf_1")
+        self.cache.cache(workflowDetail: result, workflowId: "wf_1")
+
+        expect(self.deviceCache.cacheWorkflowDetailsCount) == 1
+        expect(self.deviceCache.cachedWorkflowDetailsParameter?["wf_1"]) == result
+    }
+
+    func testCacheWorkflowDetailMergesIntoExistingPersisted() throws {
+        let existing = try Self.workflowDataResult(id: "wf_existing")
+        self.deviceCache.stubbedCachedWorkflowDetails = ["wf_existing": existing]
+
+        let new = try Self.workflowDataResult(id: "wf_new")
+        self.cache.cache(workflowDetail: new, workflowId: "wf_new")
+
+        let persisted = try XCTUnwrap(self.deviceCache.cachedWorkflowDetailsParameter)
+        expect(persisted.keys).to(contain("wf_existing", "wf_new"))
+        expect(persisted["wf_existing"]) == existing
+        expect(persisted["wf_new"]) == new
+    }
+
+    func testCachedWorkflowDetailsFromDiskReturnsPersisted() throws {
+        let result = try Self.workflowDataResult(id: "wf_1")
+        self.deviceCache.stubbedCachedWorkflowDetails = ["wf_1": result]
+
+        expect(self.cache.cachedWorkflowDetailsFromDisk()?["wf_1"]) == result
+    }
+
+    func testCachedWorkflowDetailsFromDiskReturnsNilWhenNothingCached() {
+        self.deviceCache.stubbedCachedWorkflowDetails = nil
+        expect(self.cache.cachedWorkflowDetailsFromDisk()).to(beNil())
+    }
+
+    func testCacheWorkflowsListPrunesDetailsNotInNewList() throws {
+        self.deviceCache.stubbedCachedWorkflowDetails = [
+            "wf_old": try Self.workflowDataResult(id: "wf_old"),
+            "wf_keep": try Self.workflowDataResult(id: "wf_keep")
+        ]
+
+        self.cache.cache(workflowsList: .init(workflows: [
+            .init(id: "wf_keep", displayName: "Keep", offeringId: "default", prefetch: true)
+        ]))
+
+        let persisted = try XCTUnwrap(self.deviceCache.cachedWorkflowDetailsParameter)
+        expect(persisted.keys).to(contain("wf_keep"))
+        expect(persisted.keys).toNot(contain("wf_old"))
+    }
+
+    func testCacheWorkflowsListDoesNotRewriteDetailsWhenNothingPruned() throws {
+        self.deviceCache.stubbedCachedWorkflowDetails = [
+            "wf_keep": try Self.workflowDataResult(id: "wf_keep")
+        ]
+
+        self.cache.cache(workflowsList: .init(workflows: [
+            .init(id: "wf_keep", displayName: "Keep", offeringId: "default", prefetch: true)
+        ]))
+
+        // Nothing to prune, so the detail store is left untouched (no rewrite).
+        expect(self.deviceCache.cacheWorkflowDetailsCount) == 0
+    }
+
+    func testCacheWorkflowsListPruneIsNoOpWhenNoDetailsPersisted() {
+        self.deviceCache.stubbedCachedWorkflowDetails = nil
+        self.cache.cache(workflowsList: .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: true)
+        ]))
+        expect(self.deviceCache.cacheWorkflowDetailsCount) == 0
+    }
+
+    func testClearCacheClearsPersistedWorkflowDetails() {
+        self.cache.clearCache()
+        expect(self.deviceCache.clearWorkflowDetailsCacheCount) == 1
+    }
+
+    // MARK: - WorkflowDataResult Codable round-trip
+    // The disk cache encodes/decodes `WorkflowDataResult` as JSON, so it must round-trip losslessly,
+    // including the `AnyDecodable`-backed fields (metadata, config, param values).
+
+    func testWorkflowDataResultRoundTripsThroughCodable() throws {
+        let original = WorkflowDataResult(
+            workflow: try Self.richPublishedWorkflow(id: "wf_round_trip"),
+            enrolledVariants: ["experiment_a": "variant_b"]
+        )
+
+        let encoded = try JSONEncoder.default.encode(original)
+        let decoded = try JSONDecoder.default.decode(WorkflowDataResult.self, from: encoded)
+
+        expect(decoded) == original
+    }
+
+    func testWorkflowDataResultRoundTripsWithoutEnrolledVariants() throws {
+        let original = try Self.workflowDataResult(id: "wf_no_variants")
+
+        let encoded = try JSONEncoder.default.encode(original)
+        let decoded = try JSONDecoder.default.decode(WorkflowDataResult.self, from: encoded)
+
+        expect(decoded) == original
+        expect(decoded.enrolledVariants).to(beNil())
+    }
+
     // MARK: - Helpers
 
     private static func workflowDataResult(id: String) throws -> WorkflowDataResult {
@@ -234,6 +336,61 @@ class WorkflowsCacheTests: TestCase {
               "asset_base_url": "https://assets.revenuecat.com",
               "default_locale": "en_US",
               "components_localizations": {},
+              "components_config": {
+                "base": {
+                  "stack": {
+                    "type": "stack",
+                    "components": [],
+                    "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                    "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+                    "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                    "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+                  },
+                  "background": {
+                    "type": "color",
+                    "value": { "light": { "type": "hex", "value": "#FFFFFF" } }
+                  }
+                }
+              },
+              "offering_identifier": "default"
+            }
+          },
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {}
+          }
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+    }
+
+    /// Like ``publishedWorkflow(id:)`` but with the `AnyDecodable`-backed fields (`metadata`, step
+    /// `config`/`param_values`) populated with nested values, so the Codable round-trip exercises
+    /// `AnyDecodable` encoding rather than just empty dictionaries.
+    private static func richPublishedWorkflow(id: String) throws -> PublishedWorkflow {
+        let json = """
+        {
+          "id": "\(id)",
+          "display_name": "Test",
+          "initial_step_id": "step_1",
+          "metadata": { "source": "cdn", "version": 3, "flags": ["a", "b"] },
+          "steps": {
+            "step_1": {
+              "id": "step_1",
+              "type": "screen",
+              "screen_id": "screen_1",
+              "param_values": { "count": 2, "label": "hello", "nested": { "k": true } },
+              "metadata": { "note": "step-meta" }
+            }
+          },
+          "screens": {
+            "screen_1": {
+              "template_name": "tmpl",
+              "asset_base_url": "https://assets.revenuecat.com",
+              "default_locale": "en_US",
+              "components_localizations": {},
+              "config": { "theme": "dark", "scale": 1.5 },
               "components_config": {
                 "base": {
                   "stack": {

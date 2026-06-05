@@ -37,9 +37,17 @@ class WorkflowManager {
     /// Resolves a workflow, serving a fresh cached result without a backend round-trip when possible.
     /// On a cache miss (or stale entry) it fetches from the backend, caches the result, and warms up
     /// its assets before delivering it.
+    ///
+    /// When `persistDetail` is `true` (the prefetch path) a successful fetch is also persisted to
+    /// disk, so a later cold start with the backend down can restore and render it offline. Only the
+    /// prefetch path sets this: prefetched workflows are the curated, bounded set the backend marked
+    /// as mattering, so persisting all of them is safe. The on-demand path leaves it `false` to avoid
+    /// unbounded disk growth (a session can open many distinct paywalls); persisting those behind an
+    /// LRU cap is a planned follow-up.
     func getWorkflow(appUserID: String,
                      workflowId: String,
                      isAppBackgrounded: Bool,
+                     persistDetail: Bool = false,
                      completion: @escaping (Result<WorkflowDataResult, BackendError>) -> Void) {
         if let cached = self.workflowsCache.cachedWorkflow(workflowId: workflowId),
            !self.workflowsCache.isWorkflowCacheStale(workflowId: workflowId, isAppBackgrounded: isAppBackgrounded) {
@@ -56,6 +64,9 @@ class WorkflowManager {
             }
             if case let .success(dataResult) = result {
                 self.workflowsCache.cache(workflow: dataResult, workflowId: workflowId)
+                if persistDetail {
+                    self.workflowsCache.cache(workflowDetail: dataResult, workflowId: workflowId)
+                }
                 self.warmUpAssets(for: dataResult)
             }
             completion(result)
@@ -99,6 +110,11 @@ class WorkflowManager {
                 // a backend failure instead of returning nil. The entry stays stale so the next
                 // fetch still retries the backend.
                 self.workflowsCache.restoreWorkflowsListFromDisk()
+                // Restore the prefetched workflow details persisted on disk into the in-memory cache
+                // so a cold start with the backend down can still render them. They're restored fresh
+                // (like a normal fetch) so `getWorkflow` serves them offline; the refresh is driven by
+                // the list being restored stale above, which refetches once the backend is back.
+                self.restoreWorkflowDetailsFromDisk()
                 onComplete()
             }
         }
@@ -164,7 +180,8 @@ private extension WorkflowManager {
         for summary in prefetchWorkflows {
             self.getWorkflow(appUserID: appUserID,
                              workflowId: summary.id,
-                             isAppBackgrounded: isAppBackgrounded) { _ in
+                             isAppBackgrounded: isAppBackgrounded,
+                             persistDetail: true) { _ in
                 let left = remaining.modify { value -> Int in
                     value -= 1
                     return value
@@ -173,6 +190,16 @@ private extension WorkflowManager {
                     onComplete()
                 }
             }
+        }
+    }
+
+    /// Restores the prefetched workflow details persisted on disk into the in-memory cache, so a
+    /// later ``getWorkflow(appUserID:workflowId:isAppBackgrounded:persistDetail:completion:)`` is a
+    /// cache hit with no failed network call on the render path. No-op when nothing is persisted.
+    func restoreWorkflowDetailsFromDisk() {
+        guard let details = self.workflowsCache.cachedWorkflowDetailsFromDisk() else { return }
+        for (workflowId, result) in details {
+            self.workflowsCache.cache(workflow: result, workflowId: workflowId)
         }
     }
 

@@ -41,6 +41,10 @@ final class WorkflowsCache {
     private let cachedWorkflows: Atomic<[String: CachedWorkflow]> = .init([:])
     private let cachedList: Atomic<CachedList?> = .init(nil)
 
+    /// Serializes the read-modify-write of the on-disk workflow detail map so concurrent prefetch
+    /// persists (and a list-write prune) don't clobber each other.
+    private let detailsDiskLock = Lock()
+
     init(deviceCache: DeviceCache,
          dateProvider: DateProvider = DateProvider()) {
         self.deviceCache = deviceCache
@@ -66,6 +70,40 @@ final class WorkflowsCache {
         }
     }
 
+    // MARK: - Workflow detail disk cache
+
+    /// Persists `result` under `workflowId` in the on-disk detail map, merging with whatever is
+    /// already there. Called only from the prefetch path after a successful fetch, so a persisted
+    /// detail is always one we can render offline. Mirrors how ``cache(workflowsList:)`` writes the
+    /// list to disk.
+    func cache(workflowDetail result: WorkflowDataResult, workflowId: String) {
+        self.detailsDiskLock.perform {
+            var current = self.deviceCache.cachedWorkflowDetails() ?? [:]
+            current[workflowId] = result
+            self.deviceCache.cache(workflowDetails: current)
+        }
+    }
+
+    /// Reads the persisted detail map, or `nil` when nothing is cached or the payload can't be
+    /// parsed. Used to recover prefetched workflows after a backend failure, mirroring
+    /// ``cachedWorkflowsListResponseFromDisk()``.
+    func cachedWorkflowDetailsFromDisk() -> [String: WorkflowDataResult]? {
+        return self.deviceCache.cachedWorkflowDetails()
+    }
+
+    /// Drops persisted details whose workflowId is no longer in the latest list, so workflows the
+    /// backend stopped sending don't linger on disk. The persisted set always stays a subset of what
+    /// the latest list says exists. No-op (no rewrite) when nothing is pruned.
+    private func pruneWorkflowDetails(toListIds workflowIds: Set<String>) {
+        self.detailsDiskLock.perform {
+            guard let current = self.deviceCache.cachedWorkflowDetails() else { return }
+            let pruned = current.filter { workflowIds.contains($0.key) }
+            if pruned.count != current.count {
+                self.deviceCache.cache(workflowDetails: pruned)
+            }
+        }
+    }
+
     // MARK: - Workflows list cache
 
     func isWorkflowsListCacheStale(isAppBackgrounded: Bool) -> Bool {
@@ -75,12 +113,15 @@ final class WorkflowsCache {
         return self.isStale(lastUpdated: cached.lastUpdated, isAppBackgrounded: isAppBackgrounded)
     }
 
-    /// Caches the workflows list in memory and persists it to disk.
+    /// Caches the workflows list in memory and persists it to disk. Also prunes any persisted
+    /// workflow details whose workflowId is no longer in the latest list, keeping the on-disk detail
+    /// store bounded by what the backend currently says exists.
     func cache(workflowsList response: WorkflowsListResponse) {
         self.cachedList.value = CachedList(response: response,
                                            offeringIdToWorkflowId: Self.offeringIdToWorkflowId(from: response),
                                            lastUpdated: self.dateProvider.now())
         self.deviceCache.cache(workflowsListResponse: response)
+        self.pruneWorkflowDetails(toListIds: Set(response.workflows.map { $0.id }))
     }
 
     /// Reads the last persisted workflows list, or `nil` when nothing is cached or the payload
@@ -126,6 +167,7 @@ final class WorkflowsCache {
         self.cachedWorkflows.value = [:]
         self.cachedList.value = nil
         self.deviceCache.clearWorkflowsListResponseCache()
+        self.deviceCache.clearWorkflowDetailsCache()
     }
 
     private func isStale(lastUpdated: Date, isAppBackgrounded: Bool) -> Bool {
