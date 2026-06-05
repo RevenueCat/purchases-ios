@@ -120,14 +120,12 @@ public class PaywallViewController: UIViewController {
 
     // MARK: - Testing Hooks
 
-    /// Override in tests to simulate workflows being enabled without a scheme launch argument.
-    var workflowsEndpointEnabled: Bool { ProcessInfo.processInfo.workflowsEndpointEnabled }
+    /// Settable in tests to simulate workflows being enabled without a scheme launch argument.
+    var workflowsEndpointEnabled: Bool = ProcessInfo.processInfo.workflowsEndpointEnabled
 
-    @_spi(Internal)
-    public var exitOfferOfferingForTesting: Offering? { self.exitOfferOffering }
+    var exitOfferOfferingForTesting: Offering? { self.exitOfferOffering }
 
-    @_spi(Internal)
-    public func simulateWorkflowExitOfferUpdate(_ offering: Offering?) {
+    func simulateWorkflowExitOfferUpdate(_ offering: Offering?) {
         self.updateWorkflowExitOffer(offering)
     }
 

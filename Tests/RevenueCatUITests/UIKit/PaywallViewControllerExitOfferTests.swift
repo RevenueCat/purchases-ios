@@ -12,7 +12,7 @@
 
 import Nimble
 @_spi(Internal) @testable import RevenueCat
-@_spi(Internal) @testable import RevenueCatUI
+@testable import RevenueCatUI
 import XCTest
 
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
@@ -20,16 +20,11 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 final class PaywallViewControllerExitOfferTests: TestCase {
 
-    // Subclass that forces workflowsEndpointEnabled = true without a scheme launch argument.
-    private final class WorkflowPaywallViewController: PaywallViewController {
-        override var workflowsEndpointEnabled: Bool { true }
-    }
-
     func testUpdateDisplayCloseButtonDoesNotClearWorkflowExitOffer() {
-        let offering = Self.makeOffering(identifier: "main_offering")
-        let controller = WorkflowPaywallViewController(offering: offering)
+        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
+        controller.workflowsEndpointEnabled = true
 
-        controller.simulateWorkflowExitOfferUpdate(Self.makeOffering(identifier: "exit_offering"))
+        controller.simulateWorkflowExitOfferUpdate(Self.makeOffering(identifier: "exit"))
         expect(controller.exitOfferOfferingForTesting).notTo(beNil(), description: "precondition")
 
         controller.update(with: true) // displayCloseButton — non-content mutation
@@ -41,10 +36,10 @@ final class PaywallViewControllerExitOfferTests: TestCase {
     }
 
     func testUpdateFontDoesNotClearWorkflowExitOffer() {
-        let offering = Self.makeOffering(identifier: "main_offering")
-        let controller = WorkflowPaywallViewController(offering: offering)
+        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
+        controller.workflowsEndpointEnabled = true
 
-        controller.simulateWorkflowExitOfferUpdate(Self.makeOffering(identifier: "exit_offering"))
+        controller.simulateWorkflowExitOfferUpdate(Self.makeOffering(identifier: "exit"))
         expect(controller.exitOfferOfferingForTesting).notTo(beNil(), description: "precondition")
 
         controller.updateFont(with: "Papyrus")
@@ -58,9 +53,10 @@ final class PaywallViewControllerExitOfferTests: TestCase {
     func testUpdateOfferingClearsWorkflowExitOffer() {
         // Replacing the offering is a legitimate reason to drop the previous exit offer —
         // the new paywall will re-emit one.
-        let controller = WorkflowPaywallViewController(offering: Self.makeOffering(identifier: "original"))
+        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "original"))
+        controller.workflowsEndpointEnabled = true
 
-        controller.simulateWorkflowExitOfferUpdate(Self.makeOffering(identifier: "exit_offering"))
+        controller.simulateWorkflowExitOfferUpdate(Self.makeOffering(identifier: "exit"))
         expect(controller.exitOfferOfferingForTesting).notTo(beNil(), description: "precondition")
 
         controller.update(with: Self.makeOffering(identifier: "replacement"))
