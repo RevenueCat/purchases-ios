@@ -19,23 +19,42 @@ extension Purchases {
     /// to a known offering and published paywall. If successful, this method returns `true` and
     /// attempts to present that paywall for previewing.
     ///
-    /// The `window` parameter is optional. If omitted, the SDK will attempt to locate a suitable
-    /// foreground and key window for presentation. If no window can be found (for example,
-    /// the app is backgrounded), a warning is logged and the paywall is not shown.
+    /// The `viewController` parameter may be `nil`. If omitted, the SDK will attempt to locate a suitable
+    /// view controller for presentation. If none can be found (for example, the app is backgrounded),
+    /// a warning is logged and the paywall is not shown.
+    ///
+    /// Use this method when handling a request for your app to open a `URL`. For example:
+    ///
+    /// ```swift
+    /// func myAppHandleOpenURL(_ url: URL) async {
+    ///   // see if this is a WebRedemptionToken:
+    ///   if let purchaseRedemption = Purchases.parseAsWebPurchaseRedemption(url) {
+    ///     await Purchases.shared.redeemWebPurchase(purchaseRedemption)
+    ///     return
+    ///   }
+    ///
+    ///   if Purchases.shared.presentPaywall(from: url) == true {
+    ///     // A paywall will be presented from an appropriate window
+    ///     return
+    ///   }
+    ///
+    ///   // continue with typical URL handling
+    /// }
+    /// ```
     ///
     /// - Parameters:
     ///   - url: The `URL` received by your application
-    ///   - window: The window to present the paywall from. In unspecified (the default),
-    ///   a suitable window will be chosen automatically.
+    ///   - viewController: The view controller to present the paywall from. In unspecified (the default),
+    ///   a suitable view controller will be chosen automatically.
     /// - Returns: `true` if the URL is a valid rc-paywall-preview URL and handling has begun; `false` otherwise.
     @available(iOS 15.0, macOS 12.0, *)
     @MainActor
-    @objc public func presentPaywall(from url: URL, window: UIWindow? = nil) -> Bool {
+    @objc public func presentPaywall(from url: URL, viewController: UIViewController?) -> Bool {
 
         // create the paywall view controller and show it off the provided window (if available)
         // otherwise, look for the key window of the .foregroundActive scene,
         // falling back to other scenes/windows if necessary
-        var presentationContext = window?.rootViewController
+        var presentationContext = viewController
 
         if presentationContext == nil {
             presentationContext = UIApplication.shared
@@ -51,6 +70,122 @@ extension Purchases {
         return PreviewPaywallPresenter().handle(locateOffering: {
             return try await self.offerings().offering(identifier: $0)
         }, url: url, viewController: presentationContext)
+    }
+
+    /// Attempts to present a paywall from a Preview Paywall deep link.
+    ///
+    /// This method parses the provided `URL` and attempts to extract information that correlates
+    /// to a known offering and published paywall. If successful, this method returns `true` and
+    /// attempts to present that paywall for previewing.
+    ///
+    /// The `window` parameter is optional. If omitted, the SDK will attempt to locate a suitable
+    /// foreground and key window for presentation. If no window can be found (for example,
+    /// the app is backgrounded), a warning is logged and the paywall is not shown.
+    ///
+    /// Use this method when handling a request for your app to open a `URL`. For example:
+    ///
+    /// ```swift
+    /// func myAppHandleOpenURL(_ url: URL) async {
+    ///   // see if this is a WebRedemptionToken:
+    ///   if let purchaseRedemption = Purchases.parseAsWebPurchaseRedemption(url) {
+    ///     await Purchases.shared.redeemWebPurchase(purchaseRedemption)
+    ///     return
+    ///   }
+    ///
+    ///   if Purchases.shared.presentPaywall(from: url) == true {
+    ///     // A paywall will be presented from an appropriate window
+    ///     return
+    ///   }
+    ///
+    ///   // continue with typical URL handling
+    /// }
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - url: The `URL` received by your application
+    ///   - window: The window to present the paywall from. In unspecified,
+    ///   a suitable window will be chosen automatically.
+    /// - Returns: `true` if the URL is a valid rc-paywall-preview URL and handling has begun; `false` otherwise.
+    @available(iOS 15.0, macOS 12.0, *)
+    @MainActor
+    @objc public func presentPaywall(from url: URL, window: UIWindow?) -> Bool {
+        return self.presentPaywall(from: url, viewController: window?.rootViewController)
+    }
+
+    /// Attempts to present a paywall from a Preview Paywall deep link.
+    ///
+    /// This method parses the provided `URL` and attempts to extract information that correlates
+    /// to a known offering and published paywall. If successful, this method returns `true` and
+    /// attempts to present that paywall for previewing.
+    ///
+    /// The `window` parameter is optional. If omitted, the SDK will attempt to locate a suitable
+    /// foreground and key window for presentation. If no window can be found (for example,
+    /// the app is backgrounded), a warning is logged and the paywall is not shown.
+    ///
+    /// Use this method when handling a request for your app to open a `URL`. For example:
+    ///
+    /// ```swift
+    /// func myAppHandleOpenURL(_ url: URL) async {
+    ///   // see if this is a WebRedemptionToken:
+    ///   if let purchaseRedemption = Purchases.parseAsWebPurchaseRedemption(url) {
+    ///     await Purchases.shared.redeemWebPurchase(purchaseRedemption)
+    ///     return
+    ///   }
+    ///
+    ///   if Purchases.shared.presentPaywall(from: url) == true {
+    ///     // A paywall will be presented from an appropriate window
+    ///     return
+    ///   }
+    ///
+    ///   // continue with typical URL handling
+    /// }
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - url: The `URL` received by your application
+    ///   - window: The window to present the paywall from. In unspecified,
+    ///   a suitable window will be chosen automatically.
+    /// - Returns: `true` if the URL is a valid rc-paywall-preview URL and handling has begun; `false` otherwise.
+    @available(iOS 15.0, macOS 12.0, *)
+    @MainActor
+    @objc public func presentPaywall(from url: URL, scene: UIWindowScene?) -> Bool {
+        return self.presentPaywall(from: url, window: scene?.keyWindow)
+    }
+
+    /// Attempts to present a paywall from a Preview Paywall deep link.
+    ///
+    /// This method parses the provided `URL` and attempts to extract information that correlates
+    /// to a known offering and published paywall. If successful, this method returns `true` and
+    /// attempts to present that paywall for previewing, by locating a suitable foreground and key
+    /// window for presentation. If no window can be found (for example, the app is backgrounded),
+    /// a warning is logged and the paywall is not shown.
+    ///
+    /// Use this method when handling a request for your app to open a `URL`. For example:
+    ///
+    /// ```swift
+    /// func myAppHandleOpenURL(_ url: URL) async {
+    ///   // see if this is a WebRedemptionToken:
+    ///   if let purchaseRedemption = Purchases.parseAsWebPurchaseRedemption(url) {
+    ///     await Purchases.shared.redeemWebPurchase(purchaseRedemption)
+    ///     return
+    ///   }
+    ///
+    ///   if Purchases.shared.presentPaywall(from: url) == true {
+    ///     // A paywall will be presented from an appropriate window
+    ///     return
+    ///   }
+    ///
+    ///   // continue with typical URL handling
+    /// }
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - url: The `URL` received by your application
+    /// - Returns: `true` if the URL is a valid rc-paywall-preview URL and handling has begun; `false` otherwise.
+    @available(iOS 15.0, macOS 12.0, *)
+    @MainActor
+    @objc public func presentPaywall(from url: URL) -> Bool {
+        return self.presentPaywall(from: url, viewController: nil)
     }
 
 }

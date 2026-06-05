@@ -15,9 +15,12 @@ import UIKit
 
 @available(iOS 15.0, macOS 12.0, *)
 @MainActor
-private func checkPurchasesPaywallPreviewDeepLinkHandler(_ url: URL, _ window: UIWindow?) {
+private func checkPurchasesPaywallPreview(_ url: URL) {
 
-    let _: Bool = Purchases.shared.presentPaywall(from: url, window: window)
+    let _: Bool = Purchases.shared.presentPaywall(from: url)
+    let _: Bool = Purchases.shared.presentPaywall(from: url, viewController: UIViewController?.none)
+    let _: Bool = Purchases.shared.presentPaywall(from: url, window: UIWindow?.none)
+    let _: Bool = Purchases.shared.presentPaywall(from: url, scene: UIWindowScene?.none)
 
 }
 #endif
