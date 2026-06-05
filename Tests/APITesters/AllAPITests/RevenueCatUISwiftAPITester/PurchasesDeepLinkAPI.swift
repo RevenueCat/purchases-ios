@@ -14,6 +14,7 @@ import RevenueCatUI
 import UIKit
 
 @available(iOS 15.0, macOS 12.0, *)
+@MainActor
 private func checkPurchasesPaywallPreviewDeepLinkHandler(_ url: URL, _ window: UIWindow?) {
 
     let _: Bool = Purchases.shared.presentPaywall(from: url, window: window)

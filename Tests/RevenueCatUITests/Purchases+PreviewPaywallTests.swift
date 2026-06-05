@@ -12,6 +12,8 @@ import RevenueCat
 import SwiftUI
 import XCTest
 
+#if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+
 @available(iOS 15.0, macOS 12.0, *)
 class PreviewPaywallTests: TestCase {
 
@@ -166,3 +168,5 @@ private class MockViewController: UIViewController {
     }
 
 }
+
+#endif
