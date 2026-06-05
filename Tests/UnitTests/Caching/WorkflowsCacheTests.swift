@@ -167,6 +167,25 @@ class WorkflowsCacheTests: TestCase {
         expect(self.cache.workflowId(forOfferingId: "default")).to(beNil())
     }
 
+    func testForceWorkflowsListCacheStaleMarksStaleButKeepsWorkflowIdLookup() {
+        self.cache.cache(workflowsList: .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ]))
+        expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == false
+
+        self.cache.forceWorkflowsListCacheStale()
+
+        // Stale (so the next fetch refetches) but the map still resolves until then.
+        expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == true
+        expect(self.cache.workflowId(forOfferingId: "default")) == "wf_1"
+    }
+
+    func testForceWorkflowsListCacheStaleIsNoOpWhenNothingCached() {
+        self.cache.forceWorkflowsListCacheStale()
+        expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == true
+        expect(self.cache.workflowId(forOfferingId: "default")).to(beNil())
+    }
+
     // MARK: - Disk persistence
 
     func testCacheWorkflowsListForwardsResponseToDeviceCache() {

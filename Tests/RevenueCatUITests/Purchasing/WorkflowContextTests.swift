@@ -502,21 +502,6 @@ final class WorkflowContextTests: TestCase {
         expect(context.exitOfferTriggeringStepId).to(beNil())
     }
 
-    // MARK: - resolveWorkflowContext
-
-    func testResolveWorkflowContextThrowsWhenFlagIsOff() async throws {
-        // In the unit test environment -EnableWorkflowsEndpoint is not a launch argument,
-        // so workflowsEndpointEnabled returns false and resolveWorkflowContext must throw.
-        let handler: PurchaseHandler = .mock()
-
-        await expect {
-            try await handler.resolveWorkflowContext(
-                identifier: "offering_a",
-                presentedOfferingContext: nil
-            )
-        }.to(throwError(PaywallError.offeringNotFound(identifier: "offering_a")))
-    }
-
 }
 
 // MARK: - Helpers

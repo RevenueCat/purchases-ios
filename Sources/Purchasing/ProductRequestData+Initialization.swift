@@ -29,12 +29,27 @@ extension ProductRequestData {
         let subscriptionGroup = Self.extractSubscriptionGroup(for: product)
         let discounts = Self.extractDiscounts(for: product)
 
+        let price: Decimal
+        if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *),
+           let installmentsInfo = product.installmentsInfo {
+            switch installmentsInfo.billingPlanType {
+            case .monthly:
+                price = installmentsInfo.installmentBillingPrice
+            case .upFront:
+                price = product.price
+            default:
+                price = product.price
+            }
+        } else {
+            price = product.price
+        }
+
         self.init(
-            productIdentifier: product.productIdentifier,
+            productIdentifier: product.id,
             paymentMode: paymentMode,
             currencyCode: product.priceFormatter?.currencyCode,
             storeCountry: storeCountry,
-            price: product.price as Decimal,
+            price: price,
             normalDuration: normalDuration,
             introDuration: introDuration,
             introDurationType: introDurationType,

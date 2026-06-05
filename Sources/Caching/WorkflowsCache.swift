@@ -84,9 +84,34 @@ final class WorkflowsCache {
     }
 
     /// Reads the last persisted workflows list, or `nil` when nothing is cached or the payload
-    /// can't be parsed. Used to recover the list after a backend failure.
+    /// can't be parsed.
     func cachedWorkflowsListResponseFromDisk() -> WorkflowsListResponse? {
         return self.deviceCache.cachedWorkflowsListResponse()
+    }
+
+    /// Restores the in-memory `offeringId → workflowId` map from the last list persisted on disk,
+    /// keeping the entry stale so the next fetch still hits the backend. Used to recover after a
+    /// backend failure: it keeps ``workflowId(forOfferingId:)`` resolving previously-fetched data
+    /// without suppressing the next refresh, mirroring how the offerings cache serves its disk copy
+    /// while staying stale. No-op when nothing is persisted, and the on-disk copy is left untouched.
+    func restoreWorkflowsListFromDisk() {
+        guard let response = self.cachedWorkflowsListResponseFromDisk() else { return }
+        self.cachedList.value = CachedList(response: response,
+                                           offeringIdToWorkflowId: Self.offeringIdToWorkflowId(from: response),
+                                           lastUpdated: .distantPast)
+    }
+
+    /// Marks the in-memory workflows list stale so the next ``isWorkflowsListCacheStale(isAppBackgrounded:)``
+    /// returns `true` and triggers a refetch, while ``workflowId(forOfferingId:)`` keeps resolving the
+    /// current map until then. Used to refresh the list alongside a network offerings refresh. No-op
+    /// when nothing is cached; the on-disk copy is left untouched.
+    func forceWorkflowsListCacheStale() {
+        self.cachedList.modify { cached in
+            guard let current = cached else { return }
+            cached = CachedList(response: current.response,
+                                offeringIdToWorkflowId: current.offeringIdToWorkflowId,
+                                lastUpdated: .distantPast)
+        }
     }
 
     /// Resolves the workflow id for an offering from the in-memory list, or `nil` when the list

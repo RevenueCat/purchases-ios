@@ -404,6 +404,8 @@ private extension BaseCustomerInfoResponseHandlerTests {
 
     static let purchasedProduct: PurchasedSK2Product = .init(
         productIdentifier: "product",
+        id: "product",
+        productPlanIdentifier: nil,
         subscription: .init(purchaseDate: Date()),
         entitlement: .init(productIdentifier: "entitlement", rawData: [:])
     )
