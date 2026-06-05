@@ -35,19 +35,12 @@ class WorkflowManager {
     }
 
     /// Resolves a workflow, serving a fresh cached result without a backend round-trip when possible.
-    /// On a cache miss (or stale entry) it fetches from the backend, caches the result, and warms up
-    /// its assets before delivering it.
-    ///
-    /// When `persistDetail` is `true` (the prefetch path) a successful fetch is also persisted to
-    /// disk, so a later cold start with the backend down can restore and render it offline. Only the
-    /// prefetch path sets this: prefetched workflows are the curated, bounded set the backend marked
-    /// as mattering, so persisting all of them is safe. The on-demand path leaves it `false` to avoid
-    /// unbounded disk growth (a session can open many distinct paywalls); persisting those behind an
-    /// LRU cap is a planned follow-up.
+    /// On a cache miss (or stale entry) it fetches from the backend, caches the result in memory, and
+    /// warms up its assets before delivering it. Disk persistence of prefetched details is handled by
+    /// ``prefetchWorkflows(_:appUserID:isAppBackgrounded:onComplete:)``, not here.
     func getWorkflow(appUserID: String,
                      workflowId: String,
                      isAppBackgrounded: Bool,
-                     persistDetail: Bool = false,
                      completion: @escaping (Result<WorkflowDataResult, BackendError>) -> Void) {
         if let cached = self.workflowsCache.cachedWorkflow(workflowId: workflowId),
            !self.workflowsCache.isWorkflowCacheStale(workflowId: workflowId, isAppBackgrounded: isAppBackgrounded) {
@@ -64,9 +57,6 @@ class WorkflowManager {
             }
             if case let .success(dataResult) = result {
                 self.workflowsCache.cache(workflow: dataResult, workflowId: workflowId)
-                if persistDetail {
-                    self.workflowsCache.cache(workflowDetail: dataResult, workflowId: workflowId)
-                }
                 self.warmUpAssets(for: dataResult)
             }
             completion(result)
@@ -114,7 +104,7 @@ class WorkflowManager {
                 // so a cold start with the backend down can still render them. They're restored fresh
                 // (like a normal fetch) so `getWorkflow` serves them offline; the refresh is driven by
                 // the list being restored stale above, which refetches once the backend is back.
-                self.restoreWorkflowDetailsFromDisk()
+                self.workflowsCache.restoreWorkflowDetailsFromDisk()
                 onComplete()
             }
         }
@@ -164,6 +154,14 @@ private extension WorkflowManager {
     /// `onComplete` once every prefetch finishes (success or failure). Workflows without an
     /// `offeringId` can't be resolved via ``cachedWorkflowId(forOfferingId:)``, so they're skipped.
     /// When there is nothing to prefetch, `onComplete` fires right away.
+    ///
+    /// Successful results are accumulated and persisted to disk in a single batch once the last
+    /// prefetch lands, so a later cold start with the backend down can restore and render them
+    /// offline. Only prefetched workflows are persisted: they're the curated, bounded set the backend
+    /// marked as mattering, so persisting all of them is safe. On-demand fetches are not persisted, to
+    /// avoid unbounded disk growth (a session can open many distinct paywalls); persisting those
+    /// behind an LRU cap is a planned follow-up. The disk generation captured before fetching guards
+    /// the write against an identity change mid-prefetch.
     func prefetchWorkflows(_ workflows: [WorkflowSummary],
                            appUserID: String,
                            isAppBackgrounded: Bool,
@@ -174,32 +172,27 @@ private extension WorkflowManager {
             return
         }
 
-        // Lock-guarded counter so `onComplete` fires exactly once, after the last prefetch lands,
-        // regardless of which thread each completion arrives on.
+        let generation = self.workflowsCache.currentDiskGeneration()
+        // Lock-guarded counter so the batch persist + `onComplete` fire exactly once, after the last
+        // prefetch lands, regardless of which thread each completion arrives on.
         let remaining: Atomic<Int> = .init(prefetchWorkflows.count)
+        let resolved: Atomic<[String: WorkflowDataResult]> = .init([:])
         for summary in prefetchWorkflows {
             self.getWorkflow(appUserID: appUserID,
                              workflowId: summary.id,
-                             isAppBackgrounded: isAppBackgrounded,
-                             persistDetail: true) { _ in
+                             isAppBackgrounded: isAppBackgrounded) { result in
+                if case let .success(dataResult) = result {
+                    resolved.modify { $0[summary.id] = dataResult }
+                }
                 let left = remaining.modify { value -> Int in
                     value -= 1
                     return value
                 }
                 if left == 0 {
+                    self.workflowsCache.persistWorkflowDetailsToDisk(resolved.value, ifGeneration: generation)
                     onComplete()
                 }
             }
-        }
-    }
-
-    /// Restores the prefetched workflow details persisted on disk into the in-memory cache, so a
-    /// later ``getWorkflow(appUserID:workflowId:isAppBackgrounded:persistDetail:completion:)`` is a
-    /// cache hit with no failed network call on the render path. No-op when nothing is persisted.
-    func restoreWorkflowDetailsFromDisk() {
-        guard let details = self.workflowsCache.cachedWorkflowDetailsFromDisk() else { return }
-        for (workflowId, result) in details {
-            self.workflowsCache.cache(workflow: result, workflowId: workflowId)
         }
     }
 

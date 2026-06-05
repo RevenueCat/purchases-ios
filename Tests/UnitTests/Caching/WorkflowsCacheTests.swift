@@ -213,22 +213,38 @@ class WorkflowsCacheTests: TestCase {
         expect(self.cache.cachedWorkflowsListResponseFromDisk()).to(beNil())
     }
 
+    // MARK: - Batched in-memory cache
+
+    func testCacheWorkflowsBatchStoresEachEntryRetrievable() throws {
+        let first = try Self.workflowDataResult(id: "wf_1")
+        let second = try Self.workflowDataResult(id: "wf_2")
+
+        self.cache.cache(workflows: ["wf_1": first, "wf_2": second])
+
+        expect(self.cache.cachedWorkflow(workflowId: "wf_1")) == first
+        expect(self.cache.cachedWorkflow(workflowId: "wf_2")) == second
+        expect(self.cache.isWorkflowCacheStale(workflowId: "wf_1", isAppBackgrounded: false)) == false
+        expect(self.cache.isWorkflowCacheStale(workflowId: "wf_2", isAppBackgrounded: false)) == false
+    }
+
     // MARK: - Workflow detail disk persistence
 
-    func testCacheWorkflowDetailPersistsKeyedByWorkflowId() throws {
+    func testPersistWorkflowDetailsToDiskPersistsKeyedByWorkflowId() throws {
         let result = try Self.workflowDataResult(id: "wf_1")
-        self.cache.cache(workflowDetail: result, workflowId: "wf_1")
+        self.cache.persistWorkflowDetailsToDisk(["wf_1": result],
+                                                ifGeneration: self.cache.currentDiskGeneration())
 
         expect(self.deviceCache.cacheWorkflowDetailsCount) == 1
         expect(self.deviceCache.cachedWorkflowDetailsParameter?["wf_1"]) == result
     }
 
-    func testCacheWorkflowDetailMergesIntoExistingPersisted() throws {
+    func testPersistWorkflowDetailsToDiskMergesIntoExistingPersisted() throws {
         let existing = try Self.workflowDataResult(id: "wf_existing")
         self.deviceCache.stubbedCachedWorkflowDetails = ["wf_existing": existing]
 
         let new = try Self.workflowDataResult(id: "wf_new")
-        self.cache.cache(workflowDetail: new, workflowId: "wf_new")
+        self.cache.persistWorkflowDetailsToDisk(["wf_new": new],
+                                                ifGeneration: self.cache.currentDiskGeneration())
 
         let persisted = try XCTUnwrap(self.deviceCache.cachedWorkflowDetailsParameter)
         expect(persisted.keys).to(contain("wf_existing", "wf_new"))
@@ -236,16 +252,50 @@ class WorkflowsCacheTests: TestCase {
         expect(persisted["wf_new"]) == new
     }
 
-    func testCachedWorkflowDetailsFromDiskReturnsPersisted() throws {
+    func testPersistWorkflowDetailsToDiskIsNoOpForEmptyBatch() {
+        self.cache.persistWorkflowDetailsToDisk([:], ifGeneration: self.cache.currentDiskGeneration())
+        expect(self.deviceCache.cacheWorkflowDetailsCount) == 0
+    }
+
+    func testPersistWorkflowDetailsToDiskIsDroppedWhenGenerationChanged() throws {
+        // A prefetch captures the generation, then an identity change clears the cache (bumping it),
+        // then the prefetch's batch write lands: it must be dropped rather than reviving the old data.
+        let staleGeneration = self.cache.currentDiskGeneration()
+        self.cache.clearCache()
+
+        self.cache.persistWorkflowDetailsToDisk(["wf_1": try Self.workflowDataResult(id: "wf_1")],
+                                                ifGeneration: staleGeneration)
+
+        expect(self.deviceCache.cacheWorkflowDetailsCount) == 0
+        expect(self.deviceCache.cachedWorkflowDetailsParameter).to(beNil())
+    }
+
+    func testPersistWorkflowDetailsToDiskWritesWithCurrentGenerationAfterClear() throws {
+        self.cache.clearCache()
+        // A fresh prefetch (post-clear) captures the new generation and persists normally.
+        self.cache.persistWorkflowDetailsToDisk(["wf_1": try Self.workflowDataResult(id: "wf_1")],
+                                                ifGeneration: self.cache.currentDiskGeneration())
+
+        expect(self.deviceCache.cachedWorkflowDetailsParameter?["wf_1"]).toNot(beNil())
+    }
+
+    // MARK: - Restore from disk
+
+    func testRestoreWorkflowDetailsFromDiskRestoresFreshIntoMemory() throws {
         let result = try Self.workflowDataResult(id: "wf_1")
         self.deviceCache.stubbedCachedWorkflowDetails = ["wf_1": result]
 
-        expect(self.cache.cachedWorkflowDetailsFromDisk()?["wf_1"]) == result
+        self.cache.restoreWorkflowDetailsFromDisk()
+
+        expect(self.cache.cachedWorkflow(workflowId: "wf_1")) == result
+        // Restored fresh, so it is served offline without a refetch.
+        expect(self.cache.isWorkflowCacheStale(workflowId: "wf_1", isAppBackgrounded: false)) == false
     }
 
-    func testCachedWorkflowDetailsFromDiskReturnsNilWhenNothingCached() {
+    func testRestoreWorkflowDetailsFromDiskIsNoOpWhenNothingPersisted() {
         self.deviceCache.stubbedCachedWorkflowDetails = nil
-        expect(self.cache.cachedWorkflowDetailsFromDisk()).to(beNil())
+        self.cache.restoreWorkflowDetailsFromDisk()
+        expect(self.cache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
     }
 
     func testCacheWorkflowsListPrunesDetailsNotInNewList() throws {
