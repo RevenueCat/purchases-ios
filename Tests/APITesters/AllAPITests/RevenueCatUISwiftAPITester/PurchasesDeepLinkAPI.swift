@@ -9,6 +9,8 @@
 import Foundation
 import RevenueCat
 import RevenueCatUI
+
+#if os(iOS)
 import UIKit
 
 @available(iOS 15.0, macOS 12.0, *)
@@ -17,3 +19,4 @@ private func checkPurchasesPaywallPreviewDeepLinkHandler(_ url: URL, _ window: U
     let _: Bool = Purchases.shared.presentPaywall(from: url, window: window)
 
 }
+#endif

@@ -159,7 +159,7 @@ private class MockViewController: UIViewController {
         fatalError()
     }
 
-    override func show(_ viewController: UIViewController, sender: Any?) {
+    override func present(_ viewControllerToPresent: UIViewController, animated flag: Bool, completion: (() -> Void)? = nil) {
         present()
     }
 
