@@ -265,13 +265,15 @@ private extension OfferingsManager {
 
         self.fetchProducts(withIdentifiers: productIdentifiers, fromResponse: contents.response) { result in
             let products = result.value ?? []
+            let apiKeyValidationResult = self.systemInfo.apiKeyValidationResult
 
             guard products.isEmpty == false else {
                 // Check if empty products is likely caused by https://github.com/RevenueCat/purchases-ios/issues/4954
                 // There is a widely reported bug in the iOS 18.4 Simulator affecting some HTTP requests
                 let showSimulatorWarning = self.systemInfo.isSubjectToKnownIssue_18_4_sim()
                 completion(.failure(Self.createErrorForEmptyResult(result.error,
-                                                                   showSimulatorWarning: showSimulatorWarning)))
+                                                                   showSimulatorWarning: showSimulatorWarning,
+                                                                   apiKeyValidationResult: apiKeyValidationResult)))
                 return
             }
 
@@ -283,18 +285,23 @@ private extension OfferingsManager {
                 switch fetchPolicy {
                 case .ignoreNotFoundProducts:
                     Logger.appleWarning(
-                        Strings.offering.cannot_find_product_configuration_error(identifiers: missingProductIDs)
+                        Strings.offering.cannot_find_product_configuration_error(
+                            identifiers: missingProductIDs,
+                            apiKeyValidationResult: apiKeyValidationResult)
                     )
 
                 case .failIfProductsAreMissing:
-                    completion(.failure(.missingProducts(identifiers: missingProductIDs)))
+                    completion(.failure(.missingProducts(identifiers: missingProductIDs,
+                                                         apiKeyValidationResult: apiKeyValidationResult)))
                     return
                 }
             }
 
-            if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID,
-                                                                            contents: contents,
-                                                                            loadedFromDiskCache: loadedFromDiskCache) {
+            if let createdOfferings = self.offeringsFactory.createOfferings(
+                from: productsByID,
+                contents: contents,
+                loadedFromDiskCache: loadedFromDiskCache
+            ) {
                 completion(.success(OfferingsResultData(offerings: createdOfferings,
                                                         requestedProductIds: productIdentifiers,
                                                         notFoundProductIds: missingProductIDs)))
@@ -335,17 +342,28 @@ private extension OfferingsManager {
         }
     }
 
-    private static func createErrorForEmptyResult(_ error: PurchasesError?,
-                                                  showSimulatorWarning: Bool = false) -> OfferingsManager.Error {
+    private static func createErrorForEmptyResult(
+        _ error: PurchasesError?,
+        showSimulatorWarning: Bool = false,
+        apiKeyValidationResult: Configuration.APIKeyValidationResult
+    ) -> OfferingsManager.Error {
         if let purchasesError = error,
            case ErrorCode.productRequestTimedOut = purchasesError.error {
             return .timeout(purchasesError)
         } else if showSimulatorWarning {
-            return .configurationError(Strings.offering.known_issue_ios_18_4_simulator_products_not_found.description,
-                                       underlyingError: error?.asPublicError)
+            return .configurationError(
+                Strings.offering.known_issue_ios_18_4_simulator_products_not_found(
+                    apiKeyValidationResult: apiKeyValidationResult
+                ).description,
+                underlyingError: error?.asPublicError
+            )
         } else {
-            return .configurationError(Strings.offering.configuration_error_products_not_found.description,
-                                       underlyingError: error?.asPublicError)
+            return .configurationError(
+                Strings.offering.configuration_error_products_not_found(
+                    apiKeyValidationResult: apiKeyValidationResult
+                ).description,
+                underlyingError: error?.asPublicError
+            )
         }
     }
 
@@ -541,7 +559,9 @@ extension OfferingsManager {
         case configurationError(String, PublicError?, ErrorSource)
         case timeout(PurchasesError)
         case noOfferingsFound(ErrorSource)
-        case missingProducts(identifiers: Set<String>, ErrorSource)
+        case missingProducts(identifiers: Set<String>,
+                             apiKeyValidationResult: Configuration.APIKeyValidationResult,
+                             ErrorSource)
 
     }
 
@@ -569,9 +589,12 @@ extension OfferingsManager.Error: PurchasesErrorConvertible {
                                                              functionName: source.function,
                                                              line: source.line)
 
-        case let .missingProducts(identifiers, source):
+        case let .missingProducts(identifiers, apiKeyValidationResult, source):
             return ErrorUtils.configurationError(
-                message: Strings.offering.cannot_find_product_configuration_error(identifiers: identifiers).description,
+                message: Strings.offering.cannot_find_product_configuration_error(
+                    identifiers: identifiers,
+                    apiKeyValidationResult: apiKeyValidationResult
+                ).description,
                 fileName: source.file,
                 functionName: source.function,
                 line: source.line
@@ -599,11 +622,14 @@ extension OfferingsManager.Error: PurchasesErrorConvertible {
 
     static func missingProducts(
         identifiers: Set<String>,
+        apiKeyValidationResult: Configuration.APIKeyValidationResult,
         file: String = #fileID,
         function: String = #function,
         line: UInt = #line
     ) -> Self {
-        return .missingProducts(identifiers: identifiers, .init(file: file, function: function, line: line))
+        return .missingProducts(identifiers: identifiers,
+                                apiKeyValidationResult: apiKeyValidationResult,
+                                .init(file: file, function: function, line: line))
     }
 
 }

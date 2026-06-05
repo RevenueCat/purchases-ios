@@ -979,6 +979,11 @@
 		75A4EBF12EAB9A27007C71C1 /* PurchasesFallbackURLBackendIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A4EBF02EAB9A27007C71C1 /* PurchasesFallbackURLBackendIntegrationTests.swift */; };
 		75A9F25C2E38DE57005D1AB1 /* GetWebBillingProductsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A9F25B2E38DE57005D1AB1 /* GetWebBillingProductsOperation.swift */; };
 		75ABFDB52D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75ABFDB42D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift */; };
+		FE5151005A0000000000A001 /* CustomerInfoManagerSimulatedStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5151005A0000000000A002 /* CustomerInfoManagerSimulatedStoreTests.swift */; };
+		FE5151005C0000000000A001 /* SimulatedStoreTransactionFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5151005C0000000000A002 /* SimulatedStoreTransactionFetcher.swift */; };
+		FE5151005C0000000000B001 /* SimulatedStoreTransactionFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5151005C0000000000B002 /* SimulatedStoreTransactionFetcherTests.swift */; };
+		FE5151005B0000000000A001 /* OfferingStringsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5151005B0000000000A002 /* OfferingStringsTests.swift */; };
+		FE5151005B0000000000B001 /* ConfigureStringsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5151005B0000000000B002 /* ConfigureStringsTests.swift */; };
 		75ADC06C2E437D4900210ECA /* SimulatedStoreProductsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75ADC0682E437D4900210ECA /* SimulatedStoreProductsManager.swift */; };
 		75ADC06D2E437D4900210ECA /* SimulatedStoreTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75ADC06B2E437D4900210ECA /* SimulatedStoreTransaction.swift */; };
 		75ADC06E2E437D4900210ECA /* SimulatedStorePurchaseHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75ADC0692E437D4900210ECA /* SimulatedStorePurchaseHandler.swift */; };
@@ -2553,6 +2558,11 @@
 		75A4EBF02EAB9A27007C71C1 /* PurchasesFallbackURLBackendIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesFallbackURLBackendIntegrationTests.swift; sourceTree = "<group>"; };
 		75A9F25B2E38DE57005D1AB1 /* GetWebBillingProductsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetWebBillingProductsOperation.swift; sourceTree = "<group>"; };
 		75ABFDB42D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoManagerUIPreviewModeTests.swift; sourceTree = "<group>"; };
+		FE5151005A0000000000A002 /* CustomerInfoManagerSimulatedStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoManagerSimulatedStoreTests.swift; sourceTree = "<group>"; };
+		FE5151005C0000000000A002 /* SimulatedStoreTransactionFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatedStoreTransactionFetcher.swift; sourceTree = "<group>"; };
+		FE5151005C0000000000B002 /* SimulatedStoreTransactionFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatedStoreTransactionFetcherTests.swift; sourceTree = "<group>"; };
+		FE5151005B0000000000A002 /* OfferingStringsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingStringsTests.swift; sourceTree = "<group>"; };
+		FE5151005B0000000000B002 /* ConfigureStringsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigureStringsTests.swift; sourceTree = "<group>"; };
 		75ADC0682E437D4900210ECA /* SimulatedStoreProductsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatedStoreProductsManager.swift; sourceTree = "<group>"; };
 		75ADC0692E437D4900210ECA /* SimulatedStorePurchaseHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatedStorePurchaseHandler.swift; sourceTree = "<group>"; };
 		75ADC06A2E437D4900210ECA /* SimulatedStorePurchaseUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatedStorePurchaseUI.swift; sourceTree = "<group>"; };
@@ -4533,6 +4543,8 @@
 				F575859126C08E3F00C12B97 /* OfferingsManagerTests.swift */,
 				1DA47C656406D58B636FD82D /* WorkflowManagerTests.swift */,
 				37E357C2D977BBB081216B5F /* OfferingsTests.swift */,
+				FE5151005B0000000000A002 /* OfferingStringsTests.swift */,
+				FE5151005B0000000000B002 /* ConfigureStringsTests.swift */,
 				5793396F28E77A5100C1232C /* PaymentQueueWrapperTests.swift */,
 				37E3583675928C01D92E3166 /* ProductRequestDataExtensions.swift */,
 				37E3548189DA008320B3FC98 /* ProductRequestDataInitializationTests.swift */,
@@ -4810,6 +4822,7 @@
 				37E35E992F1916C7F3911E7B /* CustomerInfoManagerTests.swift */,
 				4F3D56622A1E66A10070105A /* CustomerInfoManagerPostReceiptTests.swift */,
 				75ABFDB42D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift */,
+				FE5151005A0000000000A002 /* CustomerInfoManagerSimulatedStoreTests.swift */,
 				37E35294EBC1E5A879C95540 /* IdentityManagerTests.swift */,
 			);
 			path = Identity;
@@ -5494,6 +5507,7 @@
 			children = (
 				75A0E78F2E3D1FCF00A60BD5 /* SimulatedStorePurchaseHandlerTests.swift */,
 				750B39FD2E40940F005E141D /* PurchasesOrchestratorSimulatedStoreTests.swift */,
+				FE5151005C0000000000B002 /* SimulatedStoreTransactionFetcherTests.swift */,
 			);
 			path = SimulatedStore;
 			sourceTree = "<group>";
@@ -5502,6 +5516,7 @@
 			isa = PBXGroup;
 			children = (
 				75ADC0682E437D4900210ECA /* SimulatedStoreProductsManager.swift */,
+				FE5151005C0000000000A002 /* SimulatedStoreTransactionFetcher.swift */,
 				75ADC0692E437D4900210ECA /* SimulatedStorePurchaseHandler.swift */,
 				75ADC06A2E437D4900210ECA /* SimulatedStorePurchaseUI.swift */,
 				75ADC06B2E437D4900210ECA /* SimulatedStoreTransaction.swift */,
@@ -7506,6 +7521,7 @@
 				B35F9E0926B4BEED00095C3F /* String+Extensions.swift in Sources */,
 				574A2EE7282C3F0800150D40 /* AnyDecodable.swift in Sources */,
 				75ADC06C2E437D4900210ECA /* SimulatedStoreProductsManager.swift in Sources */,
+				FE5151005C0000000000A001 /* SimulatedStoreTransactionFetcher.swift in Sources */,
 				75ADC06D2E437D4900210ECA /* SimulatedStoreTransaction.swift in Sources */,
 				9094B41C2E96A9A70094AD5F /* AdEvent.swift in Sources */,
 				AD5000000000000000ADAD04 /* AdRewardEvents.swift in Sources */,
@@ -7756,6 +7772,8 @@
 				1DE37A192F61AF94009CA3AC /* PurchasesCustomPaywallEventsTests.swift in Sources */,
 				B36824BF268FBC8700957E4C /* SubscriberAttributeTests.swift in Sources */,
 				351B51BC26D450E800BD2BD7 /* OfferingsTests.swift in Sources */,
+				FE5151005B0000000000A001 /* OfferingStringsTests.swift in Sources */,
+				FE5151005B0000000000B001 /* ConfigureStringsTests.swift in Sources */,
 				5796A38827D6B85900653165 /* BackendPostReceiptDataTests.swift in Sources */,
 				5752E8482892DC500069281E /* ErrorUtilsTests.swift in Sources */,
 				16BCA36E2E4D9B9300B39E7F /* DeferredValueStoresTests.swift in Sources */,
@@ -7802,6 +7820,8 @@
 				FD43A7982E01F77300CBA838 /* PurchasesVirtualCurrenciesTests.swift in Sources */,
 				2DDF41E124F6F527005BC22D /* MockReceiptParser.swift in Sources */,
 				75ABFDB52D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift in Sources */,
+				FE5151005A0000000000A001 /* CustomerInfoManagerSimulatedStoreTests.swift in Sources */,
+				FE5151005C0000000000B001 /* SimulatedStoreTransactionFetcherTests.swift in Sources */,
 				57E415EB2846962500EA5460 /* PurchasesSyncPurchasesTests.swift in Sources */,
 				900D27072F96943200D32EDF /* BackendGetRewardVerificationStatusTests.swift in Sources */,
 				5766AAC5283E843300FA6091 /* PurchasesConfiguringTests.swift in Sources */,
