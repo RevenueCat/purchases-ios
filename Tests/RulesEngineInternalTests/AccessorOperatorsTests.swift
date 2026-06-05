@@ -30,13 +30,21 @@ final class AccessorOperatorsTests: XCTestCase {
     //  - The fixture scope is always a JSON object (`Evaluator.evaluate`
     //    takes `[String: Value]`), but these exercise a top-level *array*
     //    scope.
-    //  - `var` with an empty path returns the entire data object, and this
-    //    engine's `===` is always false for objects, so no predicate can
+    //  - `var` with an empty or null path returns the entire data object, and
+    //    this engine's `===` is always false for objects, so no predicate can
     //    assert the result.
 
     func testVarEmptyPathReturnsEntireData() throws {
         let vars = Value.object(["x": .int(1)])
         let out = try AccessorOperators.opVar(args: .string(""), vars: vars)
+        XCTAssertEqual(out, vars)
+    }
+
+    func testVarNullPathReturnsEntireData() throws {
+        // json-logic-js treats `undefined`, null, and "" as "return the
+        // whole data object".
+        let vars = Value.object(["x": .int(1)])
+        let out = try AccessorOperators.opVar(args: .null, vars: vars)
         XCTAssertEqual(out, vars)
     }
 
