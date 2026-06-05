@@ -836,16 +836,9 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
     var restoreFailure: PurchaseFailureHandler?
     var onDismiss: (() -> Void)?
 
-    /// The prefetched exit offer, loaded while the main paywall is showing.
-    /// This enables immediate presentation when the main paywall dismisses (no loading delay).
-    /// Copied to `presentedExitOffer` when ready to show.
-    @State
-    private var exitOfferOffering: Offering?
-
-    /// The exit offer currently being presented. Controls the sheet/fullScreenCover.
-    /// Set from `exitOfferOffering` when the main paywall dismisses without a purchase.
-    @State
-    private var presentedExitOffer: Offering?
+    /// Owns the exit-offer lifecycle (sourcing + presentation state + transitions).
+    @StateObject
+    private var exitOfferPresenter: ExitOfferPresenter
 
     @StateObject
     private var purchaseHandler: PurchaseHandler
@@ -881,6 +874,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         let handler = PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
                                               performRestore: myAppPurchaseLogic?.performRestore)
         self._purchaseHandler = .init(wrappedValue: handler)
+        self._exitOfferPresenter = .init(wrappedValue: ExitOfferPresenter(purchaseHandler: handler))
         self._promoOfferCacheOwner = .init(wrappedValue:
             PromoOfferCacheOwner(
                 cache: PaywallPromoOfferCache(
@@ -901,26 +895,21 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                             .frame(minHeight: 667)
                         #endif
                     }
-                    .sheet(item: self.$presentedExitOffer, onDismiss: self.handleExitOfferDismiss) { exitOffering in
-                        self.exitOfferPaywallView(for: exitOffering)
-                        #if targetEnvironment(macCatalyst) || os(macOS)
-                            .frame(minHeight: 667)
-                        #endif
-                    }
             #if !os(macOS)
             case .fullScreen:
                 content
                     .fullScreenCover(item: self.$offering, onDismiss: self.handleMainPaywallDismiss) { offering in
                         self.paywallView(for: offering)
                     }
-                    .fullScreenCover(
-                        item: self.$presentedExitOffer,
-                        onDismiss: self.handleExitOfferDismiss
-                    ) { exitOffering in
-                        self.exitOfferPaywallView(for: exitOffering)
-                    }
             #endif
             }
+        }
+        .exitOfferSheet(
+            presenter: self.exitOfferPresenter,
+            presentationMode: self.presentationMode,
+            onDismiss: self.onDismiss
+        ) { exitOffering in
+            self.exitOfferPaywallView(for: exitOffering)
         }
     }
 
@@ -963,8 +952,8 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             self.restoreFailure?($0)
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
-        .task {
-            self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
+        .workflowExitOfferSource(presenter: self.exitOfferPresenter) {
+            offering
         }
     }
 
@@ -985,8 +974,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         .onPurchaseCompleted { customerInfo in
             self.purchaseCompleted?(customerInfo)
             // Always close on successful purchase
-            self.presentedExitOffer = nil
-            self.exitOfferOffering = nil
+            self.exitOfferPresenter.dismissPresentedExitOffer()
         }
         .onPurchaseCancelled {
             self.purchaseCancelled?()
@@ -1000,8 +988,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self) { result in
             guard let result, result.success else { return }
             // Close on successful restore
-            self.presentedExitOffer = nil
-            self.exitOfferOffering = nil
+            self.exitOfferPresenter.dismissPresentedExitOffer()
         }
         .onPurchaseFailure {
             self.purchaseFailure?($0)
@@ -1019,7 +1006,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
     /// - Fetching `CustomerInfo` may return cached data that hasn't been updated yet
     private func handleMainPaywallDismiss() {
         // Prevent double processing
-        guard self.presentedExitOffer == nil else { return }
+        guard !self.exitOfferPresenter.isPresentingExitOffer else { return }
 
         guard !self.purchaseHandler.hasPurchasedInSession else {
             self.purchaseHandler.trackPaywallClose()
@@ -1036,24 +1023,11 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
 
         self.purchaseHandler.trackPaywallClose()
 
-        if let exitOffering = self.exitOfferOffering {
-            Logger.debug(Strings.presentingExitOffer(exitOffering.identifier))
-            self.purchaseHandler.trackExitOffer(
-                exitOfferType: .dismiss,
-                exitOfferingIdentifier: exitOffering.identifier
-            )
-            self.presentedExitOffer = exitOffering
-        } else {
+        // Present the exit offer if one is available; otherwise dismiss normally.
+        if !self.exitOfferPresenter.presentIfAvailable() {
             self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
         }
-    }
-
-    private func handleExitOfferDismiss() {
-        self.presentedExitOffer = nil
-        self.exitOfferOffering = nil
-        self.purchaseHandler.resetForNewSession()
-        self.onDismiss?()
     }
 
 }
