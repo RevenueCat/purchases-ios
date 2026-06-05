@@ -125,6 +125,50 @@
       "variables": { "x": 1 },
       "expected": true,
       "expectedWarnings": { "contains": ["missing variable"] }
+    },
+    {
+      "id": "var_splits_dot_paths_double_dot",
+      "description": "json-logic-js uses String(path).split(\".\"), keeping empty segments, so \"a..b\" walks [\"a\", \"\", \"b\"]",
+      "predicate": { "===": [{ "var": "a..b" }, "middle"] },
+      "variables": { "a": { "": { "b": "middle" } } },
+      "expected": true
+    },
+    {
+      "id": "var_splits_dot_paths_leading_dot",
+      "description": "leading dot keeps an empty first segment, so \".a\" walks [\"\", \"a\"]",
+      "predicate": { "===": [{ "var": ".a" }, "leading"] },
+      "variables": { "": { "a": "leading" } },
+      "expected": true
+    },
+    {
+      "id": "var_splits_dot_paths_trailing_dot",
+      "description": "trailing dot keeps an empty last segment, so \"a.\" walks [\"a\", \"\"]",
+      "predicate": { "===": [{ "var": "a." }, "trailing"] },
+      "variables": { "a": { "": "trailing" } },
+      "expected": true
+    },
+    {
+      "id": "var_splits_dot_paths_only_dots",
+      "description": "\".\" splits into two empty segments [\"\", \"\"]",
+      "predicate": { "===": [{ "var": "." }, "only-dots"] },
+      "variables": { "": { "": "only-dots" } },
+      "expected": true
+    },
+    {
+      "id": "var_default_not_used_when_leaf_is_null",
+      "description": "default applies only when lookup fails; a present key with an explicit null leaf is returned as-is",
+      "predicate": { "==": [{ "var": ["key", "fallback"] }, null] },
+      "variables": { "key": null },
+      "expected": true,
+      "expectedWarnings": { "contains": [] }
+    },
+    {
+      "id": "var_default_used_when_mid_path_breaks_on_null",
+      "description": "when descent hits a null parent, the default is returned instead of walking further segments",
+      "predicate": { "===": [{ "var": ["a.b", "fallback"] }, "fallback"] },
+      "variables": { "a": null },
+      "expected": true,
+      "expectedWarnings": { "contains": [] }
     }
   ]
 }

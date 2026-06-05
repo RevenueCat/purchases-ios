@@ -58,6 +58,13 @@
       "predicate": { "==": [{ "missing_some": [{ "/": [10, 0] }, ["a", "b"]] }, "b"] },
       "variables": { "a": 1 },
       "expected": true
+    },
+    {
+      "id": "missing_some_non_numeric_string_threshold_never_satisfies",
+      "description": "a non-numeric string threshold coerces to NaN, so >= is never satisfied and all keys are returned; result compared via string coercion",
+      "predicate": { "==": [{ "missing_some": ["abc", ["a", "b"]] }, "a,b"] },
+      "variables": {},
+      "expected": true
     }
   ]
 }

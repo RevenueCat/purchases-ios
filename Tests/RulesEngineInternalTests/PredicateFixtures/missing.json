@@ -70,6 +70,13 @@
       "predicate": { "==": [{ "missing": ["user.name", "user.email"] }, "user.name"] },
       "variables": { "user": { "name": null, "email": "a@b.com" } },
       "expected": true
+    },
+    {
+      "id": "missing_empty_string_key_resolves_to_scope",
+      "description": "missing routes through var; var with an empty path returns the whole scope (neither null nor empty string), so the empty key is not missing and the result is empty (falsy)",
+      "predicate": { "!!": { "missing": [""] } },
+      "variables": { "a": 1 },
+      "expected": false
     }
   ]
 }
