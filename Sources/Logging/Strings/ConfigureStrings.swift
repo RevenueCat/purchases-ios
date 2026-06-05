@@ -142,8 +142,7 @@ extension ConfigureStrings: LogMessage {
 
             if case .simulatedStore = apiKeyValidationResult {
                 return "Using a simulator with a Test Store API key. Test Store products are fetched from " +
-                "RevenueCat's backend, so purchases are simulated and don't rely on StoreKit. " +
-                "No additional simulator configuration is required to fetch products or make purchases."
+                "RevenueCat's backend, so purchases are simulated and don't rely on StoreKit."
             }
 
             return "Using a simulator. Ensure you have a StoreKit Config " +
