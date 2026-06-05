@@ -78,11 +78,24 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         }
 
         guard !self.systemInfo.isSimulatedStoreAPIKey else {
-            // For now, all products in the Simulated Store are ineligible for trial or intro discount
-            let result = productIdentifiers.reduce(into: [:]) { resultDict, productId in
-                resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.ineligible)
+            // The backend computes intro/trial eligibility for Simulated Store products. If a product
+            // carries an introductory discount (a free trial or an intro price), the user is eligible
+            // for it. Products without an introductory discount have no intro offer to be eligible for.
+            self.productsManager.products(withIdentifiers: productIdentifiers) { result in
+                let productsByID = (result.value ?? []).dictionaryAllowingDuplicateKeys { $0.productIdentifier }
+                let eligibility = productIdentifiers.reduce(into: [String: IntroEligibility]()) { dict, productId in
+                    let status: IntroEligibilityStatus
+                    if let product = productsByID[productId] {
+                        status = product.introductoryDiscount != nil ? .eligible : .noIntroOfferExists
+                    } else {
+                        status = .unknown
+                    }
+                    dict[productId] = IntroEligibility(eligibilityStatus: status)
+                }
+                self.operationDispatcher.dispatchOnMainActor {
+                    completion(eligibility)
+                }
             }
-            completion(result)
             return
         }
 
@@ -152,32 +165,54 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2CheckEligibility(_ productIdentifiers: Set<String>) async throws -> [String: IntroEligibility] {
-        var introDictionary: [String: IntroEligibility] = productIdentifiers.dictionaryWithValues { _ in
+    func sk2CheckEligibility(_ compoundProductIdentifiers: Set<String>) async throws -> [String: IntroEligibility] {
+        var introDictionary: [String: IntroEligibility] = compoundProductIdentifiers.dictionaryWithValues { _ in
                 .init(eligibilityStatus: .unknown)
         }
 
-        let products = try await self.productsManager.sk2Products(withIdentifiers: productIdentifiers)
+        let products = try await self.productsManager.sk2Products(withIdentifiers: compoundProductIdentifiers)
         for sk2StoreProduct in products {
-            let sk2Product = sk2StoreProduct.underlyingSK2Product
-
-            let eligibilityStatus: IntroEligibilityStatus
-
-            if let subscription = sk2Product.subscription, subscription.introductoryOffer != nil {
-                let isEligible = await TimingUtil.measureAndLogIfTooSlow(
-                    threshold: .introEligibility,
-                    message: Strings.eligibility.sk2_intro_eligibility_too_slow.description) {
-                        return await subscription.isEligibleForIntroOffer
-                    }
-                eligibilityStatus = isEligible ? .eligible : .ineligible
-            } else {
-                eligibilityStatus = .noIntroOfferExists
-            }
-
-            introDictionary[sk2StoreProduct.productIdentifier] = .init(eligibilityStatus: eligibilityStatus)
+            let eligibilityStatus: IntroEligibilityStatus = await checkEligibility(for: sk2StoreProduct)
+            introDictionary[sk2StoreProduct.id] = .init(eligibilityStatus: eligibilityStatus)
         }
 
         return introDictionary
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    private func checkEligibility(for sk2StoreProduct: SK2StoreProduct) async -> IntroEligibilityStatus {
+        let sk2Product = sk2StoreProduct.underlyingSK2Product
+
+        #if compiler(>=6.3.2)
+        if sk2StoreProduct.representsBillingPlan,
+           let subscription = sk2Product.subscription {
+            let billingPlanContainsIntroOffer = sk2StoreProduct.containsSubscriptionOfferTypeOnBillingPlan(
+                subscriptionOfferType: .introductory
+            )
+
+            guard billingPlanContainsIntroOffer else {
+                return .noIntroOfferExists
+            }
+
+            let isEligible = await TimingUtil.measureAndLogIfTooSlow(
+                threshold: .introEligibility,
+                message: Strings.eligibility.sk2_intro_eligibility_too_slow.description) {
+                    return await subscription.isEligibleForIntroOffer
+                }
+            return isEligible ? .eligible : .ineligible
+        }
+        #endif
+
+        if let subscription = sk2Product.subscription, subscription.introductoryOffer != nil {
+            let isEligible = await TimingUtil.measureAndLogIfTooSlow(
+                threshold: .introEligibility,
+                message: Strings.eligibility.sk2_intro_eligibility_too_slow.description) {
+                    return await subscription.isEligibleForIntroOffer
+                }
+            return isEligible ? .eligible : .ineligible
+        } else {
+            return .noIntroOfferExists
+        }
     }
 
 }
@@ -186,8 +221,8 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
 extension TrialOrIntroPriceEligibilityCheckerType {
 
     func checkEligibility(product: StoreProductType, completion: @escaping (IntroEligibilityStatus) -> Void) {
-        self.checkEligibility(productIdentifiers: [product.productIdentifier]) { eligibility in
-            completion(eligibility[product.productIdentifier]?.status ?? .unknown)
+        self.checkEligibility(productIdentifiers: [product.id]) { eligibility in
+            completion(eligibility[product.id]?.status ?? .unknown)
         }
     }
 

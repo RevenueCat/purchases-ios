@@ -26,6 +26,7 @@ struct HomeView: View {
     @State private var placementOffering: Offering? = nil
     @State private var cacheFetchPolicy: CacheFetchPolicy = .default
     @State private var showMetadataPrompt = false
+    @State private var showFetchProductsSheet = false
     @State private var metadataJSON: String = ""
 
     @State private var error: Error?
@@ -163,6 +164,12 @@ struct HomeView: View {
                     } label: {
                         Text("Manage Purchase Metadata")
                     }
+
+                    Button {
+                        self.showFetchProductsSheet.toggle()
+                    } label: {
+                        Text("Fetch Products")
+                    }
                 }
             }
             .task {
@@ -229,6 +236,9 @@ struct HomeView: View {
         }
         .sheet(item: self.$placementOffering) {
             OfferingDetailView(offering: $0)
+        }
+        .sheet(isPresented: self.$showFetchProductsSheet) {
+            FetchProductsView()
         }
     }
 

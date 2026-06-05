@@ -520,11 +520,20 @@ final class PurchasesOrchestrator {
                           completion: completionWithTracking)
         } else if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
                   let sk2Product = product.sk2Product {
+
+            let billingPlanType: BillingPlanType?
+            if #available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *) {
+                billingPlanType = product.installmentsInfo?.billingPlanType
+            } else {
+                billingPlanType = nil
+            }
+
             self.purchase(sk2Product: sk2Product,
                           package: package,
                           promotionalOffer: promotionalOffer,
                           winBackOffer: winBackOffer,
                           introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
+                          billingPlanType: billingPlanType,
                           promotionalOfferOptions: promotionalOfferOptions,
                           metadata: metadata,
                           paywallEvent: paywallEvent,
@@ -650,6 +659,7 @@ final class PurchasesOrchestrator {
                   promotionalOffer: PromotionalOffer.SignedData?,
                   winBackOffer: WinBackOffer?,
                   introductoryOfferEligibilityJWS: String?,
+                  billingPlanType: BillingPlanType?,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
@@ -663,6 +673,7 @@ final class PurchasesOrchestrator {
                     promotionalOffer: promotionalOffer,
                     winBackOffer: winBackOffer?.discount.sk2Discount,
                     introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
+                    billingPlanType: billingPlanType,
                     promotionalOfferOptions: promotionalOfferOptions,
                     metadata: metadata,
                     paywallEvent: paywallEvent,
@@ -704,6 +715,7 @@ final class PurchasesOrchestrator {
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
                   winBackOffer: Product.SubscriptionOffer? = nil,
                   introductoryOfferEligibilityJWS: String?,
+                  billingPlanType: BillingPlanType?,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
@@ -778,6 +790,28 @@ final class PurchasesOrchestrator {
                 )
                 #endif
             }
+            #if compiler(>=6.3.2)
+            if #available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *),
+               let subscriptionInfo = sk2Product.subscription, // Don't apply billing plans to OTPs
+               let billingPlanType,
+               let sk2BillingPlanType = billingPlanType.skBillingPlanType {
+                let eligibleBillingPlanTypes = Set(subscriptionInfo.pricingTerms.map({ $0.billingPlanType }))
+
+                if eligibleBillingPlanTypes.contains(sk2BillingPlanType) {
+                    Logger.debug(
+                        StoreKitStrings.sk2_applying_billing_plan(billingPlanType: billingPlanType.rawValue)
+                    )
+                    options.insert(.billingPlanType(sk2BillingPlanType))
+                } else {
+                    Logger.error(
+                        StoreKitStrings.sk2_user_not_eligible_for_billing_plan_at_purchase_time(
+                            billingPlanType: billingPlanType.rawValue
+                        )
+                    )
+                    throw ErrorUtils.productNotAvailableForPurchaseError()
+                }
+            }
+            #endif
 
             let presentedOfferingContext = package?.presentedOfferingContext
 
@@ -1043,6 +1077,7 @@ final class PurchasesOrchestrator {
     ) {
         // We can't inject StoreKit2PurchaseIntentListener in the constructor since
         // it has different availability requirements than the constructor.
+        guard !self.systemInfo.isSimulatedStoreAPIKey else { return }
 
         if systemInfo.storeKitVersion == .storeKit2 {
             self._storeKit2PurchaseIntentListener = storeKit2PurchaseIntentListener
@@ -1562,6 +1597,7 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
                                     promotionalOffer: nil,
                                     winBackOffer: offer,
                                     introductoryOfferEligibilityJWS: nil,
+                                    billingPlanType: nil,
                                     promotionalOfferOptions: nil
                                 )
 
@@ -2302,7 +2338,12 @@ extension PurchasesOrchestrator {
     }
 
     private func setSK2DelegateAndStartListening() async {
+        // The Simulated Store ("Test Store") never produces StoreKit transactions, so there's no
+        // delegate to notify and no point observing `StoreKit.Transaction.updates`.
+        guard !self.systemInfo.isSimulatedStoreAPIKey else { return }
+
         await storeKit2TransactionListener.set(delegate: self)
+
         if systemInfo.storeKitVersion == .storeKit2 {
             await storeKit2TransactionListener.listenForTransactions()
         }
