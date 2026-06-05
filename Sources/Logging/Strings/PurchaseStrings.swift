@@ -16,6 +16,7 @@ import Foundation
 import StoreKit
 
 // swiftlint:disable identifier_name
+// swiftlint:disable file_length
 
 enum PurchaseStrings {
 
