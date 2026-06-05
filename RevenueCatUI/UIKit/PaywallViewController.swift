@@ -102,11 +102,6 @@ public class PaywallViewController: UIViewController {
 
     private var configuration: PaywallViewConfiguration {
         didSet {
-            // Drop the previous workflow's exit offer before the rebuild; the new paywall re-emits it.
-            // Routed through updateWorkflowExitOffer so it keeps the "don't clear while presenting"
-            // guard and is a no-op under the legacy (non-workflow) path.
-            self.updateWorkflowExitOffer(nil)
-
             // Overriding the configuration requires re-creating the `HostingViewController`.
             // This is used by some Hybrid SDKs that require modifying the content after creation.
             self.hostingController = self.createHostingController()
@@ -368,6 +363,10 @@ public class PaywallViewController: UIViewController {
     /// - Warning: For internal use only
     @objc(updateWithOffering:)
     public func update(with offering: Offering) {
+        // Replacing the offering invalidates the previous workflow's exit offer; the rebuilt
+        // paywall re-emits its own. Routed through updateWorkflowExitOffer so it keeps the
+        // "don't clear while presenting" guard and is a no-op under the legacy (non-workflow) path.
+        self.updateWorkflowExitOffer(nil)
         self.configuration.content = .offering(offering)
     }
 
@@ -375,6 +374,7 @@ public class PaywallViewController: UIViewController {
     @available(*, deprecated, message: "use init with Offering instead")
     @objc(updateWithOfferingIdentifier:)
     public func update(with offeringIdentifier: String) {
+        self.updateWorkflowExitOffer(nil)
         self.configuration.content = .offeringIdentifier(offeringIdentifier, presentedOfferingContext: nil)
     }
 
@@ -382,6 +382,7 @@ public class PaywallViewController: UIViewController {
     @_spi(Internal)
     @objc(updateWithOfferingIdentifier:presentedOfferingContext:)
     public func update(with offeringIdentifier: String, presentedOfferingContext: PresentedOfferingContext?) {
+        self.updateWorkflowExitOffer(nil)
         self.configuration.content = .offeringIdentifier(offeringIdentifier,
                                                          presentedOfferingContext: presentedOfferingContext)
     }
@@ -754,6 +755,9 @@ private extension PaywallViewController {
         }
 
         // Bridges the embedded paywall's workflow exit offer into `exitOfferOffering`.
+        // The embedded `WorkflowPaywallView` only ever writes through this binding, so the
+        // getter is unused in practice; it stays because `Binding` requires one and the
+        // SwiftUI presentation path injects a real two-way binding into the same env key.
         let workflowExitOfferBinding = Binding<Offering?>(
             get: { [weak self] in self?.exitOfferOffering },
             set: { [weak self] offering in self?.updateWorkflowExitOffer(offering) }
