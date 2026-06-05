@@ -103,10 +103,9 @@ public class PaywallViewController: UIViewController {
     private var configuration: PaywallViewConfiguration {
         didSet {
             // Drop the previous workflow's exit offer before the rebuild; the new paywall re-emits it.
-            // (Legacy keeps its prefetched offer, which isn't re-fetched on update.)
-            if ProcessInfo.processInfo.workflowsEndpointEnabled {
-                self.exitOfferOffering = nil
-            }
+            // Routed through updateWorkflowExitOffer so it keeps the "don't clear while presenting"
+            // guard and is a no-op under the legacy (non-workflow) path.
+            self.updateWorkflowExitOffer(nil)
 
             // Overriding the configuration requires re-creating the `HostingViewController`.
             // This is used by some Hybrid SDKs that require modifying the content after creation.
