@@ -6,10 +6,10 @@
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 //
 
+import Nimble
 import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
-import Nimble
 import XCTest
 
 @available(iOS 15.0, macOS 12.0, *)
@@ -49,8 +49,9 @@ class PreviewPaywallTests: TestCase {
                                      url: URL(string: "rc://rc_paywall_preview?offering_id=1234")!,
                                      viewController: nil)) == false
 
+        let urlWithExtraParam = URL(string: "rc://rc_paywall_preview?offering_id=1234&paywall_id=abcd&extra=0000")!
         expect(self.presenter.handle(locateOffering: { _ in return nil },
-                                     url: URL(string: "rc://rc_paywall_preview?offering_id=1234&paywall_id=abcd&extra=0000")!,
+                                     url: urlWithExtraParam,
                                      viewController: nil)) == false
     }
 
@@ -86,12 +87,12 @@ class PreviewPaywallTests: TestCase {
         self.wait(for: [expectation], timeout: 0.1)
     }
 
-    func testFailedOfferingDoesntPresent() throws {
+    func testFailingToLocateOfferingDoesntPresent() throws {
         let expectation = self.expectation(description: "show paywall")
         expectation.isInverted = true
 
         expect(self.presenter.handle(
-            locateOffering: { offeringID in
+            locateOffering: { _ in
                 throw CocoaError(.userCancelled)
             },
             url: URL(string: "rc://rc_paywall_preview?offering_id=1234&paywall_id=abcd")!,
@@ -106,7 +107,7 @@ class PreviewPaywallTests: TestCase {
         expectation.isInverted = true
 
         expect(self.presenter.handle(
-            locateOffering: { offeringID in
+            locateOffering: { _ in
                 return nil
             },
             url: URL(string: "rc://rc_paywall_preview?offering_id=1234&paywall_id=abcd")!,
@@ -121,7 +122,7 @@ class PreviewPaywallTests: TestCase {
         expectation.isInverted = true
 
         expect(self.presenter.handle(
-            locateOffering: { offeringID in
+            locateOffering: { _ in
                 return self.offering
             },
             url: URL(string: "rc://rc_paywall_preview?offering_id=1234&paywall_id=wxyz")!,
@@ -135,7 +136,7 @@ class PreviewPaywallTests: TestCase {
         let expectation = self.expectation(description: "show paywall")
 
         expect(self.presenter.handle(
-            locateOffering: { offeringID in
+            locateOffering: { _ in
                 return self.offering
             },
             url: URL(string: "rc://rc_paywall_preview?offering_id=1234&paywall_id=abcd")!,
@@ -158,7 +159,7 @@ private class MockViewController: UIViewController {
         fatalError()
     }
 
-    override func show(_ vc: UIViewController, sender: Any?) {
+    override func show(_ viewController: UIViewController, sender: Any?) {
         present()
     }
 

@@ -5,7 +5,6 @@
 //  Created by Dave DeLong on 6/4/26.
 //
 
-
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
@@ -30,20 +29,20 @@ extension Purchases {
     @objc public func presentPaywall(from url: URL, window: UIWindow? = nil) -> Bool {
 
         // create the paywall view controller and show it off the provided window (if available)
-        // otherwise, look for the key window of the .foregroundActive scene, falling back to other scenes/windows if necessary
+        // otherwise, look for the key window of the .foregroundActive scene,
+        // falling back to other scenes/windows if necessary
         var presentationContext = window?.rootViewController
 
         if presentationContext == nil {
             presentationContext = UIApplication.shared
                                                .connectedScenes
                                                .compactMap { $0 as? UIWindowScene }
-                                               .sorted(by: { lhs, rhs in lhs.activationState == .foregroundActive })
+                                               .sorted(by: { lhs, _ in lhs.activationState == .foregroundActive })
                                                .flatMap(\.windows)
-                                               .sorted(by: { lhs, rhs in lhs.isKeyWindow })
+                                               .sorted(by: { lhs, _ in lhs.isKeyWindow })
                                                .compactMap(\.rootViewController)
                                                .first
         }
-        
 
         return PreviewPaywallPresenter().handle(locateOffering: {
             return try await self.offerings().offering(identifier: $0)
@@ -55,7 +54,9 @@ extension Purchases {
 @available(iOS 15.0, macOS 12.0, *)
 struct PreviewPaywallPresenter {
 
-    func handle(locateOffering: @escaping (String) async throws -> Offering?, url: URL, viewController: UIViewController?) -> Bool {
+    func handle(locateOffering: @escaping (String) async throws -> Offering?,
+                url: URL, viewController: UIViewController?) -> Bool {
+
         // expected format: {customScheme}://rc-paywall-preview?offering_id={OFFERING_ID}&paywall_id={PAYWALL_ID}
         guard let parsed = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return false }
 
@@ -64,15 +65,17 @@ struct PreviewPaywallPresenter {
         let queryItems = parsed.queryItems ?? []
 
         guard queryItems.count == 2 else {
-            Logger.warning("Invalid rc-paywall-preview link. Expected 2 query parameters, but found \(queryItems.count)")
+            Logger.warning("Invalid rc-paywall-preview link. Expected 2 parameters, but found \(queryItems.count)")
             return false
         }
 
-        guard let offeringID = queryItems.first(where: { $0.name == "offering_id" })?.value, offeringID.isEmpty == false else {
+        guard let offeringID = queryItems.first(where: { $0.name == "offering_id" })?.value,
+                offeringID.isEmpty == false else {
             Logger.warning("Invalid rc-paywall-preview link: Bad offering_id parameter")
             return false
         }
-        guard let paywallID = queryItems.first(where: { $0.name == "paywall_id" })?.value, paywallID.isEmpty == false else {
+        guard let paywallID = queryItems.first(where: { $0.name == "paywall_id" })?.value,
+                paywallID.isEmpty == false else {
             Logger.warning("Invalid rc-paywall-preview link: Bad paywall_id parameter")
             return false
         }
@@ -83,22 +86,26 @@ struct PreviewPaywallPresenter {
         }
 
         Task { @MainActor in
-            // This is done in an async closure, because locating the offering may need to wait for configuration to complete
+            // This is done in an async closure, because locating the offering
+            // may need to wait for configuration to complete
             do {
                 guard let offering = try await locateOffering(offeringID) else {
-                    Logger.warning("Attempting to show paywall for offering \(offeringID), but cannot locate a published offering with that id")
+                    Logger.warning("Attempting to show paywall for offering \(offeringID), " +
+                                   "but cannot locate a published offering with that id")
                     return
                 }
 
                 // there's a one-to-one relationship between paywalls and offerings
                 // make sure that our parameters match reality
                 guard offering.paywall?.id == paywallID else {
-                    Logger.warning("Attempting to show paywall \(paywallID), but it does not match the paywall associated with \(offeringID)")
+                    Logger.warning("Attempting to show paywall \(paywallID), " +
+                                   "but it does not match the paywall associated with \(offeringID)")
                     return
                 }
 
                 let context = PresentedOfferingContext(offeringIdentifier: offeringID)
-                let viewController = PaywallViewController(offeringIdentifier: offeringID, presentedOfferingContext: context)
+                let viewController = PaywallViewController(offeringIdentifier: offeringID,
+                                                           presentedOfferingContext: context)
                 presentationContext.show(viewController, sender: nil)
 
             } catch {
