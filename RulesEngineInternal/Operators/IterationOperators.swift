@@ -6,24 +6,16 @@
 
 import Foundation
 
-/// Iteration predicates: `some`, `all`.
-///
-/// Both follow the JSON Logic JS reference (`json-logic-js`). Shape is
-/// `{"some": [arrayExpr, predicateExpr]}` /
-/// `{"all": [arrayExpr, predicateExpr]}`. The first argument is evaluated
-/// in the current scope and must resolve to an array; anything else
-/// short-circuits to `false`. The second argument is a literal template
-/// that is evaluated per-item with `vars` rebound to the current item,
-/// with no parent-scope inheritance.
-///
-/// **Empty-array behavior**: `all` over an empty array returns `false`,
-/// not vacuous truth, per the JSON Logic JS spec.
+/// Iteration predicates: `some`, `all`. Both follow the JSON Logic JS
+/// reference (`json-logic-js`).
 enum IterationOperators {
 
     /// `{"some": [arrayExpr, predicate]}` — `true` iff `predicate` is
-    /// truthy for at least one item in the array. Empty array or
-    /// non-array source returns `false`. Short-circuits on the first
-    /// truthy result.
+    /// truthy for at least one item. The array expression is evaluated in
+    /// the current scope; the predicate is re-evaluated per item with
+    /// `vars` rebound to that item, with no parent-scope inheritance.
+    /// Empty array or non-array source returns `false`. Short-circuits on
+    /// the first truthy result.
     static func opSome(args: Value, vars: Value) throws -> Value {
         let (items, predicate) = try parseIterationArgs(args, vars: vars)
         guard let items else { return .bool(false) }
@@ -35,9 +27,11 @@ enum IterationOperators {
     }
 
     /// `{"all": [arrayExpr, predicate]}` — `true` iff `predicate` is
-    /// truthy for every item. Empty array returns `false` per the JSON
-    /// Logic JS spec, not vacuous truth. Non-array source returns
-    /// `false`. Short-circuits on the first non-truthy result.
+    /// truthy for every item. The array expression is evaluated in the
+    /// current scope; the predicate is re-evaluated per item with `vars`
+    /// rebound to that item, with no parent-scope inheritance. Empty array
+    /// returns `false` per the JSON Logic JS spec. Non-array source
+    /// returns `false`. Short-circuits on the first non-truthy result.
     static func opAll(args: Value, vars: Value) throws -> Value {
         let (items, predicate) = try parseIterationArgs(args, vars: vars)
         guard let items, !items.isEmpty else { return .bool(false) }
