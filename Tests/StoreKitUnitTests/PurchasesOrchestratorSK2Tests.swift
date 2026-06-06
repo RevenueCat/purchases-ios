@@ -57,6 +57,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                             promotionalOffer: nil,
                                             winBackOffer: nil,
                                             introductoryOfferEligibilityJWS: nil,
+                                            billingPlanType: nil,
                                             promotionalOfferOptions: nil)
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
@@ -81,6 +82,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -105,6 +107,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                                 promotionalOffer: nil,
                                                 winBackOffer: nil,
                                                 introductoryOfferEligibilityJWS: nil,
+                                                billingPlanType: nil,
                                                 promotionalOfferOptions: nil)
             XCTFail("Expected error")
         } catch {
@@ -135,6 +138,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 promotionalOffer: offer,
                 winBackOffer: nil,
                 introductoryOfferEligibilityJWS: nil,
+                billingPlanType: nil,
                 promotionalOfferOptions: nil
             )
 
@@ -158,6 +162,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil)
 
         expect(transaction).to(beNil())
@@ -187,6 +192,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                                                                   promotionalOffer: nil,
                                                                                   winBackOffer: nil,
                                                                                   introductoryOfferEligibilityJWS: nil,
+                                                                                  billingPlanType: nil,
                                                                                   promotionalOfferOptions: nil)
 
         expect(self.mockStoreKit2TransactionListener?.invokedHandle) == true
@@ -226,6 +232,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -246,6 +253,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
         expect(result.transaction?.sk2Transaction?.appAccountToken).to(beNil())
@@ -282,6 +290,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -484,6 +493,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                                  promotionalOffer: nil,
                                                  winBackOffer: nil,
                                                  introductoryOfferEligibilityJWS: nil,
+                                                 billingPlanType: nil,
                                                  promotionalOfferOptions: nil)
 
         expect(
@@ -515,6 +525,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil,
             paywallEvent: paywallEvent
         )
@@ -563,6 +574,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -585,6 +597,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -624,6 +637,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -661,6 +675,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                                  promotionalOffer: nil,
                                                  winBackOffer: nil,
                                                  introductoryOfferEligibilityJWS: nil,
+                                                 billingPlanType: nil,
                                                  promotionalOfferOptions: nil)
 
         // Verify the backend was called
@@ -699,6 +714,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                                  promotionalOffer: nil,
                                                  winBackOffer: nil,
                                                  introductoryOfferEligibilityJWS: nil,
+                                                 billingPlanType: nil,
                                                  promotionalOfferOptions: nil)
 
         expect(self.backend.invokedPostReceiptDataParameters).toNot(beNil())
@@ -729,6 +745,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                             package: package,
                                             promotionalOffer: nil,
                                             introductoryOfferEligibilityJWS: nil,
+                                            billingPlanType: nil,
                                             promotionalOfferOptions: nil)
 
         let manager = try self.mockEventsManager
@@ -760,6 +777,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -809,6 +827,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -967,6 +986,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
         let returnedExpirationDate = try XCTUnwrap(transaction?.sk2Transaction?.expirationDate)
@@ -999,6 +1019,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
         let returnedExpirationDate = try XCTUnwrap(transaction?.sk2Transaction?.expirationDate)
@@ -1261,6 +1282,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
         expect(cancelled) == true
@@ -1305,6 +1327,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 promotionalOffer: nil,
                 winBackOffer: nil,
                 introductoryOfferEligibilityJWS: nil,
+                billingPlanType: nil,
                 promotionalOfferOptions: nil
             )
             XCTFail("Expected error")
@@ -1354,6 +1377,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
         expect(cancelled) == true
@@ -1399,6 +1423,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 promotionalOffer: nil,
                 winBackOffer: nil,
                 introductoryOfferEligibilityJWS: nil,
+                billingPlanType: nil,
                 promotionalOfferOptions: nil
             )
             XCTFail("Expected error")
@@ -1450,6 +1475,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 promotionalOffer: nil,
                 winBackOffer: nil,
                 introductoryOfferEligibilityJWS: nil,
+                billingPlanType: nil,
                 promotionalOfferOptions: nil
             )
             XCTFail("Expected error")
@@ -1505,6 +1531,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
 
@@ -1548,6 +1575,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 promotionalOffer: nil,
                 winBackOffer: nil,
                 introductoryOfferEligibilityJWS: nil,
+                billingPlanType: nil,
                 promotionalOfferOptions: nil
             )
             XCTFail("Expected error")
@@ -1598,6 +1626,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
         expect(cancelled) == true
@@ -1611,6 +1640,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOffer: nil,
             winBackOffer: nil,
             introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
             promotionalOfferOptions: nil
         )
         expect(transaction).toNot(beNil())
@@ -1951,6 +1981,25 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(transactionListener.invokedListenForTransactionsCount) == 1
     }
 
+    func testSK2DoesNotListenForSK2TransactionsInSimulatedStore() throws {
+        self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
+
+        let transactionListener = MockStoreKit2TransactionListener()
+        let storeKit2ObserverModePurchasesDetector = MockStoreKit2ObserverModePurchaseDetector()
+
+        self.setUpOrchestrator(
+            storeKit2TransactionListener: transactionListener,
+            storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),
+            storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchasesDetector
+        )
+
+        // In Simulated Store mode the delegate is never set and the listener never starts
+        // observing StoreKit transactions.
+        expect(transactionListener.invokedDelegateSetter) == false
+        expect(transactionListener.invokedListenForTransactions) == false
+        expect(transactionListener.invokedListenForTransactionsCount) == 0
+    }
+
     // MARK: - Sync Purchases
 
     func verifySyncPurchases(transaction: StoreTransaction) async throws {
@@ -2021,74 +2070,82 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testSyncPurchasesSK2UsesStoredLocalTransactionMetadata() async throws {
-        let transaction = try await createTransaction(finished: true)
-        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = transaction
+        for productID in ["stored_product_from_purchase", "stored_product_from_purchase:monthly"] {
+            self.backend.invokedPostReceiptData = false
+            self.backend.invokedPostReceiptDataCount = 0
+            self.backend.invokedPostReceiptDataParameters = nil
+            self.backend.invokedPostReceiptDataParametersList = []
 
-        // Store metadata for this transaction
-        let storedProductData = ProductRequestData(
-            productIdentifier: "stored_product_from_purchase",
-            paymentMode: nil,
-            currencyCode: "EUR",
-            storeCountry: "DE",
-            price: 19.99,
-            normalDuration: nil,
-            introDuration: nil,
-            introDurationType: nil,
-            introPrice: nil,
-            subscriptionGroup: nil,
-            discounts: nil
-        )
-        let storedTransactionData = PurchasedTransactionData(
-            presentedOfferingContext: .init(
-                offeringIdentifier: "stored_offering",
-                placementIdentifier: "stored_placement",
-                targetingContext: nil
+            let transaction = try await createTransaction(finished: true)
+            self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = transaction
+
+            // Store metadata for this transaction
+            let storedProductData = ProductRequestData(
+                productIdentifier: productID,
+                paymentMode: nil,
+                currencyCode: "EUR",
+                storeCountry: "DE",
+                price: 19.99,
+                normalDuration: nil,
+                introDuration: nil,
+                introDurationType: nil,
+                introPrice: nil,
+                subscriptionGroup: nil,
+                discounts: nil
             )
-        )
-        let storedMetadata = LocalTransactionMetadata(
-            transactionId: transaction.transactionIdentifier,
-            productData: storedProductData,
-            transactionData: storedTransactionData,
-            encodedAppleReceipt: .receipt("test_receipt".asData),
-            originalPurchasesAreCompletedBy: .myApp,
-            sdkOriginated: true
-        )
+            let storedTransactionData = PurchasedTransactionData(
+                presentedOfferingContext: .init(
+                    offeringIdentifier: "stored_offering",
+                    placementIdentifier: "stored_placement",
+                    targetingContext: nil
+                )
+            )
+            let storedMetadata = LocalTransactionMetadata(
+                transactionId: transaction.transactionIdentifier,
+                productData: storedProductData,
+                transactionData: storedTransactionData,
+                encodedAppleReceipt: .receipt("test_receipt".asData),
+                originalPurchasesAreCompletedBy: .myApp,
+                sdkOriginated: true
+            )
 
-        self.mockLocalTransactionMetadataStore.storeMetadata(
-            storedMetadata,
-            forTransactionId: transaction.transactionIdentifier
-        )
+            self.mockLocalTransactionMetadataStore.storeMetadata(
+                storedMetadata,
+                forTransactionId: transaction.transactionIdentifier
+            )
 
-        self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+            self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
-        let customerInfo = try await self.orchestrator.syncPurchases(
-            receiptRefreshPolicy: .always,
-            isRestore: false,
-            initiationSource: .queue
-        )
+            let customerInfo = try await self.orchestrator.syncPurchases(
+                receiptRefreshPolicy: .always,
+                isRestore: false,
+                initiationSource: .queue
+            )
 
-        expect(self.backend.invokedPostReceiptData).to(beTrue())
-        expect(self.backend.invokedPostReceiptDataCount) == 1
+            expect(self.backend.invokedPostReceiptData).to(beTrue())
+            expect(self.backend.invokedPostReceiptDataCount) == 1
 
-        // Verify that stored metadata was used
-        expect(
-            self.backend.invokedPostReceiptDataParameters?.productData?.productIdentifier
-        ) == "stored_product_from_purchase"
-        expect(self.backend.invokedPostReceiptDataParameters?.productData?.currencyCode) == "EUR"
-        expect(self.backend.invokedPostReceiptDataParameters?.productData?.price) == 19.99
-        expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
-        ) == "stored_offering"
-        expect(self.backend.invokedPostReceiptDataParameters?.originalPurchaseCompletedBy) == .myApp
-        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == true
+            // Verify that stored metadata was used
+            expect(
+                self.backend.invokedPostReceiptDataParameters?.productData?.productIdentifier
+            ) == productID
+            expect(self.backend.invokedPostReceiptDataParameters?.productData?.currencyCode) == "EUR"
+            expect(self.backend.invokedPostReceiptDataParameters?.productData?.price) == 19.99
+            expect(
+                self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?
+                    .offeringIdentifier
+            ) == "stored_offering"
+            expect(self.backend.invokedPostReceiptDataParameters?.originalPurchaseCompletedBy) == .myApp
+            expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == true
 
-        // Verify metadata was cleared after successful post
-        expect(self.mockLocalTransactionMetadataStore.invokedRemoveMetadata.value) == true
-        expect(
-            self.mockLocalTransactionMetadataStore.invokedRemoveMetadataTransactionId.value
-        ) == transaction.transactionIdentifier
+            // Verify metadata was cleared after successful post
+            expect(self.mockLocalTransactionMetadataStore.invokedRemoveMetadata.value) == true
+            expect(
+                self.mockLocalTransactionMetadataStore.invokedRemoveMetadataTransactionId.value
+            ) == transaction.transactionIdentifier
 
-        expect(customerInfo) == mockCustomerInfo
+            expect(customerInfo) == mockCustomerInfo
+        }
     }
 
     func testSyncPurchasesDoesntPostReceiptAndReturnsCustomerInfoIfNoTransactionsAndOriginalPurchaseDatePresent()
@@ -2366,6 +2423,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                                                   promotionalOffer: nil,
                                                                   winBackOffer: nil,
                                                                   introductoryOfferEligibilityJWS: nil,
+                                                                  billingPlanType: nil,
                                                                   promotionalOfferOptions: nil)
 
         expect(transaction).toNot(beNil())
@@ -2426,6 +2484,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 promotionalOffer: offer,
                 winBackOffer: nil,
                 introductoryOfferEligibilityJWS: nil,
+                billingPlanType: nil,
                 promotionalOfferOptions: nil
             )
             XCTFail("Expected error")
@@ -2485,6 +2544,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                                             promotionalOffer: nil,
                                                             winBackOffer: nil,
                                                             introductoryOfferEligibilityJWS: nil,
+                                                            billingPlanType: nil,
                                                             promotionalOfferOptions: nil)
             XCTFail("Expected error")
         } catch {
@@ -2525,6 +2585,30 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             finishTransactions: true,
             storeKitVersion: .storeKit1
         )
+        self.setUpOrchestrator(
+            storeKit2TransactionListener: transactionListener,
+            storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),
+            storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+            diagnosticsSynchronizer: diagnosticsSynchronizer,
+            diagnosticsTracker: diagnosticsTracker
+        )
+
+        let purchaseIntentListener = MockStoreKit2PurchaseIntentListener()
+
+        self.orchestrator.setSK2PurchaseIntentListener(purchaseIntentListener)
+        expect(purchaseIntentListener.listenForPurchaseIntentsCalled).to(beFalse())
+        expect(purchaseIntentListener.lastProvidedDelegate).to(beNil())
+        expect(purchaseIntentListener.setDelegateCalled).to(beFalse())
+    }
+
+    @available(iOS 16.4, macOS 14.4, *)
+    func testSetSK2PurchaseIntentListenerDoesNothingInSimulatedStore() {
+        let transactionListener = MockStoreKit2TransactionListener()
+        let storeKit2ObserverModePurchaseDetector = MockStoreKit2ObserverModePurchaseDetector()
+        let diagnosticsSynchronizer = MockDiagnosticsSynchronizer()
+        let diagnosticsTracker = MockDiagnosticsTracker()
+
+        self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
         self.setUpOrchestrator(
             storeKit2TransactionListener: transactionListener,
             storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),

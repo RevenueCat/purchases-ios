@@ -400,7 +400,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let purchasedProductsFetcher = OfflineCustomerInfoCreator.createPurchasedProductsFetcherIfAvailable(
             diagnosticsTracker: diagnosticsTracker
         )
-        let transactionFetcher = StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
+        let transactionFetcher: StoreKit2TransactionFetcherType = systemInfo.isSimulatedStoreAPIKey
+            ? SimulatedStoreTransactionFetcher()
+            : StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
 
         let backend = Backend(
             systemInfo: systemInfo,
@@ -429,7 +431,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let simulatedStorePurchaseHandler = SimulatedStorePurchaseHandler(systemInfo: systemInfo)
 
-        let offeringsFactory = OfferingsFactory()
+        let offeringsFactory = OfferingsFactory(systemInfo: systemInfo)
         let receiptParser = PurchasesReceiptParser.default
         let transactionsManager = TransactionsManager(receiptParser: receiptParser)
 
@@ -495,6 +497,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
                                               attributeSyncing: subscriberAttributesManager,
+                                              workflowsCache: systemInfo.workflowsEndpointEnabled
+                                              ? workflowsCache : nil,
                                               appUserID: appUserID
         )
 
@@ -529,13 +533,42 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                attributionPoster: attributionPoster,
                                                systemInfo: systemInfo)
         let introCalculator = IntroEligibilityCalculator(productsManager: productsManager, receiptParser: receiptParser)
+
+        let trialOrIntroPriceChecker = CachingTrialOrIntroPriceEligibilityChecker.create(
+            with: TrialOrIntroPriceEligibilityChecker(systemInfo: systemInfo,
+                                                      receiptFetcher: receiptFetcher,
+                                                      introEligibilityCalculator: introCalculator,
+                                                      backend: backend,
+                                                      currentUserProvider: identityManager,
+                                                      operationDispatcher: operationDispatcher,
+                                                      productsManager: productsManager,
+                                                      diagnosticsTracker: diagnosticsTracker)
+        )
+
+        let paywallCache: PaywallCacheWarmingType?
+
+        if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
+            paywallCache = PaywallCacheWarming(
+                introEligibiltyChecker: trialOrIntroPriceChecker
+            )
+        } else {
+            paywallCache = nil
+        }
+
+        let workflowManager = WorkflowManager(backend: backend,
+                                              workflowsCache: workflowsCache,
+                                              paywallCache: paywallCache,
+                                              operationDispatcher: operationDispatcher)
+
         let offeringsManager = OfferingsManager(deviceCache: deviceCache,
                                                 operationDispatcher: operationDispatcher,
                                                 systemInfo: systemInfo,
                                                 backend: backend,
                                                 offeringsFactory: offeringsFactory,
                                                 productsManager: productsManager,
-                                                diagnosticsTracker: diagnosticsTracker)
+                                                diagnosticsTracker: diagnosticsTracker,
+                                                workflowManager: systemInfo.workflowsEndpointEnabled
+                                                ? workflowManager : nil)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
                                                          currentUserProvider: identityManager)
@@ -655,32 +688,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             }
         }()
 
-        let trialOrIntroPriceChecker = CachingTrialOrIntroPriceEligibilityChecker.create(
-            with: TrialOrIntroPriceEligibilityChecker(systemInfo: systemInfo,
-                                                      receiptFetcher: receiptFetcher,
-                                                      introEligibilityCalculator: introCalculator,
-                                                      backend: backend,
-                                                      currentUserProvider: identityManager,
-                                                      operationDispatcher: operationDispatcher,
-                                                      productsManager: productsManager,
-                                                      diagnosticsTracker: diagnosticsTracker)
-        )
-
-        let paywallCache: PaywallCacheWarmingType?
-
-        if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
-            paywallCache = PaywallCacheWarming(
-                introEligibiltyChecker: trialOrIntroPriceChecker
-            )
-        } else {
-            paywallCache = nil
-        }
-
-        let workflowManager = WorkflowManager(backend: backend,
-                                              workflowsCache: workflowsCache,
-                                              paywallCache: paywallCache,
-                                              operationDispatcher: operationDispatcher)
-
         let virtualCurrencyManager = VirtualCurrencyManager(
             identityManager: identityManager,
             deviceCache: deviceCache,
@@ -781,7 +788,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         Logger.debug(Strings.configure.sdk_version(Self.frameworkVersion))
         Logger.debug(Strings.configure.bundle_id(SystemInfo.bundleIdentifier))
         Logger.debug(Strings.configure.system_version(SystemInfo.systemVersion))
-        Logger.debug(Strings.configure.is_simulator(SystemInfo.isRunningInSimulator))
+        Logger.debug(Strings.configure.is_simulator(SystemInfo.isRunningInSimulator,
+                                                    apiKeyValidationResult: systemInfo.apiKeyValidationResult))
         Logger.user(Strings.configure.initial_app_user_id(isSet: appUserID != nil))
         Logger.debug(Strings.configure.response_verification_mode(systemInfo.responseVerificationMode))
         Logger.debug(Strings.configure.storekit_version(systemInfo.storeKitVersion))
@@ -1345,12 +1353,12 @@ public extension Purchases {
 
     func checkTrialOrIntroDiscountEligibility(packages: [Package]) async -> [Package: IntroEligibility] {
         let result = await self.checkTrialOrIntroDiscountEligibility(
-            productIdentifiers: packages.map(\.storeProduct.productIdentifier)
+            productIdentifiers: packages.map(\.storeProduct.id)
         )
 
         return Set(packages)
             .dictionaryWithValues { (package: Package) in
-                result[package.storeProduct.productIdentifier] ?? .init(eligibilityStatus: .unknown)
+                result[package.storeProduct.id] ?? .init(eligibilityStatus: .unknown)
             }
     }
 
