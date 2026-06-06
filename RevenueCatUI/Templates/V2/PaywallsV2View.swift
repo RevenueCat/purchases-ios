@@ -51,6 +51,11 @@ struct PaywallsV2View: View {
     @Environment(\.workflowPackageContext)
     private var workflowPackageContext
 
+    #if DEBUG
+    @Environment(\.paywallLoadingOverride)
+    private var paywallLoadingOverride: Bool?
+    #endif
+
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -78,7 +83,15 @@ struct PaywallsV2View: View {
     /// `nil` keeps the standalone-paywall behavior of tracking on `onAppear` / `onDisappear`.
     private let isActiveWorkflowPage: Bool?
     @State
-    private var didFinishEligibilityCheck: Bool = false
+    private var didFinishEligibilityCheck: Bool = {
+        #if DEBUG
+        // In Xcode Previews and Emerge snapshot runs, the async eligibility check never
+        // completes, so default to finished to avoid capturing permanently-redacted snapshots.
+        return ProcessInfo.isRunningForPreviews
+        #else
+        return false
+        #endif
+    }()
 
     @State
     private var paywallSessionID: PaywallEvent.SessionID = .init()
@@ -209,6 +222,12 @@ struct PaywallsV2View: View {
             onDismiss: self.onDismiss,
             closeWorkflowAction: self.closeWorkflowAction
         )
+        .environment(\.isPaywallLoading, {
+            #if DEBUG
+            if let override = self.paywallLoadingOverride { return override }
+            #endif
+            return !self.didFinishEligibilityCheck
+        }())
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
