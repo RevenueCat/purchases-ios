@@ -181,6 +181,52 @@
         ]
       },
       "expected": true
+    },
+    {
+      "id": "filter_reads_named_property_on_object_items_then_counts",
+      "description": "filter keeps objects whose 'qualified' flag is truthy (proving the per-item scope exposes named keys), then reduce counts the survivors by incrementing the accumulator per element — 2 of 3 qualify. Counting (rather than string coercion) proves filter returns a real array of the original objects.",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              {
+                "filter": [
+                  {
+                    "var": "items"
+                  },
+                  {
+                    "var": "qualified"
+                  }
+                ]
+              },
+              {
+                "+": [
+                  {
+                    "var": "accumulator"
+                  },
+                  1
+                ]
+              },
+              0
+            ]
+          },
+          2
+        ]
+      },
+      "variables": {
+        "items": [
+          {
+            "qualified": true
+          },
+          {
+            "qualified": false
+          },
+          {
+            "qualified": true
+          }
+        ]
+      },
+      "expected": true
     }
   ]
 }

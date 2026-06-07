@@ -386,6 +386,37 @@
       },
       "variables": {},
       "expected": true
+    },
+    {
+      "id": "reduce_evaluates_initial_accumulator_even_for_non_array_source",
+      "description": "the JS reference computes initial = jsonLogic.apply(values[2], data) before the array guard, so a non-array source still returns the evaluated seed (var 'seed' -> 42), not the literal {\"var\":\"seed\"} expression.",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              null,
+              {
+                "+": [
+                  {
+                    "var": "current"
+                  },
+                  {
+                    "var": "accumulator"
+                  }
+                ]
+              },
+              {
+                "var": "seed"
+              }
+            ]
+          },
+          42
+        ]
+      },
+      "variables": {
+        "seed": 42
+      },
+      "expected": true
     }
   ]
 }

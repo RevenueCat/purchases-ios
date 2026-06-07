@@ -64,7 +64,7 @@
     },
     {
       "id": "none_returns_true_for_null_source_per_json_logic_spec",
-      "description": "none returns true for a non-array source (unlike some/all) because the JS reference defines none via filter, which yields [] for non-arrays, and [].length === 0 is true",
+      "description": "none returns true for a non-array source (unlike some/all): the JS reference guards with !Array.isArray(x) || !x.length, so both non-array and empty sources short-circuit to true",
       "predicate": {
         "none": [
           null,
@@ -232,6 +232,31 @@
         "flag": true
       },
       "expected": true
+    },
+    {
+      "id": "none_reads_named_property_on_object_items",
+      "description": "items are data objects supplied via var, so the per-item scope exposes their named keys. One item has active=true, so none short-circuits to false — proving the property is actually read (a non-reachable property would resolve to null and yield true).",
+      "predicate": {
+        "none": [
+          {
+            "var": "users"
+          },
+          {
+            "var": "active"
+          }
+        ]
+      },
+      "variables": {
+        "users": [
+          {
+            "active": false
+          },
+          {
+            "active": true
+          }
+        ]
+      },
+      "expected": false
     }
   ]
 }

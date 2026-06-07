@@ -25,8 +25,8 @@ import Foundation
 ///
 /// **Empty- and non-array sources** per the JSON Logic JS spec:
 /// - `some` / `all` return `false`. (`all` is not vacuous truth.)
-/// - `none` returns `true` (the JS reference implements `none` in terms
-///   of `filter`, and `[].length === 0`).
+/// - `none` returns `true` for both empty and non-array sources (the JS
+///   reference guards with `!Array.isArray(x) || !x.length`).
 /// - `map` / `filter` return `[]`.
 /// - `reduce` returns the initial accumulator unchanged.
 enum IterationOperators {
@@ -65,9 +65,8 @@ enum IterationOperators {
 
     /// `{"none": [arrayExpr, predicate]}` — `true` iff `predicate` is
     /// falsy for every item. Inverse of `some`. Short-circuits on the
-    /// first truthy item. Non-array source returns `true` (the JS
-    /// reference implements `none` in terms of `filter`, which yields
-    /// `[]` for non-arrays).
+    /// first truthy item. Empty and non-array sources both return `true`,
+    /// matching the JS reference's `!Array.isArray(x) || !x.length` guard.
     static func opNone(args: Value, vars: Value) throws -> Value {
         let (items, predicate) = try parseIterationArgs(args, vars: vars)
         guard let items else { return .bool(true) }

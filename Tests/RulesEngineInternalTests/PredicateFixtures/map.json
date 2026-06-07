@@ -156,6 +156,51 @@
         ]
       },
       "expected": true
+    },
+    {
+      "id": "map_reads_named_property_on_object_items_then_reduces",
+      "description": "map reads each object's price (proving the per-item scope exposes named keys), then reduce sums the mapped values to 30 — which also proves map returns a real array rather than a string-coercible scalar.",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              {
+                "map": [
+                  {
+                    "var": "products"
+                  },
+                  {
+                    "var": "price"
+                  }
+                ]
+              },
+              {
+                "+": [
+                  {
+                    "var": "current"
+                  },
+                  {
+                    "var": "accumulator"
+                  }
+                ]
+              },
+              0
+            ]
+          },
+          30
+        ]
+      },
+      "variables": {
+        "products": [
+          {
+            "price": 10
+          },
+          {
+            "price": 20
+          }
+        ]
+      },
+      "expected": true
     }
   ]
 }
