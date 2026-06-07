@@ -21,21 +21,29 @@ enum MinMaxOperators {
 
     /// `{"max": [v1, v2, ...]}` — variadic numeric maximum.
     static func opMax(args: Value, vars: Value) throws -> Value {
-        let numbers = try evaluateAsNumbers(args, vars: vars)
-        if numbers.contains(where: { $0.isNaN }) { return .float(.nan) }
-        return .float(numbers.max() ?? -.infinity)
+        try reduceExtremum(args, vars: vars, empty: -.infinity) { Swift.max($0, $1) }
     }
 
     /// `{"min": [v1, v2, ...]}` — variadic numeric minimum.
     static func opMin(args: Value, vars: Value) throws -> Value {
-        let numbers = try evaluateAsNumbers(args, vars: vars)
-        if numbers.contains(where: { $0.isNaN }) { return .float(.nan) }
-        return .float(numbers.min() ?? .infinity)
+        try reduceExtremum(args, vars: vars, empty: .infinity) { Swift.min($0, $1) }
     }
 
-    /// Evaluate each argument and coerce it to `Double`, falling back
-    /// to `nan` for non-numeric operands.
-    private static func evaluateAsNumbers(_ args: Value, vars: Value) throws -> [Double] {
-        try Operators.evalArgs(args, vars: vars).map { $0.asNumber ?? .nan }
+    /// Evaluate each operand to a `Double` (non-numeric → `nan`) and fold
+    /// it into a single extremum in one pass. `empty` is the no-operand
+    /// result (`Math.max()` → `-∞`, `Math.min()` → `+∞`); any `nan`
+    /// operand poisons the accumulator, mirroring `Math.max` / `Math.min`.
+    private static func reduceExtremum(
+        _ args: Value,
+        vars: Value,
+        empty: Double,
+        combine: (Double, Double) -> Double
+    ) throws -> Value {
+        let result = try Operators.evalArgs(args, vars: vars).reduce(empty) { accumulator, value in
+            let number = value.asNumber ?? .nan
+            guard !accumulator.isNaN, !number.isNaN else { return .nan }
+            return combine(accumulator, number)
+        }
+        return .float(result)
     }
 }

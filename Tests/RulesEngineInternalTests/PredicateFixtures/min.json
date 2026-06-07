@@ -240,6 +240,87 @@
       },
       "variables": {},
       "expected": true
+    },
+    {
+      "id": "min_resolves_scalar_var_operands",
+      "description": "operands resolved from variables, the realistic predicate shape",
+      "predicate": {
+        "===": [
+          {
+            "min": [
+              {
+                "var": "a"
+              },
+              {
+                "var": "b"
+              }
+            ]
+          },
+          1
+        ]
+      },
+      "variables": {
+        "a": 5,
+        "b": 1
+      },
+      "expected": true
+    },
+    {
+      "id": "min_single_array_var_arg_is_nan",
+      "description": "{\"min\": {\"var\": \"scores\"}} does NOT min over the list: the single array arg stringifies to \"1,2,3\" which is NaN (matches JS Math.min([1,2,3])); x != x is true iff x is NaN",
+      "predicate": {
+        "!=": [
+          {
+            "min": {
+              "var": "scores"
+            }
+          },
+          {
+            "min": {
+              "var": "scores"
+            }
+          }
+        ]
+      },
+      "variables": {
+        "scores": [
+          1,
+          2,
+          3
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "min_nan_result_fails_closed_against_threshold",
+      "description": "a poisoned min (NaN) makes <= n come out false, the fail-closed behavior for malformed predicates",
+      "predicate": {
+        "<=": [
+          {
+            "min": [
+              1,
+              {}
+            ]
+          },
+          0
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "min_empty_args_fails_closed_against_threshold",
+      "description": "{\"min\": []} is +Infinity, so <= n is false: an empty operand list (e.g. a var resolving to nothing) fails closed",
+      "predicate": {
+        "<=": [
+          {
+            "min": []
+          },
+          0
+        ]
+      },
+      "variables": {},
+      "expected": false
     }
   ]
 }
