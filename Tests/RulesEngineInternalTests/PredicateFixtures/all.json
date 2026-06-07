@@ -209,8 +209,8 @@
       "expected": true
     },
     {
-      "id": "all_khepri_subscriptions_active_matching",
-      "description": "mirrors khepri/all_subscriptions_active/matching",
+      "id": "all_returns_true_when_every_object_in_array_matches",
+      "description": "object array source where every item satisfies the predicate returns true",
       "predicate": {
         "all": [
           {
@@ -239,8 +239,8 @@
       "expected": true
     },
     {
-      "id": "all_khepri_subscriptions_active_non_matching",
-      "description": "mirrors khepri/all_subscriptions_active/non_matching",
+      "id": "all_returns_false_when_one_object_in_array_does_not_match",
+      "description": "object array source where one item fails the predicate returns false",
       "predicate": {
         "all": [
           {
@@ -270,6 +270,46 @@
         ]
       },
       "expected": false
+    },
+    {
+      "id": "all_with_literal_false_predicate_returns_false",
+      "description": "a non-logic literal predicate is returned as-is per item; a falsy literal makes a non-empty source return false",
+      "predicate": {
+        "all": [
+          [
+            1,
+            2
+          ],
+          false
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_with_non_boolean_truthy_predicate_result",
+      "description": "predicate results go through JSON Logic truthiness, not a strict boolean check: a non-empty string is truthy for every item",
+      "predicate": {
+        "all": [
+          {
+            "var": "items"
+          },
+          {
+            "var": "label"
+          }
+        ]
+      },
+      "variables": {
+        "items": [
+          {
+            "label": "a"
+          },
+          {
+            "label": "b"
+          }
+        ]
+      },
+      "expected": true
     }
   ]
 }
