@@ -32,11 +32,14 @@ import Foundation
 enum IterationOperators {
 
     /// `{"some": [arrayExpr, predicate]}` — `true` iff `predicate` is
-    /// truthy for at least one item in the array. Empty array or
-    /// non-array source returns `false`. Short-circuits on the first
-    /// truthy result.
+    /// truthy for at least one item. The array expression is evaluated in
+    /// the current scope; the predicate is re-evaluated per item with
+    /// `vars` rebound to that item, with no parent-scope inheritance.
+    /// Empty array or non-array source returns `false`. Short-circuits on
+    /// the first truthy result.
     static func opSome(args: Value, vars: Value) throws -> Value {
-        let (items, predicate) = try parseIterationArgs(args, vars: vars, opName: "some")
+        let (items, predicate) = try parseIterationArgs(args, vars: vars)
+        guard let items else { return .bool(false) }
         for item in items {
             let result = try Evaluator.evaluateValue(predicate, vars: item)
             if result.isTruthy { return .bool(true) }
@@ -45,12 +48,14 @@ enum IterationOperators {
     }
 
     /// `{"all": [arrayExpr, predicate]}` — `true` iff `predicate` is
-    /// truthy for every item. Empty array returns `false` per the JSON
-    /// Logic JS spec, not vacuous truth. Non-array source returns
-    /// `false`. Short-circuits on the first non-truthy result.
+    /// truthy for every item. The array expression is evaluated in the
+    /// current scope; the predicate is re-evaluated per item with `vars`
+    /// rebound to that item, with no parent-scope inheritance. Empty array
+    /// returns `false` per the JSON Logic JS spec. Non-array source
+    /// returns `false`. Short-circuits on the first non-truthy result.
     static func opAll(args: Value, vars: Value) throws -> Value {
-        let (items, predicate) = try parseIterationArgs(args, vars: vars, opName: "all")
-        guard !items.isEmpty else { return .bool(false) }
+        let (items, predicate) = try parseIterationArgs(args, vars: vars)
+        guard let items, !items.isEmpty else { return .bool(false) }
         for item in items {
             let result = try Evaluator.evaluateValue(predicate, vars: item)
             if !result.isTruthy { return .bool(false) }
@@ -64,7 +69,8 @@ enum IterationOperators {
     /// reference implements `none` in terms of `filter`, which yields
     /// `[]` for non-arrays).
     static func opNone(args: Value, vars: Value) throws -> Value {
-        let (items, predicate) = try parseIterationArgs(args, vars: vars, opName: "none")
+        let (items, predicate) = try parseIterationArgs(args, vars: vars)
+        guard let items else { return .bool(true) }
         for item in items {
             let result = try Evaluator.evaluateValue(predicate, vars: item)
             if result.isTruthy { return .bool(false) }
@@ -76,7 +82,8 @@ enum IterationOperators {
     /// item, return the new array of *raw* (non-truthy-coerced) results.
     /// Empty or non-array source yields `[]`.
     static func opMap(args: Value, vars: Value) throws -> Value {
-        let (items, predicate) = try parseIterationArgs(args, vars: vars, opName: "map")
+        let (items, predicate) = try parseIterationArgs(args, vars: vars)
+        guard let items else { return .array([]) }
         var results: [Value] = []
         results.reserveCapacity(items.count)
         for item in items {
@@ -90,7 +97,8 @@ enum IterationOperators {
     /// `[]`. The retained items are the *original* values, not the
     /// predicate results.
     static func opFilter(args: Value, vars: Value) throws -> Value {
-        let (items, predicate) = try parseIterationArgs(args, vars: vars, opName: "filter")
+        let (items, predicate) = try parseIterationArgs(args, vars: vars)
+        guard let items else { return .array([]) }
         var results: [Value] = []
         for item in items {
             let result = try Evaluator.evaluateValue(predicate, vars: item)
@@ -129,20 +137,22 @@ enum IterationOperators {
     /// operators (`some`, `all`, `none`, `map`, `filter`). The source
     /// argument is evaluated in the outer scope; the predicate template
     /// is returned unevaluated so the caller can re-evaluate it per
-    /// item. A non-array source yields an empty `items` list. A
-    /// missing predicate defaults to `.null` and arguments past the
-    /// second are ignored, matching `json-logic-js`'s
+    /// item with the item as scope. `items` is `nil` when the source
+    /// does not resolve to an array, so callers can distinguish a
+    /// non-array source from a genuinely empty one (`some`/`all` treat
+    /// both as `false`, but `none`/`map`/`filter`/`reduce` need the
+    /// distinction). A missing predicate defaults to `.null` and
+    /// arguments past the second are ignored, matching `json-logic-js`'s
     /// `function(scopedData, scopedLogic)` signature.
     private static func parseIterationArgs(
         _ args: Value,
-        vars: Value,
-        opName: String
-    ) throws -> ([Value], Value) {
+        vars: Value
+    ) throws -> (items: [Value]?, predicate: Value) {
         let raw = Operators.argsAsList(args)
         let sourceArg: Value = raw.indices.contains(0) ? raw[0] : .null
         let predicate: Value = raw.indices.contains(1) ? raw[1] : .null
         let source = try Evaluator.evaluateValue(sourceArg, vars: vars)
-        guard case .array(let items) = source else { return ([], predicate) }
+        guard case .array(let items) = source else { return (nil, predicate) }
         return (items, predicate)
     }
 }

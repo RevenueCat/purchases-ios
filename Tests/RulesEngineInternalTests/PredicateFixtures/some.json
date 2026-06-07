@@ -207,8 +207,8 @@
       "expected": false
     },
     {
-      "id": "some_khepri_active_subscription_matching",
-      "description": "mirrors khepri/some_active_subscription/matching to pin parity with the backend oracle",
+      "id": "some_returns_true_when_one_object_in_array_matches",
+      "description": "object array source where at least one item satisfies the predicate returns true",
       "predicate": {
         "some": [
           {
@@ -240,8 +240,8 @@
       "expected": true
     },
     {
-      "id": "some_khepri_active_subscription_non_matching",
-      "description": "mirrors khepri/some_active_subscription/non_matching",
+      "id": "some_returns_false_when_no_object_in_array_matches",
+      "description": "object array source where no item satisfies the predicate returns false",
       "predicate": {
         "some": [
           {
@@ -271,6 +271,46 @@
         ]
       },
       "expected": false
+    },
+    {
+      "id": "some_with_literal_true_predicate_returns_true",
+      "description": "a non-logic literal predicate is returned as-is per item; a truthy literal makes a non-empty source return true",
+      "predicate": {
+        "some": [
+          [
+            1,
+            2
+          ],
+          true
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "some_with_non_boolean_truthy_predicate_result",
+      "description": "predicate results go through JSON Logic truthiness, not a strict boolean check: 0 is falsy and a non-zero number is truthy",
+      "predicate": {
+        "some": [
+          {
+            "var": "items"
+          },
+          {
+            "var": "count"
+          }
+        ]
+      },
+      "variables": {
+        "items": [
+          {
+            "count": 0
+          },
+          {
+            "count": 3
+          }
+        ]
+      },
+      "expected": true
     }
   ]
 }

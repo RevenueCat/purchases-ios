@@ -257,6 +257,70 @@
       },
       "variables": {},
       "expected": false
+    },
+    {
+      "id": "max_resolves_scalar_var_operands",
+      "description": "operands resolved from variables, the realistic predicate shape",
+      "predicate": {
+        "===": [
+          {
+            "max": [
+              {
+                "var": "a"
+              },
+              {
+                "var": "b"
+              }
+            ]
+          },
+          5
+        ]
+      },
+      "variables": {
+        "a": 1,
+        "b": 5
+      },
+      "expected": true
+    },
+    {
+      "id": "max_single_array_var_arg_is_nan",
+      "description": "{\"max\": {\"var\": \"scores\"}} does NOT max over the list: the single array arg stringifies to \"1,2,3\" which is NaN (matches JS Math.max([1,2,3])); x != x is true iff x is NaN",
+      "predicate": {
+        "!=": [
+          {
+            "max": {
+              "var": "scores"
+            }
+          },
+          {
+            "max": {
+              "var": "scores"
+            }
+          }
+        ]
+      },
+      "variables": {
+        "scores": [
+          1,
+          2,
+          3
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "max_empty_args_fails_closed_against_threshold",
+      "description": "{\"max\": []} is -Infinity, so >= n is false: an empty operand list (e.g. a var resolving to nothing) fails closed",
+      "predicate": {
+        ">=": [
+          {
+            "max": []
+          },
+          0
+        ]
+      },
+      "variables": {},
+      "expected": false
     }
   ]
 }
