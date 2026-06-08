@@ -46,7 +46,7 @@
     },
     {
       "id": "all_returns_false_for_empty_array_per_json_logic_spec",
-      "description": "json-logic-js returns false (not vacuous truth) for all over an empty array; we follow the spec even though the khepri backend returns true",
+      "description": "json-logic-js returns false for all over an empty array",
       "predicate": {
         "all": [
           [],

@@ -1,13 +1,59 @@
 {
   "fixtures": [
     {
-      "id": "some_returns_true_when_at_least_one_item_matches",
+      "id": "some_returns_true_when_all_items_match",
       "predicate": {
         "some": [
           [
             1,
             2,
             3
+          ],
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "some_returns_true_when_only_first_item_matches",
+      "description": "order independence: a match in the first position is enough even when the rest fail",
+      "predicate": {
+        "some": [
+          [
+            1,
+            -2,
+            -3
+          ],
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "some_returns_true_when_only_middle_item_matches",
+      "description": "order independence: a match in a middle position is enough even when the surrounding items fail",
+      "predicate": {
+        "some": [
+          [
+            -1,
+            2,
+            -3
           ],
           {
             ">": [
