@@ -80,15 +80,15 @@
     },
     {
       "id": "substr_positive_infinite_start_returns_empty",
-      "description": "+Infinity start is at/past the end, returning an empty substring; +Infinity is produced via division-by-zero since JSON has no Infinity literal",
-      "predicate": { "===": [{ "substr": ["abcd", { "/": [10, 0] }] }, ""] },
+      "description": "+Infinity start is at/past the end, returning an empty substring",
+      "predicate": { "===": [{ "substr": ["abcd", { "var": "+Infinity" }] }, ""] },
       "variables": {},
       "expected": true
     },
     {
       "id": "substr_negative_infinite_start_clamps_to_zero",
-      "description": "-Infinity start clamps to 0, returning the whole string; -Infinity is produced via division-by-zero since JSON has no Infinity literal",
-      "predicate": { "===": [{ "substr": ["abcd", { "/": [-10, 0] }] }, "abcd"] },
+      "description": "-Infinity start clamps to 0, returning the whole string",
+      "predicate": { "===": [{ "substr": ["abcd", { "var": "-Infinity" }] }, "abcd"] },
       "variables": {},
       "expected": true
     },
@@ -108,15 +108,15 @@
     },
     {
       "id": "substr_positive_infinite_length_returns_remaining",
-      "description": "+Infinity length clamps to the remaining string; +Infinity is produced via division-by-zero since JSON has no Infinity literal",
-      "predicate": { "===": [{ "substr": ["abcd", 1, { "/": [10, 0] }] }, "bcd"] },
+      "description": "+Infinity length clamps to the remaining string",
+      "predicate": { "===": [{ "substr": ["abcd", 1, { "var": "+Infinity" }] }, "bcd"] },
       "variables": {},
       "expected": true
     },
     {
       "id": "substr_negative_infinite_length_returns_empty",
-      "description": "-Infinity length clamps to 0, giving an empty result; -Infinity is produced via division-by-zero since JSON has no Infinity literal",
-      "predicate": { "===": [{ "substr": ["abcd", 1, { "/": [-10, 0] }] }, ""] },
+      "description": "-Infinity length clamps to 0, giving an empty result",
+      "predicate": { "===": [{ "substr": ["abcd", 1, { "var": "-Infinity" }] }, ""] },
       "variables": {},
       "expected": true
     }
