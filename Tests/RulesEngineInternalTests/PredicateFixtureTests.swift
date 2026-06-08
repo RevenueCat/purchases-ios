@@ -4,6 +4,10 @@
 //  Created by Antonio Pallares.
 //
 
+// Swift Testing is only available with the Xcode 16+ toolchain
+#if compiler(>=5.9)
+#if canImport(Testing)
+
 import Testing
 
 @testable import RulesEngineInternal
@@ -45,3 +49,6 @@ extension PredicateConformanceFixtureCase: CustomTestStringConvertible {
 
     var testDescription: String { id }
 }
+
+#endif
+#endif
