@@ -30,13 +30,13 @@ final class CapturingLogger: RulesEngineLogger {
         return capturedLogs
     }
 
-    func warn(_ message: String, tag: String) {
+    func warn(_ message: String) {
         lock.lock()
         defer { lock.unlock() }
         capturedWarnings.append(message)
     }
 
-    func log(_ message: String, tag: String) {
+    func log(_ message: String) {
         lock.lock()
         defer { lock.unlock() }
         capturedLogs.append(message)

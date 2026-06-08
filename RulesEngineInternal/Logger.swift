@@ -6,39 +6,29 @@
 
 import Foundation
 
-/// Default log tag for `RulesEngineLogger`.
-let rulesEngineLogTag = "[RulesEngine]"
-
 /// Logging facade for the rules engine.
+///
+/// Messages are emitted without any source tag/prefix; hosts that bridge
+/// this into their own logging system prepend their own identifier when
+/// they need one.
 protocol RulesEngineLogger {
 
     /// Carries engine diagnostics (missing variables, unsupported
     /// operators, type mismatches).
-    func warn(_ message: String, tag: String)
+    func warn(_ message: String)
 
     /// Carries pass-through output from the JSON Logic `log` operator.
-    func log(_ message: String, tag: String)
-}
-
-extension RulesEngineLogger {
-
-    func warn(_ message: String) {
-        warn(message, tag: rulesEngineLogTag)
-    }
-
-    func log(_ message: String) {
-        log(message, tag: rulesEngineLogTag)
-    }
+    func log(_ message: String)
 }
 
 /// Default logger for `RulesEngine.logger`.
 struct PrintLogger: RulesEngineLogger {
 
-    func warn(_ message: String, tag: String) {
-        print("\(tag) \(message)")
+    func warn(_ message: String) {
+        print(message)
     }
 
-    func log(_ message: String, tag: String) {
-        print("\(tag) \(message)")
+    func log(_ message: String) {
+        print(message)
     }
 }
