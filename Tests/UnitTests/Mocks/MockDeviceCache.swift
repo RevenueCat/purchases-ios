@@ -169,6 +169,29 @@ class MockDeviceCache: DeviceCache {
         self.clearWorkflowsListResponseCacheCount += 1
     }
 
+    // MARK: Workflow details
+
+    var cacheWorkflowDetailsCount = 0
+    var clearWorkflowDetailsCacheCount = 0
+    var stubbedCachedWorkflowDetails: [String: WorkflowDataResult]?
+    private(set) var cachedWorkflowDetailsParameter: [String: WorkflowDataResult]?
+
+    override func cachedWorkflowDetails() -> [String: WorkflowDataResult]? {
+        return self.stubbedCachedWorkflowDetails
+    }
+
+    override func cache(workflowDetails: [String: WorkflowDataResult]) {
+        self.cacheWorkflowDetailsCount += 1
+        self.cachedWorkflowDetailsParameter = workflowDetails
+        // Reflect the write so read-after-write returns it, letting tests exercise merge/prune.
+        self.stubbedCachedWorkflowDetails = workflowDetails
+    }
+
+    override func clearWorkflowDetailsCache() {
+        self.clearWorkflowDetailsCacheCount += 1
+        self.stubbedCachedWorkflowDetails = nil
+    }
+
     // MARK: SubscriberAttributes
 
     var invokedStore = false
