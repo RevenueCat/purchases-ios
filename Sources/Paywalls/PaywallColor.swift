@@ -35,6 +35,11 @@ public struct PaywallColor {
     public var stringRepresentation: String
 
     #if canImport(SwiftUI)
+    /// Creates a color from a Hex string: `#RRGGBB` or `#RRGGBBAA`.
+    public init(stringRepresentation: String) throws {
+        self.init(stringRepresentation: stringRepresentation, color: try Self.parseColor(stringRepresentation))
+    }
+
     /// The underlying SwiftUI `Color`.
     public var underlyingColor: Color {
         // swiftlint:disable:next force_cast
@@ -52,11 +57,6 @@ public struct PaywallColor {
 extension PaywallColor {
 
     #if canImport(SwiftUI)
-
-    /// Creates a color from a Hex string: `#RRGGBB` or `#RRGGBBAA`.
-    public init(stringRepresentation: String) throws {
-        self.init(stringRepresentation: stringRepresentation, color: try Self.parseColor(stringRepresentation))
-    }
 
         #if canImport(UIKit)
 
