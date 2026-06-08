@@ -205,6 +205,37 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockDeviceCache.cacheWorkflowsListResponseCount) == 0
     }
 
+    func testGetWorkflowsListDoesNotRestoreFromDiskOnClientError() throws {
+        // A 4xx means the backend rejected the request (workflows disabled, unauthorized, ...), so
+        // stale prefetched data must not be served.
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(
+            .networkError(.errorResponse(.init(code: .invalidAPIKey, originalCode: 0), .invalidRequest))
+        )
+        self.mockDeviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ])
+        self.mockDeviceCache.stubbedCachedWorkflowDetails = ["wf_1": try Self.workflowDataResult(id: "wf_1")]
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.manager.cachedWorkflowId(forOfferingId: "default")).to(beNil())
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
+    }
+
+    func testGetWorkflowsListRestoresFromDiskOnServerError() {
+        // A 5xx is transient, so the last cached list is restored to keep resolving offline.
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(
+            .networkError(.errorResponse(.init(code: .unknownError, originalCode: 0), .internalServerError))
+        )
+        self.mockDeviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ])
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.manager.cachedWorkflowId(forOfferingId: "default")) == "wf_1"
+    }
+
     func testGetWorkflowsListWithDuplicateOfferingIdKeepsLastEntry() {
         self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
             .init(id: "wf_first", displayName: "First", offeringId: "shared", prefetch: false),
