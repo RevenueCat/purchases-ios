@@ -66,6 +66,17 @@ final class VideoComponentViewTests: TestCase {
         XCTAssertEqual(maxWidth, 146)
     }
 
+    func testIsPlayableRequiresBothActiveCarouselPageAndActiveWorkflowPage() {
+        // On-screen, no carousel constraints: plays.
+        XCTAssertTrue(VideoComponentView.isPlayable(isActiveOrNeighbor: true, isWorkflowPageActive: true))
+        // Active carousel page but the workflow page is hidden off-screen: must pause.
+        XCTAssertFalse(VideoComponentView.isPlayable(isActiveOrNeighbor: true, isWorkflowPageActive: false))
+        // On-screen workflow page but a far-off carousel slide: stays paused as before.
+        XCTAssertFalse(VideoComponentView.isPlayable(isActiveOrNeighbor: false, isWorkflowPageActive: true))
+        // Off for both reasons: paused.
+        XCTAssertFalse(VideoComponentView.isPlayable(isActiveOrNeighbor: false, isWorkflowPageActive: false))
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
