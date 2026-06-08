@@ -2586,6 +2586,9 @@ workflows:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
             equal: [bump, << pipeline.parameters.action >>]
+        - not: << pipeline.parameters.generate_snapshots >>
+        - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
+        - not: << pipeline.parameters.generate_swiftinterface >>
         - matches:
             pattern: "^(release/.*|main)$"
             value: << pipeline.git.branch >>
