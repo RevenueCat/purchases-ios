@@ -108,6 +108,28 @@ class WorkflowManager {
         return self.workflowsCache.workflowId(forOfferingId: offeringId)
     }
 
+    /// Returns the cached workflow for `offeringId` only when seeding it synchronously is safe: the
+    /// workflows list is fresh and explicitly maps `offeringId`, and that workflow's detail is
+    /// cached and fresh. Otherwise returns nil so the async path refetches.
+    ///
+    /// A stale list mapping (or the old offering-id fallback) can resolve the wrong workflow, and a
+    /// synchronous seed skips the view's async refresh, so there'd be no correction.
+    func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
+        // `isAppBackgrounded: false` is intentional: this synchronous seed only runs while a paywall
+        // is being presented, i.e. the app is in the foreground. The foreground TTL is the shorter,
+        // stricter one, so the worst case is treating a borderline-fresh entry as stale and falling
+        // through to the async refetch, never seeding something the background TTL would reject.
+        guard !self.workflowsCache.isWorkflowsListCacheStale(isAppBackgrounded: false),
+              let workflowId = self.workflowsCache.workflowId(forOfferingId: offeringId) else {
+            return nil
+        }
+        guard let cached = self.workflowsCache.cachedWorkflow(workflowId: workflowId),
+              !self.workflowsCache.isWorkflowCacheStale(workflowId: workflowId, isAppBackgrounded: false) else {
+            return nil
+        }
+        return cached
+    }
+
     /// Marks the workflows list stale so the next ``getWorkflowsList(appUserID:isAppBackgrounded:onComplete:)``
     /// refetches it. Called when offerings are refreshed from the network, to keep both in sync.
     func forceWorkflowsListCacheStale() {
