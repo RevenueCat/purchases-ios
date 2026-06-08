@@ -236,6 +236,24 @@ class WorkflowManagerTests: TestCase {
         expect(self.manager.cachedWorkflowId(forOfferingId: "default")) == "wf_1"
     }
 
+    func testGetWorkflowsListRestoresDetailsFromDiskOnServerError() throws {
+        // A 5xx is transient: both the list mapping AND prefetched details must be restored so the
+        // next render can serve them offline. Complements testGetWorkflowsListRestoresFromDiskOnServerError
+        // which only asserts on the list mapping.
+        let restored = try Self.workflowDataResult(id: "wf_1")
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(
+            .networkError(.errorResponse(.init(code: .unknownError, originalCode: 0), .internalServerError))
+        )
+        self.mockDeviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ])
+        self.mockDeviceCache.stubbedCachedWorkflowDetails = ["wf_1": restored]
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == restored
+    }
+
     func testGetWorkflowsListWithDuplicateOfferingIdKeepsLastEntry() {
         self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
             .init(id: "wf_first", displayName: "First", offeringId: "shared", prefetch: false),
@@ -411,6 +429,19 @@ class WorkflowManagerTests: TestCase {
 
     func testGetWorkflowsListCallsOnCompleteAfterNetworkError() {
         self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
+
+        var completed = false
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
+
+        expect(completed) == true
+    }
+
+    func testGetWorkflowsListCallsOnCompleteOnClientError() {
+        // A 4xx skips disk restoration and returns early. onComplete must still fire so
+        // callers (e.g. offerings delivery) are not blocked.
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(
+            .networkError(.errorResponse(.init(code: .invalidAPIKey, originalCode: 0), .invalidRequest))
+        )
 
         var completed = false
         self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
