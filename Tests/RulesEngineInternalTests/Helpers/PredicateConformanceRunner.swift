@@ -122,23 +122,14 @@ enum PredicateConformanceRunner {
 
     private static func assertLogs(
         logger: CapturingLogger,
-        expected: ExpectedLogs,
+        expected: [String],
         fixtureID: String
     ) {
         let logs = logger.logs
-        guard !expected.contains.isEmpty else {
-            #expect(
-                logs.isEmpty,
-                "Fixture \(fixtureID) expected no log messages, got \(logs)"
-            )
-            return
-        }
-        for substring in expected.contains {
-            #expect(
-                logs.contains(where: { $0.contains(substring) }),
-                "Fixture \(fixtureID) missing log message containing \"\(substring)\""
-            )
-        }
+        #expect(
+            logs == expected,
+            "Fixture \(fixtureID) expected logs \(expected), got \(logs)"
+        )
     }
 }
 

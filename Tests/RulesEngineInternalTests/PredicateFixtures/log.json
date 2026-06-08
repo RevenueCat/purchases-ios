@@ -11,14 +11,14 @@
       "predicate": { "log": "hello" },
       "variables": {},
       "expected": true,
-      "expectedLogs": { "contains": ["hello"] }
+      "expectedLogs": ["hello"]
     },
     {
       "id": "log_emits_number_value_to_logger",
       "predicate": { "log": 7 },
       "variables": {},
       "expected": true,
-      "expectedLogs": { "contains": ["7"] }
+      "expectedLogs": ["7"]
     },
     {
       "id": "log_passes_through_value_in_comparison",
@@ -46,9 +46,49 @@
     },
     {
       "id": "log_empty_args_returns_null",
+      "description": "no operand resolves to null, which stringifies to \"null\"",
       "predicate": { "log": [] },
       "variables": {},
-      "expected": false
+      "expected": false,
+      "expectedLogs": ["null"]
+    },
+    {
+      "id": "log_emits_positive_infinity",
+      "predicate": { "log": { "var": "+Infinity" } },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["Infinity"]
+    },
+    {
+      "id": "log_emits_negative_infinity",
+      "predicate": { "log": { "var": "-Infinity" } },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["-Infinity"]
+    },
+    {
+      "id": "log_emits_nan",
+      "description": "NaN (produced via 0/0 since JSON has no NaN literal) stringifies to \"NaN\" and is falsy",
+      "predicate": { "log": { "/": [0, 0] } },
+      "variables": {},
+      "expected": false,
+      "expectedLogs": ["NaN"]
+    },
+    {
+      "id": "log_emits_empty_object",
+      "description": "an empty object stringifies to \"[object Object]\" and is truthy",
+      "predicate": { "log": {} },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["[object Object]"]
+    },
+    {
+      "id": "log_emits_empty_array",
+      "description": "an empty array (produced via merge) stringifies to the empty string and is falsy",
+      "predicate": { "log": { "merge": [] } },
+      "variables": {},
+      "expected": false,
+      "expectedLogs": [""]
     }
   ]
 }
