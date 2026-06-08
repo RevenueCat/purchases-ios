@@ -48,6 +48,10 @@ class WorkflowManager {
             return
         }
 
+        // Capture the cache generation when the request is issued. If an identity change clears the
+        // cache while this fetch is in flight, the in-memory write below is dropped, so a result
+        // fetched for the previous user (workflow detail is user-scoped) can't repopulate memory.
+        let generation = self.workflowsCache.currentCacheGeneration()
         self.backend.workflowsAPI.getWorkflow(appUserID: appUserID,
                                               workflowId: workflowId,
                                               isAppBackgrounded: isAppBackgrounded) { [weak self] result in
@@ -56,7 +60,9 @@ class WorkflowManager {
                 return
             }
             if case let .success(dataResult) = result {
-                self.workflowsCache.cache(workflow: dataResult, workflowId: workflowId)
+                self.workflowsCache.cache(workflow: dataResult,
+                                          workflowId: workflowId,
+                                          ifGeneration: generation)
                 self.warmUpAssets(for: dataResult)
             }
             completion(result)
@@ -160,8 +166,9 @@ private extension WorkflowManager {
     /// offline. Only prefetched workflows are persisted: they're the curated, bounded set the backend
     /// marked as mattering, so persisting all of them is safe. On-demand fetches are not persisted, to
     /// avoid unbounded disk growth (a session can open many distinct paywalls); persisting those
-    /// behind an LRU cap is a planned follow-up. The disk generation captured before fetching guards
-    /// the write against an identity change mid-prefetch.
+    /// behind an LRU cap is a planned follow-up. The cache generation captured before fetching guards
+    /// the disk write against an identity change mid-prefetch; each ``getWorkflow`` call guards its own
+    /// in-memory write the same way.
     func prefetchWorkflows(_ workflows: [WorkflowSummary],
                            appUserID: String,
                            isAppBackgrounded: Bool,
@@ -172,7 +179,7 @@ private extension WorkflowManager {
             return
         }
 
-        let generation = self.workflowsCache.currentDiskGeneration()
+        let generation = self.workflowsCache.currentCacheGeneration()
         // Lock-guarded counter so the batch persist + `onComplete` fire exactly once, after the last
         // prefetch lands, regardless of which thread each completion arrives on.
         let remaining: Atomic<Int> = .init(prefetchWorkflows.count)

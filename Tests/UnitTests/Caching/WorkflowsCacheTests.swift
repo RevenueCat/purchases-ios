@@ -232,7 +232,7 @@ class WorkflowsCacheTests: TestCase {
     func testPersistWorkflowDetailsToDiskPersistsKeyedByWorkflowId() throws {
         let result = try Self.workflowDataResult(id: "wf_1")
         self.cache.persistWorkflowDetailsToDisk(["wf_1": result],
-                                                ifGeneration: self.cache.currentDiskGeneration())
+                                                ifGeneration: self.cache.currentCacheGeneration())
 
         expect(self.deviceCache.cacheWorkflowDetailsCount) == 1
         expect(self.deviceCache.cachedWorkflowDetailsParameter?["wf_1"]) == result
@@ -244,7 +244,7 @@ class WorkflowsCacheTests: TestCase {
 
         let new = try Self.workflowDataResult(id: "wf_new")
         self.cache.persistWorkflowDetailsToDisk(["wf_new": new],
-                                                ifGeneration: self.cache.currentDiskGeneration())
+                                                ifGeneration: self.cache.currentCacheGeneration())
 
         let persisted = try XCTUnwrap(self.deviceCache.cachedWorkflowDetailsParameter)
         expect(persisted.keys).to(contain("wf_existing", "wf_new"))
@@ -253,14 +253,14 @@ class WorkflowsCacheTests: TestCase {
     }
 
     func testPersistWorkflowDetailsToDiskIsNoOpForEmptyBatch() {
-        self.cache.persistWorkflowDetailsToDisk([:], ifGeneration: self.cache.currentDiskGeneration())
+        self.cache.persistWorkflowDetailsToDisk([:], ifGeneration: self.cache.currentCacheGeneration())
         expect(self.deviceCache.cacheWorkflowDetailsCount) == 0
     }
 
     func testPersistWorkflowDetailsToDiskIsDroppedWhenGenerationChanged() throws {
         // A prefetch captures the generation, then an identity change clears the cache (bumping it),
         // then the prefetch's batch write lands: it must be dropped rather than reviving the old data.
-        let staleGeneration = self.cache.currentDiskGeneration()
+        let staleGeneration = self.cache.currentCacheGeneration()
         self.cache.clearCache()
 
         self.cache.persistWorkflowDetailsToDisk(["wf_1": try Self.workflowDataResult(id: "wf_1")],
@@ -274,7 +274,7 @@ class WorkflowsCacheTests: TestCase {
         self.cache.clearCache()
         // A fresh prefetch (post-clear) captures the new generation and persists normally.
         self.cache.persistWorkflowDetailsToDisk(["wf_1": try Self.workflowDataResult(id: "wf_1")],
-                                                ifGeneration: self.cache.currentDiskGeneration())
+                                                ifGeneration: self.cache.currentCacheGeneration())
 
         expect(self.deviceCache.cachedWorkflowDetailsParameter?["wf_1"]).toNot(beNil())
     }
@@ -339,6 +339,71 @@ class WorkflowsCacheTests: TestCase {
         expect(self.deviceCache.clearWorkflowDetailsCacheCount) == 1
     }
 
+    // MARK: - Generation-guarded in-memory cache
+
+    func testCacheWorkflowWithCurrentGenerationStoresInMemory() throws {
+        let result = try Self.workflowDataResult(id: "wf_1")
+        self.cache.cache(workflow: result,
+                         workflowId: "wf_1",
+                         ifGeneration: self.cache.currentCacheGeneration())
+
+        expect(self.cache.cachedWorkflow(workflowId: "wf_1")) == result
+    }
+
+    func testCacheWorkflowIsDroppedFromMemoryWhenGenerationChanged() throws {
+        // A fetch captures the generation, then an identity change clears the cache (bumping it),
+        // then the fetch's in-memory write lands: it must be dropped so the previous user's
+        // (user-scoped) workflow detail can't repopulate memory for the new user.
+        let staleGeneration = self.cache.currentCacheGeneration()
+        self.cache.clearCache()
+
+        self.cache.cache(workflow: try Self.workflowDataResult(id: "wf_1"),
+                         workflowId: "wf_1",
+                         ifGeneration: staleGeneration)
+
+        expect(self.cache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
+    }
+
+    // MARK: - Restore from disk does not clobber fresher memory
+
+    func testRestoreWorkflowDetailsFromDiskFillsOnlyMissingIds() throws {
+        let memoryValue = try Self.workflowDataResult(id: "wf_1", enrolledVariants: ["src": "memory"])
+        let diskValue = try Self.workflowDataResult(id: "wf_1", enrolledVariants: ["src": "disk"])
+        let filledValue = try Self.workflowDataResult(id: "wf_2")
+
+        // An on-demand fetch already put a fresher wf_1 in memory that was never persisted.
+        self.cache.cache(workflows: ["wf_1": memoryValue])
+        self.deviceCache.stubbedCachedWorkflowDetails = ["wf_1": diskValue, "wf_2": filledValue]
+
+        self.cache.restoreWorkflowDetailsFromDisk()
+
+        // wf_1 keeps the fresher in-memory value; wf_2 is filled from disk.
+        expect(self.cache.cachedWorkflow(workflowId: "wf_1")) == memoryValue
+        expect(self.cache.cachedWorkflow(workflowId: "wf_2")) == filledValue
+    }
+
+    // MARK: - Disk persistence stays a subset of the latest list
+
+    func testPersistWorkflowDetailsToDiskDropsIdsNotInCurrentList() throws {
+        // The latest list only knows wf_keep.
+        self.cache.cache(workflowsList: .init(workflows: [
+            .init(id: "wf_keep", displayName: "Keep", offeringId: "default", prefetch: true)
+        ]))
+
+        // A slower prefetch from an earlier list tries to persist a since-pruned id alongside it.
+        self.cache.persistWorkflowDetailsToDisk(
+            [
+                "wf_keep": try Self.workflowDataResult(id: "wf_keep"),
+                "wf_stale": try Self.workflowDataResult(id: "wf_stale")
+            ],
+            ifGeneration: self.cache.currentCacheGeneration()
+        )
+
+        let persisted = try XCTUnwrap(self.deviceCache.cachedWorkflowDetailsParameter)
+        expect(persisted.keys).to(contain("wf_keep"))
+        expect(persisted.keys).toNot(contain("wf_stale"))
+    }
+
     // MARK: - WorkflowDataResult Codable round-trip
     // The disk cache encodes/decodes `WorkflowDataResult` as JSON, so it must round-trip losslessly,
     // including the `AnyDecodable`-backed fields (metadata, config, param values).
@@ -369,6 +434,11 @@ class WorkflowsCacheTests: TestCase {
 
     private static func workflowDataResult(id: String) throws -> WorkflowDataResult {
         return .init(workflow: try self.publishedWorkflow(id: id), enrolledVariants: nil)
+    }
+
+    private static func workflowDataResult(id: String,
+                                           enrolledVariants: [String: String]?) throws -> WorkflowDataResult {
+        return .init(workflow: try self.publishedWorkflow(id: id), enrolledVariants: enrolledVariants)
     }
 
     private static func publishedWorkflow(id: String) throws -> PublishedWorkflow {

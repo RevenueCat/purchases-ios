@@ -458,6 +458,26 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockDeviceCache.clearWorkflowDetailsCacheCount) == clearCount
     }
 
+    func testPrefetchDoesNotRepopulateMemoryWhenIdentityChangesMidFlight() throws {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_a", displayName: "A", offeringId: "off_a", prefetch: true)
+        ]))
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        // Identity change mid-prefetch clears the cache (bumping the generation).
+        self.workflowsCache.clearCache()
+
+        // The in-flight prefetch from the previous user now lands.
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_a",
+                                                        with: .success(try Self.workflowDataResult(id: "wf_a")))
+
+        // Its in-memory write is dropped, so the previous user's (user-scoped) detail does not
+        // repopulate memory for the new user.
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_a")).to(beNil())
+    }
+
     func testGetWorkflowsListRestoresPersistedDetailsIntoInMemoryCacheOnBackendFailure() throws {
         let restored = try Self.workflowDataResult(id: "wf_1")
         self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
