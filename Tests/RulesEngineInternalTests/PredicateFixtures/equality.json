@@ -1,0 +1,85 @@
+{
+  "fixtures": [
+    {
+      "id": "eq_basic_equal_ints_true",
+      "predicate": { "==": [1, 1] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "eq_basic_unequal_ints_false",
+      "predicate": { "==": [1, 2] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "eq_coerces_string_to_number",
+      "predicate": { "==": ["1", 1] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "eq_coerces_bool_to_number",
+      "predicate": { "==": [true, 1] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "strict_eq_string_and_int_not_equal",
+      "predicate": { "===": ["1", 1] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "strict_eq_equal_ints_true",
+      "predicate": { "===": [1, 1] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "strict_eq_int_and_float_bridge_true",
+      "description": "int and float bridge as one number type, so 1 === 1.0",
+      "predicate": { "===": [1, 1.0] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "ne_equal_ints_false",
+      "predicate": { "!=": [1, 1] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "ne_unequal_ints_true",
+      "predicate": { "!=": [1, 2] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "strict_ne_equal_ints_false",
+      "predicate": { "!==": [1, 1] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "strict_ne_string_and_int_true",
+      "predicate": { "!==": ["1", 1] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "eq_missing_one_operand_is_false",
+      "description": "a missing operand stands in for undefined; 1 == undefined is false",
+      "predicate": { "==": [1] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "eq_missing_both_operands_is_true",
+      "description": "two missing operands collapse to null == null, which is true (mirrors JS null == undefined)",
+      "predicate": { "==": [] },
+      "variables": {},
+      "expected": true
+    }
+  ]
+}
