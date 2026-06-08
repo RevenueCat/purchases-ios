@@ -104,6 +104,10 @@ enum Operators {
         case "reduce":
             return try IterationOperators.opReduce(args: args, vars: vars)
 
+        // Miscellaneous
+        case "log":
+            return try MiscOperators.opLog(args: args, vars: vars)
+
         default:
             throw RuleError.unsupportedOperator(name: operatorName)
         }
