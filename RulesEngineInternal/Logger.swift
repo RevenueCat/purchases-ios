@@ -10,15 +10,13 @@ import Foundation
 let rulesEngineLogTag = "[RulesEngine]"
 
 /// Logging facade for the rules engine.
-///
-/// Two distinct channels:
-/// - `warn` carries engine diagnostics (missing variables, unsupported
-///   operators, type mismatches).
-/// - `log` carries pass-through output from the JSON Logic `log` operator,
-///   kept separate so hosts can route it independently (e.g. at debug level).
 protocol RulesEngineLogger {
 
+    /// Carries engine diagnostics (missing variables, unsupported
+    /// operators, type mismatches).
     func warn(_ message: String, tag: String)
+
+    /// Carries pass-through output from the JSON Logic `log` operator.
     func log(_ message: String, tag: String)
 }
 
