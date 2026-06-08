@@ -114,6 +114,14 @@ class WorkflowManager {
                                        onComplete: onComplete)
             case let .failure(error):
                 Logger.error(Strings.paywalls.error_fetching_workflows_list(error))
+                guard error.shouldFallBackToCache else {
+                    // A 4xx means the backend authoritatively rejected the request (workflows
+                    // disabled for the app, unauthorized for this user, ...), so don't serve stale
+                    // prefetched data from disk. Only transient errors (5xx / offline) restore below.
+                    // Mirrors how offerings gate their disk fallback on `shouldFallBackToCache`.
+                    onComplete()
+                    return
+                }
                 // Restore the in-memory offeringId -> workflowId map from the last list persisted on
                 // disk, so `cachedWorkflowId(forOfferingId:)` keeps resolving previously-fetched data after
                 // a backend failure instead of returning nil. The entry stays stale so the next
