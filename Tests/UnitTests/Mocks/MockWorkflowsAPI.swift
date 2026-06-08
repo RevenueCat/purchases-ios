@@ -65,6 +65,9 @@ class MockWorkflowsAPI: WorkflowsAPI, @unchecked Sendable {
     var invokedGetWorkflowsCount = 0
     var invokedGetWorkflowsParameters: (appUserID: String, isAppBackgrounded: Bool, type: String?)?
     var stubbedGetWorkflowsResult: Result<WorkflowsListResponse, BackendError>?
+    /// Invoked right before the `getWorkflows` completion fires, letting a test simulate an event
+    /// (e.g. an identity change clearing the cache) that lands while the list fetch is in flight.
+    var onGetWorkflowsBeforeCompletion: (() -> Void)?
 
     override func getWorkflows(appUserID: String,
                                isAppBackgrounded: Bool,
@@ -74,6 +77,7 @@ class MockWorkflowsAPI: WorkflowsAPI, @unchecked Sendable {
         self.invokedGetWorkflowsCount += 1
         self.invokedGetWorkflowsParameters = (appUserID, isAppBackgrounded, type)
 
+        self.onGetWorkflowsBeforeCompletion?()
         completion(self.stubbedGetWorkflowsResult ?? .failure(.missingAppUserID()))
     }
 

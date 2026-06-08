@@ -37,6 +37,10 @@ protocol PaywallPurchasesType: Sendable {
 #if !os(tvOS)
     @Sendable
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult
+
+    /// Synchronously returns the cached workflow for `offeringID` when present and fresh, otherwise
+    /// `nil`. Used to seed the workflow paywall without waiting on the async resolve path.
+    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult?
 #endif
 
     @Sendable

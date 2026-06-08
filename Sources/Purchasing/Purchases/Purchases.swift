@@ -400,7 +400,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let purchasedProductsFetcher = OfflineCustomerInfoCreator.createPurchasedProductsFetcherIfAvailable(
             diagnosticsTracker: diagnosticsTracker
         )
-        let transactionFetcher = StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
+        let transactionFetcher: StoreKit2TransactionFetcherType = systemInfo.isSimulatedStoreAPIKey
+            ? SimulatedStoreTransactionFetcher()
+            : StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
 
         let backend = Backend(
             systemInfo: systemInfo,
@@ -429,7 +431,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let simulatedStorePurchaseHandler = SimulatedStorePurchaseHandler(systemInfo: systemInfo)
 
-        let offeringsFactory = OfferingsFactory()
+        let offeringsFactory = OfferingsFactory(systemInfo: systemInfo)
         let receiptParser = PurchasesReceiptParser.default
         let transactionsManager = TransactionsManager(receiptParser: receiptParser)
 
@@ -786,7 +788,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         Logger.debug(Strings.configure.sdk_version(Self.frameworkVersion))
         Logger.debug(Strings.configure.bundle_id(SystemInfo.bundleIdentifier))
         Logger.debug(Strings.configure.system_version(SystemInfo.systemVersion))
-        Logger.debug(Strings.configure.is_simulator(SystemInfo.isRunningInSimulator))
+        Logger.debug(Strings.configure.is_simulator(SystemInfo.isRunningInSimulator,
+                                                    apiKeyValidationResult: systemInfo.apiKeyValidationResult))
         Logger.user(Strings.configure.initial_app_user_id(isSet: appUserID != nil))
         Logger.debug(Strings.configure.response_verification_mode(systemInfo.responseVerificationMode))
         Logger.debug(Strings.configure.storekit_version(systemInfo.storeKitVersion))
@@ -1004,6 +1007,14 @@ public extension Purchases {
                 completion: completion
             )
         }
+    }
+
+    /// Synchronously returns the cached workflow for `offeringID` when one is present and fresh,
+    /// otherwise `nil`. Used to seed the workflow paywall without a backend round-trip; callers fall
+    /// back to the async ``workflow(forOfferingIdentifier:)`` when this returns `nil`.
+    @_spi(Internal)
+    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
+        return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
