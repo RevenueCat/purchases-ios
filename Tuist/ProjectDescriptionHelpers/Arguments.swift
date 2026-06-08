@@ -7,7 +7,7 @@ extension Arguments {
     ///
     /// Example usage:
     /// ```bash
-    /// TUIST_LAUNCH_ARGUMENTS="-EnableWorkflowsEndpoint" tuist generate PaywallsTester
+    /// TUIST_LAUNCH_ARGUMENTS="-MyFeatureFlag" tuist generate PaywallsTester
     /// ```
     public static func appendingTuistLaunchArguments(
         base: Arguments = .arguments()

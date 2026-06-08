@@ -115,9 +115,6 @@ public class PaywallViewController: UIViewController {
 
     // MARK: - Testing Hooks
 
-    /// Settable in tests to simulate workflows being enabled without a scheme launch argument.
-    var workflowsEndpointEnabled: Bool = ProcessInfo.processInfo.workflowsEndpointEnabled
-
     var exitOfferOfferingForTesting: Offering? { self.exitOfferOffering }
 
     func simulateWorkflowExitOfferUpdate(_ offering: Offering?) {
@@ -328,11 +325,6 @@ public class PaywallViewController: UIViewController {
         if self.hostingController == nil {
             self.hostingController = self.createHostingController()
         }
-
-        // Prefetch exit offer
-        Task { @MainActor in
-            await self.prefetchExitOffer()
-        }
     }
 
     public override func viewWillAppear(_ animated: Bool) {
@@ -432,25 +424,9 @@ public class PaywallViewController: UIViewController {
 
     // MARK: - Exit Offer Handling
 
-    /// Prefetches the exit offer for the current offering.
-    @MainActor
-    private func prefetchExitOffer() async {
-        // Under workflows the exit offer comes from the embedded paywall (see updateWorkflowExitOffer),
-        // so skip this legacy prefetch.
-        guard !self.workflowsEndpointEnabled else { return }
-
-        guard let offering = await self.purchaseHandler.resolveOffering(for: self.configuration.content) else {
-            return
-        }
-        self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
-    }
-
     /// Feeds the embedded workflow paywall's exit offer into `exitOfferOffering` so swipe/close can
-    /// surface it. Render-dependent, so verified manually like `prefetchExitOffer`.
+    /// surface it. Render-dependent, so verified manually.
     private func updateWorkflowExitOffer(_ offering: Offering?) {
-        // The legacy prefetch owns the offer when workflows are off; don't clobber it.
-        guard self.workflowsEndpointEnabled else { return }
-
         // Keep the offer once we're presenting it, even if a late nil arrives mid-dismiss.
         guard offering != nil || !self.isShowingExitOffer else { return }
 
