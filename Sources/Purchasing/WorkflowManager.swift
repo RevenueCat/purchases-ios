@@ -118,7 +118,7 @@ class WorkflowManager {
                     // A 4xx means the backend authoritatively rejected the request (workflows
                     // disabled for the app, unauthorized for this user, ...), so don't serve stale
                     // prefetched data from disk. Only transient errors (5xx / offline) restore below.
-                    // Mirrors how offerings gate their disk fallback on `shouldFallBackToCachedOfferings`.
+                    // Mirrors how offerings gate their disk fallback on `shouldFallBackToCache`.
                     onComplete()
                     return
                 }

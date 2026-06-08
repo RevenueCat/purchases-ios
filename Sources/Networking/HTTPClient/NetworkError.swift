@@ -260,11 +260,6 @@ extension NetworkError {
         }
     }
 
-    /// Whether to fall back to cached offerings in case of this error when fetching offerings.
-    var shouldFallBackToCachedOfferings: Bool {
-        return self.shouldFallBackToCache
-    }
-
 }
 
 extension NetworkError {
