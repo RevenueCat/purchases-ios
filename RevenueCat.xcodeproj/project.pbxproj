@@ -2932,7 +2932,6 @@
 		B807748D6D88B7836EC273ED /* EqualityOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EqualityOperators.swift; sourceTree = "<group>"; };
 		B8BCBA1A622A35B377B35254 /* ValueTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ValueTests.swift; sourceTree = "<group>"; };
 		C812AE8BAE0546D2F4ACEF35 /* MinMaxOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MinMaxOperators.swift; sourceTree = "<group>"; };
-		9D8A2C402AB81F3C35672B14 /* WorkflowsCacheTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowsCacheTests.swift; sourceTree = "<group>"; };
 		C41FD75CE31F51BBE614F9B0 /* WorkflowsCache.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowsCache.swift; sourceTree = "<group>"; };
 		CC1A2B3C2E1234AB00AABBCC /* CustomVariablesEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariablesEditorView.swift; sourceTree = "<group>"; };
 		CF01A0F868569B5E2D5CA465 /* PaywallsV2LayoutFixtures.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PaywallsV2LayoutFixtures.swift; path = Tests/RevenueCatUITests/PaywallsV2/PaywallsV2LayoutFixtures.swift; sourceTree = SOURCE_ROOT; };
