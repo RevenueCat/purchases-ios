@@ -4,7 +4,11 @@
 //  Created by Antonio Pallares.
 //
 
-// Swift Testing is only available with the Xcode 16+ toolchain
+// Swift Testing is only available with the Xcode 16+ toolchain. The outer
+// `compiler(>=5.9)` guard keeps Swift 5.8 (Xcode 14) from parsing the
+// `#expect`/`#require` macros below, which it rejects as unknown directives
+// even inside an inactive `canImport` branch.
+#if compiler(>=5.9)
 #if canImport(Testing)
 
 import Testing
@@ -104,4 +108,5 @@ enum PredicateConformanceRunner {
     }
 }
 
+#endif
 #endif
