@@ -4,10 +4,6 @@
 //  Created by Antonio Pallares.
 //
 
-// Swift Testing is only available with the Xcode 16+ toolchain. On older
-// toolchains (e.g. CI's Xcode 14/15 jobs) the `Testing` module is absent, so
-// this file compiles to nothing. Its only caller, `PredicateFixtureTests`, is
-// gated the same way.
 #if canImport(Testing)
 
 import Testing
