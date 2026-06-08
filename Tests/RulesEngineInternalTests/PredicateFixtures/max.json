@@ -1,0 +1,326 @@
+{
+  "fixtures": [
+    {
+      "id": "max_returns_largest_of_many_args",
+      "predicate": {
+        "===": [
+          {
+            "max": [
+              1,
+              2,
+              3
+            ]
+          },
+          3
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_single_arg_returns_value",
+      "predicate": {
+        "===": [
+          {
+            "max": [
+              7
+            ]
+          },
+          7
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_mixes_ints_and_floats",
+      "predicate": {
+        "===": [
+          {
+            "max": [
+              1,
+              2.5,
+              2
+            ]
+          },
+          2.5
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_works_with_negatives",
+      "predicate": {
+        "===": [
+          {
+            "max": [
+              -5,
+              -10,
+              -1
+            ]
+          },
+          -1
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_coerces_numeric_strings",
+      "predicate": {
+        "===": [
+          {
+            "max": [
+              "3",
+              "9",
+              "5"
+            ]
+          },
+          9
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_coerces_bools",
+      "description": "true coerces to 1",
+      "predicate": {
+        "===": [
+          {
+            "max": [
+              true,
+              false,
+              0
+            ]
+          },
+          1
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_null_coerces_to_zero",
+      "predicate": {
+        "===": [
+          {
+            "max": [
+              null,
+              -1
+            ]
+          },
+          0
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_operand_singleton_array_coerces",
+      "description": "[2] stringifies to \"2\" which is Number 2 (matches JS Math.max(1, [2]) === 2)",
+      "predicate": {
+        "===": [
+          {
+            "max": [
+              1,
+              [
+                2
+              ]
+            ]
+          },
+          2
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_operand_object_is_nan",
+      "description": "an object operand becomes NaN (\"[object Object]\" cannot parse); x != x is true iff x is NaN",
+      "predicate": {
+        "!=": [
+          {
+            "max": [
+              1,
+              {}
+            ]
+          },
+          {
+            "max": [
+              1,
+              {}
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_operand_multi_array_is_nan",
+      "description": "[1,2] stringifies to \"1,2\" which is NaN (whole-string parse fails); x != x is true iff x is NaN",
+      "predicate": {
+        "!=": [
+          {
+            "max": [
+              1,
+              [
+                1,
+                2
+              ]
+            ]
+          },
+          {
+            "max": [
+              1,
+              [
+                1,
+                2
+              ]
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_operand_unparseable_string_is_nan",
+      "description": "an unparseable string operand becomes NaN; x != x is true iff x is NaN",
+      "predicate": {
+        "!=": [
+          {
+            "max": [
+              1,
+              "abc"
+            ]
+          },
+          {
+            "max": [
+              1,
+              "abc"
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_of_empty_args_is_negative_infinity",
+      "description": "{\"max\": []} is -Infinity (matches JS Math.max()); -Infinity is produced via division-by-zero since JSON has no Infinity literal",
+      "predicate": {
+        "===": [
+          {
+            "max": []
+          },
+          {
+            "/": [
+              -10,
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_single_non_list_arg_wrapped",
+      "description": "{\"max\": 5} is implicitly wrapped as {\"max\": [5]}",
+      "predicate": {
+        "===": [
+          {
+            "max": 5
+          },
+          5
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "max_nan_result_fails_closed_against_threshold",
+      "description": "a poisoned max (NaN) makes >= n come out false, the fail-closed behavior for malformed predicates",
+      "predicate": {
+        ">=": [
+          {
+            "max": [
+              1,
+              {}
+            ]
+          },
+          0
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "max_resolves_scalar_var_operands",
+      "description": "operands resolved from variables, the realistic predicate shape",
+      "predicate": {
+        "===": [
+          {
+            "max": [
+              {
+                "var": "a"
+              },
+              {
+                "var": "b"
+              }
+            ]
+          },
+          5
+        ]
+      },
+      "variables": {
+        "a": 1,
+        "b": 5
+      },
+      "expected": true
+    },
+    {
+      "id": "max_single_array_var_arg_is_nan",
+      "description": "{\"max\": {\"var\": \"scores\"}} does NOT max over the list: the single array arg stringifies to \"1,2,3\" which is NaN (matches JS Math.max([1,2,3])); x != x is true iff x is NaN",
+      "predicate": {
+        "!=": [
+          {
+            "max": {
+              "var": "scores"
+            }
+          },
+          {
+            "max": {
+              "var": "scores"
+            }
+          }
+        ]
+      },
+      "variables": {
+        "scores": [
+          1,
+          2,
+          3
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "max_empty_args_fails_closed_against_threshold",
+      "description": "{\"max\": []} is -Infinity, so >= n is false: an empty operand list (e.g. a var resolving to nothing) fails closed",
+      "predicate": {
+        ">=": [
+          {
+            "max": []
+          },
+          0
+        ]
+      },
+      "variables": {},
+      "expected": false
+    }
+  ]
+}
