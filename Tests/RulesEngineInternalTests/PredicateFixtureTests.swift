@@ -4,6 +4,7 @@
 //  Created by Antonio Pallares.
 //
 
+// Swift Testing is only available with the Xcode 16+ toolchain
 #if canImport(Testing)
 
 import Testing
