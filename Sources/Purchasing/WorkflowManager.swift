@@ -85,6 +85,11 @@ class WorkflowManager {
             return
         }
 
+        // Capture the cache generation when the request is issued. If an identity change clears the
+        // cache while this list fetch is in flight, the success path below is dropped, so a list
+        // (and its prefetched, user-scoped details) fetched for the previous user can't populate the
+        // new session's cache.
+        let generation = self.workflowsCache.currentCacheGeneration()
         self.backend.workflowsAPI.getWorkflows(appUserID: appUserID,
                                                isAppBackgrounded: isAppBackgrounded,
                                                type: Self.paywallWorkflowType) { [weak self] result in
@@ -94,10 +99,18 @@ class WorkflowManager {
             }
             switch result {
             case let .success(response):
+                guard self.workflowsCache.currentCacheGeneration() == generation else {
+                    // Identity changed mid-flight: this response is the previous user's. Drop it
+                    // (don't cache the list or prefetch its details) but still fire onComplete so
+                    // callers waiting on it aren't blocked, mirroring the failure branch.
+                    onComplete()
+                    return
+                }
                 self.workflowsCache.cache(workflowsList: response)
                 self.prefetchWorkflows(response.workflows,
                                        appUserID: appUserID,
                                        isAppBackgrounded: isAppBackgrounded,
+                                       generation: generation,
                                        onComplete: onComplete)
             case let .failure(error):
                 Logger.error(Strings.paywalls.error_fetching_workflows_list(error))
@@ -167,12 +180,15 @@ private extension WorkflowManager {
     /// offline. Only prefetched workflows are persisted: they're the curated, bounded set the backend
     /// marked as mattering, so persisting all of them is safe. On-demand fetches are not persisted, to
     /// avoid unbounded disk growth (a session can open many distinct paywalls); persisting those
-    /// behind an LRU cap is a planned follow-up. The cache generation captured before fetching guards
-    /// the disk write against an identity change mid-prefetch; each ``getWorkflow`` call guards its own
-    /// in-memory write the same way.
+    /// behind an LRU cap is a planned follow-up. `generation` is the cache generation captured when the
+    /// list fetch was issued (see ``getWorkflowsList(appUserID:isAppBackgrounded:onComplete:)``); it
+    /// guards the disk write against an identity change landing mid-prefetch, so the previous user's
+    /// details can't be written back after the store was cleared. Each ``getWorkflow`` call guards its
+    /// own in-memory write the same way.
     func prefetchWorkflows(_ workflows: [WorkflowSummary],
                            appUserID: String,
                            isAppBackgrounded: Bool,
+                           generation: Int,
                            onComplete: @escaping () -> Void) {
         let prefetchWorkflows = workflows.filter { $0.prefetch && $0.offeringId != nil }
         guard !prefetchWorkflows.isEmpty else {
@@ -180,7 +196,6 @@ private extension WorkflowManager {
             return
         }
 
-        let generation = self.workflowsCache.currentCacheGeneration()
         // Lock-guarded counter so the batch persist + `onComplete` fire exactly once, after the last
         // prefetch lands, regardless of which thread each completion arrives on.
         let remaining: Atomic<Int> = .init(prefetchWorkflows.count)

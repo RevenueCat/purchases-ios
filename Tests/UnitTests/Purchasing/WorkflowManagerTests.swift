@@ -478,6 +478,31 @@ class WorkflowManagerTests: TestCase {
         expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_a")).to(beNil())
     }
 
+    func testGetWorkflowsListDropsListAndPrefetchWhenIdentityChangesWhileListFetchInFlight() throws {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_a", displayName: "A", offeringId: "off_a", prefetch: true)
+        ]))
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(try Self.workflowDataResult(id: "wf_a"))
+
+        // Identity change lands while the list fetch is in flight: clearCache bumps the generation
+        // before the success completion runs, so the response belongs to the previous user.
+        self.mockWorkflowsAPI.onGetWorkflowsBeforeCompletion = { [weak self] in
+            self?.workflowsCache.clearCache()
+        }
+
+        var completed = false
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
+
+        // The previous user's list must not be cached, no prefetch must run or persist its detail,
+        // and onComplete still fires so callers (e.g. offerings delivery) are never blocked.
+        expect(self.mockDeviceCache.cacheWorkflowsListResponseCount) == 0
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 0
+        expect(self.mockDeviceCache.cacheWorkflowDetailsCount) == 0
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_a")).to(beNil())
+        expect(self.manager.cachedWorkflowId(forOfferingId: "off_a")).to(beNil())
+        expect(completed) == true
+    }
+
     func testGetWorkflowsListRestoresPersistedDetailsIntoInMemoryCacheOnBackendFailure() throws {
         let restored = try Self.workflowDataResult(id: "wf_1")
         self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
