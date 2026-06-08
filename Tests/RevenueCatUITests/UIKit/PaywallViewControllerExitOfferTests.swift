@@ -22,8 +22,6 @@ final class PaywallViewControllerExitOfferTests: TestCase {
 
     func testUpdateDisplayCloseButtonDoesNotClearWorkflowExitOffer() {
         let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
-        controller.workflowsEndpointEnabled = true
-
         controller.simulateWorkflowExitOfferUpdate(Self.makeOffering(identifier: "exit"))
         expect(controller.exitOfferOfferingForTesting).notTo(beNil(), description: "precondition")
 
@@ -37,8 +35,6 @@ final class PaywallViewControllerExitOfferTests: TestCase {
 
     func testUpdateFontDoesNotClearWorkflowExitOffer() {
         let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
-        controller.workflowsEndpointEnabled = true
-
         controller.simulateWorkflowExitOfferUpdate(Self.makeOffering(identifier: "exit"))
         expect(controller.exitOfferOfferingForTesting).notTo(beNil(), description: "precondition")
 
@@ -54,8 +50,6 @@ final class PaywallViewControllerExitOfferTests: TestCase {
         // Replacing the offering is a legitimate reason to drop the previous exit offer —
         // the new paywall will re-emit one.
         let controller = PaywallViewController(offering: Self.makeOffering(identifier: "original"))
-        controller.workflowsEndpointEnabled = true
-
         controller.simulateWorkflowExitOfferUpdate(Self.makeOffering(identifier: "exit"))
         expect(controller.exitOfferOfferingForTesting).notTo(beNil(), description: "precondition")
 

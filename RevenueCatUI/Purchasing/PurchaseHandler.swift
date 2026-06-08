@@ -283,31 +283,15 @@ extension PurchaseHandler {
 
     func cachedInitialOffering(for content: PaywallViewConfiguration.Content) -> Offering? {
 #if !os(tvOS)
-        let workflowsEndpointEnabled = ProcessInfo.processInfo.workflowsEndpointEnabled
+        // The passed/cached offering alone can't drive a workflow paywall: the rendered offering is
+        // the workflow screen's offering with its workflow-mapped components, and it needs a
+        // WorkflowContext the offering doesn't carry. Workflow seeding therefore goes through
+        // cachedInitialWorkflowContext(for:) (which can build the context from a warm cache);
+        // returning nil here avoids seeding a non-workflow paywall that would then swap once the
+        // workflow resolves.
+        return nil
 #else
-        // The workflows endpoint isn't available on tvOS, so always fall through to the cached switch.
-        let workflowsEndpointEnabled = false
-#endif
-
-        return self.cachedInitialOffering(for: content, workflowsEndpointEnabled: workflowsEndpointEnabled)
-    }
-
-    // Exposes the workflow flag so tests can cover both states deterministically without relying on the
-    // `-EnableWorkflowsEndpoint` launch argument being present in the scheme.
-    func cachedInitialOffering(
-        for content: PaywallViewConfiguration.Content,
-        workflowsEndpointEnabled: Bool
-    ) -> Offering? {
-        // The passed/cached offering alone can't drive a workflow paywall: under workflows the
-        // rendered offering is the workflow screen's offering with its workflow-mapped components,
-        // and it needs a WorkflowContext the offering doesn't carry. Workflow seeding therefore goes
-        // through cachedInitialWorkflowContext(for:workflowsEndpointEnabled:) (which can build the
-        // context from a warm cache); this overload returns nil so callers don't seed a non-workflow
-        // paywall that would then swap once the workflow resolves.
-        if workflowsEndpointEnabled {
-            return nil
-        }
-
+        // The workflows endpoint isn't available on tvOS, so seed directly from the cached offering.
         switch content {
         case let .offering(offering):
             return offering
@@ -322,65 +306,17 @@ extension PurchaseHandler {
 
             return offering
         }
-    }
-
-    func resolveOffering(for content: PaywallViewConfiguration.Content) async -> Offering? {
-        if case let .offering(offering) = content {
-            return offering
-        }
-
-        do {
-            return try await self.resolveOfferingOrThrow(for: content)
-        } catch {
-            Logger.error(Strings.errorFetchingOfferings(error))
-            return nil
-        }
-    }
-
-    func resolveOfferingOrThrow(for content: PaywallViewConfiguration.Content) async throws -> Offering {
-#if !os(tvOS)
-        return try await self.resolvePaywallViewData(for: content).offering
-#else
-        switch content {
-        case let .offering(offering):
-            return offering
-        case .defaultOffering:
-            return try await self.purchases.offerings().current.orThrow(PaywallError.noCurrentOffering)
-        case let .offeringIdentifier(identifier, presentedOfferingContext):
-            return try await self.resolveOfferingIdentifier(
-                identifier: identifier,
-                presentedOfferingContext: presentedOfferingContext
-            )
-        }
 #endif
-    }
-
-    private func resolveOfferingIdentifier(
-        identifier: String,
-        presentedOfferingContext: PresentedOfferingContext?
-    ) async throws -> Offering {
-        let offering = try await self.purchases.offerings()
-            .offering(identifier: identifier)
-            .orThrow(PaywallError.offeringNotFound(identifier: identifier))
-
-        if let presentedOfferingContext {
-            return offering.withPresentedOfferingContext(presentedOfferingContext)
-        }
-
-        return offering
     }
 
 #if !os(tvOS)
     /// Synchronously builds the workflow ``WorkflowContext`` for `content` from already-cached
     /// workflow + offerings data, so a warm cache can seed the paywall without a loading state.
-    /// Returns `nil` when workflows are disabled, when the cache is cold/stale, or on any partial
-    /// hit (workflow cached but its base offering absent), in which case the async resolve path runs.
+    /// Returns `nil` when the cache is cold/stale, or on any partial hit (workflow cached but its
+    /// base offering absent), in which case the async resolve path runs.
     func cachedInitialWorkflowContext(
-        for content: PaywallViewConfiguration.Content,
-        workflowsEndpointEnabled: Bool
+        for content: PaywallViewConfiguration.Content
     ) -> WorkflowContext? {
-        guard workflowsEndpointEnabled else { return nil }
-
         // Snapshot the cached offerings once so the default-offering lookup and the workflow's base
         // offering are resolved against the same value; `cachedOfferings` can be replaced on a
         // background thread, and reading it twice could mix two different snapshots. A nil snapshot
@@ -423,38 +359,19 @@ extension PurchaseHandler {
     func resolvePaywallViewData(
         for content: PaywallViewConfiguration.Content
     ) async throws -> ResolvedPaywallViewData {
-        return try await self.resolvePaywallViewData(
-            for: content,
-            workflowsEndpointEnabled: ProcessInfo.processInfo.workflowsEndpointEnabled
-        )
-    }
-
-    func resolvePaywallViewData(
-        for content: PaywallViewConfiguration.Content,
-        workflowsEndpointEnabled: Bool
-    ) async throws -> ResolvedPaywallViewData {
         switch content {
         case let .offering(offering):
-            if workflowsEndpointEnabled {
-                return try await self.resolveWorkflowPaywallViewData(for: offering)
-            }
-
-            return .init(offering: offering, workflowContext: nil)
+            return try await self.resolveWorkflowPaywallViewData(for: offering)
         case .defaultOffering:
             let offerings = try await self.purchases.offerings()
             let offering = try offerings.current.orThrow(PaywallError.noCurrentOffering)
-
-            if workflowsEndpointEnabled {
-                return try await self.resolveWorkflowPaywallViewData(for: offering, offerings: offerings)
-            }
-
-            return .init(offering: offering, workflowContext: nil)
+            return try await self.resolveWorkflowPaywallViewData(for: offering, offerings: offerings)
         case let .offeringIdentifier(identifier, presentedOfferingContext):
-            return try await self.resolveOfferingIdentifier(
+            let context = try await self.resolveWorkflowContext(
                 identifier: identifier,
-                presentedOfferingContext: presentedOfferingContext,
-                workflowsEndpointEnabled: workflowsEndpointEnabled
+                presentedOfferingContext: presentedOfferingContext
             )
+            return .init(offering: context.initialOffering, workflowContext: context)
         }
     }
 #endif
@@ -473,35 +390,6 @@ extension PurchaseHandler {
         return .init(offering: context.initialOffering, workflowContext: context)
     }
 
-    private func resolveOfferingIdentifier(
-        identifier: String,
-        presentedOfferingContext: PresentedOfferingContext?,
-        workflowsEndpointEnabled: Bool
-    ) async throws -> ResolvedPaywallViewData {
-        if workflowsEndpointEnabled {
-            let context = try await self.resolveWorkflowContext(
-                identifier: identifier,
-                presentedOfferingContext: presentedOfferingContext
-            )
-            return .init(offering: context.initialOffering, workflowContext: context)
-        }
-
-        let offering = try await self.purchases.offerings()
-            .offering(identifier: identifier)
-            .orThrow(PaywallError.offeringNotFound(identifier: identifier))
-
-        let resolvedOffering: Offering
-        if let presentedOfferingContext {
-            resolvedOffering = offering.withPresentedOfferingContext(presentedOfferingContext)
-        } else {
-            resolvedOffering = offering
-        }
-
-        return .init(offering: resolvedOffering, workflowContext: nil)
-    }
-
-    // Callers gate on workflowsEndpointEnabled before reaching this point, so this assumes
-    // workflows are enabled and always resolves against the workflow endpoint.
     func resolveWorkflowContext(
         identifier: String,
         presentedOfferingContext: PresentedOfferingContext?,
