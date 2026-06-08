@@ -216,6 +216,81 @@ class WorkflowManagerTests: TestCase {
         expect(self.manager.cachedWorkflowId(forOfferingId: "shared")) == "wf_last"
     }
 
+    // MARK: - cachedWorkflow(forOfferingId:)
+
+    func testCachedWorkflowReturnsFreshCachedWorkflowResolvedViaOfferingIdMap() throws {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_abc", displayName: "Flow", offeringId: "default", prefetch: false)
+        ]))
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        let expected = try Self.workflowDataResult(id: "wf_abc")
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_abc", isAppBackgrounded: false) { _ in }
+
+        expect(self.manager.cachedWorkflow(forOfferingId: "default")) == expected
+    }
+
+    func testCachedWorkflowReturnsNilWhenListNeverFetched() throws {
+        // No list fetched, so the mapping is unknown: must not fall back to the offering id.
+        let expected = try Self.workflowDataResult(id: "default")
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "default", isAppBackgrounded: false) { _ in }
+
+        expect(self.manager.cachedWorkflow(forOfferingId: "default")).to(beNil())
+    }
+
+    func testCachedWorkflowReturnsNilWhenOfferingHasNoListMapping() throws {
+        // Fresh list maps a different offering; the queried one has no mapping (even though a
+        // workflow is cached under its id), so it must not be used as a fallback workflow key.
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_other", displayName: "Other", offeringId: "other", prefetch: false)
+        ]))
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        let cachedUnderOfferingId = try Self.workflowDataResult(id: "default")
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(cachedUnderOfferingId)
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "default", isAppBackgrounded: false) { _ in }
+
+        expect(self.manager.cachedWorkflow(forOfferingId: "default")).to(beNil())
+    }
+
+    func testCachedWorkflowReturnsNilWhenWorkflowsListIsStale() throws {
+        // List ages past the TTL while the detail stays fresh: a stale mapping must not be served.
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_abc", displayName: "Flow", offeringId: "default", prefetch: false)
+        ]))
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        self.dateProvider.advance(by: 6 * 60)
+
+        let expected = try Self.workflowDataResult(id: "wf_abc")
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_abc", isAppBackgrounded: false) { _ in }
+
+        expect(self.manager.cachedWorkflow(forOfferingId: "default")).to(beNil())
+    }
+
+    func testCachedWorkflowReturnsNilWhenNothingCached() {
+        expect(self.manager.cachedWorkflow(forOfferingId: "default")).to(beNil())
+    }
+
+    func testCachedWorkflowReturnsNilWhenCachedWorkflowIsStale() throws {
+        // Detail ages past the TTL while the list mapping stays fresh: a stale detail must not be served.
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+
+        self.dateProvider.advance(by: 6 * 60)
+
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ]))
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.manager.cachedWorkflow(forOfferingId: "default")).to(beNil())
+    }
+
     // MARK: - cachedWorkflowId(forOfferingId:)
 
     func testWorkflowIdForOfferingIdReturnsNilBeforeListIsFetched() {
