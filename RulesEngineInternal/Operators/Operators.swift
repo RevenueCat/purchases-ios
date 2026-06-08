@@ -22,6 +22,7 @@ enum Operators {
         vars: Value
     ) throws -> Value {
         switch operatorName {
+        // Accessors
         case "var":
             return try AccessorOperators.opVar(args: args, vars: vars)
         case "missing":
@@ -29,6 +30,7 @@ enum Operators {
         case "missing_some":
             return try AccessorOperators.opMissingSome(args: args, vars: vars)
 
+        // Equality
         case "==":
             return try EqualityOperators.opLooseEq(args: args, vars: vars)
         case "!=":
@@ -38,6 +40,7 @@ enum Operators {
         case "!==":
             return try EqualityOperators.opStrictNe(args: args, vars: vars)
 
+        // Logic
         case "!":
             return try LogicOperators.opNot(args: args, vars: vars)
         case "!!":
@@ -49,6 +52,7 @@ enum Operators {
         case "if":
             return try LogicOperators.opIf(args: args, vars: vars)
 
+        // Arithmetic
         case "+":
             return try ArithmeticOperators.opAdd(args: args, vars: vars)
         case "-":
@@ -60,6 +64,7 @@ enum Operators {
         case "%":
             return try ArithmeticOperators.opMod(args: args, vars: vars)
 
+        // Comparison
         case "<":
             return try ComparisonOperators.opLt(args: args, vars: vars)
         case "<=":
@@ -69,6 +74,7 @@ enum Operators {
         case ">=":
             return try ComparisonOperators.opGe(args: args, vars: vars)
 
+        // String and array
         case "in":
             return try StringArrayOperators.opIn(args: args, vars: vars)
         case "cat":
@@ -78,6 +84,7 @@ enum Operators {
         case "merge":
             return try StringArrayOperators.opMerge(args: args, vars: vars)
 
+        // Iteration
         case "some":
             return try IterationOperators.opSome(args: args, vars: vars)
         case "all":
