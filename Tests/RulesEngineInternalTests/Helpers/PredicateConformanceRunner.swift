@@ -30,17 +30,18 @@ enum PredicateConformanceRunner {
     }
 
     static func run(_ fixture: PredicateConformanceFixtureCase) throws {
-        if let expectedWarnings = fixture.expectedWarnings {
+        if fixture.expectedWarnings != nil || fixture.expectedLogs != nil {
             let logger = CapturingLogger()
             let previousLogger = RulesEngine.logger
             RulesEngine.setLogger(logger)
             defer { RulesEngine.setLogger(previousLogger) }
             try assertExpectedOutcome(fixture: fixture)
-            assertWarnings(
-                logger: logger,
-                expected: expectedWarnings,
-                fixtureID: fixture.id
-            )
+            if let expectedWarnings = fixture.expectedWarnings {
+                assertWarnings(logger: logger, expected: expectedWarnings, fixtureID: fixture.id)
+            }
+            if let expectedLogs = fixture.expectedLogs {
+                assertLogs(logger: logger, expected: expectedLogs, fixtureID: fixture.id)
+            }
         } else {
             try assertExpectedOutcome(fixture: fixture)
         }
@@ -115,6 +116,27 @@ enum PredicateConformanceRunner {
             #expect(
                 warnings.contains(where: { $0.contains(substring) }),
                 "Fixture \(fixtureID) missing warning containing \"\(substring)\""
+            )
+        }
+    }
+
+    private static func assertLogs(
+        logger: CapturingLogger,
+        expected: ExpectedLogs,
+        fixtureID: String
+    ) {
+        let logs = logger.logs
+        guard !expected.contains.isEmpty else {
+            #expect(
+                logs.isEmpty,
+                "Fixture \(fixtureID) expected no log messages, got \(logs)"
+            )
+            return
+        }
+        for substring in expected.contains {
+            #expect(
+                logs.contains(where: { $0.contains(substring) }),
+                "Fixture \(fixtureID) missing log message containing \"\(substring)\""
             )
         }
     }

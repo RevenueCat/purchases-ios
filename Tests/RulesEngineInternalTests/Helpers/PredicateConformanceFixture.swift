@@ -61,6 +61,22 @@ struct ExpectedWarnings: Equatable, Decodable {
     }
 }
 
+struct ExpectedLogs: Equatable, Decodable {
+
+    /// Substrings that must each appear in some emitted `log`-channel
+    /// message. An empty list asserts that no log message is emitted.
+    let contains: [String]
+
+    enum CodingKeys: String, CodingKey {
+        case contains
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.contains = try container.decodeIfPresent([String].self, forKey: .contains) ?? []
+    }
+}
+
 struct PredicateConformanceFixtureCase: Equatable, Decodable, Identifiable, Sendable {
 
     let id: String
@@ -69,6 +85,7 @@ struct PredicateConformanceFixtureCase: Equatable, Decodable, Identifiable, Send
     let variables: [String: Value]
     let expected: ExpectedOutcome
     let expectedWarnings: ExpectedWarnings?
+    let expectedLogs: ExpectedLogs?
 }
 
 enum PredicateConformanceFixtureLoader {

@@ -11,14 +11,14 @@
       "predicate": { "log": "hello" },
       "variables": {},
       "expected": true,
-      "expectedWarnings": { "contains": ["hello"] }
+      "expectedLogs": { "contains": ["hello"] }
     },
     {
       "id": "log_emits_number_value_to_logger",
       "predicate": { "log": 7 },
       "variables": {},
       "expected": true,
-      "expectedWarnings": { "contains": ["7"] }
+      "expectedLogs": { "contains": ["7"] }
     },
     {
       "id": "log_passes_through_value_in_comparison",
