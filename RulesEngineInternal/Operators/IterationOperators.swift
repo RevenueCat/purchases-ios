@@ -24,9 +24,8 @@ import Foundation
 ///   inheritance.
 ///
 /// **Empty- and non-array sources** per the JSON Logic JS spec:
-/// - `some` / `all` return `false`. (`all` is not vacuous truth.)
-/// - `none` returns `true` for both empty and non-array sources (the JS
-///   reference guards with `!Array.isArray(x) || !x.length`).
+/// - `some` / `all` return `false`.
+/// - `none` returns `true`.
 /// - `map` / `filter` return `[]`.
 /// - `reduce` returns the initial accumulator unchanged.
 enum IterationOperators {
