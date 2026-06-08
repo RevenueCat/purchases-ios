@@ -153,7 +153,7 @@ class BackendGetWorkflowTests: BaseBackendTests {
         expect(queue.name) == "RC Workflows Queue"
     }
 
-    func testGetWorkflowEnqueuesOnWorkflowsQueueWhileListUsesSerialQueue() {
+    func testPrefetchUsesWorkflowsQueueWhileOnDemandAndListUseSerialQueue() {
         // Build a config whose queues we control and keep suspended, so operations pile up without
         // executing. This lets us observe *which* queue each request lands on, deterministically.
         // (This test only checks the routing decision; the cap behavior is exercised separately by
@@ -178,18 +178,23 @@ class BackendGetWorkflowTests: BaseBackendTests {
         )
         let api = WorkflowsAPI(backendConfig: config)
 
-        // Two distinct detail fetches => two operations, both on the workflows queue.
-        api.getWorkflow(appUserID: Self.userID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
-        api.getWorkflow(appUserID: Self.userID, workflowId: "wf_2", isAppBackgrounded: false) { _ in }
+        // A prefetch detail fetch goes on the workflows queue.
+        api.getWorkflow(appUserID: Self.userID, workflowId: "wf_1", isAppBackgrounded: false, prefetch: true) { _ in }
 
-        expect(workflowsQueue.operationCount) == 2
+        expect(workflowsQueue.operationCount) == 1
         expect(serialQueue.operationCount) == 0
 
-        // The list fetch stays on the serial queue.
+        // An on-demand detail fetch (prefetch defaults to false) stays on the serial queue.
+        api.getWorkflow(appUserID: Self.userID, workflowId: "wf_2", isAppBackgrounded: false) { _ in }
+
+        expect(workflowsQueue.operationCount) == 1
+        expect(serialQueue.operationCount) == 1
+
+        // The list fetch also stays on the serial queue.
         api.getWorkflows(appUserID: Self.userID, isAppBackgrounded: false) { _ in }
 
-        expect(serialQueue.operationCount) == 1
-        expect(workflowsQueue.operationCount) == 2
+        expect(serialQueue.operationCount) == 2
+        expect(workflowsQueue.operationCount) == 1
 
         // Drain so no operation is left un-started at teardown (NetworkOperation asserts on deinit).
         serialQueue.isSuspended = false
@@ -246,16 +251,16 @@ class BackendGetWorkflowTests: BaseBackendTests {
             self.workflowsAPI.getWorkflow(
                 appUserID: Self.userID,
                 workflowId: workflowId,
-                isAppBackgrounded: false
+                isAppBackgrounded: false,
+                prefetch: true
             ) { _ in }
         }
 
-        // Parallelism: with the cap-4 queue, exactly 4 fetches become in flight (more than 1 => not
-        // serialized). toEventually pumps the main run loop so the queued envelopes deliver.
+        // Parallelism + cap: with the cap-4 queue, exactly 4 fetches become in flight (more than 1 =>
+        // not serialized) and no 5th can start while those 4 hold their slots. toEventually pumps the
+        // main run loop so the queued envelopes deliver. The final maxInFlight == 4 assertion is the
+        // authoritative cap check (it's the observed peak across the whole run).
         expect(currentInFlight.value).toEventually(equal(4), timeout: .seconds(5))
-        // Cap: those 4 hold their slots, so no 5th can start. Catches a regression to a higher cap or a
-        // bypass of the dedicated queue.
-        expect(currentInFlight.value).toNever(beGreaterThan(4), until: .milliseconds(500))
 
         // Release everything and let the remaining operations drain.
         for _ in 0..<workflowCount {

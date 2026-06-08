@@ -274,9 +274,11 @@ extension Backend {
         static func createWorkflowsQueue() -> OperationQueue {
             let operationQueue = OperationQueue()
             operationQueue.name = "RC Workflows Queue"
-            // Workflow detail fetches run here so their CDN asset downloads overlap instead of
-            // serializing on the single backend queue. Capped at 4; each GetWorkflowOperation holds
-            // its slot through the CDN download, so this bounds concurrent CDN downloads at 4 too.
+            // Workflow prefetches run here so their CDN asset downloads overlap instead of serializing
+            // on the single backend queue. Capped at 4; each GetWorkflowOperation holds its slot
+            // through the CDN download, so this bounds concurrent CDN downloads at 4 too.
+            // Intentionally no `.background` QoS (unlike the diagnostics queue): these prefetches gate
+            // offerings delivery, so they keep the default QoS like the main backend queue.
             operationQueue.maxConcurrentOperationCount = Self.maxConcurrentWorkflowOperations
             return operationQueue
         }

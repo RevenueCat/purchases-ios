@@ -41,6 +41,7 @@ class WorkflowManager {
     func getWorkflow(appUserID: String,
                      workflowId: String,
                      isAppBackgrounded: Bool,
+                     prefetch: Bool = false,
                      completion: @escaping (Result<WorkflowDataResult, BackendError>) -> Void) {
         if let cached = self.workflowsCache.cachedWorkflow(workflowId: workflowId),
            !self.workflowsCache.isWorkflowCacheStale(workflowId: workflowId, isAppBackgrounded: isAppBackgrounded) {
@@ -54,7 +55,8 @@ class WorkflowManager {
         let generation = self.workflowsCache.currentCacheGeneration()
         self.backend.workflowsAPI.getWorkflow(appUserID: appUserID,
                                               workflowId: workflowId,
-                                              isAppBackgrounded: isAppBackgrounded) { [weak self] result in
+                                              isAppBackgrounded: isAppBackgrounded,
+                                              prefetch: prefetch) { [weak self] result in
             guard let self else {
                 completion(result)
                 return
@@ -211,7 +213,8 @@ private extension WorkflowManager {
         for summary in prefetchWorkflows {
             self.getWorkflow(appUserID: appUserID,
                              workflowId: summary.id,
-                             isAppBackgrounded: isAppBackgrounded) { result in
+                             isAppBackgrounded: isAppBackgrounded,
+                             prefetch: true) { result in
                 if case let .success(dataResult) = result {
                     resolved.modify { $0[summary.id] = dataResult }
                 }

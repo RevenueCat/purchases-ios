@@ -22,8 +22,9 @@ class MockWorkflowsAPI: WorkflowsAPI, @unchecked Sendable {
 
     var invokedGetWorkflow = false
     var invokedGetWorkflowCount = 0
-    var invokedGetWorkflowParameters: (appUserID: String, workflowId: String, isAppBackgrounded: Bool)?
-    var invokedGetWorkflowParametersList: [(appUserID: String, workflowId: String, isAppBackgrounded: Bool)] = []
+    var invokedGetWorkflowParameters: (appUserID: String, workflowId: String, isAppBackgrounded: Bool, prefetch: Bool)?
+    var invokedGetWorkflowParametersList:
+        [(appUserID: String, workflowId: String, isAppBackgrounded: Bool, prefetch: Bool)] = []
     var stubbedGetWorkflowResult: Result<WorkflowDataResult, BackendError>?
     /// Per-workflowId result, used when set; otherwise falls back to `stubbedGetWorkflowResult`.
     var stubbedGetWorkflowResults: [String: Result<WorkflowDataResult, BackendError>] = [:]
@@ -35,11 +36,12 @@ class MockWorkflowsAPI: WorkflowsAPI, @unchecked Sendable {
     override func getWorkflow(appUserID: String,
                               workflowId: String,
                               isAppBackgrounded: Bool,
+                              prefetch: Bool = false,
                               completion: @escaping WorkflowDetailResponseHandler) {
         self.invokedGetWorkflow = true
         self.invokedGetWorkflowCount += 1
-        self.invokedGetWorkflowParameters = (appUserID, workflowId, isAppBackgrounded)
-        self.invokedGetWorkflowParametersList.append((appUserID, workflowId, isAppBackgrounded))
+        self.invokedGetWorkflowParameters = (appUserID, workflowId, isAppBackgrounded, prefetch)
+        self.invokedGetWorkflowParametersList.append((appUserID, workflowId, isAppBackgrounded, prefetch))
 
         if self.shouldStoreGetWorkflowCompletions {
             self.capturedGetWorkflowCompletions.append((workflowId, completion))
