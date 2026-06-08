@@ -108,8 +108,9 @@ class WorkflowManager {
                 self.workflowsCache.restoreWorkflowsListFromDisk()
                 // Restore the prefetched workflow details persisted on disk into the in-memory cache
                 // so a cold start with the backend down can still render them. They're restored fresh
-                // (like a normal fetch) so `getWorkflow` serves them offline; the refresh is driven by
-                // the list being restored stale above, which refetches once the backend is back.
+                // (like a normal fetch) so `getWorkflow` serves them offline. The stale list above
+                // drives the next list/map refetch when the backend is back; the details themselves
+                // keep serving as cache hits until their own TTL expires (see `restoreWorkflowDetailsFromDisk`).
                 self.workflowsCache.restoreWorkflowDetailsFromDisk()
                 onComplete()
             }

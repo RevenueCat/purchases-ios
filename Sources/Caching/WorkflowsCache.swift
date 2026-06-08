@@ -122,8 +122,13 @@ final class WorkflowsCache {
 
     /// Restores the persisted prefetched details into the in-memory cache, stamped fresh so
     /// ``cachedWorkflow(workflowId:)`` serves them without a backend round-trip. Used to recover after
-    /// a list-fetch failure; the list is restored stale separately so it refetches once the backend is
-    /// back. No-op when nothing is persisted. Mirrors ``restoreWorkflowsListFromDisk()``.
+    /// a list-fetch failure. No-op when nothing is persisted. Mirrors ``restoreWorkflowsListFromDisk()``.
+    ///
+    /// Fresh, not stale: stamping them stale would make ``WorkflowManager.getWorkflow`` try the backend
+    /// (which is down, with no disk fallback) instead of serving them, defeating the recovery. The cost
+    /// is that once the backend is back these details keep being served as cache hits until their own
+    /// foreground TTL expires, only then does `getWorkflow` refetch them, so recovery refreshes the
+    /// list/map promptly but the details ride their TTL.
     ///
     /// Only fills ids not already in memory: an on-demand ``cachedWorkflow(workflowId:)`` miss may have
     /// fetched a fresher detail that was never persisted, so the older disk snapshot must not clobber it.
