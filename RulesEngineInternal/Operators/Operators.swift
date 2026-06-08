@@ -83,6 +83,8 @@ enum Operators {
         // String and array
         case "in":
             return try StringArrayOperators.opIn(args: args, vars: vars)
+        case "contains":
+            return try StringArrayOperators.opContains(args: args, vars: vars)
         case "cat":
             return try StringArrayOperators.opCat(args: args, vars: vars)
         case "substr":

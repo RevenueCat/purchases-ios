@@ -1,0 +1,130 @@
+{
+  "fixtures": [
+    {
+      "id": "contains_case_insensitive_substring_match",
+      "predicate": { "contains": ["FooBar", "oob"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "contains_exact_case_substring_match",
+      "predicate": { "contains": ["foobar", "bar"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "contains_no_match",
+      "predicate": { "contains": ["foobar", "baz"] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "contains_uppercase_needle_lowercase_haystack",
+      "predicate": { "contains": ["foobar", "BAR"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "contains_lowercase_needle_uppercase_haystack",
+      "predicate": { "contains": ["FOOBAR", "bar"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "contains_full_string_case_insensitive",
+      "predicate": { "contains": ["ABC", "abc"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "contains_unicode_accented_case_folding",
+      "description": "locale-independent Unicode lowercasing folds accented letters",
+      "predicate": { "contains": ["CAFÉ", "café"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "contains_empty_needle_matches_any_string",
+      "description": "every string contains the empty substring; no json-logic falsy guard (unlike in)",
+      "predicate": { "contains": ["abc", ""] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "contains_empty_needle_matches_empty_haystack",
+      "predicate": { "contains": ["", ""] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "contains_empty_haystack_nonempty_needle",
+      "predicate": { "contains": ["", "x"] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "contains_needle_longer_than_haystack",
+      "predicate": { "contains": ["ab", "abc"] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "contains_coerces_non_string_needle",
+      "description": "needle is stringified (mirrors in): 2 becomes \"2\"",
+      "predicate": { "contains": ["a1b2c3", 2] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "contains_non_string_haystack_number",
+      "description": "case-insensitive substring is only defined on string haystacks; non-string returns false",
+      "predicate": { "contains": [12345, "234"] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "contains_non_string_haystack_null",
+      "predicate": { "contains": [null, "x"] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "contains_non_string_haystack_bool",
+      "predicate": { "contains": [true, "tru"] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "contains_non_string_haystack_array",
+      "predicate": { "contains": [["a", "b"], "a"] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "contains_non_string_haystack_object",
+      "predicate": { "contains": [{}, "x"] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "contains_zero_args",
+      "description": "contains is function(haystack, needle); a missing haystack is null, so non-string short-circuits to false",
+      "predicate": { "contains": [] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "contains_one_arg_missing_needle",
+      "description": "a missing needle becomes null, stringified to \"null\", which is not a substring of the haystack",
+      "predicate": { "contains": ["only-one"] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "contains_ignores_args_beyond_second",
+      "predicate": { "contains": ["foobar", "foo", 999] },
+      "variables": {},
+      "expected": true
+    }
+  ]
+}

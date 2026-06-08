@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// String + array operators: `in`, `cat`, `substr`, `merge`.
+/// String + array operators: `in`, `contains`, `cat`, `substr`, `merge`.
 ///
 /// Behavior follows the JSON Logic JS reference (`json-logic-js`).
 /// `substr` slices by Unicode code points, not UTF-16 code units —
@@ -37,6 +37,31 @@ enum StringArrayOperators {
             return .bool(haystackString.contains(jsString(needle)))
         case .array(let items):
             return .bool(items.contains { strictEq(needle, $0) })
+        default:
+            return .bool(false)
+        }
+    }
+
+    /// `{"contains": [haystack, needle]}` — case-insensitive substring
+    /// test (khepri-specific, not part of JSON Logic). The haystack must
+    /// be a `.string`; non-string haystacks return `false`. The needle is
+    /// stringified via [`jsString`] and matched with locale-independent
+    /// Unicode lowercasing (`String.lowercased()`). Unlike `in`, there is
+    /// no json-logic falsy guard on the haystack — an empty needle matches
+    /// any string haystack. Argument order is reversed from `in`:
+    /// `function(haystack, needle)`. Extra operands beyond the second are
+    /// ignored.
+    static func opContains(args: Value, vars: Value) throws -> Value {
+        let evaluated = try Operators.evalArgs(args, vars: vars)
+        let haystack = evaluated.first ?? .null
+        let needle = evaluated.indices.contains(1) ? evaluated[1] : .null
+        switch haystack {
+        case .string(let haystackString):
+            let needleString = jsString(needle)
+            if needleString.isEmpty {
+                return .bool(true)
+            }
+            return .bool(haystackString.lowercased().contains(needleString.lowercased()))
         default:
             return .bool(false)
         }
