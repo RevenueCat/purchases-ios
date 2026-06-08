@@ -19,7 +19,7 @@ import XCTest
 final class PaywallViewConfigurationTests: TestCase {
 
 #if !os(tvOS)
-    func testCachedInitialOfferingReturnsNilForAllContentWhenWorkflowsEndpointEnabled() {
+    func testCachedInitialOfferingReturnsNilForAllContent() {
         let cachedOffering = TestData.offeringWithNoIntroOffer
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)
@@ -30,79 +30,14 @@ final class PaywallViewConfigurationTests: TestCase {
         )
 
         expect(handler.cachedInitialOffering(
-            for: .offering(cachedOffering),
-            workflowsEndpointEnabled: true
+            for: .offering(cachedOffering)
         )).to(beNil())
         expect(handler.cachedInitialOffering(
-            for: .defaultOffering,
-            workflowsEndpointEnabled: true
+            for: .defaultOffering
         )).to(beNil())
         expect(handler.cachedInitialOffering(
-            for: .offeringIdentifier(cachedOffering.identifier, presentedOfferingContext: nil),
-            workflowsEndpointEnabled: true
+            for: .offeringIdentifier(cachedOffering.identifier, presentedOfferingContext: nil)
         )).to(beNil())
-    }
-
-    func testCachedInitialOfferingUsesCachedOfferingsWhenWorkflowsEndpointDisabled() {
-        let cachedOffering = TestData.offeringWithNoIntroOffer
-        let purchases = Self.createMockPurchases()
-        let handler = Self.createPurchaseHandler(purchases: purchases)
-
-        purchases.cachedOfferings = Self.createOfferings(
-            [cachedOffering],
-            currentOfferingID: cachedOffering.identifier
-        )
-
-        expect(handler.cachedInitialOffering(
-            for: .offering(cachedOffering),
-            workflowsEndpointEnabled: false
-        )) === cachedOffering
-        expect(handler.cachedInitialOffering(
-            for: .defaultOffering,
-            workflowsEndpointEnabled: false
-        )?.identifier) == cachedOffering.identifier
-        expect(handler.cachedInitialOffering(
-            for: .offeringIdentifier(cachedOffering.identifier, presentedOfferingContext: nil),
-            workflowsEndpointEnabled: false
-        )?.identifier) == cachedOffering.identifier
-    }
-
-    func testResolvePaywallViewDataReturnsNilWorkflowContextWhenWorkflowsEndpointDisabled() async throws {
-        let initialOffering = Self.createOffering(identifier: "offering_a")
-            .withPresentedOfferingContext(Self.createPresentedOfferingContext(offeringIdentifier: "offering_a"))
-        let purchases = Self.createMockPurchases()
-        let handler = Self.createPurchaseHandler(purchases: purchases)
-
-        purchases.offeringsBlock = {
-            Self.createOfferings(
-                [initialOffering],
-                currentOfferingID: initialOffering.identifier
-            )
-        }
-        purchases.workflowBlock = { _ in
-            XCTFail("Workflow endpoint should not be fetched when workflowsEndpointEnabled is false")
-            throw ErrorCode.configurationError
-        }
-
-        let offeringResult = try await handler.resolvePaywallViewData(
-            for: .offering(initialOffering),
-            workflowsEndpointEnabled: false
-        )
-        let defaultOfferingResult = try await handler.resolvePaywallViewData(
-            for: .defaultOffering,
-            workflowsEndpointEnabled: false
-        )
-        let offeringIdentifierResult = try await handler.resolvePaywallViewData(
-            for: .offeringIdentifier(initialOffering.identifier, presentedOfferingContext: nil),
-            workflowsEndpointEnabled: false
-        )
-
-        expect(offeringResult.offering.identifier) == initialOffering.identifier
-        expect(offeringResult.workflowContext).to(beNil())
-        expect(defaultOfferingResult.offering.identifier) == initialOffering.identifier
-        expect(defaultOfferingResult.workflowContext).to(beNil())
-        expect(offeringIdentifierResult.offering.identifier) == initialOffering.identifier
-        expect(offeringIdentifierResult.workflowContext).to(beNil())
     }
 
     func testResolvePaywallViewDataReturnsWorkflowContextForWorkflowOfferingContent() async throws {
@@ -122,8 +57,7 @@ final class PaywallViewConfigurationTests: TestCase {
         }
 
         let result = try await handler.resolvePaywallViewData(
-            for: .offering(initialOffering),
-            workflowsEndpointEnabled: true
+            for: .offering(initialOffering)
         )
 
         expect(result.offering.identifier) == workflowOffering.identifier
@@ -158,8 +92,7 @@ final class PaywallViewConfigurationTests: TestCase {
         }
 
         let result = try await handler.resolvePaywallViewData(
-            for: .defaultOffering,
-            workflowsEndpointEnabled: true
+            for: .defaultOffering
         )
 
         expect(result.offering.identifier) == workflowOffering.identifier
@@ -189,8 +122,7 @@ final class PaywallViewConfigurationTests: TestCase {
         }
 
         let result = try await handler.resolvePaywallViewData(
-            for: .offeringIdentifier(initialOffering.identifier, presentedOfferingContext: presentedOfferingContext),
-            workflowsEndpointEnabled: true
+            for: .offeringIdentifier(initialOffering.identifier, presentedOfferingContext: presentedOfferingContext)
         )
 
         expect(result.offering.identifier) == workflowOffering.identifier
@@ -220,112 +152,12 @@ final class PaywallViewConfigurationTests: TestCase {
 
         do {
             _ = try await handler.resolvePaywallViewData(
-                for: .offering(initialOffering),
-                workflowsEndpointEnabled: true
+                for: .offering(initialOffering)
             )
             XCTFail("Expected resolvePaywallViewData to throw")
         } catch let PaywallError.offeringNotFound(identifier) {
             expect(identifier) == "offering_b"
         }
-    }
-
-    func testResolvePaywallViewDataRendersLegacyWhenOfferingHasLegacyPaywall() async throws {
-        // A legacy paywall (`offering.paywall != nil`) renders directly, with no workflow fetch.
-        let offering = Self.createOffering(identifier: "offering_a")
-            .withPresentedOfferingContext(Self.createPresentedOfferingContext(offeringIdentifier: "offering_a"))
-        let purchases = Self.createMockPurchases()
-        let handler = Self.createPurchaseHandler(purchases: purchases)
-
-        purchases.offeringsBlock = {
-            Self.createOfferings([offering], currentOfferingID: offering.identifier)
-        }
-        purchases.workflowBlock = { _ in
-            XCTFail("Workflow should not be fetched when the offering has a legacy paywall")
-            throw ErrorCode.configurationError
-        }
-
-        let result = try await handler.resolvePaywallViewData(
-            for: .offering(offering),
-            workflowsEndpointEnabled: true
-        )
-
-        expect(result.offering.identifier) == offering.identifier
-        expect(result.workflowContext).to(beNil())
-    }
-
-    func testResolvePaywallViewDataRendersLegacyForDefaultOfferingWithLegacyPaywall() async throws {
-        let offering = Self.createOffering(identifier: "offering_a")
-        let purchases = Self.createMockPurchases()
-        let handler = Self.createPurchaseHandler(purchases: purchases)
-
-        purchases.offeringsBlock = {
-            Self.createOfferings([offering], currentOfferingID: offering.identifier)
-        }
-        purchases.workflowBlock = { _ in
-            XCTFail("Workflow should not be fetched when the offering has a legacy paywall")
-            throw ErrorCode.configurationError
-        }
-
-        let result = try await handler.resolvePaywallViewData(
-            for: .defaultOffering,
-            workflowsEndpointEnabled: true
-        )
-
-        expect(result.offering.identifier) == offering.identifier
-        expect(result.workflowContext).to(beNil())
-    }
-
-    func testResolvePaywallViewDataRendersLegacyForOfferingIdentifierWithLegacyPaywall() async throws {
-        let offering = Self.createOffering(identifier: "offering_a")
-        let purchases = Self.createMockPurchases()
-        let handler = Self.createPurchaseHandler(purchases: purchases)
-        let presentedOfferingContext = PresentedOfferingContext(offeringIdentifier: offering.identifier)
-
-        purchases.offeringsBlock = {
-            Self.createOfferings([offering], currentOfferingID: offering.identifier)
-        }
-        purchases.workflowBlock = { _ in
-            XCTFail("Workflow should not be fetched when the offering has a legacy paywall")
-            throw ErrorCode.configurationError
-        }
-
-        let result = try await handler.resolvePaywallViewData(
-            for: .offeringIdentifier(offering.identifier, presentedOfferingContext: presentedOfferingContext),
-            workflowsEndpointEnabled: true
-        )
-
-        expect(result.offering.identifier) == offering.identifier
-        expect(result.offering.presentedOfferingContext?.offeringIdentifier) == offering.identifier
-        expect(result.workflowContext).to(beNil())
-    }
-
-    func testCachedInitialWorkflowContextReturnsNilWhenWorkflowsEndpointDisabled() throws {
-        let initialOffering = Self.createOffering(identifier: "offering_a")
-        let workflowOffering = Self.createOffering(identifier: "offering_b")
-        let purchases = Self.createMockPurchases()
-        let handler = Self.createPurchaseHandler(purchases: purchases)
-
-        purchases.cachedOfferings = Self.createOfferings(
-            [initialOffering, workflowOffering],
-            currentOfferingID: initialOffering.identifier
-        )
-        purchases.cachedWorkflowBlock = { _ in
-            XCTFail("Workflow cache should not be read when workflowsEndpointEnabled is false")
-            return nil
-        }
-
-        expect(handler.cachedInitialWorkflowContext(
-            for: .offering(initialOffering),
-            workflowsEndpointEnabled: false
-        )).to(beNil())
-        expect(handler.cachedInitialWorkflowContext(
-            for: .defaultOffering,
-            workflowsEndpointEnabled: false
-        )).to(beNil())
-        expect(handler.cachedInitialWorkflowContext(
-            for: .offeringIdentifier(initialOffering.identifier, presentedOfferingContext: nil),
-            workflowsEndpointEnabled: false
-        )).to(beNil())
     }
 
     func testCachedInitialWorkflowContextReturnsContextForWorkflowOfferingContentOnWarmCache() throws {
@@ -342,8 +174,7 @@ final class PaywallViewConfigurationTests: TestCase {
         }
 
         let context = try XCTUnwrap(handler.cachedInitialWorkflowContext(
-            for: .offering(initialOffering),
-            workflowsEndpointEnabled: true
+            for: .offering(initialOffering)
         ))
 
         expect(context.initialOffering.identifier) == workflowOffering.identifier
@@ -373,8 +204,7 @@ final class PaywallViewConfigurationTests: TestCase {
         }
 
         let context = try XCTUnwrap(handler.cachedInitialWorkflowContext(
-            for: .defaultOffering,
-            workflowsEndpointEnabled: true
+            for: .defaultOffering
         ))
 
         expect(context.initialOffering.identifier) == workflowOffering.identifier
@@ -395,8 +225,7 @@ final class PaywallViewConfigurationTests: TestCase {
         }
 
         let context = try XCTUnwrap(handler.cachedInitialWorkflowContext(
-            for: .offeringIdentifier(initialOffering.identifier, presentedOfferingContext: presentedOfferingContext),
-            workflowsEndpointEnabled: true
+            for: .offeringIdentifier(initialOffering.identifier, presentedOfferingContext: presentedOfferingContext)
         ))
 
         expect(context.initialOffering.identifier) == workflowOffering.identifier
@@ -416,8 +245,7 @@ final class PaywallViewConfigurationTests: TestCase {
         purchases.cachedWorkflowBlock = { _ in nil }
 
         expect(handler.cachedInitialWorkflowContext(
-            for: .offering(initialOffering),
-            workflowsEndpointEnabled: true
+            for: .offering(initialOffering)
         )).to(beNil())
     }
 
@@ -438,8 +266,7 @@ final class PaywallViewConfigurationTests: TestCase {
         }
 
         expect(handler.cachedInitialWorkflowContext(
-            for: .offering(initialOffering),
-            workflowsEndpointEnabled: true
+            for: .offering(initialOffering)
         )).to(beNil())
     }
 
@@ -455,8 +282,7 @@ final class PaywallViewConfigurationTests: TestCase {
         }
 
         expect(handler.cachedInitialWorkflowContext(
-            for: .offering(initialOffering),
-            workflowsEndpointEnabled: true
+            for: .offering(initialOffering)
         )).to(beNil())
     }
 
@@ -478,8 +304,7 @@ final class PaywallViewConfigurationTests: TestCase {
         }
 
         expect(handler.cachedInitialWorkflowContext(
-            for: .offering(initialOffering),
-            workflowsEndpointEnabled: true
+            for: .offering(initialOffering)
         )).to(beNil())
     }
 

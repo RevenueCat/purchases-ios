@@ -112,10 +112,10 @@ extension Environment {
     /// Example usage:
     /// ```bash
     /// # Single argument
-    /// TUIST_LAUNCH_ARGUMENTS="-EnableWorkflowsEndpoint" tuist generate PaywallsTester
+    /// TUIST_LAUNCH_ARGUMENTS="-MyFeatureFlag" tuist generate PaywallsTester
     ///
     /// # Multiple arguments
-    /// TUIST_LAUNCH_ARGUMENTS="-EnableWorkflowsEndpoint -MyOtherFlag" tuist generate
+    /// TUIST_LAUNCH_ARGUMENTS="-MyFeatureFlag -MyOtherFlag" tuist generate
     /// ```
     public static var extraLaunchArguments: [String] {
         let value = ProcessInfo.processInfo.environment["TUIST_LAUNCH_ARGUMENTS"] ?? ""

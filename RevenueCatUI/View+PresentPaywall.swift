@@ -677,14 +677,6 @@ private struct PresentingPaywallModifier: ViewModifier {
         .onPreferenceChange(WorkflowExitOfferPreferenceKey.self) { context in
             self.handleWorkflowExitOfferPreferenceChange(context)
         }
-        .task {
-            // When the workflows endpoint is enabled, exit offers are resolved synchronously
-            // from WorkflowContext.allOfferings via the preference key above — no fetch needed.
-            guard !ProcessInfo.processInfo.workflowsEndpointEnabled else { return }
-
-            guard let offering = await self.purchaseHandler.resolveOffering(for: self.content) else { return }
-            self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
-        }
     }
 
     private func close() {
@@ -777,7 +769,6 @@ private struct PresentingPaywallModifier: ViewModifier {
     }
 
     private func handleWorkflowExitOfferPreferenceChange(_ context: WorkflowExitOfferContext?) {
-        guard ProcessInfo.processInfo.workflowsEndpointEnabled else { return }
         // Don't nil out exitOfferOffering once an exit offer is already being presented:
         // SwiftUI may fire a final nil preference update during the dismiss animation, after
         // handleMainPaywallDismiss has already copied exitOfferOffering into presentedExitOffer.
