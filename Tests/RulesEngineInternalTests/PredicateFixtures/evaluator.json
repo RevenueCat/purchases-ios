@@ -191,16 +191,18 @@
     {
       "id": "evaluator_divide_by_zero_positive_infinity_is_truthy",
       "description": "n / 0 follows IEEE 754; {\"/\": [10, 0]} is +Infinity, which is truthy",
-      "predicate": { "/": [10, 0] },
+      "predicate": { "log": { "/": [10, 0] } },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["Infinity"]
     },
     {
       "id": "evaluator_divide_by_zero_nan_is_falsy",
       "description": "{\"/\": [0, 0]} is NaN, which is falsy",
-      "predicate": { "/": [0, 0] },
+      "predicate": { "log": { "/": [0, 0] } },
       "variables": {},
-      "expected": false
+      "expected": false,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "evaluator_comparison_predicate_with_var_operand",
