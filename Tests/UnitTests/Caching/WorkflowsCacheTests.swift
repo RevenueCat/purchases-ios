@@ -108,30 +108,30 @@ class WorkflowsCacheTests: TestCase {
 
     func testIsWorkflowsListCacheStaleIsTrueInitiallyAndFalseAfterCaching() {
         expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == true
-        self.cache.cache(workflowsList: .init(workflows: []))
+        self.seedWorkflowsList(.init(workflows: []))
         expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == false
     }
 
     func testIsWorkflowsListCacheStaleIsTrueAfterForegroundTTLExpires() {
-        self.cache.cache(workflowsList: .init(workflows: []))
+        self.seedWorkflowsList(.init(workflows: []))
         self.dateProvider.advance(by: 6 * 60)
         expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == true
     }
 
     func testIsWorkflowsListCacheStaleIsFalseAfterForegroundTTLWhenBackgrounded() {
-        self.cache.cache(workflowsList: .init(workflows: []))
+        self.seedWorkflowsList(.init(workflows: []))
         self.dateProvider.advance(by: 6 * 60)
         expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: true)) == false
     }
 
     func testIsWorkflowsListCacheStaleIsTrueAfterBackgroundTTLExpires() {
-        self.cache.cache(workflowsList: .init(workflows: []))
+        self.seedWorkflowsList(.init(workflows: []))
         self.dateProvider.advance(by: 26 * 60 * 60)
         expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: true)) == true
     }
 
     func testWorkflowIdForOfferingIdIsDerivedFromTheCachedList() {
-        self.cache.cache(workflowsList: .init(workflows: [
+        self.seedWorkflowsList(.init(workflows: [
             .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
         ]))
         expect(self.cache.workflowId(forOfferingId: "default")) == "wf_1"
@@ -139,7 +139,7 @@ class WorkflowsCacheTests: TestCase {
     }
 
     func testWorkflowIdForOfferingIdReturnsLastMatchWhenOfferingIsDuplicated() {
-        self.cache.cache(workflowsList: .init(workflows: [
+        self.seedWorkflowsList(.init(workflows: [
             .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false),
             .init(id: "wf_2", displayName: "Flow", offeringId: "default", prefetch: false)
         ]))
@@ -148,8 +148,8 @@ class WorkflowsCacheTests: TestCase {
 
     func testWorkflowIdForOfferingIdDoesNotFallBackToDiskWhenNotInMemory() {
         // The lookup is in-memory only. Restoring the disk copy is the caller's job (via
-        // `cachedWorkflowsListResponseFromDisk()` + `cache(workflowsList:)`), so an uncached list
-        // resolves to nil without touching disk.
+        // `cachedWorkflowsListResponseFromDisk()` + `cache(workflowsList:ifGeneration:)`), so an
+        // uncached list resolves to nil without touching disk.
         self.deviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
             .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
         ])
@@ -159,7 +159,7 @@ class WorkflowsCacheTests: TestCase {
     }
 
     func testClearCacheResetsWorkflowsListStalenessAndWorkflowIdLookup() {
-        self.cache.cache(workflowsList: .init(workflows: [
+        self.seedWorkflowsList(.init(workflows: [
             .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
         ]))
         self.cache.clearCache()
@@ -168,7 +168,7 @@ class WorkflowsCacheTests: TestCase {
     }
 
     func testForceWorkflowsListCacheStaleMarksStaleButKeepsWorkflowIdLookup() {
-        self.cache.cache(workflowsList: .init(workflows: [
+        self.seedWorkflowsList(.init(workflows: [
             .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
         ]))
         expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == false
@@ -189,7 +189,7 @@ class WorkflowsCacheTests: TestCase {
     // MARK: - Disk persistence
 
     func testCacheWorkflowsListForwardsResponseToDeviceCache() {
-        self.cache.cache(workflowsList: .init(workflows: [
+        self.seedWorkflowsList(.init(workflows: [
             .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
         ]))
         expect(self.deviceCache.cacheWorkflowsListResponseCount) == 1
@@ -290,7 +290,7 @@ class WorkflowsCacheTests: TestCase {
             "wf_keep": try Self.workflowDataResult(id: "wf_keep")
         ]
 
-        self.cache.cache(workflowsList: .init(workflows: [
+        self.seedWorkflowsList(.init(workflows: [
             .init(id: "wf_keep", displayName: "Keep", offeringId: "default", prefetch: true)
         ]))
 
@@ -304,7 +304,7 @@ class WorkflowsCacheTests: TestCase {
             "wf_keep": try Self.workflowDataResult(id: "wf_keep")
         ]
 
-        self.cache.cache(workflowsList: .init(workflows: [
+        self.seedWorkflowsList(.init(workflows: [
             .init(id: "wf_keep", displayName: "Keep", offeringId: "default", prefetch: true)
         ]))
 
@@ -314,7 +314,7 @@ class WorkflowsCacheTests: TestCase {
 
     func testCacheWorkflowsListPruneIsNoOpWhenNoDetailsPersisted() {
         self.deviceCache.stubbedCachedWorkflowDetails = nil
-        self.cache.cache(workflowsList: .init(workflows: [
+        self.seedWorkflowsList(.init(workflows: [
             .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: true)
         ]))
         expect(self.deviceCache.cacheWorkflowDetailsCount) == 0
@@ -372,7 +372,7 @@ class WorkflowsCacheTests: TestCase {
 
     func testPersistWorkflowDetailsToDiskDropsIdsNotInCurrentList() throws {
         // The latest list only knows wf_keep.
-        self.cache.cache(workflowsList: .init(workflows: [
+        self.seedWorkflowsList(.init(workflows: [
             .init(id: "wf_keep", displayName: "Keep", offeringId: "default", prefetch: true)
         ]))
 
@@ -388,6 +388,34 @@ class WorkflowsCacheTests: TestCase {
         let persisted = try XCTUnwrap(self.deviceCache.cachedWorkflowDetailsParameter)
         expect(persisted.keys).to(contain("wf_keep"))
         expect(persisted.keys).toNot(contain("wf_stale"))
+    }
+
+    // MARK: - Generation-guarded list write
+
+    func testCacheWorkflowsListWithCurrentGenerationWrites() {
+        let didCache = self.cache.cache(workflowsList: .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ]), ifGeneration: self.cache.currentCacheGeneration())
+
+        expect(didCache) == true
+        expect(self.cache.workflowId(forOfferingId: "default")) == "wf_1"
+        expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == false
+    }
+
+    func testCacheWorkflowsListIsDroppedWhenGenerationChanged() {
+        // A list fetch captures the generation, then an identity change clears the cache (bumping it),
+        // then the fetch's write lands: it must be dropped (and report false) so the previous user's
+        // offeringId -> workflowId map can't repopulate the cleared cache.
+        let staleGeneration = self.cache.currentCacheGeneration()
+        self.cache.clearCache()
+
+        let didCache = self.cache.cache(workflowsList: .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ]), ifGeneration: staleGeneration)
+
+        expect(didCache) == false
+        expect(self.cache.workflowId(forOfferingId: "default")).to(beNil())
+        expect(self.cache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == true
     }
 
     // MARK: - WorkflowDataResult Codable round-trip
@@ -422,6 +450,12 @@ class WorkflowsCacheTests: TestCase {
     /// with the current generation, which always matches and lets the write land.
     private func seedWorkflow(_ result: WorkflowDataResult, workflowId: String) {
         self.cache.cache(workflow: result, workflowId: workflowId, ifGeneration: self.cache.currentCacheGeneration())
+    }
+
+    /// Seeds the workflows list cache. The production write is generation-guarded, so tests seed with
+    /// the current generation, which always matches and lets the write land.
+    private func seedWorkflowsList(_ response: WorkflowsListResponse) {
+        self.cache.cache(workflowsList: response, ifGeneration: self.cache.currentCacheGeneration())
     }
 
     private static func workflowDataResult(id: String) throws -> WorkflowDataResult {

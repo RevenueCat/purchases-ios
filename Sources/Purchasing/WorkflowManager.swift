@@ -99,14 +99,14 @@ class WorkflowManager {
             }
             switch result {
             case let .success(response):
-                guard self.workflowsCache.currentCacheGeneration() == generation else {
-                    // Identity changed mid-flight: this response is the previous user's. Drop it
-                    // (don't cache the list or prefetch its details) but still fire onComplete so
-                    // callers waiting on it aren't blocked, mirroring the failure branch.
+                // The list write re-checks `generation` atomically under the cache's lock and reports
+                // whether it landed. If an identity change cleared the cache mid-flight, the write is
+                // dropped (this response is the previous user's) and we skip prefetching its details,
+                // still firing onComplete so callers waiting on it aren't blocked.
+                guard self.workflowsCache.cache(workflowsList: response, ifGeneration: generation) else {
                     onComplete()
                     return
                 }
-                self.workflowsCache.cache(workflowsList: response)
                 self.prefetchWorkflows(response.workflows,
                                        appUserID: appUserID,
                                        isAppBackgrounded: isAppBackgrounded,

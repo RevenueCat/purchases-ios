@@ -154,11 +154,18 @@ final class WorkflowsCache {
     /// the latest list says exists. No-op (no rewrite) when nothing is pruned.
     private func pruneWorkflowDetails(toListIds workflowIds: Set<String>) {
         self.detailsLock.perform {
-            guard let current = self.deviceCache.cachedWorkflowDetails() else { return }
-            let pruned = current.filter { workflowIds.contains($0.key) }
-            if pruned.count != current.count {
-                self.deviceCache.cache(workflowDetails: pruned)
-            }
+            self.pruneWorkflowDetailsLocked(toListIds: workflowIds)
+        }
+    }
+
+    /// Lock-free body of ``pruneWorkflowDetails(toListIds:)``. The caller must already hold
+    /// ``detailsLock`` (the lock is not recursive, so a guarded list write that prunes must reuse
+    /// this rather than re-entering ``pruneWorkflowDetails(toListIds:)``).
+    private func pruneWorkflowDetailsLocked(toListIds workflowIds: Set<String>) {
+        guard let current = self.deviceCache.cachedWorkflowDetails() else { return }
+        let pruned = current.filter { workflowIds.contains($0.key) }
+        if pruned.count != current.count {
+            self.deviceCache.cache(workflowDetails: pruned)
         }
     }
 
@@ -178,15 +185,28 @@ final class WorkflowsCache {
         return self.isStale(lastUpdated: cached.lastUpdated, isAppBackgrounded: isAppBackgrounded)
     }
 
-    /// Caches the workflows list in memory and persists it to disk. Also prunes any persisted
-    /// workflow details whose workflowId is no longer in the latest list, keeping the on-disk detail
-    /// store bounded by what the backend currently says exists.
-    func cache(workflowsList response: WorkflowsListResponse) {
-        self.cachedList.value = CachedList(response: response,
-                                           offeringIdToWorkflowId: Self.offeringIdToWorkflowId(from: response),
-                                           lastUpdated: self.dateProvider.now())
-        self.deviceCache.cache(workflowsListResponse: response)
-        self.pruneWorkflowDetails(toListIds: Set(response.workflows.map { $0.id }))
+    /// Caches the workflows list in memory and persists it to disk, but only if `generation` still
+    /// matches the current one. The caller captures ``currentCacheGeneration()`` when it issues the
+    /// list fetch; if ``clearCache()`` bumped it in between (a log-in/log-out), the write is dropped
+    /// so a list (the user-targeted `offeringId → workflowId` map) fetched for the previous user can't
+    /// repopulate the cleared cache. Returns `true` when the write happened, `false` when it was
+    /// dropped, so the caller can skip prefetching a dropped list's details.
+    ///
+    /// The generation check, the in-memory + disk writes, and the detail prune all run under
+    /// ``detailsLock`` together, so the whole update is atomic w.r.t. ``clearCache()`` (no
+    /// check-then-write window). Also prunes persisted details whose workflowId is no longer in the
+    /// latest list, keeping the on-disk detail store bounded by what the backend currently says exists.
+    @discardableResult
+    func cache(workflowsList response: WorkflowsListResponse, ifGeneration generation: Int) -> Bool {
+        return self.detailsLock.perform {
+            guard self.cacheGeneration.value == generation else { return false }
+            self.cachedList.value = CachedList(response: response,
+                                               offeringIdToWorkflowId: Self.offeringIdToWorkflowId(from: response),
+                                               lastUpdated: self.dateProvider.now())
+            self.deviceCache.cache(workflowsListResponse: response)
+            self.pruneWorkflowDetailsLocked(toListIds: Set(response.workflows.map { $0.id }))
+            return true
+        }
     }
 
     /// Reads the last persisted workflows list, or `nil` when nothing is cached or the payload
@@ -201,10 +221,12 @@ final class WorkflowsCache {
     /// without suppressing the next refresh, mirroring how the offerings cache serves its disk copy
     /// while staying stale. No-op when nothing is persisted, and the on-disk copy is left untouched.
     func restoreWorkflowsListFromDisk() {
-        guard let response = self.cachedWorkflowsListResponseFromDisk() else { return }
-        self.cachedList.value = CachedList(response: response,
-                                           offeringIdToWorkflowId: Self.offeringIdToWorkflowId(from: response),
-                                           lastUpdated: .distantPast)
+        self.detailsLock.perform {
+            guard let response = self.cachedWorkflowsListResponseFromDisk() else { return }
+            self.cachedList.value = CachedList(response: response,
+                                               offeringIdToWorkflowId: Self.offeringIdToWorkflowId(from: response),
+                                               lastUpdated: .distantPast)
+        }
     }
 
     /// Marks the in-memory workflows list stale so the next ``isWorkflowsListCacheStale(isAppBackgrounded:)``
@@ -229,13 +251,13 @@ final class WorkflowsCache {
     // MARK: -
 
     func clearCache() {
-        self.cachedList.value = nil
-        self.deviceCache.clearWorkflowsListResponseCache()
-        // Bump the generation and clear both detail stores together, so a fetch issued before this
-        // clear (and capturing the old generation) can't write the previous user's details back into
-        // memory or disk.
+        // Bump the generation and clear the list and detail stores (memory + disk) together under the
+        // lock, so a fetch issued before this clear (and capturing the old generation) can't write the
+        // previous user's list or details back into memory or disk.
         self.detailsLock.perform {
             self.cacheGeneration.modify { $0 += 1 }
+            self.cachedList.value = nil
+            self.deviceCache.clearWorkflowsListResponseCache()
             self.cachedWorkflows.value = [:]
             self.deviceCache.clearWorkflowDetailsCache()
         }
