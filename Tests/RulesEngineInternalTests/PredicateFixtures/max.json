@@ -210,7 +210,7 @@
     },
     {
       "id": "max_of_empty_args_is_negative_infinity",
-      "description": "{\"max\": []} is -Infinity (matches JS Math.max()); -Infinity comes from the test-only \"-Infinity\" variable since JSON has no Infinity literal",
+      "description": "{\"max\": []} is -Infinity (matches JS Math.max())",
       "predicate": {
         "===": [
           {

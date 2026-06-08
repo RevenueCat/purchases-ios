@@ -210,7 +210,7 @@
     },
     {
       "id": "min_of_empty_args_is_positive_infinity",
-      "description": "{\"min\": []} is +Infinity (matches JS Math.min()); +Infinity comes from the test-only \"+Infinity\" variable since JSON has no Infinity literal",
+      "description": "{\"min\": []} is +Infinity (matches JS Math.min())",
       "predicate": {
         "===": [
           {

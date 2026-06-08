@@ -54,7 +54,7 @@
     },
     {
       "id": "missing_some_infinite_threshold_never_satisfies",
-      "description": "+Infinity clamps to Int.max so the requirement can never be met; +Infinity comes from the test-only \"+Infinity\" variable since JSON has no Infinity literal",
+      "description": "+Infinity clamps to Int.max so the requirement can never be met",
       "predicate": { "==": [{ "missing_some": [{ "var": "+Infinity" }, ["a", "b"]] }, "b"] },
       "variables": { "a": 1 },
       "expected": true
