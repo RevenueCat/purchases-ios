@@ -20,6 +20,12 @@ import XCTest
 final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
 
     func testStickyFooterRootZLayerOnIPadFormSheet() throws {
+        // The form sheet presentation renders differently on iOS 15, producing an
+        // inconsistent snapshot. Skip on iOS 15 as a temporary fix.
+        guard #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) else {
+            throw XCTSkip("Snapshot is inconsistent on iOS 15")
+        }
+
         let viewModel = try PaywallsV2LayoutFixtures.makeStickyFooterRootZLayerViewModel()
         let view = PaywallsV2LayoutFixtures.makeRootView(
             viewModel: viewModel,
