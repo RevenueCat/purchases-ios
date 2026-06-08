@@ -71,20 +71,6 @@ final class WorkflowsCache {
         return self.isStale(lastUpdated: cached.lastUpdated, isAppBackgrounded: isAppBackgrounded)
     }
 
-    func cache(workflow: WorkflowDataResult, workflowId: String) {
-        self.cache(workflows: [workflowId: workflow])
-    }
-
-    /// Caches a batch of resolved workflows in memory in one pass, all stamped with the same `now()`.
-    func cache(workflows: [String: WorkflowDataResult]) {
-        let now = self.dateProvider.now()
-        self.cachedWorkflows.modify { cache in
-            for (workflowId, result) in workflows {
-                cache[workflowId] = CachedWorkflow(result: result, lastUpdated: now)
-            }
-        }
-    }
-
     /// Caches a freshly fetched workflow in memory, but only if `generation` still matches the current
     /// one. The caller captures ``currentCacheGeneration()`` when it issues the fetch; if
     /// ``clearCache()`` bumped it in between (a log-in/log-out), the write is dropped so a request

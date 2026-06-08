@@ -44,7 +44,7 @@ class WorkflowsCacheTests: TestCase {
 
     func testCachedWorkflowReturnsCachedValueAfterCaching() throws {
         let result = try Self.workflowDataResult(id: "wf_1")
-        self.cache.cache(workflow: result, workflowId: "wf_1")
+        self.seedWorkflow(result, workflowId: "wf_1")
         expect(self.cache.cachedWorkflow(workflowId: "wf_1")) == result
     }
 
@@ -54,31 +54,31 @@ class WorkflowsCacheTests: TestCase {
     }
 
     func testIsWorkflowCacheStaleIsFalseRightAfterCachingInForeground() throws {
-        self.cache.cache(workflow: try Self.workflowDataResult(id: "wf_1"), workflowId: "wf_1")
+        self.seedWorkflow(try Self.workflowDataResult(id: "wf_1"), workflowId: "wf_1")
         expect(self.cache.isWorkflowCacheStale(workflowId: "wf_1", isAppBackgrounded: false)) == false
     }
 
     func testIsWorkflowCacheStaleIsTrueAfterForegroundTTLExpires() throws {
-        self.cache.cache(workflow: try Self.workflowDataResult(id: "wf_1"), workflowId: "wf_1")
+        self.seedWorkflow(try Self.workflowDataResult(id: "wf_1"), workflowId: "wf_1")
         self.dateProvider.advance(by: 6 * 60)
         expect(self.cache.isWorkflowCacheStale(workflowId: "wf_1", isAppBackgrounded: false)) == true
     }
 
     func testIsWorkflowCacheStaleIsFalseAfterForegroundTTLWhenBackgrounded() throws {
-        self.cache.cache(workflow: try Self.workflowDataResult(id: "wf_1"), workflowId: "wf_1")
+        self.seedWorkflow(try Self.workflowDataResult(id: "wf_1"), workflowId: "wf_1")
         self.dateProvider.advance(by: 6 * 60)
         expect(self.cache.isWorkflowCacheStale(workflowId: "wf_1", isAppBackgrounded: true)) == false
     }
 
     func testIsWorkflowCacheStaleIsTrueAfterBackgroundTTLExpires() throws {
-        self.cache.cache(workflow: try Self.workflowDataResult(id: "wf_1"), workflowId: "wf_1")
+        self.seedWorkflow(try Self.workflowDataResult(id: "wf_1"), workflowId: "wf_1")
         self.dateProvider.advance(by: 26 * 60 * 60)
         expect(self.cache.isWorkflowCacheStale(workflowId: "wf_1", isAppBackgrounded: true)) == true
     }
 
     func testClearCacheRemovesAllCachedWorkflows() throws {
-        self.cache.cache(workflow: try Self.workflowDataResult(id: "wf_1"), workflowId: "wf_1")
-        self.cache.cache(workflow: try Self.workflowDataResult(id: "wf_2"), workflowId: "wf_2")
+        self.seedWorkflow(try Self.workflowDataResult(id: "wf_1"), workflowId: "wf_1")
+        self.seedWorkflow(try Self.workflowDataResult(id: "wf_2"), workflowId: "wf_2")
 
         self.cache.clearCache()
 
@@ -90,10 +90,10 @@ class WorkflowsCacheTests: TestCase {
 
     func testDifferentWorkflowIdsAreCachedIndependently() throws {
         let first = try Self.workflowDataResult(id: "wf_1")
-        self.cache.cache(workflow: first, workflowId: "wf_1")
+        self.seedWorkflow(first, workflowId: "wf_1")
         self.dateProvider.advance(by: 6 * 60)
         let second = try Self.workflowDataResult(id: "wf_2")
-        self.cache.cache(workflow: second, workflowId: "wf_2")
+        self.seedWorkflow(second, workflowId: "wf_2")
 
         // Both values remain retrievable.
         expect(self.cache.cachedWorkflow(workflowId: "wf_1")) == first
@@ -211,20 +211,6 @@ class WorkflowsCacheTests: TestCase {
     func testCachedWorkflowsListResponseFromDiskReturnsNilWhenNothingCached() {
         self.deviceCache.stubbedCachedWorkflowsListResponse = nil
         expect(self.cache.cachedWorkflowsListResponseFromDisk()).to(beNil())
-    }
-
-    // MARK: - Batched in-memory cache
-
-    func testCacheWorkflowsBatchStoresEachEntryRetrievable() throws {
-        let first = try Self.workflowDataResult(id: "wf_1")
-        let second = try Self.workflowDataResult(id: "wf_2")
-
-        self.cache.cache(workflows: ["wf_1": first, "wf_2": second])
-
-        expect(self.cache.cachedWorkflow(workflowId: "wf_1")) == first
-        expect(self.cache.cachedWorkflow(workflowId: "wf_2")) == second
-        expect(self.cache.isWorkflowCacheStale(workflowId: "wf_1", isAppBackgrounded: false)) == false
-        expect(self.cache.isWorkflowCacheStale(workflowId: "wf_2", isAppBackgrounded: false)) == false
     }
 
     // MARK: - Workflow detail disk persistence
@@ -372,7 +358,7 @@ class WorkflowsCacheTests: TestCase {
         let filledValue = try Self.workflowDataResult(id: "wf_2")
 
         // An on-demand fetch already put a fresher wf_1 in memory that was never persisted.
-        self.cache.cache(workflows: ["wf_1": memoryValue])
+        self.seedWorkflow(memoryValue, workflowId: "wf_1")
         self.deviceCache.stubbedCachedWorkflowDetails = ["wf_1": diskValue, "wf_2": filledValue]
 
         self.cache.restoreWorkflowDetailsFromDisk()
@@ -431,6 +417,12 @@ class WorkflowsCacheTests: TestCase {
     }
 
     // MARK: - Helpers
+
+    /// Seeds the in-memory detail cache. The production write is generation-guarded, so tests seed
+    /// with the current generation, which always matches and lets the write land.
+    private func seedWorkflow(_ result: WorkflowDataResult, workflowId: String) {
+        self.cache.cache(workflow: result, workflowId: workflowId, ifGeneration: self.cache.currentCacheGeneration())
+    }
 
     private static func workflowDataResult(id: String) throws -> WorkflowDataResult {
         return .init(workflow: try self.publishedWorkflow(id: id), enrolledVariants: nil)
