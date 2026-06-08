@@ -81,6 +81,7 @@ class BasePurchasesTests: TestCase {
                                           operationDispatcher: self.mockOperationDispatcher,
                                           operationQueue: MockBackend.QueueProvider.createBackendQueue(),
                                           diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
+                                          workflowsQueue: MockBackend.QueueProvider.createWorkflowsQueue(),
                                           systemInfo: self.systemInfo,
                                           offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
                                           dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
