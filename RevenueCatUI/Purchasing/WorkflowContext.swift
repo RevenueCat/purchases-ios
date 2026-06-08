@@ -274,13 +274,4 @@ struct WorkflowPackageContext {
     }
 }
 
-// Temporary launch-argument gate — remove once workflows are fully released.
-extension ProcessInfo {
-
-    var workflowsEndpointEnabled: Bool {
-        arguments.contains("-EnableWorkflowsEndpoint")
-    }
-
-}
-
 #endif
