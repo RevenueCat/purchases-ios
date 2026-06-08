@@ -56,6 +56,8 @@ class WorkflowManagerTests: TestCase {
         self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
 
         expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == expected
+        // On-demand fetches stay on the serial queue (prefetch == false).
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowParameters?.prefetch) == false
     }
 
     func testGetWorkflowReturnsCachedResultWithoutCallingBackendWhenFresh() throws {
@@ -139,6 +141,8 @@ class WorkflowManagerTests: TestCase {
         expect(prefetchedIds).to(contain("wf_prefetch", "wf_also_prefetch"))
         expect(prefetchedIds).toNot(contain("wf_skip"))
         expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 2
+        // Prefetch fetches must request the concurrent workflows queue.
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowParametersList.allSatisfy { $0.prefetch }) == true
     }
 
     func testGetWorkflowsListSkipsPrefetchForWorkflowsWithoutOfferingId() throws {
