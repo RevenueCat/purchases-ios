@@ -10,6 +10,21 @@ import Testing
 
 enum PredicateConformanceRunner {
 
+    /// Test-only numeric constants seeded into every fixture's variable
+    /// scope so fixtures can reference values JSON cannot express as a
+    /// literal (`±Infinity`). These exist ONLY in the test harness — they
+    /// are never part of the production engine or real rule data.
+    private static let reservedConstants: [String: Value] = [
+        "+Infinity": .float(.infinity),
+        "-Infinity": .float(-.infinity)
+    ]
+
+    /// Fixture-declared variables take precedence over the reserved
+    /// constants on a name collision.
+    private static func scope(for fixture: PredicateConformanceFixtureCase) -> [String: Value] {
+        reservedConstants.merging(fixture.variables) { _, fixtureValue in fixtureValue }
+    }
+
     static func run(_ fixture: PredicateConformanceFixtureCase) throws {
         if let expectedWarnings = fixture.expectedWarnings {
             let logger = CapturingLogger()
@@ -32,7 +47,7 @@ enum PredicateConformanceRunner {
         case .boolean(let expected):
             let result = try Evaluator.evaluate(
                 predicate: fixture.predicate,
-                variables: fixture.variables
+                variables: scope(for: fixture)
             )
             #expect(result == expected, "Fixture \(fixture.id)")
 
@@ -40,7 +55,7 @@ enum PredicateConformanceRunner {
             do {
                 _ = try Evaluator.evaluate(
                     predicate: fixture.predicate,
-                    variables: fixture.variables
+                    variables: scope(for: fixture)
                 )
                 Issue.record(
                     "Fixture \(fixture.id) expected error \(expectedError.kind) but succeeded"
