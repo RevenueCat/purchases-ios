@@ -313,23 +313,25 @@
       "predicate": {
         "!=": [
           {
-            "reduce": [
-              [
-                1,
-                2,
-                3
-              ],
-              {
-                "+": [
-                  {
-                    "var": "current"
-                  },
-                  {
-                    "var": "accumulator"
-                  }
-                ]
-              }
-            ]
+            "log": {
+              "reduce": [
+                [
+                  1,
+                  2,
+                  3
+                ],
+                {
+                  "+": [
+                    {
+                      "var": "current"
+                    },
+                    {
+                      "var": "accumulator"
+                    }
+                  ]
+                }
+              ]
+            }
           },
           {
             "reduce": [
@@ -353,7 +355,8 @@
         ]
       },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "reduce_extra_args_ignored",
