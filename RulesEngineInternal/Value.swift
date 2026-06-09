@@ -12,12 +12,19 @@ import Foundation
 /// Cross-type numeric comparisons still work — see `looseEq` and `strictEq`.
 public enum Value: Equatable, Hashable, Sendable {
 
+    /// JSON `null`.
     case null
+    /// A JSON boolean.
     case bool(Bool)
+    /// A JSON integer-valued number.
     case int(Int64)
+    /// A JSON fractional (non-integer) number.
     case float(Double)
+    /// A JSON string.
     case string(String)
+    /// A JSON array.
     case array([Value])
+    /// A JSON object.
     case object([String: Value])
 }
 

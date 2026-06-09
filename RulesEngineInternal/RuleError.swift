@@ -29,6 +29,7 @@ public enum RuleError: Error, Equatable {
 
 extension RuleError: CustomStringConvertible {
 
+    /// A human-readable description of the error.
     public var description: String {
         switch self {
         case .parse(let message):
