@@ -378,10 +378,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let userDefaults = userDefaults ?? UserDefaults.computeDefault()
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
         let workflowsCache = WorkflowsCache(deviceCache: deviceCache)
-        // Workflows are only consumed by the RevenueCatUI paywall UI, which isn't built for tvOS
-        // (PaywallView / PaywallViewController are `#if !os(tvOS)`). Leaving the workflows cache and
-        // manager unwired on tvOS keeps offerings delivery from waiting on (or fetching) a workflows
-        // list that nothing there would use.
+        // No tvOS paywall UI consumes workflows, so leave the cache and manager unwired there.
         #if os(tvOS)
         let identityWorkflowsCache: WorkflowsCache? = nil
         #else
