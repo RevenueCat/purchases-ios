@@ -43,6 +43,22 @@ class StoreTransactionTests: StoreKitConfigTestCase {
         expect(transaction.environment).to(beNil())
     }
 
+    func testSK1TransactionReturnsNilRevocationFields() async throws {
+        let product = MockSK1Product(mockProductIdentifier: Self.productID)
+        let payment = SKPayment(product: product)
+
+        let sk1Transaction = MockTransaction()
+        sk1Transaction.mockPayment = payment
+        sk1Transaction.mockTransactionDate = Date()
+        sk1Transaction.mockTransactionIdentifier = UUID().uuidString
+        sk1Transaction.mockState = .purchased
+
+        let transaction = StoreTransaction(sk1Transaction: sk1Transaction)
+
+        expect(transaction.revocationDate).to(beNil())
+        expect(transaction.revocationReason).to(beNil())
+    }
+
     func testSK1TransactionWithMissingDate() async throws {
         let product = MockSK1Product(mockProductIdentifier: Self.productID)
         let payment = SKPayment(product: product)
@@ -97,6 +113,12 @@ class StoreTransactionTests: StoreKitConfigTestCase {
         } else {
             expect(transaction.storefront).to(beNil())
         }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testRevocationReasonMapsKnownSK2Reasons() throws {
+        expect(RevocationReason(sk2RevocationReason: .developerIssue)).to(equal(.developerIssue))
+        expect(RevocationReason(sk2RevocationReason: .other)).to(equal(.other))
     }
 
     func testSk1TransactionDateBecomesAnInvalidDateIfNoDate() {

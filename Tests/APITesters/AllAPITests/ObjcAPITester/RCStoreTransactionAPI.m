@@ -20,6 +20,7 @@
     NSString *transactionIdentifier __unused = transaction.transactionIdentifier;
     NSInteger quantity __unused = transaction.quantity;
     RCStorefront *__nullable storefront __unused = transaction.storefront;
+    NSDate *__nullable revocationDate __unused = transaction.revocationDate;
 
     SKPaymentTransaction *sk1 __unused = transaction.sk1Transaction;
 }
