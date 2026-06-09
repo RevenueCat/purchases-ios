@@ -40,6 +40,18 @@ import Foundation
     public let actionId: String?
     public let componentId: String?
 
+    @_spi(Internal) public init(
+        name: String?,
+        type: WorkflowTriggerType,
+        actionId: String?,
+        componentId: String?
+    ) {
+        self.name = name
+        self.type = type
+        self.actionId = actionId
+        self.componentId = componentId
+    }
+
 }
 
 @_spi(Internal) public enum WorkflowTriggerAction: Equatable, Sendable {
@@ -68,6 +80,27 @@ import Foundation
     public var stepScreenType: [String] { screenType }
     let metadata: [String: AnyDecodable]?
 
+    // `screenType`, `paramValues`, `outputs`, and `metadata` carry backend step config that the
+    // renderer doesn't read, and `paramValues`/`outputs`/`metadata` are typed with the internal
+    // `AnyDecodable`, so they're defaulted rather than exposed.
+    @_spi(Internal) public init(
+        id: String,
+        type: String,
+        screenId: String?,
+        triggers: [WorkflowTrigger] = [],
+        triggerActions: [String: WorkflowTriggerAction] = [:]
+    ) {
+        self.id = id
+        self.type = type
+        self.screenId = screenId
+        self.screenType = []
+        self.paramValues = [:]
+        self.triggers = triggers
+        self.outputs = [:]
+        self.triggerActions = triggerActions
+        self.metadata = nil
+    }
+
 }
 
 @_spi(Internal) public struct WorkflowScreen {
@@ -87,6 +120,31 @@ import Foundation
     public let offeringIdentifier: String?
     public let exitOffers: ExitOffers?
 
+    // `config` carries backend screen config the renderer doesn't read and is typed with the
+    // internal `AnyDecodable`, so it's defaulted rather than exposed.
+    @_spi(Internal) public init(
+        name: String?,
+        templateName: String,
+        revision: Int = 0,
+        assetBaseURL: URL,
+        componentsConfig: PaywallComponentsData.ComponentsConfig,
+        componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
+        defaultLocale: PaywallComponent.LocaleID,
+        offeringIdentifier: String?,
+        exitOffers: ExitOffers? = nil
+    ) {
+        self.name = name
+        self.templateName = templateName
+        self._revision = revision
+        self.assetBaseURL = assetBaseURL
+        self.componentsConfig = componentsConfig
+        self.componentsLocalizations = componentsLocalizations
+        self.defaultLocale = defaultLocale
+        self.config = [:]
+        self.offeringIdentifier = offeringIdentifier
+        self.exitOffers = exitOffers
+    }
+
 }
 
 @_spi(Internal) public struct PublishedWorkflow {
@@ -100,6 +158,28 @@ import Foundation
     public let uiConfig: UIConfig
     let contentMaxWidth: Int?
     let metadata: [String: AnyDecodable]?
+
+    // `metadata` is typed with the internal `AnyDecodable`, so it's defaulted rather than exposed.
+    @_spi(Internal) public init(
+        id: String,
+        displayName: String,
+        initialStepId: String,
+        singleStepFallbackId: String?,
+        steps: [String: WorkflowStep],
+        screens: [String: WorkflowScreen],
+        uiConfig: UIConfig,
+        contentMaxWidth: Int? = nil
+    ) {
+        self.id = id
+        self.displayName = displayName
+        self.initialStepId = initialStepId
+        self.singleStepFallbackId = singleStepFallbackId
+        self.steps = steps
+        self.screens = screens
+        self.uiConfig = uiConfig
+        self.contentMaxWidth = contentMaxWidth
+        self.metadata = nil
+    }
 
 }
 

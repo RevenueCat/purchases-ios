@@ -26,6 +26,12 @@ struct PaywallViewConfiguration {
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler
     var promoOfferCache: PaywallPromoOfferCache?
+    #if !os(tvOS)
+    /// A pre-built workflow context to seed directly (injection/preview path), bypassing the
+    /// backend fetch. When set, `PaywallView` renders the workflow paywall immediately. Set by the
+    /// `PaywallView(workflowContext:)` initializer; tvOS has no workflow paywall UI.
+    var injectedWorkflowContext: WorkflowContext?
+    #endif
 
     init(
         content: Content,
