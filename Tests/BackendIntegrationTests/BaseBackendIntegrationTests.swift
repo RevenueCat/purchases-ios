@@ -215,7 +215,7 @@ private extension BaseBackendIntegrationTests {
 
         Purchases.shared.delegate = self.purchasesDelegate
 
-        await self.waitForAnonymousUser()
+        await self.waitForInitialCustomerState()
     }
 
     func verifyPurchasesDoesNotLeak() {
@@ -233,7 +233,7 @@ private extension BaseBackendIntegrationTests {
         }
     }
 
-    func waitForAnonymousUser() async {
+    func waitForInitialCustomerState() async {
         // SDK initialization begins with an initial request to offerings,
         // which results in a get-create of the initial anonymous user.
         // To avoid race conditions with when this request finishes and make all tests deterministic
@@ -244,6 +244,10 @@ private extension BaseBackendIntegrationTests {
         // However, it still serves the purpose of waiting for the anonymous user.
         // If there is something broken when loading offerings, there is a dedicated test that would fail instead.
         _ = try? await Purchases.shared.offerings()
+
+        // `Purchases` also starts a CustomerInfo refresh during initial foreground setup.
+        // Wait for that request so tests that clear logs can assert on only the work they trigger.
+        _ = try? await Purchases.shared.customerInfo(fetchPolicy: .cachedOrFetched)
     }
 
     func simulateForegroundingApp() {
