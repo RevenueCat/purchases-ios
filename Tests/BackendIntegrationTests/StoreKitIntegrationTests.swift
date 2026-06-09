@@ -6,7 +6,6 @@
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
-import Foundation
 import Nimble
 import OHHTTPStubs
 import OHHTTPStubsSwift
@@ -611,18 +610,9 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         _ = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
 
-        let introEligibilityPath = HTTPRequest.Path
-            .getIntroEligibility(appUserID: try self.purchases.appUserID)
-            .relativePath
-        let escapedPath = NSRegularExpression.escapedPattern(for: introEligibilityPath)
-
-        self.logger.verifyMessageWasNotLogged(regexPattern: """
-        API request started: <Request<[^>]+>: httpMethod=POST\\s+
-        path=\(escapedPath)\\s+
-        headers=.*\\s+
-        retried=false\\s+
-        >
-        """)
+        self.logger.verifyMessageWasNotLogged(
+            regexPattern: #"API request started: [^\n]*intro_eligibility"#
+        )
     }
 
     func testEligibleForIntroBeforePurchase() async throws {
