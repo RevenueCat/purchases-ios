@@ -10,7 +10,7 @@ import Foundation
 ///
 /// Numbers are split into `int` and `float` cases to preserve type intent.
 /// Cross-type numeric comparisons still work — see `looseEq` and `strictEq`.
-enum Value: Equatable, Hashable, Sendable {
+public enum Value: Equatable, Hashable, Sendable {
 
     case null
     case bool(Bool)

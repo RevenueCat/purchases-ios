@@ -15,7 +15,7 @@
 import Foundation
 
 /// Namespace for the RevenueCat rules engine.
-enum RulesEngine {}
+public enum RulesEngine {}
 
 extension RulesEngine {
 

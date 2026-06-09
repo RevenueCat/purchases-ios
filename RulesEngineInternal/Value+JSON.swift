@@ -6,16 +6,9 @@
 
 import Foundation
 
-@testable import RulesEngineInternal
-
-/// Test-only convenience for converting a JSON literal into a `Value`. Lets
-/// the tests express predicates the same way they appear in rule artifacts
-/// instead of building the tree by hand.
-///
-/// Production code never goes through this path: native callers will
-/// construct `Value` trees from their own JSON parser when wiring this
-/// engine to the SDK. Mirroring the Rust evaluator's `cfg(test)` JSON
-/// helper, this lives in the test target only.
+/// Production JSON → `Value` parser. Converts the predicate JSON extracted
+/// from the SDK artifact into the engine's typed `Value` tree. Used by
+/// `RulesEngine.evaluate`; failures surface as `RuleError.parse`.
 extension Value {
 
     /// Parse a JSON string into a `Value`. `JSONSerialization` returns

@@ -12,7 +12,7 @@ import Foundation
 /// for them — per the JSON Logic spec, they resolve to `null` and a warning
 /// is logged instead. If a strict mode is ever needed, we'd add a
 /// `missingVariable` case.
-enum RuleError: Error, Equatable {
+public enum RuleError: Error, Equatable {
 
     /// The predicate JSON could not be parsed.
     case parse(message: String)
@@ -29,7 +29,7 @@ enum RuleError: Error, Equatable {
 
 extension RuleError: CustomStringConvertible {
 
-    var description: String {
+    public var description: String {
         switch self {
         case .parse(let message):
             return "failed to parse predicate JSON: \(message)"
