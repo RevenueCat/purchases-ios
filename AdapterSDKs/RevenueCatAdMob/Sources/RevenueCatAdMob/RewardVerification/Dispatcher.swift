@@ -16,9 +16,7 @@ internal extension RewardVerification {
     enum Dispatcher {
 
         /// Awaits the verification result, then hops to the main actor to deliver it under the
-        /// one-shot guard. Always delivers exactly one result (including on cancellation, where the
-        /// poll resolves to `.failed`) so the result callback's always-fires contract holds and no
-        /// continuation is ever stranded.
+        /// one-shot guard.
         static func run(
             clientTransactionID: String,
             state: State,

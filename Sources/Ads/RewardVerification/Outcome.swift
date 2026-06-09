@@ -14,7 +14,7 @@ import Foundation
 
 internal extension RewardVerification {
 
-    /// Terminal SSV verdict delivered by `Dispatcher`.
+    /// Terminal SSV verdict from the polling loop.
     enum Outcome: Sendable {
         case verified(AdReward)
         case failed(FailureReason)

@@ -46,8 +46,6 @@ extension RewardVerificationStatusResponse: Decodable {
     private enum CodingKeys: String, CodingKey {
         case status
         case reward
-        // `JSONDecoder.default` uses `.convertFromSnakeCase`, so the wire key `failure_reason`
-        // is converted to `failureReason` before matching — use the camelCase name here.
         case failureReason
         case message
     }
@@ -88,10 +86,8 @@ extension RewardVerificationStatusResponse: Decodable {
     private static func decodeFailure(
         from container: KeyedDecodingContainer<CodingKeys>
     ) -> Failure {
-        // Both fields are best-effort: a malformed/absent value degrades to `nil` rather than
-        // failing the decode, so a `failed` status is never lost over a missing reason/message.
-        let reason = (try? container.decodeIfPresent(String.self, forKey: .failureReason)) ?? nil
-        let message = (try? container.decodeIfPresent(String.self, forKey: .message)) ?? nil
+        let reason = try? container.decodeIfPresent(String.self, forKey: .failureReason)
+        let message = try? container.decodeIfPresent(String.self, forKey: .message)
         return Failure(reason: reason, message: message)
     }
 
