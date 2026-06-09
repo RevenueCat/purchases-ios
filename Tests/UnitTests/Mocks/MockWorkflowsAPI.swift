@@ -70,6 +70,9 @@ class MockWorkflowsAPI: WorkflowsAPI, @unchecked Sendable {
     /// Invoked right before the `getWorkflows` completion fires, letting a test simulate an event
     /// (e.g. an identity change clearing the cache) that lands while the list fetch is in flight.
     var onGetWorkflowsBeforeCompletion: (() -> Void)?
+    /// When `true`, completions are captured instead of fired so tests can control ordering.
+    var shouldStoreGetWorkflowsCompletions = false
+    private(set) var capturedGetWorkflowsCompletions: [WorkflowsListResponseHandler] = []
 
     override func getWorkflows(appUserID: String,
                                isAppBackgrounded: Bool,
@@ -80,7 +83,21 @@ class MockWorkflowsAPI: WorkflowsAPI, @unchecked Sendable {
         self.invokedGetWorkflowsParameters = (appUserID, isAppBackgrounded, type)
 
         self.onGetWorkflowsBeforeCompletion?()
+
+        if self.shouldStoreGetWorkflowsCompletions {
+            self.capturedGetWorkflowsCompletions.append(completion)
+            return
+        }
+
         completion(self.stubbedGetWorkflowsResult ?? .failure(.missingAppUserID()))
+    }
+
+    /// Fires (and removes) the oldest captured `getWorkflows` completion. Requires
+    /// `shouldStoreGetWorkflowsCompletions == true`.
+    func completeStoredGetWorkflows(with result: Result<WorkflowsListResponse, BackendError>) {
+        guard !self.capturedGetWorkflowsCompletions.isEmpty else { return }
+        let completion = self.capturedGetWorkflowsCompletions.removeFirst()
+        completion(result)
     }
 
 }

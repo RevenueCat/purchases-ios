@@ -237,6 +237,82 @@ class WorkflowManagerTests: TestCase {
 
     // MARK: - getWorkflowsList
 
+    func testGetWorkflowsListStalePresentServesImmediatelyAndRefreshesInBackground() {
+        // Stale-while-revalidate for the list: when a usable offeringId -> workflowId map is already
+        // cached (stale but present), `onComplete` fires immediately and the list is refreshed in the
+        // background, so a caller (e.g. offerings delivery) isn't blocked on the network.
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_1", displayName: "A", offeringId: "default", prefetch: false)
+        ]))
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+        expect(self.manager.cachedWorkflowId(forOfferingId: "default")) == "wf_1"
+
+        // Let the list go stale, then control the refresh timing.
+        self.dateProvider.advance(by: 6 * 60)
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowsCompletions = true
+
+        var completed = false
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
+
+        // Served immediately, before the background refresh lands, and a refresh was issued.
+        expect(completed) == true
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowsCount) == 2
+        // The stale map keeps resolving in the meantime.
+        expect(self.manager.cachedWorkflowId(forOfferingId: "default")) == "wf_1"
+
+        // When the background refresh lands, the map updates.
+        self.mockWorkflowsAPI.completeStoredGetWorkflows(with: .success(.init(workflows: [
+            .init(id: "wf_2", displayName: "B", offeringId: "default", prefetch: false)
+        ])))
+        expect(self.manager.cachedWorkflowId(forOfferingId: "default")) == "wf_2"
+    }
+
+    func testGetWorkflowsListColdCacheBlocksUntilFetchCompletes() {
+        // With no cached map yet, there's nothing to serve, so `onComplete` must block on the fetch:
+        // callers need a populated offeringId -> workflowId map before `getOfferings` returns.
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowsCompletions = true
+
+        var completed = false
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
+
+        expect(completed) == false
+
+        self.mockWorkflowsAPI.completeStoredGetWorkflows(with: .success(.init(workflows: [
+            .init(id: "wf_1", displayName: "A", offeringId: "default", prefetch: false)
+        ])))
+        expect(completed) == true
+        expect(self.manager.cachedWorkflowId(forOfferingId: "default")) == "wf_1"
+    }
+
+    func testGetWorkflowsListStalePresentDropsBackgroundWriteWhenClearedBeforeRefreshLands() throws {
+        // The background list refresh's write is guarded by the generation captured when the stale map
+        // was served. If an identity change clears the cache before the refresh lands, the write is
+        // dropped, so the previous user's offeringId -> workflowId map can't repopulate the new user's
+        // cache. Like the detail drop-after-clear test, this drives the guard directly: the clear is
+        // sequenced after the call, so it passes with or without the capture-before-serve move; the
+        // true sub-statement race is the same lock-free read window the cache accepts by design.
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_1", displayName: "A", offeringId: "default", prefetch: false)
+        ]))
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+        expect(self.manager.cachedWorkflowId(forOfferingId: "default")) == "wf_1"
+
+        self.dateProvider.advance(by: 6 * 60)
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowsCompletions = true
+
+        // Stale hit: serves the cached map and stores the background refresh (capturing the generation).
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        // Identity change clears the cache (bumping the generation) before the refresh lands.
+        self.workflowsCache.clearCache()
+
+        // The background refresh returns the previous user's list: its write must be dropped.
+        self.mockWorkflowsAPI.completeStoredGetWorkflows(with: .success(.init(workflows: [
+            .init(id: "wf_2", displayName: "B", offeringId: "default", prefetch: false)
+        ])))
+        expect(self.manager.cachedWorkflowId(forOfferingId: "default")).to(beNil())
+    }
+
     func testGetWorkflowsListCallsBackendAndCachesPayload() {
         self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
             .init(id: "wf_1", displayName: "Flow A", offeringId: "default", prefetch: false)

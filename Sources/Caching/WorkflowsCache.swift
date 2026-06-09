@@ -242,6 +242,13 @@ final class WorkflowsCache {
         return self.cachedList.value?.offeringIdToWorkflowId[offeringId]
     }
 
+    /// `true` when a workflows list is present in memory (fetched or restored this session), regardless
+    /// of staleness. Lets the manager serve a stale-but-present `offeringId → workflowId` map
+    /// immediately while refreshing in the background, and block only on a cold/empty cache.
+    var hasCachedWorkflowsList: Bool {
+        return self.cachedList.value != nil
+    }
+
     // MARK: -
 
     func clearCache() {

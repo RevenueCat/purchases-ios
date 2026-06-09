@@ -131,13 +131,15 @@ class WorkflowManager {
     }
 
     /// Fetches the workflows list, persists it, then prefetches every entry flagged `prefetch == true`.
-    /// `onComplete` fires only after the list fetch **and** all prefetch fetches finish (success or
-    /// failure), making it safe to call ``cachedWorkflowId(forOfferingId:)`` from `onComplete`.
+    /// It is always safe to call ``cachedWorkflowId(forOfferingId:)`` from `onComplete`: a cold fetch
+    /// only fires `onComplete` after the list (and its prefetches) land, and the stale-but-present and
+    /// fresh paths fire it while a usable map is already cached.
     ///
-    /// When the in-memory list cache is still fresh, no network request is made and `onComplete` fires
-    /// immediately. On a backend failure `onComplete` still fires (so callers waiting on it, e.g.
-    /// offerings delivery, are never blocked); ``cachedWorkflowId(forOfferingId:)`` keeps resolving from the
-    /// last list persisted on disk until the next fetch succeeds.
+    /// Uses stale-while-revalidate: when the list is fresh, or stale but already cached, `onComplete`
+    /// fires immediately and any refresh happens in the background. Only a cold/empty cache blocks
+    /// `onComplete` on the fetch. On a backend failure `onComplete` still fires (so callers waiting on
+    /// it, e.g. offerings delivery, are never blocked); ``cachedWorkflowId(forOfferingId:)`` keeps
+    /// resolving from the last list persisted on disk until the next fetch succeeds.
     func getWorkflowsList(appUserID: String,
                           isAppBackgrounded: Bool,
                           onComplete: @escaping () -> Void = {}) {
@@ -146,11 +148,42 @@ class WorkflowManager {
             return
         }
 
-        // Capture the cache generation when the request is issued. If an identity change clears the
-        // cache while this list fetch is in flight, the success path below is dropped, so a list
-        // (and its prefetched, user-scoped details) fetched for the previous user can't populate the
-        // new session's cache.
-        let generation = self.workflowsCache.currentCacheGeneration()
+        // Stale-while-revalidate, mirroring `getWorkflow` and `OfferingsManager`: when a usable
+        // `offeringId → workflowId` map is already cached (stale but present), serve it immediately and
+        // refresh in the background, so a caller waiting on `onComplete` (e.g. offerings delivery) isn't
+        // blocked on the network. Only a cold/empty cache blocks, since there's no map to serve yet and
+        // `cachedWorkflowId(forOfferingId:)` must resolve once `onComplete` fires.
+        if self.workflowsCache.hasCachedWorkflowsList {
+            // Capture the refresh's guarding generation *before* serving, so it reflects the generation
+            // observed now rather than after `onComplete` runs. The background list write is then
+            // dropped if a `clearCache()` (login/logout) bumps the generation before the response lands,
+            // keeping the previous user's offeringId -> workflowId map out of the new user's cache.
+            let refreshGeneration = self.workflowsCache.currentCacheGeneration()
+            onComplete()
+            self.fetchAndCacheWorkflowsList(appUserID: appUserID,
+                                            isAppBackgrounded: isAppBackgrounded,
+                                            ifGeneration: refreshGeneration)
+        } else {
+            self.fetchAndCacheWorkflowsList(appUserID: appUserID,
+                                            isAppBackgrounded: isAppBackgrounded,
+                                            onComplete: onComplete)
+        }
+    }
+
+    /// Fetches the workflows list from the backend, caches it (generation-guarded), prefetches its
+    /// flagged entries, and restores from disk on a transient failure. Shared by the blocking cold-cache
+    /// path and the stale-while-revalidate background refresh. `onComplete` defaults to a no-op for the
+    /// background refresh, whose caller was already served the stale map. The cold path passes
+    /// `ifGeneration: nil` and captures the generation here (request issued now); the background refresh
+    /// forwards the generation captured at serve time so its write binds to that, not a later value.
+    private func fetchAndCacheWorkflowsList(appUserID: String,
+                                            isAppBackgrounded: Bool,
+                                            ifGeneration generation: Int? = nil,
+                                            onComplete: @escaping () -> Void = {}) {
+        // The cache generation guarding this fetch's write. If an identity change clears the cache while
+        // the fetch is in flight, the success path below is dropped, so a list (and its prefetched,
+        // user-scoped details) fetched for the previous user can't populate the new session's cache.
+        let generation = generation ?? self.workflowsCache.currentCacheGeneration()
         self.backend.workflowsAPI.getWorkflows(appUserID: appUserID,
                                                isAppBackgrounded: isAppBackgrounded,
                                                type: Self.paywallWorkflowType) { [weak self] result in
