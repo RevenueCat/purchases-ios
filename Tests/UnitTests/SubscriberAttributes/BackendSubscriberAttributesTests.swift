@@ -69,6 +69,7 @@ class BackendSubscriberAttributesTests: TestCase {
                                           operationDispatcher: MockOperationDispatcher(),
                                           operationQueue: MockBackend.QueueProvider.createBackendQueue(),
                                           diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
+                                          workflowsQueue: MockBackend.QueueProvider.createWorkflowsQueue(),
                                           systemInfo: self.systemInfo,
                                           offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
                                           dateProvider: self.dateProvider)
@@ -436,6 +437,7 @@ class BackendSubscriberAttributesTests: TestCase {
                                           operationDispatcher: MockOperationDispatcher(),
                                           operationQueue: MockBackend.QueueProvider.createBackendQueue(),
                                           diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
+                                          workflowsQueue: MockBackend.QueueProvider.createWorkflowsQueue(),
                                           systemInfo: self.systemInfo,
                                           offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
                                           dateProvider: dateProvider)
@@ -505,6 +507,7 @@ class BackendSubscriberAttributesTests: TestCase {
                                           operationDispatcher: MockOperationDispatcher(),
                                           operationQueue: MockBackend.QueueProvider.createBackendQueue(),
                                           diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
+                                          workflowsQueue: MockBackend.QueueProvider.createWorkflowsQueue(),
                                           systemInfo: self.systemInfo,
                                           offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
                                           dateProvider: dateProvider)
@@ -565,6 +568,7 @@ class BackendSubscriberAttributesTests: TestCase {
                                           operationDispatcher: MockOperationDispatcher(),
                                           operationQueue: MockBackend.QueueProvider.createBackendQueue(),
                                           diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
+                                          workflowsQueue: MockBackend.QueueProvider.createWorkflowsQueue(),
                                           systemInfo: self.systemInfo,
                                           offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
                                           dateProvider: dateProvider)
