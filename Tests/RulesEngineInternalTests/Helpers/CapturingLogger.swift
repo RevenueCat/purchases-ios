@@ -6,11 +6,11 @@
 
 import Foundation
 
-@testable import RulesEngineInternal
+@_spi(Internal) @testable import RulesEngineInternal
 
 /// Test-only logger that records warnings and `log`-channel messages
 /// separately for later assertion.
-final class CapturingLogger: RulesEngineLogger {
+final class CapturingLogger: RulesEngineLogger, @unchecked Sendable {
 
     private let lock = NSLock()
     private var capturedWarnings: [String] = []

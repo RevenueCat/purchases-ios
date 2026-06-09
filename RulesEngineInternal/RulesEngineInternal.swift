@@ -15,22 +15,28 @@
 import Foundation
 
 /// Namespace for the RevenueCat rules engine.
-enum RulesEngine {}
+public enum RulesEngine {}
 
 extension RulesEngine {
 
+    /// Per-task override used by tests and scoped diagnostic callers.
+    /// When `nil`, logging falls through to the module default.
+    @TaskLocal static var scopedLogger: RulesEngineLogger?
+
     static var logger: RulesEngineLogger {
-        loggerStorage.value
+        scopedLogger ?? loggerStorage.value
     }
 
-    static func setLogger(_ logger: RulesEngineLogger) {
+    /// Host-SDK wiring entry point. Idempotent; intended to be called once during configure.
+    @_spi(Internal)
+    public static func setDefaultLogger(_ logger: RulesEngineLogger) {
         loggerStorage.value = logger
     }
 
     private static let loggerStorage = LoggerStorage()
 }
 
-/// Locked storage for `RulesEngine.logger`. A reference type so the enclosing
+/// Locked storage for the module default logger. A reference type so the enclosing
 /// namespace's `static let loggerStorage` can be a stored property.
 private final class LoggerStorage {
 
