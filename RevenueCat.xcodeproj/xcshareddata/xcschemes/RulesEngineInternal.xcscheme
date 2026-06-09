@@ -29,7 +29,7 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <PreActions>
          <ExecutionAction
-            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType">
+            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Download khepri conformance fixtures"
                scriptText = "&quot;${SRCROOT}/scripts/rules_engine/download_predicate_conformance_fixtures.sh&quot;">
