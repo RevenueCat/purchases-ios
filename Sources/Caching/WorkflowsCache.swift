@@ -152,16 +152,10 @@ final class WorkflowsCache {
     /// Drops persisted details whose workflowId is no longer in the latest list, so workflows the
     /// backend stopped sending don't linger on disk. The persisted set always stays a subset of what
     /// the latest list says exists. No-op (no rewrite) when nothing is pruned.
+    ///
+    /// Does not take ``detailsLock`` itself: the caller must already hold it (the only caller is the
+    /// guarded list write, which prunes while holding it, and the lock is not recursive).
     private func pruneWorkflowDetails(toListIds workflowIds: Set<String>) {
-        self.detailsLock.perform {
-            self.pruneWorkflowDetailsLocked(toListIds: workflowIds)
-        }
-    }
-
-    /// Lock-free body of ``pruneWorkflowDetails(toListIds:)``. The caller must already hold
-    /// ``detailsLock`` (the lock is not recursive, so a guarded list write that prunes must reuse
-    /// this rather than re-entering ``pruneWorkflowDetails(toListIds:)``).
-    private func pruneWorkflowDetailsLocked(toListIds workflowIds: Set<String>) {
         guard let current = self.deviceCache.cachedWorkflowDetails() else { return }
         let pruned = current.filter { workflowIds.contains($0.key) }
         if pruned.count != current.count {
@@ -204,7 +198,7 @@ final class WorkflowsCache {
                                                offeringIdToWorkflowId: Self.offeringIdToWorkflowId(from: response),
                                                lastUpdated: self.dateProvider.now())
             self.deviceCache.cache(workflowsListResponse: response)
-            self.pruneWorkflowDetailsLocked(toListIds: Set(response.workflows.map { $0.id }))
+            self.pruneWorkflowDetails(toListIds: Set(response.workflows.map { $0.id }))
             return true
         }
     }
