@@ -28,17 +28,21 @@ internal extension RewardVerification {
             RewardVerification.stateStore.retrieve(for: object)
         }
 
-        /// Production entry point. Reads SDK config from `Purchases.shared`; no-ops if not configured.
+        /// Production entry point. Mints a token via `tokenProvider`; no-ops if not configured.
         ///
-        /// Delegates token generation to the core SDK so the adapter holds no SSV payload logic.
+        /// Delegates token generation to the core SDK (through `TokenProvider`) so the adapter
+        /// holds no SSV payload logic. The `tokenProvider` parameter is injectable for tests.
         @MainActor
-        static func install(on loadedAd: some CapableAd) {
-            guard Purchases.isConfigured else {
+        static func install(
+            on loadedAd: some CapableAd,
+            tokenProvider: TokenProvider = PurchasesTokenProvider()
+        ) {
+            guard tokenProvider.isConfigured else {
                 Logger.warn(RewardVerificationStrings.setup_purchases_not_configured)
                 return
             }
             let impressionId = Tracking.Adapter.impressionID(from: loadedAd.responseInfo)
-            let token = Purchases.shared.generateRewardVerificationToken(impressionId: impressionId)
+            let token = tokenProvider.generateToken(impressionId: impressionId)
             self.install(on: loadedAd, token: token)
         }
 

@@ -55,20 +55,42 @@ final class SetupTests: AdapterTestCase {
 
     // MARK: - install(on:)
 
-    func testInstallNoOpsWhenPurchasesIsNotConfigured() {
-        // The unit-test target never calls `Purchases.configure(...)`, so this assertion
-        // documents the invariant the test depends on. If a future test configures Purchases
-        // globally this XCTSkip will surface the breakage instead of silently passing.
-        try? XCTSkipUnless(!Purchases.isConfigured,
-                           "This test depends on Purchases not being configured")
+    func testInstallWhenConfiguredWiresTokenAndStashesState() throws {
         let fakeAd = FakeRewardedAd()
+        let provider = MockTokenProvider(isConfigured: true, token: Self.testToken)
 
-        RewardVerification.Setup.install(on: fakeAd)
+        RewardVerification.Setup.install(on: fakeAd, tokenProvider: provider)
+
+        let options = try XCTUnwrap(fakeAd.serverSideVerificationOptions)
+        XCTAssertEqual(options.customRewardText, Self.testToken.customData)
+        XCTAssertEqual(options.userIdentifier, Self.testToken.appUserID)
+
+        let state = try XCTUnwrap(RewardVerification.stateStore.retrieve(for: fakeAd))
+        XCTAssertEqual(state.clientTransactionID, Self.testToken.clientTransactionID)
+    }
+
+    func testInstallForwardsAdImpressionIdToTokenProvider() {
+        let fakeAd = FakeRewardedAd()
+        let provider = MockTokenProvider(isConfigured: true, token: Self.testToken)
+
+        RewardVerification.Setup.install(on: fakeAd, tokenProvider: provider)
+
+        XCTAssertEqual(provider.receivedImpressionIds,
+                       [Tracking.Adapter.impressionID(from: fakeAd.responseInfo)])
+    }
+
+    func testInstallNoOpsWhenTokenProviderNotConfigured() {
+        let fakeAd = FakeRewardedAd()
+        let provider = MockTokenProvider(isConfigured: false, token: Self.testToken)
+
+        RewardVerification.Setup.install(on: fakeAd, tokenProvider: provider)
 
         XCTAssertNil(fakeAd.serverSideVerificationOptions,
-                     "install(on:) must not wire SSV options when Purchases.isConfigured is false")
+                     "install(on:) must not wire SSV options when the provider is not configured")
         XCTAssertNil(RewardVerification.stateStore.retrieve(for: fakeAd),
-                     "install(on:) must not stash per-ad state when Purchases.isConfigured is false")
+                     "install(on:) must not stash per-ad state when the provider is not configured")
+        XCTAssertTrue(provider.receivedImpressionIds.isEmpty,
+                      "install(on:) must not request a token when not configured")
     }
 
     func testInstallOverwritesPreviouslyStashedStateOnSameAd() throws {
@@ -92,6 +114,26 @@ final class SetupTests: AdapterTestCase {
 private final class FakeRewardedAd: RewardVerification.CapableAd {
     var serverSideVerificationOptions: GoogleMobileAds.ServerSideVerificationOptions?
     let responseInfo = GoogleMobileAds.ResponseInfo()
+}
+
+@available(iOS 15.0, *)
+private final class MockTokenProvider: RewardVerification.TokenProvider {
+
+    var isConfigured: Bool
+    let token: (customData: String, clientTransactionID: String, appUserID: String)
+    private(set) var receivedImpressionIds: [String] = []
+
+    init(isConfigured: Bool, token: (customData: String, clientTransactionID: String, appUserID: String)) {
+        self.isConfigured = isConfigured
+        self.token = token
+    }
+
+    func generateToken(
+        impressionId: String
+    ) -> (customData: String, clientTransactionID: String, appUserID: String) {
+        self.receivedImpressionIds.append(impressionId)
+        return self.token
+    }
 }
 
 #endif
