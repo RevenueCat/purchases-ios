@@ -1725,6 +1725,7 @@ platform :ios do
         output_style: 'raw',
         result_bundle: true,
         testplan: options[:test_plan],
+        only_testing: Array(options[:only_testing]).compact,
         only_test_configurations: [test_configuration],
         configuration: 'Debug',
         output_directory: "fastlane/test_output/xctest/ios",

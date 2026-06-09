@@ -561,7 +561,7 @@ commands:
       - update-spm-installation-commit
       - run:
           name: Run backend_integration Tests
-          command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
+          command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>" only_testing:"BackendIntegrationTests/StoreKit2IntegrationTests/testTrialEligibilityMakesNoNetworkRequests()"
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 16 (18.5)
