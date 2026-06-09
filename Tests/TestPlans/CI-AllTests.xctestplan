@@ -57,6 +57,9 @@
       }
     },
     {
+      "skippedTests" : [
+        "PredicateConformanceTests"
+      ],
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
         "identifier" : "9F10CFD131109088B9D1C655",

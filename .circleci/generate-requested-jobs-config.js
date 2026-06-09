@@ -40,6 +40,7 @@ const JOBS = {
   "run-test-ios-26": ["slack-secrets"],
   "run-test-tvos-and-macos": ["slack-secrets"],
   "run-test-watchos": ["slack-secrets"],
+  "run-rules-engine-conformance-tests": ["slack-secrets"],
   "spm-receipt-parser": ["slack-secrets"],
   "spm-revenuecat-ui-ios-15": ["slack-secrets"],
   "spm-revenuecat-ui-ios-16": ["slack-secrets"],

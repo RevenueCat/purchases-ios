@@ -142,6 +142,6 @@ let package = Package(
         .testTarget(name: "RulesEngineInternalTests",
                     dependencies: ["RulesEngineInternal"],
                     path: "Tests/RulesEngineInternalTests",
-                    exclude: ["PredicateFixtures"])
+                    exclude: ["Fixtures", "PredicateFixtures"])
     ]
 )

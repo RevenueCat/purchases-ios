@@ -10,10 +10,13 @@ import Foundation
 
 enum PredicateConformanceFixtureError: Error, CustomStringConvertible {
 
+    case fixtureNotFound(path: String)
     case directoryNotFound(path: String)
 
     var description: String {
         switch self {
+        case let .fixtureNotFound(path):
+            return "Predicate conformance fixture not found at \(path)"
         case let .directoryNotFound(path):
             return "Predicate fixture directory not found at \(path)"
         }
@@ -82,6 +85,31 @@ enum PredicateConformanceFixtureLoader {
             .deletingLastPathComponent() // Helpers
             .deletingLastPathComponent() // RulesEngineInternalTests
             .appendingPathComponent("PredicateFixtures", isDirectory: true)
+    }
+
+    static let fixtureEnvironmentVariable = "KHEPRI_PREDICATE_CONFORMANCE_FIXTURE_PATH"
+
+    static func defaultFixtureURL() -> URL {
+        URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent() // Helpers
+            .deletingLastPathComponent() // RulesEngineInternalTests
+            .appendingPathComponent("Fixtures/predicate_conformance_v1.json")
+    }
+
+    static func fixtureURL() throws -> URL {
+        if let configuredPath = ProcessInfo.processInfo.environment[fixtureEnvironmentVariable],
+           !configuredPath.isEmpty {
+            return URL(fileURLWithPath: configuredPath, isDirectory: false)
+        }
+        return defaultFixtureURL()
+    }
+
+    static func loadCases() throws -> [PredicateConformanceFixtureCase] {
+        let url = try fixtureURL()
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            throw PredicateConformanceFixtureError.fixtureNotFound(path: url.path)
+        }
+        return try loadCases(from: url)
     }
 
     static func loadCases(from url: URL) throws -> [PredicateConformanceFixtureCase] {

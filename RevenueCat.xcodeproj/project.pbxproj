@@ -1185,6 +1185,7 @@
 		903A06602EB4B728009B9CE4 /* MockEventsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A065F2EB4B728009B9CE4 /* MockEventsManager.swift */; };
 		903A06612EB4B728009B9CE4 /* MockEventsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A065F2EB4B728009B9CE4 /* MockEventsManager.swift */; };
 		906F3B1E2EB4D89E002E07D5 /* AdEventsIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 906F3B1D2EB4D89E002E07D5 /* AdEventsIntegrationTests.swift */; };
+		908C129DD5558730655FE3C6 /* PredicateConformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37A93CB9A1310A15360D843 /* PredicateConformanceTests.swift */; };
 		909114C714204DFB8C4F3F72 /* TransactionReason.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55FCA85B959807F2D3DD175A /* TransactionReason.swift */; };
 		9094B41C2E96A9A70094AD5F /* AdEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9094B4152E96A9A70094AD5F /* AdEvent.swift */; };
 		9094B41F2E96A9A70094AD5F /* AdHTTPRequestPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9094B4112E96A9A70094AD5F /* AdHTTPRequestPath.swift */; };
@@ -2937,6 +2938,7 @@
 		CC1A2B3C2E1234AB00AABBCC /* CustomVariablesEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariablesEditorView.swift; sourceTree = "<group>"; };
 		CF01A0F868569B5E2D5CA465 /* PaywallsV2LayoutFixtures.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PaywallsV2LayoutFixtures.swift; path = Tests/RevenueCatUITests/PaywallsV2/PaywallsV2LayoutFixtures.swift; sourceTree = SOURCE_ROOT; };
 		D0DA20992F23BBEC00BA3B77 /* AdEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventTests.swift; sourceTree = "<group>"; };
+		D37A93CB9A1310A15360D843 /* PredicateConformanceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PredicateConformanceTests.swift; sourceTree = "<group>"; };
 		D794960D6EA8C55B44471D40 /* PredicateConformanceRunner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PredicateConformanceRunner.swift; sourceTree = "<group>"; };
 		D92889EDE72E0BC5C030EF03 /* Value+Decodable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Value+Decodable.swift"; sourceTree = "<group>"; };
 		DB001001AAAA0001AAAA0001 /* WorkflowEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowEvent.swift; sourceTree = "<group>"; };
@@ -6081,6 +6083,7 @@
 				B49121C11022272A08D75B4E /* AccessorOperatorsTests.swift */,
 				9F576269BC7130E5B553FB5A /* StringArrayOperatorsTests.swift */,
 				68E47E21986D2C234ADB62E8 /* PredicateFixtureTests.swift */,
+				D37A93CB9A1310A15360D843 /* PredicateConformanceTests.swift */,
 			);
 			name = RulesEngineInternalTests;
 			path = Tests/RulesEngineInternalTests;
@@ -6810,6 +6813,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A0F8AE32D4C3A7766A8654B3 /* Build configuration list for PBXNativeTarget "RulesEngineInternalTests" */;
 			buildPhases = (
+				9DA90149C4FC215D49A14E2C /* Download khepri conformance fixtures */,
 				57D70DFC39D89F6222292D94 /* Sources */,
 				0A65949DAA91444FE9B3FBBA /* Frameworks */,
 				0D8E3F24C00F8055B1F6894B /* Resources */,
@@ -7149,6 +7153,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		9DA90149C4FC215D49A14E2C /* Download khepri conformance fixtures */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download khepri conformance fixtures";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "\"${SRCROOT}/scripts/rules_engine/download_predicate_conformance_fixtures.sh\"\n";
+		};
 		B3C302D926D8066F002B72D1 /* SwiftLint */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -8252,6 +8275,7 @@
 				14F919D98087F5045070FBB5 /* PredicateConformanceRunner.swift in Sources */,
 				7F7F7B1E66E1D8705F06DE51 /* Value+Decodable.swift in Sources */,
 				D072B9ED04C331CA7DF878A5 /* PredicateFixtureTests.swift in Sources */,
+				908C129DD5558730655FE3C6 /* PredicateConformanceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

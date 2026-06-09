@@ -154,6 +154,14 @@ Upload V1 template snapshots to Emerge using BYOS
 
 Runs all the iOS tests
 
+### ios test_rules_engine_conformance
+
+```sh
+[bundle exec] fastlane ios test_rules_engine_conformance
+```
+
+Runs RulesEngineInternal khepri predicate conformance tests
+
 ### ios test_tvos
 
 ```sh
