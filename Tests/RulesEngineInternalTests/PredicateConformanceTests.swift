@@ -20,24 +20,17 @@ import Testing
 @Suite("Khepri Predicate Conformance")
 struct PredicateConformanceTests {
 
-    private static let fixtureIDs: [String] = {
-        (try? PredicateConformanceFixtureLoader.loadCases().map(\.id)) ?? []
+    private static let fixtures: [PredicateConformanceFixtureCase] = {
+        (try? PredicateConformanceFixtureLoader.loadCases()) ?? []
     }()
 
     @Test
     func fixturesLoadSuccessfully() throws {
-        let cases = try PredicateConformanceFixtureLoader.loadCases()
-        try #require(!cases.isEmpty, "Expected at least one khepri conformance fixture")
+        try #require(!Self.fixtures.isEmpty, "Expected at least one khepri conformance fixture")
     }
 
-    @Test(arguments: Self.fixtureIDs)
-    func fixture(fixtureID: String) throws {
-        let cases = try PredicateConformanceFixtureLoader.loadCases()
-        guard let fixtureCase = cases.first(where: { $0.id == fixtureID }) else {
-            Issue.record("Missing fixture \(fixtureID)")
-            return
-        }
-
+    @Test(arguments: Self.fixtures)
+    func fixture(_ fixtureCase: PredicateConformanceFixtureCase) throws {
         try PredicateConformanceRunner.run(fixtureCase)
     }
 }
