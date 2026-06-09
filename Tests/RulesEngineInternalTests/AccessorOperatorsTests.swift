@@ -6,7 +6,7 @@
 
 import XCTest
 
-@_spi(Internal) @testable import RulesEngineInternal
+@testable import RulesEngineInternal
 
 final class AccessorOperatorsTests: XCTestCase {
 

@@ -6,7 +6,7 @@
 
 import Foundation
 
-@_spi(Internal) @testable import RulesEngineInternal
+@testable import RulesEngineInternal
 
 /// Test-only logger that records warnings and `log`-channel messages
 /// separately for later assertion.

@@ -10,7 +10,7 @@
 
 import Testing
 
-@_spi(Internal) @testable import RulesEngineInternal
+@testable import RulesEngineInternal
 
 enum PredicateConformanceRunner {
 
