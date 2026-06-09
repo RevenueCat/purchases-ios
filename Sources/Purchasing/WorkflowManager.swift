@@ -41,6 +41,7 @@ class WorkflowManager {
     func getWorkflow(appUserID: String,
                      workflowId: String,
                      isAppBackgrounded: Bool,
+                     prefetch: Bool = false,
                      completion: @escaping (Result<WorkflowDataResult, BackendError>) -> Void) {
         if let cached = self.workflowsCache.cachedWorkflow(workflowId: workflowId),
            !self.workflowsCache.isWorkflowCacheStale(workflowId: workflowId, isAppBackgrounded: isAppBackgrounded) {
@@ -54,7 +55,8 @@ class WorkflowManager {
         let generation = self.workflowsCache.currentCacheGeneration()
         self.backend.workflowsAPI.getWorkflow(appUserID: appUserID,
                                               workflowId: workflowId,
-                                              isAppBackgrounded: isAppBackgrounded) { [weak self] result in
+                                              isAppBackgrounded: isAppBackgrounded,
+                                              prefetch: prefetch) { [weak self] result in
             guard let self else {
                 completion(result)
                 return
@@ -114,6 +116,14 @@ class WorkflowManager {
                                        onComplete: onComplete)
             case let .failure(error):
                 Logger.error(Strings.paywalls.error_fetching_workflows_list(error))
+                guard error.shouldFallBackToCache else {
+                    // A 4xx means the backend authoritatively rejected the request (workflows
+                    // disabled for the app, unauthorized for this user, ...), so don't serve stale
+                    // prefetched data from disk. Only transient errors (5xx / offline) restore below.
+                    // Mirrors how offerings gate their disk fallback on `shouldFallBackToCache`.
+                    onComplete()
+                    return
+                }
                 // Restore the in-memory offeringId -> workflowId map from the last list persisted on
                 // disk, so `cachedWorkflowId(forOfferingId:)` keeps resolving previously-fetched data after
                 // a backend failure instead of returning nil. The entry stays stale so the next
@@ -203,7 +213,8 @@ private extension WorkflowManager {
         for summary in prefetchWorkflows {
             self.getWorkflow(appUserID: appUserID,
                              workflowId: summary.id,
-                             isAppBackgrounded: isAppBackgrounded) { result in
+                             isAppBackgrounded: isAppBackgrounded,
+                             prefetch: true) { result in
                 if case let .success(dataResult) = result {
                     resolved.modify { $0[summary.id] = dataResult }
                 }

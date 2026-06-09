@@ -56,6 +56,8 @@ class WorkflowManagerTests: TestCase {
         self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
 
         expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == expected
+        // On-demand fetches stay on the serial queue (prefetch == false).
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowParameters?.prefetch) == false
     }
 
     func testGetWorkflowReturnsCachedResultWithoutCallingBackendWhenFresh() throws {
@@ -139,6 +141,8 @@ class WorkflowManagerTests: TestCase {
         expect(prefetchedIds).to(contain("wf_prefetch", "wf_also_prefetch"))
         expect(prefetchedIds).toNot(contain("wf_skip"))
         expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 2
+        // Prefetch fetches must request the concurrent workflows queue.
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowParametersList.allSatisfy { $0.prefetch }) == true
     }
 
     func testGetWorkflowsListSkipsPrefetchForWorkflowsWithoutOfferingId() throws {
@@ -203,6 +207,55 @@ class WorkflowManagerTests: TestCase {
 
         // The list was read from disk to restore the in-memory map; it must not be written back.
         expect(self.mockDeviceCache.cacheWorkflowsListResponseCount) == 0
+    }
+
+    func testGetWorkflowsListDoesNotRestoreFromDiskOnClientError() throws {
+        // A 4xx means the backend rejected the request (workflows disabled, unauthorized, ...), so
+        // stale prefetched data must not be served.
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(
+            .networkError(.errorResponse(.init(code: .invalidAPIKey, originalCode: 0), .invalidRequest))
+        )
+        self.mockDeviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ])
+        self.mockDeviceCache.stubbedCachedWorkflowDetails = ["wf_1": try Self.workflowDataResult(id: "wf_1")]
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.manager.cachedWorkflowId(forOfferingId: "default")).to(beNil())
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
+    }
+
+    func testGetWorkflowsListRestoresFromDiskOnServerError() {
+        // A 5xx is transient, so the last cached list is restored to keep resolving offline.
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(
+            .networkError(.errorResponse(.init(code: .unknownError, originalCode: 0), .internalServerError))
+        )
+        self.mockDeviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ])
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.manager.cachedWorkflowId(forOfferingId: "default")) == "wf_1"
+    }
+
+    func testGetWorkflowsListRestoresDetailsFromDiskOnServerError() throws {
+        // A 5xx is transient: both the list mapping AND prefetched details must be restored so the
+        // next render can serve them offline. Complements testGetWorkflowsListRestoresFromDiskOnServerError
+        // which only asserts on the list mapping.
+        let restored = try Self.workflowDataResult(id: "wf_1")
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(
+            .networkError(.errorResponse(.init(code: .unknownError, originalCode: 0), .internalServerError))
+        )
+        self.mockDeviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ])
+        self.mockDeviceCache.stubbedCachedWorkflowDetails = ["wf_1": restored]
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == restored
     }
 
     func testGetWorkflowsListWithDuplicateOfferingIdKeepsLastEntry() {
@@ -380,6 +433,19 @@ class WorkflowManagerTests: TestCase {
 
     func testGetWorkflowsListCallsOnCompleteAfterNetworkError() {
         self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
+
+        var completed = false
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
+
+        expect(completed) == true
+    }
+
+    func testGetWorkflowsListCallsOnCompleteOnClientError() {
+        // A 4xx skips disk restoration and returns early. onComplete must still fire so
+        // callers (e.g. offerings delivery) are not blocked.
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(
+            .networkError(.errorResponse(.init(code: .invalidAPIKey, originalCode: 0), .invalidRequest))
+        )
 
         var completed = false
         self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
