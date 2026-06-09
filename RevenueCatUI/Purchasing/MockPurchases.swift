@@ -105,6 +105,12 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
         await self.trackEventBlock(paywallEvent)
     }
 
+    var trackWorkflowEventBlock: (@Sendable (WorkflowEvent) async -> Void)?
+
+    func track(workflowEvent: WorkflowEvent) async {
+        await self.trackWorkflowEventBlock?(workflowEvent)
+    }
+
     struct CachedPurchaseData {
         let presentedOfferingContext: PresentedOfferingContext
         let paywallEvent: PaywallEvent?
@@ -173,6 +179,7 @@ extension PaywallPurchasesType {
         mapped.offeringsBlock = { try await self.offerings() }
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
+        mapped.trackWorkflowEventBlock = { await self.track(workflowEvent: $0) }
         mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
         #endif
 
@@ -201,6 +208,7 @@ extension PaywallPurchasesType {
         mapped.offeringsBlock = { try await self.offerings() }
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
+        mapped.trackWorkflowEventBlock = { await self.track(workflowEvent: $0) }
         mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
         #endif
 
