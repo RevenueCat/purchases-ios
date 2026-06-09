@@ -10,8 +10,11 @@ import GoogleMobileAds
 @MainActor
 final class PresentRewardVerificationTests: AdapterTestCase {
 
-    private static let testAPIKey = "appl_test_present_public_api"
-    private static let testAppUserID = "user_present_public_api"
+    private static let testToken = (
+        customData: "{}",
+        clientTransactionID: "txn_present_public_api",
+        appUserID: "user_present_public_api"
+    )
 
     func testCreateUserDidEarnRewardHandlerWithoutVerificationStateInvokesOnlyStartedWhenOutcomeNil() {
         let fakeAd = FakeCapableAd()
@@ -27,7 +30,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
 
     func testCreateUserDidEarnRewardHandlerWithStateDeliversVerifiedOutcome() throws {
         let fakeAd = FakeCapableAd()
-        RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
+        RewardVerification.Setup.install(on: fakeAd, token: Self.testToken)
 
         let expectation = self.expectation(description: "verification result")
         var receivedResult: RewardVerificationResult?
@@ -49,7 +52,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
 
     func testCreateUserDidEarnRewardHandlerWithStateDeliversFailedWhenPollFails() throws {
         let fakeAd = FakeCapableAd()
-        RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
+        RewardVerification.Setup.install(on: fakeAd, token: Self.testToken)
 
         let expectation = self.expectation(description: "failed result")
         var receivedResult: RewardVerificationResult?
@@ -71,7 +74,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
 
     func testCreateUserDidEarnRewardHandlerWithStateInvokesStartedBeforeResult() {
         let fakeAd = FakeCapableAd()
-        RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
+        RewardVerification.Setup.install(on: fakeAd, token: Self.testToken)
 
         let expectation = self.expectation(description: "result callback")
         var events: [String] = []

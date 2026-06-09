@@ -22,7 +22,7 @@ internal extension RewardVerification {
     /// Load-time SSV setup for rewarded AdMob ads.
     enum Setup {
 
-        /// Returns per-ad verification state stashed by ``install(on:apiKey:appUserID:)``, if any.
+        /// Returns per-ad verification state stashed by ``install(on:token:)``, if any.
         @MainActor
         static func verificationState(for object: AnyObject) -> State? {
             RewardVerification.stateStore.retrieve(for: object)
@@ -39,7 +39,17 @@ internal extension RewardVerification {
             }
             let impressionId = Tracking.Adapter.impressionID(from: loadedAd.responseInfo)
             let token = Purchases.shared.generateRewardVerificationToken(impressionId: impressionId)
+            self.install(on: loadedAd, token: token)
+        }
 
+        /// Wires `ServerSideVerificationOptions` onto the ad from a core-minted token and stashes
+        /// per-ad state via `StateStore`. Holds no payload logic — the token is produced by core.
+        @MainActor
+        @discardableResult
+        static func install(
+            on loadedAd: some CapableAd,
+            token: (customData: String, clientTransactionID: String, appUserID: String)
+        ) -> State {
             Logger.info(RewardVerificationStrings.setup_install(
                 adType: "\(type(of: loadedAd))",
                 transactionID: token.clientTransactionID
@@ -50,65 +60,9 @@ internal extension RewardVerification {
             options.customRewardText = token.customData
             loadedAd.serverSideVerificationOptions = options
 
-            RewardVerification.stateStore.set(State(clientTransactionID: token.clientTransactionID), for: loadedAd)
-        }
-
-        /// Generates a `client_transaction_id`, wires `ServerSideVerificationOptions` onto the ad,
-        /// and stashes per-ad state via `StateStore`. Returns `nil` if payload encoding fails.
-        @MainActor
-        @discardableResult
-        static func install(
-            on loadedAd: some CapableAd,
-            apiKey: String,
-            appUserID: String
-        ) -> State? {
-            let clientTransactionID = UUID().uuidString
-            let impressionId = Tracking.Adapter.impressionID(from: loadedAd.responseInfo)
-
-            guard let customRewardText = self.makeCustomRewardText(
-                apiKey: apiKey,
-                clientTransactionID: clientTransactionID,
-                impressionId: impressionId
-            ) else {
-                return nil
-            }
-
-            Logger.info(RewardVerificationStrings.setup_install(
-                adType: "\(type(of: loadedAd))",
-                transactionID: clientTransactionID
-            ))
-
-            let options = GoogleMobileAds.ServerSideVerificationOptions()
-            options.userIdentifier = appUserID
-            options.customRewardText = customRewardText
-            loadedAd.serverSideVerificationOptions = options
-
-            let state = State(clientTransactionID: clientTransactionID)
+            let state = State(clientTransactionID: token.clientTransactionID)
             RewardVerification.stateStore.set(state, for: loadedAd)
             return state
-        }
-
-        /// Encodes the SSV `customRewardString` payload as deterministic JSON
-        /// (`.sortedKeys`) so logs and tests are stable.
-        static func makeCustomRewardText(
-            apiKey: String,
-            clientTransactionID: String,
-            impressionId: String
-        ) -> String? {
-            let payload: [String: String] = [
-                "api_key": apiKey,
-                "client_transaction_id": clientTransactionID,
-                "impression_id": impressionId
-            ]
-            do {
-                let data = try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])
-                return String(data: data, encoding: .utf8)
-            } catch {
-                let message = RewardVerificationStrings.setup_custom_reward_text_encoding_failed(error: error)
-                Logger.error(message)
-                assertionFailure(message.description)
-                return nil
-            }
         }
     }
 }

@@ -14,7 +14,6 @@ enum RewardVerificationStrings {
 
     case setup_purchases_not_configured
     case setup_install(adType: String, transactionID: String)
-    case setup_custom_reward_text_encoding_failed(error: Error)
 
     case outcome_cancelled(transactionID: String)
     case outcome_suppressed(transactionID: String)
@@ -31,8 +30,6 @@ extension RewardVerificationStrings: LogMessage {
             return "RevenueCat SDK is not configured. Cannot install reward verification on rewarded ad."
         case let .setup_install(adType, transactionID):
             return "Reward verification install on ad type=\(adType) transactionID=\(transactionID)"
-        case let .setup_custom_reward_text_encoding_failed(error):
-            return "customRewardText encoding failed: \(error)"
 
         case let .outcome_cancelled(transactionID):
             return "Reward verification outcome cancelled (task cancelled before delivery) " +

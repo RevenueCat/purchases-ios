@@ -9,70 +9,48 @@ import GoogleMobileAds
 @MainActor
 final class SetupTests: AdapterTestCase {
 
-    private static let testAPIKey = "appl_test_api_key"
-    private static let testAppUserID = "user_test_42"
+    private static let testToken = (
+        customData: "{\"api_key\":\"appl_test_api_key\",\"client_transaction_id\":\"txn_42\",\"impression_id\":\"imp\"}",
+        clientTransactionID: "txn_42",
+        appUserID: "user_test_42"
+    )
 
-    // MARK: - install(on:apiKey:appUserID:)
+    // MARK: - install(on:token:)
 
-    func testInstallReturnsStateWithGeneratedClientTransactionID() {
+    func testInstallReturnsStateWithTokenClientTransactionID() {
         let fakeAd = FakeRewardedAd()
 
-        let state = RewardVerification.Setup.install(
-            on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID
-        )
+        let state = RewardVerification.Setup.install(on: fakeAd, token: Self.testToken)
 
-        let unwrapped = try? XCTUnwrap(state)
-        XCTAssertNotNil(unwrapped?.clientTransactionID)
-        XCTAssertNotNil(UUID(uuidString: unwrapped?.clientTransactionID ?? ""),
-                        "client_transaction_id must be a valid UUID string")
+        XCTAssertEqual(state.clientTransactionID, Self.testToken.clientTransactionID)
     }
 
     func testInstallSetsServerSideVerificationOptionsWithUserIdentifier() throws {
         let fakeAd = FakeRewardedAd()
 
-        RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
+        RewardVerification.Setup.install(on: fakeAd, token: Self.testToken)
 
         let options = try XCTUnwrap(fakeAd.serverSideVerificationOptions)
-        XCTAssertEqual(options.userIdentifier, Self.testAppUserID)
+        XCTAssertEqual(options.userIdentifier, Self.testToken.appUserID)
     }
 
-    func testInstallSetsCustomRewardTextWithApiKeyAndClientTransactionID() throws {
+    func testInstallSetsCustomRewardTextFromTokenCustomData() throws {
         let fakeAd = FakeRewardedAd()
 
-        let state = try XCTUnwrap(
-            RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
-        )
-        let customRewardText = try XCTUnwrap(fakeAd.serverSideVerificationOptions?.customRewardText)
-        let payload = try Self.parseJSONObject(customRewardText)
+        RewardVerification.Setup.install(on: fakeAd, token: Self.testToken)
 
-        XCTAssertEqual(payload["api_key"], Self.testAPIKey)
-        XCTAssertEqual(payload["client_transaction_id"], state.clientTransactionID)
+        let customRewardText = try XCTUnwrap(fakeAd.serverSideVerificationOptions?.customRewardText)
+        XCTAssertEqual(customRewardText, Self.testToken.customData)
     }
 
     func testInstallStashesStateRetrievableViaStateStore() throws {
         let fakeAd = FakeRewardedAd()
 
-        let returnedState = try XCTUnwrap(
-            RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
-        )
+        let returnedState = RewardVerification.Setup.install(on: fakeAd, token: Self.testToken)
         let stashedState = try XCTUnwrap(RewardVerification.stateStore.retrieve(for: fakeAd))
 
         XCTAssertTrue(returnedState === stashedState,
                       "RewardVerification.stateStore.retrieve(for:) must return the exact instance produced by install")
-    }
-
-    func testInstallGeneratesUniqueClientTransactionIDPerCall() {
-        let firstAd = FakeRewardedAd()
-        let secondAd = FakeRewardedAd()
-
-        let firstState = RewardVerification.Setup.install(
-            on: firstAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID
-        )
-        let secondState = RewardVerification.Setup.install(
-            on: secondAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID
-        )
-
-        XCTAssertNotEqual(firstState?.clientTransactionID, secondState?.clientTransactionID)
     }
 
     // MARK: - install(on:)
@@ -96,55 +74,15 @@ final class SetupTests: AdapterTestCase {
     func testInstallOverwritesPreviouslyStashedStateOnSameAd() throws {
         let fakeAd = FakeRewardedAd()
 
-        let firstState = try XCTUnwrap(
-            RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
-        )
-        let secondState = try XCTUnwrap(
-            RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
-        )
+        let firstToken = (customData: "{}", clientTransactionID: "txn_first", appUserID: "user")
+        let secondToken = (customData: "{}", clientTransactionID: "txn_second", appUserID: "user")
+
+        let firstState = RewardVerification.Setup.install(on: fakeAd, token: firstToken)
+        let secondState = RewardVerification.Setup.install(on: fakeAd, token: secondToken)
         let stashedState = try XCTUnwrap(RewardVerification.stateStore.retrieve(for: fakeAd))
 
         XCTAssertFalse(firstState === secondState)
         XCTAssertTrue(stashedState === secondState)
-    }
-
-    // MARK: - makeCustomRewardText
-
-    func testMakeCustomRewardTextProducesValidJSONWithExpectedKeys() throws {
-        let text = try XCTUnwrap(RewardVerification.Setup.makeCustomRewardText(
-            apiKey: "key_123",
-            clientTransactionID: "txn_456",
-            impressionId: "imp_789"
-        ))
-        let payload = try Self.parseJSONObject(text)
-
-        XCTAssertEqual(payload, [
-            "api_key": "key_123",
-            "client_transaction_id": "txn_456",
-            "impression_id": "imp_789"
-        ])
-    }
-
-    func testMakeCustomRewardTextProducesSortedKeys() throws {
-        let text = try XCTUnwrap(RewardVerification.Setup.makeCustomRewardText(
-            apiKey: "key_123",
-            clientTransactionID: "txn_456",
-            impressionId: "imp_789"
-        ))
-
-        // .sortedKeys guarantees stable byte ordering — keep tests / logs / snapshots deterministic.
-        XCTAssertEqual(
-            text,
-            "{\"api_key\":\"key_123\",\"client_transaction_id\":\"txn_456\",\"impression_id\":\"imp_789\"}"
-        )
-    }
-
-    // MARK: - Helpers
-
-    private static func parseJSONObject(_ string: String) throws -> [String: String] {
-        let data = try XCTUnwrap(string.data(using: .utf8))
-        let object = try JSONSerialization.jsonObject(with: data)
-        return try XCTUnwrap(object as? [String: String])
     }
 }
 
