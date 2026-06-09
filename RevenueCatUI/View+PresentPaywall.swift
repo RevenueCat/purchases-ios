@@ -956,6 +956,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         )
         .environment(\.workflowCompletedInSessionBinding, self.$workflowCompletedInSession)
         .onAppear(perform: self.resetWorkflowCompletedInSession)
+        .environment(\.workflowExitOfferOfferingBinding, self.$exitOfferOffering)
         .onPurchaseStarted {
             self.purchaseStarted?($0)
         }
@@ -982,8 +983,8 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             self.restoreFailure?($0)
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
-        .task {
-            self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
+        .onPreferenceChange(WorkflowExitOfferPreferenceKey.self) { context in
+            self.handleWorkflowExitOfferPreferenceChange(context)
         }
     }
 
@@ -1095,6 +1096,14 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         self.exitOfferOffering = nil
         self.purchaseHandler.resetForNewSession()
         self.onDismiss?()
+    }
+
+    private func handleWorkflowExitOfferPreferenceChange(_ context: WorkflowExitOfferContext?) {
+        // Don't nil out exitOfferOffering once an exit offer is already being presented:
+        // SwiftUI may fire a final nil preference update during the dismiss animation, after
+        // handleMainPaywallDismiss has already copied exitOfferOffering into presentedExitOffer.
+        guard context != nil || self.presentedExitOffer == nil else { return }
+        self.exitOfferOffering = context?.exitOfferOffering
     }
 
 }

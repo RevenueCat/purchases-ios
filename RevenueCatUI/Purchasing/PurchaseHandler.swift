@@ -300,7 +300,8 @@ extension PurchaseHandler {
         // workflow resolves.
         return nil
 #else
-        // The workflows endpoint isn't available on tvOS, so seed directly from the cached offering.
+        // The RevenueCatUI workflow paths are `#if !os(tvOS)`, so on tvOS seed directly from the
+        // cached offering.
         switch content {
         case let .offering(offering):
             return offering
