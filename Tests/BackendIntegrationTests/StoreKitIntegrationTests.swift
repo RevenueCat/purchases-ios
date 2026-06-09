@@ -153,6 +153,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit1 }
 
+    private static let introEligibilityRequestStartedLogRegex = #"API request started: [^\n]*intro_eligibility"#
+
     override func tearDown() async throws {
         HTTPStubs.removeAllStubs()
         try await super.tearDown()
@@ -611,7 +613,24 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         _ = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
 
         self.logger.verifyMessageWasNotLogged(
-            regexPattern: #"API request started: [^\n]*intro_eligibility"#
+            regexPattern: Self.introEligibilityRequestStartedLogRegex
+        )
+    }
+
+    func testTrialEligibilityNetworkRequestMatcherCatchesBackendRequests() async throws {
+        try XCTSkipIf(
+            Self.storeKitVersion != .storeKit1,
+            "StoreKit 2 checks intro eligibility locally through StoreKit."
+        )
+
+        let product = try await self.monthlyPackage.storeProduct
+
+        self.logger.clearMessages()
+
+        _ = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
+
+        self.logger.verifyMessageWasLogged(
+            regexPattern: Self.introEligibilityRequestStartedLogRegex
         )
     }
 
