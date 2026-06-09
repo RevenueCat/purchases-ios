@@ -6,8 +6,8 @@
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
-import Nimble
 import Foundation
+import Nimble
 import OHHTTPStubs
 import OHHTTPStubsSwift
 @testable @_spi(Internal) import RevenueCat
