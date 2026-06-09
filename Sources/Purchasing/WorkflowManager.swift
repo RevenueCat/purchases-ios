@@ -42,6 +42,7 @@ class WorkflowManager {
                      workflowId: String,
                      isAppBackgrounded: Bool,
                      prefetch: Bool = false,
+                     ifGeneration generation: Int? = nil,
                      completion: @escaping (Result<WorkflowDataResult, BackendError>) -> Void) {
         if let cached = self.workflowsCache.cachedWorkflow(workflowId: workflowId),
            !self.workflowsCache.isWorkflowCacheStale(workflowId: workflowId, isAppBackgrounded: isAppBackgrounded) {
@@ -49,10 +50,13 @@ class WorkflowManager {
             return
         }
 
-        // Capture the cache generation when the request is issued. If an identity change clears the
-        // cache while this fetch is in flight, the in-memory write below is dropped, so a result
-        // fetched for the previous user (workflow detail is user-scoped) can't repopulate memory.
-        let generation = self.workflowsCache.currentCacheGeneration()
+        // The generation guarding the in-memory write: prefetch forwards the generation captured when
+        // the list fetch was issued (`generation`), so a clear landing between caching the list and
+        // issuing this prefetch still drops the write. On-demand callers pass `nil` and capture it
+        // fresh here, since their request is only issued now. Either way, if an identity change clears
+        // the cache before the write lands it's dropped, so a result fetched for the previous user
+        // (workflow detail is user-scoped) can't repopulate memory.
+        let writeGeneration = generation ?? self.workflowsCache.currentCacheGeneration()
         self.backend.workflowsAPI.getWorkflow(appUserID: appUserID,
                                               workflowId: workflowId,
                                               isAppBackgrounded: isAppBackgrounded,
@@ -64,7 +68,7 @@ class WorkflowManager {
             if case let .success(dataResult) = result {
                 self.workflowsCache.cache(workflow: dataResult,
                                           workflowId: workflowId,
-                                          ifGeneration: generation)
+                                          ifGeneration: writeGeneration)
                 self.warmUpAssets(for: dataResult)
             }
             completion(result)
@@ -191,10 +195,11 @@ private extension WorkflowManager {
     /// marked as mattering, so persisting all of them is safe. On-demand fetches are not persisted, to
     /// avoid unbounded disk growth (a session can open many distinct paywalls); persisting those
     /// behind an LRU cap is a planned follow-up. `generation` is the cache generation captured when the
-    /// list fetch was issued (see ``getWorkflowsList(appUserID:isAppBackgrounded:onComplete:)``); it
-    /// guards the disk write against an identity change landing mid-prefetch, so the previous user's
-    /// details can't be written back after the store was cleared. Each ``getWorkflow`` call guards its
-    /// own in-memory write the same way.
+    /// list fetch was issued (see ``getWorkflowsList(appUserID:isAppBackgrounded:onComplete:)``); it's
+    /// forwarded to both the batched disk write and each ``getWorkflow``'s in-memory write, so an
+    /// identity change landing any time after the list was fetched (including between caching the list
+    /// and issuing a prefetch) drops the write and the previous user's details can't be written back
+    /// after the store was cleared.
     func prefetchWorkflows(_ workflows: [WorkflowSummary],
                            appUserID: String,
                            isAppBackgrounded: Bool,
@@ -214,7 +219,8 @@ private extension WorkflowManager {
             self.getWorkflow(appUserID: appUserID,
                              workflowId: summary.id,
                              isAppBackgrounded: isAppBackgrounded,
-                             prefetch: true) { result in
+                             prefetch: true,
+                             ifGeneration: generation) { result in
                 if case let .success(dataResult) = result {
                     resolved.modify { $0[summary.id] = dataResult }
                 }
