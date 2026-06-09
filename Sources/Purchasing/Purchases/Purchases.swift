@@ -1594,6 +1594,12 @@ public extension Purchases {
         await self.eventsManager?.track(featureEvent: paywallEvent)
     }
 
+    /// Used by `RevenueCatUI` to keep track of ``WorkflowEvent``s.
+    @_spi(Internal)
+    func track(workflowEvent: WorkflowEvent) async {
+        await self.eventsManager?.track(featureEvent: workflowEvent)
+    }
+
     /// Used by `RevenueCatUI` to keep track of ``CustomerCenterEvent``s.
     @_spi(Internal) func track(customerCenterEvent: any CustomerCenterEventType) {
         operationDispatcher.dispatchOnWorkerThread {

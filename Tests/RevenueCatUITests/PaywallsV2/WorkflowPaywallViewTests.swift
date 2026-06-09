@@ -56,6 +56,10 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(action) == .dismissWorkflow
     }
 
+    // Terminal-completion gating (no page -> no emit; page + untracked -> emit; already-tracked -> no emit)
+    // moved to `WorkflowStepEventCoordinatorTests`, which asserts the emitted events directly rather than a
+    // bool decision.
+
     func testTransitionStateStartsWithoutOutgoingPage() {
         let state = WorkflowPageTransitionState(currentPage: "step_1")
 

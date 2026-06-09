@@ -1199,6 +1199,8 @@
 		90A1B2C72F96927E00D32EDF /* AdRewardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90A1B2C62F96927E00D32EDF /* AdRewardTests.swift */; };
 		94BA76C3AAF699D59AA685FC /* PurchasesWorkflowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B1498BA2288B4643B248A5 /* PurchasesWorkflowTests.swift */; };
 		961B6FC99052B19102AE5AEC /* WorkflowNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A10AD61D82EB73FC5338DA2 /* WorkflowNavigator.swift */; };
+		81BD918A48974816AEEF22C6 /* WorkflowStepEventTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8F7749E65DE2FD7FDCB105 /* WorkflowStepEventTracker.swift */; };
+		E1D360B3B7EA478080262A84 /* WorkflowStepEventCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 323A476D8518423CBF843BE1 /* WorkflowStepEventCoordinator.swift */; };
 		97B9F00926E0977B0DAAD7D7 /* EnvironmentValues+Workflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C553D7740916F157FA16753 /* EnvironmentValues+Workflow.swift */; };
 		986C48FD2F55A58C00D8CEA5 /* PaywallSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57B1D7B32F2A213800A77E21 /* PaywallSource.swift */; };
 		9A65DFDE258AD60A00DE00B0 /* LogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */; };
@@ -2531,6 +2533,9 @@
 		65279ABC122869A50AEB8A27 /* ExitOffer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExitOffer.swift; sourceTree = "<group>"; };
 		68E47E21986D2C234ADB62E8 /* PredicateFixtureTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PredicateFixtureTests.swift; sourceTree = "<group>"; };
 		6A10AD61D82EB73FC5338DA2 /* WorkflowNavigator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowNavigator.swift; sourceTree = "<group>"; };
+		5E8F7749E65DE2FD7FDCB105 /* WorkflowStepEventTracker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowStepEventTracker.swift; sourceTree = "<group>"; };
+		323A476D8518423CBF843BE1 /* WorkflowStepEventCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowStepEventCoordinator.swift; sourceTree = "<group>"; };
+		6A5F7844775CC2D836BC617C /* ComparisonOperatorsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ComparisonOperatorsTests.swift; sourceTree = "<group>"; };
 		6E52F908EB90930822406495 /* WorkflowManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowManager.swift; sourceTree = "<group>"; };
 		6EFD5F7BD8404B6E828C4E10 /* WorkflowPaywallViewTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowPaywallViewTests.swift; sourceTree = "<group>"; };
 		709B11FAA2FC6B4929062F25 /* RulesEngineInternal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RulesEngineInternal.swift; sourceTree = "<group>"; };
@@ -2983,6 +2988,8 @@
 		F1A05E9E1B04B32B832DB194 /* PaywallCountdownComponent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaywallCountdownComponent.swift; sourceTree = "<group>"; };
 		F3A2DB969D72432B87F48C5F /* RemoteConfigAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigAPI.swift; sourceTree = "<group>"; };
 		F468C7BCEB786BEC80277ECA /* WorkflowNavigatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowNavigatorTests.swift; sourceTree = "<group>"; };
+		C07759C930F712D2D53B9333 /* WorkflowStepEventTrackerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowStepEventTrackerTests.swift; sourceTree = "<group>"; };
+		26AAFBADBA3F4E339D041135 /* WorkflowStepEventCoordinatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowStepEventCoordinatorTests.swift; sourceTree = "<group>"; };
 		F516BD28282434070083480B /* StoreKit2StorefrontListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2StorefrontListener.swift; sourceTree = "<group>"; };
 		F516BD322828FDD90083480B /* StoreKit2StorefrontListenerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2StorefrontListenerTests.swift; sourceTree = "<group>"; };
 		F530E4FE275646EF001AF6BD /* MacDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacDevice.swift; sourceTree = "<group>"; };
@@ -3249,6 +3256,8 @@
 				B413E59F2F97B3B900B5F0CA /* CarouselTabSwitchTests.swift */,
 				DB1FC9592F9A1B74009A95EA /* WorkflowScreenMapperTests.swift */,
 				F468C7BCEB786BEC80277ECA /* WorkflowNavigatorTests.swift */,
+				C07759C930F712D2D53B9333 /* WorkflowStepEventTrackerTests.swift */,
+				26AAFBADBA3F4E339D041135 /* WorkflowStepEventCoordinatorTests.swift */,
 				6EFD5F7BD8404B6E828C4E10 /* WorkflowPaywallViewTests.swift */,
 				0E4CCD8E9E454A2EB3760E06 /* ButtonComponentViewModelMappingTests.swift */,
 				A1D3F80D2D524F51BA60157C /* ButtonComponentViewTests.swift */,
@@ -3499,6 +3508,8 @@
 				2C08B3342CDD16550024857B /* PaywallComponentViewModel.swift */,
 				DB1FC9502F9A1B23009A95EA /* WorkflowScreenMapper.swift */,
 				6A10AD61D82EB73FC5338DA2 /* WorkflowNavigator.swift */,
+				5E8F7749E65DE2FD7FDCB105 /* WorkflowStepEventTracker.swift */,
+				323A476D8518423CBF843BE1 /* WorkflowStepEventCoordinator.swift */,
 			);
 			path = ViewModelHelpers;
 			sourceTree = "<group>";
@@ -8621,6 +8632,8 @@
 				7DFF88B0441F83F94C8E855F /* VideoAutoplayHandler.swift in Sources */,
 				6561C746FE7043F5E5AC75C1 /* CarouselState.swift in Sources */,
 				961B6FC99052B19102AE5AEC /* WorkflowNavigator.swift in Sources */,
+				81BD918A48974816AEEF22C6 /* WorkflowStepEventTracker.swift in Sources */,
+				E1D360B3B7EA478080262A84 /* WorkflowStepEventCoordinator.swift in Sources */,
 				97B9F00926E0977B0DAAD7D7 /* EnvironmentValues+Workflow.swift in Sources */,
 				150BEBF14F59182317CDA8DA /* WorkflowContext.swift in Sources */,
 				C53CDAA4FC3E6B51CC70D724 /* WorkflowPaywallView.swift in Sources */,
