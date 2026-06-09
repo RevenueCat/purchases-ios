@@ -610,7 +610,13 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         _ = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
 
-        self.logger.verifyMessageWasNotLogged("/intro_eligibility")
+        let introEligibilityPath = HTTPRequest.Path
+            .getIntroEligibility(appUserID: try self.purchases.appUserID)
+            .relativePath
+        self.logger.verifyMessageWasNotLogged("""
+        httpMethod=POST
+        path=\(introEligibilityPath)
+        """)
     }
 
     func testEligibleForIntroBeforePurchase() async throws {
