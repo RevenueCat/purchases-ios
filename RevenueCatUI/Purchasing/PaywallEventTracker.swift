@@ -186,7 +186,7 @@ final class PaywallEventTracker: @unchecked Sendable {
         }
     }
 
-    func trackWorkflow(_ event: WorkflowEvent) {
+    func track(_ event: WorkflowEvent) {
         self.eventDispatcher { [purchases = self.purchases] in
             await purchases.track(workflowEvent: event)
         }

@@ -63,7 +63,7 @@ class PaywallEventTrackerTests: TestCase {
         )
         let event = WorkflowEvent.stepStarted(.init(), .init(workflowId: "wf_1", stepId: "step_1"))
 
-        tracker.trackWorkflow(event)
+        tracker.track(event)
 
         await expect(trackedWorkflowEvents.value).toEventually(equal([event]), timeout: .seconds(2))
         expect(trackedPaywallEvents.value).to(beEmpty())

@@ -270,7 +270,7 @@ struct WorkflowPaywallView: View {
         self._stepEventCoordinator = .init(
             wrappedValue: WorkflowStepEventCoordinator(
                 workflow: context.workflow,
-                sink: { [purchaseHandler] event in purchaseHandler.trackWorkflowEvent(event) }
+                sink: { [purchaseHandler] event in purchaseHandler.track(event) }
             )
         )
         self._seenPages = .init(wrappedValue: initialPage.map { [$0] } ?? [])

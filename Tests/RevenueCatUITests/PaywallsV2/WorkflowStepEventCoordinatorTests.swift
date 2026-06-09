@@ -217,7 +217,7 @@ final class WorkflowStepEventCoordinatorTests: TestCase {
             eventDispatcher: PaywallEventTrackerTestDispatcher.value
         )
         let coordinator = WorkflowStepEventCoordinator(workflow: workflow) { event in
-            eventTracker.trackWorkflow(event)
+            eventTracker.track(event)
         }
 
         coordinator.trackInitialStep(step1, hasRenderedPage: true)

@@ -827,8 +827,8 @@ extension PurchaseHandler {
     }
 
     /// Tracks a workflow step lifecycle event. Dispatched on the same background path as paywall events.
-    func trackWorkflowEvent(_ event: WorkflowEvent) {
-        self.paywallEventTracker.trackWorkflow(event)
+    func track(_ event: WorkflowEvent) {
+        self.paywallEventTracker.track(event)
     }
 
     /// Tracks a purchase error event.
