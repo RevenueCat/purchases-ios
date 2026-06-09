@@ -32,6 +32,7 @@ struct App: View {
     #endif
     private var paywallDismissed: () -> Void = {}
     private var requestedDismissal: () -> Void = {}
+    private var preloadedCustomerInfo: CustomerInfo? = nil
 
     var body: some View {
         self.content
@@ -45,10 +46,19 @@ struct App: View {
         PaywallView(displayCloseButton: true)
         PaywallView(fonts: self.fonts)
         PaywallView(fonts: self.fonts, displayCloseButton: true)
+        PaywallView(customerInfo: self.preloadedCustomerInfo)
+        PaywallView(fonts: self.fonts, displayCloseButton: true, customerInfo: self.preloadedCustomerInfo)
         PaywallView(offering: self.offering)
         PaywallView(offering: self.offering, displayCloseButton: true)
         PaywallView(offering: self.offering, fonts: self.fonts)
         PaywallView(offering: self.offering, fonts: self.fonts, displayCloseButton: true)
+        PaywallView(offering: self.offering, customerInfo: self.preloadedCustomerInfo)
+        PaywallView(
+            offering: self.offering,
+            fonts: self.fonts,
+            displayCloseButton: true,
+            customerInfo: self.preloadedCustomerInfo
+        )
     }
 
     @ViewBuilder

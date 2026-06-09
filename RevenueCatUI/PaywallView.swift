@@ -73,6 +73,10 @@ public struct PaywallView: View {
     ///
     /// - Parameter fonts: An optional ``PaywallFontProvider``.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
+    /// - Parameter customerInfo: Optional pre-loaded ``CustomerInfo``. Pass the cached value from
+    /// ``Purchases/customerInfo()`` to skip the skeleton loading state on the first paywall presentation.
+    /// When `nil`, the SDK falls back to the cached value if available and otherwise fetches asynchronously,
+    /// which can briefly surface ``LoadingPaywallView``.
     ///
     /// - Note: If loading the current `Offering` fails (if the user is offline, for example),
     /// an error will be displayed.
@@ -81,12 +85,14 @@ public struct PaywallView: View {
     public init(
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
+        customerInfo: CustomerInfo? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
         let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
         self.init(
             configuration: .init(
+                customerInfo: customerInfo,
                 fonts: fonts,
                 displayCloseButton: displayCloseButton,
                 purchaseHandler: purchaseHandler
@@ -99,6 +105,8 @@ public struct PaywallView: View {
     /// - Parameter offering: The `Offering` containing the desired paywall to display.
     /// - Parameter fonts: An optional `PaywallFontProvider`.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
+    /// - Parameter customerInfo: Optional pre-loaded ``CustomerInfo``. Pass the cached value from
+    /// ``Purchases/customerInfo()`` to skip the skeleton loading state on the first paywall presentation.
     ///
     /// - Note: if `offering` does not have a current paywall (`hasPaywall == false`), or it fails to load
     /// due to invalid data, a default paywall will be displayed.
@@ -108,6 +116,7 @@ public struct PaywallView: View {
         offering: Offering,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
+        customerInfo: CustomerInfo? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
@@ -116,6 +125,7 @@ public struct PaywallView: View {
             fonts: fonts,
             displayCloseButton: displayCloseButton,
             useDraftPaywall: false,
+            customerInfo: customerInfo,
             performPurchase: performPurchase,
             performRestore: performRestore
             )
@@ -128,6 +138,7 @@ public struct PaywallView: View {
         displayCloseButton: Bool = false,
         useDraftPaywall: Bool,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        customerInfo: CustomerInfo? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
@@ -136,6 +147,7 @@ public struct PaywallView: View {
         self.init(
             configuration: .init(
                 offering: offering,
+                customerInfo: customerInfo,
                 fonts: fonts,
                 displayCloseButton: displayCloseButton,
                 useDraftPaywall: useDraftPaywall,
