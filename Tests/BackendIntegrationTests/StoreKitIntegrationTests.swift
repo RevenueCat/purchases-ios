@@ -7,6 +7,7 @@
 //
 
 import Nimble
+import Foundation
 import OHHTTPStubs
 import OHHTTPStubsSwift
 @testable @_spi(Internal) import RevenueCat
