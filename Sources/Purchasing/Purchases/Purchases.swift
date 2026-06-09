@@ -1728,10 +1728,8 @@ extension Purchases {
 
     /// Polls the backend once for reward verification status using `client_transaction_id`.
     ///
-    /// Internal API for RC ad adapters.
-    ///
     /// Cancelling the calling `Task` does not cancel the in-flight HTTP request.
-    @_spi(Internal) public func pollRewardVerificationStatus(
+    func pollRewardVerificationStatus(
         clientTransactionID: String
     ) async throws -> RewardVerificationPollStatus {
         do {

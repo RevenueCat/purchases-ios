@@ -14,7 +14,7 @@
 import Foundation
 
 /// Result of a single ad reward verification status poll.
-@_spi(Internal) public enum RewardVerificationPollStatus: Sendable, Equatable {
+enum RewardVerificationPollStatus: Sendable, Equatable {
 
     /// Verified by the backend, with the granted reward payload.
     case verified(AdReward)
