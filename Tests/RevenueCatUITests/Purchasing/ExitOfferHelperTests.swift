@@ -56,8 +56,7 @@ final class ExitOfferHelperTests: TestCase {
 
         expect(result).to(beNil())
         // validExitOffer is a pure function — no side effects — so it's safe to call on every
-        // SwiftUI render. The exitOfferSameAsCurrent warning is emitted by fetchValidExitOffer
-        // (the one-shot async path) instead.
+        // SwiftUI render; it never logs.
         self.logger.verifyMessageWasNotLogged(
             Strings.exitOfferSameAsCurrent,
             level: .warn,
@@ -78,19 +77,6 @@ final class ExitOfferHelperTests: TestCase {
         )
 
         expect(result?.identifier) == "exit_offering_a"
-    }
-
-    func testFetchValidExitOfferReturnsNilWhenPurchasesNotConfigured() async throws {
-        guard !Purchases.isConfigured else {
-            throw XCTSkip("Purchases is already configured; cannot test the unconfigured guard")
-        }
-
-        let result = await ExitOfferHelper.fetchValidExitOffer(
-            offeringId: "exit_offering_a",
-            currentOfferingId: "offering_a"
-        )
-
-        expect(result).to(beNil())
     }
 
 }
