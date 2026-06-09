@@ -21,9 +21,10 @@
     {
       "id": "add_one_arg_bool_is_nan",
       "description": "+ uses parseFloat, and parseFloat(\"true\") is NaN; NaN is the only value not equal to itself, so x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "+": [true] }, { "+": [true] }] },
+      "predicate": { "!=": [{"log": { "+": [true] }}, { "+": [true] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "add_coerces_numeric_strings",
@@ -41,9 +42,10 @@
     {
       "id": "add_non_numeric_propagates_nan",
       "description": "an object cannot coerce and propagates NaN; x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "+": [{}, 1] }, { "+": [{}, 1] }] },
+      "predicate": { "!=": [{"log": { "+": [{}, 1] }}, { "+": [{}, 1] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "add_zero_args_is_zero",
@@ -120,9 +122,10 @@
     {
       "id": "sub_zero_args_is_nan",
       "description": "{\"-\": []} is NaN (-undefined); NaN is the only value not equal to itself, so x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "-": [] }, { "-": [] }] },
+      "predicate": { "!=": [{"log": { "-": [] }}, { "-": [] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "div_basic",
@@ -139,9 +142,10 @@
     {
       "id": "div_by_zero_positive_int_zero_is_infinity",
       "description": "n / 0 is +Infinity (IEEE 754); +Infinity is produced via division-by-zero since JSON has no Infinity literal",
-      "predicate": { "===": [{ "/": [1, 0] }, { "/": [10, 0] }] },
+      "predicate": { "===": [{"log": { "/": [1, 0] }}, { "/": [10, 0] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["Infinity"]
     },
     {
       "id": "div_by_zero_positive_float_zero_is_infinity",
@@ -153,30 +157,34 @@
     {
       "id": "div_by_zero_negative_is_negative_infinity",
       "description": "-1 / 0 is -Infinity; -Infinity is produced via division-by-zero since JSON has no Infinity literal",
-      "predicate": { "===": [{ "/": [-1, 0] }, { "/": [-10, 0] }] },
+      "predicate": { "===": [{"log": { "/": [-1, 0] }}, { "/": [-10, 0] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["-Infinity"]
     },
     {
       "id": "div_by_zero_zero_over_zero_is_nan",
       "description": "0 / 0 is NaN; x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "/": [0, 0] }, { "/": [0, 0] }] },
+      "predicate": { "!=": [{"log": { "/": [0, 0] }}, { "/": [0, 0] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "div_one_arg_is_nan",
       "description": "a / undefined is NaN; x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "/": [1] }, { "/": [1] }] },
+      "predicate": { "!=": [{"log": { "/": [1] }}, { "/": [1] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "div_zero_args_is_nan",
       "description": "{\"/\": []} is NaN; x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "/": [] }, { "/": [] }] },
+      "predicate": { "!=": [{"log": { "/": [] }}, { "/": [] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "div_ignores_args_beyond_second",
@@ -194,30 +202,34 @@
     {
       "id": "mod_seven_by_zero_is_nan",
       "description": "n % 0 is NaN (IEEE 754); x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "%": [7, 0] }, { "%": [7, 0] }] },
+      "predicate": { "!=": [{"log": { "%": [7, 0] }}, { "%": [7, 0] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "mod_zero_by_zero_is_nan",
       "description": "0 % 0 is NaN; x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "%": [0, 0] }, { "%": [0, 0] }] },
+      "predicate": { "!=": [{"log": { "%": [0, 0] }}, { "%": [0, 0] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "mod_one_arg_is_nan",
       "description": "a % undefined is NaN; x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "%": [1] }, { "%": [1] }] },
+      "predicate": { "!=": [{"log": { "%": [1] }}, { "%": [1] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "mod_zero_args_is_nan",
       "description": "{\"%\": []} is NaN; x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "%": [] }, { "%": [] }] },
+      "predicate": { "!=": [{"log": { "%": [] }}, { "%": [] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "mod_ignores_args_beyond_second",
@@ -229,37 +241,42 @@
     {
       "id": "add_parsefloat_null_is_nan",
       "description": "+ uses parseFloat; parseFloat(\"null\") is NaN; x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "+": [null, 1] }, { "+": [null, 1] }] },
+      "predicate": { "!=": [{"log": { "+": [null, 1] }}, { "+": [null, 1] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "mul_parsefloat_null_is_nan",
       "description": "* uses parseFloat; parseFloat(\"null\") is NaN; x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "*": [null, 1] }, { "*": [null, 1] }] },
+      "predicate": { "!=": [{"log": { "*": [null, 1] }}, { "*": [null, 1] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "add_parsefloat_true_is_nan",
       "description": "bools never bridge through + even though Number(true) === 1; x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "+": [true, 1] }, { "+": [true, 1] }] },
+      "predicate": { "!=": [{"log": { "+": [true, 1] }}, { "+": [true, 1] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "add_parsefloat_false_is_nan",
       "description": "bools never bridge through +; x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "+": [false, 1] }, { "+": [false, 1] }] },
+      "predicate": { "!=": [{"log": { "+": [false, 1] }}, { "+": [false, 1] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "add_parsefloat_empty_string_is_nan",
       "description": "parseFloat(\"\") is NaN, unlike Number(\"\") === 0; x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "+": ["", 1] }, { "+": ["", 1] }] },
+      "predicate": { "!=": [{"log": { "+": ["", 1] }}, { "+": ["", 1] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "add_parsefloat_singleton_array_is_one",
@@ -278,9 +295,10 @@
     {
       "id": "add_parsefloat_object_is_nan",
       "description": "objects stringify to \"[object Object]\"; x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "+": [{}, 1] }, { "+": [{}, 1] }] },
+      "predicate": { "!=": [{"log": { "+": [{}, 1] }}, { "+": [{}, 1] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "sub_tonumber_null_is_zero",
@@ -313,16 +331,18 @@
     {
       "id": "div_tonumber_null_divisor_is_infinity",
       "description": "1 / null coerces the divisor to 0, yielding +Infinity; +Infinity is produced via division-by-zero since JSON has no Infinity literal",
-      "predicate": { "===": [{ "/": [1, null] }, { "/": [10, 0] }] },
+      "predicate": { "===": [{"log": { "/": [1, null] }}, { "/": [10, 0] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["Infinity"]
     },
     {
       "id": "mod_tonumber_null_divisor_is_nan",
       "description": "1 % null coerces the divisor to 0, yielding NaN; x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "%": [1, null] }, { "%": [1, null] }] },
+      "predicate": { "!=": [{"log": { "%": [1, null] }}, { "%": [1, null] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "sub_tonumber_bools",
@@ -355,16 +375,18 @@
     {
       "id": "sub_tonumber_multi_array_is_nan",
       "description": "[1, 2] stringifies to \"1,2\" which is NaN under Number(); x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "-": [[1, 2], 0] }, { "-": [[1, 2], 0] }] },
+      "predicate": { "!=": [{"log": { "-": [[1, 2], 0] }}, { "-": [[1, 2], 0] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "sub_tonumber_object_is_nan",
       "description": "{} stringifies to \"[object Object]\" which is NaN under Number(); x != x is true iff x is NaN",
-      "predicate": { "!=": [{ "-": [{}, 0] }, { "-": [{}, 0] }] },
+      "predicate": { "!=": [{"log": { "-": [{}, 0] }}, { "-": [{}, 0] }] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     }
   ]
 }
