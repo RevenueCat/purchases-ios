@@ -34,6 +34,8 @@ extension PurchaseHandler {
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         preferredLocaleOverride: String? = nil,
+        stubbedOfferings: Offerings? = nil,
+        stubbedWorkflow: WorkflowDataResult? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = Just(
             (
                 transaction: nil,
@@ -61,6 +63,7 @@ extension PurchaseHandler {
             } customerInfo: {
                 return customerInfo
             }
+        Self.applyWorkflowStub(to: purchases, offerings: stubbedOfferings, workflow: stubbedWorkflow)
         return self.init(
             purchases: purchases,
             performPurchase: performPurchase,
@@ -79,9 +82,17 @@ extension PurchaseHandler {
     }
 
     static func cancelling(
-        purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat
+        purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,
+        stubbedOfferings: Offerings? = nil,
+        stubbedWorkflow: WorkflowDataResult? = nil
     ) -> Self {
-        return .mock(purchasesAreCompletedBy: purchasesAreCompletedBy)
+        // `.map` below copies the workflow/offerings stubs onto the derived mock, so stubbing here
+        // is preserved through the cancellation wrapper.
+        return .mock(
+            purchasesAreCompletedBy: purchasesAreCompletedBy,
+            stubbedOfferings: stubbedOfferings,
+            stubbedWorkflow: stubbedWorkflow
+        )
             .map { block in { package, offer, event in
                     var result = try await block(package, offer, event)
                     result.userCancelled = true
@@ -91,7 +102,11 @@ extension PurchaseHandler {
     }
 
     /// - Returns: `PurchaseHandler` that throws `error` for purchases and restores.
-    static func failing(_ error: Error) -> Self {
+    static func failing(
+        _ error: Error,
+        stubbedOfferings: Offerings? = nil,
+        stubbedWorkflow: WorkflowDataResult? = nil
+    ) -> Self {
         let purchases = MockPurchases { _, _, _ in
             throw error
         } restorePurchases: {
@@ -101,10 +116,31 @@ extension PurchaseHandler {
         } customerInfo: {
             throw error
         }
+        Self.applyWorkflowStub(to: purchases, offerings: stubbedOfferings, workflow: stubbedWorkflow)
         return self.init(
             purchases: purchases,
             eventTracker: .init(purchases: purchases, eventDispatcher: paywallEventMockDispatcher)
         )
+    }
+
+    /// Wires a default workflow + offerings onto `purchases` so a `PaywallView(offering:)` renders
+    /// in the always-on-workflows world. Both the synchronous seed (`cachedWorkflow`/`cachedOfferings`)
+    /// and the async resolve path are covered.
+    private static func applyWorkflowStub(
+        to purchases: MockPurchases,
+        offerings: Offerings?,
+        workflow: WorkflowDataResult?
+    ) {
+        if let offerings {
+            purchases.cachedOfferings = offerings
+            purchases.offeringsBlock = { offerings }
+        }
+        #if !os(tvOS)
+        if let workflow {
+            purchases.workflowBlock = { _ in workflow }
+            purchases.cachedWorkflowBlock = { _ in workflow }
+        }
+        #endif
     }
 
     /// Creates a copy of this `PurchaseHandler` with a delay.
