@@ -219,6 +219,11 @@ struct WorkflowPaywallView: View {
     // Observing it directly would re-render the whole page ForEach + header overlay on each update.
     @StateObject private var promoOfferCacheOwner: PromoOfferCacheOwner
     @State private var hasLoggedInvalidState = false
+    /// Owns the per-impression workflow step event state machine (trace id, fire-once flags, gating).
+    /// Created in `init`, so a new presentation (new view identity) yields a fresh `traceId`, matching
+    /// Android's per-impression `workflowTraceId`. Its sequence/gating is unit tested in
+    /// `WorkflowStepEventCoordinatorTests`.
+    @State private var stepEventCoordinator: WorkflowStepEventCoordinator
     @State private var transitionState: WorkflowPageTransitionState<RenderedPage>
     @State private var activeTransitionID: UUID?
     /// Every step the user has seen, in first-seen order. Each page is kept mounted so its subtree,
@@ -261,6 +266,12 @@ struct WorkflowPaywallView: View {
             showCloseButton: displayCloseButton,
             introEligibilityChecker: introEligibilityChecker,
             packageInput: initialPackageInput
+        )
+        self._stepEventCoordinator = .init(
+            wrappedValue: WorkflowStepEventCoordinator(
+                workflow: context.workflow,
+                sink: { [purchaseHandler] event in purchaseHandler.track(event) }
+            )
         )
         self._seenPages = .init(wrappedValue: initialPage.map { [$0] } ?? [])
         self._transitionState = .init(wrappedValue: .init(currentPage: initialPage))
@@ -320,6 +331,21 @@ struct WorkflowPaywallView: View {
         // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
             self.syncExitOfferBinding()
+            self.stepEventCoordinator.trackInitialStep(
+                self.navigator.currentStep,
+                hasRenderedPage: self.transitionState.currentPage != nil
+            )
+        }
+        // Terminal `stepCompleted` is anchored here, mirroring how `paywall_close` is tracked on
+        // PaywallsV2View.onDisappear. This is the single dismissal signal that catches every path the
+        // workflow can go away — close button, post-purchase auto-dismiss, swipe-to-dismiss on a sheet,
+        // and programmatic parent dismiss — without firing during inner step transitions (the outer
+        // view stays mounted while pages swap).
+        .onDisappear {
+            self.stepEventCoordinator.trackTerminalCompletion(
+                currentStep: self.navigator.currentStep,
+                hasRenderedPage: self.transitionState.currentPage != nil
+            )
         }
         .onChangeOf(self.navigator.currentStepId) { _ in
             self.syncExitOfferBinding()
@@ -465,12 +491,19 @@ struct WorkflowPaywallView: View {
         case .dismissWorkflow:
             self.onDismiss()
         case .navigateBack:
+            let fromStep = self.navigator.currentStep
             guard let destination = self.navigator.backNavigationDestination,
                   let page = self.renderedPageForBackNavigation(stepId: destination.step.id) else {
                 return
             }
 
             self.navigator.navigateBack()
+            self.stepEventCoordinator.trackTransition(
+                from: fromStep,
+                to: destination.step,
+                renderedPageIsNil: false,
+                entryReason: .back
+            )
             self.startTransition(
                 to: page,
                 direction: .back
@@ -483,6 +516,15 @@ struct WorkflowPaywallView: View {
             for: self.context, currentStepId: self.navigator.currentStepId
         )?.exitOfferOffering
     }
+
+    // MARK: - Workflow step event tracking
+
+    // Emission state and gating (trace id, fire-once, "only if a page rendered") live in
+    // `WorkflowStepEventCoordinator`, unit tested in `WorkflowStepEventCoordinatorTests`. The view only
+    // forwards its lifecycle/navigation signals to the coordinator: initial step on `onAppear`, forward/back
+    // in the navigation handlers, and terminal completion on `onDisappear` (the single dismissal signal that
+    // catches close, post-purchase auto-dismiss, swipe-to-dismiss, and programmatic parent dismiss). The
+    // binding of those four hooks to the coordinator is verified manually in PaywallsTester.
 
     static func exitOfferContext(
         for context: WorkflowContext,
@@ -506,19 +548,29 @@ struct WorkflowPaywallView: View {
     }
 
     private func handleTriggeredNavigation(componentId: String) -> Bool {
-        guard !self.transitionState.isTransitioning,
-              let nextStep = self.navigator.triggerAction(componentId: componentId) else {
+        guard !self.transitionState.isTransitioning else {
             return false
         }
 
-        self.startTransition(
-            to: self.renderedPageForForwardNavigation(
-                stepId: nextStep.id,
-                canNavigateBack: self.navigator.canNavigateBack,
-                carryForwardPackage: self.transitionState.currentPage?.packageContext.package
-            ),
-            direction: .forward
+        // Capture the step we are leaving before triggerAction mutates the navigator.
+        let fromStep = self.navigator.currentStep
+        guard let nextStep = self.navigator.triggerAction(componentId: componentId) else {
+            return false
+        }
+
+        let page = self.renderedPageForForwardNavigation(
+            stepId: nextStep.id,
+            canNavigateBack: self.navigator.canNavigateBack,
+            carryForwardPackage: self.transitionState.currentPage?.packageContext.package
         )
+
+        self.stepEventCoordinator.trackTransition(
+            from: fromStep,
+            to: nextStep,
+            renderedPageIsNil: page == nil,
+            entryReason: .forward
+        )
+        self.startTransition(to: page, direction: .forward)
 
         return true
     }
