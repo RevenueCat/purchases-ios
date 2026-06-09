@@ -90,6 +90,139 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 2
     }
 
+    func testGetWorkflowStaleHitServesCachedValueAndRefreshesInBackground() throws {
+        // Stale-while-revalidate: a stale-but-present entry is served immediately and the cache is
+        // refreshed in the background, mirroring how `OfferingsManager` vends a stale offerings cache.
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+        let stale = try Self.workflowDataResult(id: "stale")
+        let refreshed = try Self.workflowDataResult(id: "refreshed")
+
+        // First call populates the cache with the stale value.
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .success(stale))
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == stale
+
+        // Past the 5-minute foreground TTL: the entry is now stale-but-present.
+        self.dateProvider.advance(by: 6 * 60)
+
+        var served: WorkflowDataResult?
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) {
+            served = try? $0.get()
+        }
+
+        // The caller gets the stale cached value immediately, before the background refresh lands.
+        expect(served) == stale
+        // A background refresh was issued (second backend call).
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 2
+
+        // When the background refresh completes, it updates the cache to the fresh value.
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .success(refreshed))
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == refreshed
+    }
+
+    func testGetWorkflowStaleHitDoesNotSurfaceFailingBackgroundRefresh() throws {
+        // The caller already has a usable value, so a failing background refresh is logged and
+        // swallowed, never delivered as an error, and the stale value stays cached.
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+        let stale = try Self.workflowDataResult(id: "stale")
+
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .success(stale))
+
+        self.dateProvider.advance(by: 6 * 60)
+
+        var served: WorkflowDataResult?
+        var erroredWith: BackendError?
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) {
+            switch $0 {
+            case let .success(result): served = result
+            case let .failure(error): erroredWith = error
+            }
+        }
+        expect(served) == stale
+
+        // The background refresh fails: not surfaced to the caller, and the cache keeps the stale value.
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .failure(.missingAppUserID()))
+        expect(erroredWith).to(beNil())
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == stale
+    }
+
+    func testGetWorkflowStaleHitDropsBackgroundWriteWhenCacheClearedBeforeRefreshLands() throws {
+        // The background refresh's write is guarded by the generation captured when the stale value was
+        // served. If an identity change clears the cache before the refresh lands, the write is dropped,
+        // so the previous user's (user-scoped) detail can't repopulate the new user's cache.
+        //
+        // Like the prefetch generation tests, this drives the guard directly: the true sub-statement
+        // race (a clear landing between reading the cached value and capturing the generation) is the
+        // same lock-free read window the workflows cache accepts by design and isn't deterministically
+        // reproducible here.
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+        let stale = try Self.workflowDataResult(id: "stale")
+
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .success(stale))
+
+        self.dateProvider.advance(by: 6 * 60)
+
+        // Stale hit: serves the cached value and stores the background refresh (capturing the generation).
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+
+        // Identity change clears the cache (bumping the generation) before the refresh lands.
+        self.workflowsCache.clearCache()
+
+        // The background refresh now returns the previous user's detail: its write must be dropped.
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1",
+                                                        with: .success(try Self.workflowDataResult(id: "refreshed")))
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
+    }
+
+    func testGetWorkflowStaleHitInvokesCallerCompletionExactlyOnce() throws {
+        // The caller's completion fires once (with the stale value); the background refresh receives a
+        // separate logging-only closure and never delivers to the caller again.
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+        let stale = try Self.workflowDataResult(id: "stale")
+
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .success(stale))
+
+        self.dateProvider.advance(by: 6 * 60)
+
+        var completionCount = 0
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in
+            completionCount += 1
+        }
+        expect(completionCount) == 1
+
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1",
+                                                        with: .success(try Self.workflowDataResult(id: "refreshed")))
+        expect(completionCount) == 1
+    }
+
+    func testGetWorkflowWithStaleWhileRevalidateDisabledBlocksAndDeliversFreshValue() throws {
+        // With stale-while-revalidate disabled, a stale-but-present entry must not be served: the
+        // caller blocks until the refetch lands and receives the freshly fetched value.
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+        let stale = try Self.workflowDataResult(id: "stale")
+        let refreshed = try Self.workflowDataResult(id: "refreshed")
+
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false,
+                                 staleWhileRevalidate: false) { _ in }
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .success(stale))
+
+        self.dateProvider.advance(by: 6 * 60)
+
+        var served: WorkflowDataResult?
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false,
+                                 staleWhileRevalidate: false) { served = try? $0.get() }
+
+        // Nothing delivered yet: the call blocks on the refetch instead of serving the stale value.
+        expect(served).to(beNil())
+
+        // Once the refetch lands, the caller receives the freshly fetched value.
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .success(refreshed))
+        expect(served) == refreshed
+    }
+
     func testGetWorkflowForwardsBackendError() {
         self.mockWorkflowsAPI.stubbedGetWorkflowResult = .failure(.missingAppUserID())
 
@@ -465,6 +598,29 @@ class WorkflowManagerTests: TestCase {
 
         expect(self.mockDeviceCache.cacheWorkflowDetailsCount) >= 1
         expect(self.mockDeviceCache.cachedWorkflowDetailsParameter?.keys).to(contain("wf_prefetch"))
+    }
+
+    func testPrefetchBlocksOnFetchAndPersistsFreshDetailWhenCachedButStale() throws {
+        // Seed the detail cache, then let it go stale.
+        let stale = try Self.workflowDataResult(id: "stale")
+        self.workflowsCache.cache(workflow: stale,
+                                  workflowId: "wf_a",
+                                  ifGeneration: self.workflowsCache.currentCacheGeneration())
+        self.dateProvider.advance(by: 6 * 60)
+
+        // Prefetch the same workflow. Even though it's cached-but-stale, prefetch opts out of
+        // stale-while-revalidate, so it fetches fresh and persists the fresh envelope, never the stale
+        // cached value it would otherwise serve.
+        let fresh = try Self.workflowDataResult(id: "fresh")
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_a", displayName: "A", offeringId: "off_a", prefetch: true)
+        ]))
+        self.mockWorkflowsAPI.stubbedGetWorkflowResults = ["wf_a": .success(fresh)]
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.mockDeviceCache.cachedWorkflowDetailsParameter?["wf_a"]) == fresh
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_a")) == fresh
     }
 
     func testOnDemandGetWorkflowDoesNotPersistDetailToDisk() throws {
