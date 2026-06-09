@@ -1079,6 +1079,10 @@ private extension BaseStoreKitIntegrationTests {
 
 private extension StoreKit1IntegrationTests {
 
+    /// Verifies that our test regex (`introEligibilityRequestStartedLogRegex`) actually matches the string
+    /// `description` of the HTTP request used for the `POST /get_intro_eligibility` request. This gives us a bit
+    /// more confidence that an actual HTTP request would be caught by our test, since we're testing for the absence
+    /// of the log line.
     static func verifyIntroEligibilityRequestStartedLogRegexMatchesActualLog(
         file: FileString = #file,
         line: UInt = #line
