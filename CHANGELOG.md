@@ -40,7 +40,6 @@
 #### ✨ New Features
 * [Billing Plans] Support fetching & purchasing products with billing plans (#6783) via Will Taylor (@fire-at-will)
 
-## RevenueCatUI SDK
 ### 🔄 Other Changes
 * feat(workflows): add WorkflowEvent model and wire format serialization (#6858) via Facundo Menzella (@facumenzella)
 * fix(tests): add missing iOS 14/15 snapshots for BackendGetWorkflowsListTests (#6861) via Rick (@rickvdl)
@@ -73,7 +72,6 @@
 ### 🐞 Bugfixes
 * Warm intro eligibility cache for all offerings (#6839) via Antonio Pallares (@ajpallares)
 
-## RevenueCatUI SDK
 ### 🔄 Other Changes
 * Propagate default package across workflow steps (#6790) via Facundo Menzella (@facumenzella)
 * Fix workflow paywall safe area clipping (#6816) via Facundo Menzella (@facumenzella)
