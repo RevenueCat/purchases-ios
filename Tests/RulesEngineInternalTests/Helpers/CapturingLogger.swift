@@ -8,24 +8,37 @@ import Foundation
 
 @testable import RulesEngineInternal
 
-/// Test-only logger that records every warning it receives for later
-/// assertion.
+/// Test-only logger that records warnings and `log`-channel messages
+/// separately for later assertion.
 final class CapturingLogger: RulesEngineLogger {
 
     private let lock = NSLock()
-    private var captured: [String] = []
+    private var capturedWarnings: [String] = []
+    private var capturedLogs: [String] = []
 
     init() {}
 
     var warnings: [String] {
         lock.lock()
         defer { lock.unlock() }
-        return captured
+        return capturedWarnings
     }
 
-    func warn(_ message: String, tag: String) {
+    var logs: [String] {
         lock.lock()
         defer { lock.unlock() }
-        captured.append(message)
+        return capturedLogs
+    }
+
+    func warn(_ message: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        capturedWarnings.append(message)
+    }
+
+    func log(_ message: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        capturedLogs.append(message)
     }
 }

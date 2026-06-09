@@ -69,6 +69,10 @@ struct PredicateConformanceFixtureCase: Equatable, Decodable, Identifiable, Send
     let variables: [String: Value]
     let expected: ExpectedOutcome
     let expectedWarnings: ExpectedWarnings?
+    /// The exact, ordered list of messages the `log` channel must emit. An
+    /// empty list asserts that no log message is emitted. Unlike
+    /// `expectedWarnings` (substring matching), this is a full equality check.
+    let expectedLogs: [String]?
 }
 
 enum PredicateConformanceFixtureLoader {

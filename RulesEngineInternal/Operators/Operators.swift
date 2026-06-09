@@ -95,6 +95,18 @@ enum Operators {
             return try IterationOperators.opSome(args: args, vars: vars)
         case "all":
             return try IterationOperators.opAll(args: args, vars: vars)
+        case "none":
+            return try IterationOperators.opNone(args: args, vars: vars)
+        case "map":
+            return try IterationOperators.opMap(args: args, vars: vars)
+        case "filter":
+            return try IterationOperators.opFilter(args: args, vars: vars)
+        case "reduce":
+            return try IterationOperators.opReduce(args: args, vars: vars)
+
+        // Miscellaneous
+        case "log":
+            return try MiscOperators.opLog(args: args, vars: vars)
 
         default:
             throw RuleError.unsupportedOperator(name: operatorName)

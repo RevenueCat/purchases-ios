@@ -171,6 +171,75 @@
       "predicate": { "===": [{ "if": [0, "yes"] }, null] },
       "variables": {},
       "expected": true
+    },
+    {
+      "id": "and_short_circuits_skips_log_after_falsy",
+      "description": "and stops at the first falsy operand; the trailing log never fires",
+      "predicate": { "and": [false, { "log": "unreached" }] },
+      "variables": {},
+      "expected": false,
+      "expectedLogs": []
+    },
+    {
+      "id": "and_evaluates_log_when_operand_truthy",
+      "description": "control: with no short-circuit the trailing log fires",
+      "predicate": { "and": [true, { "log": "reached" }] },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["reached"]
+    },
+    {
+      "id": "and_logs_first_then_skips_after_falsy",
+      "predicate": { "and": [{ "log": "a" }, false, { "log": "b" }] },
+      "variables": {},
+      "expected": false,
+      "expectedLogs": ["a"]
+    },
+    {
+      "id": "or_short_circuits_skips_log_after_truthy",
+      "description": "or stops at the first truthy operand; the trailing log never fires",
+      "predicate": { "or": [true, { "log": "unreached" }] },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": []
+    },
+    {
+      "id": "or_evaluates_log_when_operand_falsy",
+      "description": "control: with no short-circuit the trailing log fires",
+      "predicate": { "or": [false, { "log": "reached" }] },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["reached"]
+    },
+    {
+      "id": "if_skips_untaken_else_branch_log",
+      "predicate": { "if": [true, "yes", { "log": "else" }] },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": []
+    },
+    {
+      "id": "if_skips_untaken_then_branch_log",
+      "predicate": { "if": [false, { "log": "then" }, "else"] },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": []
+    },
+    {
+      "id": "if_evaluates_only_taken_branch_log",
+      "description": "only the taken branch is evaluated; the else log never fires",
+      "predicate": { "if": [true, { "log": "then" }, { "log": "else" }] },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["then"]
+    },
+    {
+      "id": "if_chained_skips_unreached_branch_logs",
+      "description": "neither the false branch's then-log nor the trailing else-log is reached",
+      "predicate": { "if": [false, { "log": "a" }, true, "b", { "log": "c" }] },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": []
     }
   ]
 }
