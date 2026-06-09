@@ -613,9 +613,14 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let introEligibilityPath = HTTPRequest.Path
             .getIntroEligibility(appUserID: try self.purchases.appUserID)
             .relativePath
-        self.logger.verifyMessageWasNotLogged("""
-        httpMethod=POST
-        path=\(introEligibilityPath)
+        let escapedPath = NSRegularExpression.escapedPattern(for: introEligibilityPath)
+
+        self.logger.verifyMessageWasNotLogged(regexPattern: """
+        API request started: <Request<[^>]+>: httpMethod=POST\\s+
+        path=\(escapedPath)\\s+
+        headers=.*\\s+
+        retried=false\\s+
+        >
         """)
     }
 
