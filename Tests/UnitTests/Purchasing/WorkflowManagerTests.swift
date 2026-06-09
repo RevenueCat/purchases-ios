@@ -544,6 +544,37 @@ class WorkflowManagerTests: TestCase {
         expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_a")).to(beNil())
     }
 
+    func testPrefetchInMemoryWriteIsGuardedByListGenerationNotAFreshCapture() throws {
+        // The list is fetched at generation 0 and cached. A login/logout then clears the cache
+        // (bumping the generation) *before* this prefetch's getWorkflow is issued, so it captures the
+        // already-bumped generation. The in-memory write must be guarded by the list's generation it
+        // was started with, not that fresh capture, or the previous user's (user-scoped) detail leaks
+        // into the new user's cache.
+        //
+        // This drives getWorkflow directly with the list's generation: it covers getWorkflow honoring
+        // the forwarded generation for its write. The prefetch call site forwarding that generation is
+        // verified by inspection, since the clear landing between caching the list and the prefetch's
+        // synchronous generation capture is not a window we can hit deterministically without a
+        // production-only test seam.
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+
+        let listGeneration = self.workflowsCache.currentCacheGeneration()
+
+        // Identity change clears the cache and bumps the generation before the prefetch is issued.
+        self.workflowsCache.clearCache()
+
+        self.manager.getWorkflow(appUserID: self.appUserID,
+                                 workflowId: "wf_a",
+                                 isAppBackgrounded: false,
+                                 prefetch: true,
+                                 ifGeneration: listGeneration) { _ in }
+
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_a",
+                                                        with: .success(try Self.workflowDataResult(id: "wf_a")))
+
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_a")).to(beNil())
+    }
+
     func testGetWorkflowsListDropsListAndPrefetchWhenIdentityChangesWhileListFetchInFlight() throws {
         self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
             .init(id: "wf_a", displayName: "A", offeringId: "off_a", prefetch: true)
