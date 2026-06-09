@@ -147,6 +147,130 @@ class BackendGetWorkflowTests: BaseBackendTests {
         expect(self.httpClient.calls).to(beEmpty())
     }
 
+    func testWorkflowsQueueAllowsFourConcurrentOperations() {
+        let queue = Backend.QueueProvider.createWorkflowsQueue()
+        expect(queue.maxConcurrentOperationCount) == 4
+        expect(queue.name) == "RC Workflows Queue"
+    }
+
+    func testPrefetchUsesWorkflowsQueueWhileOnDemandAndListUseSerialQueue() {
+        // Build a config whose queues we control and keep suspended, so operations pile up without
+        // executing. This lets us observe *which* queue each request lands on, deterministically.
+        // (This test only checks the routing decision; the cap behavior is exercised separately by
+        // testGetWorkflowDetailFetchesRunConcurrentlyUpToFour.)
+        self.httpClient.disableSnapshotTesting()
+
+        let serialQueue = OperationQueue()
+        serialQueue.maxConcurrentOperationCount = 1
+        serialQueue.isSuspended = true
+        let workflowsQueue = Backend.QueueProvider.createWorkflowsQueue()
+        workflowsQueue.isSuspended = true
+
+        let config = BackendConfiguration(
+            httpClient: self.httpClient,
+            operationDispatcher: self.operationDispatcher,
+            operationQueue: serialQueue,
+            diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
+            workflowsQueue: workflowsQueue,
+            systemInfo: self.systemInfo,
+            offlineCustomerInfoCreator: self.mockOfflineCustomerInfoCreator,
+            dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate)
+        )
+        let api = WorkflowsAPI(backendConfig: config)
+
+        // A prefetch detail fetch goes on the workflows queue.
+        api.getWorkflow(appUserID: Self.userID, workflowId: "wf_1", isAppBackgrounded: false, prefetch: true) { _ in }
+
+        expect(workflowsQueue.operationCount) == 1
+        expect(serialQueue.operationCount) == 0
+
+        // An on-demand detail fetch (prefetch defaults to false) stays on the serial queue.
+        api.getWorkflow(appUserID: Self.userID, workflowId: "wf_2", isAppBackgrounded: false) { _ in }
+
+        expect(workflowsQueue.operationCount) == 1
+        expect(serialQueue.operationCount) == 1
+
+        // The list fetch also stays on the serial queue.
+        api.getWorkflows(appUserID: Self.userID, isAppBackgrounded: false) { _ in }
+
+        expect(serialQueue.operationCount) == 2
+        expect(workflowsQueue.operationCount) == 1
+
+        // Drain so no operation is left un-started at teardown (NetworkOperation asserts on deinit).
+        serialQueue.isSuspended = false
+        workflowsQueue.isSuspended = false
+        expect(workflowsQueue.operationCount).toEventually(equal(0))
+        expect(serialQueue.operationCount).toEventually(equal(0))
+    }
+
+    func testGetWorkflowDetailFetchesRunConcurrentlyUpToFour() throws {
+        // Proves the property this change owns: detail fetches on the workflows queue allow up to 4
+        // concurrent CDN fetches, and no more. We fire MORE than 4 (six) so "reaches 4 and never
+        // exceeds 4" actually proves the cap rather than just the request count.
+        //
+        // Each GetWorkflowOperation holds its queue slot until its cdnFetch completion fires, so the
+        // number of cdnFetch closures simultaneously in flight equals the number of operations the
+        // queue runs concurrently. The stub below blocks on a background thread (never on main), so
+        // MockHTTPClient can keep delivering envelopes on main and the fetches genuinely overlap.
+        //
+        // Note: this observes concurrency at the injected cdnFetch seam. It does not exercise the real
+        // FileRepository / URLSession path, nor FileRepository's same-URL coalescing (the stub ignores
+        // the URL and each fetch uses a distinct workflowId).
+        self.httpClient.disableSnapshotTesting()
+
+        let workflowCount = 6
+        let cdnWorkflowData = try JSONSerialization.data(withJSONObject: Self.minimalWorkflowData)
+
+        let currentInFlight: Atomic<Int> = .init(0)
+        let maxInFlight: Atomic<Int> = .init(0)
+        // Background gate: blocked cdnFetch threads wait here. Releasing it never touches main.
+        let releaseGate = DispatchSemaphore(value: 0)
+
+        self.stubbedCdnFetch = { _, _, completion in
+            // Return immediately on the calling (main) thread; do the blocking on a background thread.
+            DispatchQueue.global(qos: .userInitiated).async {
+                let inFlight = currentInFlight.modify { value -> Int in
+                    value += 1
+                    return value
+                }
+                maxInFlight.modify { $0 = max($0, inFlight) }
+
+                releaseGate.wait()
+
+                currentInFlight.modify { $0 -= 1 }
+                completion(.success(cdnWorkflowData))
+            }
+        }
+
+        for index in 0..<workflowCount {
+            let workflowId = "wf_\(index)"
+            self.httpClient.mock(
+                requestPath: .getWorkflow(appUserID: Self.userID, workflowId: workflowId),
+                response: .init(statusCode: .success, response: Self.cdnEnvelopeResponse)
+            )
+            self.workflowsAPI.getWorkflow(
+                appUserID: Self.userID,
+                workflowId: workflowId,
+                isAppBackgrounded: false,
+                prefetch: true
+            ) { _ in }
+        }
+
+        // Parallelism + cap: with the cap-4 queue, exactly 4 fetches become in flight (more than 1 =>
+        // not serialized) and no 5th can start while those 4 hold their slots. toEventually pumps the
+        // main run loop so the queued envelopes deliver. The final maxInFlight == 4 assertion is the
+        // authoritative cap check (it's the observed peak across the whole run).
+        expect(currentInFlight.value).toEventually(equal(4), timeout: .seconds(5))
+
+        // Release everything and let the remaining operations drain.
+        for _ in 0..<workflowCount {
+            releaseGate.signal()
+        }
+
+        expect(currentInFlight.value).toEventually(equal(0), timeout: .seconds(5))
+        expect(maxInFlight.value) == 4
+    }
+
 }
 
 // MARK: - List endpoint tests
