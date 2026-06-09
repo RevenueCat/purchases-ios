@@ -80,7 +80,7 @@ class BackendErrorTests: BaseErrorTests {
         expect(error.successfullySynced) == false
     }
 
-    func testShouldFallBackToCachedOfferingsTrue() {
+    func testShouldFallBackToCacheTrue() {
         let errors = [
             error(.missingAppUserID()),
             error(.emptySubscriberAttributes()),
@@ -90,15 +90,15 @@ class BackendErrorTests: BaseErrorTests {
         ]
 
         for error in errors {
-            check(error.0.shouldFallBackToCachedOfferings,
+            check(error.0.shouldFallBackToCache,
                   condition: beTrue(),
-                  description: "Expected error's shouldFallBackToCachedOfferings to be true",
+                  description: "Expected error's shouldFallBackToCache to be true",
                   file: error.1,
                   line: error.2)
         }
     }
 
-    func testShouldFallBackToCachedOfferingsFalse() {
+    func testShouldFallBackToCacheFalse() {
         let errors = [
             error(.networkError(.errorResponse(ErrorResponse(code: .invalidAPIKey,
                                                              originalCode: BackendErrorCode.invalidAPIKey.rawValue,
@@ -107,9 +107,9 @@ class BackendErrorTests: BaseErrorTests {
         ]
 
         for error in errors {
-            check(error.0.shouldFallBackToCachedOfferings,
+            check(error.0.shouldFallBackToCache,
                   condition: beFalse(),
-                  description: "Expected error's shouldFallBackToCachedOfferings to be false",
+                  description: "Expected error's shouldFallBackToCache to be false",
                   file: error.1,
                   line: error.2)
         }

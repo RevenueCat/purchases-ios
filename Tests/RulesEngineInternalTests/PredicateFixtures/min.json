@@ -142,10 +142,12 @@
       "predicate": {
         "!=": [
           {
-            "min": [
-              1,
-              {}
-            ]
+            "log": {
+              "min": [
+                1,
+                {}
+              ]
+            }
           },
           {
             "min": [
@@ -156,7 +158,8 @@
         ]
       },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "min_operand_multi_array_is_nan",
@@ -164,13 +167,15 @@
       "predicate": {
         "!=": [
           {
-            "min": [
-              1,
-              [
+            "log": {
+              "min": [
                 1,
-                2
+                [
+                  1,
+                  2
+                ]
               ]
-            ]
+            }
           },
           {
             "min": [
@@ -184,7 +189,8 @@
         ]
       },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "min_operand_unparseable_string_is_nan",
@@ -192,10 +198,12 @@
       "predicate": {
         "!=": [
           {
-            "min": [
-              1,
-              "abc"
-            ]
+            "log": {
+              "min": [
+                1,
+                "abc"
+              ]
+            }
           },
           {
             "min": [
@@ -206,7 +214,8 @@
         ]
       },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "min_of_empty_args_is_positive_infinity",
@@ -268,8 +277,10 @@
       "predicate": {
         "!=": [
           {
-            "min": {
-              "var": "scores"
+            "log": {
+              "min": {
+                "var": "scores"
+              }
             }
           },
           {
@@ -286,7 +297,8 @@
           3
         ]
       },
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "min_nan_result_fails_closed_against_threshold",
@@ -294,16 +306,19 @@
       "predicate": {
         "<=": [
           {
-            "min": [
-              1,
-              {}
-            ]
+            "log": {
+              "min": [
+                1,
+                {}
+              ]
+            }
           },
           0
         ]
       },
       "variables": {},
-      "expected": false
+      "expected": false,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "min_empty_args_fails_closed_against_threshold",
@@ -311,13 +326,16 @@
       "predicate": {
         "<=": [
           {
-            "min": []
+            "log": {
+              "min": []
+            }
           },
           0
         ]
       },
       "variables": {},
-      "expected": false
+      "expected": false,
+      "expectedLogs": ["Infinity"]
     }
   ]
 }

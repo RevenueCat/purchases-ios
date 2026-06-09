@@ -48,16 +48,18 @@
     {
       "id": "missing_some_nan_threshold_never_satisfies",
       "description": "threshold uses raw JS >=, so >= NaN is never satisfied and the missing keys are returned; NaN is produced via division-by-zero since JSON has no NaN literal",
-      "predicate": { "==": [{ "missing_some": [{ "/": [0, 0] }, ["a", "b"]] }, "a,b"] },
+      "predicate": { "==": [{ "missing_some": [{"log": { "/": [0, 0] }}, ["a", "b"]] }, "a,b"] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "missing_some_infinite_threshold_never_satisfies",
       "description": "+Infinity clamps to Int.max so the requirement can never be met",
-      "predicate": { "==": [{ "missing_some": [{ "var": "+Infinity" }, ["a", "b"]] }, "b"] },
+      "predicate": { "==": [{ "missing_some": [{"log": { "var": "+Infinity" }}, ["a", "b"]] }, "b"] },
       "variables": { "a": 1 },
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["Infinity"]
     },
     {
       "id": "missing_some_non_numeric_string_threshold_never_satisfies",
