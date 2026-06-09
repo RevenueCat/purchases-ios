@@ -4,7 +4,8 @@
       "id": "log_is_identity_for_string",
       "predicate": { "===": [{ "log": "apple" }, "apple"] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["apple"]
     },
     {
       "id": "log_emits_string_value_to_logger",
@@ -24,25 +25,29 @@
       "id": "log_passes_through_value_in_comparison",
       "predicate": { ">": [{ "log": 5 }, 3] },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["5"]
     },
     {
       "id": "log_returns_truthy_bool_unchanged",
       "predicate": { "log": true },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["true"]
     },
     {
       "id": "log_returns_falsy_bool_unchanged",
       "predicate": { "log": false },
       "variables": {},
-      "expected": false
+      "expected": false,
+      "expectedLogs": ["false"]
     },
     {
       "id": "log_resolves_and_returns_var",
       "predicate": { "===": [{ "log": { "var": "x" } }, 42] },
       "variables": { "x": 42 },
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["42"]
     },
     {
       "id": "log_empty_args_returns_null",
