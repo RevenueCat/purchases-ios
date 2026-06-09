@@ -142,10 +142,12 @@
       "predicate": {
         "!=": [
           {
-            "max": [
-              1,
-              {}
-            ]
+            "log": {
+              "max": [
+                1,
+                {}
+              ]
+            }
           },
           {
             "max": [
@@ -156,7 +158,8 @@
         ]
       },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "max_operand_multi_array_is_nan",
@@ -164,13 +167,15 @@
       "predicate": {
         "!=": [
           {
-            "max": [
-              1,
-              [
+            "log": {
+              "max": [
                 1,
-                2
+                [
+                  1,
+                  2
+                ]
               ]
-            ]
+            }
           },
           {
             "max": [
@@ -184,7 +189,8 @@
         ]
       },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "max_operand_unparseable_string_is_nan",
@@ -192,10 +198,12 @@
       "predicate": {
         "!=": [
           {
-            "max": [
-              1,
-              "abc"
-            ]
+            "log": {
+              "max": [
+                1,
+                "abc"
+              ]
+            }
           },
           {
             "max": [
@@ -206,7 +214,8 @@
         ]
       },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "max_of_empty_args_is_negative_infinity",
@@ -244,16 +253,19 @@
       "predicate": {
         ">=": [
           {
-            "max": [
-              1,
-              {}
-            ]
+            "log": {
+              "max": [
+                1,
+                {}
+              ]
+            }
           },
           0
         ]
       },
       "variables": {},
-      "expected": false
+      "expected": false,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "max_resolves_scalar_var_operands",
@@ -285,8 +297,10 @@
       "predicate": {
         "!=": [
           {
-            "max": {
-              "var": "scores"
+            "log": {
+              "max": {
+                "var": "scores"
+              }
             }
           },
           {
@@ -303,7 +317,8 @@
           3
         ]
       },
-      "expected": true
+      "expected": true,
+      "expectedLogs": ["NaN"]
     },
     {
       "id": "max_empty_args_fails_closed_against_threshold",
@@ -311,13 +326,16 @@
       "predicate": {
         ">=": [
           {
-            "max": []
+            "log": {
+              "max": []
+            }
           },
           0
         ]
       },
       "variables": {},
-      "expected": false
+      "expected": false,
+      "expectedLogs": ["-Infinity"]
     }
   ]
 }
