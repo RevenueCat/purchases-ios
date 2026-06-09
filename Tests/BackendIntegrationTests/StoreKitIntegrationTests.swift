@@ -610,7 +610,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         _ = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
 
-        self.logger.verifyMessageWasNotLogged("API request started")
+        self.logger.verifyMessageWasNotLogged("/intro_eligibility")
     }
 
     func testEligibleForIntroBeforePurchase() async throws {
