@@ -6,6 +6,7 @@
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
+import Foundation
 import Nimble
 import OHHTTPStubs
 import OHHTTPStubsSwift
@@ -604,6 +605,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     // MARK: - Trial or Intro Eligibility tests
 
     func testTrialEligibilityMakesNoNetworkRequests() async throws {
+        try Self.verifyIntroEligibilityRequestStartedLogRegexMatchesActualLog()
         try await self.verifyReceiptIsPresentBeforeEligibilityChecking()
 
         let product = try await self.monthlyPackage.storeProduct
@@ -613,23 +615,6 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         _ = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
 
         self.logger.verifyMessageWasNotLogged(
-            regexPattern: Self.introEligibilityRequestStartedLogRegex
-        )
-    }
-
-    func testTrialEligibilityNetworkRequestMatcherCatchesBackendRequests() async throws {
-        try XCTSkipIf(
-            Self.storeKitVersion != .storeKit1,
-            "StoreKit 2 checks intro eligibility locally through StoreKit."
-        )
-
-        let product = try await self.monthlyPackage.storeProduct
-
-        self.logger.clearMessages()
-
-        _ = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
-
-        self.logger.verifyMessageWasLogged(
             regexPattern: Self.introEligibilityRequestStartedLogRegex
         )
     }
@@ -1090,4 +1075,32 @@ private extension BaseStoreKitIntegrationTests {
                      statusCode: 429,
                      headers: headers)
     }
+}
+
+private extension StoreKit1IntegrationTests {
+
+    static func verifyIntroEligibilityRequestStartedLogRegexMatchesActualLog(
+        file: FileString = #file,
+        line: UInt = #line
+    ) throws {
+        let request = HTTPRequest(
+            method: .post(EmptyRequestBody()),
+            path: .getIntroEligibility(appUserID: "test-app-user-id")
+        )
+        let message = Strings.network.api_request_started(request).description
+        let regex = try NSRegularExpression(pattern: Self.introEligibilityRequestStartedLogRegex)
+        let range = NSRange(location: 0, length: message.utf16.count)
+
+        expect(
+            file: file,
+            line: line,
+            regex.firstMatch(in: message, options: [], range: range)
+        ).toNot(
+            beNil(),
+            description: "Expected intro eligibility request matcher to match actual log: \(message)"
+        )
+    }
+
+    struct EmptyRequestBody: HTTPRequestBody {}
+
 }
