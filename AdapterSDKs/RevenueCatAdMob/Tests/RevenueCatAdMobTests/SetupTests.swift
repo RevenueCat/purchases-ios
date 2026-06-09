@@ -10,7 +10,7 @@ import GoogleMobileAds
 final class SetupTests: AdapterTestCase {
 
     private static let testToken = (
-        customData: "{\"api_key\":\"appl_test_api_key\",\"client_transaction_id\":\"txn_42\",\"impression_id\":\"imp\"}",
+        customData: "{\"client_transaction_id\":\"txn_42\"}",
         clientTransactionID: "txn_42",
         appUserID: "user_test_42"
     )
