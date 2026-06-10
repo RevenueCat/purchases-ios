@@ -16,7 +16,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         appUserID: "user_present_public_api"
     )
 
-    func testCreateUserDidEarnRewardHandlerWithoutVerificationStateInvokesOnlyStartedWhenOutcomeNil() {
+    func testCreateUserDidEarnRewardHandlerWithoutVerificationStateInvokesOnlyStartedWhenCompletedHandlerNil() {
         let fakeAd = FakeCapableAd()
         var startedCount = 0
         let handler = fakeAd.createUserDidEarnRewardHandler(
