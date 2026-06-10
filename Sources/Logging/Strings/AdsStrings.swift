@@ -28,6 +28,7 @@ enum AdsStrings {
     case poll_terminal_error(error: Error, transactionID: String)
     case poll_cancelled(transactionID: String)
     case poll_exhausted(maxAttempts: Int, transactionID: String)
+    case reward_verification_completed(outcome: String, transactionID: String)
 
 }
 
@@ -58,6 +59,8 @@ extension AdsStrings: LogMessage {
             return "Reward verification poll cancelled transactionID=\(transactionID)"
         case let .poll_exhausted(maxAttempts, transactionID):
             return "Reward verification poll exhausted \(maxAttempts) attempts transactionID=\(transactionID)"
+        case let .reward_verification_completed(outcome, transactionID):
+            return "Reward verification completed outcome=\(outcome) transactionID=\(transactionID)"
         }
     }
 

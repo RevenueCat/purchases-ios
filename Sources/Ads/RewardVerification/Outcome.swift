@@ -18,6 +18,13 @@ internal extension RewardVerification {
     enum Outcome: Sendable {
         case verified(AdReward)
         case failed(FailureReason)
+
+        var logDescription: String {
+            switch self {
+            case .verified: return "verified"
+            case .failed(let reason): return "failed(\(reason))"
+            }
+        }
     }
 
     /// Internal classification of why verification failed.
