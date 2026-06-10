@@ -12,14 +12,19 @@
 
 import Foundation
 
+/// Ties a loaded rewarded ad to its server-side reward verification
 @_spi(Experimental) public struct RewardVerificationToken: Sendable, Equatable {
 
+    /// Set as the ad network's server-side verification custom data.
     public let customData: String
 
+    /// Correlates the ad with its verification
     public let clientTransactionID: String
 
+    /// The app user the reward is attributed to; set as the ad network's SSV user identifier.
     public let appUserID: String
 
+    /// Creates a token for reward verification
     @_spi(Experimental) public init(
         customData: String,
         clientTransactionID: String,
