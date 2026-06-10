@@ -24,8 +24,34 @@ extension RulesEngine {
     @TaskLocal static var scopedLogger: RulesEngineLogger?
 
     static var logger: RulesEngineLogger {
-        scopedLogger ?? defaultLogger
+        scopedLogger ?? loggerStorage.value
     }
 
-    private static let defaultLogger: RulesEngineLogger = PrintLogger()
+    /// Replaces the module default logger. Intended to be called once during configure.
+    static func setLogger(_ logger: RulesEngineLogger) {
+        loggerStorage.value = logger
+    }
+
+    private static let loggerStorage = LoggerStorage()
+}
+
+/// Locked storage for the module default logger. A reference type so the enclosing
+/// namespace's `static let loggerStorage` can be a stored property.
+private final class LoggerStorage: @unchecked Sendable {
+
+    private let lock = NSLock()
+    private var current: RulesEngineLogger = PrintLogger()
+
+    var value: RulesEngineLogger {
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            return current
+        }
+        set {
+            lock.lock()
+            defer { lock.unlock() }
+            current = newValue
+        }
+    }
 }
