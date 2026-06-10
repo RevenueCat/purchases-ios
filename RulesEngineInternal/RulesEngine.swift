@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RulesEngineInternal.swift
+//  RulesEngine.swift
 //
 //  Created by Antonio Pallares.
 //
@@ -15,7 +15,7 @@
 import Foundation
 
 /// Namespace for the RevenueCat rules engine.
-enum RulesEngine {}
+public enum RulesEngine {}
 
 extension RulesEngine {
 
@@ -28,7 +28,7 @@ extension RulesEngine {
     }
 
     /// Replaces the module default logger. Intended to be called once during configure.
-    static func setLogger(_ logger: RulesEngineLogger) {
+    public static func setLogger(_ logger: RulesEngineLogger) {
         loggerStorage.value = logger
     }
 

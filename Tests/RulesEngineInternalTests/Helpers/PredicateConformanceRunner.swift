@@ -64,7 +64,7 @@ enum PredicateConformanceRunner {
                 Issue.record(
                     "Fixture \(fixture.id) expected error \(expectedError.kind) but succeeded"
                 )
-            } catch let error as RuleError {
+            } catch let error as RulesEngine.EvaluationError {
                 guard matchesExpected(error: error, expected: expectedError) else {
                     Issue.record(
                         "Fixture \(fixture.id) threw \(error), expected \(expectedError.kind)"
@@ -79,7 +79,7 @@ enum PredicateConformanceRunner {
         }
     }
 
-    private static func matchesExpected(error: RuleError, expected: ExpectedError) -> Bool {
+    private static func matchesExpected(error: RulesEngine.EvaluationError, expected: ExpectedError) -> Bool {
         switch expected.kind {
         case "typeMismatch":
             if case .typeMismatch = error { return true }
