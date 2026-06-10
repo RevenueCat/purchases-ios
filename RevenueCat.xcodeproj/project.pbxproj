@@ -1307,6 +1307,7 @@
 		C53CDAA4FC3E6B51CC70D724 /* WorkflowPaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800A129055A298C390AED0B5 /* WorkflowPaywallView.swift */; };
 		C808D299537245E695865C31 /* CapturingLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = E51CFC7D19BE49D2BA1A79CC /* CapturingLogger.swift */; };
 		D072B9ED04C331CA7DF878A5 /* PredicateFixtureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68E47E21986D2C234ADB62E8 /* PredicateFixtureTests.swift */; };
+		A153288D312E5729B0305553 /* RulesEngineEvaluateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D8E14F3E2F79FAC1C2FA0 /* RulesEngineEvaluateTests.swift */; };
 		D0DA209A2F23BBEC00BA3B77 /* AdEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DA20992F23BBEC00BA3B77 /* AdEventTests.swift */; };
 		D14C62206D7248D080480FCB /* WorkflowsListCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3752A4A3D77644C8B4BDD44D /* WorkflowsListCallback.swift */; };
 		D62A9C83BFD14E5FA0452CC7 /* RemoteConfigResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = E35BAD07C46D469D8CC7C396 /* RemoteConfigResponse.swift */; };
@@ -1342,7 +1343,7 @@
 		E1C0A004BEEF0001CCDD0001 /* HeaderComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C0A009BEEF0001CCDD0001 /* HeaderComponentTests.swift */; };
 		E1C0A005BEEF0001CCDD0001 /* PaywallComponentsConfigHeaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C0A00ABEEF0001CCDD0001 /* PaywallComponentsConfigHeaderTests.swift */; };
 		E2491F2CE20A7B61221261F8 /* RulesEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 709B11FAA2FC6B4929062F25 /* RulesEngine.swift */; };
-		E2F56460594ACBED2AD3DE7B /* RuleError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1B03A2D59CC0822C02186A /* RuleError.swift */; };
+		E2F56460594ACBED2AD3DE7B /* EvaluationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1B03A2D59CC0822C02186A /* EvaluationError.swift */; };
 		E362B0B039CA151D4FEB944F /* ArithmeticOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A71219F92AF8FC83FA7CB /* ArithmeticOperators.swift */; };
 		E5DCF3F2EB33F0C02C79BEEF /* AccessorOperatorsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49121C11022272A08D75B4E /* AccessorOperatorsTests.swift */; };
 		E6A54710537E4AA3810E1CB0 /* BackendGetRemoteConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96BC3A5229194DFB9653FC8C /* BackendGetRemoteConfigTests.swift */; };
@@ -2531,6 +2532,7 @@
 		60BA9A763EB70A332E2C63CE /* PredicateConformanceFixture.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PredicateConformanceFixture.swift; sourceTree = "<group>"; };
 		65279ABC122869A50AEB8A27 /* ExitOffer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExitOffer.swift; sourceTree = "<group>"; };
 		68E47E21986D2C234ADB62E8 /* PredicateFixtureTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PredicateFixtureTests.swift; sourceTree = "<group>"; };
+		645D8E14F3E2F79FAC1C2FA0 /* RulesEngineEvaluateTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RulesEngineEvaluateTests.swift; sourceTree = "<group>"; };
 		6A10AD61D82EB73FC5338DA2 /* WorkflowNavigator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowNavigator.swift; sourceTree = "<group>"; };
 		5E8F7749E65DE2FD7FDCB105 /* WorkflowStepEventTracker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowStepEventTracker.swift; sourceTree = "<group>"; };
 		323A476D8518423CBF843BE1 /* WorkflowStepEventCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowStepEventCoordinator.swift; sourceTree = "<group>"; };
@@ -2607,7 +2609,7 @@
 		77BA1AB22CCBB6EE009BF0EA /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		78B1498BA2288B4643B248A5 /* PurchasesWorkflowTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PurchasesWorkflowTests.swift; sourceTree = "<group>"; };
 		7AA86A1D9F5AE92988B20230 /* WorkflowContextTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowContextTests.swift; sourceTree = "<group>"; };
-		7F1B03A2D59CC0822C02186A /* RuleError.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RuleError.swift; sourceTree = "<group>"; };
+		7F1B03A2D59CC0822C02186A /* EvaluationError.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationError.swift; sourceTree = "<group>"; };
 		800A129055A298C390AED0B5 /* WorkflowPaywallView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowPaywallView.swift; sourceTree = "<group>"; };
 		806797F92FCD96CD00DF760F /* PaywallScrollEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallScrollEnvironment.swift; sourceTree = "<group>"; };
 		806797FD2FCD970800DF760F /* PaywallZLayerScrollPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallZLayerScrollPolicy.swift; sourceTree = "<group>"; };
@@ -5424,7 +5426,7 @@
 			children = (
 				709B11FAA2FC6B4929062F25 /* RulesEngine.swift */,
 				9AA7D8F9033399B294E4D4DB /* Logger.swift */,
-				7F1B03A2D59CC0822C02186A /* RuleError.swift */,
+				7F1B03A2D59CC0822C02186A /* EvaluationError.swift */,
 				9E174FCB9B889D4CACED0088 /* Value.swift */,
 				B78483ACCDD62ABD40AF8827 /* Evaluator.swift */,
 				52A005616C6071F856DCB16D /* Operators */,
@@ -6095,6 +6097,7 @@
 				B49121C11022272A08D75B4E /* AccessorOperatorsTests.swift */,
 				9F576269BC7130E5B553FB5A /* StringArrayOperatorsTests.swift */,
 				68E47E21986D2C234ADB62E8 /* PredicateFixtureTests.swift */,
+				645D8E14F3E2F79FAC1C2FA0 /* RulesEngineEvaluateTests.swift */,
 			);
 			name = RulesEngineInternalTests;
 			path = Tests/RulesEngineInternalTests;
@@ -8266,6 +8269,7 @@
 				14F919D98087F5045070FBB5 /* PredicateConformanceRunner.swift in Sources */,
 				7F7F7B1E66E1D8705F06DE51 /* Value+Decodable.swift in Sources */,
 				D072B9ED04C331CA7DF878A5 /* PredicateFixtureTests.swift in Sources */,
+				A153288D312E5729B0305553 /* RulesEngineEvaluateTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8303,7 +8307,7 @@
 			files = (
 				E2491F2CE20A7B61221261F8 /* RulesEngine.swift in Sources */,
 				539627EBC920B8E3832BEE5F /* Logger.swift in Sources */,
-				E2F56460594ACBED2AD3DE7B /* RuleError.swift in Sources */,
+				E2F56460594ACBED2AD3DE7B /* EvaluationError.swift in Sources */,
 				D6448E7C2A4EB4195275CD5C /* Value.swift in Sources */,
 				3DD6C3CC5EC6B69E9DA9571D /* Evaluator.swift in Sources */,
 				2A4BD4BADFA187EA13B7D6CD /* Operators.swift in Sources */,
