@@ -19,10 +19,15 @@ enum RulesEngine {}
 
 extension RulesEngine {
 
+    /// Per-task override used by tests and scoped diagnostic callers.
+    /// When `nil`, logging falls through to the module default.
+    @TaskLocal static var scopedLogger: RulesEngineLogger?
+
     static var logger: RulesEngineLogger {
-        loggerStorage.value
+        scopedLogger ?? loggerStorage.value
     }
 
+    /// Replaces the module default logger. Intended to be called once during configure.
     static func setLogger(_ logger: RulesEngineLogger) {
         loggerStorage.value = logger
     }
@@ -30,9 +35,9 @@ extension RulesEngine {
     private static let loggerStorage = LoggerStorage()
 }
 
-/// Locked storage for `RulesEngine.logger`. A reference type so the enclosing
+/// Locked storage for the module default logger. A reference type so the enclosing
 /// namespace's `static let loggerStorage` can be a stored property.
-private final class LoggerStorage {
+private final class LoggerStorage: @unchecked Sendable {
 
     private let lock = NSLock()
     private var current: RulesEngineLogger = PrintLogger()

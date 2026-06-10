@@ -32,15 +32,14 @@ enum PredicateConformanceRunner {
     static func run(_ fixture: PredicateConformanceFixtureCase) throws {
         if fixture.expectedWarnings != nil || fixture.expectedLogs != nil {
             let logger = CapturingLogger()
-            let previousLogger = RulesEngine.logger
-            RulesEngine.setLogger(logger)
-            defer { RulesEngine.setLogger(previousLogger) }
-            try assertExpectedOutcome(fixture: fixture)
-            if let expectedWarnings = fixture.expectedWarnings {
-                assertWarnings(logger: logger, expected: expectedWarnings, fixtureID: fixture.id)
-            }
-            if let expectedLogs = fixture.expectedLogs {
-                assertLogs(logger: logger, expected: expectedLogs, fixtureID: fixture.id)
+            try RulesEngine.$scopedLogger.withValue(logger) {
+                try assertExpectedOutcome(fixture: fixture)
+                if let expectedWarnings = fixture.expectedWarnings {
+                    assertWarnings(logger: logger, expected: expectedWarnings, fixtureID: fixture.id)
+                }
+                if let expectedLogs = fixture.expectedLogs {
+                    assertLogs(logger: logger, expected: expectedLogs, fixtureID: fixture.id)
+                }
             }
         } else {
             try assertExpectedOutcome(fixture: fixture)
