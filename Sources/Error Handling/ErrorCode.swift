@@ -49,6 +49,8 @@ import Foundation
     @objc(RCTestStoreSimulatedPurchaseError) case testStoreSimulatedPurchaseError = 42
 }
 
+extension ErrorCode: CaseIterable {}
+
 extension ErrorCode {
     public var description: String {
         switch self {
@@ -230,8 +232,6 @@ extension ErrorCode {
         }
     }
 }
-
-extension ErrorCode: CaseIterable {}
 
 extension ErrorCode: CustomNSError {
 
