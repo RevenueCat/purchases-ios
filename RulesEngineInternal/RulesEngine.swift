@@ -28,7 +28,7 @@ extension RulesEngine {
     }
 
     /// Replaces the module default logger. Intended to be called once during configure.
-    static func setLogger(_ logger: RulesEngineLogger) {
+    public static func setLogger(_ logger: RulesEngineLogger) {
         loggerStorage.value = logger
     }
 
