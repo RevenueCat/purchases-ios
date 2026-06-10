@@ -4,41 +4,56 @@
 //  Created by Antonio Pallares.
 //
 
-import XCTest
+// Swift Testing is only available with the Xcode 16+ toolchain
+#if compiler(>=5.9)
+#if canImport(Testing)
+
+import Testing
 
 @testable import RulesEngineInternal
 
-final class RulesEngineEvaluateTests: XCTestCase {
+@Suite("RulesEngine.evaluate")
+struct RulesEngineEvaluateTests {
 
-    func testEvaluatesTruthyPredicate() {
+    @Test
+    func evaluatesTruthyPredicate() throws {
         let result = RulesEngine.evaluate(predicate: "true", variables: [:])
-        XCTAssertEqual(try result.get(), true)
+        #expect(try result.get() == true)
     }
 
-    func testEvaluatesFalsyPredicate() {
+    @Test
+    func evaluatesFalsyPredicate() throws {
         let result = RulesEngine.evaluate(predicate: "false", variables: [:])
-        XCTAssertEqual(try result.get(), false)
+        #expect(try result.get() == false)
     }
 
-    func testEvaluatesPredicateAgainstVariables() {
+    @Test
+    func evaluatesPredicateAgainstVariables() throws {
         let result = RulesEngine.evaluate(
             predicate: #"{"==":[{"var":"x"},1]}"#,
             variables: ["x": .int(1)]
         )
-        XCTAssertEqual(try result.get(), true)
+        #expect(try result.get() == true)
     }
 
-    func testMalformedJSONReturnsParseFailure() {
+    @Test
+    func malformedJSONReturnsParseFailure() {
         let result = RulesEngine.evaluate(predicate: "{not json", variables: [:])
         guard case .failure(.parse) = result else {
-            return XCTFail("expected .failure(.parse), got \(result)")
+            Issue.record("expected .failure(.parse), got \(result)")
+            return
         }
     }
 
-    func testUnsupportedOperatorReturnsFailure() {
+    @Test
+    func unsupportedOperatorReturnsFailure() {
         let result = RulesEngine.evaluate(predicate: #"{"nope":[]}"#, variables: [:])
         guard case .failure(.unsupportedOperator) = result else {
-            return XCTFail("expected .failure(.unsupportedOperator), got \(result)")
+            Issue.record("expected .failure(.unsupportedOperator), got \(result)")
+            return
         }
     }
 }
+
+#endif
+#endif
