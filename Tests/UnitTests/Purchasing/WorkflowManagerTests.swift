@@ -307,6 +307,27 @@ class WorkflowManagerTests: TestCase {
         expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
     }
 
+    func testGetWorkflowDoesNotFallBackToDiskOnNonNetworkError() throws {
+        // A non-network error (e.g. a missing app user ID) is a configuration/identity failure, not a
+        // transient backend outage, so the persisted (user-targeted) copy must not be served even
+        // though one exists on disk. The original error surfaces instead.
+        self.mockDeviceCache.stubbedCachedWorkflowDetails = ["wf_1": try Self.workflowDataResult(id: "wf_1")]
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .failure(.missingAppUserID())
+
+        var served: WorkflowDataResult?
+        var erroredWith: BackendError?
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) {
+            switch $0 {
+            case let .success(result): served = result
+            case let .failure(error): erroredWith = error
+            }
+        }
+
+        expect(served).to(beNil())
+        expect(erroredWith).toNot(beNil())
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
+    }
+
     func testGetWorkflowStaleHitRePinsFromDiskWhenBackgroundRefreshFails() throws {
         // Stale-while-revalidate: a fallback-eligible background-refresh failure recovers the persisted
         // detail and re-stamps the cache fresh, mirroring `OfferingsManager`'s disk fallback. The disk

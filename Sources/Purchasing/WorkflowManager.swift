@@ -136,21 +136,27 @@ class WorkflowManager {
         }
     }
 
-    /// Resolves a workflow fetch failure with the same cache-fallback policy offerings and the
-    /// workflows list use, gated on ``BackendError/shouldFallBackToCache``. A 4xx is the backend
-    /// authoritatively rejecting the request, so the persisted copy is not served; a transient error
-    /// (transport / 5xx / malformed body) recovers the last persisted detail when one exists. Shared by
-    /// the blocking miss path and the stale-while-revalidate background refresh.
+    /// Resolves a workflow fetch failure with a disk-recovery policy modeled on offerings and the
+    /// workflows list. Only a transient network failure (transport / 5xx / malformed body) recovers the
+    /// last persisted detail; a 4xx (the backend authoritatively rejecting the request) or a
+    /// non-network error (e.g. a missing app user ID, a configuration/identity failure) surfaces the
+    /// error instead of serving the persisted, user-targeted copy. Shared by the blocking miss path and
+    /// the stale-while-revalidate background refresh.
     private func handleWorkflowFetchFailure(
         _ error: BackendError,
         workflowId: String,
         ifGeneration generation: Int,
         completion: @escaping (Result<WorkflowDataResult, BackendError>) -> Void
     ) {
-        guard error.shouldFallBackToCache else {
-            // 4xx: the server intentionally changed/removed this workflow, so don't serve the persisted
-            // copy. Invalidate the in-memory entry so the next call retries rather than serving a still-
-            // cached value, mirroring the list's 4xx gate and offerings' `forceCacheStale`.
+        // Gate on the underlying ``NetworkError`` rather than ``BackendError/shouldFallBackToCache``,
+        // which is `true` for every non-network case: a config/identity error like `missingAppUserID`
+        // is not transient and must not serve persisted data. The fallback-eligible statuses (transport
+        // / 5xx / malformed body) are all `.networkError` cases, matching the Android port, which only
+        // falls back on those.
+        guard case .networkError(let networkError) = error, networkError.shouldFallBackToCache else {
+            // 4xx or non-network error: don't serve the persisted copy. Invalidate the in-memory entry
+            // so the next call retries rather than serving a still-cached value, mirroring the list's
+            // 4xx gate and offerings' `forceCacheStale`.
             self.workflowsCache.invalidateWorkflowTimestamp(workflowId: workflowId)
             completion(.failure(error))
             return
