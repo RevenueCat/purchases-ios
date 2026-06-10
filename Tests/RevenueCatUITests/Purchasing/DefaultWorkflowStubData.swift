@@ -22,10 +22,15 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum DefaultWorkflowStubData {
 
-    /// A single-step workflow whose initial screen wraps `offering`.
+    /// A single-step workflow whose initial screen wraps `offering`. The screen mirrors the offering's
+    /// paywall revision so the rendered paywall reports it in tracked events, the same way the backend
+    /// stamps a revision on the workflow screen wrapping that paywall.
     static func workflow(wrapping offering: Offering) -> WorkflowDataResult {
         // swiftlint:disable:next force_try
-        return try! Self.decodeWorkflow(offeringIdentifier: offering.identifier)
+        return try! Self.decodeWorkflow(
+            offeringIdentifier: offering.identifier,
+            revision: offering.paywall?.revision ?? 0
+        )
     }
 
     /// An `Offerings` bundle containing `offering`, so the workflow screen's offering resolves.
@@ -49,7 +54,7 @@ enum DefaultWorkflowStubData {
         )
     }
 
-    private static func decodeWorkflow(offeringIdentifier: String) throws -> WorkflowDataResult {
+    private static func decodeWorkflow(offeringIdentifier: String, revision: Int) throws -> WorkflowDataResult {
         let json = """
         {
           "id": "wf_default",
@@ -84,6 +89,7 @@ enum DefaultWorkflowStubData {
                   }
                 }
               },
+              "revision": \(revision),
               "offering_identifier": "\(offeringIdentifier)"
             }
           },
