@@ -7,13 +7,12 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ErrorCode.swift — DO NOT EDIT — generated from errorcodes.yaml
+//  ErrorCode.swift — DO NOT EDIT — generated from https://github.com/RevenueCat/purchases-error-codes
 //
 // swiftlint:disable line_length missing_docs
 
 import Foundation
 
-// swiftlint:disable:next no_new_public_enums
 @objc(RCPurchasesErrorCode) public enum ErrorCode: Int, Error {
     @objc(RCUnknownError) case unknownError = 0
     @objc(RCPurchaseCancelledError) case purchaseCancelledError = 1
@@ -61,7 +60,7 @@ import Foundation
 
 extension ErrorCode: CaseIterable {}
 
-extension ErrorCode {
+extension ErrorCode: CustomStringConvertible {
     public var description: String {
         switch self {
         case .unknownError:
@@ -255,4 +254,3 @@ extension ErrorCode: CustomNSError {
 
 }
 
-extension ErrorCode: DescribableError {}
