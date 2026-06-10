@@ -34,22 +34,77 @@ class WorkflowManager {
         self.operationDispatcher = operationDispatcher
     }
 
-    /// Resolves a workflow, serving a fresh cached result without a backend round-trip when possible.
-    /// On a cache miss (or stale entry) it fetches from the backend, caches the result in memory, and
-    /// warms up its assets before delivering it. Disk persistence of prefetched details is handled by
-    /// ``prefetchWorkflows(_:appUserID:isAppBackgrounded:onComplete:)``, not here.
+    /// Resolves a workflow using stale-while-revalidate, mirroring how ``OfferingsManager`` vends
+    /// offerings: a fresh cache hit is served directly; a stale-but-present hit is served immediately
+    /// and the cache is refreshed in the background (no callbacks, failures logged); a miss fetches
+    /// from the backend, caches the result, warms its assets, and delivers the outcome.
+    ///
+    /// - Parameter staleWhileRevalidate: when `true` (the default, used by the on-demand render path),
+    ///   a stale-but-present cached workflow is served immediately with a background refresh. When
+    ///   `false` (the prefetch path), a stale workflow blocks on a full refetch instead, so prefetch
+    ///   keeps forcing a fresh fetch and persisting its envelope rather than serving a stale value.
+    ///
+    /// Disk persistence of prefetched details is handled by
+    /// ``prefetchWorkflows(_:appUserID:isAppBackgrounded:generation:onComplete:)``, not here.
     func getWorkflow(appUserID: String,
                      workflowId: String,
                      isAppBackgrounded: Bool,
                      prefetch: Bool = false,
                      ifGeneration generation: Int? = nil,
+                     staleWhileRevalidate: Bool = true,
                      completion: @escaping (Result<WorkflowDataResult, BackendError>) -> Void) {
-        if let cached = self.workflowsCache.cachedWorkflow(workflowId: workflowId),
+        let cached = self.workflowsCache.cachedWorkflow(workflowId: workflowId)
+        if let cached,
            !self.workflowsCache.isWorkflowCacheStale(workflowId: workflowId, isAppBackgrounded: isAppBackgrounded) {
             completion(.success(cached))
             return
         }
 
+        if let cached, staleWhileRevalidate {
+            // Serve the stale value immediately, then refresh the cache in the background. The caller
+            // already has a usable value, so the refresh delivers no result: a success only updates the
+            // cache, a failure is logged and swallowed. Mirrors `OfferingsManager`'s stale offerings
+            // path. Concurrent stale callers each call this, but their network requests are coalesced
+            // by `WorkflowsAPI`'s callback cache (keyed by the request), so only one fetch fires.
+            //
+            // Capture the refresh's guarding generation *before* serving, so it reflects the generation
+            // observed at serve time rather than after `completion` runs. The background write is then
+            // dropped if a `clearCache()` (login/logout) bumps the generation before the response lands,
+            // exactly like the blocking path binds its write to the generation at fetch-issue time.
+            let refreshGeneration = generation ?? self.workflowsCache.currentCacheGeneration()
+            completion(.success(cached))
+            self.fetchAndCacheWorkflow(appUserID: appUserID,
+                                       workflowId: workflowId,
+                                       isAppBackgrounded: isAppBackgrounded,
+                                       prefetch: prefetch,
+                                       ifGeneration: refreshGeneration) { result in
+                if case let .failure(error) = result {
+                    Logger.error(Strings.paywalls.error_refreshing_workflow(workflowId: workflowId, error: error))
+                }
+            }
+            return
+        }
+
+        // Miss, or stale with stale-while-revalidate disabled (the prefetch path): block on the fetch.
+        self.fetchAndCacheWorkflow(appUserID: appUserID,
+                                   workflowId: workflowId,
+                                   isAppBackgrounded: isAppBackgrounded,
+                                   prefetch: prefetch,
+                                   ifGeneration: generation,
+                                   completion: completion)
+    }
+
+    /// Fetches a workflow from the backend, caches the result in memory (guarded by `generation`), and
+    /// warms its assets before delivering the outcome. Shared by the blocking miss path and the
+    /// stale-while-revalidate background refresh.
+    private func fetchAndCacheWorkflow(
+        appUserID: String,
+        workflowId: String,
+        isAppBackgrounded: Bool,
+        prefetch: Bool = false,
+        ifGeneration generation: Int? = nil,
+        completion: @escaping (Result<WorkflowDataResult, BackendError>) -> Void
+    ) {
         // The generation guarding the in-memory write: prefetch forwards the generation captured when
         // the list fetch was issued (`generation`), so a clear landing between caching the list and
         // issuing this prefetch still drops the write. On-demand callers pass `nil` and capture it
@@ -220,7 +275,8 @@ private extension WorkflowManager {
                              workflowId: summary.id,
                              isAppBackgrounded: isAppBackgrounded,
                              prefetch: true,
-                             ifGeneration: generation) { result in
+                             ifGeneration: generation,
+                             staleWhileRevalidate: false) { result in
                 if case let .success(dataResult) = result {
                     resolved.modify { $0[summary.id] = dataResult }
                 }
