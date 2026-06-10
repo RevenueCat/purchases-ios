@@ -20,14 +20,13 @@ extension Value {
         guard let data = input.data(using: .utf8) else {
             throw RulesEngine.EvaluationError.parse(message: "non-UTF8 input")
         }
+        let json: Any
         do {
-            let json = try JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])
-            return try Value.fromJSONObject(json)
-        } catch let error as RulesEngine.EvaluationError {
-            throw error
+            json = try JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])
         } catch {
             throw RulesEngine.EvaluationError.parse(message: error.localizedDescription)
         }
+        return try Value.fromJSONObject(json)
     }
 
     /// Recursively convert a value produced by `JSONSerialization` (the
