@@ -1344,6 +1344,7 @@
 		E1C0A005BEEF0001CCDD0001 /* PaywallComponentsConfigHeaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C0A00ABEEF0001CCDD0001 /* PaywallComponentsConfigHeaderTests.swift */; };
 		E2491F2CE20A7B61221261F8 /* RulesEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 709B11FAA2FC6B4929062F25 /* RulesEngine.swift */; };
 		E2F56460594ACBED2AD3DE7B /* EvaluationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1B03A2D59CC0822C02186A /* EvaluationError.swift */; };
+		B1C8D98ABB42A16D304C4AB9 /* RulesEngineEvaluate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0DA22F713FAE8939275417 /* RulesEngineEvaluate.swift */; };
 		E362B0B039CA151D4FEB944F /* ArithmeticOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A71219F92AF8FC83FA7CB /* ArithmeticOperators.swift */; };
 		E5DCF3F2EB33F0C02C79BEEF /* AccessorOperatorsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49121C11022272A08D75B4E /* AccessorOperatorsTests.swift */; };
 		E6A54710537E4AA3810E1CB0 /* BackendGetRemoteConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96BC3A5229194DFB9653FC8C /* BackendGetRemoteConfigTests.swift */; };
@@ -2610,6 +2611,7 @@
 		78B1498BA2288B4643B248A5 /* PurchasesWorkflowTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PurchasesWorkflowTests.swift; sourceTree = "<group>"; };
 		7AA86A1D9F5AE92988B20230 /* WorkflowContextTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowContextTests.swift; sourceTree = "<group>"; };
 		7F1B03A2D59CC0822C02186A /* EvaluationError.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationError.swift; sourceTree = "<group>"; };
+		BF0DA22F713FAE8939275417 /* RulesEngineEvaluate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RulesEngineEvaluate.swift; sourceTree = "<group>"; };
 		800A129055A298C390AED0B5 /* WorkflowPaywallView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowPaywallView.swift; sourceTree = "<group>"; };
 		806797F92FCD96CD00DF760F /* PaywallScrollEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallScrollEnvironment.swift; sourceTree = "<group>"; };
 		806797FD2FCD970800DF760F /* PaywallZLayerScrollPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallZLayerScrollPolicy.swift; sourceTree = "<group>"; };
@@ -5425,9 +5427,11 @@
 			isa = PBXGroup;
 			children = (
 				709B11FAA2FC6B4929062F25 /* RulesEngine.swift */,
+				BF0DA22F713FAE8939275417 /* RulesEngineEvaluate.swift */,
 				9AA7D8F9033399B294E4D4DB /* Logger.swift */,
 				7F1B03A2D59CC0822C02186A /* EvaluationError.swift */,
 				9E174FCB9B889D4CACED0088 /* Value.swift */,
+				B72848B4B4D101F1B94E228E /* Value+JSON.swift */,
 				B78483ACCDD62ABD40AF8827 /* Evaluator.swift */,
 				52A005616C6071F856DCB16D /* Operators */,
 			);
@@ -6415,7 +6419,6 @@
 		C8DCF151EC9AE3E621BDE5A6 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
-				B72848B4B4D101F1B94E228E /* Value+JSON.swift */,
 				E51CFC7D19BE49D2BA1A79CC /* CapturingLogger.swift */,
 				60BA9A763EB70A332E2C63CE /* PredicateConformanceFixture.swift */,
 				D794960D6EA8C55B44471D40 /* PredicateConformanceRunner.swift */,
@@ -8259,7 +8262,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC6FC62BD17B7DB03A096C2A /* Value+JSON.swift in Sources */,
 				C808D299537245E695865C31 /* CapturingLogger.swift in Sources */,
 				AAAA22A18C52C28D5AB90B6D /* ValueTests.swift in Sources */,
 				6651B707B8702C9AD4A64E92 /* EvaluatorTests.swift in Sources */,
@@ -8306,9 +8308,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				E2491F2CE20A7B61221261F8 /* RulesEngine.swift in Sources */,
+				B1C8D98ABB42A16D304C4AB9 /* RulesEngineEvaluate.swift in Sources */,
 				539627EBC920B8E3832BEE5F /* Logger.swift in Sources */,
 				E2F56460594ACBED2AD3DE7B /* EvaluationError.swift in Sources */,
 				D6448E7C2A4EB4195275CD5C /* Value.swift in Sources */,
+				DC6FC62BD17B7DB03A096C2A /* Value+JSON.swift in Sources */,
 				3DD6C3CC5EC6B69E9DA9571D /* Evaluator.swift in Sources */,
 				2A4BD4BADFA187EA13B7D6CD /* Operators.swift in Sources */,
 				6F181EF4073AECF5566B5B1E /* AccessorOperators.swift in Sources */,
