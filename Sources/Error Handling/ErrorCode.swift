@@ -4,7 +4,7 @@
 import Foundation
 
 // swiftlint:disable:next no_new_public_enums
-@objc(RCPurchasesErrorCode) public enum ErrorCode: Int, Error, CaseIterable {
+@objc(RCPurchasesErrorCode) public enum ErrorCode: Int, Error {
     @objc(RCUnknownError) case unknownError = 0
     @objc(RCPurchaseCancelledError) case purchaseCancelledError = 1
     @objc(RCStoreProblemError) case storeProblemError = 2
@@ -229,4 +229,18 @@ extension ErrorCode {
             return "TEST_STORE_SIMULATED_PURCHASE_ERROR"
         }
     }
+}
+
+extension ErrorCode: CaseIterable {}
+
+extension ErrorCode: CustomNSError {
+
+    // swiftlint:disable:next missing_docs
+    public var errorUserInfo: [String: Any] {
+        return [
+            NSDebugDescriptionErrorKey: self.description,
+            "rc_code_name": self.codeName
+        ]
+    }
+
 }
