@@ -178,7 +178,6 @@ extension UIView {
   func asImage() -> UIImage {
     let format = UIGraphicsImageRendererFormat()
     format.preferredRange = .standard // Ensures 8-bit sRGB, even on Mac Catalyst where the default is Generic RGB
-    // Explicitly sets the scale instead of inheriting the simulator's.
     format.scale = 3
 
     let renderer = UIGraphicsImageRenderer(bounds: bounds, format: format)
