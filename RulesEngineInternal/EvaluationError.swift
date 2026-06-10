@@ -23,8 +23,7 @@ extension RulesEngine {
         case typeMismatch(message: String)
 
         /// The predicate references a JSON Logic operator the engine does not
-        /// implement. Carries the operator name so callers can decide policy
-        /// (default-deny, log, etc.).
+        /// implement. Carries the operator name.
         case unsupportedOperator(name: String)
 
         /// An unexpected error that is not one of the structured cases above.
