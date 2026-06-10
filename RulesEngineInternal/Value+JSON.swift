@@ -31,9 +31,8 @@ extension Value {
 
     /// Recursively convert a value produced by `JSONSerialization` (the
     /// `Any` is one of `NSNull`, `NSNumber`, `String`, `[Any]`, or
-    /// `[String: Any]`). Throws `RulesEngine.EvaluationError.parse` if it encounters anything
-    /// else — better to fail loudly than to silently coerce unknown
-    /// Foundation types (`Date`, `NSValue`, …) to `.null`.
+    /// `[String: Any]`). Throws `RulesEngine.EvaluationError.parse` if it
+    /// encounters anything else.
     static func fromJSONObject(_ object: Any) throws -> Value {
         if object is NSNull {
             return .null
