@@ -120,14 +120,57 @@ class WorkflowManager {
                 completion(result)
                 return
             }
-            if case let .success(dataResult) = result {
+            switch result {
+            case let .success(dataResult):
                 self.workflowsCache.cache(workflow: dataResult,
                                           workflowId: workflowId,
                                           ifGeneration: writeGeneration)
                 self.warmUpAssets(for: dataResult)
+                completion(.success(dataResult))
+            case let .failure(error):
+                self.handleWorkflowFetchFailure(error,
+                                                workflowId: workflowId,
+                                                ifGeneration: writeGeneration,
+                                                completion: completion)
             }
-            completion(result)
         }
+    }
+
+    /// Resolves a workflow fetch failure with the same cache-fallback policy offerings and the
+    /// workflows list use, gated on ``BackendError/shouldFallBackToCache``. A 4xx is the backend
+    /// authoritatively rejecting the request, so the persisted copy is not served; a transient error
+    /// (transport / 5xx / malformed body) recovers the last persisted detail when one exists. Shared by
+    /// the blocking miss path and the stale-while-revalidate background refresh.
+    private func handleWorkflowFetchFailure(
+        _ error: BackendError,
+        workflowId: String,
+        ifGeneration generation: Int,
+        completion: @escaping (Result<WorkflowDataResult, BackendError>) -> Void
+    ) {
+        guard error.shouldFallBackToCache else {
+            // 4xx: the server intentionally changed/removed this workflow, so don't serve the persisted
+            // copy. Invalidate the in-memory entry so the next call retries rather than serving a still-
+            // cached value, mirroring the list's 4xx gate and offerings' `forceCacheStale`.
+            self.workflowsCache.invalidateWorkflowTimestamp(workflowId: workflowId)
+            completion(.failure(error))
+            return
+        }
+
+        // Transport error / 5xx / malformed body: the backend is unavailable, not refusing. Recover the
+        // last persisted detail if we have one, matching offerings' disk fallback. The recovered result
+        // was already asset-warmed when first persisted (and `restoreWorkflowDetailsFromDisk` likewise
+        // doesn't re-warm), so we don't warm it again here.
+        guard let cached = self.workflowsCache.cachedWorkflowDetailFromDisk(workflowId: workflowId) else {
+            // Nothing on disk to recover: invalidate so the next call retries, and surface the original
+            // error so the caller is never left without a response.
+            self.workflowsCache.invalidateWorkflowTimestamp(workflowId: workflowId)
+            completion(.failure(error))
+            return
+        }
+        // Re-cache in memory (which re-stamps it fresh), guarded by the same generation as the fetch so a
+        // clear landing mid-flight still drops the write, then deliver the recovered value.
+        self.workflowsCache.cache(workflow: cached, workflowId: workflowId, ifGeneration: generation)
+        completion(.success(cached))
     }
 
     /// Fetches the workflows list, persists it, then prefetches every entry flagged `prefetch == true`.

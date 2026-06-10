@@ -84,6 +84,20 @@ final class WorkflowsCache {
         }
     }
 
+    /// Marks `workflowId`'s in-memory detail entry stale so the next
+    /// ``isWorkflowCacheStale(workflowId:isAppBackgrounded:)`` reports it stale and a subsequent fetch
+    /// retries rather than serving the still-cached value. The
+    /// per-workflow analogue of ``forceWorkflowsListCacheStale()`` (and of the offerings cache's
+    /// `forceCacheStale`); the detail fetch calls it on a terminal error that produced no fresh value,
+    /// matching how the list and offerings invalidate their cache on the same failures. No-op when
+    /// nothing is cached for the id.
+    func invalidateWorkflowTimestamp(workflowId: String) {
+        self.cachedWorkflows.modify { cache in
+            guard let existing = cache[workflowId] else { return }
+            cache[workflowId] = CachedWorkflow(result: existing.result, lastUpdated: .distantPast)
+        }
+    }
+
     // MARK: - Workflow detail disk cache
 
     /// Persists a batch of resolved workflow details to disk, merging into whatever is already there.
@@ -118,6 +132,13 @@ final class WorkflowsCache {
     /// change.
     func currentCacheGeneration() -> Int {
         return self.cacheGeneration.value
+    }
+
+    /// Returns the persisted detail for `workflowId`, or `nil` when the key is absent or nothing is
+    /// persisted. Convenience wrapper over the on-disk detail map, used by the detail fetch's disk
+    /// fallback to recover a single resolved workflow after a transient backend failure.
+    func cachedWorkflowDetailFromDisk(workflowId: String) -> WorkflowDataResult? {
+        return self.deviceCache.cachedWorkflowDetails()?[workflowId]
     }
 
     /// Restores the persisted prefetched details into the in-memory cache, stamped fresh so

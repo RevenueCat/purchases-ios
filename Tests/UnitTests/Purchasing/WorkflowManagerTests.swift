@@ -235,6 +235,111 @@ class WorkflowManagerTests: TestCase {
         expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
     }
 
+    // MARK: - getWorkflow fetch fallback
+
+    func testGetWorkflowFallsBackToDiskDetailOnServerErrorAndDeliversSuccess() throws {
+        // A 5xx is transient: recover the last persisted detail from disk, cache it fresh, and deliver it,
+        // mirroring how offerings and the workflows list fall back on `shouldFallBackToCache`.
+        let persisted = try Self.workflowDataResult(id: "wf_1")
+        self.mockDeviceCache.stubbedCachedWorkflowDetails = ["wf_1": persisted]
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .failure(
+            .networkError(.errorResponse(.init(code: .unknownError, originalCode: 0), .internalServerError))
+        )
+
+        var served: WorkflowDataResult?
+        var erroredWith: BackendError?
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) {
+            switch $0 {
+            case let .success(result): served = result
+            case let .failure(error): erroredWith = error
+            }
+        }
+
+        expect(served) == persisted
+        expect(erroredWith).to(beNil())
+        // Recovered into memory and re-stamped fresh so the next call serves it without a refetch.
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == persisted
+        expect(self.workflowsCache.isWorkflowCacheStale(workflowId: "wf_1", isAppBackgrounded: false)) == false
+    }
+
+    func testGetWorkflowDoesNotFallBackToDiskDetailOnClientError() throws {
+        // A 4xx means the backend rejected the request (workflow removed/disabled), so the persisted
+        // copy must not be served; the error surfaces instead.
+        self.mockDeviceCache.stubbedCachedWorkflowDetails = ["wf_1": try Self.workflowDataResult(id: "wf_1")]
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .failure(
+            .networkError(.errorResponse(.init(code: .invalidAPIKey, originalCode: 0), .invalidRequest))
+        )
+
+        var served: WorkflowDataResult?
+        var erroredWith: BackendError?
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) {
+            switch $0 {
+            case let .success(result): served = result
+            case let .failure(error): erroredWith = error
+            }
+        }
+
+        expect(served).to(beNil())
+        expect(erroredWith).toNot(beNil())
+        // The persisted copy was not served into memory.
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
+    }
+
+    func testGetWorkflowSurfacesErrorWhenFallbackEligibleButNoDiskDetail() {
+        // A transient error but nothing persisted to recover: surface the original error rather than
+        // leaving the caller without a response.
+        self.mockDeviceCache.stubbedCachedWorkflowDetails = nil
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .failure(
+            .networkError(.errorResponse(.init(code: .unknownError, originalCode: 0), .internalServerError))
+        )
+
+        var served: WorkflowDataResult?
+        var erroredWith: BackendError?
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) {
+            switch $0 {
+            case let .success(result): served = result
+            case let .failure(error): erroredWith = error
+            }
+        }
+
+        expect(served).to(beNil())
+        expect(erroredWith).toNot(beNil())
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
+    }
+
+    func testGetWorkflowStaleHitRePinsFromDiskWhenBackgroundRefreshFails() throws {
+        // Stale-while-revalidate: a fallback-eligible background-refresh failure recovers the persisted
+        // detail and re-stamps the cache fresh, mirroring `OfferingsManager`'s disk fallback. The disk
+        // copy (the persisted prefetched detail) can differ from the in-memory value, so the cache ends
+        // up holding the recovered disk copy.
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+        let inMemory = try Self.workflowDataResult(id: "in_memory")
+        let persisted = try Self.workflowDataResult(id: "persisted")
+        self.mockDeviceCache.stubbedCachedWorkflowDetails = ["wf_1": persisted]
+
+        // First call populates memory with the in-memory value.
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .success(inMemory))
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == inMemory
+
+        // Past the foreground TTL: the entry is stale-but-present.
+        self.dateProvider.advance(by: 6 * 60)
+
+        var served: WorkflowDataResult?
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) {
+            served = try? $0.get()
+        }
+        // Served the stale in-memory value immediately.
+        expect(served) == inMemory
+
+        // The background refresh fails fallback-eligibly: it re-pins from disk and re-stamps fresh.
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .failure(
+            .networkError(.errorResponse(.init(code: .unknownError, originalCode: 0), .internalServerError))
+        ))
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == persisted
+        expect(self.workflowsCache.isWorkflowCacheStale(workflowId: "wf_1", isAppBackgrounded: false)) == false
+    }
+
     // MARK: - getWorkflowsList
 
     func testGetWorkflowsListStalePresentServesImmediatelyAndRefreshesInBackground() {

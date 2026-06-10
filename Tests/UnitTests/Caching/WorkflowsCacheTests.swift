@@ -104,6 +104,24 @@ class WorkflowsCacheTests: TestCase {
         expect(self.cache.isWorkflowCacheStale(workflowId: "wf_2", isAppBackgrounded: false)) == false
     }
 
+    func testInvalidateWorkflowTimestampMarksFreshEntryStaleWhileKeepingItRetrievable() throws {
+        let result = try Self.workflowDataResult(id: "wf_1")
+        self.seedWorkflow(result, workflowId: "wf_1")
+        expect(self.cache.isWorkflowCacheStale(workflowId: "wf_1", isAppBackgrounded: false)) == false
+
+        self.cache.invalidateWorkflowTimestamp(workflowId: "wf_1")
+
+        // Marked stale so the next fetch retries, but the value is still served until then.
+        expect(self.cache.isWorkflowCacheStale(workflowId: "wf_1", isAppBackgrounded: false)) == true
+        expect(self.cache.cachedWorkflow(workflowId: "wf_1")) == result
+    }
+
+    func testInvalidateWorkflowTimestampIsNoOpWhenNothingCached() {
+        self.cache.invalidateWorkflowTimestamp(workflowId: "wf_1")
+        expect(self.cache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
+        expect(self.cache.isWorkflowCacheStale(workflowId: "wf_1", isAppBackgrounded: false)) == true
+    }
+
     // MARK: - Workflows list cache
 
     func testIsWorkflowsListCacheStaleIsTrueInitiallyAndFalseAfterCaching() {
@@ -263,6 +281,23 @@ class WorkflowsCacheTests: TestCase {
                                                 ifGeneration: self.cache.currentCacheGeneration())
 
         expect(self.deviceCache.cachedWorkflowDetailsParameter?["wf_1"]).toNot(beNil())
+    }
+
+    func testCachedWorkflowDetailFromDiskReturnsPersistedDetail() throws {
+        let result = try Self.workflowDataResult(id: "wf_1")
+        self.deviceCache.stubbedCachedWorkflowDetails = ["wf_1": result]
+
+        expect(self.cache.cachedWorkflowDetailFromDisk(workflowId: "wf_1")) == result
+    }
+
+    func testCachedWorkflowDetailFromDiskReturnsNilForMissingKey() throws {
+        self.deviceCache.stubbedCachedWorkflowDetails = ["wf_1": try Self.workflowDataResult(id: "wf_1")]
+        expect(self.cache.cachedWorkflowDetailFromDisk(workflowId: "wf_2")).to(beNil())
+    }
+
+    func testCachedWorkflowDetailFromDiskReturnsNilWhenNothingPersisted() {
+        self.deviceCache.stubbedCachedWorkflowDetails = nil
+        expect(self.cache.cachedWorkflowDetailFromDisk(workflowId: "wf_1")).to(beNil())
     }
 
     // MARK: - Restore from disk
