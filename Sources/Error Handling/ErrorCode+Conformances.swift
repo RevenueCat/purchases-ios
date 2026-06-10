@@ -16,18 +16,6 @@ import Foundation
 
 extension ErrorCode: DescribableError {}
 
-extension ErrorCode: CustomNSError {
-
-    // swiftlint:disable missing_docs
-    public var errorUserInfo: [String: Any] {
-        return [
-            NSDebugDescriptionErrorKey: self.description,
-            "rc_code_name": self.codeName
-        ]
-    }
-
-}
-
 // MARK: - PurchasesErrorConvertible
 
 /// An `Error` that can be converted into a `PurchasesError`
