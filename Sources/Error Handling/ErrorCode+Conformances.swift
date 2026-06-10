@@ -14,8 +14,6 @@
 
 import Foundation
 
-extension ErrorCode: DescribableError {}
-
 // MARK: - PurchasesErrorConvertible
 
 /// An `Error` that can be converted into a `PurchasesError`

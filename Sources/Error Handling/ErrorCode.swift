@@ -244,3 +244,5 @@ extension ErrorCode: CustomNSError {
     }
 
 }
+
+extension ErrorCode: DescribableError {}
