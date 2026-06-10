@@ -178,6 +178,9 @@ extension UIView {
   func asImage() -> UIImage {
     let format = UIGraphicsImageRendererFormat()
     format.preferredRange = .standard // Ensures 8-bit sRGB, even on Mac Catalyst where the default is Generic RGB
+    // Pin the capture scale instead of inheriting the simulator's screen scale, so the supersampling
+    // density stays consistent across simulators and matches the Android paywall validation render (3x).
+    format.scale = 3
 
     let renderer = UIGraphicsImageRenderer(bounds: bounds, format: format)
     return renderer.image { _ in
