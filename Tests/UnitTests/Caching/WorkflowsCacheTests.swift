@@ -283,21 +283,44 @@ class WorkflowsCacheTests: TestCase {
         expect(self.deviceCache.cachedWorkflowDetailsParameter?["wf_1"]).toNot(beNil())
     }
 
-    func testCachedWorkflowDetailFromDiskReturnsPersistedDetail() throws {
+    func testRecoverWorkflowDetailFromDiskRestoresFreshIntoMemoryAndReturnsIt() throws {
         let result = try Self.workflowDataResult(id: "wf_1")
         self.deviceCache.stubbedCachedWorkflowDetails = ["wf_1": result]
 
-        expect(self.cache.cachedWorkflowDetailFromDisk(workflowId: "wf_1")) == result
+        let recovered = self.cache.recoverWorkflowDetailFromDisk(workflowId: "wf_1",
+                                                                 ifGeneration: self.cache.currentCacheGeneration())
+
+        expect(recovered) == result
+        // Recovered into memory and re-stamped fresh so the next call serves it without a refetch.
+        expect(self.cache.cachedWorkflow(workflowId: "wf_1")) == result
+        expect(self.cache.isWorkflowCacheStale(workflowId: "wf_1", isAppBackgrounded: false)) == false
     }
 
-    func testCachedWorkflowDetailFromDiskReturnsNilForMissingKey() throws {
+    func testRecoverWorkflowDetailFromDiskReturnsNilForMissingKey() throws {
         self.deviceCache.stubbedCachedWorkflowDetails = ["wf_1": try Self.workflowDataResult(id: "wf_1")]
-        expect(self.cache.cachedWorkflowDetailFromDisk(workflowId: "wf_2")).to(beNil())
+        expect(self.cache.recoverWorkflowDetailFromDisk(workflowId: "wf_2",
+                                                        ifGeneration: self.cache.currentCacheGeneration())).to(beNil())
+        expect(self.cache.cachedWorkflow(workflowId: "wf_2")).to(beNil())
     }
 
-    func testCachedWorkflowDetailFromDiskReturnsNilWhenNothingPersisted() {
+    func testRecoverWorkflowDetailFromDiskReturnsNilWhenNothingPersisted() {
         self.deviceCache.stubbedCachedWorkflowDetails = nil
-        expect(self.cache.cachedWorkflowDetailFromDisk(workflowId: "wf_1")).to(beNil())
+        expect(self.cache.recoverWorkflowDetailFromDisk(workflowId: "wf_1",
+                                                        ifGeneration: self.cache.currentCacheGeneration())).to(beNil())
+    }
+
+    func testRecoverWorkflowDetailFromDiskIsDroppedWhenGenerationChanged() throws {
+        // A fetch captured the generation, then an identity change cleared the cache (bumping it). The
+        // disk recovery must be dropped: it returns nil and writes nothing, so the caller surfaces the
+        // error instead of delivering the previous user's detail.
+        self.deviceCache.stubbedCachedWorkflowDetails = ["wf_1": try Self.workflowDataResult(id: "wf_1")]
+        let staleGeneration = self.cache.currentCacheGeneration()
+        self.cache.clearCache()
+
+        let recovered = self.cache.recoverWorkflowDetailFromDisk(workflowId: "wf_1", ifGeneration: staleGeneration)
+
+        expect(recovered).to(beNil())
+        expect(self.cache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
     }
 
     // MARK: - Restore from disk

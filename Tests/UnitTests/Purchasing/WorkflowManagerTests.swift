@@ -328,6 +328,34 @@ class WorkflowManagerTests: TestCase {
         expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
     }
 
+    func testGetWorkflowDoesNotDeliverDiskFallbackWhenCacheClearedDuringFetch() throws {
+        // The disk recovery is generation-guarded: if an identity change clears the cache after the fetch
+        // is issued but before its transient failure lands, the previous user's persisted (user-scoped)
+        // detail must not be delivered. The caller gets the error and memory stays empty.
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+        self.mockDeviceCache.stubbedCachedWorkflowDetails = ["wf_1": try Self.workflowDataResult(id: "wf_1")]
+
+        // Issue the fetch (captures the current generation), then an identity change clears the cache.
+        var served: WorkflowDataResult?
+        var erroredWith: BackendError?
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) {
+            switch $0 {
+            case let .success(result): served = result
+            case let .failure(error): erroredWith = error
+            }
+        }
+        self.workflowsCache.clearCache()
+
+        // The fetch now fails transiently: the disk recovery is dropped (generation bumped).
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .failure(
+            .networkError(.errorResponse(.init(code: .unknownError, originalCode: 0), .internalServerError))
+        ))
+
+        expect(served).to(beNil())
+        expect(erroredWith).toNot(beNil())
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
+    }
+
     func testGetWorkflowStaleHitRePinsFromDiskWhenBackgroundRefreshFails() throws {
         // Stale-while-revalidate: a fallback-eligible background-refresh failure recovers the persisted
         // detail and re-stamps the cache fresh, mirroring `OfferingsManager`'s disk fallback. The disk

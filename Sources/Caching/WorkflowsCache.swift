@@ -91,10 +91,17 @@ final class WorkflowsCache {
     /// `forceCacheStale`); the detail fetch calls it on a terminal error that produced no fresh value,
     /// matching how the list and offerings invalidate their cache on the same failures. No-op when
     /// nothing is cached for the id.
+    ///
+    /// Only mutates an entry that is already present (it never inserts), so it can't revive a since-cleared
+    /// detail. Held under ``detailsLock`` like the other detail-cache mutators, so it's serialized against
+    /// ``clearCache()``: an async fetch failure landing during a log-in/log-out either runs before the
+    /// wipe (and is then wiped) or after it (and finds nothing to mutate).
     func invalidateWorkflowTimestamp(workflowId: String) {
-        self.cachedWorkflows.modify { cache in
-            guard let existing = cache[workflowId] else { return }
-            cache[workflowId] = CachedWorkflow(result: existing.result, lastUpdated: .distantPast)
+        self.detailsLock.perform {
+            self.cachedWorkflows.modify { cache in
+                guard let existing = cache[workflowId] else { return }
+                cache[workflowId] = CachedWorkflow(result: existing.result, lastUpdated: .distantPast)
+            }
         }
     }
 
@@ -134,11 +141,29 @@ final class WorkflowsCache {
         return self.cacheGeneration.value
     }
 
-    /// Returns the persisted detail for `workflowId`, or `nil` when the key is absent or nothing is
-    /// persisted. Convenience wrapper over the on-disk detail map, used by the detail fetch's disk
-    /// fallback to recover a single resolved workflow after a transient backend failure.
-    func cachedWorkflowDetailFromDisk(workflowId: String) -> WorkflowDataResult? {
-        return self.deviceCache.cachedWorkflowDetails()?[workflowId]
+    /// Recovers `workflowId`'s persisted detail into the in-memory cache (re-stamped fresh) and returns
+    /// it, but only if `generation` still matches the current one. Used by the detail fetch's disk
+    /// fallback after a transient backend failure.
+    ///
+    /// Returns `nil` when nothing is persisted for the id, or when an identity change cleared the cache
+    /// after the fetch was issued (``clearCache()`` bumped the generation). Returning `nil` in that case
+    /// is the whole point: the caller then surfaces the original error instead of delivering the previous
+    /// user's (user-scoped) detail, and the in-memory write is never made.
+    ///
+    /// The generation check, the disk read, and the memory write all run under ``detailsLock`` together,
+    /// so the recovery is atomic w.r.t. ``clearCache()`` (which clears the same disk + memory stores
+    /// under the lock): a clear can't land between reading disk and writing memory.
+    func recoverWorkflowDetailFromDisk(workflowId: String, ifGeneration generation: Int) -> WorkflowDataResult? {
+        return self.detailsLock.perform {
+            guard self.cacheGeneration.value == generation,
+                  let result = self.deviceCache.cachedWorkflowDetails()?[workflowId] else {
+                return nil
+            }
+            self.cachedWorkflows.modify {
+                $0[workflowId] = CachedWorkflow(result: result, lastUpdated: self.dateProvider.now())
+            }
+            return result
+        }
     }
 
     /// Restores the persisted prefetched details into the in-memory cache, stamped fresh so

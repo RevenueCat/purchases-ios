@@ -163,19 +163,21 @@ class WorkflowManager {
         }
 
         // Transport error / 5xx / malformed body: the backend is unavailable, not refusing. Recover the
-        // last persisted detail if we have one, matching offerings' disk fallback. The recovered result
-        // was already asset-warmed when first persisted (and `restoreWorkflowDetailsFromDisk` likewise
-        // doesn't re-warm), so we don't warm it again here.
-        guard let cached = self.workflowsCache.cachedWorkflowDetailFromDisk(workflowId: workflowId) else {
-            // Nothing on disk to recover: invalidate so the next call retries, and surface the original
-            // error so the caller is never left without a response.
+        // last persisted detail if we have one, matching offerings' disk fallback. The recovery reads
+        // disk, re-stamps the entry fresh, and writes it back atomically under the cache lock, guarded by
+        // the same generation as the fetch: if a `clearCache()` (login/logout) landed since the fetch was
+        // issued it returns nil, so we never deliver the previous user's (user-scoped) detail. The
+        // recovered result was already asset-warmed when first persisted (and
+        // `restoreWorkflowDetailsFromDisk` likewise doesn't re-warm), so we don't warm it again here.
+        let recovered = self.workflowsCache.recoverWorkflowDetailFromDisk(workflowId: workflowId,
+                                                                          ifGeneration: generation)
+        guard let cached = recovered else {
+            // Nothing recoverable (no persisted detail, or the cache was cleared mid-flight): invalidate
+            // so the next call retries, and surface the original error so the caller always gets a response.
             self.workflowsCache.invalidateWorkflowTimestamp(workflowId: workflowId)
             completion(.failure(error))
             return
         }
-        // Re-cache in memory (which re-stamps it fresh), guarded by the same generation as the fetch so a
-        // clear landing mid-flight still drops the write, then deliver the recovered value.
-        self.workflowsCache.cache(workflow: cached, workflowId: workflowId, ifGeneration: generation)
         completion(.success(cached))
     }
 
