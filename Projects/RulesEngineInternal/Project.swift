@@ -33,6 +33,13 @@ let project = Project(
             sources: [
                 "../../Tests/RulesEngineInternalTests/**/*.swift"
             ],
+            scripts: [
+                .pre(
+                    path: "../../scripts/rules_engine/download_predicate_conformance_fixtures.sh",
+                    name: "Download khepri conformance fixtures",
+                    basedOnDependencyAnalysis: false
+                )
+            ],
             dependencies: [
                 .target(name: "RulesEngineInternal")
             ]
@@ -43,9 +50,17 @@ let project = Project(
             name: "RulesEngineInternal",
             shared: true,
             buildAction: .buildAction(targets: ["RulesEngineInternal"]),
-            testAction: .targets([
-                .testableTarget(target: "RulesEngineInternalTests")
-            ]),
+            testAction: .targets(
+                [
+                    .testableTarget(target: "RulesEngineInternalTests")
+                ],
+                preActions: [
+                    .executionAction(
+                        title: "Download khepri conformance fixtures",
+                        scriptText: "\"${SRCROOT}/scripts/rules_engine/download_predicate_conformance_fixtures.sh\""
+                    )
+                ]
+            ),
             runAction: .runAction(configuration: "Debug"),
             archiveAction: .archiveAction(configuration: "Release"),
             profileAction: .profileAction(configuration: "Release"),

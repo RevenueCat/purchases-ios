@@ -1745,6 +1745,40 @@ jobs:
           directory: Tests/InstallationTests/CarthageInstallation/
       - slack-notify-on-fail
 
+  run-rules-engine-conformance-tests:
+    executor:
+      name: macos-executor
+      xcode_version: "26.5"
+    working_directory: ~/purchases-ios/
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
+      - run:
+          name: Validate Package.swift
+          command: swift package describe
+      - install-dependencies:
+          install_xcbeautify: false
+          install_mint: true
+      - update-spm-installation-commit
+      - run:
+          name: Download khepri predicate conformance fixtures
+          command: ./scripts/rules_engine/download_predicate_conformance_fixtures.sh
+      - run:
+          name: Run RulesEngineInternal predicate conformance tests
+          command: bundle exec fastlane test_rules_engine_conformance
+          no_output_timeout: 10m
+          environment:
+            KHEPRI_PREDICATE_CONFORMANCE_FIXTURE_PATH: Tests/RulesEngineInternalTests/Fixtures/predicate_conformance_v1.json
+            SCAN_DEVICE: iPhone 17 (26.5)
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest/rules-engine-conformance
+          destination: rules-engine-conformance
+      - slack-notify-on-fail
+
   lint:
     executor:
       name: macos-executor
