@@ -10,10 +10,9 @@ extension RulesEngine {
 
     /// Errors surfaced by the rules engine.
     ///
-    /// Note on missing variables: the v1 evaluator does **not** raise an error
+    /// Note on missing variables: the evaluator does **not** raise an error
     /// for them — per the JSON Logic spec, they resolve to `null` and a warning
-    /// is logged instead. If a strict mode is ever needed, we'd add a
-    /// `missingVariable` case.
+    /// is logged instead.
     public enum EvaluationError: Error, Equatable {
 
         /// The predicate JSON could not be parsed.
