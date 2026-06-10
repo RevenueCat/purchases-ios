@@ -2463,8 +2463,14 @@ private extension Purchases {
 
             if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
                let cache = self.paywallCache {
+                // Re-warm from cached offerings (no fetch) so the just-cleared eligibility
+                // cache isn't left cold for the next paywall.
+                let cachedOfferings = self.offeringsManager.cachedOfferings
                 self.operationDispatcher.dispatchOnWorkerThread {
                     await cache.clearEligibilityCache()
+                    if let cachedOfferings {
+                        await cache.warmUpEligibilityCache(offerings: cachedOfferings)
+                    }
                 }
             }
         }

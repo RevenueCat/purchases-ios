@@ -307,6 +307,56 @@ class ExistingUserPurchasesLogInTests: BasePurchasesLogInTests {
         expect(self.paywallCache.invokedClearEligibilityCacheCount).toEventually(equal(2))
     }
 
+    func testCustomerInfoChangeRewarmsEligibilityCacheFromCachedOfferings() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let offerings = try XCTUnwrap(
+            self.offeringsFactory.createOfferings(from: [:],
+                                                  contents: .mockContents,
+                                                  loadedFromDiskCache: false)
+        )
+        self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(offerings)
+
+        self.awaitInitialClearAndResetEligibilityWarmTracking()
+
+        let offeringsFetchCountBefore = self.mockOfferingsManager.invokedOfferingsCount
+        let updateOfferingsCacheCountBefore = self.mockOfferingsManager.invokedUpdateOfferingsCacheCount
+
+        self.customerInfoManager.cache(customerInfo: Self.mockLoggedInInfo, appUserID: Self.appUserID)
+
+        // The change clears the eligibility cache and then re-warms it from cached offerings.
+        expect(self.paywallCache.invokedClearEligibilityCacheCount).toEventually(equal(2))
+        expect(self.paywallCache.invokedWarmUpEligibilityCache).toEventually(beTrue())
+        expect(self.paywallCache.invokedWarmUpEligibilityCacheOfferings) === offerings
+
+        // Re-warming reads already-cached offerings only; it must not trigger an offerings fetch.
+        expect(self.mockOfferingsManager.invokedOfferingsCount) == offeringsFetchCountBefore
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == updateOfferingsCacheCountBefore
+    }
+
+    func testCustomerInfoChangeDoesNotWarmEligibilityCacheWithoutCachedOfferings() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        // No cached offerings: the default stubbed offerings result is a failure, so
+        // `cachedOfferings` is nil and there is nothing to re-warm.
+        self.awaitInitialClearAndResetEligibilityWarmTracking()
+
+        self.customerInfoManager.cache(customerInfo: Self.mockLoggedInInfo, appUserID: Self.appUserID)
+
+        // The change still clears the eligibility cache...
+        expect(self.paywallCache.invokedClearEligibilityCacheCount).toEventually(equal(2))
+        // ...but without cached offerings there is nothing to re-warm.
+        expect(self.paywallCache.invokedWarmUpEligibilityCache) == false
+    }
+
+    /// Waits for the initial setup-triggered eligibility-cache clear to settle, then resets
+    /// warm-up tracking so a subsequent `CustomerInfo` change can be observed in isolation.
+    private func awaitInitialClearAndResetEligibilityWarmTracking() {
+        expect(self.paywallCache.invokedClearEligibilityCacheCount).toEventually(equal(1))
+        self.paywallCache.invokedWarmUpEligibilityCache = false
+        self.paywallCache.invokedWarmUpEligibilityCacheOfferings = nil
+    }
+
 }
 
 // MARK: -
