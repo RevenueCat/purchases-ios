@@ -21,7 +21,7 @@ internal extension RewardVerification {
         var isConfigured: Bool { get }
         func generateToken(
             impressionId: String
-        ) -> (customData: String, clientTransactionID: String, appUserID: String)
+        ) -> RewardVerificationToken
     }
 
     /// Production `TokenProvider` backed by `Purchases.shared`.
@@ -31,7 +31,7 @@ internal extension RewardVerification {
 
         func generateToken(
             impressionId: String
-        ) -> (customData: String, clientTransactionID: String, appUserID: String) {
+        ) -> RewardVerificationToken {
             Purchases.shared.generateRewardVerificationToken(impressionId: impressionId)
         }
     }

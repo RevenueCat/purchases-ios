@@ -2,14 +2,14 @@ import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @_spi(Experimental) import RevenueCat
 @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
 @MainActor
 final class SetupTests: AdapterTestCase {
 
-    private static let testToken = (
+    private static let testToken = RewardVerificationToken(
         customData: "{\"client_transaction_id\":\"txn_42\"}",
         clientTransactionID: "txn_42",
         appUserID: "user_test_42"
@@ -96,8 +96,12 @@ final class SetupTests: AdapterTestCase {
     func testInstallOverwritesPreviouslyStashedStateOnSameAd() throws {
         let fakeAd = FakeRewardedAd()
 
-        let firstToken = (customData: "{}", clientTransactionID: "txn_first", appUserID: "user")
-        let secondToken = (customData: "{}", clientTransactionID: "txn_second", appUserID: "user")
+        let firstToken = RewardVerificationToken(
+            customData: "{}", clientTransactionID: "txn_first", appUserID: "user"
+        )
+        let secondToken = RewardVerificationToken(
+            customData: "{}", clientTransactionID: "txn_second", appUserID: "user"
+        )
 
         let firstState = RewardVerification.Setup.install(on: fakeAd, token: firstToken)
         let secondState = RewardVerification.Setup.install(on: fakeAd, token: secondToken)
@@ -120,17 +124,15 @@ private final class FakeRewardedAd: RewardVerification.CapableAd {
 private final class MockTokenProvider: RewardVerification.TokenProvider {
 
     var isConfigured: Bool
-    let token: (customData: String, clientTransactionID: String, appUserID: String)
+    let token: RewardVerificationToken
     private(set) var receivedImpressionIds: [String] = []
 
-    init(isConfigured: Bool, token: (customData: String, clientTransactionID: String, appUserID: String)) {
+    init(isConfigured: Bool, token: RewardVerificationToken) {
         self.isConfigured = isConfigured
         self.token = token
     }
 
-    func generateToken(
-        impressionId: String
-    ) -> (customData: String, clientTransactionID: String, appUserID: String) {
+    func generateToken(impressionId: String) -> RewardVerificationToken {
         self.receivedImpressionIds.append(impressionId)
         return self.token
     }

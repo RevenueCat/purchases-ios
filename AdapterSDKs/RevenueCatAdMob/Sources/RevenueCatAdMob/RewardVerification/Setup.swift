@@ -52,7 +52,7 @@ internal extension RewardVerification {
         @discardableResult
         static func install(
             on loadedAd: some CapableAd,
-            token: (customData: String, clientTransactionID: String, appUserID: String)
+            token: RewardVerificationToken
         ) -> State {
             Logger.info(RewardVerificationStrings.setup_install(
                 adType: "\(type(of: loadedAd))",

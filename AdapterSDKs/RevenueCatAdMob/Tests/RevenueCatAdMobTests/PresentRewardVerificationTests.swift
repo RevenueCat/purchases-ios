@@ -10,7 +10,7 @@ import GoogleMobileAds
 @MainActor
 final class PresentRewardVerificationTests: AdapterTestCase {
 
-    private static let testToken = (
+    private static let testToken = RewardVerificationToken(
         customData: "{}",
         clientTransactionID: "txn_present_public_api",
         appUserID: "user_present_public_api"

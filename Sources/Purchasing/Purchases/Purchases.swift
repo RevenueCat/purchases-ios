@@ -1662,7 +1662,7 @@ extension Purchases {
     /// ``pollRewardVerification(clientTransactionID:)`` when the reward callback fires.
     @_spi(Experimental) public func generateRewardVerificationToken(
         impressionId: String
-    ) -> (customData: String, clientTransactionID: String, appUserID: String) {
+    ) -> RewardVerificationToken {
         let clientTransactionID = UUID().uuidString
         let payload: [String: String] = [
             "api_key": self.apiKey,
@@ -1679,7 +1679,11 @@ extension Purchases {
             assertionFailure(message.description)
             customData = "{}"
         }
-        return (customData: customData, clientTransactionID: clientTransactionID, appUserID: self.appUserID)
+        return RewardVerificationToken(
+            customData: customData,
+            clientTransactionID: clientTransactionID,
+            appUserID: self.appUserID
+        )
     }
 
     /// Polls the backend until reward verification completes or the attempt budget is exhausted.
