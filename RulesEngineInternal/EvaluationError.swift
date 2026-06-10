@@ -27,6 +27,9 @@ extension RulesEngine {
         /// implement. Carries the operator name so callers can decide policy
         /// (default-deny, log, etc.).
         case unsupportedOperator(name: String)
+
+        /// An unexpected error that is not one of the structured cases above.
+        case unknown(message: String)
     }
 }
 
@@ -41,6 +44,8 @@ extension RulesEngine.EvaluationError: CustomStringConvertible {
             return "type mismatch: \(message)"
         case .unsupportedOperator(let name):
             return "unsupported operator: \(name)"
+        case .unknown(let message):
+            return "unknown error: \(message)"
         }
     }
 }

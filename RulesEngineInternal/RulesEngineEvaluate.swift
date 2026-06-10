@@ -11,12 +11,11 @@ public extension RulesEngine {
     /// Evaluates a JSON Logic predicate against a native variable scope.
     ///
     /// - Parameters:
-    ///   - predicate: The rule predicate as a JSON string, extracted from the
-    ///     SDK artifact.
-    ///   - variables: The resolved variable scope, built natively by the SDK.
+    ///   - predicate: The rule predicate as a JSON string.
+    ///   - variables: The resolved variable scope.
     /// - Returns: `.success(true)` when the predicate evaluates to a truthy
-    ///   value, `.success(false)` otherwise, or `.failure` carrying a
-    ///   structured `EvaluationError` when parsing or evaluation fails.
+    ///   value, `.success(false)` otherwise, or `.failure` carrying
+    ///   an `EvaluationError` when parsing or evaluation fails.
     static func evaluate(
         predicate: String,
         variables: [String: Value]
@@ -28,7 +27,7 @@ public extension RulesEngine {
         } catch let error as EvaluationError {
             return .failure(error)
         } catch {
-            return .failure(.parse(message: error.localizedDescription))
+            return .failure(.unknown(message: error.localizedDescription))
         }
     }
 }
