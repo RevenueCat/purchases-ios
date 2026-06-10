@@ -16,16 +16,16 @@ public extension RulesEngine {
     ///   - variables: The resolved variable scope, built natively by the SDK.
     /// - Returns: `.success(true)` when the predicate evaluates to a truthy
     ///   value, `.success(false)` otherwise, or `.failure` carrying a
-    ///   structured `RuleError` when parsing or evaluation fails.
+    ///   structured `EvaluationError` when parsing or evaluation fails.
     static func evaluate(
         predicate: String,
         variables: [String: Value]
-    ) -> Result<Bool, RuleError> {
+    ) -> Result<Bool, EvaluationError> {
         do {
             let predicateValue = try Value.fromJSONString(predicate)
             let result = try Evaluator.evaluate(predicate: predicateValue, variables: variables)
             return .success(result)
-        } catch let error as RuleError {
+        } catch let error as EvaluationError {
             return .failure(error)
         } catch {
             return .failure(.parse(message: error.localizedDescription))

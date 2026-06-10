@@ -8,7 +8,7 @@ import Foundation
 
 /// Production JSON → `Value` parser. Converts the predicate JSON extracted
 /// from the SDK artifact into the engine's typed `Value` tree. Used by
-/// `RulesEngine.evaluate`; failures surface as `RuleError.parse`.
+/// `RulesEngine.evaluate`; failures surface as `RulesEngine.EvaluationError.parse`.
 extension Value {
 
     /// Parse a JSON string into a `Value`. `JSONSerialization` returns
@@ -18,21 +18,21 @@ extension Value {
     /// type intent.
     static func fromJSONString(_ input: String) throws -> Value {
         guard let data = input.data(using: .utf8) else {
-            throw RuleError.parse(message: "non-UTF8 input")
+            throw RulesEngine.EvaluationError.parse(message: "non-UTF8 input")
         }
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])
             return try Value.fromJSONObject(json)
-        } catch let error as RuleError {
+        } catch let error as RulesEngine.EvaluationError {
             throw error
         } catch {
-            throw RuleError.parse(message: error.localizedDescription)
+            throw RulesEngine.EvaluationError.parse(message: error.localizedDescription)
         }
     }
 
     /// Recursively convert a value produced by `JSONSerialization` (the
     /// `Any` is one of `NSNull`, `NSNumber`, `String`, `[Any]`, or
-    /// `[String: Any]`). Throws `RuleError.parse` if it encounters anything
+    /// `[String: Any]`). Throws `RulesEngine.EvaluationError.parse` if it encounters anything
     /// else — better to fail loudly than to silently coerce unknown
     /// Foundation types (`Date`, `NSValue`, …) to `.null`.
     static func fromJSONObject(_ object: Any) throws -> Value {
@@ -76,7 +76,7 @@ extension Value {
             }
             return .object(result)
         }
-        throw RuleError.parse(
+        throw RulesEngine.EvaluationError.parse(
             message: "unexpected JSONSerialization output of type \(type(of: object))"
         )
     }
