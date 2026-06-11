@@ -69,7 +69,11 @@ extension ErrorCode: CustomStringConvertible {
         case .purchaseCancelledError:
             return "Purchase was cancelled."
         case .storeProblemError:
+        #if os(macOS) || targetEnvironment(macCatalyst)
+            return "There was a problem with the App Store. This could also indicate the purchase dialog was cancelled."
+        #else
             return "There was a problem with the App Store."
+        #endif
         case .purchaseNotAllowedError:
             return "The device or user is not allowed to make the purchase."
         case .purchaseInvalidError:
