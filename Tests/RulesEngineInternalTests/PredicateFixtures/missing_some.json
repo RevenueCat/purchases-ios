@@ -1,0 +1,72 @@
+{
+  "fixtures": [
+    {
+      "id": "missing_some_returns_empty_when_threshold_met",
+      "description": "need=1 and b is present (1 >= 1), so the requirement is satisfied and the result is empty",
+      "predicate": { "==": [{ "missing_some": [1, ["a", "b", "c"]] }, ""] },
+      "variables": { "b": 2 },
+      "expected": true
+    },
+    {
+      "id": "missing_some_returns_missing_list_when_below_threshold",
+      "description": "need=2 but only c is present (1 < 2), so missing keys are listed; result compared via string coercion",
+      "predicate": { "==": [{ "missing_some": [2, ["a", "b", "c"]] }, "a,b"] },
+      "variables": { "c": 3 },
+      "expected": true
+    },
+    {
+      "id": "missing_some_zero_required_always_satisfied",
+      "description": "need=0 means any number of these is fine, so the result is always empty",
+      "predicate": { "==": [{ "missing_some": [0, ["a", "b"]] }, ""] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "missing_some_supports_dot_paths",
+      "description": "path strings flow through the same dot-walker as missing",
+      "predicate": {
+        "==": [
+          { "missing_some": [2, ["user.name", "user.email", "user.age"]] },
+          "user.email,user.age"
+        ]
+      },
+      "variables": { "user": { "name": "ada" } },
+      "expected": true
+    },
+    {
+      "id": "missing_some_arity_mismatch_is_type_error",
+      "predicate": { "missing_some": [1] },
+      "variables": {},
+      "expected": { "error": "typeMismatch" }
+    },
+    {
+      "id": "missing_some_non_array_options_is_type_error",
+      "predicate": { "missing_some": [1, "a"] },
+      "variables": {},
+      "expected": { "error": "typeMismatch" }
+    },
+    {
+      "id": "missing_some_nan_threshold_never_satisfies",
+      "description": "threshold uses raw JS >=, so >= NaN is never satisfied and the missing keys are returned; NaN is produced via division-by-zero since JSON has no NaN literal",
+      "predicate": { "==": [{ "missing_some": [{"log": { "/": [0, 0] }}, ["a", "b"]] }, "a,b"] },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["NaN"]
+    },
+    {
+      "id": "missing_some_infinite_threshold_never_satisfies",
+      "description": "+Infinity clamps to Int.max so the requirement can never be met",
+      "predicate": { "==": [{ "missing_some": [{"log": { "var": "+Infinity" }}, ["a", "b"]] }, "b"] },
+      "variables": { "a": 1 },
+      "expected": true,
+      "expectedLogs": ["Infinity"]
+    },
+    {
+      "id": "missing_some_non_numeric_string_threshold_never_satisfies",
+      "description": "a non-numeric string threshold coerces to NaN, so >= is never satisfied and all keys are returned; result compared via string coercion",
+      "predicate": { "==": [{ "missing_some": ["abc", ["a", "b"]] }, "a,b"] },
+      "variables": {},
+      "expected": true
+    }
+  ]
+}

@@ -233,6 +233,39 @@ extension TestLogHandler {
         )
     }
 
+    /// - Parameter allowNoMessages: by default, this method requires logs to not be empty
+    /// to eliminate the possibility of false positives due to log handler not being installed properly.
+    func verifyMessageWasNotLogged(
+        regexPattern: String,
+        level: LogLevel? = nil,
+        allowNoMessages: Bool = false,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        if !allowNoMessages {
+            expect(
+                file: file,
+                line: line,
+                self.messages
+            )
+            .toNot(
+                beEmpty(),
+                description: "Tried to verify message was not logged, but found no messages. " +
+                "This is likely a false positive."
+            )
+        }
+
+        expect(
+            file: file,
+            line: line,
+            self.messages
+        )
+        .toNot(
+            containElementSatisfying(Self.regexEntryCondition(pattern: regexPattern, level: level)),
+            description: "Message with pattern '\(regexPattern)' should not have been logged"
+        )
+    }
+
     private func messagesMatching(_ condition: EntryCondition) -> Int {
         return self
             .messages

@@ -318,7 +318,7 @@ class NetworkErrorTests: TestCase {
         }
     }
 
-    func testShouldFallBackToCachedOfferingsTrue() {
+    func testShouldFallBackToCacheTrue() {
         let errors = [
             error(NetworkError.decodingError()),
             error(Self.offlineError),
@@ -333,15 +333,15 @@ class NetworkErrorTests: TestCase {
         ]
 
         for error in errors {
-            check(error.0.shouldFallBackToCachedOfferings,
+            check(error.0.shouldFallBackToCache,
                   condition: beTrue(),
-                  descrition: "Expected error's shouldFallBackToCachedOfferings to be true",
+                  descrition: "Expected error's shouldFallBackToCache to be true",
                   file: error.1,
                   line: error.2)
         }
     }
 
-    func testShouldFallBackToCachedOfferingsFalse() {
+    func testShouldFallBackToCacheFalse() {
         let errors = [
             error(Self.responseError(.invalidRequest)),
             error(Self.responseError(.unauthorized)),
@@ -351,9 +351,9 @@ class NetworkErrorTests: TestCase {
         ]
 
         for error in errors {
-            check(error.0.shouldFallBackToCachedOfferings,
+            check(error.0.shouldFallBackToCache,
                   condition: beFalse(),
-                  descrition: "Expected error's shouldFallBackToCachedOfferings to be false",
+                  descrition: "Expected error's shouldFallBackToCache to be false",
                   file: error.1,
                   line: error.2)
         }

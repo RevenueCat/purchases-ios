@@ -78,7 +78,7 @@ enum AccessorOperators {
     static func opMissingSome(args: Value, vars: Value) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
         guard evaluated.count == 2 else {
-            throw RuleError.typeMismatch(
+            throw RulesEngine.EvaluationError.typeMismatch(
                 message: "operator 'missing_some' expects 2 arguments, got \(evaluated.count)"
             )
         }
@@ -86,7 +86,7 @@ enum AccessorOperators {
         let options = evaluated[1]
 
         guard case .array(let items) = options else {
-            throw RuleError.typeMismatch(
+            throw RulesEngine.EvaluationError.typeMismatch(
                 message: "operator 'missing_some': second argument must be an array of paths, "
                     + "got \(options)"
             )

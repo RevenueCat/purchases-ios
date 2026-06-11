@@ -51,6 +51,9 @@ struct TextComponentView: View {
     @Environment(\.dynamicTypeSize)
     private var dynamicTypeSize
 
+    @Environment(\.isPaywallLoading)
+    private var isPaywallLoading
+
     private let viewModel: TextComponentViewModel
 
     internal init(viewModel: TextComponentViewModel) {
@@ -82,6 +85,7 @@ struct TextComponentView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(style.textAlignment)
                     .foregroundColorScheme(style.color)
+                    .redacted(reason: isPaywallLoading ? .placeholder : [])
                     .padding(style.padding)
                     .size(style.size,
                           horizontalAlignment: style.horizontalAlignment)
@@ -244,6 +248,14 @@ struct TextComponentView_Previews: PreviewProvider {
 
         platformPreview
         .previewDisplayName("Detected Platform")
+
+        defaultPreview
+        .environment(\.isPaywallLoading, true)
+        .previewDisplayName("Default (Loading)")
+
+        platformPreview
+        .environment(\.isPaywallLoading, true)
+        .previewDisplayName("Detected Platform (Loading)")
 
         // Markdown
         TextComponentView(
