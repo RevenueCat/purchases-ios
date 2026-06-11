@@ -295,13 +295,14 @@ platform :ios do
       FileUtils.cp(file_path, target_path)
     end
 
-    # Upload snapshots to Emerge
+    # Upload the same screenshots we push to paywall-rendering-validation to Emerge,
+    # reusing the "Bring Your Own Snapshots" support we already use for the V1 snapshots.
     UI.message("Uploading snapshots to Emerge for platform: #{platform}")
-    sh("bundle", "exec", "emerge", "upload", "snapshots",
-       "--name", "RevenueCat",
-       "--id", "com.revenuecat.paywall-rendering-validation.#{platform}",
-       "--repo-name", "RevenueCat/purchases-ios",
-       "#{output_dir}/images")
+    upload_snapshots_to_emerge(
+      name: "Paywall Template Screenshots (#{platform})",
+      id: "com.revenuecat.paywall-rendering-validation.#{platform}",
+      images_path: "#{output_dir}/images"
+    )
   end
 
   private_lane :commit_push_and_create_pr_if_necessary do |options|
@@ -474,17 +475,37 @@ platform :ios do
     UI.user_error!("No snapshot PNGs found in #{snapshots_path}. Recording may have failed.") if pngs.empty?
     UI.message("Found #{pngs.count} snapshot images to upload")
 
+    upload_snapshots_to_emerge(
+      name: "PaywallsTester V1 swift-snapshot-testing",
+      id: "com.revenuecat.PaywallsTester.v1-snapshots",
+      client_library: "swift-snapshot-testing",
+      project_root: File.expand_path("../Tests/RevenueCatUITests/Templates")
+    )
+  end
+
+  # Uploads snapshots to Emerge using its "Bring Your Own Snapshots" support.
+  # Shared by the V1 template snapshots and the Paywalls V2 template validation
+  # screenshots. Requires EMERGE_API_TOKEN to be available in the environment.
+  #
+  # Pass `client_library` + `project_root` to let Emerge discover snapshots from a
+  # supported library (e.g. swift-snapshot-testing), or pass `images_path` to upload
+  # an arbitrary directory of images ("upload anything" mode).
+  private_lane :upload_snapshots_to_emerge do |options|
+    name = options[:name] || UI.user_error!("No name provided for the Emerge upload")
+    id = options[:id] || UI.user_error!("No id provided for the Emerge upload")
+
     pr_number = detect_pr_number
 
     args = [
       "bundle", "exec", "emerge", "upload", "snapshots",
-      "--name", "PaywallsTester V1 swift-snapshot-testing",
-      "--id", "com.revenuecat.PaywallsTester.v1-snapshots",
-      "--repo-name", "RevenueCat/purchases-ios",
-      "--client-library", "swift-snapshot-testing",
-      "--project-root", File.expand_path("../Tests/RevenueCatUITests/Templates")
+      "--name", name,
+      "--id", id,
+      "--repo-name", "RevenueCat/purchases-ios"
     ]
+    args.push("--client-library", options[:client_library]) if options[:client_library]
+    args.push("--project-root", options[:project_root]) if options[:project_root]
     args.push("--pr-number", pr_number) if pr_number
+    args.push(options[:images_path]) if options[:images_path]
 
     sh(*args)
   end

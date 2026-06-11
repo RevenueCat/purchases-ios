@@ -2557,6 +2557,8 @@ workflows:
       - record-and-push-paywall-template-screenshots:
           context:
             - paywall-rendering-validation-pr-rw
+            # Needed for EMERGE_API_TOKEN to upload the screenshots to Emerge.
+            - slack-secrets
 
   update-paywall-templates:
     when:
