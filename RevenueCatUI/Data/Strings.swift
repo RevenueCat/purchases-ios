@@ -32,7 +32,7 @@ enum Strings {
     case tier_has_no_available_products_for_paywall(String)
 
     case attempted_to_track_event_with_missing_data
-    case paywall_unknown_button_action_tracked_for_diagnostics(componentName: String?, actionValue: String)
+    case paywall_unknown_button_action_tracked_for_diagnostics(componentName: String?, actionValue: String?)
 
     case image_starting_request(URL)
     case image_result(Result<(), ImageLoader.Error>)
@@ -164,7 +164,7 @@ extension Strings: CustomStringConvertible {
 
         case let .paywall_unknown_button_action_tracked_for_diagnostics(componentName, actionValue):
             return "Tracked unknown paywall button action for diagnostics. " +
-            "componentName=\(componentName ?? "nil"), actionValue=\(actionValue)"
+            "componentName=\(componentName ?? "nil"), actionValue=\(actionValue ?? "nil")"
 
         case let .image_starting_request(url):
             return "Starting request for image: '\(url)'"

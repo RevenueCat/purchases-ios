@@ -3,7 +3,7 @@ import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 @_spi(Experimental) @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
@@ -28,7 +28,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         let fakeAd = FakeCapableAd()
         RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
 
-        let reward = VirtualCurrencyReward(code: "coins", amount: 4)
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 4))
         let poller = RewardVerification.Poller(
             statusPoller: StubStatusPoller(statuses: [.verified(.virtualCurrency(reward))]),
             sleeper: RecordingSleeper(),
@@ -82,7 +82,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         self.wait(for: [expectation], timeout: 2.0)
 
         let result = try XCTUnwrap(receivedResult)
-        XCTAssertTrue(result.isFailed)
+        XCTAssertEqual(result, .failed)
     }
 
     func testCreateUserDidEarnRewardHandlerWithStateInvokesStartedBeforeResult() {
@@ -125,11 +125,11 @@ final class PresentRewardVerificationTests: AdapterTestCase {
         }.to(throwAssertion())
     }
 
-    func testCreateUserDidEarnRewardHandlerWithVerifiedVirtualCurrencyInvalidatesVirtualCurrenciesCache() {
+    func testCreateUserDidEarnRewardHandlerWithVerifiedVirtualCurrencyInvalidatesVirtualCurrenciesCache() throws {
         let fakeAd = FakeCapableAd()
         RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
 
-        let reward = VirtualCurrencyReward(code: "coins", amount: 4)
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 4))
         let poller = RewardVerification.Poller(
             statusPoller: StubStatusPoller(statuses: [.verified(.virtualCurrency(reward))]),
             sleeper: RecordingSleeper(),
@@ -260,7 +260,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
 @available(iOS 15.0, *)
 private final class FakeCapableAd: RewardVerification.CapableAd {
     var serverSideVerificationOptions: GoogleMobileAds.ServerSideVerificationOptions?
-    var responseInfo: GoogleMobileAds.ResponseInfo?
+    let responseInfo = GoogleMobileAds.ResponseInfo()
 }
 
 #endif

@@ -186,6 +186,12 @@ final class PaywallEventTracker: @unchecked Sendable {
         }
     }
 
+    func track(_ event: WorkflowEvent) {
+        self.eventDispatcher { [purchases = self.purchases] in
+            await purchases.track(workflowEvent: event)
+        }
+    }
+
     func componentInteractionLogger(sessionID: SessionID) -> ComponentInteractionLogger {
         return .init { [weak self] interactionData in
             return self?.trackComponentInteraction(interactionData, sessionID: sessionID) ?? false

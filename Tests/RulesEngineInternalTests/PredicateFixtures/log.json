@@ -1,0 +1,99 @@
+{
+  "fixtures": [
+    {
+      "id": "log_is_identity_for_string",
+      "predicate": { "===": [{ "log": "apple" }, "apple"] },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["apple"]
+    },
+    {
+      "id": "log_emits_string_value_to_logger",
+      "predicate": { "log": "hello" },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["hello"]
+    },
+    {
+      "id": "log_emits_number_value_to_logger",
+      "predicate": { "log": 7 },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["7"]
+    },
+    {
+      "id": "log_passes_through_value_in_comparison",
+      "predicate": { ">": [{ "log": 5 }, 3] },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["5"]
+    },
+    {
+      "id": "log_returns_truthy_bool_unchanged",
+      "predicate": { "log": true },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["true"]
+    },
+    {
+      "id": "log_returns_falsy_bool_unchanged",
+      "predicate": { "log": false },
+      "variables": {},
+      "expected": false,
+      "expectedLogs": ["false"]
+    },
+    {
+      "id": "log_resolves_and_returns_var",
+      "predicate": { "===": [{ "log": { "var": "x" } }, 42] },
+      "variables": { "x": 42 },
+      "expected": true,
+      "expectedLogs": ["42"]
+    },
+    {
+      "id": "log_empty_args_returns_null",
+      "description": "no operand resolves to null, which stringifies to \"null\"",
+      "predicate": { "log": [] },
+      "variables": {},
+      "expected": false,
+      "expectedLogs": ["null"]
+    },
+    {
+      "id": "log_emits_positive_infinity",
+      "predicate": { "log": { "var": "+Infinity" } },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["Infinity"]
+    },
+    {
+      "id": "log_emits_negative_infinity",
+      "predicate": { "log": { "var": "-Infinity" } },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["-Infinity"]
+    },
+    {
+      "id": "log_emits_nan",
+      "description": "NaN (produced via 0/0 since JSON has no NaN literal) stringifies to \"NaN\" and is falsy",
+      "predicate": { "log": { "/": [0, 0] } },
+      "variables": {},
+      "expected": false,
+      "expectedLogs": ["NaN"]
+    },
+    {
+      "id": "log_emits_empty_object",
+      "description": "an empty object stringifies to \"[object Object]\" and is truthy",
+      "predicate": { "log": {} },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["[object Object]"]
+    },
+    {
+      "id": "log_emits_empty_array",
+      "description": "an empty array (produced via merge) stringifies to the empty string and is falsy",
+      "predicate": { "log": { "merge": [] } },
+      "variables": {},
+      "expected": false,
+      "expectedLogs": [""]
+    }
+  ]
+}

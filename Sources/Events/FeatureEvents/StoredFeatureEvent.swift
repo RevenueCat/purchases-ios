@@ -57,6 +57,7 @@ enum Feature: String, Codable {
     case paywalls
     case customerCenter
     case customPaywalls
+    case workflows
 
 }
 

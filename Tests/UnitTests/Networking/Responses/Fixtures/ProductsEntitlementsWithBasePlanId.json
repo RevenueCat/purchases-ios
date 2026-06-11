@@ -1,0 +1,23 @@
+{
+    "product_entitlement_mapping": {
+        "com.revenuecat.foo_1:monthly": {
+            "product_identifier": "com.revenuecat.foo_1",
+            "base_plan_id": "monthly",
+            "entitlements": [
+                "pro_1_monthly"
+            ]
+        },
+        "com.revenuecat.foo_1": {
+            "product_identifier": "com.revenuecat.foo_1",
+            "entitlements": [
+                "pro_1"
+            ]
+        },
+        "com.revenuecat.foo_2": {
+            "product_identifier": "com.revenuecat.foo_2",
+            "entitlements": [
+                "pro_2"
+            ]
+        }
+    }
+}

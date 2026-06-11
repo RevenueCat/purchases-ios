@@ -12,6 +12,9 @@
 import RevenueCatUI
 #endif
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 struct APIKeyDashboardList: View {
 
@@ -243,6 +246,7 @@ struct APIKeyDashboardList: View {
                                 }
                                 .contextMenu {
                                     self.button(for: .workflow, offering: offering)
+                                    self.button(for: .presentWorkflow, offering: offering)
                                 }
                                 #else
                                 VStack(alignment: .leading) {
@@ -332,6 +336,36 @@ struct APIKeyDashboardList: View {
         ForEach(PaywallTesterViewMode.allCases, id: \.self) { mode in
             self.button(for: mode, offering: offering)
         }
+
+        #if os(iOS)
+        // Presents through the UIKit `PaywallViewController` so its dismissal handling and the
+        // workflow exit-offer bridge can be exercised.
+        Button {
+            self.isLoadingPaywall = true
+            self.presentUIKitPaywall(for: offering)
+        } label: {
+            Text("UIKit View Controller")
+            Image(systemName: "rectangle.portrait.on.rectangle.portrait")
+        }
+        #endif
+    }
+    #endif
+
+    #if os(iOS)
+    @MainActor
+    private func presentUIKitPaywall(for offering: Offering) {
+        let windows = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+        guard var top = (windows.first(where: \.isKeyWindow) ?? windows.first)?.rootViewController else {
+            self.isLoadingPaywall = false
+            return
+        }
+        while let presented = top.presentedViewController {
+            top = presented
+        }
+        top.present(PaywallViewController(offering: offering, displayCloseButton: true), animated: true)
+        self.isLoadingPaywall = false
     }
     #endif
 

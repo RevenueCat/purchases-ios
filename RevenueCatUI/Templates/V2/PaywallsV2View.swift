@@ -51,6 +51,11 @@ struct PaywallsV2View: View {
     @Environment(\.workflowPackageContext)
     private var workflowPackageContext
 
+    #if DEBUG
+    @Environment(\.paywallLoadingOverride)
+    private var paywallLoadingOverride: Bool?
+    #endif
+
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -72,8 +77,21 @@ struct PaywallsV2View: View {
     private let displayCloseButton: Bool
     private let onDismiss: () -> Void
     private let closeWorkflowAction: (() -> Void)?
+    /// Non-`nil` only when this paywall is a step inside a workflow, carrying whether it is the current step.
+    /// Workflow pages stay mounted across navigation, so `paywall_viewed` / `paywall_close` fire on
+    /// activation (becoming / ceasing to be the current step) rather than on SwiftUI's view lifecycle.
+    /// `nil` keeps the standalone-paywall behavior of tracking on `onAppear` / `onDisappear`.
+    private let isActiveWorkflowPage: Bool?
     @State
-    private var didFinishEligibilityCheck: Bool = false
+    private var didFinishEligibilityCheck: Bool = {
+        #if DEBUG
+        // In Xcode Previews and Emerge snapshot runs, the async eligibility check never
+        // completes, so default to finished to avoid capturing permanently-redacted snapshots.
+        return ProcessInfo.isRunningForPreviews
+        #else
+        return false
+        #endif
+    }()
 
     @State
     private var paywallSessionID: PaywallEvent.SessionID = .init()
@@ -96,7 +114,8 @@ struct PaywallsV2View: View {
         colorScheme: ColorScheme,
         promoOfferCache: PaywallPromoOfferCache? = nil,
         introEligibilityContext: IntroOfferEligibilityContext? = nil,
-        selectedPackageContextOverride: PackageContext? = nil
+        selectedPackageContextOverride: PackageContext? = nil,
+        isActiveWorkflowPage: Bool? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
@@ -114,6 +133,7 @@ struct PaywallsV2View: View {
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
         self.closeWorkflowAction = closeWorkflowAction
+        self.isActiveWorkflowPage = isActiveWorkflowPage
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
         ))
@@ -202,6 +222,12 @@ struct PaywallsV2View: View {
             onDismiss: self.onDismiss,
             closeWorkflowAction: self.closeWorkflowAction
         )
+        .environment(\.isPaywallLoading, {
+            #if DEBUG
+            if let override = self.paywallLoadingOverride { return override }
+            #endif
+            return !self.didFinishEligibilityCheck
+        }())
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
@@ -263,20 +289,12 @@ struct PaywallsV2View: View {
     private func addPaywallModifiers<Content: View>(to content: Content) -> some View {
         content
             .onAppear {
-                let forDefaultPaywall: Bool
-                if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
-                    forDefaultPaywall = true
-                } else {
-                    switch self.paywallStateManager.state {
-                    case .success:
-                        forDefaultPaywall = false
-                    case .failure:
-                        forDefaultPaywall = true
-                    }
-                }
-                self.purchaseHandler.trackPaywallImpression(
-                    self.createEventData(forDefaultPaywall: forDefaultPaywall)
-                )
+                // Standalone paywalls (isActiveWorkflowPage == nil) track `viewed` on view lifecycle.
+                // A workflow page mounts already-current, so fire here too; later re-entries are handled
+                // by `onChangeOf(self.isActiveWorkflowPage)` below. A page mounted while not current
+                // (isActiveWorkflowPage == false) waits until it becomes current.
+                guard self.isActiveWorkflowPage != false else { return }
+                self.firePaywallViewed()
             }
             .task {
                 guard !self.didFinishEligibilityCheck else {
@@ -316,7 +334,13 @@ struct PaywallsV2View: View {
             .preference(key: RestoreErrorPreferenceKey.self,
                         value: self.purchaseHandler.restoreError as NSError?)
             .disabled(self.purchaseHandler.actionInProgress)
-            .onDisappear { self.purchaseHandler.trackPaywallClose() }
+            .onDisappear {
+                // Standalone closes on disappear. A workflow page closes here only if it is still the
+                // current step at teardown (the step the user dismissed from); pages left earlier are
+                // not closed here, their navigation is reported by the workflow-events layer.
+                guard self.isActiveWorkflowPage != false else { return }
+                self.firePaywallClose()
+            }
             .environment(
                 \.componentInteractionLogger,
                 self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
@@ -326,7 +350,43 @@ struct PaywallsV2View: View {
 
                 self.dismissAfterPurchaseCompletionCallbacks()
             }
+            .onChangeOf(self.isActiveWorkflowPage) { isActive in
+                // Workflow page re-entered (became the current step again). Per the events spec each
+                // visit is its own session, so mint a fresh one and fire `viewed` for the new visit.
+                // (Never fires for standalone paywalls, whose isActiveWorkflowPage is nil and constant.)
+                guard isActive == true else { return }
+                let freshSession: PaywallEvent.SessionID = .init()
+                self.paywallSessionID = freshSession
+                self.firePaywallViewed(sessionID: freshSession)
+            }
 
+    }
+
+    private func firePaywallViewed(sessionID: PaywallEvent.SessionID? = nil) {
+        let forDefaultPaywall: Bool
+        if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
+            forDefaultPaywall = true
+        } else {
+            switch self.paywallStateManager.state {
+            case .success:
+                forDefaultPaywall = false
+            case .failure:
+                forDefaultPaywall = true
+            }
+        }
+        self.purchaseHandler.trackPaywallImpression(
+            self.createEventData(forDefaultPaywall: forDefaultPaywall, sessionID: sessionID)
+        )
+    }
+
+    private func firePaywallClose() {
+        if self.isActiveWorkflowPage == nil {
+            // Standalone paywall: close whichever session is active (unchanged behavior).
+            self.purchaseHandler.trackPaywallClose()
+        } else {
+            // Workflow page: close this page's own session, not the globally last-active one.
+            self.purchaseHandler.trackPaywallClose(sessionID: self.paywallSessionID)
+        }
     }
 
     private func dismissAfterPurchaseCompletionCallbacks() {
@@ -338,7 +398,10 @@ struct PaywallsV2View: View {
         }
     }
 
-    private func createEventData(forDefaultPaywall: Bool = false) -> PaywallEvent.Data {
+    private func createEventData(
+        forDefaultPaywall: Bool = false,
+        sessionID: PaywallEvent.SessionID? = nil
+    ) -> PaywallEvent.Data {
         let compontentsData: PaywallComponentsData
         if forDefaultPaywall {
             // The old default paywall was logged as a default template like this.
@@ -359,7 +422,7 @@ struct PaywallsV2View: View {
         return .init(
             offering: self.offering,
             paywallComponentsData: compontentsData,
-            sessionID: self.paywallSessionID,
+            sessionID: sessionID ?? self.paywallSessionID,
             displayMode: .fullScreen,
             locale: .current,
             darkMode: self.colorScheme == .dark,

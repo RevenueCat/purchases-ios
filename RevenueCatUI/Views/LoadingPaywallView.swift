@@ -178,6 +178,10 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
         throw ErrorCode.configurationError
     }
+
+    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
+        return nil
+    }
 #endif
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
@@ -197,6 +201,10 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
     }
 
     func track(paywallEvent: PaywallEvent) async {
+        // Ignoring events from loading paywall view
+    }
+
+    func track(workflowEvent: WorkflowEvent) async {
         // Ignoring events from loading paywall view
     }
 

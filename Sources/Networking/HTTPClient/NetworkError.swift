@@ -249,8 +249,10 @@ extension NetworkError {
         return self.errorStatusCode?.isServerError == true
     }
 
-    /// Whether to fall back to cached offerings in case of this error when fetching offerings.
-    var shouldFallBackToCachedOfferings: Bool {
+    /// Whether to fall back to the last cached response for this error. A 5xx or a connection-level
+    /// failure (no status code) is transient, so serving the last cached copy is appropriate; a 4xx
+    /// is the backend authoritatively rejecting the request, so stale data should not be served.
+    var shouldFallBackToCache: Bool {
         if let errorStatusCode {
             return errorStatusCode.isServerError
         } else {
