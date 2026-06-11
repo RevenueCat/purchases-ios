@@ -71,6 +71,7 @@ struct PaywallsV2View: View {
     private let purchaseHandler: PurchaseHandler
     private let workflowDefaultPackage: Package?
     private let workflowPackages: [Package]?
+    private let workflowPromoOfferProductCodes: [String: String]?
     private let showZeroDecimalPlacePrices: Bool
     /// This is a configuration value from PaywallsV1, but it's important to include here just in case the
     /// default paywall is shown. This is not used in the success path
@@ -107,6 +108,7 @@ struct PaywallsV2View: View {
         showZeroDecimalPlacePrices: Bool,
         workflowDefaultPackage: Package? = nil,
         workflowPackages: [Package]? = nil,
+        workflowPromoOfferProductCodes: [String: String]? = nil,
         displayCloseButton: Bool = false,
         onDismiss: @escaping () -> Void,
         closeWorkflowAction: (() -> Void)? = nil,
@@ -129,6 +131,7 @@ struct PaywallsV2View: View {
         self.purchaseHandler = purchaseHandler
         self.workflowDefaultPackage = workflowDefaultPackage
         self.workflowPackages = workflowPackages
+        self.workflowPromoOfferProductCodes = workflowPromoOfferProductCodes
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
@@ -313,10 +316,14 @@ struct PaywallsV2View: View {
                         workflowPackages: self.workflowPackages
                     )
                 )
-                // Promo stays on-screen only: the promo offer product code lives on the package
-                // component, which an inherited (packageless-step) package doesn't carry.
                 async let promoCheck: Void = self.paywallPromoOfferCache.computeEligibility(
-                    for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
+                    for: Self.promoEligibilityPackageInfos(
+                        paywallPackageInfos: paywallState.packageInfos.map {
+                            ($0.package, $0.promotionalOfferProductCode)
+                        },
+                        workflowPackages: self.workflowPackages,
+                        workflowPromoOfferProductCodes: self.workflowPromoOfferProductCodes
+                    )
                 )
                 _ = await (introCheck, promoCheck)
                 self.didFinishEligibilityCheck = true
@@ -619,6 +626,26 @@ extension PaywallsV2View {
 
         var seen = Set<Package>()
         return (paywallPackages + workflowPackages).filter { seen.insert($0).inserted }
+    }
+
+    /// On-screen package infos plus any inherited workflow packages (with their authored promo offer
+    /// code), so `promo_offer_condition` overrides resolve on a workflow step that has no package
+    /// component of its own.
+    static func promoEligibilityPackageInfos(
+        paywallPackageInfos: [(package: Package, promotionalOfferProductCode: String?)],
+        workflowPackages: [Package]?,
+        workflowPromoOfferProductCodes: [String: String]?
+    ) -> [(package: Package, promotionalOfferProductCode: String?)] {
+        guard let workflowPackages, !workflowPackages.isEmpty else {
+            return paywallPackageInfos
+        }
+
+        var seen = Set<Package>(paywallPackageInfos.map(\.package))
+        var result = paywallPackageInfos
+        for package in workflowPackages where seen.insert(package).inserted {
+            result.append((package, workflowPromoOfferProductCodes?[package.identifier]))
+        }
+        return result
     }
 
     static func chooseLocalization(

@@ -65,4 +65,51 @@ final class IntroEligibilityPackagesTests: TestCase {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+final class PromoEligibilityPackageInfosTests: TestCase {
+
+    private let annual = TestData.annualPackage
+    private let monthly = TestData.monthlyPackage
+
+    private func pairs(
+        _ infos: [(package: Package, promotionalOfferProductCode: String?)]
+    ) -> [(String, String?)] {
+        infos.map { ($0.package.identifier, $0.promotionalOfferProductCode) }
+    }
+
+    func testReturnsScreenInfosWhenNoWorkflowPackages() {
+        let result = PaywallsV2View.promoEligibilityPackageInfos(
+            paywallPackageInfos: [(annual, "promo_a")],
+            workflowPackages: nil,
+            workflowPromoOfferProductCodes: nil
+        )
+
+        expect(self.pairs(result)).to(equal([("$rc_annual", "promo_a")]))
+    }
+
+    // Mirrors the intro case: a packageless workflow step (empty `paywallPackageInfos`) inherits packages,
+    // and the inherited promo offer code must be carried so `promo_offer_condition` can resolve.
+    func testUsesInheritedPromoCodesWhenScreenHasNoPackageComponents() {
+        let result = PaywallsV2View.promoEligibilityPackageInfos(
+            paywallPackageInfos: [],
+            workflowPackages: [annual, monthly],
+            workflowPromoOfferProductCodes: ["$rc_annual": "promo_a"]
+        )
+
+        expect(self.pairs(result)).to(equal([("$rc_annual", "promo_a"), ("$rc_monthly", nil)]))
+    }
+
+    func testKeepsOnScreenInfoAndAppendsInheritedExtras() {
+        let result = PaywallsV2View.promoEligibilityPackageInfos(
+            paywallPackageInfos: [(annual, "screen_a")],
+            workflowPackages: [annual, monthly],
+            workflowPromoOfferProductCodes: ["$rc_annual": "wf_a", "$rc_monthly": "wf_m"]
+        )
+
+        // On-screen info wins for $rc_annual; only the missing $rc_monthly is appended.
+        expect(self.pairs(result)).to(equal([("$rc_annual", "screen_a"), ("$rc_monthly", "wf_m")]))
+    }
+
+}
+
 #endif
