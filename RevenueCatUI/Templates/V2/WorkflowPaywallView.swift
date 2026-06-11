@@ -421,6 +421,7 @@ struct WorkflowPaywallView: View {
             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
             workflowDefaultPackage: page.effectiveWorkflowPackageContext?.selectedPackage,
             workflowPackages: page.effectiveWorkflowPackageContext?.packages,
+            workflowPromoOfferProductCodes: page.effectiveWorkflowPackageContext?.promoOfferCodesByPackageId,
             displayCloseButton: page.showCloseButton,
             onDismiss: self.handleDismiss,
             closeWorkflowAction: self.onDismiss,
