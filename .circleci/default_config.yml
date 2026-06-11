@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@3.20.0
+  revenuecat: revenuecat/sdks-common-config@3.21.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -2564,6 +2564,22 @@ workflows:
     jobs:
       - update-paywall-preview-resources-commit
 
+  update-error-codes:
+    when:
+      equal: [update_error_codes, << pipeline.parameters.action >>]
+    jobs:
+      - revenuecat/update-error-codes:
+          platform: ios
+          output: Sources/Generated/ErrorCode.swift
+          executor:
+            name: macos-executor
+            xcode_version: *swiftinterface-xcode-version
+          update_api_steps:
+            - install-dependencies
+            - run:
+                name: Update swiftinterface baselines
+                command: bundle exec fastlane ios update_swiftinterface_baselines scheme:RevenueCat
+
   manual-trigger-docs-deploy:
     when:
       equal: [run-manual-docs-deploy, << pipeline.parameters.action >>]
@@ -2586,6 +2602,8 @@ workflows:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
             equal: [bump, << pipeline.parameters.action >>]
+        - not:
+            equal: [update_error_codes, << pipeline.parameters.action >>]
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
         - not: << pipeline.parameters.generate_swiftinterface >>
