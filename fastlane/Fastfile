@@ -23,10 +23,7 @@ end
 # Hack to work around a Fastlane quirk where plugin actions are run from the parent of the current working directory.
 # We switch to the first subdirectory, then run the action. The action will run from the parent of the subdirectory, which is
 # our actual current working directory.
-# This is only needed when our current working directory is not the ./fastlane directory. When it is the ./fastlane
-# directory, Fastlane already runs plugin actions from its parent (the repository root), which is what we want, so we
-# run the action directly. We also fall back to running directly when there are no subdirectories to switch into,
-# which otherwise raised "undefined method `chomp' for nil:NilClass".
+# This is only needed when our current working directory is not the ./fastlane directory.
 # https://docs.fastlane.tools/advanced/fastlane/#directory-behavior
 def run_plugin_action_in_current_directory(&block)
   first_subdirectory = Dir["*/"].first
