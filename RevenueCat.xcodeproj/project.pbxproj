@@ -1266,6 +1266,7 @@
 		B34605EB279A766C0031CA74 /* OperationQueue+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605EA279A766C0031CA74 /* OperationQueue+Extensions.swift */; };
 		B34D2AA0269606E400D88C3A /* IntroEligibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3DF6A4F269524080030D57C /* IntroEligibility.swift */; };
 		B34D2AA626976FC700D88C3A /* ErrorCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34D2AA526976FC700D88C3A /* ErrorCode.swift */; };
+		02F84B23216242A7B8CDAB4A /* ErrorCode+Conformances.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F92C8B490F4B78AC8B1AAF /* ErrorCode+Conformances.swift */; };
 		B35042C426CDB79A00905B95 /* Purchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35042C326CDB79A00905B95 /* Purchases.swift */; };
 		B35042C626CDD3B100905B95 /* PurchasesDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */; };
 		B359DDF027EAA2B4003ABA54 /* MockDateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B516F26D44E8D00BD2BD7 /* MockDateProvider.swift */; };
@@ -2898,6 +2899,7 @@
 		B34605D0279A6E600031CA74 /* CustomerAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerAPI.swift; sourceTree = "<group>"; };
 		B34605EA279A766C0031CA74 /* OperationQueue+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OperationQueue+Extensions.swift"; sourceTree = "<group>"; };
 		B34D2AA526976FC700D88C3A /* ErrorCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorCode.swift; sourceTree = "<group>"; };
+		61F92C8B490F4B78AC8B1AAF /* ErrorCode+Conformances.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ErrorCode+Conformances.swift"; sourceTree = "<group>"; };
 		B35042C326CDB79A00905B95 /* Purchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Purchases.swift; sourceTree = "<group>"; };
 		B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDelegate.swift; sourceTree = "<group>"; };
 		B35F9E0826B4BEED00095C3F /* String+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
@@ -3791,6 +3793,7 @@
 				2DD58DD627F240E0000FDFE3 /* DocCDocumentation */,
 				4F2F2EFD2A3CDA9B00652B24 /* Diagnostics */,
 				B324DC482720C15300103EE9 /* Error Handling */,
+				EA4B58C6BF6542AEB8892016 /* Generated */,
 				2CD72940268A820E00BFC976 /* FoundationExtensions */,
 				B3A36AAC26BC76230059EDEA /* Identity */,
 				2D1A28CB24AA6F4B006BE931 /* LocalReceiptParsing */,
@@ -6259,7 +6262,7 @@
 				5733B18D27FF586A00EC2045 /* BackendError.swift */,
 				B3B5FBB3269CED4B00104A0C /* BackendErrorCode.swift */,
 				B3022071272B3DDC008F1A0D /* DescribableError.swift */,
-				B34D2AA526976FC700D88C3A /* ErrorCode.swift */,
+				61F92C8B490F4B78AC8B1AAF /* ErrorCode+Conformances.swift */,
 				B3B5FBB5269CED6400104A0C /* ErrorDetails.swift */,
 				35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */,
 				2D971CC02744364C0093F35F /* SKError+Extensions.swift */,
@@ -6268,6 +6271,14 @@
 				4F0201C32A13C85500091612 /* Assertions.swift */,
 			);
 			path = "Error Handling";
+			sourceTree = "<group>";
+		};
+		EA4B58C6BF6542AEB8892016 /* Generated */ = {
+			isa = PBXGroup;
+			children = (
+				B34D2AA526976FC700D88C3A /* ErrorCode.swift */,
+			);
+			path = Generated;
 			sourceTree = "<group>";
 		};
 		B34605A1279A6E380031CA74 /* Caching */ = {
@@ -7461,6 +7472,7 @@
 				35AAEB452BBB14D000A12548 /* DiagnosticsFileHandler.swift in Sources */,
 				537B4B302DA9742500CEFF4C /* HealthReportOperation.swift in Sources */,
 				B34D2AA626976FC700D88C3A /* ErrorCode.swift in Sources */,
+				02F84B23216242A7B8CDAB4A /* ErrorCode+Conformances.swift in Sources */,
 				4F15B4A12A6774C9005BEFE8 /* CustomerInfo+NonSubscriptions.swift in Sources */,
 				887E7B592C13CD2C002977DE /* PurchasesAreCompletedBy.swift in Sources */,
 				B39E811D268E887500D31189 /* SubscriberAttribute.swift in Sources */,
