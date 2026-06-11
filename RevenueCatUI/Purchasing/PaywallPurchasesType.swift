@@ -63,6 +63,9 @@ protocol PaywallPurchasesType: Sendable {
     func track(paywallEvent: PaywallEvent) async
 
     @Sendable
+    func track(workflowEvent: WorkflowEvent) async
+
+    @Sendable
     func cachePurchaseData(
         presentedOfferingContext: PresentedOfferingContext,
         paywallEvent: PaywallEvent?,

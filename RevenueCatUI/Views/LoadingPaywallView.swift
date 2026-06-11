@@ -206,6 +206,10 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
         // Ignoring events from loading paywall view
     }
 
+    func track(workflowEvent: WorkflowEvent) async {
+        // Ignoring events from loading paywall view
+    }
+
     func cachePurchaseData(presentedOfferingContext: PresentedOfferingContext,
                            paywallEvent: PaywallEvent?,
                            productIdentifier: String) {
