@@ -3789,6 +3789,7 @@
 				2DD58DD627F240E0000FDFE3 /* DocCDocumentation */,
 				4F2F2EFD2A3CDA9B00652B24 /* Diagnostics */,
 				B324DC482720C15300103EE9 /* Error Handling */,
+				EA4B58C6BF6542AEB8892016 /* Generated */,
 				2CD72940268A820E00BFC976 /* FoundationExtensions */,
 				B3A36AAC26BC76230059EDEA /* Identity */,
 				2D1A28CB24AA6F4B006BE931 /* LocalReceiptParsing */,
@@ -6254,7 +6255,6 @@
 				5733B18D27FF586A00EC2045 /* BackendError.swift */,
 				B3B5FBB3269CED4B00104A0C /* BackendErrorCode.swift */,
 				B3022071272B3DDC008F1A0D /* DescribableError.swift */,
-				B34D2AA526976FC700D88C3A /* ErrorCode.swift */,
 				61F92C8B490F4B78AC8B1AAF /* ErrorCode+Conformances.swift */,
 				B3B5FBB5269CED6400104A0C /* ErrorDetails.swift */,
 				35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */,
@@ -6264,6 +6264,14 @@
 				4F0201C32A13C85500091612 /* Assertions.swift */,
 			);
 			path = "Error Handling";
+			sourceTree = "<group>";
+		};
+		EA4B58C6BF6542AEB8892016 /* Generated */ = {
+			isa = PBXGroup;
+			children = (
+				B34D2AA526976FC700D88C3A /* ErrorCode.swift */,
+			);
+			path = Generated;
 			sourceTree = "<group>";
 		};
 		B34605A1279A6E380031CA74 /* Caching */ = {

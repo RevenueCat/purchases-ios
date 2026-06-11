@@ -1,3 +1,4 @@
+// @generated
 //
 //  Copyright RevenueCat Inc. All Rights Reserved.
 //
@@ -138,7 +139,7 @@ extension ErrorCode: CustomStringConvertible {
         case .signatureVerificationFailed:
             return "Request failed signature verification. Please see https://rev.cat/trusted-entitlements for more info."
         case .featureNotSupportedWithStoreKit1:
-            return "This feature is not supported when using StoreKit 1.Configure the SDK to use StoreKit 2 to use this feature."
+            return "This feature is not supported when using StoreKit 1. Configure the SDK to use StoreKit 2 to use this feature."
         case .invalidWebPurchaseToken:
             return "The link you provided does not contain a valid purchase token."
         case .purchaseBelongsToOtherUser:
