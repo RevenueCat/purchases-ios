@@ -531,9 +531,15 @@ private final class InMemoryHTMLURLSchemeHandler: NSObject, WKURLSchemeHandler {
 }
 
 /// PaywallWebViewPool
+///
+/// Namespace for the web view pre-warming entry point. Declared as a caseless
+/// `struct` (not an `enum`) so it does not add a new public enum to the SDK's
+/// consumer-facing surface (see the `no_new_public_enums` SwiftLint rule).
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-public enum PaywallWebViewPool {
+public struct PaywallWebViewPool {
+
+    private init() {}
 
     /// Warms the pool so it's ready. This should be invoked well before the paywall goes to render.
     public static func warmUp() {
