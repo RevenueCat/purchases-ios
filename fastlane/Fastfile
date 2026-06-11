@@ -242,15 +242,7 @@ platform :ios do
     UI.user_error!("Failed to determine target repository name") if target_repository_name.nil? || target_repository_name.empty?
 
     # Loop over all platforms and generate screenshots for each
-    platforms = ["ios",
-                # These platforms work locally but we have been unable to figure out how to get them to work on CI due to codesigning issues.
-                #  "iphone-app-on-mac",
-                #  "ipad-app-on-mac",
-                 "mac-catalyst-optimized-for-mac",
-                 "mac-catalyst-scaled-to-match-ipad",
-                 "mac-native"]
-
-    platforms.each do |platform|
+    paywall_template_screenshot_platforms.each do |platform|
       UI.message("Generating screenshots for platform: #{platform}")
 
       output_dir = record_paywall_screenshots(platform: platform)
@@ -277,6 +269,36 @@ platform :ios do
     end
   end
 
+  desc "Records Paywall template screenshots and uploads them to Emerge for PR diffing"
+  lane :record_and_upload_paywall_template_snapshots_to_emerge do
+    paywall_template_screenshot_platforms.each do |platform|
+      UI.message("Generating screenshots for platform: #{platform}")
+      output_dir = record_paywall_screenshots(platform: platform)
+
+      UI.message("Uploading #{platform} screenshots to Emerge")
+      # Reuses the "Bring Your Own Snapshots" support we already use for the V1 snapshots.
+      # These are the same screenshots record_and_push_paywall_template_screenshots pushes to
+      # paywall-rendering-validation, but this lane runs on PRs so Emerge can diff against main.
+      upload_snapshots_to_emerge(
+        name: "Paywall Template Screenshots (#{platform})",
+        id: "com.revenuecat.paywall-rendering-validation.#{platform}",
+        images_path: "#{output_dir}/images"
+      )
+    end
+  end
+
+  # Apple platforms we render Paywalls V2 template screenshots for. Shared between the
+  # paywall-rendering-validation push and the Emerge upload so they stay in sync.
+  private_lane :paywall_template_screenshot_platforms do
+    ["ios",
+     # These platforms work locally but we have been unable to figure out how to get them to
+     # work on CI due to codesigning issues.
+     #  "iphone-app-on-mac",
+     #  "ipad-app-on-mac",
+     "mac-catalyst-optimized-for-mac",
+     "mac-catalyst-scaled-to-match-ipad",
+     "mac-native"]
+  end
 
   private_lane :process_paywall_screenshots do |options|
     output_dir = options[:output_dir] || UI.user_error!("No output_dir provided")
@@ -294,15 +316,6 @@ platform :ios do
       FileUtils.mkdir_p(target_dir)
       FileUtils.cp(file_path, target_path)
     end
-
-    # Upload the same screenshots we push to paywall-rendering-validation to Emerge,
-    # reusing the "Bring Your Own Snapshots" support we already use for the V1 snapshots.
-    UI.message("Uploading snapshots to Emerge for platform: #{platform}")
-    upload_snapshots_to_emerge(
-      name: "Paywall Template Screenshots (#{platform})",
-      id: "com.revenuecat.paywall-rendering-validation.#{platform}",
-      images_path: "#{output_dir}/images"
-    )
   end
 
   private_lane :commit_push_and_create_pr_if_necessary do |options|

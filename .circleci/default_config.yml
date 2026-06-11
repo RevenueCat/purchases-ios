@@ -1945,6 +1945,31 @@ jobs:
           command: bundle exec fastlane record_and_push_paywall_template_screenshots target_repository_path:../Tests/paywall-rendering-validation
           no_output_timeout: 15m
 
+  record-and-upload-paywall-template-snapshots-to-emerge:
+    description: "Record paywall template screenshots and upload them to Emerge for PR snapshot diffing"
+    executor:
+      name: macos-executor
+      xcode_version: "16.4"
+
+    steps:
+      - checkout
+      - install-dependencies
+      - revenuecat/setup-git-credentials
+      - revenuecat/trust-github-key
+      - run:
+          name: Fetch paywall-preview-resources
+          command: bundle exec fastlane ios fetch_paywall_preview_resources
+      - tuist-generate-workspace:
+          include_test_dependencies: true
+      - run:
+          name: Record paywall template screenshots and upload to Emerge
+          command: bundle exec fastlane record_and_upload_paywall_template_snapshots_to_emerge
+          no_output_timeout: 30m
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: paywall-template-emerge-snapshots
+      - slack-notify-on-fail
+
   update-paywall-preview-resources-commit:
     docker:
       - image: cimg/ruby:3.2.0
@@ -2328,6 +2353,11 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+      - record-and-upload-paywall-template-snapshots-to-emerge:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
 
       # Installation Tests
       - installation-tests-all-but-carthage:
@@ -2402,6 +2432,7 @@ workflows:
             - run-revenuecat-ui-ios-18-and-17
             - spm-revenuecat-ui-watchos
             - record-and-upload-paywalls-v1-snapshots
+            - record-and-upload-paywall-template-snapshots-to-emerge
             - installation-tests-all-but-carthage
             - installation-tests-carthage
             - api-tests
@@ -2557,8 +2588,6 @@ workflows:
       - record-and-push-paywall-template-screenshots:
           context:
             - paywall-rendering-validation-pr-rw
-            # Needed for EMERGE_API_TOKEN to upload the screenshots to Emerge.
-            - slack-secrets
 
   update-paywall-templates:
     when:
@@ -2659,6 +2688,9 @@ workflows:
       - record-and-upload-paywalls-v1-snapshots:
           context:
             - slack-secrets
+      - record-and-upload-paywall-template-snapshots-to-emerge:
+          context:
+            - slack-secrets
       - installation-tests-all-but-carthage:
           context:
             - slack-secrets
@@ -2729,6 +2761,7 @@ workflows:
             - run-revenuecat-ui-ios-18-and-17
             - spm-revenuecat-ui-watchos
             - record-and-upload-paywalls-v1-snapshots
+            - record-and-upload-paywall-template-snapshots-to-emerge
             - installation-tests-all-but-carthage
             - installation-tests-carthage
             - api-tests
