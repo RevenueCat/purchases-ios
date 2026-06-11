@@ -147,6 +147,33 @@ public struct PaywallView: View {
         )
     }
 
+    /// Renders a workflow paywall from an injected ``WorkflowContext`` (built via
+    /// `WorkflowPreview.makeContext`), bypassing the backend `/workflows` fetch. Used to preview
+    /// dashboard workflows (including drafts) in a companion app.
+    // swiftlint:disable:next missing_docs
+    @_spi(Internal) public init(
+        workflowContext: WorkflowContext,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
+    ) {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
+
+        var configuration = PaywallViewConfiguration(
+            content: .offering(workflowContext.initialOffering),
+            mode: .fullScreen,
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            introEligibility: introEligibility,
+            purchaseHandler: purchaseHandler
+        )
+        configuration.injectedWorkflowContext = workflowContext
+
+        self.init(configuration: configuration)
+    }
+
     init(configuration: PaywallViewConfiguration, paywallViewOwnsPurchaseHandler: Bool = true) {
         self.paywallViewOwnsPurchaseHandler = paywallViewOwnsPurchaseHandler
         if paywallViewOwnsPurchaseHandler {
@@ -161,15 +188,15 @@ public struct PaywallView: View {
 
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
 
-        // When the workflow + offerings are already cached, seed the workflow context (and its
-        // mapped offering) synchronously so a warm cache renders without a loading state. On a
-        // cold/stale/partial cache the seed is nil and the async resolve path takes over.
+        // Seed the workflow context (and its mapped offering) synchronously so the workflow paywall
+        // renders without a loading state. An injected context (preview/injection path) is used
+        // directly; otherwise a warm cache seeds it, and on a cold/stale/partial cache the seed is
+        // nil and the async resolve path takes over.
         // This @State init wiring isn't unit-tested directly (SwiftUI @State can't be seeded outside
         // a view init); the seeding logic lives in the unit-tested cachedInitialWorkflowContext, and
         // the rendered result is covered by the existing PaywallView snapshot tests.
-        let seededWorkflowContext = configuration.purchaseHandler.cachedInitialWorkflowContext(
-            for: configuration.content
-        )
+        let seededWorkflowContext = configuration.injectedWorkflowContext
+            ?? configuration.purchaseHandler.cachedInitialWorkflowContext(for: configuration.content)
         self._workflowContext = .init(initialValue: seededWorkflowContext)
         self._offering = .init(
             initialValue: seededWorkflowContext?.initialOffering
