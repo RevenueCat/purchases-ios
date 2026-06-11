@@ -28,8 +28,6 @@ struct TestApp: App {
 
 #else
 
-// Scene isn't available until iOS 14.0, so this is for backwards compatibility.
-
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
