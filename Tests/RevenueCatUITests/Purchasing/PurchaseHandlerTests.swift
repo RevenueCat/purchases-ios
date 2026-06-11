@@ -101,16 +101,18 @@ class PurchaseHandlerTests: TestCase {
         }
         let handler = PurchaseHandler(
             purchases: purchases,
-            eventDispatcher: PurchaseHandler.testEventDispatcher
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
         )
 
-        let eventData: PaywallEvent.Data = .init(
-            offering: TestData.offeringWithIntroOffer,
-            paywall: TestData.paywallWithIntroOffer,
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
             sessionID: .init(),
             displayMode: .fullScreen,
-            locale: .init(identifier: "en_US"),
-            darkMode: false
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
         )
         handler.trackPaywallImpression(eventData)
 
@@ -144,18 +146,20 @@ class PurchaseHandlerTests: TestCase {
         }
         let handler = PurchaseHandler(
             purchases: purchases,
-            eventDispatcher: PurchaseHandler.testEventDispatcher,
             performPurchase: { _ in (userCancelled: true, error: nil) },
-            performRestore: { (success: true, error: nil) }
+            performRestore: { (success: true, error: nil) },
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
         )
 
-        let eventData: PaywallEvent.Data = .init(
-            offering: TestData.offeringWithIntroOffer,
-            paywall: TestData.paywallWithIntroOffer,
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
             sessionID: .init(),
             displayMode: .fullScreen,
-            locale: .init(identifier: "en_US"),
-            darkMode: false
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
         )
         handler.trackPaywallImpression(eventData)
 
@@ -188,16 +192,18 @@ class PurchaseHandlerTests: TestCase {
         }
         let handler = PurchaseHandler(
             purchases: purchases,
-            eventDispatcher: PurchaseHandler.testEventDispatcher
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
         )
 
-        let eventData: PaywallEvent.Data = .init(
-            offering: TestData.offeringWithIntroOffer,
-            paywall: TestData.paywallWithIntroOffer,
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
             sessionID: .init(),
             displayMode: .fullScreen,
-            locale: .init(identifier: "en_US"),
-            darkMode: false
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
         )
         handler.trackPaywallImpression(eventData)
 
@@ -235,18 +241,20 @@ class PurchaseHandlerTests: TestCase {
         }
         let handler = PurchaseHandler(
             purchases: purchases,
-            eventDispatcher: PurchaseHandler.testEventDispatcher,
             performPurchase: { _ in (userCancelled: false, error: purchaseError) },
-            performRestore: { (success: true, error: nil) }
+            performRestore: { (success: true, error: nil) },
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
         )
 
-        let eventData: PaywallEvent.Data = .init(
-            offering: TestData.offeringWithIntroOffer,
-            paywall: TestData.paywallWithIntroOffer,
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
             sessionID: .init(),
             displayMode: .fullScreen,
-            locale: .init(identifier: "en_US"),
-            darkMode: false
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
         )
         handler.trackPaywallImpression(eventData)
 
@@ -277,15 +285,20 @@ class PurchaseHandlerTests: TestCase {
             return TestData.customerInfo
         }
 
-        let handler = PurchaseHandler(purchases: mockPurchases)
+        let handler = PurchaseHandler(
+            purchases: mockPurchases,
+            eventTracker: .init(purchases: mockPurchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
+        )
 
-        let eventData: PaywallEvent.Data = .init(
-            offering: TestData.offeringWithIntroOffer,
-            paywall: TestData.paywallWithIntroOffer,
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
             sessionID: .init(),
             displayMode: .fullScreen,
-            locale: .init(identifier: "en_US"),
-            darkMode: false
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
         )
         handler.trackPaywallImpression(eventData)
 
@@ -311,16 +324,19 @@ class PurchaseHandlerTests: TestCase {
         let handler = PurchaseHandler(
             purchases: mockPurchases,
             performPurchase: { _ in (userCancelled: false, error: nil) },
-            performRestore: { (success: true, error: nil) }
+            performRestore: { (success: true, error: nil) },
+            eventTracker: .init(purchases: mockPurchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
         )
 
-        let eventData: PaywallEvent.Data = .init(
-            offering: TestData.offeringWithIntroOffer,
-            paywall: TestData.paywallWithIntroOffer,
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
             sessionID: .init(),
             displayMode: .fullScreen,
-            locale: .init(identifier: "en_US"),
-            darkMode: false
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
         )
         handler.trackPaywallImpression(eventData)
 
@@ -450,13 +466,15 @@ class PurchaseHandlerTests: TestCase {
     func testCloseEventIsTrackedOnlyAfterImpressionAndOnlyOnce() async throws {
         let handler: PurchaseHandler = .mock()
 
-        let eventData: PaywallEvent.Data = .init(
-            offering: TestData.offeringWithIntroOffer,
-            paywall: TestData.paywallWithIntroOffer,
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
             sessionID: .init(),
             displayMode: .fullScreen,
-            locale: .init(identifier: "en_US"),
-            darkMode: false
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
         )
 
         let result1 = handler.trackPaywallClose()
@@ -469,6 +487,38 @@ class PurchaseHandlerTests: TestCase {
         let result3 = handler.trackPaywallClose()
         expect(result3) == false
 
+    }
+
+    func testTrackPaywallCloseBySessionClosesThatSpecificSessionNotJustTheActiveOne() async throws {
+        let handler: PurchaseHandler = .mock()
+
+        func impressionData(_ sessionID: PaywallEvent.SessionID) -> PaywallEvent.Data {
+            return .init(
+                paywallIdentifier: TestData.paywallWithIntroOffer.id,
+                offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+                paywallRevision: TestData.paywallWithIntroOffer.revision,
+                sessionID: sessionID,
+                displayMode: .fullScreen,
+                localeIdentifier: "en_US",
+                darkMode: false,
+                source: nil
+            )
+        }
+
+        let sessionA: PaywallEvent.SessionID = .init()
+        let sessionB: PaywallEvent.SessionID = .init()
+
+        // Two paywall pages are impressed (as in a workflow). `activePaywallSessionID` now points at B.
+        handler.trackPaywallImpression(impressionData(sessionA))
+        handler.trackPaywallImpression(impressionData(sessionB))
+
+        // The earlier session (A) must still be closeable by id, even though it is not the active one.
+        // `trackPaywallClose()` (no arg) would only ever close B, leaving A dangling open.
+        expect(handler.trackPaywallClose(sessionID: sessionA)) == true
+        expect(handler.trackPaywallClose(sessionID: sessionB)) == true
+
+        // Closing an already-closed session is a no-op.
+        expect(handler.trackPaywallClose(sessionID: sessionA)) == false
     }
 
     func testPaywallSourceIsPropagatedToTrackedEvents() async throws {
@@ -494,15 +544,16 @@ class PurchaseHandlerTests: TestCase {
         })
         let handler = PurchaseHandler(
             purchases: purchases,
-            eventDispatcher: PurchaseHandler.testEventDispatcher
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
         )
 
-        let eventData: PaywallEvent.Data = .init(
-            offering: TestData.offeringWithIntroOffer,
-            paywall: TestData.paywallWithIntroOffer,
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
             sessionID: .init(),
             displayMode: .fullScreen,
-            locale: .init(identifier: "en_US"),
+            localeIdentifier: "en_US",
             darkMode: false,
             source: source
         )
@@ -545,6 +596,81 @@ class PurchaseHandlerTests: TestCase {
 
         XCTAssertEqual(count, 2, "setting this should have only ouccured twice from \(job)")
     }
+
+    func test_haveBothBeenCanceled_appliesCorrectly() async throws {
+        let successfulPurchaseResult: PurchaseResultData = (
+            transaction: nil,
+            customerInfo: TestData.customerInfo,
+            userCancelled: false
+        )
+        let cancelledPurchaseResult: PurchaseResultData = (
+            transaction: nil,
+            customerInfo: TestData.customerInfo,
+            userCancelled: true
+        )
+
+        let testCases = [
+            (
+                shouldUpdate: false,
+                currentResultState: nil as PurchaseResultData?,
+                nextResultState: successfulPurchaseResult as PurchaseResultData?,
+                line: #line as UInt
+            ),
+            (false, nil, cancelledPurchaseResult, #line),
+            (false, successfulPurchaseResult, nil, #line),
+            (false, cancelledPurchaseResult, nil, #line),
+            (false, successfulPurchaseResult, successfulPurchaseResult, #line),
+            (false, successfulPurchaseResult, cancelledPurchaseResult, #line),
+            (false, cancelledPurchaseResult, successfulPurchaseResult, #line),
+            (true, cancelledPurchaseResult, cancelledPurchaseResult, #line)
+        ]
+
+        for (shouldUpdate, currentResultState, nextResultState, line) in testCases {
+            // GIVEN
+            let purchaseResult = Atomic<PurchaseResultData>(successfulPurchaseResult)
+            let purchases = MockPurchases { _, _, _ in
+                purchaseResult.value
+            } restorePurchases: {
+                TestData.customerInfo
+            } trackEvent: { event in
+                Logger.debug("Tracking event: \(event)")
+            } customerInfo: {
+                TestData.customerInfo
+            }
+
+            let handler = PurchaseHandler(
+                purchases: purchases,
+                eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
+            )
+
+            var publishedRequestIDs: [UUID?] = []
+
+            let cancellable = handler.$consecutiveCancellationRequestID
+                .sink { publishedRequestIDs.append($0) }
+
+            if let currentResultState {
+                purchaseResult.value = currentResultState
+                try await handler.purchase(package: TestData.packageWithIntroOffer)
+            }
+
+            publishedRequestIDs.removeAll()
+
+            // WHEN
+            if let nextResultState {
+                purchaseResult.value = nextResultState
+                try await handler.purchase(package: TestData.packageWithIntroOffer)
+            } else {
+                handler.resetForNewSession()
+            }
+
+            // THEN
+            let didUpdate = publishedRequestIDs.contains { $0 != nil }
+            XCTAssertEqual(didUpdate, shouldUpdate, line: line)
+
+            // cleanup
+            cancellable.cancel()
+        }
+    }
 }
 
 // MARK: - Private
@@ -560,30 +686,32 @@ private final class AsyncPurchaseHandler {
     private(set) var purchaseHandler: PurchaseHandler!
 
     init() {
+        let purchases = MockPurchases { [weak instance = self] _, _, _ in
+            let instance = try XCTUnwrap(instance)
+
+            await instance.createAndWaitForContinuation()
+
+            return (
+                transaction: nil,
+                customerInfo: TestData.customerInfo,
+                userCancelled: false
+            )
+        } restorePurchases: { [weak instance = self] in
+            let instance = try XCTUnwrap(instance)
+            await instance.createAndWaitForContinuation()
+
+            return TestData.customerInfo
+        } trackEvent: { event in
+            Logger.debug("Tracking event: \(event)")
+        } customerInfo: { [weak instance = self] in
+            let instance = try XCTUnwrap(instance)
+            await instance.createAndWaitForContinuation()
+
+            return TestData.customerInfo
+        }
         self.purchaseHandler = .init(
-            purchases: MockPurchases { [weak instance = self] _, _, _ in
-                let instance = try XCTUnwrap(instance)
-
-                await instance.createAndWaitForContinuation()
-
-                return (
-                    transaction: nil,
-                    customerInfo: TestData.customerInfo,
-                    userCancelled: false
-                )
-            } restorePurchases: { [weak instance = self] in
-                let instance = try XCTUnwrap(instance)
-                await instance.createAndWaitForContinuation()
-
-                return TestData.customerInfo
-            } trackEvent: { event in
-                Logger.debug("Tracking event: \(event)")
-            } customerInfo: { [weak instance = self] in
-                let instance = try XCTUnwrap(instance)
-                await instance.createAndWaitForContinuation()
-
-                return TestData.customerInfo
-            }
+            purchases: purchases,
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
         )
     }
 

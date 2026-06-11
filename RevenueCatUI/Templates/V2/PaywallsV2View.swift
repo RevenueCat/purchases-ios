@@ -48,6 +48,14 @@ struct PaywallsV2View: View {
     @Environment(\.paywallSource)
     private var paywallSource
 
+    @Environment(\.workflowPackageContext)
+    private var workflowPackageContext
+
+    #if DEBUG
+    @Environment(\.paywallLoadingOverride)
+    private var paywallLoadingOverride: Bool?
+    #endif
+
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -61,11 +69,32 @@ struct PaywallsV2View: View {
     private let uiConfigProvider: UIConfigProvider
     private let offering: Offering
     private let purchaseHandler: PurchaseHandler
+    private let workflowDefaultPackage: Package?
+    private let workflowPackages: [Package]?
+    private let showZeroDecimalPlacePrices: Bool
     /// This is a configuration value from PaywallsV1, but it's important to include here just in case the
     /// default paywall is shown. This is not used in the success path
     private let displayCloseButton: Bool
     private let onDismiss: () -> Void
-    @State private var didFinishEligibilityCheck: Bool = false
+    private let closeWorkflowAction: (() -> Void)?
+    /// Non-`nil` only when this paywall is a step inside a workflow, carrying whether it is the current step.
+    /// Workflow pages stay mounted across navigation, so `paywall_viewed` / `paywall_close` fire on
+    /// activation (becoming / ceasing to be the current step) rather than on SwiftUI's view lifecycle.
+    /// `nil` keeps the standalone-paywall behavior of tracking on `onAppear` / `onDisappear`.
+    private let isActiveWorkflowPage: Bool?
+    @State
+    private var didFinishEligibilityCheck: Bool = {
+        #if DEBUG
+        // In Xcode Previews and Emerge snapshot runs, the async eligibility check never
+        // completes, so default to finished to avoid capturing permanently-redacted snapshots.
+        return ProcessInfo.isRunningForPreviews
+        #else
+        return false
+        #endif
+    }()
+
+    @State
+    private var paywallSessionID: PaywallEvent.SessionID = .init()
 
     @StateObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
@@ -76,24 +105,35 @@ struct PaywallsV2View: View {
         purchaseHandler: PurchaseHandler,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
+        workflowDefaultPackage: Package? = nil,
+        workflowPackages: [Package]? = nil,
         displayCloseButton: Bool = false,
         onDismiss: @escaping () -> Void,
+        closeWorkflowAction: (() -> Void)? = nil,
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
         colorScheme: ColorScheme,
         promoOfferCache: PaywallPromoOfferCache? = nil,
-        introEligibilityContext: IntroOfferEligibilityContext? = nil
+        introEligibilityContext: IntroOfferEligibilityContext? = nil,
+        selectedPackageContextOverride: PackageContext? = nil,
+        isActiveWorkflowPage: Bool? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
-            failedToLoadFont: failedToLoadFont
+            failedToLoadFont: failedToLoadFont,
+            automaticallyScaleFontSize: paywallComponents.data.automaticallyScaleFontSize
         )
 
         self.paywallComponentsData = paywallComponents.data
         self.uiConfigProvider = uiConfigProvider
         self.offering = offering
         self.purchaseHandler = purchaseHandler
+        self.workflowDefaultPackage = workflowDefaultPackage
+        self.workflowPackages = workflowPackages
+        self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
+        self.closeWorkflowAction = closeWorkflowAction
+        self.isActiveWorkflowPage = isActiveWorkflowPage
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
         ))
@@ -124,9 +164,16 @@ struct PaywallsV2View: View {
         )
 
         let selectedPackageContext: PackageContext
-        if case .success(let paywallState) = initialState {
+        if let override = selectedPackageContextOverride {
+            selectedPackageContext = override
+        } else if case .success(let paywallState) = initialState {
             selectedPackageContext = Self.makeSelectedPackageContext(
                 from: paywallState,
+                defaultPackage: Self.effectiveDefaultPackage(
+                    pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+                    workflowDefaultPackage: workflowDefaultPackage
+                ),
+                workflowPackages: workflowPackages,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         } else {
@@ -161,36 +208,32 @@ struct PaywallsV2View: View {
     }
 
     private func loadedPaywallView(paywallState: PaywallState) -> some View {
-        LoadedPaywallsV2View(
+        let contentLocale = paywallState.rootViewModel.localizationProvider.locale
+        let defaultPackage = Self.effectiveDefaultPackage(
+            pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage ?? self.workflowDefaultPackage
+        )
+        return LoadedPaywallsV2View(
             introOfferEligibilityContext: introOfferEligibilityContext,
             paywallState: paywallState,
             uiConfigProvider: self.uiConfigProvider,
             selectedPackageContext: self.selectedPackageContext,
-            onDismiss: self.onDismiss
+            defaultPackage: defaultPackage,
+            onDismiss: self.onDismiss,
+            closeWorkflowAction: self.closeWorkflowAction
         )
+        .environment(\.isPaywallLoading, {
+            #if DEBUG
+            if let override = self.paywallLoadingOverride { return override }
+            #endif
+            return !self.didFinishEligibilityCheck
+        }())
+        .environment(\.locale, contentLocale)
+        .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)
-        .onAppear {
-            self.purchaseHandler.trackPaywallImpression(
-                self.createEventData()
-            )
-        }
-        .task {
-            guard !didFinishEligibilityCheck else {
-                return
-            }
-
-            async let introCheck: Void = introOfferEligibilityContext.computeEligibility(
-                for: paywallState.packages
-            )
-            async let promoCheck: Void = paywallPromoOfferCache.computeEligibility(
-                for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
-            )
-            _ = await (introCheck, promoCheck)
-            didFinishEligibilityCheck = true
-        }
     }
 
     @ViewBuilder
@@ -241,20 +284,47 @@ struct PaywallsV2View: View {
                 offering: self.offering
             )
         )
-        .onAppear {
-            self.purchaseHandler.trackPaywallImpression(
-                self.createEventData(forDefaultPaywall: true)
-            )
-        }
     }
 
     private func addPaywallModifiers<Content: View>(to content: Content) -> some View {
         content
+            .onAppear {
+                // Standalone paywalls (isActiveWorkflowPage == nil) track `viewed` on view lifecycle.
+                // A workflow page mounts already-current, so fire here too; later re-entries are handled
+                // by `onChangeOf(self.isActiveWorkflowPage)` below. A page mounted while not current
+                // (isActiveWorkflowPage == false) waits until it becomes current.
+                guard self.isActiveWorkflowPage != false else { return }
+                self.firePaywallViewed()
+            }
+            .task {
+                guard !self.didFinishEligibilityCheck else {
+                    return
+                }
+                if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
+                    return
+                }
+                guard case let .success(paywallState) = self.paywallStateManager.state else {
+                    return
+                }
+
+                async let introCheck: Void = self.introOfferEligibilityContext.computeEligibility(
+                    for: paywallState.packages
+                )
+                async let promoCheck: Void = self.paywallPromoOfferCache.computeEligibility(
+                    for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
+                )
+                _ = await (introCheck, promoCheck)
+                self.didFinishEligibilityCheck = true
+            }
             // Note: preferences need to be applied after `.toolbar` call
             .preference(key: PurchaseInProgressPreferenceKey.self,
                         value: self.purchaseHandler.packageBeingPurchased)
             .preference(key: PurchasedResultPreferenceKey.self,
-                        value: .init(data: self.purchaseHandler.sessionPurchaseResult))
+                        value: .init(
+                            data: self.purchaseHandler.sessionPurchaseResult,
+                            diffKey: (self.purchaseHandler.sessionPurchaseResult?.userCancelled == true) ?
+                            self.purchaseHandler.consecutiveCancellationRequestID : nil
+                        ))
             .preference(key: RestoredCustomerInfoPreferenceKey.self,
                         value: self.purchaseHandler.restoredCustomerInfo)
             .preference(key: RestoreInProgressPreferenceKey.self,
@@ -264,16 +334,74 @@ struct PaywallsV2View: View {
             .preference(key: RestoreErrorPreferenceKey.self,
                         value: self.purchaseHandler.restoreError as NSError?)
             .disabled(self.purchaseHandler.actionInProgress)
-            .onDisappear { self.purchaseHandler.trackPaywallClose() }
+            .onDisappear {
+                // Standalone closes on disappear. A workflow page closes here only if it is still the
+                // current step at teardown (the step the user dismissed from); pages left earlier are
+                // not closed here, their navigation is reported by the workflow-events layer.
+                guard self.isActiveWorkflowPage != false else { return }
+                self.firePaywallClose()
+            }
+            .environment(
+                \.componentInteractionLogger,
+                self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
+            )
             .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
-                if hasPurchased {
-                    self.onDismiss()
-                }
+                guard hasPurchased else { return }
+
+                self.dismissAfterPurchaseCompletionCallbacks()
+            }
+            .onChangeOf(self.isActiveWorkflowPage) { isActive in
+                // Workflow page re-entered (became the current step again). Per the events spec each
+                // visit is its own session, so mint a fresh one and fire `viewed` for the new visit.
+                // (Never fires for standalone paywalls, whose isActiveWorkflowPage is nil and constant.)
+                guard isActive == true else { return }
+                let freshSession: PaywallEvent.SessionID = .init()
+                self.paywallSessionID = freshSession
+                self.firePaywallViewed(sessionID: freshSession)
             }
 
     }
 
-    private func createEventData(forDefaultPaywall: Bool = false) -> PaywallEvent.Data {
+    private func firePaywallViewed(sessionID: PaywallEvent.SessionID? = nil) {
+        let forDefaultPaywall: Bool
+        if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
+            forDefaultPaywall = true
+        } else {
+            switch self.paywallStateManager.state {
+            case .success:
+                forDefaultPaywall = false
+            case .failure:
+                forDefaultPaywall = true
+            }
+        }
+        self.purchaseHandler.trackPaywallImpression(
+            self.createEventData(forDefaultPaywall: forDefaultPaywall, sessionID: sessionID)
+        )
+    }
+
+    private func firePaywallClose() {
+        if self.isActiveWorkflowPage == nil {
+            // Standalone paywall: close whichever session is active (unchanged behavior).
+            self.purchaseHandler.trackPaywallClose()
+        } else {
+            // Workflow page: close this page's own session, not the globally last-active one.
+            self.purchaseHandler.trackPaywallClose(sessionID: self.paywallSessionID)
+        }
+    }
+
+    private func dismissAfterPurchaseCompletionCallbacks() {
+        // Defer dismissal so purchase completion preferences propagate to parent modifiers first.
+        DispatchQueue.main.async {
+            guard self.purchaseHandler.hasPurchasedInSession else { return }
+
+            self.onDismiss()
+        }
+    }
+
+    private func createEventData(
+        forDefaultPaywall: Bool = false,
+        sessionID: PaywallEvent.SessionID? = nil
+    ) -> PaywallEvent.Data {
         let compontentsData: PaywallComponentsData
         if forDefaultPaywall {
             // The old default paywall was logged as a default template like this.
@@ -294,7 +422,7 @@ struct PaywallsV2View: View {
         return .init(
             offering: self.offering,
             paywallComponentsData: compontentsData,
-            sessionID: .init(),
+            sessionID: sessionID ?? self.paywallSessionID,
             displayMode: .fullScreen,
             locale: .current,
             darkMode: self.colorScheme == .dark,
@@ -312,6 +440,8 @@ private struct LoadedPaywallsV2View: View {
     private let paywallState: PaywallState
     private let uiConfigProvider: UIConfigProvider
     private let onDismiss: () -> Void
+    private let closeWorkflowAction: (() -> Void)?
+    private let defaultPackage: Package?
 
     @ObservedObject
     private var selectedPackageContext: PackageContext
@@ -321,13 +451,17 @@ private struct LoadedPaywallsV2View: View {
         paywallState: PaywallState,
         uiConfigProvider: UIConfigProvider,
         selectedPackageContext: PackageContext,
-        onDismiss: @escaping () -> Void
+        defaultPackage: Package?,
+        onDismiss: @escaping () -> Void,
+        closeWorkflowAction: (() -> Void)? = nil
     ) {
         self.introOfferEligibilityContext = introOfferEligibilityContext
         self.paywallState = paywallState
         self.uiConfigProvider = uiConfigProvider
         self.selectedPackageContext = selectedPackageContext
+        self.defaultPackage = defaultPackage
         self.onDismiss = onDismiss
+        self.closeWorkflowAction = closeWorkflowAction
     }
 
     var body: some View {
@@ -336,17 +470,17 @@ private struct LoadedPaywallsV2View: View {
                 ComponentsView(
                     componentViewModels: [.root(paywallState.rootViewModel)],
                     onDismiss: self.onDismiss,
-                    defaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage
+                    defaultPackage: self.defaultPackage
                 )
                 .fixMacButtons()
+                .environment(\.closeWorkflowAction, self.closeWorkflowAction ?? self.onDismiss)
             }
             // Used for header image and sticky footer
             .environment(\.safeAreaInsets, proxy.safeAreaInsets)
-            // If the first view in the first stack is an image,
-            // we will ignore safe area pass the safe area insets in to environment
-            // If the image is in a ZStack, the ZStack will push non-images
-            // down with the inset
-            .applyIf(paywallState.rootViewModel.firstItemIgnoresSafeAreaInfo != nil, apply: { view in
+            .applyIf(
+                paywallState.rootViewModel.headerViewModel != nil
+                || paywallState.rootViewModel.firstItemIsFullWidthMedia,
+                apply: { view in
                 view
                     .edgesIgnoringSafeArea(.top)
             })
@@ -362,6 +496,7 @@ private struct LoadedPaywallsV2View: View {
                 alignment: .top
             )
             .environment(\.selectedPackageId, self.selectedPackageContext.package?.identifier)
+            .environment(\.planSelectionDefaultPackage, self.defaultPackage)
             .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
         }
@@ -382,7 +517,7 @@ extension EnvironmentValues {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-fileprivate extension PaywallsV2View {
+extension PaywallsV2View {
 
     // swiftlint:disable:next function_parameter_count
     static func createPaywallState(
@@ -447,15 +582,24 @@ fileprivate extension PaywallsV2View {
 
     static func makeSelectedPackageContext(
         from paywallState: PaywallState,
+        defaultPackage: Package?,
+        workflowPackages: [Package]?,
         showZeroDecimalPlacePrices: Bool
     ) -> PackageContext {
         return .init(
-            package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+            package: defaultPackage,
             variableContext: .init(
-                packages: paywallState.packages,
+                packages: workflowPackages ?? paywallState.packages,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         )
+    }
+
+    static func effectiveDefaultPackage(
+        pageDefaultPackage: Package?,
+        workflowDefaultPackage: Package?
+    ) -> Package? {
+        return workflowDefaultPackage ?? pageDefaultPackage
     }
 
     static func chooseLocalization(
@@ -537,20 +681,9 @@ fileprivate extension PaywallsV2View {
     ///   returns `nil`
     ///
     static func preferredLocale(from paywallLocales: [Locale], preferredLocales: [Locale]) -> Locale? {
-        for preferredLocale in preferredLocales {
-            // match language
-            if let languageMatch = paywallLocales.first(where: { $0.matchesLanguage(preferredLocale) }) {
-                // Look for a match that includes region
-                if let exactMatch = paywallLocales.first(where: { $0 == preferredLocale }) {
-                    return exactMatch
-                }
-                // If no region match, return match that matched on region only
-                return languageMatch
-            }
-        }
-
-        return nil
+        return Locale.selectPreferredLocale(from: paywallLocales, preferredLocales: preferredLocales)
     }
+
 }
 
 private struct PaywallFallbackError: Error {

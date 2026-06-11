@@ -27,7 +27,7 @@ class TestCase: XCTestCase {
     final func initializeLogger() {
         guard self.logger == nil else { return }
 
-        self.logger = TestLogHandler(capacity: 1000, testIdentifier: self.name)
+        self.logger = TestLogHandler(capacity: 10000, testIdentifier: self.name)
     }
 
     @MainActor
@@ -67,6 +67,8 @@ class TestCase: XCTestCase {
     }
 
     // MARK: -
+
+    static var shouldRecordSnapshots: Bool { SnapshotTests.shouldRecordSnapshots }
 
 }
 

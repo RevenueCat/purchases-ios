@@ -14,7 +14,7 @@
 import Foundation
 import RevenueCat
 
-// swiftlint:disable identifier_name
+// swiftlint:disable identifier_name file_length
 
 enum Strings {
 
@@ -32,6 +32,7 @@ enum Strings {
     case tier_has_no_available_products_for_paywall(String)
 
     case attempted_to_track_event_with_missing_data
+    case paywall_unknown_button_action_tracked_for_diagnostics(componentName: String?, actionValue: String?)
 
     case image_starting_request(URL)
     case image_result(Result<(), ImageLoader.Error>)
@@ -118,6 +119,10 @@ enum Strings {
 
     // Conditional Configurability
     case paywall_contains_unsupported_condition
+    case workflow_paywall_invalid_state(currentStepId: String, screenId: String?)
+    case paywall_close_workflow_action_not_handled(componentName: String?)
+    case paywall_workflow_trigger_not_handled(componentName: String?)
+    case workflow_package_context_unresolvable(stepId: String)
 
 }
 
@@ -156,6 +161,10 @@ extension Strings: CustomStringConvertible {
 
         case .attempted_to_track_event_with_missing_data:
             return "Attempted to track event with missing data"
+
+        case let .paywall_unknown_button_action_tracked_for_diagnostics(componentName, actionValue):
+            return "Tracked unknown paywall button action for diagnostics. " +
+            "componentName=\(componentName ?? "nil"), actionValue=\(actionValue ?? "nil")"
 
         case let .image_starting_request(url):
             return "Starting request for image: '\(url)'"
@@ -378,6 +387,18 @@ extension Strings: CustomStringConvertible {
         case .paywall_contains_unsupported_condition:
             return "Unsupported paywall rule encountered. " +
             "Rendering paywall without conditional configurability rules."
+        case let .workflow_paywall_invalid_state(currentStepId, screenId):
+            return "Workflow paywall could not resolve the current screen. " +
+            "currentStepId=\(currentStepId), screenId=\(screenId ?? "nil")"
+        case let .paywall_close_workflow_action_not_handled(componentName):
+            return "Close workflow button was tapped but no close workflow action was available. " +
+            "componentName=\(componentName ?? "nil")"
+        case let .paywall_workflow_trigger_not_handled(componentName):
+            return "Workflow trigger button was tapped but no matching workflow action was available. " +
+            "componentName=\(componentName ?? "nil")"
+        case let .workflow_package_context_unresolvable(stepId):
+            return "Could not resolve package context for singleStepFallbackId '\(stepId)'. " +
+            "Price/period variables may not resolve on packageless screens."
         }
     }
 

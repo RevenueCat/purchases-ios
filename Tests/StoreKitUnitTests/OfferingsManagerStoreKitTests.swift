@@ -26,7 +26,7 @@ class OfferingsManagerStoreKitTests: StoreKitConfigTestCase {
                                         storeKitVersion: .storeKit2)
     let mockBackend = MockBackend()
     var mockOfferings: MockOfferingsAPI!
-    let mockOfferingsFactory = OfferingsFactory()
+    lazy var mockOfferingsFactory = OfferingsFactory(systemInfo: self.mockSystemInfo)
     var mockProductsManager: MockProductsManager!
     var mockDiagnosticsTracker: DiagnosticsTrackerType!
     var offeringsManager: OfferingsManager!
@@ -108,6 +108,7 @@ private extension OfferingsManagerStoreKitTests {
                       packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: StoreKitConfigTestCase.productID,
+                              platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
                       webCheckoutUrl: nil)

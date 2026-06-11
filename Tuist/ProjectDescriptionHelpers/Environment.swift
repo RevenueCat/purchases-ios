@@ -79,6 +79,21 @@ extension Environment {
         return value.isEmpty ? nil : value
     }
 
+    /// Returns a custom bundle identifier for PaywallsTester.
+    /// Useful when testing against a different RevenueCat project / App Store Connect app
+    /// that requires its own bundle ID (e.g. running on a real device with that project's products).
+    /// Defaults to `com.revenuecat.PaywallsTester` when unset.
+    ///
+    /// Example usage:
+    /// ```bash
+    /// # Generate project with a custom bundle ID
+    /// TUIST_PAYWALLS_TESTER_BUNDLE_ID=com.mycompany.PaywallsTester tuist generate PaywallsTester
+    /// ```
+    public static var paywallsTesterBundleId: String {
+        let value = ProcessInfo.processInfo.environment["TUIST_PAYWALLS_TESTER_BUNDLE_ID"] ?? ""
+        return value.isEmpty ? "com.revenuecat.PaywallsTester" : value
+    }
+
     /// Returns the RevenueCat API key for PaywallsTester, if set.
     /// When set, this will be written to Local.xcconfig during project generation.
     ///
@@ -90,5 +105,35 @@ extension Environment {
     public static var rcApiKey: String? {
         let value = ProcessInfo.processInfo.environment["TUIST_RC_API_KEY"] ?? ""
         return value.isEmpty ? nil : value
+    }
+
+    /// Returns extra launch arguments to inject into scheme run actions, enabled by default.
+    ///
+    /// Example usage:
+    /// ```bash
+    /// # Single argument
+    /// TUIST_LAUNCH_ARGUMENTS="-EnableWorkflowsEndpoint" tuist generate PaywallsTester
+    ///
+    /// # Multiple arguments
+    /// TUIST_LAUNCH_ARGUMENTS="-EnableWorkflowsEndpoint -MyOtherFlag" tuist generate
+    /// ```
+    public static var extraLaunchArguments: [String] {
+        let value = ProcessInfo.processInfo.environment["TUIST_LAUNCH_ARGUMENTS"] ?? ""
+        return value.split(separator: " ").map(String.init).filter { !$0.isEmpty }
+    }
+
+    /// Returns extra Swift compilation conditions to inject into all targets.
+    ///
+    /// Example usage:
+    /// ```bash
+    /// # Single flag
+    /// TUIST_SWIFT_CONDITIONS="ENABLE_WORKFLOWS_ENDPOINT" tuist generate PaywallsTester
+    ///
+    /// # Multiple flags
+    /// TUIST_SWIFT_CONDITIONS="ENABLE_WORKFLOWS_ENDPOINT MY_OTHER_FLAG" tuist generate
+    /// ```
+    public static var extraSwiftConditions: [String] {
+        let value = ProcessInfo.processInfo.environment["TUIST_SWIFT_CONDITIONS"] ?? ""
+        return value.split(separator: " ").map(String.init).filter { !$0.isEmpty }
     }
 }

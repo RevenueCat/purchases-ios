@@ -29,6 +29,7 @@ func checkTestStoreProductAPI() {
     let introductoryDiscount: StoreProductDiscount? = testProduct.introductoryDiscount
     let discounts: [StoreProductDiscount] = testProduct.discounts
     let locale: Locale = testProduct.locale
+    let installmentsInfo: InstallmentsInfo? = testProduct.installmentsInfo
 
     // Setters
     testProduct.localizedTitle = localizedTitle
@@ -50,7 +51,10 @@ func checkTestStoreProductAPI() {
     let _: StoreProduct = testProduct.toStoreProduct()
 }
 
-private func checkStoreProductCreation(discount: TestStoreProductDiscount) {
+private func checkStoreProductCreation(
+    discount: TestStoreProductDiscount,
+    installmentsInfo: InstallmentsInfo
+) {
     _ = TestStoreProduct(
         localizedTitle: "",
         price: 3.99,
@@ -88,5 +92,22 @@ private func checkStoreProductCreation(discount: TestStoreProductDiscount) {
         introductoryDiscount: Optional<TestStoreProductDiscount>.some(discount),
         discounts: [discount],
         locale: Locale.current
+    )
+
+    _ = TestStoreProduct(
+        localizedTitle: "",
+        price: 1.99,
+        currencyCode: "USD",
+        localizedPriceString: "",
+        productIdentifier: "",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "",
+        subscriptionGroupIdentifier: Optional<String>.some(""),
+        subscriptionPeriod: Optional<SubscriptionPeriod>.some(.init(value: 1, unit: .day)),
+        isFamilyShareable: true,
+        introductoryDiscount: Optional<TestStoreProductDiscount>.some(discount),
+        discounts: [discount],
+        locale: Locale.current,
+        installmentsInfo: installmentsInfo
     )
 }

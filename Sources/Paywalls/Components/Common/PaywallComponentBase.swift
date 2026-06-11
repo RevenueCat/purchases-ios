@@ -32,6 +32,8 @@ import Foundation
 
     case countdown(CountdownComponent)
 
+    case fallbackHeader
+
     public enum ComponentType: String, Codable, Sendable {
 
         case text
@@ -52,6 +54,7 @@ import Foundation
         case carousel
         case video
         case countdown
+        case fallbackHeader = "fallback_header"
 
     }
 
@@ -126,6 +129,8 @@ import Foundation
         case .countdown(let component):
             try container.encode(ComponentType.countdown, forKey: .type)
             try component.encode(to: encoder)
+        case .fallbackHeader:
+            try container.encode(ComponentType.fallbackHeader, forKey: .type)
         }
     }
 
@@ -211,6 +216,8 @@ import Foundation
             return .video(try VideoComponent(from: decoder))
         case .countdown:
             return .countdown(try CountdownComponent(from: decoder))
+        case .fallbackHeader:
+            return .fallbackHeader
         }
     }
 

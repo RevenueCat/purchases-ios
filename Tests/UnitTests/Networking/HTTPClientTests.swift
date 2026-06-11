@@ -35,8 +35,6 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
     // Something very specific on purpose to make sure we can differentiate it in tests from adjusted timeouts
     let defaultRequestTimeout: TimeInterval = 3.21
 
-    fileprivate let apiKey = "MockAPIKey"
-
     override func setUpWithError() throws {
         try super.setUpWithError()
 
@@ -75,8 +73,7 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
         _ systemInfo: SystemInfo,
         operationDispatcher: OperationDispatcher = MockOperationDispatcher()
     ) -> HTTPClient {
-        return HTTPClient(apiKey: self.apiKey,
-                          systemInfo: systemInfo,
+        return HTTPClient(systemInfo: systemInfo,
                           eTagManager: self.eTagManager,
                           signing: self.signing,
                           diagnosticsTracker: self.diagnosticsTracker,
@@ -1498,6 +1495,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "3.2.1")
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: true,
+                                    apiKey: "api_key",
                                     preferredLocalesProvider: .mock())
 
         self.client = self.createClient(systemInfo)
@@ -1538,6 +1536,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "1.2.3")
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: true,
+                                    apiKey: "api_key",
                                     preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
 
@@ -1577,6 +1576,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
         self.client = self.createClient(SystemInfo(platformInfo: nil,
                                                    finishTransactions: true,
+                                                   apiKey: "api_key",
                                                    preferredLocalesProvider: .mock()))
 
         waitUntil { completion in
@@ -1590,6 +1590,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let headerName = "X-UI-Preview-Mode"
         let systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: true,
+                                    apiKey: "api_key",
                                     dangerousSettings: .init(uiPreviewMode: true),
                                     preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
@@ -1614,6 +1615,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let headerName = "X-UI-Preview-Mode"
         let systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: true,
+                                    apiKey: "api_key",
                                     dangerousSettings: .init(uiPreviewMode: false),
                                     preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
@@ -1686,6 +1688,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
         self.client = self.createClient(SystemInfo(platformInfo: nil,
                                                    finishTransactions: false,
+                                                   apiKey: "api_key",
                                                    preferredLocalesProvider: .mock()))
 
         waitUntil { completion in
@@ -2190,6 +2193,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .init(
                 platformInfo: nil,
                 finishTransactions: false,
+                apiKey: "api_key",
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: .allServersDown)
@@ -2231,6 +2235,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .init(
                 platformInfo: nil,
                 finishTransactions: false,
+                apiKey: "api_key",
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: nil)
@@ -2268,6 +2273,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             .init(
                 platformInfo: nil,
                 finishTransactions: false,
+                apiKey: "api_key",
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: .init { _ in

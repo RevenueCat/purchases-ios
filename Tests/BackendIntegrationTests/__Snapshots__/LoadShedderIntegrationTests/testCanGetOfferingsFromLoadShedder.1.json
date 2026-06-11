@@ -21,6 +21,7 @@
       "paywall" : null,
       "paywall_components" : {
         "asset_base_url" : "https://assets.pawwalls.com",
+        "automatically_scale_font_size" : true,
         "components_config" : {
           "base" : {
             "background" : {
@@ -65,6 +66,7 @@
                             "top" : 0,
                             "trailing" : 0
                           },
+                          "name" : "",
                           "padding" : {
                             "bottom" : 0,
                             "leading" : 0,
@@ -94,6 +96,7 @@
                         "top" : 0,
                         "trailing" : 24
                       },
+                      "name" : "",
                       "padding" : {
                         "bottom" : 0,
                         "leading" : 0,
@@ -126,6 +129,8 @@
                           "action" : {
                             "type" : "navigate_back"
                           },
+                          "id" : "68b5fP9Fpd",
+                          "name" : "",
                           "stack" : {
                             "components" : [
                               {
@@ -190,6 +195,7 @@
                               "top" : 0,
                               "trailing" : 0
                             },
+                            "name" : "",
                             "padding" : {
                               "bottom" : 4,
                               "leading" : 4,
@@ -207,7 +213,6 @@
                             "spacing" : 0,
                             "type" : "stack"
                           },
-                          "transition" : null,
                           "type" : "button"
                         }
                       ],
@@ -221,6 +226,7 @@
                         "top" : 24,
                         "trailing" : 24
                       },
+                      "name" : "",
                       "padding" : {
                         "bottom" : 0,
                         "leading" : 0,
@@ -258,6 +264,7 @@
                     "top" : 8,
                     "trailing" : 0
                   },
+                  "name" : "",
                   "padding" : {
                     "bottom" : 0,
                     "leading" : 0,
@@ -296,6 +303,7 @@
                 "top" : 0,
                 "trailing" : 0
               },
+              "name" : "Content",
               "padding" : {
                 "bottom" : 0,
                 "leading" : 0,
@@ -340,6 +348,7 @@
                         "components" : [
                           {
                             "is_selected_by_default" : true,
+                            "name" : "",
                             "package_id" : "$rc_lifetime",
                             "stack" : {
                               "background" : {
@@ -386,6 +395,7 @@
                                         "top" : 0,
                                         "trailing" : 0
                                       },
+                                      "name" : "",
                                       "padding" : {
                                         "bottom" : 0,
                                         "leading" : 0,
@@ -415,6 +425,7 @@
                                     "top" : 0,
                                     "trailing" : 12
                                   },
+                                  "name" : "",
                                   "padding" : {
                                     "bottom" : 4,
                                     "leading" : 8,
@@ -537,6 +548,7 @@
                                             "top" : 0,
                                             "trailing" : 0
                                           },
+                                          "name" : "",
                                           "padding" : {
                                             "bottom" : 0,
                                             "leading" : 0,
@@ -566,6 +578,7 @@
                                         "top" : 0,
                                         "trailing" : 0
                                       },
+                                      "name" : "",
                                       "padding" : {
                                         "bottom" : 0,
                                         "leading" : 0,
@@ -609,6 +622,7 @@
                                         "top" : 0,
                                         "trailing" : 0
                                       },
+                                      "name" : "",
                                       "padding" : {
                                         "bottom" : 0,
                                         "leading" : 0,
@@ -638,6 +652,7 @@
                                     "top" : 0,
                                     "trailing" : 0
                                   },
+                                  "name" : "",
                                   "padding" : {
                                     "bottom" : 0,
                                     "leading" : 0,
@@ -681,6 +696,7 @@
                                     "top" : 0,
                                     "trailing" : 0
                                   },
+                                  "name" : "",
                                   "padding" : {
                                     "bottom" : 0,
                                     "leading" : 0,
@@ -710,6 +726,7 @@
                                 "top" : 0,
                                 "trailing" : 0
                               },
+                              "name" : "",
                               "overrides" : [
                                 {
                                   "conditions" : [
@@ -771,6 +788,7 @@
                           },
                           {
                             "is_selected_by_default" : false,
+                            "name" : "",
                             "package_id" : "$rc_monthly",
                             "stack" : {
                               "background" : {
@@ -875,6 +893,7 @@
                                             "top" : 0,
                                             "trailing" : 0
                                           },
+                                          "name" : "",
                                           "padding" : {
                                             "bottom" : 0,
                                             "leading" : 0,
@@ -904,6 +923,7 @@
                                         "top" : 0,
                                         "trailing" : 0
                                       },
+                                      "name" : "",
                                       "padding" : {
                                         "bottom" : 0,
                                         "leading" : 0,
@@ -946,6 +966,7 @@
                                         "top" : 0,
                                         "trailing" : 0
                                       },
+                                      "name" : "",
                                       "padding" : {
                                         "bottom" : 0,
                                         "leading" : 0,
@@ -975,6 +996,7 @@
                                     "top" : 0,
                                     "trailing" : 0
                                   },
+                                  "name" : "",
                                   "padding" : {
                                     "bottom" : 0,
                                     "leading" : 0,
@@ -1017,6 +1039,7 @@
                                     "top" : 0,
                                     "trailing" : 0
                                   },
+                                  "name" : "",
                                   "padding" : {
                                     "bottom" : 0,
                                     "leading" : 0,
@@ -1046,6 +1069,7 @@
                                 "top" : 0,
                                 "trailing" : 0
                               },
+                              "name" : "",
                               "overrides" : [
                                 {
                                   "conditions" : [
@@ -1117,6 +1141,7 @@
                           "top" : 0,
                           "trailing" : 0
                         },
+                        "name" : "Packages",
                         "padding" : {
                           "bottom" : 0,
                           "leading" : 0,
@@ -1146,6 +1171,7 @@
                       {
                         "components" : [
                           {
+                            "name" : "",
                             "stack" : {
                               "background" : {
                                 "type" : "color",
@@ -1173,6 +1199,7 @@
                                     "top" : 0,
                                     "trailing" : 0
                                   },
+                                  "name" : "",
                                   "padding" : {
                                     "bottom" : 0,
                                     "leading" : 0,
@@ -1202,6 +1229,7 @@
                                 "top" : 0,
                                 "trailing" : 0
                               },
+                              "name" : "",
                               "padding" : {
                                 "bottom" : 14,
                                 "leading" : 8,
@@ -1234,6 +1262,8 @@
                             "action" : {
                               "type" : "restore_purchases"
                             },
+                            "id" : "vLoUgvChkK",
+                            "name" : "",
                             "stack" : {
                               "components" : [
                                 {
@@ -1252,6 +1282,7 @@
                                     "top" : 0,
                                     "trailing" : 0
                                   },
+                                  "name" : "",
                                   "padding" : {
                                     "bottom" : 0,
                                     "leading" : 0,
@@ -1281,6 +1312,7 @@
                                 "top" : 0,
                                 "trailing" : 0
                               },
+                              "name" : "",
                               "padding" : {
                                 "bottom" : 0,
                                 "leading" : 0,
@@ -1307,7 +1339,6 @@
                               "spacing" : 0,
                               "type" : "stack"
                             },
-                            "transition" : null,
                             "type" : "button"
                           }
                         ],
@@ -1322,6 +1353,7 @@
                           "top" : 0,
                           "trailing" : 0
                         },
+                        "name" : "Buttons",
                         "padding" : {
                           "bottom" : 0,
                           "leading" : 0,
@@ -1360,6 +1392,7 @@
                       "top" : 0,
                       "trailing" : 0
                     },
+                    "name" : "",
                     "padding" : {
                       "bottom" : 0,
                       "leading" : 0,
@@ -1398,6 +1431,7 @@
                   "top" : 0,
                   "trailing" : 0
                 },
+                "name" : "Footer",
                 "padding" : {
                   "bottom" : 0,
                   "leading" : 16,

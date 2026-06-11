@@ -74,19 +74,20 @@ class BasePurchasesTests: TestCase {
         self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
 
-        let apiKey = "mockAPIKey"
-        let httpClient = MockHTTPClient(apiKey: apiKey,
-                                        systemInfo: self.systemInfo,
+        let httpClient = MockHTTPClient(systemInfo: self.systemInfo,
                                         eTagManager: MockETagManager(),
                                         diagnosticsTracker: self.diagnosticsTracker)
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: self.mockOperationDispatcher,
                                           operationQueue: MockBackend.QueueProvider.createBackendQueue(),
                                           diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
+                                          workflowsQueue: MockBackend.QueueProvider.createWorkflowsQueue(),
                                           systemInfo: self.systemInfo,
                                           offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
                                           dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
-        self.backend = MockBackend(backendConfig: config, attributionFetcher: self.attributionFetcher)
+        self.backend = MockBackend(backendConfig: config,
+                                   attributionFetcher: self.attributionFetcher,
+                                   mockAdsAPI: MockAdsAPI())
         self.subscriberAttributesManager = MockSubscriberAttributesManager(
             backend: self.backend,
             deviceCache: self.deviceCache,
@@ -201,6 +202,7 @@ class BasePurchasesTests: TestCase {
     var diagnosticsTracker: DiagnosticsTrackerType?
     var mockVirtualCurrencyManager: MockVirtualCurrencyManager!
     var mockLocalTransactionMetadataStore: MockLocalTransactionMetadataStore!
+    var transactionMetadataSyncHelper: TransactionMetadataSyncHelper!
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var mockDiagnosticsTracker: MockDiagnosticsTracker {
@@ -319,6 +321,7 @@ class BasePurchasesTests: TestCase {
             operationDispatcher: self.mockOperationDispatcher,
             transactionPoster: self.transactionPoster
         )
+        self.transactionMetadataSyncHelper = transactionMetadataSyncHelper
 
         self.purchases = Purchases(appUserID: appUserId,
                                    requestFetcher: self.requestFetcher,
@@ -340,6 +343,12 @@ class BasePurchasesTests: TestCase {
                                    eventsManager: self.eventsManager,
                                    productsManager: self.mockProductsManager,
                                    offeringsManager: self.mockOfferingsManager,
+                                   workflowManager: WorkflowManager(
+                                    backend: self.backend,
+                                    workflowsCache: WorkflowsCache(deviceCache: self.deviceCache),
+                                    paywallCache: self.paywallCache,
+                                    operationDispatcher: self.mockOperationDispatcher
+                                   ),
                                    offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                    purchasesOrchestrator: self.purchasesOrchestrator,
                                    purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
@@ -348,7 +357,8 @@ class BasePurchasesTests: TestCase {
                                    diagnosticsTracker: self.diagnosticsTracker,
                                    virtualCurrencyManager: self.mockVirtualCurrencyManager,
                                    healthManager: healthManager,
-                                   transactionMetadataSyncHelper: transactionMetadataSyncHelper)
+                                   transactionMetadataSyncHelper: transactionMetadataSyncHelper,
+                                   currentConfiguration: nil)
 
         self.purchasesOrchestrator.delegate = self.purchases
 
@@ -474,6 +484,36 @@ extension BasePurchasesTests {
 
         /// Tracks the order in which backend methods are called.
         var callOrder: [MockBackendOperation] = []
+
+        convenience init(backendConfig: BackendConfiguration,
+                         attributionFetcher: AttributionFetcher,
+                         mockAdsAPI: MockAdsAPI) {
+            let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
+            let identity = IdentityAPI(backendConfig: backendConfig)
+            let offerings = OfferingsAPI(backendConfig: backendConfig)
+            let webBilling = WebBillingAPI(backendConfig: backendConfig)
+            let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
+            let internalAPI = InternalAPI(backendConfig: backendConfig)
+            let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
+            let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
+            let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
+            let workflowsAPI = MockWorkflowsAPI()
+            let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
+
+            self.init(backendConfig: backendConfig,
+                      customerAPI: customer,
+                      identityAPI: identity,
+                      offeringsAPI: offerings,
+                      webBillingAPI: webBilling,
+                      offlineEntitlements: offlineEntitlements,
+                      internalAPI: internalAPI,
+                      customerCenterConfig: customerCenterConfig,
+                      redeemWebPurchaseAPI: redeemWebPurchaseAPI,
+                      virtualCurrenciesAPI: virtualCurrenciesAPI,
+                      workflowsAPI: workflowsAPI,
+                      adsAPI: mockAdsAPI,
+                      remoteConfigAPI: remoteConfigAPI)
+        }
 
         var userID: String?
         var originalApplicationVersion: String?
@@ -667,6 +707,8 @@ private extension BasePurchasesTests {
         self.paywallCache = nil
         self.eventsManager = nil
         self.webPurchaseRedemptionHelper = nil
+        self.transactionMetadataSyncHelper = nil
+        self.mockLocalTransactionMetadataStore = nil
         self.purchases = nil
     }
 

@@ -9,11 +9,14 @@
 #import "RCAdTrackerAPI.h"
 #import "RCAttributionAPI.h"
 #import "RCAttributionNetworkAPI.h"
+#import "RCBillingPlanTypeAPI.h"
 #import "RCConfigurationAPI.h"
 #import "RCCustomerInfoAPI.h"
+#import "RCDangerousSettingsAPI.h"
 #import "RCEntitlementInfoAPI.h"
 #import "RCEntitlementInfosAPI.h"
 #import "RCIntroEligibilityAPI.h"
+#import "RCInstallmentsInfoAPI.h"
 #import "RCNonSubscriptionTransactionAPI.h"
 #import "RCOfferingAPI.h"
 #import "RCOfferingsAPI.h"
@@ -52,6 +55,9 @@ int main(int argc, const char * argv[]) {
         [RCIntroEligibilityAPI checkAPI];
         [RCIntroEligibilityAPI checkEnums];
 
+        [RCInstallmentsInfoAPI checkAPI];
+        [RCInstallmentsInfoAPI checkInit];
+
         [RCNonSubscriptionTransactionAPI checkAPI];
 
         [RCOfferingAPI checkAPI];
@@ -69,6 +75,8 @@ int main(int argc, const char * argv[]) {
         [RCPurchasesAPI checkEnums];
 
         [RCConfigurationAPI checkAPI];
+
+        [RCDangerousSettingsAPI checkAPI];
 
         [RCPurchasesErrorCodeAPI checkEnums];
 
@@ -94,6 +102,8 @@ int main(int argc, const char * argv[]) {
             [RCPaywallViewControllerAPI checkAPI];
             [RCCustomPaywallImpressionAPI checkAPI];
         }
+
+        [RCBillingPlanTypeAPI checkAPI];
     }
     return 0;
 }

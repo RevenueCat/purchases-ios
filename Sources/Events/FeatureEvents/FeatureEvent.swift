@@ -52,6 +52,8 @@ extension FeatureEvent {
             return event.customerCenterAnswerSubmittedMap()
         case let event as CustomPaywallEvent:
             return event.customPaywallEventMap()
+        case let event as WorkflowEvent:
+            return event.workflowEventMap()
         default:
             return [
                 "discriminator": "unknown",
@@ -74,10 +76,11 @@ private extension PaywallEvent {
             case .exitOffer: return "paywall_exit_offer"
             case .purchaseInitiated: return "paywall_purchase_initiated"
             case .purchaseError: return "paywall_purchase_error"
+            case .componentInteraction: return "paywall_component_interacted"
             }
         }()
 
-        return [
+        var result: [String: Any] = [
             "discriminator": "paywalls",
             "type": typeName,
             "id": self.creationData.id.uuidString,
@@ -89,6 +92,84 @@ private extension PaywallEvent {
             "locale": self.data.localeIdentifier,
             "dark_mode": self.data.darkMode
         ]
+
+        if let interaction = self.componentInteractionData {
+            interaction.mergeIntoPaywallFeatureMap(&result)
+        }
+
+        return result
+    }
+
+}
+
+private extension PaywallEvent.ComponentInteractionData {
+
+    func mergeIntoPaywallFeatureMap(_ result: inout [String: Any]) {
+        self.mergeCoreFields(into: &result)
+        self.mergePackageIdentifiers(into: &result)
+        self.mergeProductIdentifiers(into: &result)
+    }
+
+    func mergeCoreFields(into result: inout [String: Any]) {
+        result["component_type"] = self.componentType.rawValue
+        result["component_value"] = self.componentValue
+        if let name = self.componentName {
+            result["component_name"] = name
+        }
+        if let url = self.componentURL {
+            result["component_url"] = url.absoluteString
+        }
+        if let originIndex = self.originIndex {
+            result["origin_index"] = originIndex
+        }
+        if let destinationIndex = self.destinationIndex {
+            result["destination_index"] = destinationIndex
+        }
+        if let originContextName = self.originContextName {
+            result["origin_context_name"] = originContextName
+        }
+        if let destinationContextName = self.destinationContextName {
+            result["destination_context_name"] = destinationContextName
+        }
+        if let defaultIndex = self.defaultIndex {
+            result["default_index"] = defaultIndex
+        }
+    }
+
+    func mergePackageIdentifiers(into result: inout [String: Any]) {
+        if let originPackageIdentifier = self.originPackageIdentifier {
+            result["origin_package_id"] = originPackageIdentifier
+        }
+        if let destinationPackageIdentifier = self.destinationPackageIdentifier {
+            result["destination_package_id"] = destinationPackageIdentifier
+        }
+        if let defaultPackageIdentifier = self.defaultPackageIdentifier {
+            result["default_package_id"] = defaultPackageIdentifier
+        }
+        if let currentPackageIdentifier = self.currentPackageIdentifier {
+            result["current_package_id"] = currentPackageIdentifier
+        }
+        if let resultingPackageIdentifier = self.resultingPackageIdentifier {
+            result["resulting_package_id"] = resultingPackageIdentifier
+        }
+    }
+
+    func mergeProductIdentifiers(into result: inout [String: Any]) {
+        if let originProductIdentifier = self.originProductIdentifier {
+            result["origin_product_id"] = originProductIdentifier
+        }
+        if let destinationProductIdentifier = self.destinationProductIdentifier {
+            result["destination_product_id"] = destinationProductIdentifier
+        }
+        if let defaultProductIdentifier = self.defaultProductIdentifier {
+            result["default_product_id"] = defaultProductIdentifier
+        }
+        if let currentProductIdentifier = self.currentProductIdentifier {
+            result["current_product_id"] = currentProductIdentifier
+        }
+        if let resultingProductIdentifier = self.resultingProductIdentifier {
+            result["resulting_product_id"] = resultingProductIdentifier
+        }
     }
 
 }
@@ -132,6 +213,54 @@ private extension CustomPaywallEvent {
         if let offeringId = self.data.offeringId {
             result["offering_id"] = offeringId
         }
+
+        if let placementIdentifier = self.data.placementIdentifier {
+            result["placement_identifier"] = placementIdentifier
+        }
+
+        if let targetingRevision = self.data.targetingRevision {
+            result["targeting_revision"] = targetingRevision
+        }
+
+        if let targetingRuleId = self.data.targetingRuleId {
+            result["targeting_rule_id"] = targetingRuleId
+        }
+
+        return result
+    }
+
+}
+
+private extension WorkflowEvent {
+
+    // swiftlint:disable:next cyclomatic_complexity
+    func workflowEventMap() -> [String: Any] {
+        let typeName: String = {
+            switch self {
+            case .stepStarted: return "workflows_step_started"
+            case .stepCompleted: return "workflows_step_completed"
+            }
+        }()
+
+        var result: [String: Any] = [
+            "discriminator": "workflows",
+            "type": typeName,
+            "id": self.creationData.id.uuidString,
+            "timestamp": self.creationData.date.millisecondsSince1970,
+            "workflow_id": self.data.workflowId,
+            "step_id": self.data.stepId,
+            "locale": self.data.localeIdentifier
+        ]
+
+        if let traceId = self.data.traceId { result["trace_id"] = traceId }
+        if let fromStepId = self.data.fromStepId { result["from_step_id"] = fromStepId }
+        if let toStepId = self.data.toStepId { result["to_step_id"] = toStepId }
+        if let entryReason = self.data.entryReason { result["entry_reason"] = entryReason }
+        if let isFirstStep = self.data.isFirstStep { result["is_first_step"] = isFirstStep }
+        if let isLastStep = self.data.isLastStep { result["is_last_step"] = isLastStep }
+        if let experimentId = self.data.experimentId { result["experiment_id"] = experimentId }
+        if let experimentVariant = self.data.experimentVariant { result["experiment_variant"] = experimentVariant }
+        if let isLastVariantStep = self.data.isLastVariantStep { result["is_last_variant_step"] = isLastVariantStep }
 
         return result
     }

@@ -190,6 +190,159 @@ class EventsManagerTests: TestCase {
         expect(map["type"] as? String) == "paywall_purchase_error"
     }
 
+    func testPaywallComponentInteractionToMap() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let interaction = PaywallEvent.ComponentInteractionData(componentType: .carousel, componentValue: "1")
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["discriminator"] as? String) == "paywalls"
+        expect(map["type"] as? String) == "paywall_component_interacted"
+        expect(map["component_type"] as? String) == "carousel"
+        expect(map["component_value"] as? String) == "1"
+        expect(map["component_url"]).to(beNil())
+    }
+
+    func testPaywallComponentInteractionToMap_IncludesComponentURLWhenSet() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let url = URL(string: "https://example.com/terms")!
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .button,
+            componentName: "terms",
+            componentValue: "navigate_to_terms",
+            componentURL: url
+        )
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["component_url"] as? String) == url.absoluteString
+    }
+
+    func testPaywallComponentInteractionToMap_IncludesNavigationFieldsWhenSet() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .tab,
+            componentName: "plans_tabs",
+            componentValue: "annual",
+            originIndex: 0,
+            destinationIndex: 1,
+            originContextName: "monthly",
+            destinationContextName: "annual",
+            defaultIndex: 0
+        )
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["origin_index"] as? Int) == 0
+        expect(map["destination_index"] as? Int) == 1
+        expect(map["origin_context_name"] as? String) == "monthly"
+        expect(map["destination_context_name"] as? String) == "annual"
+        expect(map["default_index"] as? Int) == 0
+    }
+
+    func testPaywallComponentInteractionToMap_IncludesPlanSelectionIdentifiersWhenSet() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .package,
+            componentName: "annual_package",
+            componentValue: "annual",
+            originPackageIdentifier: "monthly",
+            destinationPackageIdentifier: "annual",
+            defaultPackageIdentifier: "annual",
+            originProductIdentifier: "com.monthly",
+            destinationProductIdentifier: "com.annual",
+            defaultProductIdentifier: "com.annual"
+        )
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["component_type"] as? String) == "package"
+        expect(map["origin_package_id"] as? String) == "monthly"
+        expect(map["destination_package_id"] as? String) == "annual"
+        expect(map["default_package_id"] as? String) == "annual"
+        expect(map["origin_product_id"] as? String) == "com.monthly"
+        expect(map["destination_product_id"] as? String) == "com.annual"
+        expect(map["default_product_id"] as? String) == "com.annual"
+    }
+
+    func testPaywallComponentInteractionToMap_IncludesPackageSelectionSheetLifecycleFieldsWhenSet() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .packageSelectionSheet,
+            componentName: "all_plans_sheet",
+            componentValue: "close",
+            currentPackageIdentifier: "monthly_standard",
+            resultingPackageIdentifier: "annual_premium",
+            currentProductIdentifier: "com.example.sub.monthly",
+            resultingProductIdentifier: "com.example.sub.annual"
+        )
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["component_type"] as? String) == "package_selection_sheet"
+        expect(map["component_name"] as? String) == "all_plans_sheet"
+        expect(map["component_value"] as? String) == "close"
+        expect(map["current_package_id"] as? String) == "monthly_standard"
+        expect(map["current_product_id"] as? String) == "com.example.sub.monthly"
+        expect(map["resulting_package_id"] as? String) == "annual_premium"
+        expect(map["resulting_product_id"] as? String) == "com.example.sub.annual"
+    }
+
+    func testPaywallComponentInteractionToMap_TextMarkdownLinkUsesTextComponentType() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let url = URL(string: "https://example.com/help")!
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .text,
+            componentName: nil,
+            componentValue: "navigate_to_url",
+            componentURL: url
+        )
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["component_type"] as? String) == "text"
+        expect(map["component_value"] as? String) == "navigate_to_url"
+        expect(map["component_url"] as? String) == url.absoluteString
+    }
+
+    func testPaywallComponentInteractionToMap_TextMarkdownLinkIncludesComponentNameWhenSet() {
+        let creationData = PaywallEvent.CreationData.random()
+        let data = PaywallEvent.Data.random()
+        let url = URL(string: "https://example.com/help")!
+        let interaction = PaywallEvent.ComponentInteractionData(
+            componentType: .text,
+            componentName: "legal_footer",
+            componentValue: "navigate_to_url",
+            componentURL: url
+        )
+        let event: PaywallEvent = .componentInteraction(creationData, data, interaction)
+        let map = event.toMap()
+
+        expect(map["component_type"] as? String) == "text"
+        expect(map["component_name"] as? String) == "legal_footer"
+    }
+
+    func testTrackComponentInteractionEventStores() async throws {
+        let event: PaywallEvent = .componentInteraction(
+            .random(),
+            .random(),
+            .init(componentType: .button, componentValue: "navigate_back")
+        )
+
+        await self.manager.track(featureEvent: event)
+
+        let events = await self.store.storedEvents
+        expect(events) == [
+            try createStoredFeatureEvent(from: event)
+        ]
+    }
+
     // MARK: - toMap (Customer Center Events)
 
     func testCustomerCenterImpressionToMap() {
@@ -286,6 +439,37 @@ class EventsManagerTests: TestCase {
         expect(map["paywall_id"]).to(beNil())
     }
 
+    func testCustomPaywallImpressionToMapIncludesPlacementAndTargeting() {
+        let creationData = CustomPaywallEvent.CreationData()
+        let data = CustomPaywallEvent.Data(
+            paywallId: "my_paywall",
+            offeringId: "my_offering",
+            presentedOfferingContext: .init(
+                offeringIdentifier: "my_offering",
+                placementIdentifier: "onboarding",
+                targetingContext: .init(revision: 7, ruleId: "rule_42")
+            )
+        )
+        let event = CustomPaywallEvent.impression(creationData, data)
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["offering_id"] as? String) == "my_offering"
+        expect(map["placement_identifier"] as? String) == "onboarding"
+        expect(map["targeting_revision"] as? Int) == 7
+        expect(map["targeting_rule_id"] as? String) == "rule_42"
+    }
+
+    func testCustomPaywallImpressionToMapOmitsPlacementAndTargetingWhenNil() {
+        let creationData = CustomPaywallEvent.CreationData()
+        let data = CustomPaywallEvent.Data(paywallId: "my_paywall")
+        let event = CustomPaywallEvent.impression(creationData, data)
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["placement_identifier"]).to(beNil())
+        expect(map["targeting_revision"]).to(beNil())
+        expect(map["targeting_rule_id"]).to(beNil())
+    }
+
     // MARK: - trackEvent (Custom Paywall Impression)
 
     func testTrackCustomPaywallImpressionEvent() async throws {
@@ -311,6 +495,100 @@ class EventsManagerTests: TestCase {
             ))
         ]
         await self.verifyEmptyStore()
+    }
+
+    // MARK: - trackEvent (WorkflowEvent)
+
+    func testTrackWorkflowEventStoresWithWorkflowsFeature() async throws {
+        let event = WorkflowEvent.stepStarted(
+            .init(),
+            .init(workflowId: "wfl_abc", stepId: "step-1", entryReason: "start", isFirstStep: true)
+        )
+
+        await self.manager.track(featureEvent: event)
+
+        let events = await self.store.storedEvents
+        expect(events).to(haveCount(1))
+        expect(events.first?.feature) == .workflows
+    }
+
+    // MARK: - toMap (WorkflowEvent)
+
+    func testWorkflowStepStartedToMap() {
+        let creationData = WorkflowEvent.CreationData(id: UUID(), date: Date())
+        let event = WorkflowEvent.stepStarted(
+            creationData,
+            .init(workflowId: "wfl_abc", stepId: "step-1", localeIdentifier: "en_US")
+        )
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["discriminator"] as? String) == "workflows"
+        expect(map["type"] as? String) == "workflows_step_started"
+        expect(map["id"] as? String) == creationData.id.uuidString
+        expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
+        expect(map["workflow_id"] as? String) == "wfl_abc"
+        expect(map["step_id"] as? String) == "step-1"
+        expect(map["locale"] as? String) == "en_US"
+    }
+
+    func testWorkflowStepCompletedToMap() {
+        let creationData = WorkflowEvent.CreationData(id: UUID(), date: Date())
+        let event = WorkflowEvent.stepCompleted(
+            creationData,
+            .init(workflowId: "wfl_abc", stepId: "step-1", toStepId: "step-2")
+        )
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["discriminator"] as? String) == "workflows"
+        expect(map["type"] as? String) == "workflows_step_completed"
+        expect(map["to_step_id"] as? String) == "step-2"
+        expect(map["from_step_id"]).to(beNil())
+    }
+
+    func testWorkflowEventToMapIncludesOptionalFields() {
+        let event = WorkflowEvent.stepStarted(
+            .init(),
+            .init(
+                workflowId: "wfl_abc",
+                stepId: "step-1",
+                traceId: "trace-xyz",
+                fromStepId: "step-0",
+                entryReason: "start",
+                isFirstStep: true,
+                isLastStep: false,
+                experimentId: "exp-1",
+                experimentVariant: "variant-a",
+                isLastVariantStep: true
+            )
+        )
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["trace_id"] as? String) == "trace-xyz"
+        expect(map["from_step_id"] as? String) == "step-0"
+        expect(map["entry_reason"] as? String) == "start"
+        expect(map["is_first_step"] as? Bool) == true
+        expect(map["is_last_step"] as? Bool) == false
+        expect(map["experiment_id"] as? String) == "exp-1"
+        expect(map["experiment_variant"] as? String) == "variant-a"
+        expect(map["is_last_variant_step"] as? Bool) == true
+    }
+
+    func testWorkflowEventToMapOmitsNilOptionalFields() {
+        let event = WorkflowEvent.stepStarted(
+            .init(),
+            .init(workflowId: "wfl_abc", stepId: "step-1")
+        )
+        let map = (event as FeatureEvent).toMap()
+
+        expect(map["trace_id"]).to(beNil())
+        expect(map["from_step_id"]).to(beNil())
+        expect(map["to_step_id"]).to(beNil())
+        expect(map["entry_reason"]).to(beNil())
+        expect(map["is_first_step"]).to(beNil())
+        expect(map["is_last_step"]).to(beNil())
+        expect(map["experiment_id"]).to(beNil())
+        expect(map["experiment_variant"]).to(beNil())
+        expect(map["is_last_variant_step"]).to(beNil())
     }
 
     // MARK: - flushAllEvents

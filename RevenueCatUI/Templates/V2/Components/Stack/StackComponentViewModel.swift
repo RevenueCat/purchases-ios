@@ -27,7 +27,24 @@ class StackComponentViewModel {
 
     let viewModels: [PaywallComponentViewModel]
     let badgeViewModels: [PaywallComponentViewModel]
-    let shouldApplySafeAreaInset: Bool
+
+    /// Whether the first child is a full-width image or video.
+    /// Used by ZStack rendering to push non-hero children below the safe area.
+    var firstChildIsFullWidthMedia: Bool {
+        guard case .zlayer = component.dimension else { return false }
+        guard let first = component.components.first(where: {
+            if case .fallbackHeader = $0 { return false }
+            return true
+        }) else { return false }
+        switch first {
+        case .image(let image):
+            return image.size.width == .fill
+        case .video(let video):
+            return video.size.width == .fill
+        default:
+            return false
+        }
+    }
 
     private let discardRules: Bool
 
@@ -35,7 +52,6 @@ class StackComponentViewModel {
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel],
         badgeViewModels: [PaywallComponentViewModel],
-        shouldApplySafeAreaInset: Bool = false,
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false
     ) {
@@ -43,7 +59,6 @@ class StackComponentViewModel {
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
         self.badgeViewModels = badgeViewModels
-        self.shouldApplySafeAreaInset = shouldApplySafeAreaInset
         self.discardRules = discardRules
         self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
@@ -53,7 +68,6 @@ class StackComponentViewModel {
             component: self.component,
             viewModels: newViewModels,
             badgeViewModels: self.badgeViewModels,
-            shouldApplySafeAreaInset: self.shouldApplySafeAreaInset,
             uiConfigProvider: self.uiConfigProvider,
             discardRules: self.discardRules
         )
@@ -136,6 +150,7 @@ extension PresentedStackPartial: PresentedPartial {
         with other: PaywallComponent.PartialStackComponent?
     ) -> Self {
 
+        let name = other?.name ?? base?.name
         let visible = other?.visible ?? base?.visible
         let dimension = other?.dimension ?? base?.dimension
         let size = other?.size ?? base?.size
@@ -150,6 +165,7 @@ extension PresentedStackPartial: PresentedPartial {
         let badge = other?.badge ?? base?.badge
 
         return .init(
+            name: name,
             visible: visible,
             dimension: dimension,
             size: size,

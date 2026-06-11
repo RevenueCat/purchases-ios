@@ -70,6 +70,7 @@ let schemes: [Scheme] = [
         runAction: .runAction(
             configuration: "Debug",
             executable: "PaywallsTester",
+            arguments: .appendingTuistLaunchArguments(),
             options: .options(
                 storeKitConfigurationPath: storeKitConfigPath
             )
@@ -129,7 +130,7 @@ let project = Project(
             name: "PaywallsTester",
             destinations: allDestinations,
             product: .app,
-            bundleId: "com.revenuecat.PaywallsTester",
+            bundleId: Environment.paywallsTesterBundleId,
             deploymentTargets: allDeploymentTargets,
             infoPlist: "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Info.plist",
             sources: [
@@ -143,7 +144,7 @@ let project = Project(
                 .revenueCatUI,
                 .storeKit
             ],
-            settings: .appTarget
+            settings: .appTarget(including: ([:] as SettingsDictionary).appendingTuistSwiftConditions())
         )
     ],
     schemes: schemes,

@@ -35,11 +35,34 @@ struct TabControlToggleComponentView: View {
     @EnvironmentObject
     private var tabControlContext: TabControlContext
 
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
+
     private let viewModel: TabControlToggleComponentViewModel
     private let onDismiss: () -> Void
 
-    @State
-    private var isOn: Bool = false
+    /// `selectedTabId` in `TabControlContext` is the source of truth.
+    /// The toggle reads it and writes it only from user interaction.
+    private var isOn: Binding<Bool> {
+        Binding(
+            get: {
+                Self.computeIsOn(
+                    selectedTabId: self.tabControlContext.selectedTabId,
+                    tabIds: self.tabControlContext.tabIds
+                )
+            },
+            set: { newValue in
+                let tabIds = self.tabControlContext.tabIds
+                guard tabIds.count >= 2 else { return }
+
+                self.tabControlContext.selectedTabId = newValue ? tabIds[1] : tabIds[0]
+                _ = self.componentInteractionLogger(.paywallTabControlToggle(
+                    componentName: self.tabControlContext.name,
+                    isOn: newValue
+                ))
+            }
+        )
+    }
 
     init(viewModel: TabControlToggleComponentViewModel, onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
@@ -47,7 +70,7 @@ struct TabControlToggleComponentView: View {
     }
 
     var body: some View {
-        Toggle("", isOn: $isOn)
+        Toggle("", isOn: self.isOn)
             .toggleStyle(
                 CustomToggleStyle(
                     thumbColorOn: self.viewModel.thumbColorOn,
@@ -57,32 +80,11 @@ struct TabControlToggleComponentView: View {
                 )
             )
             .labelsHidden()
-            .onAppear {
-                self.isOn = computeIsOn(
-                    selectedTabId: tabControlContext.selectedTabId,
-                    tabIds: tabControlContext.tabIds
-                )
-            }
-            .onChangeOf(self.isOn) { newValue in
-                let tabIds = tabControlContext.tabIds
-                guard tabIds.count >= 2 else { return }
-
-                tabControlContext.selectedTabId = newValue ? tabIds[1] : tabIds[0]
-            }
-            .onChangeOf(tabControlContext.selectedTabId) { newSelectedTabId in
-                let newIsOn = computeIsOn(
-                    selectedTabId: newSelectedTabId,
-                    tabIds: tabControlContext.tabIds
-                )
-                if self.isOn != newIsOn {
-                    self.isOn = newIsOn
-                }
-            }
     }
 
     /// Computes the toggle's ON state based on the selected tab.
     /// The toggle is ON when the second tab (index 1) is selected.
-    private func computeIsOn(selectedTabId: String, tabIds: [String]) -> Bool {
+    private static func computeIsOn(selectedTabId: String, tabIds: [String]) -> Bool {
         guard tabIds.count == 2 else { return false }
         return selectedTabId == tabIds[1]
     }
@@ -151,9 +153,11 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
             TabControlContext(
                 controlStackViewModel: controlStackViewModel,
                 tabIds: ["1", "2"],
-                defaultTabId: "1"
+                defaultTabId: "1",
+                name: "Off toggle"
             )
         )
+        .environmentObject(PurchaseHandler.default())
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Off")
 
@@ -179,9 +183,11 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
             TabControlContext(
                 controlStackViewModel: controlStackViewModel,
                 tabIds: ["1", "2"],
-                defaultTabId: "2"
+                defaultTabId: "2",
+                name: "On toggle"
             )
         )
+        .environmentObject(PurchaseHandler.default())
         .previewLayout(.sizeThatFits)
         .previewDisplayName("On")
     }

@@ -11,6 +11,8 @@
 //
 //  Created by Nacho Soto on 8/8/23.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 protocol HTTPRequestPath {
@@ -101,9 +103,14 @@ extension HTTPRequest {
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
         case getVirtualCurrencies(appUserID: String)
+        case getWorkflow(appUserID: String, workflowId: String)
+        case getWorkflows(appUserID: String, type: String?)
         case postRedeemWebPurchase
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
+        case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
+        // WIP: endpoint path and signing requirements subject to change
+        case getRemoteConfig
 
     }
 
@@ -176,6 +183,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .getCustomerInfo,
                 .getOfferings,
+                .getWorkflow,
+                .getWorkflows,
                 .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
@@ -189,7 +198,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getVirtualCurrencies,
                 .appHealthReport,
                 .postCreateTicket,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .rewardVerificationStatus,
+                .getRemoteConfig:
             return true
 
         case .health,
@@ -202,6 +213,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .getCustomerInfo,
                 .getOfferings,
+                .getWorkflow,
+                .getWorkflows,
                 .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
@@ -215,7 +228,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getVirtualCurrencies,
                 .appHealthReport,
                 .postCreateTicket,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .rewardVerificationStatus,
+                .getRemoteConfig:
             return true
         case .health,
              .appHealthReportAvailability:
@@ -232,6 +247,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getOfferings,
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
+                .getWorkflow,
+                .getWorkflows,
                 .appHealthReport,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior:
@@ -243,8 +260,12 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
                 .getCustomerCenterConfig,
-                .postCreateTicket:
+                .postCreateTicket,
+                // WIP: Move to true when we have the final endpoint for remote config, and we can remove the fallback
+                .getRemoteConfig:
             return false
+        case .rewardVerificationStatus:
+            return true
         }
     }
 
@@ -256,9 +277,12 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getVirtualCurrencies,
                 .health,
                 .appHealthReportAvailability,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .rewardVerificationStatus:
             return true
-        case .getOfferings,
+        case .getWorkflow,
+                .getWorkflows,
+                .getOfferings,
                 .getIntroEligibility,
                 .postSubscriberAttributes,
                 .postAttributionData,
@@ -268,13 +292,19 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .appHealthReport,
-                .postCreateTicket:
+                .postCreateTicket,
+                .getRemoteConfig:
             return false
         }
     }
 
     var relativePath: String {
-        return "/v1/\(self.pathComponent)"
+        switch self {
+        case .getRemoteConfig:
+            return "/v2/\(self.pathComponent)"
+        default:
+            return "/v1/\(self.pathComponent)"
+        }
     }
 
     var pathComponent: String {
@@ -327,10 +357,26 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .getVirtualCurrencies(appUserID):
             return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
 
+        case let .getWorkflow(appUserID, workflowId):
+            return "subscribers/\(Self.escape(appUserID))/workflows/\(Self.escape(workflowId))"
+
+        case let .getWorkflows(appUserID, type):
+            let base = "subscribers/\(Self.escape(appUserID))/workflows"
+            if let type = type {
+                return "\(base)?type=\(Self.escape(type))"
+            }
+            return base
+
         case .postCreateTicket:
             return "customercenter/support/create-ticket"
         case let .isPurchaseAllowedByRestoreBehavior(appUserID):
             return "subscribers/\(Self.escape(appUserID))/restore/eligibility"
+
+        case let .rewardVerificationStatus(appUserID, clientTransactionID):
+            return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
+
+        case .getRemoteConfig:
+            return "config"
         }
     }
 
@@ -341,6 +387,12 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .getOfferings:
             return "get_offerings"
+
+        case .getWorkflow:
+            return "get_workflow"
+
+        case .getWorkflows:
+            return "get_workflows"
 
         case .getIntroEligibility:
             return "get_intro_eligibility"
@@ -388,6 +440,12 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "post_create_ticket"
         case .isPurchaseAllowedByRestoreBehavior:
             return "post_restore_eligibility"
+
+        case .rewardVerificationStatus:
+            return "get_reward_verification_status"
+
+        case .getRemoteConfig:
+            return "get_remote_config"
         }
     }
 

@@ -30,6 +30,20 @@ protocol PaywallPurchasesType: Sendable {
     var subscriptionHistoryTracker: SubscriptionHistoryTracker { get }
 
     @Sendable
+    func offerings() async throws -> Offerings
+
+    var cachedOfferings: Offerings? { get }
+
+#if !os(tvOS)
+    @Sendable
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult
+
+    /// Synchronously returns the cached workflow for `offeringID` when present and fresh, otherwise
+    /// `nil`. Used to seed the workflow paywall without waiting on the async resolve path.
+    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult?
+#endif
+
+    @Sendable
     func purchase(
         package: Package,
         promotionalOffer: PromotionalOffer?,
@@ -44,6 +58,9 @@ protocol PaywallPurchasesType: Sendable {
 
     @Sendable
     func track(paywallEvent: PaywallEvent) async
+
+    @Sendable
+    func track(workflowEvent: WorkflowEvent) async
 
     @Sendable
     func cachePurchaseData(

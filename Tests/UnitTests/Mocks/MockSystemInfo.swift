@@ -16,13 +16,16 @@ class MockSystemInfo: SystemInfo {
     var stubbedIsApplicationBackgrounded: Bool?
     var stubbedIsSandbox: Bool?
     var stubbedIsDebugBuild: Bool?
+    var stubbedWorkflowsEndpointEnabled: Bool?
     var stubbedStorefront: StorefrontType?
     var stubbedApiKeyValidationResult: Configuration.APIKeyValidationResult?
 
     convenience init(platformInfo: Purchases.PlatformInfo? = nil,
                      finishTransactions: Bool,
                      customEntitlementsComputation: Bool = false,
+                     bundle: Bundle = .main,
                      storeKitVersion: StoreKitVersion = .default,
+                     apiKey: String = "mock_api_key",
                      apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
                      dangerousSettings: DangerousSettings,
@@ -30,7 +33,9 @@ class MockSystemInfo: SystemInfo {
                      preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
         self.init(platformInfo: platformInfo,
                   finishTransactions: finishTransactions,
+                  bundle: bundle,
                   storeKitVersion: storeKitVersion,
+                  apiKey: apiKey,
                   apiKeyValidationResult: apiKeyValidationResult,
                   responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
@@ -43,7 +48,9 @@ class MockSystemInfo: SystemInfo {
                      finishTransactions: Bool,
                      customEntitlementsComputation: Bool = false,
                      uiPreviewMode: Bool = false,
+                     bundle: Bundle = .main,
                      storeKitVersion: StoreKitVersion = .default,
+                     apiKey: String = "mock_api_key",
                      apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
                      clock: ClockType = TestClock(),
@@ -58,7 +65,9 @@ class MockSystemInfo: SystemInfo {
         self.init(platformInfo: platformInfo,
                   finishTransactions: finishTransactions,
                   customEntitlementsComputation: customEntitlementsComputation,
+                  bundle: bundle,
                   storeKitVersion: storeKitVersion,
+                  apiKey: apiKey,
                   apiKeyValidationResult: apiKeyValidationResult,
                   responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
@@ -91,6 +100,10 @@ class MockSystemInfo: SystemInfo {
 
     override var isSandbox: Bool {
         return self.stubbedIsSandbox ?? super.isSandbox
+    }
+
+    override var workflowsEndpointEnabled: Bool {
+        return self.stubbedWorkflowsEndpointEnabled ?? super.workflowsEndpointEnabled
     }
 
     override var isDebugBuild: Bool {

@@ -360,9 +360,8 @@ extension PaywallComponent {
         case .stack(let component):
             return component.containsUnsupportedConditions()
         case .button(let component):
-            if component.stack.containsUnsupportedConditions() {
-                return true
-            }
+            if component.overrides?.hasUnsupportedCondition() == true { return true }
+            if component.stack.containsUnsupportedConditions() { return true }
             if case let .navigateTo(.sheet(sheet)) = component.action {
                 return sheet.stack.containsUnsupportedConditions()
             }
@@ -388,6 +387,8 @@ extension PaywallComponent {
             return component.containsUnsupportedConditions()
         case .countdown(let component):
             return component.containsUnsupportedConditions()
+        case .fallbackHeader:
+            return false
         }
     }
 

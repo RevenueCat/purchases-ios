@@ -125,7 +125,8 @@ private enum ButtonWithSheetPreview {
             shape: .pill
         ),
         action: nil,
-        method: nil
+        method: nil,
+        name: nil
     )
 
     static let viewAllButton = PaywallComponent.ButtonComponent(
@@ -195,7 +196,8 @@ private enum ButtonWithSheetPreview {
                                             shape: .pill
                                         ),
                                         action: .inAppCheckout,
-                                        method: .inAppCheckout
+                                        method: .inAppCheckout,
+                                        name: nil
                                     )),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -216,7 +218,8 @@ private enum ButtonWithSheetPreview {
                                             shape: .pill
                                         ),
                                         action: .webCheckout,
-                                        method: .webCheckout(.init())
+                                        method: .webCheckout(.init()),
+                                        name: nil
                                     )),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -237,7 +240,8 @@ private enum ButtonWithSheetPreview {
                                             shape: .pill
                                         ),
                                         action: .webProductSelection,
-                                        method: .webProductSelection(.init())
+                                        method: .webProductSelection(.init()),
+                                        name: nil
                                     )),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -260,7 +264,8 @@ private enum ButtonWithSheetPreview {
                                         action: .webCheckout,
                                         method: .customWebCheckout(
                                             .init(customUrl: .init(url: "web_checkout_url", packageParam: "rc_package"))
-                                        )
+                                        ),
+                                        name: nil
                                     )),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -283,7 +288,8 @@ private enum ButtonWithSheetPreview {
                                         action: .webProductSelection,
                                         method: .customWebCheckout(
                                             .init(customUrl: .init(url: "web_checkout_url"))
-                                        )
+                                        ),
+                                        name: nil
                                     ))
                                 ],
                                 size: .init(width: .fill, height: .fit),
@@ -513,6 +519,24 @@ struct ButtonWithSheetPreview_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 1")
+
+        PaywallsV2View(
+            paywallComponents: ButtonWithSheetPreview.paywallComponents,
+            offering: .init(identifier: "default",
+                            serverDescription: "",
+                            availablePackages: [weeklyPackage, monthlyPackage],
+                            webCheckoutUrl: URL(string: "https://pay.revenuecat.com/abcd1234/the-app-user-id")!),
+            purchaseHandler: PurchaseHandler.default(),
+            introEligibilityChecker: .default(),
+            showZeroDecimalPlacePrices: true,
+            onDismiss: { },
+            failedToLoadFont: { _ in },
+            colorScheme: .light
+        )
+        .environment(\.paywallLoadingOverride, true)
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.fixed(width: 400, height: 800))
+        .previewDisplayName("Template 1 (Loading)")
     }
 }
 

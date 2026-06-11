@@ -1,0 +1,245 @@
+{
+  "fixtures": [
+    {
+      "id": "not_negates_true_to_false",
+      "predicate": { "!": true },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "not_negates_truthy_int_to_false",
+      "predicate": { "!": 5 },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "not_negates_false_to_true",
+      "predicate": { "!": false },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "not_negates_zero_to_true",
+      "predicate": { "!": 0 },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "not_negates_null_to_true",
+      "predicate": { "!": null },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "not_unwraps_singleton_array",
+      "predicate": { "!": [true] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "not_not_casts_truthy_to_true",
+      "predicate": { "!!": 5 },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "not_not_casts_empty_string_to_false",
+      "predicate": { "!!": "" },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "and_returns_first_falsy_value",
+      "predicate": { "===": [{ "and": [1, 0, 2] }, 0] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "and_returns_last_value_when_all_truthy",
+      "predicate": { "===": [{ "and": [1, 2, 3] }, 3] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "and_short_circuits_on_first_falsy",
+      "description": "and short-circuits at the first falsy operand; the trailing unsupported-op operand is never evaluated",
+      "predicate": {
+        "===": [
+          { "and": [1, false, { "definitelyNotAnOp": [1] }] },
+          false
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "and_empty_returns_null",
+      "description": "spec parity: {\"and\": []} returns undefined, which maps to null",
+      "predicate": { "===": [{ "and": [] }, null] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "if_empty_and_takes_else_branch",
+      "description": "{\"and\": []} is null (falsy), so the surrounding if selects the else branch",
+      "predicate": { "===": [{ "if": [{ "and": [] }, "yes", "no"] }, "no"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "or_returns_first_truthy_value",
+      "predicate": { "===": [{ "or": [0, 7, 2] }, 7] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "or_returns_last_value_when_all_falsy",
+      "predicate": { "===": [{ "or": [0, false, null] }, null] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "or_empty_returns_null",
+      "description": "spec parity: {\"or\": []} returns undefined, which maps to null",
+      "predicate": { "===": [{ "or": [] }, null] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "if_three_arg_true_branch",
+      "predicate": { "===": [{ "if": [true, "yes", "no"] }, "yes"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "if_three_arg_false_branch",
+      "predicate": { "===": [{ "if": [false, "yes", "no"] }, "no"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "if_chained_else_if",
+      "description": "if (false) \"a\" else if (true) \"b\" else \"c\" yields \"b\"",
+      "predicate": { "===": [{ "if": [false, "a", true, "b", "c"] }, "b"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "if_no_truthy_no_else_returns_null",
+      "description": "even-arity, no else, no truthy condition yields null",
+      "predicate": { "===": [{ "if": [false, "a", false, "b"] }, null] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "if_empty_returns_null",
+      "predicate": { "===": [{ "if": [] }, null] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "if_single_arg_string_returned",
+      "description": "{\"if\": [expr]} falls through to the trailing else branch and returns the lone argument as-is",
+      "predicate": { "===": [{ "if": ["only"] }, "only"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "if_single_arg_false_returned",
+      "description": "{\"if\": [expr]} falls through to the trailing else branch and returns the lone argument as-is",
+      "predicate": { "===": [{ "if": [false] }, false] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "if_two_arg_truthy_returns_then",
+      "description": "{\"if\": [cond, then]} with no else returns then when the condition is truthy",
+      "predicate": { "===": [{ "if": [true, "yes"] }, "yes"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "if_two_arg_falsy_returns_null",
+      "description": "{\"if\": [cond, then]} returns null (not the falsy condition value) when the condition is falsy",
+      "predicate": { "===": [{ "if": [false, "yes"] }, null] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "if_two_arg_falsy_int_returns_null",
+      "description": "{\"if\": [cond, then]} returns null when the condition is a falsy int",
+      "predicate": { "===": [{ "if": [0, "yes"] }, null] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "and_short_circuits_skips_log_after_falsy",
+      "description": "and stops at the first falsy operand; the trailing log never fires",
+      "predicate": { "and": [false, { "log": "unreached" }] },
+      "variables": {},
+      "expected": false,
+      "expectedLogs": []
+    },
+    {
+      "id": "and_evaluates_log_when_operand_truthy",
+      "description": "control: with no short-circuit the trailing log fires",
+      "predicate": { "and": [true, { "log": "reached" }] },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["reached"]
+    },
+    {
+      "id": "and_logs_first_then_skips_after_falsy",
+      "predicate": { "and": [{ "log": "a" }, false, { "log": "b" }] },
+      "variables": {},
+      "expected": false,
+      "expectedLogs": ["a"]
+    },
+    {
+      "id": "or_short_circuits_skips_log_after_truthy",
+      "description": "or stops at the first truthy operand; the trailing log never fires",
+      "predicate": { "or": [true, { "log": "unreached" }] },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": []
+    },
+    {
+      "id": "or_evaluates_log_when_operand_falsy",
+      "description": "control: with no short-circuit the trailing log fires",
+      "predicate": { "or": [false, { "log": "reached" }] },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["reached"]
+    },
+    {
+      "id": "if_skips_untaken_else_branch_log",
+      "predicate": { "if": [true, "yes", { "log": "else" }] },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": []
+    },
+    {
+      "id": "if_skips_untaken_then_branch_log",
+      "predicate": { "if": [false, { "log": "then" }, "else"] },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": []
+    },
+    {
+      "id": "if_evaluates_only_taken_branch_log",
+      "description": "only the taken branch is evaluated; the else log never fires",
+      "predicate": { "if": [true, { "log": "then" }, { "log": "else" }] },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["then"]
+    },
+    {
+      "id": "if_chained_skips_unreached_branch_logs",
+      "description": "neither the false branch's then-log nor the trailing else-log is reached",
+      "predicate": { "if": [false, { "log": "a" }, true, "b", { "log": "c" }] },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": []
+    }
+  ]
+}

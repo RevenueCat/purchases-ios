@@ -12,6 +12,7 @@ import Foundation
 
     final class PurchaseButtonComponent: PaywallComponentBase {
 
+        public let name: String?
         let type: ComponentType
         public let stack: PaywallComponent.StackComponent
 
@@ -25,7 +26,22 @@ import Foundation
             case webProductSelection = "web_product_selection"
         }
 
-        public enum Method: Codable, Sendable, Hashable, Equatable {
+        public enum Method: Codable, Sendable, Hashable, Equatable, CustomStringConvertible {
+            public var description: String {
+                switch self {
+                case .inAppCheckout:
+                    return "in_app_checkout"
+                case .webCheckout:
+                    return "web_checkout"
+                case .webProductSelection:
+                    return "web_product_selection"
+                case .customWebCheckout:
+                    return "custom_web_checkout"
+                case .unknown:
+                    return "unknown"
+                }
+            }
+
             case inAppCheckout
             case webCheckout(WebCheckout)
             case webProductSelection(WebCheckout)
@@ -133,12 +149,14 @@ import Foundation
         public init(
             stack: PaywallComponent.StackComponent,
             action: Action?,
-            method: Method?
+            method: Method?,
+            name: String?
         ) {
             self.type = .purchaseButton
             self.stack = stack
             self.action = action
             self.method = method
+            self.name = name
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -146,14 +164,15 @@ import Foundation
             hasher.combine(stack)
             hasher.combine(action)
             hasher.combine(method)
+            hasher.combine(name)
         }
 
         public static func == (lhs: PurchaseButtonComponent, rhs: PurchaseButtonComponent) -> Bool {
             return lhs.type == rhs.type &&
                 lhs.stack == rhs.stack &&
                 lhs.action == rhs.action &&
-                lhs.method == rhs.method
+                lhs.method == rhs.method &&
+                lhs.name == rhs.name
         }
     }
-
 }

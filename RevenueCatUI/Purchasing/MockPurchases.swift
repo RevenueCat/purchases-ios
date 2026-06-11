@@ -16,8 +16,9 @@
 #if DEBUG
 
 /// An implementation of `PaywallPurchasesType` that allows creating custom blocks.
+/// `Sendable` is unchecked: DEBUG-only mock with mutable test state; used from tests / main actor.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-final class MockPurchases: PaywallPurchasesType {
+final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
 
     typealias CustomerInfoBlock = @Sendable () async throws -> CustomerInfo
     typealias PurchaseBlock = @Sendable (Package, PromotionalOffer?, PaywallEvent?) async throws -> PurchaseResultData
@@ -35,6 +36,30 @@ final class MockPurchases: PaywallPurchasesType {
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return _purchasesAreCompletedBy }
         set { _ = newValue }
+    }
+
+    var cachedOfferings: Offerings?
+
+#if !os(tvOS)
+    var workflowBlock: ((String) async throws -> WorkflowDataResult)?
+
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
+        guard let block = workflowBlock else { throw ErrorCode.configurationError }
+        return try await block(offeringID)
+    }
+
+    var cachedWorkflowBlock: ((String) -> WorkflowDataResult?)?
+
+    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
+        return self.cachedWorkflowBlock?(offeringID)
+    }
+#endif
+
+    var offeringsBlock: (() async throws -> Offerings)?
+
+    func offerings() async throws -> Offerings {
+        guard let block = offeringsBlock else { throw ErrorCode.configurationError }
+        return try await block()
     }
 
     let subscriptionHistoryTracker = SubscriptionHistoryTracker()
@@ -78,6 +103,12 @@ final class MockPurchases: PaywallPurchasesType {
 
     func track(paywallEvent: PaywallEvent) async {
         await self.trackEventBlock(paywallEvent)
+    }
+
+    var trackWorkflowEventBlock: (@Sendable (WorkflowEvent) async -> Void)?
+
+    func track(workflowEvent: WorkflowEvent) async {
+        await self.trackWorkflowEventBlock?(workflowEvent)
     }
 
     struct CachedPurchaseData {
@@ -128,7 +159,11 @@ extension PaywallPurchasesType {
         purchase: @escaping (@escaping MockPurchases.PurchaseBlock) -> MockPurchases.PurchaseBlock,
         restore: @escaping (@escaping MockPurchases.RestoreBlock) -> MockPurchases.RestoreBlock
     ) -> PaywallPurchasesType {
-        return MockPurchases { package, promotionalOffer, paywallEvent in
+        let mapped = MockPurchases(
+            purchasesAreCompletedBy: self.purchasesAreCompletedBy,
+            preferredLocales: self.preferredLocales,
+            preferredLocaleOverride: self.preferredLocaleOverride
+        ) { package, promotionalOffer, paywallEvent in
             try await purchase({ pkg, offer, event in
                 try await self.purchase(package: pkg, promotionalOffer: offer, paywallEvent: event)
             })(package, promotionalOffer, paywallEvent)
@@ -139,13 +174,27 @@ extension PaywallPurchasesType {
         } customerInfo: {
             try await self.customerInfo()
         }
+
+        mapped.cachedOfferings = self.cachedOfferings
+        mapped.offeringsBlock = { try await self.offerings() }
+        #if !os(tvOS)
+        mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
+        mapped.trackWorkflowEventBlock = { await self.track(workflowEvent: $0) }
+        mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
+        #endif
+
+        return mapped
     }
 
     /// Creates a copy of this `PaywallPurchasesType` wrapping `trackEvent`.
     func map(
         trackEvent: @escaping (@escaping MockPurchases.TrackEventBlock) -> MockPurchases.TrackEventBlock
     ) -> PaywallPurchasesType {
-        return MockPurchases { package, promotionalOffer, paywallEvent in
+        let mapped = MockPurchases(
+            purchasesAreCompletedBy: self.purchasesAreCompletedBy,
+            preferredLocales: self.preferredLocales,
+            preferredLocaleOverride: self.preferredLocaleOverride
+        ) { package, promotionalOffer, paywallEvent in
             try await self.purchase(package: package, promotionalOffer: promotionalOffer, paywallEvent: paywallEvent)
         } restorePurchases: {
             try await self.restorePurchases()
@@ -154,6 +203,16 @@ extension PaywallPurchasesType {
         } customerInfo: {
             try await self.customerInfo()
         }
+
+        mapped.cachedOfferings = self.cachedOfferings
+        mapped.offeringsBlock = { try await self.offerings() }
+        #if !os(tvOS)
+        mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
+        mapped.trackWorkflowEventBlock = { await self.track(workflowEvent: $0) }
+        mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
+        #endif
+
+        return mapped
     }
 
 }

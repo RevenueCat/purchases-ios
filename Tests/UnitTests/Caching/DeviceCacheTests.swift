@@ -497,6 +497,89 @@ class DeviceCacheTests: TestCase {
         expect(self.mockFileCache.saveDataInvocations.count) == 1
     }
 
+    // MARK: - Workflows list response
+
+    func testWorkflowsListResponseIsProperlyCachedToDisk() {
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+
+        expect(self.mockFileCache.saveDataInvocations.count) == 0
+
+        self.deviceCache.cache(workflowsListResponse: .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: true)
+        ]))
+
+        expect(self.mockFileCache.saveDataInvocations.count) == 1
+    }
+
+    func testCachedWorkflowsListResponseRoundTripsThroughDisk() throws {
+        let response = WorkflowsListResponse(workflows: [
+            .init(id: "wf_1", displayName: "Flow A", offeringId: "default", prefetch: true),
+            .init(id: "wf_2", displayName: "Flow B", offeringId: nil, prefetch: false)
+        ])
+
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+        self.mockFileCache.stubCachedContentExists(with: true)
+        self.mockFileCache.stubLoadFile(with: .success(try response.jsonEncodedData))
+
+        self.deviceCache.cache(workflowsListResponse: response)
+
+        let cached = self.deviceCache.cachedWorkflowsListResponse()
+        expect(cached) == response
+    }
+
+    func testCachedWorkflowsListResponseReturnsNilWhenNothingCached() {
+        expect(self.deviceCache.cachedWorkflowsListResponse()).to(beNil())
+    }
+
+    func testWorkflowsListResponseIsNeverSavedToUserDefaults() {
+        let workflowsKey = "com.revenuecat.userdefaults.workflowsListResponse"
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+
+        self.deviceCache.cache(workflowsListResponse: .init(workflows: []))
+
+        expect(self.mockUserDefaults.mockValues[workflowsKey]).to(beNil())
+        expect(self.mockFileCache.saveDataInvocations.count) == 1
+    }
+
+    // MARK: - Workflow details
+
+    func testWorkflowDetailsAreProperlyCachedToDisk() throws {
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+
+        expect(self.mockFileCache.saveDataInvocations.count) == 0
+
+        self.deviceCache.cache(workflowDetails: ["wf_1": try Self.workflowDataResult(id: "wf_1")])
+
+        expect(self.mockFileCache.saveDataInvocations.count) == 1
+    }
+
+    func testCachedWorkflowDetailsRoundTripThroughDisk() throws {
+        let details = ["wf_1": try Self.workflowDataResult(id: "wf_1")]
+
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+        self.mockFileCache.stubCachedContentExists(with: true)
+        self.mockFileCache.stubLoadFile(with: .success(try details.jsonEncodedData))
+
+        self.deviceCache.cache(workflowDetails: details)
+
+        let cached = self.deviceCache.cachedWorkflowDetails()
+        expect(cached) == details
+    }
+
+    func testCachedWorkflowDetailsReturnsNilWhenNothingCached() {
+        expect(self.deviceCache.cachedWorkflowDetails()).to(beNil())
+    }
+
+    func testWorkflowDetailsAreNeverSavedToUserDefaults() throws {
+        let workflowDetailsKey = "com.revenuecat.userdefaults.workflowDetails"
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+
+        self.deviceCache.cache(workflowDetails: ["wf_1": try Self.workflowDataResult(id: "wf_1")])
+
+        expect(self.mockUserDefaults.mockValues[workflowDetailsKey]).to(beNil())
+        expect(self.mockFileCache.saveDataInvocations.count) == 1
+    }
+
     func testSetLatestAdvertisingIdsByNetworkSentMapsAttributionNetworksToStringKeys() {
         let userId = "asdf"
         let token = "token"
@@ -1210,6 +1293,51 @@ private extension DeviceCacheTests {
         )
     }
 
+    static func workflowDataResult(id: String) throws -> WorkflowDataResult {
+        let json = """
+        {
+          "id": "\(id)",
+          "display_name": "Test",
+          "initial_step_id": "step_1",
+          "steps": {
+            "step_1": { "id": "step_1", "type": "screen", "screen_id": "screen_1" }
+          },
+          "screens": {
+            "screen_1": {
+              "template_name": "tmpl",
+              "asset_base_url": "https://assets.revenuecat.com",
+              "default_locale": "en_US",
+              "components_localizations": {},
+              "components_config": {
+                "base": {
+                  "stack": {
+                    "type": "stack",
+                    "components": [],
+                    "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                    "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+                    "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                    "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+                  },
+                  "background": {
+                    "type": "color",
+                    "value": { "light": { "type": "hex", "value": "#FFFFFF" } }
+                  }
+                }
+              },
+              "offering_identifier": "default"
+            }
+          },
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {}
+          }
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+        return .init(workflow: workflow, enrolledVariants: nil)
+    }
+
     func makeIsolatedUserDefaults(file: StaticString = #fileID,
                                   function: StaticString = #function,
                                   line: UInt = #line) -> UserDefaults {
@@ -1255,9 +1383,10 @@ private extension DeviceCacheTests {
         )
 
         let offering = try XCTUnwrap(
-            OfferingsFactory().createOffering(from: products,
-                                              offering: offeringsData,
-                                              uiConfig: nil)
+            OfferingsFactory(systemInfo: MockSystemInfo(finishTransactions: true))
+                .createOffering(from: products,
+                                offering: offeringsData,
+                                uiConfig: nil)
         )
         return Offerings(
             offerings: [offeringIdentifier: offering],

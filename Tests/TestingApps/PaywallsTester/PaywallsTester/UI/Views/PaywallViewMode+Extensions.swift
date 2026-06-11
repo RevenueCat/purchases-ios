@@ -19,6 +19,8 @@ enum PaywallTesterViewMode {
     case condensedFooter
     case presentIfNeeded
     case presentPaywall
+    case workflow
+    case presentWorkflow
 }
 
 internal extension PaywallTesterViewMode {
@@ -46,7 +48,7 @@ internal extension PaywallTesterViewMode {
     }
     
     var isAvailableOnExamples: Bool {
-        return self != .presentIfNeeded && self != .presentPaywall
+        return self != .presentIfNeeded && self != .presentPaywall && self != .workflow && self != .presentWorkflow
     }
 
     var mode: PaywallViewMode {
@@ -59,6 +61,8 @@ internal extension PaywallTesterViewMode {
         #endif
         case .presentIfNeeded: return .fullScreen
         case .presentPaywall: return .fullScreen
+        case .workflow: return .fullScreen
+        case .presentWorkflow: return .fullScreen
         }
     }
 
@@ -66,12 +70,14 @@ internal extension PaywallTesterViewMode {
         switch self {
         case .fullScreen: return "iphone"
         case .sheet: return "iphone"
-        #if !os(watchOS)
+        #if !os(watchOS) && !os(macOS)
         case .footer: return "lanyardcard"
         case .condensedFooter: return "ruler"
-        case .presentIfNeeded: return "signpost.right.and.left"
         #endif
+        case .presentIfNeeded: return "signpost.right.and.left"
         case .presentPaywall: return "rectangle.portrait.and.arrow.forward"
+        case .workflow: return "arrow.trianglehead.branch"
+        case .presentWorkflow: return "arrow.trianglehead.branch.fill"
         }
     }
 
@@ -81,16 +87,20 @@ internal extension PaywallTesterViewMode {
             return "Fullscreen"
         case .sheet:
             return "Sheet"
-        #if !os(watchOS)
+        #if !os(watchOS) && !os(macOS)
         case .footer:
             return "Footer"
         case .condensedFooter:
             return "Condensed Footer"
+        #endif
         case .presentIfNeeded:
             return "Present If Needed"
-        #endif
         case .presentPaywall:
             return "Present Paywall"
+        case .workflow:
+            return "Workflow - Sheet"
+        case .presentWorkflow:
+            return "Workflow - Full"
         }
     }
 
