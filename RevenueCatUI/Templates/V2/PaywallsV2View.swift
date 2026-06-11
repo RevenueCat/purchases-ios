@@ -308,8 +308,13 @@ struct PaywallsV2View: View {
                 }
 
                 async let introCheck: Void = self.introOfferEligibilityContext.computeEligibility(
-                    for: paywallState.packages
+                    for: Self.introEligibilityPackages(
+                        paywallPackages: paywallState.packages,
+                        workflowPackages: self.workflowPackages
+                    )
                 )
+                // Promo stays on-screen only: the promo offer product code lives on the package
+                // component, which an inherited (packageless-step) package doesn't carry.
                 async let promoCheck: Void = self.paywallPromoOfferCache.computeEligibility(
                     for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
                 )
@@ -600,6 +605,20 @@ extension PaywallsV2View {
         workflowDefaultPackage: Package?
     ) -> Package? {
         return workflowDefaultPackage ?? pageDefaultPackage
+    }
+
+    /// On-screen packages plus any inherited workflow packages, so `intro_offer_condition` overrides
+    /// resolve on a workflow step that has no package component of its own.
+    static func introEligibilityPackages(
+        paywallPackages: [Package],
+        workflowPackages: [Package]?
+    ) -> [Package] {
+        guard let workflowPackages, !workflowPackages.isEmpty else {
+            return paywallPackages
+        }
+
+        var seen = Set<Package>()
+        return (paywallPackages + workflowPackages).filter { seen.insert($0).inserted }
     }
 
     static func chooseLocalization(
