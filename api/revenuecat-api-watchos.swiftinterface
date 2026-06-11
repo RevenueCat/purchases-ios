@@ -107,6 +107,13 @@ extension RevenueCat.CustomerCenterPresentationMode : Swift.Codable {
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
+public typealias PublicError = Foundation.NSError
+extension Foundation.NSError {
+  public var asErrorCode: RevenueCat.ErrorCode? {
+    get
+  }
+}
+infix operator ??? : DefaultPrecedence
 @objc(RCPurchasesErrorCode) public enum ErrorCode : Swift.Int, Swift.Error {
   @objc(RCUnknownError) case unknownError = 0
   @objc(RCPurchaseCancelledError) case purchaseCancelledError = 1
@@ -165,7 +172,7 @@ extension RevenueCat.ErrorCode : Swift.CaseIterable {
     get
   }
 }
-extension RevenueCat.ErrorCode {
+extension RevenueCat.ErrorCode : Swift.CustomStringConvertible {
   public var description: Swift.String {
     get
   }
@@ -175,13 +182,6 @@ extension RevenueCat.ErrorCode : Foundation.CustomNSError {
     get
   }
 }
-public typealias PublicError = Foundation.NSError
-extension Foundation.NSError {
-  public var asErrorCode: RevenueCat.ErrorCode? {
-    get
-  }
-}
-infix operator ??? : DefaultPrecedence
 public typealias ProductIdentifier = Swift.String
 @_hasMissingDesignatedInitializers @objc(RCCustomerInfo) final public class CustomerInfo : ObjectiveC.NSObject {
   @objc final public let entitlements: RevenueCat.EntitlementInfos
@@ -3042,7 +3042,6 @@ extension RevenueCat.StoreProduct.ProductType : Swift.RawRepresentable {}
 extension RevenueCat.ErrorCode : Swift.Equatable {}
 extension RevenueCat.ErrorCode : Swift.Hashable {}
 extension RevenueCat.ErrorCode : Swift.RawRepresentable {}
-extension RevenueCat.ErrorCode : Swift.CustomStringConvertible {}
 extension RevenueCat.VerificationResult : Swift.Equatable {}
 extension RevenueCat.VerificationResult : Swift.Hashable {}
 extension RevenueCat.VerificationResult : Swift.RawRepresentable {}
