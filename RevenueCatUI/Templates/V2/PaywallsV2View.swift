@@ -620,12 +620,8 @@ extension PaywallsV2View {
         paywallPackages: [Package],
         workflowPackages: [Package]?
     ) -> [Package] {
-        guard let workflowPackages, !workflowPackages.isEmpty else {
-            return paywallPackages
-        }
-
         var seen = Set<Package>()
-        return (paywallPackages + workflowPackages).filter { seen.insert($0).inserted }
+        return (paywallPackages + (workflowPackages ?? [])).filter { seen.insert($0).inserted }
     }
 
     /// On-screen package infos plus any inherited workflow packages (with their authored promo offer
@@ -636,13 +632,12 @@ extension PaywallsV2View {
         workflowPackages: [Package]?,
         workflowPromoOfferProductCodes: [String: String]?
     ) -> [(package: Package, promotionalOfferProductCode: String?)] {
-        guard let workflowPackages, !workflowPackages.isEmpty else {
-            return paywallPackageInfos
+        var seen = Set<Package>()
+        var result: [(package: Package, promotionalOfferProductCode: String?)] = []
+        for info in paywallPackageInfos where seen.insert(info.package).inserted {
+            result.append(info)
         }
-
-        var seen = Set<Package>(paywallPackageInfos.map(\.package))
-        var result = paywallPackageInfos
-        for package in workflowPackages where seen.insert(package).inserted {
+        for package in workflowPackages ?? [] where seen.insert(package).inserted {
             result.append((package, workflowPromoOfferProductCodes?[package.identifier]))
         }
         return result

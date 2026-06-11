@@ -63,6 +63,24 @@ final class IntroEligibilityPackagesTests: TestCase {
         expect(result) == [annual, monthly, weekly]
     }
 
+    func testDeduplicatesDuplicatesWithinWorkflowPackages() {
+        let result = PaywallsV2View.introEligibilityPackages(
+            paywallPackages: [annual],
+            workflowPackages: [monthly, monthly]
+        )
+
+        expect(result) == [annual, monthly]
+    }
+
+    func testDeduplicatesDuplicatesWithinPaywallPackages() {
+        let result = PaywallsV2View.introEligibilityPackages(
+            paywallPackages: [annual, annual],
+            workflowPackages: nil
+        )
+
+        expect(result) == [annual]
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -108,6 +126,17 @@ final class PromoEligibilityPackageInfosTests: TestCase {
 
         // On-screen info wins for $rc_annual; only the missing $rc_monthly is appended.
         expect(self.pairs(result)).to(equal([("$rc_annual", "screen_a"), ("$rc_monthly", "wf_m")]))
+    }
+
+    func testDeduplicatesDuplicatesWithinPaywallPackageInfos() {
+        let result = PaywallsV2View.promoEligibilityPackageInfos(
+            paywallPackageInfos: [(annual, "promo_a"), (annual, "promo_a2")],
+            workflowPackages: nil,
+            workflowPromoOfferProductCodes: nil
+        )
+
+        // First occurrence wins; the duplicate is dropped.
+        expect(self.pairs(result)).to(equal([("$rc_annual", "promo_a")]))
     }
 
 }
