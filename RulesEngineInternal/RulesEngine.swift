@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RulesEngineInternal.swift
+//  RulesEngine.swift
 //
 //  Created by Antonio Pallares.
 //
@@ -15,24 +15,29 @@
 import Foundation
 
 /// Namespace for the RevenueCat rules engine.
-enum RulesEngine {}
+public enum RulesEngine {}
 
 extension RulesEngine {
 
+    /// Per-task override used by tests and scoped diagnostic callers.
+    /// When `nil`, logging falls through to the module default.
+    @TaskLocal static var scopedLogger: RulesEngineLogger?
+
     static var logger: RulesEngineLogger {
-        loggerStorage.value
+        scopedLogger ?? loggerStorage.value
     }
 
-    static func setLogger(_ logger: RulesEngineLogger) {
+    /// Replaces the module default logger. Intended to be called once during configure.
+    public static func setLogger(_ logger: RulesEngineLogger) {
         loggerStorage.value = logger
     }
 
     private static let loggerStorage = LoggerStorage()
 }
 
-/// Locked storage for `RulesEngine.logger`. A reference type so the enclosing
+/// Locked storage for the module default logger. A reference type so the enclosing
 /// namespace's `static let loggerStorage` can be a stored property.
-private final class LoggerStorage {
+private final class LoggerStorage: @unchecked Sendable {
 
     private let lock = NSLock()
     private var current: RulesEngineLogger = PrintLogger()
