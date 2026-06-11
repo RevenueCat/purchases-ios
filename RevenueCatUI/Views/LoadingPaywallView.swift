@@ -161,6 +161,8 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
     var preferredLocaleOverride: String? { nil }
 
+    var isUIPreviewMode: Bool { false }
+
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return .myApp }
         set { _ = newValue }
