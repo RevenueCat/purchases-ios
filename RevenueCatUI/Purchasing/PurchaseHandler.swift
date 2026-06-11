@@ -55,7 +55,7 @@ final class PurchaseHandler: ObservableObject {
         return purchases.preferredLocales.map(Locale.init)
     }
 
-    /// Whether the SDK is running in UI preview mode (e.g. RevenueCat's preview app).
+    /// Whether the SDK is running in UI preview mode.
     var isUIPreviewMode: Bool {
         return purchases.isUIPreviewMode
     }

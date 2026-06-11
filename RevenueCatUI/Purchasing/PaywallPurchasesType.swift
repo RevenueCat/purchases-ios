@@ -22,7 +22,7 @@ protocol PaywallPurchasesType: Sendable {
     /// Returns the preferred locales, including the locale override if set.
     var preferredLocales: [String] { get }
 
-    /// Whether the SDK is running in UI preview mode (e.g. RevenueCat's preview app).
+    /// Whether the SDK is running in UI preview mode.
     var isUIPreviewMode: Bool { get }
 
     /// `preferredLocales` will always include the preferred locale override if set, so this
