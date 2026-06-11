@@ -72,7 +72,7 @@ let package = Package(
                     exclude: ["ReceiptParserTests-Info.plist"]),
         // RevenueCatUI
         .target(name: "RevenueCatUI",
-                dependencies: ["RevenueCat"],
+                dependencies: ["RevenueCat", "RulesEngineInternal"],
                 path: "RevenueCatUI",
                 resources: [
                     .copy("Resources/background.jpg"),

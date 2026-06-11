@@ -65,6 +65,13 @@ extension TargetDependency {
         }
     }
 
+    /// Returns the internal rules engine project dependency.
+    public static var rulesEngineInternal: TargetDependency {
+        .project(
+            target: "RulesEngineInternal",
+            path: .relativeToRoot("Projects/RulesEngineInternal"))
+    }
+
     // MARK: - RevenueCat
 
     /// RevenueCat as a native Xcode SPM package dependency (used for both local and remote SPM modes)

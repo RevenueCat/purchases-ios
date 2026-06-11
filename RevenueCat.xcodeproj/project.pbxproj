@@ -314,6 +314,7 @@
 		2DEAC2E626EFE470006914ED /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DEAC2E526EFE470006914ED /* Assets.xcassets */; };
 		2DFF6C56270CA28800ECAFAB /* MockRequestFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B517926D44FF000BD2BD7 /* MockRequestFetcher.swift */; };
 		3508C2DD2E7D461087CD4782 /* RulesEngineInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B3F68BC246A0E31CC9F0C5BE /* RulesEngineInternal.framework */; };
+		B521A46F115EF2A694823190 /* RulesEngineInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B3F68BC246A0E31CC9F0C5BE /* RulesEngineInternal.framework */; };
 		35109DAB2BC6E436001030C8 /* BackendPostDiagnosticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35109DAA2BC6E436001030C8 /* BackendPostDiagnosticsTests.swift */; };
 		35109DB92BC8143E001030C8 /* DiagnosticsEventsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35109DB82BC8143E001030C8 /* DiagnosticsEventsRequest.swift */; };
 		351B513D26D4491E00BD2BD7 /* MockDeviceCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B513C26D4491E00BD2BD7 /* MockDeviceCache.swift */; };
@@ -492,6 +493,7 @@
 		4F6ABC7A2A81649800250E63 /* MockPaywallCacheWarming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6ABC792A81649800250E63 /* MockPaywallCacheWarming.swift */; };
 		4F6ABC7C2A81673F00250E63 /* PaywallCacheWarmingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6ABC7B2A81673F00250E63 /* PaywallCacheWarmingTests.swift */; };
 		4F6ABC7E2A81700900250E63 /* PaywallsStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6ABC7D2A81700900250E63 /* PaywallsStrings.swift */; };
+		8D943561844B18DCA6BED417 /* RulesEngineEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F5323D4E304F237F041A0EA /* RulesEngineEvaluator.swift */; };
 		4F6BED592A26A14400CD9322 /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6BED582A26A14400CD9322 /* DebugView.swift */; };
 		4F6BEDD92A26B55C00CD9322 /* DebugViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6BEDD82A26B55C00CD9322 /* DebugViewModel.swift */; };
 		4F6BEDE02A26B65900CD9322 /* DebugViewSheetPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6BEDDF2A26B65900CD9322 /* DebugViewSheetPresentation.swift */; };
@@ -1555,6 +1557,13 @@
 			remoteGlobalIDString = 2DC5621524EC63420031F69B;
 			remoteInfo = RevenueCat;
 		};
+		D1CE5F85C62AE93002679E05 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 521BC74E9D1E8CDF27F52D50;
+			remoteInfo = RulesEngineInternal;
+		};
 		A26CE49308DEABCA3FFB0B9E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
@@ -2131,6 +2140,7 @@
 		4F6ABC792A81649800250E63 /* MockPaywallCacheWarming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPaywallCacheWarming.swift; sourceTree = "<group>"; };
 		4F6ABC7B2A81673F00250E63 /* PaywallCacheWarmingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallCacheWarmingTests.swift; sourceTree = "<group>"; };
 		4F6ABC7D2A81700900250E63 /* PaywallsStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallsStrings.swift; sourceTree = "<group>"; };
+		0F5323D4E304F237F041A0EA /* RulesEngineEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulesEngineEvaluator.swift; sourceTree = "<group>"; };
 		4F6BED582A26A14400CD9322 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
 		4F6BEDD82A26B55C00CD9322 /* DebugViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugViewModel.swift; sourceTree = "<group>"; };
 		4F6BEDDF2A26B65900CD9322 /* DebugViewSheetPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugViewSheetPresentation.swift; sourceTree = "<group>"; };
@@ -3192,6 +3202,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				88DE93E12C211CBC0086B6D8 /* RevenueCat.framework in Frameworks */,
+				B521A46F115EF2A694823190 /* RulesEngineInternal.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4932,6 +4943,14 @@
 			path = DebugUI;
 			sourceTree = "<group>";
 		};
+		D34311E08C492B73DC88105B /* RulesEngine */ = {
+			isa = PBXGroup;
+			children = (
+				0F5323D4E304F237F041A0EA /* RulesEngineEvaluator.swift */,
+			);
+			path = RulesEngine;
+			sourceTree = "<group>";
+		};
 		4F87610D2A5C9E330006FA14 /* Paywalls */ = {
 			isa = PBXGroup;
 			children = (
@@ -5872,6 +5891,7 @@
 				887A5FE72C1D037000E1A461 /* Helpers */,
 				887A5FEC2C1D037000E1A461 /* Modifiers */,
 				887A5FF12C1D037000E1A461 /* Purchasing */,
+				D34311E08C492B73DC88105B /* RulesEngine */,
 				887A60462C1D037000E1A461 /* Resources */,
 				887A604F2C1D037000E1A461 /* Templates */,
 				887A60522C1D037000E1A461 /* UIKit */,
@@ -6831,6 +6851,7 @@
 			);
 			dependencies = (
 				88DE93E42C211CBC0086B6D8 /* PBXTargetDependency */,
+				F46DA6CAF67417AC46AA4580 /* PBXTargetDependency */,
 			);
 			name = RevenueCatUI;
 			productName = RevenueCatUIDev;
@@ -8451,6 +8472,7 @@
 				887A60CF2C1D037000E1A461 /* View+PresentPaywallFooter.swift in Sources */,
 				887A60BB2C1D037000E1A461 /* Template4View.swift in Sources */,
 				887A607E2C1D037000E1A461 /* Logger.swift in Sources */,
+				8D943561844B18DCA6BED417 /* RulesEngineEvaluator.swift in Sources */,
 				887A60852C1D037000E1A461 /* FitToAspectRatio.swift in Sources */,
 				FD9BCEBC2DC946C400408A5D /* BottomSheetView.swift in Sources */,
 				03F0B6512DD5700D00E82199 /* LocalizationDictionaryExtensions.swift in Sources */,
@@ -8683,6 +8705,11 @@
 			isa = PBXTargetDependency;
 			target = 2DC5621524EC63420031F69B /* RevenueCat */;
 			targetProxy = 88DE93E32C211CBC0086B6D8 /* PBXContainerItemProxy */;
+		};
+		F46DA6CAF67417AC46AA4580 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 521BC74E9D1E8CDF27F52D50 /* RulesEngineInternal */;
+			targetProxy = D1CE5F85C62AE93002679E05 /* PBXContainerItemProxy */;
 		};
 		F0DA7D5A75829E11C897D33F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;

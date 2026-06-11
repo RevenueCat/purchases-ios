@@ -123,6 +123,8 @@ enum Strings {
     case paywall_close_workflow_action_not_handled(componentName: String?)
     case paywall_workflow_trigger_not_handled(componentName: String?)
     case workflow_package_context_unresolvable(stepId: String)
+    case rules_engine_warning(String)
+    case rules_engine_log(String)
 
 }
 
@@ -399,6 +401,10 @@ extension Strings: CustomStringConvertible {
         case let .workflow_package_context_unresolvable(stepId):
             return "Could not resolve package context for singleStepFallbackId '\(stepId)'. " +
             "Price/period variables may not resolve on packageless screens."
+        case let .rules_engine_warning(message):
+            return "Rules engine warning: \(message)"
+        case let .rules_engine_log(message):
+            return "Rules engine log: \(message)"
         }
     }
 

@@ -30,6 +30,7 @@ Pod::Spec.new do |s|
   s.source_files = 'RevenueCatUI/**/*.swift'
 
   s.dependency 'RevenueCat', s.version.to_s
+  s.dependency 'RevenueCatRulesEngine', s.version.to_s
 
   s.resource_bundles = {
     'RevenueCat_RevenueCatUI' => [

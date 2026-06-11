@@ -115,7 +115,7 @@ let package = Package(
                     exclude: ["ReceiptParserTests-Info.plist"]),
         // RevenueCatUI
         .target(name: "RevenueCatUI",
-                dependencies: ["RevenueCat"],
+                dependencies: ["RevenueCat", "RulesEngineInternal"],
                 path: "RevenueCatUI",
                 resources: [
                     // Note: these have to match the values in RevenueCatUI.podspec
