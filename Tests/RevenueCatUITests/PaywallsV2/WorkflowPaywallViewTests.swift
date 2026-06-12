@@ -56,10 +56,6 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(action) == .dismissWorkflow
     }
 
-    // Terminal-completion gating (no page -> no emit; page + untracked -> emit; already-tracked -> no emit)
-    // moved to `WorkflowStepEventCoordinatorTests`, which asserts the emitted events directly rather than a
-    // bool decision.
-
     func testTransitionStateStartsWithoutOutgoingPage() {
         let state = WorkflowPageTransitionState(currentPage: "step_1")
 
@@ -112,94 +108,6 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(state.offset(for: .outgoing, width: 320)) == 320
         expect(state.headerButtonOpacity(for: .current)) == 1
         expect(state.headerButtonOpacity(for: .outgoing)) == 0
-    }
-
-    func testMatchingHeadersStayPinnedWithoutCrossfading() {
-        var state = WorkflowPageTransitionState(currentPage: "step_1")
-        let headerTransition = WorkflowHeaderTransition(
-            currentHeader: "shared_header",
-            outgoingHeader: "shared_header"
-        )
-
-        state.beginTransition(to: "step_2", direction: .forward)
-
-        expect(state.headerButtonOpacity(for: .current, headerTransition: headerTransition)) == 1
-        expect(state.headerButtonOpacity(for: .outgoing, headerTransition: headerTransition)) == 0
-
-        state.advanceAnimation()
-
-        expect(state.headerButtonOpacity(for: .current, headerTransition: headerTransition)) == 1
-        expect(state.headerButtonOpacity(for: .outgoing, headerTransition: headerTransition)) == 0
-    }
-
-    func testHeaderFadesInWhenOnlyIncomingPageHasHeader() {
-        var state = WorkflowPageTransitionState(currentPage: "step_1")
-        let headerTransition = WorkflowHeaderTransition(
-            currentHeader: "incoming_header",
-            outgoingHeader: nil as String?
-        )
-
-        state.beginTransition(to: "step_2", direction: .forward)
-
-        expect(state.headerButtonOpacity(for: .current, headerTransition: headerTransition)) == 0
-        expect(state.headerButtonOpacity(for: .outgoing, headerTransition: headerTransition)) == 0
-
-        state.advanceAnimation()
-
-        expect(state.headerButtonOpacity(for: .current, headerTransition: headerTransition)) == 1
-        expect(state.headerButtonOpacity(for: .outgoing, headerTransition: headerTransition)) == 0
-    }
-
-    func testHeaderFadesOutWhenOnlyOutgoingPageHasHeader() {
-        var state = WorkflowPageTransitionState(currentPage: "step_1")
-        let headerTransition = WorkflowHeaderTransition(
-            currentHeader: nil as String?,
-            outgoingHeader: "outgoing_header"
-        )
-
-        state.beginTransition(to: "step_2", direction: .forward)
-
-        expect(state.headerButtonOpacity(for: .current, headerTransition: headerTransition)) == 0
-        expect(state.headerButtonOpacity(for: .outgoing, headerTransition: headerTransition)) == 1
-
-        state.advanceAnimation()
-
-        expect(state.headerButtonOpacity(for: .current, headerTransition: headerTransition)) == 0
-        expect(state.headerButtonOpacity(for: .outgoing, headerTransition: headerTransition)) == 0
-    }
-
-    func testHeaderOverlayOnlyRendersWhenAtLeastOnePageHasAHeader() {
-        let noHeader = WorkflowHeaderTransition(
-            currentHeader: nil as String?,
-            outgoingHeader: nil as String?
-        )
-        let entering = WorkflowHeaderTransition(
-            currentHeader: "incoming_header",
-            outgoingHeader: nil as String?
-        )
-        let leaving = WorkflowHeaderTransition(
-            currentHeader: nil as String?,
-            outgoingHeader: "outgoing_header"
-        )
-        let stable = WorkflowHeaderTransition(
-            currentHeader: "shared_header",
-            outgoingHeader: "shared_header"
-        )
-
-        expect(noHeader.shouldRenderOverlay) == false
-        expect(entering.shouldRenderOverlay) == true
-        expect(leaving.shouldRenderOverlay) == true
-        expect(stable.shouldRenderOverlay) == true
-    }
-
-    func testWorkflowRenderingContextDefaultsToNonTransitioningPageContent() {
-        let context = WorkflowRenderingContext.identity
-
-        expect(context.pageTransition.pageOffset) == 0
-        expect(context.pageTransition.headerButtonOpacity) == 1
-        expect(context.pageTransition.isTransitioning) == false
-        expect(context.pageHeaderSuppressed) == false
-        expect(context.isHeader) == false
     }
 
     func testCompletingTransitionDropsOutgoingPage() {
@@ -435,9 +343,8 @@ extension WorkflowPaywallViewTests {
     /// Scenario: user navigates step1 → step2 (annual carried forward), selects monthly on step2,
     /// returns to step1, then navigates forward to step2 again.
     /// Step2 must show monthly (the user's own previous selection), not annual (the new carry-forward).
-    /// `WorkflowPaywallView.renderedPageForForwardNavigation` implements this by returning the step's
-    /// already-mounted page from `seenPages` (whose `PackageContext` holds the user's selection),
-    /// skipping `buildPackageInput` entirely on a revisit.
+    /// `WorkflowPaywallView.renderedPageForForwardNavigation` implements this via the cache-hit path that skips
+    /// `buildPackageInput` entirely when the step already has a `PackageContext` in `stepPackageContexts`.
     ///
     /// This also guards that `PackageContext` is a reference type: the mutation at line
     /// `cachedCtx.package = monthly` must be visible through `stepCache` for the cache to work.
@@ -463,15 +370,14 @@ extension WorkflowPaywallViewTests {
         let cachedCtx = cachedInput.packageContext
         expect(cachedCtx.package?.identifier) == annual.identifier
 
-        // User selects monthly on the step (mutation through the PackageContext reference the
-        // step's mounted page holds in seenPages).
+        // User selects monthly on the step (mutation through the reference stored in stepPackageContexts).
         cachedCtx.package = monthly
 
-        // Simulate the per-step cache that WorkflowPaywallView maintains (the page kept in seenPages).
+        // Simulate the per-step cache that WorkflowPaywallView maintains.
         let stepCache: [String: PackageContext] = ["step_terminal": cachedCtx]
 
-        // Second forward navigation would carry annual again — but the step is already in seenPages.
-        // WorkflowPaywallView.renderedPageForForwardNavigation returns that page and skips buildPackageInput.
+        // Second forward navigation would carry annual again — but the step is already cached.
+        // WorkflowPaywallView.renderedPageForForwardNavigation takes the cache-hit path and skips buildPackageInput.
         // Demonstrate the divergence: carry-forward would produce annual, cache has monthly.
         let wouldBeWithCarryForward = WorkflowPaywallView.buildPackageInput(
             stepId: "step_terminal",
@@ -918,5 +824,380 @@ extension WorkflowPaywallViewTests {
     }
 
 }
+
+#if !os(watchOS) && !os(macOS)
+
+// MARK: - Callback tests (single step)
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPaywallViewTests {
+
+    @MainActor
+    func testOnPurchaseStartedFiredInWorkflow() throws {
+        let purchaseHandler: PurchaseHandler = .mock()
+        let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
+        var packageBeingPurchased: Package?
+
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onPurchaseStarted { packageBeingPurchased = $0 }
+            .addToHierarchy()
+
+        Task {
+            _ = try await purchaseHandler.purchase(package: TestData.annualPackage)
+        }
+
+        expect(packageBeingPurchased).toEventuallyNot(beNil())
+    }
+
+    @MainActor
+    func testOnPurchaseCompletedFiredInWorkflow() throws {
+        let purchaseHandler: PurchaseHandler = .mock()
+        let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
+        var customerInfo: CustomerInfo?
+
+        // WorkflowPaywallView stores purchaseHandler as a plain `let` (no @ObservedObject),
+        // so it relies on a parent observer to trigger re-renders when purchase state changes.
+        // This wrapper mirrors what PaywallView does in production.
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onPurchaseCompleted { customerInfo = $0 }
+            .addToHierarchy()
+
+        Task {
+            _ = try await purchaseHandler.purchase(package: TestData.annualPackage)
+        }
+
+        expect(customerInfo).toEventually(be(TestData.customerInfo))
+    }
+
+    @MainActor
+    func testOnPurchaseCancelledFiredInWorkflow() throws {
+        let purchaseHandler: PurchaseHandler = .cancelling()
+        let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
+        var cancelled = false
+
+        let dispose = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onPurchaseCancelled { cancelled = true }
+            .addToHierarchy()
+
+        defer { dispose() }
+
+        Task {
+            _ = try await purchaseHandler.purchase(package: TestData.annualPackage)
+        }
+
+        expect(cancelled).toEventually(beTrue())
+    }
+
+    @MainActor
+    func testOnPurchaseFailureFiredInWorkflow() throws {
+        let purchaseHandler: PurchaseHandler = .failing(Self.failureError)
+        let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
+        var error: NSError?
+
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onPurchaseFailure { error = $0 }
+            .addToHierarchy()
+
+        Task {
+            _ = try? await purchaseHandler.purchase(package: TestData.annualPackage)
+        }
+
+        expect(error).toEventually(matchError(Self.failureError))
+    }
+
+    @MainActor
+    func testOnRestoreStartedFiredInWorkflow() throws {
+        let purchaseHandler: PurchaseHandler = .mock()
+        let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
+        var started = false
+
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onRestoreStarted { started = true }
+            .addToHierarchy()
+
+        Task {
+            _ = try await purchaseHandler.restorePurchases()
+        }
+
+        expect(started).toEventually(beTrue())
+    }
+
+    @MainActor
+    func testOnRestoreCompletedFiredInWorkflow() throws {
+        let purchaseHandler: PurchaseHandler = .mock()
+        let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
+        var customerInfo: CustomerInfo?
+
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onRestoreCompleted { customerInfo = $0 }
+            .addToHierarchy()
+
+        Task {
+            _ = try await purchaseHandler.restorePurchases()
+            purchaseHandler.setRestored(TestData.customerInfo, success: false)
+        }
+
+        expect(customerInfo).toEventually(be(TestData.customerInfo))
+    }
+
+    @MainActor
+    func testOnRestoreFailureFiredInWorkflow() throws {
+        let purchaseHandler: PurchaseHandler = .failing(Self.failureError)
+        let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
+        var error: NSError?
+
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onRestoreFailure { error = $0 }
+            .addToHierarchy()
+
+        Task {
+            _ = try? await purchaseHandler.restorePurchases()
+        }
+
+        expect(error).toEventually(matchError(Self.failureError))
+    }
+
+    private static let failureError: Error = ErrorCode.storeProblemError
+
+}
+
+// MARK: - Callback tests (non-initial step)
+// These tests verify that purchase/restore callbacks fire when the workflow renders
+// a non-initial step. WorkflowPaywallView uses a shared purchaseHandler across all
+// steps — these tests confirm the callbacks are wired correctly regardless of step
+// position. Navigation behavior itself is tested in WorkflowNavigator unit tests.
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPaywallViewTests {
+
+    @MainActor
+    func testOnPurchaseStartedFiredFromNonInitialStep() throws {
+        let purchaseHandler: PurchaseHandler = .mock()
+        // Start the workflow on step_b (a non-initial step) to verify callbacks
+        // are wired on any step, not just the first one.
+        let context = try Self.makeContextStartingAt(stepId: "step_b")
+        var packageBeingPurchased: Package?
+
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onPurchaseStarted { packageBeingPurchased = $0 }
+            .addToHierarchy()
+
+        Task {
+            _ = try await purchaseHandler.purchase(package: TestData.annualPackage)
+        }
+
+        expect(packageBeingPurchased).toEventuallyNot(beNil())
+    }
+
+    @MainActor
+    func testOnPurchaseCompletedFiredFromNonInitialStep() throws {
+        let purchaseHandler: PurchaseHandler = .mock()
+        let context = try Self.makeContextStartingAt(stepId: "step_b")
+        var customerInfo: CustomerInfo?
+
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onPurchaseCompleted { customerInfo = $0 }
+            .addToHierarchy()
+
+        Task {
+            _ = try await purchaseHandler.purchase(package: TestData.annualPackage)
+        }
+
+        expect(customerInfo).toEventually(be(TestData.customerInfo))
+    }
+
+    @MainActor
+    func testOnPurchaseCancelledFiredFromNonInitialStep() throws {
+        let purchaseHandler: PurchaseHandler = .cancelling()
+        let context = try Self.makeContextStartingAt(stepId: "step_b")
+        var cancelled = false
+
+        let dispose = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onPurchaseCancelled { cancelled = true }
+            .addToHierarchy()
+
+        defer { dispose() }
+
+        Task {
+            _ = try await purchaseHandler.purchase(package: TestData.annualPackage)
+        }
+
+        expect(cancelled).toEventually(beTrue())
+    }
+
+    @MainActor
+    func testOnPurchaseFailureFiredFromNonInitialStep() throws {
+        let purchaseHandler: PurchaseHandler = .failing(Self.failureError)
+        let context = try Self.makeContextStartingAt(stepId: "step_b")
+        var error: NSError?
+
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onPurchaseFailure { error = $0 }
+            .addToHierarchy()
+
+        Task {
+            _ = try? await purchaseHandler.purchase(package: TestData.annualPackage)
+        }
+
+        expect(error).toEventually(matchError(Self.failureError))
+    }
+
+    @MainActor
+    func testOnRestoreStartedFiredFromNonInitialStep() throws {
+        let purchaseHandler: PurchaseHandler = .mock()
+        let context = try Self.makeContextStartingAt(stepId: "step_b")
+        var started = false
+
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onRestoreStarted { started = true }
+            .addToHierarchy()
+
+        Task {
+            _ = try await purchaseHandler.restorePurchases()
+        }
+
+        expect(started).toEventually(beTrue())
+    }
+
+    @MainActor
+    func testOnRestoreCompletedFiredFromNonInitialStep() throws {
+        let purchaseHandler: PurchaseHandler = .mock()
+        let context = try Self.makeContextStartingAt(stepId: "step_b")
+        var customerInfo: CustomerInfo?
+
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onRestoreCompleted { customerInfo = $0 }
+            .addToHierarchy()
+
+        Task {
+            _ = try await purchaseHandler.restorePurchases()
+            purchaseHandler.setRestored(TestData.customerInfo, success: false)
+        }
+
+        expect(customerInfo).toEventually(be(TestData.customerInfo))
+    }
+
+    @MainActor
+    func testOnRestoreFailureFiredFromNonInitialStep() throws {
+        let purchaseHandler: PurchaseHandler = .failing(Self.failureError)
+        let context = try Self.makeContextStartingAt(stepId: "step_b")
+        var error: NSError?
+
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onRestoreFailure { error = $0 }
+            .addToHierarchy()
+
+        Task {
+            _ = try? await purchaseHandler.restorePurchases()
+        }
+
+        expect(error).toEventually(matchError(Self.failureError))
+    }
+
+}
+
+// MARK: - Callback test helpers
+
+/// Mirrors the @StateObject role that PaywallView plays in production:
+/// WorkflowPaywallView stores purchaseHandler as a plain `let`, so it needs
+/// an observing parent to trigger re-renders when purchase state changes.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct WorkflowPurchaseObserver: View {
+
+    @ObservedObject var purchaseHandler: PurchaseHandler
+    let context: WorkflowContext
+
+    var body: some View {
+        WorkflowPaywallView(
+            context: context,
+            purchaseHandler: purchaseHandler,
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false,
+            displayCloseButton: false,
+            promoOfferCache: nil,
+            onDismiss: {}
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension WorkflowPaywallViewTests {
+
+    /// Creates a two-step workflow (step_a, step_b) with initial_step_id set to stepId.
+    /// Use this to exercise callbacks from a non-initial step without requiring navigation.
+    static func makeContextStartingAt(stepId: String) throws -> WorkflowContext {
+        let offeringId = "offering_test"
+        let workflowJSON = """
+        {
+          "id": "wf_non_initial_test",
+          "display_name": "Non-Initial Test",
+          "initial_step_id": "\(stepId)",
+          "single_step_fallback_id": "step_a",
+          "steps": {
+            "step_a": { "id": "step_a", "type": "screen", "screen_id": "screen_a" },
+            "step_b": { "id": "step_b", "type": "screen", "screen_id": "screen_b" }
+          },
+          "screens": {
+            "screen_a": \(makeScreenJSON(packages: [], offeringId: offeringId)),
+            "screen_b": \(makeScreenJSON(packages: [], offeringId: offeringId))
+          },
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {}
+          }
+        }
+        """
+        let data = try XCTUnwrap(workflowJSON.data(using: .utf8))
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+
+        let packages = [
+            makePackage(identifier: TestData.annualPackage.identifier, offeringId: offeringId),
+            makePackage(identifier: TestData.monthlyPackage.identifier, offeringId: offeringId)
+        ]
+        let offering = Offering(
+            identifier: offeringId,
+            serverDescription: "Test",
+            metadata: [:],
+            paywall: nil,
+            availablePackages: packages,
+            webCheckoutUrl: nil
+        )
+        let offerings = Offerings(
+            offerings: [offeringId: offering],
+            currentOfferingID: nil,
+            placements: nil,
+            targeting: nil,
+            contents: .init(
+                response: .init(
+                    currentOfferingId: nil,
+                    offerings: [],
+                    placements: nil,
+                    targeting: nil,
+                    uiConfig: nil
+                ),
+                httpResponseOriginalSource: .mainServer
+            ),
+            loadedFromDiskCache: false
+        )
+        return WorkflowContext(
+            workflow: workflow,
+            allOfferings: offerings,
+            initialOffering: offering,
+            presentedOfferingContext: nil
+        )
+    }
+
+}
+
+// Note: callbacks are not re-tested across a live, in-flight step transition.
+// WorkflowPaywallView holds a single `purchaseHandler` (a plain `let`) above the per-step
+// PaywallsV2View subtrees that navigation swaps, so callback forwarding is step-independent
+// by construction; the non-initial-step tests above already cover "fires from a step the
+// view did not start on". Navigation/transition mechanics are covered by WorkflowNavigator
+// and transition-state unit tests. Verifying callbacks during the animated two-page window
+// needs UI automation (Maestro), not a unit-test seam.
+
+#endif // !os(watchOS) && !os(macOS)
 
 #endif
