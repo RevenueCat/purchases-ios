@@ -20,10 +20,10 @@ final class EvaluatorTests: XCTestCase {
     func testMalformedJSONSurfacesParseError() {
         // Parse errors now surface from the test-only JSON helper (production
         // callers parse on the native side and never hand `evaluate` a
-        // malformed tree). The error case is still `RuleError.parse`.
+        // malformed tree). The error case is still `RulesEngine.EvaluationError.parse`.
         XCTAssertThrowsError(try Value.fromJSONString("{not json")) { error in
-            guard case RuleError.parse = error else {
-                return XCTFail("expected RuleError.parse, got \(error)")
+            guard case RulesEngine.EvaluationError.parse = error else {
+                return XCTFail("expected RulesEngine.EvaluationError.parse, got \(error)")
             }
         }
     }

@@ -12,15 +12,12 @@ final class AccessorOperatorsTests: XCTestCase {
 
     private var logger: CapturingLogger!
 
-    override func setUp() {
-        super.setUp()
-        logger = CapturingLogger()
-        RulesEngine.setLogger(logger)
-    }
-
-    override func tearDown() {
-        logger = nil
-        super.tearDown()
+    override func invokeTest() {
+        let captured = CapturingLogger()
+        logger = captured
+        RulesEngine.$scopedLogger.withValue(captured) {
+            super.invokeTest()
+        }
     }
 
     // MARK: - var
