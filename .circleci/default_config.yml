@@ -2571,6 +2571,7 @@ workflows:
       - revenuecat/update-error-codes:
           platform: ios
           output: Sources/Generated/ErrorCode.swift
+          commit_paths: "Sources/Generated/ErrorCode.swift,api"
           executor:
             name: macos-executor
             xcode_version: *swiftinterface-xcode-version
