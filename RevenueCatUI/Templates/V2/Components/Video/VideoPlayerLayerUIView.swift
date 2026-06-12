@@ -152,6 +152,9 @@ struct VideoPlayerLayerView: UIViewRepresentable {
         }
 
         func tearDown() {
+            // Stop lifecycle resume before pausing, so a later didBecomeActive can't restart a
+            // player that's being dismantled.
+            autoplayHandler.invalidate()
             player.pause()
         }
 

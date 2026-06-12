@@ -96,6 +96,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
 
         private let autoplayHandler: VideoAutoplayHandler
         private var loopObserver: NSObjectProtocol?
+        private var isTornDown = false
 
         init(
             videoURL: URL,
@@ -142,9 +143,12 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
                     forName: AVPlayerItem.didPlayToEndTimeNotification,
                     object: playerItem,
                     queue: .main
-                ) { [weak avPlayer] _ in
-                    avPlayer?.seek(to: .zero)
-                    avPlayer?.play()
+                ) { [weak self] _ in
+                    // A notification can already be queued on the main queue when teardown runs;
+                    // don't resurrect playback for a player that's being dismantled.
+                    guard let self = self, !self.isTornDown else { return }
+                    self.player.seek(to: .zero)
+                    self.player.play()
                 }
             }
 
@@ -154,6 +158,8 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         }
 
         func tearDown() {
+            isTornDown = true
+            autoplayHandler.invalidate()
             player.pause()
             if let loopObserver = self.loopObserver {
                 NotificationCenter.default.removeObserver(loopObserver)

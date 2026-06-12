@@ -61,6 +61,13 @@ final class VideoAutoplayHandler {
         }
     }
 
+    /// Stops responding to lifecycle transitions. Call when the player is being torn down so a
+    /// later `didBecomeActive` can't resume a player that should stay stopped.
+    func invalidate() {
+        cancellables.removeAll()
+        wasPlayingBeforeBackground = false
+    }
+
 }
 
 // MARK: - Production implementations
