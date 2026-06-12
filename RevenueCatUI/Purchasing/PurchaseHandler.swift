@@ -55,6 +55,11 @@ final class PurchaseHandler: ObservableObject {
         return purchases.preferredLocales.map(Locale.init)
     }
 
+    /// Whether the SDK is running in UI preview mode.
+    var isUIPreviewMode: Bool {
+        return purchases.isUIPreviewMode
+    }
+
     var preferredLocaleOverride: Locale? {
         return purchases.preferredLocaleOverride.map(Locale.init)
     }
@@ -821,6 +826,8 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     var preferredLocales: [String] { Locale.preferredLanguages }
 
     var preferredLocaleOverride: String? { nil }
+
+    var isUIPreviewMode: Bool { false }
 
     var subscriptionHistoryTracker: RevenueCat.SubscriptionHistoryTracker {
         SubscriptionHistoryTracker()
