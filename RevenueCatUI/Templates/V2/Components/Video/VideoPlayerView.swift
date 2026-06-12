@@ -67,15 +67,29 @@ struct VideoPlayerView: View {
         )
         .allowsHitTesting(showControls)
 #elseif canImport(UIKit)
-        VideoPlayerUIView(
-            videoURL: videoURL,
-            shouldAutoPlay: shouldAutoPlay && !reduceMotion,
-            contentMode: contentMode,
-            loopVideo: loopVideo,
-            showControls: showControls,
-            muteAudio: muteAudio
-        )
-        .allowsHitTesting(showControls)
+        if showControls {
+            // Controls require AVPlayerViewController for the playback UI.
+            VideoPlayerUIView(
+                videoURL: videoURL,
+                shouldAutoPlay: shouldAutoPlay && !reduceMotion,
+                contentMode: contentMode,
+                loopVideo: loopVideo,
+                showControls: showControls,
+                muteAudio: muteAudio
+            )
+            .allowsHitTesting(true)
+        } else {
+            // No controls (e.g. backgrounds): render via AVPlayerLayer to avoid AVKit's internal
+            // AVPlayerController, whose KVO observers crash when fed an AVPlayerLooper-driven queue player.
+            VideoPlayerLayerView(
+                videoURL: videoURL,
+                shouldAutoPlay: shouldAutoPlay && !reduceMotion,
+                contentMode: contentMode,
+                loopVideo: loopVideo,
+                muteAudio: muteAudio
+            )
+            .allowsHitTesting(false)
+        }
 #endif
     }
 
