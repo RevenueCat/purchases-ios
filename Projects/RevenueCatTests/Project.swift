@@ -139,7 +139,18 @@ let project = Project(
                 "../../Tests/BackendIntegrationTests/BaseStoreKitIntegrationTests.swift",
                 "../../Tests/BackendIntegrationTests/MainThreadMonitor.swift",
                 "../../Tests/BackendIntegrationTests/Constants.swift",
-                "../../Tests/BackendIntegrationTests/Helpers/**/*.swift",
+                // Only the helpers that are CustomEntitlementComputation-aware (conditional import).
+                // The excluded helpers import `RevenueCat` directly and aren't used by these tests,
+                // so compiling them here would link against the wrong module.
+                .glob(
+                    "../../Tests/BackendIntegrationTests/Helpers/**/*.swift",
+                    excluding: [
+                        "../../Tests/BackendIntegrationTests/Helpers/SK1ProductFetcher.swift",
+                        "../../Tests/BackendIntegrationTests/Helpers/SK2ProductFetcher.swift",
+                        "../../Tests/BackendIntegrationTests/Helpers/ObserverModeManager.swift",
+                        "../../Tests/BackendIntegrationTests/Helpers/ExternalPurchasesManager.swift"
+                    ]
+                ),
                 "../../Tests/UnitTests/Misc/**/TestCase.swift",
                 "../../Tests/UnitTests/Mocks/MockSandboxEnvironmentDetector.swift",
                 "../../Tests/UnitTests/TestHelpers/**/TestLogHandler.swift",
