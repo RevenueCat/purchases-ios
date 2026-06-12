@@ -82,6 +82,9 @@ struct VideoPlayerLayerView: UIViewRepresentable {
     func updateUIView(_ uiView: PlayerLayerBackedView, context: Context) { }
 
     static func dismantleUIView(_ uiView: PlayerLayerBackedView, coordinator: Coordinator) {
+        // Deterministically stop playback before the view/coordinator deallocates, so audio and
+        // rendering stop promptly (e.g. on carousel navigation), mirroring the controls path.
+        coordinator.tearDown()
         uiView.playerLayer.player = nil
     }
 
@@ -146,6 +149,10 @@ struct VideoPlayerLayerView: UIViewRepresentable {
             if shouldAutoPlay {
                 avPlayer.play()
             }
+        }
+
+        func tearDown() {
+            player.pause()
         }
 
         deinit {

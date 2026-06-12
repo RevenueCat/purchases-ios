@@ -28,12 +28,15 @@ extension AVPlayer: VideoPlaybackController {
 
 }
 
+/// Renders a video with playback controls via `AVPlayerViewController`.
+///
+/// Only used when controls are requested; the no-controls path uses `VideoPlayerLayerView`, which
+/// avoids `AVPlayerViewController`'s internal `AVPlayerController` (and the looper-related KVO crash).
 struct VideoPlayerUIView: UIViewControllerRepresentable {
     let videoURL: URL
     let shouldAutoPlay: Bool
     let contentMode: ContentMode
     let loopVideo: Bool
-    let showControls: Bool
     let muteAudio: Bool
 
     func makeCoordinator() -> Coordinator {
@@ -49,14 +52,9 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         let controller = AVPlayerViewController()
         controller.player = context.coordinator.player
         controller.view.backgroundColor = .clear
-        controller.showsPlaybackControls = showControls
-        // When controls are hidden, disable user interaction to allow carousel swipes to pass through.
-        // When controls are shown, user interaction remains enabled so users can tap to play/pause,
-        // seek, etc. In this case, carousel swipes over the video area won't work, which is the
-        // expected behavior since the user is interacting with the video controls.
-        if !showControls {
-            controller.view.isUserInteractionEnabled = false
-        }
+        controller.showsPlaybackControls = true
+        // User interaction stays enabled so users can tap to play/pause, seek, etc. Carousel swipes
+        // over the video area won't work, which is expected when interacting with the video controls.
         if #available(tvOS 14.0, *) {
             controller.allowsPictureInPicturePlayback = false
         }
