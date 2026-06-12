@@ -34,6 +34,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
     let showControls: Bool
     let player: AVPlayer
     let looper: AVPlayerLooper?
+    let audioSessionHandler: VideoAudioSessionHandler
 
     init(
         videoURL: URL,
@@ -67,6 +68,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         #endif
 
         self.player = avPlayer
+        self.audioSessionHandler = VideoAudioSessionHandler()
 
         if shouldAutoPlay {
             avPlayer.play()
@@ -78,20 +80,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
     }
 
     func makeUIViewController(context: Context) -> AVPlayerViewController {
-        let audioSession = AVAudioSession.sharedInstance()
-        context.coordinator.previousCategory = audioSession.category
-        context.coordinator.previousMode = audioSession.mode
-        context.coordinator.previousOptions = audioSession.categoryOptions
-
-        do {
-            try audioSession.setCategory(
-                .ambient,
-                mode: .default,
-                options: [.mixWithOthers]
-            )
-        } catch {
-            Logger.warning(Strings.video_failed_to_set_audio_session_category(error))
-        }
+        context.coordinator.audioSessionHandler = audioSessionHandler
 
         let controller = AVPlayerViewController()
         controller.player = player
@@ -123,9 +112,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
 
     class Coordinator {
 
-        var previousCategory: AVAudioSession.Category?
-        var previousMode: AVAudioSession.Mode?
-        var previousOptions: AVAudioSession.CategoryOptions?
+        var audioSessionHandler: VideoAudioSessionHandler?
 
         private let autoplayHandler: VideoAutoplayHandler
 
@@ -134,24 +121,6 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
                 playbackController: player,
                 lifecycleObserver: SystemAppLifecycleObserver()
             )
-        }
-
-        deinit {
-            guard let category = previousCategory,
-                  let mode = previousMode,
-                  let options = previousOptions else {
-                return
-            }
-
-            do {
-                try AVAudioSession.sharedInstance().setCategory(
-                    category,
-                    mode: mode,
-                    options: options
-                )
-            } catch {
-                Logger.warning(Strings.video_failed_to_set_audio_session_category(error))
-            }
         }
 
     }
