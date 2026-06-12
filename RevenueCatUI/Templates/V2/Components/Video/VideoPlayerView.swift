@@ -74,7 +74,6 @@ struct VideoPlayerView: View {
                 shouldAutoPlay: shouldAutoPlay && !reduceMotion,
                 contentMode: contentMode,
                 loopVideo: loopVideo,
-                showControls: showControls,
                 muteAudio: muteAudio
             )
             .allowsHitTesting(true)
