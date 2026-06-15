@@ -95,9 +95,9 @@ extension ErrorCode: CustomStringConvertible {
         case .unexpectedBackendResponseError:
             return "Received malformed response from the backend."
         case .receiptInUseByOtherSubscriberError:
-            return "The receipt is in use by other subscriber."
+            return "The receipt is in use by another subscriber."
         case .invalidAppUserIdError:
-            return "The app user id is not valid."
+            return "The app user ID is not valid."
         case .operationAlreadyInProgressForProductError:
             return "The operation is already in progress for this product."
         case .unknownBackendError:
@@ -147,7 +147,7 @@ extension ErrorCode: CustomStringConvertible {
         case .invalidWebPurchaseToken:
             return "The link you provided does not contain a valid purchase token."
         case .purchaseBelongsToOtherUser:
-            return "The web purchase already belongs to other user."
+            return "The web purchase already belongs to another user."
         case .expiredWebPurchaseToken:
             return "The link you provided has expired. A new one will be sent to the email used to make the purchase."
         case .testStoreSimulatedPurchaseError:
