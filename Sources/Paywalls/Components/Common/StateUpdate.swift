@@ -40,7 +40,10 @@ import Foundation
         }
 
         public init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
+            guard let container = try? decoder.container(keyedBy: CodingKeys.self) else {
+                self = .unsupported
+                return
+            }
             let key = (try? container.decodeIfPresent(String.self, forKey: .set)) ?? nil
             if let key, let value = try? container.decode(StateUpdateValue.self, forKey: .toValue) {
                 self = .set(key: key, value: value)
