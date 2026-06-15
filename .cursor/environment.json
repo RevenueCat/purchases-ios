@@ -3,5 +3,5 @@
     "dockerfile": "Dockerfile",
     "context": ".."
   },
-  "install": "bundle install --frozen"
+  "install": "bundle config set frozen true && bundle install"
 }
