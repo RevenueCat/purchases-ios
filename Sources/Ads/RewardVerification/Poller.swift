@@ -127,8 +127,6 @@ internal extension RewardVerification {
             return .failed(.timeout)
         }
 
-        /// Retries network/offline transport errors and any HTTP 5xx, keying on the status code
-        /// rather than the mapped `ErrorCode` so empty/unparseable 5xx retry and 4xx fail fast.
         static func isTransientPollingError(_ error: Error) -> Bool {
             switch error as? ErrorCode {
             case .networkError, .offlineConnectionError:

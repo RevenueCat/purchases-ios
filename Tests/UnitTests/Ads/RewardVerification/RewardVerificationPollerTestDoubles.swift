@@ -146,8 +146,6 @@ func makePoller(
     )
 }
 
-/// A `PublicError` carrying `statusCode` in `userInfo`, built through the production
-/// `asBackendError`/`asPublicError` path. Use `.unknownError` to model an unparseable body.
 func makePollingError(statusCode: Int, backendCode: BackendErrorCode) -> NSError {
     ErrorResponse(code: backendCode, originalCode: backendCode.rawValue, message: nil)
         .asBackendError(with: HTTPStatusCode(rawValue: statusCode))
