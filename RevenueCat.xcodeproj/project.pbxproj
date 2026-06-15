@@ -2693,6 +2693,7 @@
 		9D09F3C92E3A859A0002840D /* eu */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = eu; path = eu.lproj/Localizable.strings; sourceTree = "<group>"; };
 		9D09F3CA2E3A859A0002840E /* sr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sr; path = sr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		9D09F3CB2E3A859A0002840F /* sr_Latn */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sr_Latn; path = sr_Latn.lproj/Localizable.strings; sourceTree = "<group>"; };
+		9D09F3CC2E3A859A00028410 /* sl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sl; path = sl.lproj/Localizable.strings; sourceTree = "<group>"; };
 		9D8A2C402AB81F3C35672B14 /* WorkflowsCacheTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowsCacheTests.swift; sourceTree = "<group>"; };
 		9E174FCB9B889D4CACED0088 /* Value.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Value.swift; sourceTree = "<group>"; };
 		9F576269BC7130E5B553FB5A /* StringArrayOperatorsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StringArrayOperatorsTests.swift; sourceTree = "<group>"; };
@@ -6591,6 +6592,7 @@
 				eu,
 				sr,
 				sr_Latn,
+				sl,
 			);
 			mainGroup = 352629F41F7C4B9100C04F2C;
 			packageReferences = (
@@ -8589,6 +8591,7 @@
 				9D09F3C92E3A859A0002840D /* eu */,
 				9D09F3CA2E3A859A0002840E /* sr */,
 				9D09F3CB2E3A859A0002840F /* sr_Latn */,
+				9D09F3CC2E3A859A00028410 /* sl */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
