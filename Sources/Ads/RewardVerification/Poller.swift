@@ -105,9 +105,9 @@ internal extension RewardVerification {
                     case .failed: return .failed(.backendError)
                     case .pending, .unknown: continue
                     }
-                } catch let code as ErrorCode where code.isTransientPolling {
+                } catch where Self.isTransientPollingError(error) {
                     Logger.debug(AdsStrings.poll_transient_error(
-                        error: code,
+                        error: error,
                         transactionID: clientTransactionID
                     ))
                     continue
@@ -125,6 +125,18 @@ internal extension RewardVerification {
                 transactionID: clientTransactionID
             ))
             return .failed(.timeout)
+        }
+
+        /// Retries network/offline transport errors and any HTTP 5xx, keying on the status code
+        /// rather than the mapped `ErrorCode` so empty/unparseable 5xx retry and 4xx fail fast.
+        static func isTransientPollingError(_ error: Error) -> Bool {
+            switch error as? ErrorCode {
+            case .networkError, .offlineConnectionError:
+                return true
+            default:
+                let statusCode = (error as NSError).userInfo[ErrorDetails.statusCodeKey] as? Int
+                return statusCode.map { HTTPStatusCode(rawValue: $0).isServerError } ?? false
+            }
         }
     }
 
@@ -155,22 +167,6 @@ private extension RewardVerificationPollStatus {
         case .pending: return "pending"
         case .failed: return "failed"
         case .unknown: return "unknown"
-        }
-    }
-}
-
-// MARK: - ErrorCode classification
-
-private extension ErrorCode {
-
-    var isTransientPolling: Bool {
-        switch self {
-        case .networkError,
-             .offlineConnectionError,
-             .unknownBackendError:
-            return true
-        default:
-            return false
         }
     }
 }
