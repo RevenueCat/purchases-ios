@@ -11,6 +11,7 @@
 //
 //  Created by Jacob Zivan Rakidzich on 8/18/25.
 
+import AVFoundation
 import AVKit
 @_spi(Internal) import RevenueCat
 import SwiftUI
