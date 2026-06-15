@@ -157,10 +157,14 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "/v1/offerings"
         case .getProductEntitlementMapping:
             return "/v1/product_entitlement_mapping"
-        case .getWorkflows:
-            return "/workflows/v1/workflows"
+        case let .getWorkflows(_, type):
+            let base = "/workflows/v1/workflows"
+            if let type = type {
+                return "\(base)?type=\(Self.escape(type))"
+            }
+            return base
         case let .getWorkflow(_, workflowId):
-            return "/workflows/v1/workflows/\(workflowId)"
+            return "/workflows/v1/workflows/\(Self.escape(workflowId))"
         default:
             return nil
         }
