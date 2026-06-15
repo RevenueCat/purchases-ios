@@ -11,6 +11,7 @@
 //
 //  Created by Jacob Zivan Rakidzich on 8/18/25.
 
+import AVFoundation
 import AVKit
 @_spi(Internal) import RevenueCat
 import SwiftUI
@@ -61,7 +62,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         // Defense-in-depth: disabling video-frame-analysis removes one family of `currentItem.*`
         // observers that AVKit's internal AVPlayerController registers and that can crash on teardown.
         #if os(iOS)
-        if #available(iOS 16.0, *) {
+        if #available(iOS 16.0, macCatalyst 18.0, *) {
             controller.allowsVideoFrameAnalysis = false
         }
         #endif
