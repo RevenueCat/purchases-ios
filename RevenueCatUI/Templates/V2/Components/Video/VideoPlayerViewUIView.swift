@@ -140,8 +140,19 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
             )
 
             if loopVideo {
+                // Prefer the modern class-scoped notification name, but fall back to the legacy
+                // constant on older compilers/SDKs (pre-Swift 5.9 / Xcode 15) where
+                // `AVPlayerItem.didPlayToEndTimeNotification` doesn't exist. The CI compatibility
+                // matrix builds RevenueCatUI on those older toolchains.
+                let endOfItemNotification: NSNotification.Name
+                #if compiler(>=5.9)
+                endOfItemNotification = AVPlayerItem.didPlayToEndTimeNotification
+                #else
+                endOfItemNotification = NSNotification.Name.AVPlayerItemDidPlayToEndTime
+                #endif
+
                 self.loopObserver = NotificationCenter.default.addObserver(
-                    forName: AVPlayerItem.didPlayToEndTimeNotification,
+                    forName: endOfItemNotification,
                     object: playerItem,
                     queue: .main
                 ) { [weak self] _ in
