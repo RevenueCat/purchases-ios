@@ -93,10 +93,8 @@ final class PaywallStateStore: ObservableObject {
 
         let changed = self.withLock {
             var didChange = false
-            for update in updates {
-                if self.apply(update, payload: payload) {
-                    didChange = true
-                }
+            for update in updates where self.apply(update, payload: payload) {
+                didChange = true
             }
             return didChange
         }

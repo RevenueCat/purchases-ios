@@ -154,7 +154,7 @@ struct PaywallsV2View: View {
             wrappedValue: introEligibilityContext ?? .init(introEligibilityChecker: introEligibilityChecker)
         )
         self._ownStateStore = .init(
-            wrappedValue: PaywallStateStore(declarations: paywallComponents.data.state ?? [:])
+            wrappedValue: PaywallStateStore(declarations: paywallComponents.data.stateDeclarations ?? [:])
         )
 
         // Step 0: Decide which ComponentsConfig to use (base is default)
