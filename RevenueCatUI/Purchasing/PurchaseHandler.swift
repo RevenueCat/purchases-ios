@@ -465,14 +465,29 @@ extension PurchaseHandler {
 #endif
 
 #if !os(tvOS)
+    /// Returns `provided`, or fetches offerings (which also populates the offeringId → workflowId map).
+    private func resolveOfferings(_ provided: Offerings?) async throws -> Offerings {
+        if let provided { return provided }
+        return try await self.purchases.offerings()
+    }
+
     private func resolveWorkflowPaywallViewData(
         for offering: Offering,
         offerings: Offerings? = nil
     ) async throws -> ResolvedPaywallViewData {
+        // Fetch offerings first: it populates the offeringId → workflowId map the gate below reads.
+        let allOfferings = try await self.resolveOfferings(offerings)
+
+        // No mapping means a legacy offering; fetching a workflow would 404, so render legacy.
+        guard self.purchases.cachedWorkflowId(forOfferingIdentifier: offering.identifier) != nil else {
+            Logger.warning(Strings.no_workflow_mapped_for_offering(offeringId: offering.identifier))
+            return .init(offering: offering, workflowContext: nil)
+        }
+
         let context = try await self.resolveWorkflowContext(
             identifier: offering.identifier,
             presentedOfferingContext: offering.presentedOfferingContext,
-            offerings: offerings
+            offerings: allOfferings
         )
 
         return .init(offering: context.initialOffering, workflowContext: context)
@@ -483,15 +498,24 @@ extension PurchaseHandler {
         presentedOfferingContext: PresentedOfferingContext?,
         workflowsEndpointEnabled: Bool
     ) async throws -> ResolvedPaywallViewData {
+        // Fetch offerings first: it populates the offeringId → workflowId map the gate below reads.
+        let allOfferings = try await self.purchases.offerings()
+
+        // Take the workflow path only when one is mapped; otherwise a legacy offering would 404.
         if workflowsEndpointEnabled {
-            let context = try await self.resolveWorkflowContext(
-                identifier: identifier,
-                presentedOfferingContext: presentedOfferingContext
-            )
-            return .init(offering: context.initialOffering, workflowContext: context)
+            if self.purchases.cachedWorkflowId(forOfferingIdentifier: identifier) != nil {
+                let context = try await self.resolveWorkflowContext(
+                    identifier: identifier,
+                    presentedOfferingContext: presentedOfferingContext,
+                    offerings: allOfferings
+                )
+                return .init(offering: context.initialOffering, workflowContext: context)
+            }
+
+            Logger.warning(Strings.no_workflow_mapped_for_offering(offeringId: identifier))
         }
 
-        let offering = try await self.purchases.offerings()
+        let offering = try allOfferings
             .offering(identifier: identifier)
             .orThrow(PaywallError.offeringNotFound(identifier: identifier))
 
@@ -514,15 +538,8 @@ extension PurchaseHandler {
     ) async throws -> WorkflowContext {
         async let fetchResultTask = self.purchases.workflow(forOfferingIdentifier: identifier)
 
-        // Reuse the caller's offerings snapshot when provided (e.g. the .defaultOffering path
-        // already fetched it) to avoid a redundant offerings() call. Otherwise fetch it
-        // concurrently with the workflow request.
-        let allOfferings: Offerings
-        if let offerings {
-            allOfferings = offerings
-        } else {
-            allOfferings = try await self.purchases.offerings()
-        }
+        // Reuse the caller's snapshot if provided; otherwise fetch concurrently with the workflow above.
+        let allOfferings = try await self.resolveOfferings(offerings)
 
         let fetchResult = try await fetchResultTask
 
@@ -959,6 +976,10 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     }
 
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
+        return nil
+    }
+
+    func cachedWorkflowId(forOfferingIdentifier offeringID: String) -> String? {
         return nil
     }
 #endif
