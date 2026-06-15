@@ -136,12 +136,25 @@ struct VideoPlayerView: View {
             }
         }
 
+        #if os(watchOS)
+        // Prefer the modern class-scoped notification name, but fall back to the legacy constant on
+        // older compilers/SDKs (pre-Swift 5.9 / Xcode 15) where
+        // `AVPlayerItem.didPlayToEndTimeNotification` doesn't exist.
+        private var didPlayToEndTimeNotification: NSNotification.Name {
+            #if compiler(>=5.9)
+            return AVPlayerItem.didPlayToEndTimeNotification
+            #else
+            return NSNotification.Name.AVPlayerItemDidPlayToEndTime
+            #endif
+        }
+        #endif
+
         var body: some View {
             VideoPlayer(player: player)
             #if os(watchOS)
                 // This is less reliable than using the AVPlayerLooper.
                 // Unfortunately, that is not available on watchOS
-                .onReceive(notificationCenter.publisher(for: NSNotification.Name.AVPlayerItemDidPlayToEndTime)) { _ in
+                .onReceive(notificationCenter.publisher(for: didPlayToEndTimeNotification)) { _ in
                     if loopVideo {
                         player.seek(to: .zero)
                         player.play()
