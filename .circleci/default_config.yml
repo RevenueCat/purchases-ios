@@ -59,6 +59,25 @@ executors:
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
+  # A macOS executor safe to pass into orb jobs (e.g. revenuecat/update-error-codes).
+  # The standard macos-executor embeds pipeline.parameters.* in its environment, which
+  # don't resolve when an executor is evaluated outside this config's own pipeline-parameter
+  # scope (such as inside an orb), causing an "Unknown variable(s)" config error. This
+  # variant hardcodes those values so it carries no such references.
+  macos-executor-external:
+    parameters:
+      xcode_version:
+        type: string
+        default: "16.4"
+    macos:
+      # circleci-lint: disable=unknown-xcode-version
+      xcode: << parameters.xcode_version >>
+    resource_class: m4pro.medium
+    environment:
+      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: "false"
+      CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: "false"
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
   macos-executor-large:
     parameters:
       xcode_version:
@@ -2573,7 +2592,7 @@ workflows:
           output: Sources/Generated/ErrorCode.swift
           commit_paths: "Sources/Generated/ErrorCode.swift,api"
           executor:
-            name: macos-executor
+            name: macos-executor-external
             xcode_version: *swiftinterface-xcode-version
           update_api_steps:
             - install-dependencies
