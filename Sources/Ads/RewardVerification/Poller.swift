@@ -132,7 +132,7 @@ internal extension RewardVerification {
             case .networkError, .offlineConnectionError:
                 return true
             default:
-                let statusCode = (error as NSError).userInfo[ErrorDetails.statusCodeKey] as? Int
+                let statusCode = (error as NSError).httpStatusCode
                 return statusCode.map { HTTPStatusCode(rawValue: $0).isServerError } ?? false
             }
         }
