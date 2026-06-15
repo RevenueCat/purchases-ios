@@ -260,6 +260,20 @@ extension NetworkError {
         }
     }
 
+    /// Whether this error is transient and therefore worth retrying: connection-level failures
+    /// (no HTTP status code) and `5xx` server responses. `4xx` responses are terminal — the backend
+    /// authoritatively rejected the request, so retrying won't yield a different result.
+    var isTransient: Bool {
+        switch self {
+        case .decoding, .unableToCreateRequest, .signatureVerificationFailed:
+            return false
+        case .dnsError, .networkError, .unexpectedResponse:
+            return true
+        case let .errorResponse(_, statusCode, _):
+            return statusCode.isServerError
+        }
+    }
+
 }
 
 extension NetworkError {

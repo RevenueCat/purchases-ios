@@ -20,10 +20,6 @@ extension NSError {
         return self.userInfo[ErrorDetails.attributeErrorsKey] as? [String: String]
     }
 
-    var httpStatusCode: Int? {
-        return self.userInfo[ErrorDetails.statusCodeKey] as? Int
-    }
-
 }
 
 extension Error {
