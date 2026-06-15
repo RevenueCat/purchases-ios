@@ -396,18 +396,25 @@ extension PurchaseHandler {
         // resolvePaywallViewData(for:) dispatch does for each content type.
         let identifier: String
         let presentedOfferingContext: PresentedOfferingContext?
+        let hasLegacyPaywall: Bool
         switch content {
         case let .offering(offering):
             identifier = offering.identifier
             presentedOfferingContext = offering.presentedOfferingContext
+            hasLegacyPaywall = offering.paywall != nil
         case .defaultOffering:
             guard let current = allOfferings.current else { return nil }
             identifier = current.identifier
             presentedOfferingContext = current.presentedOfferingContext
+            hasLegacyPaywall = current.paywall != nil
         case let .offeringIdentifier(offeringIdentifier, context):
             identifier = offeringIdentifier
             presentedOfferingContext = context
+            hasLegacyPaywall = allOfferings.offering(identifier: offeringIdentifier)?.paywall != nil
         }
+
+        // A legacy paywall renders directly (matches the async gate), so don't seed a workflow for it.
+        if hasLegacyPaywall { return nil }
 
         // A fresh cached workflow must be present; a miss returns nil so the async resolve path runs
         // instead of seeding a partial paywall.
@@ -440,24 +447,36 @@ extension PurchaseHandler {
     ) async throws -> ResolvedPaywallViewData {
         switch content {
         case let .offering(offering):
-            if workflowsEndpointEnabled {
-                return try await self.resolveWorkflowPaywallViewData(for: offering)
-            }
-
-            return .init(offering: offering, workflowContext: nil)
+            // resolveWorkflowContext fetches offerings itself when the workflow path is taken.
+            return try await self.resolvePaywallViewData(
+                for: offering,
+                offerings: nil,
+                workflowsEndpointEnabled: workflowsEndpointEnabled
+            )
         case .defaultOffering:
             let offerings = try await self.purchases.offerings()
             let offering = try offerings.current.orThrow(PaywallError.noCurrentOffering)
+            return try await self.resolvePaywallViewData(
+                for: offering,
+                offerings: offerings,
+                workflowsEndpointEnabled: workflowsEndpointEnabled
+            )
+        case let .offeringIdentifier(identifier, presentedOfferingContext):
+            let offerings = try await self.purchases.offerings()
+            let offering = try offerings
+                .offering(identifier: identifier)
+                .orThrow(PaywallError.offeringNotFound(identifier: identifier))
 
-            if workflowsEndpointEnabled {
-                return try await self.resolveWorkflowPaywallViewData(for: offering, offerings: offerings)
+            let resolvedOffering: Offering
+            if let presentedOfferingContext {
+                resolvedOffering = offering.withPresentedOfferingContext(presentedOfferingContext)
+            } else {
+                resolvedOffering = offering
             }
 
-            return .init(offering: offering, workflowContext: nil)
-        case let .offeringIdentifier(identifier, presentedOfferingContext):
-            return try await self.resolveOfferingIdentifier(
-                identifier: identifier,
-                presentedOfferingContext: presentedOfferingContext,
+            return try await self.resolvePaywallViewData(
+                for: resolvedOffering,
+                offerings: offerings,
                 workflowsEndpointEnabled: workflowsEndpointEnabled
             )
         }
@@ -465,68 +484,31 @@ extension PurchaseHandler {
 #endif
 
 #if !os(tvOS)
-    /// Returns `provided`, or fetches offerings (which also populates the offeringId → workflowId map).
+    /// Returns `provided`, or fetches offerings.
     private func resolveOfferings(_ provided: Offerings?) async throws -> Offerings {
         if let provided { return provided }
         return try await self.purchases.offerings()
     }
 
-    private func resolveWorkflowPaywallViewData(
+    /// Routes a resolved offering to its own (legacy) paywall or the workflows endpoint.
+    /// `offering.paywall == nil` is the durable marker of a non-legacy paywall: a v1 paywall always
+    /// carries `paywall`, so a legacy offering renders directly without a workflow fetch.
+    private func resolvePaywallViewData(
         for offering: Offering,
-        offerings: Offerings? = nil
+        offerings: Offerings?,
+        workflowsEndpointEnabled: Bool
     ) async throws -> ResolvedPaywallViewData {
-        // Fetch offerings first: it populates the offeringId → workflowId map the gate below reads.
-        let allOfferings = try await self.resolveOfferings(offerings)
-
-        // No mapping means a legacy offering; fetching a workflow would 404, so render legacy.
-        guard self.purchases.cachedWorkflowId(forOfferingIdentifier: offering.identifier) != nil else {
-            Logger.warning(Strings.no_workflow_mapped_for_offering(offeringId: offering.identifier))
+        guard workflowsEndpointEnabled, offering.paywall == nil else {
             return .init(offering: offering, workflowContext: nil)
         }
 
         let context = try await self.resolveWorkflowContext(
             identifier: offering.identifier,
             presentedOfferingContext: offering.presentedOfferingContext,
-            offerings: allOfferings
+            offerings: offerings
         )
 
         return .init(offering: context.initialOffering, workflowContext: context)
-    }
-
-    private func resolveOfferingIdentifier(
-        identifier: String,
-        presentedOfferingContext: PresentedOfferingContext?,
-        workflowsEndpointEnabled: Bool
-    ) async throws -> ResolvedPaywallViewData {
-        // Fetch offerings first: it populates the offeringId → workflowId map the gate below reads.
-        let allOfferings = try await self.purchases.offerings()
-
-        // Take the workflow path only when one is mapped; otherwise a legacy offering would 404.
-        if workflowsEndpointEnabled {
-            if self.purchases.cachedWorkflowId(forOfferingIdentifier: identifier) != nil {
-                let context = try await self.resolveWorkflowContext(
-                    identifier: identifier,
-                    presentedOfferingContext: presentedOfferingContext,
-                    offerings: allOfferings
-                )
-                return .init(offering: context.initialOffering, workflowContext: context)
-            }
-
-            Logger.warning(Strings.no_workflow_mapped_for_offering(offeringId: identifier))
-        }
-
-        let offering = try allOfferings
-            .offering(identifier: identifier)
-            .orThrow(PaywallError.offeringNotFound(identifier: identifier))
-
-        let resolvedOffering: Offering
-        if let presentedOfferingContext {
-            resolvedOffering = offering.withPresentedOfferingContext(presentedOfferingContext)
-        } else {
-            resolvedOffering = offering
-        }
-
-        return .init(offering: resolvedOffering, workflowContext: nil)
     }
 
     // Callers gate on workflowsEndpointEnabled before reaching this point, so this assumes
@@ -976,10 +958,6 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     }
 
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
-        return nil
-    }
-
-    func cachedWorkflowId(forOfferingIdentifier offeringID: String) -> String? {
         return nil
     }
 #endif

@@ -184,10 +184,6 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
         return nil
     }
-
-    func cachedWorkflowId(forOfferingIdentifier offeringID: String) -> String? {
-        return nil
-    }
 #endif
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {

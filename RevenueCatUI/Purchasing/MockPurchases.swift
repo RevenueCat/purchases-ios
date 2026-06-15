@@ -54,12 +54,6 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
         return self.cachedWorkflowBlock?(offeringID)
     }
-
-    var cachedWorkflowIdBlock: ((String) -> String?)?
-
-    func cachedWorkflowId(forOfferingIdentifier offeringID: String) -> String? {
-        return self.cachedWorkflowIdBlock?(offeringID)
-    }
 #endif
 
     var offeringsBlock: (() async throws -> Offerings)?
@@ -189,7 +183,6 @@ extension PaywallPurchasesType {
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
         mapped.trackWorkflowEventBlock = { await self.track(workflowEvent: $0) }
         mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
-        mapped.cachedWorkflowIdBlock = { self.cachedWorkflowId(forOfferingIdentifier: $0) }
         #endif
 
         return mapped
@@ -220,7 +213,6 @@ extension PaywallPurchasesType {
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
         mapped.trackWorkflowEventBlock = { await self.track(workflowEvent: $0) }
         mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
-        mapped.cachedWorkflowIdBlock = { self.cachedWorkflowId(forOfferingIdentifier: $0) }
         #endif
 
         return mapped

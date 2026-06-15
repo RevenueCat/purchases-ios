@@ -123,7 +123,6 @@ enum Strings {
     case paywall_close_workflow_action_not_handled(componentName: String?)
     case paywall_workflow_trigger_not_handled(componentName: String?)
     case workflow_package_context_unresolvable(stepId: String)
-    case no_workflow_mapped_for_offering(offeringId: String)
 
 }
 
@@ -400,8 +399,6 @@ extension Strings: CustomStringConvertible {
         case let .workflow_package_context_unresolvable(stepId):
             return "Could not resolve package context for singleStepFallbackId '\(stepId)'. " +
             "Price/period variables may not resolve on packageless screens."
-        case let .no_workflow_mapped_for_offering(offeringId):
-            return "No workflow mapped for offering '\(offeringId)'; rendering legacy paywall."
         }
     }
 

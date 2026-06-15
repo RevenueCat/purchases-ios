@@ -1017,13 +1017,6 @@ public extension Purchases {
         return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
     }
 
-    /// The workflow id mapped to `offeringID` by the workflows list, or `nil` when the list has no
-    /// entry. Reads the list map only, so a mapped-but-not-yet-fetched workflow still resolves.
-    @_spi(Internal)
-    func cachedWorkflowId(forOfferingIdentifier offeringID: String) -> String? {
-        return self.workflowManager.cachedWorkflowId(forOfferingId: offeringID)
-    }
-
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
         return try await self.offeringsAsync(fetchPolicy: fetchPolicy)
     }

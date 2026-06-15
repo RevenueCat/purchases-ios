@@ -106,7 +106,8 @@ final class PaywallViewConfigurationTests: TestCase {
     }
 
     func testResolvePaywallViewDataReturnsWorkflowContextForWorkflowOfferingContent() async throws {
-        let initialOffering = Self.createOffering(identifier: "offering_a")
+        // `paywall: nil` marks a non-legacy offering, so the workflow path is taken.
+        let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
             .withPresentedOfferingContext(Self.createPresentedOfferingContext(offeringIdentifier: "offering_a"))
         let workflowOffering = Self.createOffering(identifier: "offering_b")
         let purchases = Self.createMockPurchases()
@@ -115,7 +116,6 @@ final class PaywallViewConfigurationTests: TestCase {
         purchases.offeringsBlock = {
             Self.createOfferings([initialOffering, workflowOffering])
         }
-        purchases.cachedWorkflowIdBlock = { _ in "wf_test" }
         purchases.workflowBlock = { offeringIdentifier in
             expect(offeringIdentifier) == initialOffering.identifier
             return try Self.createWorkflowDataResult(offeringIdentifier: workflowOffering.identifier)
@@ -139,7 +139,7 @@ final class PaywallViewConfigurationTests: TestCase {
     }
 
     func testResolvePaywallViewDataReturnsWorkflowContextForWorkflowDefaultOffering() async throws {
-        let initialOffering = Self.createOffering(identifier: "offering_a")
+        let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
             .withPresentedOfferingContext(.init(offeringIdentifier: "offering_a"))
         let workflowOffering = Self.createOffering(identifier: "offering_b")
         let purchases = Self.createMockPurchases()
@@ -152,7 +152,6 @@ final class PaywallViewConfigurationTests: TestCase {
                 targeting: .init(revision: 7, ruleId: "targeting_rule_offering_a")
             )
         }
-        purchases.cachedWorkflowIdBlock = { _ in "wf_test" }
         purchases.workflowBlock = { offeringIdentifier in
             expect(offeringIdentifier) == initialOffering.identifier
             return try Self.createWorkflowDataResult(offeringIdentifier: workflowOffering.identifier)
@@ -175,7 +174,7 @@ final class PaywallViewConfigurationTests: TestCase {
     }
 
     func testResolvePaywallViewDataReturnsWorkflowContextForWorkflowOfferingIdentifier() async throws {
-        let initialOffering = Self.createOffering(identifier: "offering_a")
+        let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
         let workflowOffering = Self.createOffering(identifier: "offering_b")
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)
@@ -184,7 +183,6 @@ final class PaywallViewConfigurationTests: TestCase {
         purchases.offeringsBlock = {
             Self.createOfferings([initialOffering, workflowOffering])
         }
-        purchases.cachedWorkflowIdBlock = { _ in "wf_test" }
         purchases.workflowBlock = { offeringIdentifier in
             expect(offeringIdentifier) == initialOffering.identifier
             return try Self.createWorkflowDataResult(offeringIdentifier: workflowOffering.identifier)
@@ -209,14 +207,13 @@ final class PaywallViewConfigurationTests: TestCase {
         // The workflow screen resolves to "offering_b", but the offerings snapshot only contains the
         // trigger offering "offering_a". The error must report the screen's offering id that was
         // actually missing, not the trigger offering used to look up the workflow.
-        let initialOffering = Self.createOffering(identifier: "offering_a")
+        let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)
 
         purchases.offeringsBlock = {
             Self.createOfferings([initialOffering], currentOfferingID: initialOffering.identifier)
         }
-        purchases.cachedWorkflowIdBlock = { _ in "wf_test" }
         purchases.workflowBlock = { _ in
             try Self.createWorkflowDataResult(offeringIdentifier: "offering_b")
         }
@@ -232,7 +229,8 @@ final class PaywallViewConfigurationTests: TestCase {
         }
     }
 
-    func testResolvePaywallViewDataFallsBackToLegacyWhenNoWorkflowMappedForOffering() async throws {
+    func testResolvePaywallViewDataRendersLegacyWhenOfferingHasLegacyPaywall() async throws {
+        // A legacy paywall (`offering.paywall != nil`) renders directly, with no workflow fetch.
         let offering = Self.createOffering(identifier: "offering_a")
             .withPresentedOfferingContext(Self.createPresentedOfferingContext(offeringIdentifier: "offering_a"))
         let purchases = Self.createMockPurchases()
@@ -241,9 +239,8 @@ final class PaywallViewConfigurationTests: TestCase {
         purchases.offeringsBlock = {
             Self.createOfferings([offering], currentOfferingID: offering.identifier)
         }
-        purchases.cachedWorkflowIdBlock = { _ in nil }
         purchases.workflowBlock = { _ in
-            XCTFail("Workflow should not be fetched when no workflow is mapped for the offering")
+            XCTFail("Workflow should not be fetched when the offering has a legacy paywall")
             throw ErrorCode.configurationError
         }
 
@@ -256,7 +253,7 @@ final class PaywallViewConfigurationTests: TestCase {
         expect(result.workflowContext).to(beNil())
     }
 
-    func testResolvePaywallViewDataFallsBackToLegacyWhenNoWorkflowMappedForDefaultOffering() async throws {
+    func testResolvePaywallViewDataRendersLegacyForDefaultOfferingWithLegacyPaywall() async throws {
         let offering = Self.createOffering(identifier: "offering_a")
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)
@@ -264,9 +261,8 @@ final class PaywallViewConfigurationTests: TestCase {
         purchases.offeringsBlock = {
             Self.createOfferings([offering], currentOfferingID: offering.identifier)
         }
-        purchases.cachedWorkflowIdBlock = { _ in nil }
         purchases.workflowBlock = { _ in
-            XCTFail("Workflow should not be fetched when no workflow is mapped for the offering")
+            XCTFail("Workflow should not be fetched when the offering has a legacy paywall")
             throw ErrorCode.configurationError
         }
 
@@ -279,7 +275,7 @@ final class PaywallViewConfigurationTests: TestCase {
         expect(result.workflowContext).to(beNil())
     }
 
-    func testResolvePaywallViewDataFallsBackToLegacyWhenNoWorkflowMappedForOfferingIdentifier() async throws {
+    func testResolvePaywallViewDataRendersLegacyForOfferingIdentifierWithLegacyPaywall() async throws {
         let offering = Self.createOffering(identifier: "offering_a")
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)
@@ -288,9 +284,8 @@ final class PaywallViewConfigurationTests: TestCase {
         purchases.offeringsBlock = {
             Self.createOfferings([offering], currentOfferingID: offering.identifier)
         }
-        purchases.cachedWorkflowIdBlock = { _ in nil }
         purchases.workflowBlock = { _ in
-            XCTFail("Workflow should not be fetched when no workflow is mapped for the offering")
+            XCTFail("Workflow should not be fetched when the offering has a legacy paywall")
             throw ErrorCode.configurationError
         }
 
@@ -302,36 +297,6 @@ final class PaywallViewConfigurationTests: TestCase {
         expect(result.offering.identifier) == offering.identifier
         expect(result.offering.presentedOfferingContext?.offeringIdentifier) == offering.identifier
         expect(result.workflowContext).to(beNil())
-    }
-
-    func testResolvePaywallViewDataResolvesWorkflowWhenMapPopulatedByOfferingsFetch() async throws {
-        // The map is cold until offerings() runs, so the gate must fetch offerings before deciding;
-        // a mapped workflow offering then renders the workflow instead of degrading to legacy.
-        let initialOffering = Self.createOffering(identifier: "offering_a")
-        let workflowOffering = Self.createOffering(identifier: "offering_b")
-        let purchases = Self.createMockPurchases()
-        let handler = Self.createPurchaseHandler(purchases: purchases)
-        let presentedOfferingContext = PresentedOfferingContext(offeringIdentifier: initialOffering.identifier)
-
-        let offeringsFetched = Atomic(false)
-        purchases.offeringsBlock = {
-            offeringsFetched.value = true
-            return Self.createOfferings([initialOffering, workflowOffering])
-        }
-        purchases.cachedWorkflowIdBlock = { _ in offeringsFetched.value ? "wf_test" : nil }
-        purchases.workflowBlock = { offeringIdentifier in
-            expect(offeringIdentifier) == initialOffering.identifier
-            return try Self.createWorkflowDataResult(offeringIdentifier: workflowOffering.identifier)
-        }
-
-        let result = try await handler.resolvePaywallViewData(
-            for: .offeringIdentifier(initialOffering.identifier, presentedOfferingContext: presentedOfferingContext),
-            workflowsEndpointEnabled: true
-        )
-
-        expect(result.offering.identifier) == workflowOffering.identifier
-        expect(result.workflowContext?.initialOffering.identifier) == workflowOffering.identifier
-        expect(result.workflowContext?.presentedOfferingContext?.offeringIdentifier) == initialOffering.identifier
     }
 
     func testCachedInitialWorkflowContextReturnsNilWhenWorkflowsEndpointDisabled() throws {
@@ -364,7 +329,7 @@ final class PaywallViewConfigurationTests: TestCase {
     }
 
     func testCachedInitialWorkflowContextReturnsContextForWorkflowOfferingContentOnWarmCache() throws {
-        let initialOffering = Self.createOffering(identifier: "offering_a")
+        let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
             .withPresentedOfferingContext(Self.createPresentedOfferingContext(offeringIdentifier: "offering_a"))
         let workflowOffering = Self.createOffering(identifier: "offering_b")
         let purchases = Self.createMockPurchases()
@@ -392,7 +357,7 @@ final class PaywallViewConfigurationTests: TestCase {
     }
 
     func testCachedInitialWorkflowContextReturnsContextForWorkflowDefaultOfferingOnWarmCache() throws {
-        let initialOffering = Self.createOffering(identifier: "offering_a")
+        let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
             .withPresentedOfferingContext(.init(offeringIdentifier: "offering_a"))
         let workflowOffering = Self.createOffering(identifier: "offering_b")
         let purchases = Self.createMockPurchases()
@@ -417,7 +382,7 @@ final class PaywallViewConfigurationTests: TestCase {
     }
 
     func testCachedInitialWorkflowContextReturnsContextForWorkflowOfferingIdentifierOnWarmCache() throws {
-        let initialOffering = Self.createOffering(identifier: "offering_a")
+        let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
         let workflowOffering = Self.createOffering(identifier: "offering_b")
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)
@@ -440,7 +405,7 @@ final class PaywallViewConfigurationTests: TestCase {
     }
 
     func testCachedInitialWorkflowContextReturnsNilWhenWorkflowNotCached() throws {
-        let initialOffering = Self.createOffering(identifier: "offering_a")
+        let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)
 
@@ -457,7 +422,7 @@ final class PaywallViewConfigurationTests: TestCase {
     }
 
     func testCachedInitialWorkflowContextReturnsNilWhenBaseOfferingMissingFromCache() throws {
-        let initialOffering = Self.createOffering(identifier: "offering_a")
+        let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
         let workflowOffering = Self.createOffering(identifier: "offering_b")
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)
@@ -487,6 +452,29 @@ final class PaywallViewConfigurationTests: TestCase {
         purchases.cachedOfferings = nil
         purchases.cachedWorkflowBlock = { _ in
             try? Self.createWorkflowDataResult(offeringIdentifier: workflowOffering.identifier)
+        }
+
+        expect(handler.cachedInitialWorkflowContext(
+            for: .offering(initialOffering),
+            workflowsEndpointEnabled: true
+        )).to(beNil())
+    }
+
+    func testCachedInitialWorkflowContextReturnsNilWhenOfferingHasLegacyPaywall() throws {
+        // Even with a cached workflow, an offering with a legacy paywall must not seed a workflow:
+        // it renders legacy via the async path, matching the gate in resolvePaywallViewData.
+        let initialOffering = Self.createOffering(identifier: "offering_a")
+        let workflowOffering = Self.createOffering(identifier: "offering_b")
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.cachedOfferings = Self.createOfferings(
+            [initialOffering, workflowOffering],
+            currentOfferingID: initialOffering.identifier
+        )
+        purchases.cachedWorkflowBlock = { _ in
+            XCTFail("Workflow cache should not be read for an offering with a legacy paywall")
+            return nil
         }
 
         expect(handler.cachedInitialWorkflowContext(
@@ -552,12 +540,14 @@ private extension PaywallViewConfigurationTests {
         )
     }
 
-    static func createOffering(identifier: String) -> Offering {
+    /// `paywall` defaults to a legacy paywall. Pass `paywall: nil` for a workflow-eligible offering
+    /// (the workflow gate routes `offering.paywall == nil` offerings through the workflows endpoint).
+    static func createOffering(identifier: String, paywall: PaywallData? = TestData.paywallWithIntroOffer) -> Offering {
         return Offering(
             identifier: identifier,
             serverDescription: "Offering \(identifier)",
             metadata: [:],
-            paywall: TestData.paywallWithIntroOffer,
+            paywall: paywall,
             availablePackages: TestData.packages,
             webCheckoutUrl: nil
         )
