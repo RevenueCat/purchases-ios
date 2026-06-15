@@ -141,7 +141,9 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
 
             if loopVideo {
                 self.loopObserver = NotificationCenter.default.addObserver(
-                    forName: AVPlayerItem.didPlayToEndTimeNotification,
+                    // Use the legacy constant (not `AVPlayerItem.didPlayToEndTimeNotification`):
+                    // the class-property form doesn't exist on older SDKs the CI matrix builds against.
+                    forName: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
                     object: playerItem,
                     queue: .main
                 ) { [weak self] _ in

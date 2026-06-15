@@ -141,7 +141,7 @@ struct VideoPlayerView: View {
             #if os(watchOS)
                 // This is less reliable than using the AVPlayerLooper.
                 // Unfortunately, that is not available on watchOS
-                .onReceive(notificationCenter.publisher(for: AVPlayerItem.didPlayToEndTimeNotification)) { _ in
+                .onReceive(notificationCenter.publisher(for: NSNotification.Name.AVPlayerItemDidPlayToEndTime)) { _ in
                     if loopVideo {
                         player.seek(to: .zero)
                         player.play()
