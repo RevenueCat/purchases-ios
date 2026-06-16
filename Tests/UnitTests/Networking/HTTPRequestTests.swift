@@ -65,7 +65,9 @@ class HTTPRequestTests: TestCase {
         .getOfferings(appUserID: anonymousUser),
         .getIntroEligibility(appUserID: anonymousUser),
         .postAttributionData(appUserID: anonymousUser),
-        .postSubscriberAttributes(appUserID: anonymousUser)
+        .postSubscriberAttributes(appUserID: anonymousUser),
+        .getWorkflows(appUserID: anonymousUser, type: nil),
+        .getWorkflow(appUserID: anonymousUser, workflowId: "wf_1")
     ]
 
     func testPathsDontHaveLeadingSlash() {
