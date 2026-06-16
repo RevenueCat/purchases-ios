@@ -20,12 +20,14 @@ class RemoteConfigAPI {
     }
 
     func getRemoteConfig(
+        request: RemoteConfigRequest = .init(),
         isAppBackgrounded: Bool,
         completion: @escaping RemoteConfigResponseHandler
     ) {
         let factory = GetRemoteConfigOperation.createFactory(
             configuration: self.backendConfig,
-            callbackCache: self.callbackCache
+            callbackCache: self.callbackCache,
+            request: request
         )
 
         let callback = RemoteConfigCallback(cacheKey: factory.cacheKey, completion: completion)

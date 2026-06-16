@@ -50,7 +50,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(self.httpClient.calls.first?.request.path.relativePath) == "/v2/config"
     }
 
-    func testGetRemoteConfigEncodesDefaultRequestBody() throws {
+    func testGetRemoteConfigEncodesDefaultManifestRequestBody() throws {
         self.mockSuccessfulResponse()
 
         waitUntil { completed in
@@ -58,7 +58,49 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         let body = try XCTUnwrap(self.httpClient.calls.first?.request.requestBody?.asJSONDictionary())
-        expect(body).to(beEmpty())
+        let manifest = try XCTUnwrap(body["manifest"] as? [String: Any])
+
+        expect(manifest["domain"] as? String) == "app"
+        expect(manifest["topics"] as? [String: String]) == [:]
+        expect(manifest["prefetch_blobs"] as? [String]) == []
+        expect(manifest["prefetched_blobs"] as? [String]) == []
+        expect(manifest["last_refresh_at"] as? Int) == 0
+    }
+
+    func testGetRemoteConfigEncodesCustomManifestRequestBody() throws {
+        self.mockSuccessfulResponse()
+
+        let request = RemoteConfigRequest(
+            manifest: .init(
+                domain: "project",
+                topics: [
+                    "paywalls": "etag-paywalls",
+                    "product_entitlement_mapping": "etag-pem"
+                ],
+                prefetchBlobs: ["blob-a"],
+                prefetchedBlobs: ["blob-b"],
+                lastRefreshAt: 123
+            )
+        )
+
+        waitUntil { completed in
+            self.remoteConfigAPI.getRemoteConfig(
+                request: request,
+                isAppBackgrounded: false
+            ) { _ in completed() }
+        }
+
+        let body = try XCTUnwrap(self.httpClient.calls.first?.request.requestBody?.asJSONDictionary())
+        let manifest = try XCTUnwrap(body["manifest"] as? [String: Any])
+
+        expect(manifest["domain"] as? String) == "project"
+        expect(manifest["topics"] as? [String: String]) == [
+            "paywalls": "etag-paywalls",
+            "product_entitlement_mapping": "etag-pem"
+        ]
+        expect(manifest["prefetch_blobs"] as? [String]) == ["blob-a"]
+        expect(manifest["prefetched_blobs"] as? [String]) == ["blob-b"]
+        expect(manifest["last_refresh_at"] as? Int) == 123
     }
 
     func testGetRemoteConfigRequestsRCContainerFormat() {
@@ -122,16 +164,38 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     // MARK: - Request coalescing
 
-    func testGetRemoteConfigCoalescesSimultaneousRequests() {
+    func testGetRemoteConfigCoalescesSimultaneousRequestsWithSameManifest() {
+        self.mockSuccessfulResponse(delay: .milliseconds(10))
+
+        let responses: Atomic<Int> = .init(0)
+        let request = RemoteConfigRequest(
+            manifest: .init(domain: "app", topics: ["paywalls": "etag-a"])
+        )
+
+        self.remoteConfigAPI.getRemoteConfig(request: request, isAppBackgrounded: false) { _ in responses.value += 1 }
+        self.remoteConfigAPI.getRemoteConfig(request: request, isAppBackgrounded: false) { _ in responses.value += 1 }
+
+        expect(responses.value).toEventually(equal(2))
+        expect(self.httpClient.calls).to(haveCount(1))
+    }
+
+    func testGetRemoteConfigDoesNotCoalesceSimultaneousRequestsWithDifferentManifests() {
         self.mockSuccessfulResponse(delay: .milliseconds(10))
 
         let responses: Atomic<Int> = .init(0)
 
-        self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false) { _ in responses.value += 1 }
-        self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false) { _ in responses.value += 1 }
+        self.remoteConfigAPI.getRemoteConfig(
+            request: .init(manifest: .init(domain: "app", topics: ["paywalls": "etag-a"])),
+            isAppBackgrounded: false
+        ) { _ in responses.value += 1 }
+
+        self.remoteConfigAPI.getRemoteConfig(
+            request: .init(manifest: .init(domain: "app", topics: ["paywalls": "etag-b"])),
+            isAppBackgrounded: false
+        ) { _ in responses.value += 1 }
 
         expect(responses.value).toEventually(equal(2))
-        expect(self.httpClient.calls).to(haveCount(1))
+        expect(self.httpClient.calls).to(haveCount(2))
     }
 
     func testCoalescedRequestsLogDebugMessage() {
