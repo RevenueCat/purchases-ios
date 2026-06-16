@@ -61,7 +61,6 @@ public final class RevocationReason: NSObject, RawRepresentable, Sendable {
 
 // MARK: - StoreKit 2
 
-#if swift(>=5.9)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension RevocationReason {
 
@@ -83,4 +82,3 @@ extension RevocationReason {
     }
 
 }
-#endif
