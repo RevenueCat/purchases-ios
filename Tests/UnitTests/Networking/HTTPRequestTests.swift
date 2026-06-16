@@ -36,7 +36,9 @@ class HTTPRequestTests: TestCase {
         .postSubscriberAttributes(appUserID: userID),
         .health,
         .getProductEntitlementMapping,
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID)
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
+        .getWorkflows(appUserID: userID, type: nil),
+        .getWorkflow(appUserID: userID, workflowId: "wf_1")
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
         .health
@@ -51,7 +53,9 @@ class HTTPRequestTests: TestCase {
         .health,
         .getOfferings(appUserID: userID),
         .getProductEntitlementMapping,
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID)
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
+        .getWorkflows(appUserID: userID, type: nil),
+        .getWorkflow(appUserID: userID, workflowId: "wf_1")
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
@@ -168,7 +172,9 @@ class HTTPRequestTests: TestCase {
 
         expect(staticEndpoints) == [
             .getOfferings(appUserID: Self.userID),
-            .getProductEntitlementMapping
+            .getProductEntitlementMapping,
+            .getWorkflows(appUserID: Self.userID, type: nil),
+            .getWorkflow(appUserID: Self.userID, workflowId: "wf_1")
         ]
     }
 
@@ -195,10 +201,34 @@ class HTTPRequestTests: TestCase {
             case .getOfferings:
                 XCTAssertEqual(fallbackUrlsPaths,
                                ["https://api-production.8-lives-cat.io/v1/offerings"])
+            case .getWorkflows(_, let type):
+                let expected = type.map {
+                    "https://api-production.8-lives-cat.io/workflows/v1/workflows?type=\($0)"
+                } ?? "https://api-production.8-lives-cat.io/workflows/v1/workflows"
+                XCTAssertEqual(fallbackUrlsPaths, [expected])
+            case let .getWorkflow(_, workflowId):
+                XCTAssertEqual(fallbackUrlsPaths,
+                               ["https://api-production.8-lives-cat.io/workflows/v1/workflows/\(workflowId)"])
             default:
                 XCTAssertTrue(fallbackUrlsPaths.isEmpty)
             }
         }
+    }
+
+    func testGetWorkflowsFallbackUrlIncludesTypeParam() {
+        let path = HTTPRequest.Path.getWorkflows(appUserID: Self.userID, type: "PAYWALL")
+        XCTAssertEqual(
+            path.fallbackUrls.map { $0.absoluteString },
+            ["https://api-production.8-lives-cat.io/workflows/v1/workflows?type=PAYWALL"]
+        )
+    }
+
+    func testGetWorkflowFallbackUrlEscapesWorkflowId() {
+        let path = HTTPRequest.Path.getWorkflow(appUserID: Self.userID, workflowId: "wf id/with special")
+        XCTAssertEqual(
+            path.fallbackUrls.map { $0.absoluteString },
+            ["https://api-production.8-lives-cat.io/workflows/v1/workflows/wf%20id%2Fwith%20special"]
+        )
     }
 
     func testUserIDEscaping() {
