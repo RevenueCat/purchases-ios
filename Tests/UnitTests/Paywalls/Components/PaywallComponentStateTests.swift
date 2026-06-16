@@ -98,7 +98,7 @@ final class StateDeclarationDecodingTests: TestCase {
         }
         """)
 
-        let state = try XCTUnwrap(data.state)
+        let state = try XCTUnwrap(data.stateDeclarations)
         expect(state).to(haveCount(4))
         expect(state["planComparisonOpen"]?.defaultValue).to(equal(.bool(false)))
         expect(state["activeSlide"]?.defaultValue).to(equal(.int(0)))
@@ -109,7 +109,7 @@ final class StateDeclarationDecodingTests: TestCase {
     func testDecodePaywallComponentsDataWithoutStateMap() throws {
         let data = try decodeComponentsData(state: nil)
 
-        expect(data.state).to(beNil())
+        expect(data.stateDeclarations).to(beNil())
         expect(data.errorInfo).to(beNil())
     }
 
@@ -122,7 +122,7 @@ final class StateDeclarationDecodingTests: TestCase {
         }
         """)
 
-        let state = try XCTUnwrap(data.state)
+        let state = try XCTUnwrap(data.stateDeclarations)
         expect(state).to(haveCount(1))
         expect(state["valid"]?.defaultValue).to(equal(.bool(true)))
         expect(data.errorInfo).to(beNil())
@@ -133,14 +133,14 @@ final class StateDeclarationDecodingTests: TestCase {
         "not_an_object"
         """)
 
-        expect(data.state).to(beNil())
+        expect(data.stateDeclarations).to(beNil())
         expect(data.errorInfo).to(beNil())
     }
 
     func testEmptyStateMapIsNormalizedToNil() throws {
         let data = try decodeComponentsData(state: "{}")
 
-        expect(data.state).to(beNil())
+        expect(data.stateDeclarations).to(beNil())
         expect(data.errorInfo).to(beNil())
     }
 
@@ -152,7 +152,7 @@ final class StateDeclarationDecodingTests: TestCase {
         }
         """)
 
-        expect(data.state).to(beNil())
+        expect(data.stateDeclarations).to(beNil())
         expect(data.errorInfo).to(beNil())
     }
 
@@ -164,7 +164,7 @@ final class StateDeclarationDecodingTests: TestCase {
         let encoded = try JSONEncoder.default.encode(original)
         let decoded = try JSONDecoder.default.decode(PaywallComponentsData.self, from: encoded)
 
-        expect(decoded.state).to(equal(original.state))
+        expect(decoded.stateDeclarations).to(equal(original.stateDeclarations))
     }
 
     // MARK: Helpers

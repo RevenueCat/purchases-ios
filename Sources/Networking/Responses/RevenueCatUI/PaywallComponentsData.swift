@@ -115,7 +115,7 @@ import Foundation
     /// Declared paywall state keys (key → type + default), used to seed the presentation-session
     /// state store. Declared at the root of the presentation unit; `nil` when the paywall declares
     /// no state, which behaves identically to an empty declaration.
-    public private(set) var state: [String: PaywallComponent.StateDeclaration]?
+    public private(set) var stateDeclarations: [String: PaywallComponent.StateDeclaration]?
 
     /// When `false`, paywall text will not respect Dynamic Type and would use fixed sizing. Otherwise it will scale.
     public var automaticallyScaleFontSize: Bool
@@ -136,7 +136,7 @@ import Foundation
         case zeroDecimalPlaceCountries
         case exitOffers
         case automaticallyScaleFontSize
-        case state
+        case stateDeclarations = "state"
     }
 
     public init(id: String? = nil,
@@ -149,7 +149,7 @@ import Foundation
                 zeroDecimalPlaceCountries: [String] = [],
                 exitOffers: ExitOffers? = nil,
                 automaticallyScaleFontSize: Bool = true,
-                state: [String: PaywallComponent.StateDeclaration]? = nil) {
+                stateDeclarations: [String: PaywallComponent.StateDeclaration]? = nil) {
         self.id = id
         self.templateName = templateName
         self.assetBaseURL = assetBaseURL
@@ -160,7 +160,7 @@ import Foundation
         self.zeroDecimalPlaceCountries = zeroDecimalPlaceCountries
         self.exitOffers = exitOffers
         self.automaticallyScaleFontSize = automaticallyScaleFontSize
-        self.state = state
+        self.stateDeclarations = stateDeclarations
     }
 
 }
@@ -233,9 +233,9 @@ import Foundation
         // a map whose entries all fail to decode are all represented identically.
         let decodedState = ((try? container.decodeIfPresent(
             [String: FailableStateDeclaration].self,
-            forKey: .state
+            forKey: .stateDeclarations
         )) ?? nil)?.compactMapValues(\.declaration)
-        state = (decodedState?.isEmpty == false) ? decodedState : nil
+        stateDeclarations = (decodedState?.isEmpty == false) ? decodedState : nil
 
         let shouldScale = try container.decodeIfPresent(Bool.self, forKey: .automaticallyScaleFontSize)
         // default behavior should respect the dynamic type settings unless explicitly disabled
@@ -273,7 +273,7 @@ import Foundation
         )
         try container.encodeIfPresent(exitOffers, forKey: .exitOffers)
         try container.encode(automaticallyScaleFontSize, forKey: .automaticallyScaleFontSize)
-        try container.encodeIfPresent(state, forKey: .state)
+        try container.encodeIfPresent(stateDeclarations, forKey: .stateDeclarations)
     }
 
 }
