@@ -46,8 +46,7 @@ public typealias SK2Transaction = StoreKit.Transaction
     internal var environment: StoreEnvironment? { self.transaction.environment }
     internal var reason: TransactionReason? { self.transaction.reason }
     @objc public var revocationDate: Date? { self.transaction.revocationDate }
-    // Not exposed to Objective-C: `RevocationReason` is a Swift struct and cannot be represented as `@objc`.
-    public var revocationReason: RevocationReason? { self.transaction.revocationReason }
+    @objc public var revocationReason: RevocationReason? { self.transaction.revocationReason }
 
     var hasKnownPurchaseDate: Bool { return self.transaction.hasKnownPurchaseDate }
     var hasKnownTransactionIdentifier: Bool { self.transaction.hasKnownTransactionIdentifier }
