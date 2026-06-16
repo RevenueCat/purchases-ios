@@ -201,4 +201,131 @@ final class StateDeclarationDecodingTests: TestCase {
 
 }
 
+// MARK: - StateUpdate decoding
+
+final class StateUpdateDecodingTests: TestCase {
+
+    typealias StateUpdate = PaywallComponent.StateUpdate
+
+    // MARK: set operation
+
+    func testDecodeSetWithStringLiteral() throws {
+        let update = try decodeStateUpdate("""
+        {"set": "selectedFeatureTab", "to": "billing"}
+        """)
+        expect(update).to(equal(.set(key: "selectedFeatureTab", value: .literal(.string("billing")))))
+    }
+
+    func testDecodeSetWithIntegerLiteral() throws {
+        let update = try decodeStateUpdate("""
+        {"set": "activeSlide", "to": 2}
+        """)
+        expect(update).to(equal(.set(key: "activeSlide", value: .literal(.int(2)))))
+    }
+
+    func testDecodeSetWithDoubleLiteral() throws {
+        let update = try decodeStateUpdate("""
+        {"set": "discountMultiplier", "to": 0.5}
+        """)
+        expect(update).to(equal(.set(key: "discountMultiplier", value: .literal(.double(0.5)))))
+    }
+
+    func testDecodeSetWithBooleanLiteral() throws {
+        let update = try decodeStateUpdate("""
+        {"set": "planComparisonOpen", "to": true}
+        """)
+        expect(update).to(equal(.set(key: "planComparisonOpen", value: .literal(.bool(true)))))
+    }
+
+    func testDecodeSetWithPayloadReference() throws {
+        let update = try decodeStateUpdate("""
+        {"set": "activeSlide", "to": "$value"}
+        """)
+        expect(update).to(equal(.set(key: "activeSlide", value: .payloadReference)))
+    }
+
+    func testDecodeIgnoresUnknownFields() throws {
+        let update = try decodeStateUpdate("""
+        {"set": "planComparisonOpen", "to": true, "future_field": 1}
+        """)
+        expect(update).to(equal(.set(key: "planComparisonOpen", value: .literal(.bool(true)))))
+    }
+
+    // MARK: unsupported / resilience
+
+    func testDecodeUnknownOperationIsUnsupported() throws {
+        // A future operation (e.g. `toggle`) carries no `set`/`to` keys.
+        let update = try decodeStateUpdate("""
+        {"toggle": "planComparisonOpen"}
+        """)
+        expect(update).to(equal(.unsupported))
+    }
+
+    func testDecodeSetWithoutValueIsUnsupported() throws {
+        let update = try decodeStateUpdate("""
+        {"set": "planComparisonOpen"}
+        """)
+        expect(update).to(equal(.unsupported))
+    }
+
+    func testDecodeNonObjectEntryIsUnsupported() throws {
+        // Regression: a non-object entry has no keyed container and must degrade to `.unsupported`
+        // rather than throwing and failing the enclosing component's decode.
+        expect(try self.decodeStateUpdate("\"not_an_object\"")).to(equal(.unsupported))
+        expect(try self.decodeStateUpdate("42")).to(equal(.unsupported))
+        expect(try self.decodeStateUpdate("true")).to(equal(.unsupported))
+        expect(try self.decodeStateUpdate("[1, 2]")).to(equal(.unsupported))
+        expect(try self.decodeStateUpdate("null")).to(equal(.unsupported))
+    }
+
+    func testDecodeArrayDegradesBadEntriesWithoutFailing() throws {
+        // The reviewer's case: a malformed entry must not fail the whole `stateUpdates` array
+        // (and therefore the whole button/carousel/tabs component) decode.
+        let updates = try decodeStateUpdates("""
+        [
+            {"set": "selectedFeatureTab", "to": "billing"},
+            "not_an_object",
+            {"set": "activeSlide", "to": "$value"}
+        ]
+        """)
+        expect(updates).to(haveCount(3))
+        expect(updates[0]).to(equal(.set(key: "selectedFeatureTab", value: .literal(.string("billing")))))
+        expect(updates[1]).to(equal(.unsupported))
+        expect(updates[2]).to(equal(.set(key: "activeSlide", value: .payloadReference)))
+    }
+
+    // MARK: round-trip
+
+    func testSetRoundTrips() throws {
+        let original = StateUpdate.set(key: "activeSlide", value: .literal(.int(3)))
+        let decoded = try JSONDecoder.default.decode(
+            StateUpdate.self,
+            from: JSONEncoder.default.encode(original)
+        )
+        expect(decoded).to(equal(original))
+    }
+
+    func testPayloadReferenceRoundTrips() throws {
+        let original = StateUpdate.set(key: "activeSlide", value: .payloadReference)
+        let decoded = try JSONDecoder.default.decode(
+            StateUpdate.self,
+            from: JSONEncoder.default.encode(original)
+        )
+        expect(decoded).to(equal(original))
+    }
+
+    // MARK: Helpers
+
+    /// Decodes a single update by wrapping it in a one-element array, mirroring how `stateUpdates`
+    /// is always decoded (`[StateUpdate]`) and keeping every fixture a valid top-level JSON document.
+    private func decodeStateUpdate(_ json: String) throws -> StateUpdate {
+        return try XCTUnwrap(decodeStateUpdates("[\(json)]").first)
+    }
+
+    private func decodeStateUpdates(_ json: String) throws -> [StateUpdate] {
+        return try JSONDecoder.default.decode([StateUpdate].self, from: json.data(using: .utf8)!)
+    }
+
+}
+
 #endif
