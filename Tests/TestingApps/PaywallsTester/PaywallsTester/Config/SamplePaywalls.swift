@@ -49,6 +49,7 @@ final class SamplePaywallLoader {
             identifier: Self.offeringIdentifier,
             serverDescription: Self.offeringIdentifier,
             metadata: [:],
+            paywallComponents: .init(uiConfig: PreviewUIConfig.make(), data: components),
             availablePackages: self.packages,
             webCheckoutUrl: nil
         )
@@ -567,6 +568,309 @@ private extension SamplePaywallLoader {
     static let tosURL = URL(string: "https://revenuecat.com/tos")!
 
 }
+
+// MARK: - State-driven Paywalls demo: Tab selected-state
+
+
+#if !os(tvOS) // For Paywalls V2
+
+extension SamplePaywallLoader {
+
+    /// The state key the Tabs component writes to and the sibling components read from.
+    /// In production the editor emits an id-based key (e.g. `cmp:<tabId>`); the SDK only requires
+    /// that it is an opaque string, so any stable string works for a hand-authored demo.
+    private static let planStateKey = "selected_plan"
+
+    static func tabStateComponentsData() -> PaywallComponentsData {
+        return .init(
+            templateName: "state-driven-tabs-demo",
+            assetBaseURL: Self.paywallAssetBaseURL,
+            componentsConfig: .init(base: .init(
+                stack: Self.tabStateRootStack(),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [
+                "en_US": [
+                    // Tab control labels
+                    "tab_monthly_label": .string("Monthly"),
+                    "tab_annual_label": .string("Annual"),
+                    "tab_lifetime_label": .string("Lifetime"),
+                    // Per-tab content (inside the tabs)
+                    "tab_monthly_title": .string("Monthly plan"),
+                    "tab_monthly_desc": .string("Billed every month. Cancel anytime."),
+                    "tab_annual_title": .string("Annual plan"),
+                    "tab_annual_desc": .string("Billed once a year. Our most popular option."),
+                    "tab_lifetime_title": .string("Lifetime access"),
+                    "tab_lifetime_desc": .string("One payment. Yours forever, no renewals."),
+                    // Reactive headline (text + color + size + weight change per tab)
+                    "headline_monthly": .string("Flexible, no commitment"),
+                    "headline_annual": .string("Best value — save 33%"),
+                    "headline_lifetime": .string("Pay once, own it forever"),
+                    // Reactive price (text + color change per tab)
+                    "price_monthly": .string("$9.99 / month"),
+                    "price_annual": .string("$79.99 / year"),
+                    "price_lifetime": .string("$199.99 one-time"),
+                    // Reactive savings banner (hidden on monthly; text + colors per tab)
+                    "savings_annual": .string("🎉 2 months free vs. paying monthly"),
+                    "savings_lifetime": .string("⏰ Limited-time lifetime offer")
+                ]
+            ],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US",
+            // The declared default matches `defaultTabId` so the first render is consistent.
+            state: [
+                Self.planStateKey: .init(type: "string", defaultValue: .string("monthly"))
+            ]
+        )
+    }
+
+    // MARK: Root layout
+
+    private static func tabStateRootStack() -> PaywallComponent.StackComponent {
+        return .init(
+            components: [
+                .tabs(Self.planTabs()),
+                // Everything below reacts to the selected tab via `state_condition` overrides.
+                .icon(Self.reactivePlanIcon()),
+                .text(Self.reactiveHeadline()),
+                .stack(Self.reactivePriceCard()),
+                .text(Self.reactiveSavingsBanner())
+            ],
+            dimension: .vertical(.center, .start),
+            size: .init(width: .fill, height: .fill),
+            spacing: 16,
+            backgroundColor: .init(light: .hex("#ffffff")),
+            padding: .init(top: 80, bottom: 24, leading: 16, trailing: 16)
+        )
+    }
+
+    // MARK: Tabs (the component that publishes state)
+
+    private static func planTabs() -> PaywallComponent.TabsComponent {
+        return .init(
+            size: .init(width: .fill, height: .fit),
+            control: .init(
+                type: .buttons,
+                stack: .init(
+                    components: [
+                        Self.tabControlButton(tabId: "monthly", labelLid: "tab_monthly_label"),
+                        Self.tabControlButton(tabId: "annual", labelLid: "tab_annual_label"),
+                        Self.tabControlButton(tabId: "lifetime", labelLid: "tab_lifetime_label")
+                    ],
+                    dimension: .horizontal(.center, .start),
+                    size: .init(width: .fit, height: .fit),
+                    backgroundColor: .init(light: .hex("#dedede")),
+                    padding: .init(top: 3, bottom: 3, leading: 3, trailing: 3),
+                    shape: .pill
+                )
+            ),
+            tabs: [
+                Self.tab(id: "monthly", titleLid: "tab_monthly_title", descLid: "tab_monthly_desc"),
+                Self.tab(id: "annual", titleLid: "tab_annual_title", descLid: "tab_annual_desc"),
+                Self.tab(id: "lifetime", titleLid: "tab_lifetime_title", descLid: "tab_lifetime_desc")
+            ],
+            defaultTabId: "monthly",
+            // Publishes the selected tab id into the store on every selection.
+            stateUpdates: [
+                .set(key: Self.planStateKey, value: .payloadReference)
+            ]
+        )
+    }
+
+    private static func tabControlButton(
+        tabId: String,
+        labelLid: String
+    ) -> PaywallComponent {
+        return .tabControlButton(.init(
+            tabId: tabId,
+            stack: .init(
+                components: [
+                    .text(.init(
+                        text: labelLid,
+                        color: .init(light: .hex("#000000")),
+                        size: .init(width: .fit, height: .fit),
+                        overrides: [
+                            .init(conditions: [.selected], properties: .init(color: .init(light: .hex("#ffffff"))))
+                        ]
+                    ))
+                ],
+                size: .init(width: .fit, height: .fit),
+                padding: .init(top: 8, bottom: 8, leading: 18, trailing: 18),
+                shape: .pill,
+                overrides: [
+                    .init(conditions: [.selected], properties: .init(backgroundColor: .init(light: .hex("#3d6787"))))
+                ]
+            )
+        ))
+    }
+
+    /// Each tab holds multiple components: the control (switcher) plus a title and a description.
+    private static func tab(id: String, titleLid: String, descLid: String) -> PaywallComponent.TabsComponent.Tab {
+        return .init(id: id, stack: .init(
+            components: [
+                .tabControl(.init()),
+                .text(.init(
+                    text: titleLid,
+                    fontWeight: .bold,
+                    color: .init(light: .hex("#111827")),
+                    size: .init(width: .fit, height: .fit),
+                    margin: .init(top: 16, bottom: 0, leading: 0, trailing: 0),
+                    fontSize: 20
+                )),
+                .text(.init(
+                    text: descLid,
+                    color: .init(light: .hex("#6b7280")),
+                    size: .init(width: .fill, height: .fit),
+                    margin: .init(top: 4, bottom: 0, leading: 0, trailing: 0),
+                    fontSize: 14
+                ))
+            ],
+            dimension: .vertical(.center, .start),
+            size: .init(width: .fill, height: .fit),
+            spacing: 4
+        ))
+    }
+
+    // MARK: Reacting siblings (outside the tabs)
+
+    /// Headline whose text, color, size and weight all change with the selected tab.
+    /// Base = the "monthly" look; `annual` / `lifetime` are applied via `state` overrides.
+    private static func reactiveHeadline() -> PaywallComponent.TextComponent {
+        return .init(
+            text: "headline_monthly",
+            fontWeight: .regular,
+            color: .init(light: .hex("#6b7280")),
+            size: .init(width: .fill, height: .fit),
+            fontSize: 18,
+            horizontalAlignment: .center,
+            overrides: [
+                .init(extendedConditions: Self.whenPlan("annual"), properties: .init(
+                    text: "headline_annual",
+                    fontWeight: .bold,
+                    color: .init(light: .hex("#1b873f")),
+                    fontSize: 22
+                )),
+                .init(extendedConditions: Self.whenPlan("lifetime"), properties: .init(
+                    text: "headline_lifetime",
+                    fontWeight: .bold,
+                    color: .init(light: .hex("#7c3aed")),
+                    fontSize: 22
+                ))
+            ]
+        )
+    }
+
+    /// A price "card" whose background color, corner shape and border change with the selected tab,
+    /// wrapping a price label whose text and color also change. Both the stack and the inner text
+    /// re-resolve independently from the same state key.
+    private static func reactivePriceCard() -> PaywallComponent.StackComponent {
+        return .init(
+            components: [
+                .text(.init(
+                    text: "price_monthly",
+                    fontWeight: .bold,
+                    color: .init(light: .hex("#111827")),
+                    size: .init(width: .fit, height: .fit),
+                    fontSize: 24,
+                    overrides: [
+                        .init(extendedConditions: Self.whenPlan("annual"), properties: .init(
+                            text: "price_annual",
+                            color: .init(light: .hex("#1b873f"))
+                        )),
+                        .init(extendedConditions: Self.whenPlan("lifetime"), properties: .init(
+                            text: "price_lifetime",
+                            color: .init(light: .hex("#7c3aed"))
+                        ))
+                    ]
+                ))
+            ],
+            dimension: .vertical(.center, .start),
+            size: .init(width: .fill, height: .fit),
+            backgroundColor: .init(light: .hex("#f3f4f6")),
+            padding: .init(top: 24, bottom: 24, leading: 16, trailing: 16),
+            shape: .rectangle(.init(topLeading: 12, topTrailing: 12, bottomLeading: 12, bottomTrailing: 12)),
+            overrides: [
+                .init(extendedConditions: Self.whenPlan("annual"), properties: .init(
+                    backgroundColor: .init(light: .hex("#e7f7ec")),
+                    shape: .rectangle(.init(topLeading: 20, topTrailing: 20, bottomLeading: 20, bottomTrailing: 20)),
+                    border: .init(color: .init(light: .hex("#1b873f")), width: 2)
+                )),
+                .init(extendedConditions: Self.whenPlan("lifetime"), properties: .init(
+                    backgroundColor: .init(light: .hex("#f3e8ff")),
+                    shape: .rectangle(.init(topLeading: 20, topTrailing: 20, bottomLeading: 20, bottomTrailing: 20)),
+                    border: .init(color: .init(light: .hex("#7c3aed")), width: 2)
+                ))
+            ]
+        )
+    }
+
+    /// Banner hidden on the default (monthly) tab and revealed — with different copy and colors —
+    /// on the annual and lifetime tabs.
+    private static func reactiveSavingsBanner() -> PaywallComponent.TextComponent {
+        return .init(
+            visible: false,
+            text: "savings_annual", // placeholder; not shown while hidden
+            fontWeight: .semibold,
+            color: .init(light: .hex("#1b873f")),
+            backgroundColor: .init(light: .hex("#e7f7ec")),
+            size: .init(width: .fill, height: .fit),
+            padding: .init(top: 12, bottom: 12, leading: 16, trailing: 16),
+            fontSize: 15,
+            overrides: [
+                .init(extendedConditions: Self.whenPlan("annual"), properties: .init(
+                    visible: true,
+                    text: "savings_annual",
+                    color: .init(light: .hex("#1b873f")),
+                    backgroundColor: .init(light: .hex("#e7f7ec"))
+                )),
+                .init(extendedConditions: Self.whenPlan("lifetime"), properties: .init(
+                    visible: true,
+                    text: "savings_lifetime",
+                    color: .init(light: .hex("#c2410c")),
+                    backgroundColor: .init(light: .hex("#ffedd5"))
+                ))
+            ]
+        )
+    }
+
+    /// A plan badge icon whose tint and circular background change with the selected tab — proof
+    /// that Icon components re-resolve from state too. Base = monthly (gray glyph, no background);
+    /// annual / lifetime add a colored circle behind a white glyph.
+    private static func reactivePlanIcon() -> PaywallComponent.IconComponent {
+        return .init(
+            baseUrl: "https://icons.pawwalls.com/icons",
+            iconName: "pizza",
+            formats: .init(svg: "pizza.svg", png: "pizza.png", heic: "pizza.heic", webp: "pizza.webp"),
+            size: .init(width: .fixed(56), height: .fixed(56)),
+            padding: .zero,
+            margin: .zero,
+            color: .init(light: .hex("#6b7280")),
+            iconBackground: nil,
+            overrides: [
+                .init(extendedConditions: Self.whenPlan("annual"), properties: .init(
+                    padding: .init(top: 12, bottom: 12, leading: 12, trailing: 12),
+                    color: .init(light: .hex("#ffffff")),
+                    iconBackground: .init(color: .init(light: .hex("#1b873f")), shape: .circle)
+                )),
+                .init(extendedConditions: Self.whenPlan("lifetime"), properties: .init(
+                    padding: .init(top: 12, bottom: 12, leading: 12, trailing: 12),
+                    color: .init(light: .hex("#ffffff")),
+                    iconBackground: .init(color: .init(light: .hex("#7c3aed")), shape: .circle)
+                ))
+            ]
+        )
+    }
+
+    /// Builds the dedicated internal `state` condition for a given plan value. The public `Condition`
+    /// enum has no `.state` case, so overrides are constructed via the `extendedConditions:` initializer.
+    private static func whenPlan(_ value: String) -> [PaywallComponent.ExtendedCondition] {
+        return [.state(operator: .equals, name: Self.planStateKey, value: .string(value))]
+    }
+
+}
+
+#endif
 
 #endif
 
