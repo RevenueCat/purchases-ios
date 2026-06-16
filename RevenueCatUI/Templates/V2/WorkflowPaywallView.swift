@@ -431,7 +431,9 @@ struct WorkflowPaywallView: View {
             introEligibilityContext: page.introOfferEligibilityContext,
             selectedPackageContextOverride: page.packageContext,
             // Drives per-visit paywall_viewed / paywall_close: this page is the current workflow step.
-            isActiveWorkflowPage: isActive
+            isActiveWorkflowPage: isActive,
+            workflowId: self.context.workflow.id,
+            stepId: page.stepId
         )
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
         .environment(\.workflowTriggerAction, { componentId in
