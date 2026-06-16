@@ -50,10 +50,7 @@ class PurchaseCompletedHandlerTests: TestCase {
     }
 
     func testOnPurchaseCompletedWithCancellation() throws {
-        let handler: PurchaseHandler = .cancelling(
-            stubbedOfferings: Self.stubbedOfferings,
-            stubbedWorkflow: Self.stubbedWorkflow
-        )
+        let handler: PurchaseHandler = .cancelling()
 
         var customerInfo: CustomerInfo?
         var purchased = false
@@ -123,10 +120,7 @@ class PurchaseCompletedHandlerTests: TestCase {
     }
 
     func testOnPurchaseCancelled() throws {
-        let handler: PurchaseHandler = .cancelling(
-            stubbedOfferings: Self.stubbedOfferings,
-            stubbedWorkflow: Self.stubbedWorkflow
-        )
+        let handler: PurchaseHandler = .cancelling()
 
         var completed = false
         var cancelled = false
@@ -152,10 +146,7 @@ class PurchaseCompletedHandlerTests: TestCase {
     }
 
     func testOnPurchaseCancelledIsCalledForConsecutiveCancellations() throws {
-        let handler: PurchaseHandler = .cancelling(
-            stubbedOfferings: Self.stubbedOfferings,
-            stubbedWorkflow: Self.stubbedWorkflow
-        )
+        let handler: PurchaseHandler = .cancelling()
         var cancellationCount = 0
 
         let dispose = try PaywallView(
@@ -297,10 +288,7 @@ class PurchaseCompletedHandlerTests: TestCase {
     }
 
     func testOnPurchaseCompletedInvokedBeforeRequestedDismissal() throws {
-        let handler: PurchaseHandler = .mock(
-            stubbedOfferings: Self.stubbedOfferings,
-            stubbedWorkflow: Self.stubbedWorkflow
-        )
+        let handler: PurchaseHandler = .mock()
         var callbackOrder: [String] = []
 
         let dispose = try PaywallView(
@@ -326,17 +314,11 @@ class PurchaseCompletedHandlerTests: TestCase {
         expect(callbackOrder).toEventually(equal(["onPurchaseCompleted", "onRequestedDismissal"]))
     }
 
-    private static let purchaseHandler: PurchaseHandler =
-        .mock(stubbedOfferings: stubbedOfferings, stubbedWorkflow: stubbedWorkflow)
-    private static let failingHandler: PurchaseHandler =
-        .failing(failureError, stubbedOfferings: stubbedOfferings, stubbedWorkflow: stubbedWorkflow)
+    private static let purchaseHandler: PurchaseHandler = .mock()
+    private static let failingHandler: PurchaseHandler = .failing(failureError)
     private static let offering = TestData.offeringWithNoIntroOffer
     private static let package = TestData.annualPackage
     private static let failureError: Error = ErrorCode.storeProblemError
-    // The deployed backend wraps every offering in a workflow, so the mock must too or the paywall
-    // never renders (and these purchase/restore callbacks never fire).
-    private static let stubbedOfferings = DefaultWorkflowStubData.offerings(containing: offering)
-    private static let stubbedWorkflow = DefaultWorkflowStubData.workflow(wrapping: offering)
 
 }
 
