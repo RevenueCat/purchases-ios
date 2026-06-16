@@ -628,7 +628,7 @@ extension AdEvent {
 
         internal var id: ID
         internal var date: Date
-        internal var captureMethod: AdEventCaptureMethod
+        internal var captureMethod: AdEventCaptureMethod?
 
         internal init(
             id: ID = .init(),
@@ -656,9 +656,10 @@ extension AdEvent.CreationData: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(AdEvent.ID.self, forKey: .id)
         self.date = try container.decode(Date.self, forKey: .date)
-        // Events serialized before `capture_method` existed are all manual reports, so default accordingly.
-        self.captureMethod = try container.decodeIfPresent(AdEventCaptureMethod.self,
-                                                           forKey: .captureMethod) ?? .manual
+        // Events serialized before `capture_method` existed have indeterminate provenance (the adapter
+        // routes through the same public API as manual reports), so leave it unset and let the backend
+        // default it to `unknown` rather than guessing.
+        self.captureMethod = try container.decodeIfPresent(AdEventCaptureMethod.self, forKey: .captureMethod)
     }
 
 }

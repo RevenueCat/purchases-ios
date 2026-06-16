@@ -294,19 +294,25 @@ class AdFeatureEventsRequestTests: TestCase {
         expect(requestEvent.captureMethod) == "adapter"
     }
 
-    func testCaptureMethodDefaultsToManualWhenAbsentFromStoredEvent() throws {
+    func testCaptureMethodIsOmittedForLegacyStoredEvent() throws {
         let event = AdEvent.displayed(Self.eventCreationData, Self.eventData)
         let storedEvent = try Self.createStoredAdEvent(from: event)
 
-        // Simulate an event serialized before `capture_method` existed.
+        // Simulate an event serialized before `capture_method` existed. Its provenance is indeterminate,
+        // so it must stay unset and be omitted from the request (the backend then defaults it to `unknown`).
         let legacyEncodedEvent = storedEvent.encodedEvent
             .replacingOccurrences(of: "\"capture_method\":\"manual\",", with: "")
         expect(legacyEncodedEvent).toNot(contain("capture_method"))
 
         let jsonData = try XCTUnwrap(legacyEncodedEvent.data(using: .utf8))
         let decodedEvent = try JSONDecoder.default.decode(AdEvent.self, from: jsonData)
+        expect(decodedEvent.creationData.captureMethod).to(beNil())
 
-        expect(decodedEvent.creationData.captureMethod) == .manual
+        let storedLegacyEvent = try XCTUnwrap(StoredAdEvent(event: decodedEvent,
+                                                            userID: Self.userID,
+                                                            appSessionID: Self.appSessionID))
+        let requestEvent = try XCTUnwrap(AdEventsRequest.AdEventRequest(storedEvent: storedLegacyEvent))
+        expect(requestEvent.captureMethod).to(beNil())
     }
 
     // MARK: -
