@@ -279,6 +279,36 @@ class AdFeatureEventsRequestTests: TestCase {
             .to(equal(dateWithMilliseconds.timeIntervalSince1970))
     }
 
+    // MARK: - Capture method
+
+    func testAdapterCaptureMethodIsSerialized() throws {
+        let creationData = AdEvent.CreationData(
+            id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
+            date: .init(timeIntervalSince1970: 1694029328),
+            captureMethod: .adapter
+        )
+        let event = AdEvent.displayed(creationData, Self.eventData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent = try XCTUnwrap(AdEventsRequest.AdEventRequest(storedEvent: storedEvent))
+
+        expect(requestEvent.captureMethod) == "adapter"
+    }
+
+    func testCaptureMethodDefaultsToManualWhenAbsentFromStoredEvent() throws {
+        let event = AdEvent.displayed(Self.eventCreationData, Self.eventData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+
+        // Simulate an event serialized before `capture_method` existed.
+        let legacyEncodedEvent = storedEvent.encodedEvent
+            .replacingOccurrences(of: "\"capture_method\":\"manual\",", with: "")
+        expect(legacyEncodedEvent).toNot(contain("capture_method"))
+
+        let jsonData = try XCTUnwrap(legacyEncodedEvent.data(using: .utf8))
+        let decodedEvent = try JSONDecoder.default.decode(AdEvent.self, from: jsonData)
+
+        expect(decodedEvent.creationData.captureMethod) == .manual
+    }
+
     // MARK: -
 
 }

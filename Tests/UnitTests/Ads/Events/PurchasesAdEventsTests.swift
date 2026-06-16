@@ -276,4 +276,59 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.failureReason) == .backendError
     }
 
+    // MARK: - Capture method
+
+    func testPublicTrackingAPIStampsManualCaptureMethod() async throws {
+        let displayedData = AdDisplayed(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .rewarded,
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        self.purchases.adTracker.trackAdDisplayed(displayedData)
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
+        expect(trackedEvents.first?.creationData.captureMethod) == .manual
+    }
+
+    func testAdapterEntryPointStampsAdapterCaptureMethod() async throws {
+        let displayedData = AdDisplayed(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        self.purchases.adTracker.trackAdDisplayed(displayedData, captureMethod: .adapter)
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
+        expect(trackedEvents.first?.creationData.captureMethod) == .adapter
+    }
+
+    func testRewardTrackingDefaultsToAdapterCaptureMethod() async throws {
+        let data = AdRewardVerified(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            reward: .virtualCurrency(code: "GOLD", amount: 100)
+        )
+
+        self.purchases.adTracker.trackAdRewardVerified(data)
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
+        expect(trackedEvents.first?.creationData.captureMethod) == .adapter
+    }
+
 }
