@@ -67,15 +67,28 @@ struct VideoPlayerView: View {
         )
         .allowsHitTesting(showControls)
 #elseif canImport(UIKit)
-        VideoPlayerUIView(
-            videoURL: videoURL,
-            shouldAutoPlay: shouldAutoPlay && !reduceMotion,
-            contentMode: contentMode,
-            loopVideo: loopVideo,
-            showControls: showControls,
-            muteAudio: muteAudio
-        )
-        .allowsHitTesting(showControls)
+        if showControls {
+            // Controls require AVPlayerViewController for the playback UI.
+            VideoPlayerUIView(
+                videoURL: videoURL,
+                shouldAutoPlay: shouldAutoPlay && !reduceMotion,
+                contentMode: contentMode,
+                loopVideo: loopVideo,
+                muteAudio: muteAudio
+            )
+            .allowsHitTesting(true)
+        } else {
+            // No controls (e.g. backgrounds): render via AVPlayerLayer to avoid AVKit's internal
+            // AVPlayerController, whose KVO observers crash when fed an AVPlayerLooper-driven queue player.
+            VideoPlayerLayerView(
+                videoURL: videoURL,
+                shouldAutoPlay: shouldAutoPlay && !reduceMotion,
+                contentMode: contentMode,
+                loopVideo: loopVideo,
+                muteAudio: muteAudio
+            )
+            .allowsHitTesting(false)
+        }
 #endif
     }
 
@@ -123,12 +136,25 @@ struct VideoPlayerView: View {
             }
         }
 
+        #if os(watchOS)
+        // Prefer the modern class-scoped notification name, but fall back to the legacy constant on
+        // older compilers/SDKs (pre-Swift 5.9 / Xcode 15) where
+        // `AVPlayerItem.didPlayToEndTimeNotification` doesn't exist.
+        private var didPlayToEndTimeNotification: NSNotification.Name {
+            #if compiler(>=5.9)
+            return AVPlayerItem.didPlayToEndTimeNotification
+            #else
+            return NSNotification.Name.AVPlayerItemDidPlayToEndTime
+            #endif
+        }
+        #endif
+
         var body: some View {
             VideoPlayer(player: player)
             #if os(watchOS)
                 // This is less reliable than using the AVPlayerLooper.
                 // Unfortunately, that is not available on watchOS
-                .onReceive(notificationCenter.publisher(for: AVPlayerItem.didPlayToEndTimeNotification)) { _ in
+                .onReceive(notificationCenter.publisher(for: didPlayToEndTimeNotification)) { _ in
                     if loopVideo {
                         player.seek(to: .zero)
                         player.play()
