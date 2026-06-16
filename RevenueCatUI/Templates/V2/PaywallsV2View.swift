@@ -402,8 +402,12 @@ struct PaywallsV2View: View {
     }
 
     private func firePaywallImpression(sessionID: PaywallEvent.SessionID? = nil) {
-        // A workflow step the backend did not classify as a paywall reports no paywall events.
-        guard self.reportsPaywallImpression else { return }
+        // A workflow step the backend did not classify as a paywall reports no paywall events. Clear
+        // any active session so a purchase here is unattributed, not charged to the prior paywall step.
+        guard self.reportsPaywallImpression else {
+            self.purchaseHandler.clearActivePaywallSession()
+            return
+        }
 
         let forDefaultPaywall: Bool
         if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {

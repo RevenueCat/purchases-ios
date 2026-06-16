@@ -700,6 +700,13 @@ extension PurchaseHandler {
         self.paywallEventTracker.trackPaywallImpression(eventData)
     }
 
+    /// Clears the active paywall session (without discarding its tracked events) so subsequent purchase
+    /// events are unattributed until the next impression. Used when a non-paywall workflow step becomes
+    /// current: it reports no impression, and a purchase there must not attribute to the prior step.
+    func clearActivePaywallSession() {
+        self.activePaywallSessionID = nil
+    }
+
     func componentInteractionLogger(sessionID: PaywallEvent.SessionID) -> ComponentInteractionLogger {
         return self.paywallEventTracker.componentInteractionLogger(sessionID: sessionID)
     }
