@@ -157,6 +157,8 @@
 		1EFA95152CDBAB7500CA5951 /* MockWebPurchaseRedemptionHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EFA95142CDBAB7500CA5951 /* MockWebPurchaseRedemptionHelper.swift */; };
 		1EFA95162CDBAB7500CA5951 /* MockWebPurchaseRedemptionHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EFA95142CDBAB7500CA5951 /* MockWebPurchaseRedemptionHelper.swift */; };
 		2A4BD4BADFA187EA13B7D6CD /* Operators.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7BA50D5AA17E5D4A5D3E99D /* Operators.swift */; };
+		2A5E77D12F10B3B500BC5900 /* RevocationReason.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A5E77D02F10B3B500BC5900 /* RevocationReason.swift */; };
+		2A5E77D22F10B3B500BC5900 /* RevocationReason.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A5E77D02F10B3B500BC5900 /* RevocationReason.swift */; };
 		2B699E6661ECFB93B146A2D9 /* SynchronizedUserDefaultsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B0EAB50136613F69FAA3BB /* SynchronizedUserDefaultsTests.swift */; };
 		2C08B2E92CD40DBF0024857B /* ButtonComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C08B2E82CD40DBF0024857B /* ButtonComponentTests.swift */; };
 		2C08B3072CD55D660024857B /* FlexHStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C08B3062CD55D590024857B /* FlexHStack.swift */; };
@@ -2084,6 +2086,7 @@
 		53AAD34E2E09856400605F51 /* PaymentAuthorizationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentAuthorizationProvider.swift; sourceTree = "<group>"; };
 		53E33BBA2E095B8900287158 /* SDKHealthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDKHealthManager.swift; sourceTree = "<group>"; };
 		55FCA85B959807F2D3DD175A /* TransactionReason.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionReason.swift; sourceTree = "<group>"; };
+		2A5E77D02F10B3B500BC5900 /* RevocationReason.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RevocationReason.swift; sourceTree = "<group>"; };
 		57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntitlementMappingDecodingTests.swift; sourceTree = "<group>"; };
 		57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetProductEntitlementMappingOperation.swift; sourceTree = "<group>"; };
 		57045B3B29C51AF7001A5417 /* ProductEntitlementMappingCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntitlementMappingCallback.swift; sourceTree = "<group>"; };
@@ -3465,6 +3468,7 @@
 				2D1015DD275A57FC0086173F /* SubscriptionPeriod.swift */,
 				4F174F462B07EA7E00FE538E /* StorefrontProvider.swift */,
 				FDC892FD2CD157F1000AEB9F /* WinBackOffer.swift */,
+				2A5E77D02F10B3B500BC5900 /* RevocationReason.swift */,
 				55FCA85B959807F2D3DD175A /* TransactionReason.swift */,
 			);
 			path = StoreKitAbstractions;
@@ -7183,6 +7187,7 @@
 				75ADC06C2E437D4900210ECA /* SimulatedStoreProductsManager.swift in Sources */,
 				FE5151005C0000000000A001 /* SimulatedStoreTransactionFetcher.swift in Sources */,
 				75ADC06D2E437D4900210ECA /* SimulatedStoreTransaction.swift in Sources */,
+				2A5E77D22F10B3B500BC5900 /* RevocationReason.swift in Sources */,
 				9094B41C2E96A9A70094AD5F /* AdEvent.swift in Sources */,
 				AD5000000000000000ADAD04 /* AdRewardEvents.swift in Sources */,
 				9094B41F2E96A9A70094AD5F /* AdHTTPRequestPath.swift in Sources */,
@@ -7394,6 +7399,7 @@
 				03C06FC72D46742D00600693 /* PaywallCarouselComponent.swift in Sources */,
 				DDD45A15A641C0FF0BEF6178 /* PaywallCountdownComponent.swift in Sources */,
 				51978277F6FF8880DDF3028D /* ExitOffer.swift in Sources */,
+				2A5E77D12F10B3B500BC5900 /* RevocationReason.swift in Sources */,
 				909114C714204DFB8C4F3F72 /* TransactionReason.swift in Sources */,
 				461DF6CBD6A73F7081683DC4 /* WorkflowsCache.swift in Sources */,
 			);
