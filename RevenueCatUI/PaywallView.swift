@@ -128,6 +128,7 @@ public struct PaywallView: View {
         displayCloseButton: Bool = false,
         useDraftPaywall: Bool,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        simulatePromoEligible: Bool = false,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
@@ -140,7 +141,8 @@ public struct PaywallView: View {
                 displayCloseButton: displayCloseButton,
                 useDraftPaywall: useDraftPaywall,
                 introEligibility: introEligibility,
-                purchaseHandler: purchaseHandler
+                purchaseHandler: purchaseHandler,
+                promoOfferCache: simulatePromoEligible ? PaywallPromoOfferCache(simulateEligible: true) : nil
             )
         )
     }

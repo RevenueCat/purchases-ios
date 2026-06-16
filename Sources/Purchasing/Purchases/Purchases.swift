@@ -2324,6 +2324,11 @@ extension Purchases {
         return self.systemInfo.preferredLocales
     }
 
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public var isUIPreviewMode: Bool {
+        return self.systemInfo.dangerousSettings.uiPreviewMode
+    }
+
     // `preferredLocales` will always include the preferred locale override if set, so this
     // property is only useful for reading the override value
     // swiftlint:disable missing_docs

@@ -161,3 +161,5 @@ else
 
   fail("Purchases iOS checks failed — see the comment above for details.") unless all_failures.empty?
 end
+
+fail_on_generated_edits(["Sources/Generated/"])
