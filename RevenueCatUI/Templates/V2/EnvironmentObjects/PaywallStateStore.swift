@@ -222,4 +222,41 @@ extension EnvironmentValues {
 
 }
 
+// MARK: - State snapshot environment values
+
+/// The presentation root injects the state store's *current values* and *declared defaults* as
+/// plain environment values, recomputed whenever the store publishes a change (the root observes
+/// the store via `@StateObject`). Override-resolving component views read these to feed
+/// `ConditionContext`, and — because reading an environment value subscribes the view to it —
+/// re-resolve their overrides whenever a state update changes the snapshot. This is the
+/// "redraw via environment value" path: the object itself is not observed by the leaf views
+/// (it is exposed only as the optional `paywallStateStore` key), so unrelated state writes never
+/// invalidate views that don't read the values.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct PaywallStateValuesKey: EnvironmentKey {
+    static let defaultValue: [String: PaywallComponent.ConditionValue] = [:]
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct PaywallStateDefaultsKey: EnvironmentKey {
+    static let defaultValue: [String: PaywallComponent.ConditionValue] = [:]
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+
+    /// Current values of declared state keys for the presentation session.
+    var paywallStateValues: [String: PaywallComponent.ConditionValue] {
+        get { self[PaywallStateValuesKey.self] }
+        set { self[PaywallStateValuesKey.self] = newValue }
+    }
+
+    /// Declared defaults for state keys, used when a key has no value in the current snapshot.
+    var paywallStateDefaults: [String: PaywallComponent.ConditionValue] {
+        get { self[PaywallStateDefaultsKey.self] }
+        set { self[PaywallStateDefaultsKey.self] = newValue }
+    }
+
+}
+
 #endif

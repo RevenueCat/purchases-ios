@@ -223,7 +223,15 @@ struct PaywallsV2View: View {
         )
         // Standalone paywalls own their presentation session's state store; inside a workflow the
         // store injected by WorkflowPaywallView wins so state survives screen navigation.
-        .environment(\.paywallStateStore, self.inheritedStateStore ?? self.ownStateStore)
+        .environment(\.paywallStateStore, self.activeStateStore)
+        .environment(\.paywallStateValues, self.activeStateStore.values)
+        .environment(\.paywallStateDefaults, self.activeStateStore.defaults)
+    }
+
+    /// The state store backing this presentation: the workflow-injected store when present
+    /// (so values survive screen navigation), otherwise this paywall's own store.
+    private var activeStateStore: PaywallStateStore {
+        self.inheritedStateStore ?? self.ownStateStore
     }
 
     private func loadedPaywallView(paywallState: PaywallState) -> some View {
