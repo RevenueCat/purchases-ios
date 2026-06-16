@@ -68,11 +68,19 @@ extension RevocationReason {
     ///
     /// Returns `nil` for unrecognized reasons.
     convenience init?(sk2RevocationReason reason: SK2Transaction.RevocationReason) {
+        guard let revocationReason = Self.from(sk2RevocationReason: reason) else {
+            return nil
+        }
+
+        self.init(rawValue: revocationReason.rawValue)
+    }
+
+    static func from(sk2RevocationReason reason: SK2Transaction.RevocationReason) -> RevocationReason? {
         switch reason {
         case .developerIssue:
-            self.init(rawValue: Self.developerIssue.rawValue)
+            return Self.developerIssue
         case .other:
-            self.init(rawValue: Self.other.rawValue)
+            return Self.other
         default:
             Logger.appleWarning(
                 Strings.storeKit.sk2_unknown_revocation_reason(String(describing: reason))

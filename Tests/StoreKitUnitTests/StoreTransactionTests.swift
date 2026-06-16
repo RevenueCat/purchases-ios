@@ -119,11 +119,15 @@ class StoreTransactionTests: StoreKitConfigTestCase {
     func testRevocationReasonMapsKnownSK2Reasons() throws {
         expect(RevocationReason(sk2RevocationReason: .developerIssue)).to(equal(.developerIssue))
         expect(RevocationReason(sk2RevocationReason: .other)).to(equal(.other))
+
+        expect(RevocationReason.from(sk2RevocationReason: .developerIssue)) === .developerIssue
+        expect(RevocationReason.from(sk2RevocationReason: .other)) === .other
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testRevocationReasonReturnsNilForUnknownSK2Reason() throws {
         expect(RevocationReason(sk2RevocationReason: .init(rawValue: 12345))).to(beNil())
+        expect(RevocationReason.from(sk2RevocationReason: .init(rawValue: 12345))).to(beNil())
     }
 
     func testRevocationReasonValues() {
