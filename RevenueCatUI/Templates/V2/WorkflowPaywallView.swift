@@ -431,7 +431,9 @@ struct WorkflowPaywallView: View {
             introEligibilityContext: page.introOfferEligibilityContext,
             selectedPackageContextOverride: page.packageContext,
             // Drives per-visit paywall_viewed / paywall_close: this page is the current workflow step.
-            isActiveWorkflowPage: isActive
+            isActiveWorkflowPage: isActive,
+            // Gates impression reporting: only steps tagged as paywalls report a paywall impression.
+            workflowScreenType: page.screenType
         )
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
         .environment(\.workflowTriggerAction, { componentId in
@@ -656,6 +658,7 @@ struct WorkflowPaywallView: View {
         return .init(
             stepId: stepId,
             content: .init(paywallComponents: paywallComponents, offering: offering),
+            screenType: step.stepScreenType,
             headerComponent: screen.componentsConfig.base.header,
             showCloseButton: showCloseButton,
             introOfferEligibilityContext: .init(introEligibilityChecker: introEligibilityChecker),
@@ -756,6 +759,9 @@ private struct RenderedPage: Identifiable {
     let id = UUID()
     let stepId: String
     let content: CurrentStepContent
+    /// The step's `screen_type` classification (`nil` when the backend did not tag it). Drives whether
+    /// this page reports a paywall impression. See `PaywallsV2View.shouldReportPaywallImpression`.
+    let screenType: [String]?
     let headerComponent: PaywallComponent.HeaderComponent?
     let showCloseButton: Bool
     /// Page-scoped so late async eligibility checks cannot overwrite another workflow step.

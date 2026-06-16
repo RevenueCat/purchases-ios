@@ -141,4 +141,60 @@ final class PromoEligibilityPackageInfosTests: TestCase {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+final class ShouldReportPaywallImpressionTests: TestCase {
+
+    func testStandalonePaywallAlwaysReports() {
+        // Standalone paywalls have no workflow screen_type and must keep reporting impressions.
+        expect(PaywallsV2View.shouldReportPaywallImpression(
+            isActiveWorkflowPage: nil,
+            workflowScreenType: nil
+        )) == true
+        expect(PaywallsV2View.shouldReportPaywallImpression(
+            isActiveWorkflowPage: nil,
+            workflowScreenType: ["survey"]
+        )) == true
+    }
+
+    func testWorkflowPaywallStepReports() {
+        expect(PaywallsV2View.shouldReportPaywallImpression(
+            isActiveWorkflowPage: true,
+            workflowScreenType: [WorkflowScreenType.paywall]
+        )) == true
+    }
+
+    func testWorkflowUntaggedStepReportsToPreserveBehavior() {
+        // Older/untagged workflows (nil screen_type) must keep firing impressions so a backend that
+        // has not rolled out screen analytics is not silently muted.
+        expect(PaywallsV2View.shouldReportPaywallImpression(
+            isActiveWorkflowPage: true,
+            workflowScreenType: nil
+        )) == true
+    }
+
+    func testWorkflowStepTaggedNonPaywallDoesNotReport() {
+        expect(PaywallsV2View.shouldReportPaywallImpression(
+            isActiveWorkflowPage: true,
+            workflowScreenType: []
+        )) == false
+        expect(PaywallsV2View.shouldReportPaywallImpression(
+            isActiveWorkflowPage: true,
+            workflowScreenType: ["survey"]
+        )) == false
+    }
+
+    func testInactiveWorkflowPageGatedBySameRule() {
+        // `isActiveWorkflowPage == false` is still a workflow page; the screen_type rule applies.
+        expect(PaywallsV2View.shouldReportPaywallImpression(
+            isActiveWorkflowPage: false,
+            workflowScreenType: [WorkflowScreenType.paywall]
+        )) == true
+        expect(PaywallsV2View.shouldReportPaywallImpression(
+            isActiveWorkflowPage: false,
+            workflowScreenType: ["survey"]
+        )) == false
+    }
+
+}
+
 #endif
