@@ -32,15 +32,14 @@ enum PredicateConformanceRunner {
     static func run(_ fixture: PredicateConformanceFixtureCase) throws {
         if fixture.expectedWarnings != nil || fixture.expectedLogs != nil {
             let logger = CapturingLogger()
-            let previousLogger = RulesEngine.logger
-            RulesEngine.setLogger(logger)
-            defer { RulesEngine.setLogger(previousLogger) }
-            try assertExpectedOutcome(fixture: fixture)
-            if let expectedWarnings = fixture.expectedWarnings {
-                assertWarnings(logger: logger, expected: expectedWarnings, fixtureID: fixture.id)
-            }
-            if let expectedLogs = fixture.expectedLogs {
-                assertLogs(logger: logger, expected: expectedLogs, fixtureID: fixture.id)
+            try RulesEngine.$scopedLogger.withValue(logger) {
+                try assertExpectedOutcome(fixture: fixture)
+                if let expectedWarnings = fixture.expectedWarnings {
+                    assertWarnings(logger: logger, expected: expectedWarnings, fixtureID: fixture.id)
+                }
+                if let expectedLogs = fixture.expectedLogs {
+                    assertLogs(logger: logger, expected: expectedLogs, fixtureID: fixture.id)
+                }
             }
         } else {
             try assertExpectedOutcome(fixture: fixture)
@@ -65,7 +64,7 @@ enum PredicateConformanceRunner {
                 Issue.record(
                     "Fixture \(fixture.id) expected error \(expectedError.kind) but succeeded"
                 )
-            } catch let error as RuleError {
+            } catch let error as RulesEngine.EvaluationError {
                 guard matchesExpected(error: error, expected: expectedError) else {
                     Issue.record(
                         "Fixture \(fixture.id) threw \(error), expected \(expectedError.kind)"
@@ -80,7 +79,7 @@ enum PredicateConformanceRunner {
         }
     }
 
-    private static func matchesExpected(error: RuleError, expected: ExpectedError) -> Bool {
+    private static func matchesExpected(error: RulesEngine.EvaluationError, expected: ExpectedError) -> Bool {
         switch expected.kind {
         case "typeMismatch":
             if case .typeMismatch = error { return true }

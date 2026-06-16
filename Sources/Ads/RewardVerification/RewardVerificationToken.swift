@@ -25,7 +25,7 @@ import Foundation
     public let appUserID: String
 
     /// Creates a token for reward verification
-    @_spi(Experimental) public init(
+    @_spi(Internal) public init(
         customData: String,
         clientTransactionID: String,
         appUserID: String
