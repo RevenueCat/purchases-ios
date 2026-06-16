@@ -655,4 +655,39 @@ import Foundation
 
     }
 
+    struct GlassEffect: PaywallComponentBase {
+        public static var clear: Self { .init(effect: .clear, tint: nil, interactive: nil) }
+        public static var glassy: Self { .init(effect: .glassy, tint: nil, interactive: nil) }
+
+        public static func clear(tint: ColorScheme? = nil, interactive: Bool? = nil) -> Self {
+            .init(effect: .clear, tint: tint, interactive: interactive)
+        }
+
+        public static func glassy(tint: ColorScheme? = nil, interactive: Bool? = nil) -> Self {
+            .init(effect: .glassy, tint: tint, interactive: interactive)
+        }
+
+        // swiftlint:disable:next nesting
+        @_spi(Internal) public enum Effect: String, PaywallComponentBase {
+            case clear
+            case glassy
+
+            public init(from decoder: any Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                let rawValue = try? container.decode(String.self)
+                self = Effect(rawValue: rawValue ?? "") ?? .glassy
+            }
+        }
+
+        public let effect: Effect
+        public let tint: ColorScheme?
+        public let interactive: Bool?
+
+        public init(effect: Effect, tint: ColorScheme?, interactive: Bool?) {
+            self.effect = effect
+            self.tint = tint
+            self.interactive = interactive
+        }
+    }
+
 }

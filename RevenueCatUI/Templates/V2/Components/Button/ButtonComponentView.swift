@@ -112,6 +112,7 @@ struct ButtonComponentView: View {
                 )
             }
             .withTransition(viewModel.component.transition)
+            .withGlassEffect(from: viewModel.stackViewModel)
             .disabled(self.shouldBeDisabled)
             .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
             .offset(x: self.workflowRenderingContext.isHeader ? -self.headerPageOffset : 0)
@@ -342,7 +343,9 @@ struct ButtonComponentView_Previews: PreviewProvider {
                                     )
                                 )
                             ],
-                            backgroundColor: nil
+                            backgroundColor: nil,
+                            shape: .pill,
+                            glassEffect: .glassy
                         )
                     ),
                     localizationProvider: localizationProvider,
