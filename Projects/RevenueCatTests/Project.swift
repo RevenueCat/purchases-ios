@@ -60,9 +60,9 @@ let project = Project(
             bundleId: "com.revenuecat.StoreKitUnitTestsHostApp",
             deploymentTargets: .multiplatform(
                 iOS: "13.0",
-                macOS: "10.15",
-                watchOS: "6.2",
-                tvOS: "13.0",
+                macOS: "11.0",
+                watchOS: "7.0",
+                tvOS: "14.0",
                 visionOS: "1.0"
             ),
             infoPlist: .file(path: "../../Tests/UnitTestsHostApp/Info.plist"),
@@ -264,6 +264,22 @@ let project = Project(
 
     ],
     schemes: [
+
+        .scheme(
+            name: "RevenueCatTests",
+            shared: true,
+            buildAction: .buildAction(targets: ["UnitTests"]),
+            testAction: .testPlans([
+                .relativeToRoot("Tests/TestPlans/CI-AllTests.xctestplan"),
+                .relativeToRoot("Tests/TestPlans/CI-RevenueCat.xctestplan"),
+                .relativeToRoot("Tests/TestPlans/CI-RevenueCat-Snapshots.xctestplan"),
+                .relativeToRoot("Tests/TestPlans/CI-Snapshots.xctestplan")
+            ]),
+            runAction: .runAction(configuration: "Debug"),
+            archiveAction: .archiveAction(configuration: "Release"),
+            profileAction: .profileAction(configuration: "Release"),
+            analyzeAction: .analyzeAction(configuration: "Debug")
+        ),
 
         .scheme(
             name: "BackendIntegrationTests",

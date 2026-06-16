@@ -753,7 +753,8 @@ platform :ios do
       step_name: "scan - iPhone",
       device: ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)",
       ensure_devices_found: true,
-      scheme: "RevenueCat",
+      workspace: 'RevenueCat-Tuist.xcworkspace',
+      scheme: "RevenueCatTests",
       prelaunch_simulator: true,
       output_types: 'junit',
       result_bundle: true,
@@ -778,7 +779,8 @@ platform :ios do
       step_name: "scan - Apple TV",
       device: ENV['SCAN_DEVICE'] || "Apple TV",
       ensure_devices_found: true,
-      scheme: "RevenueCat",
+      workspace: 'RevenueCat-Tuist.xcworkspace',
+      scheme: "RevenueCatTests",
       prelaunch_simulator: true,
       output_types: 'junit',
       result_bundle: true,
@@ -803,7 +805,8 @@ platform :ios do
       step_name: "scan - watchOS",
       device: ENV['SCAN_DEVICE'] || "Apple Watch Series 10 (46mm)",
       ensure_devices_found: true,
-      scheme: "RevenueCat",
+      workspace: 'RevenueCat-Tuist.xcworkspace',
+      scheme: "RevenueCatTests",
       prelaunch_simulator: true,
       output_types: 'junit',
       result_bundle: true,
@@ -2578,22 +2581,19 @@ platform :mac do
       test_plan = "CI-RevenueCat"
     end
 
-    begin
-      xcodebuild(
-        workspace: 'RevenueCat.xcworkspace',
-        scheme: 'RevenueCat',
-        destination: "platform=macOS,arch=arm64",
-        output_style: :basic,
-        result_bundle_path: 'fastlane/test_output/xctest/macos/revenuecat.xcresult',
-        report_formats: [:junit],
-        report_path: 'fastlane/test_output/xctest/macos/revenuecat/tests.xml',
-        test: true,
-        xcargs: "-testPlan #{test_plan} CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
-      )
-    rescue => e
-      # Equivalent to `fail_build: !generate_snapshots`
-      raise e if !generate_snapshots
-    end
+    scan(
+      step_name: "scan - macOS",
+      destination: "platform=macOS,arch=arm64",
+      workspace: 'RevenueCat-Tuist.xcworkspace',
+      scheme: "RevenueCatTests",
+      output_types: 'junit',
+      result_bundle: true,
+      testplan: test_plan,
+      configuration: 'Debug',
+      output_directory: "fastlane/test_output/xctest/macos",
+      number_of_retries: generate_snapshots ? 0 : 5,
+      fail_build: !generate_snapshots
+    )
   end
 
 end

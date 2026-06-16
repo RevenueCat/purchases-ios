@@ -937,6 +937,8 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - tuist-generate-workspace:
+          include_test_dependencies: true
       - run:
           name: Run tvOS tests
           command: bundle exec fastlane test_tvos
@@ -988,6 +990,8 @@ jobs:
           name: Validate Package.swift
           command: swift package describe
       - install-dependencies
+      - tuist-generate-workspace:
+          include_test_dependencies: true
 
       # === SPM Release Build (Xcode 26) ===
       - unless:
@@ -1061,6 +1065,8 @@ jobs:
           name: Validate Package.swift
           command: swift package describe
       - install-dependencies
+      - tuist-generate-workspace:
+          include_test_dependencies: true
 
       # === SPM Release Build (Xcode 16) ===
       - unless:
@@ -1146,6 +1152,8 @@ jobs:
           install_mint: true
       - install-xcbeautify-for-xcode15
       - update-spm-installation-commit
+      - tuist-generate-workspace:
+          include_test_dependencies: true
 
       # === SPM Release Build (Xcode 15) ===
       - unless:
@@ -1193,6 +1201,8 @@ jobs:
           install_xcodes: true
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
+      - tuist-generate-workspace:
+          include_test_dependencies: true
 
       # === SPM Release Build (Xcode 14) ===
       - unless:
@@ -1297,6 +1307,8 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - tuist-generate-workspace:
+          include_test_dependencies: true
       - run:
           name: Run tests
           command: bundle exec fastlane test_watchos
