@@ -265,7 +265,6 @@ platform :ios do
       )
     end
 
-    # Remove screenshots for paywalls we no longer render, so stale or renamed entries don't linger.
     remove_stale_template_screenshots(
       target_repository_path: target_repository_path,
       produced_offering_ids_by_platform: produced_offering_ids_by_platform
@@ -312,21 +311,20 @@ platform :ios do
        "--repo-name", "RevenueCat/purchases-ios",
        "#{output_dir}/images")
 
-    # Return the offering IDs produced for this platform, so the caller can prune stale screenshots.
+    # Return the offering IDs produced for this platform.
     produced_offering_ids
   end
 
-  # Removes screenshots (and now-empty directories) for paywalls that were not rendered in this run, so stale or
-  # renamed entries don't linger in the target repository. Only the platform files produced by this lane are pruned
-  # (ios.png and the mac-*.png variants), each against the offering IDs produced for that platform, so screenshots
-  # owned by other platforms (e.g. android.png) are never affected.
+  # Removes screenshots (and now-empty directories) for paywalls that were not rendered in this run. Only the
+  # platform files produced by this lane are pruned (ios.png and the mac-*.png variants), each against the
+  # offering IDs produced for that platform, so screenshots owned by other platforms (e.g. android.png) are
+  # never affected.
   private_lane :remove_stale_template_screenshots do |options|
     target_repository_path = options[:target_repository_path] || UI.user_error!("No target_repository_path provided")
     produced_offering_ids_by_platform = options[:produced_offering_ids_by_platform] || UI.user_error!("No produced_offering_ids_by_platform provided")
 
     templates_dir = "#{target_repository_path}/screenshots/templates"
     produced_offering_ids_by_platform.each do |platform, produced_offering_ids|
-      # Safety: never prune a platform if it produced nothing (e.g. a failed render), to avoid wiping its screenshots.
       if produced_offering_ids.empty?
         UI.important("No #{platform} screenshots were produced; skipping stale cleanup for it.")
         next
@@ -340,7 +338,7 @@ platform :ios do
       end
     end
 
-    # Remove any template directories that no longer contain any files (e.g. once every platform dropped a paywall).
+    # Remove any empty directories.
     Dir.glob("#{templates_dir}/*").each do |dir|
       next unless File.directory?(dir)
       Dir.rmdir(dir) if Dir.empty?(dir)
