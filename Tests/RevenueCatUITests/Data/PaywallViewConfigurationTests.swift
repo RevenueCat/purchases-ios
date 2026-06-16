@@ -19,24 +19,52 @@ import XCTest
 final class PaywallViewConfigurationTests: TestCase {
 
 #if !os(tvOS)
-    func testCachedInitialOfferingReturnsNilForAllContent() {
-        let cachedOffering = TestData.offeringWithNoIntroOffer
+    func testCachedInitialOfferingSeedsCallerPassedLegacyOffering() {
+        // Only a caller-passed `.offering` with a legacy (v1) paywall is seeded synchronously: it
+        // renders directly (matching the async resolvePaywallViewData gate on `offering.paywall ==
+        // nil`) without a workflow. Cache-backed `.defaultOffering` / `.offeringIdentifier` lookups
+        // defer to async so the offerings fetch can refresh a stale cache, so they return nil here
+        // even for a cached legacy offering.
+        let legacyOffering = TestData.offeringWithNoIntroOffer
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)
 
         purchases.cachedOfferings = Self.createOfferings(
-            [cachedOffering],
-            currentOfferingID: cachedOffering.identifier
+            [legacyOffering],
+            currentOfferingID: legacyOffering.identifier
         )
 
         expect(handler.cachedInitialOffering(
-            for: .offering(cachedOffering)
+            for: .offering(legacyOffering)
+        )?.identifier) == legacyOffering.identifier
+        expect(handler.cachedInitialOffering(
+            for: .defaultOffering
+        )).to(beNil())
+        expect(handler.cachedInitialOffering(
+            for: .offeringIdentifier(legacyOffering.identifier, presentedOfferingContext: nil)
+        )).to(beNil())
+    }
+
+    func testCachedInitialOfferingReturnsNilForWorkflowOffering() {
+        // A non-legacy offering (`paywall: nil`) needs a WorkflowContext the offering can't carry, so
+        // it isn't seeded here; returning nil defers to cachedInitialWorkflowContext / async resolve.
+        let workflowOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.cachedOfferings = Self.createOfferings(
+            [workflowOffering],
+            currentOfferingID: workflowOffering.identifier
+        )
+
+        expect(handler.cachedInitialOffering(
+            for: .offering(workflowOffering)
         )).to(beNil())
         expect(handler.cachedInitialOffering(
             for: .defaultOffering
         )).to(beNil())
         expect(handler.cachedInitialOffering(
-            for: .offeringIdentifier(cachedOffering.identifier, presentedOfferingContext: nil)
+            for: .offeringIdentifier(workflowOffering.identifier, presentedOfferingContext: nil)
         )).to(beNil())
     }
 
