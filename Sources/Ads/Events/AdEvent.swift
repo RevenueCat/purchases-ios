@@ -33,16 +33,14 @@ internal protocol AdImpressionEventData: AdEventData {
     var impressionId: String { get }
 }
 
-/// Identifies the mechanism that emitted an ad event.
-///
-/// The backend defaults missing/unrecognized values to `unknown` (pre-feature SDK versions send nothing),
-/// so the SDK only ever stamps the two values it can determine deterministically at the emit path.
+/// Identifies the mechanism that emitted an ad event. The SDK only ever emits these two values;
+/// pre-feature versions send nothing, which the backend treats as `unknown`.
 @_spi(Internal) public enum AdEventCaptureMethod: String, Codable, Sendable {
 
     /// Auto-captured by an official RevenueCat ad-network adapter.
     case adapter
 
-    /// Reported via the public `trackAd*` tracking API (native custom integrations and all hybrid SDKs).
+    /// Reported via the public `trackAd*` tracking API.
     case manual
 
 }

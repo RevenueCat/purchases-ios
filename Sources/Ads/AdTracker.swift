@@ -86,7 +86,7 @@ public final class AdTracker: NSObject {
         self.trackAdFailedToLoad(data, captureMethod: .manual)
     }
 
-    // swiftlint:disable:next missing_docs
+    /// Adapter entry point that stamps the event's `capture_method`.
     @_spi(Internal) public func trackAdFailedToLoad(_ data: AdFailedToLoad, captureMethod: AdEventCaptureMethod) {
         Task {
             let event = AdEvent.failedToLoad(.init(captureMethod: captureMethod), data)
@@ -117,7 +117,7 @@ public final class AdTracker: NSObject {
         self.trackAdLoaded(data, captureMethod: .manual)
     }
 
-    // swiftlint:disable:next missing_docs
+    /// Adapter entry point that stamps the event's `capture_method`.
     @_spi(Internal) public func trackAdLoaded(_ data: AdLoaded, captureMethod: AdEventCaptureMethod) {
         Task {
             let event = AdEvent.loaded(.init(captureMethod: captureMethod), data)
@@ -148,7 +148,7 @@ public final class AdTracker: NSObject {
         self.trackAdDisplayed(data, captureMethod: .manual)
     }
 
-    // swiftlint:disable:next missing_docs
+    /// Adapter entry point that stamps the event's `capture_method`.
     @_spi(Internal) public func trackAdDisplayed(_ data: AdDisplayed, captureMethod: AdEventCaptureMethod) {
         Task {
             let event = AdEvent.displayed(.init(captureMethod: captureMethod), data)
@@ -178,7 +178,7 @@ public final class AdTracker: NSObject {
         self.trackAdOpened(data, captureMethod: .manual)
     }
 
-    // swiftlint:disable:next missing_docs
+    /// Adapter entry point that stamps the event's `capture_method`.
     @_spi(Internal) public func trackAdOpened(_ data: AdOpened, captureMethod: AdEventCaptureMethod) {
         Task {
             let event = AdEvent.opened(.init(captureMethod: captureMethod), data)
@@ -212,7 +212,7 @@ public final class AdTracker: NSObject {
         self.trackAdRevenue(data, captureMethod: .manual)
     }
 
-    // swiftlint:disable:next missing_docs
+    /// Adapter entry point that stamps the event's `capture_method`.
     @_spi(Internal) public func trackAdRevenue(_ data: AdRevenue, captureMethod: AdEventCaptureMethod) {
         Task {
             let event = AdEvent.revenue(.init(captureMethod: captureMethod), data)
@@ -226,7 +226,7 @@ public final class AdTracker: NSObject {
      - Parameter data: The earned (unverified) reward event data
      */
     @_spi(Internal) public func trackAdRewardEarnedUnverified(_ data: AdRewardEarnedUnverified,
-                                                              captureMethod: AdEventCaptureMethod = .adapter) {
+                                                              captureMethod: AdEventCaptureMethod) {
         Task {
             let event = AdEvent.rewardEarnedUnverified(.init(captureMethod: captureMethod), data)
             await self.eventsManager?.track(adEvent: event)
@@ -239,7 +239,7 @@ public final class AdTracker: NSObject {
      - Parameter data: The verified reward event data
      */
     @_spi(Internal) public func trackAdRewardVerified(_ data: AdRewardVerified,
-                                                      captureMethod: AdEventCaptureMethod = .adapter) {
+                                                      captureMethod: AdEventCaptureMethod) {
         Task {
             let event = AdEvent.rewardVerified(.init(captureMethod: captureMethod), data)
             await self.eventsManager?.track(adEvent: event)
@@ -252,7 +252,7 @@ public final class AdTracker: NSObject {
      - Parameter data: The failed-to-verify reward event data
      */
     @_spi(Internal) public func trackAdRewardFailedToVerify(_ data: AdRewardFailedToVerify,
-                                                            captureMethod: AdEventCaptureMethod = .adapter) {
+                                                            captureMethod: AdEventCaptureMethod) {
         Task {
             let event = AdEvent.rewardFailedToVerify(.init(captureMethod: captureMethod), data)
             await self.eventsManager?.track(adEvent: event)

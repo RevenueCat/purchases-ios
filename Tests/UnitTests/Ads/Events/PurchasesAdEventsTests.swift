@@ -190,7 +190,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             rewardAmount: 10
         )
 
-        self.purchases.adTracker.trackAdRewardEarnedUnverified(data)
+        self.purchases.adTracker.trackAdRewardEarnedUnverified(data, captureMethod: .adapter)
 
         await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
 
@@ -223,7 +223,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             reward: .virtualCurrency(code: "GOLD", amount: 100)
         )
 
-        self.purchases.adTracker.trackAdRewardVerified(data)
+        self.purchases.adTracker.trackAdRewardVerified(data, captureMethod: .adapter)
 
         await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
 
@@ -256,7 +256,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             failureReason: .backendError
         )
 
-        self.purchases.adTracker.trackAdRewardFailedToVerify(data)
+        self.purchases.adTracker.trackAdRewardFailedToVerify(data, captureMethod: .adapter)
 
         await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
 
@@ -312,7 +312,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(trackedEvents.first?.creationData.captureMethod) == .adapter
     }
 
-    func testRewardTrackingDefaultsToAdapterCaptureMethod() async throws {
+    func testRewardTrackingStampsAdapterCaptureMethod() async throws {
         let data = AdRewardVerified(
             networkName: "AdMob",
             mediatorName: .adMob,
@@ -323,7 +323,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             reward: .virtualCurrency(code: "GOLD", amount: 100)
         )
 
-        self.purchases.adTracker.trackAdRewardVerified(data)
+        self.purchases.adTracker.trackAdRewardVerified(data, captureMethod: .adapter)
 
         await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
 
