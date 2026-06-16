@@ -45,6 +45,8 @@ public typealias SK2Transaction = StoreKit.Transaction
     @objc internal var jwsRepresentation: String? { self.transaction.jwsRepresentation }
     internal var environment: StoreEnvironment? { self.transaction.environment }
     internal var reason: TransactionReason? { self.transaction.reason }
+    @objc public var revocationDate: Date? { self.transaction.revocationDate }
+    @objc public var revocationReason: RevocationReason? { self.transaction.revocationReason }
 
     var hasKnownPurchaseDate: Bool { return self.transaction.hasKnownPurchaseDate }
     var hasKnownTransactionIdentifier: Bool { self.transaction.hasKnownTransactionIdentifier }
@@ -126,6 +128,14 @@ internal protocol StoreTransactionType: Sendable {
     /// The reason for the transaction, if known.
     /// - Note: this is only available for StoreKit 2 transactions starting with iOS 17.
     var reason: TransactionReason? { get }
+
+    /// The date the App Store refunded or revoked the transaction, if it was revoked; `nil` otherwise.
+    /// - Note: this is only available for StoreKit 2 transactions.
+    var revocationDate: Date? { get }
+
+    /// The reason the transaction was revoked, if it was revoked; `nil` otherwise.
+    /// - Note: this is only available for StoreKit 2 transactions.
+    var revocationReason: RevocationReason? { get }
 
     /// Indicates to the App Store that the app delivered the purchased content
     /// or enabled the service to finish the transaction.
