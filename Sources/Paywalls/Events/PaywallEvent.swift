@@ -155,8 +155,8 @@ extension PaywallEvent {
         var productId: String?
         var errorCode: Int?
         var errorMessage: String?
-        var workflowId: String?
-        var stepId: String?
+        @_spi(Internal) public var workflowId: String?
+        @_spi(Internal) public var stepId: String?
 
         #if !os(tvOS) // For Paywalls V2
         @_spi(Internal)
