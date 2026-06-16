@@ -20,16 +20,42 @@ import StoreKit
 /// When the revocation reason cannot be determined, the property is `nil`. This happens for:
 /// - All StoreKit 1 transactions (SK1 does not expose revocation metadata).
 /// - StoreKit 2 transactions that were not revoked.
-public struct RevocationReason: RawRepresentable, Equatable, Sendable {
+@objc(RCRevocationReason)
+public final class RevocationReason: NSObject, RawRepresentable, Sendable {
 
-    public let rawValue: String
+    /// String representation of the revocation reason.
+    @objc public let rawValue: String
 
-    public init(rawValue: String) {
+    /// Creates a revocation reason with the specified raw value.
+    @objc public init(rawValue: String) {
         self.rawValue = rawValue
+        super.init()
     }
 
-    public static let developerIssue = RevocationReason(rawValue: "developer_issue")
-    public static let other = RevocationReason(rawValue: "other")
+    /// The transaction was revoked because of an issue with the app.
+    @objc(RCDeveloperIssue) public static let developerIssue = RevocationReason(rawValue: "developer_issue")
+
+    /// The transaction was revoked for another reason.
+    @objc(RCOther) public static let other = RevocationReason(rawValue: "other")
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? RevocationReason else { return false }
+
+        if self === other {
+            return true
+        }
+
+        return self.rawValue == other.rawValue
+    }
+
+    public override var hash: Int {
+        return self.rawValue.hashValue
+    }
+
+    /// Pattern matching operator.
+    public static func ~= (lhs: RevocationReason, rhs: RevocationReason) -> Bool {
+        lhs.rawValue == rhs.rawValue
+    }
 
 }
 
@@ -42,12 +68,12 @@ extension RevocationReason {
     /// Creates a ``RevocationReason`` from a StoreKit 2 `Transaction.RevocationReason`.
     ///
     /// Returns `nil` for unrecognized reasons.
-    init?(sk2RevocationReason reason: SK2Transaction.RevocationReason) {
+    convenience init?(sk2RevocationReason reason: SK2Transaction.RevocationReason) {
         switch reason {
         case .developerIssue:
-            self = .developerIssue
+            self.init(rawValue: Self.developerIssue.rawValue)
         case .other:
-            self = .other
+            self.init(rawValue: Self.other.rawValue)
         default:
             Logger.appleWarning(
                 Strings.storeKit.sk2_unknown_revocation_reason(String(describing: reason))

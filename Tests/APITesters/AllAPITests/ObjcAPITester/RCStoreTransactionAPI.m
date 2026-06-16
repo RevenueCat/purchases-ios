@@ -21,6 +21,10 @@
     NSInteger quantity __unused = transaction.quantity;
     RCStorefront *__nullable storefront __unused = transaction.storefront;
     NSDate *__nullable revocationDate __unused = transaction.revocationDate;
+    RCRevocationReason *__nullable revocationReason __unused = transaction.revocationReason;
+    RCRevocationReason *developerIssue __unused = [RCRevocationReason RCDeveloperIssue];
+    RCRevocationReason *other __unused = [RCRevocationReason RCOther];
+    NSString *revocationReasonRawValue __unused = [RCRevocationReason RCOther].rawValue;
 
     SKPaymentTransaction *sk1 __unused = transaction.sk1Transaction;
 }
