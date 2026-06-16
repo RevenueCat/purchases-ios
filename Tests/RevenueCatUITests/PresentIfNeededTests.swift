@@ -158,10 +158,7 @@ class PresentIfNeededTests: TestCase {
     }
 
     func testRestoreWithoutUnlockedEntitlementsDoesNotDismissPaywall() throws {
-        let handler: PurchaseHandler = .mock(
-            stubbedOfferings: Self.stubbedOfferings,
-            stubbedWorkflow: Self.stubbedWorkflow
-        )
+        let handler: PurchaseHandler = .mock()
         var dismissed = false
 
         let dispose = try Text("")
@@ -278,25 +275,17 @@ class PresentIfNeededTests: TestCase {
         task.cancel()
     }
 
-    private static let purchaseHandler: PurchaseHandler =
-        .mock(stubbedOfferings: stubbedOfferings, stubbedWorkflow: stubbedWorkflow)
-    private static let failingHandler: PurchaseHandler =
-        .failing(failureError, stubbedOfferings: stubbedOfferings, stubbedWorkflow: stubbedWorkflow)
+    private static let purchaseHandler: PurchaseHandler = .mock()
+    private static let failingHandler: PurchaseHandler = .failing(failureError)
     private static let offering = TestData.offeringWithNoIntroOffer
     private static let package = TestData.annualPackage
     private static let failureError: Error = ErrorCode.storeProblemError
-    // The deployed backend wraps every offering in a workflow, so the mock must too or the paywall
-    // never renders (and these purchase/restore callbacks never fire).
-    private static let stubbedOfferings = DefaultWorkflowStubData.offerings(containing: offering)
-    private static let stubbedWorkflow = DefaultWorkflowStubData.workflow(wrapping: offering)
     private static func externalPurchaseHandler(performPurchase: PerformPurchase? = nil,
                                                 performRestore: PerformRestore? = nil)
     -> PurchaseHandler {
         .mock(purchasesAreCompletedBy: .myApp,
               performPurchase: performPurchase,
-              performRestore: performRestore,
-              stubbedOfferings: stubbedOfferings,
-              stubbedWorkflow: stubbedWorkflow)
+              performRestore: performRestore)
     }
 
 }
