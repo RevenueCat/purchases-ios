@@ -64,10 +64,7 @@ class BasePaywallViewEventsTests: TestCase {
         self.continueAfterFailure = false
 
         self.handler =
-            .cancelling(
-                stubbedOfferings: Self.stubbedOfferings,
-                stubbedWorkflow: Self.stubbedWorkflow
-            )
+            .cancelling()
             .map { _ in
                 return { [weak self] event in
                     await self?.track(event)
@@ -180,10 +177,6 @@ class BasePaywallViewEventsTests: TestCase {
     }
 
     private static let offering = TestData.offeringWithNoIntroOffer
-    // The deployed backend wraps every offering in a workflow, so the mock must too or the paywall
-    // never renders (and these impression/close/exit-offer events never fire).
-    private static let stubbedOfferings = DefaultWorkflowStubData.offerings(containing: offering.withLocalImages)
-    private static let stubbedWorkflow = DefaultWorkflowStubData.workflow(wrapping: offering.withLocalImages)
 
 }
 
@@ -238,13 +231,7 @@ private extension BasePaywallViewEventsTests {
 
     func verifyEventData(_ data: PaywallEvent.Data) {
         expect(data.offeringIdentifier) == Self.offering.identifier
-        // Always-on workflows render this V1 offering through the workflow path. Full screen reports
-        // the workflow screen's revision (mirrored from the offering's paywall); footer modes render
-        // the V2 default paywall, which reports PaywallData.revisionID.
-        let expectedRevision = self.mode.isFullScreen
-            ? (Self.offering.paywall?.revision ?? PaywallData.revisionID)
-            : PaywallData.revisionID
-        expect(data.paywallRevision) == expectedRevision
+        expect(data.paywallRevision) == Self.offering.paywall?.revision
         expect(data.displayMode) == self.mode
         expect(data.localeIdentifier) == Locale.current.identifier
         expect(data.darkMode) == (self.scheme == .dark)

@@ -288,13 +288,20 @@ extension PurchaseHandler {
 
     func cachedInitialOffering(for content: PaywallViewConfiguration.Content) -> Offering? {
 #if !os(tvOS)
-        // The passed/cached offering alone can't drive a workflow paywall: the rendered offering is
-        // the workflow screen's offering with its workflow-mapped components, and it needs a
-        // WorkflowContext the offering doesn't carry. Workflow seeding therefore goes through
-        // cachedInitialWorkflowContext(for:) (which can build the context from a warm cache);
-        // returning nil here avoids seeding a non-workflow paywall that would then swap once the
-        // workflow resolves.
-        return nil
+        // Only a caller-passed offering that carries a legacy (v1) paywall is seeded synchronously:
+        // it renders directly without a workflow (matching the async resolvePaywallViewData(for:)
+        // gate on `offering.paywall == nil`), so seeding it skips the offering-resolution loading
+        // state (which otherwise needs Purchases configured to fetch). Everything else returns nil
+        // and defers to the async resolve path: a non-legacy offering needs a WorkflowContext the
+        // offering can't carry, and a cache-backed `.defaultOffering` / `.offeringIdentifier` lookup
+        // is left to async so the offerings fetch can refresh a stale cache instead of seeding (and
+        // pinning) a stale offering.
+        switch content {
+        case let .offering(offering):
+            return offering.paywall != nil ? offering : nil
+        case .defaultOffering, .offeringIdentifier:
+            return nil
+        }
 #else
         // The RevenueCatUI workflow paths are `#if !os(tvOS)`, so on tvOS seed directly from the
         // cached offering.
