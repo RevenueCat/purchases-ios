@@ -326,6 +326,65 @@ class WorkflowResponseTests: TestCase {
         expect(step.metadata).to(beNil())
     }
 
+    func testDecodeWorkflowStepScreenTypeFromMetadata() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "metadata": { "screen_type": ["paywall"] }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.stepScreenType) == ["paywall"]
+    }
+
+    func testDecodeWorkflowStepScreenTypeEmptyWhenTaggedEmpty() throws {
+        // A step the backend tagged with no known type. `[]` (not `nil`) means "explicitly not a
+        // paywall", which suppresses the impression.
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "metadata": { "screen_type": [] }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.stepScreenType) == []
+    }
+
+    func testDecodeWorkflowStepScreenTypeNilWhenKeyAbsent() throws {
+        // Older workflows omit `screen_type`. `nil` (not `[]`) preserves the always-report behavior.
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "metadata": { "other_key": "value" }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.stepScreenType).to(beNil())
+    }
+
+    func testDecodeWorkflowStepScreenTypeNilWhenMetadataNull() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "metadata": null
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.stepScreenType).to(beNil())
+    }
+
     func testDecodeWorkflowStepMatchingActualBackendResponse() throws {
         let json = """
         {
