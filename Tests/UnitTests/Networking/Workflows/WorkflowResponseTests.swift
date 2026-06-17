@@ -357,7 +357,8 @@ class WorkflowResponseTests: TestCase {
     }
 
     func testDecodeWorkflowStepScreenTypeNilWhenKeyAbsent() throws {
-        // Older workflows omit `screen_type`. `nil` (not `[]`) preserves the always-report behavior.
+        // Older workflows omit `screen_type`. `nil` (not `[]`) drives the untagged fallback in the UI
+        // layer (report only on `singleStepFallbackId`); see `PaywallsV2View.shouldTrackPaywallEvents`.
         let json = """
         {
           "id": "step_1",
