@@ -60,7 +60,7 @@ extension Purchases {
             presentationContext = UIApplication.shared
                                                .connectedScenes
                                                .compactMap { $0 as? UIWindowScene }
-                                               .flatMap { scene -> Array<(UIScene.ActivationState, UIWindow)> in
+                                               .flatMap { scene -> [(UIScene.ActivationState, UIWindow)] in
                                                    // ignore unattached scenes
                                                    if scene.activationState == .unattached { return [] }
                                                    return scene.windows.map { (scene.activationState, $0) }
