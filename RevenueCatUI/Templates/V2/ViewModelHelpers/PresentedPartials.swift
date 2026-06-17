@@ -128,7 +128,7 @@ extension PresentedPartial {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    // swiftlint:disable:next function_parameter_count
+    // swiftlint:disable:next function_parameter_count cyclomatic_complexity
     private static func evaluateCondition(
         _ condition: PaywallComponent.ExtendedCondition,
         state: ComponentViewState,
@@ -186,6 +186,10 @@ extension PresentedPartial {
                 operator: conditionOperator,
                 selectedPackageId: conditionContext.selectedPackageId
             )
+
+        // State condition — evaluation deferred to a future PR
+        case .state:
+            return false
 
         // Unknown/unsupported conditions never match
         case .unsupported:

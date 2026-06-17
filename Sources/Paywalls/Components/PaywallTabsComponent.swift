@@ -173,6 +173,8 @@ import Foundation
         public let defaultTabId: String?
 
         public let overrides: ComponentOverrides<PartialTabsComponent>?
+        /// State updates applied when a tab is selected. Decode-only in Phase 0.
+        public let stateUpdates: [StateUpdate]?
 
         public init(
             name: String? = nil,
@@ -189,7 +191,8 @@ import Foundation
             tabs: [Tab],
             defaultTabId: String? = nil,
 
-            overrides: ComponentOverrides<PartialTabsComponent>? = nil
+            overrides: ComponentOverrides<PartialTabsComponent>? = nil,
+            stateUpdates: [StateUpdate]? = nil
         ) {
             self.type = .stack
             self.name = name
@@ -207,6 +210,7 @@ import Foundation
             self.defaultTabId = defaultTabId
 
             self.overrides = overrides
+            self.stateUpdates = stateUpdates
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -224,6 +228,7 @@ import Foundation
             hasher.combine(tabs)
             hasher.combine(defaultTabId)
             hasher.combine(overrides)
+            hasher.combine(stateUpdates)
         }
 
         public static func == (lhs: TabsComponent, rhs: TabsComponent) -> Bool {
@@ -240,7 +245,8 @@ import Foundation
                    lhs.control == rhs.control &&
                    lhs.tabs == rhs.tabs &&
                    lhs.defaultTabId == rhs.defaultTabId &&
-                   lhs.overrides == rhs.overrides
+                   lhs.overrides == rhs.overrides &&
+                   lhs.stateUpdates == rhs.stateUpdates
         }
     }
 
