@@ -379,12 +379,6 @@ struct PaywallsV2View: View {
 
     }
 
-    /// Whether a workflow step reports paywall events at all (impression and close). Reports when:
-    /// standalone, `screen_type` is `nil` (untagged/pre-rollout, preserves prior behavior), or it
-    /// contains `paywall`. Suppresses only a present `screen_type` lacking `paywall`.
-    ///
-    /// Per khepri #21429 only the `single_step_fallback_id` step is tagged `["paywall"]`, so a
-    /// fallback-less workflow intentionally reports nothing this release; don't relax `[]` lightly.
     static func shouldReportPaywallImpression(
         isActiveWorkflowPage: Bool?,
         workflowScreenType: [String]?
