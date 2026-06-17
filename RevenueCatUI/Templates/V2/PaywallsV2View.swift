@@ -93,8 +93,9 @@ struct PaywallsV2View: View {
     /// activation (becoming / ceasing to be the current step) rather than on SwiftUI's view lifecycle.
     /// `nil` keeps the standalone-paywall behavior of tracking on `onAppear` / `onDisappear`.
     private let isActiveWorkflowPage: Bool?
-    private let workflowId: String?
-    private let stepId: String?
+    /// The workflow step's `screen_type` classification, used to gate impression reporting. `nil` for
+    /// standalone paywalls and for workflow steps the backend did not tag (see `stepScreenType`).
+    private let workflowScreenType: [String]?
     @State
     private var didFinishEligibilityCheck: Bool = {
         #if DEBUG
@@ -130,8 +131,7 @@ struct PaywallsV2View: View {
         introEligibilityContext: IntroOfferEligibilityContext? = nil,
         selectedPackageContextOverride: PackageContext? = nil,
         isActiveWorkflowPage: Bool? = nil,
-        workflowId: String? = nil,
-        stepId: String? = nil
+        workflowScreenType: [String]? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
@@ -151,8 +151,7 @@ struct PaywallsV2View: View {
         self.onDismiss = onDismiss
         self.closeWorkflowAction = closeWorkflowAction
         self.isActiveWorkflowPage = isActiveWorkflowPage
-        self.workflowId = workflowId
-        self.stepId = stepId
+        self.workflowScreenType = workflowScreenType
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
         ))
@@ -324,7 +323,7 @@ struct PaywallsV2View: View {
                 // by `onChangeOf(self.isActiveWorkflowPage)` below. A page mounted while not current
                 // (isActiveWorkflowPage == false) waits until it becomes current.
                 guard self.isActiveWorkflowPage != false else { return }
-                self.firePaywallViewed()
+                self.firePaywallImpression()
             }
             .task {
                 guard !self.didFinishEligibilityCheck else {
@@ -396,12 +395,35 @@ struct PaywallsV2View: View {
                 guard isActive == true else { return }
                 let freshSession: PaywallEvent.SessionID = .init()
                 self.paywallSessionID = freshSession
-                self.firePaywallViewed(sessionID: freshSession)
+                self.firePaywallImpression(sessionID: freshSession)
             }
 
     }
 
-    private func firePaywallViewed(sessionID: PaywallEvent.SessionID? = nil) {
+    static func shouldReportPaywallImpression(
+        isActiveWorkflowPage: Bool?,
+        workflowScreenType: [String]?
+    ) -> Bool {
+        guard isActiveWorkflowPage != nil else { return true }
+        guard let screenType = workflowScreenType else { return true }
+        return screenType.contains(WorkflowScreenType.paywall)
+    }
+
+    private var reportsPaywallImpression: Bool {
+        Self.shouldReportPaywallImpression(
+            isActiveWorkflowPage: self.isActiveWorkflowPage,
+            workflowScreenType: self.workflowScreenType
+        )
+    }
+
+    private func firePaywallImpression(sessionID: PaywallEvent.SessionID? = nil) {
+        // A workflow step the backend did not classify as a paywall reports no paywall events. Clear
+        // any active session so a purchase here is unattributed, not charged to the prior paywall step.
+        guard self.reportsPaywallImpression else {
+            self.purchaseHandler.clearActivePaywallSession()
+            return
+        }
+
         let forDefaultPaywall: Bool
         if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
             forDefaultPaywall = true
@@ -419,6 +441,8 @@ struct PaywallsV2View: View {
     }
 
     private func firePaywallClose() {
+        guard self.reportsPaywallImpression else { return }
+
         if self.isActiveWorkflowPage == nil {
             // Standalone paywall: close whichever session is active (unchanged behavior).
             self.purchaseHandler.trackPaywallClose()
