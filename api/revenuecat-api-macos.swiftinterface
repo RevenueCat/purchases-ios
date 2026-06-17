@@ -3051,6 +3051,9 @@ public enum WebPurchaseRedemptionResult : Swift.Sendable {
   case purchaseBelongsToOtherUser
   case expired(_: Swift.String)
 }
+extension RevenueCat.ErrorCode : Swift.Equatable {}
+extension RevenueCat.ErrorCode : Swift.Hashable {}
+extension RevenueCat.ErrorCode : Swift.RawRepresentable {}
 extension RevenueCat.AttributionNetwork : Swift.Equatable {}
 extension RevenueCat.AttributionNetwork : Swift.Hashable {}
 extension RevenueCat.AttributionNetwork : Swift.RawRepresentable {}
@@ -3073,9 +3076,6 @@ extension RevenueCat.CacheFetchPolicy : Swift.RawRepresentable {}
 extension RevenueCat.StoreProduct.ProductType : Swift.Equatable {}
 extension RevenueCat.StoreProduct.ProductType : Swift.Hashable {}
 extension RevenueCat.StoreProduct.ProductType : Swift.RawRepresentable {}
-extension RevenueCat.ErrorCode : Swift.Equatable {}
-extension RevenueCat.ErrorCode : Swift.Hashable {}
-extension RevenueCat.ErrorCode : Swift.RawRepresentable {}
 extension RevenueCat.VerificationResult : Swift.Equatable {}
 extension RevenueCat.VerificationResult : Swift.Hashable {}
 extension RevenueCat.VerificationResult : Swift.RawRepresentable {}
