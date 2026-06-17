@@ -212,8 +212,8 @@ struct PreviewPaywallPresenter {
 
         let queryItems = parsed.queryItems ?? []
 
-        guard queryItems.count == 2 else {
-            Logger.warning("Invalid rc-paywall-preview link. Expected 2 parameters, but found \(queryItems.count)")
+        guard queryItems.count >= 2 else {
+            Logger.warning("Invalid rc-paywall-preview link. Expected 2+ parameters, but found \(queryItems.count)")
             return false
         }
 

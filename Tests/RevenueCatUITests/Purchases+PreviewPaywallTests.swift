@@ -50,11 +50,6 @@ class PreviewPaywallTests: TestCase {
         expect(self.presenter.handle(locateOffering: { _ in return nil },
                                      url: URL(string: "rc://rc-paywall-preview?offering_id=1234")!,
                                      viewController: nil)) == false
-
-        let urlWithExtraParam = URL(string: "rc://rc-paywall-preview?offering_id=1234&paywall_id=abcd&extra=0000")!
-        expect(self.presenter.handle(locateOffering: { _ in return nil },
-                                     url: urlWithExtraParam,
-                                     viewController: nil)) == false
     }
 
     func testEmptyParameterValues() throws {
