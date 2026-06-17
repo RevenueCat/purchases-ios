@@ -121,6 +121,42 @@ class TabsComponentStateTests: TestCase {
         )?.visible).to(equal(true))
     }
 
+    /// Regression: in a workflow the shared store is injected by `WorkflowPaywallView` and created
+    /// empty — the paywall's `state` declarations live on the page, not on the workflow-level store.
+    /// Until the page contributes its keys (what `PaywallsV2View`'s `onAppear` now does via
+    /// `registerDeclarations`), updates to declared keys are dropped as undeclared and sibling
+    /// overrides never flip. This exercises that same mechanism at the store/resolver level.
+    func testWorkflowSharedStoreIgnoresUpdatesUntilDeclarationsRegistered() {
+        // Mirrors the workflow-level store: created without this page's declarations.
+        let sharedStore = PaywallStateStore()
+
+        // Before registration the "annual" selection targets an undeclared key, so it is ignored and
+        // the override stays inapplicable — the reported bug.
+        sharedStore.apply(
+            [.set(key: Self.stateKey, value: .payloadReference)],
+            payload: .string("annual")
+        )
+        expect(sharedStore.values[Self.stateKey]).to(beNil())
+        expect(Self.buildVisibilityPartial(
+            stateValues: sharedStore.values,
+            stateDefaults: sharedStore.defaults
+        )).to(beNil())
+
+        // The page contributes its declarations to the shared store (the fix).
+        sharedStore.registerDeclarations(Self.declarations)
+
+        // The same selection now lands and the override flips on.
+        sharedStore.apply(
+            [.set(key: Self.stateKey, value: .payloadReference)],
+            payload: .string("annual")
+        )
+        expect(sharedStore.values[Self.stateKey]).to(equal(.string("annual")))
+        expect(Self.buildVisibilityPartial(
+            stateValues: sharedStore.values,
+            stateDefaults: sharedStore.defaults
+        )?.visible).to(equal(true))
+    }
+
 }
 
 #endif
