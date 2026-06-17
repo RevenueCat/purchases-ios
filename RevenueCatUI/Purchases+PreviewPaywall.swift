@@ -60,10 +60,18 @@ extension Purchases {
             presentationContext = UIApplication.shared
                                                .connectedScenes
                                                .compactMap { $0 as? UIWindowScene }
-                                               .sorted(by: { lhs, _ in lhs.activationState == .foregroundActive })
-                                               .flatMap(\.windows)
-                                               .sorted(by: { lhs, _ in lhs.isKeyWindow })
-                                               .compactMap(\.rootViewController)
+                                               .flatMap { scene -> Array<(UIScene.ActivationState, UIWindow)> in
+                                                   // ignore unattached scenes
+                                                   if scene.activationState == .unattached { return [] }
+                                                   return scene.windows.map { (scene.activationState, $0) }
+                                               }
+                                               .sorted(by: { (left, right) in
+                                                   // prefer windows from scenes with a lower (more foreground) state
+                                                   if left.0 != right.0 { return left.0.rawValue < right.0.rawValue }
+                                                   // if they have the same state, prefer a key window over non-key
+                                                   return left.1.isKeyWindow
+                                               })
+                                               .compactMap(\.1.rootViewController)
                                                .first
         }
 
