@@ -316,14 +316,6 @@ struct PaywallsV2View: View {
     private func addPaywallModifiers<Content: View>(to content: Content) -> some View {
         content
             .onAppear {
-                // Inside a workflow the shared store injected from above (WorkflowPaywallView) is created
-                // empty; contribute this page's declared keys so its `stateUpdates` can land and sibling
-                // components observe the resulting values. No-op when standalone (`inheritedStateStore`
-                // is nil and `ownStateStore` is already seeded from declarations at init).
-                self.inheritedStateStore?.registerDeclarations(
-                    self.paywallComponentsData.stateDeclarations ?? [:]
-                )
-
                 // Standalone paywalls (isActiveWorkflowPage == nil) track `viewed` on view lifecycle.
                 // A workflow page mounts already-current, so fire here too; later re-entries are handled
                 // by `onChangeOf(self.isActiveWorkflowPage)` below. A page mounted while not current
