@@ -540,6 +540,10 @@ commands:
         type: boolean
         default: false
         description: "Whether to include test/dev dependencies when generating the workspace."
+      rc_xcode_project:
+        type: boolean
+        default: false
+        description: "Generate in localXcodeProject mode (TUIST_RC_XCODE_PROJECT=true) so RevenueCat builds as an Xcode framework. Required for the unit-test lanes so installation method and request snapshots match the legacy workspace."
     steps:
       - revenuecat/install-tuist
       - run:
@@ -547,6 +551,9 @@ commands:
           command: |
             export PATH="$HOME/.local/share/mise/shims:$PATH"
             export TUIST_INCLUDE_TEST_DEPENDENCIES=<< parameters.include_test_dependencies >>
+            if [ "<< parameters.rc_xcode_project >>" = "true" ]; then
+              export TUIST_RC_XCODE_PROJECT=true
+            fi
             if [ -n "<< parameters.query >>" ]; then
               tuist install && tuist generate << parameters.query >> --no-open
             else
@@ -939,6 +946,7 @@ jobs:
       - install-dependencies
       - tuist-generate-workspace:
           include_test_dependencies: true
+          rc_xcode_project: true
       - run:
           name: Run tvOS tests
           command: bundle exec fastlane test_tvos
@@ -992,6 +1000,7 @@ jobs:
       - install-dependencies
       - tuist-generate-workspace:
           include_test_dependencies: true
+          rc_xcode_project: true
 
       # === SPM Release Build (Xcode 26) ===
       - unless:
@@ -1067,6 +1076,7 @@ jobs:
       - install-dependencies
       - tuist-generate-workspace:
           include_test_dependencies: true
+          rc_xcode_project: true
 
       # === SPM Release Build (Xcode 16) ===
       - unless:
@@ -1154,6 +1164,7 @@ jobs:
       - update-spm-installation-commit
       - tuist-generate-workspace:
           include_test_dependencies: true
+          rc_xcode_project: true
 
       # === SPM Release Build (Xcode 15) ===
       - unless:
@@ -1203,6 +1214,7 @@ jobs:
       - update-spm-installation-commit
       - tuist-generate-workspace:
           include_test_dependencies: true
+          rc_xcode_project: true
 
       # === SPM Release Build (Xcode 14) ===
       - unless:
@@ -1309,6 +1321,7 @@ jobs:
       - install-dependencies
       - tuist-generate-workspace:
           include_test_dependencies: true
+          rc_xcode_project: true
       - run:
           name: Run tests
           command: bundle exec fastlane test_watchos
