@@ -23,6 +23,7 @@ enum PaywallsStrings {
     case warming_up_videos(videoURLs: Set<URLWithValidation>)
     case warming_up_workflow(screenCount: Int)
     case error_fetching_workflows_list(BackendError)
+    case error_refreshing_workflow(workflowId: String, error: BackendError)
     case error_prefetching_image(URL, Error)
     case font_download_already_in_progress(name: String, fontURL: URL)
     case font_downloaded_sucessfully(name: String, fontURL: URL)
@@ -172,6 +173,9 @@ extension PaywallsStrings: LogMessage {
 
         case let .error_fetching_workflows_list(error):
             return "Error fetching workflows list: \(error.localizedDescription)"
+
+        case let .error_refreshing_workflow(workflowId, error):
+            return "Background refresh failed for workflow \(workflowId): \(error.localizedDescription)"
 
         case let .background_task_started(taskName):
             return "Background task started: \(taskName)"

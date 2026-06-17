@@ -211,8 +211,4 @@ class ErrorCodeTests: TestCase {
         expect(errorCode.rawValue).to(equal(expectedRawValue))
     }
 
-    func testRemovedErrorCodesAreNotReAdded() {
-        expect(ErrorCode.reservedRawValues).toNot(contain(ErrorCode.allCases.map { $0.rawValue }))
-    }
-
 }

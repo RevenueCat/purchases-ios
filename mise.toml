@@ -5,4 +5,36 @@ swiftlint = "0.62.2"
 [hooks]
 postinstall = "mise run install"
 
+[tasks.install]
+description = "Resolve Swift Package dependencies via Tuist"
+run = "tuist install"
+
+# Shell setup task (no automated test); verified manually via `mise run setup-worktree`.
+[tasks.setup-worktree]
+description = "Prepare a git worktree: link Local.xcconfig from the primary checkout and resolve deps. Run `tuist generate <Target>` afterwards."
+depends = ["install"]
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+# The primary checkout is the parent of the shared .git directory.
+primary="$(dirname "$(git rev-parse --git-common-dir)")"
+current="$(git rev-parse --show-toplevel)"
+
+# Local.xcconfig is gitignored and per-worktree. Link it from the primary
+# checkout so every worktree shares one API key / config without hand-copying.
+if [ "$current" != "$primary" ] && [ ! -e "Local.xcconfig" ]; then
+  # Clear a dangling symlink (e.g. the primary's Local.xcconfig moved) so ln/cp don't fail under set -e.
+  rm -f "Local.xcconfig"
+  if [ -f "$primary/Local.xcconfig" ]; then
+    ln -s "$primary/Local.xcconfig" "Local.xcconfig"
+    echo "Linked Local.xcconfig -> $primary/Local.xcconfig"
+  elif [ -f "Local.xcconfig.SAMPLE" ]; then
+    cp "Local.xcconfig.SAMPLE" "Local.xcconfig"
+    echo "WARNING: primary checkout has no Local.xcconfig; copied Local.xcconfig.SAMPLE. Fill in your API key."
+  else
+    echo "WARNING: no Local.xcconfig in the primary checkout and no Local.xcconfig.SAMPLE to copy."
+  fi
+fi
+"""
 

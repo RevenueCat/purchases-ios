@@ -117,7 +117,10 @@ extension OfferingsManagerTests {
         expect(offerings["base"]!.monthly?.storeProduct).toNot(beNil())
 
         self.logger.verifyMessageWasLogged(
-            Strings.offering.cannot_find_product_configuration_error(identifiers: ["yearly_freetrial"]),
+            Strings.offering.cannot_find_product_configuration_error(
+                identifiers: ["yearly_freetrial"],
+                apiKeyValidationResult: .validApplePlatform
+            ),
             level: .warn
         )
     }
@@ -140,7 +143,10 @@ extension OfferingsManagerTests {
 
         // then
         expect(result).to(beFailure { error in
-            expect(error).to(matchError(OfferingsManager.Error.missingProducts(identifiers: ["yearly_freetrial"])))
+            expect(error).to(matchError(OfferingsManager.Error.missingProducts(
+                identifiers: ["yearly_freetrial"],
+                apiKeyValidationResult: .validApplePlatform
+            )))
         })
     }
 
@@ -401,7 +407,8 @@ extension OfferingsManagerTests {
 
         switch result?.error {
         case let .configurationError(message, underlyingError, _):
-            expect(message) == Strings.offering.configuration_error_products_not_found.description
+            expect(message) == Strings.offering
+                .configuration_error_products_not_found(apiKeyValidationResult: .validApplePlatform).description
             expect(underlyingError).to(beNil())
         default:
             fail("Unexpected result")
@@ -427,7 +434,8 @@ extension OfferingsManagerTests {
 
         switch result?.error {
         case let .configurationError(message, underlyingError, _):
-            expect(message) == Strings.offering.configuration_error_products_not_found.description
+            expect(message) == Strings.offering
+                .configuration_error_products_not_found(apiKeyValidationResult: .validApplePlatform).description
             expect(underlyingError).to(matchError(error))
         default:
             fail("Unexpected result")

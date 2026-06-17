@@ -167,7 +167,7 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
 }
 
 extension PublishedWorkflow: Codable, Equatable, Sendable {}
-extension WorkflowDataResult: Equatable, Sendable {}
+extension WorkflowDataResult: Codable, Equatable, Sendable {}
 
 extension PublishedWorkflow: HTTPResponseBody {}
 

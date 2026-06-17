@@ -46,10 +46,19 @@ struct TextComponentView: View {
     @Environment(\.selectedPackageId)
     private var selectedPackageId
 
+    @Environment(\.paywallStateValues)
+    private var paywallStateValues
+
+    @Environment(\.paywallStateDefaults)
+    private var paywallStateDefaults
+
     // Observing dynamicTypeSize triggers view rebuilds when Dynamic Type settings change,
     // which causes fonts to be recreated with the correct scaled size.
     @Environment(\.dynamicTypeSize)
     private var dynamicTypeSize
+
+    @Environment(\.isPaywallLoading)
+    private var isPaywallLoading
 
     private let viewModel: TextComponentViewModel
 
@@ -70,7 +79,9 @@ struct TextComponentView: View {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             promoOffer: promoOffer,
             countdownTime: countdownTime,
-            customVariables: self.customVariables
+            customVariables: self.customVariables,
+            stateValues: self.paywallStateValues,
+            stateDefaults: self.paywallStateDefaults
         ) { style in
             if style.visible {
                 NonLocalizedMarkdownText(
@@ -82,6 +93,7 @@ struct TextComponentView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(style.textAlignment)
                     .foregroundColorScheme(style.color)
+                    .redacted(reason: isPaywallLoading ? .placeholder : [])
                     .padding(style.padding)
                     .size(style.size,
                           horizontalAlignment: style.horizontalAlignment)
@@ -244,6 +256,14 @@ struct TextComponentView_Previews: PreviewProvider {
 
         platformPreview
         .previewDisplayName("Detected Platform")
+
+        defaultPreview
+        .environment(\.isPaywallLoading, true)
+        .previewDisplayName("Default (Loading)")
+
+        platformPreview
+        .environment(\.isPaywallLoading, true)
+        .previewDisplayName("Detected Platform (Loading)")
 
         // Markdown
         TextComponentView(

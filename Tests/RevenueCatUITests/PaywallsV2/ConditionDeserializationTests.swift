@@ -338,6 +338,90 @@ class ConditionDeserializationTests: TestCase {
         expect(condition).to(equal(.unsupported))
     }
 
+    // MARK: - State Condition Tests
+
+    func testDecodeStateConditionWithBooleanValue() throws {
+        let json = """
+        {"type": "state_condition", "operator": "=", "name": "planComparisonOpen", "value": true}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.state(operator: .equals, name: "planComparisonOpen", value: .bool(true))))
+    }
+
+    func testDecodeStateConditionWithIntegerValue() throws {
+        let json = """
+        {"type": "state_condition", "operator": "=", "name": "activeSlide", "value": 2}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.state(operator: .equals, name: "activeSlide", value: .int(2))))
+    }
+
+    func testDecodeStateConditionWithDoubleValue() throws {
+        let json = """
+        {"type": "state_condition", "operator": "=", "name": "discountMultiplier", "value": 0.5}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.state(operator: .equals, name: "discountMultiplier", value: .double(0.5))))
+    }
+
+    func testDecodeStateConditionWithStringValueAndNotEquals() throws {
+        let json = """
+        {"type": "state_condition", "operator": "!=", "name": "selectedFeatureTab", "value": "billing"}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(
+            .state(operator: .notEquals, name: "selectedFeatureTab", value: .string("billing"))
+        ))
+    }
+
+    func testDecodeStateConditionIgnoresUnknownFields() throws {
+        let json = """
+        {"type": "state_condition", "operator": "=", "name": "key", "value": "v", "future_field": 1}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.state(operator: .equals, name: "key", value: .string("v"))))
+    }
+
+    func testDecodeStateConditionMissingName_FallsBackToUnsupported() throws {
+        let json = """
+        {"type": "state_condition", "operator": "=", "value": true}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.unsupported))
+    }
+
+    func testDecodeStateConditionMissingValue_FallsBackToUnsupported() throws {
+        let json = """
+        {"type": "state_condition", "operator": "=", "name": "key"}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.unsupported))
+    }
+
+    func testDecodeStateConditionWithUnknownOperator_FallsBackToUnsupported() throws {
+        let json = """
+        {"type": "state_condition", "operator": ">", "name": "activeSlide", "value": 2}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.unsupported))
+    }
+
+    func testDecodeStateConditionWithArrayValue_FallsBackToUnsupported() throws {
+        let json = """
+        {"type": "state_condition", "operator": "=", "name": "key", "value": [1, 2]}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.unsupported))
+    }
+
+    func testDecodeStateConditionWithObjectValue_FallsBackToUnsupported() throws {
+        let json = """
+        {"type": "state_condition", "operator": "=", "name": "key", "value": {"nested": true}}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.unsupported))
+    }
+
     // MARK: - Encoding Tests
 
     func testEncodeVariableCondition() throws {
@@ -358,6 +442,20 @@ class ConditionDeserializationTests: TestCase {
         let condition = PaywallComponent.ExtendedCondition.selectedPackage(
             operator: .in,
             packages: ["monthly", "annual"]
+        )
+
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(condition)
+        let decoded = try decode(String(data: data, encoding: .utf8)!)
+
+        expect(decoded).to(equal(condition))
+    }
+
+    func testEncodeStateCondition() throws {
+        let condition = PaywallComponent.ExtendedCondition.state(
+            operator: .notEquals,
+            name: "selectedFeatureTab",
+            value: .string("billing")
         )
 
         let encoder = JSONEncoder()
@@ -411,6 +509,13 @@ class ConditionDeserializationTests: TestCase {
             packages: ["monthly"]
         )
         expect(packageCondition.toCondition()).to(equal(.unsupported))
+
+        let stateCondition = PaywallComponent.ExtendedCondition.state(
+            operator: .equals,
+            name: "planComparisonOpen",
+            value: .bool(true)
+        )
+        expect(stateCondition.toCondition()).to(equal(.unsupported))
     }
 
     // MARK: - Helpers

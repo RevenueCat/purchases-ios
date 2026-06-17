@@ -56,6 +56,8 @@ class WorkflowManagerTests: TestCase {
         self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
 
         expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == expected
+        // On-demand fetches stay on the serial queue (prefetch == false).
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowParameters?.prefetch) == false
     }
 
     func testGetWorkflowReturnsCachedResultWithoutCallingBackendWhenFresh() throws {
@@ -86,6 +88,139 @@ class WorkflowManagerTests: TestCase {
         self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
 
         expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 2
+    }
+
+    func testGetWorkflowStaleHitServesCachedValueAndRefreshesInBackground() throws {
+        // Stale-while-revalidate: a stale-but-present entry is served immediately and the cache is
+        // refreshed in the background, mirroring how `OfferingsManager` vends a stale offerings cache.
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+        let stale = try Self.workflowDataResult(id: "stale")
+        let refreshed = try Self.workflowDataResult(id: "refreshed")
+
+        // First call populates the cache with the stale value.
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .success(stale))
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == stale
+
+        // Past the 5-minute foreground TTL: the entry is now stale-but-present.
+        self.dateProvider.advance(by: 6 * 60)
+
+        var served: WorkflowDataResult?
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) {
+            served = try? $0.get()
+        }
+
+        // The caller gets the stale cached value immediately, before the background refresh lands.
+        expect(served) == stale
+        // A background refresh was issued (second backend call).
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 2
+
+        // When the background refresh completes, it updates the cache to the fresh value.
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .success(refreshed))
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == refreshed
+    }
+
+    func testGetWorkflowStaleHitDoesNotSurfaceFailingBackgroundRefresh() throws {
+        // The caller already has a usable value, so a failing background refresh is logged and
+        // swallowed, never delivered as an error, and the stale value stays cached.
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+        let stale = try Self.workflowDataResult(id: "stale")
+
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .success(stale))
+
+        self.dateProvider.advance(by: 6 * 60)
+
+        var served: WorkflowDataResult?
+        var erroredWith: BackendError?
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) {
+            switch $0 {
+            case let .success(result): served = result
+            case let .failure(error): erroredWith = error
+            }
+        }
+        expect(served) == stale
+
+        // The background refresh fails: not surfaced to the caller, and the cache keeps the stale value.
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .failure(.missingAppUserID()))
+        expect(erroredWith).to(beNil())
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == stale
+    }
+
+    func testGetWorkflowStaleHitDropsBackgroundWriteWhenCacheClearedBeforeRefreshLands() throws {
+        // The background refresh's write is guarded by the generation captured when the stale value was
+        // served. If an identity change clears the cache before the refresh lands, the write is dropped,
+        // so the previous user's (user-scoped) detail can't repopulate the new user's cache.
+        //
+        // Like the prefetch generation tests, this drives the guard directly: the true sub-statement
+        // race (a clear landing between reading the cached value and capturing the generation) is the
+        // same lock-free read window the workflows cache accepts by design and isn't deterministically
+        // reproducible here.
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+        let stale = try Self.workflowDataResult(id: "stale")
+
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .success(stale))
+
+        self.dateProvider.advance(by: 6 * 60)
+
+        // Stale hit: serves the cached value and stores the background refresh (capturing the generation).
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+
+        // Identity change clears the cache (bumping the generation) before the refresh lands.
+        self.workflowsCache.clearCache()
+
+        // The background refresh now returns the previous user's detail: its write must be dropped.
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1",
+                                                        with: .success(try Self.workflowDataResult(id: "refreshed")))
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
+    }
+
+    func testGetWorkflowStaleHitInvokesCallerCompletionExactlyOnce() throws {
+        // The caller's completion fires once (with the stale value); the background refresh receives a
+        // separate logging-only closure and never delivers to the caller again.
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+        let stale = try Self.workflowDataResult(id: "stale")
+
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .success(stale))
+
+        self.dateProvider.advance(by: 6 * 60)
+
+        var completionCount = 0
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in
+            completionCount += 1
+        }
+        expect(completionCount) == 1
+
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1",
+                                                        with: .success(try Self.workflowDataResult(id: "refreshed")))
+        expect(completionCount) == 1
+    }
+
+    func testGetWorkflowWithStaleWhileRevalidateDisabledBlocksAndDeliversFreshValue() throws {
+        // With stale-while-revalidate disabled, a stale-but-present entry must not be served: the
+        // caller blocks until the refetch lands and receives the freshly fetched value.
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+        let stale = try Self.workflowDataResult(id: "stale")
+        let refreshed = try Self.workflowDataResult(id: "refreshed")
+
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false,
+                                 staleWhileRevalidate: false) { _ in }
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .success(stale))
+
+        self.dateProvider.advance(by: 6 * 60)
+
+        var served: WorkflowDataResult?
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false,
+                                 staleWhileRevalidate: false) { served = try? $0.get() }
+
+        // Nothing delivered yet: the call blocks on the refetch instead of serving the stale value.
+        expect(served).to(beNil())
+
+        // Once the refetch lands, the caller receives the freshly fetched value.
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_1", with: .success(refreshed))
+        expect(served) == refreshed
     }
 
     func testGetWorkflowForwardsBackendError() {
@@ -139,6 +274,8 @@ class WorkflowManagerTests: TestCase {
         expect(prefetchedIds).to(contain("wf_prefetch", "wf_also_prefetch"))
         expect(prefetchedIds).toNot(contain("wf_skip"))
         expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 2
+        // Prefetch fetches must request the concurrent workflows queue.
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowParametersList.allSatisfy { $0.prefetch }) == true
     }
 
     func testGetWorkflowsListSkipsPrefetchForWorkflowsWithoutOfferingId() throws {
@@ -205,6 +342,55 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockDeviceCache.cacheWorkflowsListResponseCount) == 0
     }
 
+    func testGetWorkflowsListDoesNotRestoreFromDiskOnClientError() throws {
+        // A 4xx means the backend rejected the request (workflows disabled, unauthorized, ...), so
+        // stale prefetched data must not be served.
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(
+            .networkError(.errorResponse(.init(code: .invalidAPIKey, originalCode: 0), .invalidRequest))
+        )
+        self.mockDeviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ])
+        self.mockDeviceCache.stubbedCachedWorkflowDetails = ["wf_1": try Self.workflowDataResult(id: "wf_1")]
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.manager.cachedWorkflowId(forOfferingId: "default")).to(beNil())
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
+    }
+
+    func testGetWorkflowsListRestoresFromDiskOnServerError() {
+        // A 5xx is transient, so the last cached list is restored to keep resolving offline.
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(
+            .networkError(.errorResponse(.init(code: .unknownError, originalCode: 0), .internalServerError))
+        )
+        self.mockDeviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ])
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.manager.cachedWorkflowId(forOfferingId: "default")) == "wf_1"
+    }
+
+    func testGetWorkflowsListRestoresDetailsFromDiskOnServerError() throws {
+        // A 5xx is transient: both the list mapping AND prefetched details must be restored so the
+        // next render can serve them offline. Complements testGetWorkflowsListRestoresFromDiskOnServerError
+        // which only asserts on the list mapping.
+        let restored = try Self.workflowDataResult(id: "wf_1")
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(
+            .networkError(.errorResponse(.init(code: .unknownError, originalCode: 0), .internalServerError))
+        )
+        self.mockDeviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ])
+        self.mockDeviceCache.stubbedCachedWorkflowDetails = ["wf_1": restored]
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == restored
+    }
+
     func testGetWorkflowsListWithDuplicateOfferingIdKeepsLastEntry() {
         self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
             .init(id: "wf_first", displayName: "First", offeringId: "shared", prefetch: false),
@@ -214,6 +400,81 @@ class WorkflowManagerTests: TestCase {
         self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
 
         expect(self.manager.cachedWorkflowId(forOfferingId: "shared")) == "wf_last"
+    }
+
+    // MARK: - cachedWorkflow(forOfferingId:)
+
+    func testCachedWorkflowReturnsFreshCachedWorkflowResolvedViaOfferingIdMap() throws {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_abc", displayName: "Flow", offeringId: "default", prefetch: false)
+        ]))
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        let expected = try Self.workflowDataResult(id: "wf_abc")
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_abc", isAppBackgrounded: false) { _ in }
+
+        expect(self.manager.cachedWorkflow(forOfferingId: "default")) == expected
+    }
+
+    func testCachedWorkflowReturnsNilWhenListNeverFetched() throws {
+        // No list fetched, so the mapping is unknown: must not fall back to the offering id.
+        let expected = try Self.workflowDataResult(id: "default")
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "default", isAppBackgrounded: false) { _ in }
+
+        expect(self.manager.cachedWorkflow(forOfferingId: "default")).to(beNil())
+    }
+
+    func testCachedWorkflowReturnsNilWhenOfferingHasNoListMapping() throws {
+        // Fresh list maps a different offering; the queried one has no mapping (even though a
+        // workflow is cached under its id), so it must not be used as a fallback workflow key.
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_other", displayName: "Other", offeringId: "other", prefetch: false)
+        ]))
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        let cachedUnderOfferingId = try Self.workflowDataResult(id: "default")
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(cachedUnderOfferingId)
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "default", isAppBackgrounded: false) { _ in }
+
+        expect(self.manager.cachedWorkflow(forOfferingId: "default")).to(beNil())
+    }
+
+    func testCachedWorkflowReturnsNilWhenWorkflowsListIsStale() throws {
+        // List ages past the TTL while the detail stays fresh: a stale mapping must not be served.
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_abc", displayName: "Flow", offeringId: "default", prefetch: false)
+        ]))
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        self.dateProvider.advance(by: 6 * 60)
+
+        let expected = try Self.workflowDataResult(id: "wf_abc")
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_abc", isAppBackgrounded: false) { _ in }
+
+        expect(self.manager.cachedWorkflow(forOfferingId: "default")).to(beNil())
+    }
+
+    func testCachedWorkflowReturnsNilWhenNothingCached() {
+        expect(self.manager.cachedWorkflow(forOfferingId: "default")).to(beNil())
+    }
+
+    func testCachedWorkflowReturnsNilWhenCachedWorkflowIsStale() throws {
+        // Detail ages past the TTL while the list mapping stays fresh: a stale detail must not be served.
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+
+        self.dateProvider.advance(by: 6 * 60)
+
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
+        ]))
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.manager.cachedWorkflow(forOfferingId: "default")).to(beNil())
     }
 
     // MARK: - cachedWorkflowId(forOfferingId:)
@@ -310,6 +571,232 @@ class WorkflowManagerTests: TestCase {
         self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
 
         expect(completed) == true
+    }
+
+    func testGetWorkflowsListCallsOnCompleteOnClientError() {
+        // A 4xx skips disk restoration and returns early. onComplete must still fire so
+        // callers (e.g. offerings delivery) are not blocked.
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(
+            .networkError(.errorResponse(.init(code: .invalidAPIKey, originalCode: 0), .invalidRequest))
+        )
+
+        var completed = false
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
+
+        expect(completed) == true
+    }
+
+    // MARK: - Detail disk persistence
+
+    func testPrefetchPersistsWorkflowDetailToDisk() throws {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_prefetch", displayName: "A", offeringId: "off_a", prefetch: true)
+        ]))
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(try Self.workflowDataResult(id: "wf_prefetch"))
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.mockDeviceCache.cacheWorkflowDetailsCount) >= 1
+        expect(self.mockDeviceCache.cachedWorkflowDetailsParameter?.keys).to(contain("wf_prefetch"))
+    }
+
+    func testPrefetchBlocksOnFetchAndPersistsFreshDetailWhenCachedButStale() throws {
+        // Seed the detail cache, then let it go stale.
+        let stale = try Self.workflowDataResult(id: "stale")
+        self.workflowsCache.cache(workflow: stale,
+                                  workflowId: "wf_a",
+                                  ifGeneration: self.workflowsCache.currentCacheGeneration())
+        self.dateProvider.advance(by: 6 * 60)
+
+        // Prefetch the same workflow. Even though it's cached-but-stale, prefetch opts out of
+        // stale-while-revalidate, so it fetches fresh and persists the fresh envelope, never the stale
+        // cached value it would otherwise serve.
+        let fresh = try Self.workflowDataResult(id: "fresh")
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_a", displayName: "A", offeringId: "off_a", prefetch: true)
+        ]))
+        self.mockWorkflowsAPI.stubbedGetWorkflowResults = ["wf_a": .success(fresh)]
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.mockDeviceCache.cachedWorkflowDetailsParameter?["wf_a"]) == fresh
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_a")) == fresh
+    }
+
+    func testOnDemandGetWorkflowDoesNotPersistDetailToDisk() throws {
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(try Self.workflowDataResult(id: "wf_1"))
+
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+
+        expect(self.mockDeviceCache.cacheWorkflowDetailsCount) == 0
+    }
+
+    func testPrefetchDoesNotPersistDetailWhenFetchFails() throws {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_prefetch", displayName: "A", offeringId: "off_a", prefetch: true)
+        ]))
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .failure(.missingAppUserID())
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.mockDeviceCache.cacheWorkflowDetailsCount) == 0
+    }
+
+    func testPrefetchPersistsAllDetailsInASingleDiskWrite() throws {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_a", displayName: "A", offeringId: "off_a", prefetch: true),
+            .init(id: "wf_b", displayName: "B", offeringId: "off_b", prefetch: true)
+        ]))
+        self.mockWorkflowsAPI.stubbedGetWorkflowResults = [
+            "wf_a": .success(try Self.workflowDataResult(id: "wf_a")),
+            "wf_b": .success(try Self.workflowDataResult(id: "wf_b"))
+        ]
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        // Two prefetches, but the details are batched into one disk write.
+        expect(self.mockDeviceCache.cacheWorkflowDetailsCount) == 1
+        expect(self.mockDeviceCache.cachedWorkflowDetailsParameter?.keys).to(contain("wf_a", "wf_b"))
+    }
+
+    func testPrefetchDropsDiskWriteWhenIdentityChangesMidFlight() throws {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_a", displayName: "A", offeringId: "off_a", prefetch: true)
+        ]))
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        // Identity change mid-prefetch clears the cache (bumping the disk generation).
+        self.workflowsCache.clearCache()
+        let clearCount = self.mockDeviceCache.clearWorkflowDetailsCacheCount
+
+        // The in-flight prefetch from the previous user now lands.
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_a",
+                                                        with: .success(try Self.workflowDataResult(id: "wf_a")))
+
+        // Its detail write is dropped, so the previous user's payload is not written back after clear.
+        expect(self.mockDeviceCache.cacheWorkflowDetailsCount) == 0
+        expect(self.mockDeviceCache.clearWorkflowDetailsCacheCount) == clearCount
+    }
+
+    func testPrefetchDoesNotRepopulateMemoryWhenIdentityChangesMidFlight() throws {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_a", displayName: "A", offeringId: "off_a", prefetch: true)
+        ]))
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        // Identity change mid-prefetch clears the cache (bumping the generation).
+        self.workflowsCache.clearCache()
+
+        // The in-flight prefetch from the previous user now lands.
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_a",
+                                                        with: .success(try Self.workflowDataResult(id: "wf_a")))
+
+        // Its in-memory write is dropped, so the previous user's (user-scoped) detail does not
+        // repopulate memory for the new user.
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_a")).to(beNil())
+    }
+
+    func testPrefetchInMemoryWriteIsGuardedByListGenerationNotAFreshCapture() throws {
+        // The list is fetched at generation 0 and cached. A login/logout then clears the cache
+        // (bumping the generation) *before* this prefetch's getWorkflow is issued, so it captures the
+        // already-bumped generation. The in-memory write must be guarded by the list's generation it
+        // was started with, not that fresh capture, or the previous user's (user-scoped) detail leaks
+        // into the new user's cache.
+        //
+        // This drives getWorkflow directly with the list's generation: it covers getWorkflow honoring
+        // the forwarded generation for its write. The prefetch call site forwarding that generation is
+        // verified by inspection, since the clear landing between caching the list and the prefetch's
+        // synchronous generation capture is not a window we can hit deterministically without a
+        // production-only test seam.
+        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+
+        let listGeneration = self.workflowsCache.currentCacheGeneration()
+
+        // Identity change clears the cache and bumps the generation before the prefetch is issued.
+        self.workflowsCache.clearCache()
+
+        self.manager.getWorkflow(appUserID: self.appUserID,
+                                 workflowId: "wf_a",
+                                 isAppBackgrounded: false,
+                                 prefetch: true,
+                                 ifGeneration: listGeneration) { _ in }
+
+        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_a",
+                                                        with: .success(try Self.workflowDataResult(id: "wf_a")))
+
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_a")).to(beNil())
+    }
+
+    func testGetWorkflowsListDropsListAndPrefetchWhenIdentityChangesWhileListFetchInFlight() throws {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
+            .init(id: "wf_a", displayName: "A", offeringId: "off_a", prefetch: true)
+        ]))
+        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(try Self.workflowDataResult(id: "wf_a"))
+
+        // Identity change lands while the list fetch is in flight: clearCache bumps the generation
+        // before the success completion runs, so the response belongs to the previous user.
+        self.mockWorkflowsAPI.onGetWorkflowsBeforeCompletion = { [weak self] in
+            self?.workflowsCache.clearCache()
+        }
+
+        var completed = false
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
+
+        // The previous user's list must not be cached, no prefetch must run or persist its detail,
+        // and onComplete still fires so callers (e.g. offerings delivery) are never blocked.
+        expect(self.mockDeviceCache.cacheWorkflowsListResponseCount) == 0
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 0
+        expect(self.mockDeviceCache.cacheWorkflowDetailsCount) == 0
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_a")).to(beNil())
+        expect(self.manager.cachedWorkflowId(forOfferingId: "off_a")).to(beNil())
+        expect(completed) == true
+    }
+
+    func testGetWorkflowsListRestoresPersistedDetailsIntoInMemoryCacheOnBackendFailure() throws {
+        let restored = try Self.workflowDataResult(id: "wf_1")
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
+        self.mockDeviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: true)
+        ])
+        self.mockDeviceCache.stubbedCachedWorkflowDetails = ["wf_1": restored]
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == restored
+    }
+
+    func testRestoredDetailIsServedOfflineWithoutHittingBackend() throws {
+        let restored = try Self.workflowDataResult(id: "wf_1")
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
+        self.mockDeviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
+            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: true)
+        ])
+        self.mockDeviceCache.stubbedCachedWorkflowDetails = ["wf_1": restored]
+
+        // Backend-down recovery restores the detail into the in-memory cache (fresh)...
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        // ...so a later render is a cache hit with no backend round-trip.
+        var served: WorkflowDataResult?
+        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) {
+            served = try? $0.get()
+        }
+
+        expect(served) == restored
+        expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 0
+    }
+
+    func testGetWorkflowsListRestoreIsNoOpWhenNoDetailsPersisted() {
+        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
+        self.mockDeviceCache.stubbedCachedWorkflowDetails = nil
+
+        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+
+        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
     }
 
     // MARK: - Helpers

@@ -32,6 +32,7 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
     private let _purchasesAreCompletedBy: PurchasesAreCompletedBy
     let preferredLocales: [String]
     let preferredLocaleOverride: String?
+    var isUIPreviewMode = false
 
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return _purchasesAreCompletedBy }
@@ -46,6 +47,12 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
         guard let block = workflowBlock else { throw ErrorCode.configurationError }
         return try await block(offeringID)
+    }
+
+    var cachedWorkflowBlock: ((String) -> WorkflowDataResult?)?
+
+    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
+        return self.cachedWorkflowBlock?(offeringID)
     }
 #endif
 
@@ -97,6 +104,12 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
 
     func track(paywallEvent: PaywallEvent) async {
         await self.trackEventBlock(paywallEvent)
+    }
+
+    var trackWorkflowEventBlock: (@Sendable (WorkflowEvent) async -> Void)?
+
+    func track(workflowEvent: WorkflowEvent) async {
+        await self.trackWorkflowEventBlock?(workflowEvent)
     }
 
     struct CachedPurchaseData {
@@ -165,8 +178,11 @@ extension PaywallPurchasesType {
 
         mapped.cachedOfferings = self.cachedOfferings
         mapped.offeringsBlock = { try await self.offerings() }
+        mapped.isUIPreviewMode = self.isUIPreviewMode
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
+        mapped.trackWorkflowEventBlock = { await self.track(workflowEvent: $0) }
+        mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
         #endif
 
         return mapped
@@ -192,8 +208,11 @@ extension PaywallPurchasesType {
 
         mapped.cachedOfferings = self.cachedOfferings
         mapped.offeringsBlock = { try await self.offerings() }
+        mapped.isUIPreviewMode = self.isUIPreviewMode
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
+        mapped.trackWorkflowEventBlock = { await self.track(workflowEvent: $0) }
+        mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
         #endif
 
         return mapped

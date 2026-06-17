@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@3.20.0
+  revenuecat: revenuecat/sdks-common-config@3.21.2
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -59,6 +59,25 @@ executors:
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
+  # A macOS executor safe to pass into orb jobs (e.g. revenuecat/update-error-codes).
+  # The standard macos-executor embeds pipeline.parameters.* in its environment, which
+  # don't resolve when an executor is evaluated outside this config's own pipeline-parameter
+  # scope (such as inside an orb), causing an "Unknown variable(s)" config error. This
+  # variant hardcodes those values so it carries no such references.
+  macos-executor-external:
+    parameters:
+      xcode_version:
+        type: string
+        default: "16.4"
+    macos:
+      # circleci-lint: disable=unknown-xcode-version
+      xcode: << parameters.xcode_version >>
+    resource_class: m4pro.medium
+    environment:
+      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: "false"
+      CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: "false"
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
   macos-executor-large:
     parameters:
       xcode_version:
@@ -104,7 +123,7 @@ aliases:
         ignore: /.*/
       branches:
         only: main
-  swiftinterface-xcode-version: &swiftinterface-xcode-version "26.3"
+  swiftinterface-xcode-version: &swiftinterface-xcode-version "26.5"
 commands:
   github-notify-pr-on-fail:
     steps:
@@ -559,6 +578,8 @@ commands:
       - checkout
       - install-dependencies
       - update-spm-installation-commit
+      - tuist-generate-workspace:
+          include_test_dependencies: true
       - run:
           name: Run backend_integration Tests
           command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
@@ -625,7 +646,7 @@ jobs:
   revenuecat-admob-tests:
     executor:
       name: macos-executor
-      xcode_version: "26.3"
+      xcode_version: "26.5"
     steps:
       - checkout
       - install-dependencies:
@@ -640,7 +661,7 @@ jobs:
           command: bundle exec fastlane test_revenuecat_admob
           no_output_timeout: 10m
           environment:
-            DEVICE: iPhone 17,OS=26.2
+            DEVICE: iPhone 17,OS=26.5
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecat_admob
@@ -818,7 +839,7 @@ jobs:
   record-and-upload-paywalls-v1-snapshots:
     executor:
       name: macos-executor
-      xcode_version: "26.3"
+      xcode_version: "26.5"
 
     steps:
       - checkout
@@ -830,7 +851,7 @@ jobs:
           command: bundle exec fastlane record_and_upload_v1_snapshots
           no_output_timeout: 15m
           environment:
-            DEVICE: iPhone 17,OS=26.2
+            DEVICE: iPhone 17,OS=26.5
       - store_test_results:
           path: fastlane/test_output/v1-snapshots/tests.xml
       - store_artifacts:
@@ -841,7 +862,7 @@ jobs:
   run-revenuecat-ui-ios-26:
     executor:
       name: macos-executor
-      xcode_version: "26.3"
+      xcode_version: "26.5"
 
     steps:
       - checkout
@@ -862,7 +883,7 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 15m
           environment:
-            DEVICE: iPhone 17,OS=26.2
+            DEVICE: iPhone 17,OS=26.5
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
@@ -958,6 +979,7 @@ jobs:
   run-test-ios-26:
     executor:
       name: macos-executor
+      # Not updated: FB22500243 (Xcode 26.3+ breaks this job)
       xcode_version: "26.3"
 
     steps:
@@ -1352,7 +1374,7 @@ jobs:
   run-all-maestro-e2e-tests:
     executor:
       name: macos-executor
-      xcode_version: "26.3"
+      xcode_version: "26.5"
     steps:
       - macos/preboot-simulator:
           version: "18.6"
@@ -1822,7 +1844,7 @@ jobs:
   deploy-purchase-tester:
     executor:
       name: macos-executor
-      xcode_version: "26.3"
+      xcode_version: "26.5"
     parameters:
       dry_run:
         type: boolean
@@ -1841,7 +1863,7 @@ jobs:
   deploy-rct-tester:
     executor:
       name: macos-executor
-      xcode_version: "26.3"
+      xcode_version: "26.5"
     parameters:
       dry_run:
         type: boolean
@@ -2563,6 +2585,23 @@ workflows:
     jobs:
       - update-paywall-preview-resources-commit
 
+  update-error-codes:
+    when:
+      equal: [update_error_codes, << pipeline.parameters.action >>]
+    jobs:
+      - revenuecat/update-error-codes:
+          platform: ios
+          output: Sources/Generated/ErrorCode.swift
+          commit_paths: "Sources/Generated/ErrorCode.swift,api"
+          executor:
+            name: macos-executor-external
+            xcode_version: *swiftinterface-xcode-version
+          update_api_steps:
+            - install-dependencies
+            - run:
+                name: Update swiftinterface baselines
+                command: bundle exec fastlane ios update_swiftinterface_baselines scheme:RevenueCat
+
   manual-trigger-docs-deploy:
     when:
       equal: [run-manual-docs-deploy, << pipeline.parameters.action >>]
@@ -2585,6 +2624,11 @@ workflows:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
             equal: [bump, << pipeline.parameters.action >>]
+        - not:
+            equal: [update_error_codes, << pipeline.parameters.action >>]
+        - not: << pipeline.parameters.generate_snapshots >>
+        - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
+        - not: << pipeline.parameters.generate_swiftinterface >>
         - matches:
             pattern: "^(release/.*|main)$"
             value: << pipeline.git.branch >>
