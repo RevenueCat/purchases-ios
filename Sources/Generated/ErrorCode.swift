@@ -121,7 +121,7 @@ extension ErrorCode: CustomStringConvertible {
         case .emptySubscriberAttributes:
             return "A request for subscriber attributes returned none."
         case .productDiscountMissingIdentifierError:
-            return "The SKProductDiscount or Product.SubscriptionOffer wrapped\nby StoreProductDiscount is missing an identifier.\nThis is a required property and likely an AppStore quirk that it is missing."
+            return "The SKProductDiscount or Product.SubscriptionOffer wrapped by StoreProductDiscount is missing an identifier. This is a required property and likely an AppStore quirk that it is missing."
         case .productDiscountMissingSubscriptionGroupIdentifierError:
             return "Unable to create a discount offer, the product is missing a subscriptionGroupIdentifier."
         case .customerInfoError:
@@ -135,7 +135,7 @@ extension ErrorCode: CustomStringConvertible {
         case .apiEndpointBlockedError:
             return "Requests to RevenueCat are being blocked. See: https://rev.cat/dnsBlocking for more info."
         case .invalidPromotionalOfferError:
-            return "The information associated with this PromotionalOffer is not valid.\nSee https://rev.cat/ios-subscription-offers for more info."
+            return "The information associated with this PromotionalOffer is not valid. See https://rev.cat/ios-subscription-offers for more info."
         case .offlineConnectionError:
             return "Error performing request because the internet connection appears to be offline."
         case .featureNotAvailableInCustomEntitlementsComputationMode:
