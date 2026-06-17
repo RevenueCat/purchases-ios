@@ -815,6 +815,12 @@ final class PurchasesOrchestrator {
 
             let presentedOfferingContext = package?.presentedOfferingContext
 
+            self.cachePurchaseData(
+                presentedOfferingContext: presentedOfferingContext,
+                paywallEvent: paywallEvent,
+                productIdentifier: sk2Product.id
+            )
+
             result = try await self.purchase(sk2Product, options)
 
             // The `purchase(sk2Product)` call can throw a `StoreKitError.userCancelled` error.
@@ -829,6 +835,7 @@ final class PurchasesOrchestrator {
             case .userCancelled:
                 userCancelled = true
                 transaction = nil
+                self.clearCachedPurchaseData(productIdentifier: sk2Product.id)
                 if self.systemInfo.dangerousSettings.customEntitlementComputation {
                     throw ErrorUtils.purchaseCancelledError()
                 }
@@ -896,6 +903,8 @@ final class PurchasesOrchestrator {
                 throw ErrorUtils.purchaseCancelledError()
             }
 
+            self.clearCachedPurchaseData(productIdentifier: productId)
+
             self.trackPurchaseAttemptEventIfNeeded(startTime,
                                                    successful: false,
                                                    productId: productId,
@@ -934,6 +943,8 @@ final class PurchasesOrchestrator {
                                                    storeKitVersion: .storeKit2,
                                                    purchaseResult: nil,
                                                    error: purchasesError.asPublicError)
+
+            self.clearCachedPurchaseData(productIdentifier: productId)
 
             throw purchasesError
         }

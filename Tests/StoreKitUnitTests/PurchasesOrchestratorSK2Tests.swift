@@ -1244,6 +1244,49 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ) == "test_offering"
     }
 
+    func testSK2TransactionListenerDelegateIncludesCachedOfferingAndPaywall() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let offeringContext = PresentedOfferingContext(offeringIdentifier: "test_offering")
+        let paywallEvent = PaywallEvent.purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo
+        )
+
+        let cacheDate = self.mockDateProvider.now()
+        self.orchestrator.cachePurchaseData(
+            presentedOfferingContext: offeringContext,
+            paywallEvent: paywallEvent,
+            productIdentifier: Self.testProductId
+        )
+
+        let transaction = MockStoreTransaction(
+            productIdentifier: Self.testProductId,
+            purchaseDate: cacheDate.addingTimeInterval(1)
+        )
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "test_offering"
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
+        ) == Self.paywallEventCreationData
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
+        ) == Self.paywallEventWithPurchaseInfo
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
+    }
+
     func testSK2PurchaseWithPackageThenCancelledThenPurchaseWithProductDoesNotIncludeOfferingContext() async throws {
         self.setUpStoreKit2Listener()
 
@@ -1339,7 +1382,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
-    func testSK2CancelledPurchaseDoesNotClearExternallyCachedPresentedOfferingContext() async throws {
+    func testSK2CancelledPurchaseClearsCachedPresentedOfferingContext() async throws {
         self.setUpStoreKit2Listener()
 
         self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
@@ -1369,8 +1412,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         )
         expect(cancelled) == true
 
-        // The SK2 purchase path does not clear externally cached context.
-        // A subsequent transaction via the listener should still pick it up.
+        // The SK2 purchase path clears cached context on cancel.
         let transaction = MockStoreTransaction(productIdentifier: product.id)
 
         try await self.orchestrator.storeKit2TransactionListener(
@@ -1380,12 +1422,11 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         expect(self.backend.invokedPostReceiptData) == true
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData
-                .presentedOfferingContext?.offeringIdentifier
-        ) == "test_offering"
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
     }
 
-    func testSK2FailedPurchaseDoesNotClearExternallyCachedPresentedOfferingContext() async throws {
+    func testSK2FailedPurchaseClearsCachedPresentedOfferingContext() async throws {
         self.setUpStoreKit2Listener()
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
@@ -1420,8 +1461,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         self.testSession.failTransactionsEnabled = false
 
-        // The SK2 purchase path does not clear externally cached context.
-        // A subsequent transaction via the listener should still pick it up.
+        // The SK2 purchase path clears cached context on failure.
         let transaction = MockStoreTransaction(productIdentifier: product.id)
 
         try await self.orchestrator.storeKit2TransactionListener(
@@ -1431,12 +1471,11 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         expect(self.backend.invokedPostReceiptData) == true
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData
-                .presentedOfferingContext?.offeringIdentifier
-        ) == "test_offering"
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
     }
 
-    func testSK2CancelledPurchaseDoesNotClearExternallyCachedContextWithCustomEntitlementComputation() async throws {
+    func testSK2CancelledPurchaseClearsCachedContextWithCustomEntitlementComputation() async throws {
         self.setUpSystemInfo(finishTransactions: true, customEntitlementComputation: true)
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
@@ -1470,8 +1509,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             expect(error).to(matchError(ErrorCode.purchaseCancelledError))
         }
 
-        // The SK2 purchase path does not clear externally cached context.
-        // A subsequent transaction via the listener should still pick it up.
+        // The SK2 purchase path clears cached context on cancel.
         let transaction = MockStoreTransaction(productIdentifier: product.id)
 
         try await self.orchestrator.storeKit2TransactionListener(
@@ -1481,9 +1519,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         expect(self.backend.invokedPostReceiptData) == true
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData
-                .presentedOfferingContext?.offeringIdentifier
-        ) == "test_offering"
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
     }
 
     func testSK2FailedPurchaseForProductADoesNotAffectProductBContext() async throws {
