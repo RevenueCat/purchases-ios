@@ -43,6 +43,11 @@ struct ImageComponentView: View {
     @Environment(\.selectedPackageId)
     private var selectedPackageId
 
+    @Environment(\.paywallStateValues)
+    private var paywallStateValues
+    @Environment(\.paywallStateDefaults)
+    private var paywallStateDefaults
+
     @Environment(\.requestSizeCalculation)
     private var requestSizeCalculation
 
@@ -81,6 +86,8 @@ struct ImageComponentView: View {
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackageId: self.selectedPackageId,
             customVariables: self.customVariables,
+            stateValues: self.paywallStateValues,
+            stateDefaults: self.paywallStateDefaults,
             colorScheme: colorScheme
         ) { style in
             if style.visible {

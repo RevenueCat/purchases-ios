@@ -359,6 +359,11 @@ struct WorkflowPaywallView: View {
         // this presentation session's state store. PaywallsV2View only creates its own store when
         // no store was injected from above (i.e. standalone presentation).
         .environment(\.paywallStateStore, self.stateStore)
+        // Republish the shared store's snapshot to the whole workflow subtree. This view observes
+        // `stateStore` via `@StateObject`, so a state update re-runs this body and refreshes the
+        // values every page reads when re-resolving `state` conditions.
+        .environment(\.paywallStateValues, self.stateStore.values)
+        .environment(\.paywallStateDefaults, self.stateStore.defaults)
     }
 
     // MARK: - Helpers

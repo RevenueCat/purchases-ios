@@ -136,7 +136,7 @@ import Foundation
         case zeroDecimalPlaceCountries
         case exitOffers
         case automaticallyScaleFontSize
-        case stateDeclarations = "state"
+        case stateDeclarations
     }
 
     public init(id: String? = nil,
