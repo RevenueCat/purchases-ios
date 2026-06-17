@@ -633,7 +633,7 @@ extension AdEvent {
         internal init(
             id: ID = .init(),
             date: Date = .init(),
-            captureMethod: AdEventCaptureMethod = .manual
+            captureMethod: AdEventCaptureMethod
         ) {
             self.id = id
             self.date = date

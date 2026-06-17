@@ -261,7 +261,8 @@ extension AdEvent.CreationData {
     static func random() -> Self {
         return .init(
             id: .init(),
-            date: .now.removingMilliseconds
+            date: .now.removingMilliseconds,
+            captureMethod: .manual
         )
     }
 
