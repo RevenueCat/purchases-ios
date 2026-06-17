@@ -619,7 +619,7 @@ extension SamplePaywallLoader {
             revision: 1,
             defaultLocaleIdentifier: "en_US",
             // The declared default matches `defaultTabId` so the first render is consistent.
-            state: [
+            stateDeclarations: [
                 Self.planStateKey: .init(type: "string", defaultValue: .string("monthly"))
             ]
         )
