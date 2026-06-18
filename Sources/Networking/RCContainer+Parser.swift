@@ -192,29 +192,13 @@ extension RCContainer {
             return Self.base64URLString(from: bytes)
         }
 
-        /// Encodes complete 3-byte chunks as base64url without padding.
-        ///
-        /// RC Container checksums are always 24 bytes, so there is no remainder chunk to encode.
+        /// Encodes bytes as base64url without padding.
         private static func base64URLString(from bytes: [UInt8]) -> String {
-            let alphabet = Array("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".utf8)
-            var encoded: [UInt8] = []
-            encoded.reserveCapacity((bytes.count / 3) * 4)
-
-            var offset = 0
-            while offset + 2 < bytes.count {
-                let value = (UInt32(bytes[offset]) << 16)
-                | (UInt32(bytes[offset + 1]) << 8)
-                | UInt32(bytes[offset + 2])
-
-                encoded.append(alphabet[Int((value >> 18) & 0x3f)])
-                encoded.append(alphabet[Int((value >> 12) & 0x3f)])
-                encoded.append(alphabet[Int((value >> 6) & 0x3f)])
-                encoded.append(alphabet[Int(value & 0x3f)])
-
-                offset += 3
-            }
-
-            return String(bytes: encoded, encoding: .utf8) ?? ""
+            return Data(bytes)
+                .base64EncodedString()
+                .replacingOccurrences(of: "+", with: "-")
+                .replacingOccurrences(of: "/", with: "_")
+                .replacingOccurrences(of: "=", with: "")
         }
 
         /// Re-bases an integer byte range into the `Data` storage for temporary zero-copy access.
