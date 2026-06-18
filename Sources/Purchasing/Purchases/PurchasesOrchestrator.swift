@@ -979,8 +979,8 @@ final class PurchasesOrchestrator {
 
     /// Caches purchase context (offering + optional paywall event) for a product.
     /// Both the `.myApp` external purchase path and `PaywallExtensions` call this through
-    /// the `@_spi(Internal)` API (which defaults `originatedFromPurchase` to `false`). The SK1 and
-    /// SK2 purchase paths call this internally passing `originatedFromPurchase: true`.
+    /// the `@_spi(Internal)` API. The SK1 and SK2 purchase paths call this internally passing
+    /// `originatedFromPurchase: true`.
     ///
     /// - Parameter originatedFromPurchase: whether the context was cached at the intent of a
     ///   RevenueCat `purchase()` call. This governs how the entry is evicted on retrieval, see
