@@ -41,9 +41,10 @@ internal extension RewardVerification {
 
     /// Bounded polling loop. Retries `pending`/`unknown` statuses and transient `BackendError`
     /// throws within an attempt budget; everything else (terminal `BackendError`, sleeper failure,
-    /// any unrecognised throw) collapses to `.failed`. Honors `Task.isCancelled` between attempts
-    /// and after each attempt completes, mapping cancellation to `.failed(.cancelled)` and exiting
-    /// early without further polling.
+    /// any unrecognised throw) ends in `.failed` carrying a specific `FailureReason` (the binary
+    /// collapse to a public result happens upstream). Honors `Task.isCancelled` between attempts and
+    /// after each attempt completes, mapping cancellation to `.failed(.cancelled)` and exiting early
+    /// without further polling.
     struct Poller: Sendable {
 
         static let defaultMaxAttempts = 10
