@@ -1951,9 +1951,7 @@ private extension PurchasesOrchestrator {
                                        restored: Bool) {
         let purchaseSource = self.purchaseSource(for: purchasedTransaction.productIdentifier,
                                                  restored: restored)
-        // Restored transactions never attribute cached purchase context (a restore is not a new
-        // purchase). For non-restores, `consumeCachedPurchaseContext(for:initiationSource:)` applies the
-        // peek-vs-remove rule based on the initiation source.
+        // Don't attribute offering context or paywall data for restored transactions
         let cached = restored
             ? nil
             : self.consumeCachedPurchaseContext(for: purchasedTransaction,
