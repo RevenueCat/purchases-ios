@@ -39,8 +39,8 @@ internal extension RewardVerification {
         let sample: @Sendable () -> TimeInterval
     }
 
-    /// Bounded polling loop. Retries `pending`/`unknown` statuses and transient `ErrorCode`
-    /// throws within an attempt budget; everything else (terminal `ErrorCode`, sleeper failure,
+    /// Bounded polling loop. Retries `pending`/`unknown` statuses and transient `BackendError`
+    /// throws within an attempt budget; everything else (terminal `BackendError`, sleeper failure,
     /// any unrecognised throw) collapses to `.failed`. Honors `Task.isCancelled` between
     /// attempts and exits early without further polling.
     struct Poller: Sendable {
