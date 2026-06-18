@@ -887,7 +887,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ) == "offering_b"
     }
 
-    func testSK1ExternallyCachedContextIsNotClearedOnFailure() async throws {
+    func testSK1ExternallyCachedContextIsClearedOnFailure() async throws {
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
         let product = try await self.fetchSk1Product()
@@ -933,12 +933,11 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
             }
         }
 
-        // A failed RC purchase() does not clear externally-cached context, so the surviving entry
-        // is attributed to the subsequent successful purchase of the same product.
+        // A cancelled/failed purchase clears the cached context regardless of where it came from,
+        // so the subsequent successful purchase of the same product has no offering context.
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData
-                .presentedOfferingContext?.offeringIdentifier
-        ) == "hybrid_offering"
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
     }
 
     func testSK1PurchasePackageFailThenPurchasePackageAgainIncludesOfferingContext() async throws {
@@ -1003,8 +1002,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.orchestrator.cachePurchaseData(
             presentedOfferingContext: offeringContext,
             paywallEvent: nil,
-            productIdentifier: product.productIdentifier,
-            originatedFromPurchase: true
+            productIdentifier: product.productIdentifier
         )
 
         // Simulate a failed (non-cancelled) SK1 payment
@@ -1055,8 +1053,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.orchestrator.cachePurchaseData(
             presentedOfferingContext: offeringContext,
             paywallEvent: nil,
-            productIdentifier: product.productIdentifier,
-            originatedFromPurchase: true
+            productIdentifier: product.productIdentifier
         )
 
         // Simulate a cancelled SK1 payment

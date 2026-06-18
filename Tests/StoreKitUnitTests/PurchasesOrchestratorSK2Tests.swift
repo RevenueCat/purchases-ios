@@ -1395,8 +1395,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.orchestrator.cachePurchaseData(
             presentedOfferingContext: offeringContext,
             paywallEvent: nil,
-            productIdentifier: product.id,
-            originatedFromPurchase: true
+            productIdentifier: product.id
         )
 
         // Simulate user cancellation via the mock listener
@@ -1439,8 +1438,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.orchestrator.cachePurchaseData(
             presentedOfferingContext: offeringContext,
             paywallEvent: nil,
-            productIdentifier: product.id,
-            originatedFromPurchase: true
+            productIdentifier: product.id
         )
 
         // Make the purchase fail with a StoreKit error
@@ -1491,8 +1489,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.orchestrator.cachePurchaseData(
             presentedOfferingContext: offeringContext,
             paywallEvent: nil,
-            productIdentifier: product.id,
-            originatedFromPurchase: true
+            productIdentifier: product.id
         )
 
         self.mockStoreKit2TransactionListener?.mockResult = .init(.userCancelled)
@@ -1577,7 +1574,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ) == "offering_b"
     }
 
-    func testSK2ExternallyCachedContextIsNotClearedOnFailure() async throws {
+    func testSK2ExternallyCachedContextIsClearedOnFailure() async throws {
         self.setUpStoreKit2Listener()
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
@@ -1612,8 +1609,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         self.testSession.failTransactionsEnabled = false
 
-        // The SK2 purchase path does not clear externally cached context.
-        // A subsequent transaction via the listener should still pick it up.
+        // A cancelled/failed purchase clears the cached context regardless of where it came from,
+        // so a subsequent transaction via the listener has no offering context to attach.
         let transaction = MockStoreTransaction(productIdentifier: product.id)
 
         try await self.orchestrator.storeKit2TransactionListener(
@@ -1623,9 +1620,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         expect(self.backend.invokedPostReceiptData) == true
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData
-                .presentedOfferingContext?.offeringIdentifier
-        ) == "hybrid_offering"
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
     }
 
     func testSK2PurchasePackageCancelThenPurchasePackageAgainIncludesOfferingContext() async throws {

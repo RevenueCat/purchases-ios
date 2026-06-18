@@ -626,8 +626,7 @@ final class PurchasesOrchestrator {
                                                        purchaseResult: nil, // SK2 only
                                                        error: error)
                 if cancelled || error != nil {
-                    self.clearCachedPurchaseData(productIdentifier: productIdentifier,
-                                                 onlyIfOriginatedFromPurchase: true)
+                    self.clearCachedPurchaseData(productIdentifier: productIdentifier)
                 }
 
                 if !cancelled {
@@ -838,7 +837,7 @@ final class PurchasesOrchestrator {
             case .userCancelled:
                 userCancelled = true
                 transaction = nil
-                self.clearCachedPurchaseData(productIdentifier: sk2Product.id, onlyIfOriginatedFromPurchase: true)
+                self.clearCachedPurchaseData(productIdentifier: sk2Product.id)
                 if self.systemInfo.dangerousSettings.customEntitlementComputation {
                     throw ErrorUtils.purchaseCancelledError()
                 }
@@ -906,7 +905,7 @@ final class PurchasesOrchestrator {
                 throw ErrorUtils.purchaseCancelledError()
             }
 
-            self.clearCachedPurchaseData(productIdentifier: productId, onlyIfOriginatedFromPurchase: true)
+            self.clearCachedPurchaseData(productIdentifier: productId)
 
             self.trackPurchaseAttemptEventIfNeeded(startTime,
                                                    successful: false,
@@ -947,7 +946,7 @@ final class PurchasesOrchestrator {
                                                    purchaseResult: nil,
                                                    error: purchasesError.asPublicError)
 
-            self.clearCachedPurchaseData(productIdentifier: productId, onlyIfOriginatedFromPurchase: true)
+            self.clearCachedPurchaseData(productIdentifier: productId)
 
             throw purchasesError
         }
@@ -1013,20 +1012,8 @@ final class PurchasesOrchestrator {
         self.cachedPurchaseContextByProductID.modify { $0[productIdentifier] = cached }
     }
 
-    /// Clears the cached purchase context for a product.
-    ///
-    /// - Parameter onlyIfOriginatedFromPurchase: when `true`, only an entry cached at the intent of
-    ///   a RevenueCat `purchase()` call is removed. This is used by `purchase()` cancel/failure
-    ///   paths so they don't wipe externally-cached context (SwiftUI StoreKit paywalls, custom
-    ///   purchase logic) that wasn't created by that purchase and may still be attributed to its own
-    ///   transaction arriving via the queue.
-    func clearCachedPurchaseData(productIdentifier: String, onlyIfOriginatedFromPurchase: Bool = false) {
-        self.cachedPurchaseContextByProductID.modify { cache in
-            if onlyIfOriginatedFromPurchase, cache[productIdentifier]?.originatedFromPurchase != true {
-                return
-            }
-            cache.removeValue(forKey: productIdentifier)
-        }
+    func clearCachedPurchaseData(productIdentifier: String) {
+        self.cachedPurchaseContextByProductID.modify { $0.removeValue(forKey: productIdentifier) }
     }
 
     func postEventsIfNeeded(delayed: Bool = false) {
@@ -1309,8 +1296,7 @@ private extension PurchasesOrchestrator {
 
     func handleFailedTransaction(_ transaction: SKPaymentTransaction) {
         let storeTransaction = StoreTransaction(sk1Transaction: transaction)
-        self.clearCachedPurchaseData(productIdentifier: storeTransaction.productIdentifier,
-                                     onlyIfOriginatedFromPurchase: true)
+        self.clearCachedPurchaseData(productIdentifier: storeTransaction.productIdentifier)
 
         if let error = transaction.error,
            let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: storeTransaction) {
