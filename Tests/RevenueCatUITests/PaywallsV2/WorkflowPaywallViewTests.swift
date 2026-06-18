@@ -56,6 +56,34 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(action) == .dismissWorkflow
     }
 
+    func testHasCompletedInSessionTrueAfterPurchase() {
+        expect(WorkflowPaywallView.hasCompletedInSession(
+            hasPurchasedInSession: true,
+            didRestoreSuccessfully: false
+        )) == true
+    }
+
+    func testHasCompletedInSessionTrueAfterSuccessfulRestore() {
+        // A successful restore auto-dismisses the workflow; that is a completion, not an abandonment,
+        // so workflows_close must be suppressed even though no purchase happened. This intentionally also
+        // suppresses the rare case where a restore succeeds but the paywall stays visible and the user
+        // then abandons (the `shouldDisplay` check that distinguishes them lives in the presenter, not
+        // here). Under-firing is the safe direction: it never records a false abandonment. See the
+        // rationale on `WorkflowPaywallView.hasCompletedInSession`.
+        expect(WorkflowPaywallView.hasCompletedInSession(
+            hasPurchasedInSession: false,
+            didRestoreSuccessfully: true
+        )) == true
+    }
+
+    func testHasCompletedInSessionFalseWhenNeitherPurchasedNorRestored() {
+        // Plain dismissal with nothing restored is an abandonment.
+        expect(WorkflowPaywallView.hasCompletedInSession(
+            hasPurchasedInSession: false,
+            didRestoreSuccessfully: false
+        )) == false
+    }
+
     func testTransitionStateStartsWithoutOutgoingPage() {
         let state = WorkflowPageTransitionState(currentPage: "step_1")
 

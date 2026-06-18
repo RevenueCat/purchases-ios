@@ -25,6 +25,7 @@ final class WorkflowStepEventCoordinator {
     private let tracker: WorkflowStepEventTracker
     private var hasTrackedInitialStep = false
     private var hasTrackedTerminalCompletion = false
+    private var hasTrackedAbandonment = false
 
     init(workflow: PublishedWorkflow, traceId: String, sink: @escaping (WorkflowEvent) -> Void) {
         self.tracker = WorkflowStepEventTracker(workflow: workflow, traceId: traceId, sink: sink)
@@ -76,6 +77,19 @@ final class WorkflowStepEventCoordinator {
         }
         self.hasTrackedTerminalCompletion = true
         self.tracker.trackStepCompleted(currentStep, toStepId: nil)
+    }
+
+    /// Emits a workflow-level `close` (abandonment) once, only if the workflow was dismissed without
+    /// completing it and a page is currently rendered. Unlike `trackTerminalCompletion`, it is not a
+    /// step-lifecycle signal and is not gated by `screen_type`: abandonment on a non-paywall step still
+    /// fires. A completed purchase or a successful restore is a natural exit, not an abandonment, so
+    /// `hasCompletedInSession` suppresses the event.
+    func trackAbandonment(currentStep: WorkflowStep?, hasRenderedPage: Bool, hasCompletedInSession: Bool) {
+        guard !self.hasTrackedAbandonment, !hasCompletedInSession, hasRenderedPage, let currentStep else {
+            return
+        }
+        self.hasTrackedAbandonment = true
+        self.tracker.trackClose(currentStep)
     }
 
 }

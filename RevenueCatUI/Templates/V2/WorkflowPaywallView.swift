@@ -347,6 +347,18 @@ struct WorkflowPaywallView: View {
         // and programmatic parent dismiss — without firing during inner step transitions (the outer
         // view stays mounted while pages swap).
         .onDisappear {
+            // Workflow abandonment: fires unless the workflow was completed via a purchase or a
+            // successful restore (both auto-dismiss only after their session state is set, so they
+            // reliably suppress it here). Not gated by `screen_type`, so it captures abandonment on
+            // non-paywall steps too.
+            self.stepEventCoordinator.trackAbandonment(
+                currentStep: self.navigator.currentStep,
+                hasRenderedPage: self.transitionState.currentPage != nil,
+                hasCompletedInSession: Self.hasCompletedInSession(
+                    hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession,
+                    didRestoreSuccessfully: self.purchaseHandler.restoredCustomerInfo?.success == true
+                )
+            )
             self.stepEventCoordinator.trackTerminalCompletion(
                 currentStep: self.navigator.currentStep,
                 hasRenderedPage: self.transitionState.currentPage != nil
@@ -546,6 +558,25 @@ struct WorkflowPaywallView: View {
         currentStepId: String
     ) -> WorkflowExitOfferContext? {
         return context.exitOfferContext(forStepId: currentStepId)
+    }
+
+    /// Whether the workflow reached a natural completion (so dismissing it is not an abandonment).
+    /// A purchase or a successful restore both count: each auto-dismisses the workflow, and recording
+    /// `workflows_close` for them would be a false abandonment. Mirrors Android setting
+    /// `_purchaseCompleted` on both a completed purchase and a restore that dismisses the paywall.
+    ///
+    /// Accepted divergence from Android: Android only treats a restore as completion when it actually
+    /// dismisses the paywall (`success && !shouldDisplay`). That `shouldDisplay` check lives in the
+    /// presenter, not this view, so here any successful restore counts. In the rare case where a restore
+    /// succeeds but the paywall's display condition keeps it visible and the user then abandons, this
+    /// under-fires `workflows_close`. That is the safe direction for an ingestion-only analytics event:
+    /// it never records a *false* abandonment. Perfect parity would require recording a completion signal
+    /// at the presenter's restore-dismiss sites (a follow-up).
+    static func hasCompletedInSession(
+        hasPurchasedInSession: Bool,
+        didRestoreSuccessfully: Bool
+    ) -> Bool {
+        return hasPurchasedInSession || didRestoreSuccessfully
     }
 
     static func dismissalAction(
