@@ -23,10 +23,8 @@ extension RCContainer {
             case truncatedHeader
             case invalidMagic
             case unsupportedVersion(UInt8)
-            case nonZeroHeaderReservedBytes
             case truncatedElementHeader(index: Int)
             case truncatedElement(index: Int)
-            case nonZeroElementReserved(index: Int)
             case nonZeroPadding(index: Int)
             case checksumMismatch(index: Int, expected: String, actual: String)
             case missingConfigElement
@@ -34,12 +32,24 @@ extension RCContainer {
         }
         // swiftlint:enable nesting
 
-        private static let headerSize = 8
+        private static let magicOffset = 0
+        private static let magicSize = 2
+        private static let versionOffset = magicOffset + magicSize
+        private static let versionSize = 1
+        private static let flagsOffset = versionOffset + versionSize
+        private static let flagsSize = 1
+        private static let headerReservedOffset = flagsOffset + flagsSize
+        private static let headerReservedSize = 4
+        private static let headerSize = headerReservedOffset + headerReservedSize
+
         private static let magic = (UInt8(ascii: "R"), UInt8(ascii: "C"))
         private static let version: UInt8 = 1
         private static let alignment = 8
+        private static let uint32Size = 4
         private static let checksumSize = 24
-        private static let elementHeaderSize = checksumSize + 4 + 4
+        private static let elementSizeFieldSize = uint32Size
+        private static let elementReservedFieldSize = uint32Size
+        private static let elementHeaderSize = checksumSize + elementSizeFieldSize + elementReservedFieldSize
 
         private let data: Data
         private var offset = 0
@@ -63,28 +73,24 @@ extension RCContainer {
 
         /// Parses the fixed-size container header and positions the cursor at the first element.
         ///
-        /// Version 1 preserves the flags byte for future use, but reserved bytes must remain zero so
-        /// newer header fields cannot be silently ignored by older SDKs.
+        /// Version 1 preserves the flags byte for future use and skips the reserved bytes so future
+        /// server-side additions do not make older SDKs reject the whole container.
         private mutating func parseHeader() throws -> UInt8 {
             guard self.hasBytes(Self.headerSize) else {
                 throw FormatError.truncatedHeader
             }
 
-            guard self.byte(at: 0) == Self.magic.0,
-                  self.byte(at: 1) == Self.magic.1 else {
+            guard self.byte(at: Self.magicOffset) == Self.magic.0,
+                  self.byte(at: Self.magicOffset + 1) == Self.magic.1 else {
                 throw FormatError.invalidMagic
             }
 
-            let version = self.byte(at: 2)
+            let version = self.byte(at: Self.versionOffset)
             guard version == Self.version else {
                 throw FormatError.unsupportedVersion(version)
             }
 
-            guard self.bytesAreZero(in: 4..<Self.headerSize) else {
-                throw FormatError.nonZeroHeaderReservedBytes
-            }
-
-            let flags = self.byte(at: 3)
+            let flags = self.byte(at: Self.flagsOffset)
             self.offset = Self.headerSize
             return flags
         }
@@ -106,13 +112,10 @@ extension RCContainer {
 
             self.offset = checksumEndOffset
             let elementSize = Int(self.littleEndianUInt32(at: self.offset))
-            self.offset += 4
+            self.offset += Self.elementSizeFieldSize
 
             let reserved = self.littleEndianUInt32(at: self.offset)
-            guard reserved == 0 else {
-                throw FormatError.nonZeroElementReserved(index: index)
-            }
-            self.offset += 4
+            self.offset += Self.elementReservedFieldSize
 
             guard self.hasBytes(elementSize) else {
                 throw FormatError.truncatedElement(index: index)
@@ -136,7 +139,8 @@ extension RCContainer {
                 storage: self.data,
                 checksumRange: checksumRange,
                 payloadRange: payloadRange,
-                checksum: checksum
+                checksum: checksum,
+                reserved: reserved
             )
         }
 
@@ -220,7 +224,7 @@ extension RCContainer {
             }
         }
 
-        /// Reads the wire-format little-endian `UInt32` used for payload sizes and reserved fields.
+        /// Reads the wire-format little-endian `UInt32` used for payload sizes and reserved metadata.
         private func littleEndianUInt32(at offset: Int) -> UInt32 {
             return UInt32(self.byte(at: offset))
             | UInt32(self.byte(at: offset + 1)) << 8
@@ -248,7 +252,7 @@ extension RCContainer {
             return count >= 0 && self.offset <= self.data.count - count
         }
 
-        /// Validates reserved fields and padding ranges.
+        /// Validates padding ranges.
         private func bytesAreZero(in range: Range<Int>) -> Bool {
             for offset in range where self.byte(at: offset) != 0 {
                 return false

@@ -22,6 +22,9 @@ extension RCContainer {
         /// The payload size in bytes, excluding the element header and any alignment padding.
         let size: Int
 
+        /// The element header's reserved field, currently unused and retained for future metadata.
+        let reserved: UInt32
+
         private let storage: Data
         private let checksumRange: Range<Data.Index>
         private let payloadRange: Range<Data.Index>
@@ -30,12 +33,14 @@ extension RCContainer {
             storage: Data,
             checksumRange: Range<Data.Index>,
             payloadRange: Range<Data.Index>,
-            checksum: String
+            checksum: String,
+            reserved: UInt32
         ) {
             self.storage = storage
             self.checksumRange = checksumRange
             self.payloadRange = payloadRange
             self.checksum = checksum
+            self.reserved = reserved
             self.size = storage.distance(from: payloadRange.lowerBound, to: payloadRange.upperBound)
         }
 
