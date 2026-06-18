@@ -46,6 +46,12 @@ struct TextComponentView: View {
     @Environment(\.selectedPackageId)
     private var selectedPackageId
 
+    @Environment(\.paywallStateValues)
+    private var paywallStateValues
+
+    @Environment(\.paywallStateDefaults)
+    private var paywallStateDefaults
+
     // Observing dynamicTypeSize triggers view rebuilds when Dynamic Type settings change,
     // which causes fonts to be recreated with the correct scaled size.
     @Environment(\.dynamicTypeSize)
@@ -73,7 +79,9 @@ struct TextComponentView: View {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             promoOffer: promoOffer,
             countdownTime: countdownTime,
-            customVariables: self.customVariables
+            customVariables: self.customVariables,
+            stateValues: self.paywallStateValues,
+            stateDefaults: self.paywallStateDefaults
         ) { style in
             if style.visible {
                 NonLocalizedMarkdownText(

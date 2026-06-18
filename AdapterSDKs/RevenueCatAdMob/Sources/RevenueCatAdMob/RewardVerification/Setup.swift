@@ -8,7 +8,7 @@ import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @_spi(Experimental) import RevenueCat
 
 @available(iOS 15.0, *)
 internal extension RewardVerification {
@@ -22,79 +22,51 @@ internal extension RewardVerification {
     /// Load-time SSV setup for rewarded AdMob ads.
     enum Setup {
 
-        /// Returns per-ad verification state stashed by ``install(on:apiKey:appUserID:)``, if any.
+        /// Returns per-ad verification state stashed by ``install(on:token:)``, if any.
         @MainActor
         static func verificationState(for object: AnyObject) -> State? {
             RewardVerification.stateStore.retrieve(for: object)
         }
 
-        /// Production entry point. Reads SDK config from `Purchases.shared`; no-ops if not configured.
+        /// Production entry point. Mints a token via `tokenProvider`; no-ops if not configured.
+        ///
+        /// Delegates token generation to the core SDK (through `TokenProvider`) so the adapter
+        /// holds no SSV payload logic. The `tokenProvider` parameter is injectable for tests.
         @MainActor
-        static func install(on loadedAd: some CapableAd) {
-            guard Purchases.isConfigured else {
+        static func install(
+            on loadedAd: some CapableAd,
+            tokenProvider: TokenProvider = PurchasesTokenProvider()
+        ) {
+            guard tokenProvider.isConfigured else {
                 Logger.warn(RewardVerificationStrings.setup_purchases_not_configured)
                 return
             }
-            let purchases = Purchases.shared
-            self.install(on: loadedAd, apiKey: purchases.apiKey, appUserID: purchases.appUserID)
+            let impressionId = Tracking.Adapter.impressionID(from: loadedAd.responseInfo)
+            let token = tokenProvider.generateToken(impressionId: impressionId)
+            self.install(on: loadedAd, token: token)
         }
 
-        /// Generates a `client_transaction_id`, wires `ServerSideVerificationOptions` onto the ad,
-        /// and stashes per-ad state via `StateStore`. Returns `nil` if payload encoding fails.
+        /// Wires `ServerSideVerificationOptions` onto the ad from a core-minted token and stashes
+        /// per-ad state via `StateStore`. Holds no payload logic — the token is produced by core.
         @MainActor
         @discardableResult
         static func install(
             on loadedAd: some CapableAd,
-            apiKey: String,
-            appUserID: String
-        ) -> State? {
-            let clientTransactionID = UUID().uuidString
-            let impressionId = Tracking.Adapter.impressionID(from: loadedAd.responseInfo)
-
-            guard let customRewardText = self.makeCustomRewardText(
-                apiKey: apiKey,
-                clientTransactionID: clientTransactionID,
-                impressionId: impressionId
-            ) else {
-                return nil
-            }
-
+            token: RewardVerificationToken
+        ) -> State {
             Logger.info(RewardVerificationStrings.setup_install(
                 adType: "\(type(of: loadedAd))",
-                transactionID: clientTransactionID
+                transactionID: token.clientTransactionID
             ))
 
             let options = GoogleMobileAds.ServerSideVerificationOptions()
-            options.userIdentifier = appUserID
-            options.customRewardText = customRewardText
+            options.userIdentifier = token.appUserID
+            options.customRewardText = token.customData
             loadedAd.serverSideVerificationOptions = options
 
-            let state = State(clientTransactionID: clientTransactionID)
+            let state = State(clientTransactionID: token.clientTransactionID)
             RewardVerification.stateStore.set(state, for: loadedAd)
             return state
-        }
-
-        /// Encodes the SSV `customRewardString` payload as deterministic JSON
-        /// (`.sortedKeys`) so logs and tests are stable.
-        static func makeCustomRewardText(
-            apiKey: String,
-            clientTransactionID: String,
-            impressionId: String
-        ) -> String? {
-            let payload: [String: String] = [
-                "api_key": apiKey,
-                "client_transaction_id": clientTransactionID,
-                "impression_id": impressionId
-            ]
-            do {
-                let data = try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])
-                return String(data: data, encoding: .utf8)
-            } catch {
-                let message = RewardVerificationStrings.setup_custom_reward_text_encoding_failed(error: error)
-                Logger.error(message)
-                assertionFailure(message.description)
-                return nil
-            }
         }
     }
 }
