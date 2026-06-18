@@ -62,6 +62,34 @@ final class HangingStatusPoller: RewardVerificationStatusPolling, @unchecked Sen
     }
 }
 
+/// Signals that the in-flight `pollStatus` call has started, observes cancellation cooperatively
+/// (without throwing), then resolves to a successful status. Models the race where a status request
+/// completes successfully at the same moment the surrounding task is cancelled — the poller must
+/// still collapse that to `.failed(.cancelled)`.
+final class CancelThenSucceedStatusPoller: RewardVerificationStatusPolling, @unchecked Sendable {
+
+    private let started: Atomic<Bool>
+    private let successStatus: RewardVerificationPollStatus
+    private(set) var callCount = 0
+
+    var didStart: Bool { self.started.value }
+
+    init(started: Atomic<Bool>, successStatus: RewardVerificationPollStatus) {
+        self.started = started
+        self.successStatus = successStatus
+    }
+
+    func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus {
+        self.callCount += 1
+        self.started.value = true
+        // Wait for cancellation cooperatively *without* throwing, then resolve successfully.
+        while !Task.isCancelled {
+            await Task.yield()
+        }
+        return self.successStatus
+    }
+}
+
 final class ScriptedStatusPoller: RewardVerificationStatusPolling, @unchecked Sendable {
 
     enum Step {

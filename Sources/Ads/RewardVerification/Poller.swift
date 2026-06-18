@@ -41,8 +41,10 @@ internal extension RewardVerification {
 
     /// Bounded polling loop. Retries `pending`/`unknown` statuses and transient `BackendError`
     /// throws within an attempt budget; everything else (terminal `BackendError`, sleeper failure,
-    /// any unrecognised throw) collapses to `.failed`. Honors `Task.isCancelled` between
-    /// attempts and exits early without further polling.
+    /// any unrecognised throw) ends in `.failed` carrying a specific `FailureReason` (the binary
+    /// collapse to a public result happens upstream). Honors `Task.isCancelled` between attempts and
+    /// after each attempt completes, mapping cancellation to `.failed(.cancelled)` and exiting early
+    /// without further polling.
     struct Poller: Sendable {
 
         static let defaultMaxAttempts = 10
@@ -79,6 +81,8 @@ internal extension RewardVerification {
                 maxAttempts: self.maxAttempts
             ))
 
+            var lastDisposition: PollDisposition = .pending
+
             for attempt in 0..<self.maxAttempts {
                 Logger.verbose(AdsStrings.poll_attempt(
                     attempt: attempt + 1,
@@ -87,47 +91,112 @@ internal extension RewardVerification {
                 ))
 
                 if Task.isCancelled {
-                    Logger.debug(AdsStrings.poll_cancelled(transactionID: clientTransactionID))
-                    return .failed(.unknown)
+                    Logger.warn(AdsStrings.poll_cancelled(transactionID: clientTransactionID))
+                    return .failed(.cancelled)
                 }
                 if attempt > 0 {
                     try? await self.sleeper.sleep(seconds: self.jitter.sample())
                 }
 
-                do {
-                    let status = try await self.statusPoller.pollStatus(
-                        clientTransactionID: clientTransactionID
-                    )
-                    Logger.debug(AdsStrings.poll_status(
-                        status: status.logDescription,
-                        transactionID: clientTransactionID
-                    ))
-                    switch status {
-                    case .verified(let reward): return .verified(reward)
-                    case .failed: return .failed(.backendError)
-                    case .pending, .unknown: continue
-                    }
-                } catch let error as BackendError where error.isTransient {
-                    Logger.debug(AdsStrings.poll_transient_error(
-                        error: error,
-                        transactionID: clientTransactionID
-                    ))
-                    continue
-                } catch {
-                    Logger.error(AdsStrings.poll_terminal_error(
-                        error: error,
-                        transactionID: clientTransactionID
-                    ))
-                    return .failed(error is BackendError ? .backendError : .unknown)
+                switch await self.pollOnce(clientTransactionID: clientTransactionID) {
+                case .finished(let outcome):
+                    return outcome
+                case .retry(let disposition):
+                    lastDisposition = disposition
                 }
             }
 
-            Logger.warn(AdsStrings.poll_exhausted(
-                maxAttempts: self.maxAttempts,
-                transactionID: clientTransactionID
+            return .failed(self.exhaustionReason(
+                for: lastDisposition,
+                clientTransactionID: clientTransactionID
             ))
-            return .failed(.timeout)
         }
+
+        /// Runs a single poll attempt: either a terminal `Outcome` or a `retry` carrying the
+        /// disposition to remember for exhaustion classification.
+        private func pollOnce(clientTransactionID: String) async -> PollAttemptResult {
+            do {
+                let status = try await self.statusPoller.pollStatus(
+                    clientTransactionID: clientTransactionID
+                )
+                // A cancellation that lands while the status request is in flight won't surface as a
+                // `CancellationError` if the request resolves successfully. Re-check before logging or
+                // acting on the status, so a late cancellation maps to `.failed(.cancelled)` instead of
+                // emitting a stale outcome (e.g. a backend-rejection warning the caller never receives).
+                if Task.isCancelled {
+                    Logger.warn(AdsStrings.poll_cancelled(transactionID: clientTransactionID))
+                    return .finished(.failed(.cancelled))
+                }
+                Logger.debug(AdsStrings.poll_status(
+                    status: status.logDescription,
+                    transactionID: clientTransactionID
+                ))
+                switch status {
+                case .verified(let reward):
+                    return .finished(.verified(reward))
+                case let .failed(reason, message):
+                    Logger.warn(AdsStrings.poll_backend_rejected(
+                        reason: reason,
+                        message: message,
+                        transactionID: clientTransactionID
+                    ))
+                    return .finished(.failed(.backendRejected(reason: reason, message: message)))
+                case .pending:
+                    return .retry(.pending)
+                case .unknown:
+                    return .retry(.unknownStatus)
+                }
+            } catch let error as BackendError where error.isTransient {
+                Logger.debug(AdsStrings.poll_transient_error(
+                    error: error,
+                    transactionID: clientTransactionID
+                ))
+                return .retry(.transient)
+            } catch is CancellationError {
+                Logger.warn(AdsStrings.poll_cancelled(transactionID: clientTransactionID))
+                return .finished(.failed(.cancelled))
+            } catch {
+                // A non-retryable transport/HTTP failure or a decoding error stopped the poll.
+                Logger.error(AdsStrings.poll_terminal_error(
+                    error: error,
+                    transactionID: clientTransactionID
+                ))
+                return .finished(.failed(.terminalError(error: "\(error)")))
+            }
+        }
+
+        /// Logs the diagnostic for an exhausted poll and returns the matching ``FailureReason``.
+        private func exhaustionReason(
+            for disposition: PollDisposition,
+            clientTransactionID: String
+        ) -> FailureReason {
+            switch disposition {
+            case .pending:
+                Logger.warn(AdsStrings.poll_exhausted_pending(transactionID: clientTransactionID))
+                return .exhaustedPending
+            case .transient:
+                Logger.warn(AdsStrings.poll_exhausted_transient(transactionID: clientTransactionID))
+                return .exhaustedTransient
+            case .unknownStatus:
+                Logger.warn(AdsStrings.poll_unexpected_response(transactionID: clientTransactionID))
+                return .unexpectedResponse
+            }
+        }
+    }
+
+    /// The most recent non-terminal result of a poll attempt, used to classify *why* the attempt
+    /// budget was exhausted (last-observed disposition wins).
+    enum PollDisposition {
+        case pending
+        case transient
+        case unknownStatus
+    }
+
+    /// Outcome of a single ``Poller`` attempt: a terminal result, or a retry carrying the
+    /// disposition to remember.
+    enum PollAttemptResult {
+        case finished(Outcome)
+        case retry(PollDisposition)
     }
 
     // MARK: - Production seam impls
