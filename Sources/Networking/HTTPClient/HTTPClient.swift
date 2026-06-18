@@ -862,15 +862,10 @@ extension HTTPClient {
 // MARK: - Extensions
 
 fileprivate extension NetworkError {
+    /// A request may be retried against a fallback host only for transient failures (connection-level
+    /// errors and 5xx). See ``NetworkError/isTransient``.
     var isAllowedToRetryWithFallbackHost: Bool {
-        switch self {
-        case .decoding, .unableToCreateRequest, .signatureVerificationFailed:
-            return false
-        case .dnsError, .networkError, .unexpectedResponse:
-            return true
-        case let .errorResponse(_, statusCode, _):
-            return HTTPStatusCode(rawValue: statusCode.rawValue).isServerError
-        }
+        return self.isTransient
     }
 }
 

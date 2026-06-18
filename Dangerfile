@@ -9,6 +9,9 @@ EXCLUDED_SWIFT_PATH_PREFIXES = [
 
 COMMENT_MARKER = "<!-- purchases-ios-danger -->"
 
+PROD_LINES_LIMIT = 300
+SKIP_SIZE_LABEL = "skip-pr-lines-changed-check"
+
 def normalize_path(path)
   Pathname(path).cleanpath.to_s.sub(%r{\A\./}, '')
 end
@@ -22,6 +25,15 @@ def relevant_swift_file?(path)
   in_tests = path.start_with?('Tests/')
 
   in_project_sources || in_tests
+end
+
+def production_swift_file?(path)
+  path = normalize_path(path)
+  return false unless path.end_with?('.swift')
+  return false if path.start_with?('Sources/Generated/')
+
+  path.start_with?('Sources/') || path.start_with?('RevenueCatUI/') ||
+    path.start_with?('RulesEngineInternal/')
 end
 
 def project_swift_file_paths(project_file)
@@ -117,6 +129,29 @@ def public_enum_messages
   [[], [message]]
 end
 
+# Fail PRs that change too many lines of production Swift code.
+# Large PRs are hard to review well, so we cap the churn (insertions + deletions)
+# across real .swift files, excluding tests, example apps, and generated output.
+# Authors who legitimately need a large PR can add the bypass label.
+def pr_size_messages
+  prod_files = (git.modified_files + git.added_files).uniq.select { |f| production_swift_file?(f) }
+
+  total_changed = prod_files.sum do |f|
+    info = git.info_for_file(f)
+    info ? info[:insertions] + info[:deletions] : 0
+  end
+
+  return [[], []] if total_changed <= PROD_LINES_LIMIT
+
+  if github.pr_labels.include?(SKIP_SIZE_LABEL)
+    [[], ["This PR changes #{total_changed} lines of production Swift (limit #{PROD_LINES_LIMIT}); " \
+          "skipped via `#{SKIP_SIZE_LABEL}` label."]]
+  else
+    [["This PR changes #{total_changed} lines of production Swift code, over the #{PROD_LINES_LIMIT}-line " \
+      "limit. Split it into smaller PRs, or add the `#{SKIP_SIZE_LABEL}` label to bypass."], []]
+  end
+end
+
 # Collect all issues
 all_failures = []
 all_warnings = []
@@ -131,6 +166,10 @@ all_failures.concat(f)
 all_warnings.concat(w)
 
 f, w = public_enum_messages
+all_failures.concat(f)
+all_warnings.concat(w)
+
+f, w = pr_size_messages
 all_failures.concat(f)
 all_warnings.concat(w)
 

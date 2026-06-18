@@ -114,7 +114,8 @@ class AdFeatureEventsRequestTests: TestCase {
         let expectedUserID = "test-user"
         let adEventCreationData: AdEvent.CreationData = .init(
             id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
-            date: .init(timeIntervalSince1970: 1694029328)
+            date: .init(timeIntervalSince1970: 1694029328),
+            captureMethod: .manual
         )
         let adEventData = AdDisplayed(
             networkName: "AdMob",
@@ -156,7 +157,8 @@ class AdFeatureEventsRequestTests: TestCase {
         let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.123)
         let creationData = AdEvent.CreationData(
             id: UUID(),
-            date: dateWithMilliseconds
+            date: dateWithMilliseconds,
+            captureMethod: .manual
         )
         let event = AdEvent.displayed(creationData, Self.eventData)
         let storedEvent = try XCTUnwrap(
@@ -179,7 +181,8 @@ class AdFeatureEventsRequestTests: TestCase {
         let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.123)
         let creationData = AdEvent.CreationData(
             id: UUID(),
-            date: dateWithMilliseconds
+            date: dateWithMilliseconds,
+            captureMethod: .manual
         )
         let eventData = AdDisplayed(
             networkName: "AdMob",
@@ -213,7 +216,8 @@ class AdFeatureEventsRequestTests: TestCase {
         let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.456)
         let creationData = AdEvent.CreationData(
             id: UUID(),
-            date: dateWithMilliseconds
+            date: dateWithMilliseconds,
+            captureMethod: .manual
         )
         let eventData = AdRevenue(
             networkName: "AdMob",
@@ -250,7 +254,8 @@ class AdFeatureEventsRequestTests: TestCase {
         let dateWithMilliseconds = Date(timeIntervalSince1970: 1694029328.789)
         let creationData = AdEvent.CreationData(
             id: UUID(),
-            date: dateWithMilliseconds
+            date: dateWithMilliseconds,
+            captureMethod: .manual
         )
         let eventData = AdFailedToLoad(
             mediatorName: .appLovin,
@@ -279,6 +284,53 @@ class AdFeatureEventsRequestTests: TestCase {
             .to(equal(dateWithMilliseconds.timeIntervalSince1970))
     }
 
+    // MARK: - Capture method
+
+    func testAdapterCaptureMethodIsSerialized() throws {
+        let creationData = AdEvent.CreationData(
+            id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
+            date: .init(timeIntervalSince1970: 1694029328),
+            captureMethod: .adapter
+        )
+        let event = AdEvent.displayed(creationData, Self.eventData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent = try XCTUnwrap(AdEventsRequest.AdEventRequest(storedEvent: storedEvent))
+
+        expect(requestEvent.captureMethod) == "adapter"
+    }
+
+    func testCaptureMethodIsOmittedForLegacyStoredEvent() throws {
+        // A `displayed` event as serialized by an SDK version that predates `capture_method`.
+        let legacyEvent = """
+        {
+          "displayed": {
+            "_0": {
+              "date": "2023-09-06T19:42:08.000Z",
+              "id": "72164C05-2BDC-4807-8918-A4105F727DEB"
+            },
+            "_1": {
+              "ad_format": { "raw_value": "rewarded" },
+              "ad_unit_id": "ca-app-pub-123456789",
+              "impression_id": "impression-123",
+              "mediator_name": { "raw_value": "AppLovin" },
+              "network_name": "AdMob",
+              "placement": "home_screen"
+            }
+          }
+        }
+        """
+
+        let data = try XCTUnwrap(legacyEvent.data(using: .utf8))
+        let decodedEvent = try JSONDecoder.default.decode(AdEvent.self, from: data)
+        expect(decodedEvent.creationData.captureMethod).to(beNil())
+
+        let storedEvent = try XCTUnwrap(StoredAdEvent(event: decodedEvent,
+                                                      userID: Self.userID,
+                                                      appSessionID: Self.appSessionID))
+        let requestEvent = try XCTUnwrap(AdEventsRequest.AdEventRequest(storedEvent: storedEvent))
+        expect(requestEvent.captureMethod).to(beNil())
+    }
+
     // MARK: -
 
 }
@@ -294,7 +346,8 @@ private extension AdFeatureEventsRequestTests {
 
     static let eventCreationData: AdEvent.CreationData = .init(
         id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
-        date: .init(timeIntervalSince1970: 1694029328)
+        date: .init(timeIntervalSince1970: 1694029328),
+        captureMethod: .manual
     )
 
     static let failedToLoadData: AdFailedToLoad = .init(
