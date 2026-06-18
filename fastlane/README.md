@@ -98,10 +98,10 @@ Setup development environment
 
 Updates paywall-preview-resources-commit to point to latest commit on main and creates/updates PR
 
-### ios record_and_distribute_paywall_template_screenshots
+### ios record_and_upload_v2_snapshots
 
 ```sh
-[bundle exec] fastlane ios record_and_distribute_paywall_template_screenshots
+[bundle exec] fastlane ios record_and_upload_v2_snapshots
 ```
 
 Records Paywall template screenshots and distributes them to the paywall-rendering-validation repo and/or Emerge

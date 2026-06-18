@@ -216,7 +216,7 @@ platform :ios do
   end
 
   desc "Records Paywall template screenshots and distributes them to the paywall-rendering-validation repo and/or Emerge"
-  lane :record_and_distribute_paywall_template_screenshots do |options|
+  lane :record_and_upload_v2_snapshots do |options|
     push_to_validation_repo = options[:push_to_validation_repo].to_s == "true"
     upload_to_emerge = options[:upload_to_emerge].to_s == "true"
     UI.user_error!("At least one of push_to_validation_repo or upload_to_emerge must be true.") unless push_to_validation_repo || upload_to_emerge
