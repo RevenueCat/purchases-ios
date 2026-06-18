@@ -1937,27 +1937,20 @@ jobs:
           name: Build BinarySizeTest (SPM) and upload to Emerge
           command: bundle exec fastlane build_and_upload_emerge_binary_size_analysis integration_method:SPM
 
-  record-and-distribute-paywall-template-screenshots:
-    description: "Record paywall template screenshots once and distribute them to the paywall-rendering-validation repository and/or Emerge"
+  record-and-upload-paywalls-v2-snapshots:
+    description: "Record paywall template screenshots and distribute them to the paywall-rendering-validation repository and/or Emerge"
     parameters:
       push_to_validation_repo:
         type: boolean
         default: false
       upload_to_emerge:
         type: boolean
-        default: true
+        default: false
     executor:
       name: macos-executor
       xcode_version: "16.4"
 
     steps:
-      - run:
-          name: Validate destinations
-          command: |
-            if [ "<< parameters.push_to_validation_repo >>" != "true" ] && [ "<< parameters.upload_to_emerge >>" != "true" ]; then
-              echo "At least one of push_to_validation_repo or upload_to_emerge must be true."
-              exit 1
-            fi
       - checkout
       - install-dependencies
       - revenuecat/setup-git-credentials
@@ -1979,7 +1972,7 @@ jobs:
                   echo "export GITHUB_TOKEN=$GH_TOKEN_PAYWALL_RENDERING_VALIDATION_PR_RW" >> $BASH_ENV
                   source $BASH_ENV
       - run:
-          name: Record and distribute paywall template screenshots
+          name: Record and upload paywall template screenshots
           command: bundle exec fastlane record_and_distribute_paywall_template_screenshots push_to_validation_repo:<< parameters.push_to_validation_repo >> upload_to_emerge:<< parameters.upload_to_emerge >> target_repository_path:../Tests/paywall-rendering-validation
           no_output_timeout: 30m
       - store_artifacts:
@@ -2370,7 +2363,7 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
-      - record-and-distribute-paywall-template-screenshots:
+      - record-and-upload-paywalls-v2-snapshots:
           push_to_validation_repo: false
           upload_to_emerge: true
           requires:
@@ -2451,7 +2444,7 @@ workflows:
             - run-revenuecat-ui-ios-18-and-17
             - spm-revenuecat-ui-watchos
             - record-and-upload-paywalls-v1-snapshots
-            - record-and-distribute-paywall-template-screenshots
+            - record-and-upload-paywalls-v2-snapshots
             - installation-tests-all-but-carthage
             - installation-tests-carthage
             - api-tests
@@ -2593,7 +2586,7 @@ workflows:
     jobs:
       - release-train
 
-  record-and-distribute-paywall-template-screenshots:
+  record-and-upload-paywalls-v2-snapshots:
     when:
       or:
         - equal:
@@ -2604,12 +2597,11 @@ workflows:
             - equal: ["main", << pipeline.git.branch >>]
             - equal: ["default", << pipeline.parameters.action >>]
     jobs:
-      - record-and-distribute-paywall-template-screenshots:
+      - record-and-upload-paywalls-v2-snapshots:
           push_to_validation_repo: true
           upload_to_emerge: true
           context:
             - paywall-rendering-validation-pr-rw
-            # Needed by slack-notify-on-fail.
             - slack-secrets
 
   update-paywall-templates:

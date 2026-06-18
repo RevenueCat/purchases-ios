@@ -104,7 +104,7 @@ Updates paywall-preview-resources-commit to point to latest commit on main and c
 [bundle exec] fastlane ios record_and_distribute_paywall_template_screenshots
 ```
 
-Records Paywall template screenshots once and distributes them to the paywall-rendering-validation repo and/or Emerge
+Records Paywall template screenshots and distributes them to the paywall-rendering-validation repo and/or Emerge
 
 ### ios record_paywall_screenshots
 
