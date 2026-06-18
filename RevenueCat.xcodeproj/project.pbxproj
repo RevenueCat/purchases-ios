@@ -932,6 +932,8 @@
 		A1B2C3D42FE1000000000004 /* RCContainerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE1000000000003 /* RCContainerTests.swift */; };
 		A1B2C3D42FE1000000000005 /* RCContainer+Element.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE1000000000006 /* RCContainer+Element.swift */; };
 		A1B2C3D42FE1000000000007 /* RCContainer+Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE1000000000008 /* RCContainer+Parser.swift */; };
+		A1B2C3D42FE100000000000D /* RCContainerBackwardsCompatibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE100000000000A /* RCContainerBackwardsCompatibilityTests.swift */; };
+		A1B2C3D42FE100000000000E /* RCContainerTestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE100000000000B /* RCContainerTestData.swift */; };
 		7648885717DC2DB5009DD01B /* MinMaxOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = C812AE8BAE0546D2F4ACEF35 /* MinMaxOperators.swift */; };
 		7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */; };
 		7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */; };
@@ -2875,6 +2877,9 @@
 		A1B2C3D42FE1000000000003 /* RCContainerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RCContainerTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE1000000000006 /* RCContainer+Element.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RCContainer+Element.swift"; sourceTree = "<group>"; };
 		A1B2C3D42FE1000000000008 /* RCContainer+Parser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RCContainer+Parser.swift"; sourceTree = "<group>"; };
+		A1B2C3D42FE100000000000A /* RCContainerBackwardsCompatibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RCContainerBackwardsCompatibilityTests.swift; sourceTree = "<group>"; };
+		A1B2C3D42FE100000000000B /* RCContainerTestData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RCContainerTestData.swift; sourceTree = "<group>"; };
+		A1B2C3D42FE100000000000C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		E31E8A264E9F4375A3B29D78 /* RemoteConfigResponseDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigResponseDecodingTests.swift; sourceTree = "<group>"; };
 		E35BAD07C46D469D8CC7C396 /* RemoteConfigResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigResponse.swift; sourceTree = "<group>"; };
 		E51CFC7D19BE49D2BA1A79CC /* CapturingLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CapturingLogger.swift; sourceTree = "<group>"; };
@@ -4527,13 +4532,24 @@
 				576C8AD827D2BCB90058FA6E /* HTTPRequestTests.swift */,
 				57DC9F4927CD37BA00DA6AF9 /* HTTPStatusCodeTests.swift */,
 				57D04BB727D947C6006DAC06 /* HTTPResponseTests.swift */,
-				A1B2C3D42FE1000000000003 /* RCContainerTests.swift */,
+				A1B2C3D42FE1000000000009 /* RCContainer */,
 				5733B1A327FF9F8300EC2045 /* NetworkErrorTests.swift */,
 				5733B1A727FFBCC800EC2045 /* BackendErrorTests.swift */,
 				5733B1A927FFBCF900EC2045 /* BaseErrorTests.swift */,
 				DB7EA7752F964CA200BCC082 /* Workflows */,
 			);
 			path = Networking;
+			sourceTree = "<group>";
+		};
+		A1B2C3D42FE1000000000009 /* RCContainer */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D42FE100000000000A /* RCContainerBackwardsCompatibilityTests.swift */,
+				A1B2C3D42FE100000000000B /* RCContainerTestData.swift */,
+				A1B2C3D42FE1000000000003 /* RCContainerTests.swift */,
+				A1B2C3D42FE100000000000C /* README.md */,
+			);
+			path = RCContainer;
 			sourceTree = "<group>";
 		};
 		35E840C1270FB45600899AE2 /* Support */ = {
@@ -7666,6 +7682,8 @@
 				DB7EA7762F964CA200BCC082 /* WorkflowResponseTests.swift in Sources */,
 				858195FCF0E04E3CAA99F9BB /* RemoteConfigResponseDecodingTests.swift in Sources */,
 				A1B2C3D42FE1000000000004 /* RCContainerTests.swift in Sources */,
+				A1B2C3D42FE100000000000D /* RCContainerBackwardsCompatibilityTests.swift in Sources */,
+				A1B2C3D42FE100000000000E /* RCContainerTestData.swift in Sources */,
 				DB7EA7772F964CA200BCC082 /* WorkflowDetailProcessorTests.swift in Sources */,
 				FDC4B60B2FCE1122001E5F96 /* InstallmentsInfoTests.swift in Sources */,
 				4F8DDB692AAA9189000188F2 /* OperationDispatcherTests.swift in Sources */,

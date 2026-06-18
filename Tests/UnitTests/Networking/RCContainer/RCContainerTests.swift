@@ -17,29 +17,36 @@ final class RCContainerTests: TestCase {
         let productMapping = #"{"products":[]}"#.asData
         let paywall = #"{"paywall":"default"}"#.asData
 
-        let container = try RCContainer(data: Self.container(config: config, contentElements: [
+        let container = try RCContainer(data: RCContainerTestData.container(config: config, contentElements: [
             productMapping,
             paywall
         ]))
 
-        expect(Self.data(from: container.config)) == config
+        expect(RCContainerTestData.data(from: container.config)) == config
         expect(container.flags) == 0
         expect(container.config.size) == config.count
         expect(container.contentElements).to(haveCount(2))
-        expect(Self.data(from: try XCTUnwrap(container.contentElements[Self.blobRef(for: productMapping)])))
-        == productMapping
-        expect(Self.data(from: try XCTUnwrap(container.contentElements[Self.blobRef(for: paywall)])))
-        == paywall
+        expect(RCContainerTestData.data(
+            from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: productMapping)])
+        )) == productMapping
+        expect(RCContainerTestData.data(
+            from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: paywall)])
+        )) == paywall
     }
 
     func testParsesEmptyConfigWithContentElement() throws {
         let content = "content".asData
 
-        let container = try RCContainer(data: Self.container(config: Data(), contentElements: [content]))
+        let container = try RCContainer(data: RCContainerTestData.container(
+            config: Data(),
+            contentElements: [content]
+        ))
 
         expect(container.config.size) == 0
-        expect(Self.data(from: container.config)).to(beEmpty())
-        expect(Self.data(from: try XCTUnwrap(container.contentElements[Self.blobRef(for: content)]))) == content
+        expect(RCContainerTestData.data(from: container.config)).to(beEmpty())
+        expect(RCContainerTestData.data(
+            from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: content)])
+        )) == content
     }
 
     func testParsesMultipleContentElementsOfDifferingSizesIncludingEmptyElement() throws {
@@ -50,15 +57,16 @@ final class RCContainerTests: TestCase {
             Data()
         ]
 
-        let container = try RCContainer(data: Self.container(
+        let container = try RCContainer(data: RCContainerTestData.container(
             config: "config".asData,
             contentElements: contentElements
         ))
 
         expect(container.contentElements).to(haveCount(contentElements.count))
         for contentElement in contentElements {
-            expect(Self.data(from: try XCTUnwrap(container.contentElements[Self.blobRef(for: contentElement)])))
-            == contentElement
+            expect(RCContainerTestData.data(
+                from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: contentElement)])
+            )) == contentElement
         }
     }
 
@@ -66,8 +74,8 @@ final class RCContainerTests: TestCase {
         let config = "config".asData
         let content = "content".asData
 
-        let container = try RCContainer(data: Self.container(config: config, contentElements: [content]))
-        let ref = Self.blobRef(for: content)
+        let container = try RCContainer(data: RCContainerTestData.container(config: config, contentElements: [content]))
+        let ref = RCContainerTestData.blobRef(for: content)
         let element = try XCTUnwrap(container.contentElements[ref])
 
         expect(ref).to(haveCount(32))
@@ -80,84 +88,87 @@ final class RCContainerTests: TestCase {
     func testDuplicateContentElementsCollapseToOneLookupEntry() throws {
         let content = "same payload".asData
 
-        let container = try RCContainer(data: Self.container(config: "config".asData, contentElements: [
+        let container = try RCContainer(data: RCContainerTestData.container(config: "config".asData, contentElements: [
             content,
             content
         ]))
 
         expect(container.contentElements).to(haveCount(1))
-        expect(Self.data(from: try XCTUnwrap(container.contentElements[Self.blobRef(for: content)]))) == content
+        expect(RCContainerTestData.data(
+            from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: content)])
+        )) == content
     }
 
     func testParsesLittleEndianElementSizes() throws {
         let config = Data(repeating: 0xab, count: 257)
 
-        let container = try RCContainer(data: Self.container(config: config))
+        let container = try RCContainer(data: RCContainerTestData.container(config: config))
 
         expect(container.config.size) == 257
-        expect(Self.data(from: container.config)) == config
+        expect(RCContainerTestData.data(from: container.config)) == config
     }
 
     func testParsesNonZeroFlags() throws {
-        let container = try RCContainer(data: Self.container(config: "config".asData, flags: 0x07))
+        let container = try RCContainer(data: RCContainerTestData.container(config: "config".asData, flags: 0x07))
 
         expect(container.flags) == 0x07
-        expect(Self.data(from: container.config)) == "config".asData
+        expect(RCContainerTestData.data(from: container.config)) == "config".asData
     }
 
     func testIgnoresReservedFields() throws {
-        let container = try RCContainer(data: Self.container(
+        let container = try RCContainer(data: RCContainerTestData.container(
             config: "config".asData,
             headerReservedBytes: [1, 2, 3, 4],
             elementReserved: 0x01020304
         ))
 
-        expect(Self.data(from: container.config)) == "config".asData
+        expect(RCContainerTestData.data(from: container.config)) == "config".asData
         expect(container.config.reserved) == 0x01020304
     }
 
     func testAcceptsOmittedFinalPadding() throws {
         let config = "abc".asData
 
-        let container = try RCContainer(data: Self.container(
+        let container = try RCContainer(data: RCContainerTestData.container(
             config: config,
             omitFinalPadding: true
         ))
 
-        expect(Self.data(from: container.config)) == config
+        expect(RCContainerTestData.data(from: container.config)) == config
     }
 
     func testAcceptsPartiallyOmittedFinalPadding() throws {
-        var data = Self.container(config: "abc".asData)
+        var data = RCContainerTestData.container(config: "abc".asData)
         data.removeLast(3)
 
         let container = try RCContainer(data: data)
 
-        expect(Self.data(from: container.config)) == "abc".asData
+        expect(RCContainerTestData.data(from: container.config)) == "abc".asData
     }
 
     func testParsesDataSliceWithNonZeroStartIndex() throws {
         let prefix = Data([0, 1, 2, 3, 4])
-        let containerData = Self.container(config: "config".asData, contentElements: ["blob".asData])
+        let containerData = RCContainerTestData.container(config: "config".asData, contentElements: ["blob".asData])
         let prefixedData = prefix + containerData
         let slicedData = prefixedData[prefix.count..<prefixedData.endIndex]
 
         let container = try RCContainer(data: slicedData)
 
-        expect(Self.data(from: container.config)) == "config".asData
-        expect(Self.data(from: try XCTUnwrap(container.contentElements[Self.blobRef(for: "blob".asData)])))
-        == "blob".asData
+        expect(RCContainerTestData.data(from: container.config)) == "config".asData
+        expect(RCContainerTestData.data(
+            from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: "blob".asData)])
+        )) == "blob".asData
     }
 
     func testRejectsInvalidHeaderFields() {
-        var invalidMagic = Self.container(config: "config".asData)
+        var invalidMagic = RCContainerTestData.container(config: "config".asData)
         invalidMagic[invalidMagic.startIndex] = UInt8(ascii: "X")
         Self.expectParsing(invalidMagic, throws: .invalidMagic)
 
-        var unsupportedVersion = Self.container(config: "config".asData)
+        var unsupportedVersion = RCContainerTestData.container(config: "config".asData)
         let versionIndex = unsupportedVersion.index(
             unsupportedVersion.startIndex,
-            offsetBy: Self.headerVersionOffset
+            offsetBy: RCContainerTestData.headerVersionOffset
         )
         unsupportedVersion[versionIndex] = 2
         Self.expectParsing(unsupportedVersion, throws: .unsupportedVersion(2))
@@ -165,11 +176,14 @@ final class RCContainerTests: TestCase {
 
     func testRejectsTruncatedContainers() {
         Self.expectParsing(Data([UInt8(ascii: "R")]), throws: .truncatedHeader)
-        Self.expectParsing(Self.header(), throws: .missingConfigElement)
-        Self.expectParsing(Self.header() + Data([0]), throws: .truncatedElementHeader(index: 0))
+        Self.expectParsing(RCContainerTestData.header(), throws: .missingConfigElement)
+        Self.expectParsing(
+            RCContainerTestData.header() + Data([0]),
+            throws: .truncatedElementHeader(index: 0)
+        )
 
-        var truncatedElement = Self.header()
-        truncatedElement.append(contentsOf: Self.checksum(for: "abcdefgh".asData))
+        var truncatedElement = RCContainerTestData.header()
+        truncatedElement.append(contentsOf: RCContainerTestData.checksum(for: "abcdefgh".asData))
         truncatedElement.appendLittleEndianUInt32(8)
         truncatedElement.appendLittleEndianUInt32(0)
         truncatedElement.append("abcdefg".asData)
@@ -177,7 +191,7 @@ final class RCContainerTests: TestCase {
     }
 
     func testRejectsNonZeroPadding() {
-        var data = Self.container(config: "abc".asData)
+        var data = RCContainerTestData.container(config: "abc".asData)
         let lastIndex = data.index(before: data.endIndex)
         data[lastIndex] = 1
 
@@ -185,8 +199,8 @@ final class RCContainerTests: TestCase {
     }
 
     func testRejectsChecksumMismatch() {
-        var data = Self.container(config: "config".asData)
-        data[data.index(data.startIndex, offsetBy: Self.firstPayloadOffset)] = UInt8(ascii: "x")
+        var data = RCContainerTestData.container(config: "config".asData)
+        data[data.index(data.startIndex, offsetBy: RCContainerTestData.firstPayloadOffset)] = UInt8(ascii: "x")
 
         do {
             _ = try RCContainer(data: data)
@@ -208,7 +222,7 @@ final class RCContainerTests: TestCase {
 
     func testExposesPayloadThroughBorrowedByteClosure() throws {
         let payload = "borrowed bytes".asData
-        let container = try RCContainer(data: Self.container(config: payload))
+        let container = try RCContainer(data: RCContainerTestData.container(config: payload))
 
         let size = container.config.withPayloadBytes { bytes in
             return bytes.count
@@ -223,7 +237,7 @@ final class RCContainerTests: TestCase {
 
     func testPayloadBytesPointIntoOriginalContainerStorage() throws {
         let payload = Data(repeating: 0xab, count: 128)
-        let data = Self.container(config: payload)
+        let data = RCContainerTestData.container(config: payload)
         let container = try RCContainer(data: data)
 
         try data.withUnsafeBytes { containerBytes in
@@ -232,7 +246,7 @@ final class RCContainerTests: TestCase {
             try container.config.withPayloadBytes { payloadBytes in
                 let payloadBaseAddress = UInt(bitPattern: try XCTUnwrap(payloadBytes.baseAddress))
 
-                expect(payloadBaseAddress) == containerBaseAddress + UInt(Self.firstPayloadOffset)
+                expect(payloadBaseAddress) == containerBaseAddress + UInt(RCContainerTestData.firstPayloadOffset)
             }
         }
     }
@@ -242,15 +256,6 @@ final class RCContainerTests: TestCase {
 // MARK: - Helpers
 
 private extension RCContainerTests {
-
-    static let headerSize = 8
-    static let headerMagicSize = 2
-    static let headerReservedSize = 4
-    static let checksumSize = 24
-    static let uint32Size = 4
-    static var headerVersionOffset: Int { return Self.headerMagicSize }
-    static var elementHeaderSize: Int { return Self.checksumSize + Self.uint32Size + Self.uint32Size }
-    static var firstPayloadOffset: Int { return Self.headerSize + Self.elementHeaderSize }
 
     static func expectParsing(
         _ data: Data,
@@ -268,68 +273,9 @@ private extension RCContainerTests {
         }
     }
 
-    static func container(
-        config: Data,
-        contentElements: [Data] = [],
-        flags: UInt8 = 0,
-        headerReservedBytes: [UInt8] = [0, 0, 0, 0],
-        elementReserved: UInt32 = 0,
-        omitFinalPadding: Bool = false
-    ) -> Data {
-        var data = Self.header(flags: flags, reservedBytes: headerReservedBytes)
-        let elements = [config] + contentElements
-
-        for (index, element) in elements.enumerated() {
-            let isFinalElement = index == elements.count - 1
-            data.appendElement(
-                element,
-                reserved: elementReserved,
-                omitPadding: omitFinalPadding && isFinalElement
-            )
-        }
-
-        return data
-    }
-
-    static func header(flags: UInt8 = 0, reservedBytes: [UInt8] = [0, 0, 0, 0]) -> Data {
-        var data = Data([UInt8(ascii: "R"), UInt8(ascii: "C"), 1, flags])
-        data.append(contentsOf: reservedBytes.prefix(Self.headerReservedSize))
-        data.append(Data(repeating: 0, count: max(0, Self.headerReservedSize - reservedBytes.count)))
-        return data
-    }
-
-    static func data(from element: RCContainer.Element) -> Data {
-        return element.withPayloadBytes { Data($0) }
-    }
-
-    static func blobRef(for data: Data) -> String {
-        return Data(Self.checksum(for: data))
-            .base64EncodedString()
-            .replacingOccurrences(of: "+", with: "-")
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "=", with: "")
-    }
-
-    static func checksum(for data: Data) -> [UInt8] {
-        return Array(data.sha256.prefix(24))
-    }
-
 }
 
 private extension Data {
-
-    mutating func appendElement(_ payload: Data, reserved: UInt32 = 0, omitPadding: Bool = false) {
-        self.append(contentsOf: RCContainerTests.checksum(for: payload))
-        self.appendLittleEndianUInt32(UInt32(payload.count))
-        self.appendLittleEndianUInt32(reserved)
-        self.append(payload)
-
-        guard !omitPadding else {
-            return
-        }
-
-        self.append(Data(repeating: 0, count: (8 - payload.count % 8) % 8))
-    }
 
     mutating func appendLittleEndianUInt32(_ value: UInt32) {
         self.append(UInt8(value & 0xff))
