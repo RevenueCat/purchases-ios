@@ -816,6 +816,11 @@ final class PurchasesOrchestrator {
 
             let presentedOfferingContext = package?.presentedOfferingContext
 
+            // We cache the context here, before starting the purchase, even though this SK2 purchase
+            // path never reads it back: the transaction can be delivered (and its receipt posted) by
+            // the `Transaction.updates` queue listener before `purchase(sk2Product:)` returns. The
+            // listener's `.queue` post is what reads this cache, so the attribution isn't lost to
+            // that race. See `consumeCachedPurchaseContext(for:initiationSource:)`.
             self.cachePurchaseData(
                 presentedOfferingContext: presentedOfferingContext,
                 paywallEvent: paywallEvent,
