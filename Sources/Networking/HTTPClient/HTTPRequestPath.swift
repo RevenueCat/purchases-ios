@@ -276,8 +276,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
                 .getCustomerCenterConfig,
-                .postCreateTicket,
-                .remoteConfig:
+                .postCreateTicket:
+            return false
+        case .remoteConfig:
+            // swiftlint:disable:next todo
+            // TODO: Enable signature verification once remote-config binary responses are signed.
             return false
         case .rewardVerificationStatus:
             return true
@@ -307,8 +310,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .appHealthReport,
-                .postCreateTicket,
-                .remoteConfig:
+                .postCreateTicket:
+            return false
+        case .remoteConfig:
+            // swiftlint:disable:next todo
+            // TODO: Require a nonce once remote-config binary responses are signed.
             return false
         }
     }
