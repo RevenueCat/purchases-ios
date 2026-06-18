@@ -83,6 +83,19 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(self.httpClient.calls.first?.headers[ETagManager.eTagValidationTimeRequestHeader.rawValue]).to(beNil())
     }
 
+    func testGetRemoteConfigDoesNotSendSignatureVerificationHeaders() {
+        self.mockSuccessfulResponse()
+
+        waitUntil { completed in
+            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false) { _ in completed() }
+        }
+
+        let headers = self.httpClient.calls.first?.headers
+        expect(headers?[HTTPClient.RequestHeader.nonce.rawValue]).to(beNil())
+        expect(headers?[HTTPClient.RequestHeader.headerParametersForSignature.rawValue]).to(beNil())
+        expect(headers?[HTTPClient.RequestHeader.postParameters.rawValue]).to(beNil())
+    }
+
     // MARK: - Jitterable delay
 
     func testGetRemoteConfigUsesDefaultJitterableDelayWhenBackgrounded() {

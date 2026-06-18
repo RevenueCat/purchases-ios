@@ -267,8 +267,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getWorkflow,
                 .appHealthReport,
                 .appHealthReportAvailability,
-                .isPurchaseAllowedByRestoreBehavior,
-                .remoteConfig:
+                .isPurchaseAllowedByRestoreBehavior:
             return true
         case .getIntroEligibility,
                 .postSubscriberAttributes,
@@ -277,7 +276,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
                 .getCustomerCenterConfig,
-                .postCreateTicket:
+                .postCreateTicket,
+                .remoteConfig:
             return false
         case .rewardVerificationStatus:
             return true
@@ -293,7 +293,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .health,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
-                .remoteConfig,
                 .rewardVerificationStatus:
             return true
         case .getWorkflow,
@@ -308,7 +307,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .appHealthReport,
-                .postCreateTicket:
+                .postCreateTicket,
+                .remoteConfig:
             return false
         }
     }
