@@ -2035,8 +2035,6 @@ private extension PurchasesOrchestrator {
     /// - Externally-cached entries (SwiftUI StoreKit paywalls, custom purchase logic via the
     ///   `@_spi(Internal)` `cachePurchaseData`) have no purchase-initiated post to follow, so the
     ///   first read (a queue post) consumes them, preventing the entry from leaking indefinitely.
-    ///
-    /// Centralizing the rule here ensures the SK1 and SK2 paths can't drift.
     func consumeCachedPurchaseContext(
         for transaction: StoreTransactionType,
         initiationSource: PostReceiptSource.InitiationSource
