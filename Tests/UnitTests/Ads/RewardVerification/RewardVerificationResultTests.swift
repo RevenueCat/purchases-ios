@@ -35,4 +35,24 @@ final class RewardVerificationResultTests: TestCase {
         let result = RewardVerificationResult.verified(.unsupportedReward)
         XCTAssertEqual(result.verifiedReward, .unsupportedReward)
     }
+
+    func testSingleRewardHasEmptyMoreRewards() {
+        let result = RewardVerificationResult.verified(.noReward)
+        XCTAssertTrue(result.moreRewards.isEmpty)
+    }
+
+    func testFailedHasEmptyMoreRewards() {
+        XCTAssertTrue(RewardVerificationResult.failed.moreRewards.isEmpty)
+    }
+
+    func testMultiGrantExposesPrimaryAndMoreRewards() throws {
+        let primary = AdReward.virtualCurrency(code: "coins", amount: 10)
+        let entitlement = AdReward.entitlement(identifier: "pro", expiresAt: Date())
+        let result = RewardVerificationResult.verified(primary, moreRewards: [entitlement])
+
+        XCTAssertEqual(result.verifiedReward, primary)
+        XCTAssertEqual(result.moreRewards, [entitlement])
+        // moreRewards must not repeat the primary reward.
+        XCTAssertFalse(result.moreRewards.contains(primary))
+    }
 }

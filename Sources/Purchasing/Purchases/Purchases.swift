@@ -1722,25 +1722,28 @@ extension Purchases {
         clientTransactionID: String
     ) async -> RewardVerificationResult {
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        if case .verified(let reward) = outcome {
-            if reward.virtualCurrency != nil {
+        if case let .verified(reward, moreRewards) = outcome {
+            let rewards = [reward] + moreRewards
+            if rewards.contains(where: { $0.virtualCurrency != nil }) {
                 Logger.debug(AdsStrings.reward_verification_virtual_currency_invalidating_cache(
                     transactionID: clientTransactionID
                 ))
                 self.invalidateVirtualCurrenciesCache()
             }
-            if reward.entitlement != nil,
+            if rewards.contains(where: { $0.entitlement != nil }),
                await self.refreshCustomerInfoAfterEntitlementGrant(clientTransactionID: clientTransactionID)
                 == false {
-                // Couldn't reflect the entitlement locally — report `.failed` so the app doesn't act on a
-                // reward it can't honor yet. The grant persists server-side and syncs on a later fetch.
+                // Couldn't reflect the entitlement(s) locally — report `.failed` so the app doesn't act on
+                // a reward it can't honor yet. The grant persists server-side and syncs on a later fetch.
                 return .failed
             }
         }
         #endif
         switch outcome {
-        case .verified(let reward): return .verified(reward)
-        case .failed: return .failed
+        case let .verified(reward, moreRewards):
+            return .verified(reward, moreRewards: moreRewards)
+        case .failed:
+            return .failed
         }
     }
 
@@ -1798,8 +1801,8 @@ extension Purchases {
         }
 
         switch response.status {
-        case let .verified(reward):
-            return .verified(reward)
+        case let .verified(reward, moreRewards):
+            return .verified(reward: reward, moreRewards: moreRewards)
         case .pending:
             return .pending
         case let .failed(failure):

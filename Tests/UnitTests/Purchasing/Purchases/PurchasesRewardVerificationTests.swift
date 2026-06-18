@@ -251,6 +251,38 @@ extension PurchasesRewardVerificationTests {
         expect(self.backend.getCustomerInfoCallCount) == before
     }
 
+    func testPollRewardVerificationMultiGrantInvalidatesVCCacheAndFetchesCustomerInfo() async throws {
+        let virtualCurrency = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
+        let entitlement = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
+        let before = self.backend.getCustomerInfoCallCount
+        let poller = self.makeStubPoller(statuses: [
+            .verified(reward: .virtualCurrency(virtualCurrency), moreRewards: [.entitlement(entitlement)])
+        ])
+
+        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+
+        // VC reward → invalidate the VC cache; entitlement reward → actively refresh CustomerInfo.
+        expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 1
+        expect(self.backend.getCustomerInfoCallCount) > before
+        expect(result.verifiedReward) == .virtualCurrency(virtualCurrency)
+        expect(result.moreRewards) == [.entitlement(entitlement)]
+    }
+
+    func testPollRewardVerificationMultiGrantFailsWhenEntitlementRefreshFails() async throws {
+        let virtualCurrency = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
+        let entitlement = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
+        self.backend.overrideCustomerInfoResult = .failure(makeTerminalBackendError())
+        let poller = self.makeStubPoller(statuses: [
+            .verified(reward: .virtualCurrency(virtualCurrency), moreRewards: [.entitlement(entitlement)])
+        ])
+
+        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+
+        // A failed entitlement refresh fails the whole batch; the VC cache was still invalidated.
+        expect(result) == .failed
+        expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 1
+    }
+
 }
 
 // MARK: - generateRewardVerificationToken

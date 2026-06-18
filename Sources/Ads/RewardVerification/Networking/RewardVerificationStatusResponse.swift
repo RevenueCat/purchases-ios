@@ -19,7 +19,9 @@ struct RewardVerificationStatusResponse: Equatable {
 
     enum Status: Equatable {
 
-        case verified(AdReward)
+        /// Verified by the backend, with the primary `reward` plus any `moreRewards` (additional
+        /// rewards only — `moreRewards` does not repeat `reward`).
+        case verified(reward: AdReward, moreRewards: [AdReward])
         case pending
         case failed(Failure)
         case unknown
@@ -48,6 +50,7 @@ extension RewardVerificationStatusResponse: Decodable {
         case reward
         case failureReason
         case message
+        case moreRewards
     }
 
     private enum RewardCodingKeys: String, CodingKey {
@@ -75,7 +78,10 @@ extension RewardVerificationStatusResponse: Decodable {
     ) -> Status {
         switch rawStatus {
         case "verified":
-            return .verified(Self.decodeVerifiedReward(from: container))
+            return .verified(
+                reward: Self.decodePrimaryReward(from: container),
+                moreRewards: Self.decodeMoreRewards(from: container)
+            )
         case "pending":
             return .pending
         case "failed":
@@ -94,7 +100,7 @@ extension RewardVerificationStatusResponse: Decodable {
         return Failure(reason: reason, message: message)
     }
 
-    private static func decodeVerifiedReward(
+    private static func decodePrimaryReward(
         from container: KeyedDecodingContainer<CodingKeys>
     ) -> AdReward {
         guard container.contains(.reward),
@@ -102,44 +108,78 @@ extension RewardVerificationStatusResponse: Decodable {
             return .noReward
         }
 
-        guard let rewardContainer = try? container.nestedContainer(
-            keyedBy: RewardCodingKeys.self,
-            forKey: .reward
-        ) else {
+        guard let wire = try? container.decode(WireReward.self, forKey: .reward) else {
             Logger.warn(Strings.backendError.unexpected_reward_verification_reward_value)
             return .unsupportedReward
         }
+        return wire.reward
+    }
 
-        let rewardType = (try? rewardContainer.decode(String.self, forKey: .type)) ?? ""
+    private static func decodeMoreRewards(
+        from container: KeyedDecodingContainer<CodingKeys>
+    ) -> [AdReward] {
+        guard container.contains(.moreRewards),
+              (try? container.decodeNil(forKey: .moreRewards)) != true else {
+            return []
+        }
 
-        switch rewardType {
-        case RewardType.virtualCurrency:
-            let code = try? rewardContainer.decode(String.self, forKey: .code)
-            let amount = try? rewardContainer.decode(Int.self, forKey: .amount)
-            guard let code, let amount,
-                  let payload = VirtualCurrencyReward(code: code, amount: amount) else {
+        guard let wire = try? container.decode([WireReward].self, forKey: .moreRewards) else {
+            Logger.warn(Strings.backendError.unexpected_reward_verification_reward_value)
+            return []
+        }
+        return wire.map(\.reward)
+    }
+
+    /// Decodes a single reward object (`{ "type", ... }`) into an ``AdReward``, never throwing:
+    /// malformed or unknown shapes log a warning and fall back to ``AdReward/unsupportedReward`` so a
+    /// single bad entry can't drop the rest of the list.
+    private struct WireReward: Decodable {
+
+        let reward: AdReward
+
+        init(from decoder: Decoder) throws {
+            guard let container = try? decoder.container(keyedBy: RewardCodingKeys.self) else {
+                Logger.warn(Strings.backendError.unexpected_reward_verification_reward_value)
+                self.reward = .unsupportedReward
+                return
+            }
+            self.reward = Self.decodeReward(from: container)
+        }
+
+        private static func decodeReward(
+            from container: KeyedDecodingContainer<RewardCodingKeys>
+        ) -> AdReward {
+            let rewardType = (try? container.decode(String.self, forKey: .type)) ?? ""
+
+            switch rewardType {
+            case RewardType.virtualCurrency:
+                let code = try? container.decode(String.self, forKey: .code)
+                let amount = try? container.decode(Int.self, forKey: .amount)
+                guard let code, let amount,
+                      let payload = VirtualCurrencyReward(code: code, amount: amount) else {
+                    Logger.warn(
+                        Strings.backendError.malformed_reward_verification_reward_payload(type: rewardType)
+                    )
+                    return .unsupportedReward
+                }
+                return .virtualCurrency(payload)
+            case RewardType.entitlement:
+                let identifier = try? container.decode(String.self, forKey: .identifier)
+                let expiresAt = try? container.decode(Date.self, forKey: .expiresAt)
+                guard let identifier, let expiresAt,
+                      let payload = EntitlementReward(identifier: identifier, expiresAt: expiresAt) else {
+                    Logger.warn(
+                        Strings.backendError.malformed_reward_verification_reward_payload(type: rewardType)
+                    )
+                    return .unsupportedReward
+                }
+                return .entitlement(payload)
+            default:
                 Logger.warn(
-                    Strings.backendError.malformed_reward_verification_reward_payload(type: rewardType)
+                    Strings.backendError.unsupported_reward_verification_reward_type(type: rewardType)
                 )
                 return .unsupportedReward
             }
-            return .virtualCurrency(payload)
-        case RewardType.entitlement:
-            let identifier = try? rewardContainer.decode(String.self, forKey: .identifier)
-            let expiresAt = try? rewardContainer.decode(Date.self, forKey: .expiresAt)
-            guard let identifier, let expiresAt,
-                  let payload = EntitlementReward(identifier: identifier, expiresAt: expiresAt) else {
-                Logger.warn(
-                    Strings.backendError.malformed_reward_verification_reward_payload(type: rewardType)
-                )
-                return .unsupportedReward
-            }
-            return .entitlement(payload)
-        default:
-            Logger.warn(
-                Strings.backendError.unsupported_reward_verification_reward_type(type: rewardType)
-            )
-            return .unsupportedReward
         }
     }
 }

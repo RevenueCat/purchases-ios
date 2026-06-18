@@ -12,7 +12,7 @@
 
 import XCTest
 
-@_spi(Internal) @testable import RevenueCat
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 
 final class StubStatusPoller: RewardVerificationStatusPolling, @unchecked Sendable {
 
@@ -193,4 +193,28 @@ func makeConnectivityError() -> BackendError {
 /// A terminal `BackendError` that is not worth retrying (no transient signal).
 func makeTerminalBackendError() -> BackendError {
     .networkError(.signatureVerificationFailed(path: HTTPRequest.Path.health, code: .success))
+}
+
+// MARK: - Single-reward conveniences
+
+// Test-only `verified(_:)` factories mirroring the common single-reward case (no additional rewards),
+// keeping call sites that predate multi-grant terse. They coexist with the
+// `verified(reward:moreRewards:)` enum cases because the argument labels differ.
+
+extension RewardVerificationPollStatus {
+    static func verified(_ reward: AdReward) -> Self {
+        .verified(reward: reward, moreRewards: [])
+    }
+}
+
+extension RewardVerification.Outcome {
+    static func verified(_ reward: AdReward) -> Self {
+        .verified(reward: reward, moreRewards: [])
+    }
+}
+
+extension RewardVerificationStatusResponse.Status {
+    static func verified(_ reward: AdReward) -> Self {
+        .verified(reward: reward, moreRewards: [])
+    }
 }
