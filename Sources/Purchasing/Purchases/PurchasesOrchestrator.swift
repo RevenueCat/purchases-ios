@@ -1006,13 +1006,17 @@ final class PurchasesOrchestrator {
             Logger.verbose(Strings.paywalls.caching_purchase_initiated_paywall)
         }
 
-        let cached = CachedPurchaseContext(
-            offeringContext: presentedOfferingContext,
-            paywallEvent: paywallEvent,
-            cacheDate: self.dateProvider.now(),
-            originatedFromPurchase: originatedFromPurchase
-        )
-        self.cachedPurchaseContextByProductID.modify { $0[productIdentifier] = cached }
+        self.cachedPurchaseContextByProductID.modify { cache in
+            let existing = cache[productIdentifier]
+            cache[productIdentifier] = CachedPurchaseContext(
+                // Don't drop a value a previous write cached when this one doesn't carry it.
+                offeringContext: presentedOfferingContext ?? existing?.offeringContext,
+                paywallEvent: paywallEvent ?? existing?.paywallEvent,
+                cacheDate: self.dateProvider.now(),
+                // A purchase-initiated post is expected if either write was purchase-originated.
+                originatedFromPurchase: originatedFromPurchase || (existing?.originatedFromPurchase ?? false)
+            )
+        }
     }
 
     func clearCachedPurchaseData(productIdentifier: String) {
