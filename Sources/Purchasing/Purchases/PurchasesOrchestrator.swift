@@ -905,12 +905,12 @@ final class PurchasesOrchestrator {
         promotionalOfferId: String?,
         winBackOfferApplied: Bool
     ) async throws -> PurchaseResultData {
+        self.clearCachedPurchaseData(productIdentifier: productId)
+
         if case StoreKitError.userCancelled = error {
             guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
                 throw ErrorUtils.purchaseCancelledError()
             }
-
-            self.clearCachedPurchaseData(productIdentifier: productId)
 
             self.trackPurchaseAttemptEventIfNeeded(startTime,
                                                    successful: false,
@@ -950,8 +950,6 @@ final class PurchasesOrchestrator {
                                                    storeKitVersion: .storeKit2,
                                                    purchaseResult: nil,
                                                    error: purchasesError.asPublicError)
-
-            self.clearCachedPurchaseData(productIdentifier: productId)
 
             throw purchasesError
         }
