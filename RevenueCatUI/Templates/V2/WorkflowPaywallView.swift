@@ -214,6 +214,11 @@ struct WorkflowPaywallView: View {
     private let onDismiss: () -> Void
 
     @StateObject private var navigator: WorkflowNavigator
+    /// One paywall state store per workflow presentation: all screens read and write the same
+    /// store, so values survive screen navigation and reset only when the presentation ends
+    /// (this view, and with it the `@StateObject`, is torn down). Seeded empty for now —
+    /// workflow-root `state` declarations arrive with the workflow wire-format follow-up.
+    @StateObject private var stateStore = PaywallStateStore()
     // Held via PromoOfferCacheOwner so this view owns one cache shared across all workflow pages
     // without subscribing to its @Published changes: body only forwards the cache to children.
     // Observing it directly would re-render the whole page ForEach + header overlay on each update.
@@ -350,6 +355,15 @@ struct WorkflowPaywallView: View {
         .onChangeOf(self.navigator.currentStepId) { _ in
             self.syncExitOfferBinding()
         }
+        // Workflow-level injection: every page (current, outgoing, and hidden-but-mounted) shares
+        // this presentation session's state store. PaywallsV2View only creates its own store when
+        // no store was injected from above (i.e. standalone presentation).
+        .environment(\.paywallStateStore, self.stateStore)
+        // Republish the shared store's snapshot to the whole workflow subtree. This view observes
+        // `stateStore` via `@StateObject`, so a state update re-runs this body and refreshes the
+        // values every page reads when re-resolving `state` conditions.
+        .environment(\.paywallStateValues, self.stateStore.values)
+        .environment(\.paywallStateDefaults, self.stateStore.defaults)
     }
 
     // MARK: - Helpers

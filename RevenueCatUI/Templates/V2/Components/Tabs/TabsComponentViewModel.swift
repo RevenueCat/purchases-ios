@@ -32,6 +32,13 @@ class TabsComponentViewModel {
     let defaultTabId: String?
     let name: String?
 
+    /// State-store updates, dispatched when the selected tab changes
+    /// (e.g. `{ "set": "<tab state key>", "to": "$value" }`, where `$value`
+    /// is the newly selected tab id). `nil`/empty when the paywall declares no tab state.
+    var stateUpdates: [PaywallComponent.StateUpdate]? {
+        self.component.stateUpdates
+    }
+
     init(
         component: PaywallComponent.TabsComponent,
         controlStackViewModel: StackComponentViewModel,

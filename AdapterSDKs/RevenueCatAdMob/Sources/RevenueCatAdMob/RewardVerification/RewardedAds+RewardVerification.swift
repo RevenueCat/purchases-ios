@@ -159,17 +159,17 @@ import GoogleMobileAds
 @available(iOS 15.0, *)
 internal extension RewardVerification.CapableAd {
 
-    /// Returns the handler used by GoogleMobileAds `present` APIs while optionally dispatching
-    /// RevenueCat reward-verification polling results.
+    /// Returns the handler used by GoogleMobileAds `present` APIs, delivering the core SDK's
+    /// reward-verification result through the one-shot guard on the main actor.
     ///
-    /// - Parameter poller: For unit tests; pass `nil` in production to use ``RewardVerification.Poller/makeDefault()``.
+    /// - Parameter pollRewardVerification: For unit tests; pass `nil` in production to use
+    ///   `Purchases.shared.pollRewardVerification(clientTransactionID:)`. Virtual-currency cache
+    ///   invalidation happens inside the core call.
     @MainActor
     func createUserDidEarnRewardHandler(
         rewardVerificationStarted: (@MainActor () -> Void)?,
         rewardVerificationCompleted: (@MainActor (RewardVerificationResult) -> Void)?,
-        poller: RewardVerification.Poller? = nil,
-        invalidateVirtualCurrenciesCache: @escaping @MainActor () -> Void
-            = RewardVerification.SideEffects.invalidateVirtualCurrenciesCacheIfConfigured
+        pollRewardVerification: (@Sendable (String) async -> RewardVerificationResult)? = nil
     ) -> (() -> Void) {
         let state = RewardVerification.Setup.verificationState(for: self)
 
@@ -193,32 +193,16 @@ internal extension RewardVerification.CapableAd {
                 return
             }
 
-            let resolvedPoller = poller ?? .makeDefault()
+            let poll = pollRewardVerification ?? { clientTransactionID in
+                await Purchases.shared.pollRewardVerification(clientTransactionID: clientTransactionID)
+            }
+
             RewardVerification.Dispatcher.dispatch(
                 clientTransactionID: state.clientTransactionID,
                 state: state,
-                poller: resolvedPoller,
-                outcomeHandler: { internalOutcome in
-                    if case .verified(let reward) = internalOutcome, reward.virtualCurrency != nil {
-                        invalidateVirtualCurrenciesCache()
-                    }
-                    rewardVerificationCompleted(RewardVerification.mapOutcome(internalOutcome))
-                }
+                pollRewardVerification: poll,
+                resultHandler: { result in rewardVerificationCompleted(result) }
             )
-        }
-    }
-}
-
-// MARK: - Internal outcome -> presentation result
-
-@available(iOS 15.0, *)
-internal extension RewardVerification {
-    static func mapOutcome(_ outcome: Outcome) -> RewardVerificationResult {
-        switch outcome {
-        case .verified(let reward):
-            return .verified(reward)
-        case .failed:
-            return .failed
         }
     }
 }

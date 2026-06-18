@@ -27,6 +27,8 @@ import Foundation
         public let stack: PaywallComponent.StackComponent
         public let transition: PaywallComponent.Transition?
         public let overrides: ComponentOverrides<PartialButtonComponent>?
+        /// State updates applied when the button's action fires. Decode-only in Phase 0.
+        public let stateUpdates: [StateUpdate]?
         /// Preserves the backend-only `close_workflow` action without growing the public enum surface.
         @_spi(Internal) public let isCloseWorkflowAction: Bool
 
@@ -37,7 +39,8 @@ import Foundation
             action: Action,
             stack: PaywallComponent.StackComponent,
             transition: PaywallComponent.Transition? = nil,
-            overrides: ComponentOverrides<PartialButtonComponent>? = nil
+            overrides: ComponentOverrides<PartialButtonComponent>? = nil,
+            stateUpdates: [StateUpdate]? = nil
         ) {
             self.type = .button
             self.name = name
@@ -47,6 +50,7 @@ import Foundation
             self.stack = stack
             self.transition = transition
             self.overrides = overrides
+            self.stateUpdates = stateUpdates
             self.isCloseWorkflowAction = false
         }
 
@@ -59,6 +63,7 @@ import Foundation
             case stack
             case transition
             case overrides
+            case stateUpdates
         }
 
         private enum ActionCodingKeys: String, CodingKey {
@@ -86,6 +91,7 @@ import Foundation
                 ComponentOverrides<PartialButtonComponent>.self,
                 forKey: .overrides
             )
+            self.stateUpdates = try container.decodeIfPresent([StateUpdate].self, forKey: .stateUpdates)
         }
 
         public func encode(to encoder: Encoder) throws {
@@ -103,6 +109,7 @@ import Foundation
             try container.encode(stack, forKey: .stack)
             try container.encodeIfPresent(transition, forKey: .transition)
             try container.encodeIfPresent(overrides, forKey: .overrides)
+            try container.encodeIfPresent(stateUpdates, forKey: .stateUpdates)
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -115,6 +122,7 @@ import Foundation
             hasher.combine(stack)
             hasher.combine(transition)
             hasher.combine(overrides)
+            hasher.combine(stateUpdates)
         }
 
         public static func == (lhs: ButtonComponent, rhs: ButtonComponent) -> Bool {
@@ -126,7 +134,8 @@ import Foundation
                    lhs.isCloseWorkflowAction == rhs.isCloseWorkflowAction &&
                    lhs.stack == rhs.stack &&
                    lhs.transition == rhs.transition &&
-                   lhs.overrides == rhs.overrides
+                   lhs.overrides == rhs.overrides &&
+                   lhs.stateUpdates == rhs.stateUpdates
 
         }
 
