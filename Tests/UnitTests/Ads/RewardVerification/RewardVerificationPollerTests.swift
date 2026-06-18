@@ -1,16 +1,22 @@
-// swiftlint:disable file_length
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  RewardVerificationPollerTests.swift
+//
+
+// swiftlint:disable file_length type_body_length
 
 import XCTest
 
-#if os(iOS) && canImport(GoogleMobileAds)
-import GoogleMobileAds
 @_spi(Internal) @_spi(Experimental) @testable import RevenueCat
-@testable import RevenueCatAdMob
 
-// swiftlint:disable type_body_length
-
-@available(iOS 15.0, *)
-final class PollerTests: AdapterTestCase {
+final class RewardVerificationPollerTests: TestCase {
 
     // MARK: - Terminal statuses
 
@@ -116,11 +122,11 @@ final class PollerTests: AdapterTestCase {
         XCTAssertEqual(sleeper.delays.count, 2)
     }
 
-    // MARK: - Transient `ErrorCode` retry path
+    // MARK: - Transient connection-level retry path
 
-    func testTransientErrorCodeOnFirstAttemptIsRetried() async {
+    func testTransientNetworkErrorOnFirstAttemptIsRetried() async {
         let statusPoller = ScriptedStatusPoller(steps: [
-            .throwError(ErrorCode.networkError),
+            .throwError(makeConnectivityError()),
             .status(.verified(.noReward))
         ])
         let sleeper = RecordingSleeper()
@@ -135,10 +141,10 @@ final class PollerTests: AdapterTestCase {
         XCTAssertEqual(sleeper.delays.count, 1, "A transient throw should still consume an inter-attempt sleep")
     }
 
-    func testTransientErrorCodeAfterPendingIsRetried() async {
+    func testTransientNetworkErrorAfterPendingIsRetried() async {
         let statusPoller = ScriptedStatusPoller(steps: [
             .status(.pending),
-            .throwError(ErrorCode.offlineConnectionError),
+            .throwError(makeConnectivityError()),
             .status(.verified(.noReward))
         ])
         let sleeper = RecordingSleeper()
@@ -154,7 +160,9 @@ final class PollerTests: AdapterTestCase {
     }
 
     func testEveryAttemptThrowingTransientExhaustsBudgetAndReturnsFailed() async {
-        let statusPoller = ThrowingStatusPoller(error: ErrorCode.unknownBackendError)
+        let statusPoller = ThrowingStatusPoller(
+            error: makePollingError(statusCode: 500, backendCode: .internalServerError)
+        )
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 5)
 
@@ -173,9 +181,9 @@ final class PollerTests: AdapterTestCase {
     func testMixedPendingAndTransientThrowsExhaustsBudgetAndReturnsFailed() async {
         let statusPoller = ScriptedStatusPoller(steps: [
             .status(.pending),
-            .throwError(ErrorCode.networkError),
+            .throwError(makeConnectivityError()),
             .status(.pending),
-            .throwError(ErrorCode.offlineConnectionError),
+            .throwError(makeConnectivityError()),
             .status(.pending)
         ])
         let sleeper = RecordingSleeper()
@@ -190,11 +198,15 @@ final class PollerTests: AdapterTestCase {
         XCTAssertEqual(sleeper.delays.count, 4)
     }
 
-    func testEachTransientErrorCodeIsRetried() async {
-        let transient: [ErrorCode] = [.networkError, .offlineConnectionError, .unknownBackendError]
-        for code in transient {
+    func testTransientErrorsAreRetried() async {
+        // Connection-level failure (no HTTP status) and 5xx server responses are both transient.
+        let transient: [BackendError] = [
+            makeConnectivityError(),
+            makePollingError(statusCode: 500, backendCode: .internalServerError)
+        ]
+        for error in transient {
             let statusPoller = ScriptedStatusPoller(steps: [
-                .throwError(code),
+                .throwError(error),
                 .status(.verified(.noReward))
             ])
             let sut = makePoller(statusPoller: statusPoller, sleeper: RecordingSleeper())
@@ -202,16 +214,52 @@ final class PollerTests: AdapterTestCase {
             let outcome = await sut.run(clientTransactionID: "tx-1")
 
             guard case .verified(.noReward) = outcome else {
-                return XCTFail("Expected .verified for transient code \(code), got \(outcome)")
+                return XCTFail("Expected .verified for transient error \(error), got \(outcome)")
             }
-            XCTAssertEqual(statusPoller.callCount, 2, "Transient code \(code) should have been retried once")
+            XCTAssertEqual(statusPoller.callCount, 2, "Transient error \(error) should have been retried once")
         }
     }
 
-    // MARK: - Terminal `ErrorCode` path
+    // MARK: - HTTP-status-keyed retry (5xx transient, 4xx terminal)
 
-    func testSignatureVerificationFailedReturnsFailedWithoutRetrying() async {
-        let statusPoller = ThrowingStatusPoller(error: ErrorCode.signatureVerificationFailed)
+    func testParseableServerErrorIsRetried() async {
+        let statusPoller = ScriptedStatusPoller(steps: [
+            .throwError(makePollingError(statusCode: 500, backendCode: .internalServerError)),
+            .status(.verified(.noReward))
+        ])
+        let sleeper = RecordingSleeper()
+        let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
+
+        let outcome = await sut.run(clientTransactionID: "tx-1")
+
+        guard case .verified(.noReward) = outcome else {
+            return XCTFail("Expected .verified(.noReward), got \(outcome)")
+        }
+        XCTAssertEqual(statusPoller.callCount, 2, "A 5xx should be retried")
+    }
+
+    func testUnparseableServerErrorIsRetried() async {
+        // Empty 5xx maps to `.unknownError` (not a transient code) but must still be retried on the 5xx status.
+        let statusPoller = ScriptedStatusPoller(steps: [
+            .throwError(makePollingError(statusCode: 503, backendCode: .unknownError)),
+            .status(.verified(.noReward))
+        ])
+        let sleeper = RecordingSleeper()
+        let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
+
+        let outcome = await sut.run(clientTransactionID: "tx-1")
+
+        guard case .verified(.noReward) = outcome else {
+            return XCTFail("Expected .verified(.noReward), got \(outcome)")
+        }
+        XCTAssertEqual(statusPoller.callCount, 2, "An unparseable 5xx should still be retried")
+    }
+
+    func testClientErrorIsNotRetriedAndFailsFastAsBackendError() async {
+        // A 4xx must fail fast as `.backendError`, not be retried to a misleading `.timeout`.
+        let statusPoller = ThrowingStatusPoller(
+            error: makePollingError(statusCode: 400, backendCode: .badRequest)
+        )
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
@@ -220,41 +268,61 @@ final class PollerTests: AdapterTestCase {
         guard case .failed(.backendError) = outcome else {
             return XCTFail("Expected .failed(.backendError), got \(outcome)")
         }
-        XCTAssertEqual(statusPoller.callCount, 1, "Terminal ErrorCode must not be retried")
+        XCTAssertEqual(statusPoller.callCount, 1, "A 4xx must not be retried")
         XCTAssertTrue(sleeper.delays.isEmpty)
     }
 
-    func testUnexpectedBackendResponseErrorReturnsFailedWithoutRetrying() async {
-        let statusPoller = ThrowingStatusPoller(error: ErrorCode.unexpectedBackendResponseError)
-        let sleeper = RecordingSleeper()
-        let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
-
-        let outcome = await sut.run(clientTransactionID: "tx-1")
-
-        guard case .failed(.backendError) = outcome else {
-            return XCTFail("Expected .failed(.backendError), got \(outcome)")
-        }
-        XCTAssertEqual(statusPoller.callCount, 1)
-    }
-
-    func testApiEndpointBlockedErrorReturnsFailedWithoutRetrying() async {
-        // DNS blocking — retrying within ~10s won't unblock the user; surface `.failed` immediately.
-        let statusPoller = ThrowingStatusPoller(error: ErrorCode.apiEndpointBlockedError)
-        let sleeper = RecordingSleeper()
-        let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
-
-        let outcome = await sut.run(clientTransactionID: "tx-1")
-
-        guard case .failed(.backendError) = outcome else {
-            return XCTFail("Expected .failed(.backendError), got \(outcome)")
-        }
-        XCTAssertEqual(statusPoller.callCount, 1)
-    }
-
-    func testPendingThenTerminalErrorCodeReturnsFailedWithoutAdditionalPolls() async {
+    func testServerErrorAfterPendingIsRetried() async {
         let statusPoller = ScriptedStatusPoller(steps: [
             .status(.pending),
-            .throwError(ErrorCode.signatureVerificationFailed)
+            .throwError(makePollingError(statusCode: 502, backendCode: .unknownError)),
+            .status(.verified(.noReward))
+        ])
+        let sleeper = RecordingSleeper()
+        let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
+
+        let outcome = await sut.run(clientTransactionID: "tx-1")
+
+        guard case .verified(.noReward) = outcome else {
+            return XCTFail("Expected .verified(.noReward), got \(outcome)")
+        }
+        XCTAssertEqual(statusPoller.callCount, 3)
+    }
+
+    // MARK: - Terminal `BackendError` path
+
+    func testTerminalBackendErrorReturnsFailedWithoutRetrying() async {
+        let statusPoller = ThrowingStatusPoller(error: makeTerminalBackendError())
+        let sleeper = RecordingSleeper()
+        let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
+
+        let outcome = await sut.run(clientTransactionID: "tx-1")
+
+        guard case .failed(.backendError) = outcome else {
+            return XCTFail("Expected .failed(.backendError), got \(outcome)")
+        }
+        XCTAssertEqual(statusPoller.callCount, 1, "A terminal BackendError must not be retried")
+        XCTAssertTrue(sleeper.delays.isEmpty)
+    }
+
+    func testNonNetworkBackendErrorReturnsFailedWithoutRetrying() async {
+        // A BackendError without an underlying NetworkError carries no transient signal.
+        let statusPoller = ThrowingStatusPoller(error: BackendError.unexpectedBackendResponse(.customerInfoNil))
+        let sleeper = RecordingSleeper()
+        let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
+
+        let outcome = await sut.run(clientTransactionID: "tx-1")
+
+        guard case .failed(.backendError) = outcome else {
+            return XCTFail("Expected .failed(.backendError), got \(outcome)")
+        }
+        XCTAssertEqual(statusPoller.callCount, 1)
+    }
+
+    func testPendingThenTerminalBackendErrorReturnsFailedWithoutAdditionalPolls() async {
+        let statusPoller = ScriptedStatusPoller(steps: [
+            .status(.pending),
+            .throwError(makeTerminalBackendError())
         ])
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
@@ -270,8 +338,6 @@ final class PollerTests: AdapterTestCase {
     // MARK: - Catch-all behaviour
 
     func testCancellationErrorFromPollStatusReturnsFailedWithoutRetrying() async {
-        // `CancellationError` is not an `ErrorCode`, so the poller's terminal-ErrorCode path
-        // doesn't apply — it falls through to the catch-all and surfaces `.unknown`.
         let statusPoller = ThrowingStatusPoller(error: CancellationError())
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
@@ -286,7 +352,7 @@ final class PollerTests: AdapterTestCase {
     }
 
     func testUnrecognisedErrorTypeFromPollStatusReturnsFailedWithoutRetrying() async {
-        let statusPoller = ThrowingStatusPoller(error: SentinelError())
+        let statusPoller = ThrowingStatusPoller(error: PollerSentinelError())
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
@@ -318,9 +384,8 @@ final class PollerTests: AdapterTestCase {
     }
 
     func testSleeperFailureIsSwallowedAndLoopContinuesToNextAttempt() async {
-        // Inter-attempt sleeps use `try?`, so a throwing sleeper does not abort the run.
         let statusPoller = StubStatusPoller(statuses: [.pending, .verified(.noReward)])
-        let sleeper = ThrowingSleeper(error: SentinelError())
+        let sleeper = ThrowingSleeper(error: PollerSentinelError())
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
@@ -403,7 +468,7 @@ final class PollerTests: AdapterTestCase {
     func testJitterIsSampledOncePerInterAttemptSleep() async {
         let statusPoller = StubStatusPoller(statuses: Array(repeating: .pending, count: 5))
         let sleeper = RecordingSleeper()
-        let counter = Counter()
+        let counter = PollerJitterCounter()
         let jitter = RewardVerification.Jitter {
             counter.increment()
             return 1.0
@@ -421,7 +486,3 @@ final class PollerTests: AdapterTestCase {
         XCTAssertEqual(sleeper.delays.count, 4)
     }
 }
-
-// swiftlint:enable type_body_length
-
-#endif

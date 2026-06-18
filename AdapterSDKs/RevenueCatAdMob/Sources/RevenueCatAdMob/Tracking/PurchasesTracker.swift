@@ -7,7 +7,7 @@
 import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
-@_spi(Experimental) import RevenueCat
+@_spi(Experimental) @_spi(Internal) import RevenueCat
 
 @available(iOS 15.0, *)
 internal extension Tracking {
@@ -17,11 +17,21 @@ internal extension Tracking {
 
         var isConfigured: Bool { Purchases.isConfigured }
 
-        func trackAdLoaded(_ data: AdLoaded) { Purchases.shared.adTracker.trackAdLoaded(data) }
-        func trackAdDisplayed(_ data: AdDisplayed) { Purchases.shared.adTracker.trackAdDisplayed(data) }
-        func trackAdOpened(_ data: AdOpened) { Purchases.shared.adTracker.trackAdOpened(data) }
-        func trackAdRevenue(_ data: AdRevenue) { Purchases.shared.adTracker.trackAdRevenue(data) }
-        func trackAdFailedToLoad(_ data: AdFailedToLoad) { Purchases.shared.adTracker.trackAdFailedToLoad(data) }
+        func trackAdLoaded(_ data: AdLoaded) {
+            Purchases.shared.adTracker.trackAdLoaded(data, captureMethod: .adapter)
+        }
+        func trackAdDisplayed(_ data: AdDisplayed) {
+            Purchases.shared.adTracker.trackAdDisplayed(data, captureMethod: .adapter)
+        }
+        func trackAdOpened(_ data: AdOpened) {
+            Purchases.shared.adTracker.trackAdOpened(data, captureMethod: .adapter)
+        }
+        func trackAdRevenue(_ data: AdRevenue) {
+            Purchases.shared.adTracker.trackAdRevenue(data, captureMethod: .adapter)
+        }
+        func trackAdFailedToLoad(_ data: AdFailedToLoad) {
+            Purchases.shared.adTracker.trackAdFailedToLoad(data, captureMethod: .adapter)
+        }
 
     }
 

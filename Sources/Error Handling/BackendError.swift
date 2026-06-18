@@ -204,6 +204,11 @@ extension BackendError {
         return self.networkError?.isServerDown == true
     }
 
+    /// Whether this error is transient and worth retrying. See ``NetworkError/isTransient``.
+    var isTransient: Bool {
+        return self.networkError?.isTransient ?? false
+    }
+
     private var networkError: NetworkError? {
         switch self {
         case let .networkError(networkError):
