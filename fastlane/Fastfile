@@ -249,12 +249,15 @@ platform :ios do
       output_dir = record_paywall_screenshots(platform: platform)
       UI.message("Output directory for #{platform}: #{output_dir}")
 
-      # Process the screenshots from the output directory
+      # Copy the screenshots into the paywall-rendering-validation repo.
       produced_offering_ids_by_platform[platform] = process_paywall_screenshots(
         output_dir: output_dir,
         target_repository_path: target_repository_path,
         platform: platform
       )
+
+      # Upload the same screenshots to Emerge so we only record once but distribute to both destinations.
+      upload_paywall_template_screenshots_to_emerge(platform: platform, output_dir: output_dir)
     end
 
     remove_stale_template_screenshots(
@@ -282,12 +285,19 @@ platform :ios do
       output_dir = record_paywall_screenshots(platform: platform)
 
       UI.message("Uploading #{platform} screenshots to Emerge")
-      upload_snapshots_to_emerge(
-        name: "Paywall Rendering Validation (#{platform})",
-        id: "com.revenuecat.paywall-rendering-validation.#{platform}",
-        images_path: "#{output_dir}/images"
-      )
+      upload_paywall_template_screenshots_to_emerge(platform: platform, output_dir: output_dir)
     end
+  end
+
+  private_lane :upload_paywall_template_screenshots_to_emerge do |options|
+    platform = options[:platform] || UI.user_error!("No platform provided")
+    output_dir = options[:output_dir] || UI.user_error!("No output_dir provided")
+
+    upload_snapshots_to_emerge(
+      name: "Paywall Rendering Validation (#{platform})",
+      id: "com.revenuecat.paywall-rendering-validation.#{platform}",
+      images_path: "#{output_dir}/images"
+    )
   end
 
   # Apple platforms we render Paywalls V2 template screenshots for.

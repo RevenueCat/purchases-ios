@@ -2728,9 +2728,6 @@ workflows:
       - record-and-upload-paywalls-v1-snapshots:
           context:
             - slack-secrets
-      - record-and-upload-paywall-template-snapshots-to-emerge:
-          context:
-            - slack-secrets
       - installation-tests-all-but-carthage:
           context:
             - slack-secrets
@@ -2801,7 +2798,6 @@ workflows:
             - run-revenuecat-ui-ios-18-and-17
             - spm-revenuecat-ui-watchos
             - record-and-upload-paywalls-v1-snapshots
-            - record-and-upload-paywall-template-snapshots-to-emerge
             - installation-tests-all-but-carthage
             - installation-tests-carthage
             - api-tests
