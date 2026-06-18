@@ -20,6 +20,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
+        // TODO: Re-enable snapshots once the remote-config network stack is final.
         self.httpClient.disableSnapshotTesting()
     }
 
@@ -139,16 +140,30 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
     func testGetRemoteConfigParsesRCContainerResponse() throws {
         self.mockSuccessfulResponse()
 
-        let result: Result<RCContainer, BackendError>? = waitUntilValue { completed in
+        let result: Result<RCContainer?, BackendError>? = waitUntilValue { completed in
             self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
         }
 
-        let container = try XCTUnwrap(result?.value)
+        let container = try XCTUnwrap(try XCTUnwrap(result?.value))
         expect(RCContainerTestData.data(from: container.config)) == Self.config
         expect(container.contentElements).to(haveCount(1))
         expect(RCContainerTestData.data(
             from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: Self.content)])
         )) == Self.content
+    }
+
+    func testGetRemoteConfigNoContentResponseSucceedsWithNoContainer() throws {
+        self.httpClient.mock(
+            requestPath: .remoteConfig,
+            response: .init(statusCode: .noContent, body: Data())
+        )
+
+        let result: Result<RCContainer?, BackendError>? = waitUntilValue { completed in
+            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+        expect(try XCTUnwrap(result?.value)).to(beNil())
     }
 
     // MARK: - Error handling
@@ -203,6 +218,24 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         self.httpClient.mock(
             requestPath: .remoteConfig,
             response: .init(statusCode: .success, body: "not an rc container".asData)
+        )
+
+        let result = waitUntilValue { completed in
+            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+        }
+
+        guard case let .networkError(.decoding(error, _)) = result?.error else {
+            fail("Expected decoding error, got \(String(describing: result?.error))")
+            return
+        }
+
+        expect(error.domain) == String(reflecting: RCContainer.Parser.FormatError.self)
+    }
+
+    func testGetRemoteConfigSuccessfulJSONResponseSendsDecodingError() {
+        self.httpClient.mock(
+            requestPath: .remoteConfig,
+            response: .init(statusCode: .success, body: #"{"api_sources":[]}"#.asData)
         )
 
         let result = waitUntilValue { completed in

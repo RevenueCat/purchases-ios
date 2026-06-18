@@ -46,6 +46,7 @@ class HTTPStatusCodeTests: TestCase {
     func testIsSuccessfulResponse() {
         expect(HTTPStatusCode.success.isSuccessfulResponse) == true
         expect(HTTPStatusCode.createdSuccess.isSuccessfulResponse) == true
+        expect(HTTPStatusCode.noContent.isSuccessfulResponse) == true
         expect(HTTPStatusCode.redirect.isSuccessfulResponse) == true
         expect(HTTPStatusCode.notModified.isSuccessfulResponse) == true
         expect(HTTPStatusCode.temporaryRedirect.isSuccessfulResponse) == true
@@ -73,6 +74,7 @@ class HTTPStatusCodeTests: TestCase {
     func testIsNotServerError() {
         expect(HTTPStatusCode.success.isServerError) == false
         expect(HTTPStatusCode.createdSuccess.isServerError) == false
+        expect(HTTPStatusCode.noContent.isServerError) == false
         expect(HTTPStatusCode.redirect.isServerError) == false
         expect(HTTPStatusCode.notModified.isServerError) == false
         expect(HTTPStatusCode.temporaryRedirect.isServerError) == false
@@ -89,6 +91,7 @@ class HTTPStatusCodeTests: TestCase {
     func testIsSuccessfullySynced() {
         expect(HTTPStatusCode.success.isSuccessfullySynced) == true
         expect(HTTPStatusCode.createdSuccess.isSuccessfullySynced) == true
+        expect(HTTPStatusCode.noContent.isSuccessfullySynced) == true
         expect(HTTPStatusCode.redirect.isSuccessfullySynced) == true
         expect(HTTPStatusCode.notModified.isSuccessfullySynced) == true
         expect(HTTPStatusCode.temporaryRedirect.isSuccessfullySynced) == true

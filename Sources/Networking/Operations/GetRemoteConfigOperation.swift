@@ -57,8 +57,12 @@ private extension GetRemoteConfigOperation {
                 callback.completion(
                     response
                         .flatMap { response in
-                            Result {
-                                try RCContainer(data: response.body)
+                            guard response.httpStatusCode != .noContent else {
+                                return .success(nil)
+                            }
+
+                            return Result {
+                                try Optional.some(RCContainer(data: response.body))
                             }
                             .mapError { NetworkError.decoding($0, response.body) }
                         }

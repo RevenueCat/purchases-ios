@@ -9,7 +9,7 @@ import Foundation
 
 class RemoteConfigAPI {
 
-    typealias RemoteConfigResponseHandler = Backend.ResponseHandler<RCContainer>
+    typealias RemoteConfigResponseHandler = Backend.ResponseHandler<RCContainer?>
 
     private let callbackCache: CallbackCache<RemoteConfigCallback>
     private let backendConfig: BackendConfiguration
