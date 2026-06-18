@@ -1,26 +1,28 @@
 //
-//  Poller.swift
+//  Copyright RevenueCat Inc. All Rights Reserved.
 //
-//  Created by RevenueCat.
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  Poller.swift
 //
 
 import Foundation
 
-#if os(iOS) && canImport(GoogleMobileAds)
-@_spi(Internal) import RevenueCat
+/// Production wiring: `Purchases.shared.pollRewardVerificationStatus(clientTransactionID:)`.
+internal protocol RewardVerificationStatusPolling: Sendable {
+    func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus
+}
 
-@available(iOS 15.0, *)
+/// Async sleep abstraction used by the polling loop. Production wiring is `RewardVerification.TaskSleeper`.
+internal protocol RewardVerificationAsyncSleeper: Sendable {
+    func sleep(seconds: TimeInterval) async throws
+}
+
 internal extension RewardVerification {
-
-    /// Production wiring: `Purchases.shared.pollRewardVerificationStatus(clientTransactionID:)`.
-    protocol StatusPolling: Sendable {
-        func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus
-    }
-
-    /// Async sleep abstraction used by the polling loop. Production wiring is `TaskSleeper`.
-    protocol AsyncSleeper: Sendable {
-        func sleep(seconds: TimeInterval) async throws
-    }
 
     /// Per-attempt jitter sampler. Defaults to a uniform draw in `[0.75s, 1.25s]`.
     struct Jitter: Sendable {
@@ -43,14 +45,14 @@ internal extension RewardVerification {
 
         static let defaultMaxAttempts = 10
 
-        private let statusPoller: StatusPolling
-        private let sleeper: AsyncSleeper
+        private let statusPoller: RewardVerificationStatusPolling
+        private let sleeper: RewardVerificationAsyncSleeper
         private let jitter: Jitter
         let maxAttempts: Int
 
         init(
-            statusPoller: StatusPolling,
-            sleeper: AsyncSleeper,
+            statusPoller: RewardVerificationStatusPolling,
+            sleeper: RewardVerificationAsyncSleeper,
             jitter: Jitter = .default,
             maxAttempts: Int = Poller.defaultMaxAttempts
         ) {
@@ -70,20 +72,20 @@ internal extension RewardVerification {
         }
 
         func run(clientTransactionID: String) async -> Outcome {
-            Logger.debug(RewardVerificationStrings.poll_start(
+            Logger.debug(AdsStrings.poll_start(
                 transactionID: clientTransactionID,
                 maxAttempts: self.maxAttempts
             ))
 
             for attempt in 0..<self.maxAttempts {
-                Logger.verbose(RewardVerificationStrings.poll_attempt(
+                Logger.verbose(AdsStrings.poll_attempt(
                     attempt: attempt + 1,
                     maxAttempts: self.maxAttempts,
                     transactionID: clientTransactionID
                 ))
 
                 if Task.isCancelled {
-                    Logger.debug(RewardVerificationStrings.poll_cancelled(transactionID: clientTransactionID))
+                    Logger.debug(AdsStrings.poll_cancelled(transactionID: clientTransactionID))
                     return .failed(.unknown)
                 }
                 if attempt > 0 {
@@ -91,8 +93,10 @@ internal extension RewardVerification {
                 }
 
                 do {
-                    let status = try await self.statusPoller.pollStatus(clientTransactionID: clientTransactionID)
-                    Logger.debug(RewardVerificationStrings.poll_status(
+                    let status = try await self.statusPoller.pollStatus(
+                        clientTransactionID: clientTransactionID
+                    )
+                    Logger.debug(AdsStrings.poll_status(
                         status: status.logDescription,
                         transactionID: clientTransactionID
                     ))
@@ -102,23 +106,21 @@ internal extension RewardVerification {
                     case .pending, .unknown: continue
                     }
                 } catch let code as ErrorCode where code.isTransientPolling {
-                    Logger.debug(RewardVerificationStrings.poll_transient_error(
+                    Logger.debug(AdsStrings.poll_transient_error(
                         error: code,
                         transactionID: clientTransactionID
                     ))
                     continue
                 } catch {
-                    Logger.error(RewardVerificationStrings.poll_terminal_error(
+                    Logger.error(AdsStrings.poll_terminal_error(
                         error: error,
                         transactionID: clientTransactionID
                     ))
-                    // Non-transient ErrorCode is a backend rejection; everything else (CancellationError,
-                    // custom error types) is unclassifiable and surfaces as .unknown.
                     return .failed(error is ErrorCode ? .backendError : .unknown)
                 }
             }
 
-            Logger.warn(RewardVerificationStrings.poll_exhausted(
+            Logger.warn(AdsStrings.poll_exhausted(
                 maxAttempts: self.maxAttempts,
                 transactionID: clientTransactionID
             ))
@@ -128,14 +130,14 @@ internal extension RewardVerification {
 
     // MARK: - Production seam impls
 
-    struct PurchasesStatusPoller: StatusPolling {
+    struct PurchasesStatusPoller: RewardVerificationStatusPolling {
 
         func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus {
             try await Purchases.shared.pollRewardVerificationStatus(clientTransactionID: clientTransactionID)
         }
     }
 
-    struct TaskSleeper: AsyncSleeper {
+    struct TaskSleeper: RewardVerificationAsyncSleeper {
 
         func sleep(seconds: TimeInterval) async throws {
             try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
@@ -145,7 +147,7 @@ internal extension RewardVerification {
 
 // MARK: - Helpers
 
-fileprivate extension RewardVerificationPollStatus {
+private extension RewardVerificationPollStatus {
 
     var logDescription: String {
         switch self {
@@ -159,8 +161,7 @@ fileprivate extension RewardVerificationPollStatus {
 
 // MARK: - ErrorCode classification
 
-/// Allowlist of `ErrorCode` cases the polling loop retries instead of surfacing as `.failed`.
-fileprivate extension ErrorCode {
+private extension ErrorCode {
 
     var isTransientPolling: Bool {
         switch self {
@@ -173,5 +174,3 @@ fileprivate extension ErrorCode {
         }
     }
 }
-
-#endif

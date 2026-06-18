@@ -103,8 +103,8 @@ extension HTTPRequest {
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
         case getVirtualCurrencies(appUserID: String)
-        case getWorkflow(appUserID: String, workflowId: String)
         case getWorkflows(appUserID: String, type: String?)
+        case getWorkflow(appUserID: String, workflowId: String)
         case postRedeemWebPurchase
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
@@ -157,6 +157,14 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "/v1/offerings"
         case .getProductEntitlementMapping:
             return "/v1/product_entitlement_mapping"
+        case let .getWorkflows(_, type):
+            let base = "/workflows/v1/workflows"
+            if let type = type {
+                return "\(base)?type=\(Self.escape(type))"
+            }
+            return base
+        case let .getWorkflow(_, workflowId):
+            return "/workflows/v1/workflows/\(Self.escape(workflowId))"
         default:
             return nil
         }
@@ -183,8 +191,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .getCustomerInfo,
                 .getOfferings,
-                .getWorkflow,
                 .getWorkflows,
+                .getWorkflow,
                 .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
@@ -213,8 +221,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .getCustomerInfo,
                 .getOfferings,
-                .getWorkflow,
                 .getWorkflows,
+                .getWorkflow,
                 .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
@@ -247,8 +255,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getOfferings,
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
-                .getWorkflow,
                 .getWorkflows,
+                .getWorkflow,
                 .appHealthReport,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior:

@@ -1,11 +1,20 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  RewardVerificationPollerTestDoubles.swift
+//
+
 import XCTest
 
-#if os(iOS) && canImport(GoogleMobileAds)
-@_spi(Internal) import RevenueCat
-@testable import RevenueCatAdMob
+@_spi(Internal) @testable import RevenueCat
 
-@available(iOS 15.0, *)
-final class StubStatusPoller: RewardVerification.StatusPolling, @unchecked Sendable {
+final class StubStatusPoller: RewardVerificationStatusPolling, @unchecked Sendable {
 
     private var statuses: [RewardVerificationPollStatus]
     private(set) var receivedIDs: [String] = []
@@ -26,8 +35,7 @@ final class StubStatusPoller: RewardVerification.StatusPolling, @unchecked Senda
     }
 }
 
-@available(iOS 15.0, *)
-final class ThrowingStatusPoller: RewardVerification.StatusPolling, @unchecked Sendable {
+final class ThrowingStatusPoller: RewardVerificationStatusPolling, @unchecked Sendable {
 
     let error: any Error
     private(set) var callCount = 0
@@ -42,9 +50,8 @@ final class ThrowingStatusPoller: RewardVerification.StatusPolling, @unchecked S
     }
 }
 
-/// Suspends indefinitely so tests can exercise cancellation of an in-flight Dispatcher task.
-@available(iOS 15.0, *)
-final class HangingStatusPoller: RewardVerification.StatusPolling, @unchecked Sendable {
+/// Suspends indefinitely so tests can exercise cancellation of an in-flight polling task.
+final class HangingStatusPoller: RewardVerificationStatusPolling, @unchecked Sendable {
 
     private(set) var callCount = 0
 
@@ -55,8 +62,7 @@ final class HangingStatusPoller: RewardVerification.StatusPolling, @unchecked Se
     }
 }
 
-@available(iOS 15.0, *)
-final class ScriptedStatusPoller: RewardVerification.StatusPolling, @unchecked Sendable {
+final class ScriptedStatusPoller: RewardVerificationStatusPolling, @unchecked Sendable {
 
     enum Step {
         case status(RewardVerificationPollStatus)
@@ -85,8 +91,7 @@ final class ScriptedStatusPoller: RewardVerification.StatusPolling, @unchecked S
     }
 }
 
-@available(iOS 15.0, *)
-final class RecordingSleeper: RewardVerification.AsyncSleeper, @unchecked Sendable {
+final class RecordingSleeper: RewardVerificationAsyncSleeper, @unchecked Sendable {
 
     private(set) var delays: [TimeInterval] = []
 
@@ -97,8 +102,7 @@ final class RecordingSleeper: RewardVerification.AsyncSleeper, @unchecked Sendab
     }
 }
 
-@available(iOS 15.0, *)
-final class ThrowingSleeper: RewardVerification.AsyncSleeper, @unchecked Sendable {
+final class ThrowingSleeper: RewardVerificationAsyncSleeper, @unchecked Sendable {
 
     let error: any Error
     private(set) var callCount = 0
@@ -113,7 +117,7 @@ final class ThrowingSleeper: RewardVerification.AsyncSleeper, @unchecked Sendabl
     }
 }
 
-final class Counter: @unchecked Sendable {
+final class PollerJitterCounter: @unchecked Sendable {
 
     private(set) var value = 0
 
@@ -122,17 +126,16 @@ final class Counter: @unchecked Sendable {
     }
 }
 
-/// Class-based so tests can assert thrown-error identity via `XCTAssertIdentical`.
-final class SentinelError: Error {}
+/// Class-based so tests can assert thrown-error identity.
+final class PollerSentinelError: Error {}
 
 // MARK: - Factories
 
 /// Builds a `RewardVerification.Poller` with deterministic 1.0s jitter for tests that don't care
 /// about the random delay distribution (those that do should construct the poller directly).
-@available(iOS 15.0, *)
 func makePoller(
-    statusPoller: RewardVerification.StatusPolling,
-    sleeper: RewardVerification.AsyncSleeper,
+    statusPoller: RewardVerificationStatusPolling,
+    sleeper: RewardVerificationAsyncSleeper,
     maxAttempts: Int = 10
 ) -> RewardVerification.Poller {
     RewardVerification.Poller(
@@ -142,5 +145,3 @@ func makePoller(
         maxAttempts: maxAttempts
     )
 }
-
-#endif

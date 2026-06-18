@@ -242,6 +242,7 @@ platform :ios do
     UI.user_error!("Failed to determine target repository name") if target_repository_name.nil? || target_repository_name.empty?
 
     # Loop over all platforms and generate screenshots for each
+    produced_offering_ids_by_platform = {}
     paywall_template_screenshot_platforms.each do |platform|
       UI.message("Generating screenshots for platform: #{platform}")
 
@@ -249,12 +250,17 @@ platform :ios do
       UI.message("Output directory for #{platform}: #{output_dir}")
 
       # Process the screenshots from the output directory
-      process_paywall_screenshots(
+      produced_offering_ids_by_platform[platform] = process_paywall_screenshots(
         output_dir: output_dir,
         target_repository_path: target_repository_path,
         platform: platform
       )
     end
+
+    remove_stale_template_screenshots(
+      target_repository_path: target_repository_path,
+      produced_offering_ids_by_platform: produced_offering_ids_by_platform
+    )
 
     # Commit, push, and create a PR in the target repository
     Dir.chdir(target_repository_path) do
@@ -305,8 +311,10 @@ platform :ios do
     target_repository_path = options[:target_repository_path] || UI.user_error!("No target_repository_path provided")
     platform = options[:platform] || UI.user_error!("No platform provided")
 
+    produced_offering_ids = []
     Dir.glob("#{output_dir}/images/*.png").each do |file_path|
       offering_id = File.basename(file_path, File.extname(file_path))
+      produced_offering_ids << offering_id
       target_dir = "#{target_repository_path}/screenshots/templates/#{offering_id}"
 
       target_path = "#{target_dir}/#{platform}.png"
@@ -315,6 +323,39 @@ platform :ios do
 
       FileUtils.mkdir_p(target_dir)
       FileUtils.cp(file_path, target_path)
+    end
+
+    # Return the offering IDs produced for this platform.
+    produced_offering_ids
+  end
+
+  # Removes screenshots (and now-empty directories) for paywalls that were not rendered in this run. Only the
+  # platform files produced by this lane are pruned (ios.png and the mac-*.png variants), each against the
+  # offering IDs produced for that platform, so screenshots owned by other platforms (e.g. android.png) are
+  # never affected.
+  private_lane :remove_stale_template_screenshots do |options|
+    target_repository_path = options[:target_repository_path] || UI.user_error!("No target_repository_path provided")
+    produced_offering_ids_by_platform = options[:produced_offering_ids_by_platform] || UI.user_error!("No produced_offering_ids_by_platform provided")
+
+    templates_dir = "#{target_repository_path}/screenshots/templates"
+    produced_offering_ids_by_platform.each do |platform, produced_offering_ids|
+      if produced_offering_ids.empty?
+        UI.important("No #{platform} screenshots were produced; skipping stale cleanup for it.")
+        next
+      end
+
+      Dir.glob("#{templates_dir}/*/#{platform}.png").each do |existing|
+        offering_id = File.basename(File.dirname(existing))
+        next if produced_offering_ids.include?(offering_id)
+        UI.message("Removing stale #{platform} screenshot: #{existing}")
+        FileUtils.rm(existing)
+      end
+    end
+
+    # Remove any empty directories.
+    Dir.glob("#{templates_dir}/*").each do |dir|
+      next unless File.directory?(dir)
+      Dir.rmdir(dir) if Dir.empty?(dir)
     end
   end
 
@@ -1756,6 +1797,7 @@ platform :ios do
     success = false
     begin
       scan(
+        workspace: 'RevenueCat-Tuist.xcworkspace',
         scheme: "BackendIntegrationTests",
         ensure_devices_found: true,
         derived_data_path: "scan_derived_data",

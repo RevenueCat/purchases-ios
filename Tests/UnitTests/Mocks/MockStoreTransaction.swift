@@ -29,6 +29,8 @@ final class MockStoreTransaction: StoreTransactionType {
     let jwsRepresentation: String?
     let environment: StoreEnvironment?
     let reason: TransactionReason?
+    let revocationDate: Date? = nil
+    let revocationReason: RevocationReason? = nil
 
     init(
         productIdentifier: String = UUID().uuidString,
