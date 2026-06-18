@@ -984,7 +984,7 @@ final class PurchasesOrchestrator {
     ///
     /// - Parameter originatedFromPurchase: whether the context was cached at the intent of a
     ///   RevenueCat `purchase()` call. This governs how the entry is evicted on retrieval, see
-    ///   `cachedPurchaseContext(for:initiationSource:)`.
+    ///   `consumeCachedPurchaseContext(for:initiationSource:)`.
     func cachePurchaseData(
         presentedOfferingContext: PresentedOfferingContext?,
         paywallEvent: PaywallEvent?,
@@ -1528,7 +1528,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         let isKnownRenewal = transaction.reason == .renewal
         let cached = isKnownRenewal
             ? nil
-            : self.cachedPurchaseContext(for: transaction, initiationSource: .queue)
+            : self.consumeCachedPurchaseContext(for: transaction, initiationSource: .queue)
         let offeringContext = cached?.offeringContext
         let paywall = cached?.paywallEvent
 
@@ -1949,12 +1949,12 @@ private extension PurchasesOrchestrator {
         let purchaseSource = self.purchaseSource(for: purchasedTransaction.productIdentifier,
                                                  restored: restored)
         // Restored transactions never attribute cached purchase context (a restore is not a new
-        // purchase). For non-restores, `cachedPurchaseContext(for:initiationSource:)` applies the
+        // purchase). For non-restores, `consumeCachedPurchaseContext(for:initiationSource:)` applies the
         // peek-vs-remove rule based on the initiation source.
         let cached = restored
             ? nil
-            : self.cachedPurchaseContext(for: purchasedTransaction,
-                                         initiationSource: purchaseSource.initiationSource)
+            : self.consumeCachedPurchaseContext(for: purchasedTransaction,
+                                                initiationSource: purchaseSource.initiationSource)
         let offeringContext = cached?.offeringContext
         let paywall = cached?.paywallEvent
         let unsyncedAttributes = self.refreshATTStatusAndGetUnsyncedAttributes()
@@ -2019,10 +2019,11 @@ private extension PurchasesOrchestrator {
         let originatedFromPurchase: Bool
     }
 
-    /// Retrieves the cached purchase context for a `transaction`, applying the product-ID and
-    /// date-compatibility check: the cache date must be at or before the transaction's purchase
-    /// date, otherwise the cache is for a later purchase and `nil` is returned. Also returns `nil`
-    /// when there is no cached context for the product.
+    /// Returns the cached purchase context for a `transaction`, **potentially evicting it from the
+    /// cache** (see eviction rule below), applying the product-ID and date-compatibility check: the
+    /// cache date must be at or before the transaction's purchase date, otherwise the cache is for a
+    /// later purchase and `nil` is returned. Also returns `nil` when there is no cached context for
+    /// the product.
     ///
     /// Whether the entry is *consumed* (removed) or only *peeked* (left in place) depends on its
     /// origin, not on the caller:
@@ -2035,7 +2036,7 @@ private extension PurchasesOrchestrator {
     ///   first read (a queue post) consumes them, preventing the entry from leaking indefinitely.
     ///
     /// Centralizing the rule here ensures the SK1 and SK2 paths can't drift.
-    func cachedPurchaseContext(
+    func consumeCachedPurchaseContext(
         for transaction: StoreTransactionType,
         initiationSource: PostReceiptSource.InitiationSource
     ) -> CachedPurchaseContext? {
@@ -2325,7 +2326,7 @@ extension PurchasesOrchestrator {
         presentedOfferingContext: PresentedOfferingContext? = nil,
         presentedPaywall: PaywallEvent? = nil
     ) async throws -> CustomerInfo {
-        let cached = self.cachedPurchaseContext(for: transaction, initiationSource: initiationSource)
+        let cached = self.consumeCachedPurchaseContext(for: transaction, initiationSource: initiationSource)
         let offeringContext = presentedOfferingContext ?? cached?.offeringContext
         let paywall = presentedPaywall ?? cached?.paywallEvent
         let unsyncedAttributes = self.refreshATTStatusAndGetUnsyncedAttributes()
