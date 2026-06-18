@@ -1722,7 +1722,7 @@ extension Purchases {
 
 }
 
-// MARK: - Reward Verification (Internal SPI)
+// MARK: - Reward Verification
 
 extension Purchases {
 
