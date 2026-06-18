@@ -67,11 +67,11 @@ extension AdsStrings: LogMessage {
                 ?? "the server rejected it."
             return "Reward verification failed: \(detail) transactionID=\(transactionID)"
         case let .poll_exhausted_pending(transactionID):
-            return "Reward verification timed out: the AdMob server-side verification (SSV) callback " +
+            return "Reward verification timed out: the server-side verification (SSV) callback " +
                 "was not received in time. Possible causes: SSV is not enabled/configured for this ad " +
-                "unit in the AdMob Dashboard, the SSV callback URL is misconfigured in the AdMob " +
-                "Dashboard, AdMob delayed delivering the callback, or RevenueCat failed to process the " +
-                "SSV webhook. transactionID=\(transactionID)"
+                "unit in your ad network's dashboard, the SSV callback URL is misconfigured, the ad " +
+                "network delayed delivering the callback, or RevenueCat failed to process the SSV " +
+                "webhook. transactionID=\(transactionID)"
         case let .poll_exhausted_transient(transactionID):
             return "Reward verification timed out after repeated transient errors while polling — " +
                 "typically unstable device network connectivity. The reward couldn't be verified. " +
