@@ -32,7 +32,8 @@ def production_swift_file?(path)
   return false unless path.end_with?('.swift')
   return false if path.start_with?('Sources/Generated/')
 
-  path.start_with?('Sources/') || path.start_with?('RevenueCatUI/')
+  path.start_with?('Sources/') || path.start_with?('RevenueCatUI/') ||
+    path.start_with?('RulesEngineInternal/')
 end
 
 def project_swift_file_paths(project_file)
