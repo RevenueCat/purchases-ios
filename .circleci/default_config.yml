@@ -1967,13 +1967,16 @@ jobs:
                 name: Clone paywall-rendering-validation repository
                 command: git clone git@github.com:RevenueCat/paywall-rendering-validation.git ../Tests/paywall-rendering-validation
             - run:
-                name: Set GitHub token environment variable
+                name: Set environment variables for the validation repo push
                 command: |
                   echo "export GITHUB_TOKEN=$GH_TOKEN_PAYWALL_RENDERING_VALIDATION_PR_RW" >> $BASH_ENV
+                  echo "export PAYWALL_VALIDATION_REPO_PATH=../Tests/paywall-rendering-validation" >> $BASH_ENV
                   source $BASH_ENV
       - run:
           name: Record and upload paywall template screenshots
-          command: bundle exec fastlane record_and_upload_v2_snapshots push_to_validation_repo:<< parameters.push_to_validation_repo >> upload_to_emerge:<< parameters.upload_to_emerge >> target_repository_path:../Tests/paywall-rendering-validation
+          # target_repository_path is only set when push_to_validation_repo is true; the lane pushes
+          # to the validation repo only when it receives a non-empty target_repository_path.
+          command: bundle exec fastlane record_and_upload_v2_snapshots upload_to_emerge:<< parameters.upload_to_emerge >> target_repository_path:"${PAYWALL_VALIDATION_REPO_PATH:-}"
           no_output_timeout: 30m
       - store_artifacts:
           path: fastlane/test_output
