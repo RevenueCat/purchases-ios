@@ -12,19 +12,19 @@
 
 import Foundation
 
+/// Production wiring: `Purchases.shared.fetchRewardVerificationStatus(clientTransactionID:)`,
+/// which throws a structured ``BackendError`` so the poller can reuse the SDK's retry
+/// classification (``BackendError/isTransient``).
+internal protocol RewardVerificationStatusPolling: Sendable {
+    func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus
+}
+
+/// Async sleep abstraction used by the polling loop. Production wiring is `RewardVerification.TaskSleeper`.
+internal protocol RewardVerificationAsyncSleeper: Sendable {
+    func sleep(seconds: TimeInterval) async throws
+}
+
 internal extension RewardVerification {
-
-    /// Production wiring: `Purchases.shared.fetchRewardVerificationStatus(clientTransactionID:)`,
-    /// which throws a structured ``BackendError`` so the poller can reuse the SDK's retry
-    /// classification (``BackendError/isTransient``).
-    protocol StatusPolling: Sendable {
-        func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus
-    }
-
-    /// Async sleep abstraction used by the polling loop. Production wiring is `TaskSleeper`.
-    protocol AsyncSleeper: Sendable {
-        func sleep(seconds: TimeInterval) async throws
-    }
 
     /// Per-attempt jitter sampler. Defaults to a uniform draw in `[0.75s, 1.25s]`.
     struct Jitter: Sendable {
@@ -47,14 +47,14 @@ internal extension RewardVerification {
 
         static let defaultMaxAttempts = 10
 
-        private let statusPoller: StatusPolling
-        private let sleeper: AsyncSleeper
+        private let statusPoller: RewardVerificationStatusPolling
+        private let sleeper: RewardVerificationAsyncSleeper
         private let jitter: Jitter
         let maxAttempts: Int
 
         init(
-            statusPoller: StatusPolling,
-            sleeper: AsyncSleeper,
+            statusPoller: RewardVerificationStatusPolling,
+            sleeper: RewardVerificationAsyncSleeper,
             jitter: Jitter = .default,
             maxAttempts: Int = Poller.defaultMaxAttempts
         ) {
@@ -132,14 +132,14 @@ internal extension RewardVerification {
 
     // MARK: - Production seam impls
 
-    struct PurchasesStatusPoller: StatusPolling {
+    struct PurchasesStatusPoller: RewardVerificationStatusPolling {
 
         func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus {
             try await Purchases.shared.fetchRewardVerificationStatus(clientTransactionID: clientTransactionID)
         }
     }
 
-    struct TaskSleeper: AsyncSleeper {
+    struct TaskSleeper: RewardVerificationAsyncSleeper {
 
         func sleep(seconds: TimeInterval) async throws {
             try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))

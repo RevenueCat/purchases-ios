@@ -33,6 +33,18 @@ internal protocol AdImpressionEventData: AdEventData {
     var impressionId: String { get }
 }
 
+/// Identifies the mechanism that emitted an ad event. The SDK only ever emits these two values;
+/// pre-feature versions send nothing, which the backend treats as `unknown`.
+@_spi(Internal) public enum AdEventCaptureMethod: String, Codable, Sendable {
+
+    /// Auto-captured by an official RevenueCat ad-network adapter.
+    case adapter
+
+    /// Reported via the public `trackAd*` tracking API.
+    case manual
+
+}
+
 /// Type representing an ad mediation network name.
 ///
 /// Use the predefined static properties for common mediators, or create custom values
@@ -616,13 +628,16 @@ extension AdEvent {
 
         internal var id: ID
         internal var date: Date
+        internal var captureMethod: AdEventCaptureMethod?
 
         internal init(
             id: ID = .init(),
-            date: Date = .init()
+            date: Date = .init(),
+            captureMethod: AdEventCaptureMethod
         ) {
             self.id = id
             self.date = date
+            self.captureMethod = captureMethod
         }
 
     }

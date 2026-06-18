@@ -14,7 +14,7 @@ import XCTest
 
 @_spi(Internal) @testable import RevenueCat
 
-final class StubStatusPoller: RewardVerification.StatusPolling, @unchecked Sendable {
+final class StubStatusPoller: RewardVerificationStatusPolling, @unchecked Sendable {
 
     private var statuses: [RewardVerificationPollStatus]
     private(set) var receivedIDs: [String] = []
@@ -35,7 +35,7 @@ final class StubStatusPoller: RewardVerification.StatusPolling, @unchecked Senda
     }
 }
 
-final class ThrowingStatusPoller: RewardVerification.StatusPolling, @unchecked Sendable {
+final class ThrowingStatusPoller: RewardVerificationStatusPolling, @unchecked Sendable {
 
     let error: any Error
     private(set) var callCount = 0
@@ -51,7 +51,7 @@ final class ThrowingStatusPoller: RewardVerification.StatusPolling, @unchecked S
 }
 
 /// Suspends indefinitely so tests can exercise cancellation of an in-flight polling task.
-final class HangingStatusPoller: RewardVerification.StatusPolling, @unchecked Sendable {
+final class HangingStatusPoller: RewardVerificationStatusPolling, @unchecked Sendable {
 
     private(set) var callCount = 0
 
@@ -62,7 +62,7 @@ final class HangingStatusPoller: RewardVerification.StatusPolling, @unchecked Se
     }
 }
 
-final class ScriptedStatusPoller: RewardVerification.StatusPolling, @unchecked Sendable {
+final class ScriptedStatusPoller: RewardVerificationStatusPolling, @unchecked Sendable {
 
     enum Step {
         case status(RewardVerificationPollStatus)
@@ -91,7 +91,7 @@ final class ScriptedStatusPoller: RewardVerification.StatusPolling, @unchecked S
     }
 }
 
-final class RecordingSleeper: RewardVerification.AsyncSleeper, @unchecked Sendable {
+final class RecordingSleeper: RewardVerificationAsyncSleeper, @unchecked Sendable {
 
     private(set) var delays: [TimeInterval] = []
 
@@ -102,7 +102,7 @@ final class RecordingSleeper: RewardVerification.AsyncSleeper, @unchecked Sendab
     }
 }
 
-final class ThrowingSleeper: RewardVerification.AsyncSleeper, @unchecked Sendable {
+final class ThrowingSleeper: RewardVerificationAsyncSleeper, @unchecked Sendable {
 
     let error: any Error
     private(set) var callCount = 0
@@ -134,8 +134,8 @@ final class PollerSentinelError: Error {}
 /// Builds a `RewardVerification.Poller` with deterministic 1.0s jitter for tests that don't care
 /// about the random delay distribution (those that do should construct the poller directly).
 func makePoller(
-    statusPoller: RewardVerification.StatusPolling,
-    sleeper: RewardVerification.AsyncSleeper,
+    statusPoller: RewardVerificationStatusPolling,
+    sleeper: RewardVerificationAsyncSleeper,
     maxAttempts: Int = 10
 ) -> RewardVerification.Poller {
     RewardVerification.Poller(
