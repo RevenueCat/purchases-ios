@@ -1787,6 +1787,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
 
         self.backend.invokedPostReceiptData = false
+        self.backend.invokedPostReceiptDataParameters = nil
 
         let secondTransaction = MockStoreTransaction(productIdentifier: Self.testProductId)
 

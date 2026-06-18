@@ -69,9 +69,7 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
         self.invokedHandleParameters = (.init(purchaseResult), ())
         self.invokedHandleParametersList.append((.init(purchaseResult), ()))
 
-        if let onHandle = self.onHandle {
-            try await onHandle()
-        }
+        try await self.onHandle?()
 
         if self.mockCancelled {
             return .userCancelled
