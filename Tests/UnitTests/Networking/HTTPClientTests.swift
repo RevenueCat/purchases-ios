@@ -1014,6 +1014,30 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(self.eTagManager.invokedETagHeader) == false
     }
 
+    func testRemoteConfigDoesNotUseETagCacheEvenIfResponseIncludesETagHeader() {
+        let request = HTTPRequest(method: .post(RemoteConfigRequest()), path: .remoteConfig)
+        let headerPresent: Atomic<Bool?> = nil
+
+        stub(condition: isPath(request.path)) { request in
+            headerPresent.value = request.allHTTPHeaderFields?.keys.contains(
+                ETagManager.eTagRequestHeader.rawValue
+            ) == true
+            return HTTPStubsResponse(
+                data: Data(),
+                statusCode: .success,
+                headers: [ETagManager.eTagResponseHeader.rawValue: "ETAG"]
+            )
+        }
+
+        waitUntil { completion in
+            self.client.perform(request, with: .disabled) { (_: DataResponse) in completion() }
+        }
+
+        expect(headerPresent.value) == false
+        expect(self.eTagManager.invokedETagHeader) == false
+        expect(self.eTagManager.invokedHTTPResultFromCacheOrBackend) == false
+    }
+
     func testAlwaysPassesClientVersion() {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 

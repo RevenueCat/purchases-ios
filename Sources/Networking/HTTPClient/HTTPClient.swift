@@ -152,6 +152,8 @@ class HTTPClient {
 
 extension HTTPClient {
 
+    static let rcContainerFormatAcceptHeaderValue = "application/x-rc-format"
+
     static func authorizationHeader(withAPIKey apiKey: String) -> RequestHeaders {
         return [RequestHeader.authorization.rawValue: "Bearer \(apiKey)"]
     }
@@ -185,6 +187,7 @@ extension HTTPClient {
     enum RequestHeader: String {
 
         case authorization = "Authorization"
+        case accept = "Accept"
         case nonce = "X-Nonce"
         case eTag = "X-RevenueCat-ETag"
         case eTagValidationTime = "X-RC-Last-Refresh-Time"
@@ -448,6 +451,10 @@ private extension HTTPClient {
             }
             // Fetch from ETagManager if available
             .map { (response) -> VerifiedHTTPResponse<Data>? in
+                guard request.httpRequest.path.shouldSendEtag else {
+                    return response.asOptionalResponse
+                }
+
                 return self.eTagManager.httpResultFromCacheOrBackend(
                     with: response,
                     request: urlRequest,
@@ -902,6 +909,7 @@ extension HTTPRequest {
         internalSettings: InternalDangerousSettingsType
     ) -> HTTPClient.RequestHeaders {
         var result: HTTPClient.RequestHeaders = defaultHeaders
+        result += self.path.additionalHeaders
 
         if self.path.authenticated {
             result += authHeaders

@@ -38,13 +38,15 @@ class HTTPRequestTests: TestCase {
         .getProductEntitlementMapping,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
         .getWorkflows(appUserID: userID, type: nil),
-        .getWorkflow(appUserID: userID, workflowId: "wf_1")
+        .getWorkflow(appUserID: userID, workflowId: "wf_1"),
+        .remoteConfig
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
         .health
     ]
     private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
-        .health
+        .health,
+        .remoteConfig
     ]
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
@@ -55,14 +57,16 @@ class HTTPRequestTests: TestCase {
         .getProductEntitlementMapping,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
         .getWorkflows(appUserID: userID, type: nil),
-        .getWorkflow(appUserID: userID, workflowId: "wf_1")
+        .getWorkflow(appUserID: userID, workflowId: "wf_1"),
+        .remoteConfig
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
         .logIn,
         .postReceiptData,
         .health,
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID)
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
+        .remoteConfig
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
         .getCustomerInfo(appUserID: anonymousUser),
@@ -209,6 +213,9 @@ class HTTPRequestTests: TestCase {
             case let .getWorkflow(_, workflowId):
                 XCTAssertEqual(fallbackUrlsPaths,
                                ["https://api-production.8-lives-cat.io/workflows/v1/workflows/\(workflowId)"])
+            case .remoteConfig:
+                XCTAssertEqual(fallbackUrlsPaths,
+                               ["https://api-production.8-lives-cat.io/v2/config"])
             default:
                 XCTAssertTrue(fallbackUrlsPaths.isEmpty)
             }
@@ -308,5 +315,17 @@ class HTTPRequestTests: TestCase {
     func testRequestIsRetryableIfSet() {
         let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"), isRetryable: true)
         expect(request.isRetryable).to(beTrue())
+    }
+
+    func testRemoteConfigUsesRCContainerAcceptHeader() {
+        let request: HTTPRequest = .init(method: .post(RemoteConfigRequest()), path: .remoteConfig)
+        let headers = request.headers(
+            with: [:],
+            defaultHeaders: [:],
+            verificationMode: .disabled,
+            internalSettings: DangerousSettings.Internal.default
+        )
+
+        expect(headers[HTTPClient.RequestHeader.accept.rawValue]) == HTTPClient.rcContainerFormatAcceptHeaderValue
     }
 }
