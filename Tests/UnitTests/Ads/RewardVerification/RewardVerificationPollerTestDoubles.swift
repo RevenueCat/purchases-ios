@@ -149,8 +149,12 @@ func makePoller(
 /// Builds a `BackendError` carrying an HTTP status, mirroring what the backend produces. The poller
 /// reuses the SDK's `BackendError.isTransient` classification (5xx transient, 4xx terminal).
 func makePollingError(statusCode: Int, backendCode: BackendErrorCode) -> BackendError {
-    ErrorResponse(code: backendCode, originalCode: backendCode.rawValue, message: nil)
-        .asBackendError(with: HTTPStatusCode(rawValue: statusCode))
+    .networkError(
+        .errorResponse(
+            ErrorResponse(code: backendCode, originalCode: backendCode.rawValue, message: nil),
+            HTTPStatusCode(rawValue: statusCode)
+        )
+    )
 }
 
 /// A connection-level (transport) failure with no HTTP status: transient, retried by the poller.
