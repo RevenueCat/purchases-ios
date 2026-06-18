@@ -1,7 +1,54 @@
 {
+  "id": "promo_web_view",
   "type": "web_view",
+  "protocol_version": 1,
   "url": "https://example.com",
-  "sizing": {
-    "mode": "automatic"
+  "size": {
+    "width": { "type": "fill" },
+    "height": { "type": "fit" }
+  },
+  "visible": true,
+  "name": "Promo web component",
+  "fallback": {
+    "id": "promo_web_view_fallback",
+    "type": "stack",
+    "components": [
+      {
+        "type": "stack",
+        "components": [],
+        "size": {
+          "width": { "type": "fill" },
+          "height": { "type": "fit" }
+        },
+        "dimension": {
+          "type": "vertical",
+          "alignment": "center",
+          "distribution": "start"
+        },
+        "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+        "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+      }
+    ],
+    "size": {
+      "width": { "type": "fill" },
+      "height": { "type": "fit" }
+    },
+    "dimension": {
+      "type": "vertical",
+      "alignment": "center",
+      "distribution": "start"
+    },
+    "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+    "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+  },
+  "capabilities": {
+    "network_access": {
+      "allowed_domains": ["api.segment.io"]
+    },
+    "camera": false,
+    "microphone": false,
+    "clipboard_write": false,
+    "clipboard_read": false,
+    "geolocation": false
   }
 }

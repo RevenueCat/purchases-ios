@@ -102,7 +102,7 @@ struct ComponentsView: View {
         case .countdown(let viewModel):
             CountdownComponentView(viewModel: viewModel, onDismiss: onDismiss)
         case .webView(let viewModel):
-            WebViewComponentView(viewModel: viewModel)
+            WebViewComponentView(viewModel: viewModel, onDismiss: onDismiss)
         }
     }
 }

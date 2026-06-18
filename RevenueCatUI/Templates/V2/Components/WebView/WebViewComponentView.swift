@@ -27,9 +27,11 @@ import WebKit
 struct WebViewComponentView: View {
 
     let viewModel: WebViewComponentViewModel
+    let onDismiss: () -> Void
 
-    init(viewModel: WebViewComponentViewModel) {
+    init(viewModel: WebViewComponentViewModel, onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
+        self.onDismiss = onDismiss
     }
 
     #if canImport(UIKit) || os(macOS)
@@ -40,27 +42,98 @@ struct WebViewComponentView: View {
     private var customVariables
 
     var body: some View {
+        if viewModel.visible {
+            self.content
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
         #if canImport(UIKit)
         if let resolvedURL = viewModel.resolvedURL(customVariables: customVariables) {
             let urlToLoad = viewModel.cachedURL(for: resolvedURL) ?? resolvedURL
             WebViewRepresentable(url: urlToLoad, height: $dynamicHeight)
-                .frame(maxWidth: .infinity)
-                .frame(height: dynamicHeight)
+                .modifier(WebViewSizeModifier(size: viewModel.size, measuredHeight: dynamicHeight))
                 .clipped()
                 .background(Color.clear)
+            // swiftlint:disable:next todo
+            // TODO: render `fallback` if the web content fails to load mid-flight
+            // (network/render error), not just when the URL is invalid.
+        } else {
+            self.fallback
         }
         #elseif os(macOS)
         if let resolvedURL = viewModel.resolvedURL(customVariables: customVariables) {
             let urlToLoad = viewModel.cachedURL(for: resolvedURL) ?? resolvedURL
+            let macHeight = dynamicHeight ?? Self.initialHeight
             MacWebViewRepresentable(url: urlToLoad, height: $dynamicHeight)
-                .frame(maxWidth: .infinity)
-                .frame(height: dynamicHeight ?? Self.initialHeight)
+                .modifier(WebViewSizeModifier(size: viewModel.size, measuredHeight: macHeight))
                 .clipped()
                 .background(Color.clear)
+        } else {
+            self.fallback
         }
         #else
-        EmptyView()
+        self.fallback
         #endif
+    }
+
+    @ViewBuilder
+    private var fallback: some View {
+        if let fallbackStackViewModel = viewModel.fallbackStackViewModel {
+            StackComponentView(viewModel: fallbackStackViewModel, onDismiss: onDismiss)
+        }
+    }
+
+}
+
+/// Applies the component's ``PaywallComponent/Size`` to the web view. For a `fit` height the
+/// dynamically-measured web content height is used; other constraints follow the shared
+/// Paywalls V2 sizing semantics.
+// swiftlint:disable:next todo
+// TODO: refine `fill`/`relative` height behavior to fully match `SizeModifier`.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct WebViewSizeModifier: ViewModifier {
+
+    let size: PaywallComponent.Size
+    let measuredHeight: CGFloat?
+
+    func body(content: Content) -> some View {
+        content
+            .applyWebViewWidth(size.width)
+            .applyWebViewHeight(size.height, measuredHeight: measuredHeight)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension View {
+
+    @ViewBuilder
+    func applyWebViewWidth(_ constraint: PaywallComponent.SizeConstraint) -> some View {
+        switch constraint {
+        case .fit:
+            self
+        case .fill:
+            self.frame(maxWidth: .infinity)
+        case .fixed(let value):
+            self.frame(width: CGFloat(value))
+        case .relative:
+            self
+        }
+    }
+
+    @ViewBuilder
+    func applyWebViewHeight(_ constraint: PaywallComponent.SizeConstraint, measuredHeight: CGFloat?) -> some View {
+        switch constraint {
+        case .fit, .relative:
+            // Web content has no intrinsic height, so use the dynamically-measured height.
+            self.frame(height: measuredHeight)
+        case .fill:
+            self.frame(maxHeight: .infinity)
+        case .fixed(let value):
+            self.frame(height: CGFloat(value))
+        }
     }
 
 }

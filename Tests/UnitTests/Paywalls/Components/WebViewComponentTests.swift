@@ -23,7 +23,22 @@ class WebViewComponentTests: TestCase {
 
         let webView2 = try webView.encodeAndDecode()
 
+        XCTAssertEqual(webView.id, "promo_web_view")
+        XCTAssertEqual(webView.name, "Promo web component")
+        XCTAssertEqual(webView.visible, true)
+        XCTAssertEqual(webView.protocolVersion, 1)
         XCTAssertEqual(webView.url, "https://example.com")
+        XCTAssertEqual(webView.size, .init(width: .fill, height: .fit))
+
+        // Fallback is decoded as a normal stack with its children preserved (not stripped).
+        XCTAssertNotNil(webView.fallback)
+        XCTAssertEqual(webView.fallback?.components.count, 1)
+
+        // Capabilities are decoded for fidelity (no functional behavior).
+        XCTAssertEqual(webView.capabilities?.networkAccess?.allowedDomains, ["api.segment.io"])
+        XCTAssertEqual(webView.capabilities?.camera, false)
+
+        // Round-trip preserves everything.
         XCTAssertEqual(webView, webView2)
     }
 
@@ -39,6 +54,39 @@ class WebViewComponentTests: TestCase {
         }
 
         XCTAssertEqual(webView.url, "https://example.com")
+        XCTAssertEqual(webView.protocolVersion, 1)
+    }
+
+    func testDecodeDefaultsProtocolVersionAndSizeWhenAbsent() throws {
+        let json = """
+        {
+          "type": "web_view",
+          "url": "https://example.com"
+        }
+        """.data(using: .utf8)!
+
+        let webView = try JSONDecoder.default
+            .decode(PaywallComponent.WebViewComponent.self, from: json)
+
+        XCTAssertEqual(webView.protocolVersion, 1)
+        XCTAssertEqual(webView.size, .init(width: .fill, height: .fit))
+        XCTAssertNil(webView.fallback)
+        XCTAssertNil(webView.capabilities)
+    }
+
+    func testFallbackChildrenArePreservedThroughRoundTrip() throws {
+        let component = PaywallComponent.WebViewComponent(
+            url: "https://example.com",
+            fallback: .init(components: [
+                .text(.init(text: "id_1", color: .init(light: .hex("#000000")))),
+                .text(.init(text: "id_2", color: .init(light: .hex("#000000"))))
+            ])
+        )
+
+        let decoded = try component.encodeAndDecode()
+
+        XCTAssertEqual(decoded.fallback?.components.count, 2)
+        XCTAssertEqual(decoded, component)
     }
 
 }

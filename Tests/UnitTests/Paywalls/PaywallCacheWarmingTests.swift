@@ -207,7 +207,7 @@ final class PaywallCacheWarmingTests: TestCase {
 
         await cache.warmUpPaywallImagesCache(offerings: offerings)
 
-        let generatedURLs = await htmlFileRepository.generatedURLs
+        let generatedURLs = htmlFileRepository.generatedURLs
         expect(generatedURLs) == [webViewURL]
     }
 
@@ -526,25 +526,42 @@ final actor MockFontsManager: PaywallFontManagerType {
     }
 }
 
+// A thread-safe mock. `InMemoryHTMLFileRepositoryType.getCachedFileURL(for:)` is a synchronous
+// requirement, which an `actor` cannot satisfy without `nonisolated`, so this uses a lock instead.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
-private final actor MockInMemoryHTMLFileRepository: InMemoryHTMLFileRepositoryType {
+private final class MockInMemoryHTMLFileRepository: InMemoryHTMLFileRepositoryType, @unchecked Sendable {
 
-    private(set) var generatedURLs: [URL] = []
-    private(set) var cachedFileURLRequests: [URL] = []
+    private let lock = NSLock()
+    private var _generatedURLs: [URL] = []
+    private var _cachedFileURLRequests: [URL] = []
     private var cachedFileURLs: [URL: URL] = [:]
 
+    var generatedURLs: [URL] {
+        self.lock.withLock { self._generatedURLs }
+    }
+
+    var cachedFileURLRequests: [URL] {
+        self.lock.withLock { self._cachedFileURLRequests }
+    }
+
     func generateOrGetCachedFileURL(for url: URL) async throws -> URL {
-        self.generatedURLs.append(url)
-        return self.cachedFileURLs[url] ?? url
+        return self.lock.withLock {
+            self._generatedURLs.append(url)
+            return self.cachedFileURLs[url] ?? url
+        }
     }
 
     func getCachedFileURL(for url: URL) -> URL? {
-        self.cachedFileURLRequests.append(url)
-        return self.cachedFileURLs[url]
+        return self.lock.withLock {
+            self._cachedFileURLRequests.append(url)
+            return self.cachedFileURLs[url]
+        }
     }
 
     func stubCachedFileURL(_ cachedURL: URL, for url: URL) {
-        self.cachedFileURLs[url] = cachedURL
+        self.lock.withLock {
+            self.cachedFileURLs[url] = cachedURL
+        }
     }
 
 }

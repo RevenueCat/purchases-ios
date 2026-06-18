@@ -514,10 +514,23 @@ struct ViewModelFactory {
                 )
             )
         case .webView(let component):
+            let fallbackStackViewModel = try component.fallback.map { fallback in
+                try toStackViewModel(
+                    component: fallback,
+                    packageValidator: packageValidator,
+                    purchaseButtonCollector: purchaseButtonCollector,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering,
+                    colorScheme: colorScheme
+                )
+            }
+
             return .webView(WebViewComponentViewModel(
                 component: component,
                 localizationProvider: localizationProvider,
-                uiConfigProvider: uiConfigProvider
+                uiConfigProvider: uiConfigProvider,
+                fallbackStackViewModel: fallbackStackViewModel
             ))
         case .fallbackHeader:
             // fallbackHeader is filtered out in toStackViewModel and should never reach here.

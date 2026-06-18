@@ -20,44 +20,132 @@ final class WebViewComponentTests: TestCase {
 
     // MARK: - JSON decoding
 
-    func testDecodeWebViewComponent() throws {
-        let json = """
-        {
-          "type": "web_view",
-          "url": "https://example.com",
-          "sizing": {
-            "mode": "automatic"
+    private static let webViewJSON = """
+    {
+      "id": "promo_web_view",
+      "type": "web_view",
+      "protocol_version": 1,
+      "url": "https://example.com",
+      "size": {
+        "width": { "type": "fill" },
+        "height": { "type": "fit" }
+      },
+      "visible": true,
+      "name": "Promo web component",
+      "fallback": {
+        "id": "promo_web_view_fallback",
+        "type": "stack",
+        "components": [
+          {
+            "type": "stack",
+            "components": [],
+            "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+            "dimension": { "type": "vertical", "alignment": "center", "distribution": "start" },
+            "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+            "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
           }
-        }
-        """.data(using: .utf8)!
+        ],
+        "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+        "dimension": { "type": "vertical", "alignment": "center", "distribution": "start" },
+        "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+        "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+      },
+      "capabilities": {
+        "network_access": { "allowed_domains": ["api.segment.io"] },
+        "camera": false,
+        "microphone": false,
+        "clipboard_write": false,
+        "clipboard_read": false,
+        "geolocation": false
+      }
+    }
+    """
 
-        let component = try JSONDecoder.default.decode(PaywallComponent.self, from: json)
+    func testDecodeWebViewComponent() throws {
+        let component = try JSONDecoder.default.decode(
+            PaywallComponent.self,
+            from: Self.webViewJSON.data(using: .utf8)!
+        )
 
         guard case .webView(let webView) = component else {
             XCTFail("Expected .webView component, got \(component)")
             return
         }
 
+        XCTAssertEqual(webView.id, "promo_web_view")
+        XCTAssertEqual(webView.name, "Promo web component")
+        XCTAssertEqual(webView.visible, true)
+        XCTAssertEqual(webView.protocolVersion, 1)
         XCTAssertEqual(webView.url, "https://example.com")
+        XCTAssertEqual(webView.size, .init(width: .fill, height: .fit))
+
+        // Fallback is a normal stack with its children preserved (not stripped).
+        XCTAssertNotNil(webView.fallback)
+        XCTAssertEqual(webView.fallback?.components.count, 1)
     }
 
     func testDecodeWebViewComponentRoundTrip() throws {
-        let json = """
-        {
-          "type": "web_view",
-          "url": "https://example.com",
-          "sizing": {
-            "mode": "automatic"
-          }
-        }
-        """.data(using: .utf8)!
-
-        let component = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: json)
+        let component = try JSONDecoder.default.decode(
+            PaywallComponent.WebViewComponent.self,
+            from: Self.webViewJSON.data(using: .utf8)!
+        )
         let encoded = try JSONEncoder().encode(component)
         let decoded = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: encoded)
 
         XCTAssertEqual(component, decoded)
         XCTAssertEqual(decoded.url, "https://example.com")
+        XCTAssertEqual(decoded.protocolVersion, 1)
+        XCTAssertEqual(decoded.size, .init(width: .fill, height: .fit))
+        XCTAssertEqual(decoded.visible, true)
+        XCTAssertEqual(decoded.fallback?.components.count, 1)
+    }
+
+    func testDecodeWebViewComponentCapabilitiesDoNotCrash() throws {
+        let component = try JSONDecoder.default.decode(
+            PaywallComponent.WebViewComponent.self,
+            from: Self.webViewJSON.data(using: .utf8)!
+        )
+
+        // Capabilities are modeled for fidelity only — decoding must not crash, no behavior asserted.
+        XCTAssertEqual(component.capabilities?.networkAccess?.allowedDomains, ["api.segment.io"])
+        XCTAssertEqual(component.capabilities?.geolocation, false)
+    }
+
+    func testDecodeWebViewComponentWithFixedHeightSize() throws {
+        let json = """
+        {
+          "type": "web_view",
+          "url": "https://example.com",
+          "size": {
+            "width": { "type": "fill" },
+            "height": { "type": "fixed", "value": 320 }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let webView = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: json)
+
+        XCTAssertEqual(webView.size.width, .fill)
+        XCTAssertEqual(webView.size.height, .fixed(320))
+    }
+
+    func testDecodeWebViewComponentNotVisible() throws {
+        let json = """
+        {
+          "type": "web_view",
+          "url": "https://example.com",
+          "visible": false,
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } }
+        }
+        """.data(using: .utf8)!
+
+        let webView = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: json)
+
+        XCTAssertEqual(webView.visible, false)
+
+        // The view model surfaces visibility the same way other components do.
+        let viewModel = Self.makeViewModel(component: webView)
+        XCTAssertFalse(viewModel.visible)
     }
 
     func testDecodeWebViewComponentWithTemplateURL() throws {
@@ -65,9 +153,7 @@ final class WebViewComponentTests: TestCase {
         {
           "type": "web_view",
           "url": "https://example.com/{{ custom.animal }}.html",
-          "sizing": {
-            "mode": "automatic"
-          }
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } }
         }
         """.data(using: .utf8)!
 
@@ -321,6 +407,18 @@ private extension WebViewComponentTests {
         customVariableDefinitions: [String: UIConfig.CustomVariableDefinition] = [:],
         htmlFileRepository: InMemoryHTMLFileRepositoryType = MockInMemoryHTMLFileRepository()
     ) -> WebViewComponentViewModel {
+        return makeViewModel(
+            component: .init(url: urlTemplate),
+            customVariableDefinitions: customVariableDefinitions,
+            htmlFileRepository: htmlFileRepository
+        )
+    }
+
+    static func makeViewModel(
+        component: PaywallComponent.WebViewComponent,
+        customVariableDefinitions: [String: UIConfig.CustomVariableDefinition] = [:],
+        htmlFileRepository: InMemoryHTMLFileRepositoryType = MockInMemoryHTMLFileRepository()
+    ) -> WebViewComponentViewModel {
         let uiConfig = UIConfig(
             app: .init(colors: [:], fonts: [:]),
             localizations: [:],
@@ -328,7 +426,7 @@ private extension WebViewComponentTests {
             customVariables: customVariableDefinitions
         )
         return WebViewComponentViewModel(
-            component: .init(url: urlTemplate),
+            component: component,
             localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
             uiConfigProvider: UIConfigProvider(uiConfig: uiConfig),
             htmlFileRepository: htmlFileRepository

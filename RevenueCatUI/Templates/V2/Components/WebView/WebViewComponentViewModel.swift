@@ -22,13 +22,23 @@ class WebViewComponentViewModel {
     private let uiConfigProvider: UIConfigProvider
     private let htmlFileRepository: InMemoryHTMLFileRepositoryType
 
+    let size: PaywallComponent.Size
+    let visible: Bool
+
+    /// Stack rendered when the web content cannot be displayed (e.g. the resolved URL is invalid).
+    let fallbackStackViewModel: StackComponentViewModel?
+
     init(
         component: PaywallComponent.WebViewComponent,
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
+        fallbackStackViewModel: StackComponentViewModel? = nil,
         htmlFileRepository: InMemoryHTMLFileRepositoryType = InMemoryHTMLFileRepository.shared
     ) {
         self.urlTemplate = component.url
+        self.size = component.size
+        self.visible = component.visible ?? true
+        self.fallbackStackViewModel = fallbackStackViewModel
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.htmlFileRepository = htmlFileRepository
