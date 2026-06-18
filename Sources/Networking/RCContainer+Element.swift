@@ -9,9 +9,17 @@ import Foundation
 
 extension RCContainer {
 
+    /// A single RC Container element backed by the original container bytes.
+    ///
+    /// `Element` stores byte ranges into the retained container `Data`. Use `withPayloadBytes` and
+    /// `withChecksumBytes` to inspect bytes without materializing per-element `Data` copies. The
+    /// backing data is private on purpose so callers cannot accidentally introduce copying behavior.
     struct Element {
 
+        /// The element checksum encoded as a 32-character URL-safe base64 string with no padding.
         let checksum: String
+
+        /// The payload size in bytes, excluding the element header and any alignment padding.
         let size: Int
 
         private let storage: Data
@@ -31,10 +39,16 @@ extension RCContainer {
             self.size = storage.distance(from: payloadRange.lowerBound, to: payloadRange.upperBound)
         }
 
+        // Keep byte access closure-based so callers do not accidentally materialize element payloads
+        // as separate `Data` values. A convenience payload `Data` property would be easy to misuse and
+        // would silently copy bytes out of the retained container storage.
+
+        /// Provides read-only access to the payload bytes for the duration of `body`.
         func withPayloadBytes<T>(_ body: (UnsafeRawBufferPointer) throws -> T) rethrows -> T {
             return try self.withBytes(in: self.payloadRange, body)
         }
 
+        /// Provides read-only access to the raw 24-byte checksum for the duration of `body`.
         func withChecksumBytes<T>(_ body: (UnsafeRawBufferPointer) throws -> T) rethrows -> T {
             return try self.withBytes(in: self.checksumRange, body)
         }

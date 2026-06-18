@@ -10,9 +10,14 @@ import Foundation
 
 extension RCContainer {
 
+    /// Validates and indexes the RC Container binary format.
+    ///
+    /// The parser walks the container with a byte offset cursor, validates each field before advancing
+    /// past it, and records `Data.Index` ranges that point at the retained backing `Data`.
     struct Parser {
 
         // swiftlint:disable nesting
+        /// Typed failures for malformed RC Container bytes.
         enum FormatError: Error, Equatable {
 
             case truncatedHeader
@@ -39,10 +44,12 @@ extension RCContainer {
         private let data: Data
         private var offset = 0
 
+        /// Creates a parser over the provided `Data` without copying it.
         init(data: Data) {
             self.data = data
         }
 
+        /// Parses the full container and returns the header flags plus indexed elements.
         mutating func parse() throws -> (flags: UInt8, elements: [Element]) {
             let flags = try self.parseHeader()
 
@@ -54,6 +61,10 @@ extension RCContainer {
             return (flags: flags, elements: elements)
         }
 
+        /// Parses the fixed-size container header and positions the cursor at the first element.
+        ///
+        /// Version 1 preserves the flags byte for future use, but reserved bytes must remain zero so
+        /// newer header fields cannot be silently ignored by older SDKs.
         private mutating func parseHeader() throws -> UInt8 {
             guard self.hasBytes(Self.headerSize) else {
                 throw FormatError.truncatedHeader
@@ -78,6 +89,11 @@ extension RCContainer {
             return flags
         }
 
+        /// Parses one element and returns an `Element` that points into the original container bytes.
+        ///
+        /// The stored checksum is read before the cursor moves into the payload. The payload checksum
+        /// is then recomputed from the payload range so checksum validation does not depend on mutable
+        /// cursor state after parsing continues.
         private mutating func parseElement(index: Int) throws -> Element {
             guard self.hasBytes(Self.elementHeaderSize) else {
                 throw FormatError.truncatedElementHeader(index: index)
@@ -124,6 +140,11 @@ extension RCContainer {
             )
         }
 
+        /// Consumes zero padding after a payload.
+        ///
+        /// Padding length is derived only from the element payload size, not from the absolute container
+        /// offset. The final element may omit trailing padding bytes entirely, but any padding bytes that
+        /// are present still need to be zero.
         private mutating func consumePadding(forElementSize elementSize: Int, elementIndex: Int) throws {
             let paddingSize = (Self.alignment - elementSize % Self.alignment) % Self.alignment
             guard paddingSize > 0 else {
@@ -143,6 +164,10 @@ extension RCContainer {
             }
         }
 
+        /// Computes the blob-ref string for a payload range.
+        ///
+        /// Blob refs are the first 24 bytes of the SHA-256 digest encoded as unpadded base64url,
+        /// producing a stable 32-character string that can be used as a content lookup key.
         private func checksumString(in range: Range<Int>) -> String {
             var hash = SHA256()
             self.withUnsafeBytes(in: range) { bytes in
@@ -152,6 +177,7 @@ extension RCContainer {
             return Self.base64URLString(from: Array(hash.finalize().prefix(Self.checksumSize)))
         }
 
+        /// Encodes bytes already present in the container as an unpadded base64url string.
         private func base64URLString(in range: Range<Int>) -> String {
             var bytes: [UInt8] = []
             bytes.reserveCapacity(range.count)
@@ -162,6 +188,9 @@ extension RCContainer {
             return Self.base64URLString(from: bytes)
         }
 
+        /// Encodes complete 3-byte chunks as base64url without padding.
+        ///
+        /// RC Container checksums are always 24 bytes, so there is no remainder chunk to encode.
         private static func base64URLString(from bytes: [UInt8]) -> String {
             let alphabet = Array("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".utf8)
             var encoded: [UInt8] = []
@@ -184,12 +213,14 @@ extension RCContainer {
             return String(bytes: encoded, encoding: .utf8) ?? ""
         }
 
+        /// Re-bases an integer byte range into the `Data` storage for temporary zero-copy access.
         private func withUnsafeBytes<T>(in range: Range<Int>, _ body: (UnsafeRawBufferPointer) -> T) -> T {
             return self.data.withUnsafeBytes { bytes in
                 return body(UnsafeRawBufferPointer(rebasing: bytes[range]))
             }
         }
 
+        /// Reads the wire-format little-endian `UInt32` used for payload sizes and reserved fields.
         private func littleEndianUInt32(at offset: Int) -> UInt32 {
             return UInt32(self.byte(at: offset))
             | UInt32(self.byte(at: offset + 1)) << 8
@@ -197,20 +228,27 @@ extension RCContainer {
             | UInt32(self.byte(at: offset + 3)) << 24
         }
 
+        /// Reads a byte at a container-relative offset.
         private func byte(at offset: Int) -> UInt8 {
             return self.data[self.data.index(self.data.startIndex, offsetBy: offset)]
         }
 
+        /// Converts a container-relative offset and count into `Data.Index` bounds.
+        ///
+        /// `Data` indices are not guaranteed to be zero-based, especially for slices, so stored element
+        /// ranges use real `Data.Index` values while parser math stays in container-relative byte offsets.
         private func dataRange(offset: Int, count: Int) -> Range<Data.Index> {
             let startIndex = self.data.index(self.data.startIndex, offsetBy: offset)
             let endIndex = self.data.index(startIndex, offsetBy: count)
             return startIndex..<endIndex
         }
 
+        /// Checks whether the current cursor can read `count` bytes without overflowing the buffer.
         private func hasBytes(_ count: Int) -> Bool {
             return count >= 0 && self.offset <= self.data.count - count
         }
 
+        /// Validates reserved fields and padding ranges.
         private func bytesAreZero(in range: Range<Int>) -> Bool {
             for offset in range where self.byte(at: offset) != 0 {
                 return false
