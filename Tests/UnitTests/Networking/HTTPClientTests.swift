@@ -705,6 +705,18 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         self.logger.verifyMessageWasNotLogged("Queued request GET /v1/subscribers/identify for retry in 0.0 seconds.")
     }
 
+    func testNoContentResponseBodyDataConvertsNilToEmptyData() {
+        expect(HTTPClient.responseBodyData(statusCode: .noContent, data: nil)) == Data()
+    }
+
+    func testNotModifiedResponseBodyDataIsNil() {
+        expect(HTTPClient.responseBodyData(statusCode: .notModified, data: Data())) == nil
+    }
+
+    func testSuccessfulResponseBodyDataPreservesNilData() {
+        expect(HTTPClient.responseBodyData(statusCode: .success, data: nil)).to(beNil())
+    }
+
     func testServerSide200WithETagInRequest() {
         let request = HTTPRequest(method: .get, path: .mockPath)
         let responseData = "{\"message\": \"something is great up in the cloud\"}".asData

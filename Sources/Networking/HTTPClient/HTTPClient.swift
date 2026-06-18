@@ -390,10 +390,7 @@ private extension HTTPClient {
 
         let statusCode: HTTPStatusCode = .init(rawValue: httpURLResponse.statusCode)
 
-        // `nil` if status code is 304, since the response will be empty and fetched from the eTag.
-        let dataIfAvailable = statusCode == .notModified
-            ? nil
-            : data
+        let dataIfAvailable = Self.responseBodyData(statusCode: statusCode, data: data)
 
         return self.createVerifiedResponse(request: request,
                                            urlRequest: urlRequest,
@@ -963,6 +960,22 @@ private extension NetworkError {
 
 }
 
+extension HTTPClient {
+
+    static func responseBodyData(statusCode: HTTPStatusCode, data: Data?) -> Data? {
+        switch statusCode {
+        case .notModified:
+            // `nil` if status code is 304, since the response will be empty and fetched from the eTag.
+            return nil
+        case .noContent:
+            return data ?? Data()
+        default:
+            return data
+        }
+    }
+
+}
+
 extension Result where Success == Data?, Failure == NetworkError {
 
     /// Converts a `Result<Data?, NetworkError>` into `Result<HTTPResponse<Data?>, NetworkError>`
@@ -990,7 +1003,10 @@ extension Result where Success == VerifiedHTTPResponse<Data>, Failure == Network
         return self.flatMap { response in                   // Convert the `Result` type
             Result<VerifiedHTTPResponse<Value>, Error> {    // Create a new `Result<Value>`
                 try response.mapBody { data in              // Convert the from `Data` -> `Value`
-                    try Value.create(with: data)            // Decode `Data` into `Value`
+                    try Value.create(                       // Decode `Data` into `Value`
+                        with: data,
+                        httpStatusCode: response.httpStatusCode
+                    )
                 }
                 .copyWithNewRequestDate()                   // Update request date for 304 responses
             }

@@ -246,6 +246,24 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(error.domain) == String(reflecting: RCContainer.Parser.FormatError.self)
     }
 
+    func testGetRemoteConfigSuccessfulEmptyResponseSendsDecodingError() {
+        self.httpClient.mock(
+            requestPath: .remoteConfig,
+            response: .init(statusCode: .success, body: Data())
+        )
+
+        let result = waitUntilValue { completed in
+            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+        }
+
+        guard case let .networkError(.decoding(error, _)) = result?.error else {
+            fail("Expected decoding error, got \(String(describing: result?.error))")
+            return
+        }
+
+        expect(error.domain) == String(reflecting: RCContainer.Parser.FormatError.self)
+    }
+
     func testGetRemoteConfigSuccessfulJSONResponseSendsDecodingError() {
         self.httpClient.mock(
             requestPath: .remoteConfig,
