@@ -1525,7 +1525,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
     ) async throws {
         // Only attribute offering context and paywall data for transactions that are not known
         // to be renewals. When the reason is `nil` (i.e. iOS < 17), we still attempt
-        // attribution because the product-ID and date matching in `cachedPurchaseContext`
+        // attribution because the product-ID and date matching in `consumeCachedPurchaseContext`
         // will safely return nil for non-matching transactions, making the misattribution case
         // extremely unlikely.
         let isKnownRenewal = transaction.reason == .renewal
