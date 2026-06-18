@@ -603,7 +603,8 @@ final class PurchasesOrchestrator {
         self.cachePurchaseData(
             presentedOfferingContext: package?.presentedOfferingContext,
             paywallEvent: paywallEvent,
-            productIdentifier: productIdentifier
+            productIdentifier: productIdentifier,
+            originatedFromPurchase: true
         )
 
         self.productsManager.cache(StoreProduct(sk1Product: sk1Product))
@@ -625,7 +626,8 @@ final class PurchasesOrchestrator {
                                                        purchaseResult: nil, // SK2 only
                                                        error: error)
                 if cancelled || error != nil {
-                    self.clearCachedPurchaseData(productIdentifier: productIdentifier)
+                    self.clearCachedPurchaseData(productIdentifier: productIdentifier,
+                                                 onlyIfOriginatedFromPurchase: true)
                 }
 
                 if !cancelled {
@@ -818,7 +820,8 @@ final class PurchasesOrchestrator {
             self.cachePurchaseData(
                 presentedOfferingContext: presentedOfferingContext,
                 paywallEvent: paywallEvent,
-                productIdentifier: sk2Product.id
+                productIdentifier: sk2Product.id,
+                originatedFromPurchase: true
             )
 
             result = try await self.purchase(sk2Product, options)
@@ -835,7 +838,7 @@ final class PurchasesOrchestrator {
             case .userCancelled:
                 userCancelled = true
                 transaction = nil
-                self.clearCachedPurchaseData(productIdentifier: sk2Product.id)
+                self.clearCachedPurchaseData(productIdentifier: sk2Product.id, onlyIfOriginatedFromPurchase: true)
                 if self.systemInfo.dangerousSettings.customEntitlementComputation {
                     throw ErrorUtils.purchaseCancelledError()
                 }
@@ -903,7 +906,7 @@ final class PurchasesOrchestrator {
                 throw ErrorUtils.purchaseCancelledError()
             }
 
-            self.clearCachedPurchaseData(productIdentifier: productId)
+            self.clearCachedPurchaseData(productIdentifier: productId, onlyIfOriginatedFromPurchase: true)
 
             self.trackPurchaseAttemptEventIfNeeded(startTime,
                                                    successful: false,
@@ -944,7 +947,7 @@ final class PurchasesOrchestrator {
                                                    purchaseResult: nil,
                                                    error: purchasesError.asPublicError)
 
-            self.clearCachedPurchaseData(productIdentifier: productId)
+            self.clearCachedPurchaseData(productIdentifier: productId, onlyIfOriginatedFromPurchase: true)
 
             throw purchasesError
         }
@@ -977,11 +980,17 @@ final class PurchasesOrchestrator {
 
     /// Caches purchase context (offering + optional paywall event) for a product.
     /// Both the `.myApp` external purchase path and `PaywallExtensions` call this through
-    /// the `@_spi(Internal)` API. The SK1 purchase path also calls this internally.
+    /// the `@_spi(Internal)` API (which defaults `originatedFromPurchase` to `false`). The SK1 and
+    /// SK2 purchase paths call this internally passing `originatedFromPurchase: true`.
+    ///
+    /// - Parameter originatedFromPurchase: whether the context was cached at the intent of a
+    ///   RevenueCat `purchase()` call. This governs how the entry is evicted on retrieval, see
+    ///   `cachedPurchaseContext(for:initiationSource:)`.
     func cachePurchaseData(
         presentedOfferingContext: PresentedOfferingContext?,
         paywallEvent: PaywallEvent?,
-        productIdentifier: String
+        productIdentifier: String,
+        originatedFromPurchase: Bool = false
     ) {
         guard presentedOfferingContext != nil || paywallEvent != nil else { return }
 
@@ -998,13 +1007,26 @@ final class PurchasesOrchestrator {
         let cached = CachedPurchaseContext(
             offeringContext: presentedOfferingContext,
             paywallEvent: paywallEvent,
-            cacheDate: self.dateProvider.now()
+            cacheDate: self.dateProvider.now(),
+            originatedFromPurchase: originatedFromPurchase
         )
         self.cachedPurchaseContextByProductID.modify { $0[productIdentifier] = cached }
     }
 
-    func clearCachedPurchaseData(productIdentifier: String) {
-        self.cachedPurchaseContextByProductID.modify { $0.removeValue(forKey: productIdentifier) }
+    /// Clears the cached purchase context for a product.
+    ///
+    /// - Parameter onlyIfOriginatedFromPurchase: when `true`, only an entry cached at the intent of
+    ///   a RevenueCat `purchase()` call is removed. This is used by `purchase()` cancel/failure
+    ///   paths so they don't wipe externally-cached context (SwiftUI StoreKit paywalls, custom
+    ///   purchase logic) that wasn't created by that purchase and may still be attributed to its own
+    ///   transaction arriving via the queue.
+    func clearCachedPurchaseData(productIdentifier: String, onlyIfOriginatedFromPurchase: Bool = false) {
+        self.cachedPurchaseContextByProductID.modify { cache in
+            if onlyIfOriginatedFromPurchase, cache[productIdentifier]?.originatedFromPurchase != true {
+                return
+            }
+            cache.removeValue(forKey: productIdentifier)
+        }
     }
 
     func postEventsIfNeeded(delayed: Bool = false) {
@@ -1287,7 +1309,8 @@ private extension PurchasesOrchestrator {
 
     func handleFailedTransaction(_ transaction: SKPaymentTransaction) {
         let storeTransaction = StoreTransaction(sk1Transaction: transaction)
-        self.clearCachedPurchaseData(productIdentifier: storeTransaction.productIdentifier)
+        self.clearCachedPurchaseData(productIdentifier: storeTransaction.productIdentifier,
+                                     onlyIfOriginatedFromPurchase: true)
 
         if let error = transaction.error,
            let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: storeTransaction) {
@@ -1513,11 +1536,13 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
     ) async throws {
         // Only attribute offering context and paywall data for transactions that are not known
         // to be renewals. When the reason is `nil` (i.e. iOS < 17), we still attempt
-        // attribution because the product-ID and date matching in `getCachedPurchaseContext`
+        // attribution because the product-ID and date matching in `cachedPurchaseContext`
         // will safely return nil for non-matching transactions, making the misattribution case
         // extremely unlikely.
         let isKnownRenewal = transaction.reason == .renewal
-        let cached = isKnownRenewal ? nil : self.getCachedPurchaseContext(for: transaction)
+        let cached = isKnownRenewal
+            ? nil
+            : self.cachedPurchaseContext(for: transaction, initiationSource: .queue)
         let offeringContext = cached?.offeringContext
         let paywall = cached?.paywallEvent
 
@@ -1937,14 +1962,13 @@ private extension PurchasesOrchestrator {
                                        restored: Bool) {
         let purchaseSource = self.purchaseSource(for: purchasedTransaction.productIdentifier,
                                                  restored: restored)
-        let cached: CachedPurchaseContext?
-        if restored {
-            cached = nil
-        } else if purchaseSource.initiationSource == .purchase {
-            cached = self.getAndRemoveCachedPurchaseContext(for: purchasedTransaction)
-        } else {
-            cached = self.getCachedPurchaseContext(for: purchasedTransaction)
-        }
+        // Restored transactions never attribute cached purchase context (a restore is not a new
+        // purchase). For non-restores, `cachedPurchaseContext(for:initiationSource:)` applies the
+        // peek-vs-remove rule based on the initiation source.
+        let cached = restored
+            ? nil
+            : self.cachedPurchaseContext(for: purchasedTransaction,
+                                         initiationSource: purchaseSource.initiationSource)
         let offeringContext = cached?.offeringContext
         let paywall = cached?.paywallEvent
         let unsyncedAttributes = self.refreshATTStatusAndGetUnsyncedAttributes()
@@ -2000,48 +2024,48 @@ private extension PurchasesOrchestrator {
 
     /// Cached purchase context containing both offering and optional paywall event data,
     /// keyed by product identifier. The `cacheDate` is used to verify that the cached
-    /// context corresponds to a specific transaction (not an older/newer one).
+    /// context corresponds to a specific transaction (not an older/newer one). `originatedFromPurchase`
+    /// records whether the entry was cached at the intent of a RevenueCat `purchase()` call.
     struct CachedPurchaseContext {
         let offeringContext: PresentedOfferingContext?
         let paywallEvent: PaywallEvent?
         let cacheDate: Date
+        let originatedFromPurchase: Bool
     }
 
-    /// Atomically retrieves and removes the cached purchase context for a transaction.
-    /// Returns `nil` if no cached context exists for the product, or if the cache date
-    /// is after the transaction's purchase date (meaning the cache is for a later purchase).
-    func getAndRemoveCachedPurchaseContext(
-        for transaction: StoreTransactionType
+    /// Retrieves the cached purchase context for a `transaction`, applying the product-ID and
+    /// date-compatibility check: the cache date must be at or before the transaction's purchase
+    /// date, otherwise the cache is for a later purchase and `nil` is returned. Also returns `nil`
+    /// when there is no cached context for the product.
+    ///
+    /// Whether the entry is *consumed* (removed) or only *peeked* (left in place) depends on its
+    /// origin, not on the caller:
+    /// - Entries cached at the intent of a RevenueCat `purchase()` call (`originatedFromPurchase`)
+    ///   are consumed only by their purchase-initiated post. Queue-initiated reads peek, so a queue
+    ///   transaction racing ahead of `purchase()` returning and the later purchase post are both
+    ///   attributed.
+    /// - Externally-cached entries (SwiftUI StoreKit paywalls, custom purchase logic via the
+    ///   `@_spi(Internal)` `cachePurchaseData`) have no purchase-initiated post to follow, so the
+    ///   first read (a queue post) consumes them, preventing the entry from leaking indefinitely.
+    ///
+    /// Centralizing the rule here ensures the SK1 and SK2 paths can't drift.
+    func cachedPurchaseContext(
+        for transaction: StoreTransactionType,
+        initiationSource: PostReceiptSource.InitiationSource
     ) -> CachedPurchaseContext? {
         return self.cachedPurchaseContextByProductID.modify { cache in
-            guard let cached = cache[transaction.productIdentifier] else {
+            guard let cached = cache[transaction.productIdentifier],
+                  cached.cacheDate <= transaction.purchaseDate else {
                 return nil
             }
 
-            guard cached.cacheDate <= transaction.purchaseDate else {
-                return nil
+            let shouldRemove = !cached.originatedFromPurchase || initiationSource == .purchase
+            if shouldRemove {
+                cache.removeValue(forKey: transaction.productIdentifier)
             }
 
-            cache.removeValue(forKey: transaction.productIdentifier)
             return cached
         }
-    }
-
-    /// Retrieves the cached purchase context for a transaction WITHOUT removing it.
-    /// Returns `nil` if no cached context exists for the product, or if the cache date
-    /// is after the transaction's purchase date (meaning the cache is for a later purchase).
-    /// Use this from queue-initiated paths so the cached context remains available for a
-    /// subsequent purchase-initiated post for the same product.
-    func getCachedPurchaseContext(for transaction: StoreTransactionType) -> CachedPurchaseContext? {
-        guard let cached = self.cachedPurchaseContextByProductID.value[transaction.productIdentifier] else {
-            return nil
-        }
-
-        guard cached.cacheDate <= transaction.purchaseDate else {
-            return nil
-        }
-
-        return cached
     }
 
     /// Computes a `ProductRequestData` for an active subscription found in the receipt,
@@ -2315,12 +2339,7 @@ extension PurchasesOrchestrator {
         presentedOfferingContext: PresentedOfferingContext? = nil,
         presentedPaywall: PaywallEvent? = nil
     ) async throws -> CustomerInfo {
-        let cached: CachedPurchaseContext?
-        if initiationSource == .queue {
-            cached = self.getCachedPurchaseContext(for: transaction)
-        } else {
-            cached = self.getAndRemoveCachedPurchaseContext(for: transaction)
-        }
+        let cached = self.cachedPurchaseContext(for: transaction, initiationSource: initiationSource)
         let offeringContext = presentedOfferingContext ?? cached?.offeringContext
         let paywall = presentedPaywall ?? cached?.paywallEvent
         let unsyncedAttributes = self.refreshATTStatusAndGetUnsyncedAttributes()

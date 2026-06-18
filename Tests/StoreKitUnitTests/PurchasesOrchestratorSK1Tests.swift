@@ -887,13 +887,13 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ) == "offering_b"
     }
 
-    func testSK1ExternallyCachedContextIsClearedOnFailure() async throws {
+    func testSK1ExternallyCachedContextIsNotClearedOnFailure() async throws {
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
         let product = try await self.fetchSk1Product()
         let payment = self.storeKit1Wrapper.payment(with: product)
 
-        // Simulate a hybrid SDK caching the context via the @_spi(Internal) API
+        // Simulate a hybrid SDK caching the context via the @_spi(Internal) API (external entry).
         self.orchestrator.cachePurchaseData(
             presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: "hybrid_offering"),
             paywallEvent: nil,
@@ -933,9 +933,12 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
             }
         }
 
+        // A failed RC purchase() does not clear externally-cached context, so the surviving entry
+        // is attributed to the subsequent successful purchase of the same product.
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
-        ).to(beNil())
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "hybrid_offering"
     }
 
     func testSK1PurchasePackageFailThenPurchasePackageAgainIncludesOfferingContext() async throws {
@@ -1000,7 +1003,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.orchestrator.cachePurchaseData(
             presentedOfferingContext: offeringContext,
             paywallEvent: nil,
-            productIdentifier: product.productIdentifier
+            productIdentifier: product.productIdentifier,
+            originatedFromPurchase: true
         )
 
         // Simulate a failed (non-cancelled) SK1 payment
@@ -1051,7 +1055,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.orchestrator.cachePurchaseData(
             presentedOfferingContext: offeringContext,
             paywallEvent: nil,
-            productIdentifier: product.productIdentifier
+            productIdentifier: product.productIdentifier,
+            originatedFromPurchase: true
         )
 
         // Simulate a cancelled SK1 payment
@@ -1136,10 +1141,13 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let mockPayment = self.storeKit1Wrapper.payment(with: product)
 
         let cacheDate = self.mockDateProvider.now()
+        // A purchase-originated entry is only consumed by its purchase-initiated post, so queue
+        // reads peek and leave it in place.
         self.orchestrator.cachePurchaseData(
             presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: "test_offering"),
             paywallEvent: nil,
-            productIdentifier: Self.testProductId
+            productIdentifier: Self.testProductId,
+            originatedFromPurchase: true
         )
 
         let queueTransaction = MockTransaction()
