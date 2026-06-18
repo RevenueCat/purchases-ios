@@ -275,26 +275,22 @@ platform :ios do
     end
   end
 
-  desc "Records Paywall template screenshots and uploads them to Emerge for PR diffing"
+  desc "Records Paywall template screenshots and uploads them to Emerge"
   lane :record_and_upload_paywall_template_snapshots_to_emerge do
     paywall_template_screenshot_platforms.each do |platform|
       UI.message("Generating screenshots for platform: #{platform}")
       output_dir = record_paywall_screenshots(platform: platform)
 
       UI.message("Uploading #{platform} screenshots to Emerge")
-      # Reuses the "Bring Your Own Snapshots" support we already use for the V1 snapshots.
-      # These are the same screenshots record_and_push_paywall_template_screenshots pushes to
-      # paywall-rendering-validation, but this lane runs on PRs so Emerge can diff against main.
       upload_snapshots_to_emerge(
-        name: "Paywall Template Screenshots (#{platform})",
+        name: "Paywall Rendering Validation (#{platform})",
         id: "com.revenuecat.paywall-rendering-validation.#{platform}",
         images_path: "#{output_dir}/images"
       )
     end
   end
 
-  # Apple platforms we render Paywalls V2 template screenshots for. Shared between the
-  # paywall-rendering-validation push and the Emerge upload so they stay in sync.
+  # Apple platforms we render Paywalls V2 template screenshots for.
   private_lane :paywall_template_screenshot_platforms do
     ["ios",
      # These platforms work locally but we have been unable to figure out how to get them to
@@ -537,13 +533,11 @@ platform :ios do
     )
   end
 
-  # Uploads snapshots to Emerge using its "Bring Your Own Snapshots" support.
-  # Shared by the V1 template snapshots and the Paywalls V2 template validation
-  # screenshots. Requires EMERGE_API_TOKEN to be available in the environment.
+  # Uploads snapshots to Emerge. Requires EMERGE_API_TOKEN to be available in the environment.
   #
-  # Pass `client_library` + `project_root` to let Emerge discover snapshots from a
-  # supported library (e.g. swift-snapshot-testing), or pass `images_path` to upload
-  # an arbitrary directory of images ("upload anything" mode).
+  # Pass `client_library` + `project_root` to let Emerge discover snapshots from a supported
+  # library (e.g. swift-snapshot-testing), or pass `images_path` to upload an arbitrary directory
+  # of images.
   private_lane :upload_snapshots_to_emerge do |options|
     name = options[:name] || UI.user_error!("No name provided for the Emerge upload")
     id = options[:id] || UI.user_error!("No id provided for the Emerge upload")
