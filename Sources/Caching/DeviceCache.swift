@@ -287,6 +287,23 @@ class DeviceCache {
         self.largeItemCache.removeObject(forKey: CacheKey.workflowsListResponse.rawValue)
     }
 
+    // MARK: - Workflow details
+    // The prefetched workflow details are persisted under a single, non-user-scoped key as a
+    // `workflowId -> WorkflowDataResult` map, mirroring how the workflows list is stored above.
+    // Cross-user safety is handled by clearing it on identity transitions.
+
+    func cachedWorkflowDetails() -> [String: WorkflowDataResult]? {
+        return self.value(for: CacheKey.workflowDetails)
+    }
+
+    func cache(workflowDetails: [String: WorkflowDataResult]) {
+        self.largeItemCache.set(codable: workflowDetails, forKey: CacheKey.workflowDetails.rawValue)
+    }
+
+    func clearWorkflowDetailsCache() {
+        self.largeItemCache.removeObject(forKey: CacheKey.workflowDetails.rawValue)
+    }
+
     // MARK: - subscriber attributes
     // Write operations use `lockingUserDefaults` to ensure atomic read-modify-write.
     // Read operations use the lock-free `userDefaults` since they don't modify data.
@@ -551,6 +568,7 @@ class DeviceCache {
         case customerInfoLastUpdated(String)
         case offerings(String)
         case workflowsListResponse
+        case workflowDetails
         case legacySubscriberAttributes(String)
         case attributionDataDefaults(String)
         case syncedSK2ObserverModeTransactionIDs
@@ -563,6 +581,7 @@ class DeviceCache {
             case let .customerInfoLastUpdated(userID): return "\(Self.base)purchaserInfoLastUpdated.\(userID)"
             case let .offerings(userID): return "\(Self.base)offerings.\(userID)"
             case .workflowsListResponse: return "\(Self.base)workflowsListResponse"
+            case .workflowDetails: return "\(Self.base)workflowDetails"
             case let .legacySubscriberAttributes(userID): return "\(Self.legacySubscriberAttributesBase)\(userID)"
             case let .attributionDataDefaults(userID): return "\(Self.base)attribution.\(userID)"
             case .syncedSK2ObserverModeTransactionIDs:

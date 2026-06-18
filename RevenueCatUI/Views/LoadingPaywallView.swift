@@ -161,6 +161,8 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
     var preferredLocaleOverride: String? { nil }
 
+    var isUIPreviewMode: Bool { false }
+
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return .myApp }
         set { _ = newValue }
@@ -177,6 +179,10 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
 #if !os(tvOS)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
         throw ErrorCode.configurationError
+    }
+
+    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
+        return nil
     }
 #endif
 
@@ -197,6 +203,10 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
     }
 
     func track(paywallEvent: PaywallEvent) async {
+        // Ignoring events from loading paywall view
+    }
+
+    func track(workflowEvent: WorkflowEvent) async {
         // Ignoring events from loading paywall view
     }
 

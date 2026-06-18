@@ -204,6 +204,11 @@ extension BackendError {
         return self.networkError?.isServerDown == true
     }
 
+    /// Whether this error is transient and worth retrying. See ``NetworkError/isTransient``.
+    var isTransient: Bool {
+        return self.networkError?.isTransient ?? false
+    }
+
     private var networkError: NetworkError? {
         switch self {
         case let .networkError(networkError):
@@ -315,11 +320,12 @@ extension BackendError {
 
 extension BackendError {
 
-    /// Whether to fall back to cached offerings in case of this error when fetching offerings.
-    var shouldFallBackToCachedOfferings: Bool {
+    /// Whether to fall back to the last cached response for this error. See
+    /// ``NetworkError/shouldFallBackToCache``.
+    var shouldFallBackToCache: Bool {
         switch self {
         case .networkError(let networkError):
-            return networkError.shouldFallBackToCachedOfferings
+            return networkError.shouldFallBackToCache
         default:
             return true
         }

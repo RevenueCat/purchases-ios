@@ -22,12 +22,16 @@ end
 
 # Hack to work around a Fastlane quirk where plugin actions are run from the parent of the current working directory.
 # We switch to the first subdirectory, then run the action. The action will run from the parent of the subdirectory, which is
-# our actual current working directory. The obvious limitation is that this doesn't work if the current working directory
-# does not have any subdirectories.
+# our actual current working directory.
 # This is only needed when our current working directory is not the ./fastlane directory.
 # https://docs.fastlane.tools/advanced/fastlane/#directory-behavior
 def run_plugin_action_in_current_directory(&block)
-  Dir.chdir(Dir["*/"].first.chomp("/"), &block)
+  first_subdirectory = Dir["*/"].first
+  if first_subdirectory.nil?
+    block.call
+  else
+    Dir.chdir(first_subdirectory.chomp("/"), &block)
+  end
 end
 
 
@@ -246,6 +250,7 @@ platform :ios do
                  "mac-catalyst-scaled-to-match-ipad",
                  "mac-native"]
 
+    produced_offering_ids_by_platform = {}
     platforms.each do |platform|
       UI.message("Generating screenshots for platform: #{platform}")
 
@@ -253,12 +258,17 @@ platform :ios do
       UI.message("Output directory for #{platform}: #{output_dir}")
 
       # Process the screenshots from the output directory
-      process_paywall_screenshots(
+      produced_offering_ids_by_platform[platform] = process_paywall_screenshots(
         output_dir: output_dir,
         target_repository_path: target_repository_path,
         platform: platform
       )
     end
+
+    remove_stale_template_screenshots(
+      target_repository_path: target_repository_path,
+      produced_offering_ids_by_platform: produced_offering_ids_by_platform
+    )
 
     # Commit, push, and create a PR in the target repository
     Dir.chdir(target_repository_path) do
@@ -279,8 +289,10 @@ platform :ios do
     target_repository_path = options[:target_repository_path] || UI.user_error!("No target_repository_path provided")
     platform = options[:platform] || UI.user_error!("No platform provided")
 
+    produced_offering_ids = []
     Dir.glob("#{output_dir}/images/*.png").each do |file_path|
       offering_id = File.basename(file_path, File.extname(file_path))
+      produced_offering_ids << offering_id
       target_dir = "#{target_repository_path}/screenshots/templates/#{offering_id}"
 
       target_path = "#{target_dir}/#{platform}.png"
@@ -298,6 +310,39 @@ platform :ios do
        "--id", "com.revenuecat.paywall-rendering-validation.#{platform}",
        "--repo-name", "RevenueCat/purchases-ios",
        "#{output_dir}/images")
+
+    # Return the offering IDs produced for this platform.
+    produced_offering_ids
+  end
+
+  # Removes screenshots (and now-empty directories) for paywalls that were not rendered in this run. Only the
+  # platform files produced by this lane are pruned (ios.png and the mac-*.png variants), each against the
+  # offering IDs produced for that platform, so screenshots owned by other platforms (e.g. android.png) are
+  # never affected.
+  private_lane :remove_stale_template_screenshots do |options|
+    target_repository_path = options[:target_repository_path] || UI.user_error!("No target_repository_path provided")
+    produced_offering_ids_by_platform = options[:produced_offering_ids_by_platform] || UI.user_error!("No produced_offering_ids_by_platform provided")
+
+    templates_dir = "#{target_repository_path}/screenshots/templates"
+    produced_offering_ids_by_platform.each do |platform, produced_offering_ids|
+      if produced_offering_ids.empty?
+        UI.important("No #{platform} screenshots were produced; skipping stale cleanup for it.")
+        next
+      end
+
+      Dir.glob("#{templates_dir}/*/#{platform}.png").each do |existing|
+        offering_id = File.basename(File.dirname(existing))
+        next if produced_offering_ids.include?(offering_id)
+        UI.message("Removing stale #{platform} screenshot: #{existing}")
+        FileUtils.rm(existing)
+      end
+    end
+
+    # Remove any empty directories.
+    Dir.glob("#{templates_dir}/*").each do |dir|
+      next unless File.directory?(dir)
+      Dir.rmdir(dir) if Dir.empty?(dir)
+    end
   end
 
   private_lane :commit_push_and_create_pr_if_necessary do |options|
@@ -1718,6 +1763,7 @@ platform :ios do
     success = false
     begin
       scan(
+        workspace: 'RevenueCat-Tuist.xcworkspace',
         scheme: "BackendIntegrationTests",
         ensure_devices_found: true,
         derived_data_path: "scan_derived_data",

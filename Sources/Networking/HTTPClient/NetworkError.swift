@@ -249,12 +249,28 @@ extension NetworkError {
         return self.errorStatusCode?.isServerError == true
     }
 
-    /// Whether to fall back to cached offerings in case of this error when fetching offerings.
-    var shouldFallBackToCachedOfferings: Bool {
+    /// Whether to fall back to the last cached response for this error. A 5xx or a connection-level
+    /// failure (no status code) is transient, so serving the last cached copy is appropriate; a 4xx
+    /// is the backend authoritatively rejecting the request, so stale data should not be served.
+    var shouldFallBackToCache: Bool {
         if let errorStatusCode {
             return errorStatusCode.isServerError
         } else {
             return true
+        }
+    }
+
+    /// Whether this error is transient and therefore worth retrying: connection-level failures
+    /// (no HTTP status code) and `5xx` server responses. `4xx` responses are terminal — the backend
+    /// authoritatively rejected the request, so retrying won't yield a different result.
+    var isTransient: Bool {
+        switch self {
+        case .decoding, .unableToCreateRequest, .signatureVerificationFailed:
+            return false
+        case .dnsError, .networkError, .unexpectedResponse:
+            return true
+        case let .errorResponse(_, statusCode, _):
+            return statusCode.isServerError
         }
     }
 

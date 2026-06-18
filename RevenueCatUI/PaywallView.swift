@@ -128,6 +128,7 @@ public struct PaywallView: View {
         displayCloseButton: Bool = false,
         useDraftPaywall: Bool,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        simulatePromoEligible: Bool = false,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
@@ -140,7 +141,8 @@ public struct PaywallView: View {
                 displayCloseButton: displayCloseButton,
                 useDraftPaywall: useDraftPaywall,
                 introEligibility: introEligibility,
-                purchaseHandler: purchaseHandler
+                purchaseHandler: purchaseHandler,
+                promoOfferCache: simulatePromoEligible ? PaywallPromoOfferCache(simulateEligible: true) : nil
             )
         )
     }
@@ -159,10 +161,23 @@ public struct PaywallView: View {
 
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
 
+        // When workflows are enabled and the workflow + offerings are already cached, seed the
+        // workflow context (and its mapped offering) synchronously so a warm cache renders without
+        // a loading state. On a cold/stale/partial cache the seed is nil and the async resolve path
+        // takes over; with workflows off this is nil and we fall back to the cached offering.
+        // This @State init wiring isn't unit-tested directly (SwiftUI @State can't be seeded outside
+        // a view init); the seeding logic lives in the unit-tested cachedInitialWorkflowContext, and
+        // the rendered result is covered by the existing PaywallView snapshot tests.
+        let seededWorkflowContext = configuration.purchaseHandler.cachedInitialWorkflowContext(
+            for: configuration.content,
+            workflowsEndpointEnabled: ProcessInfo.processInfo.workflowsEndpointEnabled
+        )
+        self._workflowContext = .init(initialValue: seededWorkflowContext)
         self._offering = .init(
-            initialValue: configuration.purchaseHandler.cachedInitialOffering(
-                for: configuration.content
-            )
+            initialValue: seededWorkflowContext?.initialOffering
+                ?? configuration.purchaseHandler.cachedInitialOffering(
+                    for: configuration.content
+                )
         )
         self._customerInfo = .init(
             initialValue: configuration.customerInfo ?? Self.loadCachedCustomerInfoIfPossible()

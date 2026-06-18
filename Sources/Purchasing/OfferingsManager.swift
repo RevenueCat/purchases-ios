@@ -142,7 +142,7 @@ class OfferingsManager {
                                                   preferredLocales: preferredLocales,
                                                   completion: completion)
 
-            case let .failure(backendError) where backendError.shouldFallBackToCachedOfferings:
+            case let .failure(backendError) where backendError.shouldFallBackToCache:
 
                 // If error fetching offerings, attempt to load them from disk cache.
                 self.fetchCachedOfferingsFromDisk(appUserID: appUserID,

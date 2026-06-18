@@ -45,6 +45,11 @@ public struct PaywallColor {
     // Only available from iOS 13
     fileprivate var _underlyingColor: (any Sendable)?
 
+    /// "Designated" initializer
+    private init(stringRepresentation: String, underlyingColor: (any Sendable)?) {
+        self.stringRepresentation = stringRepresentation
+        self._underlyingColor = underlyingColor
+    }
 }
 
 // MARK: - Public constructors
@@ -119,12 +124,6 @@ private extension PaywallColor {
     }
 
     #endif
-
-    /// "Designated" initializer
-    private init(stringRepresentation: String, underlyingColor: (any Sendable)?) {
-        self.stringRepresentation = stringRepresentation
-        self._underlyingColor = underlyingColor
-    }
 
 }
 

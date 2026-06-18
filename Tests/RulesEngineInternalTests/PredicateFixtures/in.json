@@ -1,0 +1,78 @@
+{
+  "fixtures": [
+    {
+      "id": "in_substring_match_for_string_haystack",
+      "predicate": { "in": ["bar", "foobar"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "in_substring_no_match",
+      "predicate": { "in": ["baz", "foobar"] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "in_array_membership_strict_types",
+      "predicate": { "in": ["US", ["US", "CA", "MX"]] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "in_array_membership_is_strict",
+      "description": "Array.prototype.indexOf is strict (===), so 5 is not in [\"5\"]",
+      "predicate": { "in": [5, ["5", "6"]] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "in_string_haystack_coerces_non_string_needle",
+      "description": "String.prototype.indexOf coerces a non-string needle to a string, so 5 is found in \"12345\"",
+      "predicate": { "in": [5, "12345"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "in_unsupported_haystack_null",
+      "description": "no indexOf in JS, so unsupported haystack types return false",
+      "predicate": { "in": ["x", null] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "in_unsupported_haystack_number",
+      "description": "no indexOf in JS, so unsupported haystack types return false",
+      "predicate": { "in": ["x", 123] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "in_unsupported_haystack_bool",
+      "description": "no indexOf in JS, so unsupported haystack types return false",
+      "predicate": { "in": ["x", true] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "in_unsupported_haystack_object",
+      "description": "no indexOf in JS, so unsupported haystack types return false",
+      "predicate": { "in": ["x", {}] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "in_zero_args",
+      "description": "json-logic-js declares in as function(a, b); a missing haystack short-circuits to false",
+      "predicate": { "in": [] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "in_one_arg",
+      "description": "a missing needle becomes JS undefined, which indexOf won't find",
+      "predicate": { "in": ["only-one"] },
+      "variables": {},
+      "expected": false
+    }
+  ]
+}

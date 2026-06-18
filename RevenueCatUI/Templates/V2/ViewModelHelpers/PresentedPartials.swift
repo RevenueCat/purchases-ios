@@ -50,15 +50,25 @@ struct ConditionContext {
     /// Custom variables for condition evaluation (developer-provided merged with dashboard defaults).
     let customVariables: [String: CustomVariableValue]
 
+    /// Snapshot of the presentation session's state store (current values of declared state keys).
+    let stateValues: [String: PaywallComponent.ConditionValue]
+
+    /// Declared defaults for state keys, used when a key has no value in the store snapshot.
+    let stateDefaults: [String: PaywallComponent.ConditionValue]
+
     /// Creates a context with the given parameters.
     /// Developer-provided `customVariables` take priority over `defaultCustomVariables` from the dashboard.
     init(
         selectedPackageId: String? = nil,
         customVariables: [String: CustomVariableValue] = [:],
-        defaultCustomVariables: [String: CustomVariableValue] = [:]
+        defaultCustomVariables: [String: CustomVariableValue] = [:],
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:]
     ) {
         self.selectedPackageId = selectedPackageId
         self.customVariables = defaultCustomVariables.merging(customVariables) { _, developer in developer }
+        self.stateValues = stateValues
+        self.stateDefaults = stateDefaults
     }
 
 }
@@ -128,7 +138,7 @@ extension PresentedPartial {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    // swiftlint:disable:next function_parameter_count
+    // swiftlint:disable:next function_parameter_count cyclomatic_complexity
     private static func evaluateCondition(
         _ condition: PaywallComponent.ExtendedCondition,
         state: ComponentViewState,
@@ -187,6 +197,16 @@ extension PresentedPartial {
                 selectedPackageId: conditionContext.selectedPackageId
             )
 
+        // Paywall component state condition
+        case .state(let conditionOperator, let name, let value):
+            return evaluateStateCondition(
+                name: name,
+                expectedValue: value,
+                operator: conditionOperator,
+                stateValues: conditionContext.stateValues,
+                stateDefaults: conditionContext.stateDefaults
+            )
+
         // Unknown/unsupported conditions never match
         case .unsupported:
             return false
@@ -242,6 +262,60 @@ extension PresentedPartial {
             return matches
         case .notEquals:
             return !matches
+        }
+    }
+
+    /// Evaluates a `state` condition against the state-store snapshot.
+    ///
+    /// A key with no value in the store falls back to its declared default. A key that is neither
+    /// in the store nor declared evaluates to `false` regardless of operator, so the containing
+    /// override is never applied. This deliberately differs from `evaluateVariableCondition`'s
+    /// missing-variable rule (`!=` matches a missing variable): state keys are editor-managed,
+    /// so an undeclared reference is a consistency error rather than a legitimately absent value.
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    private static func evaluateStateCondition(
+        name: String,
+        expectedValue: PaywallComponent.ConditionValue,
+        operator conditionOperator: PaywallComponent.EqualityOperator,
+        stateValues: [String: PaywallComponent.ConditionValue],
+        stateDefaults: [String: PaywallComponent.ConditionValue]
+    ) -> Bool {
+        guard let actualValue = stateValues[name] ?? stateDefaults[name] else {
+            return false
+        }
+
+        let matches = matchesConditionValue(actualValue: actualValue, expectedValue: expectedValue)
+
+        switch conditionOperator {
+        case .equals:
+            return matches
+        case .notEquals:
+            return !matches
+        }
+    }
+
+    /// Type-strict comparison of two `ConditionValue`s: string matches only string, boolean only
+    /// boolean, and numbers (int or double) match numbers; any other type mismatch is "not equal".
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    private static func matchesConditionValue(
+        actualValue: PaywallComponent.ConditionValue,
+        expectedValue: PaywallComponent.ConditionValue
+    ) -> Bool {
+        switch (actualValue, expectedValue) {
+        case (.string(let actual), .string(let expected)):
+            return actual == expected
+        case (.bool(let actual), .bool(let expected)):
+            return actual == expected
+        case (.int(let actual), .int(let expected)):
+            return actual == expected
+        case (.int(let actual), .double(let expected)):
+            return doublesMatch(Double(actual), expected)
+        case (.double(let actual), .int(let expected)):
+            return doublesMatch(actual, Double(expected))
+        case (.double(let actual), .double(let expected)):
+            return doublesMatch(actual, expected)
+        default:
+            return false
         }
     }
 

@@ -19,6 +19,16 @@ enum AdsStrings {
 
     case unknown_reward_kind(rawValue: String)
     case invalid_virtual_currency_payload(code: String?, amount: Int?)
+    case reward_verification_token_encoding_failed(error: Error)
+
+    case poll_start(transactionID: String, maxAttempts: Int)
+    case poll_attempt(attempt: Int, maxAttempts: Int, transactionID: String)
+    case poll_status(status: String, transactionID: String)
+    case poll_transient_error(error: Error, transactionID: String)
+    case poll_terminal_error(error: Error, transactionID: String)
+    case poll_cancelled(transactionID: String)
+    case poll_exhausted(maxAttempts: Int, transactionID: String)
+    case reward_verification_completed(outcome: String, transactionID: String)
 
 }
 
@@ -32,6 +42,25 @@ extension AdsStrings: LogMessage {
             return "Received an invalid 'virtual_currency' ad reward payload " +
                 "(code: \(code ?? "nil"), amount: \(amount.map(String.init) ?? "nil")); " +
                 "falling back to unsupportedReward."
+        case let .reward_verification_token_encoding_failed(error):
+            return "Reward verification token customData encoding failed: \(error)"
+
+        case let .poll_start(transactionID, maxAttempts):
+            return "Reward verification poll start transactionID=\(transactionID) maxAttempts=\(maxAttempts)"
+        case let .poll_attempt(attempt, maxAttempts, transactionID):
+            return "Reward verification poll attempt \(attempt)/\(maxAttempts) transactionID=\(transactionID)"
+        case let .poll_status(status, transactionID):
+            return "Reward verification poll status=\(status) transactionID=\(transactionID)"
+        case let .poll_transient_error(error, transactionID):
+            return "Reward verification poll transient error, retrying: \(error) transactionID=\(transactionID)"
+        case let .poll_terminal_error(error, transactionID):
+            return "Reward verification poll terminal error: \(error) transactionID=\(transactionID)"
+        case let .poll_cancelled(transactionID):
+            return "Reward verification poll cancelled transactionID=\(transactionID)"
+        case let .poll_exhausted(maxAttempts, transactionID):
+            return "Reward verification poll exhausted \(maxAttempts) attempts transactionID=\(transactionID)"
+        case let .reward_verification_completed(outcome, transactionID):
+            return "Reward verification completed outcome=\(outcome) transactionID=\(transactionID)"
         }
     }
 
