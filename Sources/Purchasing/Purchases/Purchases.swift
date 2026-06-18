@@ -1710,8 +1710,19 @@ extension Purchases {
             transactionID: clientTransactionID
         ))
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        if case .verified(let reward) = outcome, reward.virtualCurrency != nil {
-            self.invalidateVirtualCurrenciesCache()
+        if case .verified(let reward) = outcome {
+            if reward.virtualCurrency != nil {
+                Logger.debug(AdsStrings.reward_verification_virtual_currency_invalidating_cache(
+                    transactionID: clientTransactionID
+                ))
+                self.invalidateVirtualCurrenciesCache()
+            }
+            if reward.entitlement != nil {
+                Logger.debug(AdsStrings.reward_verification_entitlement_invalidating_customer_info(
+                    transactionID: clientTransactionID
+                ))
+                self.invalidateCustomerInfoCache()
+            }
         }
         #endif
         switch outcome {

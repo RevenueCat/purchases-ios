@@ -197,6 +197,28 @@ extension PurchasesRewardVerificationTests {
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 0
     }
 
+    func testPollRewardVerificationInvalidatesCustomerInfoCacheOnEntitlementReward() async throws {
+        let reward = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
+        let before = self.deviceCache.invokedClearCustomerInfoCacheCount
+        let poller = self.makeStubPoller(statuses: [.verified(.entitlement(reward))])
+
+        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+
+        expect(result.verifiedReward) == .entitlement(reward)
+        expect(self.deviceCache.invokedClearCustomerInfoCacheCount) == before + 1
+        expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 0
+    }
+
+    func testPollRewardVerificationDoesNotInvalidateCustomerInfoCacheOnVirtualCurrencyReward() async throws {
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 4))
+        let before = self.deviceCache.invokedClearCustomerInfoCacheCount
+        let poller = self.makeStubPoller(statuses: [.verified(.virtualCurrency(reward))])
+
+        _ = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+
+        expect(self.deviceCache.invokedClearCustomerInfoCacheCount) == before
+    }
+
 }
 
 // MARK: - generateRewardVerificationToken
