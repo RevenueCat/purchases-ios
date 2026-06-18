@@ -84,11 +84,29 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
     }
 
     func testPollRewardVerificationStatusMapsFailedStatus() async throws {
-        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(.init(status: .failed))
+        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
+            .init(status: .failed(.init(reason: nil, message: nil)))
+        )
 
         let status = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: "tx-id")
 
-        expect(status) == .failed
+        expect(status) == .failed(reason: nil, message: nil)
+    }
+
+    func testPollRewardVerificationStatusForwardsFailureReasonAndMessage() async throws {
+        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
+            .init(status: .failed(.init(
+                reason: "no_access",
+                message: "AdMob server-side reward verification is not enabled for this app."
+            )))
+        )
+
+        let status = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: "tx-id")
+
+        expect(status) == .failed(
+            reason: "no_access",
+            message: "AdMob server-side reward verification is not enabled for this app."
+        )
     }
 
     func testPollRewardVerificationStatusForwardsBackendError() async throws {
@@ -139,7 +157,7 @@ extension PurchasesRewardVerificationTests {
     }
 
     func testPollRewardVerificationReturnsFailed() async {
-        let poller = self.makeStubPoller(statuses: [.failed])
+        let poller = self.makeStubPoller(statuses: [.failed(reason: nil, message: nil)])
 
         let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
@@ -172,7 +190,7 @@ extension PurchasesRewardVerificationTests {
     }
 
     func testPollRewardVerificationDoesNotInvalidateCacheOnFailed() async {
-        let poller = self.makeStubPoller(statuses: [.failed])
+        let poller = self.makeStubPoller(statuses: [.failed(reason: nil, message: nil)])
 
         _ = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 

@@ -115,29 +115,40 @@ final class DispatcherTests: AdapterTestCase {
         XCTAssertEqual(recorder.snapshot().first?.verifiedReward, .unsupportedReward)
     }
 
-    func testDispatchCancellationDoesNotFireHandlerAndPreservesGuard() async {
+    func testDispatchCancellationStillDeliversFailedAndConsumesGuard() async {
+        // The result callback's contract is that it always fires exactly once. On cancellation the
+        // poll resolves to `.failed` and the dispatcher still delivers it (rather than silently
+        // dropping the callback and stranding the caller).
         let state = RewardVerification.State(clientTransactionID: "tx-dispatch-cancel")
         let recorder = ResultRecorder()
+        let pollStarted = MainActorAssertionRecorder()
 
         let task = RewardVerification.Dispatcher.dispatch(
             clientTransactionID: state.clientTransactionID,
             state: state,
             pollRewardVerification: { _ in
-                try? await Task.sleep(nanoseconds: UInt64.max)
+                pollStarted.markFired()
+                // Hang cooperatively until cancelled, then resolve to `.failed` (mirrors the core
+                // poller mapping cancellation → `.failed`).
+                while !Task.isCancelled {
+                    try? await Task.sleep(nanoseconds: 1_000_000)
+                }
                 return .failed
             },
             resultHandler: { recorder.append($0) }
         )
 
-        // Yield once so the dispatched Task starts and is parked inside the hanging poll before cancel.
-        await Task.yield()
+        // Wait until the poll is in-flight before cancelling so cancellation interrupts it.
+        while !pollStarted.didFire {
+            await Task.yield()
+        }
         task.cancel()
         await task.value
 
-        XCTAssertTrue(recorder.snapshot().isEmpty,
-                      "Cancelling the dispatched task must not deliver a result")
-        XCTAssertTrue(state.consumeFireToken(),
-                      "Cancellation must leave the one-shot guard intact for a later attempt")
+        XCTAssertEqual(recorder.snapshot(), [.failed],
+                       "Cancellation must still deliver exactly one .failed result")
+        XCTAssertFalse(state.consumeFireToken(),
+                       "Delivering the cancellation result must consume the one-shot guard")
     }
 
     // MARK: - Threading

@@ -25,9 +25,14 @@ enum AdsStrings {
     case poll_attempt(attempt: Int, maxAttempts: Int, transactionID: String)
     case poll_status(status: String, transactionID: String)
     case poll_transient_error(error: Error, transactionID: String)
+
+    // Terminal failure diagnostics (one is logged when polling ends in `failed`).
+    case poll_backend_rejected(reason: String?, message: String?, transactionID: String)
+    case poll_exhausted_pending(transactionID: String)
+    case poll_exhausted_transient(transactionID: String)
+    case poll_unexpected_response(transactionID: String)
     case poll_terminal_error(error: Error, transactionID: String)
     case poll_cancelled(transactionID: String)
-    case poll_exhausted(maxAttempts: Int, transactionID: String)
     case reward_verification_completed(outcome: String, transactionID: String)
 
 }
@@ -53,12 +58,34 @@ extension AdsStrings: LogMessage {
             return "Reward verification poll status=\(status) transactionID=\(transactionID)"
         case let .poll_transient_error(error, transactionID):
             return "Reward verification poll transient error, retrying: \(error) transactionID=\(transactionID)"
+
+        case let .poll_backend_rejected(reason, message, transactionID):
+            // Prefer the human-readable message; fall back to the raw failure_reason code so the
+            // cause still surfaces when the backend sends a reason without a message.
+            let detail = message
+                ?? reason.map { "the server rejected it (reason: \($0))" }
+                ?? "the server rejected it."
+            return "Reward verification failed: \(detail) transactionID=\(transactionID)"
+        case let .poll_exhausted_pending(transactionID):
+            return "Reward verification timed out: the server-side verification (SSV) callback " +
+                "was not received in time. Possible causes: SSV is not enabled/configured for this ad " +
+                "unit in your ad network's dashboard, the SSV callback URL is misconfigured, the ad " +
+                "network delayed delivering the callback, or RevenueCat failed to process the SSV " +
+                "webhook. transactionID=\(transactionID)"
+        case let .poll_exhausted_transient(transactionID):
+            return "Reward verification timed out after repeated transient errors while polling — " +
+                "typically unstable device network connectivity. The reward couldn't be verified. " +
+                "transactionID=\(transactionID)"
+        case let .poll_unexpected_response(transactionID):
+            return "Reward verification stopped after the server returned a status this SDK version " +
+                "doesn't recognize. Update to the latest SDK version; if you're already on the latest, " +
+                "contact RevenueCat support. transactionID=\(transactionID)"
         case let .poll_terminal_error(error, transactionID):
-            return "Reward verification poll terminal error: \(error) transactionID=\(transactionID)"
+            return "Reward verification stopped after an unrecoverable error: \(error). This is " +
+                "unexpected; if it persists, contact RevenueCat support with the error above. " +
+                "transactionID=\(transactionID)"
         case let .poll_cancelled(transactionID):
-            return "Reward verification poll cancelled transactionID=\(transactionID)"
-        case let .poll_exhausted(maxAttempts, transactionID):
-            return "Reward verification poll exhausted \(maxAttempts) attempts transactionID=\(transactionID)"
+            return "Reward verification was cancelled before completion. transactionID=\(transactionID)"
         case let .reward_verification_completed(outcome, transactionID):
             return "Reward verification completed outcome=\(outcome) transactionID=\(transactionID)"
         }

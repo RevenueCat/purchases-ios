@@ -44,23 +44,17 @@ final class RewardVerificationOutcomeTests: TestCase {
         }
     }
 
-    func testAllCasesAreConstructibleAndExhaustiveInSwitch() throws {
-        let payload = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 1))
-        let cases: [RewardVerification.Outcome] = [
-            .verified(.virtualCurrency(payload)),
-            .verified(.noReward),
-            .verified(.unsupportedReward),
-            .failed(.timeout),
-            .failed(.backendError),
-            .failed(.unknown)
-        ]
-
-        for outcome in cases {
-            switch outcome {
-            case .verified: continue
-            case .failed: continue
-            }
+    func testFailedReasonsCarryTheirPayloads() {
+        let backendRejected = RewardVerification.Outcome.failed(
+            .backendRejected(reason: "no_access", message: "nope")
+        )
+        guard case .failed(.backendRejected("no_access", "nope")) = backendRejected else {
+            return XCTFail("Expected .failed(.backendRejected(\"no_access\", \"nope\")), got \(backendRejected)")
         }
-        XCTAssertEqual(cases.count, 6)
+
+        let terminal = RewardVerification.Outcome.failed(.terminalError(error: "boom"))
+        guard case .failed(.terminalError("boom")) = terminal else {
+            return XCTFail("Expected .failed(.terminalError(\"boom\")), got \(terminal)")
+        }
     }
 }
