@@ -145,3 +145,24 @@ func makePoller(
         maxAttempts: maxAttempts
     )
 }
+
+/// Builds a `BackendError` carrying an HTTP status, mirroring what the backend produces. The poller
+/// reuses the SDK's `BackendError.isTransient` classification (5xx transient, 4xx terminal).
+func makePollingError(statusCode: Int, backendCode: BackendErrorCode) -> BackendError {
+    .networkError(
+        .errorResponse(
+            ErrorResponse(code: backendCode, originalCode: backendCode.rawValue, message: nil),
+            HTTPStatusCode(rawValue: statusCode)
+        )
+    )
+}
+
+/// A connection-level (transport) failure with no HTTP status: transient, retried by the poller.
+func makeConnectivityError() -> BackendError {
+    .networkError(.networkError(URLError(.timedOut) as NSError))
+}
+
+/// A terminal `BackendError` that is not worth retrying (no transient signal).
+func makeTerminalBackendError() -> BackendError {
+    .networkError(.signatureVerificationFailed(path: HTTPRequest.Path.health, code: .success))
+}

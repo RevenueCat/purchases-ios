@@ -12,7 +12,9 @@
 
 import Foundation
 
-/// Production wiring: `Purchases.shared.pollRewardVerificationStatus(clientTransactionID:)`.
+/// Production wiring: `Purchases.shared.fetchRewardVerificationStatus(clientTransactionID:)`,
+/// which throws a structured ``BackendError`` so the poller can reuse the SDK's retry
+/// classification (``BackendError/isTransient``).
 internal protocol RewardVerificationStatusPolling: Sendable {
     func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus
 }
@@ -37,8 +39,8 @@ internal extension RewardVerification {
         let sample: @Sendable () -> TimeInterval
     }
 
-    /// Bounded polling loop. Retries `pending`/`unknown` statuses and transient `ErrorCode`
-    /// throws within an attempt budget; everything else (terminal `ErrorCode`, sleeper failure,
+    /// Bounded polling loop. Retries `pending`/`unknown` statuses and transient `BackendError`
+    /// throws within an attempt budget; everything else (terminal `BackendError`, sleeper failure,
     /// any unrecognised throw) collapses to `.failed`. Honors `Task.isCancelled` between
     /// attempts and exits early without further polling.
     struct Poller: Sendable {
@@ -62,7 +64,7 @@ internal extension RewardVerification {
             self.maxAttempts = maxAttempts
         }
 
-        /// Production poller wired to `Purchases.shared.pollRewardVerificationStatus(...)` and
+        /// Production poller wired to `Purchases.shared.fetchRewardVerificationStatus(...)` and
         /// `Task.sleep`.
         static func makeDefault() -> Poller {
             Poller(
@@ -105,9 +107,9 @@ internal extension RewardVerification {
                     case .failed: return .failed(.backendError)
                     case .pending, .unknown: continue
                     }
-                } catch let code as ErrorCode where code.isTransientPolling {
+                } catch let error as BackendError where error.isTransient {
                     Logger.debug(AdsStrings.poll_transient_error(
-                        error: code,
+                        error: error,
                         transactionID: clientTransactionID
                     ))
                     continue
@@ -116,7 +118,7 @@ internal extension RewardVerification {
                         error: error,
                         transactionID: clientTransactionID
                     ))
-                    return .failed(error is ErrorCode ? .backendError : .unknown)
+                    return .failed(error is BackendError ? .backendError : .unknown)
                 }
             }
 
@@ -133,7 +135,7 @@ internal extension RewardVerification {
     struct PurchasesStatusPoller: RewardVerificationStatusPolling {
 
         func pollStatus(clientTransactionID: String) async throws -> RewardVerificationPollStatus {
-            try await Purchases.shared.pollRewardVerificationStatus(clientTransactionID: clientTransactionID)
+            try await Purchases.shared.fetchRewardVerificationStatus(clientTransactionID: clientTransactionID)
         }
     }
 
@@ -155,22 +157,6 @@ private extension RewardVerificationPollStatus {
         case .pending: return "pending"
         case .failed: return "failed"
         case .unknown: return "unknown"
-        }
-    }
-}
-
-// MARK: - ErrorCode classification
-
-private extension ErrorCode {
-
-    var isTransientPolling: Bool {
-        switch self {
-        case .networkError,
-             .offlineConnectionError,
-             .unknownBackendError:
-            return true
-        default:
-            return false
         }
     }
 }

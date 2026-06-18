@@ -122,11 +122,11 @@ final class RewardVerificationPollerTests: TestCase {
         XCTAssertEqual(sleeper.delays.count, 2)
     }
 
-    // MARK: - Transient `ErrorCode` retry path
+    // MARK: - Transient connection-level retry path
 
-    func testTransientErrorCodeOnFirstAttemptIsRetried() async {
+    func testTransientNetworkErrorOnFirstAttemptIsRetried() async {
         let statusPoller = ScriptedStatusPoller(steps: [
-            .throwError(ErrorCode.networkError),
+            .throwError(makeConnectivityError()),
             .status(.verified(.noReward))
         ])
         let sleeper = RecordingSleeper()
@@ -141,10 +141,10 @@ final class RewardVerificationPollerTests: TestCase {
         XCTAssertEqual(sleeper.delays.count, 1, "A transient throw should still consume an inter-attempt sleep")
     }
 
-    func testTransientErrorCodeAfterPendingIsRetried() async {
+    func testTransientNetworkErrorAfterPendingIsRetried() async {
         let statusPoller = ScriptedStatusPoller(steps: [
             .status(.pending),
-            .throwError(ErrorCode.offlineConnectionError),
+            .throwError(makeConnectivityError()),
             .status(.verified(.noReward))
         ])
         let sleeper = RecordingSleeper()
@@ -160,7 +160,9 @@ final class RewardVerificationPollerTests: TestCase {
     }
 
     func testEveryAttemptThrowingTransientExhaustsBudgetAndReturnsFailed() async {
-        let statusPoller = ThrowingStatusPoller(error: ErrorCode.unknownBackendError)
+        let statusPoller = ThrowingStatusPoller(
+            error: makePollingError(statusCode: 500, backendCode: .internalServerError)
+        )
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper, maxAttempts: 5)
 
@@ -179,9 +181,9 @@ final class RewardVerificationPollerTests: TestCase {
     func testMixedPendingAndTransientThrowsExhaustsBudgetAndReturnsFailed() async {
         let statusPoller = ScriptedStatusPoller(steps: [
             .status(.pending),
-            .throwError(ErrorCode.networkError),
+            .throwError(makeConnectivityError()),
             .status(.pending),
-            .throwError(ErrorCode.offlineConnectionError),
+            .throwError(makeConnectivityError()),
             .status(.pending)
         ])
         let sleeper = RecordingSleeper()
@@ -196,11 +198,15 @@ final class RewardVerificationPollerTests: TestCase {
         XCTAssertEqual(sleeper.delays.count, 4)
     }
 
-    func testEachTransientErrorCodeIsRetried() async {
-        let transient: [ErrorCode] = [.networkError, .offlineConnectionError, .unknownBackendError]
-        for code in transient {
+    func testTransientErrorsAreRetried() async {
+        // Connection-level failure (no HTTP status) and 5xx server responses are both transient.
+        let transient: [BackendError] = [
+            makeConnectivityError(),
+            makePollingError(statusCode: 500, backendCode: .internalServerError)
+        ]
+        for error in transient {
             let statusPoller = ScriptedStatusPoller(steps: [
-                .throwError(code),
+                .throwError(error),
                 .status(.verified(.noReward))
             ])
             let sut = makePoller(statusPoller: statusPoller, sleeper: RecordingSleeper())
@@ -208,16 +214,52 @@ final class RewardVerificationPollerTests: TestCase {
             let outcome = await sut.run(clientTransactionID: "tx-1")
 
             guard case .verified(.noReward) = outcome else {
-                return XCTFail("Expected .verified for transient code \(code), got \(outcome)")
+                return XCTFail("Expected .verified for transient error \(error), got \(outcome)")
             }
-            XCTAssertEqual(statusPoller.callCount, 2, "Transient code \(code) should have been retried once")
+            XCTAssertEqual(statusPoller.callCount, 2, "Transient error \(error) should have been retried once")
         }
     }
 
-    // MARK: - Terminal `ErrorCode` path
+    // MARK: - HTTP-status-keyed retry (5xx transient, 4xx terminal)
 
-    func testSignatureVerificationFailedReturnsFailedWithoutRetrying() async {
-        let statusPoller = ThrowingStatusPoller(error: ErrorCode.signatureVerificationFailed)
+    func testParseableServerErrorIsRetried() async {
+        let statusPoller = ScriptedStatusPoller(steps: [
+            .throwError(makePollingError(statusCode: 500, backendCode: .internalServerError)),
+            .status(.verified(.noReward))
+        ])
+        let sleeper = RecordingSleeper()
+        let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
+
+        let outcome = await sut.run(clientTransactionID: "tx-1")
+
+        guard case .verified(.noReward) = outcome else {
+            return XCTFail("Expected .verified(.noReward), got \(outcome)")
+        }
+        XCTAssertEqual(statusPoller.callCount, 2, "A 5xx should be retried")
+    }
+
+    func testUnparseableServerErrorIsRetried() async {
+        // Empty 5xx maps to `.unknownError` (not a transient code) but must still be retried on the 5xx status.
+        let statusPoller = ScriptedStatusPoller(steps: [
+            .throwError(makePollingError(statusCode: 503, backendCode: .unknownError)),
+            .status(.verified(.noReward))
+        ])
+        let sleeper = RecordingSleeper()
+        let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
+
+        let outcome = await sut.run(clientTransactionID: "tx-1")
+
+        guard case .verified(.noReward) = outcome else {
+            return XCTFail("Expected .verified(.noReward), got \(outcome)")
+        }
+        XCTAssertEqual(statusPoller.callCount, 2, "An unparseable 5xx should still be retried")
+    }
+
+    func testClientErrorIsNotRetriedAndFailsFastAsBackendError() async {
+        // A 4xx must fail fast as `.backendError`, not be retried to a misleading `.timeout`.
+        let statusPoller = ThrowingStatusPoller(
+            error: makePollingError(statusCode: 400, backendCode: .badRequest)
+        )
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
 
@@ -226,40 +268,61 @@ final class RewardVerificationPollerTests: TestCase {
         guard case .failed(.backendError) = outcome else {
             return XCTFail("Expected .failed(.backendError), got \(outcome)")
         }
-        XCTAssertEqual(statusPoller.callCount, 1, "Terminal ErrorCode must not be retried")
+        XCTAssertEqual(statusPoller.callCount, 1, "A 4xx must not be retried")
         XCTAssertTrue(sleeper.delays.isEmpty)
     }
 
-    func testUnexpectedBackendResponseErrorReturnsFailedWithoutRetrying() async {
-        let statusPoller = ThrowingStatusPoller(error: ErrorCode.unexpectedBackendResponseError)
-        let sleeper = RecordingSleeper()
-        let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
-
-        let outcome = await sut.run(clientTransactionID: "tx-1")
-
-        guard case .failed(.backendError) = outcome else {
-            return XCTFail("Expected .failed(.backendError), got \(outcome)")
-        }
-        XCTAssertEqual(statusPoller.callCount, 1)
-    }
-
-    func testApiEndpointBlockedErrorReturnsFailedWithoutRetrying() async {
-        let statusPoller = ThrowingStatusPoller(error: ErrorCode.apiEndpointBlockedError)
-        let sleeper = RecordingSleeper()
-        let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
-
-        let outcome = await sut.run(clientTransactionID: "tx-1")
-
-        guard case .failed(.backendError) = outcome else {
-            return XCTFail("Expected .failed(.backendError), got \(outcome)")
-        }
-        XCTAssertEqual(statusPoller.callCount, 1)
-    }
-
-    func testPendingThenTerminalErrorCodeReturnsFailedWithoutAdditionalPolls() async {
+    func testServerErrorAfterPendingIsRetried() async {
         let statusPoller = ScriptedStatusPoller(steps: [
             .status(.pending),
-            .throwError(ErrorCode.signatureVerificationFailed)
+            .throwError(makePollingError(statusCode: 502, backendCode: .unknownError)),
+            .status(.verified(.noReward))
+        ])
+        let sleeper = RecordingSleeper()
+        let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
+
+        let outcome = await sut.run(clientTransactionID: "tx-1")
+
+        guard case .verified(.noReward) = outcome else {
+            return XCTFail("Expected .verified(.noReward), got \(outcome)")
+        }
+        XCTAssertEqual(statusPoller.callCount, 3)
+    }
+
+    // MARK: - Terminal `BackendError` path
+
+    func testTerminalBackendErrorReturnsFailedWithoutRetrying() async {
+        let statusPoller = ThrowingStatusPoller(error: makeTerminalBackendError())
+        let sleeper = RecordingSleeper()
+        let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
+
+        let outcome = await sut.run(clientTransactionID: "tx-1")
+
+        guard case .failed(.backendError) = outcome else {
+            return XCTFail("Expected .failed(.backendError), got \(outcome)")
+        }
+        XCTAssertEqual(statusPoller.callCount, 1, "A terminal BackendError must not be retried")
+        XCTAssertTrue(sleeper.delays.isEmpty)
+    }
+
+    func testNonNetworkBackendErrorReturnsFailedWithoutRetrying() async {
+        // A BackendError without an underlying NetworkError carries no transient signal.
+        let statusPoller = ThrowingStatusPoller(error: BackendError.unexpectedBackendResponse(.customerInfoNil))
+        let sleeper = RecordingSleeper()
+        let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)
+
+        let outcome = await sut.run(clientTransactionID: "tx-1")
+
+        guard case .failed(.backendError) = outcome else {
+            return XCTFail("Expected .failed(.backendError), got \(outcome)")
+        }
+        XCTAssertEqual(statusPoller.callCount, 1)
+    }
+
+    func testPendingThenTerminalBackendErrorReturnsFailedWithoutAdditionalPolls() async {
+        let statusPoller = ScriptedStatusPoller(steps: [
+            .status(.pending),
+            .throwError(makeTerminalBackendError())
         ])
         let sleeper = RecordingSleeper()
         let sut = makePoller(statusPoller: statusPoller, sleeper: sleeper)

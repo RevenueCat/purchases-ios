@@ -1734,13 +1734,27 @@ extension Purchases {
     @_spi(Internal) public func pollRewardVerificationStatus(
         clientTransactionID: String
     ) async throws -> RewardVerificationPollStatus {
+        do {
+            return try await self.fetchRewardVerificationStatus(clientTransactionID: clientTransactionID)
+        } catch let error as BackendError {
+            throw error.asPublicError
+        }
+    }
+
+    /// Fetches reward-verification status preserving the structured ``BackendError`` so the poller
+    /// can reuse the SDK's retry classification (``BackendError/isTransient``). The public
+    /// ``pollRewardVerificationStatus(clientTransactionID:)`` wraps this and flattens to a public error.
+    ///
+    /// - Throws: `BackendError`
+    internal func fetchRewardVerificationStatus(
+        clientTransactionID: String
+    ) async throws -> RewardVerificationPollStatus {
         let response = try await Async.call { completion in
             self.backend.adsAPI.getRewardVerificationStatus(
                 appUserID: self.appUserID,
-                clientTransactionID: clientTransactionID
-            ) { result in
-                completion(result.mapError(\.asPublicError))
-            }
+                clientTransactionID: clientTransactionID,
+                completion: completion
+            )
         }
 
         switch response.status {
