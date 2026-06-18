@@ -20,6 +20,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
+        // swiftlint:disable:next todo
         // TODO: Re-enable snapshots once the remote-config network stack is final.
         self.httpClient.disableSnapshotTesting()
     }
