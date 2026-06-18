@@ -31,11 +31,11 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
         self.setupPurchases()
     }
 
-    func testPollRewardVerificationStatusMapsUnknownStatusToUnknown() async throws {
+    func testFetchRewardVerificationStatusMapsUnknownStatusToUnknown() async throws {
         let transactionID = "AABBCCDD-1111-2222-3333-444455556666"
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(.init(status: .unknown))
 
-        let status = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: transactionID)
+        let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: transactionID)
 
         expect(status) == .unknown
         expect(try self.mockAdsAPI.invokedGetRewardVerificationStatusCount) == 1
@@ -44,56 +44,56 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
         expect(try self.mockAdsAPI.invokedGetRewardVerificationStatusParameters?.clientTransactionID) == transactionID
     }
 
-    func testPollRewardVerificationStatusMapsVerifiedStatusWithVirtualCurrencyReward() async throws {
+    func testFetchRewardVerificationStatusMapsVerifiedStatusWithVirtualCurrencyReward() async throws {
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 10))
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
             .init(status: .verified(.virtualCurrency(reward)))
         )
 
-        let status = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: "tx-id")
+        let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id")
 
         expect(status) == .verified(.virtualCurrency(reward))
     }
 
-    func testPollRewardVerificationStatusMapsVerifiedStatusWithNoReward() async throws {
+    func testFetchRewardVerificationStatusMapsVerifiedStatusWithNoReward() async throws {
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
             .init(status: .verified(.noReward))
         )
 
-        let status = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: "tx-id")
+        let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id")
 
         expect(status) == .verified(.noReward)
     }
 
-    func testPollRewardVerificationStatusMapsVerifiedStatusWithUnsupportedReward() async throws {
+    func testFetchRewardVerificationStatusMapsVerifiedStatusWithUnsupportedReward() async throws {
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
             .init(status: .verified(.unsupportedReward))
         )
 
-        let status = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: "tx-id")
+        let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id")
 
         expect(status) == .verified(.unsupportedReward)
     }
 
-    func testPollRewardVerificationStatusMapsPendingStatus() async throws {
+    func testFetchRewardVerificationStatusMapsPendingStatus() async throws {
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(.init(status: .pending))
 
-        let status = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: "tx-id")
+        let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id")
 
         expect(status) == .pending
     }
 
-    func testPollRewardVerificationStatusMapsFailedStatus() async throws {
+    func testFetchRewardVerificationStatusMapsFailedStatus() async throws {
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
             .init(status: .failed(.init(reason: nil, message: nil)))
         )
 
-        let status = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: "tx-id")
+        let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id")
 
         expect(status) == .failed(reason: nil, message: nil)
     }
 
-    func testPollRewardVerificationStatusForwardsFailureReasonAndMessage() async throws {
+    func testFetchRewardVerificationStatusForwardsFailureReasonAndMessage() async throws {
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(
             .init(status: .failed(.init(
                 reason: "no_access",
@@ -101,7 +101,7 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
             )))
         )
 
-        let status = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: "tx-id")
+        let status = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id")
 
         expect(status) == .failed(
             reason: "no_access",
@@ -109,15 +109,15 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
         )
     }
 
-    func testPollRewardVerificationStatusForwardsBackendError() async throws {
+    func testFetchRewardVerificationStatusForwardsBackendError() async throws {
         let backendError: BackendError = .networkError(.offlineConnection())
         try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .failure(backendError)
 
         do {
-            _ = try await self.purchases.pollRewardVerificationStatus(clientTransactionID: "tx-id")
-            fail("Expected pollRewardVerificationStatus to throw")
+            _ = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id")
+            fail("Expected fetchRewardVerificationStatus to throw")
         } catch {
-            expect(error).to(matchError(backendError.asPurchasesError))
+            expect(error).to(matchError(backendError))
         }
     }
 
