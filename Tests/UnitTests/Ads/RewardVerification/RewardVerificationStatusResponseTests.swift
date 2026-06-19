@@ -86,6 +86,30 @@ final class RewardVerificationStatusResponseTests: TestCase {
         )
     }
 
+    func testEntitlementMissingExpiresAtDecodesAsUnsupported() throws {
+        let response = try self.decode([
+            "status": "verified",
+            "reward": ["type": "entitlement", "identifier": "pro"]
+        ])
+        expect(response.status) == .verified(.unsupportedReward)
+        self.logger.verifyMessageWasLogged(
+            Strings.backendError.malformed_reward_verification_reward_payload(type: "entitlement"),
+            level: .warn
+        )
+    }
+
+    func testEntitlementInvalidExpiresAtDecodesAsUnsupported() throws {
+        let response = try self.decode([
+            "status": "verified",
+            "reward": ["type": "entitlement", "identifier": "pro", "expires_at": "not-a-date"]
+        ])
+        expect(response.status) == .verified(.unsupportedReward)
+        self.logger.verifyMessageWasLogged(
+            Strings.backendError.malformed_reward_verification_reward_payload(type: "entitlement"),
+            level: .warn
+        )
+    }
+
     func testUnknownRewardTypeDecodesAsUnsupported() throws {
         let response = try self.decode([
             "status": "verified",
