@@ -2815,7 +2815,8 @@ workflows:
             - record-and-upload-paywalls-v1-snapshots
             - installation-tests-all-but-carthage
             - installation-tests-carthage
-            - installation-tests-carthage-xcode-27
+            # Xcode 27 is still beta; run it but don't block releases on it yet.
+            # - installation-tests-carthage-xcode-27
             - api-tests
             - revenuecat-admob-tests
             - deploy-purchase-tester
