@@ -84,6 +84,7 @@ enum PurchaseStrings {
                                                  placementID: String?,
                                                  paywallSessionID: UUID?)
     case caching_presented_offering_identifier(offeringID: String, productID: String)
+    case cache_purchase_data_offering_mismatch(existingOfferingID: String, newOfferingID: String, productID: String)
     case payment_queue_wrapper_delegate_call_sk1_enabled
     case restorepurchases_called_with_allow_sharing_appstore_account_false
     case sk2_observer_mode_error_processing_transaction(Error)
@@ -347,6 +348,12 @@ extension PurchaseStrings: LogMessage {
 
         case let .caching_presented_offering_identifier(offeringID, productID):
             return "Caching presented offering identifier '\(offeringID)' for product '\(productID)'"
+
+        case let .cache_purchase_data_offering_mismatch(existingOfferingID, newOfferingID, productID):
+            return "Caching purchase data for product '\(productID)' with offering '\(newOfferingID)', but a " +
+            "different offering '\(existingOfferingID)' was already cached for it. This usually means a purchase " +
+            "was started for a different package than the one presented. Keeping the latest offering and " +
+            "discarding the previously cached data for this product."
 
         case .payment_queue_wrapper_delegate_call_sk1_enabled:
             return "Unexpectedly received PaymentQueueWrapperDelegate call with SK1 enabled"
