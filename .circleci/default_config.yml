@@ -548,6 +548,10 @@ commands:
         type: string
         default: ""
         description: "Override the mise.toml Tuist version for this lane. The Xcode 14.3.1 lane runs on macOS 13, where Tuist >=4.46 (built for macOS 14) won't launch, so it pins 4.45.1."
+      legacy_snapshot_testing:
+        type: boolean
+        default: false
+        description: "Resolve swift-snapshot-testing 1.17.7 (swift-tools 5.7) instead of 1.18.9 (6.0). The Xcode 14.3.1 lane (Swift 5.8.1) can't resolve the 6.0 manifest."
     steps:
       - when:
           condition: << parameters.tuist_version >>
@@ -566,6 +570,9 @@ commands:
             export TUIST_INCLUDE_TEST_DEPENDENCIES=<< parameters.include_test_dependencies >>
             if [ "<< parameters.rc_xcode_project >>" = "true" ]; then
               export TUIST_RC_XCODE_PROJECT=true
+            fi
+            if [ "<< parameters.legacy_snapshot_testing >>" = "true" ]; then
+              export TUIST_LEGACY_SNAPSHOT_TESTING=true
             fi
             if [ -n "<< parameters.query >>" ]; then
               tuist install && tuist generate << parameters.query >> --no-open
@@ -1229,6 +1236,7 @@ jobs:
           include_test_dependencies: true
           rc_xcode_project: true
           tuist_version: "4.45.1"
+          legacy_snapshot_testing: true
 
       # === SPM Release Build (Xcode 14) ===
       - unless:
