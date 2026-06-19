@@ -47,6 +47,16 @@ const JOBS = {
   "spm-revenuecat-ui-watchos": ["slack-secrets"],
 };
 
+// Some allowlisted entries are parameterized variants of an underlying job rather
+// than standalone jobs. They map to the real job name plus the parameters to pass,
+// matching how they're invoked in default_config.yml's workflows.
+const PARAMETERIZED_JOBS = {
+  "installation-tests-carthage-xcode-27": {
+    job: "installation-tests-carthage",
+    parameters: { xcode_version: "27.0.0" },
+  },
+};
+
 const requestedJobs = (process.env.REQUESTED_JOBS || "").trim().split(/\s+/).filter(Boolean);
 
 if (requestedJobs.length === 0) {
@@ -75,11 +85,27 @@ const header = lines.slice(0, workflowsIndex + 1).join("\n");
 const workflow = requestedJobs
   .map((job) => {
     const contexts = JOBS[job];
-    if (contexts.length === 0) {
+    const variant = PARAMETERIZED_JOBS[job];
+    const realJob = variant ? variant.job : job;
+
+    if (contexts.length === 0 && !variant) {
       return `      - ${job}`;
     }
-    const contextLines = contexts.map((ctx) => `            - ${ctx}`).join("\n");
-    return `      - ${job}:\n          context:\n${contextLines}`;
+
+    const lines = [`      - ${realJob}:`];
+    if (variant) {
+      lines.push(`          name: ${job}`);
+      for (const [key, value] of Object.entries(variant.parameters)) {
+        lines.push(`          ${key}: "${value}"`);
+      }
+    }
+    if (contexts.length > 0) {
+      lines.push("          context:");
+      for (const ctx of contexts) {
+        lines.push(`            - ${ctx}`);
+      }
+    }
+    return lines.join("\n");
   })
   .join("\n");
 
