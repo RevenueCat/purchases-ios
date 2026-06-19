@@ -49,6 +49,29 @@ class MockHTTPClient: HTTPClient {
             self.init(response: .success(response), delay: delay)
         }
 
+        init(
+            statusCode: HTTPStatusCode,
+            body: Data,
+            responseHeaders: HTTPResponse.Headers = [:],
+            verificationResult: VerificationResult = .defaultValue,
+            delay: DispatchTimeInterval = .never,
+            isLoadShedderResponse: Bool = false,
+            isFallbackUrlResponse: Bool = false
+        ) {
+            let response = VerifiedHTTPResponse(
+                response: .init(
+                    httpStatusCode: statusCode,
+                    responseHeaders: responseHeaders,
+                    body: body
+                ),
+                verificationResult: verificationResult,
+                isLoadShedderResponse: isLoadShedderResponse,
+                isFallbackUrlResponse: isFallbackUrlResponse
+            )
+
+            self.init(response: .success(response), delay: delay)
+        }
+
         init(error: NetworkError, delay: DispatchTimeInterval = .never) {
             self.init(response: .failure(error), delay: delay)
         }

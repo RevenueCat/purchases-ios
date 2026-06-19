@@ -10,6 +10,6 @@ import Foundation
 struct RemoteConfigCallback: CacheKeyProviding {
 
     let cacheKey: String
-    let completion: (Result<RemoteConfigResponse, BackendError>) -> Void
+    let completion: (Result<RCContainer?, BackendError>) -> Void
 
 }

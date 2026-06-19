@@ -2569,6 +2569,19 @@ extension RevenueCat.PromotionalOffer : Swift.Sendable {
 }
 extension RevenueCat.PromotionalOffer.SignedData : Swift.Sendable {
 }
+@objc(RCRevocationReason) final public class RevocationReason : ObjectiveC.NSObject, Swift.RawRepresentable, Swift.Sendable {
+  @objc final public let rawValue: Swift.String
+  @objc public init(rawValue: Swift.String)
+  @objc(RCDeveloperIssue) public static let developerIssue: RevenueCat.RevocationReason
+  @objc(RCOther) public static let other: RevenueCat.RevocationReason
+  @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
+  @objc override final public var hash: Swift.Int {
+    @objc get
+  }
+  public static func ~= (lhs: RevenueCat.RevocationReason, rhs: RevenueCat.RevocationReason) -> Swift.Bool
+  public typealias RawValue = Swift.String
+  @objc deinit
+}
 public typealias SK1Product = StoreKit.SKProduct
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 public typealias SK2Product = StoreKit.Product
@@ -2832,6 +2845,12 @@ public typealias SK2Transaction = StoreKit.Transaction
     @objc get
   }
   @objc final public var storefront: RevenueCat.Storefront? {
+    @objc get
+  }
+  @objc final public var revocationDate: Foundation.Date? {
+    @objc get
+  }
+  @objc final public var revocationReason: RevenueCat.RevocationReason? {
     @objc get
   }
   @objc override final public func isEqual(_ object: Any?) -> Swift.Bool

@@ -1,13 +1,20 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  RewardVerificationOutcomeTests.swift
+//
+
 import XCTest
 
-#if os(iOS) && canImport(GoogleMobileAds)
 @_spi(Internal) @_spi(Experimental) @testable import RevenueCat
-@testable import RevenueCatAdMob
 
-@available(iOS 15.0, *)
-final class OutcomeTests: AdapterTestCase {
-
-    // MARK: - Case construction
+final class RewardVerificationOutcomeTests: TestCase {
 
     func testVerifiedCarriesVirtualCurrencyRewardPayload() throws {
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
@@ -37,25 +44,17 @@ final class OutcomeTests: AdapterTestCase {
         }
     }
 
-    func testAllCasesAreConstructibleAndExhaustiveInSwitch() throws {
-        let payload = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 1))
-        let cases: [RewardVerification.Outcome] = [
-            .verified(.virtualCurrency(payload)),
-            .verified(.noReward),
-            .verified(.unsupportedReward),
-            .failed(.timeout),
-            .failed(.backendError),
-            .failed(.unknown)
-        ]
-
-        for outcome in cases {
-            switch outcome {
-            case .verified: continue
-            case .failed: continue
-            }
+    func testFailedReasonsCarryTheirPayloads() {
+        let backendRejected = RewardVerification.Outcome.failed(
+            .backendRejected(reason: "no_access", message: "nope")
+        )
+        guard case .failed(.backendRejected("no_access", "nope")) = backendRejected else {
+            return XCTFail("Expected .failed(.backendRejected(\"no_access\", \"nope\")), got \(backendRejected)")
         }
-        XCTAssertEqual(cases.count, 6)
+
+        let terminal = RewardVerification.Outcome.failed(.terminalError(error: "boom"))
+        guard case .failed(.terminalError("boom")) = terminal else {
+            return XCTFail("Expected .failed(.terminalError(\"boom\")), got \(terminal)")
+        }
     }
 }
-
-#endif
