@@ -8922,6 +8922,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				"MACOSX_DEPLOYMENT_TARGET[sdk=macosx27*]" = "12.0";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.StoreKitUnitTestsHostApp;
@@ -8933,7 +8934,11 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
 				TVOS_DEPLOYMENT_TARGET = 14.0;
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvos27*]" = "15.0";
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator27*]" = "15.0";
 				WATCHOS_DEPLOYMENT_TARGET = 7.0;
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "8.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "8.0";
 			};
 			name = Debug;
 		};
@@ -8953,6 +8958,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				"MACOSX_DEPLOYMENT_TARGET[sdk=macosx27*]" = "12.0";
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.StoreKitUnitTestsHostApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -8962,7 +8968,11 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
 				TVOS_DEPLOYMENT_TARGET = 14.0;
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvos27*]" = "15.0";
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator27*]" = "15.0";
 				WATCHOS_DEPLOYMENT_TARGET = 7.0;
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "8.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "8.0";
 			};
 			name = Release;
 		};
@@ -9021,7 +9031,10 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]" = "15.0";
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]" = "15.0";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				"MACOSX_DEPLOYMENT_TARGET[sdk=macosx27*]" = "12.0";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -9032,9 +9045,13 @@
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				TVOS_DEPLOYMENT_TARGET = 13.0;
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvos27*]" = "15.0";
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator27*]" = "15.0";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 				WATCHOS_DEPLOYMENT_TARGET = 6.2;
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "8.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "8.0";
 				XROS_DEPLOYMENT_TARGET = 1.0;
 			};
 			name = Debug;
@@ -9088,7 +9105,10 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]" = "15.0";
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]" = "15.0";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				"MACOSX_DEPLOYMENT_TARGET[sdk=macosx27*]" = "12.0";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -9100,10 +9120,14 @@
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				TVOS_DEPLOYMENT_TARGET = 13.0;
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvos27*]" = "15.0";
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator27*]" = "15.0";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 				WATCHOS_DEPLOYMENT_TARGET = 6.2;
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "8.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "8.0";
 				XROS_DEPLOYMENT_TARGET = 1.0;
 			};
 			name = Release;
@@ -9263,12 +9287,15 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 RevenueCat. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]" = "15.0";
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]" = "15.0";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				"MACOSX_DEPLOYMENT_TARGET[sdk=macosx27*]" = "12.0";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.RulesEngineInternal;
 				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -9283,10 +9310,14 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,6,7";
 				TVOS_DEPLOYMENT_TARGET = 13.0;
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvos27*]" = "15.0";
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator27*]" = "15.0";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 				WATCHOS_DEPLOYMENT_TARGET = 6.2;
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "8.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "8.0";
 				XROS_DEPLOYMENT_TARGET = 1.0;
 			};
 			name = Release;
@@ -9314,6 +9345,8 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024 RevenueCat. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]" = "15.0";
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]" = "15.0";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -9365,6 +9398,8 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024 RevenueCat. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]" = "15.0";
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]" = "15.0";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -9407,12 +9442,15 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 RevenueCat. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]" = "15.0";
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]" = "15.0";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				"MACOSX_DEPLOYMENT_TARGET[sdk=macosx27*]" = "12.0";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.RulesEngineInternal;
 				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -9427,9 +9465,13 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,6,7";
 				TVOS_DEPLOYMENT_TARGET = 13.0;
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvos27*]" = "15.0";
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator27*]" = "15.0";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 				WATCHOS_DEPLOYMENT_TARGET = 6.2;
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "8.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "8.0";
 				XROS_DEPLOYMENT_TARGET = 1.0;
 			};
 			name = Debug;
@@ -9443,6 +9485,8 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]" = "15.0";
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]" = "15.0";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.RulesEngineInternalTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = "";
@@ -9465,6 +9509,8 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]" = "15.0";
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]" = "15.0";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.RulesEngineInternalTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = "";
