@@ -47,46 +47,19 @@ private extension SubscriptionsView {
 
     func rows(for subscription: SubscriptionInfo) -> [(name: String, value: String)] {
         return [
-            ("Store", self.storeName(subscription.store)),
+            ("Store", "\(subscription.store)"),
             ("Is Active", "\(subscription.isActive)"),
             ("Will Renew", "\(subscription.willRenew)"),
-            ("Period Type", self.periodTypeName(subscription.periodType)),
+            ("Period Type", "\(subscription.periodType)"),
             ("Expires Date", self.date(subscription.expiresDate) ?? "-"),
             ("Grace Period Expires", self.date(subscription.gracePeriodExpiresDate) ?? "-"),
             ("Auto Resume Date", self.date(subscription.autoResumeDate) ?? "-"),
+            ("Product Plan Identifier", subscription.productPlanIdentifier ?? "-"),
         ]
     }
 
     func date(_ date: Date?) -> String? {
         return date.map { $0.formatted() }
-    }
-
-    func storeName(_ store: Store) -> String {
-        switch store {
-        case .appStore: return "App Store"
-        case .macAppStore: return "Mac App Store"
-        case .playStore: return "Play Store"
-        case .stripe: return "Stripe"
-        case .promotional: return "Promotional"
-        case .unknownStore: return "Unknown"
-        case .amazon: return "Amazon"
-        case .rcBilling: return "RevenueCat Billing"
-        case .external: return "External"
-        case .paddle: return "Paddle"
-        case .testStore: return "Test Store"
-        case .galaxy: return "Galaxy Store"
-        @unknown default: return "Unknown"
-        }
-    }
-
-    func periodTypeName(_ periodType: PeriodType) -> String {
-        switch periodType {
-        case .normal: return "Normal"
-        case .intro: return "Intro"
-        case .trial: return "Trial"
-        case .prepaid: return "Prepaid"
-        @unknown default: return "Unknown"
-        }
     }
 
 }
