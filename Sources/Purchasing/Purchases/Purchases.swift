@@ -1690,7 +1690,9 @@ extension Purchases {
     ///
     /// Call when your ad network's reward callback fires, passing the `clientTransactionID` returned by
     /// ``generateRewardVerificationToken(impressionId:)``.
-    /// Invalidates the virtual currencies cache automatically on a verified virtual-currency reward.
+    /// On a verified reward, automatically invalidates the relevant cache so the grant is reflected on the
+    /// next access: the virtual currencies cache for a virtual-currency reward, and the `CustomerInfo`
+    /// cache for an entitlement reward.
     @_spi(Experimental) public func pollRewardVerification(
         clientTransactionID: String
     ) async -> RewardVerificationResult {
