@@ -54,13 +54,11 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
     visionOS: "1.3"
 )
 
-// Use custom StoreKit config if TUIST_SK_CONFIG_PATH is set, otherwise use default
-let storeKitConfigPath: Path = if Environment.storekitConfigPath != nil {
-    // Reference the copied file in the project directory
-    "../../Tests/TestingApps/PaywallsTester/PaywallsTester/PaywallsTester.storekit"
-} else {
-    "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Products.storekit"
-}
+// Use custom StoreKit config if TUIST_SK_CONFIG_PATH is set, otherwise use default.
+// Ternary (not an if-expression) so the manifest compiles on Swift 5.8 (Xcode 14.3.1 lane).
+let storeKitConfigPath: Path = Environment.storekitConfigPath != nil
+    ? "../../Tests/TestingApps/PaywallsTester/PaywallsTester/PaywallsTester.storekit"
+    : "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Products.storekit"
 
 let schemes: [Scheme] = [
     .scheme(
