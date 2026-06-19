@@ -51,6 +51,11 @@ struct PaywallsV2View: View {
     @Environment(\.workflowPackageContext)
     private var workflowPackageContext
 
+    /// Non-`nil` when an ancestor (i.e. `WorkflowPaywallView`) already injected the presentation
+    /// session's state store; in that case this view must not shadow it with its own.
+    @Environment(\.paywallStateStore)
+    private var inheritedStateStore
+
     #if DEBUG
     @Environment(\.paywallLoadingOverride)
     private var paywallLoadingOverride: Bool?
@@ -58,6 +63,11 @@ struct PaywallsV2View: View {
 
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    /// Paywall-level state store, used only when this paywall is presented standalone
+    /// (no workflow-level store injected from above). Seeded from the paywall's declared state.
+    @StateObject
+    private var ownStateStore: PaywallStateStore
 
     @StateObject
     private var paywallStateManager: PaywallStateManager
@@ -143,6 +153,9 @@ struct PaywallsV2View: View {
         self._introOfferEligibilityContext = .init(
             wrappedValue: introEligibilityContext ?? .init(introEligibilityChecker: introEligibilityChecker)
         )
+        self._ownStateStore = .init(
+            wrappedValue: PaywallStateStore(declarations: paywallComponents.data.stateDeclarations ?? [:])
+        )
 
         // Step 0: Decide which ComponentsConfig to use (base is default)
         let componentsConfig = paywallComponentsData.componentsConfig.base
@@ -208,6 +221,14 @@ struct PaywallsV2View: View {
                 }
             }
         )
+        // Only publish the state-store environment when this paywall owns the store (standalone).
+        // Inside a workflow the store is injected and observed by `WorkflowPaywallView`;
+        .applyIf(self.inheritedStateStore == nil) {
+            $0
+                .environment(\.paywallStateStore, self.ownStateStore)
+                .environment(\.paywallStateValues, self.ownStateStore.values)
+                .environment(\.paywallStateDefaults, self.ownStateStore.defaults)
+        }
     }
 
     private func loadedPaywallView(paywallState: PaywallState) -> some View {

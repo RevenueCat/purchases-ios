@@ -1651,25 +1651,96 @@ public extension Purchases {
 
 }
 
-// MARK: - Reward Verification (Internal SPI)
+// MARK: - Reward Verification (Experimental SPI)
 
 extension Purchases {
 
-    /// Polls the backend once for reward verification status using `client_transaction_id`.
+    /// Generates a reward verification token for a loaded rewarded ad.
     ///
-    /// Internal API for RC ad adapters.
+    /// Call after the ad has loaded. Pass `customData` and `appUserID` to your ad network's
+    /// server-side verification options, then stash `clientTransactionID` for use with
+    /// ``pollRewardVerification(clientTransactionID:)`` when the reward callback fires.
+    @_spi(Experimental) public func generateRewardVerificationToken(
+        impressionId: String
+    ) -> RewardVerificationToken {
+        let clientTransactionID = UUID().uuidString
+        let payload: [String: String] = [
+            "api_key": self.apiKey,
+            "client_transaction_id": clientTransactionID,
+            "impression_id": impressionId
+        ]
+        let customData: String
+        do {
+            let data = try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])
+            customData = String(data: data, encoding: .utf8) ?? "{}"
+        } catch {
+            let message = AdsStrings.reward_verification_token_encoding_failed(error: error)
+            Logger.error(message)
+            assertionFailure(message.description)
+            customData = "{}"
+        }
+        return RewardVerificationToken(
+            customData: customData,
+            clientTransactionID: clientTransactionID,
+            appUserID: self.appUserID
+        )
+    }
+
+    /// Polls the backend until reward verification completes or the attempt budget is exhausted.
+    ///
+    /// Call when your ad network's reward callback fires, passing the `clientTransactionID` returned by
+    /// ``generateRewardVerificationToken(impressionId:)``.
+    /// Invalidates the virtual currencies cache automatically on a verified virtual-currency reward.
+    @_spi(Experimental) public func pollRewardVerification(
+        clientTransactionID: String
+    ) async -> RewardVerificationResult {
+        await self.pollRewardVerification(
+            clientTransactionID: clientTransactionID,
+            poller: RewardVerification.Poller.makeDefault()
+        )
+    }
+
+    internal func pollRewardVerification(
+        clientTransactionID: String,
+        poller: RewardVerification.Poller
+    ) async -> RewardVerificationResult {
+        let outcome = await poller.run(clientTransactionID: clientTransactionID)
+        Logger.info(AdsStrings.reward_verification_completed(
+            outcome: outcome.logDescription,
+            transactionID: clientTransactionID
+        ))
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        if case .verified(let reward) = outcome, reward.virtualCurrency != nil {
+            self.invalidateVirtualCurrenciesCache()
+        }
+        #endif
+        switch outcome {
+        case .verified(let reward): return .verified(reward)
+        case .failed: return .failed
+        }
+    }
+
+}
+
+// MARK: - Reward Verification
+
+extension Purchases {
+
+    /// Fetches reward-verification status preserving the structured ``BackendError`` so the poller
+    /// can reuse the SDK's retry classification (``BackendError/isTransient``).
     ///
     /// Cancelling the calling `Task` does not cancel the in-flight HTTP request.
-    @_spi(Internal) public func pollRewardVerificationStatus(
+    ///
+    /// - Throws: `BackendError`
+    internal func fetchRewardVerificationStatus(
         clientTransactionID: String
     ) async throws -> RewardVerificationPollStatus {
         let response = try await Async.call { completion in
             self.backend.adsAPI.getRewardVerificationStatus(
                 appUserID: self.appUserID,
-                clientTransactionID: clientTransactionID
-            ) { result in
-                completion(result.mapError(\.asPublicError))
-            }
+                clientTransactionID: clientTransactionID,
+                completion: completion
+            )
         }
 
         switch response.status {
@@ -1677,8 +1748,8 @@ extension Purchases {
             return .verified(reward)
         case .pending:
             return .pending
-        case .failed:
-            return .failed
+        case let .failed(failure):
+            return .failed(reason: failure.reason, message: failure.message)
         case .unknown:
             return .unknown
         }

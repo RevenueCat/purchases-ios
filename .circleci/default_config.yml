@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@3.21.1
+  revenuecat: revenuecat/sdks-common-config@4.0.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -2591,7 +2591,7 @@ workflows:
     jobs:
       - revenuecat/update-error-codes:
           platform: ios
-          output: Sources/Generated/ErrorCode.swift
+          outputs: "ErrorCode.swift:Sources/Generated/ErrorCode.swift"
           commit_paths: "Sources/Generated/ErrorCode.swift,api"
           executor:
             name: macos-executor-external

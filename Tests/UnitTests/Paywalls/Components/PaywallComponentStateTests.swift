@@ -177,7 +177,7 @@ final class StateDeclarationDecodingTests: TestCase {
     }
 
     private func decodeComponentsData(state: String?) throws -> PaywallComponentsData {
-        let stateField = state.map { ",\n\"state\": \($0)" } ?? ""
+        let stateField = state.map { ",\n\"stateDeclarations\": \($0)" } ?? ""
         let json = """
         {
             "template_name": "components",
