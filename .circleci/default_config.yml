@@ -898,6 +898,45 @@ jobs:
           destination: scan-test-output
       - slack-notify-on-fail
 
+  run-revenuecat-ui-ios-27:
+    executor:
+      name: macos-executor
+      xcode_version: "27.0.0"
+
+    steps:
+      - checkout
+      # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
+      - install-dependencies:
+          install_xcbeautify: false
+      - update-spm-installation-commit
+      - unless:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          steps:
+            - run:
+                name: SPM RevenueCatUI Release Build
+                command: swift build -c release --target RevenueCatUI
+                no_output_timeout: 5m
+      - run:
+          name: SPM RevenueCatUI Tests
+          command: bundle exec fastlane test_revenuecatui
+          no_output_timeout: 15m
+          environment:
+            DEVICE: iPhone 17,OS=27.0
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          job: "create_snapshot_pr"
+          version: "revenuecatui-27"
+      - compress_result_bundle:
+          directory: fastlane/test_output
+          bundle_name: revenuecatui
+      - store_test_results:
+          path: fastlane/test_output/revenuecatui/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: scan-test-output
+      - slack-notify-on-fail
+
   spm-revenuecat-ui-watchos:
     executor:
       name: macos-executor
@@ -1017,6 +1056,49 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-26
+      - slack-notify-on-fail
+      - github-notify-pr-on-fail
+
+  run-test-ios-27:
+    executor:
+      name: macos-executor
+      xcode_version: "27.0.0"
+
+    steps:
+      - checkout
+      - run:
+          name: Validate Package.swift
+          command: swift package describe
+      - install-dependencies
+
+      # === SPM Release Build (Xcode 27) ===
+      - unless:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: SPM Release Build (Xcode 27)
+                command: swift build -c release --target RevenueCat
+                no_output_timeout: 30m
+
+      # === iOS 27 tests ===
+      - run:
+          name: Run iOS 27 tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 15m
+          environment:
+            SCAN_DEVICE: iPhone 17 (27.0)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_snapshots >>
+          job: "create_snapshot_pr"
+          version: "ios-27"
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output-ios-27
       - slack-notify-on-fail
       - github-notify-pr-on-fail
 
@@ -2257,6 +2339,9 @@ workflows:
       - run-test-ios-26:
           context:
             - slack-secrets
+      - run-test-ios-27:
+          context:
+            - slack-secrets
       - build-xcode-265:
           context:
             - slack-secrets
@@ -2264,6 +2349,9 @@ workflows:
           context:
             - slack-secrets
       - run-revenuecat-ui-ios-26:
+          context:
+            - slack-secrets
+      - run-revenuecat-ui-ios-27:
           context:
             - slack-secrets
       - emerge_purchases_ui_snapshot_tests:
@@ -2437,9 +2525,11 @@ workflows:
             - check-api-changes-revenuecat
             - check-api-changes-revenuecatui
             - run-test-ios-26
+            - run-test-ios-27
             - build-xcode-265
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
+            - run-revenuecat-ui-ios-27
             - emerge_purchases_ui_snapshot_tests
             - emerge_binary_size_analysis
             - build-tv-watch-mac-and-visionos
