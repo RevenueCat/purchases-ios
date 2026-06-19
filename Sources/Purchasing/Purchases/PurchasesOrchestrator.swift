@@ -1006,13 +1006,39 @@ final class PurchasesOrchestrator {
             Logger.verbose(Strings.paywalls.caching_purchase_initiated_paywall)
         }
 
-        let cached = CachedPurchaseContext(
-            offeringContext: presentedOfferingContext,
-            paywallEvent: paywallEvent,
-            cacheDate: self.dateProvider.now(),
-            originatedFromPurchase: originatedFromPurchase
-        )
-        self.cachedPurchaseContextByProductID.modify { $0[productIdentifier] = cached }
+        self.cachedPurchaseContextByProductID.modify { cache in
+            let existing = cache[productIdentifier]
+
+            let existingOfferingID = existing?.offeringContext?.offeringIdentifier
+                ?? existing?.paywallEvent?.data.offeringIdentifier
+            let newOfferingID = presentedOfferingContext?.offeringIdentifier
+                ?? paywallEvent?.data.offeringIdentifier
+
+            if let existingOfferingID, let newOfferingID, existingOfferingID != newOfferingID {
+                // A different offering was already cached for this same product.
+                // So we attribute the purchase that's actually happening (new data).
+                Logger.warn(Strings.purchase.cache_purchase_data_offering_mismatch(
+                    existingOfferingID: existingOfferingID,
+                    newOfferingID: newOfferingID,
+                    productID: productIdentifier
+                ))
+                cache[productIdentifier] = CachedPurchaseContext(
+                    offeringContext: presentedOfferingContext,
+                    paywallEvent: paywallEvent,
+                    cacheDate: self.dateProvider.now(),
+                    originatedFromPurchase: originatedFromPurchase
+                )
+            } else {
+                // Same offering (or one side absent): merge. This preserves a paywall event an
+                // earlier call cached when a later same-product call omits it.
+                cache[productIdentifier] = CachedPurchaseContext(
+                    offeringContext: presentedOfferingContext ?? existing?.offeringContext,
+                    paywallEvent: paywallEvent ?? existing?.paywallEvent,
+                    cacheDate: self.dateProvider.now(),
+                    originatedFromPurchase: originatedFromPurchase || (existing?.originatedFromPurchase ?? false)
+                )
+            }
+        }
     }
 
     func clearCachedPurchaseData(productIdentifier: String) {
