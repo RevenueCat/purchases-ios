@@ -241,30 +241,72 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
     func testGetRemoteConfigParsesRCContainerResponse() throws {
         self.mockSuccessfulResponse()
 
-        let result: Result<RCContainer?, BackendError>? = waitUntilValue { completed in
+        let result: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue { completed in
             self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
         }
 
-        let container = try XCTUnwrap(try XCTUnwrap(result?.value))
+        let fetchResult = try XCTUnwrap(result?.value)
+        guard case let .updated(container, verificationResult) = fetchResult else {
+            return XCTFail("Expected updated remote config result")
+        }
+
         expect(RCContainerTestData.data(from: container.config)) == Self.config
         expect(container.contentElements).to(haveCount(1))
         expect(RCContainerTestData.data(
             from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: Self.content)])
         )) == Self.content
+        expect(verificationResult) == .notRequested
+    }
+
+    func testGetRemoteConfigReturnsVerificationResultFromHTTPClient() throws {
+        self.mockSuccessfulResponse(verificationResult: .verified)
+
+        let result: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue { completed in
+            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+        }
+
+        let fetchResult = try XCTUnwrap(result?.value)
+        guard case let .updated(container, verificationResult) = fetchResult else {
+            return XCTFail("Expected updated remote config result")
+        }
+
+        expect(container).toNot(beNil())
+        expect(verificationResult) == .verified
+    }
+
+    func testGetRemoteConfigReturnsFailedVerificationResultFromHTTPClient() throws {
+        self.mockSuccessfulResponse(verificationResult: .failed)
+
+        let result: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue { completed in
+            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+        }
+
+        let fetchResult = try XCTUnwrap(result?.value)
+        guard case let .updated(container, verificationResult) = fetchResult else {
+            return XCTFail("Expected updated remote config result")
+        }
+
+        expect(container).toNot(beNil())
+        expect(verificationResult) == .failed
     }
 
     func testGetRemoteConfigNoContentResponseSucceedsWithNoContainer() throws {
         self.httpClient.mock(
             requestPath: .remoteConfig,
-            response: .init(statusCode: .noContent, body: Data())
+            response: .init(statusCode: .noContent, body: Data(), verificationResult: .verified)
         )
 
-        let result: Result<RCContainer?, BackendError>? = waitUntilValue { completed in
+        let result: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue { completed in
             self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
         }
 
         expect(result).to(beSuccess())
-        expect(try XCTUnwrap(result?.value)).to(beNil())
+        let fetchResult = try XCTUnwrap(result?.value)
+        guard case let .notModified(verificationResult) = fetchResult else {
+            return XCTFail("Expected not modified remote config result")
+        }
+
+        expect(verificationResult) == .verified
     }
 
     // MARK: - Error handling
@@ -380,12 +422,16 @@ private extension BackendGetRemoteConfigTests {
         return RCContainerTestData.container(config: Self.config, contentElements: [Self.content])
     }
 
-    func mockSuccessfulResponse(delay: DispatchTimeInterval = .never) {
+    func mockSuccessfulResponse(
+        verificationResult: VerificationResult = .defaultValue,
+        delay: DispatchTimeInterval = .never
+    ) {
         self.httpClient.mock(
             requestPath: .remoteConfig,
             response: .init(
                 statusCode: .success,
                 body: Self.containerData,
+                verificationResult: verificationResult,
                 delay: delay
             )
         )

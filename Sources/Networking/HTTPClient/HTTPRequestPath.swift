@@ -48,6 +48,64 @@ protocol HTTPRequestPath {
 
     /// Additional headers specific to this endpoint.
     var additionalHeaders: HTTPRequest.Headers { get }
+
+    /// Provides the bytes that should be used for response signature verification.
+    var responseSignaturePayloadProvider: ResponseSignaturePayloadProvider { get }
+}
+
+protocol ResponseSignaturePayloadProvider {
+
+    func verificationResultWithoutSignature(
+        for statusCode: HTTPStatusCode,
+        body: Data?
+    ) -> VerificationResult?
+
+    func signaturePayload(from body: Data?) throws -> Data?
+
+    func requestBodyForSignature(_ request: HTTPRequest) -> HTTPRequestBody?
+
+}
+
+struct DefaultResponseSignaturePayloadProvider: ResponseSignaturePayloadProvider {
+
+    func verificationResultWithoutSignature(
+        for statusCode: HTTPStatusCode,
+        body: Data?
+    ) -> VerificationResult? {
+        return nil
+    }
+
+    func signaturePayload(from body: Data?) throws -> Data? {
+        return body
+    }
+
+    func requestBodyForSignature(_ request: HTTPRequest) -> HTTPRequestBody? {
+        return request.requestBody
+    }
+
+}
+
+struct RemoteConfigSignaturePayloadProvider: ResponseSignaturePayloadProvider {
+
+    func verificationResultWithoutSignature(
+        for statusCode: HTTPStatusCode,
+        body: Data?
+    ) -> VerificationResult? {
+        guard statusCode == .noContent else {
+            return nil
+        }
+
+        return .verified
+    }
+
+    func signaturePayload(from body: Data?) throws -> Data? {
+        return try RemoteConfigResponseVerifier.signatureMessage(from: body)
+    }
+
+    func requestBodyForSignature(_ request: HTTPRequest) -> HTTPRequestBody? {
+        return nil
+    }
+
 }
 
 extension HTTPRequestPath {
@@ -66,6 +124,10 @@ extension HTTPRequestPath {
 
     var additionalHeaders: HTTPRequest.Headers {
         return [:]
+    }
+
+    var responseSignaturePayloadProvider: ResponseSignaturePayloadProvider {
+        return DefaultResponseSignaturePayloadProvider()
     }
 
     var url: URL? { return self.url(proxyURL: nil) }
@@ -278,11 +340,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .postCreateTicket:
             return false
-        case .remoteConfig:
-            // swiftlint:disable:next todo
-            // TODO: Enable signature verification once remote-config binary responses are signed.
-            return false
-        case .rewardVerificationStatus:
+        case .remoteConfig,
+                .rewardVerificationStatus:
             return true
         }
     }
@@ -313,9 +372,16 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postCreateTicket:
             return false
         case .remoteConfig:
-            // swiftlint:disable:next todo
-            // TODO: Require a nonce once remote-config binary responses are signed.
             return false
+        }
+    }
+
+    var responseSignaturePayloadProvider: ResponseSignaturePayloadProvider {
+        switch self {
+        case .remoteConfig:
+            return RemoteConfigSignaturePayloadProvider()
+        default:
+            return DefaultResponseSignaturePayloadProvider()
         }
     }
 
