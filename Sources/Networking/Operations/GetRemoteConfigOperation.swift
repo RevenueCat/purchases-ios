@@ -61,12 +61,6 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
         self.manifest.cacheKey
     }
 
-    var contentForSignature: [(key: String, value: String?)] {
-        return [
-            (Self.CodingKeys.manifest.stringValue, self.manifest.cacheKey)
-        ]
-    }
-
 }
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
