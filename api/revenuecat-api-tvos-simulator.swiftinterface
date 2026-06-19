@@ -249,6 +249,7 @@ extension RevenueCat.CustomerInfo : Swift.Identifiable {
   @objc final public let unsubscribeDetectedAt: Foundation.Date?
   @objc final public let billingIssuesDetectedAt: Foundation.Date?
   @objc final public let gracePeriodExpiresDate: Foundation.Date?
+  @objc final public let autoResumeDate: Foundation.Date?
   @objc final public let ownershipType: RevenueCat.PurchaseOwnershipType
   @objc final public let periodType: RevenueCat.PeriodType
   @objc final public let refundedAt: Foundation.Date?
