@@ -250,6 +250,47 @@ extension SwiftUICore.View {
   @_Concurrency.MainActor @preconcurrency public func customPaywallVariables(_ variables: [Swift.String : RevenueCatUI.CustomVariableValue]) -> some SwiftUICore.View
   
 }
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct PaywallWebViewMessage : Swift.Sendable, Swift.Equatable {
+  public let componentID: Swift.String
+  public let type: Swift.String
+  public let responses: [Swift.String : RevenueCatUI.PaywallWebViewValue]?
+  public let error: Swift.String?
+  public init(componentID: Swift.String, type: Swift.String, responses: [Swift.String : RevenueCatUI.PaywallWebViewValue]? = nil, error: Swift.String? = nil)
+  public static func == (a: RevenueCatUI.PaywallWebViewMessage, b: RevenueCatUI.PaywallWebViewMessage) -> Swift.Bool
+}
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct PaywallWebViewValue : Swift.Sendable, Swift.Equatable, Swift.Hashable {
+  public static func string(_ value: Swift.String) -> RevenueCatUI.PaywallWebViewValue
+  public static func number(_ value: Swift.Double) -> RevenueCatUI.PaywallWebViewValue
+  public static func bool(_ value: Swift.Bool) -> RevenueCatUI.PaywallWebViewValue
+  public static func array(_ value: [RevenueCatUI.PaywallWebViewValue]) -> RevenueCatUI.PaywallWebViewValue
+  public static func object(_ value: [Swift.String : RevenueCatUI.PaywallWebViewValue]) -> RevenueCatUI.PaywallWebViewValue
+  public static let null: RevenueCatUI.PaywallWebViewValue
+  public var stringValue: Swift.String? {
+    get
+  }
+  public var numberValue: Swift.Double? {
+    get
+  }
+  public var boolValue: Swift.Bool? {
+    get
+  }
+  public var arrayValue: [RevenueCatUI.PaywallWebViewValue]? {
+    get
+  }
+  public var objectValue: [Swift.String : RevenueCatUI.PaywallWebViewValue]? {
+    get
+  }
+  public var isNull: Swift.Bool {
+    get
+  }
+  public static func == (a: RevenueCatUI.PaywallWebViewValue, b: RevenueCatUI.PaywallWebViewValue) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
 public struct ResumeAction : Swift.Sendable {
   public init(action: @escaping @Sendable (Swift.Bool) -> Swift.Void)
   @_Concurrency.MainActor public func resume(shouldProceed: Swift.Bool)
@@ -298,6 +339,15 @@ open class CustomPaywallFontProvider : RevenueCatUI.PaywallFontProvider {
   @available(iOS 15.0, watchOS 8.0, macOS 12.0, *)
   @available(tvOS, unavailable, introduced: 15.0, message: "RevenueCatUI does not support tvOS yet")
   public typealias Body = @_opaqueReturnTypeOf("$s12RevenueCatUI11PaywallViewV4bodyQrvp", 0) __
+}
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@_Concurrency.MainActor public struct PaywallWebViewController {
+  @_Concurrency.MainActor public func postVariables(componentID: Swift.String, variables: [Swift.String : RevenueCatUI.PaywallWebViewValue])
+  @_Concurrency.MainActor public func postMessage(componentID: Swift.String, type: Swift.String, variables: [Swift.String : RevenueCatUI.PaywallWebViewValue])
+}
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@_Concurrency.MainActor public struct PaywallWebViewPool {
+  @_Concurrency.MainActor public static func warmUp()
 }
 @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @objc(RCPaywallFooterViewController) @_Concurrency.MainActor @preconcurrency final public class PaywallFooterViewController : RevenueCatUI.PaywallViewController {
@@ -373,6 +423,15 @@ extension RevenueCatUI.PaywallViewController : UIKit.UIAdaptivePresentationContr
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
 extension SwiftUICore.View {
   @_Concurrency.MainActor @preconcurrency public func onWebPurchaseRedemptionAttempt(perform completion: @escaping @Sendable (RevenueCat.WebPurchaseRedemptionResult) -> Swift.Void) -> some SwiftUICore.View
+  
+}
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct PaywallWebViewMessageAction {
+  public init(_ action: @escaping @_Concurrency.MainActor (RevenueCatUI.PaywallWebViewMessage, RevenueCatUI.PaywallWebViewController) -> Swift.Void)
+}
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension SwiftUICore.View {
+  @_Concurrency.MainActor @preconcurrency public func onPaywallWebViewMessage(_ action: @escaping @_Concurrency.MainActor (RevenueCatUI.PaywallWebViewMessage, RevenueCatUI.PaywallWebViewController) -> Swift.Void) -> some SwiftUICore.View
   
 }
 public enum PaywallPresentationMode {
@@ -536,5 +595,9 @@ extension RevenueCatUI.CustomerCenterNavigationLink : Swift.Sendable {}
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, *)
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 extension RevenueCatUI.PaywallView : Swift.Sendable {}
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension RevenueCatUI.PaywallWebViewController : Swift.Sendable {}
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension RevenueCatUI.PaywallWebViewPool : Swift.Sendable {}
 extension RevenueCatUI.PaywallPresentationMode : Swift.Equatable {}
 extension RevenueCatUI.PaywallPresentationMode : Swift.Hashable {}

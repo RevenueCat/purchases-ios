@@ -41,10 +41,31 @@ struct WebViewComponentView: View {
     @Environment(\.customPaywallVariables)
     private var customVariables
 
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    @Environment(\.paywallWebViewMessageAction)
+    private var webViewMessageAction
+
     var body: some View {
         if viewModel.visible {
             self.content
         }
+    }
+
+    /// The current bidirectional-communication configuration for this `web_view`. Rebuilt on each
+    /// `body` evaluation so SDK-managed variables (notably `color_scheme`) and the app handler stay
+    /// fresh as the environment changes.
+    private var bridge: WebViewBridgeConfiguration {
+        WebViewBridgeConfiguration(
+            componentID: viewModel.componentID,
+            messageAction: webViewMessageAction,
+            baseVariables: PaywallWebViewVariables.base(
+                locale: viewModel.locale,
+                colorScheme: colorScheme,
+                customVariables: customVariables
+            )
+        )
     }
 
     @ViewBuilder
@@ -52,7 +73,7 @@ struct WebViewComponentView: View {
         #if canImport(UIKit)
         if let resolvedURL = viewModel.resolvedURL(customVariables: customVariables) {
             let urlToLoad = viewModel.cachedURL(for: resolvedURL) ?? resolvedURL
-            WebViewRepresentable(url: urlToLoad, height: $dynamicHeight)
+            WebViewRepresentable(url: urlToLoad, height: $dynamicHeight, bridge: bridge)
                 .modifier(WebViewSizeModifier(size: viewModel.size, measuredHeight: dynamicHeight))
                 .clipped()
                 .background(Color.clear)
@@ -66,7 +87,7 @@ struct WebViewComponentView: View {
         if let resolvedURL = viewModel.resolvedURL(customVariables: customVariables) {
             let urlToLoad = viewModel.cachedURL(for: resolvedURL) ?? resolvedURL
             let macHeight = dynamicHeight ?? Self.initialHeight
-            MacWebViewRepresentable(url: urlToLoad, height: $dynamicHeight)
+            MacWebViewRepresentable(url: urlToLoad, height: $dynamicHeight, bridge: bridge)
                 .modifier(WebViewSizeModifier(size: viewModel.size, measuredHeight: macHeight))
                 .clipped()
                 .background(Color.clear)
@@ -82,6 +103,107 @@ struct WebViewComponentView: View {
     private var fallback: some View {
         if let fallbackStackViewModel = viewModel.fallbackStackViewModel {
             StackComponentView(viewModel: fallbackStackViewModel, onDismiss: onDismiss)
+        }
+    }
+
+}
+
+// MARK: - Bidirectional communication bridge
+
+/// Per-render configuration for the `web_view` postMessage bridge. Captured from the environment in
+/// `WebViewComponentView.body` and refreshed into the coordinator on every `updateUIView`.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WebViewBridgeConfiguration {
+
+    /// The canonical `component_id`. When `nil` (legacy/partial config without an `id`) the message
+    /// bridge is not installed.
+    let componentID: String?
+    let messageAction: PaywallWebViewMessageAction?
+
+    /// SDK-managed + paywall custom variables sent automatically in response to `rc:request-variables`.
+    let baseVariables: [String: PaywallWebViewValue]
+
+}
+
+/// Builds the SDK-managed variable set exposed to web content. `WebKit`-free so it's unit-testable.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+enum PaywallWebViewVariables {
+
+    /// Top-level keys owned by the SDK; app-supplied variables belong under `custom`.
+    static func base(
+        locale: Locale,
+        colorScheme: ColorScheme,
+        customVariables: [String: CustomVariableValue]
+    ) -> [String: PaywallWebViewValue] {
+        var variables: [String: PaywallWebViewValue] = [
+            "locale": .string(self.bcp47Identifier(for: locale)),
+            "color_scheme": .string(self.colorSchemeString(colorScheme))
+        ]
+
+        let custom = customVariables.mapValues(self.value(from:))
+        variables["custom"] = .object(custom)
+
+        return variables
+    }
+
+    static func bcp47Identifier(for locale: Locale) -> String {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            return locale.identifier(.bcp47)
+        } else {
+            return locale.identifier.replacingOccurrences(of: "_", with: "-")
+        }
+    }
+
+    static func colorSchemeString(_ colorScheme: ColorScheme) -> String {
+        switch colorScheme {
+        case .light: return "light"
+        case .dark: return "dark"
+        @unknown default: return "unknown"
+        }
+    }
+
+    private static func value(from custom: CustomVariableValue) -> PaywallWebViewValue {
+        if custom.isBool {
+            return .bool(custom.boolValue)
+        } else if custom.isNumber {
+            return .number(custom.doubleValue)
+        } else {
+            return .string(custom.stringValue)
+        }
+    }
+
+}
+
+/// Dispatches a validated inbound `web_view` message. `WebKit`-free (takes the extracted body and
+/// frame flag) so it's unit-testable without a live `WKWebView`.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+enum PaywallWebViewMessageDispatcher {
+
+    @MainActor
+    static func handle(
+        body: Any,
+        isMainFrame: Bool,
+        componentID: String,
+        controller: PaywallWebViewController,
+        bridge: WebViewBridgeConfiguration
+    ) {
+        guard isMainFrame else {
+            Logger.debug(Strings.paywall_web_view_message_rejected(reason: "message not from the main frame"))
+            return
+        }
+
+        let parser = PaywallWebViewMessageParser(expectedComponentID: componentID)
+        switch parser.parse(body) {
+        case .success(let message):
+            // The SDK always replies to a variables request with the canonical SDK-managed +
+            // custom variables, even when the app installs no handler.
+            if message.type == PaywallWebViewMessageType.requestVariables {
+                controller.postVariables(componentID: message.componentID, variables: bridge.baseVariables)
+            }
+            bridge.messageAction?(message, controller)
+
+        case .failure(let error):
+            Logger.debug(Strings.paywall_web_view_message_rejected(reason: "\(error)"))
         }
     }
 
@@ -152,7 +274,7 @@ private extension WebViewComponentView {
 #if canImport(WebKit)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private enum PaywallWebViewScripts {
+enum PaywallWebViewScripts {
 
     static let measureHeightJavaScript = "window.__rcMeasureHeight && window.__rcMeasureHeight()"
 
@@ -248,6 +370,35 @@ private enum PaywallWebViewScripts {
         forMainFrameOnly: true
     )
 
+    /// The native handler name the message bridge posts to. Independent of height reporting.
+    static let messageHandlerName = "rcWebViewMessage"
+
+    /// Injected at document start so the web bundle can call `window.RevenueCatWebView.postMessage`
+    /// before its own scripts run. Native → web messages arrive via `window.__revenueCatReceiveMessage`,
+    /// which the web bundle defines. The bridge exposes no other native surface.
+    static let messageBridgeJavaScriptSource = """
+    (function() {
+      if (window.__rcBridgeInstalled) { return; }
+      window.__rcBridgeInstalled = true;
+
+      window.RevenueCatWebView = window.RevenueCatWebView || {
+        postMessage: function(message) {
+          if (window.webkit &&
+              window.webkit.messageHandlers &&
+              window.webkit.messageHandlers.\(messageHandlerName)) {
+            window.webkit.messageHandlers.\(messageHandlerName).postMessage(message);
+          }
+        }
+      };
+    })();
+    """
+
+    static let messageBridgeUserScript = WKUserScript(
+        source: PaywallWebViewScripts.messageBridgeJavaScriptSource,
+        injectionTime: .atDocumentStart,
+        forMainFrameOnly: true
+    )
+
 }
 
 #endif
@@ -260,6 +411,7 @@ private struct WebViewRepresentable: UIViewRepresentable {
 
     let url: URL
     @Binding var height: CGFloat?
+    let bridge: WebViewBridgeConfiguration
 
     func makeUIView(context: Context) -> WKWebView {
         let webView = WebViewPool.shared.acquire()
@@ -278,7 +430,9 @@ private struct WebViewRepresentable: UIViewRepresentable {
         webView.scrollView.pinchGestureRecognizer?.isEnabled = false
         webView.scrollView.delegate = context.coordinator
 
+        context.coordinator.bridge = bridge
         context.coordinator.registerHeightReporting(on: webView)
+        context.coordinator.registerMessageBridgeIfNeeded(on: webView)
 
         context.coordinator.currentURL = url
         webView.load(URLRequest(url: url))
@@ -286,6 +440,10 @@ private struct WebViewRepresentable: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
+        // Refresh the bridge config so SDK-managed variables (color scheme) and the app handler
+        // stay current; do not reload the web view on these changes.
+        context.coordinator.bridge = bridge
+
         if context.coordinator.currentURL != url {
             context.coordinator.currentURL = url
             uiView.load(URLRequest(url: url))
@@ -300,6 +458,7 @@ private struct WebViewRepresentable: UIViewRepresentable {
 
     static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
         coordinator.unregisterHeightReporting(from: uiView)
+        coordinator.unregisterMessageBridge(from: uiView)
         uiView.navigationDelegate = nil
         uiView.scrollView.delegate = nil
 
@@ -315,10 +474,13 @@ private struct WebViewRepresentable: UIViewRepresentable {
     final class Coordinator: NSObject, WKNavigationDelegate, UIScrollViewDelegate, WKScriptMessageHandler {
 
         static let heightMessageHandlerName = "rcWebViewHeight"
+        static let messageHandlerName = PaywallWebViewScripts.messageHandlerName
 
         @Binding var height: CGFloat?
         var currentURL: URL?
+        var bridge: WebViewBridgeConfiguration?
         private var heightMessageHandler: WeakScriptMessageHandler?
+        private var messageBridgeHandler: WeakScriptMessageHandler?
         private weak var webView: WKWebView?
         private var heightMeasurementGeneration = 0
 
@@ -334,6 +496,10 @@ private struct WebViewRepresentable: UIViewRepresentable {
             self.webView = webView
             let handler = WeakScriptMessageHandler(delegate: self)
             self.heightMessageHandler = handler
+            // Defensive: a pooled web view may still carry a handler from a prior use.
+            webView.configuration.userContentController.removeScriptMessageHandler(
+                forName: Self.heightMessageHandlerName
+            )
             webView.configuration.userContentController.add(handler, name: Self.heightMessageHandlerName)
         }
 
@@ -345,11 +511,43 @@ private struct WebViewRepresentable: UIViewRepresentable {
             self.webView = nil
         }
 
+        /// Installs the postMessage handler only when the component has a stable `id`. With no `id`
+        /// the bridge cannot validate/route messages, so it is left disabled (the static JS bridge
+        /// still exists but its messages are dropped by WebKit).
+        func registerMessageBridgeIfNeeded(on webView: WKWebView) {
+            guard self.bridge?.componentID != nil else {
+                Logger.debug(Strings.paywall_web_view_missing_id)
+                return
+            }
+            self.webView = webView
+            let handler = WeakScriptMessageHandler(delegate: self)
+            self.messageBridgeHandler = handler
+            webView.configuration.userContentController.removeScriptMessageHandler(
+                forName: Self.messageHandlerName
+            )
+            webView.configuration.userContentController.add(handler, name: Self.messageHandlerName)
+        }
+
+        func unregisterMessageBridge(from webView: WKWebView) {
+            webView.configuration.userContentController.removeScriptMessageHandler(
+                forName: Self.messageHandlerName
+            )
+            self.messageBridgeHandler = nil
+        }
+
         func userContentController(
             _ userContentController: WKUserContentController,
             didReceive message: WKScriptMessage
         ) {
-            guard message.name == Self.heightMessageHandlerName else { return }
+            switch message.name {
+            case Self.messageHandlerName:
+                self.handleBridgeMessage(message)
+                return
+            case Self.heightMessageHandlerName:
+                break
+            default:
+                return
+            }
 
             let reportedHeight: CGFloat?
             if let number = message.body as? NSNumber {
@@ -363,6 +561,24 @@ private struct WebViewRepresentable: UIViewRepresentable {
             if let reportedHeight {
                 self.applyHeight(reportedHeight, to: self.webView)
             }
+        }
+
+        private func handleBridgeMessage(_ message: WKScriptMessage) {
+            guard let bridge = self.bridge, let componentID = bridge.componentID else { return }
+
+            let controller = PaywallWebViewController(
+                webView: self.webView,
+                componentID: componentID,
+                expectedLoadedURL: self.currentURL
+            )
+
+            PaywallWebViewMessageDispatcher.handle(
+                body: message.body,
+                isMainFrame: message.frameInfo.isMainFrame,
+                componentID: componentID,
+                controller: controller,
+                bridge: bridge
+            )
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
@@ -479,6 +695,9 @@ final class WebViewPool {
         webView.configuration.userContentController.removeScriptMessageHandler(
             forName: WebViewRepresentable.Coordinator.heightMessageHandlerName
         )
+        webView.configuration.userContentController.removeScriptMessageHandler(
+            forName: WebViewRepresentable.Coordinator.messageHandlerName
+        )
         webView.configuration.websiteDataStore.removeData(
             ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
             modifiedSince: .distantPast
@@ -522,6 +741,7 @@ final class AutoSizingWebView: WKWebView {
         config.allowsInlineMediaPlayback = true
         config.userContentController.addUserScript(PaywallWebViewScripts.disableZoomUserScript)
         config.userContentController.addUserScript(PaywallWebViewScripts.heightReportingUserScript)
+        config.userContentController.addUserScript(PaywallWebViewScripts.messageBridgeUserScript)
         config.setURLSchemeHandler(InMemoryHTMLURLSchemeHandler(), forURLScheme: "purchaseshtml")
         super.init(frame: .zero, configuration: config)
         isOpaque = false
@@ -633,11 +853,14 @@ private struct MacWebViewRepresentable: NSViewRepresentable {
 
     let url: URL
     @Binding var height: CGFloat?
+    let bridge: WebViewBridgeConfiguration
 
     func makeNSView(context: Context) -> WKWebView {
         let webView = WKWebView(frame: .zero, configuration: Self.makeConfiguration())
         webView.navigationDelegate = context.coordinator
+        context.coordinator.bridge = bridge
         context.coordinator.registerHeightReporting(on: webView)
+        context.coordinator.registerMessageBridgeIfNeeded(on: webView)
         context.coordinator.currentURL = url
         webView.load(URLRequest(url: url))
 
@@ -645,6 +868,8 @@ private struct MacWebViewRepresentable: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: WKWebView, context: Context) {
+        context.coordinator.bridge = bridge
+
         if context.coordinator.currentURL != url {
             context.coordinator.currentURL = url
             nsView.load(URLRequest(url: url))
@@ -655,6 +880,7 @@ private struct MacWebViewRepresentable: NSViewRepresentable {
 
     static func dismantleNSView(_ nsView: WKWebView, coordinator: Coordinator) {
         coordinator.unregisterHeightReporting(from: nsView)
+        coordinator.unregisterMessageBridge(from: nsView)
         nsView.navigationDelegate = nil
         nsView.stopLoading()
         nsView.configuration.websiteDataStore.removeData(
@@ -671,6 +897,7 @@ private struct MacWebViewRepresentable: NSViewRepresentable {
         let config = WKWebViewConfiguration()
         config.websiteDataStore = .nonPersistent()
         config.userContentController.addUserScript(PaywallWebViewScripts.heightReportingUserScript)
+        config.userContentController.addUserScript(PaywallWebViewScripts.messageBridgeUserScript)
         config.setURLSchemeHandler(InMemoryHTMLURLSchemeHandler(), forURLScheme: "purchaseshtml")
 
         return config
@@ -679,10 +906,13 @@ private struct MacWebViewRepresentable: NSViewRepresentable {
     final class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
 
         static let heightMessageHandlerName = "rcWebViewHeight"
+        static let messageHandlerName = PaywallWebViewScripts.messageHandlerName
 
         @Binding var height: CGFloat?
         var currentURL: URL?
+        var bridge: WebViewBridgeConfiguration?
         private var heightMessageHandler: WeakScriptMessageHandler?
+        private var messageBridgeHandler: WeakScriptMessageHandler?
         private weak var webView: WKWebView?
         private var heightMeasurementGeneration = 0
 
@@ -698,6 +928,9 @@ private struct MacWebViewRepresentable: NSViewRepresentable {
             self.webView = webView
             let handler = WeakScriptMessageHandler(delegate: self)
             self.heightMessageHandler = handler
+            webView.configuration.userContentController.removeScriptMessageHandler(
+                forName: Self.heightMessageHandlerName
+            )
             webView.configuration.userContentController.add(handler, name: Self.heightMessageHandlerName)
         }
 
@@ -709,11 +942,40 @@ private struct MacWebViewRepresentable: NSViewRepresentable {
             self.webView = nil
         }
 
+        func registerMessageBridgeIfNeeded(on webView: WKWebView) {
+            guard self.bridge?.componentID != nil else {
+                Logger.debug(Strings.paywall_web_view_missing_id)
+                return
+            }
+            self.webView = webView
+            let handler = WeakScriptMessageHandler(delegate: self)
+            self.messageBridgeHandler = handler
+            webView.configuration.userContentController.removeScriptMessageHandler(
+                forName: Self.messageHandlerName
+            )
+            webView.configuration.userContentController.add(handler, name: Self.messageHandlerName)
+        }
+
+        func unregisterMessageBridge(from webView: WKWebView) {
+            webView.configuration.userContentController.removeScriptMessageHandler(
+                forName: Self.messageHandlerName
+            )
+            self.messageBridgeHandler = nil
+        }
+
         func userContentController(
             _ userContentController: WKUserContentController,
             didReceive message: WKScriptMessage
         ) {
-            guard message.name == Self.heightMessageHandlerName else { return }
+            switch message.name {
+            case Self.messageHandlerName:
+                self.handleBridgeMessage(message)
+                return
+            case Self.heightMessageHandlerName:
+                break
+            default:
+                return
+            }
 
             let reportedHeight: CGFloat?
             if let number = message.body as? NSNumber {
@@ -727,6 +989,24 @@ private struct MacWebViewRepresentable: NSViewRepresentable {
             if let reportedHeight {
                 self.applyHeight(reportedHeight)
             }
+        }
+
+        private func handleBridgeMessage(_ message: WKScriptMessage) {
+            guard let bridge = self.bridge, let componentID = bridge.componentID else { return }
+
+            let controller = PaywallWebViewController(
+                webView: self.webView,
+                componentID: componentID,
+                expectedLoadedURL: self.currentURL
+            )
+
+            PaywallWebViewMessageDispatcher.handle(
+                body: message.body,
+                isMainFrame: message.frameInfo.isMainFrame,
+                componentID: componentID,
+                controller: controller,
+                bridge: bridge
+            )
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {

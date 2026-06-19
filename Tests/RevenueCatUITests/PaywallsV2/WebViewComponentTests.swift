@@ -383,6 +383,28 @@ final class WebViewComponentTests: TestCase {
         XCTAssertEqual(data.allWebViewURLs, [staticURL])
     }
 
+    // MARK: - Component ID & locale (bridge canonical identity)
+
+    func testViewModelExposesSchemaComponentID() {
+        let viewModel = Self.makeViewModel(
+            component: .init(id: "promo_web_view", url: "https://example.com")
+        )
+
+        XCTAssertEqual(viewModel.componentID, "promo_web_view")
+    }
+
+    func testViewModelComponentIDIsNilWhenSchemaOmitsID() {
+        let viewModel = Self.makeViewModel(component: .init(url: "https://example.com"))
+
+        XCTAssertNil(viewModel.componentID)
+    }
+
+    func testViewModelExposesLocale() {
+        let viewModel = Self.makeViewModel(urlTemplate: "https://example.com")
+
+        XCTAssertEqual(viewModel.locale, Locale(identifier: "en_US"))
+    }
+
 #if canImport(UIKit)
 
     func testWebViewPoolCreatesWebViewsWithNonPersistentWebsiteDataStore() {

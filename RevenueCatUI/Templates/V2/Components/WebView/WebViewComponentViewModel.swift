@@ -25,8 +25,17 @@ class WebViewComponentViewModel {
     let size: PaywallComponent.Size
     let visible: Bool
 
+    /// The schema component identifier, used as the canonical `component_id` for the postMessage
+    /// bridge. `nil` for legacy/partial configs that omit `id`, in which case the bridge is disabled.
+    let componentID: String?
+
     /// Stack rendered when the web content cannot be displayed (e.g. the resolved URL is invalid).
     let fallbackStackViewModel: StackComponentViewModel?
+
+    /// The locale resolved for this paywall, exposed as an SDK-managed `locale` variable.
+    var locale: Locale {
+        self.localizationProvider.locale
+    }
 
     init(
         component: PaywallComponent.WebViewComponent,
@@ -38,6 +47,7 @@ class WebViewComponentViewModel {
         self.urlTemplate = component.url
         self.size = component.size
         self.visible = component.visible ?? true
+        self.componentID = component.id
         self.fallbackStackViewModel = fallbackStackViewModel
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
