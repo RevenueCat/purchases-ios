@@ -1,3 +1,4 @@
+// @generated
 //
 //  Copyright RevenueCat Inc. All Rights Reserved.
 //
@@ -7,20 +8,13 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ErrorCode.swift
+//  ErrorCode.swift — DO NOT EDIT — generated from https://github.com/RevenueCat/purchases-error-codes
 //
-//  Created by Joshua Liebowitz on 7/8/21.
-//
+// swiftlint:disable line_length missing_docs
 
 import Foundation
 
-/**
- Error codes used by the Purchases SDK
- */
 @objc(RCPurchasesErrorCode) public enum ErrorCode: Int, Error {
-
-    // swiftlint:disable missing_docs
-
     @objc(RCUnknownError) case unknownError = 0
     @objc(RCPurchaseCancelledError) case purchaseCancelledError = 1
     @objc(RCStoreProblemError) case storeProblemError = 2
@@ -48,59 +42,34 @@ import Foundation
     @objc(RCUnsupportedError) case unsupportedError = 24
     @objc(RCEmptySubscriberAttributesError) case emptySubscriberAttributes = 25
     @objc(RCProductDiscountMissingIdentifierError) case productDiscountMissingIdentifierError = 26
-    @objc(RCProductDiscountMissingSubscriptionGroupIdentifierError)
-    case productDiscountMissingSubscriptionGroupIdentifierError = 28
+    @objc(RCProductDiscountMissingSubscriptionGroupIdentifierError) case productDiscountMissingSubscriptionGroupIdentifierError = 28
     @objc(RCCustomerInfoError) case customerInfoError = 29
     @objc(RCSystemInfoError) case systemInfoError = 30
-    @objc(RCBeginRefundRequestError)case beginRefundRequestError = 31
+    @objc(RCBeginRefundRequestError) case beginRefundRequestError = 31
     @objc(RCProductRequestTimedOut) case productRequestTimedOut = 32
     @objc(RCAPIEndpointBlocked) case apiEndpointBlockedError = 33
     @objc(RCInvalidPromotionalOfferError) case invalidPromotionalOfferError = 34
     @objc(RCOfflineConnectionError) case offlineConnectionError = 35
-    @objc(RCFeatureNotAvailableInCustomEntitlementsComputationMode)
-    case featureNotAvailableInCustomEntitlementsComputationMode = 36
+    @objc(RCFeatureNotAvailableInCustomEntitlementsComputationMode) case featureNotAvailableInCustomEntitlementsComputationMode = 36
     @objc(RCSignatureVerificationFailed) case signatureVerificationFailed = 37
     @objc(RCFeatureNotSupportedWithStoreKit1) case featureNotSupportedWithStoreKit1 = 38
     @objc(RCInvalidWebPurchaseToken) case invalidWebPurchaseToken = 39
     @objc(RCPurchaseBelongsToOtherUser) case purchaseBelongsToOtherUser = 40
     @objc(RCExpiredWebPurchaseToken) case expiredWebPurchaseToken = 41
     @objc(RCTestStoreSimulatedPurchaseError) case testStoreSimulatedPurchaseError = 42
-
-    // swiftlint:enable missing_docs
-
 }
 
-extension ErrorCode {
+extension ErrorCode: CaseIterable {}
 
-    /**
-     * When an ErrorCode has been deprecated and then removed, add it to the reserved list so that we do not
-     * accidentally reuse it. For example:
-     * `@objc(RCMissingAppUserIDForAliasCreationError) case missingAppUserIDForAliasCreationError = 27` was removed,
-     * so we add its rawValue of `27` to the `reservedRawValues` array. That way our unit tests will catch if we
-     * accidentally add `27` back into the enumeration.
-     */
-    static var reservedRawValues: Set<RawValue> {
-        return [27]
-    }
-
-}
-
-extension ErrorCode: CaseIterable { }
-
-extension ErrorCode: DescribableError {
-
-    // swiftlint:disable:next missing_docs
+extension ErrorCode: CustomStringConvertible {
     public var description: String {
         switch self {
-        case .networkError:
-            return "A network error has occurred."
         case .unknownError:
             return "Unknown error."
         case .purchaseCancelledError:
             return "Purchase was cancelled."
         case .storeProblemError:
         #if os(macOS) || targetEnvironment(macCatalyst)
-            // See https://github.com/RevenueCat/purchases-ios/issues/370
             return "There was a problem with the App Store. This could also indicate the purchase dialog was cancelled."
         #else
             return "There was a problem with the App Store."
@@ -115,31 +84,30 @@ extension ErrorCode: DescribableError {
             return "This product is already active for the user."
         case .receiptAlreadyInUseError:
             return "There is already another active subscriber using the same receipt."
+        case .invalidReceiptError:
+            return "The receipt is not valid."
         case .missingReceiptFileError:
             return "The receipt is missing."
+        case .networkError:
+            return "A network error has occurred."
         case .invalidCredentialsError:
             return "There was a credentials issue. Check the underlying error for more details."
         case .unexpectedBackendResponseError:
             return "Received malformed response from the backend."
-        case .invalidReceiptError:
-            return "The receipt is not valid."
+        case .receiptInUseByOtherSubscriberError:
+            return "The receipt is in use by another subscriber."
         case .invalidAppUserIdError:
-            return "The app user id is not valid."
+            return "The app user ID is not valid."
         case .operationAlreadyInProgressForProductError:
             return "The operation is already in progress for this product."
         case .unknownBackendError:
             return "There was an unknown backend error."
-        case .receiptInUseByOtherSubscriberError:
-            return "The receipt is in use by other subscriber."
         case .invalidAppleSubscriptionKeyError:
-            return """
-                   Apple In-App Purchase Key is invalid or not present. You must configure an In-App Purchase Key.
-                   Please see https://rev.cat/in-app-purchase-key-configuration for more info.
-                   """
+            return "Apple In-App Purchase Key is invalid or not present. You must configure an In-App Purchase Key.\nPlease see https://rev.cat/in-app-purchase-key-configuration for more info."
         case .ineligibleError:
             return "The User is ineligible for that action."
         case .insufficientPermissionsError:
-            return "App does not have sufficient permissions to make purchases"
+            return "App does not have sufficient permissions to make purchases."
         case .paymentPendingError:
             return "The payment is pending."
         case .invalidSubscriberAttributesError:
@@ -147,23 +115,13 @@ extension ErrorCode: DescribableError {
         case .logOutAnonymousUserError:
             return "LogOut was called but the current user is anonymous."
         case .configurationError:
-            return """
-                   There is an issue with your configuration. Check the underlying error for more details.
-                   More information: https://rev.cat/sdk-troubleshooting
-                   """
+            return "There is an issue with your configuration. Check the underlying error for more details.\nMore information: https://rev.cat/sdk-troubleshooting"
         case .unsupportedError:
-            return """
-                   There was a problem with the operation. Looks like we doesn't support that yet.
-                   Check the underlying error for more details.
-                   """
+            return "There was a problem with the operation. Looks like we don't support that yet. Check the underlying error for more details."
         case .emptySubscriberAttributes:
             return "A request for subscriber attributes returned none."
         case .productDiscountMissingIdentifierError:
-            return """
-                   The SKProductDiscount or Product.SubscriptionOffer wrapped
-                   by StoreProductDiscount is missing an identifier.
-                   This is a required property and likely an AppStore quirk that it is missing.
-                   """
+            return "The SKProductDiscount or Product.SubscriptionOffer wrapped by StoreProductDiscount is missing an identifier. This is a required property and likely an AppStore quirk that it is missing."
         case .productDiscountMissingSubscriptionGroupIdentifierError:
             return "Unable to create a discount offer, the product is missing a subscriptionGroupIdentifier."
         case .customerInfoError:
@@ -177,57 +135,30 @@ extension ErrorCode: DescribableError {
         case .apiEndpointBlockedError:
             return "Requests to RevenueCat are being blocked. See: https://rev.cat/dnsBlocking for more info."
         case .invalidPromotionalOfferError:
-            return """
-                   The information associated with this PromotionalOffer is not valid.
-                   See https://rev.cat/ios-subscription-offers for more info.
-                   """
+            return "The information associated with this PromotionalOffer is not valid. See https://rev.cat/ios-subscription-offers for more info."
         case .offlineConnectionError:
             return "Error performing request because the internet connection appears to be offline."
-
         case .featureNotAvailableInCustomEntitlementsComputationMode:
             return "This feature is not available when utilizing the customEntitlementsComputation dangerousSetting."
         case .signatureVerificationFailed:
-            return "Request failed signature verification. See https://rev.cat/trusted-entitlements for more info."
+            return "Request failed signature verification. Please see https://rev.cat/trusted-entitlements for more info."
         case .featureNotSupportedWithStoreKit1:
-            return "This feature is not supported when using StoreKit 1." +
-                "Configure the SDK to use StoreKit 2 to use this feature."
-
+            return "This feature is not supported when using StoreKit 1. Configure the SDK to use StoreKit 2 to use this feature."
         case .invalidWebPurchaseToken:
             return "The link you provided does not contain a valid purchase token."
         case .purchaseBelongsToOtherUser:
-            return "The web purchase already belongs to other user."
+            return "The web purchase already belongs to another user."
         case .expiredWebPurchaseToken:
             return "The link you provided has expired. A new one will be sent to the email used to make the purchase."
         case .testStoreSimulatedPurchaseError:
             return "Purchase failure simulated successfully in Test Store."
-        @unknown default:
-            return "Something went wrong."
         }
     }
-
-}
-
-extension ErrorCode: CustomNSError {
-
-    // swiftlint:disable missing_docs
-    public var errorUserInfo: [String: Any] {
-        return [
-            NSDebugDescriptionErrorKey: self.description,
-            "rc_code_name": self.codeName
-        ]
-    }
-
 }
 
 extension ErrorCode {
-
-    /**
-     * The error short string, based on the error code.
-     */
     var codeName: String {
         switch self {
-        case .networkError:
-            return "NETWORK_ERROR"
         case .unknownError:
             return "UNKNOWN"
         case .purchaseCancelledError:
@@ -244,22 +175,24 @@ extension ErrorCode {
             return "PRODUCT_ALREADY_PURCHASED"
         case .receiptAlreadyInUseError:
             return "RECEIPT_ALREADY_IN_USE"
+        case .invalidReceiptError:
+            return "INVALID_RECEIPT"
         case .missingReceiptFileError:
             return "MISSING_RECEIPT_FILE"
+        case .networkError:
+            return "NETWORK_ERROR"
         case .invalidCredentialsError:
             return "INVALID_CREDENTIALS"
         case .unexpectedBackendResponseError:
             return "UNEXPECTED_BACKEND_RESPONSE_ERROR"
-        case .invalidReceiptError:
-            return "INVALID_RECEIPT"
+        case .receiptInUseByOtherSubscriberError:
+            return "RECEIPT_IN_USE_BY_OTHER_SUBSCRIBER"
         case .invalidAppUserIdError:
             return "INVALID_APP_USER_ID"
         case .operationAlreadyInProgressForProductError:
             return "OPERATION_ALREADY_IN_PROGRESS_FOR_PRODUCT_ERROR"
         case .unknownBackendError:
             return "UNKNOWN_BACKEND_ERROR"
-        case .receiptInUseByOtherSubscriberError:
-            return "RECEIPT_IN_USE_BY_OTHER_SUBSCRIBER"
         case .invalidAppleSubscriptionKeyError:
             return "INVALID_APPLE_SUBSCRIPTION_KEY"
         case .ineligibleError:
@@ -310,35 +243,18 @@ extension ErrorCode {
             return "EXPIRED_WEB_PURCHASE_TOKEN"
         case .testStoreSimulatedPurchaseError:
             return "TEST_STORE_SIMULATED_PURCHASE_ERROR"
-        @unknown default:
-            return "UNRECOGNIZED_ERROR"
         }
     }
-
 }
 
-// MARK: - PurchasesErrorConvertible
+extension ErrorCode: CustomNSError {
 
-/// An `Error` that can be converted into a `PurchasesError`
-protocol PurchasesErrorConvertible: Swift.Error {
-
-    /// Convert the receiver into a `PurchasesError` with all the necessary context.
-    ///
-    /// ### Related symbols:
-    /// - ``ErrorUtils``
-    /// - ``ErrorCode``
-    var asPurchasesError: PurchasesError { get }
-
-}
-
-extension PurchasesErrorConvertible {
-
-    var asPublicError: PublicError {
-        return self.asPurchasesError.asPublicError
-    }
-
-    var description: String {
-        return self.asPurchasesError.localizedDescription
+    // swiftlint:disable:next missing_docs
+    public var errorUserInfo: [String: Any] {
+        return [
+            NSDebugDescriptionErrorKey: self.description,
+            "rc_code_name": self.codeName
+        ]
     }
 
 }

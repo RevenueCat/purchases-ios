@@ -185,7 +185,7 @@ For snapshot testing, sample applications, pre-commit hooks, and release process
 
 ### Size & Structure
 
-- **Prefer smaller, self-contained stacked PRs** when possible. "Self-contained" means the PR compiles, passes tests, and is reviewable on its own. As a rule of thumb, aim to keep the diff under ~500 lines of hand-written source — excluding generated, serialized, or non-reviewed files (e.g. JSON, snapshots, lockfiles, `api/*.swiftinterface`). For larger tasks, plan the PR breakdown up front and stack interdependent changes instead of bundling everything into one large PR.
+- **Prefer smaller, self-contained stacked PRs** when possible. "Self-contained" means the PR compiles, passes tests, and is reviewable on its own. As a rule of thumb, aim to keep the diff under ~300 lines of hand-written source — excluding generated, serialized, or non-reviewed files (e.g. JSON, snapshots, lockfiles, `api/*.swiftinterface`) and test or example app files. For larger tasks, plan the PR breakdown up front and stack interdependent changes instead of bundling everything into one large PR.
 
 ### Description
 

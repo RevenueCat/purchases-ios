@@ -13,7 +13,7 @@ import Foundation
 /// operators (`and`, `or`, `if`) iterate manually.
 enum Operators {
 
-    /// Dispatch a JSON Logic operator. Throws `RuleError.unsupportedOperator`
+    /// Dispatch a JSON Logic operator. Throws `RulesEngine.EvaluationError.unsupportedOperator`
     /// when the operator name isn't implemented in this slice.
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     static func dispatch(
@@ -109,7 +109,7 @@ enum Operators {
             return try MiscOperators.opLog(args: args, vars: vars)
 
         default:
-            throw RuleError.unsupportedOperator(name: operatorName)
+            throw RulesEngine.EvaluationError.unsupportedOperator(name: operatorName)
         }
     }
 

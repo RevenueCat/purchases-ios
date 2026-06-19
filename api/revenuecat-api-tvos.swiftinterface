@@ -106,6 +106,13 @@ extension RevenueCat.CustomerCenterPresentationMode : Swift.Codable {
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
+public typealias PublicError = Foundation.NSError
+extension Foundation.NSError {
+  public var asErrorCode: RevenueCat.ErrorCode? {
+    get
+  }
+}
+infix operator ??? : DefaultPrecedence
 @objc(RCPurchasesErrorCode) public enum ErrorCode : Swift.Int, Swift.Error {
   @objc(RCUnknownError) case unknownError = 0
   @objc(RCPurchaseCancelledError) case purchaseCancelledError = 1
@@ -164,7 +171,7 @@ extension RevenueCat.ErrorCode : Swift.CaseIterable {
     get
   }
 }
-extension RevenueCat.ErrorCode {
+extension RevenueCat.ErrorCode : Swift.CustomStringConvertible {
   public var description: Swift.String {
     get
   }
@@ -174,13 +181,6 @@ extension RevenueCat.ErrorCode : Foundation.CustomNSError {
     get
   }
 }
-public typealias PublicError = Foundation.NSError
-extension Foundation.NSError {
-  public var asErrorCode: RevenueCat.ErrorCode? {
-    get
-  }
-}
-infix operator ??? : DefaultPrecedence
 public typealias ProductIdentifier = Swift.String
 @_hasMissingDesignatedInitializers @objc(RCCustomerInfo) final public class CustomerInfo : ObjectiveC.NSObject {
   @objc final public let entitlements: RevenueCat.EntitlementInfos
@@ -2455,6 +2455,19 @@ extension RevenueCat.PromotionalOffer : Swift.Sendable {
 }
 extension RevenueCat.PromotionalOffer.SignedData : Swift.Sendable {
 }
+@objc(RCRevocationReason) final public class RevocationReason : ObjectiveC.NSObject, Swift.RawRepresentable, Swift.Sendable {
+  @objc final public let rawValue: Swift.String
+  @objc public init(rawValue: Swift.String)
+  @objc(RCDeveloperIssue) public static let developerIssue: RevenueCat.RevocationReason
+  @objc(RCOther) public static let other: RevenueCat.RevocationReason
+  @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
+  @objc override final public var hash: Swift.Int {
+    @objc get
+  }
+  public static func ~= (lhs: RevenueCat.RevocationReason, rhs: RevenueCat.RevocationReason) -> Swift.Bool
+  public typealias RawValue = Swift.String
+  @objc deinit
+}
 public typealias SK1Product = StoreKit.SKProduct
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 public typealias SK2Product = StoreKit.Product
@@ -2718,6 +2731,12 @@ public typealias SK2Transaction = StoreKit.Transaction
     @objc get
   }
   @objc final public var storefront: RevenueCat.Storefront? {
+    @objc get
+  }
+  @objc final public var revocationDate: Foundation.Date? {
+    @objc get
+  }
+  @objc final public var revocationReason: RevenueCat.RevocationReason? {
     @objc get
   }
   @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
@@ -3041,7 +3060,6 @@ extension RevenueCat.StoreProduct.ProductType : Swift.RawRepresentable {}
 extension RevenueCat.ErrorCode : Swift.Equatable {}
 extension RevenueCat.ErrorCode : Swift.Hashable {}
 extension RevenueCat.ErrorCode : Swift.RawRepresentable {}
-extension RevenueCat.ErrorCode : Swift.CustomStringConvertible {}
 extension RevenueCat.VerificationResult : Swift.Equatable {}
 extension RevenueCat.VerificationResult : Swift.Hashable {}
 extension RevenueCat.VerificationResult : Swift.RawRepresentable {}
