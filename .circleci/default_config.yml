@@ -421,26 +421,6 @@ commands:
           command: |
             bundle exec fastlane update_carthage_commit
 
-  run-carthage-installation-tests:
-    steps:
-      - checkout-with-minimal-permissions
-      - run:
-          name: Upgrade Carthage
-          command: |
-            brew update
-            brew upgrade carthage
-      - update-carthage-installation-commit
-      # Carthage
-      - run:
-          name: Carthage Update
-          working_directory: Tests/InstallationTests/CarthageInstallation/
-          command: |
-            bundle exec fastlane installation_tests
-      - set-signing-repo-deploy-key-for-git
-      - install-dependencies-scan-and-archive:
-          directory: Tests/InstallationTests/CarthageInstallation/
-      - slack-notify-on-fail
-
   restore-installation-test-cache:
     parameters:
       test-name:
@@ -1864,14 +1844,23 @@ jobs:
       name: macos-executor-large
       xcode_version: << parameters.xcode_version >>
     steps:
-      - run-carthage-installation-tests
-
-  installation-tests-carthage-xcode-27:
-    executor:
-      name: macos-executor-large
-      xcode_version: "27.0.0"
-    steps:
-      - run-carthage-installation-tests
+      - checkout-with-minimal-permissions
+      - run:
+          name: Upgrade Carthage
+          command: |
+            brew update
+            brew upgrade carthage
+      - update-carthage-installation-commit
+      # Carthage
+      - run:
+          name: Carthage Update
+          working_directory: Tests/InstallationTests/CarthageInstallation/
+          command: |
+            bundle exec fastlane installation_tests
+      - set-signing-repo-deploy-key-for-git
+      - install-dependencies-scan-and-archive:
+          directory: Tests/InstallationTests/CarthageInstallation/
+      - slack-notify-on-fail
 
   lint:
     executor:
@@ -2495,7 +2484,9 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
-      - installation-tests-carthage-xcode-27:
+      - installation-tests-carthage:
+          name: installation-tests-carthage-xcode-27
+          xcode_version: "27.0.0"
           requires:
             - approve-full-tests
           context:
@@ -2868,7 +2859,9 @@ workflows:
       - installation-tests-carthage:
           context:
             - slack-secrets
-      - installation-tests-carthage-xcode-27:
+      - installation-tests-carthage:
+          name: installation-tests-carthage-xcode-27
+          xcode_version: "27.0.0"
           context:
             - slack-secrets
       - api-tests:
