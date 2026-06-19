@@ -34,7 +34,7 @@ final class RewardVerificationStatusResponseTests: TestCase {
     }
 
     func testDecodesFailedStatus() throws {
-        expect(try self.decode(["status": "failed"]).status) == .failed
+        expect(try self.decode(["status": "failed"]).status) == .failed(.init(reason: nil, message: nil))
     }
 
     func testDecodesUnknownStatus() throws {
