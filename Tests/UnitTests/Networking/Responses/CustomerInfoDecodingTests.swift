@@ -205,6 +205,13 @@ class CustomerInfoVersion2DecodingTests: BaseHTTPResponseTest {
         expect(subscription.purchaseDate) == dateFormatter.date(from: "2023-01-12T20:29:44Z")
         expect(subscription.store) == .appStore
         expect(subscription.unsubscribeDetectedAt).to(beNil())
+        expect(subscription.autoResumeDate).to(beNil())
+
+        let pausedSubscription = try XCTUnwrap(
+            subscriber.subscriptions["com.revenuecat.annual_39.99.2_week_intro"]
+        )
+        expect(pausedSubscription.store) == .playStore
+        expect(pausedSubscription.autoResumeDate) == dateFormatter.date(from: "2023-02-01T00:00:00Z")
     }
 
     func testEntitlements() throws {

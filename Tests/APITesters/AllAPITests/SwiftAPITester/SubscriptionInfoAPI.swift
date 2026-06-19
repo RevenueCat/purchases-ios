@@ -26,6 +26,7 @@ func checkSubscriptionInfoAPI() {
     let uda: Date? = subscription.unsubscribeDetectedAt
     let bida: Date? = subscription.billingIssuesDetectedAt
     let gped: Date? = subscription.gracePeriodExpiresDate
+    let ard: Date? = subscription.autoResumeDate
     let oType: PurchaseOwnershipType = subscription.ownershipType
     let pType: PeriodType = subscription.periodType
     let rAt: Date? = subscription.refundedAt

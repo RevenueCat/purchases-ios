@@ -23,6 +23,7 @@
     NSDate *unsubscribeDetectedAt __unused = subscription.unsubscribeDetectedAt;
     NSDate *billingIssuesDetectedAt __unused = subscription.billingIssuesDetectedAt;
     NSDate *gracePeriodExpiresDate __unused = subscription.gracePeriodExpiresDate;
+    NSDate *autoResumeDate __unused = subscription.autoResumeDate;
     RCPurchaseOwnershipType ownershipType __unused = subscription.ownershipType;
     RCPeriodType periodType __unused = subscription.periodType;
     NSDate *refundedAt __unused = subscription.refundedAt;

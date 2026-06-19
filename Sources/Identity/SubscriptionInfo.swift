@@ -49,6 +49,10 @@ import Foundation
     /// nil if the customer has never been in a grace period.
     @objc public let gracePeriodExpiresDate: Date?
 
+    /// Date when a paused subscription is expected to automatically resume.
+    /// Only set for Google Play subscriptions that have been paused; nil otherwise.
+    @objc public let autoResumeDate: Date?
+
     /// How the Customer received access to this subscription:
     /// - ``PurchaseOwnershipType/purchased``: The customer bought the subscription.
     /// - ``PurchaseOwnershipType/familyShared``: The Customer has access to the product via their family.
@@ -94,6 +98,7 @@ import Foundation
          periodType: PeriodType,
          refundedAt: Date?,
          storeTransactionId: String?,
+         autoResumeDate: Date?,
          requestDate: Date,
          price: ProductPaidPrice?,
          managementURL: URL?,
@@ -107,6 +112,7 @@ import Foundation
         self.unsubscribeDetectedAt = unsubscribeDetectedAt
         self.billingIssuesDetectedAt = billingIssuesDetectedAt
         self.gracePeriodExpiresDate = gracePeriodExpiresDate
+        self.autoResumeDate = autoResumeDate
         self.ownershipType = ownershipType
         self.periodType = periodType
         self.refundedAt = refundedAt
@@ -135,6 +141,7 @@ import Foundation
             unsubscribeDetectedAt: \(String(describing: unsubscribeDetectedAt)),
             billingIssuesDetectedAt: \(String(describing: billingIssuesDetectedAt)),
             gracePeriodExpiresDate: \(String(describing: gracePeriodExpiresDate)),
+            autoResumeDate: \(String(describing: autoResumeDate)),
             ownershipType: \(ownershipType),
             periodType: \(String(describing: periodType)),
             refundedAt: \(String(describing: refundedAt)),

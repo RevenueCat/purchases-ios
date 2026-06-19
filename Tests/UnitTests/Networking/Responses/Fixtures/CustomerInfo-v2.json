@@ -46,8 +46,8 @@
                 "purchase_date": "2022-12-20T08:34:35Z",
                 "billing_issues_detected_at": null,
                 "ownership_type": "PURCHASED",
-                "store": "app_store",
-                "auto_resume_date": null
+                "store": "play_store",
+                "auto_resume_date": "2023-02-01T00:00:00Z"
             },
             "com.revenuecat.intro_test.monthly.1_week_intro": {
                 "original_purchase_date": "2022-12-21T18:14:53Z",
