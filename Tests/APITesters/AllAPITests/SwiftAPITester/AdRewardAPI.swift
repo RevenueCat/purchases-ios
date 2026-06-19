@@ -6,20 +6,24 @@
 import Foundation
 @_spi(Experimental) import RevenueCat
 
-func checkAdRewardAPI(reward: AdReward) {
-    let _: VirtualCurrencyReward? = reward.virtualCurrency
-    let _: EntitlementReward? = reward.entitlement
+var adReward: AdReward!
+var virtualCurrencyReward: VirtualCurrencyReward!
+var entitlementReward: EntitlementReward!
+
+func checkAdRewardAPI() {
+    let _: VirtualCurrencyReward? = adReward.virtualCurrency
+    let _: EntitlementReward? = adReward.entitlement
     let _: AdReward = .noReward
     let _: AdReward = .unsupportedReward
-    let _: Bool = reward == .noReward
+    let _: Bool = adReward == .noReward
 }
 
-func checkVirtualCurrencyRewardAPI(reward: VirtualCurrencyReward) {
-    let _: String = reward.code
-    let _: Int = reward.amount
+func checkVirtualCurrencyRewardAPI() {
+    let _: String = virtualCurrencyReward.code
+    let _: Int = virtualCurrencyReward.amount
 }
 
-func checkEntitlementRewardAPI(reward: EntitlementReward) {
-    let _: String = reward.identifier
-    let _: Date = reward.expiresAt
+func checkEntitlementRewardAPI() {
+    let _: String = entitlementReward.identifier
+    let _: Date = entitlementReward.expiresAt
 }
