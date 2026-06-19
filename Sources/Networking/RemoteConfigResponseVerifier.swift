@@ -7,6 +7,29 @@
 
 import Foundation
 
+struct RemoteConfigSignatureContextProvider: ResponseSignatureContextProvider {
+
+    func signatureVerificationOverride(
+        statusCode: HTTPStatusCode,
+        body: Data?
+    ) -> VerificationResult? {
+        guard statusCode == .noContent else {
+            return nil
+        }
+
+        return .verified
+    }
+
+    func responsePayloadForSignature(from body: Data?) throws -> Data? {
+        return try RemoteConfigResponseVerifier.signatureMessage(from: body)
+    }
+
+    func requestBodyForSignature(for request: HTTPRequest) -> HTTPRequestBody? {
+        return nil
+    }
+
+}
+
 /// Extracts the signed payload for remote config RC Container responses.
 ///
 /// Remote config defines the first RC Container element as the config element. The backend signature

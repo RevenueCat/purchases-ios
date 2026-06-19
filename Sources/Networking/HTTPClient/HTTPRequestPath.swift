@@ -49,61 +49,49 @@ protocol HTTPRequestPath {
     /// Additional headers specific to this endpoint.
     var additionalHeaders: HTTPRequest.Headers { get }
 
-    /// Provides the bytes that should be used for response signature verification.
-    var responseSignaturePayloadProvider: ResponseSignaturePayloadProvider { get }
+    /// Provides endpoint-specific inputs for response signature verification.
+    var responseSignatureContextProvider: ResponseSignatureContextProvider { get }
 }
 
-protocol ResponseSignaturePayloadProvider {
+/// Provides endpoint-specific inputs for backend response signature verification.
+///
+/// Most endpoints use the raw response body and request body. Specialized endpoints can override
+/// either input or resolve verification before signature headers are required.
+protocol ResponseSignatureContextProvider {
 
-    func verificationResultWithoutSignature(
-        for statusCode: HTTPStatusCode,
+    /// Returns a result that should be used instead of normal signature verification.
+    ///
+    /// Return `nil` to continue with normal signature verification.
+    func signatureVerificationOverride(
+        statusCode: HTTPStatusCode,
         body: Data?
     ) -> VerificationResult?
 
-    func signaturePayload(from body: Data?) throws -> Data?
+    /// Returns the response bytes that should be verified against the backend signature.
+    ///
+    /// This may throw when deriving the signed payload requires validating response structure first.
+    func responsePayloadForSignature(from body: Data?) throws -> Data?
 
-    func requestBodyForSignature(_ request: HTTPRequest) -> HTTPRequestBody?
+    /// Returns the request body component to include in signature parameters, if any.
+    func requestBodyForSignature(for request: HTTPRequest) -> HTTPRequestBody?
 
 }
 
-struct DefaultResponseSignaturePayloadProvider: ResponseSignaturePayloadProvider {
+struct DefaultResponseSignatureContextProvider: ResponseSignatureContextProvider {
 
-    func verificationResultWithoutSignature(
-        for statusCode: HTTPStatusCode,
+    func signatureVerificationOverride(
+        statusCode: HTTPStatusCode,
         body: Data?
     ) -> VerificationResult? {
         return nil
     }
 
-    func signaturePayload(from body: Data?) throws -> Data? {
+    func responsePayloadForSignature(from body: Data?) throws -> Data? {
         return body
     }
 
-    func requestBodyForSignature(_ request: HTTPRequest) -> HTTPRequestBody? {
+    func requestBodyForSignature(for request: HTTPRequest) -> HTTPRequestBody? {
         return request.requestBody
-    }
-
-}
-
-struct RemoteConfigSignaturePayloadProvider: ResponseSignaturePayloadProvider {
-
-    func verificationResultWithoutSignature(
-        for statusCode: HTTPStatusCode,
-        body: Data?
-    ) -> VerificationResult? {
-        guard statusCode == .noContent else {
-            return nil
-        }
-
-        return .verified
-    }
-
-    func signaturePayload(from body: Data?) throws -> Data? {
-        return try RemoteConfigResponseVerifier.signatureMessage(from: body)
-    }
-
-    func requestBodyForSignature(_ request: HTTPRequest) -> HTTPRequestBody? {
-        return nil
     }
 
 }
@@ -126,8 +114,8 @@ extension HTTPRequestPath {
         return [:]
     }
 
-    var responseSignaturePayloadProvider: ResponseSignaturePayloadProvider {
-        return DefaultResponseSignaturePayloadProvider()
+    var responseSignatureContextProvider: ResponseSignatureContextProvider {
+        return DefaultResponseSignatureContextProvider()
     }
 
     var url: URL? { return self.url(proxyURL: nil) }
@@ -376,12 +364,12 @@ extension HTTPRequest.Path: HTTPRequestPath {
         }
     }
 
-    var responseSignaturePayloadProvider: ResponseSignaturePayloadProvider {
+    var responseSignatureContextProvider: ResponseSignatureContextProvider {
         switch self {
         case .remoteConfig:
-            return RemoteConfigSignaturePayloadProvider()
+            return RemoteConfigSignatureContextProvider()
         default:
-            return DefaultResponseSignaturePayloadProvider()
+            return DefaultResponseSignatureContextProvider()
         }
     }
 
