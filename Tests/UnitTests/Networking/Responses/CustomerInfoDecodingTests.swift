@@ -212,6 +212,20 @@ class CustomerInfoVersion2DecodingTests: BaseHTTPResponseTest {
         )
         expect(pausedSubscription.store) == .playStore
         expect(pausedSubscription.autoResumeDate) == dateFormatter.date(from: "2023-02-01T00:00:00Z")
+        expect(pausedSubscription.productPlanIdentifier) == "annual-plan"
+    }
+
+    func testSubscriptionsByProductIdentifierExposesAutoResumeDateAndProductPlan() throws {
+        let subscriptions = self.customerInfo.subscriptionsByProductIdentifier
+
+        let pausedSubscription = try XCTUnwrap(subscriptions["com.revenuecat.annual_39.99.2_week_intro"])
+        expect(pausedSubscription.store) == .playStore
+        expect(pausedSubscription.autoResumeDate) == dateFormatter.date(from: "2023-02-01T00:00:00Z")
+        expect(pausedSubscription.productPlanIdentifier) == "annual-plan"
+
+        let activeSubscription = try XCTUnwrap(subscriptions["com.revenuecat.monthly_4.99.1_week_intro"])
+        expect(activeSubscription.autoResumeDate).to(beNil())
+        expect(activeSubscription.productPlanIdentifier).to(beNil())
     }
 
     func testEntitlements() throws {

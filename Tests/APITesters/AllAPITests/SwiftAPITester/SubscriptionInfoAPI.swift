@@ -36,4 +36,5 @@ func checkSubscriptionInfoAPI() {
     let displayName: String? = subscription.displayName
     let managementURL: URL? = subscription.managementURL
     let price: ProductPaidPrice? = subscription.price
+    let productPlanIdentifier: String? = subscription.productPlanIdentifier
 }

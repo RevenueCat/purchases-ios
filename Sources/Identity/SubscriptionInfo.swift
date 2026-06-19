@@ -85,6 +85,10 @@ import Foundation
     /// Management purchase URL
     @objc public let managementURL: URL?
 
+    /// The base plan identifier that unlocked this subscription (Google Play base plans
+    /// and Apple purchases with non-upfront billing plans).
+    @objc public let productPlanIdentifier: String?
+
     init(productIdentifier: String,
          purchaseDate: Date,
          originalPurchaseDate: Date?,
@@ -102,7 +106,8 @@ import Foundation
          requestDate: Date,
          price: ProductPaidPrice?,
          managementURL: URL?,
-         displayName: String?) {
+         displayName: String?,
+         productPlanIdentifier: String?) {
         self.productIdentifier = productIdentifier
         self.purchaseDate = purchaseDate
         self.originalPurchaseDate = originalPurchaseDate
@@ -126,6 +131,7 @@ import Foundation
         self.price = price
         self.managementURL = managementURL
         self.displayName = displayName
+        self.productPlanIdentifier = productPlanIdentifier
 
         super.init()
     }
@@ -149,7 +155,8 @@ import Foundation
             isActive: \(isActive),
             willRenew: \(willRenew),
             managementURL: \(String(describing: managementURL)),
-            displayName: \(String(describing: displayName))
+            displayName: \(String(describing: displayName)),
+            productPlanIdentifier: \(String(describing: productPlanIdentifier))
         }
         """
     }

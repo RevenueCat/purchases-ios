@@ -32,6 +32,7 @@
     BOOL willRenew __unused = subscription.willRenew;
     NSString *displayName __unused = subscription.displayName;
     NSURL *managementURL __unused = subscription.managementURL;
+    NSString *productPlanIdentifier __unused = subscription.productPlanIdentifier;
 }
 
 @end

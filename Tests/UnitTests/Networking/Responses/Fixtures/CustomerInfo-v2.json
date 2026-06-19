@@ -47,7 +47,8 @@
                 "billing_issues_detected_at": null,
                 "ownership_type": "PURCHASED",
                 "store": "play_store",
-                "auto_resume_date": "2023-02-01T00:00:00Z"
+                "auto_resume_date": "2023-02-01T00:00:00Z",
+                "product_plan_identifier": "annual-plan"
             },
             "com.revenuecat.intro_test.monthly.1_week_intro": {
                 "original_purchase_date": "2022-12-21T18:14:53Z",
