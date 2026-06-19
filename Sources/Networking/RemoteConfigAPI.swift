@@ -44,31 +44,31 @@ class RemoteConfigAPI {
 
 enum RemoteConfigFetchResult {
 
-    case updated(container: RCContainer, verificationResult: VerificationResult)
-    case notModified(verificationResult: VerificationResult)
+    case container(RCContainer, verificationResult: VerificationResult)
+    case noContent(verificationResult: VerificationResult)
 
     var container: RCContainer? {
         switch self {
-        case let .updated(container, _):
+        case let .container(container, _):
             return container
-        case .notModified:
+        case .noContent:
             return nil
         }
     }
 
     var verificationResult: VerificationResult {
         switch self {
-        case let .updated(_, verificationResult),
-             let .notModified(verificationResult):
+        case let .container(_, verificationResult),
+             let .noContent(verificationResult):
             return verificationResult
         }
     }
 
     init(response: VerifiedHTTPResponse<RCContainer?>) {
         if let container = response.body {
-            self = .updated(container: container, verificationResult: response.verificationResult)
+            self = .container(container, verificationResult: response.verificationResult)
         } else {
-            self = .notModified(verificationResult: response.verificationResult)
+            self = .noContent(verificationResult: response.verificationResult)
         }
     }
 

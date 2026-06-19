@@ -246,8 +246,8 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         let fetchResult = try XCTUnwrap(result?.value)
-        guard case let .updated(container, verificationResult) = fetchResult else {
-            return XCTFail("Expected updated remote config result")
+        guard case let .container(container, verificationResult) = fetchResult else {
+            return XCTFail("Expected remote config container result")
         }
 
         expect(RCContainerTestData.data(from: container.config)) == Self.config
@@ -266,8 +266,8 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         let fetchResult = try XCTUnwrap(result?.value)
-        guard case let .updated(container, verificationResult) = fetchResult else {
-            return XCTFail("Expected updated remote config result")
+        guard case let .container(container, verificationResult) = fetchResult else {
+            return XCTFail("Expected remote config container result")
         }
 
         expect(container).toNot(beNil())
@@ -282,8 +282,8 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         let fetchResult = try XCTUnwrap(result?.value)
-        guard case let .updated(container, verificationResult) = fetchResult else {
-            return XCTFail("Expected updated remote config result")
+        guard case let .container(container, verificationResult) = fetchResult else {
+            return XCTFail("Expected remote config container result")
         }
 
         expect(container).toNot(beNil())
@@ -302,8 +302,8 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
         expect(result).to(beSuccess())
         let fetchResult = try XCTUnwrap(result?.value)
-        guard case let .notModified(verificationResult) = fetchResult else {
-            return XCTFail("Expected not modified remote config result")
+        guard case let .noContent(verificationResult) = fetchResult else {
+            return XCTFail("Expected no content remote config result")
         }
 
         expect(verificationResult) == .verified

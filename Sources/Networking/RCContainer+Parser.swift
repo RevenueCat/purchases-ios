@@ -89,6 +89,11 @@ extension RCContainer {
             self.data = data
         }
 
+        /// Validates the container header and positions the cursor at the first element.
+        mutating func moveToFirstElement() throws {
+            _ = try self.parseHeader()
+        }
+
         /// Parses the fixed-size container header and positions the cursor at the first element.
         ///
         /// Version 1 preserves the flags byte for future use and skips the reserved bytes so future

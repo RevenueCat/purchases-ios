@@ -1,5 +1,5 @@
 //
-//  RemoteConfigResponseVerifier.swift
+//  RemoteConfigSignatureContextProvider.swift
 //  RevenueCat
 //
 //  Created by RevenueCat.
@@ -7,6 +7,11 @@
 
 import Foundation
 
+/// Provides the signature inputs for remote config RC Container responses.
+///
+/// The response signature covers the config element's stored 24-byte checksum. A `204 No Content`
+/// response represents a successful no-update result and is treated as verified without signature
+/// headers.
 struct RemoteConfigSignatureContextProvider: ResponseSignatureContextProvider {
 
     func signatureVerificationOverride(
@@ -21,7 +26,7 @@ struct RemoteConfigSignatureContextProvider: ResponseSignatureContextProvider {
     }
 
     func responsePayloadForSignature(from body: Data?) throws -> Data? {
-        return try RemoteConfigResponseVerifier.signatureMessage(from: body)
+        return try Self.configChecksum(from: body)
     }
 
     func requestBodyForSignature(for request: HTTPRequest) -> HTTPRequestBody? {
@@ -30,19 +35,19 @@ struct RemoteConfigSignatureContextProvider: ResponseSignatureContextProvider {
 
 }
 
-/// Extracts the signed payload for remote config RC Container responses.
-///
-/// Remote config defines the first RC Container element as the config element. The backend signature
-/// is computed over that element's stored 24-byte checksum, not over the full container body.
-enum RemoteConfigResponseVerifier {
+private extension RemoteConfigSignatureContextProvider {
 
-    static func signatureMessage(from data: Data?) throws -> Data {
+    /// Extracts the signed payload from a remote config RC Container response.
+    ///
+    /// Remote config defines the first RC Container element as the config element. The backend signs
+    /// that element's stored checksum, not the full container body.
+    static func configChecksum(from data: Data?) throws -> Data {
         guard let data = data else {
             throw RCContainer.Parser.FormatError.truncatedHeader
         }
 
         var parser = RCContainer.ElementParser(data: data)
-        _ = try parser.parseHeader()
+        try parser.moveToFirstElement()
         guard parser.hasRemainingBytes else {
             throw RCContainer.Parser.FormatError.missingConfigElement
         }
