@@ -1803,6 +1803,7 @@
 		2DD500CE2C519EB4009C19B7 /* ProxyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyView.swift; sourceTree = "<group>"; };
 		2DD500CF2C519EB4009C19B7 /* ProxyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyViewModel.swift; sourceTree = "<group>"; };
 		2DD500D12C519EB4009C19B7 /* CustomerInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoView.swift; sourceTree = "<group>"; };
+		2DD5DA7E00000000F0010001 /* SubscriptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionsView.swift; sourceTree = "<group>"; };
 		2DD500D22C519EB4009C19B7 /* CustomerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerView.swift; sourceTree = "<group>"; };
 		2DD500D32C519EB4009C19B7 /* EntitlementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementsView.swift; sourceTree = "<group>"; };
 		2DD500D42C519EB4009C19B7 /* SubscriberAttributesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesView.swift; sourceTree = "<group>"; };
@@ -3898,6 +3899,7 @@
 			isa = PBXGroup;
 			children = (
 				2DD500D12C519EB4009C19B7 /* CustomerInfoView.swift */,
+				2DD5DA7E00000000F0010001 /* SubscriptionsView.swift */,
 				2DD500D22C519EB4009C19B7 /* CustomerView.swift */,
 				2DD500D32C519EB4009C19B7 /* EntitlementsView.swift */,
 				2DD500D42C519EB4009C19B7 /* SubscriberAttributesView.swift */,
