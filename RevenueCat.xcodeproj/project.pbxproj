@@ -8937,8 +8937,8 @@
 				"TVOS_DEPLOYMENT_TARGET[sdk=appletvos27*]" = "15.0";
 				"TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator27*]" = "15.0";
 				WATCHOS_DEPLOYMENT_TARGET = 7.0;
-				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "8.0";
-				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "8.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "9.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "9.0";
 			};
 			name = Debug;
 		};
@@ -8971,8 +8971,8 @@
 				"TVOS_DEPLOYMENT_TARGET[sdk=appletvos27*]" = "15.0";
 				"TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator27*]" = "15.0";
 				WATCHOS_DEPLOYMENT_TARGET = 7.0;
-				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "8.0";
-				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "8.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "9.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "9.0";
 			};
 			name = Release;
 		};
@@ -9050,8 +9050,8 @@
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 				WATCHOS_DEPLOYMENT_TARGET = 6.2;
-				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "8.0";
-				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "8.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "9.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "9.0";
 				XROS_DEPLOYMENT_TARGET = 1.0;
 			};
 			name = Debug;
@@ -9126,8 +9126,8 @@
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 				WATCHOS_DEPLOYMENT_TARGET = 6.2;
-				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "8.0";
-				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "8.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "9.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "9.0";
 				XROS_DEPLOYMENT_TARGET = 1.0;
 			};
 			name = Release;
@@ -9316,8 +9316,8 @@
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 				WATCHOS_DEPLOYMENT_TARGET = 6.2;
-				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "8.0";
-				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "8.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "9.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "9.0";
 				XROS_DEPLOYMENT_TARGET = 1.0;
 			};
 			name = Release;
@@ -9470,8 +9470,8 @@
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 				WATCHOS_DEPLOYMENT_TARGET = 6.2;
-				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "8.0";
-				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "8.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "9.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "9.0";
 				XROS_DEPLOYMENT_TARGET = 1.0;
 			};
 			name = Debug;
