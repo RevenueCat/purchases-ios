@@ -544,7 +544,20 @@ commands:
         type: boolean
         default: false
         description: "Generate in localXcodeProject mode (TUIST_RC_XCODE_PROJECT=true) so RevenueCat builds as an Xcode framework. Required for the unit-test lanes so installation method and request snapshots match the legacy workspace."
+      tuist_version:
+        type: string
+        default: ""
+        description: "Override the mise.toml Tuist version for this lane. The Xcode 14.3.1 lane runs on macOS 13, where Tuist >=4.46 (built for macOS 14) won't launch, so it pins 4.45.1."
     steps:
+      - when:
+          condition: << parameters.tuist_version >>
+          steps:
+            - run:
+                name: Pin Tuist << parameters.tuist_version >> for this lane
+                command: |
+                  sed -i.bak 's/^tuist = .*/tuist = "<< parameters.tuist_version >>"/' mise.toml
+                  rm -f mise.toml.bak
+                  cat mise.toml
       - revenuecat/install-tuist
       - run:
           name: Generate Tuist workspace
@@ -1215,6 +1228,7 @@ jobs:
       - tuist-generate-workspace:
           include_test_dependencies: true
           rc_xcode_project: true
+          tuist_version: "4.45.1"
 
       # === SPM Release Build (Xcode 14) ===
       - unless:

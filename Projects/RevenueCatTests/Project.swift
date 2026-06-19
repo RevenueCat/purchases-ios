@@ -72,9 +72,9 @@ let project = Project(
                 .nimble,
                 .snapshotTesting,
                 .ohHTTPStubsSwift
-            ],
-            metadata: .metadata(tags: ["RevenueCatTests"])
-        ),
+            ]
+        )
+        .tagged(["RevenueCatTests"]),
 
         .target(
             name: "ReceiptParserTests",
@@ -112,9 +112,9 @@ let project = Project(
             sources: [
                 "../../Tests/UnitTestsHostApp/**/*.swift"
             ],
-            dependencies: [],
-            metadata: .metadata(tags: ["RevenueCatTests"])
-        ),
+            dependencies: []
+        )
+        .tagged(["RevenueCatTests"]),
 
         // MARK: – StoreKit Unit Tests
         .target(
@@ -144,9 +144,9 @@ let project = Project(
             ],
             additionalFiles: [
                 "../../Tests/StoreKitUnitTests/UnitTestsConfiguration.storekit"
-            ],
-            metadata: .metadata(tags: ["RevenueCatTests"])
-        ),
+            ]
+        )
+        .tagged(["RevenueCatTests"]),
 
         // MARK: – BackendIntegrationTests Host App
         .target(
@@ -165,9 +165,9 @@ let project = Project(
             ],
             dependencies: [
              .storeKit
-            ],
-            metadata: .metadata(tags: ["RevenueCatTests"])
-        ),
+            ]
+        )
+        .tagged(["RevenueCatTests"]),
 
         .target(
             name: "BackendCustomEntitlementsIntegrationTests",
@@ -218,9 +218,9 @@ let project = Project(
                 base: [
                     "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"
                 ]
-            ),
-            metadata: .metadata(tags: ["RevenueCatTests"])
-        ),
+            )
+        )
+        .tagged(["RevenueCatTests"]),
 
         .target(
             name: "BackendIntegrationTests",
@@ -261,9 +261,9 @@ let project = Project(
             additionalFiles: [
                 "../../Tests/BackendIntegrationTests/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit",
                 "../../BackendIntegrationTests/**.xctestplan"
-            ],
-            metadata: .metadata(tags: ["RevenueCatTests"])
-        ),
+            ]
+        )
+        .tagged(["RevenueCatTests"]),
 
         // MARK: – RevenueCatAdMobTests
         .target(
@@ -281,9 +281,9 @@ let project = Project(
                 .revenueCatAdMob,
                 .googleMobileAds,
                 .nimble
-            ],
-            metadata: .metadata(tags: ["RevenueCatTests"])
-        ),
+            ]
+        )
+        .tagged(["RevenueCatTests"]),
 
         // MARK: – RevenueCatUITests
         .target(
@@ -301,9 +301,9 @@ let project = Project(
                 .nimble,
                 .snapshotTesting,
                 .ohHTTPStubsSwift
-            ],
-            metadata: .metadata(tags: ["RevenueCatTests"])
+            ]
         )
+        .tagged(["RevenueCatTests"])
 
     ],
     schemes: [

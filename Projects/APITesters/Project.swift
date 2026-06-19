@@ -48,9 +48,9 @@ let project = Project(
             dependencies: [
                 .revenueCat,
                 .revenueCatUI
-            ],
-            metadata: .metadata(tags: ["APITester"])
-        ),
+            ]
+        )
+        .tagged(["APITester"]),
 
         .target(
             name: "SwiftAPITester",
@@ -68,9 +68,9 @@ let project = Project(
             ),
             dependencies: [
                 .revenueCat
-            ],
-            metadata: .metadata(tags: ["APITester"])
-        ),
+            ]
+        )
+        .tagged(["APITester"]),
 
         .target(
             name: "ReceiptParserAPITester",
@@ -88,9 +88,9 @@ let project = Project(
             ),
             dependencies: [
                 .receiptParser
-            ],
-            metadata: .metadata(tags: ["APITester"])
-        ),
+            ]
+        )
+        .tagged(["APITester"]),
 
         .target(
             name: "RevenueCatUISwiftAPITester",
@@ -113,9 +113,9 @@ let project = Project(
             ),
             dependencies: [
                 .revenueCatUI
-            ],
-            metadata: .metadata(tags: ["APITester"])
-        ),
+            ]
+        )
+        .tagged(["APITester"]),
 
         .target(
             name: "CustomEntitlementComputationSwiftAPITester",
@@ -133,9 +133,9 @@ let project = Project(
             ),
             dependencies: [
                 .revenueCatCustomEntitlementComputation
-            ],
-            metadata: .metadata(tags: ["APITester"])
+            ]
         )
+        .tagged(["APITester"])
     ],
     schemes: [
         .scheme(
