@@ -178,7 +178,14 @@ extension UIView {
   func asImage() -> UIImage {
     let format = UIGraphicsImageRendererFormat()
     format.preferredRange = .standard // Ensures 8-bit sRGB, even on Mac Catalyst where the default is Generic RGB
+    // Pin the capture scale per platform so it doesn't depend on the runtime display scale. Each value
+    // matches the platform's native rendering scale: forcing a higher scale upsamples already-rasterized
+    // content and blurs the result (e.g. forcing 3x on Mac Catalyst, whose native scale is 2x).
+    #if targetEnvironment(macCatalyst)
+    format.scale = 2
+    #else
     format.scale = 3
+    #endif
 
     let renderer = UIGraphicsImageRenderer(bounds: bounds, format: format)
     return renderer.image { _ in
@@ -191,7 +198,35 @@ extension UIView {
 
 extension NSView {
     func asImage() -> NSImage {
-        let rep = bitmapImageRepForCachingDisplay(in: bounds)!
+        // Native macOS (mac-native). Pin the capture scale to 2x rather than relying on the recording
+        // machine's display backing scale, so the supersampling is deterministic across environments.
+        let scale: CGFloat = 2
+        let pixelsWide = Int((bounds.width * scale).rounded())
+        let pixelsHigh = Int((bounds.height * scale).rounded())
+
+        guard pixelsWide > 0, pixelsHigh > 0,
+              let rep = NSBitmapImageRep(
+                bitmapDataPlanes: nil,
+                pixelsWide: pixelsWide,
+                pixelsHigh: pixelsHigh,
+                bitsPerSample: 8,
+                samplesPerPixel: 4,
+                hasAlpha: true,
+                isPlanar: false,
+                colorSpaceName: .deviceRGB,
+                bytesPerRow: 0,
+                bitsPerPixel: 0
+              )
+        else {
+            // Fall back to the view's native backing scale if the fixed-scale bitmap can't be created.
+            let fallback = bitmapImageRepForCachingDisplay(in: bounds)!
+            cacheDisplay(in: bounds, to: fallback)
+            let image = NSImage(size: bounds.size)
+            image.addRepresentation(fallback)
+            return image
+        }
+        rep.size = bounds.size
+
         cacheDisplay(in: bounds, to: rep)
 
         let image = NSImage(size: bounds.size)
