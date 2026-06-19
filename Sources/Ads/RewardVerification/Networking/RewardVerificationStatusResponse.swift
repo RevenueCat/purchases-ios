@@ -21,8 +21,22 @@ struct RewardVerificationStatusResponse: Equatable {
 
         case verified(AdReward)
         case pending
-        case failed
+        case failed(Failure)
         case unknown
+
+    }
+
+    /// Backend-provided detail accompanying a `failed` status.
+    ///
+    /// Both fields are optional: older backends (and the no-record/feature-off paths) may omit them.
+    struct Failure: Equatable {
+
+        /// Raw `failure_reason` wire value (e.g. `no_access`). Stored as-is for forward
+        /// compatibility — unrecognized values are kept rather than dropped. `nil` when absent.
+        let reason: String?
+
+        /// Human-readable cause, logged verbatim. `nil` when absent.
+        let message: String?
 
     }
 }
@@ -32,6 +46,8 @@ extension RewardVerificationStatusResponse: Decodable {
     private enum CodingKeys: String, CodingKey {
         case status
         case reward
+        case failureReason
+        case message
     }
 
     private enum RewardCodingKeys: String, CodingKey {
@@ -60,11 +76,19 @@ extension RewardVerificationStatusResponse: Decodable {
         case "pending":
             return .pending
         case "failed":
-            return .failed
+            return .failed(Self.decodeFailure(from: container))
         default:
             Logger.warn(Strings.backendError.unknown_reward_verification_status(status: rawStatus))
             return .unknown
         }
+    }
+
+    private static func decodeFailure(
+        from container: KeyedDecodingContainer<CodingKeys>
+    ) -> Failure {
+        let reason = try? container.decodeIfPresent(String.self, forKey: .failureReason)
+        let message = try? container.decodeIfPresent(String.self, forKey: .message)
+        return Failure(reason: reason, message: message)
     }
 
     private static func decodeVerifiedReward(

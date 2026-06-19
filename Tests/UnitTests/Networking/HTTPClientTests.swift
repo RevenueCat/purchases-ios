@@ -705,6 +705,18 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         self.logger.verifyMessageWasNotLogged("Queued request GET /v1/subscribers/identify for retry in 0.0 seconds.")
     }
 
+    func testNoContentResponseBodyDataConvertsNilToEmptyData() {
+        expect(HTTPClient.responseBodyData(statusCode: .noContent, data: nil)) == Data()
+    }
+
+    func testNotModifiedResponseBodyDataIsNil() {
+        expect(HTTPClient.responseBodyData(statusCode: .notModified, data: Data())) == nil
+    }
+
+    func testSuccessfulResponseBodyDataPreservesNilData() {
+        expect(HTTPClient.responseBodyData(statusCode: .success, data: nil)).to(beNil())
+    }
+
     func testServerSide200WithETagInRequest() {
         let request = HTTPRequest(method: .get, path: .mockPath)
         let responseData = "{\"message\": \"something is great up in the cloud\"}".asData
@@ -1012,6 +1024,30 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         expect(headerPresent.value) == false
         expect(self.eTagManager.invokedETagHeader) == false
+    }
+
+    func testRemoteConfigDoesNotUseETagCacheEvenIfResponseIncludesETagHeader() {
+        let request = HTTPRequest(method: .post(RemoteConfigRequest()), path: .remoteConfig)
+        let headerPresent: Atomic<Bool?> = nil
+
+        stub(condition: isPath(request.path)) { request in
+            headerPresent.value = request.allHTTPHeaderFields?.keys.contains(
+                ETagManager.eTagRequestHeader.rawValue
+            ) == true
+            return HTTPStubsResponse(
+                data: Data(),
+                statusCode: .success,
+                headers: [ETagManager.eTagResponseHeader.rawValue: "ETAG"]
+            )
+        }
+
+        waitUntil { completion in
+            self.client.perform(request, with: .disabled) { (_: DataResponse) in completion() }
+        }
+
+        expect(headerPresent.value) == false
+        expect(self.eTagManager.invokedETagHeader) == false
+        expect(self.eTagManager.invokedHTTPResultFromCacheOrBackend) == false
     }
 
     func testAlwaysPassesClientVersion() {

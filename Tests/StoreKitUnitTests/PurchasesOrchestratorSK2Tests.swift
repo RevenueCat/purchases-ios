@@ -1244,6 +1244,49 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ) == "test_offering"
     }
 
+    func testSK2TransactionListenerDelegateIncludesCachedOfferingAndPaywall() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let offeringContext = PresentedOfferingContext(offeringIdentifier: "test_offering")
+        let paywallEvent = PaywallEvent.purchaseInitiated(
+            Self.paywallEventCreationData,
+            Self.paywallEventWithPurchaseInfo
+        )
+
+        let cacheDate = self.mockDateProvider.now()
+        self.orchestrator.cachePurchaseData(
+            presentedOfferingContext: offeringContext,
+            paywallEvent: paywallEvent,
+            productIdentifier: Self.testProductId
+        )
+
+        let transaction = MockStoreTransaction(
+            productIdentifier: Self.testProductId,
+            purchaseDate: cacheDate.addingTimeInterval(1)
+        )
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "test_offering"
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
+        ) == Self.paywallEventCreationData
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
+        ) == Self.paywallEventWithPurchaseInfo
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
+    }
+
     func testSK2PurchaseWithPackageThenCancelledThenPurchaseWithProductDoesNotIncludeOfferingContext() async throws {
         self.setUpStoreKit2Listener()
 
@@ -1339,7 +1382,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
-    func testSK2CancelledPurchaseDoesNotClearExternallyCachedPresentedOfferingContext() async throws {
+    func testSK2CancelledPurchaseClearsCachedPresentedOfferingContext() async throws {
         self.setUpStoreKit2Listener()
 
         self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
@@ -1369,8 +1412,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         )
         expect(cancelled) == true
 
-        // The SK2 purchase path does not clear externally cached context.
-        // A subsequent transaction via the listener should still pick it up.
+        // The SK2 purchase path clears cached context on cancel.
         let transaction = MockStoreTransaction(productIdentifier: product.id)
 
         try await self.orchestrator.storeKit2TransactionListener(
@@ -1380,12 +1422,11 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         expect(self.backend.invokedPostReceiptData) == true
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData
-                .presentedOfferingContext?.offeringIdentifier
-        ) == "test_offering"
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
     }
 
-    func testSK2FailedPurchaseDoesNotClearExternallyCachedPresentedOfferingContext() async throws {
+    func testSK2FailedPurchaseClearsCachedPresentedOfferingContext() async throws {
         self.setUpStoreKit2Listener()
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
@@ -1420,8 +1461,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         self.testSession.failTransactionsEnabled = false
 
-        // The SK2 purchase path does not clear externally cached context.
-        // A subsequent transaction via the listener should still pick it up.
+        // The SK2 purchase path clears cached context on failure.
         let transaction = MockStoreTransaction(productIdentifier: product.id)
 
         try await self.orchestrator.storeKit2TransactionListener(
@@ -1431,12 +1471,11 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         expect(self.backend.invokedPostReceiptData) == true
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData
-                .presentedOfferingContext?.offeringIdentifier
-        ) == "test_offering"
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
     }
 
-    func testSK2CancelledPurchaseDoesNotClearExternallyCachedContextWithCustomEntitlementComputation() async throws {
+    func testSK2CancelledPurchaseClearsCachedContextWithCustomEntitlementComputation() async throws {
         self.setUpSystemInfo(finishTransactions: true, customEntitlementComputation: true)
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
@@ -1470,8 +1509,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             expect(error).to(matchError(ErrorCode.purchaseCancelledError))
         }
 
-        // The SK2 purchase path does not clear externally cached context.
-        // A subsequent transaction via the listener should still pick it up.
+        // The SK2 purchase path clears cached context on cancel.
         let transaction = MockStoreTransaction(productIdentifier: product.id)
 
         try await self.orchestrator.storeKit2TransactionListener(
@@ -1481,9 +1519,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         expect(self.backend.invokedPostReceiptData) == true
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData
-                .presentedOfferingContext?.offeringIdentifier
-        ) == "test_offering"
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
     }
 
     func testSK2FailedPurchaseForProductADoesNotAffectProductBContext() async throws {
@@ -1537,7 +1574,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ) == "offering_b"
     }
 
-    func testSK2ExternallyCachedContextIsNotClearedOnFailure() async throws {
+    func testSK2ExternallyCachedContextIsClearedOnFailure() async throws {
         self.setUpStoreKit2Listener()
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
@@ -1572,8 +1609,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         self.testSession.failTransactionsEnabled = false
 
-        // The SK2 purchase path does not clear externally cached context.
-        // A subsequent transaction via the listener should still pick it up.
+        // A cancelled/failed purchase clears the cached context regardless of where it came from,
+        // so a subsequent transaction via the listener has no offering context to attach.
         let transaction = MockStoreTransaction(productIdentifier: product.id)
 
         try await self.orchestrator.storeKit2TransactionListener(
@@ -1583,9 +1620,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         expect(self.backend.invokedPostReceiptData) == true
         expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData
-                .presentedOfferingContext?.offeringIdentifier
-        ) == "hybrid_offering"
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
     }
 
     func testSK2PurchasePackageCancelThenPurchasePackageAgainIncludesOfferingContext() async throws {
@@ -1720,6 +1756,147 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ) == "test_offering"
     }
 
+    func testSK2QueueListenerPeeksPurchaseOriginatedContextWithoutRemoving() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // A purchase-originated entry is only consumed by its purchase-initiated post, so queue
+        // reads peek and leave it in place (handling the race where a queue transaction arrives
+        // before `purchase()` returns).
+        self.orchestrator.cachePurchaseData(
+            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: "test_offering"),
+            paywallEvent: nil,
+            productIdentifier: Self.testProductId,
+            originatedFromPurchase: true
+        )
+
+        let transaction = MockStoreTransaction(productIdentifier: Self.testProductId)
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "test_offering"
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
+
+        self.backend.invokedPostReceiptData = false
+        self.backend.invokedPostReceiptDataParameters = nil
+
+        let secondTransaction = MockStoreTransaction(productIdentifier: Self.testProductId)
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: secondTransaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "test_offering"
+    }
+
+    func testSK2QueueListenerRemovesExternallyCachedPurchaseContext() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // An externally-cached entry (the default, e.g. SwiftUI StoreKit paywalls) has no
+        // purchase-initiated post to follow, so the first queue read consumes it.
+        self.orchestrator.cachePurchaseData(
+            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: "test_offering"),
+            paywallEvent: nil,
+            productIdentifier: Self.testProductId
+        )
+
+        let transaction = MockStoreTransaction(productIdentifier: Self.testProductId)
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "test_offering"
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
+
+        self.backend.invokedPostReceiptData = false
+
+        // The entry was consumed by the first queue read, so a subsequent same-product queue
+        // transaction gets no attribution, preventing the externally-cached context from leaking.
+        let secondTransaction = MockStoreTransaction(productIdentifier: Self.testProductId)
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: secondTransaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
+    }
+
+    func testSK2PurchaseRemovesCachedPurchaseContext() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        self.orchestrator.cachePurchaseData(
+            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: "test_offering"),
+            paywallEvent: nil,
+            productIdentifier: Self.testProductId
+        )
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+
+        let product = try await self.fetchSk2Product()
+
+        _ = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
+            promotionalOfferOptions: nil
+        )
+
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "test_offering"
+
+        self.backend.invokedPostReceiptData = false
+
+        let queueTransaction = MockStoreTransaction(productIdentifier: Self.testProductId)
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: queueTransaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
+    }
+
     func testSK2TransactionListenerDoesNotAttributeCachedDataWhenPurchaseDateIsBeforeCacheDate() async throws {
         self.setUpStoreKit2Listener()
 
@@ -1753,6 +1930,327 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         // transaction's purchase date is before the cache date
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext).to(beNil())
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall).to(beNil())
+    }
+
+    func testSK2TransactionListenerAttributesStaleCachedContextToLaterSameProductTransaction() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let cacheDate = self.mockDateProvider.now()
+        self.orchestrator.cachePurchaseData(
+            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: "test_offering"),
+            paywallEvent: .purchaseInitiated(
+                Self.paywallEventCreationData,
+                Self.paywallEventWithPurchaseInfo
+            ),
+            productIdentifier: Self.testProductId,
+            originatedFromPurchase: true
+        )
+
+        // A later transaction for the same product arrives via the queue, well after the cached
+        // purchase intent. Because a purchase-originated entry is only peeked (never evicted) by
+        // queue reads and the transaction's purchase date is at/after the cache date, the cached
+        // context is intentionally reused. This is the flip side of
+        // `testSK2TransactionListenerDoesNotAttributeCachedDataWhenPurchaseDateIsBeforeCacheDate`
+        // and pins down the accepted trade-off of peeking purchase-originated entries on the queue.
+        let laterTransaction = MockStoreTransaction(
+            productIdentifier: Self.testProductId,
+            purchaseDate: cacheDate.addingTimeInterval(60 * 60)
+        )
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: laterTransaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "test_offering"
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
+        ) == Self.paywallEventCreationData
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
+    }
+
+    func testCachePurchaseDataMergePreservesCachedPaywallWhenLaterWriteOmitsIt() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // A first write caches the paywall (e.g. an external `cachePurchaseData` call) and a later
+        // same-product write omits it (e.g. the SDK's purchase path caching only the offering). The
+        // merge must keep the previously cached paywall rather than clobber it with nil.
+        self.orchestrator.cachePurchaseData(
+            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: "offering"),
+            paywallEvent: .purchaseInitiated(
+                Self.paywallEventCreationData,
+                Self.paywallEventWithPurchaseInfo
+            ),
+            productIdentifier: Self.testProductId
+        )
+        self.orchestrator.cachePurchaseData(
+            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: "offering"),
+            paywallEvent: nil,
+            productIdentifier: Self.testProductId,
+            originatedFromPurchase: true
+        )
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: MockStoreTransaction(productIdentifier: Self.testProductId)
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "offering"
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
+        ) == Self.paywallEventCreationData
+    }
+
+    func testCachePurchaseDataMergePreservesCachedOfferingWhenLaterWriteOmitsIt() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // Symmetric to the paywall case: a first write caches the offering and a later same-product
+        // write carries only the paywall (whose offering matches). The merge must keep the previously
+        // cached offering.
+        self.orchestrator.cachePurchaseData(
+            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: "offering"),
+            paywallEvent: nil,
+            productIdentifier: Self.testProductId
+        )
+        self.orchestrator.cachePurchaseData(
+            presentedOfferingContext: nil,
+            paywallEvent: .purchaseInitiated(
+                Self.paywallEventCreationData,
+                Self.paywallEventWithPurchaseInfo
+            ),
+            productIdentifier: Self.testProductId,
+            originatedFromPurchase: true
+        )
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: MockStoreTransaction(productIdentifier: Self.testProductId)
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "offering"
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
+        ) == Self.paywallEventCreationData
+    }
+
+    func testCachePurchaseDataMergeKeepsPurchaseOriginatedFlagAcrossWrites() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // A purchase-originated write is followed by a later external (default) write. The merged
+        // entry must stay purchase-originated, so queue reads peek (never evict) it. Otherwise the
+        // entry would be consumed by the first queue read and lost before `purchase()` returns.
+        self.orchestrator.cachePurchaseData(
+            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: "offering"),
+            paywallEvent: nil,
+            productIdentifier: Self.testProductId,
+            originatedFromPurchase: true
+        )
+        self.orchestrator.cachePurchaseData(
+            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: "offering"),
+            paywallEvent: nil,
+            productIdentifier: Self.testProductId
+        )
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: MockStoreTransaction(productIdentifier: Self.testProductId)
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "offering"
+
+        self.backend.invokedPostReceiptData = false
+        self.backend.invokedPostReceiptDataParameters = nil
+
+        // A second queue read still sees the entry: the purchase-originated flag survived the merge.
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: MockStoreTransaction(productIdentifier: Self.testProductId)
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "offering"
+    }
+
+    func testCachePurchaseDataKeepsLatestAndDropsPreviousWhenOfferingDiffersForSameProduct() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // A paywall caches an offering + paywall event for the product, then the developer starts a
+        // purchase for a *different* offering's package (same product id). The offerings disagree, so
+        // the latest write wins and the previously cached paywall event is dropped rather than merged.
+        self.orchestrator.cachePurchaseData(
+            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: "offering"),
+            paywallEvent: .purchaseInitiated(
+                Self.paywallEventCreationData,
+                Self.paywallEventWithPurchaseInfo
+            ),
+            productIdentifier: Self.testProductId
+        )
+        self.orchestrator.cachePurchaseData(
+            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: "offering_b"),
+            paywallEvent: nil,
+            productIdentifier: Self.testProductId,
+            originatedFromPurchase: true
+        )
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: MockStoreTransaction(productIdentifier: Self.testProductId)
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "offering_b"
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall).to(beNil())
+    }
+
+    func testCachePurchaseDataDetectsOfferingMismatchUsingCachedPaywallOffering() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // The cached entry has no offering context, only a paywall event, so its offering is read from
+        // the paywall (`"offering"`). A later purchase for a different offering ("offering_b") must
+        // still be detected as a mismatch and keep only the latest data.
+        self.orchestrator.cachePurchaseData(
+            presentedOfferingContext: nil,
+            paywallEvent: .purchaseInitiated(
+                Self.paywallEventCreationData,
+                Self.paywallEventWithPurchaseInfo
+            ),
+            productIdentifier: Self.testProductId
+        )
+        self.orchestrator.cachePurchaseData(
+            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: "offering_b"),
+            paywallEvent: nil,
+            productIdentifier: Self.testProductId,
+            originatedFromPurchase: true
+        )
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: MockStoreTransaction(productIdentifier: Self.testProductId)
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "offering_b"
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall).to(beNil())
+    }
+
+    func testSK2QueueTransactionArrivingDuringPurchaseIsAttributedAndPurchaseStillConsumesCache() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk2Product()
+        let package = Package(
+            identifier: "package",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk2Product: product),
+            offeringIdentifier: "test_offering",
+            webCheckoutUrl: nil
+        )
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+
+        // Reproduce the race we're fixing: while `purchase()` is in flight (the purchase intent
+        // has been cached, but the purchase-initiated POST hasn't happened yet), a queue
+        // transaction for the same product arrives. The `onHandle` hook fires from within the
+        // listener's `handle(purchaseResult:)`, which the purchase flow awaits after caching the
+        // intent and before posting.
+        var queuePostInitiationSource: PostReceiptSource.InitiationSource?
+        var queuePostOfferingIdentifier: String??
+        mockListener.onHandle = {
+            let queueTransaction = MockStoreTransaction(productIdentifier: product.id)
+            try await self.orchestrator.storeKit2TransactionListener(
+                self.mockStoreKit2TransactionListener!,
+                updatedTransaction: queueTransaction
+            )
+            queuePostInitiationSource =
+                self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource
+            queuePostOfferingIdentifier =
+                self.backend.invokedPostReceiptDataParameters?.transactionData
+                    .presentedOfferingContext?.offeringIdentifier
+        }
+
+        _ = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: package,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
+            promotionalOfferOptions: nil
+        )
+
+        // The queue transaction that arrived mid-purchase was attributed from the cached intent.
+        expect(queuePostInitiationSource) == .queue
+        expect(queuePostOfferingIdentifier) == "test_offering"
+
+        // The purchase-initiated POST is also attributed (offering passed directly + cached intent).
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .purchase
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "test_offering"
+
+        // After the purchase consumed the cache, a later queue transaction for the same product
+        // no longer gets attribution.
+        self.backend.invokedPostReceiptData = false
+        let trailingTransaction = MockStoreTransaction(productIdentifier: product.id)
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: trailingTransaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
     }
 
     func testSK2TransactionListenerDelegateIncludesAttributionForPurchaseReason() async throws {
@@ -1881,6 +2379,70 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
         ) == Self.paywallEventWithPurchaseInfo
         expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
+    }
+
+    func testHandleRecordPurchaseRemovesExternallyCachedPurchaseContext() async throws {
+        self.setUpSystemInfo(finishTransactions: false) // Observer mode (required by recordPurchase)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        self.orchestrator.cachePurchaseData(
+            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: "test_offering"),
+            paywallEvent: .purchaseInitiated(
+                Self.paywallEventCreationData,
+                Self.paywallEventWithPurchaseInfo
+            ),
+            productIdentifier: Self.testProductId
+        )
+
+        let product = try await self.fetchSk2Product()
+        let purchaseResult = try await product.purchase()
+
+        guard case let .success(verificationResult) = purchaseResult,
+              case let .verified(sk2Transaction) = verificationResult else {
+            fail("Expected verified transaction")
+            return
+        }
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+        mockListener.mockTransaction = .init(sk2Transaction)
+        mockListener.mockJWSToken = verificationResult.jwsRepresentation
+
+        let transaction = try await self.orchestrator.handleRecordPurchase(purchaseResult)
+
+        expect(transaction).toNot(beNil())
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
+        ) == Self.paywallEventCreationData
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData
+                .presentedOfferingContext?.offeringIdentifier
+        ) == "test_offering"
+        expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
+
+        self.backend.invokedPostReceiptData = false
+
+        // The cached context was externally cached (no purchase-initiated post follows), so the
+        // `recordPurchase` queue post consumed it: a subsequent same-product queue transaction is
+        // no longer attributed.
+        let secondTransaction = MockStoreTransaction(productIdentifier: Self.testProductId)
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            mockListener,
+            updatedTransaction: secondTransaction
+        )
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall).to(beNil())
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
+        ).to(beNil())
     }
 
     func testHandleRecordPurchaseWithoutPaywall() async throws {

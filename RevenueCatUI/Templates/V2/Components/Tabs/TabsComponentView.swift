@@ -110,8 +110,12 @@ struct LoadedTabsComponentView: View {
 
     @Environment(\.customPaywallVariables)
     private var customVariables
+
     @Environment(\.selectedPackageId)
     private var selectedPackageId
+
+    @Environment(\.paywallStateStore)
+    private var stateStore
 
     private let viewModel: TabsComponentViewModel
     private let workflowDefaultPackage: Package?
@@ -289,6 +293,10 @@ struct LoadedTabsComponentView: View {
             .onAppear {
                 if !wasConfigured {
                     self.wasConfigured = true
+                    // Seed the store with the initial selection so components that react to the tab
+                    // render their correct state on first appearance. A no-op when the declared
+                    // default already matches the initial tab.
+                    self.publishSelectedTabState(self.tabControlContext.selectedTabId)
                     // Propagate the initial tab's package to parent context for the purchase button.
                     // Subsequent changes are handled by the onChange callback in LoadedTabComponentView.
                     if let package = tierPackageContext.package {
@@ -311,6 +319,10 @@ struct LoadedTabsComponentView: View {
             //    - Otherwise → use tab's default
             //
             .onChangeOf(self.tabControlContext.selectedTabId) { newTabId in
+                // Publish the new selection before the package-restoration guard so dependent
+                // components re-resolve their `state` conditions even for tabs without packages.
+                self.publishSelectedTabState(newTabId)
+
                 guard let newTabViewModel = self.viewModel.tabViewModels[newTabId],
                       let newTierPackageContext = self.tierPackageContexts[newTabId] else {
                     return
@@ -388,6 +400,16 @@ struct LoadedTabsComponentView: View {
                 }
             }
         }
+    }
+
+    private func publishSelectedTabState(_ tabId: String) {
+        guard let stateStore = self.stateStore,
+              let stateUpdates = self.viewModel.stateUpdates,
+              !stateUpdates.isEmpty else {
+            return
+        }
+
+        stateStore.apply(stateUpdates, payload: .string(tabId))
     }
 
 }

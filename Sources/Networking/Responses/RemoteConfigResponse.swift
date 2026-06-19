@@ -7,6 +7,8 @@
 
 import Foundation
 
+struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {}
+
 struct RemoteConfigResponse: Equatable {
 
     let apiSources: [ApiSource]

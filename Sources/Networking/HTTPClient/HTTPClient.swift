@@ -152,6 +152,8 @@ class HTTPClient {
 
 extension HTTPClient {
 
+    static let rcContainerFormatAcceptHeaderValue = "application/x-rc-format"
+
     static func authorizationHeader(withAPIKey apiKey: String) -> RequestHeaders {
         return [RequestHeader.authorization.rawValue: "Bearer \(apiKey)"]
     }
@@ -185,6 +187,7 @@ extension HTTPClient {
     enum RequestHeader: String {
 
         case authorization = "Authorization"
+        case accept = "Accept"
         case nonce = "X-Nonce"
         case eTag = "X-RevenueCat-ETag"
         case eTagValidationTime = "X-RC-Last-Refresh-Time"
@@ -387,10 +390,7 @@ private extension HTTPClient {
 
         let statusCode: HTTPStatusCode = .init(rawValue: httpURLResponse.statusCode)
 
-        // `nil` if status code is 304, since the response will be empty and fetched from the eTag.
-        let dataIfAvailable = statusCode == .notModified
-            ? nil
-            : data
+        let dataIfAvailable = Self.responseBodyData(statusCode: statusCode, data: data)
 
         return self.createVerifiedResponse(request: request,
                                            urlRequest: urlRequest,
@@ -448,6 +448,10 @@ private extension HTTPClient {
             }
             // Fetch from ETagManager if available
             .map { (response) -> VerifiedHTTPResponse<Data>? in
+                guard request.httpRequest.path.shouldSendEtag else {
+                    return response.asOptionalResponse
+                }
+
                 return self.eTagManager.httpResultFromCacheOrBackend(
                     with: response,
                     request: urlRequest,
@@ -862,15 +866,10 @@ extension HTTPClient {
 // MARK: - Extensions
 
 fileprivate extension NetworkError {
+    /// A request may be retried against a fallback host only for transient failures (connection-level
+    /// errors and 5xx). See ``NetworkError/isTransient``.
     var isAllowedToRetryWithFallbackHost: Bool {
-        switch self {
-        case .decoding, .unableToCreateRequest, .signatureVerificationFailed:
-            return false
-        case .dnsError, .networkError, .unexpectedResponse:
-            return true
-        case let .errorResponse(_, statusCode, _):
-            return HTTPStatusCode(rawValue: statusCode.rawValue).isServerError
-        }
+        return self.isTransient
     }
 }
 
@@ -907,6 +906,7 @@ extension HTTPRequest {
         internalSettings: InternalDangerousSettingsType
     ) -> HTTPClient.RequestHeaders {
         var result: HTTPClient.RequestHeaders = defaultHeaders
+        result += self.path.additionalHeaders
 
         if self.path.authenticated {
             result += authHeaders
@@ -960,6 +960,22 @@ private extension NetworkError {
 
 }
 
+extension HTTPClient {
+
+    static func responseBodyData(statusCode: HTTPStatusCode, data: Data?) -> Data? {
+        switch statusCode {
+        case .notModified:
+            // `nil` if status code is 304, since the response will be empty and fetched from the eTag.
+            return nil
+        case .noContent:
+            return data ?? Data()
+        default:
+            return data
+        }
+    }
+
+}
+
 extension Result where Success == Data?, Failure == NetworkError {
 
     /// Converts a `Result<Data?, NetworkError>` into `Result<HTTPResponse<Data?>, NetworkError>`
@@ -987,7 +1003,10 @@ extension Result where Success == VerifiedHTTPResponse<Data>, Failure == Network
         return self.flatMap { response in                   // Convert the `Result` type
             Result<VerifiedHTTPResponse<Value>, Error> {    // Create a new `Result<Value>`
                 try response.mapBody { data in              // Convert the from `Data` -> `Value`
-                    try Value.create(with: data)            // Decode `Data` into `Value`
+                    try Value.create(                       // Decode `Data` into `Value`
+                        with: data,
+                        httpStatusCode: response.httpStatusCode
+                    )
                 }
                 .copyWithNewRequestDate()                   // Update request date for 304 responses
             }
