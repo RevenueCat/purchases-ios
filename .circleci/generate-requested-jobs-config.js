@@ -27,6 +27,7 @@ const JOBS = {
   "generate-swiftinterface": ["slack-secrets-ios"],
   "installation-tests-all-but-carthage": ["slack-secrets"],
   "installation-tests-carthage": ["slack-secrets"],
+  "installation-tests-carthage-xcode-27": ["slack-secrets"],
   "integration-tests-all": ["slack-secrets"],
   "lint": ["slack-secrets"],
   "pod-lib-lint": ["slack-secrets"],

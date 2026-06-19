@@ -422,6 +422,26 @@ commands:
           command: |
             bundle exec fastlane update_carthage_commit
 
+  run-carthage-installation-tests:
+    steps:
+      - checkout-with-minimal-permissions
+      - run:
+          name: Upgrade Carthage
+          command: |
+            brew update
+            brew upgrade carthage
+      - update-carthage-installation-commit
+      # Carthage
+      - run:
+          name: Carthage Update
+          working_directory: Tests/InstallationTests/CarthageInstallation/
+          command: |
+            bundle exec fastlane installation_tests
+      - set-signing-repo-deploy-key-for-git
+      - install-dependencies-scan-and-archive:
+          directory: Tests/InstallationTests/CarthageInstallation/
+      - slack-notify-on-fail
+
   restore-installation-test-cache:
     parameters:
       test-name:
@@ -1748,23 +1768,14 @@ jobs:
     executor:
       name: macos-executor-large
     steps:
-      - checkout-with-minimal-permissions
-      - run:
-          name: Upgrade Carthage
-          command: |
-            brew update
-            brew upgrade carthage
-      - update-carthage-installation-commit
-      # Carthage
-      - run:
-          name: Carthage Update
-          working_directory: Tests/InstallationTests/CarthageInstallation/
-          command: |
-            bundle exec fastlane installation_tests
-      - set-signing-repo-deploy-key-for-git
-      - install-dependencies-scan-and-archive:
-          directory: Tests/InstallationTests/CarthageInstallation/
-      - slack-notify-on-fail
+      - run-carthage-installation-tests
+
+  installation-tests-carthage-xcode-27:
+    executor:
+      name: macos-executor-large
+      xcode_version: "27.0.0"
+    steps:
+      - run-carthage-installation-tests
 
   lint:
     executor:
@@ -2385,6 +2396,11 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+      - installation-tests-carthage-xcode-27:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
 
       # SPM / Other Build Tests
       - api-tests:
@@ -2450,6 +2466,7 @@ workflows:
             - record-and-upload-paywalls-v2-snapshots
             - installation-tests-all-but-carthage
             - installation-tests-carthage
+            - installation-tests-carthage-xcode-27
             - api-tests
             - spm-receipt-parser
             - revenuecat-admob-tests
@@ -2731,6 +2748,9 @@ workflows:
       - installation-tests-carthage:
           context:
             - slack-secrets
+      - installation-tests-carthage-xcode-27:
+          context:
+            - slack-secrets
       - api-tests:
           context:
             - slack-secrets
@@ -2797,6 +2817,7 @@ workflows:
             - record-and-upload-paywalls-v1-snapshots
             - installation-tests-all-but-carthage
             - installation-tests-carthage
+            - installation-tests-carthage-xcode-27
             - api-tests
             - revenuecat-admob-tests
             - deploy-purchase-tester
