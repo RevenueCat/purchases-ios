@@ -18,7 +18,8 @@ let project = Project(
                 "../../RevenueCatUI/**/*.swift"
             ],
             dependencies: [
-                .revenueCat
+                .revenueCat,
+                .rulesEngineInternal
             ],
             settings: .settings(
                 base: ([:] as SettingsDictionary).appendingTuistSwiftConditions()

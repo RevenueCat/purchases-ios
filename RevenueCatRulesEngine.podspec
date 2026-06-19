@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name             = "RevenueCatRulesEngine"
   s.module_name      = "RulesEngineInternal"
-  s.version          = "5.74.0-SNAPSHOT"
+  s.version          = "5.79.0-SNAPSHOT"
   s.summary          = "Rules engine used internally by the RevenueCat SDK."
 
   s.description      = <<-DESC
