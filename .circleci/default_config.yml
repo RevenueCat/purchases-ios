@@ -1937,8 +1937,15 @@ jobs:
           name: Build BinarySizeTest (SPM) and upload to Emerge
           command: bundle exec fastlane build_and_upload_emerge_binary_size_analysis integration_method:SPM
 
-  record-and-push-paywall-template-screenshots:
-    description: "Record new paywall template screenshots with Paparazzi and push them to the paywall-rendering-validation repository"
+  record-and-upload-paywalls-v2-snapshots:
+    description: "Record paywall template screenshots and distribute them to the paywall-rendering-validation repository and/or Emerge"
+    parameters:
+      push_to_validation_repo:
+        type: boolean
+        default: false
+      upload_to_emerge:
+        type: boolean
+        default: false
     executor:
       name: macos-executor
       xcode_version: "16.4"
@@ -1953,18 +1960,28 @@ jobs:
           command: bundle exec fastlane ios fetch_paywall_preview_resources
       - tuist-generate-workspace:
           include_test_dependencies: true
+      - when:
+          condition: << parameters.push_to_validation_repo >>
+          steps:
+            - run:
+                name: Clone paywall-rendering-validation repository
+                command: git clone git@github.com:RevenueCat/paywall-rendering-validation.git ../Tests/paywall-rendering-validation
+            - run:
+                name: Set environment variables for the validation repo push
+                command: |
+                  echo "export GITHUB_TOKEN=$GH_TOKEN_PAYWALL_RENDERING_VALIDATION_PR_RW" >> $BASH_ENV
+                  echo "export PAYWALL_VALIDATION_REPO_PATH=../Tests/paywall-rendering-validation" >> $BASH_ENV
+                  source $BASH_ENV
       - run:
-          name: Clone paywall-rendering-validation repository
-          command: git clone git@github.com:RevenueCat/paywall-rendering-validation.git ../Tests/paywall-rendering-validation
-      - run:
-          name: Set GitHub token environment variable
-          command: |
-            echo "export GITHUB_TOKEN=$GH_TOKEN_PAYWALL_RENDERING_VALIDATION_PR_RW" >> $BASH_ENV
-            source $BASH_ENV
-      - run:
-          name: Run tests
-          command: bundle exec fastlane record_and_push_paywall_template_screenshots target_repository_path:../Tests/paywall-rendering-validation
-          no_output_timeout: 15m
+          name: Record and upload paywall template screenshots
+          # target_repository_path is only set when push_to_validation_repo is true; the lane pushes
+          # to the validation repo only when it receives a non-empty target_repository_path.
+          command: bundle exec fastlane record_and_upload_v2_snapshots upload_to_emerge:<< parameters.upload_to_emerge >> target_repository_path:"${PAYWALL_VALIDATION_REPO_PATH:-}"
+          no_output_timeout: 30m
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: paywall-template-screenshots
+      - slack-notify-on-fail
 
   update-paywall-preview-resources-commit:
     docker:
@@ -2349,6 +2366,13 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+      - record-and-upload-paywalls-v2-snapshots:
+          push_to_validation_repo: false
+          upload_to_emerge: true
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
 
       # Installation Tests
       - installation-tests-all-but-carthage:
@@ -2423,6 +2447,7 @@ workflows:
             - run-revenuecat-ui-ios-18-and-17
             - spm-revenuecat-ui-watchos
             - record-and-upload-paywalls-v1-snapshots
+            - record-and-upload-paywalls-v2-snapshots
             - installation-tests-all-but-carthage
             - installation-tests-carthage
             - api-tests
@@ -2564,7 +2589,7 @@ workflows:
     jobs:
       - release-train
 
-  record-and-push-paywall-template-screenshots:
+  record-and-upload-paywalls-v2-snapshots:
     when:
       or:
         - equal:
@@ -2575,9 +2600,12 @@ workflows:
             - equal: ["main", << pipeline.git.branch >>]
             - equal: ["default", << pipeline.parameters.action >>]
     jobs:
-      - record-and-push-paywall-template-screenshots:
+      - record-and-upload-paywalls-v2-snapshots:
+          push_to_validation_repo: true
+          upload_to_emerge: true
           context:
             - paywall-rendering-validation-pr-rw
+            - slack-secrets
 
   update-paywall-templates:
     when:
