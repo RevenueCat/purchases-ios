@@ -1008,14 +1008,41 @@ final class PurchasesOrchestrator {
 
         self.cachedPurchaseContextByProductID.modify { cache in
             let existing = cache[productIdentifier]
-            cache[productIdentifier] = CachedPurchaseContext(
-                // Don't drop a value a previous write cached when this one doesn't carry it.
-                offeringContext: presentedOfferingContext ?? existing?.offeringContext,
-                paywallEvent: paywallEvent ?? existing?.paywallEvent,
-                cacheDate: self.dateProvider.now(),
-                // A purchase-initiated post is expected if either write was purchase-originated.
-                originatedFromPurchase: originatedFromPurchase || (existing?.originatedFromPurchase ?? false)
-            )
+
+            // Each individual call is internally consistent (its offering context and paywall event
+            // reference the same offering), so a call's offering can be read from either source.
+            let existingOfferingID = existing?.offeringContext?.offeringIdentifier
+                ?? existing?.paywallEvent?.data.offeringIdentifier
+            let newOfferingID = presentedOfferingContext?.offeringIdentifier
+                ?? paywallEvent?.data.offeringIdentifier
+
+            if let existingOfferingID, let newOfferingID, existingOfferingID != newOfferingID {
+                // A different offering was already cached for this same product. 
+                // Keep only the latest call's data so we attribute the
+                // purchase that's actually happening, and surface the inconsistency.
+                Logger.warn(Strings.purchase.cache_purchase_data_offering_mismatch(
+                    existingOfferingID: existingOfferingID,
+                    newOfferingID: newOfferingID,
+                    productID: productIdentifier
+                ))
+                cache[productIdentifier] = CachedPurchaseContext(
+                    offeringContext: presentedOfferingContext,
+                    paywallEvent: paywallEvent,
+                    cacheDate: self.dateProvider.now(),
+                    originatedFromPurchase: originatedFromPurchase
+                )
+            } else {
+                // Same offering (or one side absent): merge, keeping each value the latest call carries
+                // and falling back to the previously cached one. This preserves a paywall event an
+                // earlier call cached when a later same-product call omits it.
+                cache[productIdentifier] = CachedPurchaseContext(
+                    offeringContext: presentedOfferingContext ?? existing?.offeringContext,
+                    paywallEvent: paywallEvent ?? existing?.paywallEvent,
+                    cacheDate: self.dateProvider.now(),
+                    // A purchase-initiated post is expected if either write was purchase-originated.
+                    originatedFromPurchase: originatedFromPurchase || (existing?.originatedFromPurchase ?? false)
+                )
+            }
         }
     }
 
