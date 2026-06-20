@@ -124,6 +124,10 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 
     purchases.restorePurchases()
     purchases.restorePurchases { (_: CustomerInfo?, _: PublicError?) in }
+    purchases.restorePurchases(transferBehavior: .transferIfNoActiveSubscriptions)
+    purchases.restorePurchases(
+        transferBehavior: .keepWithOriginalAppUserID
+    ) { (_: CustomerInfo?, _: PublicError?) in }
 
     if #available(iOS 14.0, *) {
 #if os(iOS)
@@ -171,10 +175,13 @@ private func checkPurchaseParams() {
     let pack: Package! = nil
     let storeProduct: StoreProduct! = nil
     let offer: PromotionalOffer! = nil
+    let transferBehavior: TransferBehavior = .transferToNewAppUserID
+    let _: String = transferBehavior.rawValue
 
     let packageParamsBuilder = PurchaseParams.Builder(package: pack)
         .with(promotionalOffer: offer)
         .with(quantity: 3)
+        .with(transferBehavior: transferBehavior)
 
     if #available(iOS 15.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
         let _ = PurchaseParams.Builder(package: pack)
@@ -196,6 +203,7 @@ private func checkPurchaseParams() {
     let productParamsBuilder = PurchaseParams.Builder(product: storeProduct)
         .with(promotionalOffer: offer)
         .with(quantity: 5)
+        .with(transferBehavior: .keepWithOriginalAppUserID)
 
     if #available(iOS 15.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
         let _ = PurchaseParams.Builder(product: storeProduct)
@@ -239,6 +247,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
         for try await _: CustomerInfo in purchases.customerInfoStream {}
 
         let _: CustomerInfo = try await purchases.restorePurchases()
+        let _: CustomerInfo = try await purchases.restorePurchases(transferBehavior: .transferToNewAppUserID)
 
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             let _: Bool = try await purchases.isPurchaseAllowedByRestoreBehavior()

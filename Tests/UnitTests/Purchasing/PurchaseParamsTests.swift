@@ -191,5 +191,31 @@ class PurchaseParamsTests: TestCase {
         }
     }
 
+    func testPurchaseParamsBuilderWithTransferBehavior() {
+        let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
+        let storeProduct = StoreProduct(sk1Product: product)
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: storeProduct,
+                              offeringIdentifier: "offering",
+                              webCheckoutUrl: nil)
+
+        let productParams = PurchaseParams.Builder(product: storeProduct)
+            .with(transferBehavior: .transferToNewAppUserID)
+            .build()
+
+        expect(productParams.product) == storeProduct
+        expect(productParams.package).to(beNil())
+        expect(productParams.transferBehavior) == .transferToNewAppUserID
+
+        let packageParams = PurchaseParams.Builder(package: package)
+            .with(transferBehavior: .keepWithOriginalAppUserID)
+            .build()
+
+        expect(packageParams.package) == package
+        expect(packageParams.product).to(beNil())
+        expect(packageParams.transferBehavior) == .keepWithOriginalAppUserID
+    }
+
     #endif
 }
