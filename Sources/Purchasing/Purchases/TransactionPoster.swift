@@ -46,6 +46,7 @@ struct PurchasedTransactionData {
     var metadata: [String: String]?
     var aadAttributionToken: String?
     var storeCountry: String?
+    var transferBehavior: TransferBehavior?
 
 }
 
@@ -372,7 +373,8 @@ extension TransactionPoster {
         let shouldStoreMetadata = storedTransactionMetadata == nil && (
             postReceiptSource.initiationSource == .purchase ||
             purchasedTransactionData.presentedOfferingContext != nil ||
-            purchasedTransactionData.presentedPaywall != nil
+            purchasedTransactionData.presentedPaywall != nil ||
+            purchasedTransactionData.transferBehavior != nil
         )
 
         let containsAttributionData = storedTransactionMetadata != nil || shouldStoreMetadata

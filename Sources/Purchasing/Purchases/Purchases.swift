@@ -1291,6 +1291,24 @@ public extension Purchases {
         return try await self.restorePurchasesAsync()
     }
 
+    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+    @objc(restorePurchasesWithTransferBehavior:completion:)
+    func restorePurchases(
+        transferBehavior: TransferBehavior,
+        completion: ((CustomerInfo?, PublicError?) -> Void)? = nil
+    ) {
+        self.purchasesOrchestrator.restorePurchases(transferBehavior: transferBehavior) { @Sendable in
+            completion?($0.value, $0.error?.asPublicError)
+        }
+    }
+
+    func restorePurchases(transferBehavior: TransferBehavior) async throws -> CustomerInfo {
+        return try await self.restorePurchasesAsync(transferBehavior: transferBehavior)
+    }
+
+    #endif
+
     @objc(purchaseWithParams:completion:)
     func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(params: params, trackDiagnostics: true, completion: completion)

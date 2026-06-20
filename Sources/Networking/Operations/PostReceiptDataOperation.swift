@@ -63,6 +63,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
         -\(postData.subscriberAttributesByKey?.individualizedCacheKeyPart ?? "")
         -\(postData.sdkOriginated)
+        -\(postData.transferBehavior?.rawValue ?? "")
         -\(postData.containsAttributionData ? (postData.transactionId ?? "") : "")
         """
 
@@ -160,6 +161,7 @@ extension PostReceiptDataOperation {
         /// Indicates whether this purchase was initiated via the SDK's `purchase()` methods.
         let sdkOriginated: Bool
         let metadata: [String: String]?
+        let transferBehavior: TransferBehavior?
         let containsAttributionData: Bool
     }
 
@@ -221,6 +223,7 @@ extension PostReceiptDataOperation.PostData {
             transactionId: transactionId,
             sdkOriginated: sdkOriginated,
             metadata: data.metadata,
+            transferBehavior: data.transferBehavior,
             containsAttributionData: containsAttributionData
         )
     }
@@ -308,6 +311,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case transactionId = "transaction_id"
         case sdkOriginated = "sdk_originated"
         case metadata
+        case transferBehavior = "transfer_behavior"
 
     }
 
@@ -329,6 +333,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         try container.encodeIfPresent(self.transactionId, forKey: .transactionId)
         try container.encode(self.sdkOriginated, forKey: .sdkOriginated)
         try container.encodeIfPresent(self.metadata, forKey: .metadata)
+        try container.encodeIfPresent(self.transferBehavior?.rawValue, forKey: .transferBehavior)
         try container.encodeIfPresent(self.presentedOfferingIdentifier, forKey: .presentedOfferingIdentifier)
         try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)
         try container.encodeIfPresent(self.appliedTargetingRule, forKey: .appliedTargetingRule)

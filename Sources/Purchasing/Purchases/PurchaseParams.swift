@@ -45,6 +45,7 @@ import Foundation
     #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     let promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?
+    let transferBehavior: TransferBehavior?
 
     #endif
 
@@ -64,6 +65,7 @@ import Foundation
 
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.promotionalOfferOptions = builder.promotionalOfferOptions
+        self.transferBehavior = builder.transferBehavior
         #endif
     }
 
@@ -85,6 +87,7 @@ import Foundation
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
         private(set) var promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?
+        private(set) var transferBehavior: TransferBehavior?
 
         #endif
 
@@ -190,6 +193,15 @@ import Foundation
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
         @objc public func with(promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions) -> Self {
             self.promotionalOfferOptions = promotionalOfferOptions
+            return self
+        }
+
+        /**
+         * Sets how RevenueCat should handle a purchase that is already associated with another App User ID.
+         * - Parameter transferBehavior: The ``TransferBehavior`` to apply when posting the receipt.
+         */
+        @objc public func with(transferBehavior: TransferBehavior) -> Self {
+            self.transferBehavior = transferBehavior
             return self
         }
 
