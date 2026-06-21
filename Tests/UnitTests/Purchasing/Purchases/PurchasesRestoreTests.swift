@@ -182,6 +182,19 @@ class PurchasesRestoreTests: BasePurchasesTests {
         expect(self.backend.postedIsRestore!).to(beTrue())
     }
 
+    func testRestoringPurchasesWithTransferBehaviorPostsTransferBehavior() {
+        let transferBehavior = TransferBehavior(rawValue: "keep_with_original_app_user_id")
+
+        self.purchasesOrchestrator.restorePurchases(
+            transferBehavior: transferBehavior,
+            completion: nil
+        )
+
+        expect(self.backend.postReceiptDataCalled).to(beTrue())
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.transferBehavior?.rawValue)
+            == "keep_with_original_app_user_id"
+    }
+
     func testRestoringPurchasesSetsIsRestoreForAnon() {
         Purchases.clearSingleton()
         self.setupAnonPurchases()
