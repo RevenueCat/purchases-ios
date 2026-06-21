@@ -186,7 +186,7 @@ class PurchasesRestoreTests: BasePurchasesTests {
         self.purchases.restorePurchases()
 
         expect(self.backend.postReceiptDataCalled).to(beTrue())
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.transferBehavior).to(beNil())
+        expect(self.backend.postedTransferBehavior).to(beNil())
     }
 
     func testRestoringPurchasesWithTransferBehaviorPostsTransferBehavior() {
@@ -198,8 +198,7 @@ class PurchasesRestoreTests: BasePurchasesTests {
         )
 
         expect(self.backend.postReceiptDataCalled).to(beTrue())
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.transferBehavior?.rawValue)
-            == "keep_with_original_app_user_id"
+        expect(self.backend.postedTransferBehavior?.rawValue) == "keep_with_original_app_user_id"
     }
 
     func testRestoringPurchasesSetsIsRestoreForAnon() {

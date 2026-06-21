@@ -98,8 +98,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.transferBehavior?.rawValue)
-            == "transfer_to_new_app_user_id"
+        expect(self.backend.postedTransferBehavior?.rawValue) == "transfer_to_new_app_user_id"
     }
 
     @MainActor
