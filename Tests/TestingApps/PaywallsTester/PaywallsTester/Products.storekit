@@ -43,71 +43,59 @@
       "productID" : "com.revenuecat.simpleapp.lifetimelite",
       "referenceName" : "Lifetime Lite",
       "type" : "NonConsumable"
-    },
-    {
-      "displayPrice" : "0.99",
-      "familyShareable" : false,
-      "internalID" : "70E95235",
-      "localizations" : [
-        {
-          "description" : "",
-          "displayName" : "",
-          "locale" : "en_US"
-        }
-      ],
-      "productID" : "500coins",
-      "referenceName" : "500coins",
-      "type" : "Consumable"
     }
   ],
   "settings" : {
-    "_askToBuyEnabled" : false,
-    "_billingGracePeriodEnabled" : false,
-    "_billingIssuesEnabled" : false,
-    "_disableDialogs" : false,
     "_failTransactionsEnabled" : false,
     "_locale" : "en_US",
-    "_renewalBillingIssuesEnabled" : false,
     "_storefront" : "USA",
     "_storeKitErrors" : [
       {
+        "current" : null,
         "enabled" : false,
         "name" : "Load Products"
       },
       {
+        "current" : null,
         "enabled" : false,
         "name" : "Purchase"
       },
       {
+        "current" : null,
         "enabled" : false,
         "name" : "Verification"
       },
       {
+        "current" : null,
         "enabled" : false,
         "name" : "App Store Sync"
       },
       {
+        "current" : null,
         "enabled" : false,
         "name" : "Subscription Status"
       },
       {
+        "current" : null,
         "enabled" : false,
         "name" : "App Transaction"
       },
       {
+        "current" : null,
         "enabled" : false,
         "name" : "Manage Subscriptions Sheet"
       },
       {
+        "current" : null,
         "enabled" : false,
         "name" : "Refund Request Sheet"
       },
       {
+        "current" : null,
         "enabled" : false,
         "name" : "Offer Code Redeem Sheet"
       }
-    ],
-    "_timeRate" : 0
+    ]
   },
   "subscriptionGroups" : [
     {
@@ -164,7 +152,7 @@
               "locale" : "ar"
             }
           ],
-          "productID" : "mark_premium",
+          "productID" : "com.revenuecat.simpleapp.monthly",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Monthly",
           "subscriptionGroupID" : "CEEF018E",
@@ -208,7 +196,7 @@
               "locale" : "ar"
             }
           ],
-          "productID" : "mark_premium2",
+          "productID" : "com.revenuecat.simpleapp.yearly",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Yearly",
           "subscriptionGroupID" : "CEEF018E",
@@ -236,7 +224,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "mark_premium3",
+          "productID" : "com.revenuecat.simpleapp.weekly",
           "recurringSubscriptionPeriod" : "P1W",
           "referenceName" : "Weekly",
           "subscriptionGroupID" : "CEEF018E",
