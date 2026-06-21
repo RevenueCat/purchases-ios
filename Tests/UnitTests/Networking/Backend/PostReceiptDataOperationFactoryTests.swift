@@ -522,6 +522,27 @@ class PostReceiptDataOperationFactoryTests: TestCase {
         expect(json["transfer_behavior"] as? String) == "transfer_to_new_app_user_id"
     }
 
+    func testTransferBehaviorIsNotEncodedWhenNil() throws {
+        let postData = PostReceiptDataOperation.PostData(
+            transactionData: .init(),
+            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: false,
+            purchaseCompletedBy: .revenueCat,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
+        )
+
+        let encodedPostData = try JSONEncoder.default.encode(postData)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encodedPostData) as? [String: Any])
+
+        expect(json.keys).toNot(contain("transfer_behavior"))
+    }
+
     func testCacheKeyDifferenceWhenTransferBehaviorChanges() {
         let config = self.createConfig()
         let purchaseCompletedBy: PurchasesAreCompletedBy = .revenueCat

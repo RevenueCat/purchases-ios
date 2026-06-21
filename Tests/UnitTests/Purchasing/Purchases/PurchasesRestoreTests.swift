@@ -182,6 +182,13 @@ class PurchasesRestoreTests: BasePurchasesTests {
         expect(self.backend.postedIsRestore!).to(beTrue())
     }
 
+    func testRestoringPurchasesDoesNotPostTransferBehaviorByDefault() {
+        self.purchases.restorePurchases()
+
+        expect(self.backend.postReceiptDataCalled).to(beTrue())
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.transferBehavior).to(beNil())
+    }
+
     func testRestoringPurchasesWithTransferBehaviorPostsTransferBehavior() {
         let transferBehavior = TransferBehavior(rawValue: "keep_with_original_app_user_id")
 
