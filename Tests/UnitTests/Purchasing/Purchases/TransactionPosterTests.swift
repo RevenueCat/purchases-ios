@@ -801,7 +801,8 @@ class TransactionPosterTests: TestCase {
                 offeringIdentifier: "stored_offering",
                 placementIdentifier: "stored_placement",
                 targetingContext: nil
-            )
+            ),
+            transferBehavior: TransferBehavior(rawValue: "keep_with_original_app_user_id")
         )
         let storedMetadata = LocalTransactionMetadata(
             transactionId: self.mockTransaction.transactionIdentifier,
@@ -834,6 +835,8 @@ class TransactionPosterTests: TestCase {
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
         ) == "stored_offering"
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.transferBehavior?.rawValue)
+            == "keep_with_original_app_user_id"
         expect(self.backend.invokedPostReceiptDataParameters?.originalPurchaseCompletedBy) == .myApp
     }
 

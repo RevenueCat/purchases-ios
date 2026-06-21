@@ -201,6 +201,40 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(self.httpClient.calls).to(haveCount(1))
     }
 
+    func testPostsReceiptDataWithTransferBehaviorCorrectly() throws {
+        let path: HTTPRequest.Path = .postReceiptData
+
+        httpClient.mock(
+            requestPath: path,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        let isRestore = true
+        let purchaseCompletedBy: PurchasesAreCompletedBy = .revenueCat
+        let observerMode = purchaseCompletedBy.observerMode
+        let transferBehavior = TransferBehavior(rawValue: "transfer_if_no_active_subscriptions")
+
+        waitUntil { completed in
+            self.backend.post(receipt: Self.receipt,
+                              productData: nil,
+                              transactionData: .init(
+                                 presentedOfferingContext: nil,
+                                 unsyncedAttributes: nil,
+                                 storeCountry: nil,
+                                 transferBehavior: transferBehavior
+                              ),
+                              postReceiptSource: .init(isRestore: isRestore, initiationSource: .restore),
+                              observerMode: observerMode,
+                              originalPurchaseCompletedBy: purchaseCompletedBy,
+                              appUserID: Self.userID,
+                              completion: { _ in
+                completed()
+            })
+        }
+
+        expect(self.httpClient.calls).to(haveCount(1))
+    }
+
     func testPostsReceiptDataWithTestReceiptIdentifier() throws {
         let identifier = try XCTUnwrap(UUID(uuidString: "12345678-1234-1234-1234-C2C35AE34D09")).uuidString
 
