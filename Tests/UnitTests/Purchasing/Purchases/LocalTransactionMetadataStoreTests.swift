@@ -512,8 +512,11 @@ class LocalTransactionMetadataStoreE2ETests: TestCase {
         expect(retrieved?.transactionData.metadata) == originalMetadata.transactionData.metadata
         expect(retrieved?.transactionData.aadAttributionToken) == originalMetadata.transactionData.aadAttributionToken
         expect(retrieved?.transactionData.storeCountry) == originalMetadata.transactionData.storeCountry
-        expect(retrieved?.transactionData.transferBehavior?.rawValue)
-            == originalMetadata.transactionData.transferBehavior?.rawValue
+        if let expectedTransferBehavior = originalMetadata.transactionData.transferBehavior?.rawValue {
+            expect(retrieved?.transactionData.transferBehavior?.rawValue) == expectedTransferBehavior
+        } else {
+            expect(retrieved?.transactionData.transferBehavior?.rawValue).to(beNil())
+        }
 
         // Verify encoded receipt
         expect(retrieved?.encodedAppleReceipt) == originalMetadata.encodedAppleReceipt
