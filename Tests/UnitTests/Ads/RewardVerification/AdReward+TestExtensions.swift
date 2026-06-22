@@ -26,8 +26,6 @@ extension AdReward {
         return .virtualCurrency(payload)
     }
 
-    /// Test-only convenience that builds an entitlement reward from an identifier and expiration.
-    /// Falls back to ``unsupportedReward`` when the inputs are rejected.
     static func entitlement(identifier: String, expiresAt: Date) -> AdReward {
         guard let payload = EntitlementReward(identifier: identifier, expiresAt: expiresAt) else {
             return .unsupportedReward

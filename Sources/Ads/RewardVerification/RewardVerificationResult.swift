@@ -28,8 +28,7 @@ import Foundation
 
     /// Server verification succeeded for this ad's transaction.
     ///
-    /// `moreRewards` carries any *additional* rewards granted alongside the primary `reward`; it does
-    /// not repeat `reward` and is empty in the common single-reward case.
+    /// `moreRewards` contains additional rewards only; it does not repeat `reward`.
     @_spi(Internal) public static func verified(
         _ reward: AdReward,
         moreRewards: [AdReward] = []
@@ -40,20 +39,19 @@ import Foundation
     /// Verification did not complete successfully (rejected, exhausted polling, error, etc.).
     public static let failed = RewardVerificationResult(storage: .failed)
 
-    /// Non-`nil` when verification succeeded. The primary reward granted for this ad.
+    /// Primary verified reward, if verification succeeded.
     public var verifiedReward: AdReward? {
         guard case .verified(let reward, _) = self.storage else { return nil }
         return reward
     }
 
-    /// Additional rewards granted alongside ``verifiedReward``. Does not repeat ``verifiedReward``;
-    /// empty when verification failed or only a single reward was granted.
+    /// Additional verified rewards. Empty when verification failed or only one reward was granted.
     public var moreRewards: [AdReward] {
         guard case .verified(_, let moreRewards) = self.storage else { return [] }
         return moreRewards
     }
 
-    /// `true` when verification did not complete successfully.
+    /// Whether verification failed.
     var failed: Bool {
         guard case .failed = self.storage else { return false }
         return true

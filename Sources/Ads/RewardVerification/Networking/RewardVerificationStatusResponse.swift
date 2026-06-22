@@ -19,8 +19,7 @@ struct RewardVerificationStatusResponse: Equatable {
 
     enum Status: Equatable {
 
-        /// Verified by the backend, with the primary `reward` plus any `moreRewards` (additional
-        /// rewards only — `moreRewards` does not repeat `reward`).
+        /// `moreRewards` contains additional rewards only; it does not repeat `reward`.
         case verified(reward: AdReward, moreRewards: [AdReward])
         case pending
         case failed(Failure)
@@ -130,9 +129,7 @@ extension RewardVerificationStatusResponse: Decodable {
         return wire.map(\.reward)
     }
 
-    /// Decodes a single reward object (`{ "type", ... }`) into an ``AdReward``, never throwing:
-    /// malformed or unknown shapes log a warning and fall back to ``AdReward/unsupportedReward`` so a
-    /// single bad entry can't drop the rest of the list.
+    /// Decodes malformed or unknown reward objects as ``AdReward/unsupportedReward``.
     private struct WireReward: Decodable {
 
         let reward: AdReward

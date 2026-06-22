@@ -16,7 +16,6 @@ import XCTest
 
 @_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 
-/// Decoding tests for the reward-verification poll response wire shape (`reward` + `more_rewards`).
 final class RewardVerificationStatusResponseTests: TestCase {
 
     private static let expiresAtString = "2026-06-16T12:00:00Z"
@@ -77,7 +76,6 @@ final class RewardVerificationStatusResponseTests: TestCase {
     }
 
     func testMalformedEntitlementDecodesAsUnsupported() throws {
-        // Entitlement reward missing its `identifier`.
         let response = try self.decode([
             "status": "verified",
             "reward": ["type": "entitlement", "expires_at": Self.expiresAtString]

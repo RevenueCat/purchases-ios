@@ -211,7 +211,6 @@ extension PurchasesRewardVerificationTests {
 
     func testPollRewardVerificationFailsWhenEntitlementCustomerInfoRefreshFails() async throws {
         let reward = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
-        // Terminal (non-transient) error — should not be retried.
         self.backend.overrideCustomerInfoResult = .failure(makeTerminalBackendError())
         let before = self.backend.getCustomerInfoCallCount
         let poller = self.makeStubPoller(statuses: [.verified(.entitlement(reward))])
@@ -221,7 +220,6 @@ extension PurchasesRewardVerificationTests {
         expect(result) == .failed
         expect(result.verifiedReward).to(beNil())
         expect(self.backend.getCustomerInfoCallCount) == before + 1
-        // The completion log reflects the delivered result, never "verified".
         self.logger.verifyMessageWasLogged(
             AdsStrings.reward_verification_completed(result: .failed, transactionID: "tx-1"),
             level: .info
@@ -234,7 +232,6 @@ extension PurchasesRewardVerificationTests {
     }
 
     func testTransientServerErrorsAreRetriableForEntitlementRefresh() {
-        // Typical transient infra errors (502, 503) must be retried, not treated as terminal.
         for statusCode in [502, 503] {
             let error = makePollingError(statusCode: statusCode, backendCode: .internalServerError)
             expect(error.isTransient).to(beTrue(), description: "status \(statusCode) should be transient")
@@ -261,7 +258,6 @@ extension PurchasesRewardVerificationTests {
 
         let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
-        // VC reward → invalidate the VC cache; entitlement reward → actively refresh CustomerInfo.
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 1
         expect(self.backend.getCustomerInfoCallCount) > before
         expect(result.verifiedReward) == .virtualCurrency(virtualCurrency)
@@ -278,7 +274,6 @@ extension PurchasesRewardVerificationTests {
 
         let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
-        // A failed entitlement refresh fails the whole batch; the VC cache was still invalidated.
         expect(result) == .failed
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 1
     }

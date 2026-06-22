@@ -52,7 +52,6 @@ final class RewardVerificationResultTests: TestCase {
 
         XCTAssertEqual(result.verifiedReward, primary)
         XCTAssertEqual(result.moreRewards, [entitlement])
-        // moreRewards must not repeat the primary reward.
         XCTAssertFalse(result.moreRewards.contains(primary))
     }
 }

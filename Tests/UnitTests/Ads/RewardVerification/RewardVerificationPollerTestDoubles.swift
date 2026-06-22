@@ -197,10 +197,6 @@ func makeTerminalBackendError() -> BackendError {
 
 // MARK: - Single-reward conveniences
 
-// Test-only `verified(_:)` factories mirroring the common single-reward case (no additional rewards),
-// keeping call sites that predate multi-grant terse. They coexist with the
-// `verified(reward:moreRewards:)` enum cases because the argument labels differ.
-
 extension RewardVerificationPollStatus {
     static func verified(_ reward: AdReward) -> Self {
         .verified(reward: reward, moreRewards: [])
