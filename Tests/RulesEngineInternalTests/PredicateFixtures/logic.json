@@ -74,10 +74,11 @@
     },
     {
       "id": "and_empty_returns_undefined",
-      "description": "json-logic-js reduces {\"and\": []} to undefined, and undefined !== null",
-      "predicate": { "===": [{ "and": [] }, null] },
+      "description": "json-logic-js reduces {\"and\": []} to undefined: it logs as \"undefined\" and is !== null",
+      "predicate": { "===": [{ "log": { "and": [] } }, null] },
       "variables": {},
-      "expected": false
+      "expected": false,
+      "expectedLogs": ["undefined"]
     },
     {
       "id": "if_empty_and_takes_else_branch",
@@ -100,10 +101,11 @@
     },
     {
       "id": "or_empty_returns_undefined",
-      "description": "json-logic-js reduces {\"or\": []} to undefined, and undefined !== null",
-      "predicate": { "===": [{ "or": [] }, null] },
+      "description": "json-logic-js reduces {\"or\": []} to undefined: it logs as \"undefined\" and is !== null",
+      "predicate": { "===": [{ "log": { "or": [] } }, null] },
       "variables": {},
-      "expected": false
+      "expected": false,
+      "expectedLogs": ["undefined"]
     },
     {
       "id": "if_three_arg_true_branch",
