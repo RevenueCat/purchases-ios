@@ -142,57 +142,136 @@ final class PromoEligibilityPackageInfosTests: TestCase {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-final class ShouldReportPaywallImpressionTests: TestCase {
+final class ShouldTrackPaywallEventsTests: TestCase {
 
     func testStandalonePaywallAlwaysReports() {
         // Standalone paywalls have no workflow screen_type and must keep reporting impressions.
-        expect(PaywallsV2View.shouldReportPaywallImpression(
+        expect(PaywallsV2View.shouldTrackPaywallEvents(
             isActiveWorkflowPage: nil,
-            workflowScreenType: nil
+            workflowScreenType: nil,
+            isSingleStepFallback: false
         )) == true
-        expect(PaywallsV2View.shouldReportPaywallImpression(
+        expect(PaywallsV2View.shouldTrackPaywallEvents(
             isActiveWorkflowPage: nil,
-            workflowScreenType: ["survey"]
+            workflowScreenType: ["survey"],
+            isSingleStepFallback: false
         )) == true
     }
 
     func testWorkflowPaywallStepReports() {
-        expect(PaywallsV2View.shouldReportPaywallImpression(
+        // A step tagged as a paywall reports regardless of whether it is the fallback step.
+        expect(PaywallsV2View.shouldTrackPaywallEvents(
             isActiveWorkflowPage: true,
-            workflowScreenType: [WorkflowScreenType.paywall]
+            workflowScreenType: [WorkflowScreenType.paywall],
+            isSingleStepFallback: false
         )) == true
     }
 
-    func testWorkflowUntaggedStepReportsToPreserveBehavior() {
-        // Older/untagged workflows (nil screen_type) must keep firing impressions so a backend that
-        // has not rolled out screen analytics is not silently muted.
-        expect(PaywallsV2View.shouldReportPaywallImpression(
+    func testWorkflowUntaggedStepFallsBackToSingleStepFallback() {
+        // Untagged workflows (nil screen_type, e.g. a backend that has not rolled out screen analytics)
+        // fall back to the structural rule: only the singleStepFallbackId step reports.
+        expect(PaywallsV2View.shouldTrackPaywallEvents(
             isActiveWorkflowPage: true,
-            workflowScreenType: nil
+            workflowScreenType: nil,
+            isSingleStepFallback: true
         )) == true
+        // Untagged and not the fallback step → suppressed. This also covers the owner-confirmed case of a
+        // workflow with no `singleStepFallbackId` at all: `WorkflowPaywallView` derives `isSingleStepFallback`
+        // as `stepId == singleStepFallbackId`, which is `false` for every step when the optional fallback id
+        // is absent, so no paywall events fire on any step (only workflow events).
+        expect(PaywallsV2View.shouldTrackPaywallEvents(
+            isActiveWorkflowPage: true,
+            workflowScreenType: nil,
+            isSingleStepFallback: false
+        )) == false
     }
 
     func testWorkflowStepTaggedNonPaywallDoesNotReport() {
-        expect(PaywallsV2View.shouldReportPaywallImpression(
+        // A tagged step without `paywall` is suppressed even when it is the fallback step.
+        expect(PaywallsV2View.shouldTrackPaywallEvents(
             isActiveWorkflowPage: true,
-            workflowScreenType: []
+            workflowScreenType: [],
+            isSingleStepFallback: true
         )) == false
-        expect(PaywallsV2View.shouldReportPaywallImpression(
+        expect(PaywallsV2View.shouldTrackPaywallEvents(
             isActiveWorkflowPage: true,
-            workflowScreenType: ["survey"]
+            workflowScreenType: ["survey"],
+            isSingleStepFallback: false
         )) == false
     }
 
     func testInactiveWorkflowPageGatedBySameRule() {
         // `isActiveWorkflowPage == false` is still a workflow page; the screen_type rule applies.
-        expect(PaywallsV2View.shouldReportPaywallImpression(
+        expect(PaywallsV2View.shouldTrackPaywallEvents(
             isActiveWorkflowPage: false,
-            workflowScreenType: [WorkflowScreenType.paywall]
+            workflowScreenType: [WorkflowScreenType.paywall],
+            isSingleStepFallback: false
         )) == true
-        expect(PaywallsV2View.shouldReportPaywallImpression(
+        expect(PaywallsV2View.shouldTrackPaywallEvents(
             isActiveWorkflowPage: false,
-            workflowScreenType: ["survey"]
+            workflowScreenType: ["survey"],
+            isSingleStepFallback: false
         )) == false
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
+final class WorkflowComponentInteractionLoggerTests: TestCase {
+
+    private static let interactionData = PaywallEvent.ComponentInteractionData(
+        componentType: .text,
+        componentName: "link_copy",
+        componentValue: "navigate_to_url"
+    )
+
+    func testNonPaywallStepGetsNoOpLogger() {
+        var factoryInvoked = false
+        let logger = PaywallsV2View.componentInteractionLogger(tracksPaywallEvents: false) {
+            factoryInvoked = true
+            return ComponentInteractionLogger { _ in true }
+        }
+
+        // A non-paywall step must emit no component_interaction: the real logger is never built and the
+        // installed no-op reports nothing.
+        expect(factoryInvoked) == false
+        expect(logger(Self.interactionData)) == false
+    }
+
+    func testPaywallStepGetsRealLogger() async throws {
+        let tracker = PaywallEventTracker(
+            purchases: MockPurchases(
+                purchase: { _, _, _ in
+                    (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+                },
+                restorePurchases: { TestData.customerInfo },
+                trackEvent: { _ in },
+                customerInfo: { TestData.customerInfo }
+            ),
+            eventDispatcher: PaywallEventTrackerTestDispatcher.value
+        )
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false,
+            source: nil
+        )
+        tracker.trackPaywallImpression(eventData)
+
+        let logger = PaywallsV2View.componentInteractionLogger(tracksPaywallEvents: true) {
+            tracker.componentInteractionLogger(sessionID: eventData.sessionIdentifier)
+        }
+
+        // A paywall step uses the real session-bound logger, which reports the interaction.
+        expect(logger(Self.interactionData)) == true
+
+        await Task(priority: .low) {
+            await Task.yield()
+        }.value
     }
 
 }
