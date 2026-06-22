@@ -1492,13 +1492,15 @@ private extension TransactionPosterTests {
 
     func handleTransaction(
         _ data: PurchasedTransactionData,
-        postReceiptSource: PostReceiptSource = .init(isRestore: false, initiationSource: .queue)
+        postReceiptSource: PostReceiptSource = .init(isRestore: false, initiationSource: .queue),
+        originatedFromPurchase: Bool = false
     ) throws -> Result<CustomerInfo, BackendError> {
         let result = waitUntilValue { completion in
             self.poster.handlePurchasedTransaction(
                 self.mockTransaction,
                 data: data,
                 postReceiptSource: postReceiptSource,
+                originatedFromPurchase: originatedFromPurchase,
                 currentUserID: "user"
             ) {
                 completion($0)

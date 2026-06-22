@@ -29,6 +29,7 @@ final class MockTransactionPoster: TransactionPosterType {
                                                              data: PurchasedTransactionData,
                                                              postReceiptSource: PostReceiptSource,
                                                              currentUserID: String)?> = nil
+    let invokedHandlePurchasedTransactionOriginatedFromPurchase: Atomic<Bool?> = nil
     let invokedHandlePurchasedTransactionParameterList: Atomic<[(transaction: StoreTransactionType,
                                                                  data: PurchasedTransactionData,
                                                                  postReceiptSource: PostReceiptSource)]> = .init([])
@@ -42,10 +43,12 @@ final class MockTransactionPoster: TransactionPosterType {
         )
     }
 
+    // swiftlint:disable:next function_parameter_count
     func handlePurchasedTransaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
         postReceiptSource: PostReceiptSource,
+        originatedFromPurchase: Bool,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
@@ -58,7 +61,11 @@ final class MockTransactionPoster: TransactionPosterType {
 
         self.invokedHandlePurchasedTransaction.value = true
         self.invokedHandlePurchasedTransactionCount.modify { $0 += 1 }
-        self.invokedHandlePurchasedTransactionParameters.value = (transaction, data, postReceiptSource, currentUserID)
+        self.invokedHandlePurchasedTransactionParameters.value = (transaction,
+                                                                  data,
+                                                                  postReceiptSource,
+                                                                  currentUserID)
+        self.invokedHandlePurchasedTransactionOriginatedFromPurchase.value = originatedFromPurchase
         self.invokedHandlePurchasedTransactionParameterList.modify {
             $0.append((transaction, data, postReceiptSource))
         }

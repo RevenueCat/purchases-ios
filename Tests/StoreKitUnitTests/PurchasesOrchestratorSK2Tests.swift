@@ -1785,6 +1785,9 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 .presentedOfferingContext?.offeringIdentifier
         ) == "test_offering"
         expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
+        // Even though the post is queue-initiated, the context originated from a `purchase()` call,
+        // so this must be reported as SDK-originated (the queue transaction raced ahead of `purchase()`).
+        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == true
 
         self.backend.invokedPostReceiptData = false
         self.backend.invokedPostReceiptDataParameters = nil
@@ -1801,6 +1804,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             self.backend.invokedPostReceiptDataParameters?.transactionData
                 .presentedOfferingContext?.offeringIdentifier
         ) == "test_offering"
+        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == true
     }
 
     func testSK2QueueListenerRemovesExternallyCachedPurchaseContext() async throws {
@@ -1830,6 +1834,9 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 .presentedOfferingContext?.offeringIdentifier
         ) == "test_offering"
         expect(self.backend.invokedPostReceiptDataParameters?.postReceiptSource.initiationSource) == .queue
+        // The context was cached externally (not from a `purchase()` call), so a queue-initiated
+        // post must not be reported as SDK-originated.
+        expect(self.backend.invokedPostReceiptDataParameters?.sdkOriginated) == false
 
         self.backend.invokedPostReceiptData = false
 
