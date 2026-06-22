@@ -17,6 +17,29 @@ import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
 
+/// Describes what ``ImageComponentView`` renders inside its measuring `ZStack`.
+///
+/// Extracted as a pure value so the size/render flow can be unit-tested without
+/// having to host the SwiftUI view and observe asynchronous layout passes.
+struct ImageRenderPlan: Equatable {
+
+    enum Content: Equatable {
+        /// No image content (e.g. a far-offscreen carousel page we don't want to load yet).
+        case none
+        /// The decorated remote image.
+        case image
+        /// A synthetic image rendered only for previews/snapshots.
+        case preview
+    }
+
+    /// Whether a greedy, content-free layer is rendered to measure the available
+    /// space before the image is constrained.
+    let showsMeasurementPlaceholder: Bool
+
+    /// The image content rendered (on top of the measurement placeholder, if any).
+    let content: Content
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ImageComponentView: View {
 
@@ -96,21 +119,31 @@ struct ImageComponentView: View {
                     height: self.imageSize(style: style).height
                 )
                 let effectiveSize = self.size ?? self.viewModel.cachedMeasuredSize
-                let forceSizeCalculation = shouldForceSizeCalculation(for: effectiveSize)
+                let plan = Self.renderPlan(
+                    sizeIsKnown: effectiveSize != nil,
+                    requestSizeCalculation: self.requestSizeCalculation,
+                    isRenderingForPreview: self.renderForPreview
+                )
 
                 Group {
                     ZStack {
-                        if forceSizeCalculation {
-                            // We cannot correctly render the image until we know the space the image can fill
-                            // this will fill the space so we can get the correct measurements and render the image
+                        if plan.showsMeasurementPlaceholder {
+                            // We cannot correctly render the image until we know the space the image can fill.
+                            // This greedy, content-free layer fills the available space so we measure the
+                            // parent's width (not the image's intrinsic size) before constraining the image.
                             self.decorate(Color.clear, with: style)
-                        } else if renderForPreview {
+                        }
+
+                        switch plan.content {
+                        case .none:
+                            EmptyView()
+                        case .preview:
                             #if DEBUG
                             self.decorate(
                                 self.renderImage(
                                     DualColorImageGenerator.purpleOrangeWide.image.resizable(),
                                     effectiveSize ?? .zero,
-                                    maxWidth: self.calculateMaxWidth(
+                                    maxWidth: Self.calculateMaxWidth(
                                         parentWidth: effectiveSize?.width ?? 0,
                                         style: style
                                     ),
@@ -121,7 +154,7 @@ struct ImageComponentView: View {
                             #else
                             EmptyView()
                             #endif
-                        } else {
+                        case .image:
                             self.decorate(
                                 RemoteImage(
                                     url: style.url,
@@ -135,7 +168,7 @@ struct ImageComponentView: View {
                                     self.renderImage(
                                         image,
                                         size,
-                                        maxWidth: self.calculateMaxWidth(
+                                        maxWidth: Self.calculateMaxWidth(
                                             parentWidth: effectiveSize?.width ?? 0,
                                             style: style
                                         ),
@@ -160,12 +193,35 @@ struct ImageComponentView: View {
         }
     }
 
-    private func shouldForceSizeCalculation(for effectiveSize: CGSize?) -> Bool {
-        if effectiveSize == nil {
-            return true
+    static func renderPlan(
+        sizeIsKnown: Bool,
+        requestSizeCalculation: Bool,
+        isRenderingForPreview: Bool
+    ) -> ImageRenderPlan {
+        // Render the greedy measurement placeholder whenever our size is unknown or a
+        // recalculation was explicitly requested (e.g. offscreen carousel pages). This lets us
+        // measure the available width (not the image's intrinsic size) before constraining the
+        // image, so fill/fixed-width images don't push past their bounds.
+        let showsMeasurementPlaceholder = !sizeIsKnown || requestSizeCalculation
+
+        let content: ImageRenderPlan.Content
+        if isRenderingForPreview {
+            content = .preview
+        } else if !sizeIsKnown {
+            // First load: keep the image mounted alongside the measurement placeholder so it
+            // participates in the enclosing transition (e.g. a sheet) instead of popping in once
+            // the size resolves. The image is constrained to a maxWidth of 0 until the size is
+            // known, so it does not pollute the measurement.
+            content = .image
+        } else if requestSizeCalculation {
+            // Size already known, but a recalculation was requested for a far-offscreen carousel
+            // page. Avoid eagerly loading the image until the page is near the viewport.
+            content = .none
         } else {
-            return requestSizeCalculation
+            content = .image
         }
+
+        return ImageRenderPlan(showsMeasurementPlaceholder: showsMeasurementPlaceholder, content: content)
     }
 
     private func decorate<Content: View>(
@@ -193,7 +249,7 @@ struct ImageComponentView: View {
             .padding(style.margin)
     }
 
-    private func calculateMaxWidth(parentWidth: CGFloat, style: ImageComponentStyle) -> CGFloat {
+    static func calculateMaxWidth(parentWidth: CGFloat, style: ImageComponentStyle) -> CGFloat {
         let totalBorderWidth = (style.border?.width ?? 0) * 2
         let maxWidth = parentWidth - totalBorderWidth
             - style.margin.leading - style.margin.trailing
