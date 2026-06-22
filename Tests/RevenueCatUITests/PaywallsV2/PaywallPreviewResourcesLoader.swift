@@ -173,19 +173,20 @@ class PaywallPreviewResourcesLoader {
 
     private static func subscriptionProduct(
         productIdentifier: String,
-        title: String,
+        description: String,
         price: Decimal,
         localizedPriceString: String,
         subscriptionPeriod: SubscriptionPeriod
     ) -> StoreProduct {
         return TestStoreProduct(
-            localizedTitle: title,
+            // Matches the web/dashboard `product.store_product_name` ("Pro Access").
+            localizedTitle: "Pro Access",
             price: price,
             currencyCode: "USD",
             localizedPriceString: localizedPriceString,
             productIdentifier: productIdentifier,
             productType: .autoRenewableSubscription,
-            localizedDescription: title,
+            localizedDescription: description,
             subscriptionPeriod: subscriptionPeriod,
             introductoryDiscount: introductoryOffer(),
             locale: previewLocale
@@ -197,7 +198,7 @@ class PaywallPreviewResourcesLoader {
     /// specifies a billing plan identifier.
     private static func previewStoreProductsByID() -> [String: StoreProduct] {
         let lifetime = TestStoreProduct(
-            localizedTitle: "Lifetime",
+            localizedTitle: "Pro Access",
             price: 119.99,
             currencyCode: "USD",
             localizedPriceString: "$119.99",
@@ -209,42 +210,42 @@ class PaywallPreviewResourcesLoader {
 
         let weekly = subscriptionProduct(
             productIdentifier: "com.revenuecat.weekly_product",
-            title: "Weekly",
+            description: "Weekly",
             price: 2.99,
             localizedPriceString: "$2.99",
             subscriptionPeriod: .init(value: 1, unit: .week)
         )
         let monthly = subscriptionProduct(
             productIdentifier: "com.revenuecat.monthly_product",
-            title: "Monthly",
+            description: "Monthly",
             price: 9.99,
             localizedPriceString: "$9.99",
             subscriptionPeriod: .init(value: 1, unit: .month)
         )
         let bimonthly = subscriptionProduct(
             productIdentifier: "com.revenuecat.bimonthly_product",
-            title: "2 Months",
+            description: "2 Months",
             price: 17.99,
             localizedPriceString: "$17.99",
             subscriptionPeriod: .init(value: 2, unit: .month)
         )
         let quarterly = subscriptionProduct(
             productIdentifier: "com.revenuecat.quarterly_product",
-            title: "3 Months",
+            description: "3 Months",
             price: 24.99,
             localizedPriceString: "$24.99",
             subscriptionPeriod: .init(value: 3, unit: .month)
         )
         let semester = subscriptionProduct(
             productIdentifier: "com.revenuecat.semester_product",
-            title: "6 Months",
+            description: "6 Months",
             price: 39.99,
             localizedPriceString: "$39.99",
             subscriptionPeriod: .init(value: 6, unit: .month)
         )
         let annual = subscriptionProduct(
             productIdentifier: "com.revenuecat.annual_product",
-            title: "Annual",
+            description: "Annual",
             price: 69.99,
             localizedPriceString: "$69.99",
             subscriptionPeriod: .init(value: 1, unit: .year)
