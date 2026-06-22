@@ -17,20 +17,12 @@ final class RemoteConfigurationDecodingTests: TestCase {
 
         expect(response.domain) == "app"
         expect(response.subdomains) == ["app_workflows"]
-        expect(response.appUUID) == "1a2b3c4d"
-        expect(response.stateHash) == "x3R7YvQw2NfM"
-        expect(response.manifest.domain) == "app"
-        expect(response.manifest.topics) == [
-            "sources": "Jc83RzcK1LqA",
-            "product_entitlement_mapping": "9v1DnUu6rXbE"
-        ]
-        expect(response.manifest.prefetchBlobs) == [
+        expect(response.manifest.rawValue)
+            == "v1.1710000100.product_entitlement_mapping:9v1DnUu6rXbE,sources:Jc83RzcK1LqA"
+        expect(response.activeTopics) == ["sources", "product_entitlement_mapping"]
+        expect(response.prefetchBlobs) == [
             "AAECAwQFBgcICQoLDA0ODxAREhMUFRYX"
         ]
-        expect(response.manifest.prefetchedBlobs) == [
-            "GBkaGxwdHh8gISIjJCUmJygpKissLS4v"
-        ]
-        expect(response.manifest.lastRefreshAt) == 1710000100
 
         try self.expectFullPayloadSources(in: response)
 
@@ -74,13 +66,8 @@ final class RemoteConfigurationDecodingTests: TestCase {
         let payload = """
         {
           "domain": "app",
-          "manifest": {
-            "domain": "app",
-            "topics": {
-              "sources": "new-sources-etag",
-              "product_entitlement_mapping": "unchanged-pem-etag"
-            }
-          },
+          "manifest": "v1.1710000100.product_entitlement_mapping:unchanged-pem-etag,sources:new-sources-etag",
+          "active_topics": ["sources", "product_entitlement_mapping"],
           "topics": {
             "sources": {
               "api": {
@@ -96,10 +83,9 @@ final class RemoteConfigurationDecodingTests: TestCase {
 
         let response = try JSONDecoder.default.decode(RemoteConfiguration.self, from: payload)
 
-        expect(response.manifest.topics) == [
-            "sources": "new-sources-etag",
-            "product_entitlement_mapping": "unchanged-pem-etag"
-        ]
+        expect(response.manifest.rawValue)
+            == "v1.1710000100.product_entitlement_mapping:unchanged-pem-etag,sources:new-sources-etag"
+        expect(response.activeTopics) == ["sources", "product_entitlement_mapping"]
         let sourcesTopic = try XCTUnwrap(response.topics.entries["sources"])
         expect(sourcesTopic["api"]?.content) == [
             "id": "secondary",
@@ -114,18 +100,15 @@ final class RemoteConfigurationDecodingTests: TestCase {
         let payload = """
         {
           "domain": "app",
-          "manifest": {
-            "domain": "app",
-            "topics": {
-              "sources": "same-sources-etag"
-            }
-          },
+          "manifest": "v1.1710000100.sources:same-sources-etag",
+          "active_topics": ["sources"],
           "topics": {}
         }
         """.asData
 
         let response = try JSONDecoder.default.decode(RemoteConfiguration.self, from: payload)
 
+        expect(response.activeTopics) == ["sources"]
         expect(response.topics.entries["sources"]).to(beNil())
     }
 
@@ -133,33 +116,25 @@ final class RemoteConfigurationDecodingTests: TestCase {
         let payload = """
         {
           "domain": "app",
-          "manifest": {
-            "domain": "app",
-            "topics": {
-              "sources": "same-sources-etag"
-            }
-          },
+          "manifest": "v1.1710000100.sources:same-sources-etag",
+          "active_topics": ["sources"],
           "topics": {}
         }
         """.asData
 
         let response = try JSONDecoder.default.decode(RemoteConfiguration.self, from: payload)
 
-        expect(response.manifest.topics) == ["sources": "same-sources-etag"]
+        expect(response.manifest.rawValue) == "v1.1710000100.sources:same-sources-etag"
+        expect(response.activeTopics) == ["sources"]
         expect(response.topics.entries).to(beEmpty())
-        expect(response.topics.entries["sources"]).to(beNil())
     }
 
     func testPreservesUnknownTopicNames() throws {
         let payload = """
         {
           "domain": "app",
-          "manifest": {
-            "domain": "app",
-            "topics": {
-              "future_topic": "future-etag"
-            }
-          },
+          "manifest": "v1.1710000100.future_topic:future-etag",
+          "active_topics": ["future_topic"],
           "topics": {
             "future_topic": {
               "default": {
@@ -172,7 +147,8 @@ final class RemoteConfigurationDecodingTests: TestCase {
 
         let response = try JSONDecoder.default.decode(RemoteConfiguration.self, from: payload)
 
-        expect(response.manifest.topics) == ["future_topic": "future-etag"]
+        expect(response.manifest.rawValue) == "v1.1710000100.future_topic:future-etag"
+        expect(response.activeTopics) == ["future_topic"]
         expect(response.topics.entries["future_topic"]?["default"]?.blobRef)
             == "AAECAwQFBgcICQoLDA0ODxAREhMUFRYX"
     }
@@ -220,30 +196,37 @@ final class RemoteConfigurationDecodingTests: TestCase {
         let payload = """
         {
           "domain": "app",
-          "manifest": {
-            "domain": "app"
-          }
+          "manifest": "v1.0.",
+          "active_topics": []
         }
         """.asData
 
         let response = try JSONDecoder.default.decode(RemoteConfiguration.self, from: payload)
 
         expect(response.subdomains).to(beEmpty())
-        expect(response.appUUID).to(beNil())
-        expect(response.stateHash).to(beNil())
+        expect(response.prefetchBlobs).to(beEmpty())
         expect(response.topics.entries).to(beEmpty())
-        expect(response.manifest.topics).to(beEmpty())
-        expect(response.manifest.prefetchBlobs).to(beEmpty())
-        expect(response.manifest.prefetchedBlobs).to(beEmpty())
-        expect(response.manifest.lastRefreshAt) == 0
+    }
+
+    func testMalformedLookingManifestStringStillDecodes() throws {
+        let payload = """
+        {
+          "domain": "app",
+          "manifest": "not-a-valid-token",
+          "active_topics": []
+        }
+        """.asData
+
+        let response = try JSONDecoder.default.decode(RemoteConfiguration.self, from: payload)
+
+        expect(response.manifest.rawValue) == "not-a-valid-token"
     }
 
     func testFailsWhenRequiredTopLevelDomainIsMissing() {
         let payload = """
         {
-          "manifest": {
-            "domain": "app"
-          }
+          "manifest": "v1.0.",
+          "active_topics": []
         }
         """.asData
 
@@ -253,18 +236,19 @@ final class RemoteConfigurationDecodingTests: TestCase {
     func testFailsWhenRequiredManifestIsMissing() {
         let payload = """
         {
-          "domain": "app"
+          "domain": "app",
+          "active_topics": []
         }
         """.asData
 
         XCTAssertThrowsError(try JSONDecoder.default.decode(RemoteConfiguration.self, from: payload))
     }
 
-    func testFailsWhenRequiredManifestDomainIsMissing() {
+    func testFailsWhenRequiredActiveTopicsIsMissing() {
         let payload = """
         {
           "domain": "app",
-          "manifest": {}
+          "manifest": "v1.0."
         }
         """.asData
 
@@ -324,15 +308,12 @@ final class RemoteConfigurationDecodingTests: TestCase {
         expect(json["prefetch"]).to(beNil())
     }
 
-    func testManifestEncodeRoundTripPreservesRequestShape() throws {
-        let manifest = RemoteConfiguration.Manifest(
+    func testRequestEncodeRoundTripPreservesShape() throws {
+        let request = RemoteConfigRequest(
             domain: "app",
-            topics: ["sources": "sources-etag"],
-            prefetchBlobs: ["blob-b", "blob-a"],
-            prefetchedBlobs: ["blob-a"],
-            lastRefreshAt: 123
+            manifest: RemoteConfigManifestToken("v1.123.sources:sources-etag"),
+            prefetchedBlobs: ["blob-b", "blob-a"]
         )
-        let request = RemoteConfigRequest(manifest: manifest)
 
         let data = try JSONEncoder.default.encode(request)
         let decoded = try JSONDecoder.default.decode(RemoteConfigRequest.self, from: data)
@@ -348,17 +329,9 @@ private extension RemoteConfigurationDecodingTests {
     {
       "domain": "app",
       "subdomains": ["app_workflows"],
-      "app_uuid": "1a2b3c4d",
-      "manifest": {
-        "domain": "app",
-        "topics": {
-          "sources": "Jc83RzcK1LqA",
-          "product_entitlement_mapping": "9v1DnUu6rXbE"
-        },
-        "prefetch_blobs": ["AAECAwQFBgcICQoLDA0ODxAREhMUFRYX"],
-        "prefetched_blobs": ["GBkaGxwdHh8gISIjJCUmJygpKissLS4v"],
-        "last_refresh_at": 1710000100
-      },
+      "manifest": "v1.1710000100.product_entitlement_mapping:9v1DnUu6rXbE,sources:Jc83RzcK1LqA",
+      "active_topics": ["sources", "product_entitlement_mapping"],
+      "prefetch_blobs": ["AAECAwQFBgcICQoLDA0ODxAREhMUFRYX"],
       "topics": {
         "sources": {
           "api": {
@@ -388,8 +361,7 @@ private extension RemoteConfigurationDecodingTests {
             "prefetch": true
           }
         }
-      },
-      "state_hash": "x3R7YvQw2NfM"
+      }
     }
     """.asData
 

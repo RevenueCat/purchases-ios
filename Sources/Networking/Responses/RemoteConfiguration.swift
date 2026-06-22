@@ -16,63 +16,36 @@ struct RemoteConfiguration: Equatable {
     let domain: String
     /// Other domains the SDK should also sync to assemble the full configuration.
     let subdomains: [String]
-    let appUUID: String?
-    let manifest: Manifest
+    /// Opaque token returned by the server and replayed on future requests.
+    let manifest: RemoteConfigManifestToken
+    /// Full set of active topic names, including unchanged topics omitted from `topics`.
+    let activeTopics: [String]
+    /// Blob refs the server expects the SDK to have cached for this configuration.
+    let prefetchBlobs: [String]
     /// Changed topic bodies only. If a topic's client-sent etag still matches, the topic is omitted
-    /// and the client keeps its cached topic data. `manifest` lists every active topic and its current
-    /// etag, including unchanged ones, so it is the source of truth for which topics exist.
+    /// and the client keeps its cached topic data. `activeTopics` is the source of truth for topic
+    /// existence, so cached topics absent there should be removed.
     let topics: Topics
-    let stateHash: String?
 
     init(
         domain: String,
         subdomains: [String] = [],
-        appUUID: String? = nil,
-        manifest: Manifest,
-        topics: Topics = .init(),
-        stateHash: String? = nil
+        manifest: RemoteConfigManifestToken,
+        activeTopics: [String],
+        prefetchBlobs: [String] = [],
+        topics: Topics = .init()
     ) {
         self.domain = domain
         self.subdomains = subdomains
-        self.appUUID = appUUID
         self.manifest = manifest
+        self.activeTopics = activeTopics
+        self.prefetchBlobs = prefetchBlobs
         self.topics = topics
-        self.stateHash = stateHash
     }
 
 }
 
 extension RemoteConfiguration {
-
-    struct Manifest: Codable, Equatable {
-
-        static let appDomain = "app"
-
-        let domain: String
-        /// Topic name to compact topic etag. Lists every active topic, including unchanged ones.
-        let topics: [String: String]
-        /// Blob refs the server believes the SDK should have prefetched.
-        let prefetchBlobs: [String]
-        /// Blob refs the SDK has actually cached locally. Sent on the request; absent from server responses.
-        let prefetchedBlobs: [String]
-        /// Timestamp from the previous server manifest. Used only for refresh cadence.
-        let lastRefreshAt: Int
-
-        init(
-            domain: String = Self.appDomain,
-            topics: [String: String] = [:],
-            prefetchBlobs: [String] = [],
-            prefetchedBlobs: [String] = [],
-            lastRefreshAt: Int = 0
-        ) {
-            self.domain = domain
-            self.topics = topics
-            self.prefetchBlobs = prefetchBlobs
-            self.prefetchedBlobs = prefetchedBlobs
-            self.lastRefreshAt = lastRefreshAt
-        }
-
-    }
 
     struct Topics: Equatable {
 
@@ -143,6 +116,30 @@ extension RemoteConfiguration {
 
 }
 
+/// Opaque `/v2/config` manifest token returned by the backend and replayed verbatim by the SDK.
+///
+/// The SDK intentionally does not parse or validate this value. The backend owns the token format and
+/// treats malformed or stale tokens as an empty manifest.
+struct RemoteConfigManifestToken: Codable, Equatable {
+
+    let rawValue: String
+
+    init(_ rawValue: String) {
+        self.rawValue = rawValue
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        self.init(try container.decode(String.self))
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.rawValue)
+    }
+
+}
+
 // MARK: - Codable
 
 extension RemoteConfiguration: Codable {
@@ -150,44 +147,20 @@ extension RemoteConfiguration: Codable {
     private enum CodingKeys: String, CodingKey {
         case domain
         case subdomains
-        case appUUID = "appUuid"
         case manifest
+        case activeTopics
+        case prefetchBlobs
         case topics
-        case stateHash
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.domain = try container.decode(String.self, forKey: .domain)
         self.subdomains = try container.decodeIfPresent([String].self, forKey: .subdomains) ?? []
-        self.appUUID = try container.decodeIfPresent(String.self, forKey: .appUUID)
-        self.manifest = try container.decode(Manifest.self, forKey: .manifest)
+        self.manifest = try container.decode(RemoteConfigManifestToken.self, forKey: .manifest)
+        self.activeTopics = try container.decode([String].self, forKey: .activeTopics)
+        self.prefetchBlobs = try container.decodeIfPresent([String].self, forKey: .prefetchBlobs) ?? []
         self.topics = try container.decodeIfPresent(Topics.self, forKey: .topics) ?? Topics()
-        self.stateHash = try container.decodeIfPresent(String.self, forKey: .stateHash)
-    }
-
-}
-
-extension RemoteConfiguration.Manifest {
-
-    private enum CodingKeys: String, CodingKey {
-        case domain
-        case topics
-        case prefetchBlobs
-        case prefetchedBlobs
-        case lastRefreshAt
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-
-        self.init(
-            domain: try container.decode(String.self, forKey: .domain),
-            topics: try container.decodeIfPresent([String: String].self, forKey: .topics) ?? [:],
-            prefetchBlobs: try container.decodeIfPresent([String].self, forKey: .prefetchBlobs) ?? [],
-            prefetchedBlobs: try container.decodeIfPresent([String].self, forKey: .prefetchedBlobs) ?? [],
-            lastRefreshAt: try container.decodeIfPresent(Int.self, forKey: .lastRefreshAt) ?? 0
-        )
     }
 
 }

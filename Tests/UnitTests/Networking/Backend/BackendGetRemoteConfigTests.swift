@@ -58,29 +58,19 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         let body = try XCTUnwrap(self.httpClient.calls.first?.request.requestBody?.asJSONDictionary())
-        let manifest = try XCTUnwrap(body["manifest"] as? [String: Any])
 
-        expect(manifest["domain"] as? String) == "app"
-        expect(manifest["topics"] as? [String: String]) == [:]
-        expect(manifest["prefetch_blobs"] as? [String]) == []
-        expect(manifest["prefetched_blobs"] as? [String]) == []
-        expect(manifest["last_refresh_at"] as? Int) == 0
+        expect(body["domain"] as? String) == "app"
+        expect(body["manifest"]).to(beNil())
+        expect(body["prefetched_blobs"]).to(beNil())
     }
 
     func testGetRemoteConfigEncodesCustomManifestRequestBody() throws {
         self.mockSuccessfulResponse()
 
         let request = RemoteConfigRequest(
-            manifest: .init(
-                domain: "project",
-                topics: [
-                    "paywalls": "etag-paywalls",
-                    "product_entitlement_mapping": "etag-pem"
-                ],
-                prefetchBlobs: ["blob-a"],
-                prefetchedBlobs: ["blob-b"],
-                lastRefreshAt: 123
-            )
+            domain: "project",
+            manifest: RemoteConfigManifestToken("v1.123.paywalls:etag-paywalls,product_entitlement_mapping:etag-pem"),
+            prefetchedBlobs: ["blob-b"]
         )
 
         waitUntil { completed in
@@ -91,16 +81,10 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         let body = try XCTUnwrap(self.httpClient.calls.first?.request.requestBody?.asJSONDictionary())
-        let manifest = try XCTUnwrap(body["manifest"] as? [String: Any])
 
-        expect(manifest["domain"] as? String) == "project"
-        expect(manifest["topics"] as? [String: String]) == [
-            "paywalls": "etag-paywalls",
-            "product_entitlement_mapping": "etag-pem"
-        ]
-        expect(manifest["prefetch_blobs"] as? [String]) == ["blob-a"]
-        expect(manifest["prefetched_blobs"] as? [String]) == ["blob-b"]
-        expect(manifest["last_refresh_at"] as? Int) == 123
+        expect(body["domain"] as? String) == "project"
+        expect(body["manifest"] as? String) == "v1.123.paywalls:etag-paywalls,product_entitlement_mapping:etag-pem"
+        expect(body["prefetched_blobs"] as? [String]) == ["blob-b"]
     }
 
     func testGetRemoteConfigRequestsRCContainerFormat() {
@@ -169,7 +153,8 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
         let responses: Atomic<Int> = .init(0)
         let request = RemoteConfigRequest(
-            manifest: .init(domain: "app", topics: ["paywalls": "etag-a"])
+            manifest: RemoteConfigManifestToken("v1.10.paywalls:etag-a"),
+            prefetchedBlobs: ["blob-b", "blob-a"]
         )
 
         self.remoteConfigAPI.getRemoteConfig(request: request, isAppBackgrounded: false) { _ in responses.value += 1 }
@@ -185,12 +170,50 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let responses: Atomic<Int> = .init(0)
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(manifest: .init(domain: "app", topics: ["paywalls": "etag-a"])),
+            request: .init(manifest: RemoteConfigManifestToken("v1.10.paywalls:etag-a")),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(manifest: .init(domain: "app", topics: ["paywalls": "etag-b"])),
+            request: .init(manifest: RemoteConfigManifestToken("v1.10.paywalls:etag-b")),
+            isAppBackgrounded: false
+        ) { _ in responses.value += 1 }
+
+        expect(responses.value).toEventually(equal(2))
+        expect(self.httpClient.calls).to(haveCount(2))
+    }
+
+    func testGetRemoteConfigDoesNotCoalesceSimultaneousRequestsWithDifferentDomains() {
+        self.mockSuccessfulResponse(delay: .milliseconds(10))
+
+        let responses: Atomic<Int> = .init(0)
+
+        self.remoteConfigAPI.getRemoteConfig(
+            request: .init(domain: "app", manifest: RemoteConfigManifestToken("v1.10.paywalls:etag-a")),
+            isAppBackgrounded: false
+        ) { _ in responses.value += 1 }
+
+        self.remoteConfigAPI.getRemoteConfig(
+            request: .init(domain: "app_workflows", manifest: RemoteConfigManifestToken("v1.10.paywalls:etag-a")),
+            isAppBackgrounded: false
+        ) { _ in responses.value += 1 }
+
+        expect(responses.value).toEventually(equal(2))
+        expect(self.httpClient.calls).to(haveCount(2))
+    }
+
+    func testGetRemoteConfigDoesNotCoalesceSimultaneousRequestsWithDifferentPrefetchedBlobs() {
+        self.mockSuccessfulResponse(delay: .milliseconds(10))
+
+        let responses: Atomic<Int> = .init(0)
+
+        self.remoteConfigAPI.getRemoteConfig(
+            request: .init(manifest: RemoteConfigManifestToken("v1.10.paywalls:etag-a"), prefetchedBlobs: ["blob-a"]),
+            isAppBackgrounded: false
+        ) { _ in responses.value += 1 }
+
+        self.remoteConfigAPI.getRemoteConfig(
+            request: .init(manifest: RemoteConfigManifestToken("v1.10.paywalls:etag-a"), prefetchedBlobs: ["blob-b"]),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 

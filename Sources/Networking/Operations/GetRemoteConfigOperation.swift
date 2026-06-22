@@ -47,18 +47,43 @@ final class GetRemoteConfigOperation: CacheableNetworkOperation {
 
 struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
 
-    let manifest: RemoteConfiguration.Manifest
+    private static let appDomain = "app"
+
+    let domain: String
+    let manifest: RemoteConfigManifestToken?
+    let prefetchedBlobs: [String]
 
     private enum CodingKeys: String, CodingKey {
+        case domain
         case manifest
+        case prefetchedBlobs
     }
 
-    init(manifest: RemoteConfiguration.Manifest = .init()) {
+    init(
+        domain: String = Self.appDomain,
+        manifest: RemoteConfigManifestToken? = nil,
+        prefetchedBlobs: [String] = []
+    ) {
+        self.domain = domain
         self.manifest = manifest
+        self.prefetchedBlobs = prefetchedBlobs
     }
 
     var cacheKey: String {
-        self.manifest.cacheKey
+        [
+            "domain=\(self.domain)",
+            "manifest=\(self.manifest?.rawValue ?? "")",
+            "prefetched_blobs=\(self.prefetchedBlobs.sorted().joined(separator: ","))"
+        ].joined(separator: "|")
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.domain, forKey: .domain)
+        try container.encodeIfPresent(self.manifest, forKey: .manifest)
+        if !self.prefetchedBlobs.isEmpty {
+            try container.encode(self.prefetchedBlobs, forKey: .prefetchedBlobs)
+        }
     }
 
 }
@@ -80,24 +105,6 @@ private extension GetRemoteConfigOperation {
                 callback.completion(response.map(\.body).mapError(BackendError.networkError))
             }
         }
-    }
-
-}
-
-private extension RemoteConfiguration.Manifest {
-
-    var cacheKey: String {
-        let topicsKey = self.topics
-            .sorted { $0.key < $1.key }
-            .map { "\($0.key)=\($0.value)" }
-            .joined(separator: ",")
-        return [
-            "domain=\(self.domain)",
-            "topics={\(topicsKey)}",
-            "prefetch_blobs=\(self.prefetchBlobs.sorted().joined(separator: ","))",
-            "prefetched_blobs=\(self.prefetchedBlobs.sorted().joined(separator: ","))",
-            "last_refresh_at=\(self.lastRefreshAt)"
-        ].joined(separator: "|")
     }
 
 }
