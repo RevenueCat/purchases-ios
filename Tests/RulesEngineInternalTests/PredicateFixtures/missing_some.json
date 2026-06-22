@@ -41,8 +41,8 @@
     },
     {
       "id": "missing_some_string_options_treated_as_array_like",
-      "description": "json-logic-js spreads the options string as an array-like arg list (missing.apply), so \"a\" becomes the single key \"a\"; it is missing, so the result is [\"a\"] (truthy)",
-      "predicate": { "missing_some": [1, "a"] },
+      "description": "json-logic-js spreads the options string as an array-like arg list (missing.apply), so \"a\" becomes the single key \"a\"; it is missing, so the result is [\"a\"] (compared via string coercion)",
+      "predicate": { "==": [{ "missing_some": [1, "a"] }, "a"] },
       "variables": {},
       "expected": true
     },
