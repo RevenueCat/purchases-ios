@@ -1745,7 +1745,7 @@ extension Purchases {
     }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    /// Refreshes `CustomerInfo` (bypassing the cache) so an entitlement reward is reflected locally,
+    /// Fetches current `CustomerInfo` so an entitlement reward is reflected locally,
     /// retrying transient failures since `getCustomerInfo` has no built-in retry. Returns whether it
     /// succeeded.
     private func refreshCustomerInfoAfterEntitlementGrant(clientTransactionID: String) async -> Bool {
