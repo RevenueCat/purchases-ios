@@ -88,8 +88,9 @@ import Foundation
     let metadata: [String: AnyDecodable]?
 
     /// The step's `screen_type` from the backend (`metadata.screen_type`). `nil` = untagged (older
-    /// workflows), `[]` = tagged with no known type; the distinction drives impression gating. Key is
-    /// literal snake_case: `convertFromSnakeCase` skips keys inside `[String: AnyDecodable]`.
+    /// workflows), `[]` = tagged with no known type; the distinction drives paywall-event gating (see
+    /// `PaywallsV2View.shouldTrackPaywallEvents`). Key is literal snake_case: `convertFromSnakeCase` skips
+    /// keys inside `[String: AnyDecodable]`.
     public var stepScreenType: [String]? {
         guard case let .array(values)? = self.metadata?[WorkflowScreenType.metadataKey] else {
             return nil
