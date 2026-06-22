@@ -85,11 +85,14 @@ enum AccessorOperators {
         let needCountValue = evaluated[0]
         let options = evaluated[1]
 
-        // json-logic-js evaluates `missing.apply(this, options)`, so `options`
-        // is treated as an *array-like* argument list rather than strictly an
-        // array:
+        // json-logic-js computes `missing.apply(this, [options])` for the
+        // keys, then reads `options.length` for the threshold. So the key
+        // set and the threshold count come from *different* views of
+        // `options`:
         //   - array  → its elements are the keys; length = element count
-        //   - string → its characters are the keys; length = character count
+        //   - string → the *whole string* is a single key; length = its
+        //              character count (so a long string can satisfy a
+        //              larger threshold while only ever contributing one key)
         //   - null   → no keys; `length` is `undefined`, which makes the
         //              threshold comparison `NaN >= need` (always false), so
         //              the missing list is returned unconditionally
@@ -101,7 +104,7 @@ enum AccessorOperators {
             keys = items
             total = items.count
         case .string(let string):
-            keys = string.map { .string(String($0)) }
+            keys = [.string(string)]
             total = string.count
         case .null, .undefined:
             keys = []

@@ -15,6 +15,20 @@
       "expected": true
     },
     {
+      "id": "missing_some_string_options_length_counts_characters_satisfied",
+      "description": "options is the string \"abcde\": json-logic-js checks it as a single (missing) key but uses its character length (5) in the threshold math, so 5 - 1 = 4 meets need=4 and the result is empty",
+      "predicate": { "==": [{ "missing_some": [4, "abcde"] }, ""] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "missing_some_string_options_length_counts_characters_below_threshold",
+      "description": "same string \"abcde\" but need=5 exceeds 5 - 1 = 4, so the single whole-string key \"abcde\" is returned (compared via string coercion)",
+      "predicate": { "==": [{ "missing_some": [5, "abcde"] }, "abcde"] },
+      "variables": {},
+      "expected": true
+    },
+    {
       "id": "missing_some_zero_required_always_satisfied",
       "description": "need=0 means any number of these is fine, so the result is always empty",
       "predicate": { "==": [{ "missing_some": [0, ["a", "b"]] }, ""] },
