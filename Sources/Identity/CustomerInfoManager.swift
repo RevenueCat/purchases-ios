@@ -459,6 +459,7 @@ private extension CustomerInfoManager {
                         transactionToPost,
                         data: transactionData,
                         postReceiptSource: Self.sourceForUnfinishedTransaction,
+                        forceSdkOriginated: false,
                         currentUserID: appUserID
                     )
                     switch result {
@@ -573,6 +574,7 @@ private extension CustomerInfoManager {
                         transaction,
                         data: data,
                         postReceiptSource: postReceiptSource,
+                        forceSdkOriginated: false,
                         currentUserID: appUserID
                     )
                 }

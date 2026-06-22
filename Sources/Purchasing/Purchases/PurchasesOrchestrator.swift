@@ -1581,7 +1581,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
             transaction,
             data: transactionData,
             postReceiptSource: purchaseSource,
-            originatedFromPurchase: cached?.originatedFromPurchase ?? false,
+            forceSdkOriginated: cached?.originatedFromPurchase ?? false,
             currentUserID: self.appUserID
         )
 
@@ -1999,7 +1999,7 @@ private extension PurchasesOrchestrator {
                 purchasedTransaction,
                 data: transactionData,
                 postReceiptSource: purchaseSource,
-                originatedFromPurchase: cached?.originatedFromPurchase ?? false,
+                forceSdkOriginated: cached?.originatedFromPurchase ?? false,
                 currentUserID: self.appUserID
             ) { result in
 
@@ -2373,7 +2373,7 @@ extension PurchasesOrchestrator {
             transaction,
             data: transactionData,
             postReceiptSource: purchaseSource,
-            originatedFromPurchase: cached?.originatedFromPurchase ?? false,
+            forceSdkOriginated: cached?.originatedFromPurchase ?? false,
             currentUserID: self.appUserID
         )
 

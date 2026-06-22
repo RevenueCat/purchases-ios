@@ -29,7 +29,7 @@ final class MockTransactionPoster: TransactionPosterType {
                                                              data: PurchasedTransactionData,
                                                              postReceiptSource: PostReceiptSource,
                                                              currentUserID: String)?> = nil
-    let invokedHandlePurchasedTransactionOriginatedFromPurchase: Atomic<Bool?> = nil
+    let invokedHandlePurchasedTransactionForceSdkOriginated: Atomic<Bool?> = nil
     let invokedHandlePurchasedTransactionParameterList: Atomic<[(transaction: StoreTransactionType,
                                                                  data: PurchasedTransactionData,
                                                                  postReceiptSource: PostReceiptSource)]> = .init([])
@@ -48,7 +48,7 @@ final class MockTransactionPoster: TransactionPosterType {
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
         postReceiptSource: PostReceiptSource,
-        originatedFromPurchase: Bool,
+        forceSdkOriginated: Bool,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
@@ -65,7 +65,7 @@ final class MockTransactionPoster: TransactionPosterType {
                                                                   data,
                                                                   postReceiptSource,
                                                                   currentUserID)
-        self.invokedHandlePurchasedTransactionOriginatedFromPurchase.value = originatedFromPurchase
+        self.invokedHandlePurchasedTransactionForceSdkOriginated.value = forceSdkOriginated
         self.invokedHandlePurchasedTransactionParameterList.modify {
             $0.append((transaction, data, postReceiptSource))
         }

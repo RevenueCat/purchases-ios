@@ -60,15 +60,16 @@ typealias CachedTransactionMetadataPostResult = (
 protocol TransactionPosterType: AnyObject, Sendable {
 
     /// Starts a `PostReceiptDataOperation` for the transaction.
-    /// - Parameter originatedFromPurchase: whether the transaction originated from a RevenueCat
-    /// `purchase()` call, even if this particular post is queue-initiated (a queue transaction can
-    /// race ahead of `purchase()` returning). Drives `sdkOriginated` for those queue-initiated posts.
+    /// - Parameter forceSdkOriginated: when `true`, report this post as `sdkOriginated` even if it
+    /// is queue-initiated. Used when a queue transaction races ahead of `purchase()` returning so
+    /// it's still attributed to the SDK. When `false`, `sdkOriginated` is derived normally (from the
+    /// initiation source / stored metadata), so `false` does not imply the post is not SDK-originated.
     // swiftlint:disable:next function_parameter_count
     func handlePurchasedTransaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
         postReceiptSource: PostReceiptSource,
-        originatedFromPurchase: Bool,
+        forceSdkOriginated: Bool,
         currentUserID: String,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     )
@@ -142,7 +143,7 @@ final class TransactionPoster: TransactionPosterType {
     func handlePurchasedTransaction(_ transaction: StoreTransactionType,
                                     data: PurchasedTransactionData,
                                     postReceiptSource: PostReceiptSource,
-                                    originatedFromPurchase: Bool,
+                                    forceSdkOriginated: Bool,
                                     currentUserID: String,
                                     completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         Logger.debug(Strings.purchase.transaction_poster_handling_transaction(
@@ -169,7 +170,7 @@ final class TransactionPoster: TransactionPosterType {
                         self.postReceipt(transaction: transaction,
                                          purchasedTransactionData: data,
                                          postReceiptSource: postReceiptSource,
-                                         originatedFromPurchase: originatedFromPurchase,
+                                         forceSdkOriginated: forceSdkOriginated,
                                          receipt: encodedReceipt,
                                          product: product,
                                          appTransaction: appTransaction,
@@ -203,7 +204,7 @@ final class TransactionPoster: TransactionPosterType {
                              purchasedTransactionData: data,
                              postReceiptSource: postReceiptSource,
                              // Synced SK2 transactions are detected outside an SDK `purchase()` call.
-                             originatedFromPurchase: false,
+                             forceSdkOriginated: false,
                              receipt: receipt,
                              product: product,
                              appTransaction: appTransactionJWS,
@@ -304,7 +305,7 @@ extension TransactionPosterType {
         _ transaction: StoreTransaction,
         data: PurchasedTransactionData,
         postReceiptSource: PostReceiptSource,
-        originatedFromPurchase: Bool = false,
+        forceSdkOriginated: Bool,
         currentUserID: String
     ) async -> Result<CustomerInfo, BackendError> {
         await Async.call { completion in
@@ -312,7 +313,7 @@ extension TransactionPosterType {
                 transaction,
                 data: data,
                 postReceiptSource: postReceiptSource,
-                originatedFromPurchase: originatedFromPurchase,
+                forceSdkOriginated: forceSdkOriginated,
                 currentUserID: currentUserID,
                 completion: completion
             )
@@ -372,7 +373,7 @@ extension TransactionPoster {
     private func postReceipt(transaction: StoreTransactionType,
                              purchasedTransactionData: PurchasedTransactionData,
                              postReceiptSource: PostReceiptSource,
-                             originatedFromPurchase: Bool,
+                             forceSdkOriginated: Bool,
                              receipt: EncodedAppleReceipt,
                              product: StoreProduct?,
                              appTransaction: String?,
@@ -398,11 +399,11 @@ extension TransactionPoster {
 
         // sdkOriginated indicates whether this purchase was initiated by the SDK (stored metadata takes precedence):
         // - true when the purchase was initiated via SDK's purchase() methods (initiationSource == .purchase)
-        // - true when a queue-initiated post carries context cached at the intent of a purchase() call
-        //   (a queue transaction can race ahead of purchase() returning, see `originatedFromPurchase`)
+        // - true when `forceSdkOriginated` is set, i.e. a queue-initiated post carries context cached at
+        //   the intent of a purchase() call (a queue transaction can race ahead of purchase() returning)
         // - false when the purchase was detected in the queue but triggered outside the SDK
         let sdkOriginated = storedTransactionMetadata?.sdkOriginated ??
-            (postReceiptSource.initiationSource == .purchase || originatedFromPurchase)
+            (postReceiptSource.initiationSource == .purchase || forceSdkOriginated)
 
         if shouldStoreMetadata {
             let metadataToStore = LocalTransactionMetadata(
