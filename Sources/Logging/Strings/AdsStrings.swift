@@ -35,7 +35,8 @@ enum AdsStrings {
     case poll_cancelled(transactionID: String)
     case reward_verification_completed(outcome: String, transactionID: String)
     case reward_verification_virtual_currency_invalidating_cache(transactionID: String)
-    case reward_verification_entitlement_invalidating_customer_info(transactionID: String)
+    case reward_verification_entitlement_fetching_customer_info(transactionID: String)
+    case reward_verification_entitlement_customer_info_refresh_failed(transactionID: String)
 
 }
 
@@ -93,8 +94,12 @@ extension AdsStrings: LogMessage {
         case let .reward_verification_virtual_currency_invalidating_cache(transactionID):
             return "Reward verification granted a virtual currency; invalidating virtual currencies cache " +
                 "transactionID=\(transactionID)"
-        case let .reward_verification_entitlement_invalidating_customer_info(transactionID):
-            return "Reward verification granted an entitlement; invalidating CustomerInfo cache " +
+        case let .reward_verification_entitlement_fetching_customer_info(transactionID):
+            return "Reward verification granted an entitlement; fetching updated CustomerInfo " +
+                "transactionID=\(transactionID)"
+        case let .reward_verification_entitlement_customer_info_refresh_failed(transactionID):
+            return "Reward verification granted an entitlement but refreshing CustomerInfo failed; " +
+                "reporting the reward as failed (the grant persists server-side and will sync later). " +
                 "transactionID=\(transactionID)"
         }
     }
