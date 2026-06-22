@@ -45,6 +45,9 @@ protocol HTTPRequestPath {
 
     /// The fallback relative path for this endpoint, if any.
     var fallbackRelativePath: String? { get }
+
+    /// Additional headers specific to this endpoint.
+    var additionalHeaders: HTTPRequest.Headers { get }
 }
 
 extension HTTPRequestPath {
@@ -59,6 +62,10 @@ extension HTTPRequestPath {
 
     var fallbackRelativePath: String? {
         return nil
+    }
+
+    var additionalHeaders: HTTPRequest.Headers {
+        return [:]
     }
 
     var url: URL? { return self.url(proxyURL: nil) }
@@ -109,8 +116,7 @@ extension HTTPRequest {
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
-        // WIP: endpoint path and signing requirements subject to change
-        case getRemoteConfig
+        case remoteConfig
 
     }
 
@@ -165,6 +171,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return base
         case let .getWorkflow(_, workflowId):
             return "/workflows/v1/workflows/\(Self.escape(workflowId))"
+        case .remoteConfig:
+            return "/v2/config"
         default:
             return nil
         }
@@ -208,7 +216,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus,
-                .getRemoteConfig:
+                .remoteConfig:
             return true
 
         case .health,
@@ -237,10 +245,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
-                .rewardVerificationStatus,
-                .getRemoteConfig:
+                .rewardVerificationStatus:
             return true
-        case .health,
+        case .remoteConfig,
+             .health,
              .appHealthReportAvailability:
             return false
         }
@@ -268,9 +276,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
                 .getCustomerCenterConfig,
-                .postCreateTicket,
-                // WIP: Move to true when we have the final endpoint for remote config, and we can remove the fallback
-                .getRemoteConfig:
+                .postCreateTicket:
+            return false
+        case .remoteConfig:
+            // swiftlint:disable:next todo
+            // TODO: Enable signature verification once remote-config binary responses are signed.
             return false
         case .rewardVerificationStatus:
             return true
@@ -300,15 +310,18 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .appHealthReport,
-                .postCreateTicket,
-                .getRemoteConfig:
+                .postCreateTicket:
+            return false
+        case .remoteConfig:
+            // swiftlint:disable:next todo
+            // TODO: Require a nonce once remote-config binary responses are signed.
             return false
         }
     }
 
     var relativePath: String {
         switch self {
-        case .getRemoteConfig:
+        case .remoteConfig:
             return "/v2/\(self.pathComponent)"
         default:
             return "/v1/\(self.pathComponent)"
@@ -383,7 +396,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .rewardVerificationStatus(appUserID, clientTransactionID):
             return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
 
-        case .getRemoteConfig:
+        case .remoteConfig:
             return "config"
         }
     }
@@ -452,8 +465,17 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .rewardVerificationStatus:
             return "get_reward_verification_status"
 
-        case .getRemoteConfig:
-            return "get_remote_config"
+        case .remoteConfig:
+            return "remote_config"
+        }
+    }
+
+    var additionalHeaders: HTTPRequest.Headers {
+        switch self {
+        case .remoteConfig:
+            return [HTTPClient.RequestHeader.accept.rawValue: HTTPClient.rcContainerFormatAcceptHeaderValue]
+        default:
+            return [:]
         }
     }
 

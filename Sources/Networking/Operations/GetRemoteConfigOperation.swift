@@ -46,19 +46,15 @@ extension GetRemoteConfigOperation: @unchecked Sendable {}
 private extension GetRemoteConfigOperation {
 
     func getRemoteConfig(completion: @escaping () -> Void) {
-        let request = HTTPRequest(method: .get, path: .getRemoteConfig)
+        let request = HTTPRequest(method: .post(RemoteConfigRequest()), path: .remoteConfig)
 
-        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<RemoteConfigResponse>.Result) in
+        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<RCContainer?>.Result) in
             defer {
                 completion()
             }
 
             self.callbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                callback.completion(
-                    response
-                        .map { $0.body }
-                        .mapError(BackendError.networkError)
-                )
+                callback.completion(response.map(\.body).mapError(BackendError.networkError))
             }
         }
     }
