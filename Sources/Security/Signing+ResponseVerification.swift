@@ -77,6 +77,8 @@ extension HTTPResponse where Body == Data? {
         do {
             message = try contextProvider.responsePayloadForSignature(from: body)
         } catch {
+            Logger.warn(Strings.signing.signature_payload_failed_creation(request, error))
+
             return .failed
         }
 
