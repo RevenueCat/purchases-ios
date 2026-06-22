@@ -14,6 +14,12 @@ public enum Value: Equatable, Hashable, Sendable {
 
     /// JSON `null`.
     case null
+    /// JS `undefined`. Not expressible in JSON, so it never appears in
+    /// predicate or variable input — it is only produced internally by
+    /// operators that mirror json-logic-js's `undefined` result (e.g.
+    /// `{"and": []}`, `{"or": []}`, `{"log": []}`). Distinct from `null`
+    /// so strict equality matches JS (`undefined === null` is `false`).
+    case undefined
     /// A JSON boolean.
     case bool(Bool)
     /// A JSON integer-valued number.
@@ -36,7 +42,7 @@ extension Value {
     /// - everything else → truthy
     var isTruthy: Bool {
         switch self {
-        case .null:
+        case .null, .undefined:
             return false
         case .bool(let value):
             return value
@@ -64,6 +70,11 @@ extension Value {
         switch self {
         case .null:
             return 0.0
+        case .undefined:
+            // JS `Number(undefined)` is `NaN`; returning `nil` keeps the
+            // "no comparable number" contract (looseEq fallback fails,
+            // arithmetic callers map to `.nan`).
+            return nil
         case .bool(let value):
             return value ? 1.0 : 0.0
         case .int(let value):
@@ -90,6 +101,8 @@ func jsToNumber(_ value: Value) -> Double {
     switch value {
     case .null:
         return 0
+    case .undefined:
+        return .nan
     case .bool(let value):
         return value ? 1 : 0
     case .int(let value):
@@ -125,6 +138,14 @@ func jsToNumber(_ value: Value) -> Double {
 // swiftlint:disable:next cyclomatic_complexity
 func looseEq(_ lhs: Value, _ rhs: Value) -> Bool {
     switch (lhs, rhs) {
+    // JS abstract equality: `undefined == null` and `undefined == undefined`
+    // are `true`; `undefined` compares unequal to everything else. These must
+    // precede the `null` arms so `(.null, .undefined)` doesn't fall into them.
+    case (.undefined, .undefined), (.undefined, .null), (.null, .undefined):
+        return true
+    case (.undefined, _), (_, .undefined):
+        return false
+
     case (.null, .null):
         return true
     case (.null, _), (_, .null):
@@ -182,6 +203,8 @@ func jsString(_ value: Value) -> String {
     switch value {
     case .null:
         return "null"
+    case .undefined:
+        return "undefined"
     case .bool(let value):
         return value ? "true" : "false"
     case .int(let value):
@@ -208,6 +231,7 @@ func jsArrayJoin(_ items: [Value]) -> String {
 /// `jsString`.
 func jsArrayElementString(_ value: Value) -> String {
     if case .null = value { return "" }
+    if case .undefined = value { return "" }
     return jsString(value)
 }
 
@@ -268,6 +292,8 @@ private func parseFloatPrefix(_ string: String) -> Double {
 func strictEq(_ lhs: Value, _ rhs: Value) -> Bool {
     switch (lhs, rhs) {
     case (.null, .null):
+        return true
+    case (.undefined, .undefined):
         return true
     case (.bool(let left), .bool(let right)):
         return left == right

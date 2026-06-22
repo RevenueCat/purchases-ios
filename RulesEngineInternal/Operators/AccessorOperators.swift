@@ -85,20 +85,40 @@ enum AccessorOperators {
         let needCountValue = evaluated[0]
         let options = evaluated[1]
 
-        guard case .array(let items) = options else {
+        // json-logic-js evaluates `missing.apply(this, options)`, so `options`
+        // is treated as an *array-like* argument list rather than strictly an
+        // array:
+        //   - array  → its elements are the keys; length = element count
+        //   - string → its characters are the keys; length = character count
+        //   - null   → no keys; `length` is `undefined`, which makes the
+        //              threshold comparison `NaN >= need` (always false), so
+        //              the missing list is returned unconditionally
+        //   - other  → `Function.prototype.apply` throws a `TypeError`
+        let keys: [Value]
+        let total: Int?
+        switch options {
+        case .array(let items):
+            keys = items
+            total = items.count
+        case .string(let string):
+            keys = string.map { .string(String($0)) }
+            total = string.count
+        case .null, .undefined:
+            keys = []
+            total = nil
+        default:
             throw RulesEngine.EvaluationError.typeMismatch(
-                message: "operator 'missing_some': second argument must be an array of paths, "
+                message: "operator 'missing_some': second argument must be array-like, "
                     + "got \(options)"
             )
         }
-        let total = items.count
 
         // Threshold uses JS `ToNumber` + `>=`. `NaN` and unparseable
         // strings never satisfy; `+Infinity` never satisfies for finite
         // present counts; `-Infinity` always satisfies.
         let need = jsToNumber(needCountValue)
 
-        let missing = try opMissing(args: options, vars: vars)
+        let missing = try opMissing(args: .array(keys), vars: vars)
         let missingCount: Int
         if case .array(let entries) = missing {
             missingCount = entries.count
@@ -106,7 +126,7 @@ enum AccessorOperators {
             missingCount = 0
         }
 
-        if Double(total - missingCount) >= need {
+        if let total, Double(total - missingCount) >= need {
             return .array([])
         }
         return missing
