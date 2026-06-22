@@ -1708,19 +1708,8 @@ extension Purchases {
     ) async -> RewardVerificationResult {
         let outcome = await poller.run(clientTransactionID: clientTransactionID)
         let result = await self.rewardVerificationResult(for: outcome, clientTransactionID: clientTransactionID)
-
-        // Log the *delivered* result, not the raw poll outcome — an entitlement-refresh failure downgrades
-        // a verified poll to `.failed`, so the completion log must match what the caller receives.
-        let resultDescription: String
-        if result.verifiedReward != nil {
-            resultDescription = "verified"
-        } else if case .failed = outcome {
-            resultDescription = outcome.logDescription
-        } else {
-            resultDescription = "failed(entitlementRefreshFailed)"
-        }
         Logger.info(AdsStrings.reward_verification_completed(
-            outcome: resultDescription,
+            result: result,
             transactionID: clientTransactionID
         ))
         return result

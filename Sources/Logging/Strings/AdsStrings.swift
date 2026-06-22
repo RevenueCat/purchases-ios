@@ -33,7 +33,7 @@ enum AdsStrings {
     case poll_unexpected_response(transactionID: String)
     case poll_terminal_error(error: Error, transactionID: String)
     case poll_cancelled(transactionID: String)
-    case reward_verification_completed(outcome: String, transactionID: String)
+    case reward_verification_completed(result: RewardVerificationResult, transactionID: String)
     case reward_verification_virtual_currency_invalidating_cache(transactionID: String)
     case reward_verification_entitlement_fetching_customer_info(transactionID: String)
     case reward_verification_entitlement_customer_info_refresh_failed(transactionID: String)
@@ -89,7 +89,8 @@ extension AdsStrings: LogMessage {
                 "transactionID=\(transactionID)"
         case let .poll_cancelled(transactionID):
             return "Reward verification was cancelled before completion. transactionID=\(transactionID)"
-        case let .reward_verification_completed(outcome, transactionID):
+        case let .reward_verification_completed(result, transactionID):
+            let outcome = result.failed ? "failed" : "verified"
             return "Reward verification completed outcome=\(outcome) transactionID=\(transactionID)"
         case let .reward_verification_virtual_currency_invalidating_cache(transactionID):
             return "Reward verification granted a virtual currency; invalidating virtual currencies cache " +

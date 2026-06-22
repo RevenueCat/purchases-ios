@@ -223,13 +223,13 @@ extension PurchasesRewardVerificationTests {
         expect(self.backend.getCustomerInfoCallCount) == before + 1
         // The completion log reflects the delivered result, never "verified".
         self.logger.verifyMessageWasLogged(
-            AdsStrings.reward_verification_completed(
-                outcome: "failed(entitlementRefreshFailed)", transactionID: "tx-1"
-            ),
+            AdsStrings.reward_verification_completed(result: .failed, transactionID: "tx-1"),
             level: .info
         )
         self.logger.verifyMessageWasNotLogged(
-            AdsStrings.reward_verification_completed(outcome: "verified", transactionID: "tx-1")
+            AdsStrings.reward_verification_completed(
+                result: .verified(.entitlement(reward)), transactionID: "tx-1"
+            )
         )
     }
 
