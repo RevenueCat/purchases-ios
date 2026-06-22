@@ -20,6 +20,9 @@ import UIKit
 #if canImport(WebKit)
 import WebKit
 #endif
+#if canImport(CoreLocation)
+import CoreLocation
+#endif
 
 #if !os(tvOS) // For Paywalls V2
 
@@ -73,7 +76,12 @@ struct WebViewComponentView: View {
         #if canImport(UIKit)
         if let resolvedURL = viewModel.resolvedURL(customVariables: customVariables) {
             let urlToLoad = viewModel.cachedURL(for: resolvedURL) ?? resolvedURL
-            WebViewRepresentable(url: urlToLoad, height: $dynamicHeight, bridge: bridge)
+            WebViewRepresentable(
+                url: urlToLoad,
+                height: $dynamicHeight,
+                bridge: bridge,
+                capabilities: viewModel.capabilities
+            )
                 .modifier(WebViewSizeModifier(size: viewModel.size, measuredHeight: dynamicHeight))
                 .clipped()
                 .background(Color.clear)
@@ -87,7 +95,12 @@ struct WebViewComponentView: View {
         if let resolvedURL = viewModel.resolvedURL(customVariables: customVariables) {
             let urlToLoad = viewModel.cachedURL(for: resolvedURL) ?? resolvedURL
             let macHeight = dynamicHeight ?? Self.initialHeight
-            MacWebViewRepresentable(url: urlToLoad, height: $dynamicHeight, bridge: bridge)
+            MacWebViewRepresentable(
+                url: urlToLoad,
+                height: $dynamicHeight,
+                bridge: bridge,
+                capabilities: viewModel.capabilities
+            )
                 .modifier(WebViewSizeModifier(size: viewModel.size, measuredHeight: macHeight))
                 .clipped()
                 .background(Color.clear)
@@ -399,7 +412,138 @@ enum PaywallWebViewScripts {
         forMainFrameOnly: true
     )
 
+    /// The native handler name the geolocation bridge posts to. Only installed when the
+    /// `geolocation` capability is granted.
+    static let geolocationHandlerName = "rcGeolocation"
+
+    /// Injected at document start (only when `geolocation` is granted) to bridge HTML5
+    /// `navigator.geolocation` to CoreLocation, which `WKWebView` does not proxy on its own.
+    /// `getCurrentPosition` posts a `{ requestId }` to the native `rcGeolocation` handler and
+    /// stores the callbacks; the native side resolves them via `window.__rcDeliverGeolocation`
+    /// or `window.__rcGeolocationError`. `watchPosition` is a no-op stub (returns `-1`).
+    static let geolocationBridgeJavaScriptSource = """
+    (function() {
+      if (window.__rcGeolocationInstalled) { return; }
+      window.__rcGeolocationInstalled = true;
+
+      var callbacks = {};
+
+      function randomId() {
+        return 'geo_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      }
+
+      function post(requestId) {
+        if (window.webkit &&
+            window.webkit.messageHandlers &&
+            window.webkit.messageHandlers.\(geolocationHandlerName)) {
+          window.webkit.messageHandlers.\(geolocationHandlerName).postMessage({ requestId: requestId });
+        }
+      }
+
+      window.__rcDeliverGeolocation = function(requestId, lat, lon, accuracy) {
+        var entry = callbacks[requestId];
+        if (!entry) { return; }
+        delete callbacks[requestId];
+        if (typeof entry.success === 'function') {
+          entry.success({
+            coords: {
+              latitude: lat,
+              longitude: lon,
+              accuracy: accuracy,
+              altitude: null,
+              altitudeAccuracy: null,
+              heading: null,
+              speed: null
+            },
+            timestamp: Date.now()
+          });
+        }
+      };
+
+      window.__rcGeolocationError = function(requestId, code, message) {
+        var entry = callbacks[requestId];
+        if (!entry) { return; }
+        delete callbacks[requestId];
+        if (typeof entry.error === 'function') {
+          entry.error({ code: code, message: message });
+        }
+      };
+
+      var geolocation = {
+        getCurrentPosition: function(success, error) {
+          var requestId = randomId();
+          callbacks[requestId] = { success: success, error: error };
+          post(requestId);
+        },
+        watchPosition: function() { return -1; },
+        clearWatch: function() {}
+      };
+
+      try {
+        Object.defineProperty(navigator, 'geolocation', { value: geolocation, configurable: true });
+      } catch (e) {
+        navigator.geolocation = geolocation;
+      }
+    })();
+    """
+
+    static func geolocationUserScript() -> WKUserScript {
+        return WKUserScript(
+            source: PaywallWebViewScripts.geolocationBridgeJavaScriptSource,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true
+        )
+    }
+
+    /// Adds the always-on scripts (zoom-disable, height reporting, message bridge) that every pooled
+    /// web view starts with. Used both at construction and when resetting a returned view, so a
+    /// pooled view never retains capability-specific scripts (e.g. geolocation) from a prior use.
+    static func addBaseUserScripts(to controller: WKUserContentController) {
+        controller.addUserScript(PaywallWebViewScripts.disableZoomUserScript)
+        controller.addUserScript(PaywallWebViewScripts.heightReportingUserScript)
+        controller.addUserScript(PaywallWebViewScripts.messageBridgeUserScript)
+    }
+
 }
+
+#if canImport(CoreLocation)
+
+/// Delivers CoreLocation results back into the web view's geolocation bridge. Shared by the iOS and
+/// macOS coordinators so the JS-escaping logic lives in one place.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+enum PaywallWebViewGeolocation {
+
+    static func deliver(requestId: String, location: CLLocation, to webView: WKWebView?) {
+        guard let webView else { return }
+        let coordinate = location.coordinate
+        let script = "window.__rcDeliverGeolocation && window.__rcDeliverGeolocation("
+            + "\(jsStringLiteral(requestId)), "
+            + "\(coordinate.latitude), \(coordinate.longitude), \(location.horizontalAccuracy))"
+        webView.evaluateJavaScript(script)
+    }
+
+    static func deliverError(requestId: String, code: Int, message: String, to webView: WKWebView?) {
+        guard let webView else { return }
+        let script = "window.__rcGeolocationError && window.__rcGeolocationError("
+            + "\(jsStringLiteral(requestId)), \(code), \(jsStringLiteral(message)))"
+        webView.evaluateJavaScript(script)
+    }
+
+    /// Produces a safely-escaped JS string literal (including surrounding quotes) via JSON encoding.
+    private static func jsStringLiteral(_ value: String) -> String {
+        guard let data = try? JSONSerialization.data(withJSONObject: [value]),
+              var encoded = String(data: data, encoding: .utf8) else {
+            return "\"\""
+        }
+        // Strip the array brackets, leaving the quoted, escaped element.
+        encoded.removeFirst()
+        encoded.removeLast()
+        return encoded
+    }
+
+}
+
+#endif
 
 #endif
 
@@ -412,10 +556,17 @@ private struct WebViewRepresentable: UIViewRepresentable {
     let url: URL
     @Binding var height: CGFloat?
     let bridge: WebViewBridgeConfiguration
+    let capabilities: PaywallComponent.WebViewCapabilities?
 
     func makeUIView(context: Context) -> WKWebView {
-        let webView = WebViewPool.shared.acquire()
+        context.coordinator.capabilities = capabilities
+
+        // A `network_access`-bearing view needs its `WKContentRuleList` attached before the first
+        // load. If it isn't compiled yet, use a fresh view (not a pooled one) so the pool stays
+        // available while we defer the load until compilation finishes.
+        let webView = Self.acquireWebView(for: capabilities)
         webView.navigationDelegate = context.coordinator
+        webView.uiDelegate = context.coordinator
         webView.scrollView.isScrollEnabled = false
         webView.scrollView.backgroundColor = .clear
         webView.isOpaque = false
@@ -433,10 +584,24 @@ private struct WebViewRepresentable: UIViewRepresentable {
         context.coordinator.bridge = bridge
         context.coordinator.registerHeightReporting(on: webView)
         context.coordinator.registerMessageBridgeIfNeeded(on: webView)
+        context.coordinator.installGeolocationBridgeIfNeeded(on: webView)
 
         context.coordinator.currentURL = url
-        webView.load(URLRequest(url: url))
+        context.coordinator.loadRespectingNetworkAccess(url: url, on: webView)
         return webView
+    }
+
+    /// Pulls a pooled web view, or creates a fresh standalone one when a not-yet-compiled content
+    /// rule list would otherwise force the load to be deferred on a pooled instance.
+    private static func acquireWebView(
+        for capabilities: PaywallComponent.WebViewCapabilities?
+    ) -> AutoSizingWebView {
+        if let identifier = WebViewCapabilitiesConfiguration.contentRuleListIdentifier(
+            for: capabilities?.networkAccess
+        ), WebViewContentRuleListStore.shared.cached(identifier: identifier) == nil {
+            return WebViewPool.shared.makeStandaloneWebView()
+        }
+        return WebViewPool.shared.acquire()
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
@@ -459,7 +624,9 @@ private struct WebViewRepresentable: UIViewRepresentable {
     static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
         coordinator.unregisterHeightReporting(from: uiView)
         coordinator.unregisterMessageBridge(from: uiView)
+        coordinator.unregisterGeolocationBridge(from: uiView)
         uiView.navigationDelegate = nil
+        uiView.uiDelegate = nil
         uiView.scrollView.delegate = nil
 
         if let webView = uiView as? AutoSizingWebView {
@@ -471,18 +638,26 @@ private struct WebViewRepresentable: UIViewRepresentable {
         Coordinator(height: $height)
     }
 
-    final class Coordinator: NSObject, WKNavigationDelegate, UIScrollViewDelegate, WKScriptMessageHandler {
+    final class Coordinator: NSObject, WKNavigationDelegate, UIScrollViewDelegate, WKScriptMessageHandler,
+                             WKUIDelegate {
 
         static let heightMessageHandlerName = "rcWebViewHeight"
         static let messageHandlerName = PaywallWebViewScripts.messageHandlerName
+        static let geolocationHandlerName = PaywallWebViewScripts.geolocationHandlerName
 
         @Binding var height: CGFloat?
         var currentURL: URL?
         var bridge: WebViewBridgeConfiguration?
+        var capabilities: PaywallComponent.WebViewCapabilities?
         private var heightMessageHandler: WeakScriptMessageHandler?
         private var messageBridgeHandler: WeakScriptMessageHandler?
+        private var geolocationMessageHandler: WeakScriptMessageHandler?
         private weak var webView: WKWebView?
         private var heightMeasurementGeneration = 0
+        #if canImport(CoreLocation)
+        private var locationManagerStorage: CLLocationManager?
+        private var pendingGeolocationRequestIds: [String] = []
+        #endif
 
         init(height: Binding<CGFloat?>) {
             _height = height
@@ -535,6 +710,33 @@ private struct WebViewRepresentable: UIViewRepresentable {
             self.messageBridgeHandler = nil
         }
 
+        /// Defers the load until the `network_access` content rule list is attached, so no request
+        /// is ever issued before the blocking rules are in place. Loads immediately when no
+        /// `network_access` capability is declared.
+        func loadRespectingNetworkAccess(url: URL, on webView: WKWebView) {
+            guard let networkAccess = self.capabilities?.networkAccess,
+                  let identifier = WebViewCapabilitiesConfiguration.contentRuleListIdentifier(
+                    for: networkAccess
+                  ),
+                  let json = WebViewCapabilitiesConfiguration.contentBlockingRules(for: networkAccess) else {
+                webView.load(URLRequest(url: url))
+                return
+            }
+
+            WebViewContentRuleListStore.shared.ruleList(
+                forIdentifier: identifier,
+                json: json
+            ) { [weak webView] ruleList in
+                guard let webView else { return }
+                if let ruleList {
+                    webView.configuration.userContentController.add(ruleList)
+                }
+                // Fail closed: if compilation failed there is no permissive rule attached, so the
+                // load proceeds without any network grant. The blocked main document falls back.
+                webView.load(URLRequest(url: url))
+            }
+        }
+
         func userContentController(
             _ userContentController: WKUserContentController,
             didReceive message: WKScriptMessage
@@ -542,6 +744,9 @@ private struct WebViewRepresentable: UIViewRepresentable {
             switch message.name {
             case Self.messageHandlerName:
                 self.handleBridgeMessage(message)
+                return
+            case Self.geolocationHandlerName:
+                self.handleGeolocationMessage(message)
                 return
             case Self.heightMessageHandlerName:
                 break
@@ -655,9 +860,149 @@ private struct WebViewRepresentable: UIViewRepresentable {
             scrollView.zoomScale = 1.0
         }
 
+        // MARK: - Geolocation bridge
+
+        /// Installs the `navigator.geolocation` → CoreLocation bridge only when the capability is
+        /// granted. When off, the script is not injected and `navigator.geolocation` is untouched.
+        func installGeolocationBridgeIfNeeded(on webView: WKWebView) {
+            guard self.capabilities?.geolocation == true else { return }
+            self.webView = webView
+            webView.configuration.userContentController.addUserScript(
+                PaywallWebViewScripts.geolocationUserScript()
+            )
+            let handler = WeakScriptMessageHandler(delegate: self)
+            self.geolocationMessageHandler = handler
+            webView.configuration.userContentController.removeScriptMessageHandler(
+                forName: Self.geolocationHandlerName
+            )
+            webView.configuration.userContentController.add(handler, name: Self.geolocationHandlerName)
+        }
+
+        func unregisterGeolocationBridge(from webView: WKWebView) {
+            webView.configuration.userContentController.removeScriptMessageHandler(
+                forName: Self.geolocationHandlerName
+            )
+            self.geolocationMessageHandler = nil
+            #if canImport(CoreLocation)
+            self.tearDownLocationManager()
+            #endif
+        }
+
+        func handleGeolocationMessage(_ message: WKScriptMessage) {
+            #if canImport(CoreLocation)
+            guard self.capabilities?.geolocation == true,
+                  let body = message.body as? [String: Any],
+                  let requestId = body["requestId"] as? String else {
+                return
+            }
+            self.pendingGeolocationRequestIds.append(requestId)
+            self.resolvePendingGeolocation()
+            #endif
+        }
+
+        // MARK: - WKUIDelegate (media capture / clipboard)
+
+        @available(iOS 15.0, macOS 12.0, *)
+        func webView(
+            _ webView: WKWebView,
+            requestMediaCapturePermissionFor origin: WKSecurityOrigin,
+            initiatedByFrame frame: WKFrameInfo,
+            type: WKMediaCaptureType,
+            decisionHandler: @escaping (WKPermissionDecision) -> Void
+        ) {
+            decisionHandler(
+                WebViewCapabilitiesConfiguration.mediaCaptureDecision(
+                    type: type,
+                    capabilities: self.capabilities
+                )
+            )
+        }
+
+        @available(iOS 16.0, macOS 13.0, *)
+        func webView(
+            _ webView: WKWebView,
+            requestingCopyPermissionFor origin: WKSecurityOrigin,
+            completionHandler: @escaping (Bool) -> Void
+        ) {
+            completionHandler(self.capabilities?.clipboardWrite == true)
+        }
+
     }
 
 }
+
+#if canImport(CoreLocation)
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+extension WebViewRepresentable.Coordinator: CLLocationManagerDelegate {
+
+    func resolvePendingGeolocation() {
+        let manager = self.geolocationManager()
+        switch manager.authorizationStatus {
+        case .notDetermined:
+            manager.requestWhenInUseAuthorization()
+        case .authorizedAlways, .authorizedWhenInUse:
+            manager.requestLocation()
+        default:
+            self.failAllPendingGeolocation(code: 1, message: "Location permission denied or unavailable")
+        }
+    }
+
+    func tearDownLocationManager() {
+        self.locationManagerStorage?.delegate = nil
+        self.locationManagerStorage = nil
+        self.pendingGeolocationRequestIds.removeAll()
+    }
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        switch manager.authorizationStatus {
+        case .authorizedAlways, .authorizedWhenInUse:
+            if !self.pendingGeolocationRequestIds.isEmpty { manager.requestLocation() }
+        case .notDetermined:
+            break
+        default:
+            self.failAllPendingGeolocation(code: 1, message: "Location permission denied or unavailable")
+        }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+        let ids = self.pendingGeolocationRequestIds
+        self.pendingGeolocationRequestIds.removeAll()
+        for id in ids {
+            PaywallWebViewGeolocation.deliver(requestId: id, location: location, to: self.webView)
+        }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        self.failAllPendingGeolocation(code: 2, message: error.localizedDescription)
+    }
+
+    private func geolocationManager() -> CLLocationManager {
+        if let manager = self.locationManagerStorage { return manager }
+        let manager = CLLocationManager()
+        manager.delegate = self
+        self.locationManagerStorage = manager
+        return manager
+    }
+
+    private func failAllPendingGeolocation(code: Int, message: String) {
+        let ids = self.pendingGeolocationRequestIds
+        self.pendingGeolocationRequestIds.removeAll()
+        for id in ids {
+            PaywallWebViewGeolocation.deliverError(
+                requestId: id,
+                code: code,
+                message: message,
+                to: self.webView
+            )
+        }
+    }
+
+}
+
+#endif
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WebViewPool {
@@ -686,18 +1031,36 @@ final class WebViewPool {
         return self.pool.popLast() ?? self.makeWebView()
     }
 
+    /// Creates a fresh web view that bypasses the pool. Used when a `network_access` content rule
+    /// list isn't compiled yet, so the load can be deferred without holding a pooled instance.
+    func makeStandaloneWebView() -> AutoSizingWebView {
+        return self.makeWebView()
+    }
+
     func `return`(_ webView: AutoSizingWebView) {
         webView.stopLoading()
         webView.navigationDelegate = nil
+        webView.uiDelegate = nil
         webView.scrollView.delegate = nil
         webView.scrollView.zoomScale = 1.0
         webView.setContentHeight(0)
+
+        // Clear capability-specific state so a reused view never inherits another component's
+        // capabilities: drop content rules, the geolocation handler, and any capability scripts
+        // (resetting user scripts back to the always-on base set).
         webView.configuration.userContentController.removeScriptMessageHandler(
             forName: WebViewRepresentable.Coordinator.heightMessageHandlerName
         )
         webView.configuration.userContentController.removeScriptMessageHandler(
             forName: WebViewRepresentable.Coordinator.messageHandlerName
         )
+        webView.configuration.userContentController.removeScriptMessageHandler(
+            forName: WebViewRepresentable.Coordinator.geolocationHandlerName
+        )
+        webView.configuration.userContentController.removeAllContentRuleLists()
+        webView.configuration.userContentController.removeAllUserScripts()
+        PaywallWebViewScripts.addBaseUserScripts(to: webView.configuration.userContentController)
+
         webView.configuration.websiteDataStore.removeData(
             ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
             modifiedSince: .distantPast
@@ -739,9 +1102,7 @@ final class AutoSizingWebView: WKWebView {
         config.processPool = processPool
         config.websiteDataStore = .nonPersistent()
         config.allowsInlineMediaPlayback = true
-        config.userContentController.addUserScript(PaywallWebViewScripts.disableZoomUserScript)
-        config.userContentController.addUserScript(PaywallWebViewScripts.heightReportingUserScript)
-        config.userContentController.addUserScript(PaywallWebViewScripts.messageBridgeUserScript)
+        PaywallWebViewScripts.addBaseUserScripts(to: config.userContentController)
         config.setURLSchemeHandler(InMemoryHTMLURLSchemeHandler(), forURLScheme: "purchaseshtml")
         super.init(frame: .zero, configuration: config)
         isOpaque = false
@@ -854,15 +1215,19 @@ private struct MacWebViewRepresentable: NSViewRepresentable {
     let url: URL
     @Binding var height: CGFloat?
     let bridge: WebViewBridgeConfiguration
+    let capabilities: PaywallComponent.WebViewCapabilities?
 
     func makeNSView(context: Context) -> WKWebView {
         let webView = WKWebView(frame: .zero, configuration: Self.makeConfiguration())
         webView.navigationDelegate = context.coordinator
+        webView.uiDelegate = context.coordinator
+        context.coordinator.capabilities = capabilities
         context.coordinator.bridge = bridge
         context.coordinator.registerHeightReporting(on: webView)
         context.coordinator.registerMessageBridgeIfNeeded(on: webView)
+        context.coordinator.installGeolocationBridgeIfNeeded(on: webView)
         context.coordinator.currentURL = url
-        webView.load(URLRequest(url: url))
+        context.coordinator.loadRespectingNetworkAccess(url: url, on: webView)
 
         return webView
     }
@@ -881,7 +1246,9 @@ private struct MacWebViewRepresentable: NSViewRepresentable {
     static func dismantleNSView(_ nsView: WKWebView, coordinator: Coordinator) {
         coordinator.unregisterHeightReporting(from: nsView)
         coordinator.unregisterMessageBridge(from: nsView)
+        coordinator.unregisterGeolocationBridge(from: nsView)
         nsView.navigationDelegate = nil
+        nsView.uiDelegate = nil
         nsView.stopLoading()
         nsView.configuration.websiteDataStore.removeData(
             ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
@@ -903,18 +1270,25 @@ private struct MacWebViewRepresentable: NSViewRepresentable {
         return config
     }
 
-    final class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
+    final class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler, WKUIDelegate {
 
         static let heightMessageHandlerName = "rcWebViewHeight"
         static let messageHandlerName = PaywallWebViewScripts.messageHandlerName
+        static let geolocationHandlerName = PaywallWebViewScripts.geolocationHandlerName
 
         @Binding var height: CGFloat?
         var currentURL: URL?
         var bridge: WebViewBridgeConfiguration?
+        var capabilities: PaywallComponent.WebViewCapabilities?
         private var heightMessageHandler: WeakScriptMessageHandler?
         private var messageBridgeHandler: WeakScriptMessageHandler?
+        private var geolocationMessageHandler: WeakScriptMessageHandler?
         private weak var webView: WKWebView?
         private var heightMeasurementGeneration = 0
+        #if canImport(CoreLocation)
+        private var locationManagerStorage: CLLocationManager?
+        private var pendingGeolocationRequestIds: [String] = []
+        #endif
 
         init(height: Binding<CGFloat?>) {
             _height = height
@@ -963,6 +1337,31 @@ private struct MacWebViewRepresentable: NSViewRepresentable {
             self.messageBridgeHandler = nil
         }
 
+        /// Defers the load until the `network_access` content rule list is attached, so no request
+        /// is ever issued before the blocking rules are in place. Loads immediately when no
+        /// `network_access` capability is declared.
+        func loadRespectingNetworkAccess(url: URL, on webView: WKWebView) {
+            guard let networkAccess = self.capabilities?.networkAccess,
+                  let identifier = WebViewCapabilitiesConfiguration.contentRuleListIdentifier(
+                    for: networkAccess
+                  ),
+                  let json = WebViewCapabilitiesConfiguration.contentBlockingRules(for: networkAccess) else {
+                webView.load(URLRequest(url: url))
+                return
+            }
+
+            WebViewContentRuleListStore.shared.ruleList(
+                forIdentifier: identifier,
+                json: json
+            ) { [weak webView] ruleList in
+                guard let webView else { return }
+                if let ruleList {
+                    webView.configuration.userContentController.add(ruleList)
+                }
+                webView.load(URLRequest(url: url))
+            }
+        }
+
         func userContentController(
             _ userContentController: WKUserContentController,
             didReceive message: WKScriptMessage
@@ -970,6 +1369,9 @@ private struct MacWebViewRepresentable: NSViewRepresentable {
             switch message.name {
             case Self.messageHandlerName:
                 self.handleBridgeMessage(message)
+                return
+            case Self.geolocationHandlerName:
+                self.handleGeolocationMessage(message)
                 return
             case Self.heightMessageHandlerName:
                 break
@@ -1067,9 +1469,153 @@ private struct MacWebViewRepresentable: NSViewRepresentable {
             }
         }
 
+        // MARK: - Geolocation bridge
+
+        /// Installs the `navigator.geolocation` → CoreLocation bridge only when the capability is
+        /// granted. When off, the script is not injected and `navigator.geolocation` is untouched.
+        func installGeolocationBridgeIfNeeded(on webView: WKWebView) {
+            guard self.capabilities?.geolocation == true else { return }
+            self.webView = webView
+            webView.configuration.userContentController.addUserScript(
+                PaywallWebViewScripts.geolocationUserScript()
+            )
+            let handler = WeakScriptMessageHandler(delegate: self)
+            self.geolocationMessageHandler = handler
+            webView.configuration.userContentController.removeScriptMessageHandler(
+                forName: Self.geolocationHandlerName
+            )
+            webView.configuration.userContentController.add(handler, name: Self.geolocationHandlerName)
+        }
+
+        func unregisterGeolocationBridge(from webView: WKWebView) {
+            webView.configuration.userContentController.removeScriptMessageHandler(
+                forName: Self.geolocationHandlerName
+            )
+            self.geolocationMessageHandler = nil
+            #if canImport(CoreLocation)
+            self.tearDownLocationManager()
+            #endif
+        }
+
+        func handleGeolocationMessage(_ message: WKScriptMessage) {
+            #if canImport(CoreLocation)
+            guard self.capabilities?.geolocation == true,
+                  let body = message.body as? [String: Any],
+                  let requestId = body["requestId"] as? String else {
+                return
+            }
+            self.pendingGeolocationRequestIds.append(requestId)
+            self.resolvePendingGeolocation()
+            #endif
+        }
+
+        var geolocationWebView: WKWebView? { self.webView }
+
+        // MARK: - WKUIDelegate (media capture / clipboard)
+
+        @available(macOS 12.0, *)
+        func webView(
+            _ webView: WKWebView,
+            requestMediaCapturePermissionFor origin: WKSecurityOrigin,
+            initiatedByFrame frame: WKFrameInfo,
+            type: WKMediaCaptureType,
+            decisionHandler: @escaping (WKPermissionDecision) -> Void
+        ) {
+            decisionHandler(
+                WebViewCapabilitiesConfiguration.mediaCaptureDecision(
+                    type: type,
+                    capabilities: self.capabilities
+                )
+            )
+        }
+
+        @available(macOS 13.0, *)
+        func webView(
+            _ webView: WKWebView,
+            requestingCopyPermissionFor origin: WKSecurityOrigin,
+            completionHandler: @escaping (Bool) -> Void
+        ) {
+            completionHandler(self.capabilities?.clipboardWrite == true)
+        }
+
     }
 
 }
+
+#if canImport(CoreLocation)
+
+@available(macOS 12.0, *)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension MacWebViewRepresentable.Coordinator: CLLocationManagerDelegate {
+
+    func resolvePendingGeolocation() {
+        let manager = self.geolocationManager()
+        switch manager.authorizationStatus {
+        case .notDetermined:
+            manager.requestWhenInUseAuthorization()
+        case .authorizedAlways, .authorizedWhenInUse:
+            manager.requestLocation()
+        default:
+            self.failAllPendingGeolocation(code: 1, message: "Location permission denied or unavailable")
+        }
+    }
+
+    func tearDownLocationManager() {
+        self.locationManagerStorage?.delegate = nil
+        self.locationManagerStorage = nil
+        self.pendingGeolocationRequestIds.removeAll()
+    }
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        switch manager.authorizationStatus {
+        case .authorizedAlways, .authorizedWhenInUse:
+            if !self.pendingGeolocationRequestIds.isEmpty { manager.requestLocation() }
+        case .notDetermined:
+            break
+        default:
+            self.failAllPendingGeolocation(code: 1, message: "Location permission denied or unavailable")
+        }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+        let ids = self.pendingGeolocationRequestIds
+        self.pendingGeolocationRequestIds.removeAll()
+        for id in ids {
+            PaywallWebViewGeolocation.deliver(requestId: id, location: location, to: self.geolocationWebView)
+        }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        self.failAllPendingGeolocation(code: 2, message: error.localizedDescription)
+    }
+
+    private func geolocationManager() -> CLLocationManager {
+        if let manager = self.locationManagerStorage { return manager }
+        let manager = CLLocationManager()
+        manager.delegate = self
+        self.locationManagerStorage = manager
+        return manager
+    }
+
+    private func failAllPendingGeolocation(code: Int, message: String) {
+        let ids = self.pendingGeolocationRequestIds
+        self.pendingGeolocationRequestIds.removeAll()
+        for id in ids {
+            PaywallWebViewGeolocation.deliverError(
+                requestId: id,
+                code: code,
+                message: message,
+                to: self.geolocationWebView
+            )
+        }
+    }
+
+}
+
+#endif
 
 @available(macOS 12.0, *)
 @available(iOS, unavailable)

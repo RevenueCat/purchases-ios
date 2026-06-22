@@ -74,6 +74,54 @@ class WebViewComponentTests: TestCase {
         XCTAssertNil(webView.capabilities)
     }
 
+    func testDecodeEmptyAllowedDomainsIsEmptyArrayNotNil() throws {
+        let json = """
+        {
+          "type": "web_view",
+          "url": "https://example.com",
+          "capabilities": { "network_access": { "allowed_domains": [] } }
+        }
+        """.data(using: .utf8)!
+
+        let webView = try JSONDecoder.default
+            .decode(PaywallComponent.WebViewComponent.self, from: json)
+
+        XCTAssertEqual(webView.capabilities?.networkAccess?.allowedDomains, [])
+        XCTAssertNotNil(webView.capabilities?.networkAccess)
+    }
+
+    func testDecodeOmittedCapabilityFieldsAreNilNotFalse() throws {
+        let json = """
+        {
+          "type": "web_view",
+          "url": "https://example.com",
+          "capabilities": { "camera": true }
+        }
+        """.data(using: .utf8)!
+
+        let webView = try JSONDecoder.default
+            .decode(PaywallComponent.WebViewComponent.self, from: json)
+
+        XCTAssertEqual(webView.capabilities?.camera, true)
+        XCTAssertNil(webView.capabilities?.microphone)
+        XCTAssertNil(webView.capabilities?.networkAccess)
+    }
+
+    func testDecodeUnknownCapabilityKeyIsIgnored() throws {
+        let json = """
+        {
+          "type": "web_view",
+          "url": "https://example.com",
+          "capabilities": { "camera": true, "future_capability": "yes" }
+        }
+        """.data(using: .utf8)!
+
+        let webView = try JSONDecoder.default
+            .decode(PaywallComponent.WebViewComponent.self, from: json)
+
+        XCTAssertEqual(webView.capabilities?.camera, true)
+    }
+
     func testFallbackChildrenArePreservedThroughRoundTrip() throws {
         let component = PaywallComponent.WebViewComponent(
             url: "https://example.com",

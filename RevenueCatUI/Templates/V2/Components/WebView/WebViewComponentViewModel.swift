@@ -32,6 +32,10 @@ class WebViewComponentViewModel {
     /// Stack rendered when the web content cannot be displayed (e.g. the resolved URL is invalid).
     let fallbackStackViewModel: StackComponentViewModel?
 
+    /// Declared web view capabilities. Drives the runtime `WKWebView` configuration (content
+    /// blocking, media capture, geolocation, clipboard). `nil` (the default) grants nothing.
+    let capabilities: PaywallComponent.WebViewCapabilities?
+
     /// The locale resolved for this paywall, exposed as an SDK-managed `locale` variable.
     var locale: Locale {
         self.localizationProvider.locale
@@ -48,6 +52,7 @@ class WebViewComponentViewModel {
         self.size = component.size
         self.visible = component.visible ?? true
         self.componentID = component.id
+        self.capabilities = component.capabilities
         self.fallbackStackViewModel = fallbackStackViewModel
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider

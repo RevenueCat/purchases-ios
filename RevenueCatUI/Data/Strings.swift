@@ -110,6 +110,8 @@ enum Strings {
     case paywall_web_view_message_rejected(reason: String)
     case paywall_web_view_post_message_failed(Error)
     case paywall_web_view_post_message_skipped
+    case paywall_web_view_content_rules_failed(Error)
+    case paywall_web_view_capability_denied(capability: String)
 
     // Video
     case video_failed_to_set_audio_session_category(Error)
@@ -374,6 +376,11 @@ extension Strings: CustomStringConvertible {
         case .paywall_web_view_post_message_skipped:
             return "Skipped delivering a message to a web_view component because its web view is no " +
             "longer available or is showing different content."
+        case .paywall_web_view_content_rules_failed(let error):
+            return "Failed to compile content-blocking rules for a web_view component; blocking all " +
+            "network requests as a fallback: \(error)"
+        case .paywall_web_view_capability_denied(let capability):
+            return "Ignoring unsupported web_view capability '\(capability)'."
 
         case .video_failed_to_set_audio_session_category(let error):
             return "Failed to set audio session category: \(error)"

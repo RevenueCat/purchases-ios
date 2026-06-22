@@ -111,6 +111,101 @@ final class WebViewComponentTests: TestCase {
         XCTAssertEqual(component.capabilities?.geolocation, false)
     }
 
+    func testDecodeFullCapabilities() throws {
+        let json = """
+        {
+          "id": "wv",
+          "type": "web_view",
+          "url": "https://example.com",
+          "capabilities": {
+            "network_access": { "allowed_domains": ["api.example.com", "cdn.example.com"] },
+            "camera": true,
+            "microphone": true,
+            "clipboard_write": true,
+            "clipboard_read": true,
+            "geolocation": true
+          }
+        }
+        """
+        let component = try JSONDecoder.default.decode(
+            PaywallComponent.WebViewComponent.self,
+            from: json.data(using: .utf8)!
+        )
+
+        let capabilities = try XCTUnwrap(component.capabilities)
+        XCTAssertEqual(capabilities.networkAccess?.allowedDomains, ["api.example.com", "cdn.example.com"])
+        XCTAssertEqual(capabilities.camera, true)
+        XCTAssertEqual(capabilities.microphone, true)
+        XCTAssertEqual(capabilities.clipboardWrite, true)
+        XCTAssertEqual(capabilities.clipboardRead, true)
+        XCTAssertEqual(capabilities.geolocation, true)
+    }
+
+    func testDecodeAbsentCapabilitiesIsNil() throws {
+        let json = """
+        { "id": "wv", "type": "web_view", "url": "https://example.com" }
+        """
+        let component = try JSONDecoder.default.decode(
+            PaywallComponent.WebViewComponent.self,
+            from: json.data(using: .utf8)!
+        )
+        XCTAssertNil(component.capabilities)
+    }
+
+    func testDecodeEmptyAllowedDomainsIsEmptyArrayNotNil() throws {
+        let json = """
+        {
+          "id": "wv",
+          "type": "web_view",
+          "url": "https://example.com",
+          "capabilities": { "network_access": { "allowed_domains": [] } }
+        }
+        """
+        let component = try JSONDecoder.default.decode(
+            PaywallComponent.WebViewComponent.self,
+            from: json.data(using: .utf8)!
+        )
+        // An empty allow-list (block everything) is distinct from no network_access object at all.
+        XCTAssertEqual(component.capabilities?.networkAccess?.allowedDomains, [])
+        XCTAssertNotNil(component.capabilities?.networkAccess)
+    }
+
+    func testDecodeOmittedCapabilityFieldsAreNilNotFalse() throws {
+        let json = """
+        {
+          "id": "wv",
+          "type": "web_view",
+          "url": "https://example.com",
+          "capabilities": { "camera": true }
+        }
+        """
+        let component = try JSONDecoder.default.decode(
+            PaywallComponent.WebViewComponent.self,
+            from: json.data(using: .utf8)!
+        )
+        XCTAssertEqual(component.capabilities?.camera, true)
+        XCTAssertNil(component.capabilities?.microphone)
+        XCTAssertNil(component.capabilities?.geolocation)
+        XCTAssertNil(component.capabilities?.networkAccess)
+    }
+
+    func testDecodeUnknownCapabilityKeyIsIgnored() throws {
+        let json = """
+        {
+          "id": "wv",
+          "type": "web_view",
+          "url": "https://example.com",
+          "capabilities": { "camera": true, "future_capability": "yes" }
+        }
+        """
+        // An unknown capability key must be ignored, not rejected.
+        let component = try JSONDecoder.default.decode(
+            PaywallComponent.WebViewComponent.self,
+            from: json.data(using: .utf8)!
+        )
+        XCTAssertEqual(component.capabilities?.camera, true)
+    }
+
     func testDecodeWebViewComponentWithFixedHeightSize() throws {
         let json = """
         {

@@ -37,8 +37,8 @@ import Foundation
         /// (e.g. the resolved URL is invalid). Preserved verbatim, including children.
         public let fallback: StackComponent?
 
-        /// Declared web view capabilities. Decoded and preserved for fidelity only —
-        /// no capability is granted from these values yet.
+        /// Declared web view capabilities. When omitted (the default), the web view grants
+        /// nothing; each declared capability opts into a specific `WKWebView` affordance.
         public let capabilities: WebViewCapabilities?
 
         public init(
@@ -127,8 +127,8 @@ import Foundation
 
     }
 
-    /// Declared capabilities for a ``WebViewComponent``. Modeled for decoding/round-trip fidelity
-    /// only — none of these values currently change the web view's runtime configuration.
+    /// Declared capabilities for a ``WebViewComponent``. Each field opts the web view into a
+    /// specific `WKWebView` affordance; omitted fields and an omitted object grant nothing.
     struct WebViewCapabilities: PaywallComponentBase {
 
         public struct NetworkAccess: PaywallComponentBase {
