@@ -208,9 +208,6 @@ commands:
       install_mint:
         type: boolean
         default: false
-      install_xcodes:
-        type: boolean
-        default: false
     steps:
       - install-bundle-dependencies:
           directory: << parameters.directory >>
@@ -219,7 +216,6 @@ commands:
           command: |
             echo "xcbeautify:<< parameters.install_xcbeautify >>" > .homebrew-deps
             echo "mint:<< parameters.install_mint >>" >> .homebrew-deps
-            echo "xcodes:<< parameters.install_xcodes >>" >> .homebrew-deps
       - restore_cache:
           keys:
             - v2-homebrew-cache-{{ checksum ".homebrew-deps" }}-{{ arch }}
@@ -233,16 +229,10 @@ commands:
           steps:
             - install-brew-dependency:
                 dependency_name: "mint"
-      - when:
-          condition: << parameters.install_xcodes >>
-          steps:
-            - install-brew-dependency:
-                dependency_name: "xcodes"
       - save_cache:
           key: v2-homebrew-cache-{{ checksum ".homebrew-deps" }}-{{ arch }}
           paths:
             - /opt/homebrew/Cellar/xcbeautify/
-            - /opt/homebrew/Cellar/xcodes/
             - /Users/$USER/Library/Caches/Homebrew/
 
   install-brew-dependency:
@@ -301,6 +291,36 @@ commands:
           key: mint-xcbeautify-2.30.1-{{ arch }}
           paths:
             - ~/.mint
+
+  install-xcodes-for-xcode14:
+    description: "Installs the xcodes 1.6.2 prebuilt binary"
+    steps:
+      - restore_cache:
+          keys:
+            - v1-xcodes-1.6.2-{{ arch }}
+      - run:
+          name: Install xcodes 1.6.2
+          command: |
+            # Pinned to 1.6.2: it supports the visionOS (com.apple.platform.xros)
+            # runtime index entry that breaks older xcodes, and unlike 2.x it has a
+            # Ventura bottle (2.x has none, so brew can't install it on this runner).
+            # We install the prebuilt universal binary into /opt/homebrew/bin (on PATH
+            # and reachable under sudo, used by the runtime install script).
+            # Match on the exact version so a pre-installed/older xcodes is replaced.
+            if xcodes version 2>/dev/null | grep -q "1.6.2"; then
+                echo "xcodes 1.6.2 already installed, skipping."
+                exit 0
+            fi
+            curl -fsSL -o /tmp/xcodes.tar.gz \
+              https://github.com/XcodesOrg/xcodes/releases/download/1.6.2/xcodes-1.6.2.macos.arm64.tar.gz
+            tar -xzf /tmp/xcodes.tar.gz -C /tmp
+            sudo mv /tmp/xcodes/1.6.2/bin/xcodes /opt/homebrew/bin/xcodes
+            sudo chmod +x /opt/homebrew/bin/xcodes
+            xcodes version
+      - save_cache:
+          key: v1-xcodes-1.6.2-{{ arch }}
+          paths:
+            - /opt/homebrew/bin/xcodes
 
   install-rubydocker-dependencies:
     steps:
@@ -1190,7 +1210,7 @@ jobs:
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
-          install_xcodes: true
+      - install-xcodes-for-xcode14
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
 
