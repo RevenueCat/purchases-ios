@@ -133,16 +133,17 @@ enum Operators {
     /// Evaluate exactly two arguments. Used by binary operators (`==`,
     /// `!=`, `===`, `!==`).
     /// Evaluate args and return the first two operands. Missing
-    /// operands default to `.null` (standing in for JS `undefined`)
-    /// and extras are silently discarded — matches `json-logic-js`'s
-    /// `function(a, b)` operator signatures.
+    /// operands default to `.undefined` (JS omitted-argument semantics:
+    /// `function(a, b)` sees `undefined` for absent args, so e.g.
+    /// `{"===": [{"and": []}]}` is `undefined === undefined`) and extras
+    /// are silently discarded.
     static func evalTwo(
         _ args: Value,
         vars: Value
     ) throws -> (Value, Value) {
         let evaluated = try evalArgs(args, vars: vars)
-        let lhs = evaluated.first ?? .null
-        let rhs = evaluated.indices.contains(1) ? evaluated[1] : .null
+        let lhs = evaluated.first ?? .undefined
+        let rhs = evaluated.indices.contains(1) ? evaluated[1] : .undefined
         return (lhs, rhs)
     }
 
