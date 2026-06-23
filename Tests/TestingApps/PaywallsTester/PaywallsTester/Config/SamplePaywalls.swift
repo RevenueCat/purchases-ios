@@ -870,6 +870,89 @@ extension SamplePaywallLoader {
 
 }
 
+// MARK: - Bundled component paywalls (loaded from JSON in the app bundle)
+
+extension SamplePaywallLoader {
+
+    /// Paywalls authored as Paywalls V2 component JSON and shipped inside the tester app bundle
+    /// (see `Config/BundledPaywalls`). They are shown in the live paywall list alongside the
+    /// offerings fetched from the server. The `fileName` matches the bundled `.json` resource.
+    private static let bundledComponentPaywalls: [(identifier: String, fileName: String)] = [
+        (identifier: "Dog Paywall (Bundled)", fileName: "components-dog"),
+        (identifier: "Cat Paywall (Bundled)", fileName: "components-cat")
+    ]
+
+    /// Builds an offering for every bundled component paywall JSON file that decodes successfully.
+    func bundledComponentOfferings() -> [Offering] {
+        return Self.bundledComponentPaywalls.compactMap { paywall in
+            guard let data = Self.loadBundledComponentsData(fileName: paywall.fileName) else {
+                return nil
+            }
+            return self.offering(identifier: paywall.identifier, with: data)
+        }
+    }
+
+    private func offering(identifier: String, with components: PaywallComponentsData) -> Offering {
+        return .init(
+            identifier: identifier,
+            serverDescription: identifier,
+            metadata: [:],
+            paywallComponents: .init(uiConfig: PreviewUIConfig.make(), data: components),
+            availablePackages: self.packages,
+            webCheckoutUrl: nil
+        )
+    }
+
+    /// Loads a bundled component paywall JSON file (which contains only the `componentsConfig`)
+    /// and wraps it in a full `PaywallComponentsData` so it can back an `Offering`.
+    private static func loadBundledComponentsData(fileName: String) -> PaywallComponentsData? {
+        guard let url = Bundle.main.url(forResource: fileName, withExtension: "json"),
+              let jsonData = try? Data(contentsOf: url) else {
+            return nil
+        }
+
+        // Mirrors how the SDK decodes paywall responses from the server.
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+
+        guard let componentsConfig = try? decoder.decode(
+            PaywallComponentsData.ComponentsConfig.self,
+            from: jsonData
+        ) else {
+            return nil
+        }
+
+        return .init(
+            templateName: "components",
+            assetBaseURL: Self.paywallAssetBaseURL,
+            componentsConfig: componentsConfig,
+            componentsLocalizations: Self.bundledComponentLocalizations,
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
+    /// Placeholder localizations for the `*_lid` references in the bundled JSON. The JSON ships
+    /// without its localization table, so these stand in to let the paywalls render with real text.
+    private static let bundledComponentLocalizations:
+        [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary] = [
+            "en_US": [
+                "b11T5KqURa": .string("Monthly"),
+                "3PUpQs2Ysa": .string("{{ total_price_and_per_month }}"),
+                "Hjy1nCtkxJ": .string("Annual"),
+                "tzMoZfGK7q": .string("{{ total_price_and_per_month }}"),
+                "pAwLNYbZ2e": .string("Best Value"),
+                "uZcnB1JkxA": .string("Continue"),
+                "n1dzcYoLL1": .string("Restore purchases"),
+                "9pHXVuJRXm": .string("Terms & Conditions"),
+                "PXTOmY0Zc3": .string("Privacy Policy"),
+                "92rZFECc4Z": .string("https://www.revenuecat.com/terms"),
+                "VBPJOj-Wkx": .string("https://www.revenuecat.com/privacy")
+            ]
+        ]
+
+}
+
 #endif
 
 #endif

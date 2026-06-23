@@ -123,14 +123,23 @@ struct APIKeyDashboardList: View {
     }
 
     private func fetchOfferings() async {
+        // Paywalls bundled with the tester app (Config/BundledPaywalls) are always shown
+        // alongside the offerings fetched from the server, even if the server fetch fails.
+        var bundledOfferings: [Offering] = []
+        #if DEBUG && !os(tvOS)
+        bundledOfferings = SamplePaywallLoader().bundledComponentOfferings()
+        #endif
+
         do {
             // Force refresh offerings
             _ = try await Purchases.shared.syncAttributesAndOfferingsIfNeeded()
 
-            let offerings = try await Purchases.shared.offerings()
+            let serverOfferings = try await Purchases.shared.offerings()
                 .all
                 .map(\.value)
                 .sorted { $0.id < $1.id }
+
+            let offerings = serverOfferings + bundledOfferings
 
             if let presentedPaywall = presentedPaywall {
                 for offering in offerings {
@@ -167,7 +176,22 @@ struct APIKeyDashboardList: View {
                 )
             )
         } catch let error as NSError {
-            self.offerings = .failure(error)
+            // Still show the bundled paywalls if the server offerings couldn't be fetched.
+            guard !bundledOfferings.isEmpty else {
+                self.offerings = .failure(error)
+                return
+            }
+
+            let offeringsBySection = Dictionary(
+                grouping: bundledOfferings,
+                by: { Template(name: templateGroupName(offering: $0)) }
+            )
+            self.offerings = .success(
+                .init(
+                    sections: Array(offeringsBySection.keys),
+                    offeringsBySection: offeringsBySection
+                )
+            )
         }
     }
 
