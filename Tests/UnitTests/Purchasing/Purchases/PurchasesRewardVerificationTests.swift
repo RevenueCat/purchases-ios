@@ -197,6 +197,60 @@ extension PurchasesRewardVerificationTests {
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 0
     }
 
+    func testPollRewardVerificationFetchesCustomerInfoOnEntitlementReward() async throws {
+        let reward = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
+        let before = self.backend.getCustomerInfoCallCount
+        let poller = self.makeStubPoller(statuses: [.verified(.entitlement(reward))])
+
+        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+
+        expect(result.verifiedReward) == .entitlement(reward)
+        expect(self.backend.getCustomerInfoCallCount) > before
+        expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 0
+    }
+
+    func testPollRewardVerificationFailsWhenEntitlementCustomerInfoRefreshFails() async throws {
+        let reward = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
+        // Terminal (non-transient) error — should not be retried.
+        self.backend.overrideCustomerInfoResult = .failure(makeTerminalBackendError())
+        let before = self.backend.getCustomerInfoCallCount
+        let poller = self.makeStubPoller(statuses: [.verified(.entitlement(reward))])
+
+        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+
+        expect(result) == .failed
+        expect(result.verifiedReward).to(beNil())
+        expect(self.backend.getCustomerInfoCallCount) == before + 1
+        // The completion log reflects the delivered result, never "verified".
+        self.logger.verifyMessageWasLogged(
+            AdsStrings.reward_verification_completed(result: .failed, transactionID: "tx-1"),
+            level: .info
+        )
+        self.logger.verifyMessageWasNotLogged(
+            AdsStrings.reward_verification_completed(
+                result: .verified(.entitlement(reward)), transactionID: "tx-1"
+            )
+        )
+    }
+
+    func testTransientServerErrorsAreRetriableForEntitlementRefresh() {
+        // Typical transient infra errors (502, 503) must be retried, not treated as terminal.
+        for statusCode in [502, 503] {
+            let error = makePollingError(statusCode: statusCode, backendCode: .internalServerError)
+            expect(error.isTransient).to(beTrue(), description: "status \(statusCode) should be transient")
+        }
+    }
+
+    func testPollRewardVerificationDoesNotFetchCustomerInfoOnVirtualCurrencyReward() async throws {
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 4))
+        let before = self.backend.getCustomerInfoCallCount
+        let poller = self.makeStubPoller(statuses: [.verified(.virtualCurrency(reward))])
+
+        _ = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+
+        expect(self.backend.getCustomerInfoCallCount) == before
+    }
+
 }
 
 // MARK: - generateRewardVerificationToken
