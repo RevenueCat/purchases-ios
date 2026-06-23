@@ -206,10 +206,15 @@ final class PaywallEventTracker: @unchecked Sendable {
         guard var entry = self.sessions[sessionID],
               let data = entry.eventData,
               !entry.hasTrackedClose else {
+            // Both branches are expected no-ops, not anomalies: on dismiss a session can be closed by
+            // more than one layer (e.g. the `presentPaywall` modifier closes + `resetForNewSession()`
+            // discards it, then a workflow page's `onDisappear` closes the same session by id). Exactly
+            // one close event is ever emitted; the redundant attempt lands here. Logged at verbose so it
+            // does not read as an error at debug level.
             if self.sessions[sessionID]?.eventData == nil {
-                Logger.debug("Attempted to track paywall close but eventData is nil for session \(sessionID)")
+                Logger.verbose("Skipping paywall close: session \(sessionID) already discarded")
             } else if self.sessions[sessionID]?.hasTrackedClose == true {
-                Logger.debug("Attempted to track paywall close but close was already tracked for session \(sessionID)")
+                Logger.verbose("Skipping paywall close: close already tracked for session \(sessionID)")
             }
             return false
         }
