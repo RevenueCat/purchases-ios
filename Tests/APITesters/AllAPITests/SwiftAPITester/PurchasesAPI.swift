@@ -34,6 +34,7 @@ func checkPurchasesAPI() {
     checkIdentity(purchases: purch)
     checkPurchasesPurchasingAPI(purchases: purch)
     checkPurchasesSupportAPI(purchases: purch)
+    checkRewardVerificationAPI(purchases: purch)
 
     let _: Attribution = purch.attribution
 
@@ -283,6 +284,27 @@ private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
     purchases.collectDeviceIdentifiers()
 }
 
+private func checkRewardVerificationAPI(purchases: Purchases) {
+    let token: RewardVerificationToken = purchases.generateRewardVerificationToken(impressionId: "")
+    let _: String = token.customData
+    let _: String = token.clientTransactionID
+    let _: String = token.appUserID
+
+    let result: RewardVerificationResult = .failed
+    let reward: AdReward? = result.verifiedReward
+    let _: Bool = result == .failed
+
+    let _: AdReward = .noReward
+    let _: AdReward = .unsupportedReward
+    let _: Bool = reward == .noReward
+
+    if let virtualCurrency: VirtualCurrencyReward = reward?.virtualCurrency {
+        let _: String = virtualCurrency.code
+        let _: Int = virtualCurrency.amount
+        let _: Bool = virtualCurrency == virtualCurrency
+    }
+}
+
 private func checkAsyncMethods(purchases: Purchases) async {
     let pack: Package! = nil
     let stp: StoreProduct! = nil
@@ -373,6 +395,8 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let webPurchaseRedemptionResult: WebPurchaseRedemptionResult = await purchases.redeemWebPurchase(
             webPurchaseRedemption
         )
+
+        let _: RewardVerificationResult = await purchases.pollRewardVerification(clientTransactionID: "")
     } catch {}
 }
 
