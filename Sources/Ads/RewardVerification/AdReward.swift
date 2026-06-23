@@ -15,12 +15,14 @@ import Foundation
 
 /// Reward payload describing the outcome of a verified rewarded ad.
 ///
-/// Inspect the received reward by checking ``virtualCurrency`` or comparing against
+/// Inspect the received reward by checking ``virtualCurrency`` / ``entitlement`` or comparing against
 /// ``noReward`` / ``unsupportedReward``:
 ///
 /// ```swift
 /// if let virtualCurrency = adReward.virtualCurrency {
 ///     // Reward is a virtual-currency line item.
+/// } else if let entitlement = adReward.entitlement {
+///     // Reward is a temporary entitlement grant.
 /// } else if adReward == .noReward {
 ///     // Verification succeeded but no reward was granted.
 /// } else if adReward == .unsupportedReward {
@@ -31,6 +33,7 @@ import Foundation
 
     private enum Storage: Sendable, Equatable {
         case virtualCurrency(VirtualCurrencyReward)
+        case entitlement(EntitlementReward)
         case noReward
         case unsupportedReward
     }
@@ -46,6 +49,11 @@ import Foundation
         AdReward(storage: .virtualCurrency(payload))
     }
 
+    /// Reward is a temporary entitlement grant with an identifier and expiration.
+    internal static func entitlement(_ payload: EntitlementReward) -> AdReward {
+        AdReward(storage: .entitlement(payload))
+    }
+
     /// Verification succeeded but no reward was granted.
     public static let noReward = AdReward(storage: .noReward)
 
@@ -58,10 +66,17 @@ import Foundation
         return payload
     }
 
+    /// Non-`nil` when this reward represents an ``EntitlementReward``.
+    public var entitlement: EntitlementReward? {
+        guard case .entitlement(let payload) = self.storage else { return nil }
+        return payload
+    }
+
     /// Stable raw value used for wire encoding and ObjC interop.
     internal var kindRawValue: String {
         switch self.storage {
         case .virtualCurrency: return Self.Kind.virtualCurrency
+        case .entitlement: return Self.Kind.entitlement
         case .noReward: return Self.Kind.noReward
         case .unsupportedReward: return Self.Kind.unsupportedReward
         }
@@ -69,6 +84,7 @@ import Foundation
 
     internal enum Kind {
         static let virtualCurrency = "virtual_currency"
+        static let entitlement = "entitlement"
         static let noReward = "no_reward"
         static let unsupportedReward = "unsupported_reward"
     }
