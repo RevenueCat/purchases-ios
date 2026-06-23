@@ -61,6 +61,7 @@ public final class TransferBehavior: NSObject, Sendable {
 
 #else
 
+/// This class is used for testing purposes only.
 internal final class TransferBehavior: NSObject, Sendable {
 
     let rawValue: String
