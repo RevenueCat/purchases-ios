@@ -54,16 +54,73 @@ class RemoteConfigAPI: RemoteConfigAPIType {
 
 }
 
-struct RemoteConfigFetchResult {
+enum RemoteConfigFetchResult {
 
-    /// `nil` represents a successful `204 No Content` response. Malformed or undecodable
-    /// container bytes should fail before this result is created.
-    let container: RCContainer?
-    let verificationResult: VerificationResult
+    case container(RemoteConfigContainer, verificationResult: VerificationResult)
+    case noContent(verificationResult: VerificationResult)
 
-    init(response: VerifiedHTTPResponse<RCContainer?>) {
-        self.container = response.body
-        self.verificationResult = response.verificationResult
+    var container: RemoteConfigContainer? {
+        switch self {
+        case let .container(container, _):
+            return container
+        case .noContent:
+            return nil
+        }
+    }
+
+    var verificationResult: VerificationResult {
+        switch self {
+        case let .container(_, verificationResult),
+             let .noContent(verificationResult):
+            return verificationResult
+        }
+    }
+
+    init(response: VerifiedHTTPResponse<Data?>) throws {
+        if let body = response.body {
+            self = try .container(
+                RemoteConfigContainer(data: body),
+                verificationResult: response.verificationResult
+            )
+        } else {
+            self = .noContent(verificationResult: response.verificationResult)
+        }
+    }
+
+}
+
+struct RemoteConfigContainer {
+
+    /// Underlying generic RC Container parsed from the remote config response.
+    let rcContainer: RCContainer
+
+    /// The first RC Container element, interpreted as the remote config payload for `/v2/config`.
+    let configElement: RCContainer.Element
+
+    /// Inline blob elements delivered with the remote config response, keyed by stored checksum.
+    let inlineContentElements: [String: RCContainer.Element]
+
+    /// Parses a remote config response container and validates the required config element.
+    ///
+    /// Inline content elements are opportunistic cache entries and are validated only when they are
+    /// written to the blob store.
+    init(data: Data) throws {
+        let container = try RCContainer(data: data)
+        try self.init(rcContainer: container)
+    }
+
+    init(rcContainer container: RCContainer) throws {
+        guard let configElement = container.elements.first else {
+            throw RCContainer.Parser.FormatError.missingElement(index: 0)
+        }
+        try configElement.validateChecksum()
+
+        self.rcContainer = container
+        self.configElement = configElement
+        self.inlineContentElements = Dictionary(
+            container.elements.dropFirst().map { ($0.checksum, $0) },
+            uniquingKeysWith: { _, last in last }
+        )
     }
 
 }

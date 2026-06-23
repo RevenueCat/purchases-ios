@@ -248,10 +248,12 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let fetchResult = try XCTUnwrap(result?.value)
         let container = try XCTUnwrap(fetchResult.container)
 
-        expect(RCContainerTestData.data(from: container.config)) == Self.config
-        expect(container.contentElements).to(haveCount(1))
+        let contentElementsByChecksum = container.inlineContentElements
+
+        expect(RCContainerTestData.data(from: container.configElement)) == Self.config
+        expect(contentElementsByChecksum).to(haveCount(1))
         expect(RCContainerTestData.data(
-            from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: Self.content)])
+            from: try XCTUnwrap(contentElementsByChecksum[RCContainerTestData.blobRef(for: Self.content)])
         )) == Self.content
         expect(fetchResult.verificationResult) == .notRequested
     }
@@ -267,6 +269,58 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
         expect(fetchResult.container).toNot(beNil())
         expect(fetchResult.verificationResult) == .verified
+    }
+
+    func testGetRemoteConfigKeepsContentElementsWithChecksumMismatch() throws {
+        let data = RCContainerTestData.container(
+            config: Self.config,
+            contentElements: [Self.content],
+            checksumOverride: { index, payload in
+                return index == 1
+                    ? Array(repeating: 0, count: RCContainerTestData.checksumSize)
+                    : RCContainerTestData.checksum(for: payload)
+            }
+        )
+        self.httpClient.mock(
+            requestPath: .remoteConfig,
+            response: .init(statusCode: .success, body: data)
+        )
+
+        let result: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue { completed in
+            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+        }
+
+        let fetchResult = try XCTUnwrap(result?.value)
+        guard case let .container(container, _) = fetchResult else {
+            return XCTFail("Expected remote config container result")
+        }
+
+        let contentElementsByChecksum = container.inlineContentElements
+
+        expect(RCContainerTestData.data(from: container.configElement)) == Self.config
+        expect(contentElementsByChecksum).to(haveCount(1))
+    }
+
+    func testGetRemoteConfigFailsWhenConfigChecksumMismatches() {
+        let data = RCContainerTestData.container(
+            config: Self.config,
+            checksumOverride: { _, _ in Array(repeating: 0, count: RCContainerTestData.checksumSize) }
+        )
+        self.httpClient.mock(
+            requestPath: .remoteConfig,
+            response: .init(statusCode: .success, body: data)
+        )
+
+        let result: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue { completed in
+            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+        }
+
+        guard case let .networkError(.decoding(error, _)) = result?.error else {
+            fail("Expected decoding error, got \(String(describing: result?.error))")
+            return
+        }
+
+        expect(error.domain) == String(reflecting: RCContainer.Parser.FormatError.self)
     }
 
     func testGetRemoteConfigReturnsFailedVerificationResultFromHTTPClient() throws {

@@ -42,10 +42,12 @@ private extension RemoteConfigSignatureContextProvider {
         var parser = RCContainer.ElementParser(data: data)
         try parser.moveToFirstElement()
         guard parser.hasRemainingBytes else {
-            throw RCContainer.Parser.FormatError.missingConfigElement
+            throw RCContainer.Parser.FormatError.missingElement(index: 0)
         }
 
         let configElement = try parser.parseElement(index: 0)
+        try configElement.validateChecksum()
+
         return configElement.withChecksumBytes { bytes in
             Data(bytes)
         }

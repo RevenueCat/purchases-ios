@@ -5,15 +5,15 @@
 //  Created by RevenueCat.
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 
-import CryptoKit
 import Foundation
 
 extension RCContainer {
 
-    /// Validates and indexes the RC Container binary format.
+    /// Validates and indexes the RC Container binary structure.
     ///
-    /// The parser walks the container with a byte offset cursor, validates each field before advancing
-    /// past it, and records `Data.Index` ranges that point at the retained backing `Data`.
+    /// The parser walks the container with a byte offset cursor, validates structural fields before
+    /// advancing past them, and records `Data.Index` ranges that point at the retained backing `Data`.
+    /// Payload checksum validation is handled by `Element` according to each caller's domain rules.
     struct Parser {
 
         // swiftlint:disable nesting
@@ -27,8 +27,8 @@ extension RCContainer {
             case truncatedElementHeader(index: Int)
             case truncatedElement(index: Int)
             case nonZeroPadding(index: Int)
-            case checksumMismatch(index: Int, expected: String, actual: String)
-            case missingConfigElement
+            case checksumMismatch(expected: String, actual: String)
+            case missingElement(index: Int)
 
         }
         // swiftlint:enable nesting
@@ -121,9 +121,8 @@ extension RCContainer {
 
         /// Parses one element and returns an `Element` that points into the original container bytes.
         ///
-        /// The stored checksum is read before the cursor moves into the payload. The payload checksum
-        /// is then recomputed from the payload range so checksum validation does not depend on mutable
-        /// cursor state after parsing continues.
+        /// The parser reads the stored checksum and payload range, but intentionally does not validate
+        /// payload bytes against the checksum. Callers validate elements according to their domain rules.
         mutating func parseElement(index: Int) throws -> Element {
             guard self.hasBytes(Self.elementHeaderSize) else {
                 throw Parser.FormatError.truncatedElementHeader(index: index)
@@ -147,14 +146,6 @@ extension RCContainer {
 
             let payloadStartOffset = self.offset
             let payloadRange = self.dataRange(offset: payloadStartOffset, count: elementSize)
-            let actualChecksum = self.checksumString(in: payloadStartOffset..<payloadStartOffset + elementSize)
-            guard checksum == actualChecksum else {
-                throw Parser.FormatError.checksumMismatch(
-                    index: index,
-                    expected: checksum,
-                    actual: actualChecksum
-                )
-            }
 
             self.offset += elementSize
             try self.consumePadding(forElementSize: elementSize, elementIndex: index)
@@ -192,19 +183,6 @@ extension RCContainer {
             }
         }
 
-        /// Computes the blob-ref string for a payload range.
-        ///
-        /// Blob refs are the first 24 bytes of the SHA-256 digest encoded as unpadded base64url,
-        /// producing a stable 32-character string that can be used as a content lookup key.
-        private func checksumString(in range: Range<Int>) -> String {
-            var hash = SHA256()
-            self.withUnsafeBytes(in: range) { bytes in
-                hash.update(bufferPointer: bytes)
-            }
-
-            return Self.base64URLString(from: Array(hash.finalize().prefix(Self.checksumSize)))
-        }
-
         /// Encodes bytes already present in the container as an unpadded base64url string.
         private func base64URLString(in range: Range<Int>) -> String {
             var bytes: [UInt8] = []
@@ -223,13 +201,6 @@ extension RCContainer {
                 .replacingOccurrences(of: "+", with: "-")
                 .replacingOccurrences(of: "/", with: "_")
                 .replacingOccurrences(of: "=", with: "")
-        }
-
-        /// Re-bases an integer byte range into the `Data` storage for temporary zero-copy access.
-        private func withUnsafeBytes<T>(in range: Range<Int>, _ body: (UnsafeRawBufferPointer) -> T) -> T {
-            return self.data.withUnsafeBytes { bytes in
-                return body(UnsafeRawBufferPointer(rebasing: bytes[range]))
-            }
         }
 
         /// Reads the wire-format little-endian `UInt32` used for payload sizes and reserved metadata.

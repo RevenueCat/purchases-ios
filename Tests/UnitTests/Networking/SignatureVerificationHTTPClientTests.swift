@@ -636,7 +636,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
-        expect(response).to(beFailure())
+        expect(response).to(beSuccess())
         expect(self.signing.requests).to(haveCount(1))
         expect(self.signing.requests.onlyElement?.parameters.message) == Data(
             RCContainerTestData.checksum(for: config)

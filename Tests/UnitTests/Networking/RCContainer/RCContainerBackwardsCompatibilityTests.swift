@@ -14,21 +14,24 @@ final class RCContainerBackwardsCompatibilityTests: TestCase {
 
     func testConfigOnlyFixtureParses() throws {
         let container = try Self.parseFixture("v1_config_only")
+        let configElement = try RCContainerTestData.firstElement(in: container)
 
         expect(container.flags) == 0
-        expect(RCContainerTestData.data(from: container.config)) == RCContainerTestData.configJSON
-        expect(container.config.checksum) == RCContainerTestData.blobRef(for: RCContainerTestData.configJSON)
-        expect(container.config.withChecksumBytes { $0.count }) == RCContainerTestData.checksumSize
-        expect(container.contentElements).to(beEmpty())
+        expect(RCContainerTestData.data(from: configElement)) == RCContainerTestData.configJSON
+        expect(configElement.checksum) == RCContainerTestData.blobRef(for: RCContainerTestData.configJSON)
+        expect(configElement.withChecksumBytes { $0.count }) == RCContainerTestData.checksumSize
+        expect(RCContainerTestData.contentElements(in: container)).to(beEmpty())
     }
 
     func testSingleElementFixtureParses() throws {
         let container = try Self.parseFixture("v1_single_element")
         let blob = RCContainerTestData.entitlementMappingBlob
-        let element = try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: blob)])
+        let contentElementsByChecksum = RCContainerTestData.contentElements(in: container)
+        let element = try XCTUnwrap(contentElementsByChecksum[RCContainerTestData.blobRef(for: blob)])
 
-        expect(RCContainerTestData.data(from: container.config)) == RCContainerTestData.configJSON
-        expect(container.contentElements).to(haveCount(1))
+        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) ==
+        RCContainerTestData.configJSON
+        expect(contentElementsByChecksum).to(haveCount(1))
         expect(RCContainerTestData.data(from: element)) == blob
         expect(element.checksum) == RCContainerTestData.blobRef(for: blob)
     }
@@ -41,17 +44,19 @@ final class RCContainerBackwardsCompatibilityTests: TestCase {
             RCContainerTestData.entitlementMappingBlob,
             RCContainerTestData.largeBlob
         ]
+        let contentElementsByChecksum = RCContainerTestData.contentElements(in: container)
 
-        expect(RCContainerTestData.data(from: container.config)) == RCContainerTestData.configJSON
-        expect(container.contentElements).to(haveCount(expected.count))
+        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) ==
+        RCContainerTestData.configJSON
+        expect(contentElementsByChecksum).to(haveCount(expected.count))
 
         for blob in expected {
-            let element = try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: blob)])
+            let element = try XCTUnwrap(contentElementsByChecksum[RCContainerTestData.blobRef(for: blob)])
             expect(RCContainerTestData.data(from: element)) == blob
         }
 
         let largeElement = try XCTUnwrap(
-            container.contentElements[RCContainerTestData.blobRef(for: RCContainerTestData.largeBlob)]
+            contentElementsByChecksum[RCContainerTestData.blobRef(for: RCContainerTestData.largeBlob)]
         )
         expect(largeElement.size) == 300
     }
@@ -59,12 +64,13 @@ final class RCContainerBackwardsCompatibilityTests: TestCase {
     func testEmptyConfigFixtureParses() throws {
         let container = try Self.parseFixture("v1_empty_config")
         let blob = RCContainerTestData.entitlementMappingBlob
+        let contentElementsByChecksum = RCContainerTestData.contentElements(in: container)
 
-        expect(container.config.size) == 0
-        expect(RCContainerTestData.data(from: container.config)).to(beEmpty())
-        expect(container.contentElements).to(haveCount(1))
+        expect(try RCContainerTestData.firstElement(in: container).size) == 0
+        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))).to(beEmpty())
+        expect(contentElementsByChecksum).to(haveCount(1))
         expect(RCContainerTestData.data(
-            from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: blob)])
+            from: try XCTUnwrap(contentElementsByChecksum[RCContainerTestData.blobRef(for: blob)])
         )) == blob
     }
 
@@ -72,15 +78,18 @@ final class RCContainerBackwardsCompatibilityTests: TestCase {
         let container = try Self.parseFixture("v1_flags_set")
 
         expect(container.flags) == 0x07
-        expect(RCContainerTestData.data(from: container.config)) == RCContainerTestData.configJSON
+        expect(RCContainerTestData.data(
+            from: try RCContainerTestData.firstElement(in: container)
+        )) == RCContainerTestData.configJSON
     }
 
     func testDuplicateElementsFixtureCollapsesInContentAddressedMap() throws {
         let container = try Self.parseFixture("v1_duplicate_elements")
+        let contentElementsByChecksum = RCContainerTestData.contentElements(in: container)
 
-        expect(container.contentElements).to(haveCount(1))
+        expect(contentElementsByChecksum).to(haveCount(1))
         expect(RCContainerTestData.data(
-            from: try XCTUnwrap(container.contentElements[
+            from: try XCTUnwrap(contentElementsByChecksum[
                 RCContainerTestData.blobRef(for: RCContainerTestData.entitlementMappingBlob)
             ])
         )) == RCContainerTestData.entitlementMappingBlob
