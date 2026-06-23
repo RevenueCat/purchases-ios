@@ -14,7 +14,7 @@ import Foundation
 
 /**
  * Configures how RevenueCat should handle a purchase that is already associated with another App User ID.
- * 
+ *
  * See [the RevenueCat docs](https://www.revenuecat.com/docs/projects/restore-behavior) for more information.
  */
 @objc(RCTransferBehavior)
@@ -37,7 +37,7 @@ public final class TransferBehavior: NSObject, Sendable {
     /// String value sent to the RevenueCat backend.
     @objc public let rawValue: String
 
-    private init(rawValue: String) {
+    internal init(rawValue: String) {
         self.rawValue = rawValue
         super.init()
     }
