@@ -43,6 +43,26 @@ class PaywallEventTrackerTests: TestCase {
         }
     }
 
+    func testRedundantCloseAfterSessionDiscardedIsNoOp() async throws {
+        // Mirrors the workflow dismiss path: the presentation layer closes the session and
+        // `resetForNewSession()` discards it, then the workflow page's `onDisappear` closes the same
+        // session by id. The second close must be a no-op so exactly one close event is emitted.
+        let (tracker, trackedEvents) = Self.makeTracker()
+        let sessionID = Self.eventData.sessionIdentifier
+
+        tracker.trackPaywallImpression(Self.eventData)
+        expect(tracker.trackPaywallClose(sessionID: sessionID)) == true
+
+        tracker.discardSession(sessionID: sessionID)
+
+        // Redundant close on the already-discarded session: no crash, no second event.
+        expect(tracker.trackPaywallClose(sessionID: sessionID)) == false
+
+        await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
+        let closeCount = trackedEvents.value.filter { if case .close = $0 { return true }; return false }.count
+        expect(closeCount) == 1
+    }
+
     func testTrackWorkflowForwardsEventToPurchasesWithoutEmittingPaywallEvents() async throws {
         // Workflow step events must flow through the same dispatcher to `track(workflowEvent:)`,
         // and must NOT be tracked as PaywallEvents (paywall_close behavior is unaffected).
