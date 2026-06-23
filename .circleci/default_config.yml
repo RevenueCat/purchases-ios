@@ -304,8 +304,7 @@ commands:
             # Pinned to 1.6.2: it supports the visionOS (com.apple.platform.xros)
             # runtime index entry that breaks older xcodes. We install the prebuilt
             # universal binary into /opt/homebrew/bin (on PATH and reachable under
-            # sudo, used by the runtime install script) so we don't depend on the
-            # cache or whatever xcodes the runner image happens to provide.
+            # sudo, used by the runtime install script).
             # Match on the exact version so a pre-installed/older xcodes is replaced.
             if xcodes version 2>/dev/null | grep -q "1.6.2"; then
                 echo "xcodes 1.6.2 already installed, skipping."
