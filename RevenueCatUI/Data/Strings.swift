@@ -105,6 +105,14 @@ enum Strings {
     case paywall_variable_looks_like_custom(variableName: String)
     case paywall_custom_variable_invalid_key(key: String)
 
+    // Web View
+    case paywall_web_view_missing_id
+    case paywall_web_view_message_rejected(reason: String)
+    case paywall_web_view_post_message_failed(Error)
+    case paywall_web_view_post_message_skipped
+    case paywall_web_view_content_rules_failed(Error)
+    case paywall_web_view_capability_denied(capability: String)
+
     // Video
     case video_failed_to_set_audio_session_category(Error)
     case video_failed_to_cache(URL, Error)
@@ -357,6 +365,22 @@ extension Strings: CustomStringConvertible {
         case .paywall_custom_variable_invalid_key(let key):
             return "Custom variable key '\(key)' is invalid. " +
             "Keys must start with a letter and contain only letters, numbers, and underscores."
+
+        case .paywall_web_view_missing_id:
+            return "web_view component has no id; the postMessage bridge is disabled for it. " +
+            "Assign an id to the component to enable bidirectional communication."
+        case .paywall_web_view_message_rejected(let reason):
+            return "Rejected a message from a web_view component: \(reason)"
+        case .paywall_web_view_post_message_failed(let error):
+            return "Failed to deliver a message to a web_view component: \(error)"
+        case .paywall_web_view_post_message_skipped:
+            return "Skipped delivering a message to a web_view component because its web view is no " +
+            "longer available or is showing different content."
+        case .paywall_web_view_content_rules_failed(let error):
+            return "Failed to compile content-blocking rules for a web_view component; blocking all " +
+            "network requests as a fallback: \(error)"
+        case .paywall_web_view_capability_denied(let capability):
+            return "Ignoring unsupported web_view capability '\(capability)'."
 
         case .video_failed_to_set_audio_session_category(let error):
             return "Failed to set audio session category: \(error)"
