@@ -11,7 +11,8 @@ protocol RemoteConfigDiskCacheType: AnyObject {
 
     func read() -> PersistedRemoteConfiguration?
 
-    func write(_ configuration: PersistedRemoteConfiguration)
+    @discardableResult
+    func write(_ configuration: PersistedRemoteConfiguration) -> Bool
 
 }
 
@@ -23,14 +24,16 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
     let prefetchBlobs: [String]
     let topicBlobRefs: [String: [String]]
     let lastRefreshAt: Date?
+    let prefetchedBlobRefs: [String]
 
     init(
-        domain: String,
+        domain: String = RemoteConfiguration.defaultDomain,
         manifest: String,
-        activeTopics: [String],
-        prefetchBlobs: [String],
-        topicBlobRefs: [String: [String]],
-        lastRefreshAt: Date?
+        activeTopics: [String] = [],
+        prefetchBlobs: [String] = [],
+        topicBlobRefs: [String: [String]] = [:],
+        lastRefreshAt: Date? = nil,
+        prefetchedBlobRefs: [String] = []
     ) {
         self.domain = domain
         self.manifest = manifest
@@ -38,6 +41,7 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
         self.prefetchBlobs = prefetchBlobs
         self.topicBlobRefs = topicBlobRefs
         self.lastRefreshAt = lastRefreshAt
+        self.prefetchedBlobRefs = prefetchedBlobRefs
     }
 
     init(from decoder: Decoder) throws {
@@ -48,7 +52,8 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
             activeTopics: try container.decodeIfPresent([String].self, forKey: .activeTopics) ?? [],
             prefetchBlobs: try container.decodeIfPresent([String].self, forKey: .prefetchBlobs) ?? [],
             topicBlobRefs: try container.decodeIfPresent([String: [String]].self, forKey: .topicBlobRefs) ?? [:],
-            lastRefreshAt: try container.decodeIfPresent(Date.self, forKey: .lastRefreshAt)
+            lastRefreshAt: try container.decodeIfPresent(Date.self, forKey: .lastRefreshAt),
+            prefetchedBlobRefs: try container.decodeIfPresent([String].self, forKey: .prefetchedBlobRefs) ?? []
         )
     }
 
@@ -59,6 +64,7 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
         case prefetchBlobs
         case topicBlobRefs
         case lastRefreshAt
+        case prefetchedBlobRefs
     }
 
 }
@@ -86,10 +92,14 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
         }
     }
 
-    func write(_ configuration: PersistedRemoteConfiguration) {
-        if !self.cache.set(codable: configuration, forKey: Self.fileName) {
+    @discardableResult
+    func write(_ configuration: PersistedRemoteConfiguration) -> Bool {
+        let didWrite = self.cache.set(codable: configuration, forKey: Self.fileName)
+        if !didWrite {
             Logger.error(Strings.remoteConfig.failedToWriteCache)
         }
+
+        return didWrite
     }
 
 }

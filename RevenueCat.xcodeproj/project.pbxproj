@@ -942,9 +942,11 @@
 		A1B2C3D42FE100000000000E /* RCContainerTestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE100000000000B /* RCContainerTestData.swift */; };
 		A1B2C3D42FE2000000000002 /* RemoteConfigDiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE2000000000001 /* RemoteConfigDiskCache.swift */; };
 		A1B2C3D42FE2000000000004 /* RemoteConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE2000000000003 /* RemoteConfigManager.swift */; };
+		A1B2C3D42FE200000000000D /* RemoteConfigBlobStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE200000000000C /* RemoteConfigBlobStore.swift */; };
 		A1B2C3D42FE2000000000006 /* RemoteConfigStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE2000000000005 /* RemoteConfigStrings.swift */; };
 		A1B2C3D42FE2000000000009 /* RemoteConfigDiskCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE2000000000008 /* RemoteConfigDiskCacheTests.swift */; };
 		A1B2C3D42FE200000000000B /* RemoteConfigManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE200000000000A /* RemoteConfigManagerTests.swift */; };
+		A1B2C3D42FE200000000000F /* RemoteConfigBlobStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE200000000000E /* RemoteConfigBlobStoreTests.swift */; };
 		7648885717DC2DB5009DD01B /* MinMaxOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = C812AE8BAE0546D2F4ACEF35 /* MinMaxOperators.swift */; };
 		7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */; };
 		7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */; };
@@ -2905,9 +2907,11 @@
 		A1B2C3D42FE1000000000011 /* RemoteConfigSignatureContextProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigSignatureContextProvider.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE2000000000001 /* RemoteConfigDiskCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigDiskCache.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE2000000000003 /* RemoteConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigManager.swift; sourceTree = "<group>"; };
+		A1B2C3D42FE200000000000C /* RemoteConfigBlobStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobStore.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE2000000000005 /* RemoteConfigStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigStrings.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE2000000000008 /* RemoteConfigDiskCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigDiskCacheTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE200000000000A /* RemoteConfigManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigManagerTests.swift; sourceTree = "<group>"; };
+		A1B2C3D42FE200000000000E /* RemoteConfigBlobStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobStoreTests.swift; sourceTree = "<group>"; };
 		E31E8A264E9F4375A3B29D78 /* RemoteConfigurationDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationDecodingTests.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000A1 /* WeightedSourceSelectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightedSourceSelectorTests.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000C1 /* RemoteConfigSourceProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigSourceProviderTests.swift; sourceTree = "<group>"; };
@@ -4552,6 +4556,7 @@
 				F3A2DB969D72432B87F48C5F /* RemoteConfigAPI.swift */,
 				FEDA000000000000000000A2 /* WeightedSourceSelector.swift */,
 				FEDA000000000000000000C2 /* RemoteConfigSourceProvider.swift */,
+				A1B2C3D42FE200000000000C /* RemoteConfigBlobStore.swift */,
 				A1B2C3D42FE2000000000001 /* RemoteConfigDiskCache.swift */,
 				A1B2C3D42FE2000000000003 /* RemoteConfigManager.swift */,
 				A1B2C3D42FE1000000000011 /* RemoteConfigSignatureContextProvider.swift */,
@@ -4599,6 +4604,7 @@
 		A1B2C3D42FE2000000000007 /* RemoteConfig */ = {
 			isa = PBXGroup;
 			children = (
+				A1B2C3D42FE200000000000E /* RemoteConfigBlobStoreTests.swift */,
 				A1B2C3D42FE2000000000008 /* RemoteConfigDiskCacheTests.swift */,
 				A1B2C3D42FE200000000000A /* RemoteConfigManagerTests.swift */,
 			);
@@ -7191,6 +7197,7 @@
 				A1B2C3D42FE1000000000002 /* RCContainer.swift in Sources */,
 				A1B2C3D42FE1000000000005 /* RCContainer+Element.swift in Sources */,
 				A1B2C3D42FE1000000000007 /* RCContainer+Parser.swift in Sources */,
+				A1B2C3D42FE200000000000D /* RemoteConfigBlobStore.swift in Sources */,
 				A1B2C3D42FE2000000000002 /* RemoteConfigDiskCache.swift in Sources */,
 				A1B2C3D42FE2000000000004 /* RemoteConfigManager.swift in Sources */,
 				A1B2C3D42FE2000000000006 /* RemoteConfigStrings.swift in Sources */,
@@ -7752,6 +7759,7 @@
 				A1B2C3D42FE1000000000004 /* RCContainerTests.swift in Sources */,
 				A1B2C3D42FE100000000000D /* RCContainerBackwardsCompatibilityTests.swift in Sources */,
 				A1B2C3D42FE100000000000E /* RCContainerTestData.swift in Sources */,
+				A1B2C3D42FE200000000000F /* RemoteConfigBlobStoreTests.swift in Sources */,
 				A1B2C3D42FE2000000000009 /* RemoteConfigDiskCacheTests.swift in Sources */,
 				A1B2C3D42FE200000000000B /* RemoteConfigManagerTests.swift in Sources */,
 				DB7EA7772F964CA200BCC082 /* WorkflowDetailProcessorTests.swift in Sources */,
