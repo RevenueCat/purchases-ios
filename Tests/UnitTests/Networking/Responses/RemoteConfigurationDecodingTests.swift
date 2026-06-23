@@ -17,7 +17,7 @@ final class RemoteConfigurationDecodingTests: TestCase {
 
         expect(response.domain) == "app"
         expect(response.subdomains) == ["app_workflows"]
-        expect(response.manifest.rawValue)
+        expect(response.manifest)
             == "v1.1710000100.product_entitlement_mapping:9v1DnUu6rXbE,sources:Jc83RzcK1LqA"
         expect(response.activeTopics) == ["sources", "product_entitlement_mapping"]
         expect(response.prefetchBlobs) == [
@@ -83,7 +83,7 @@ final class RemoteConfigurationDecodingTests: TestCase {
 
         let response = try JSONDecoder.default.decode(RemoteConfiguration.self, from: payload)
 
-        expect(response.manifest.rawValue)
+        expect(response.manifest)
             == "v1.1710000100.product_entitlement_mapping:unchanged-pem-etag,sources:new-sources-etag"
         expect(response.activeTopics) == ["sources", "product_entitlement_mapping"]
         let sourcesTopic = try XCTUnwrap(response.topics.entries["sources"])
@@ -124,7 +124,7 @@ final class RemoteConfigurationDecodingTests: TestCase {
 
         let response = try JSONDecoder.default.decode(RemoteConfiguration.self, from: payload)
 
-        expect(response.manifest.rawValue) == "v1.1710000100.sources:same-sources-etag"
+        expect(response.manifest) == "v1.1710000100.sources:same-sources-etag"
         expect(response.activeTopics) == ["sources"]
         expect(response.topics.entries).to(beEmpty())
     }
@@ -147,7 +147,7 @@ final class RemoteConfigurationDecodingTests: TestCase {
 
         let response = try JSONDecoder.default.decode(RemoteConfiguration.self, from: payload)
 
-        expect(response.manifest.rawValue) == "v1.1710000100.future_topic:future-etag"
+        expect(response.manifest) == "v1.1710000100.future_topic:future-etag"
         expect(response.activeTopics) == ["future_topic"]
         expect(response.topics.entries["future_topic"]?["default"]?.blobRef)
             == "AAECAwQFBgcICQoLDA0ODxAREhMUFRYX"
@@ -219,7 +219,7 @@ final class RemoteConfigurationDecodingTests: TestCase {
 
         let response = try JSONDecoder.default.decode(RemoteConfiguration.self, from: payload)
 
-        expect(response.manifest.rawValue) == "not-a-valid-token"
+        expect(response.manifest) == "not-a-valid-token"
     }
 
     func testFailsWhenRequiredTopLevelDomainIsMissing() {
@@ -311,7 +311,7 @@ final class RemoteConfigurationDecodingTests: TestCase {
     func testRequestEncodeRoundTripPreservesShape() throws {
         let request = RemoteConfigRequest(
             domain: "app",
-            manifest: RemoteConfigManifestToken("v1.123.sources:sources-etag"),
+            manifest: "v1.123.sources:sources-etag",
             prefetchedBlobs: ["blob-b", "blob-a"]
         )
 

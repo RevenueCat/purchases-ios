@@ -50,7 +50,7 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
     private static let appDomain = "app"
 
     let domain: String
-    let manifest: RemoteConfigManifestToken?
+    let manifest: String?
     let prefetchedBlobs: [String]
 
     private enum CodingKeys: String, CodingKey {
@@ -61,7 +61,7 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
 
     init(
         domain: String = Self.appDomain,
-        manifest: RemoteConfigManifestToken? = nil,
+        manifest: String? = nil,
         prefetchedBlobs: [String] = []
     ) {
         self.domain = domain
@@ -72,7 +72,7 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
     var cacheKey: String {
         [
             "domain=\(self.domain)",
-            "manifest=\(self.manifest?.rawValue ?? "")",
+            "manifest=\(self.manifest ?? "")",
             "prefetched_blobs=\(self.prefetchedBlobs.sorted().joined(separator: ","))"
         ].joined(separator: "|")
     }

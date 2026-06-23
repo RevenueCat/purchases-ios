@@ -69,7 +69,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
         let request = RemoteConfigRequest(
             domain: "project",
-            manifest: RemoteConfigManifestToken("v1.123.paywalls:etag-paywalls,product_entitlement_mapping:etag-pem"),
+            manifest: "v1.123.paywalls:etag-paywalls,product_entitlement_mapping:etag-pem",
             prefetchedBlobs: ["blob-b"]
         )
 
@@ -153,7 +153,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
         let responses: Atomic<Int> = .init(0)
         let request = RemoteConfigRequest(
-            manifest: RemoteConfigManifestToken("v1.10.paywalls:etag-a"),
+            manifest: "v1.10.paywalls:etag-a",
             prefetchedBlobs: ["blob-b", "blob-a"]
         )
 
@@ -170,12 +170,12 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let responses: Atomic<Int> = .init(0)
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(manifest: RemoteConfigManifestToken("v1.10.paywalls:etag-a")),
+            request: .init(manifest: "v1.10.paywalls:etag-a"),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(manifest: RemoteConfigManifestToken("v1.10.paywalls:etag-b")),
+            request: .init(manifest: "v1.10.paywalls:etag-b"),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
@@ -189,12 +189,12 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let responses: Atomic<Int> = .init(0)
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(domain: "app", manifest: RemoteConfigManifestToken("v1.10.paywalls:etag-a")),
+            request: .init(domain: "app", manifest: "v1.10.paywalls:etag-a"),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(domain: "app_workflows", manifest: RemoteConfigManifestToken("v1.10.paywalls:etag-a")),
+            request: .init(domain: "app_workflows", manifest: "v1.10.paywalls:etag-a"),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
@@ -208,12 +208,12 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let responses: Atomic<Int> = .init(0)
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(manifest: RemoteConfigManifestToken("v1.10.paywalls:etag-a"), prefetchedBlobs: ["blob-a"]),
+            request: .init(manifest: "v1.10.paywalls:etag-a", prefetchedBlobs: ["blob-a"]),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(manifest: RemoteConfigManifestToken("v1.10.paywalls:etag-a"), prefetchedBlobs: ["blob-b"]),
+            request: .init(manifest: "v1.10.paywalls:etag-a", prefetchedBlobs: ["blob-b"]),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 

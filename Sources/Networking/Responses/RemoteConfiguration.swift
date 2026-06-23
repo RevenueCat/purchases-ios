@@ -17,7 +17,7 @@ struct RemoteConfiguration: Equatable {
     /// Other domains the SDK should also sync to assemble the full configuration.
     let subdomains: [String]
     /// Opaque token returned by the server and replayed on future requests.
-    let manifest: RemoteConfigManifestToken
+    let manifest: String
     /// Full set of active topic names, including unchanged topics omitted from `topics`.
     let activeTopics: [String]
     /// Blob refs the server expects the SDK to have cached for this configuration.
@@ -30,7 +30,7 @@ struct RemoteConfiguration: Equatable {
     init(
         domain: String,
         subdomains: [String] = [],
-        manifest: RemoteConfigManifestToken,
+        manifest: String,
         activeTopics: [String],
         prefetchBlobs: [String] = [],
         topics: Topics = .init()
@@ -116,30 +116,6 @@ extension RemoteConfiguration {
 
 }
 
-/// Opaque `/v2/config` manifest token returned by the backend and replayed verbatim by the SDK.
-///
-/// The SDK intentionally does not parse or validate this value. The backend owns the token format and
-/// treats malformed or stale tokens as an empty manifest.
-struct RemoteConfigManifestToken: Codable, Equatable {
-
-    let rawValue: String
-
-    init(_ rawValue: String) {
-        self.rawValue = rawValue
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        self.init(try container.decode(String.self))
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(self.rawValue)
-    }
-
-}
-
 // MARK: - Codable
 
 extension RemoteConfiguration: Codable {
@@ -157,7 +133,7 @@ extension RemoteConfiguration: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.domain = try container.decode(String.self, forKey: .domain)
         self.subdomains = try container.decodeIfPresent([String].self, forKey: .subdomains) ?? []
-        self.manifest = try container.decode(RemoteConfigManifestToken.self, forKey: .manifest)
+        self.manifest = try container.decode(String.self, forKey: .manifest)
         self.activeTopics = try container.decode([String].self, forKey: .activeTopics)
         self.prefetchBlobs = try container.decodeIfPresent([String].self, forKey: .prefetchBlobs) ?? []
         self.topics = try container.decodeIfPresent(Topics.self, forKey: .topics) ?? Topics()
