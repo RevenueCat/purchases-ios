@@ -250,6 +250,7 @@ extension RevenueCat.CustomerInfo : Swift.Identifiable {
   @objc final public let unsubscribeDetectedAt: Foundation.Date?
   @objc final public let billingIssuesDetectedAt: Foundation.Date?
   @objc final public let gracePeriodExpiresDate: Foundation.Date?
+  @objc final public let autoResumeDate: Foundation.Date?
   @objc final public let ownershipType: RevenueCat.PurchaseOwnershipType
   @objc final public let periodType: RevenueCat.PeriodType
   @objc final public let refundedAt: Foundation.Date?
@@ -259,6 +260,7 @@ extension RevenueCat.CustomerInfo : Swift.Identifiable {
   @objc final public let displayName: Swift.String?
   @objc final public let price: RevenueCat.ProductPaidPrice?
   @objc final public let managementURL: Foundation.URL?
+  @objc final public let productPlanIdentifier: Swift.String?
   @objc override final public var description: Swift.String {
     @objc get
   }
