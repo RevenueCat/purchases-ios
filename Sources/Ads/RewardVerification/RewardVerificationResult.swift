@@ -41,7 +41,7 @@ import Foundation
     }
 
     /// `true` when verification did not complete successfully.
-    public var failed: Bool {
+    var failed: Bool {
         guard case .failed = self.storage else { return false }
         return true
     }
