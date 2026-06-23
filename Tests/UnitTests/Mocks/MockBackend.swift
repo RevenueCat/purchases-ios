@@ -29,6 +29,10 @@ class MockBackend: Backend {
     var invokedPostReceiptDataParametersList: [PostReceiptParameters] = []
     var onPostReceipt: (() -> Void)?
 
+    /// When set, the next `post(receipt:)` call defers its completion until this signal fires.
+    /// Consumed after a single use. Used to deterministically test ordering of concurrent receipt posts.
+    let deferredPostReceiptCompletionGate: Atomic<AsyncSignal?> = nil
+
     public convenience init() {
         let systemInfo = MockSystemInfo(platformInfo: nil,
                                         finishTransactions: false,
@@ -106,7 +110,15 @@ class MockBackend: Backend {
 
         self.onPostReceipt?()
 
-        completion(stubbedPostReceiptResult ?? .failure(.missingAppUserID()))
+        let result = stubbedPostReceiptResult ?? .failure(.missingAppUserID())
+        if let gate = self.deferredPostReceiptCompletionGate.getAndSet(nil) {
+            Task {
+                await gate.wait()
+                completion(result)
+            }
+        } else {
+            completion(result)
+        }
     }
 
     var invokedGetSubscriberData = false

@@ -77,3 +77,60 @@ class AtomicTests: TestCase {
     }
 
 }
+
+class AsyncSignalTests: TestCase {
+
+    func testWaitReturnsImmediatelyWhenAlreadySignaled() async {
+        let signal = AsyncSignal()
+        signal.signal()
+
+        await signal.wait()
+    }
+
+    func testWaitResumesAfterSignal() async {
+        let signal = AsyncSignal()
+        let resumed: Atomic<Bool> = false
+
+        let waiter = Task {
+            await signal.wait()
+            resumed.value = true
+        }
+
+        // The waiter should still be suspended before the signal.
+        expect(resumed.value) == false
+
+        signal.signal()
+        await waiter.value
+
+        expect(resumed.value) == true
+    }
+
+    func testSignalResumesAllWaiters() async {
+        let signal = AsyncSignal()
+        let resumedCount: Atomic<Int> = .init(0)
+
+        let waiters = (0..<5).map { _ in
+            Task {
+                await signal.wait()
+                resumedCount.modify { $0 += 1 }
+            }
+        }
+
+        signal.signal()
+        for waiter in waiters {
+            await waiter.value
+        }
+
+        expect(resumedCount.value) == 5
+    }
+
+    func testMultipleSignalsAreNoOps() async {
+        let signal = AsyncSignal()
+        signal.signal()
+        signal.signal()
+
+        await signal.wait()
+        await signal.wait()
+    }
+
+}

@@ -44,6 +44,12 @@ final class PurchasesOrchestrator {
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
     private let cachedPurchaseContextByProductID: Atomic<[String: CachedPurchaseContext]> = .init([:])
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
+
+    /// Tracks in-flight `purchase()`-initiated receipt posts, keyed by product identifier.
+    /// A queue-initiated receipt post (`StoreKit.Transaction.updates`) for the same product waits on
+    /// the corresponding signal so the purchase post (which carries offering/paywall attribution)
+    /// reaches the backend first. See `awaitInFlightPurchaseReceiptPostIfNeeded(productIdentifier:)`.
+    private let inFlightPurchaseReceiptPostsByProductID: Atomic<[String: AsyncSignal]> = .init([:])
     private let isSyncingCachedTransactionMetadata: Atomic<Bool> = .init(false)
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
@@ -735,6 +741,21 @@ final class PurchasesOrchestrator {
         let startTime = self.dateProvider.now()
         var winBackOfferApplied: Bool = false
 
+        // Register an in-flight purchase before initiating the StoreKit purchase, so a transaction
+        // that reaches `StoreKit.Transaction.updates` before this call returns waits for this
+        // purchase's receipt post (which carries the attribution) to finish first.
+        let purchaseReceiptPostSignal = AsyncSignal()
+        self.inFlightPurchaseReceiptPostsByProductID.modify { $0[sk2Product.id] = purchaseReceiptPostSignal }
+        defer {
+            self.inFlightPurchaseReceiptPostsByProductID.modify { signals in
+                // Only remove if it's still ours, so a newer concurrent purchase isn't evicted.
+                if signals[sk2Product.id] === purchaseReceiptPostSignal {
+                    signals.removeValue(forKey: sk2Product.id)
+                }
+            }
+            purchaseReceiptPostSignal.signal()
+        }
+
         do {
             if let signedData = promotionalOffer {
                 Logger.debug(Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier))
@@ -994,6 +1015,17 @@ final class PurchasesOrchestrator {
 
     func clearCachedPurchaseData(productIdentifier: String) {
         self.cachedPurchaseContextByProductID.modify { $0.removeValue(forKey: productIdentifier) }
+    }
+
+    /// Waits for an in-flight `purchase()`-initiated receipt post for the given product to finish, if any.
+    /// Used to order a queue-initiated receipt post after the attributed purchase post for the same product.
+    private func awaitInFlightPurchaseReceiptPostIfNeeded(productIdentifier: String) async {
+        guard let signal = self.inFlightPurchaseReceiptPostsByProductID.value[productIdentifier] else {
+            return
+        }
+
+        Logger.debug(Strings.purchase.sk2_queue_receipt_post_waiting_for_purchase(productID: productIdentifier))
+        await signal.wait()
     }
 
     func postEventsIfNeeded(delayed: Bool = false) {
@@ -1500,6 +1532,11 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         _ listener: StoreKit2TransactionListenerType,
         updatedTransaction transaction: StoreTransactionType
     ) async throws {
+        // If a `purchase()` for this same product is in flight, wait for its receipt post (which
+        // carries the offering/paywall attribution) to finish before posting this queue-initiated
+        // transaction, so the attributed post reaches the backend first.
+        await self.awaitInFlightPurchaseReceiptPostIfNeeded(productIdentifier: transaction.productIdentifier)
+
         // Only attribute offering context and paywall data for transactions that are not known
         // to be renewals. When the reason is `nil` (i.e. iOS < 17), we still attempt
         // attribution because the product-ID and date matching in `getAndRemoveCachedPurchaseContext`
