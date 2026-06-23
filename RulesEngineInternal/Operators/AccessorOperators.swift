@@ -178,9 +178,16 @@ enum AccessorOperators {
         }
     }
 
+    /// `missing` routes each key through `var`, where `.null`/`.undefined`
+    /// resolve to the full scope (so they are never "missing"). Returning
+    /// `nil` here skips them, matching json-logic-js.
     private static func keyAsPath(_ value: Value) -> String? {
-        if case .null = value { return nil }
-        return jsString(value)
+        switch value {
+        case .null, .undefined:
+            return nil
+        default:
+            return jsString(value)
+        }
     }
 
     /// Resolve `path` the way `var` does. Empty path returns the entire
