@@ -35,7 +35,7 @@ public final class TransferBehavior: NSObject, Sendable {
     /// String value sent to the RevenueCat backend.
     @objc public let rawValue: String
 
-    init(rawValue: String) {
+    private init(rawValue: String) {
         self.rawValue = rawValue
         super.init()
     }
