@@ -155,6 +155,8 @@ extension PaywallEvent {
         var productId: String?
         var errorCode: Int?
         var errorMessage: String?
+        @_spi(Internal) public var workflowId: String?
+        @_spi(Internal) public var stepId: String?
 
         #if !os(tvOS) // For Paywalls V2
         @_spi(Internal)
@@ -264,7 +266,9 @@ extension PaywallEvent {
             packageId: String? = nil,
             productId: String? = nil,
             errorCode: Int? = nil,
-            errorMessage: String? = nil
+            errorMessage: String? = nil,
+            workflowId: String? = nil,
+            stepId: String? = nil
         ) {
             self.paywallIdentifier = paywallIdentifier
             self.offeringIdentifier = offeringIdentifier
@@ -281,6 +285,8 @@ extension PaywallEvent {
             self.productId = productId
             self.errorCode = errorCode
             self.errorMessage = errorMessage
+            self.workflowId = workflowId
+            self.stepId = stepId
         }
 
     }

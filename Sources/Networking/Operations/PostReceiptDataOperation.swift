@@ -175,6 +175,11 @@ extension PostReceiptDataOperation {
         var localeIdentifier: String
         var source: PaywallSource?
 
+        // Sent at the top level of the post-receipt body as `presented_workflow_id`/`presented_step_id`,
+        // not inside the nested `paywall` object — excluded from Codable via the CodingKeys enum below.
+        var workflowId: String?
+        var stepId: String?
+
     }
 
     struct AppliedTargetingRule {
@@ -240,7 +245,9 @@ private extension PurchasedTransactionData {
                      displayMode: paywall.data.displayMode,
                      darkMode: paywall.data.darkMode,
                      localeIdentifier: paywall.data.localeIdentifier,
-                     source: paywall.data.source)
+                     source: paywall.data.source,
+                     workflowId: paywall.data.workflowId,
+                     stepId: paywall.data.stepId)
     }
 }
 
@@ -306,6 +313,8 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case presentedPlacementIdentifier
         case appliedTargetingRule
         case paywall
+        case presentedWorkflowId = "presented_workflow_id"
+        case presentedStepId = "presented_step_id"
         case testReceiptIdentifier = "test_receipt_identifier"
         case appTransaction = "app_transaction"
         case transactionId = "transaction_id"
@@ -338,6 +347,8 @@ extension PostReceiptDataOperation.PostData: Encodable {
         try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)
         try container.encodeIfPresent(self.appliedTargetingRule, forKey: .appliedTargetingRule)
         try container.encodeIfPresent(self.paywall, forKey: .paywall)
+        try container.encodeIfPresent(self.paywall?.workflowId, forKey: .presentedWorkflowId)
+        try container.encodeIfPresent(self.paywall?.stepId, forKey: .presentedStepId)
         try container.encodeIfPresent(self.purchaseCompletedBy?.name, forKey: .purchaseCompletedBy)
 
         try container.encodeIfPresent(
