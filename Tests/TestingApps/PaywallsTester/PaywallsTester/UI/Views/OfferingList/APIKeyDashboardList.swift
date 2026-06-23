@@ -139,7 +139,8 @@ struct APIKeyDashboardList: View {
                 .map(\.value)
                 .sorted { $0.id < $1.id }
 
-            let offerings = serverOfferings + bundledOfferings
+            // Bundled paywalls go first so they're easy to spot at the top of the list.
+            let offerings = bundledOfferings + serverOfferings
 
             if let presentedPaywall = presentedPaywall {
                 for offering in offerings {

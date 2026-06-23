@@ -137,8 +137,7 @@ let project = Project(
                 "../../Tests/TestingApps/PaywallsTester/PaywallsTester/**/*.swift"
             ],
             resources: [
-                "../../Tests/TestingApps/PaywallsTester/PaywallsTester/**/*.xcassets",
-                "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Config/BundledPaywalls/*.json"
+                "../../Tests/TestingApps/PaywallsTester/PaywallsTester/**/*.xcassets"
             ],
             dependencies: [
                 .revenueCat,
