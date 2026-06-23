@@ -63,6 +63,8 @@ func main() -> Int {
 
     checkStorefrontAPI()
 
+    checkTransferBehaviorAPI()
+
     // Trusted Entitlements: internal until ready to be made public.
     // checkVerificationResultAPI()
 
