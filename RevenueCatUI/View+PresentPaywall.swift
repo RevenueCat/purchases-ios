@@ -652,6 +652,7 @@ private struct PresentingPaywallModifier: ViewModifier {
             self.purchaseStarted?($0)
         }
         .onPurchaseCompleted { customerInfo in
+            self.markWorkflowCompletedInSession()
             self.purchaseCompleted?(customerInfo)
             // Always close on successful purchase - shouldDisplay drives when to show, not when to close
             self.close()
@@ -703,12 +704,16 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.workflowCompletedInSession = false
     }
 
+    private func markWorkflowCompletedInSession() {
+        self.workflowCompletedInSession = true
+    }
+
     private func handleMainPaywallRestoreResult(_ result: PurchaseHandler.RestoreResult?) {
         guard let result else { return }
 
         // For restore, check shouldDisplay since restore might succeed without granting the expected entitlement.
         if result.success && !self.shouldDisplay(result.customerInfo) {
-            self.workflowCompletedInSession = true
+            self.markWorkflowCompletedInSession()
             self.close()
         }
     }
@@ -718,7 +723,7 @@ private struct PresentingPaywallModifier: ViewModifier {
 
         // For restore, check shouldDisplay since restore might succeed without granting the expected entitlement.
         if result.success && !self.shouldDisplay(result.customerInfo) {
-            self.workflowCompletedInSession = true
+            self.markWorkflowCompletedInSession()
             self.closeExitOffer()
         }
     }
@@ -797,6 +802,7 @@ private struct PresentingPaywallModifier: ViewModifier {
             self.purchaseStarted?($0)
         }
         .onPurchaseCompleted { customerInfo in
+            self.markWorkflowCompletedInSession()
             self.purchaseCompleted?(customerInfo)
             // Always close on successful purchase - shouldDisplay drives when to show, not when to close
             self.closeExitOffer()
@@ -963,6 +969,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             self.purchaseStarted?($0)
         }
         .onPurchaseCompleted { customerInfo in
+            self.markWorkflowCompletedInSession()
             self.purchaseCompleted?(customerInfo)
             // Always close on successful purchase
             self.offering = nil
@@ -1005,6 +1012,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             self.purchaseStarted?($0)
         }
         .onPurchaseCompleted { customerInfo in
+            self.markWorkflowCompletedInSession()
             self.purchaseCompleted?(customerInfo)
             // Always close on successful purchase
             self.presentedExitOffer = nil
@@ -1033,11 +1041,15 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         self.workflowCompletedInSession = false
     }
 
+    private func markWorkflowCompletedInSession() {
+        self.workflowCompletedInSession = true
+    }
+
     private func handleMainPaywallRestoreResult(_ result: PurchaseHandler.RestoreResult?) {
         guard let result, result.success else { return }
 
         // Close on successful restore.
-        self.workflowCompletedInSession = true
+        self.markWorkflowCompletedInSession()
         self.offering = nil
     }
 
@@ -1045,7 +1057,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         guard let result, result.success else { return }
 
         // Close on successful restore.
-        self.workflowCompletedInSession = true
+        self.markWorkflowCompletedInSession()
         self.presentedExitOffer = nil
         self.exitOfferOffering = nil
     }
