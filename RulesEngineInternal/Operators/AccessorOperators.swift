@@ -11,8 +11,10 @@ enum AccessorOperators {
 
     /// `{"var": "subscriber.last_seen_country"}` — look up a (possibly
     /// nested) value by dot-path. `{"var": ["path", default]}` returns
-    /// `default` when the path is missing. `{"var": ""}` returns the entire
-    /// data scope.
+    /// `default` when the path is missing; an `undefined` default is
+    /// coerced to `.null`, mirroring `json-logic-js`'s
+    /// `not_found = (b === undefined) ? null : b`. `{"var": ""}` returns
+    /// the entire data scope.
     ///
     /// Per the JSON Logic spec, the path and default arguments are
     /// recursively evaluated before lookup (e.g.
@@ -29,6 +31,8 @@ enum AccessorOperators {
             return found
         }
         if let defaultValue = defaultValue {
+            // json-logic-js coerces an `undefined` default to `null`.
+            if case .undefined = defaultValue { return .null }
             return defaultValue
         }
         RulesEngine.logger.warn("missing variable: \(path)")
