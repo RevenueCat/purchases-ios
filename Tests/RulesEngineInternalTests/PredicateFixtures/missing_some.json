@@ -29,6 +29,13 @@
       "expected": true
     },
     {
+      "id": "missing_some_string_options_length_is_utf16_code_units",
+      "description": "json-logic-js uses options.length (UTF-16 code units), so the emoji is one missing key but contributes length 2; 2 - 1 = 1 meets need=1 and the result is empty",
+      "predicate": { "==": [{ "missing_some": [1, "😀"] }, ""] },
+      "variables": {},
+      "expected": true
+    },
+    {
       "id": "missing_some_zero_required_always_satisfied",
       "description": "need=0 means any number of these is fine, so the result is always empty",
       "predicate": { "==": [{ "missing_some": [0, ["a", "b"]] }, ""] },

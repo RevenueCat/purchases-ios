@@ -91,8 +91,9 @@ enum AccessorOperators {
         // `options`:
         //   - array  → its elements are the keys; length = element count
         //   - string → the *whole string* is a single key; length = its
-        //              character count (so a long string can satisfy a
-        //              larger threshold while only ever contributing one key)
+        //              UTF-16 code-unit count (matching JS `String.length`),
+        //              so a long string can satisfy a larger threshold while
+        //              only ever contributing one key
         //   - null   → no keys; `length` is `undefined`, which makes the
         //              threshold comparison `NaN >= need` (always false), so
         //              the missing list is returned unconditionally
@@ -105,7 +106,7 @@ enum AccessorOperators {
             total = items.count
         case .string(let string):
             keys = [.string(string)]
-            total = string.count
+            total = string.utf16.count
         case .null, .undefined:
             keys = []
             total = nil
@@ -164,12 +165,13 @@ enum AccessorOperators {
     }
 
     /// Coerce the evaluated path argument to a string per
-    /// `json-logic-js`'s `String(a).split(".")`. `nil`, `.null`, and
-    /// `""` are treated as the empty path, which signals the caller
-    /// to return the entire data scope.
+    /// `json-logic-js`'s `String(a).split(".")`. `nil`, `.null`,
+    /// `.undefined`, and `""` are treated as the empty path, which signals
+    /// the caller to return the entire data scope — matching json-logic-js's
+    /// `typeof a === "undefined" || a === "" || a === null` guard.
     private static func pathSegment(from value: Value?) -> String {
         switch value {
-        case .none, .some(.null):
+        case .none, .some(.null), .some(.undefined):
             return ""
         case .some(let other):
             return jsString(other)
