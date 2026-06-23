@@ -56,6 +56,37 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(action) == .dismissWorkflow
     }
 
+    func testHasCompletedInSessionTrueAfterPurchase() {
+        expect(WorkflowPaywallView.hasCompletedInSession(
+            hasPurchasedInSession: true,
+            hasCompletedWorkflowInSession: false
+        )) == true
+    }
+
+    func testHasCompletedInSessionTrueAfterWorkflowCompletionSignal() {
+        expect(WorkflowPaywallView.hasCompletedInSession(
+            hasPurchasedInSession: false,
+            hasCompletedWorkflowInSession: true
+        )) == true
+    }
+
+    func testHasCompletedInSessionFalseAfterRestoreWithoutCompletionSignal() {
+        // Raw restore success is not enough to complete a workflow. The presenter marks completion
+        // only when restore actually dismisses the paywall.
+        expect(WorkflowPaywallView.hasCompletedInSession(
+            hasPurchasedInSession: false,
+            hasCompletedWorkflowInSession: false
+        )) == false
+    }
+
+    func testHasCompletedInSessionFalseWhenNeitherPurchasedNorRestored() {
+        // Plain dismissal with nothing restored is an abandonment.
+        expect(WorkflowPaywallView.hasCompletedInSession(
+            hasPurchasedInSession: false,
+            hasCompletedWorkflowInSession: false
+        )) == false
+    }
+
     func testTransitionStateStartsWithoutOutgoingPage() {
         let state = WorkflowPageTransitionState(currentPage: "step_1")
 

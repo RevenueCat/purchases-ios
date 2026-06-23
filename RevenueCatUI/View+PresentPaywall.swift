@@ -545,6 +545,11 @@ private struct PresentingPaywallModifier: ViewModifier {
     @State
     private var exitOfferOffering: Offering?
 
+    /// Set when a workflow completes through purchase or restore-driven dismissal.
+    /// Regular paywalls ignore this environment value; only `WorkflowPaywallView` consumes it.
+    @State
+    private var workflowCompletedInSession = false
+
     /// The exit offer currently being presented. Controls the sheet/fullScreenCover.
     /// Set from `exitOfferOffering` when the main paywall dismisses without a purchase.
     @State
@@ -641,10 +646,13 @@ private struct PresentingPaywallModifier: ViewModifier {
             )
         )
         .environment(\.workflowExitOfferOfferingBinding, self.$exitOfferOffering)
+        .environment(\.workflowCompletedInSessionBinding, self.$workflowCompletedInSession)
+        .onAppear(perform: self.resetWorkflowCompletedInSession)
         .onPurchaseStarted {
             self.purchaseStarted?($0)
         }
         .onPurchaseCompleted { customerInfo in
+            self.markWorkflowCompletedInSession()
             self.purchaseCompleted?(customerInfo)
             // Always close on successful purchase - shouldDisplay drives when to show, not when to close
             self.close()
@@ -658,14 +666,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         .onRestoreCompleted { customerInfo in
             self.restoreCompleted?(customerInfo)
         }
-        .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self) { result in
-            guard let result else { return }
-
-            // For restore, check shouldDisplay since restore might succeed without granting the expected entitlement
-            if result.success && !self.shouldDisplay(result.customerInfo) {
-                self.close()
-            }
-        }
+        .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self, perform: self.handleMainPaywallRestoreResult)
         .onPurchaseFailure {
             self.purchaseFailure?($0)
         }
@@ -697,6 +698,34 @@ private struct PresentingPaywallModifier: ViewModifier {
 
         self.presentedExitOffer = nil
         self.exitOfferOffering = nil
+    }
+
+    private func resetWorkflowCompletedInSession() {
+        self.workflowCompletedInSession = false
+    }
+
+    private func markWorkflowCompletedInSession() {
+        self.workflowCompletedInSession = true
+    }
+
+    private func handleMainPaywallRestoreResult(_ result: PurchaseHandler.RestoreResult?) {
+        guard let result else { return }
+
+        // For restore, check shouldDisplay since restore might succeed without granting the expected entitlement.
+        if result.success && !self.shouldDisplay(result.customerInfo) {
+            self.markWorkflowCompletedInSession()
+            self.close()
+        }
+    }
+
+    private func handleExitOfferRestoreResult(_ result: PurchaseHandler.RestoreResult?) {
+        guard let result else { return }
+
+        // For restore, check shouldDisplay since restore might succeed without granting the expected entitlement.
+        if result.success && !self.shouldDisplay(result.customerInfo) {
+            self.markWorkflowCompletedInSession()
+            self.closeExitOffer()
+        }
     }
 
     /// Handles dismissal of the main paywall, checking for exit offers.
@@ -768,10 +797,12 @@ private struct PresentingPaywallModifier: ViewModifier {
             )
         )
         .customPaywallVariables(self.customPaywallVariables)
+        .environment(\.workflowCompletedInSessionBinding, self.$workflowCompletedInSession)
         .onPurchaseStarted {
             self.purchaseStarted?($0)
         }
         .onPurchaseCompleted { customerInfo in
+            self.markWorkflowCompletedInSession()
             self.purchaseCompleted?(customerInfo)
             // Always close on successful purchase - shouldDisplay drives when to show, not when to close
             self.closeExitOffer()
@@ -785,14 +816,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         .onRestoreCompleted { customerInfo in
             self.restoreCompleted?(customerInfo)
         }
-        .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self) { result in
-            guard let result else { return }
-
-            // For restore, check shouldDisplay since restore might succeed without granting the expected entitlement
-            if result.success && !self.shouldDisplay(result.customerInfo) {
-                self.closeExitOffer()
-            }
-        }
+        .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self, perform: self.handleExitOfferRestoreResult)
         .onPurchaseFailure {
             self.purchaseFailure?($0)
         }
@@ -841,6 +865,11 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
     /// Copied to `presentedExitOffer` when ready to show.
     @State
     private var exitOfferOffering: Offering?
+
+    /// Set when a workflow completes through purchase or restore-driven dismissal.
+    /// Regular paywalls ignore this environment value; only `WorkflowPaywallView` consumes it.
+    @State
+    private var workflowCompletedInSession = false
 
     /// The exit offer currently being presented. Controls the sheet/fullScreenCover.
     /// Set from `exitOfferOffering` when the main paywall dismisses without a purchase.
@@ -934,10 +963,13 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 promoOfferCache: self.promoOfferCacheOwner.cache
             )
         )
+        .environment(\.workflowCompletedInSessionBinding, self.$workflowCompletedInSession)
+        .onAppear(perform: self.resetWorkflowCompletedInSession)
         .onPurchaseStarted {
             self.purchaseStarted?($0)
         }
         .onPurchaseCompleted { customerInfo in
+            self.markWorkflowCompletedInSession()
             self.purchaseCompleted?(customerInfo)
             // Always close on successful purchase
             self.offering = nil
@@ -951,11 +983,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         .onRestoreCompleted { customerInfo in
             self.restoreCompleted?(customerInfo)
         }
-        .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self) { result in
-            guard let result, result.success else { return }
-            // Close on successful restore
-            self.offering = nil
-        }
+        .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self, perform: self.handleMainPaywallRestoreResult)
         .onPurchaseFailure {
             self.purchaseFailure?($0)
         }
@@ -979,10 +1007,12 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             )
         )
         .customPaywallVariables(self.customPaywallVariables)
+        .environment(\.workflowCompletedInSessionBinding, self.$workflowCompletedInSession)
         .onPurchaseStarted {
             self.purchaseStarted?($0)
         }
         .onPurchaseCompleted { customerInfo in
+            self.markWorkflowCompletedInSession()
             self.purchaseCompleted?(customerInfo)
             // Always close on successful purchase
             self.presentedExitOffer = nil
@@ -997,12 +1027,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         .onRestoreCompleted { customerInfo in
             self.restoreCompleted?(customerInfo)
         }
-        .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self) { result in
-            guard let result, result.success else { return }
-            // Close on successful restore
-            self.presentedExitOffer = nil
-            self.exitOfferOffering = nil
-        }
+        .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self, perform: self.handleExitOfferRestoreResult)
         .onPurchaseFailure {
             self.purchaseFailure?($0)
         }
@@ -1010,6 +1035,31 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             self.restoreFailure?($0)
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
+    }
+
+    private func resetWorkflowCompletedInSession() {
+        self.workflowCompletedInSession = false
+    }
+
+    private func markWorkflowCompletedInSession() {
+        self.workflowCompletedInSession = true
+    }
+
+    private func handleMainPaywallRestoreResult(_ result: PurchaseHandler.RestoreResult?) {
+        guard let result, result.success else { return }
+
+        // Close on successful restore.
+        self.markWorkflowCompletedInSession()
+        self.offering = nil
+    }
+
+    private func handleExitOfferRestoreResult(_ result: PurchaseHandler.RestoreResult?) {
+        guard let result, result.success else { return }
+
+        // Close on successful restore.
+        self.markWorkflowCompletedInSession()
+        self.presentedExitOffer = nil
+        self.exitOfferOffering = nil
     }
 
     /// Handles dismissal of the main paywall, checking for exit offers.
