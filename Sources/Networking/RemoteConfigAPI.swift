@@ -110,10 +110,7 @@ struct RemoteConfigContainer {
     }
 
     init(rcContainer container: RCContainer) throws {
-        guard let configElement = container.elements.first else {
-            throw RCContainer.Parser.FormatError.missingElement(index: 0)
-        }
-        try configElement.validateChecksum()
+        let configElement = try Self.validatedConfigElement(in: container)
 
         self.rcContainer = container
         self.configElement = configElement
@@ -121,6 +118,37 @@ struct RemoteConfigContainer {
             container.elements.dropFirst().map { ($0.checksum, $0) },
             uniquingKeysWith: { _, last in last }
         )
+    }
+
+}
+
+extension RemoteConfigContainer {
+
+    /// Parses only the first RC Container element, which remote config defines as the config element.
+    ///
+    /// This avoids parsing the whole container when signature verification only needs the config
+    /// checksum.
+    static func validatedConfigElement(from data: Data) throws -> RCContainer.Element {
+        var parser = RCContainer.ElementParser(data: data)
+        try parser.moveToFirstElement()
+        guard parser.hasRemainingBytes else {
+            throw RCContainer.Parser.FormatError.missingElement(index: 0)
+        }
+
+        return try self.validatedConfigElement(parser.parseElement(index: 0))
+    }
+
+    static func validatedConfigElement(in container: RCContainer) throws -> RCContainer.Element {
+        guard let configElement = container.elements.first else {
+            throw RCContainer.Parser.FormatError.missingElement(index: 0)
+        }
+
+        return try self.validatedConfigElement(configElement)
+    }
+
+    private static func validatedConfigElement(_ element: RCContainer.Element) throws -> RCContainer.Element {
+        try element.validateChecksum()
+        return element
     }
 
 }

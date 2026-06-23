@@ -39,14 +39,7 @@ private extension RemoteConfigSignatureContextProvider {
             throw RCContainer.Parser.FormatError.missingBody
         }
 
-        var parser = RCContainer.ElementParser(data: data)
-        try parser.moveToFirstElement()
-        guard parser.hasRemainingBytes else {
-            throw RCContainer.Parser.FormatError.missingElement(index: 0)
-        }
-
-        let configElement = try parser.parseElement(index: 0)
-        try configElement.validateChecksum()
+        let configElement = try RemoteConfigContainer.validatedConfigElement(from: data)
 
         return configElement.withChecksumBytes { bytes in
             Data(bytes)
