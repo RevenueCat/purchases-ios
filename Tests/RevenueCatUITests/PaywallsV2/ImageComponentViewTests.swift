@@ -64,6 +64,21 @@ final class ImageComponentViewTests: TestCase {
         XCTAssertEqual(plan.content, .none)
     }
 
+    // Regression guard for the carousel lazy-load path: a far-offscreen page that has not been
+    // measured yet (size unknown) AND has requestSizeCalculation set must NOT mount the image. The
+    // lazy-load skip must win over the first-load mount, otherwise we start fetching images for
+    // pages the user may never reach.
+    func testOffscreenCarouselPageDoesNotMountImageBeforeFirstMeasurement() {
+        let plan = ImageComponentView.renderPlan(
+            sizeIsKnown: false,
+            requestSizeCalculation: true,
+            isRenderingForPreview: false
+        )
+
+        XCTAssertTrue(plan.showsMeasurementPlaceholder)
+        XCTAssertEqual(plan.content, .none)
+    }
+
     // MARK: - First-load animation regression
 
     // Regression guard for the paywall sheet bug: on the first (uncached) load the size is not yet

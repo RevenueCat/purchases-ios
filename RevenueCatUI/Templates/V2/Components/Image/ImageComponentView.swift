@@ -207,17 +207,18 @@ struct ImageComponentView: View {
         let content: ImageRenderPlan.Content
         if isRenderingForPreview {
             content = .preview
-        } else if !sizeIsKnown {
-            // First load: keep the image mounted alongside the measurement placeholder so it
-            // participates in the enclosing transition (e.g. a sheet) instead of popping in once
-            // the size resolves. The image is constrained to a maxWidth of 0 until the size is
-            // known, so it does not pollute the measurement.
-            content = .image
         } else if requestSizeCalculation {
-            // Size already known, but a recalculation was requested for a far-offscreen carousel
-            // page. Avoid eagerly loading the image until the page is near the viewport.
+            // Far-offscreen carousel page: render only the measurement placeholder so the page can
+            // be sized, but never mount the image — defer loading until the page nears the viewport.
+            // This takes precedence over the first-load branch below: a brand-new far-off page also
+            // has an unknown size, and we must NOT mount its image just because it hasn't been
+            // measured yet.
             content = .none
         } else {
+            // Normal display, plus first load while the size is still unknown. On first load the
+            // image is kept mounted alongside the measurement placeholder (constrained to a maxWidth
+            // of 0 until the size resolves) so it participates in the enclosing transition (e.g. a
+            // sheet) instead of popping in once the size is known.
             content = .image
         }
 
