@@ -302,9 +302,10 @@ commands:
           name: Install xcodes 1.6.2
           command: |
             # Pinned to 1.6.2: it supports the visionOS (com.apple.platform.xros)
-            # runtime index entry that breaks older xcodes. We install the prebuilt
-            # universal binary into /opt/homebrew/bin (on PATH and reachable under
-            # sudo, used by the runtime install script).
+            # runtime index entry that breaks older xcodes, and unlike 2.x it has a
+            # Ventura bottle (2.x has none, so brew can't install it on this runner).
+            # We install the prebuilt universal binary into /opt/homebrew/bin (on PATH
+            # and reachable under sudo, used by the runtime install script).
             # Match on the exact version so a pre-installed/older xcodes is replaced.
             if xcodes version 2>/dev/null | grep -q "1.6.2"; then
                 echo "xcodes 1.6.2 already installed, skipping."
