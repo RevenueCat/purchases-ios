@@ -55,6 +55,11 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
     var invokedHandleParameters: (purchaseResult: Box<StoreKit.Product.PurchaseResult>, Void)?
     var invokedHandleParametersList = [(purchaseResult: Box<StoreKit.Product.PurchaseResult>, Void)]()
 
+    /// Optional hook invoked from within `handle(purchaseResult:)`, before it returns. Lets tests
+    /// reproduce the race where a queue transaction arrives while a `purchase()` call is still
+    /// in flight (i.e. after the purchase intent has been cached but before the purchase posts).
+    var onHandle: (() async throws -> Void)?
+
     func handle(
         purchaseResult: StoreKit.Product.PurchaseResult,
         fromTransactionUpdate: Bool = false
@@ -63,6 +68,8 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
         self.invokedHandleCount += 1
         self.invokedHandleParameters = (.init(purchaseResult), ())
         self.invokedHandleParametersList.append((.init(purchaseResult), ()))
+
+        try await self.onHandle?()
 
         if self.mockCancelled {
             return .userCancelled

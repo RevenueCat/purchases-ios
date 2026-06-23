@@ -1722,28 +1722,14 @@ extension Purchases {
 
 }
 
-// MARK: - Reward Verification (Internal SPI)
+// MARK: - Reward Verification
 
 extension Purchases {
 
-    /// Polls the backend once for reward verification status using `client_transaction_id`.
-    ///
-    /// Internal API for RC ad adapters.
+    /// Fetches reward-verification status preserving the structured ``BackendError`` so the poller
+    /// can reuse the SDK's retry classification (``BackendError/isTransient``).
     ///
     /// Cancelling the calling `Task` does not cancel the in-flight HTTP request.
-    @_spi(Internal) public func pollRewardVerificationStatus(
-        clientTransactionID: String
-    ) async throws -> RewardVerificationPollStatus {
-        do {
-            return try await self.fetchRewardVerificationStatus(clientTransactionID: clientTransactionID)
-        } catch let error as BackendError {
-            throw error.asPublicError
-        }
-    }
-
-    /// Fetches reward-verification status preserving the structured ``BackendError`` so the poller
-    /// can reuse the SDK's retry classification (``BackendError/isTransient``). The public
-    /// ``pollRewardVerificationStatus(clientTransactionID:)`` wraps this and flattens to a public error.
     ///
     /// - Throws: `BackendError`
     internal func fetchRewardVerificationStatus(
@@ -1762,8 +1748,8 @@ extension Purchases {
             return .verified(reward)
         case .pending:
             return .pending
-        case .failed:
-            return .failed
+        case let .failed(failure):
+            return .failed(reason: failure.reason, message: failure.message)
         case .unknown:
             return .unknown
         }

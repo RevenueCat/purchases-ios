@@ -93,6 +93,8 @@ struct PaywallsV2View: View {
     /// activation (becoming / ceasing to be the current step) rather than on SwiftUI's view lifecycle.
     /// `nil` keeps the standalone-paywall behavior of tracking on `onAppear` / `onDisappear`.
     private let isActiveWorkflowPage: Bool?
+    private let workflowId: String?
+    private let stepId: String?
     @State
     private var didFinishEligibilityCheck: Bool = {
         #if DEBUG
@@ -127,7 +129,9 @@ struct PaywallsV2View: View {
         promoOfferCache: PaywallPromoOfferCache? = nil,
         introEligibilityContext: IntroOfferEligibilityContext? = nil,
         selectedPackageContextOverride: PackageContext? = nil,
-        isActiveWorkflowPage: Bool? = nil
+        isActiveWorkflowPage: Bool? = nil,
+        workflowId: String? = nil,
+        stepId: String? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
@@ -147,6 +151,8 @@ struct PaywallsV2View: View {
         self.onDismiss = onDismiss
         self.closeWorkflowAction = closeWorkflowAction
         self.isActiveWorkflowPage = isActiveWorkflowPage
+        self.workflowId = workflowId
+        self.stepId = stepId
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
         ))
@@ -452,7 +458,7 @@ struct PaywallsV2View: View {
             compontentsData = self.paywallComponentsData
         }
 
-        return .init(
+        var data = PaywallEvent.Data(
             offering: self.offering,
             paywallComponentsData: compontentsData,
             sessionID: sessionID ?? self.paywallSessionID,
@@ -461,6 +467,9 @@ struct PaywallsV2View: View {
             darkMode: self.colorScheme == .dark,
             source: self.paywallSource
         )
+        data.workflowId = self.workflowId
+        data.stepId = self.stepId
+        return data
     }
 
 }
