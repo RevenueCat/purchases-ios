@@ -1303,11 +1303,6 @@ public extension Purchases {
         }
     }
 
-    @objc(restorePurchasesWithTransferBehavior:)
-    func restorePurchases(transferBehavior: TransferBehavior) {
-        self.restorePurchases(transferBehavior: transferBehavior, completion: nil)
-    }
-
     func restorePurchases(transferBehavior: TransferBehavior) async throws -> CustomerInfo {
         return try await self.restorePurchasesAsync(transferBehavior: transferBehavior)
     }
