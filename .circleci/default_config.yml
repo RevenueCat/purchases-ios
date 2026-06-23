@@ -292,7 +292,7 @@ commands:
           paths:
             - ~/.mint
 
-  install-xcodes:
+  install-xcodes-for-xcode14:
     description: "Installs the xcodes 1.6.2 prebuilt binary"
     steps:
       - restore_cache:
@@ -1210,7 +1210,7 @@ jobs:
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
-      - install-xcodes
+      - install-xcodes-for-xcode14
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
 
