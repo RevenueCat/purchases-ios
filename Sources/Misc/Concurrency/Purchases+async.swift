@@ -99,6 +99,18 @@ extension Purchases {
         }
     }
 
+    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+    func restorePurchasesAsync(transferBehavior: TransferBehavior) async throws -> CustomerInfo {
+        return try await withUnsafeThrowingContinuation { continuation in
+            self.restorePurchases(transferBehavior: transferBehavior) { customerInfo, error in
+                continuation.resume(with: Result(customerInfo, error))
+            }
+        }
+    }
+
+    #endif
+
     func purchaseAsync(_ params: PurchaseParams) async throws -> PurchaseResultData {
         return try await withUnsafeThrowingContinuation { continuation in
             purchase(params,

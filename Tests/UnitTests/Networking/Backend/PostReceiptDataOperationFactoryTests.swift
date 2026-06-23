@@ -741,4 +741,102 @@ class PostReceiptDataOperationFactoryTests: TestCase {
         expect(factory1.cacheKey) != factory2.cacheKey
     }
 
+    func testTransferBehaviorIsEncoded() throws {
+        let postData = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                transferBehavior: TransferBehavior(rawValue: "transfer_to_new_app_user_id")
+            ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: false,
+            purchaseCompletedBy: .revenueCat,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
+        )
+
+        let encodedPostData = try JSONEncoder.default.encode(postData)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encodedPostData) as? [String: Any])
+
+        expect(json["transfer_behavior"] as? String) == "transfer_to_new_app_user_id"
+    }
+
+    func testTransferBehaviorIsNotEncodedWhenNil() throws {
+        let postData = PostReceiptDataOperation.PostData(
+            transactionData: .init(),
+            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: false,
+            purchaseCompletedBy: .revenueCat,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
+        )
+
+        let encodedPostData = try JSONEncoder.default.encode(postData)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encodedPostData) as? [String: Any])
+
+        expect(json.keys).toNot(contain("transfer_behavior"))
+    }
+
+    func testCacheKeyDifferenceWhenTransferBehaviorChanges() {
+        let config = self.createConfig()
+        let purchaseCompletedBy: PurchasesAreCompletedBy = .revenueCat
+        let observerMode = purchaseCompletedBy.observerMode
+
+        let postData1 = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                transferBehavior: TransferBehavior(rawValue: "transfer_to_new_app_user_id")
+            ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: observerMode,
+            purchaseCompletedBy: purchaseCompletedBy,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
+        )
+
+        let postData2 = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                transferBehavior: TransferBehavior(rawValue: "keep_with_original_app_user_id")
+            ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: observerMode,
+            purchaseCompletedBy: purchaseCompletedBy,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
+        )
+
+        let factory1 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData1,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        let factory2 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData2,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        expect(factory1.cacheKey) != factory2.cacheKey
+    }
+
 }

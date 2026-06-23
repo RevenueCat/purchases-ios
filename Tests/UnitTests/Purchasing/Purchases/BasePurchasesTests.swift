@@ -572,6 +572,7 @@ extension BasePurchasesTests {
         var postedSubscriptionGroup: String?
         var postedDiscounts: [StoreProductDiscount]?
         var postedOfferingIdentifier: String?
+        var postedTransferBehavior: TransferBehavior?
         var postedObserverMode: Bool?
         var postedInitiationSource: PostReceiptSource.InitiationSource?
         var postReceiptResult: Result<CustomerInfo, BackendError>?
@@ -609,6 +610,7 @@ extension BasePurchasesTests {
             }
 
             self.postedOfferingIdentifier = transactionData.presentedOfferingContext?.offeringIdentifier
+            self.postedTransferBehavior = transactionData.transferBehavior
             self.postedObserverMode = observerMode
             self.postedInitiationSource = postReceiptSource.initiationSource
 

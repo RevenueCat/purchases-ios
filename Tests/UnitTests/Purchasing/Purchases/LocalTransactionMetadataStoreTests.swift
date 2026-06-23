@@ -420,7 +420,8 @@ class LocalTransactionMetadataStoreTests: TestCase {
             unsyncedAttributes: ["key": .init(attribute: .email, value: "test@example.com")],
             metadata: ["custom_key": "custom_value"],
             aadAttributionToken: "test_token",
-            storeCountry: "US"
+            storeCountry: "US",
+            transferBehavior: TransferBehavior(rawValue: "keep_with_original_app_user_id")
         )
 
         return LocalTransactionMetadata(
@@ -511,6 +512,7 @@ class LocalTransactionMetadataStoreE2ETests: TestCase {
         expect(retrieved?.transactionData.metadata) == originalMetadata.transactionData.metadata
         expect(retrieved?.transactionData.aadAttributionToken) == originalMetadata.transactionData.aadAttributionToken
         expect(retrieved?.transactionData.storeCountry) == originalMetadata.transactionData.storeCountry
+        expect(retrieved?.transactionData.transferBehavior?.rawValue) == "keep_with_original_app_user_id"
 
         // Verify encoded receipt
         expect(retrieved?.encodedAppleReceipt) == originalMetadata.encodedAppleReceipt
@@ -534,6 +536,7 @@ class LocalTransactionMetadataStoreE2ETests: TestCase {
         expect(retrieved).toNot(beNil())
         expect(retrieved?.transactionId) == transactionId
         expect(retrieved?.productData).to(beNil())
+        expect(retrieved?.transactionData.transferBehavior).to(beNil())
         expect(retrieved?.originalPurchasesAreCompletedBy) == .myApp
         expect(retrieved?.sdkOriginated) == false
     }
@@ -1016,7 +1019,8 @@ class LocalTransactionMetadataStoreE2ETests: TestCase {
             unsyncedAttributes: nil,
             metadata: ["integration_key": "integration_value", "another_key": "another_value"],
             aadAttributionToken: "integration_attribution_token",
-            storeCountry: "US"
+            storeCountry: "US",
+            transferBehavior: TransferBehavior(rawValue: "keep_with_original_app_user_id")
         )
 
         return LocalTransactionMetadata(

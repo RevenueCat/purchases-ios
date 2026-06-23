@@ -80,6 +80,27 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.backend.postedIsRestore) == false
     }
 
+    func testPurchaseWithTransferBehaviorSendsTransferBehaviorToBackend() throws {
+        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
+        let transferBehavior = TransferBehavior(rawValue: "transfer_to_new_app_user_id")
+        self.purchasesOrchestrator.purchase(
+            product: product,
+            package: nil,
+            promotionalOffer: nil,
+            metadata: nil,
+            transferBehavior: transferBehavior,
+            trackDiagnostics: true
+        ) { _, _, _, _ in }
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
+        transaction.mockState = .purchased
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
+
+        expect(self.backend.postReceiptDataCalled) == true
+        expect(self.backend.postedTransferBehavior?.rawValue) == "transfer_to_new_app_user_id"
+    }
+
     @MainActor
     func testPurchaseCallbackIsInvokedWhenProcessingQueueTransactionForSameProduct() {
         // This documents a race condition that we can't detect in the implementation

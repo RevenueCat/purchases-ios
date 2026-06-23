@@ -312,7 +312,10 @@ final class PurchasesOrchestrator {
         }
     }
 
-    func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
+    func restorePurchases(
+        transferBehavior: TransferBehavior? = nil,
+        completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?
+    ) {
         if self.systemInfo.isSimulatedStoreAPIKey {
             Logger.debug(Strings.purchase.restore_purchases_simulated_store)
             self.customerInfoManager.customerInfo(appUserID: self.appUserID, fetchPolicy: .default) { result in
@@ -324,6 +327,7 @@ final class PurchasesOrchestrator {
         self.syncPurchases(receiptRefreshPolicy: .always,
                            isRestore: true,
                            initiationSource: .restore,
+                           transferBehavior: transferBehavior,
                            completion: completion)
     }
 
@@ -448,10 +452,12 @@ final class PurchasesOrchestrator {
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
         let promotionalOfferOptions = params.promotionalOfferOptions
+        let transferBehavior = params.transferBehavior
 
         #else
 
         let promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions? = nil
+        let transferBehavior: TransferBehavior? = nil
 
         #endif
 
@@ -474,6 +480,7 @@ final class PurchasesOrchestrator {
                  introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
                  promotionalOfferOptions: promotionalOfferOptions,
                  metadata: metadata,
+                 transferBehavior: transferBehavior,
                  quantity: params.quantity,
                  trackDiagnostics: trackDiagnostics,
                  completion: completion)
@@ -486,6 +493,7 @@ final class PurchasesOrchestrator {
                   introductoryOfferEligibilityJWS: String? = nil,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions? = nil,
                   metadata: [String: String]? = nil,
+                  transferBehavior: TransferBehavior? = nil,
                   paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil,
                   trackDiagnostics: Bool,
@@ -515,6 +523,7 @@ final class PurchasesOrchestrator {
                           payment: payment,
                           package: package,
                           paywallEvent: paywallEvent,
+                          transferBehavior: transferBehavior,
                           quantity: quantity,
                           wrapper: storeKit1Wrapper,
                           completion: completionWithTracking)
@@ -536,12 +545,14 @@ final class PurchasesOrchestrator {
                           billingPlanType: billingPlanType,
                           promotionalOfferOptions: promotionalOfferOptions,
                           metadata: metadata,
+                          transferBehavior: transferBehavior,
                           paywallEvent: paywallEvent,
                           quantity: quantity,
                           completion: completionWithTracking)
         } else if let simulatedStoreProduct = product.testStoreProduct {
             self.handlePurchase(simulatedStoreProduct: simulatedStoreProduct,
                                 metadata: metadata,
+                                transferBehavior: transferBehavior,
                                 completion: completionWithTracking)
         } else {
             fatalError("Unrecognized product: \(product)")
@@ -568,6 +579,7 @@ final class PurchasesOrchestrator {
                   payment: SKMutablePayment,
                   package: Package?,
                   paywallEvent: PaywallEvent? = nil,
+                  transferBehavior: TransferBehavior? = nil,
                   quantity: Int? = nil,
                   wrapper: StoreKit1Wrapper,
                   completion: @escaping PurchaseCompletedBlock) {
@@ -603,6 +615,7 @@ final class PurchasesOrchestrator {
         self.cachePurchaseData(
             presentedOfferingContext: package?.presentedOfferingContext,
             paywallEvent: paywallEvent,
+            transferBehavior: transferBehavior,
             productIdentifier: productIdentifier,
             originatedFromPurchase: true
         )
@@ -663,6 +676,7 @@ final class PurchasesOrchestrator {
                   billingPlanType: BillingPlanType?,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
                   metadata: [String: String]? = nil,
+                  transferBehavior: TransferBehavior? = nil,
                   paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil,
                   completion: @escaping PurchaseCompletedBlock) {
@@ -677,6 +691,7 @@ final class PurchasesOrchestrator {
                     billingPlanType: billingPlanType,
                     promotionalOfferOptions: promotionalOfferOptions,
                     metadata: metadata,
+                    transferBehavior: transferBehavior,
                     paywallEvent: paywallEvent,
                     quantity: quantity
                 )
@@ -719,6 +734,7 @@ final class PurchasesOrchestrator {
                   billingPlanType: BillingPlanType?,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
                   metadata: [String: String]? = nil,
+                  transferBehavior: TransferBehavior? = nil,
                   paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
@@ -824,6 +840,7 @@ final class PurchasesOrchestrator {
             self.cachePurchaseData(
                 presentedOfferingContext: presentedOfferingContext,
                 paywallEvent: paywallEvent,
+                transferBehavior: transferBehavior,
                 productIdentifier: sk2Product.id,
                 originatedFromPurchase: true
             )
@@ -869,7 +886,8 @@ final class PurchasesOrchestrator {
                     .purchase,
                     metadata,
                     presentedOfferingContext: presentedOfferingContext,
-                    presentedPaywall: paywallEvent
+                    presentedPaywall: paywallEvent,
+                    transferBehavior: transferBehavior
                 )
                 self.postFeatureEventsIfNeeded()
             } else {
@@ -991,10 +1009,11 @@ final class PurchasesOrchestrator {
     func cachePurchaseData(
         presentedOfferingContext: PresentedOfferingContext?,
         paywallEvent: PaywallEvent?,
+        transferBehavior: TransferBehavior? = nil,
         productIdentifier: String,
         originatedFromPurchase: Bool = false
     ) {
-        guard presentedOfferingContext != nil || paywallEvent != nil else { return }
+        guard presentedOfferingContext != nil || paywallEvent != nil || transferBehavior != nil else { return }
 
         if let offeringContext = presentedOfferingContext {
             Logger.debug(Strings.purchase.caching_presented_offering_identifier(
@@ -1025,6 +1044,7 @@ final class PurchasesOrchestrator {
                 cache[productIdentifier] = CachedPurchaseContext(
                     offeringContext: presentedOfferingContext,
                     paywallEvent: paywallEvent,
+                    transferBehavior: transferBehavior,
                     cacheDate: self.dateProvider.now(),
                     originatedFromPurchase: originatedFromPurchase
                 )
@@ -1034,6 +1054,7 @@ final class PurchasesOrchestrator {
                 cache[productIdentifier] = CachedPurchaseContext(
                     offeringContext: presentedOfferingContext ?? existing?.offeringContext,
                     paywallEvent: paywallEvent ?? existing?.paywallEvent,
+                    transferBehavior: transferBehavior ?? existing?.transferBehavior,
                     cacheDate: self.dateProvider.now(),
                     originatedFromPurchase: originatedFromPurchase || (existing?.originatedFromPurchase ?? false)
                 )
@@ -1560,6 +1581,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
             : self.consumeCachedPurchaseContext(for: transaction, initiationSource: .queue)
         let offeringContext = cached?.offeringContext
         let paywall = cached?.paywallEvent
+        let transferBehavior = cached?.transferBehavior
 
         let storefront = await self.storefront(from: transaction)
         let subscriberAttributes = self.refreshATTStatusAndGetUnsyncedAttributes()
@@ -1569,7 +1591,8 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
             presentedPaywall: paywall,
             unsyncedAttributes: subscriberAttributes,
             aadAttributionToken: adServicesToken,
-            storeCountry: storefront?.countryCode
+            storeCountry: storefront?.countryCode,
+            transferBehavior: transferBehavior
         )
         let purchaseSource: PostReceiptSource = .init(
             isRestore: self.allowSharingAppStoreAccount,
@@ -1749,6 +1772,7 @@ private extension PurchasesOrchestrator {
     private func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                                isRestore: Bool,
                                initiationSource: PostReceiptSource.InitiationSource,
+                               transferBehavior: TransferBehavior? = nil,
                                completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         self.trackSyncOrRestorePurchasesStartedIfNeeded(receiptRefreshPolicy)
         let startTime = self.dateProvider.now()
@@ -1769,11 +1793,13 @@ private extension PurchasesOrchestrator {
            #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             self.syncPurchasesSK2(isRestore: isRestore,
                                   initiationSource: initiationSource,
+                                  transferBehavior: transferBehavior,
                                   completion: completionWithTracking)
         } else {
             self.syncPurchasesSK1(receiptRefreshPolicy: receiptRefreshPolicy,
                                   isRestore: isRestore,
                                   initiationSource: initiationSource,
+                                  transferBehavior: transferBehavior,
                                   completion: completionWithTracking)
         }
     }
@@ -1781,6 +1807,7 @@ private extension PurchasesOrchestrator {
     func syncPurchasesSK1(receiptRefreshPolicy: ReceiptRefreshPolicy,
                           isRestore: Bool,
                           initiationSource: PostReceiptSource.InitiationSource,
+                          transferBehavior: TransferBehavior? = nil,
                           completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         let currentAppUserID = self.appUserID
         let unsyncedAttributes = self.refreshATTStatusAndGetUnsyncedAttributes()
@@ -1820,7 +1847,8 @@ private extension PurchasesOrchestrator {
                 self.createProductRequestData(with: receiptData) { productRequestData in
                     let transactionData = PurchasedTransactionData(presentedOfferingContext: nil,
                                                                    unsyncedAttributes: unsyncedAttributes,
-                                                                   storeCountry: productRequestData?.storeCountry)
+                                                                   storeCountry: productRequestData?.storeCountry,
+                                                                   transferBehavior: transferBehavior)
 
                     self.backend.post(
                         receipt: .receipt(receiptData),
@@ -1844,6 +1872,7 @@ private extension PurchasesOrchestrator {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private func syncPurchasesSK2(isRestore: Bool,
                                   initiationSource: PostReceiptSource.InitiationSource,
+                                  transferBehavior: TransferBehavior? = nil,
                                   completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         let currentAppUserID = self.appUserID
         let unsyncedAttributes = self.refreshATTStatusAndGetUnsyncedAttributes()
@@ -1902,7 +1931,8 @@ private extension PurchasesOrchestrator {
 
                 let transactionData: PurchasedTransactionData = .init(
                     presentedOfferingContext: nil,
-                    unsyncedAttributes: unsyncedAttributes
+                    unsyncedAttributes: unsyncedAttributes,
+                    transferBehavior: transferBehavior
                 )
                 let purchaseSource: PostReceiptSource = .init(
                     isRestore: isRestore,
@@ -1928,7 +1958,8 @@ private extension PurchasesOrchestrator {
             let transactionData: PurchasedTransactionData = .init(
                 presentedOfferingContext: nil,
                 unsyncedAttributes: unsyncedAttributes,
-                storeCountry: transaction.storefront?.countryCode
+                storeCountry: transaction.storefront?.countryCode,
+                transferBehavior: transferBehavior
             )
             let purchaseSource: PostReceiptSource = .init(isRestore: isRestore, initiationSource: initiationSource)
 
@@ -1984,6 +2015,7 @@ private extension PurchasesOrchestrator {
                                                 initiationSource: purchaseSource.initiationSource)
         let offeringContext = cached?.offeringContext
         let paywall = cached?.paywallEvent
+        let transferBehavior = cached?.transferBehavior
         let unsyncedAttributes = self.refreshATTStatusAndGetUnsyncedAttributes()
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             let transactionData: PurchasedTransactionData = .init(
@@ -1991,7 +2023,8 @@ private extension PurchasesOrchestrator {
                 presentedPaywall: paywall,
                 unsyncedAttributes: unsyncedAttributes,
                 aadAttributionToken: adServicesToken,
-                storeCountry: storefront?.countryCode
+                storeCountry: storefront?.countryCode,
+                transferBehavior: transferBehavior
             )
 
             self.transactionPoster.handlePurchasedTransaction(
@@ -2042,6 +2075,7 @@ private extension PurchasesOrchestrator {
     struct CachedPurchaseContext {
         let offeringContext: PresentedOfferingContext?
         let paywallEvent: PaywallEvent?
+        let transferBehavior: TransferBehavior?
         let cacheDate: Date
         let originatedFromPurchase: Bool
     }
@@ -2207,9 +2241,15 @@ private extension PurchasesOrchestrator {
 
     func handlePurchase(simulatedStoreProduct: SimulatedStoreProduct,
                         metadata: [String: String]?,
+                        transferBehavior: TransferBehavior?,
                         completion: @escaping PurchaseCompletedBlock) {
         if self.systemInfo.isSimulatedStoreAPIKey {
-            self.purchase(simulatedStoreProduct: simulatedStoreProduct, metadata: metadata, completion: completion)
+            self.purchase(
+                simulatedStoreProduct: simulatedStoreProduct,
+                metadata: metadata,
+                transferBehavior: transferBehavior,
+                completion: completion
+            )
         } else {
             self.handleTestProductNotAvailableForPurchase(completion)
         }
@@ -2217,6 +2257,7 @@ private extension PurchasesOrchestrator {
 
     private func purchase(simulatedStoreProduct: SimulatedStoreProduct,
                           metadata: [String: String]?,
+                          transferBehavior: TransferBehavior?,
                           completion: @escaping PurchaseCompletedBlock) {
         Task {
             let result = await self.simulatedStorePurchaseHandler.purchase(product: simulatedStoreProduct)
@@ -2229,7 +2270,12 @@ private extension PurchasesOrchestrator {
                 await completion(nil, nil, purchasesError.asPublicError, false)
             case .success(let transaction):
                 do {
-                    let customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
+                    let customerInfo = try await self.handlePurchasedTransaction(
+                        transaction,
+                        .purchase,
+                        metadata,
+                        transferBehavior: transferBehavior
+                    )
                     await completion(transaction, customerInfo, nil, false)
                 } catch {
                     let purchasesError = ErrorUtils.purchasesError(withUntypedError: error)
@@ -2349,11 +2395,13 @@ extension PurchasesOrchestrator {
         _ initiationSource: PostReceiptSource.InitiationSource,
         _ metadata: [String: String]?,
         presentedOfferingContext: PresentedOfferingContext? = nil,
-        presentedPaywall: PaywallEvent? = nil
+        presentedPaywall: PaywallEvent? = nil,
+        transferBehavior: TransferBehavior? = nil
     ) async throws -> CustomerInfo {
         let cached = self.consumeCachedPurchaseContext(for: transaction, initiationSource: initiationSource)
         let offeringContext = presentedOfferingContext ?? cached?.offeringContext
         let paywall = presentedPaywall ?? cached?.paywallEvent
+        let effectiveTransferBehavior = transferBehavior ?? cached?.transferBehavior
         let unsyncedAttributes = self.refreshATTStatusAndGetUnsyncedAttributes()
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(
@@ -2362,7 +2410,8 @@ extension PurchasesOrchestrator {
             unsyncedAttributes: unsyncedAttributes,
             metadata: metadata,
             aadAttributionToken: adServicesToken,
-            storeCountry: transaction.storefront?.countryCode
+            storeCountry: transaction.storefront?.countryCode,
+            transferBehavior: effectiveTransferBehavior
         )
         let purchaseSource: PostReceiptSource = .init(isRestore: self.allowSharingAppStoreAccount,
                                                       initiationSource: initiationSource)
