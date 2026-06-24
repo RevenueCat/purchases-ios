@@ -34,7 +34,7 @@ enum Evaluator {
     /// call it for short-circuit / nested evaluation.
     static func evaluateValue(_ predicate: Value, vars: Value) throws -> Value {
         switch predicate {
-        case .null, .bool, .int, .float, .string:
+        case .null, .undefined, .bool, .int, .float, .string:
             return predicate
 
         case .array(let items):

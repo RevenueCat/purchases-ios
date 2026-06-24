@@ -73,15 +73,16 @@
       "expected": true
     },
     {
-      "id": "and_empty_returns_null",
-      "description": "spec parity: {\"and\": []} returns undefined, which maps to null",
-      "predicate": { "===": [{ "and": [] }, null] },
+      "id": "and_empty_returns_undefined",
+      "description": "json-logic-js reduces {\"and\": []} to undefined: it logs as \"undefined\" and is !== null",
+      "predicate": { "===": [{ "log": { "and": [] } }, null] },
       "variables": {},
-      "expected": true
+      "expected": false,
+      "expectedLogs": ["undefined"]
     },
     {
       "id": "if_empty_and_takes_else_branch",
-      "description": "{\"and\": []} is null (falsy), so the surrounding if selects the else branch",
+      "description": "{\"and\": []} is undefined (falsy), so the surrounding if selects the else branch",
       "predicate": { "===": [{ "if": [{ "and": [] }, "yes", "no"] }, "no"] },
       "variables": {},
       "expected": true
@@ -99,11 +100,12 @@
       "expected": true
     },
     {
-      "id": "or_empty_returns_null",
-      "description": "spec parity: {\"or\": []} returns undefined, which maps to null",
-      "predicate": { "===": [{ "or": [] }, null] },
+      "id": "or_empty_returns_undefined",
+      "description": "json-logic-js reduces {\"or\": []} to undefined: it logs as \"undefined\" and is !== null",
+      "predicate": { "===": [{ "log": { "or": [] } }, null] },
       "variables": {},
-      "expected": true
+      "expected": false,
+      "expectedLogs": ["undefined"]
     },
     {
       "id": "if_three_arg_true_branch",

@@ -76,10 +76,24 @@
     },
     {
       "id": "eq_missing_both_operands_is_true",
-      "description": "two missing operands collapse to null == null, which is true (mirrors JS null == undefined)",
+      "description": "two missing operands stand in for undefined; undefined == undefined is true",
       "predicate": { "==": [] },
       "variables": {},
       "expected": true
+    },
+    {
+      "id": "strict_eq_undefined_equals_undefined",
+      "description": "a missing operand is undefined (not null); {\"and\": []} also yields undefined, so undefined === undefined is true",
+      "predicate": { "===": [{ "and": [] }] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "strict_eq_null_is_not_undefined",
+      "description": "the missing operand is undefined, and null === undefined is false (undefined !== null under strict equality)",
+      "predicate": { "===": [null] },
+      "variables": {},
+      "expected": false
     }
   ]
 }

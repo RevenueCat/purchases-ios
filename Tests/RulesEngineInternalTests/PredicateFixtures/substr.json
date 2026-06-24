@@ -119,6 +119,13 @@
       "predicate": { "===": [{ "substr": ["abcd", 1, { "var": "-Infinity" }] }, ""] },
       "variables": {},
       "expected": true
+    },
+    {
+      "id": "substr_missing_source_stringifies_undefined",
+      "description": "substr is function(source, start, end); a missing source is undefined, which stringifies to \"undefined\" (not \"null\")",
+      "predicate": { "===": [{ "substr": [] }, "undefined"] },
+      "variables": {},
+      "expected": true
     }
   ]
 }

@@ -201,6 +201,20 @@
         ]
       },
       "expected": true
+    },
+    {
+      "id": "map_missing_predicate_elements_strict_not_null",
+      "description": "map is function(scopedData, scopedLogic); a missing predicate is undefined, so apply(undefined, item) yields undefined per element. undefined !== null, so no element strictly equals null",
+      "predicate": { "some": [{ "map": [[1, 2]] }, { "===": [{ "var": "" }, null] }] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "map_missing_predicate_elements_loose_equal_null",
+      "description": "the same undefined elements are loosely equal to null (undefined == null), confirming they are undefined rather than some other value",
+      "predicate": { "all": [{ "map": [[1, 2]] }, { "==": [{ "var": "" }, null] }] },
+      "variables": {},
+      "expected": true
     }
   ]
 }

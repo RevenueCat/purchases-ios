@@ -11,8 +11,10 @@ enum AccessorOperators {
 
     /// `{"var": "subscriber.last_seen_country"}` — look up a (possibly
     /// nested) value by dot-path. `{"var": ["path", default]}` returns
-    /// `default` when the path is missing. `{"var": ""}` returns the entire
-    /// data scope.
+    /// `default` when the path is missing; an `undefined` default is
+    /// coerced to `.null`, mirroring `json-logic-js`'s
+    /// `not_found = (b === undefined) ? null : b`. `{"var": ""}` returns
+    /// the entire data scope.
     ///
     /// Per the JSON Logic spec, the path and default arguments are
     /// recursively evaluated before lookup (e.g.
@@ -29,6 +31,8 @@ enum AccessorOperators {
             return found
         }
         if let defaultValue = defaultValue {
+            // json-logic-js coerces an `undefined` default to `null`.
+            if case .undefined = defaultValue { return .null }
             return defaultValue
         }
         RulesEngine.logger.warn("missing variable: \(path)")
@@ -85,20 +89,44 @@ enum AccessorOperators {
         let needCountValue = evaluated[0]
         let options = evaluated[1]
 
-        guard case .array(let items) = options else {
+        // json-logic-js computes `missing.apply(this, [options])` for the
+        // keys, then reads `options.length` for the threshold. So the key
+        // set and the threshold count come from *different* views of
+        // `options`:
+        //   - array  → its elements are the keys; length = element count
+        //   - string → the *whole string* is a single key; length = its
+        //              UTF-16 code-unit count (matching JS `String.length`),
+        //              so a long string can satisfy a larger threshold while
+        //              only ever contributing one key
+        //   - null   → no keys; `length` is `undefined`, which makes the
+        //              threshold comparison `NaN >= need` (always false), so
+        //              the missing list is returned unconditionally
+        //   - other  → `Function.prototype.apply` throws a `TypeError`
+        let keys: [Value]
+        let total: Int?
+        switch options {
+        case .array(let items):
+            keys = items
+            total = items.count
+        case .string(let string):
+            keys = [.string(string)]
+            total = string.utf16.count
+        case .null, .undefined:
+            keys = []
+            total = nil
+        default:
             throw RulesEngine.EvaluationError.typeMismatch(
-                message: "operator 'missing_some': second argument must be an array of paths, "
+                message: "operator 'missing_some': second argument must be array-like, "
                     + "got \(options)"
             )
         }
-        let total = items.count
 
         // Threshold uses JS `ToNumber` + `>=`. `NaN` and unparseable
         // strings never satisfy; `+Infinity` never satisfies for finite
         // present counts; `-Infinity` always satisfies.
         let need = jsToNumber(needCountValue)
 
-        let missing = try opMissing(args: options, vars: vars)
+        let missing = try opMissing(args: .array(keys), vars: vars)
         let missingCount: Int
         if case .array(let entries) = missing {
             missingCount = entries.count
@@ -106,7 +134,7 @@ enum AccessorOperators {
             missingCount = 0
         }
 
-        if Double(total - missingCount) >= need {
+        if let total, Double(total - missingCount) >= need {
             return .array([])
         }
         return missing
@@ -141,21 +169,29 @@ enum AccessorOperators {
     }
 
     /// Coerce the evaluated path argument to a string per
-    /// `json-logic-js`'s `String(a).split(".")`. `nil`, `.null`, and
-    /// `""` are treated as the empty path, which signals the caller
-    /// to return the entire data scope.
+    /// `json-logic-js`'s `String(a).split(".")`. `nil`, `.null`,
+    /// `.undefined`, and `""` are treated as the empty path, which signals
+    /// the caller to return the entire data scope — matching json-logic-js's
+    /// `typeof a === "undefined" || a === "" || a === null` guard.
     private static func pathSegment(from value: Value?) -> String {
         switch value {
-        case .none, .some(.null):
+        case .none, .some(.null), .some(.undefined):
             return ""
         case .some(let other):
             return jsString(other)
         }
     }
 
+    /// `missing` routes each key through `var`, where `.null`/`.undefined`
+    /// resolve to the full scope (so they are never "missing"). Returning
+    /// `nil` here skips them, matching json-logic-js.
     private static func keyAsPath(_ value: Value) -> String? {
-        if case .null = value { return nil }
-        return jsString(value)
+        switch value {
+        case .null, .undefined:
+            return nil
+        default:
+            return jsString(value)
+        }
     }
 
     /// Resolve `path` the way `var` does. Empty path returns the entire

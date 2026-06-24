@@ -15,6 +15,27 @@
       "expected": true
     },
     {
+      "id": "missing_some_string_options_length_counts_characters_satisfied",
+      "description": "options is the string \"abcde\": json-logic-js checks it as a single (missing) key but uses its character length (5) in the threshold math, so 5 - 1 = 4 meets need=4 and the result is empty",
+      "predicate": { "==": [{ "missing_some": [4, "abcde"] }, ""] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "missing_some_string_options_length_counts_characters_below_threshold",
+      "description": "same string \"abcde\" but need=5 exceeds 5 - 1 = 4, so the single whole-string key \"abcde\" is returned (compared via string coercion)",
+      "predicate": { "==": [{ "missing_some": [5, "abcde"] }, "abcde"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "missing_some_string_options_length_is_utf16_code_units",
+      "description": "json-logic-js uses options.length (UTF-16 code units), so the emoji is one missing key but contributes length 2; 2 - 1 = 1 meets need=1 and the result is empty",
+      "predicate": { "==": [{ "missing_some": [1, "😀"] }, ""] },
+      "variables": {},
+      "expected": true
+    },
+    {
       "id": "missing_some_zero_required_always_satisfied",
       "description": "need=0 means any number of these is fine, so the result is always empty",
       "predicate": { "==": [{ "missing_some": [0, ["a", "b"]] }, ""] },
@@ -40,10 +61,11 @@
       "expected": { "error": "typeMismatch" }
     },
     {
-      "id": "missing_some_non_array_options_is_type_error",
-      "predicate": { "missing_some": [1, "a"] },
+      "id": "missing_some_string_options_treated_as_array_like",
+      "description": "json-logic-js spreads the options string as an array-like arg list (missing.apply), so \"a\" becomes the single key \"a\"; it is missing, so the result is [\"a\"] (compared via string coercion)",
+      "predicate": { "==": [{ "missing_some": [1, "a"] }, "a"] },
       "variables": {},
-      "expected": { "error": "typeMismatch" }
+      "expected": true
     },
     {
       "id": "missing_some_nan_threshold_never_satisfies",
