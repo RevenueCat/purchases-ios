@@ -45,11 +45,11 @@ final class PurchasesOrchestrator {
     private let cachedPurchaseContextByProductID: Atomic<[String: CachedPurchaseContext]> = .init([:])
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
 
-    /// Tracks in-flight `purchase()`-initiated receipt posts, keyed by product identifier.
-    /// A queue-initiated receipt post (`StoreKit.Transaction.updates`) for the same product waits on
-    /// the corresponding signal so the purchase post (which carries offering/paywall attribution)
-    /// reaches the backend first. See `awaitInFlightPurchaseReceiptPostIfNeeded(productIdentifier:)`.
-    private let inFlightPurchaseReceiptPostsByProductID: Atomic<[String: AsyncSignal]> = .init([:])
+    /// Tracks in-flight `purchase()` operations, keyed by product identifier.
+    /// A queue-initiated receipt post (`StoreKit.Transaction.updates`) for the same product awaits the
+    /// corresponding task so the purchase post (which carries offering/paywall attribution) reaches the
+    /// backend first. See `awaitInFlightPurchaseReceiptPostIfNeeded(productIdentifier:)`.
+    private let inFlightPurchasesByProductID: Atomic<[String: Task<PurchaseResultData, Error>]> = .init([:])
     private let isSyncingCachedTransactionMetadata: Atomic<Bool> = .init(false)
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
@@ -715,7 +715,6 @@ final class PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    // swiftlint:disable:next function_body_length cyclomatic_complexity
     func purchase(sk2Product: SK2Product,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
@@ -726,6 +725,50 @@ final class PurchasesOrchestrator {
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil) async throws -> PurchaseResultData {
+        // Run the purchase + receipt post as a task that a concurrent queue-initiated receipt post for
+        // the same product can await, so the attributed purchase post reaches the backend first. The
+        // task is created (and registered) synchronously before the StoreKit purchase begins, so a
+        // transaction reaching `Transaction.updates` mid-purchase will find it.
+        let purchaseTask = Task {
+            try await self.performSK2Purchase(
+                sk2Product: sk2Product,
+                package: package,
+                promotionalOffer: promotionalOffer,
+                winBackOffer: winBackOffer,
+                introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
+                billingPlanType: billingPlanType,
+                promotionalOfferOptions: promotionalOfferOptions,
+                metadata: metadata,
+                paywallEvent: paywallEvent,
+                quantity: quantity
+            )
+        }
+
+        self.inFlightPurchasesByProductID.modify { $0[sk2Product.id] = purchaseTask }
+        defer {
+            self.inFlightPurchasesByProductID.modify { tasks in
+                // Only remove if it's still ours, so a newer concurrent purchase isn't evicted.
+                if tasks[sk2Product.id] == purchaseTask {
+                    tasks.removeValue(forKey: sk2Product.id)
+                }
+            }
+        }
+
+        return try await purchaseTask.value
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    // swiftlint:disable:next function_body_length cyclomatic_complexity
+    private func performSK2Purchase(sk2Product: SK2Product,
+                                    package: Package?,
+                                    promotionalOffer: PromotionalOffer.SignedData? = nil,
+                                    winBackOffer: Product.SubscriptionOffer? = nil,
+                                    introductoryOfferEligibilityJWS: String?,
+                                    billingPlanType: BillingPlanType?,
+                                    promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
+                                    metadata: [String: String]? = nil,
+                                    paywallEvent: PaywallEvent? = nil,
+                                    quantity: Int? = nil) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
         var options: Set<Product.PurchaseOption> = [.simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)]
 
@@ -740,21 +783,6 @@ final class PurchasesOrchestrator {
 
         let startTime = self.dateProvider.now()
         var winBackOfferApplied: Bool = false
-
-        // Register an in-flight purchase before initiating the StoreKit purchase, so a transaction
-        // that reaches `StoreKit.Transaction.updates` before this call returns waits for this
-        // purchase's receipt post (which carries the attribution) to finish first.
-        let purchaseReceiptPostSignal = AsyncSignal()
-        self.inFlightPurchaseReceiptPostsByProductID.modify { $0[sk2Product.id] = purchaseReceiptPostSignal }
-        defer {
-            self.inFlightPurchaseReceiptPostsByProductID.modify { signals in
-                // Only remove if it's still ours, so a newer concurrent purchase isn't evicted.
-                if signals[sk2Product.id] === purchaseReceiptPostSignal {
-                    signals.removeValue(forKey: sk2Product.id)
-                }
-            }
-            purchaseReceiptPostSignal.signal()
-        }
 
         do {
             if let signedData = promotionalOffer {
@@ -1020,12 +1048,12 @@ final class PurchasesOrchestrator {
     /// Waits for an in-flight `purchase()`-initiated receipt post for the given product to finish, if any.
     /// Used to order a queue-initiated receipt post after the attributed purchase post for the same product.
     private func awaitInFlightPurchaseReceiptPostIfNeeded(productIdentifier: String) async {
-        guard let signal = self.inFlightPurchaseReceiptPostsByProductID.value[productIdentifier] else {
+        guard let purchaseTask = self.inFlightPurchasesByProductID.value[productIdentifier] else {
             return
         }
 
         Logger.debug(Strings.purchase.sk2_queue_receipt_post_waiting_for_purchase(productID: productIdentifier))
-        await signal.wait()
+        _ = await purchaseTask.result
     }
 
     func postEventsIfNeeded(delayed: Bool = false) {

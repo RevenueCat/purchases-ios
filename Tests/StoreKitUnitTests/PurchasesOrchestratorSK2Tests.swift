@@ -1738,7 +1738,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         )
 
         // Defer the purchase-initiated receipt post so it stays in flight while we trigger the queue post.
-        let gate = AsyncSignal()
+        let gate = MockAsyncGate()
         self.backend.deferredPostReceiptCompletionGate.value = gate
 
         let purchaseTask = Task {
@@ -1753,7 +1753,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             )
         }
 
-        // Once the purchase post has reached the backend, the in-flight purchase is registered.
+        // Wait until the purchase post has reached the backend (the in-flight purchase task is
+        // registered synchronously when `purchase()` is called, and is now blocked on this post).
         expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(1))
         expect(self.backend.invokedPostReceiptDataParametersList.first?.postReceiptSource.initiationSource) == .purchase
 
@@ -1771,7 +1772,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptDataCount) == 1
 
         // Releasing the purchase post lets the purchase finish, which unblocks the queue post.
-        gate.signal()
+        gate.open()
 
         _ = try await purchaseTask.value
         try await queueTask.value
