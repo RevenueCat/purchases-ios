@@ -109,9 +109,48 @@ extension RemoteConfiguration {
             }
         }
 
+        // JSONDecoder.default converts `blob_ref` to `blobRef` before matching dynamic keys.
         private static let blobRefKey = DynamicCodingKey("blobRef")
         private static let prefetchKey = DynamicCodingKey("prefetch")
 
+    }
+
+}
+
+/// Opaque `/v2/config` manifest token returned by the backend and replayed verbatim by the SDK.
+///
+/// The SDK intentionally does not parse or validate this value. The backend owns the token format and
+/// treats malformed or stale tokens as an empty manifest.
+struct RemoteConfigManifestToken: Codable, Equatable {
+
+    let rawValue: String
+
+    init(_ rawValue: String) {
+        self.rawValue = rawValue
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        self.init(try container.decode(String.self))
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.rawValue)
+    }
+
+}
+
+extension RemoteConfiguration.Topics {
+
+    /// The blob refs each changed topic's items reference, keyed by topic name.
+    ///
+    /// Inline-only changed topics are represented by an empty list so future syncs can retain the
+    /// topic while still knowing it does not keep any blobs alive.
+    var topicBlobRefs: [String: [String]] {
+        return self.entries.mapValues { topic in
+            topic.values.compactMap(\.blobRef).sorted()
+        }
     }
 
 }
