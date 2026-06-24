@@ -46,7 +46,7 @@ struct SystemWeightedSourceRandomizer: WeightedSourceRandomizer {
 class WeightedSourceSelector<Source: WeightedSource> {
 
     private let orderedSources: [Source]
-    private var currentIndex: Int = 0
+    private var iterator: IndexingIterator<[Source]>
 
     /// The source currently in use, or `nil` if there are no sources left to try.
     private(set) var current: Source?
@@ -56,27 +56,21 @@ class WeightedSourceSelector<Source: WeightedSource> {
         randomizer: WeightedSourceRandomizer = SystemWeightedSourceRandomizer()
     ) {
         self.orderedSources = Self.computeOrder(of: sources, randomizer: randomizer)
-        self.current = self.orderedSources.first
+        self.iterator = self.orderedSources.makeIterator()
+        self.current = self.iterator.next()
     }
 
     /// Moves to the next source in the fallback order. Returns `nil` if none remain.
     @discardableResult
     func advance() -> Source? {
-        let nextIndex = self.currentIndex + 1
-        if nextIndex < self.orderedSources.count {
-            self.currentIndex = nextIndex
-            self.current = self.orderedSources[nextIndex]
-        } else {
-            self.currentIndex = self.orderedSources.count
-            self.current = nil
-        }
+        self.current = self.iterator.next()
         return self.current
     }
 
     /// Rewinds to the first source in the fallback order.
     func reset() {
-        self.currentIndex = 0
-        self.current = self.orderedSources.first
+        self.iterator = self.orderedSources.makeIterator()
+        self.current = self.iterator.next()
     }
 
     private static func computeOrder(
