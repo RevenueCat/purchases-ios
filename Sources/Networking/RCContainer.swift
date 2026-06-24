@@ -60,11 +60,3 @@ struct RCContainer {
     }
 
 }
-
-extension RCContainer: HTTPResponseBody {
-
-    static func create(with data: Data) throws -> RCContainer {
-        return try .init(data: data)
-    }
-
-}

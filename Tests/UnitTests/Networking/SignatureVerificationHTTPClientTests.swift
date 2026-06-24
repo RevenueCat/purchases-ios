@@ -356,7 +356,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
         let request = Self.remoteConfigRequest
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(request, completionHandler: completion)
         }
 
@@ -382,7 +382,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: Self.rcContainer())
         self.signing.stubbedVerificationResult = true
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -398,7 +398,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           statusCode: .noContent)
         self.signing.stubbedVerificationResult = true
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -419,7 +419,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: Data(),
                           statusCode: .noContent)
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -436,7 +436,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: Data(),
                           statusCode: .noContent)
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -524,7 +524,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: Self.rcContainer())
         self.signing.stubbedVerificationResult = true
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -541,7 +541,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: Self.rcContainer())
         self.signing.stubbedVerificationResult = true
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -561,7 +561,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: Self.rcContainer())
         self.signing.stubbedVerificationResult = false
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -578,7 +578,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: Self.rcContainer())
         self.signing.stubbedVerificationResult = false
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -604,7 +604,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: body)
         self.signing.stubbedVerificationResult = true
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -632,7 +632,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: body)
         self.signing.stubbedVerificationResult = true
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 

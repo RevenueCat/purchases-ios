@@ -76,10 +76,10 @@ enum RemoteConfigFetchResult {
         }
     }
 
-    init(response: VerifiedHTTPResponse<Data?>) throws {
-        if let body = response.body {
-            self = try .container(
-                RemoteConfigContainer(data: body),
+    init(response: VerifiedHTTPResponse<RemoteConfigContainer?>) {
+        if let container = response.body {
+            self = .container(
+                container,
                 verificationResult: response.verificationResult
             )
         } else {
@@ -118,6 +118,14 @@ struct RemoteConfigContainer {
             container.elements.dropFirst().map { ($0.checksum, $0) },
             uniquingKeysWith: { _, last in last }
         )
+    }
+
+}
+
+extension RemoteConfigContainer: HTTPResponseBody {
+
+    static func create(with data: Data) throws -> RemoteConfigContainer {
+        return try .init(data: data)
     }
 
 }
