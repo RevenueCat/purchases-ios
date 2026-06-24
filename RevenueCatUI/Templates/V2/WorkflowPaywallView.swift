@@ -449,7 +449,11 @@ struct WorkflowPaywallView: View {
             // Gates paywall events: steps tagged as paywalls report; untagged steps fall back to the
             // single-step-fallback rule below.
             workflowScreenType: page.screenType,
-            isWorkflowSingleStepFallback: page.isSingleStepFallback
+            isWorkflowSingleStepFallback: page.isSingleStepFallback,
+            // Carried into PaywallEvent.Data so a purchase started on this step is attributed via
+            // presented_workflow_id / presented_step_id in the post-receipt body.
+            workflowId: self.context.workflow.id,
+            stepId: page.stepId
         )
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
         .environment(\.workflowTriggerAction, { componentId in

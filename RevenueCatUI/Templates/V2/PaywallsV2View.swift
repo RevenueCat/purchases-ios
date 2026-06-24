@@ -100,6 +100,11 @@ struct PaywallsV2View: View {
     /// steps (`nil` `screen_type`), where it restores the structural rule of reporting on the fallback
     /// step alone. Irrelevant for standalone paywalls and tagged steps.
     private let isWorkflowSingleStepFallback: Bool
+    /// The workflow and step identifiers this paywall belongs to, carried into `PaywallEvent.Data` so a
+    /// purchase started here is attributed via `presented_workflow_id` / `presented_step_id` in the
+    /// post-receipt body. `nil` for standalone paywalls.
+    private let workflowId: String?
+    private let stepId: String?
     @State
     private var didFinishEligibilityCheck: Bool = {
         #if DEBUG
@@ -136,7 +141,9 @@ struct PaywallsV2View: View {
         selectedPackageContextOverride: PackageContext? = nil,
         isActiveWorkflowPage: Bool? = nil,
         workflowScreenType: [String]? = nil,
-        isWorkflowSingleStepFallback: Bool = false
+        isWorkflowSingleStepFallback: Bool = false,
+        workflowId: String? = nil,
+        stepId: String? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
@@ -158,6 +165,8 @@ struct PaywallsV2View: View {
         self.isActiveWorkflowPage = isActiveWorkflowPage
         self.workflowScreenType = workflowScreenType
         self.isWorkflowSingleStepFallback = isWorkflowSingleStepFallback
+        self.workflowId = workflowId
+        self.stepId = stepId
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
         ))
