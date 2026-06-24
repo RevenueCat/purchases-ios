@@ -413,7 +413,6 @@
 		37E35C8515C5E2D01B0AF5C1 /* Strings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3507939634ED5A9280544 /* Strings.swift */; };
 		3B41364A5DFC4039B3026F40 /* RemoteConfigAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A2DB969D72432B87F48C5F /* RemoteConfigAPI.swift */; };
 		FEDA000000000000000000B2 /* WeightedSourceSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000A2 /* WeightedSourceSelector.swift */; };
-		FEDA000000000000000000B3 /* RemoteConfigSources.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000A3 /* RemoteConfigSources.swift */; };
 		3DD6C3CC5EC6B69E9DA9571D /* Evaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78483ACCDD62ABD40AF8827 /* Evaluator.swift */; };
 		424117A427E05CDDE5CAB803 /* LogicOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EF5BB0DF2CED359AB0089B4 /* LogicOperators.swift */; };
 		42F1DF385E3C1F9903A07FBF /* ProductsFetcherSK1.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB3CBAA73855779FE828CE2 /* ProductsFetcherSK1.swift */; };
@@ -2902,7 +2901,6 @@
 		F1A05E9E1B04B32B832DB194 /* PaywallCountdownComponent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaywallCountdownComponent.swift; sourceTree = "<group>"; };
 		F3A2DB969D72432B87F48C5F /* RemoteConfigAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigAPI.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000A2 /* WeightedSourceSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightedSourceSelector.swift; sourceTree = "<group>"; };
-		FEDA000000000000000000A3 /* RemoteConfigSources.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigSources.swift; sourceTree = "<group>"; };
 		F468C7BCEB786BEC80277ECA /* WorkflowNavigatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowNavigatorTests.swift; sourceTree = "<group>"; };
 		F516BD28282434070083480B /* StoreKit2StorefrontListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2StorefrontListener.swift; sourceTree = "<group>"; };
 		F516BD322828FDD90083480B /* StoreKit2StorefrontListenerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2StorefrontListenerTests.swift; sourceTree = "<group>"; };
@@ -4532,7 +4530,6 @@
 				A1B2C3D42FE1000000000008 /* RCContainer+Parser.swift */,
 				F3A2DB969D72432B87F48C5F /* RemoteConfigAPI.swift */,
 				FEDA000000000000000000A2 /* WeightedSourceSelector.swift */,
-				FEDA000000000000000000A3 /* RemoteConfigSources.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -7150,7 +7147,6 @@
 				DB3395E12F840AA60079250C /* WorkflowsAPI.swift in Sources */,
 				3B41364A5DFC4039B3026F40 /* RemoteConfigAPI.swift in Sources */,
 				FEDA000000000000000000B2 /* WeightedSourceSelector.swift in Sources */,
-				FEDA000000000000000000B3 /* RemoteConfigSources.swift in Sources */,
 				E6B064598F674333A29E0781 /* RemoteConfigCallback.swift in Sources */,
 				A6CC43904EBD4860BFD2BD85 /* GetRemoteConfigOperation.swift in Sources */,
 				D62A9C83BFD14E5FA0452CC7 /* RemoteConfiguration.swift in Sources */,
