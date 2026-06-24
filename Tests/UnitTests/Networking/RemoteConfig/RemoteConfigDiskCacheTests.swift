@@ -131,6 +131,16 @@ final class RemoteConfigDiskCacheTests: TestCase {
         expect(FileManager.default.fileExists(atPath: self.fileURL.path)) == true
     }
 
+    func testWriteLogsWhenDirectoryURLIsUnavailable() {
+        self.cache = RemoteConfigDiskCache(directoryURL: nil)
+
+        self.cache.write(PersistedRemoteConfiguration(
+            manifest: RemoteConfigManifestToken("v1.1710000100.sources:etag1")
+        ))
+
+        self.logger.verifyMessageWasLogged(Strings.remoteConfig.cacheURLNotAvailable, level: .error)
+    }
+
     func testWriteOverwritesPreviousSnapshot() throws {
         self.cache.write(PersistedRemoteConfiguration(
             domain: "app",
