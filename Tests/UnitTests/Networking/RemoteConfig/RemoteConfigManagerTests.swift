@@ -335,6 +335,66 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobStore.invokedWriteParameters?.data) == blob
     }
 
+    func testContainerResponseCachesOnlyReferencedInlineContentElements() throws {
+        let referencedBlob = "referenced blob".asData
+        let unreferencedBlob = "unreferenced blob".asData
+        let referencedBlobRef = RCContainerTestData.blobRef(for: referencedBlob)
+        let unreferencedBlobRef = RCContainerTestData.blobRef(for: unreferencedBlob)
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "\(referencedBlobRef)" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.container(
+                try Self.container(config: response, contentElements: [referencedBlob, unreferencedBlob]),
+                verificationResult: .verified
+            ))
+        )
+
+        expect(self.blobStore.invokedWriteParametersList.map(\.ref)) == [referencedBlobRef]
+        expect(self.blobStore.invokedWriteParametersList.map(\.data)) == [referencedBlob]
+        expect(self.blobStore.invokedWriteParametersList.map(\.ref)).toNot(contain(unreferencedBlobRef))
+    }
+
+    func testContainerResponseCachesInlineContentElementReferencedOnlyByPrefetchBlobs() throws {
+        let prefetchBlob = "prefetch blob".asData
+        let prefetchBlobRef = RCContainerTestData.blobRef(for: prefetchBlob)
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "prefetch_blobs": ["\(prefetchBlobRef)"],
+          "topics": {
+            "sources": {
+              "api": { "url": "https://api.revenuecat.com" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.container(
+                try Self.container(config: response, contentElements: [prefetchBlob]),
+                verificationResult: .verified
+            ))
+        )
+
+        expect(self.blobStore.invokedWriteParameters?.ref) == prefetchBlobRef
+        expect(self.blobStore.invokedWriteParameters?.data) == prefetchBlob
+    }
+
     func testContainerResponseCachesOnlyValidInlineContentElements() throws {
         let validBlob = "valid blob".asData
         let invalidBlob = "invalid blob".asData
@@ -423,7 +483,7 @@ final class RemoteConfigManagerTests: TestCase {
         let newRef = RCContainerTestData.blobRef(for: "new".asData)
         self.diskCache.stubbedWriteResult = false
         self.diskCache.stubbedRead = PersistedRemoteConfiguration(
-            manifest: RemoteConfigManifestToken("v1.1710000100.sources:etag1"),
+            manifest: "v1.1710000100.sources:etag1",
             topicBlobRefs: ["sources": [oldRef]]
         )
         let response = """

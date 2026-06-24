@@ -148,7 +148,10 @@ private extension RemoteConfigManager {
         ))
     }
 
-    /// Returns the topic refs that should be represented after applying this config response.
+    /// Returns the topic blob refs that should be persisted after this response is applied.
+    ///
+    /// Changed topics overwrite previous refs, unchanged active topics keep previous refs, and inactive topics
+    /// are removed.
     func postSyncTopicBlobRefs(
         previous: PersistedRemoteConfiguration?,
         response: RemoteConfiguration
@@ -158,7 +161,10 @@ private extension RemoteConfigManager {
             .filter { topic, _ in response.activeTopics.contains(topic) }
     }
 
-    /// Returns the refs that may remain cached after this config response is persisted.
+    /// Returns the post-sync set of blob refs the SDK should keep locally.
+    ///
+    /// This includes requested prefetch blobs plus blob refs used by active topics after merging changed
+    /// response topics with previously persisted unchanged topics.
     func postSyncReferencedBlobRefs(
         response: RemoteConfiguration,
         postSyncTopicBlobRefs: [String: [String]]
@@ -166,9 +172,9 @@ private extension RemoteConfigManager {
         return Set(response.prefetchBlobs).union(postSyncTopicBlobRefs.values.flatMap { $0 })
     }
 
-    /// Writes valid inline content elements into the content-addressed blob store.
+    /// Writes valid inline content elements that are referenced by this config response.
     ///
-    /// Invalid content elements are skipped because inline blobs are opportunistic cache entries.
+    /// Invalid or unreferenced content elements are skipped because inline blobs are opportunistic cache entries.
     func extractInlineBlobs(
         from container: RemoteConfigContainer,
         keepingOnly referencedBlobRefs: Set<String>
