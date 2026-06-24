@@ -169,7 +169,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
 private extension RemoteConfigDiskCacheTests {
 
     var fileURL: URL {
-        return self.directoryURL.appendingPathComponent("remoteConfig.json", isDirectory: false)
+        return self.directoryURL.appendingPathComponent("remote_config.json", isDirectory: false)
     }
 
 }

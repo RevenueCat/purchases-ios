@@ -119,8 +119,8 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
 private extension RemoteConfigDiskCache {
 
-    static let directoryName = "RemoteConfig"
-    static let fileName = "remoteConfig.json"
+    static let directoryName = "remote_config"
+    static let fileName = "remote_config.json"
 
     static var defaultDirectoryURL: URL? {
         #if os(tvOS)
