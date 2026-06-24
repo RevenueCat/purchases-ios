@@ -418,6 +418,36 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.diskCache.invokedWriteParameter?.prefetchedBlobRefs) == [cachedRef]
     }
 
+    func testContainerResponseDoesNotPruneBlobStoreWhenCacheWriteFails() throws {
+        let oldRef = RCContainerTestData.blobRef(for: "old".asData)
+        let newRef = RCContainerTestData.blobRef(for: "new".asData)
+        self.diskCache.stubbedWriteResult = false
+        self.diskCache.stubbedRead = PersistedRemoteConfiguration(
+            manifest: RemoteConfigManifestToken("v1.1710000100.sources:etag1"),
+            topicBlobRefs: ["sources": [oldRef]]
+        )
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "\(newRef)" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.container(try Self.container(config: response), verificationResult: .verified))
+        )
+
+        expect(self.diskCache.invokedWriteCount) == 1
+        expect(self.blobStore.invokedRetainOnlyCount) == 0
+    }
+
 }
 
 private extension RemoteConfigManagerTests {
@@ -503,6 +533,7 @@ private final class MockRemoteConfigAPI: RemoteConfigAPIType {
 private final class MockRemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
     var stubbedRead: PersistedRemoteConfiguration?
+    var stubbedWriteResult = true
 
     private(set) var invokedWriteCount = 0
     private(set) var invokedWriteParameter: PersistedRemoteConfiguration?
@@ -515,7 +546,8 @@ private final class MockRemoteConfigDiskCache: RemoteConfigDiskCacheType {
     func write(_ configuration: PersistedRemoteConfiguration) -> Bool {
         self.invokedWriteCount += 1
         self.invokedWriteParameter = configuration
-        return true
+
+        return self.stubbedWriteResult
     }
 
 }
