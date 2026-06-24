@@ -883,14 +883,15 @@ extension SamplePaywallLoader {
         (identifier: "Cat Paywall (Bundled)", json: BundledComponentPaywallJSON.cat)
     ]
 
-    /// Builds an offering for every embedded component paywall JSON that decodes successfully.
+    /// Builds an offering for every embedded component paywall JSON that decodes successfully,
+    /// plus the programmatically-built WebView capability samples.
     func bundledComponentOfferings() -> [Offering] {
-        return Self.bundledComponentPaywalls.compactMap { paywall in
-            guard let data = Self.componentsData(fromJSON: paywall.json) else {
-                return nil
+        let jsonOfferings = Self.bundledComponentPaywalls.compactMap { paywall in
+            Self.componentsData(fromJSON: paywall.json).map {
+                self.offering(identifier: paywall.identifier, with: $0)
             }
-            return self.offering(identifier: paywall.identifier, with: data)
         }
+        return jsonOfferings + self.webViewCapabilityOfferings()
     }
 
     private func offering(identifier: String, with components: PaywallComponentsData) -> Offering {
@@ -950,6 +951,110 @@ extension SamplePaywallLoader {
                 "VBPJOj-Wkx": .string("https://www.revenuecat.com/privacy")
             ]
         ]
+
+    // MARK: - WebView capability samples
+
+    /// A WebView capability test paywall: a title plus a single `web_view` component pointing at the
+    /// matching sample page on https://alexrepty.github.io/capabilities, with `capabilities` declared.
+    private struct WebViewSample {
+        /// Offering identifier shown in the tester list.
+        let offeringID: String
+        /// The `web_view` component id. Must equal the `?cid=` query value so bridge messages validate.
+        let cid: String
+        /// Heading shown above the web view.
+        let title: String
+        /// Sample page file name under `/capabilities`.
+        let page: String
+        /// Declared capabilities (nil grants nothing extra and leaves network unrestricted).
+        let capabilities: PaywallComponent.WebViewCapabilities?
+    }
+
+    private static let webViewSamples: [WebViewSample] = [
+        .init(offeringID: "WebView: Network (open)", cid: "cap_network_open",
+              title: "Network · open", page: "network.html",
+              capabilities: nil),
+        .init(offeringID: "WebView: Network (restricted)", cid: "cap_network_restricted",
+              title: "Network · restricted to alexrepty.github.io", page: "network.html",
+              capabilities: .init(networkAccess: .init(allowedDomains: ["alexrepty.github.io"]))),
+        .init(offeringID: "WebView: Camera (granted)", cid: "cap_camera_granted",
+              title: "Camera · granted", page: "camera.html",
+              capabilities: .init(camera: true)),
+        .init(offeringID: "WebView: Camera (denied)", cid: "cap_camera_denied",
+              title: "Camera · denied", page: "camera.html",
+              capabilities: .init(camera: false)),
+        .init(offeringID: "WebView: Microphone (granted)", cid: "cap_mic_granted",
+              title: "Microphone · granted", page: "microphone.html",
+              capabilities: .init(microphone: true)),
+        .init(offeringID: "WebView: Microphone (denied)", cid: "cap_mic_denied",
+              title: "Microphone · denied", page: "microphone.html",
+              capabilities: .init(microphone: false)),
+        .init(offeringID: "WebView: Clipboard (granted)", cid: "cap_clipboard_granted",
+              title: "Clipboard · granted", page: "clipboard.html",
+              capabilities: .init(clipboardWrite: true, clipboardRead: true)),
+        .init(offeringID: "WebView: Clipboard (denied)", cid: "cap_clipboard_denied",
+              title: "Clipboard · denied", page: "clipboard.html",
+              capabilities: .init(clipboardWrite: false, clipboardRead: false)),
+        .init(offeringID: "WebView: Geolocation (granted)", cid: "cap_geo_granted",
+              title: "Geolocation · granted", page: "geolocation.html",
+              capabilities: .init(geolocation: true)),
+        .init(offeringID: "WebView: Geolocation (denied)", cid: "cap_geo_denied",
+              title: "Geolocation · denied", page: "geolocation.html",
+              capabilities: .init(geolocation: false)),
+        .init(offeringID: "WebView: JS Bridge", cid: "cap_bridge",
+              title: "JS bridge", page: "bridge.html",
+              capabilities: nil)
+    ]
+
+    private static let webViewSampleBaseURL = "https://alexrepty.github.io/capabilities"
+
+    /// Builds one offering per `WebViewSample`, each a minimal V2 paywall wrapping a `web_view`.
+    func webViewCapabilityOfferings() -> [Offering] {
+        return Self.webViewSamples.map { self.offering(for: $0) }
+    }
+
+    private func offering(for sample: WebViewSample) -> Offering {
+        let titleLid = "title"
+        let url = "\(Self.webViewSampleBaseURL)/\(sample.page)?cid=\(sample.cid)"
+
+        let stack = PaywallComponent.StackComponent(
+            components: [
+                .text(.init(
+                    text: titleLid,
+                    fontWeight: .bold,
+                    color: .init(light: .hex("#000000")),
+                    size: .init(width: .fill, height: .fit),
+                    fontSize: 18,
+                    horizontalAlignment: .center
+                )),
+                .webView(.init(
+                    id: sample.cid,
+                    url: url,
+                    size: .init(width: .fill, height: .fill),
+                    capabilities: sample.capabilities
+                ))
+            ],
+            dimension: .vertical(.center, .start),
+            size: .init(width: .fill, height: .fill),
+            spacing: 12,
+            backgroundColor: .init(light: .hex("#ffffff")),
+            padding: .init(top: 60, bottom: 24, leading: 16, trailing: 16)
+        )
+
+        let data = PaywallComponentsData(
+            templateName: "components",
+            assetBaseURL: Self.paywallAssetBaseURL,
+            componentsConfig: .init(base: .init(
+                stack: stack,
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: ["en_US": [titleLid: .string(sample.title)]],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+
+        return self.offering(identifier: sample.offeringID, with: data)
+    }
 
 }
 
