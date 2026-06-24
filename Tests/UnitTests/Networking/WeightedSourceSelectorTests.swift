@@ -103,13 +103,31 @@ final class WeightedSourceSelectorTests: TestCase {
     }
 
     func testAdvanceWalksTiedSourcesByWeightExcludingTried() {
-        // sourceA(30) chosen first via target 0; advancing then re-rolls among the remaining ([b]).
+        // sourceA(30) is drawn first via target 0; the rest of the tier is precomputed, so advancing
+        // walks to the only remaining source (b) without consuming more randomness.
         let sourceA = TestSource(id: "a", priority: 0, weight: 30)
         let sourceB = TestSource(id: "b", priority: 0, weight: 70)
-        let selector = WeightedSourceSelector(sources: [sourceA, sourceB], randomizer: FakeRandomizer(0, 0))
+        let selector = WeightedSourceSelector(sources: [sourceA, sourceB], randomizer: FakeRandomizer(0))
 
         expect(selector.current?.id) == "a"
         expect(selector.advance()?.id) == "b"
+        expect(selector.advance()).to(beNil())
+    }
+
+    func testAdvanceWalksFullWeightedOrderWithinTier() {
+        // Three tied sources. The eager order is built by drawing without replacement: target 70
+        // skips a(30) and lands on b, then among the remaining [a, c] target 0 picks a, leaving c.
+        let sourceA = TestSource(id: "a", priority: 0, weight: 30)
+        let sourceB = TestSource(id: "b", priority: 0, weight: 70)
+        let sourceC = TestSource(id: "c", priority: 0, weight: 50)
+        let selector = WeightedSourceSelector(
+            sources: [sourceA, sourceB, sourceC],
+            randomizer: FakeRandomizer(70, 0)
+        )
+
+        expect(selector.current?.id) == "b"
+        expect(selector.advance()?.id) == "a"
+        expect(selector.advance()?.id) == "c"
         expect(selector.advance()).to(beNil())
     }
 
@@ -144,7 +162,7 @@ private struct TestSource: WeightedSource, Equatable {
 
 }
 
-/// Returns queued values from `nextInt(upperBound:)`, clamped into range, repeating the last value
+/// Returns queued values from `randomInt(below:)`, clamped into range, repeating the last value
 /// once the queue is drained. Mirrors the Android `FakeRandom`/`QueuedRandom` test helpers.
 private final class FakeRandomizer: WeightedSourceRandomizer {
 
@@ -155,10 +173,10 @@ private final class FakeRandomizer: WeightedSourceRandomizer {
         self.values = values.isEmpty ? [0] : values
     }
 
-    func nextInt(upperBound: Int) -> Int {
+    func randomInt(below bound: Int) -> Int {
         let value = self.index < self.values.count ? self.values[self.index] : self.values.last!
         self.index += 1
-        return min(max(0, value), upperBound - 1)
+        return min(max(0, value), bound - 1)
     }
 
 }

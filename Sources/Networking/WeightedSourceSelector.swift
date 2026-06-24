@@ -7,18 +7,11 @@
 
 import Foundation
 
-/// A source the SDK can fetch a resource from (e.g. an API or blob/asset source), carrying the
-/// ordering metadata used to choose between alternatives.
-///
-/// Selection only depends on `id`, `priority` and `weight`; concrete sources add their own
-/// connection details (an API `url`, a blob `urlFormat`, etc.) that the selector never inspects.
+/// A source the SDK can fetch a resource from, carrying the metadata used to choose between
+/// alternatives.
 protocol WeightedSource {
 
-    /// Stable identifier used to exclude an already-tried source from later selections.
-    var id: String { get }
-
-    /// Higher values are preferred. The selector always exhausts the highest available priority
-    /// tier before considering a lower one.
+    /// Higher values are preferred. A tier is exhausted before a lower one is considered.
     var priority: Int { get }
 
     /// Relative likelihood of being chosen among sources tied at the same `priority`.
@@ -26,105 +19,113 @@ protocol WeightedSource {
 
 }
 
-/// Provides the random integers used to break weight ties. Abstracted so tests can make selection
-/// deterministic, mirroring the `Random` injection used by the Android SDK.
+/// Provides the random integers used to break weight ties. Abstracted so tests can be deterministic.
 protocol WeightedSourceRandomizer {
 
-    /// Returns a value in `0..<upperBound`. `upperBound` is always strictly positive.
-    func nextInt(upperBound: Int) -> Int
+    /// Returns a fresh random value in `0..<bound`. `bound` is always strictly positive.
+    func randomInt(below bound: Int) -> Int
 
 }
 
 struct SystemWeightedSourceRandomizer: WeightedSourceRandomizer {
 
-    func nextInt(upperBound: Int) -> Int {
-        return Int.random(in: 0..<upperBound)
+    func randomInt(below bound: Int) -> Int {
+        return Int.random(in: 0..<bound)
     }
 
 }
 
-/// Picks which `Source` to use from a fixed list, and keeps track of the current choice so callers
-/// can read it at any time and advance to the next alternative when the current one is unusable.
+/// Picks which `Source` to use and exposes `current` so callers can advance through the fallback
+/// order when a source is unusable.
 ///
-/// Selection rules:
-/// - The highest `priority` among the not-yet-tried sources wins.
-/// - Ties at that priority are broken by weighted random using `weight`. Negative weights are
-///   treated as `0`; if every candidate weighs `0`, the choice is uniform random.
+/// The order is computed up front: priority tiers from highest to lowest, each tier arranged into a
+/// weight-biased random order. Negative weights are treated as `0`; when a group's weights sum to
+/// `0`, the next source is drawn uniformly at random.
 ///
-/// This type is a pure selection state machine: it does not fetch anything, classify failures, or
-/// decide *when* to advance. Those concerns belong to the caller. A single instance models the
-/// global selection state for one resource kind (one for API sources, one for blob sources).
-///
-/// - Note: This type is not thread-safe. Callers that share an instance across concurrent tasks
-///   must serialize access to it.
+/// - Note: Not thread-safe. Callers sharing an instance must serialize access.
 class WeightedSourceSelector<Source: WeightedSource> {
 
-    private let sources: [Source]
-    private let randomizer: WeightedSourceRandomizer
+    private let orderedSources: [Source]
+    private var currentIndex: Int = 0
 
-    /// Identifiers of sources already returned as `current` during the current selection cycle, and
-    /// therefore excluded from future picks until `reset()` is called.
-    private var triedIDs: Set<String> = []
-
-    /// The source currently in use, or `nil` if `sources` is empty or every source has been tried.
-    /// Reading this never changes the selection.
+    /// The source currently in use, or `nil` if there are no sources left to try.
     private(set) var current: Source?
 
     init(
         sources: [Source],
         randomizer: WeightedSourceRandomizer = SystemWeightedSourceRandomizer()
     ) {
-        self.sources = sources
-        self.randomizer = randomizer
-        self.current = self.select(excluding: self.triedIDs)
+        self.orderedSources = Self.computeOrder(of: sources, randomizer: randomizer)
+        self.current = self.orderedSources.first
     }
 
-    /// Marks the `current` source as tried and selects the next best alternative, excluding every
-    /// source already tried in this cycle.
-    ///
-    /// - Returns: The newly selected `current`, or `nil` if no untried sources remain.
+    /// Moves to the next source in the fallback order. Returns `nil` if none remain.
     @discardableResult
     func advance() -> Source? {
-        if let current = self.current {
-            self.triedIDs.insert(current.id)
+        let nextIndex = self.currentIndex + 1
+        if nextIndex < self.orderedSources.count {
+            self.currentIndex = nextIndex
+            self.current = self.orderedSources[nextIndex]
+        } else {
+            self.currentIndex = self.orderedSources.count
+            self.current = nil
         }
-        self.current = self.select(excluding: self.triedIDs)
         return self.current
     }
 
-    /// Clears the tried-source history and re-selects from the full list, returning to the initial
-    /// selection behavior. Use when the selection cycle should start over (e.g. the source list
-    /// changed, or a previously-failing source should be reconsidered).
+    /// Rewinds to the first source in the fallback order.
     func reset() {
-        self.triedIDs.removeAll()
-        self.current = self.select(excluding: self.triedIDs)
+        self.currentIndex = 0
+        self.current = self.orderedSources.first
     }
 
-    private func select(excluding excludedIDs: Set<String>) -> Source? {
-        let candidates = self.sources.filter { !excludedIDs.contains($0.id) }
-        guard let highestPriority = candidates.map(\.priority).max() else { return nil }
+    private static func computeOrder(
+        of sources: [Source],
+        randomizer: WeightedSourceRandomizer
+    ) -> [Source] {
+        let sourcesByPriority = Dictionary(grouping: sources, by: { $0.priority })
+        return sourcesByPriority.keys
+            .sorted(by: >)
+            .flatMap { weightedShuffle(sourcesByPriority[$0] ?? [], randomizer: randomizer) }
+    }
 
-        let topPriority = candidates.filter { $0.priority == highestPriority }
-        guard topPriority.count > 1 else { return topPriority.first }
+    private static func weightedShuffle(
+        _ tier: [Source],
+        randomizer: WeightedSourceRandomizer
+    ) -> [Source] {
+        guard tier.count > 1 else { return tier }
 
-        let weights = topPriority.map { max(0, $0.weight) }
+        var remaining = tier
+        var ordered: [Source] = []
+        ordered.reserveCapacity(remaining.count)
+        while remaining.count > 1 {
+            ordered.append(remaining.remove(at: weightedPickIndex(in: remaining, randomizer: randomizer)))
+        }
+        ordered.append(contentsOf: remaining)
+        return ordered
+    }
+
+    private static func weightedPickIndex(
+        in sources: [Source],
+        randomizer: WeightedSourceRandomizer
+    ) -> Int {
+        let weights = sources.map { max(0, $0.weight) }
         let totalWeight = weights.reduce(0, +)
 
         guard totalWeight > 0 else {
-            return topPriority[self.randomizer.nextInt(upperBound: topPriority.count)]
+            return randomizer.randomInt(below: sources.count)
         }
 
-        let target = self.randomizer.nextInt(upperBound: totalWeight)
+        let target = randomizer.randomInt(below: totalWeight)
         var cumulative = 0
         for (index, weight) in weights.enumerated() {
             cumulative += weight
             if target < cumulative {
-                return topPriority[index]
+                return index
             }
         }
 
-        // Unreachable: `target < totalWeight` guarantees a match above. Returns last candidate defensively.
-        return topPriority.last
+        return sources.count - 1
     }
 
 }
