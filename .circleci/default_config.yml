@@ -1765,8 +1765,13 @@ jobs:
             }
 
   installation-tests-carthage:
+    parameters:
+      xcode_version:
+        type: string
+        default: "16.4"
     executor:
       name: macos-executor-large
+      xcode_version: << parameters.xcode_version >>
     steps:
       - checkout-with-minimal-permissions
       - run:
@@ -2405,6 +2410,13 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+      - installation-tests-carthage:
+          name: installation-tests-carthage-xcode-27
+          xcode_version: "27.0.0"
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
 
       # SPM / Other Build Tests
       - api-tests:
@@ -2470,6 +2482,7 @@ workflows:
             - record-and-upload-paywalls-v2-snapshots
             - installation-tests-all-but-carthage
             - installation-tests-carthage
+            - installation-tests-carthage-xcode-27
             - api-tests
             - spm-receipt-parser
             - revenuecat-admob-tests
@@ -2751,6 +2764,11 @@ workflows:
       - installation-tests-carthage:
           context:
             - slack-secrets
+      - installation-tests-carthage:
+          name: installation-tests-carthage-xcode-27
+          xcode_version: "27.0.0"
+          context:
+            - slack-secrets
       - api-tests:
           context:
             - slack-secrets
@@ -2817,6 +2835,8 @@ workflows:
             - record-and-upload-paywalls-v1-snapshots
             - installation-tests-all-but-carthage
             - installation-tests-carthage
+            # Xcode 27 is still beta; run it but don't block releases on it yet.
+            # - installation-tests-carthage-xcode-27
             - api-tests
             - revenuecat-admob-tests
             - deploy-purchase-tester
