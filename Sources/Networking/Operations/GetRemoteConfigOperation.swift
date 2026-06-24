@@ -10,32 +10,80 @@ import Foundation
 final class GetRemoteConfigOperation: CacheableNetworkOperation {
 
     private let callbackCache: CallbackCache<RemoteConfigCallback>
+    private let request: RemoteConfigRequest
 
     static func createFactory(
         configuration: NetworkConfiguration,
-        callbackCache: CallbackCache<RemoteConfigCallback>
+        callbackCache: CallbackCache<RemoteConfigCallback>,
+        request: RemoteConfigRequest
     ) -> CacheableNetworkOperationFactory<GetRemoteConfigOperation> {
         return .init({ cacheKey in
                 .init(
                     configuration: configuration,
                     callbackCache: callbackCache,
+                    request: request,
                     cacheKey: cacheKey
                 )
         },
-                     individualizedCacheKeyPart: "")
+                     individualizedCacheKeyPart: request.cacheKey)
     }
 
     private init(
         configuration: NetworkConfiguration,
         callbackCache: CallbackCache<RemoteConfigCallback>,
+        request: RemoteConfigRequest,
         cacheKey: String
     ) {
         self.callbackCache = callbackCache
+        self.request = request
         super.init(configuration: configuration, cacheKey: cacheKey)
     }
 
     override func begin(completion: @escaping () -> Void) {
         self.getRemoteConfig(completion: completion)
+    }
+
+}
+
+struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
+
+    private static let appDomain = "app"
+
+    let domain: String
+    let manifest: String?
+    let prefetchedBlobs: [String]
+
+    private enum CodingKeys: String, CodingKey {
+        case domain
+        case manifest
+        case prefetchedBlobs
+    }
+
+    init(
+        domain: String = Self.appDomain,
+        manifest: String? = nil,
+        prefetchedBlobs: [String] = []
+    ) {
+        self.domain = domain
+        self.manifest = manifest
+        self.prefetchedBlobs = prefetchedBlobs
+    }
+
+    var cacheKey: String {
+        [
+            "domain=\(self.domain)",
+            "manifest=\(self.manifest ?? "")",
+            "prefetched_blobs=\(self.prefetchedBlobs.sorted().joined(separator: ","))"
+        ].joined(separator: "|")
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.domain, forKey: .domain)
+        try container.encodeIfPresent(self.manifest, forKey: .manifest)
+        if !self.prefetchedBlobs.isEmpty {
+            try container.encode(self.prefetchedBlobs, forKey: .prefetchedBlobs)
+        }
     }
 
 }
@@ -46,7 +94,7 @@ extension GetRemoteConfigOperation: @unchecked Sendable {}
 private extension GetRemoteConfigOperation {
 
     func getRemoteConfig(completion: @escaping () -> Void) {
-        let request = HTTPRequest(method: .post(RemoteConfigRequest()), path: .remoteConfig)
+        let request = HTTPRequest(method: .post(self.request), path: .remoteConfig)
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<RCContainer?>.Result) in
             defer {
