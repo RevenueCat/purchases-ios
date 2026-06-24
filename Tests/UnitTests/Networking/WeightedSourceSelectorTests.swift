@@ -80,6 +80,32 @@ final class WeightedSourceSelectorTests: TestCase {
         expect(selector.current) == sourceA
     }
 
+    func testNegativeWeightSourceIsNeverPickedAtUpperBoundary() {
+        // Total weight is 50 (sourceB clamps to 0). Even drawing the top of the range, the clamped
+        // source contributes no probability mass, so sourceA still wins.
+        let sourceA = TestSource(id: "a", priority: 0, weight: 50)
+        let sourceB = TestSource(id: "b", priority: 0, weight: -50)
+        let selector = WeightedSourceSelector(sources: [sourceA, sourceB], randomizer: FakeRandomizer(50))
+        expect(selector.current) == sourceA
+    }
+
+    func testZeroWeightSourceIsLastResortWithinItsPriorityTier() {
+        // The zero-weight source never wins the weighted draw, but it stays reachable as the tier's
+        // last resort: tried after its weighted peer, yet still before any lower-priority source.
+        let weighted = TestSource(id: "weighted", priority: 10, weight: 50)
+        let zero = TestSource(id: "zero", priority: 10, weight: 0)
+        let lowerPriority = TestSource(id: "lower", priority: 0, weight: 100)
+        let selector = WeightedSourceSelector(
+            sources: [weighted, zero, lowerPriority],
+            randomizer: FakeRandomizer(0)
+        )
+
+        expect(selector.current) == weighted
+        expect(selector.advance()) == zero
+        expect(selector.advance()) == lowerPriority
+        expect(selector.advance()).to(beNil())
+    }
+
     // MARK: - advance()
 
     func testAdvanceExcludesCurrentAndPicksNextPriorityTier() {
