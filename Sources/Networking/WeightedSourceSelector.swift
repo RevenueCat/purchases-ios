@@ -126,9 +126,9 @@ class WeightedSourceSelector<Source: WeightedSource> {
 
 private extension Int {
 
-    /// Adds `a` and `b`, clamping to `Int.max` instead of overflowing.
-    static func sumOrIntMax(_ a: Int, _ b: Int) -> Int {
-        let (sum, overflow) = a.addingReportingOverflow(b)
+    /// Adds `lhs` and `rhs`, clamping to `Int.max` instead of overflowing.
+    static func sumOrIntMax(_ lhs: Int, _ rhs: Int) -> Int {
+        let (sum, overflow) = lhs.addingReportingOverflow(rhs)
         return overflow ? .max : sum
     }
 
