@@ -93,7 +93,7 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
         }
 
         if !self.cache.set(codable: configuration, forKey: Self.fileName) {
-            Logger.error(Strings.remoteConfig.failedToWriteCache(DiskCacheError.writeFailed))
+            Logger.error(Strings.remoteConfig.failedToWriteCache)
         }
     }
 
@@ -110,17 +110,6 @@ extension RemoteConfigDiskCache {
         #else
         return .applicationSupport()
         #endif
-    }
-
-    enum DiskCacheError: LocalizedError {
-        case writeFailed
-
-        var errorDescription: String? {
-            switch self {
-            case .writeFailed:
-                return "Synchronized cache write failed."
-            }
-        }
     }
 
 }

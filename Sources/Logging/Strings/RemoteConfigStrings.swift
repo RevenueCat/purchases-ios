@@ -11,7 +11,7 @@ enum RemoteConfigStrings {
 
     case cacheURLNotAvailable
     case failedToReadCache(Error)
-    case failedToWriteCache(Error)
+    case failedToWriteCache
 
 }
 
@@ -23,8 +23,8 @@ extension RemoteConfigStrings: LogMessage {
             return "Remote config cache URL is not available."
         case let .failedToReadCache(error):
             return "Failed to read remote config cache from disk: \(error.localizedDescription)"
-        case let .failedToWriteCache(error):
-            return "Failed to write remote config cache to disk: \(error.localizedDescription)"
+        case .failedToWriteCache:
+            return "Failed to write remote config cache to disk."
         }
     }
 
