@@ -120,6 +120,15 @@ extension SwiftUICore.View {
   
 }
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct PaywallWebViewMessage : Swift.Sendable, Swift.Equatable {
+  public let componentID: Swift.String
+  public let type: Swift.String
+  public let responses: [Swift.String : RevenueCatUI.PaywallWebViewValue]?
+  public let error: Swift.String?
+  public init(componentID: Swift.String, type: Swift.String, responses: [Swift.String : RevenueCatUI.PaywallWebViewValue]? = nil, error: Swift.String? = nil)
+  public static func == (a: RevenueCatUI.PaywallWebViewMessage, b: RevenueCatUI.PaywallWebViewMessage) -> Swift.Bool
+}
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct PaywallWebViewValue : Swift.Sendable, Swift.Equatable, Swift.Hashable {
   public static func string(_ value: Swift.String) -> RevenueCatUI.PaywallWebViewValue
   public static func number(_ value: Swift.Double) -> RevenueCatUI.PaywallWebViewValue
