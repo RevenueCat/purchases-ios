@@ -27,16 +27,19 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     private let dateProvider: DateProvider
     private let isRefreshing: Atomic<Bool> = false
     private let blobStore: RemoteConfigBlobStoreType
+    private let currentUserProvider: CurrentUserProvider
 
     init(
         remoteConfigAPI: RemoteConfigAPIType,
         diskCache: RemoteConfigDiskCacheType,
         blobStore: RemoteConfigBlobStoreType,
+        currentUserProvider: CurrentUserProvider,
         dateProvider: DateProvider = DateProvider()
     ) {
         self.remoteConfigAPI = remoteConfigAPI
         self.diskCache = diskCache
         self.blobStore = blobStore
+        self.currentUserProvider = currentUserProvider
         self.dateProvider = dateProvider
     }
 
@@ -45,6 +48,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
         let persisted = self.diskCache.read()
         let request = RemoteConfigRequest(
+            appUserID: self.currentUserProvider.currentAppUserID,
             domain: persisted?.domain ?? Self.defaultDomain,
             manifest: persisted?.manifest,
             prefetchedBlobs: self.cachedPrefetchedBlobRefs(from: persisted)

@@ -310,14 +310,17 @@ final class RemoteConfigurationDecodingTests: TestCase {
 
     func testRequestEncodeRoundTripPreservesShape() throws {
         let request = RemoteConfigRequest(
+            appUserID: "app-user-id",
             domain: "app",
             manifest: "v1.123.sources:sources-etag",
             prefetchedBlobs: ["blob-b", "blob-a"]
         )
 
         let data = try JSONEncoder.default.encode(request)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
         let decoded = try JSONDecoder.default.decode(RemoteConfigRequest.self, from: data)
 
+        expect(json["app_user_id"] as? String) == "app-user-id"
         expect(decoded) == request
     }
 

@@ -318,7 +318,10 @@ class HTTPRequestTests: TestCase {
     }
 
     func testRemoteConfigUsesRCContainerAcceptHeader() {
-        let request: HTTPRequest = .init(method: .post(RemoteConfigRequest()), path: .remoteConfig)
+        let request: HTTPRequest = .init(
+            method: .post(RemoteConfigRequest(appUserID: "app-user-id")),
+            path: .remoteConfig
+        )
         let headers = request.headers(
             with: [:],
             defaultHeaders: [:],

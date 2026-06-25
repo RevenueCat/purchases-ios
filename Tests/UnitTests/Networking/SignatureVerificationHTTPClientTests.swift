@@ -1175,7 +1175,10 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
 private extension BaseSignatureVerificationHTTPClientTests {
 
     static var remoteConfigRequest: HTTPRequest {
-        return .init(method: .post(RemoteConfigRequest()), path: HTTPRequest.Path.remoteConfig)
+        return .init(
+            method: .post(RemoteConfigRequest(appUserID: "app-user-id")),
+            path: HTTPRequest.Path.remoteConfig
+        )
     }
 
     static func rcContainer(

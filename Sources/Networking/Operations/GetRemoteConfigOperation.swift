@@ -47,21 +47,26 @@ final class GetRemoteConfigOperation: CacheableNetworkOperation {
 
 struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
 
+    let appUserID: String
     let domain: String
     let manifest: String?
     let prefetchedBlobs: [String]
 
     private enum CodingKeys: String, CodingKey {
+        // JSONDecoder.default converts `app_user_id` to `appUserId` before matching CodingKeys.
+        case appUserID = "appUserId"
         case domain
         case manifest
         case prefetchedBlobs
     }
 
     init(
+        appUserID: String,
         domain: String = RemoteConfiguration.defaultDomain,
         manifest: String? = nil,
         prefetchedBlobs: [String] = []
     ) {
+        self.appUserID = appUserID
         self.domain = domain
         self.manifest = manifest
         self.prefetchedBlobs = prefetchedBlobs
@@ -69,6 +74,7 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
 
     var cacheKey: String {
         [
+            "app_user_id=\(self.appUserID)",
             "domain=\(self.domain)",
             "manifest=\(self.manifest ?? "")",
             "prefetched_blobs=\(self.prefetchedBlobs.sorted().joined(separator: ","))"
@@ -77,11 +83,21 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.appUserID, forKey: .appUserID)
         try container.encode(self.domain, forKey: .domain)
         try container.encodeIfPresent(self.manifest, forKey: .manifest)
         if !self.prefetchedBlobs.isEmpty {
             try container.encode(self.prefetchedBlobs, forKey: .prefetchedBlobs)
         }
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.appUserID = try container.decode(String.self, forKey: .appUserID)
+        self.domain = try container.decode(String.self, forKey: .domain)
+        self.manifest = try container.decodeIfPresent(String.self, forKey: .manifest)
+        self.prefetchedBlobs = try container.decodeIfPresent([String].self, forKey: .prefetchedBlobs) ?? []
     }
 
 }

@@ -32,7 +32,7 @@ class RemoteConfigAPI: RemoteConfigAPIType {
     }
 
     func getRemoteConfig(
-        request: RemoteConfigRequest = .init(),
+        request: RemoteConfigRequest,
         isAppBackgrounded: Bool,
         completion: @escaping RemoteConfigResponseHandler
     ) {
