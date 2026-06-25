@@ -936,6 +936,9 @@
 		A1B2C3D42FE1000000000010 /* RemoteConfigSignatureContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE1000000000011 /* RemoteConfigSignatureContextProvider.swift */; };
 		A1B2C3D42FE100000000000D /* RCContainerBackwardsCompatibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE100000000000A /* RCContainerBackwardsCompatibilityTests.swift */; };
 		A1B2C3D42FE100000000000E /* RCContainerTestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE100000000000B /* RCContainerTestData.swift */; };
+		A1B2C3D42FE2000000000002 /* RemoteConfigDiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE2000000000001 /* RemoteConfigDiskCache.swift */; };
+		A1B2C3D42FE2000000000006 /* RemoteConfigStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE2000000000005 /* RemoteConfigStrings.swift */; };
+		A1B2C3D42FE2000000000009 /* RemoteConfigDiskCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE2000000000008 /* RemoteConfigDiskCacheTests.swift */; };
 		7648885717DC2DB5009DD01B /* MinMaxOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = C812AE8BAE0546D2F4ACEF35 /* MinMaxOperators.swift */; };
 		7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */; };
 		7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */; };
@@ -2891,6 +2894,9 @@
 		A1B2C3D42FE100000000000B /* RCContainerTestData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RCContainerTestData.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE100000000000C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		A1B2C3D42FE1000000000011 /* RemoteConfigSignatureContextProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigSignatureContextProvider.swift; sourceTree = "<group>"; };
+		A1B2C3D42FE2000000000001 /* RemoteConfigDiskCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigDiskCache.swift; sourceTree = "<group>"; };
+		A1B2C3D42FE2000000000005 /* RemoteConfigStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigStrings.swift; sourceTree = "<group>"; };
+		A1B2C3D42FE2000000000008 /* RemoteConfigDiskCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigDiskCacheTests.swift; sourceTree = "<group>"; };
 		E31E8A264E9F4375A3B29D78 /* RemoteConfigurationDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationDecodingTests.swift; sourceTree = "<group>"; };
 		E35BAD07C46D469D8CC7C396 /* RemoteConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfiguration.swift; sourceTree = "<group>"; };
 		E51CFC7D19BE49D2BA1A79CC /* CapturingLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CapturingLogger.swift; sourceTree = "<group>"; };
@@ -3579,6 +3585,7 @@
 				57488BE729CB7FB60000EE7E /* OfflineEntitlementsStrings.swift */,
 				4F6ABC7D2A81700900250E63 /* PaywallsStrings.swift */,
 				9A65E0A42591A23500DE00B0 /* PurchaseStrings.swift */,
+				A1B2C3D42FE2000000000005 /* RemoteConfigStrings.swift */,
 				5791FCF22992D3EC00F1FEDA /* SigningStrings.swift */,
 				F5C0196826E880800005D61E /* StoreKitStrings.swift */,
 				757E73D02F0FE26A0066DCDC /* TransactionMetadataStrings.swift */,
@@ -4527,6 +4534,7 @@
 				A1B2C3D42FE1000000000006 /* RCContainer+Element.swift */,
 				A1B2C3D42FE1000000000008 /* RCContainer+Parser.swift */,
 				F3A2DB969D72432B87F48C5F /* RemoteConfigAPI.swift */,
+				A1B2C3D42FE2000000000001 /* RemoteConfigDiskCache.swift */,
 				A1B2C3D42FE1000000000011 /* RemoteConfigSignatureContextProvider.swift */,
 			);
 			path = Networking;
@@ -4547,6 +4555,7 @@
 				57DC9F4927CD37BA00DA6AF9 /* HTTPStatusCodeTests.swift */,
 				57D04BB727D947C6006DAC06 /* HTTPResponseTests.swift */,
 				A1B2C3D42FE1000000000009 /* RCContainer */,
+				A1B2C3D42FE2000000000007 /* RemoteConfig */,
 				5733B1A327FF9F8300EC2045 /* NetworkErrorTests.swift */,
 				5733B1A727FFBCC800EC2045 /* BackendErrorTests.swift */,
 				5733B1A927FFBCF900EC2045 /* BaseErrorTests.swift */,
@@ -4564,6 +4573,14 @@
 				A1B2C3D42FE100000000000C /* README.md */,
 			);
 			path = RCContainer;
+			sourceTree = "<group>";
+		};
+		A1B2C3D42FE2000000000007 /* RemoteConfig */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D42FE2000000000008 /* RemoteConfigDiskCacheTests.swift */,
+			);
+			path = RemoteConfig;
 			sourceTree = "<group>";
 		};
 		35E840C1270FB45600899AE2 /* Support */ = {
@@ -7149,6 +7166,8 @@
 				A1B2C3D42FE1000000000002 /* RCContainer.swift in Sources */,
 				A1B2C3D42FE1000000000005 /* RCContainer+Element.swift in Sources */,
 				A1B2C3D42FE1000000000007 /* RCContainer+Parser.swift in Sources */,
+				A1B2C3D42FE2000000000002 /* RemoteConfigDiskCache.swift in Sources */,
+				A1B2C3D42FE2000000000006 /* RemoteConfigStrings.swift in Sources */,
 				A1B2C3D42FE1000000000010 /* RemoteConfigSignatureContextProvider.swift in Sources */,
 				DB3395DD2F840A790079250C /* WorkflowResponseAction.swift in Sources */,
 				2CD72944268A826F00BFC976 /* Date+Extensions.swift in Sources */,
@@ -7705,6 +7724,7 @@
 				A1B2C3D42FE1000000000004 /* RCContainerTests.swift in Sources */,
 				A1B2C3D42FE100000000000D /* RCContainerBackwardsCompatibilityTests.swift in Sources */,
 				A1B2C3D42FE100000000000E /* RCContainerTestData.swift in Sources */,
+				A1B2C3D42FE2000000000009 /* RemoteConfigDiskCacheTests.swift in Sources */,
 				DB7EA7772F964CA200BCC082 /* WorkflowDetailProcessorTests.swift in Sources */,
 				FDC4B60B2FCE1122001E5F96 /* InstallmentsInfoTests.swift in Sources */,
 				4F8DDB692AAA9189000188F2 /* OperationDispatcherTests.swift in Sources */,
