@@ -65,26 +65,21 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
 
 final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
-    private let fileManager: FileManager
-    private let directoryURL: URL?
+    private let cache: SynchronizedLargeItemCache
 
     init(
-        fileManager: FileManager = .default,
-        directoryURL: URL? = RemoteConfigDiskCache.defaultDirectoryURL
+        cache: SynchronizedLargeItemCache = .init(
+            cache: FileManager.default,
+            basePath: RemoteConfigDiskCache.basePath,
+            directoryType: RemoteConfigDiskCache.directoryType
+        )
     ) {
-        self.fileManager = fileManager
-        self.directoryURL = directoryURL
+        self.cache = cache
     }
 
     func read() -> PersistedRemoteConfiguration? {
-        guard let fileURL = self.fileURL,
-              self.fileManager.fileExists(atPath: fileURL.path) else {
-            return nil
-        }
-
         do {
-            let data = try Data(contentsOf: fileURL)
-            return try JSONDecoder.default.decode(PersistedRemoteConfiguration.self, from: data)
+            return try self.cache.value(forKey: Self.fileName)
         } catch {
             Logger.error(Strings.remoteConfig.failedToReadCache(error))
             return nil
@@ -92,45 +87,40 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
     }
 
     func write(_ configuration: PersistedRemoteConfiguration) {
-        guard let directoryURL = self.directoryURL else {
+        guard self.cache.isAvailable else {
             Logger.error(Strings.remoteConfig.cacheURLNotAvailable)
             return
         }
 
-        do {
-            try self.fileManager.createDirectory(
-                at: directoryURL,
-                withIntermediateDirectories: true,
-                attributes: nil
-            )
-
-            let data = try JSONEncoder.default.encode(configuration)
-            try data.write(to: directoryURL.appendingPathComponent(Self.fileName, isDirectory: false), options: .atomic)
-        } catch {
-            Logger.error(Strings.remoteConfig.failedToWriteCache(error))
+        if !self.cache.set(codable: configuration, forKey: Self.fileName) {
+            Logger.error(Strings.remoteConfig.failedToWriteCache(DiskCacheError.writeFailed))
         }
-    }
-
-    private var fileURL: URL? {
-        return self.directoryURL?.appendingPathComponent(Self.fileName, isDirectory: false)
     }
 
 }
 
-private extension RemoteConfigDiskCache {
+extension RemoteConfigDiskCache {
 
-    static let directoryName = "remote_config"
+    static let basePath = "remote_config"
     static let fileName = "remote_config.json"
 
-    static var defaultDirectoryURL: URL? {
+    static var directoryType: DirectoryHelper.DirectoryType {
         #if os(tvOS)
-        let directoryType = DirectoryHelper.DirectoryType.cache
+        return .cache
         #else
-        let directoryType = DirectoryHelper.DirectoryType.applicationSupport()
+        return .applicationSupport()
         #endif
+    }
 
-        return DirectoryHelper.baseUrl(for: directoryType)?
-            .appendingPathComponent(Self.directoryName, isDirectory: true)
+    enum DiskCacheError: LocalizedError {
+        case writeFailed
+
+        var errorDescription: String? {
+            switch self {
+            case .writeFailed:
+                return "Synchronized cache write failed."
+            }
+        }
     }
 
 }

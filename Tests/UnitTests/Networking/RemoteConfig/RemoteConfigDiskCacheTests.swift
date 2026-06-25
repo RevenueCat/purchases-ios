@@ -12,21 +12,38 @@ import XCTest
 
 final class RemoteConfigDiskCacheTests: TestCase {
 
-    private var directoryURL: URL!
+    private var rootURL: URL!
+    private var fileURL: URL!
     private var cache: RemoteConfigDiskCache!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.directoryURL = FileManager.default.temporaryDirectory
+        self.rootURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("RemoteConfigDiskCacheTests-\(UUID().uuidString)", isDirectory: true)
-        self.cache = RemoteConfigDiskCache(directoryURL: self.directoryURL)
+
+        #if os(tvOS)
+        let directoryType = DirectoryHelper.DirectoryType.cache
+        #else
+        let directoryType = DirectoryHelper.DirectoryType.applicationSupport(overrideURL: self.rootURL)
+        #endif
+
+        self.cache = RemoteConfigDiskCache(cache: .init(
+            cache: FileManager.default,
+            basePath: RemoteConfigDiskCache.basePath,
+            directoryType: directoryType
+        ))
+
+        self.fileURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: directoryType)?
+            .appendingPathComponent(RemoteConfigDiskCache.basePath, isDirectory: true)
+            .appendingPathComponent(RemoteConfigDiskCache.fileName, isDirectory: false))
     }
 
     override func tearDownWithError() throws {
-        try? FileManager.default.removeItem(at: self.directoryURL)
+        try? FileManager.default.removeItem(at: self.rootURL)
         self.cache = nil
-        self.directoryURL = nil
+        self.fileURL = nil
+        self.rootURL = nil
 
         try super.tearDownWithError()
     }
@@ -82,7 +99,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
 
     func testReadReturnsNilWhenPersistedFileIsCorrupt() throws {
         try FileManager.default.createDirectory(
-            at: self.directoryURL,
+            at: self.fileURL.deletingLastPathComponent(),
             withIntermediateDirectories: true,
             attributes: nil
         )
@@ -93,7 +110,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
 
     func testReadToleratesOldFormatByDroppingUnknownTopicBodies() throws {
         try FileManager.default.createDirectory(
-            at: self.directoryURL,
+            at: self.fileURL.deletingLastPathComponent(),
             withIntermediateDirectories: true,
             attributes: nil
         )
@@ -131,8 +148,26 @@ final class RemoteConfigDiskCacheTests: TestCase {
         expect(FileManager.default.fileExists(atPath: self.fileURL.path)) == true
     }
 
+    func testWriteUsesRemoteConfigDirectoryAndFileName() {
+        self.cache.write(PersistedRemoteConfiguration(
+            domain: "app",
+            manifest: RemoteConfigManifestToken("v1.1710000100.sources:etag1"),
+            activeTopics: [],
+            prefetchBlobs: [],
+            topicBlobRefs: [:],
+            lastRefreshAt: Date()
+        ))
+
+        expect(self.fileURL.deletingLastPathComponent().lastPathComponent) == "remote_config"
+        expect(self.fileURL.lastPathComponent) == "remote_config.json"
+        expect(FileManager.default.fileExists(atPath: self.fileURL.path)) == true
+    }
+
     func testWriteLogsWhenDirectoryURLIsUnavailable() {
-        self.cache = RemoteConfigDiskCache(directoryURL: nil)
+        self.cache = RemoteConfigDiskCache(cache: .init(
+            cache: MockSimpleCache(cacheDirectory: nil),
+            basePath: RemoteConfigDiskCache.basePath
+        ))
 
         self.cache.write(PersistedRemoteConfiguration(
             domain: "app",
@@ -167,14 +202,6 @@ final class RemoteConfigDiskCacheTests: TestCase {
         let read = try XCTUnwrap(self.cache.read())
 
         expect(read.manifest) == RemoteConfigManifestToken("v1.1710000100.sources:new")
-    }
-
-}
-
-private extension RemoteConfigDiskCacheTests {
-
-    var fileURL: URL {
-        return self.directoryURL.appendingPathComponent("remote_config.json", isDirectory: false)
     }
 
 }
