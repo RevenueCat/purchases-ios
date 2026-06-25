@@ -102,7 +102,11 @@ private extension GetRemoteConfigOperation {
             }
 
             self.callbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                callback.completion(response.map(\.body).mapError(BackendError.networkError))
+                callback.completion(
+                    response
+                        .map { RemoteConfigFetchResult(response: $0) }
+                        .mapError(BackendError.networkError)
+                )
             }
         }
     }

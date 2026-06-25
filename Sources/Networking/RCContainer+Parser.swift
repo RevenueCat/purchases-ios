@@ -20,6 +20,7 @@ extension RCContainer {
         /// Typed failures for malformed RC Container bytes.
         enum FormatError: Error, Equatable {
 
+            case missingBody
             case truncatedHeader
             case invalidMagic
             case unsupportedVersion(UInt8)
@@ -31,6 +32,33 @@ extension RCContainer {
 
         }
         // swiftlint:enable nesting
+
+        private var elementParser: ElementParser
+
+        /// Creates a parser over the provided `Data` without copying it.
+        init(data: Data) {
+            self.elementParser = .init(data: data)
+        }
+
+        /// Parses the full container and returns the header flags plus indexed elements.
+        mutating func parse() throws -> (flags: UInt8, elements: [Element]) {
+            let flags = try self.elementParser.parseHeader()
+
+            var elements: [Element] = []
+            while self.elementParser.hasRemainingBytes {
+                elements.append(try self.elementParser.parseElement(index: elements.count))
+            }
+
+            return (flags: flags, elements: elements)
+        }
+
+    }
+
+    /// Cursor-based parser for the generic RC Container wire format.
+    ///
+    /// This type intentionally has no remote-config knowledge. It only knows how to validate the
+    /// container header and parse individual elements from the current cursor position.
+    struct ElementParser {
 
         private static let magicOffset = 0
         private static let magicSize = 2
@@ -54,40 +82,36 @@ extension RCContainer {
         private let data: Data
         private var offset = 0
 
-        /// Creates a parser over the provided `Data` without copying it.
+        var hasRemainingBytes: Bool {
+            return self.offset < self.data.count
+        }
+
         init(data: Data) {
             self.data = data
         }
 
-        /// Parses the full container and returns the header flags plus indexed elements.
-        mutating func parse() throws -> (flags: UInt8, elements: [Element]) {
-            let flags = try self.parseHeader()
-
-            var elements: [Element] = []
-            while self.offset < self.data.count {
-                elements.append(try self.parseElement(index: elements.count))
-            }
-
-            return (flags: flags, elements: elements)
+        /// Validates the container header and positions the cursor at the first element.
+        mutating func moveToFirstElement() throws {
+            _ = try self.parseHeader()
         }
 
         /// Parses the fixed-size container header and positions the cursor at the first element.
         ///
         /// Version 1 preserves the flags byte for future use and skips the reserved bytes so future
         /// server-side additions do not make older SDKs reject the whole container.
-        private mutating func parseHeader() throws -> UInt8 {
+        mutating func parseHeader() throws -> UInt8 {
             guard self.hasBytes(Self.headerSize) else {
-                throw FormatError.truncatedHeader
+                throw Parser.FormatError.truncatedHeader
             }
 
             guard self.byte(at: Self.magicOffset) == Self.magic.0,
                   self.byte(at: Self.magicOffset + 1) == Self.magic.1 else {
-                throw FormatError.invalidMagic
+                throw Parser.FormatError.invalidMagic
             }
 
             let version = self.byte(at: Self.versionOffset)
             guard version == Self.version else {
-                throw FormatError.unsupportedVersion(version)
+                throw Parser.FormatError.unsupportedVersion(version)
             }
 
             let flags = self.byte(at: Self.flagsOffset)
@@ -100,9 +124,9 @@ extension RCContainer {
         /// The stored checksum is read before the cursor moves into the payload. The payload checksum
         /// is then recomputed from the payload range so checksum validation does not depend on mutable
         /// cursor state after parsing continues.
-        private mutating func parseElement(index: Int) throws -> Element {
+        mutating func parseElement(index: Int) throws -> Element {
             guard self.hasBytes(Self.elementHeaderSize) else {
-                throw FormatError.truncatedElementHeader(index: index)
+                throw Parser.FormatError.truncatedElementHeader(index: index)
             }
 
             let checksumStartOffset = self.offset
@@ -118,14 +142,14 @@ extension RCContainer {
             self.offset += Self.elementReservedFieldSize
 
             guard self.hasBytes(elementSize) else {
-                throw FormatError.truncatedElement(index: index)
+                throw Parser.FormatError.truncatedElement(index: index)
             }
 
             let payloadStartOffset = self.offset
             let payloadRange = self.dataRange(offset: payloadStartOffset, count: elementSize)
             let actualChecksum = self.checksumString(in: payloadStartOffset..<payloadStartOffset + elementSize)
             guard checksum == actualChecksum else {
-                throw FormatError.checksumMismatch(
+                throw Parser.FormatError.checksumMismatch(
                     index: index,
                     expected: checksum,
                     actual: actualChecksum
@@ -158,7 +182,7 @@ extension RCContainer {
             let remainingBytes = self.data.count - self.offset
             let availablePaddingBytes = min(paddingSize, remainingBytes)
             guard self.bytesAreZero(in: self.offset..<self.offset + availablePaddingBytes) else {
-                throw FormatError.nonZeroPadding(index: elementIndex)
+                throw Parser.FormatError.nonZeroPadding(index: elementIndex)
             }
 
             if remainingBytes < paddingSize {
