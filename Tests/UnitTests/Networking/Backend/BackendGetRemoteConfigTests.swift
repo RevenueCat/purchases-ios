@@ -47,7 +47,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         expect(self.httpClient.calls.map { $0.request.path as? HTTPRequest.Path }) == [.remoteConfig]
-        expect(self.httpClient.calls.first?.request.path.relativePath) == "/v2/config"
+        expect(self.httpClient.calls.first?.request.path.relativePath) == "/v1/config"
     }
 
     func testGetRemoteConfigEncodesDefaultManifestRequestBody() throws {

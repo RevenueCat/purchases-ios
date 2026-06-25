@@ -207,7 +207,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .getWorkflow(_, workflowId):
             return "/workflows/v1/workflows/\(Self.escape(workflowId))"
         case .remoteConfig:
-            return "/v2/config"
+            return "/v1/config"
         default:
             return nil
         }
@@ -357,12 +357,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
     }
 
     var relativePath: String {
-        switch self {
-        case .remoteConfig:
-            return "/v2/\(self.pathComponent)"
-        default:
-            return "/v1/\(self.pathComponent)"
-        }
+        return "/v1/\(self.pathComponent)"
     }
 
     var pathComponent: String {

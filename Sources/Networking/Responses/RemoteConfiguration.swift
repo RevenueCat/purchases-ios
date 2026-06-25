@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// The `/v2/config` configuration object.
+/// The `/v1/config` configuration object.
 ///
 /// This is returned by the remote config API either as the config JSON inside an `RCContainer`
 /// response or as the plain JSON HTTP response body.

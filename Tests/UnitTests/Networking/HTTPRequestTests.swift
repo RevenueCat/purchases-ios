@@ -215,7 +215,7 @@ class HTTPRequestTests: TestCase {
                                ["https://api-production.8-lives-cat.io/workflows/v1/workflows/\(workflowId)"])
             case .remoteConfig:
                 XCTAssertEqual(fallbackUrlsPaths,
-                               ["https://api-production.8-lives-cat.io/v2/config"])
+                               ["https://api-production.8-lives-cat.io/v1/config"])
             default:
                 XCTAssertTrue(fallbackUrlsPaths.isEmpty)
             }
