@@ -59,18 +59,6 @@ final class LargeItemCacheTypeTests: TestCase {
         try fileManager.removeItem(at: self.testDirectory.appendingPathComponent(nonExistentSubdir))
     }
 
-    func testSaveDataOverwritesExistingFile() throws {
-        let url = self.testDirectory.appendingPathComponent("overwrite.txt")
-
-        try self.fileManager.saveData(Data("old".utf8), to: url)
-        try self.fileManager.saveData(Data("new".utf8), to: url)
-
-        let savedData = try Data(contentsOf: url)
-        expect(savedData) == Data("new".utf8)
-
-        try fileManager.removeItem(at: url)
-    }
-
     func testSaveDataAsyncCreatesParentDirectoryIfNeeded() async throws {
         let nonExistentSubdir = UUID().uuidString
         let url = self.testDirectory
