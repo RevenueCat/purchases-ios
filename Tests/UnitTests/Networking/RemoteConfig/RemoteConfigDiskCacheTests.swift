@@ -36,7 +36,8 @@ final class RemoteConfigDiskCacheTests: TestCase {
         )
         self.cache = RemoteConfigDiskCache(cache: synchronizedCache)
 
-        self.cacheDirectoryURL = try XCTUnwrap(synchronizedCache.cacheURL)
+        self.cacheDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: directoryType))
+            .appendingPathComponent(RemoteConfigDiskCache.basePath, isDirectory: true)
         try? FileManager.default.removeItem(at: self.cacheDirectoryURL)
 
         self.fileURL = self.cacheDirectoryURL
@@ -169,7 +170,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
         expect(FileManager.default.fileExists(atPath: self.fileURL.path)) == true
     }
 
-    func testWriteLogsWhenDirectoryURLIsUnavailable() {
+    func testWriteLogsWhenCacheCannotWrite() {
         self.cache = RemoteConfigDiskCache(cache: .init(
             cache: MockSimpleCache(cacheDirectory: nil),
             basePath: RemoteConfigDiskCache.basePath
@@ -184,7 +185,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
             lastRefreshAt: nil
         ))
 
-        self.logger.verifyMessageWasLogged(Strings.remoteConfig.cacheURLNotAvailable, level: .error)
+        self.logger.verifyMessageWasLogged(Strings.remoteConfig.failedToWriteCache, level: .error)
     }
 
     func testWriteOverwritesPreviousSnapshot() throws {

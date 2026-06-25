@@ -21,7 +21,7 @@ internal final class SynchronizedLargeItemCache {
 
     private let cache: LargeItemCacheType
     private let lock: Lock
-    let cacheURL: URL?
+    private let cacheURL: URL?
 
     init(
         cache: LargeItemCacheType,
