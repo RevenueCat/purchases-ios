@@ -10,13 +10,14 @@ import Foundation
 /// Provides the signature inputs for remote config RC Container responses.
 ///
 /// The response signature covers the config element's stored 24-byte checksum. A `204 No Content`
-/// response represents a successful no-update result and is treated as verified without signature
-/// headers.
+/// response has no response payload, but still verifies the request context.
 struct RemoteConfigSignatureContextProvider: ResponseSignatureContextProvider {
 
-    let shouldTreatNoContentResponseAsVerified = true
+    func responsePayloadForSignature(from body: Data?, statusCode: HTTPStatusCode) throws -> Data? {
+        guard statusCode != .noContent else {
+            return nil
+        }
 
-    func responsePayloadForSignature(from body: Data?) throws -> Data? {
         return try Self.configChecksum(from: body)
     }
 

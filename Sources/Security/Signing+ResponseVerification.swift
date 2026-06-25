@@ -69,14 +69,9 @@ extension HTTPResponse where Body == Data? {
         }
 
         let contextProvider = request.path.responseSignatureContextProvider
-        if statusCode == .noContent,
-           contextProvider.shouldTreatNoContentResponseAsVerified {
-            return .verified
-        }
-
         let message: Data?
         do {
-            message = try contextProvider.responsePayloadForSignature(from: body)
+            message = try contextProvider.responsePayloadForSignature(from: body, statusCode: statusCode)
         } catch {
             Logger.warn(Strings.signing.signature_payload_failed_creation(request, error))
 

@@ -390,12 +390,13 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(self.signing.requests.onlyElement?.parameters.etag) == Self.eTag
     }
 
-    func testRemoteConfigNoContentResponseIsVerifiedWithoutCallingSigner() throws {
+    func testRemoteConfigNoContentResponseVerifiesRequestContextWithEmptyResponseMessage() throws {
         self.mockResponse(path: HTTPRequest.Path.remoteConfig,
-                          signature: nil,
-                          requestDate: nil,
-                          body: Data(),
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: "not an RC Container".asData,
                           statusCode: .noContent)
+        self.signing.stubbedVerificationResult = true
 
         let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
@@ -404,7 +405,10 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(response).to(beSuccess())
         expect(response?.value?.body).to(beNil())
         expect(response?.value?.verificationResult) == .verified
-        expect(self.signing.requests).to(beEmpty())
+        expect(self.signing.requests).to(haveCount(1))
+        expect(self.signing.requests.onlyElement?.parameters.message).to(beNil())
+        expect(self.signing.requests.onlyElement?.parameters.nonce).to(beNil())
+        expect(self.signing.requests.onlyElement?.parameters.requestBody).to(beNil())
     }
 
     func testRemoteConfigNoContentResponseWithDisabledVerificationIsNotRequested() throws {
@@ -425,11 +429,10 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(self.signing.requests).to(beEmpty())
     }
 
-    func testRemoteConfigNoContentResponseSucceedsInEnforcedMode() throws {
-        self.changeClientToEnforced()
+    func testRemoteConfigNoContentResponseMissingSignatureReturnsFailedVerification() throws {
         self.mockResponse(path: HTTPRequest.Path.remoteConfig,
                           signature: nil,
-                          requestDate: nil,
+                          requestDate: Self.date2,
                           body: Data(),
                           statusCode: .noContent)
 
@@ -439,14 +442,77 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
         expect(response).to(beSuccess())
         expect(response?.value?.body).to(beNil())
-        expect(response?.value?.verificationResult) == .verified
+        expect(response?.value?.verificationResult) == .failed
         expect(self.signing.requests).to(beEmpty())
+    }
+
+    func testRemoteConfigNoContentResponseMissingSignatureFailsInEnforcedMode() throws {
+        self.changeClientToEnforced()
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: nil,
+                          requestDate: Self.date2,
+                          body: Data(),
+                          statusCode: .noContent)
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beFailure())
+        expect(response?.error)
+            .to(matchError(NetworkError.signatureVerificationFailed(
+                path: HTTPRequest.Path.remoteConfig,
+                code: .success
+            )))
+        expect(self.signing.requests).to(beEmpty())
+    }
+
+    func testRemoteConfigNoContentResponseInvalidSignatureReturnsFailedVerification() throws {
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: Data(),
+                          statusCode: .noContent)
+        self.signing.stubbedVerificationResult = false
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.body).to(beNil())
+        expect(response?.value?.verificationResult) == .failed
+        expect(self.signing.requests).to(haveCount(1))
+        expect(self.signing.requests.onlyElement?.parameters.message).to(beNil())
+    }
+
+    func testRemoteConfigNoContentResponseInvalidSignatureFailsInEnforcedMode() throws {
+        self.changeClientToEnforced()
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: Data(),
+                          statusCode: .noContent)
+        self.signing.stubbedVerificationResult = false
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beFailure())
+        expect(response?.error)
+            .to(matchError(NetworkError.signatureVerificationFailed(
+                path: HTTPRequest.Path.remoteConfig,
+                code: .success
+            )))
+        expect(self.signing.requests).to(haveCount(1))
+        expect(self.signing.requests.onlyElement?.parameters.message).to(beNil())
     }
 
     func testRemoteConfigSignaturePayloadMissingBodyThrowsMissingBodyError() {
         let provider = RemoteConfigSignatureContextProvider()
 
-        XCTAssertThrowsError(try provider.responsePayloadForSignature(from: nil)) { error in
+        XCTAssertThrowsError(try provider.responsePayloadForSignature(from: nil, statusCode: .success)) { error in
             expect(error as? RCContainer.Parser.FormatError) == .missingBody
         }
     }

@@ -56,16 +56,13 @@ protocol HTTPRequestPath {
 /// Provides endpoint-specific inputs for backend response signature verification.
 ///
 /// Most endpoints use the raw response body and request body. Specialized endpoints can override
-/// either input or how `204 No Content` responses are handled.
+/// either input.
 protocol ResponseSignatureContextProvider {
-
-    /// Whether `204 No Content` responses should be treated as verified without signature headers.
-    var shouldTreatNoContentResponseAsVerified: Bool { get }
 
     /// Returns the response bytes that should be verified against the backend signature.
     ///
     /// This may throw when deriving the signed payload requires validating response structure first.
-    func responsePayloadForSignature(from body: Data?) throws -> Data?
+    func responsePayloadForSignature(from body: Data?, statusCode: HTTPStatusCode) throws -> Data?
 
     /// Returns the request body component to include in signature parameters, if any.
     func requestBodyForSignature(for request: HTTPRequest) -> HTTPRequestBody?
@@ -74,9 +71,7 @@ protocol ResponseSignatureContextProvider {
 
 struct DefaultResponseSignatureContextProvider: ResponseSignatureContextProvider {
 
-    let shouldTreatNoContentResponseAsVerified = false
-
-    func responsePayloadForSignature(from body: Data?) throws -> Data? {
+    func responsePayloadForSignature(from body: Data?, statusCode: HTTPStatusCode) throws -> Data? {
         return body
     }
 
