@@ -74,7 +74,7 @@ extension FileManager: LargeItemCacheType {
     func saveData(_ data: Data, to url: URL) throws {
         let directoryURL = url.deletingLastPathComponent()
         try createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
-        try data.write(to: url)
+        try data.write(to: url, options: .atomic)
     }
 
     /// Store data to a url and validate that the file is correct before saving
