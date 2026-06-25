@@ -119,30 +119,6 @@ extension RemoteConfiguration {
 
 }
 
-/// Opaque `/v2/config` manifest token returned by the backend and replayed verbatim by the SDK.
-///
-/// The SDK intentionally does not parse or validate this value. The backend owns the token format and
-/// treats malformed or stale tokens as an empty manifest.
-struct RemoteConfigManifestToken: Codable, Equatable {
-
-    let rawValue: String
-
-    init(_ rawValue: String) {
-        self.rawValue = rawValue
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        self.init(try container.decode(String.self))
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(self.rawValue)
-    }
-
-}
-
 // MARK: - Codable
 
 extension RemoteConfiguration: Codable {

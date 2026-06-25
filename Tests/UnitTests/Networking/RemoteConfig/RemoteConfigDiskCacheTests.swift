@@ -59,7 +59,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
     }
 
     func testWriteThenReadRoundTripsManifestAndTopicBlobRefs() throws {
-        let manifest = RemoteConfigManifestToken("v1.1710000100.product_entitlement_mapping:etag2,sources:etag1")
+        let manifest = "v1.1710000100.product_entitlement_mapping:etag2,sources:etag1"
         let activeTopics = ["sources", "product_entitlement_mapping"]
         let topicBlobRefs = [
             "sources": ["blobRefA"],
@@ -87,7 +87,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
     }
 
     func testInlineOnlyTopicsPersistWithEmptyBlobRefList() throws {
-        let manifest = RemoteConfigManifestToken("v1.1710000100.sources:etag1")
+        let manifest = "v1.1710000100.sources:etag1"
         let topicBlobRefs = ["sources": [String]()]
 
         self.cache.write(PersistedRemoteConfiguration(
@@ -134,7 +134,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
         let read = try XCTUnwrap(self.cache.read())
 
         expect(read.domain) == "app"
-        expect(read.manifest) == RemoteConfigManifestToken("v1.1710000100.sources:etag1")
+        expect(read.manifest) == "v1.1710000100.sources:etag1"
         expect(read.activeTopics).to(beEmpty())
         expect(read.prefetchBlobs).to(beEmpty())
         expect(read.topicBlobRefs).to(beEmpty())
@@ -144,7 +144,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
     func testWriteCreatesDirectoryWhenAbsent() {
         self.cache.write(PersistedRemoteConfiguration(
             domain: "app",
-            manifest: RemoteConfigManifestToken("v1.1710000100.sources:etag1"),
+            manifest: "v1.1710000100.sources:etag1",
             activeTopics: [],
             prefetchBlobs: [],
             topicBlobRefs: [:],
@@ -157,7 +157,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
     func testWriteUsesRemoteConfigDirectoryAndFileName() {
         self.cache.write(PersistedRemoteConfiguration(
             domain: "app",
-            manifest: RemoteConfigManifestToken("v1.1710000100.sources:etag1"),
+            manifest: "v1.1710000100.sources:etag1",
             activeTopics: [],
             prefetchBlobs: [],
             topicBlobRefs: [:],
@@ -177,7 +177,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
 
         self.cache.write(PersistedRemoteConfiguration(
             domain: "app",
-            manifest: RemoteConfigManifestToken("v1.1710000100.sources:etag1"),
+            manifest: "v1.1710000100.sources:etag1",
             activeTopics: [],
             prefetchBlobs: [],
             topicBlobRefs: [:],
@@ -190,7 +190,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
     func testWriteOverwritesPreviousSnapshot() throws {
         self.cache.write(PersistedRemoteConfiguration(
             domain: "app",
-            manifest: RemoteConfigManifestToken("v1.1710000100.sources:old"),
+            manifest: "v1.1710000100.sources:old",
             activeTopics: [],
             prefetchBlobs: [],
             topicBlobRefs: [:],
@@ -198,7 +198,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
         ))
         self.cache.write(PersistedRemoteConfiguration(
             domain: "app",
-            manifest: RemoteConfigManifestToken("v1.1710000100.sources:new"),
+            manifest: "v1.1710000100.sources:new",
             activeTopics: ["sources"],
             prefetchBlobs: [],
             topicBlobRefs: [:],
@@ -207,7 +207,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
 
         let read = try XCTUnwrap(self.cache.read())
 
-        expect(read.manifest) == RemoteConfigManifestToken("v1.1710000100.sources:new")
+        expect(read.manifest) == "v1.1710000100.sources:new"
     }
 
 }

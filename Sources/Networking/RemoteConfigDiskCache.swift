@@ -18,7 +18,7 @@ protocol RemoteConfigDiskCacheType: AnyObject {
 struct PersistedRemoteConfiguration: Codable, Equatable {
 
     let domain: String
-    let manifest: RemoteConfigManifestToken
+    let manifest: String
     let activeTopics: [String]
     let prefetchBlobs: [String]
     let topicBlobRefs: [String: [String]]
@@ -26,7 +26,7 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
 
     init(
         domain: String,
-        manifest: RemoteConfigManifestToken,
+        manifest: String,
         activeTopics: [String],
         prefetchBlobs: [String],
         topicBlobRefs: [String: [String]],
@@ -44,7 +44,7 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.init(
             domain: try container.decodeIfPresent(String.self, forKey: .domain) ?? RemoteConfiguration.defaultDomain,
-            manifest: try container.decode(RemoteConfigManifestToken.self, forKey: .manifest),
+            manifest: try container.decode(String.self, forKey: .manifest),
             activeTopics: try container.decodeIfPresent([String].self, forKey: .activeTopics) ?? [],
             prefetchBlobs: try container.decodeIfPresent([String].self, forKey: .prefetchBlobs) ?? [],
             topicBlobRefs: try container.decodeIfPresent([String: [String]].self, forKey: .topicBlobRefs) ?? [:],
