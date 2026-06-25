@@ -13,6 +13,8 @@ import Foundation
 /// response or as the plain JSON HTTP response body.
 struct RemoteConfiguration: Equatable {
 
+    static let defaultDomain = "app"
+
     let domain: String
     /// Other domains the SDK should also sync to assemble the full configuration.
     let subdomains: [String]
@@ -109,6 +111,7 @@ extension RemoteConfiguration {
             }
         }
 
+        // JSONDecoder.default converts `blob_ref` to `blobRef` before matching dynamic keys.
         private static let blobRefKey = DynamicCodingKey("blobRef")
         private static let prefetchKey = DynamicCodingKey("prefetch")
 

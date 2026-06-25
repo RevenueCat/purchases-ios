@@ -9,7 +9,7 @@ import Foundation
 
 class RemoteConfigAPI {
 
-    typealias RemoteConfigResponseHandler = Backend.ResponseHandler<RCContainer?>
+    typealias RemoteConfigResponseHandler = Backend.ResponseHandler<RemoteConfigFetchResult>
 
     private let callbackCache: CallbackCache<RemoteConfigCallback>
     private let backendConfig: BackendConfiguration
@@ -38,6 +38,20 @@ class RemoteConfigAPI {
             delay: .default(forBackgroundedApp: isAppBackgrounded),
             cacheStatus: cacheStatus
         )
+    }
+
+}
+
+struct RemoteConfigFetchResult {
+
+    /// `nil` represents a successful `204 No Content` response. Malformed or undecodable
+    /// container bytes should fail before this result is created.
+    let container: RCContainer?
+    let verificationResult: VerificationResult
+
+    init(response: VerifiedHTTPResponse<RCContainer?>) {
+        self.container = response.body
+        self.verificationResult = response.verificationResult
     }
 
 }

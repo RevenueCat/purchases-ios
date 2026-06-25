@@ -57,7 +57,8 @@ class HTTPRequestTests: TestCase {
         .getProductEntitlementMapping,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
         .getWorkflows(appUserID: userID, type: nil),
-        .getWorkflow(appUserID: userID, workflowId: "wf_1")
+        .getWorkflow(appUserID: userID, workflowId: "wf_1"),
+        .remoteConfig
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
@@ -176,7 +177,8 @@ class HTTPRequestTests: TestCase {
             .getOfferings(appUserID: Self.userID),
             .getProductEntitlementMapping,
             .getWorkflows(appUserID: Self.userID, type: nil),
-            .getWorkflow(appUserID: Self.userID, workflowId: "wf_1")
+            .getWorkflow(appUserID: Self.userID, workflowId: "wf_1"),
+            .remoteConfig
         ]
     }
 

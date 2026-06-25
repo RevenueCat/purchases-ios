@@ -48,6 +48,37 @@ protocol HTTPRequestPath {
 
     /// Additional headers specific to this endpoint.
     var additionalHeaders: HTTPRequest.Headers { get }
+
+    /// Provides endpoint-specific inputs for response signature verification.
+    var responseSignatureContextProvider: ResponseSignatureContextProvider { get }
+}
+
+/// Provides endpoint-specific inputs for backend response signature verification.
+///
+/// Most endpoints use the raw response body and request body. Specialized endpoints can override
+/// either input.
+protocol ResponseSignatureContextProvider {
+
+    /// Returns the response bytes that should be verified against the backend signature.
+    ///
+    /// This may throw when deriving the signed payload requires validating response structure first.
+    func responsePayloadForSignature(from body: Data?, statusCode: HTTPStatusCode) throws -> Data?
+
+    /// Returns the request body component to include in signature parameters, if any.
+    func requestBodyForSignature(for request: HTTPRequest) -> HTTPRequestBody?
+
+}
+
+struct DefaultResponseSignatureContextProvider: ResponseSignatureContextProvider {
+
+    func responsePayloadForSignature(from body: Data?, statusCode: HTTPStatusCode) throws -> Data? {
+        return body
+    }
+
+    func requestBodyForSignature(for request: HTTPRequest) -> HTTPRequestBody? {
+        return request.requestBody
+    }
+
 }
 
 extension HTTPRequestPath {
@@ -66,6 +97,10 @@ extension HTTPRequestPath {
 
     var additionalHeaders: HTTPRequest.Headers {
         return [:]
+    }
+
+    var responseSignatureContextProvider: ResponseSignatureContextProvider {
+        return DefaultResponseSignatureContextProvider()
     }
 
     var url: URL? { return self.url(proxyURL: nil) }
@@ -267,7 +302,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getWorkflow,
                 .appHealthReport,
                 .appHealthReportAvailability,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .remoteConfig,
+                .rewardVerificationStatus:
             return true
         case .getIntroEligibility,
                 .postSubscriberAttributes,
@@ -278,12 +315,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .postCreateTicket:
             return false
-        case .remoteConfig:
-            // swiftlint:disable:next todo
-            // TODO: Enable signature verification once remote-config binary responses are signed.
-            return false
-        case .rewardVerificationStatus:
-            return true
         }
     }
 
@@ -313,9 +344,16 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postCreateTicket:
             return false
         case .remoteConfig:
-            // swiftlint:disable:next todo
-            // TODO: Require a nonce once remote-config binary responses are signed.
             return false
+        }
+    }
+
+    var responseSignatureContextProvider: ResponseSignatureContextProvider {
+        switch self {
+        case .remoteConfig:
+            return RemoteConfigSignatureContextProvider()
+        default:
+            return DefaultResponseSignatureContextProvider()
         }
     }
 

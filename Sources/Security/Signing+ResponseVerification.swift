@@ -68,6 +68,16 @@ extension HTTPResponse where Body == Data? {
             return .notRequested
         }
 
+        let contextProvider = request.path.responseSignatureContextProvider
+        let message: Data?
+        do {
+            message = try contextProvider.responsePayloadForSignature(from: body, statusCode: statusCode)
+        } catch {
+            Logger.warn(Strings.signing.signature_payload_failed_creation(request, error))
+
+            return .failed
+        }
+
         guard let signature = HTTPResponse.value(
             forCaseInsensitiveHeaderField: .signature,
             in: responseHeaders
@@ -89,9 +99,9 @@ extension HTTPResponse where Body == Data? {
         if signing.verify(signature: signature,
                           with: .init(
                             path: request.path,
-                            message: body,
+                            message: message,
                             requestHeaders: requestHeaders,
-                            requestBody: request.requestBody,
+                            requestBody: contextProvider.requestBodyForSignature(for: request),
                             nonce: request.nonce,
                             etag: HTTPResponse.value(forCaseInsensitiveHeaderField: .eTag, in: responseHeaders),
                             requestDate: requestDate.millisecondsSince1970,
