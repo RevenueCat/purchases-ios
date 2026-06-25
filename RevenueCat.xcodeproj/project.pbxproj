@@ -1419,6 +1419,7 @@
 		FEDA000000000000000000D2 /* RemoteConfigSourceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C2 /* RemoteConfigSourceProvider.swift */; };
 		FEDA000000000000000000E1 /* MockRemoteConfigSourceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */; };
 		FEDA000000000000000000E2 /* MockRemoteConfigSourceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */; };
+		FFDE30D78DAFB1C58C5D44EF /* PaywallWebViewValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC98EB915E05F1CFDFD0687D /* PaywallWebViewValue.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -2536,6 +2537,7 @@
 		834DFBE817EAEDDF0179F323 /* PaywallZLayerScrollPolicyTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PaywallZLayerScrollPolicyTests.swift; path = Tests/RevenueCatUITests/PaywallsV2/PaywallZLayerScrollPolicyTests.swift; sourceTree = SOURCE_ROOT; };
 		839F34382E3BC574006355B0 /* PlatformColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformColor.swift; sourceTree = "<group>"; };
 		839F343A2E3BC5C4006355B0 /* PlatformBezierPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBezierPath.swift; sourceTree = "<group>"; };
+		83AC793744895AD08CE7D052 /* PaywallWebViewValueTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaywallWebViewValueTests.swift; sourceTree = "<group>"; };
 		83EE33252E1E20360011CF1C /* PaywallPreviewResourcesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPreviewResourcesLoader.swift; sourceTree = "<group>"; };
 		84C3F1AC1D7E1E64341D3936 /* Pods_RevenueCat_PurchasesTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RevenueCat_PurchasesTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		863C9FCC9388B370BDAF36C9 /* WebViewComponentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WebViewComponentView.swift; sourceTree = "<group>"; };
@@ -2800,6 +2802,7 @@
 		AAE17E010000000000000002 /* EntitlementReward.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementReward.swift; sourceTree = "<group>"; };
 		AAE17E010000000000000004 /* RewardVerificationStatusResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationStatusResponseTests.swift; sourceTree = "<group>"; };
 		AC06C294F30E7D8000000002 /* SelectedPackageId.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedPackageId.swift; sourceTree = "<group>"; };
+		AC98EB915E05F1CFDFD0687D /* PaywallWebViewValue.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaywallWebViewValue.swift; sourceTree = "<group>"; };
 		AD5000000000000000ADAD01 /* AdsStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsStrings.swift; sourceTree = "<group>"; };
 		AD5000000000000000ADAD03 /* AdRewardEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdRewardEvents.swift; sourceTree = "<group>"; };
 		AD5000000000000000ADAD05 /* AdReward+TestExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AdReward+TestExtensions.swift"; sourceTree = "<group>"; };
@@ -3198,6 +3201,7 @@
 				8BAF5880071599951932A6A1 /* ImageComponentViewTests.swift */,
 				BC6D9D5964DA2EA53FAEB2F5 /* WebViewCapabilitiesTests.swift */,
 				E0405C692DEAEFE6F36A9411 /* WebViewComponentTests.swift */,
+				83AC793744895AD08CE7D052 /* PaywallWebViewValueTests.swift */,
 			);
 			path = PaywallsV2;
 			sourceTree = "<group>";
@@ -5548,6 +5552,7 @@
 				57B1D7B12F2A1F1800A77E21 /* PaywallSourceEnvironment.swift */,
 				887A5FDC2C1D037000E1A461 /* Variables.swift */,
 				93B46553B99148F3A60B8BFB /* CustomPaywallVariables.swift */,
+				AC98EB915E05F1CFDFD0687D /* PaywallWebViewValue.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -8373,6 +8378,7 @@
 				9EA7410B386848B365F44AED /* WebViewCapabilitiesConfiguration.swift in Sources */,
 				854C4F7B377DFBD17B5C5740 /* WebViewComponentView.swift in Sources */,
 				5BCB9749FDD9493A14B6B870 /* WebViewComponentViewModel.swift in Sources */,
+				FFDE30D78DAFB1C58C5D44EF /* PaywallWebViewValue.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
