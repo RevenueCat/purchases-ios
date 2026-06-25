@@ -517,7 +517,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(self.signing.requests).to(haveCount(1))
     }
 
-    func testRemoteConfigConfigChecksumMismatchFailsBeforeCallingSigner() throws {
+    func testRemoteConfigConfigChecksumMismatchFailsVerificationBeforeCallingSigner() throws {
         let body = Self.rcContainer(
             checksumOverride: { index, data in
                 let checksum = RCContainerTestData.checksum(for: data)
@@ -534,7 +534,8 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
-        expect(response).to(beFailure())
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .failed
         expect(self.signing.requests).to(beEmpty())
     }
 
@@ -1049,6 +1050,32 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
 
         expect(response).to(beSuccess())
         expect(response?.value?.verificationResult) == .failed
+    }
+
+    func testRemoteConfigConfigChecksumMismatchFailsRequestBeforeCallingSigner() throws {
+        let body = Self.rcContainer(
+            checksumOverride: { index, data in
+                let checksum = RCContainerTestData.checksum(for: data)
+                return index == 0 ? Array(checksum.reversed()) : checksum
+            }
+        )
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: body)
+        self.signing.stubbedVerificationResult = true
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beFailure())
+        expect(response?.error)
+            .to(matchError(NetworkError.signatureVerificationFailed(
+                path: HTTPRequest.Path.remoteConfig,
+                code: .success
+            )))
+        expect(self.signing.requests).to(beEmpty())
     }
 
     func testFakeSignatureFailuresWithDisabledVerification() {
