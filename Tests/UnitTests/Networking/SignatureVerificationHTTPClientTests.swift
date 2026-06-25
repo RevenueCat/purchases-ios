@@ -1077,16 +1077,14 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
-        // Enforced mode would turn a failed verification result into `signatureVerificationFailed`,
-        // but this response never reaches that point as a typed success: checksum validation also
-        // makes the RC Container undecodable.
+        // Enforced mode turns the failed verification result into a transport failure before
+        // typed RC Container parsing can report the checksum mismatch as a decoding error.
         expect(response).to(beFailure())
-        switch try XCTUnwrap(response?.error) {
-        case .decoding:
-            break
-        default:
-            fail("Expected decoding error")
-        }
+        expect(response?.error)
+            .to(matchError(NetworkError.signatureVerificationFailed(
+                path: HTTPRequest.Path.remoteConfig,
+                code: .success
+            )))
         expect(self.signing.requests).to(beEmpty())
     }
 
