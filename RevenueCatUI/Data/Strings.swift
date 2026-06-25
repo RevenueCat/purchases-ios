@@ -111,6 +111,10 @@ enum Strings {
 
     // Web View
     case paywall_web_view_content_rules_failed(Error)
+    case paywall_web_view_missing_id
+    case paywall_web_view_message_rejected(reason: String)
+    case paywall_web_view_post_message_failed(Error)
+    case paywall_web_view_post_message_skipped
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -369,6 +373,16 @@ extension Strings: CustomStringConvertible {
         case .paywall_web_view_content_rules_failed(let error):
             return "Failed to compile content-blocking rules for a web_view component; the page " +
             "remains isolated to its uploaded bundle: \(error)"
+        case .paywall_web_view_missing_id:
+            return "web_view component has no id; the postMessage bridge is disabled for it. " +
+            "Assign an id to the component to enable bidirectional communication."
+        case .paywall_web_view_message_rejected(let reason):
+            return "Rejected a message from a web_view component: \(reason)"
+        case .paywall_web_view_post_message_failed(let error):
+            return "Failed to deliver a message to a web_view component: \(error)"
+        case .paywall_web_view_post_message_skipped:
+            return "Skipped delivering a message to a web_view component because its web view is no " +
+            "longer available or is showing different content."
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
