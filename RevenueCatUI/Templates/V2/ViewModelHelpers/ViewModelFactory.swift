@@ -513,6 +513,10 @@ struct ViewModelFactory {
                     fallbackStackViewModel: fallbackStackViewModel
                 )
             )
+        case .webView:
+            // The web_view renderer is introduced in a follow-up change; until then the component
+            // decodes but is not rendered.
+            throw TemplateError.unexpectedComponent
         case .fallbackHeader:
             // fallbackHeader is filtered out in toStackViewModel and should never reach here.
             assertionFailure("fallbackHeader should have been filtered before view model creation")

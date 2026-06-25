@@ -1,0 +1,12 @@
+{
+  "id": "promo_web_view",
+  "type": "web_view",
+  "protocol_version": 1,
+  "url": "https://example.com",
+  "size": {
+    "width": { "type": "fill" },
+    "height": { "type": "fit" }
+  },
+  "visible": true,
+  "name": "Promo web component"
+}
