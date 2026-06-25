@@ -517,7 +517,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(self.signing.requests).to(haveCount(1))
     }
 
-    func testRemoteConfigConfigChecksumMismatchFailsVerificationBeforeCallingSigner() throws {
+    func testRemoteConfigConfigChecksumMismatchFailsDecodingBeforeCallingSigner() throws {
         let body = Self.rcContainer(
             checksumOverride: { index, data in
                 let checksum = RCContainerTestData.checksum(for: data)
@@ -534,8 +534,16 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
-        expect(response).to(beSuccess())
-        expect(response?.value?.verificationResult) == .failed
+        // A config checksum mismatch is both a signature-payload failure and an invalid
+        // RC Container. Informational mode does not fail the request for verification alone,
+        // but typed response parsing still fails because there is no valid container to return.
+        expect(response).to(beFailure())
+        switch try XCTUnwrap(response?.error) {
+        case .decoding:
+            break
+        default:
+            fail("Expected decoding error")
+        }
         expect(self.signing.requests).to(beEmpty())
     }
 
@@ -1069,12 +1077,16 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
+        // Enforced mode would turn a failed verification result into `signatureVerificationFailed`,
+        // but this response never reaches that point as a typed success: checksum validation also
+        // makes the RC Container undecodable.
         expect(response).to(beFailure())
-        expect(response?.error)
-            .to(matchError(NetworkError.signatureVerificationFailed(
-                path: HTTPRequest.Path.remoteConfig,
-                code: .success
-            )))
+        switch try XCTUnwrap(response?.error) {
+        case .decoding:
+            break
+        default:
+            fail("Expected decoding error")
+        }
         expect(self.signing.requests).to(beEmpty())
     }
 
