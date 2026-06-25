@@ -171,7 +171,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptData) == false
     }
 
-    #if swift(>=5.9)
+    // `SKTestSession.setSimulatedError(_:forAPI:)` is part of the StoreKitTest Swift overlay,
+    // which ships no Mac Catalyst (macabi) slice in Xcode 26.5, so it can't be compiled for Catalyst
+    // (Apple bug FB22922982).
+    #if swift(>=5.9) && !targetEnvironment(macCatalyst)
     @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
     func testPurchaseSK2CancelledWithSimulatedError() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
@@ -536,6 +539,15 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testPurchaseFailureClearsPresentedPaywall() async throws {
+        // `SKTestSession.setSimulatedError(_:forAPI:)` is part of the StoreKitTest Swift overlay,
+        // which ships no Mac Catalyst (macabi) slice in Xcode 26.5, so it can't be compiled for Catalyst
+        // (Apple bug FB22922982).
+        // This test relies on that fault-injection API, so it's skipped on Catalyst. The method is kept
+        // defined to satisfy the `PurchasesOrchestratorTests` protocol conformance.
+        #if targetEnvironment(macCatalyst)
+        throw XCTSkip("SKTestSession.setSimulatedError(_:forAPI:) is unavailable when compiling for Mac Catalyst " +
+                      "(Apple bug FB22922982)")
+        #else
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
         #if compiler(>=5.9)
         if #available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *) {
@@ -594,6 +606,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall
         ).to(beNil())
+        #endif
     }
 
     func testCancelEventClearsPresentedPaywall() async throws {
@@ -2501,7 +2514,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         }
     }
 
-    #if swift(>=5.9)
+    // `SKTestSession.setSimulatedError(_:forAPI:)` is part of the StoreKitTest Swift overlay,
+    // which ships no Mac Catalyst (macabi) slice in Xcode 26.5, so it can't be compiled for Catalyst
+    // (Apple bug FB22922982).
+    #if swift(>=5.9) && !targetEnvironment(macCatalyst)
     @available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *)
     func testPurchaseWithSimulatedErrorTracksError() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()

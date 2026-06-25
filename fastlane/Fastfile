@@ -2633,6 +2633,37 @@ platform :mac do
     end
   end
 
+  desc "Runs tests on Mac Catalyst"
+  lane :test_catalyst do |options|
+    # Runs the same test plan as iOS (including the StoreKit unit tests) but on the
+    # Mac Catalyst variant. As of May 2026, StoreKit tests fail to fetch products
+    # on iOS simulators with Xcode 26.4+. This lane is used to check whether the
+    # same StoreKit bug reproduces on Mac Catalyst.
+    #
+    # The host app must be ad-hoc signed (`CODE_SIGN_IDENTITY=-`). A fully unsigned
+    # Mac Catalyst app has no application container, so `SKTestSession` cannot persist
+    # its configuration (disabling dialogs, clearing transactions, storefront
+    # overrides) and every write fails with `SKInternalErrorDomain Code=3`, which
+    # makes purchase dialogs reappear and StoreKit tests fail. Ad-hoc signing (the
+    # equivalent of Xcode's "Sign to Run Locally") gives the app a stable container.
+    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+    test_plan = generate_snapshots ? "CI-Snapshots" : "CI-AllTests"
+
+    scan(
+      step_name: "scan - Mac Catalyst",
+      destination: "platform=macOS,arch=arm64,variant=Mac Catalyst",
+      scheme: "RevenueCat",
+      output_types: 'junit',
+      result_bundle: true,
+      testplan: test_plan,
+      configuration: 'Debug',
+      output_directory: "fastlane/test_output/xctest/catalyst",
+      number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
+      fail_build: !generate_snapshots,
+      xcargs: "CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=YES CODE_SIGN_STYLE=Manual"
+    )
+  end
+
 end
 
 def check_no_git_tag_exists(version_number)

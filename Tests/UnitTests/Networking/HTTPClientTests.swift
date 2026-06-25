@@ -1453,7 +1453,10 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
     }
 
-    #if os(macOS) || targetEnvironment(macCatalyst)
+    // On Mac Catalyst `identifierForVendor` follows the iOS path (`UIDevice`, always present and
+    // independent of sandbox), so Catalyst uses the iOS branch below. Only macOS native gates the
+    // identifier behind the sandbox check.
+    #if os(macOS)
     func testAlwaysPassesAppleDeviceIdentifierWhenIsSandbox() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 

@@ -1040,6 +1040,40 @@ jobs:
       - slack-notify-on-fail
       - github-notify-pr-on-fail
 
+  # As of May 2026, StoreKit tests fail to fetch products on iOS simulators when
+  # building with Xcode 26.4+ (see run-test-ios-26 / build-xcode-265 notes below).
+  # The same bug does not appear to reproduce on Mac Catalyst, so this job runs the
+  # full iOS test plan (including StoreKit tests) on the Mac Catalyst variant with
+  # Xcode 26.5 to confirm this on CI.
+  run-test-mac-catalyst-xcode-26:
+    executor:
+      name: macos-executor
+      xcode_version: "26.5"
+
+    steps:
+      - checkout
+      - install-dependencies
+
+      # === Mac Catalyst tests ===
+      - run:
+          name: Run Mac Catalyst tests
+          command: bundle exec fastlane mac test_catalyst
+          no_output_timeout: 15m
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/catalyst
+          bundle_name: RevenueCat
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_snapshots >>
+          job: "create_snapshot_pr"
+          version: "mac-catalyst-26"
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output-mac-catalyst
+      - slack-notify-on-fail
+      - github-notify-pr-on-fail
+
   # As of May 12, 2026, there is a StoreKit bug that is preventing us from running unit tests
   # when building with Xcode 26.4+. When built with Xcode 26.4+, tests that fetch products
   # with StoreKit with a SKConfig file fail to fetch products. Thus, a good chunk of our
@@ -2215,6 +2249,7 @@ workflows:
       - run-test-ios-15-and-14
       - run-test-tvos-and-macos
       - run-test-watchos
+      - run-test-mac-catalyst-xcode-26
       - backend-integration-tests-SK2 # Snapshots from this job are shared with all BackendIntegrationTests
 
 
@@ -2273,6 +2308,9 @@ workflows:
           context:
             - slack-secrets
       - build-xcode-265:
+          context:
+            - slack-secrets
+      - run-test-mac-catalyst-xcode-26:
           context:
             - slack-secrets
       - pod-lib-lint:
@@ -2446,6 +2484,7 @@ workflows:
             - check-api-changes-revenuecatui
             - run-test-ios-26
             - build-xcode-265
+            - run-test-mac-catalyst-xcode-26
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
@@ -2773,6 +2812,9 @@ workflows:
       - build-xcode-265:
           context:
             - slack-secrets
+      - run-test-mac-catalyst-xcode-26:
+          context:
+            - slack-secrets
       - pod-lib-lint:
           context:
             - slack-secrets
@@ -2794,6 +2836,7 @@ workflows:
             - lint
             - run-test-ios-26
             - build-xcode-265
+            - run-test-mac-catalyst-xcode-26
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
