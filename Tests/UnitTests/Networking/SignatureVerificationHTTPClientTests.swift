@@ -462,7 +462,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(response?.error)
             .to(matchError(NetworkError.signatureVerificationFailed(
                 path: HTTPRequest.Path.remoteConfig,
-                code: .success
+                code: .noContent
             )))
         expect(self.signing.requests).to(beEmpty())
     }
@@ -503,7 +503,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(response?.error)
             .to(matchError(NetworkError.signatureVerificationFailed(
                 path: HTTPRequest.Path.remoteConfig,
-                code: .success
+                code: .noContent
             )))
         expect(self.signing.requests).to(haveCount(1))
         expect(self.signing.requests.onlyElement?.parameters.message).to(beNil())
