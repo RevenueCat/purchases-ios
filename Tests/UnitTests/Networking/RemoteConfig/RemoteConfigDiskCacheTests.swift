@@ -13,6 +13,7 @@ import XCTest
 final class RemoteConfigDiskCacheTests: TestCase {
 
     private var rootURL: URL!
+    private var cacheDirectoryURL: URL!
     private var fileURL: URL!
     private var cache: RemoteConfigDiskCache!
 
@@ -28,21 +29,26 @@ final class RemoteConfigDiskCacheTests: TestCase {
         let directoryType = DirectoryHelper.DirectoryType.applicationSupport(overrideURL: self.rootURL)
         #endif
 
-        self.cache = RemoteConfigDiskCache(cache: .init(
+        let synchronizedCache = SynchronizedLargeItemCache(
             cache: FileManager.default,
             basePath: RemoteConfigDiskCache.basePath,
             directoryType: directoryType
-        ))
+        )
+        self.cache = RemoteConfigDiskCache(cache: synchronizedCache)
 
-        self.fileURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: directoryType)?
-            .appendingPathComponent(RemoteConfigDiskCache.basePath, isDirectory: true)
-            .appendingPathComponent(RemoteConfigDiskCache.fileName, isDirectory: false))
+        self.cacheDirectoryURL = try XCTUnwrap(synchronizedCache.cacheURL)
+        try? FileManager.default.removeItem(at: self.cacheDirectoryURL)
+
+        self.fileURL = self.cacheDirectoryURL
+            .appendingPathComponent(RemoteConfigDiskCache.fileName, isDirectory: false)
     }
 
     override func tearDownWithError() throws {
+        try? FileManager.default.removeItem(at: self.cacheDirectoryURL)
         try? FileManager.default.removeItem(at: self.rootURL)
         self.cache = nil
         self.fileURL = nil
+        self.cacheDirectoryURL = nil
         self.rootURL = nil
 
         try super.tearDownWithError()
