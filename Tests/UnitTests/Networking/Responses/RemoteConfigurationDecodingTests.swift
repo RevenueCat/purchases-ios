@@ -321,35 +321,6 @@ final class RemoteConfigurationDecodingTests: TestCase {
         expect(decoded) == request
     }
 
-    func testTopicsBlobRefsIncludesEmptyListForInlineOnlyTopics() throws {
-        let payload = """
-        {
-          "domain": "app",
-          "manifest": "v1.1710000100.product_entitlement_mapping:pem-etag,sources:sources-etag",
-          "active_topics": ["sources", "product_entitlement_mapping"],
-          "topics": {
-            "sources": {
-              "api": {
-                "url": "https://api.revenuecat.com"
-              }
-            },
-            "product_entitlement_mapping": {
-              "default": {
-                "blob_ref": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYX"
-              }
-            }
-          }
-        }
-        """.asData
-
-        let response = try JSONDecoder.default.decode(RemoteConfiguration.self, from: payload)
-
-        expect(response.topics.topicBlobRefs) == [
-            "sources": [],
-            "product_entitlement_mapping": ["AAECAwQFBgcICQoLDA0ODxAREhMUFRYX"]
-        ]
-    }
-
 }
 
 private extension RemoteConfigurationDecodingTests {

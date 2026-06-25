@@ -47,8 +47,6 @@ final class GetRemoteConfigOperation: CacheableNetworkOperation {
 
 struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
 
-    private static let appDomain = "app"
-
     let domain: String
     let manifest: String?
     let prefetchedBlobs: [String]
@@ -60,7 +58,7 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
     }
 
     init(
-        domain: String = Self.appDomain,
+        domain: String = RemoteConfiguration.defaultDomain,
         manifest: String? = nil,
         prefetchedBlobs: [String] = []
     ) {

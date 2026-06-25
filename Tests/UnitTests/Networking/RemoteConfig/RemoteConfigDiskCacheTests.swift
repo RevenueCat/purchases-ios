@@ -135,7 +135,12 @@ final class RemoteConfigDiskCacheTests: TestCase {
         self.cache = RemoteConfigDiskCache(directoryURL: nil)
 
         self.cache.write(PersistedRemoteConfiguration(
-            manifest: RemoteConfigManifestToken("v1.1710000100.sources:etag1")
+            domain: "app",
+            manifest: RemoteConfigManifestToken("v1.1710000100.sources:etag1"),
+            activeTopics: [],
+            prefetchBlobs: [],
+            topicBlobRefs: [:],
+            lastRefreshAt: nil
         ))
 
         self.logger.verifyMessageWasLogged(Strings.remoteConfig.cacheURLNotAvailable, level: .error)

@@ -13,6 +13,8 @@ import Foundation
 /// response or as the plain JSON HTTP response body.
 struct RemoteConfiguration: Equatable {
 
+    static let defaultDomain = "app"
+
     let domain: String
     /// Other domains the SDK should also sync to assemble the full configuration.
     let subdomains: [String]
@@ -137,20 +139,6 @@ struct RemoteConfigManifestToken: Codable, Equatable {
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(self.rawValue)
-    }
-
-}
-
-extension RemoteConfiguration.Topics {
-
-    /// The blob refs each changed topic's items reference, keyed by topic name.
-    ///
-    /// Inline-only changed topics are represented by an empty list so future syncs can retain the
-    /// topic while still knowing it does not keep any blobs alive.
-    var topicBlobRefs: [String: [String]] {
-        return self.entries.mapValues { topic in
-            topic.values.compactMap(\.blobRef).sorted()
-        }
     }
 
 }
