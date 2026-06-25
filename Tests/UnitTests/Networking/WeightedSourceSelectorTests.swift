@@ -106,6 +106,19 @@ final class WeightedSourceSelectorTests: TestCase {
         expect(selector.advance()).to(beNil())
     }
 
+    func testWeightsSummingBeyondIntMaxDoNotOverflow() {
+        // The tier's weights overflow `Int` when summed, so the total saturates to `Int.max` instead
+        // of trapping. Drawing target 5 skips `a` (weight 1) and lands on `b` (weight `Int.max`)
+        // without the running subtraction underflowing.
+        let sourceA = TestSource(id: "a", priority: 0, weight: 1)
+        let sourceB = TestSource(id: "b", priority: 0, weight: .max)
+        let selector = WeightedSourceSelector(sources: [sourceA, sourceB], randomizer: FakeRandomizer(5))
+
+        expect(selector.current) == sourceB
+        expect(selector.advance()) == sourceA
+        expect(selector.advance()).to(beNil())
+    }
+
     // MARK: - advance()
 
     func testAdvanceExcludesCurrentAndPicksNextPriorityTier() {

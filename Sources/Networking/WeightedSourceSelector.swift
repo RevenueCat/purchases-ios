@@ -27,7 +27,7 @@ protocol WeightedSourceRandomizer {
 
 }
 
-struct SystemWeightedSourceRandomizer: WeightedSourceRandomizer {
+private struct SystemWeightedSourceRandomizer: WeightedSourceRandomizer {
 
     func randomInt(below bound: Int) -> Int {
         return Int.random(in: 0..<bound)
@@ -53,8 +53,9 @@ class WeightedSourceSelector<Source: WeightedSource> {
 
     init(
         sources: [Source],
-        randomizer: WeightedSourceRandomizer = SystemWeightedSourceRandomizer()
+        randomizer: WeightedSourceRandomizer? = nil
     ) {
+        let randomizer = randomizer ?? SystemWeightedSourceRandomizer()
         self.orderedSources = Self.computeOrder(of: sources, randomizer: randomizer)
         self.iterator = self.orderedSources.makeIterator()
         self.current = self.iterator.next()
@@ -104,22 +105,31 @@ class WeightedSourceSelector<Source: WeightedSource> {
         randomizer: WeightedSourceRandomizer
     ) -> Int {
         let weights = sources.map { max(0, $0.weight) }
-        let totalWeight = weights.reduce(0, +)
+        let totalWeight = weights.reduce(0, Int.sumOrIntMax)
 
         guard totalWeight > 0 else {
             return randomizer.randomInt(below: sources.count)
         }
 
-        let target = randomizer.randomInt(below: totalWeight)
-        var cumulative = 0
+        var target = randomizer.randomInt(below: totalWeight)
         for (index, weight) in weights.enumerated() {
-            cumulative += weight
-            if target < cumulative {
+            target -= weight
+            if target < 0 {
                 return index
             }
         }
 
         return sources.count - 1
+    }
+
+}
+
+private extension Int {
+
+    /// Adds `a` and `b`, clamping to `Int.max` instead of overflowing.
+    static func sumOrIntMax(_ a: Int, _ b: Int) -> Int {
+        let (sum, overflow) = a.addingReportingOverflow(b)
+        return overflow ? .max : sum
     }
 
 }
