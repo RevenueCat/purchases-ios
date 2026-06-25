@@ -20,6 +20,7 @@ extension RCContainer {
         /// Typed failures for malformed RC Container bytes.
         enum FormatError: Error, Equatable {
 
+            case missingBody
             case truncatedHeader
             case invalidMagic
             case unsupportedVersion(UInt8)

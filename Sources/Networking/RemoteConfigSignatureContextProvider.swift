@@ -14,16 +14,7 @@ import Foundation
 /// headers.
 struct RemoteConfigSignatureContextProvider: ResponseSignatureContextProvider {
 
-    func signatureVerificationOverride(
-        statusCode: HTTPStatusCode,
-        body: Data?
-    ) -> VerificationResult? {
-        guard statusCode == .noContent else {
-            return nil
-        }
-
-        return .verified
-    }
+    let shouldTreatNoContentResponseAsVerified = true
 
     func responsePayloadForSignature(from body: Data?) throws -> Data? {
         return try Self.configChecksum(from: body)
@@ -40,10 +31,11 @@ private extension RemoteConfigSignatureContextProvider {
     /// Extracts the signed payload from a remote config RC Container response.
     ///
     /// Remote config defines the first RC Container element as the config element. The backend signs
-    /// that element's stored checksum, not the full container body.
+    /// that element's stored checksum, not the full container body. This intentionally parses only
+    /// the first element so verification can fail before the full response is decoded later.
     static func configChecksum(from data: Data?) throws -> Data {
         guard let data = data else {
-            throw RCContainer.Parser.FormatError.truncatedHeader
+            throw RCContainer.Parser.FormatError.missingBody
         }
 
         var parser = RCContainer.ElementParser(data: data)

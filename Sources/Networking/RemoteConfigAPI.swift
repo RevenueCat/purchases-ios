@@ -42,34 +42,16 @@ class RemoteConfigAPI {
 
 }
 
-enum RemoteConfigFetchResult {
+struct RemoteConfigFetchResult {
 
-    case container(RCContainer, verificationResult: VerificationResult)
-    case noContent(verificationResult: VerificationResult)
-
-    var container: RCContainer? {
-        switch self {
-        case let .container(container, _):
-            return container
-        case .noContent:
-            return nil
-        }
-    }
-
-    var verificationResult: VerificationResult {
-        switch self {
-        case let .container(_, verificationResult),
-             let .noContent(verificationResult):
-            return verificationResult
-        }
-    }
+    /// `nil` represents a successful `204 No Content` response. Malformed or undecodable
+    /// container bytes should fail before this result is created.
+    let container: RCContainer?
+    let verificationResult: VerificationResult
 
     init(response: VerifiedHTTPResponse<RCContainer?>) {
-        if let container = response.body {
-            self = .container(container, verificationResult: response.verificationResult)
-        } else {
-            self = .noContent(verificationResult: response.verificationResult)
-        }
+        self.container = response.body
+        self.verificationResult = response.verificationResult
     }
 
 }

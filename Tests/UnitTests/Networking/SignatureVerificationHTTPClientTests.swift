@@ -443,6 +443,14 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(self.signing.requests).to(beEmpty())
     }
 
+    func testRemoteConfigSignaturePayloadMissingBodyThrowsMissingBodyError() {
+        let provider = RemoteConfigSignatureContextProvider()
+
+        XCTAssertThrowsError(try provider.responsePayloadForSignature(from: nil)) { error in
+            expect(error as? RCContainer.Parser.FormatError) == .missingBody
+        }
+    }
+
     func testRemoteConfigMissingSignatureReturnsFailedVerification() throws {
         self.mockResponse(path: HTTPRequest.Path.remoteConfig,
                           signature: nil,

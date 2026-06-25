@@ -69,8 +69,9 @@ extension HTTPResponse where Body == Data? {
         }
 
         let contextProvider = request.path.responseSignatureContextProvider
-        if let result = contextProvider.signatureVerificationOverride(statusCode: statusCode, body: body) {
-            return result
+        if statusCode == .noContent,
+           contextProvider.shouldTreatNoContentResponseAsVerified {
+            return .verified
         }
 
         let message: Data?

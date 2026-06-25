@@ -246,16 +246,14 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         let fetchResult = try XCTUnwrap(result?.value)
-        guard case let .container(container, verificationResult) = fetchResult else {
-            return XCTFail("Expected remote config container result")
-        }
+        let container = try XCTUnwrap(fetchResult.container)
 
         expect(RCContainerTestData.data(from: container.config)) == Self.config
         expect(container.contentElements).to(haveCount(1))
         expect(RCContainerTestData.data(
             from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: Self.content)])
         )) == Self.content
-        expect(verificationResult) == .notRequested
+        expect(fetchResult.verificationResult) == .notRequested
     }
 
     func testGetRemoteConfigReturnsVerificationResultFromHTTPClient() throws {
@@ -266,12 +264,9 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         let fetchResult = try XCTUnwrap(result?.value)
-        guard case let .container(container, verificationResult) = fetchResult else {
-            return XCTFail("Expected remote config container result")
-        }
 
-        expect(container).toNot(beNil())
-        expect(verificationResult) == .verified
+        expect(fetchResult.container).toNot(beNil())
+        expect(fetchResult.verificationResult) == .verified
     }
 
     func testGetRemoteConfigReturnsFailedVerificationResultFromHTTPClient() throws {
@@ -282,12 +277,9 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         let fetchResult = try XCTUnwrap(result?.value)
-        guard case let .container(container, verificationResult) = fetchResult else {
-            return XCTFail("Expected remote config container result")
-        }
 
-        expect(container).toNot(beNil())
-        expect(verificationResult) == .failed
+        expect(fetchResult.container).toNot(beNil())
+        expect(fetchResult.verificationResult) == .failed
     }
 
     func testGetRemoteConfigNoContentResponseSucceedsWithNoContainer() throws {
@@ -302,11 +294,9 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
         expect(result).to(beSuccess())
         let fetchResult = try XCTUnwrap(result?.value)
-        guard case let .noContent(verificationResult) = fetchResult else {
-            return XCTFail("Expected no content remote config result")
-        }
 
-        expect(verificationResult) == .verified
+        expect(fetchResult.container).to(beNil())
+        expect(fetchResult.verificationResult) == .verified
     }
 
     // MARK: - Error handling
