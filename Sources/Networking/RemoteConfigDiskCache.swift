@@ -87,7 +87,7 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
     }
 
     func write(_ configuration: PersistedRemoteConfiguration) {
-        guard self.cache.isAvailable else {
+        guard self.cache.cacheURL != nil else {
             Logger.error(Strings.remoteConfig.cacheURLNotAvailable)
             return
         }

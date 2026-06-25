@@ -21,11 +21,7 @@ internal final class SynchronizedLargeItemCache {
 
     private let cache: LargeItemCacheType
     private let lock: Lock
-    private let cacheURL: URL?
-
-    var isAvailable: Bool {
-        return self.cacheURL != nil
-    }
+    let cacheURL: URL?
 
     init(
         cache: LargeItemCacheType,
