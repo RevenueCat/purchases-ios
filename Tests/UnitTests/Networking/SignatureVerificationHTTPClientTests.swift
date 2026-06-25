@@ -345,6 +345,304 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(signingRequest.publicKey).toNot(beNil())
     }
 
+    func testValidRemoteConfigSignatureUsesConfigChecksumAsSignedMessage() throws {
+        let config = "config".asData
+        let body = Self.rcContainer(config: config, contentElements: ["content".asData])
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: body)
+        self.signing.stubbedVerificationResult = true
+
+        let request = Self.remoteConfigRequest
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(request, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .verified
+        expect(response?.value?.body).toNot(beNil())
+
+        expect(self.signing.requests).to(haveCount(1))
+        let signingRequest = try XCTUnwrap(self.signing.requests.onlyElement)
+
+        expect(signingRequest.parameters.message) == Data(RCContainerTestData.checksum(for: config))
+        expect(signingRequest.parameters.nonce).to(beNil())
+        expect(signingRequest.parameters.requestBody).to(beNil())
+        expect(signingRequest.parameters.requestDate) == Self.date2.millisecondsSince1970
+        expect(signingRequest.signature) == Self.sampleSignature
+    }
+
+    func testRemoteConfigSignatureIncludesETagIfBackendSendsIt() throws {
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          eTag: Self.eTag,
+                          body: Self.rcContainer())
+        self.signing.stubbedVerificationResult = true
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(self.signing.requests.onlyElement?.parameters.etag) == Self.eTag
+    }
+
+    func testRemoteConfigNoContentResponseVerifiesRequestContextWithEmptyResponseMessage() throws {
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: "not an RC Container".asData,
+                          statusCode: .noContent)
+        self.signing.stubbedVerificationResult = true
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.body).to(beNil())
+        expect(response?.value?.verificationResult) == .verified
+        expect(self.signing.requests).to(haveCount(1))
+        expect(self.signing.requests.onlyElement?.parameters.message).to(beNil())
+        expect(self.signing.requests.onlyElement?.parameters.nonce).to(beNil())
+        expect(self.signing.requests.onlyElement?.parameters.requestBody).to(beNil())
+    }
+
+    func testRemoteConfigNoContentResponseWithDisabledVerificationIsNotRequested() throws {
+        self.changeClient(.disabled)
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: nil,
+                          requestDate: nil,
+                          body: Data(),
+                          statusCode: .noContent)
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.body).to(beNil())
+        expect(response?.value?.verificationResult) == .notRequested
+        expect(self.signing.requests).to(beEmpty())
+    }
+
+    func testRemoteConfigNoContentResponseMissingSignatureReturnsFailedVerification() throws {
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: nil,
+                          requestDate: Self.date2,
+                          body: Data(),
+                          statusCode: .noContent)
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.body).to(beNil())
+        expect(response?.value?.verificationResult) == .failed
+        expect(self.signing.requests).to(beEmpty())
+    }
+
+    func testRemoteConfigNoContentResponseMissingSignatureFailsInEnforcedMode() throws {
+        self.changeClientToEnforced()
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: nil,
+                          requestDate: Self.date2,
+                          body: Data(),
+                          statusCode: .noContent)
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beFailure())
+        expect(response?.error)
+            .to(matchError(NetworkError.signatureVerificationFailed(
+                path: HTTPRequest.Path.remoteConfig,
+                code: .noContent
+            )))
+        expect(self.signing.requests).to(beEmpty())
+    }
+
+    func testRemoteConfigNoContentResponseInvalidSignatureReturnsFailedVerification() throws {
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: Data(),
+                          statusCode: .noContent)
+        self.signing.stubbedVerificationResult = false
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.body).to(beNil())
+        expect(response?.value?.verificationResult) == .failed
+        expect(self.signing.requests).to(haveCount(1))
+        expect(self.signing.requests.onlyElement?.parameters.message).to(beNil())
+    }
+
+    func testRemoteConfigNoContentResponseInvalidSignatureFailsInEnforcedMode() throws {
+        self.changeClientToEnforced()
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: Data(),
+                          statusCode: .noContent)
+        self.signing.stubbedVerificationResult = false
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beFailure())
+        expect(response?.error)
+            .to(matchError(NetworkError.signatureVerificationFailed(
+                path: HTTPRequest.Path.remoteConfig,
+                code: .noContent
+            )))
+        expect(self.signing.requests).to(haveCount(1))
+        expect(self.signing.requests.onlyElement?.parameters.message).to(beNil())
+    }
+
+    func testRemoteConfigSignaturePayloadMissingBodyThrowsMissingBodyError() {
+        let provider = RemoteConfigSignatureContextProvider()
+
+        XCTAssertThrowsError(try provider.responsePayloadForSignature(from: nil, statusCode: .success)) { error in
+            expect(error as? RCContainer.Parser.FormatError) == .missingBody
+        }
+    }
+
+    func testRemoteConfigMissingSignatureReturnsFailedVerification() throws {
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: nil,
+                          requestDate: Self.date2,
+                          body: Self.rcContainer())
+        self.signing.stubbedVerificationResult = true
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .failed
+        expect(self.signing.requests).to(beEmpty())
+    }
+
+    func testRemoteConfigMissingSignatureFailsInEnforcedMode() throws {
+        self.changeClientToEnforced()
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: nil,
+                          requestDate: Self.date2,
+                          body: Self.rcContainer())
+        self.signing.stubbedVerificationResult = true
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beFailure())
+        expect(response?.error)
+            .to(matchError(NetworkError.signatureVerificationFailed(
+                path: HTTPRequest.Path.remoteConfig,
+                code: .success
+            )))
+        expect(self.signing.requests).to(beEmpty())
+    }
+
+    func testRemoteConfigInvalidSignatureReturnsFailedVerification() throws {
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: Self.rcContainer())
+        self.signing.stubbedVerificationResult = false
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .failed
+        expect(self.signing.requests).to(haveCount(1))
+    }
+
+    func testRemoteConfigInvalidSignatureFailsInEnforcedMode() throws {
+        self.changeClientToEnforced()
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: Self.rcContainer())
+        self.signing.stubbedVerificationResult = false
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beFailure())
+        expect(response?.error)
+            .to(matchError(NetworkError.signatureVerificationFailed(
+                path: HTTPRequest.Path.remoteConfig,
+                code: .success
+            )))
+        expect(self.signing.requests).to(haveCount(1))
+    }
+
+    func testRemoteConfigConfigChecksumMismatchFailsDecodingBeforeCallingSigner() throws {
+        let body = Self.rcContainer(
+            checksumOverride: { index, data in
+                let checksum = RCContainerTestData.checksum(for: data)
+                return index == 0 ? Array(checksum.reversed()) : checksum
+            }
+        )
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: body)
+        self.signing.stubbedVerificationResult = true
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        // A config checksum mismatch is both a signature-payload failure and an invalid
+        // RC Container. Informational mode does not fail the request for verification alone,
+        // but typed response parsing still fails because there is no valid container to return.
+        expect(response).to(beFailure())
+        switch try XCTUnwrap(response?.error) {
+        case .decoding:
+            break
+        default:
+            fail("Expected decoding error")
+        }
+        expect(self.signing.requests).to(beEmpty())
+    }
+
+    func testRemoteConfigCorruptedContentElementDoesNotAffectSignedMessage() throws {
+        let config = "config".asData
+        let content = "content".asData
+        var body = Self.rcContainer(config: config, contentElements: [content])
+        body[Self.contentPayloadOffset(config: config)] = UInt8(ascii: "x")
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: body)
+        self.signing.stubbedVerificationResult = true
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beFailure())
+        expect(self.signing.requests).to(haveCount(1))
+        expect(self.signing.requests.onlyElement?.parameters.message) == Data(
+            RCContainerTestData.checksum(for: config)
+        )
+    }
+
     func testPerformRequestOverridesVerificationMode() throws {
         self.mockPath(statusCode: .success, requestDate: Self.date1)
 
@@ -836,6 +1134,34 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         expect(response?.value?.verificationResult) == .failed
     }
 
+    func testRemoteConfigConfigChecksumMismatchFailsRequestBeforeCallingSigner() throws {
+        let body = Self.rcContainer(
+            checksumOverride: { index, data in
+                let checksum = RCContainerTestData.checksum(for: data)
+                return index == 0 ? Array(checksum.reversed()) : checksum
+            }
+        )
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig,
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: body)
+        self.signing.stubbedVerificationResult = true
+
+        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        // Enforced mode turns the failed verification result into a transport failure before
+        // typed RC Container parsing can report the checksum mismatch as a decoding error.
+        expect(response).to(beFailure())
+        expect(response?.error)
+            .to(matchError(NetworkError.signatureVerificationFailed(
+                path: HTTPRequest.Path.remoteConfig,
+                code: .success
+            )))
+        expect(self.signing.requests).to(beEmpty())
+    }
+
     func testFakeSignatureFailuresWithDisabledVerification() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
         self.signing.stubbedVerificationResult = true
@@ -855,6 +1181,31 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
 // MARK: - Private
 
 private extension BaseSignatureVerificationHTTPClientTests {
+
+    static var remoteConfigRequest: HTTPRequest {
+        return .init(method: .post(RemoteConfigRequest()), path: HTTPRequest.Path.remoteConfig)
+    }
+
+    static func rcContainer(
+        config: Data = "config".asData,
+        contentElements: [Data] = [],
+        checksumOverride: ((Int, Data) -> [UInt8])? = nil
+    ) -> Data {
+        return RCContainerTestData.container(
+            config: config,
+            contentElements: contentElements,
+            checksumOverride: checksumOverride
+        )
+    }
+
+    static func contentPayloadOffset(config: Data) -> Data.Index {
+        let configPadding = (8 - config.count % 8) % 8
+        return RCContainerTestData.headerSize
+            + RCContainerTestData.elementHeaderSize
+            + config.count
+            + configPadding
+            + RCContainerTestData.elementHeaderSize
+    }
 
     final func changeClient(
         _ verificationMode: Configuration.EntitlementVerificationMode,
