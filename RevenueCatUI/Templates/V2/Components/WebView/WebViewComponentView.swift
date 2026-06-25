@@ -54,6 +54,14 @@ struct WebViewComponentView: View {
                 .clipped()
                 .background(Color.clear)
         }
+        #elseif os(macOS)
+        if let resolvedURL = viewModel.resolvedURL(customVariables: customVariables) {
+            let macHeight = dynamicHeight ?? Self.initialHeight
+            MacWebViewRepresentable(url: resolvedURL, height: $dynamicHeight)
+                .modifier(WebViewSizeModifier(size: viewModel.size, measuredHeight: macHeight))
+                .clipped()
+                .background(Color.clear)
+        }
         // An invalid/unresolvable URL renders nothing.
         #else
         EmptyView()
@@ -503,5 +511,95 @@ final class AutoSizingWebView: WKWebView {
 }
 
 #endif // canImport(UIKit) && canImport(WebKit)
+
+#if os(macOS) && canImport(WebKit)
+
+@available(macOS 12.0, *)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private struct MacWebViewRepresentable: NSViewRepresentable {
+
+    let url: URL
+    @Binding var height: CGFloat?
+
+    func makeNSView(context: Context) -> WKWebView {
+        let webView = WKWebView(frame: .zero, configuration: Self.makeConfiguration())
+        webView.navigationDelegate = context.coordinator
+        context.coordinator.registerHeightReporting(on: webView)
+        context.coordinator.currentURL = url
+        PaywallWebViewScripts.loadIsolated(url: url, on: webView)
+
+        return webView
+    }
+
+    func updateNSView(_ nsView: WKWebView, context: Context) {
+        if context.coordinator.currentURL != url {
+            context.coordinator.currentURL = url
+            nsView.load(URLRequest(url: url))
+        }
+
+        context.coordinator.reportHeightIfNeeded(in: nsView)
+    }
+
+    static func dismantleNSView(_ nsView: WKWebView, coordinator: Coordinator) {
+        coordinator.unregisterHeightReporting(from: nsView)
+        nsView.navigationDelegate = nil
+        nsView.stopLoading()
+        nsView.configuration.websiteDataStore.removeData(
+            ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
+            modifiedSince: .distantPast
+        ) {}
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(height: $height)
+    }
+
+    private static func makeConfiguration() -> WKWebViewConfiguration {
+        let config = WKWebViewConfiguration()
+        config.websiteDataStore = .nonPersistent()
+        config.userContentController.addUserScript(PaywallWebViewScripts.heightReportingUserScript)
+
+        return config
+    }
+
+    final class Coordinator: NSObject, WKNavigationDelegate {
+
+        @Binding var height: CGFloat?
+        var currentURL: URL?
+
+        private lazy var heightReporter = WebViewHeightReporter { [weak self] newHeight, _ in
+            guard let self, newHeight >= 0, abs(newHeight - (self.height ?? 0)) > 0.5 else { return }
+            DispatchQueue.main.async {
+                self.height = newHeight
+            }
+        }
+
+        init(height: Binding<CGFloat?>) {
+            _height = height
+        }
+
+        func registerHeightReporting(on webView: WKWebView) {
+            self.heightReporter.register(on: webView)
+        }
+
+        func unregisterHeightReporting(from webView: WKWebView) {
+            self.heightReporter.unregister(from: webView)
+        }
+
+        func reportHeightIfNeeded(in webView: WKWebView) {
+            self.heightReporter.reportIfNeeded(in: webView)
+        }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            self.heightReporter.handleNavigationFinished(in: webView)
+        }
+
+    }
+
+}
+
+#endif // os(macOS) && canImport(WebKit)
 
 #endif // !os(tvOS)
