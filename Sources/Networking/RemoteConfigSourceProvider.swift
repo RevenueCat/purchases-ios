@@ -106,7 +106,7 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
                 continue
             }
             if source.priority != existing.priority || source.weight != existing.weight {
-                Logger.debug(Strings.remoteConfig.duplicateSourceURL(source.url))
+                Logger.warn(Strings.remoteConfig.duplicateSourceURL(source.url))
             }
             if source.priority > existing.priority ||
                 (source.priority == existing.priority && source.weight > existing.weight) {
