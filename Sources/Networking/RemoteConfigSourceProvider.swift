@@ -8,7 +8,7 @@
 import Foundation
 
 /// A remote config source: a URL plus the metadata used to order sources.
-struct RemoteConfigSource: WeightedSource, Equatable {
+struct RemoteConfigSource {
 
     /// A plain URL or a URL format with placeholders (e.g. `{blob_ref}`), to be resolved by the caller.
     let url: String
@@ -18,12 +18,12 @@ struct RemoteConfigSource: WeightedSource, Equatable {
 }
 
 /// The api and blob sources for the remote config, as provided by the `sources` topic.
-struct RemoteConfigSources: Equatable {
+struct RemoteConfigSources {
 
     let api: [RemoteConfigSource]
     let blob: [RemoteConfigSource]
 
-    init(api: [RemoteConfigSource] = [], blob: [RemoteConfigSource] = []) {
+    init(api: [RemoteConfigSource], blob: [RemoteConfigSource]) {
         self.api = api
         self.blob = blob
     }
@@ -41,19 +41,15 @@ struct RemoteConfigEndpoint: WeightedSource, Equatable {
     }
 
     let kind: Kind
+    let source: RemoteConfigSource
 
     /// A plain URL or a URL format with placeholders, to be resolved by the caller.
-    let url: String
+    var url: String { self.source.url }
+    var priority: Int { self.source.priority }
+    var weight: Int { self.source.weight }
 
-    /// Selection metadata, used to order endpoints within a kind.
-    let priority: Int
-    let weight: Int
-
-    init(kind: Kind, url: String, priority: Int = 0, weight: Int = 0) {
-        self.kind = kind
-        self.url = url
-        self.priority = priority
-        self.weight = weight
+    static func == (lhs: RemoteConfigEndpoint, rhs: RemoteConfigEndpoint) -> Bool {
+        return lhs.kind == rhs.kind && lhs.url == rhs.url
     }
 
 }
@@ -69,8 +65,8 @@ protocol RemoteConfigSourceProviderType: AnyObject {
     /// Falls back to the next source for the endpoint's kind. No-op if `endpoint` is no longer current.
     func reportUnhealthy(_ endpoint: RemoteConfigEndpoint)
 
-    /// Rewinds both api and blob to their first source, e.g. to start fresh on a new fetch cycle.
-    func restart()
+    /// Rewinds the given kind to its first source, e.g. to start fresh on a new fetch cycle.
+    func restart(_ kind: RemoteConfigEndpoint.Kind)
 
 }
 
@@ -104,26 +100,37 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
         }
     }
 
-    func restart() {
-        self.api.restart()
-        self.blob.restart()
+    func restart(_ kind: RemoteConfigEndpoint.Kind) {
+        switch kind {
+        case .api: self.api.restart()
+        case .blob: self.blob.restart()
+        }
     }
 
-    /// Builds the endpoints for a kind, keeping the first occurrence of each url and dropping later
-    /// duplicates. Done once here so endpoints never need to be rebuilt on reads.
+    /// Builds the endpoints for a kind, collapsing duplicate urls to the occurrence with the highest
+    /// priority (tie-broken by weight). Done once here so endpoints never need to be rebuilt on reads.
     private static func endpoints(
         from sources: [RemoteConfigSource],
         kind: RemoteConfigEndpoint.Kind
     ) -> [RemoteConfigEndpoint] {
-        var seenURLs = Set<String>()
-        return sources.compactMap { source in
-            guard seenURLs.insert(source.url).inserted else { return nil }
-            return RemoteConfigEndpoint(
-                kind: kind,
-                url: source.url,
-                priority: source.priority,
-                weight: source.weight
-            )
+        var bestByURL: [String: RemoteConfigSource] = [:]
+        var order: [String] = []
+        for source in sources {
+            guard let existing = bestByURL[source.url] else {
+                bestByURL[source.url] = source
+                order.append(source.url)
+                continue
+            }
+            if source.priority != existing.priority || source.weight != existing.weight {
+                Logger.debug(Strings.remoteConfig.duplicateSourceURL(source.url))
+            }
+            if source.priority > existing.priority ||
+                (source.priority == existing.priority && source.weight > existing.weight) {
+                bestByURL[source.url] = source
+            }
+        }
+        return order.compactMap { url in
+            bestByURL[url].map { RemoteConfigEndpoint(kind: kind, source: $0) }
         }
     }
 

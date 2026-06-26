@@ -22,9 +22,9 @@ final class MockRemoteConfigSourceProvider: RemoteConfigSourceProviderType {
         self.reportedUnhealthyEndpoints.append(endpoint)
     }
 
-    private(set) var restartCallCount = 0
-    func restart() {
-        self.restartCallCount += 1
+    private(set) var restartedKinds: [RemoteConfigEndpoint.Kind] = []
+    func restart(_ kind: RemoteConfigEndpoint.Kind) {
+        self.restartedKinds.append(kind)
     }
 
 }

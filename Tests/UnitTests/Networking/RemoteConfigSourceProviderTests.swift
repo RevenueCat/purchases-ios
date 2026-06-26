@@ -15,7 +15,10 @@ final class RemoteConfigSourceProviderTests: TestCase {
     // MARK: - Initial selection
 
     func testCurrentEndpointsAreNilWhenNoSources() {
-        let provider = RemoteConfigSourceProvider(sources: RemoteConfigSources(), randomizer: FakeRandomizer())
+        let provider = RemoteConfigSourceProvider(
+            sources: RemoteConfigSources(api: [], blob: []),
+            randomizer: FakeRandomizer()
+        )
         expect(provider.currentAPIEndpoint).to(beNil())
         expect(provider.currentBlobEndpoint).to(beNil())
     }
@@ -86,6 +89,29 @@ final class RemoteConfigSourceProviderTests: TestCase {
         expect(provider.currentAPIEndpoint?.url) == Self.url("b")
         provider.reportUnhealthy(provider.currentAPIEndpoint!)
         expect(provider.currentAPIEndpoint).to(beNil())
+    }
+
+    func testDedupKeepsHighestPriorityRegardlessOfOrder() {
+        let provider = Self.apiProvider([
+            Self.source("a", priority: 0, weight: 1),
+            Self.source("a", priority: 10, weight: 1),
+            Self.source("b", priority: 5, weight: 1)
+        ])
+
+        // `a` is kept at priority 10, so it outranks `b` (priority 5) despite appearing first at 0.
+        expect(provider.currentAPIEndpoint?.url) == Self.url("a")
+        expect(provider.currentAPIEndpoint?.priority) == 10
+        provider.reportUnhealthy(provider.currentAPIEndpoint!)
+        expect(provider.currentAPIEndpoint?.url) == Self.url("b")
+    }
+
+    func testDedupTieBreaksByWeightForEqualPriority() {
+        let provider = Self.apiProvider([
+            Self.source("a", priority: 0, weight: 1),
+            Self.source("a", priority: 0, weight: 100)
+        ])
+
+        expect(provider.currentAPIEndpoint?.weight) == 100
     }
 
     // MARK: - api / blob independence
@@ -186,11 +212,11 @@ final class RemoteConfigSourceProviderTests: TestCase {
         provider.reportUnhealthy(provider.currentAPIEndpoint!)
         expect(provider.currentAPIEndpoint?.url) == Self.url("c")
 
-        provider.restart()
+        provider.restart(.api)
         expect(provider.currentAPIEndpoint?.url) == Self.url("a")
     }
 
-    func testRestartRewindsBothKinds() {
+    func testRestartOnlyRewindsRequestedKind() {
         let provider = RemoteConfigSourceProvider(
             sources: RemoteConfigSources(
                 api: [Self.source("api1", priority: 10), Self.source("api2", priority: 0)],
@@ -204,8 +230,11 @@ final class RemoteConfigSourceProviderTests: TestCase {
         expect(provider.currentAPIEndpoint?.url) == Self.url("api2")
         expect(provider.currentBlobEndpoint?.url) == Self.url("blob2")
 
-        provider.restart()
+        provider.restart(.api)
         expect(provider.currentAPIEndpoint?.url) == Self.url("api1")
+        expect(provider.currentBlobEndpoint?.url) == Self.url("blob2")
+
+        provider.restart(.blob)
         expect(provider.currentBlobEndpoint?.url) == Self.url("blob1")
     }
 
@@ -264,7 +293,10 @@ final class RemoteConfigSourceProviderTests: TestCase {
     }
 
     private static func apiProvider(_ sources: [RemoteConfigSource]) -> RemoteConfigSourceProvider {
-        return RemoteConfigSourceProvider(sources: RemoteConfigSources(api: sources), randomizer: FakeRandomizer(0))
+        return RemoteConfigSourceProvider(
+            sources: RemoteConfigSources(api: sources, blob: []),
+            randomizer: FakeRandomizer(0)
+        )
     }
 
 }
