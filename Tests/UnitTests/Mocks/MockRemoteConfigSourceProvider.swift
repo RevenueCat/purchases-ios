@@ -12,10 +12,14 @@ import Foundation
 final class MockRemoteConfigSourceProvider: RemoteConfigSourceProviderType {
 
     var stubbedCurrentAPISource: RemoteConfigSourceHandle?
-    var currentAPISource: RemoteConfigSourceHandle? { self.stubbedCurrentAPISource }
-
     var stubbedCurrentBlobSource: RemoteConfigSourceHandle?
-    var currentBlobSource: RemoteConfigSourceHandle? { self.stubbedCurrentBlobSource }
+
+    func getCurrent(for purpose: RemoteConfigSourceHandle.Purpose) -> RemoteConfigSourceHandle? {
+        switch purpose {
+        case .api: return self.stubbedCurrentAPISource
+        case .blob: return self.stubbedCurrentBlobSource
+        }
+    }
 
     private(set) var reportedUnhealthySources: [RemoteConfigSourceHandle] = []
     func reportUnhealthy(_ handle: RemoteConfigSourceHandle) {

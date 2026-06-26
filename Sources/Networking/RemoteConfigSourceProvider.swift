@@ -17,14 +17,6 @@ struct RemoteConfigSource {
 
 }
 
-/// The api and blob sources for the remote config, as provided by the `sources` topic.
-struct RemoteConfigSources {
-
-    let api: [RemoteConfigSource]
-    let blob: [RemoteConfigSource]
-
-}
-
 /// A source handed out by a `RemoteConfigSourceProvider`, tagged with its purpose (api or blob).
 /// Report it back via `reportUnhealthy(_:)` to fall back to the next source. The `url` is its
 /// identity: a report is ignored once the provider has already moved past that url.
@@ -48,11 +40,8 @@ struct RemoteConfigSourceHandle: WeightedSource {
 
 protocol RemoteConfigSourceProviderType: AnyObject {
 
-    /// The current healthy api source, or `nil` once every api source has been reported unhealthy.
-    var currentAPISource: RemoteConfigSourceHandle? { get }
-
-    /// The current healthy blob source, or `nil` once every blob source has been reported unhealthy.
-    var currentBlobSource: RemoteConfigSourceHandle? { get }
+    /// The current healthy source for `purpose`, or `nil` once all of its sources are reported unhealthy.
+    func getCurrent(for purpose: RemoteConfigSourceHandle.Purpose) -> RemoteConfigSourceHandle?
 
     /// Falls back to the next source for the handle's purpose. No-op if `handle` is no longer current.
     func reportUnhealthy(_ handle: RemoteConfigSourceHandle)
@@ -72,17 +61,20 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     private let api: SourceFailover
     private let blob: SourceFailover
 
-    init(sources: RemoteConfigSources, randomizer: WeightedSourceRandomizer? = nil) {
-        self.api = SourceFailover(handles: Self.handles(from: sources.api, purpose: .api), randomizer: randomizer)
-        self.blob = SourceFailover(handles: Self.handles(from: sources.blob, purpose: .blob), randomizer: randomizer)
+    init(
+        apiSources: [RemoteConfigSource],
+        blobSources: [RemoteConfigSource],
+        randomizer: WeightedSourceRandomizer? = nil
+    ) {
+        self.api = SourceFailover(handles: Self.handles(from: apiSources, purpose: .api), randomizer: randomizer)
+        self.blob = SourceFailover(handles: Self.handles(from: blobSources, purpose: .blob), randomizer: randomizer)
     }
 
-    var currentAPISource: RemoteConfigSourceHandle? {
-        return self.api.current
-    }
-
-    var currentBlobSource: RemoteConfigSourceHandle? {
-        return self.blob.current
+    func getCurrent(for purpose: RemoteConfigSourceHandle.Purpose) -> RemoteConfigSourceHandle? {
+        switch purpose {
+        case .api: return self.api.current
+        case .blob: return self.blob.current
+        }
     }
 
     func reportUnhealthy(_ handle: RemoteConfigSourceHandle) {
