@@ -55,10 +55,10 @@ final class RemoteConfigManager: RemoteConfigManagerType {
             defer { self.endRefresh() }
 
             switch result {
-            case let .success(.container(container, _)):
-                self.persist(container: container, previous: persisted)
-            case .success(.noContent):
-                break
+            case let .success(fetchResult):
+                if let container = fetchResult.container {
+                    self.persist(container: container, previous: persisted)
+                }
             case let .failure(error):
                 Logger.error(Strings.remoteConfig.refreshFailed(error))
             }
@@ -118,6 +118,17 @@ private extension RemoteConfigManager {
         return previous
             .merging(response.topics.topicBlobRefs) { _, changed in changed }
             .filter { topic, _ in response.activeTopics.contains(topic) }
+    }
+
+}
+
+fileprivate extension RemoteConfiguration.Topics {
+
+    /// The blob refs each changed topic's items reference, keyed by topic name.
+    var topicBlobRefs: [String: [String]] {
+        return self.entries.mapValues { topic in
+            topic.values.compactMap(\.blobRef).sorted()
+        }
     }
 
 }

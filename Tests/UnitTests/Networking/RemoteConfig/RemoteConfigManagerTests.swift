@@ -72,7 +72,7 @@ final class RemoteConfigManagerTests: TestCase {
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
 
-        self.remoteConfigAPI.complete(with: .success(.noContent(verificationResult: .verified)))
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
         self.manager.refreshRemoteConfig(isAppBackgrounded: true)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
@@ -97,7 +97,7 @@ final class RemoteConfigManagerTests: TestCase {
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
-            with: .success(.container(try Self.container(config: response), verificationResult: .verified))
+            with: .success(.test(container: try Self.container(config: response)))
         )
 
         expect(self.diskCache.invokedWriteCount) == 1
@@ -133,7 +133,7 @@ final class RemoteConfigManagerTests: TestCase {
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
-            with: .success(.container(try Self.container(config: response), verificationResult: .verified))
+            with: .success(.test(container: try Self.container(config: response)))
         )
 
         expect(self.diskCache.invokedWriteParameter?.topicBlobRefs) == ["sources": ["newSources"]]
@@ -162,7 +162,7 @@ final class RemoteConfigManagerTests: TestCase {
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
-            with: .success(.container(try Self.container(config: response), verificationResult: .verified))
+            with: .success(.test(container: try Self.container(config: response)))
         )
 
         expect(self.diskCache.invokedWriteParameter?.topicBlobRefs) == [
@@ -190,7 +190,7 @@ final class RemoteConfigManagerTests: TestCase {
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
-            with: .success(.container(try Self.container(config: response), verificationResult: .verified))
+            with: .success(.test(container: try Self.container(config: response)))
         )
 
         expect(self.diskCache.invokedWriteParameter?.topicBlobRefs) == ["sources": []]
@@ -202,7 +202,7 @@ final class RemoteConfigManagerTests: TestCase {
         )
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.remoteConfigAPI.complete(with: .success(.noContent(verificationResult: .verified)))
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
 
         expect(self.diskCache.invokedWriteCount) == 0
     }
@@ -223,7 +223,7 @@ final class RemoteConfigManagerTests: TestCase {
     func testMalformedConfigPayloadLeavesCacheUntouched() throws {
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
-            with: .success(.container(try Self.container(config: "{ not valid json"), verificationResult: .verified))
+            with: .success(.test(container: try Self.container(config: "{ not valid json")))
         )
 
         expect(self.diskCache.invokedWriteCount) == 0
@@ -246,9 +246,8 @@ final class RemoteConfigManagerTests: TestCase {
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
-            with: .success(.container(
-                try Self.container(config: response, contentElements: [invalidContentElement]),
-                verificationResult: .verified
+            with: .success(.test(
+                container: try Self.container(config: response, contentElements: [invalidContentElement])
             ))
         )
 
@@ -285,6 +284,26 @@ private extension RemoteConfigManagerTests {
         return try RCContainer(data: RCContainerTestData.container(
             config: config.asData,
             contentElements: contentElements
+        ))
+    }
+
+}
+
+private extension RemoteConfigFetchResult {
+
+    /// Builds a fetch result through the production initializer. A `nil` container
+    /// represents a `204 No Content` response.
+    static func test(
+        container: RCContainer?,
+        verificationResult: VerificationResult = .verified
+    ) -> RemoteConfigFetchResult {
+        return RemoteConfigFetchResult(response: .init(
+            httpStatusCode: container == nil ? .noContent : .success,
+            responseHeaders: [:],
+            body: container,
+            verificationResult: verificationResult,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false
         ))
     }
 
