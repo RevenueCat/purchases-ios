@@ -68,9 +68,9 @@ class SecureStorageErrorTests: TestCase {
     }
 
     func testTwoErrorsWithSameRawValueAreDescribedIdentically() {
-        let a = SecureStorageError(rawValue: errSecDuplicateItem)
-        let b = SecureStorageError(rawValue: errSecDuplicateItem)
-        expect(a.description) == b.description
+        let error1 = SecureStorageError(rawValue: errSecDuplicateItem)
+        let error2 = SecureStorageError(rawValue: errSecDuplicateItem)
+        expect(error1.description) == error2.description
     }
 
 }
@@ -148,7 +148,7 @@ private class MockSecureItemStorage: SecureItemStorage {
 
 }
 
-class SecureItemStorageDefaultImplementationTests: TestCase {
+class MockSecureItemStorageTests: TestCase {
 
     private var storage: MockSecureItemStorage!
 
@@ -406,12 +406,12 @@ class KeychainTests: TestCase {
     func testReadItemsForDifferentIdentifiersAreIndependent() throws {
         let id1 = uniqueID("x")
         let id2 = uniqueID("y")
-        let d1 = data(byte: 0x11)
-        let d2 = data(byte: 0x22)
-        try keychain.saveItem(identifier: id1, contents: d1)
-        try keychain.saveItem(identifier: id2, contents: d2)
-        expect(try self.keychain.readItem(identifier: id1)) == d1
-        expect(try self.keychain.readItem(identifier: id2)) == d2
+        let data1 = data(byte: 0x11)
+        let data2 = data(byte: 0x22)
+        try keychain.saveItem(identifier: id1, contents: data1)
+        try keychain.saveItem(identifier: id2, contents: data2)
+        expect(try self.keychain.readItem(identifier: id1)) == data1
+        expect(try self.keychain.readItem(identifier: id2)) == data2
     }
 
     // MARK: - saveItem
@@ -568,25 +568,25 @@ class KeychainTests: TestCase {
 class AccessGroupTests: TestCase {
 
     func testAccessGroupStringIsStored() {
-        let ag = Keychain.AccessGroup(accessGroup: "com.example.shared", appIdentifier: "com.example.app")
-        expect(ag.accessGroup) == "com.example.shared"
+        let accessGroup = Keychain.AccessGroup(accessGroup: "com.example.shared", appIdentifier: "com.example.app")
+        expect(accessGroup.accessGroup) == "com.example.shared"
     }
 
     func testAppIdentifierIsStored() {
-        let ag = Keychain.AccessGroup(accessGroup: "com.example.shared", appIdentifier: "com.example.app")
-        expect(ag.appIdentifier) == "com.example.app"
+        let accessGroup = Keychain.AccessGroup(accessGroup: "com.example.shared", appIdentifier: "com.example.app")
+        expect(accessGroup.appIdentifier) == "com.example.app"
     }
 
     func testAccessGroupAndAppIdentifierCanBeDistinct() {
-        let ag = Keychain.AccessGroup(accessGroup: "com.example.group", appIdentifier: "com.example.app.one")
-        expect(ag.accessGroup) == "com.example.group"
-        expect(ag.appIdentifier) == "com.example.app.one"
+        let accessGroup = Keychain.AccessGroup(accessGroup: "com.example.group", appIdentifier: "com.example.app.one")
+        expect(accessGroup.accessGroup) == "com.example.group"
+        expect(accessGroup.appIdentifier) == "com.example.app.one"
     }
 
     func testAccessGroupCanMatchAppIdentifier() {
         // A common pattern: the app's own bundle ID is also the access group.
-        let ag = Keychain.AccessGroup(accessGroup: "com.example.app", appIdentifier: "com.example.app")
-        expect(ag.accessGroup) == ag.appIdentifier
+        let accessGroup = Keychain.AccessGroup(accessGroup: "com.example.app", appIdentifier: "com.example.app")
+        expect(accessGroup.accessGroup) == ag.appIdentifier
     }
 
 }

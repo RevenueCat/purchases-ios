@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import Security
 import LocalAuthentication
+import Security
 
 /// A protocol that defines the interface for reading, writing, updating, and deleting secure items
 ///
@@ -23,13 +23,13 @@ protocol SecureItemStorage {
     /// - Returns: `true` if the secure storage holds the item; `false` otherwise.
     /// - Throws: a ``SecureStorageError`` if an error occurred during lookup
     func containsItem(identifier: String) throws(SecureStorageError) -> Bool
-    
+
     /// Return a list of all retrievable identifiers in the secure storage
     ///
     /// - Returns: a list of identifiers
     /// - Throws: a ``SecureStorageError`` if an error occurred during retrieval
     func allItemIdentifiers() throws(SecureStorageError) -> [String]
-    
+
     /// Read a single secure item
     /// - Parameter identifier: the identifier of the item
     /// - Returns: the item's `Data`, if it exists. Returns `nil` if no item is stored for that identifier.
@@ -74,7 +74,7 @@ protocol SecureItemStorage {
 
 /// Storage attributes of secure items
 struct SecureItemAttributes {
-    
+
     /// Indicates whether a secure item should be included in the device's backups.
     ///
     /// If this value is `true` (the default), then items will be present in a device's backups
@@ -107,14 +107,14 @@ extension SecureItemStorage {
             try self.deleteItem(identifier: identifier)
         }
     }
-    
+
     /// Modify an item, using default ``SecureItemAttributes``.
     ///
     /// - SeeAlso: ``modifyItem(identifier:contents:attributes:)``
     func modifyItem(identifier: String, contents: Data?) throws(SecureStorageError) {
         try self.modifyItem(identifier: identifier, contents: contents, attributes: SecureItemAttributes())
     }
-    
+
     /// Save an item, using default ``SecureItemAttributes``.
     ///
     /// - SeeAlso: ``saveItem(identifier:contents:attributes:)``
@@ -145,7 +145,7 @@ struct Keychain: SecureItemStorage {
         // and default to using the "revenuecat" service
         var base: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
-            kSecAttrService: "revenuecat",
+            kSecAttrService: "revenuecat"
         ]
 
         // If we share these blobs with other processes, then set the access group and change the service.
