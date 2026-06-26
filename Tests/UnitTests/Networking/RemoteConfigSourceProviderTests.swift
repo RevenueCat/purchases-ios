@@ -14,29 +14,29 @@ final class RemoteConfigSourceProviderTests: TestCase {
 
     // MARK: - Initial selection
 
-    func testCurrentEndpointsAreNilWhenNoSources() {
+    func testCurrentSourcesAreNilWhenNoSources() {
         let provider = RemoteConfigSourceProvider(
             sources: RemoteConfigSources(api: [], blob: []),
             randomizer: FakeRandomizer()
         )
-        expect(provider.currentAPIEndpoint).to(beNil())
-        expect(provider.currentBlobEndpoint).to(beNil())
+        expect(provider.currentAPISource).to(beNil())
+        expect(provider.currentBlobSource).to(beNil())
     }
 
-    func testCurrentEndpointReturnsHighestPrioritySource() {
+    func testCurrentSourceReturnsHighestPrioritySource() {
         let low = Self.source("low", priority: 0, weight: 100)
         let high = Self.source("high", priority: 10, weight: 1)
         let provider = Self.apiProvider([low, high])
 
-        let endpoint = provider.currentAPIEndpoint
-        expect(endpoint?.url) == Self.url("high")
-        expect(endpoint?.kind) == .api
+        let handle = provider.currentAPISource
+        expect(handle?.url) == Self.url("high")
+        expect(handle?.purpose) == .api
     }
 
-    func testCurrentEndpointIsStableAcrossReads() {
+    func testCurrentSourceIsStableAcrossReads() {
         let provider = Self.apiProvider([Self.source("a"), Self.source("b")])
 
-        expect(provider.currentAPIEndpoint?.url) == provider.currentAPIEndpoint?.url
+        expect(provider.currentAPISource?.url) == provider.currentAPISource?.url
     }
 
     // MARK: - reportUnhealthy advances
@@ -46,18 +46,18 @@ final class RemoteConfigSourceProviderTests: TestCase {
         let low = Self.source("low", priority: 0, weight: 1)
         let provider = Self.apiProvider([high, low])
 
-        let first = provider.currentAPIEndpoint
+        let first = provider.currentAPISource
         expect(first?.url) == Self.url("high")
 
         provider.reportUnhealthy(first!)
-        expect(provider.currentAPIEndpoint?.url) == Self.url("low")
+        expect(provider.currentAPISource?.url) == Self.url("low")
     }
 
-    func testCurrentEndpointIsNilWhenExhausted() {
+    func testCurrentSourceIsNilWhenExhausted() {
         let provider = Self.apiProvider([Self.source("only")])
 
-        provider.reportUnhealthy(provider.currentAPIEndpoint!)
-        expect(provider.currentAPIEndpoint).to(beNil())
+        provider.reportUnhealthy(provider.currentAPISource!)
+        expect(provider.currentAPISource).to(beNil())
     }
 
     func testReportUnhealthyWalksFullFallbackOrder() {
@@ -66,13 +66,13 @@ final class RemoteConfigSourceProviderTests: TestCase {
         let third = Self.source("3", priority: 10, weight: 1)
         let provider = Self.apiProvider([first, second, third])
 
-        expect(provider.currentAPIEndpoint?.url) == Self.url("1")
-        provider.reportUnhealthy(provider.currentAPIEndpoint!)
-        expect(provider.currentAPIEndpoint?.url) == Self.url("2")
-        provider.reportUnhealthy(provider.currentAPIEndpoint!)
-        expect(provider.currentAPIEndpoint?.url) == Self.url("3")
-        provider.reportUnhealthy(provider.currentAPIEndpoint!)
-        expect(provider.currentAPIEndpoint).to(beNil())
+        expect(provider.currentAPISource?.url) == Self.url("1")
+        provider.reportUnhealthy(provider.currentAPISource!)
+        expect(provider.currentAPISource?.url) == Self.url("2")
+        provider.reportUnhealthy(provider.currentAPISource!)
+        expect(provider.currentAPISource?.url) == Self.url("3")
+        provider.reportUnhealthy(provider.currentAPISource!)
+        expect(provider.currentAPISource).to(beNil())
     }
 
     // MARK: - Dedup
@@ -84,11 +84,11 @@ final class RemoteConfigSourceProviderTests: TestCase {
             Self.source("b", priority: 0, weight: 1)
         ])
 
-        expect(provider.currentAPIEndpoint?.url) == Self.url("a")
-        provider.reportUnhealthy(provider.currentAPIEndpoint!)
-        expect(provider.currentAPIEndpoint?.url) == Self.url("b")
-        provider.reportUnhealthy(provider.currentAPIEndpoint!)
-        expect(provider.currentAPIEndpoint).to(beNil())
+        expect(provider.currentAPISource?.url) == Self.url("a")
+        provider.reportUnhealthy(provider.currentAPISource!)
+        expect(provider.currentAPISource?.url) == Self.url("b")
+        provider.reportUnhealthy(provider.currentAPISource!)
+        expect(provider.currentAPISource).to(beNil())
     }
 
     func testDedupKeepsHighestPriorityRegardlessOfOrder() {
@@ -99,10 +99,10 @@ final class RemoteConfigSourceProviderTests: TestCase {
         ])
 
         // `a` is kept at priority 10, so it outranks `b` (priority 5) despite appearing first at 0.
-        expect(provider.currentAPIEndpoint?.url) == Self.url("a")
-        expect(provider.currentAPIEndpoint?.priority) == 10
-        provider.reportUnhealthy(provider.currentAPIEndpoint!)
-        expect(provider.currentAPIEndpoint?.url) == Self.url("b")
+        expect(provider.currentAPISource?.url) == Self.url("a")
+        expect(provider.currentAPISource?.priority) == 10
+        provider.reportUnhealthy(provider.currentAPISource!)
+        expect(provider.currentAPISource?.url) == Self.url("b")
     }
 
     func testDedupTieBreaksByWeightForEqualPriority() {
@@ -111,7 +111,7 @@ final class RemoteConfigSourceProviderTests: TestCase {
             Self.source("a", priority: 0, weight: 100)
         ])
 
-        expect(provider.currentAPIEndpoint?.weight) == 100
+        expect(provider.currentAPISource?.weight) == 100
     }
 
     // MARK: - api / blob independence
@@ -122,12 +122,12 @@ final class RemoteConfigSourceProviderTests: TestCase {
             randomizer: FakeRandomizer(0)
         )
 
-        let api = provider.currentAPIEndpoint
-        let blob = provider.currentBlobEndpoint
+        let api = provider.currentAPISource
+        let blob = provider.currentBlobSource
         expect(api?.url) == Self.url("api")
-        expect(api?.kind) == .api
+        expect(api?.purpose) == .api
         expect(blob?.url) == Self.url("blob")
-        expect(blob?.kind) == .blob
+        expect(blob?.purpose) == .blob
     }
 
     func testReportingAPIUnhealthyDoesNotAffectBlob() {
@@ -139,13 +139,13 @@ final class RemoteConfigSourceProviderTests: TestCase {
             randomizer: FakeRandomizer(0)
         )
 
-        provider.reportUnhealthy(provider.currentAPIEndpoint!)
-        expect(provider.currentAPIEndpoint?.url) == Self.url("api2")
-        expect(provider.currentBlobEndpoint?.url) == Self.url("blob1")
+        provider.reportUnhealthy(provider.currentAPISource!)
+        expect(provider.currentAPISource?.url) == Self.url("api2")
+        expect(provider.currentBlobSource?.url) == Self.url("blob1")
 
-        provider.reportUnhealthy(provider.currentBlobEndpoint!)
-        expect(provider.currentAPIEndpoint?.url) == Self.url("api2")
-        expect(provider.currentBlobEndpoint?.url) == Self.url("blob2")
+        provider.reportUnhealthy(provider.currentBlobSource!)
+        expect(provider.currentAPISource?.url) == Self.url("api2")
+        expect(provider.currentBlobSource?.url) == Self.url("blob2")
     }
 
     // MARK: - Stale report handling (race conditions)
@@ -153,54 +153,54 @@ final class RemoteConfigSourceProviderTests: TestCase {
     func testStaleReportIsIgnoredAfterAnotherCallerAdvanced() {
         let provider = Self.apiProvider([Self.source("a"), Self.source("b"), Self.source("c")])
 
-        // Two callers grab the same current endpoint.
-        let endpointA = provider.currentAPIEndpoint
-        let endpointB = provider.currentAPIEndpoint
-        expect(endpointA?.url) == endpointB?.url
+        // Two callers grab the same current source.
+        let handleA = provider.currentAPISource
+        let handleB = provider.currentAPISource
+        expect(handleA?.url) == handleB?.url
 
         // Caller A reports it unhealthy: the provider advances.
-        provider.reportUnhealthy(endpointA!)
-        expect(provider.currentAPIEndpoint?.url) == Self.url("b")
+        provider.reportUnhealthy(handleA!)
+        expect(provider.currentAPISource?.url) == Self.url("b")
 
-        // Caller B reports the *same* (now superseded) endpoint: this must NOT advance again.
-        provider.reportUnhealthy(endpointB!)
-        expect(provider.currentAPIEndpoint?.url) == Self.url("b")
+        // Caller B reports the *same* (now superseded) source: this must NOT advance again.
+        provider.reportUnhealthy(handleB!)
+        expect(provider.currentAPISource?.url) == Self.url("b")
     }
 
-    func testReportingSameEndpointTwiceAdvancesOnlyOnce() {
+    func testReportingSameSourceTwiceAdvancesOnlyOnce() {
         let provider = Self.apiProvider([Self.source("a"), Self.source("b"), Self.source("c")])
 
-        let endpoint = provider.currentAPIEndpoint
-        provider.reportUnhealthy(endpoint!)
-        provider.reportUnhealthy(endpoint!)
-        provider.reportUnhealthy(endpoint!)
+        let handle = provider.currentAPISource
+        provider.reportUnhealthy(handle!)
+        provider.reportUnhealthy(handle!)
+        provider.reportUnhealthy(handle!)
 
-        expect(provider.currentAPIEndpoint?.url) == Self.url("b")
+        expect(provider.currentAPISource?.url) == Self.url("b")
     }
 
-    func testReportingFreshEndpointAfterStaleReportStillAdvances() {
+    func testReportingFreshSourceAfterStaleReportStillAdvances() {
         let provider = Self.apiProvider([Self.source("a"), Self.source("b"), Self.source("c")])
 
-        let stale = provider.currentAPIEndpoint
+        let stale = provider.currentAPISource
         provider.reportUnhealthy(stale!)              // a -> b
         provider.reportUnhealthy(stale!)              // ignored, still b
 
-        let fresh = provider.currentAPIEndpoint       // b
+        let fresh = provider.currentAPISource       // b
         provider.reportUnhealthy(fresh!)              // b -> c
-        expect(provider.currentAPIEndpoint?.url) == Self.url("c")
+        expect(provider.currentAPISource?.url) == Self.url("c")
     }
 
     func testStaleReportOnExhaustedProviderIsIgnored() {
         let provider = Self.apiProvider([Self.source("a"), Self.source("b")])
 
-        let first = provider.currentAPIEndpoint
+        let first = provider.currentAPISource
         provider.reportUnhealthy(first!)
-        provider.reportUnhealthy(provider.currentAPIEndpoint!)
-        expect(provider.currentAPIEndpoint).to(beNil())
+        provider.reportUnhealthy(provider.currentAPISource!)
+        expect(provider.currentAPISource).to(beNil())
 
-        // Reporting the original stale endpoint again must not resurrect or change anything.
+        // Reporting the original stale source again must not resurrect or change anything.
         provider.reportUnhealthy(first!)
-        expect(provider.currentAPIEndpoint).to(beNil())
+        expect(provider.currentAPISource).to(beNil())
     }
 
     // MARK: - restart
@@ -208,15 +208,15 @@ final class RemoteConfigSourceProviderTests: TestCase {
     func testRestartRewindsToFirstSource() {
         let provider = Self.apiProvider([Self.source("a"), Self.source("b"), Self.source("c")])
 
-        provider.reportUnhealthy(provider.currentAPIEndpoint!)
-        provider.reportUnhealthy(provider.currentAPIEndpoint!)
-        expect(provider.currentAPIEndpoint?.url) == Self.url("c")
+        provider.reportUnhealthy(provider.currentAPISource!)
+        provider.reportUnhealthy(provider.currentAPISource!)
+        expect(provider.currentAPISource?.url) == Self.url("c")
 
-        provider.restart(.api)
-        expect(provider.currentAPIEndpoint?.url) == Self.url("a")
+        provider.restart(for: .api)
+        expect(provider.currentAPISource?.url) == Self.url("a")
     }
 
-    func testRestartOnlyRewindsRequestedKind() {
+    func testRestartOnlyRewindsRequestedPurpose() {
         let provider = RemoteConfigSourceProvider(
             sources: RemoteConfigSources(
                 api: [Self.source("api1", priority: 10), Self.source("api2", priority: 0)],
@@ -225,43 +225,40 @@ final class RemoteConfigSourceProviderTests: TestCase {
             randomizer: FakeRandomizer(0)
         )
 
-        provider.reportUnhealthy(provider.currentAPIEndpoint!)
-        provider.reportUnhealthy(provider.currentBlobEndpoint!)
-        expect(provider.currentAPIEndpoint?.url) == Self.url("api2")
-        expect(provider.currentBlobEndpoint?.url) == Self.url("blob2")
+        provider.reportUnhealthy(provider.currentAPISource!)
+        provider.reportUnhealthy(provider.currentBlobSource!)
+        expect(provider.currentAPISource?.url) == Self.url("api2")
+        expect(provider.currentBlobSource?.url) == Self.url("blob2")
 
-        provider.restart(.api)
-        expect(provider.currentAPIEndpoint?.url) == Self.url("api1")
-        expect(provider.currentBlobEndpoint?.url) == Self.url("blob2")
+        provider.restart(for: .api)
+        expect(provider.currentAPISource?.url) == Self.url("api1")
+        expect(provider.currentBlobSource?.url) == Self.url("blob2")
 
-        provider.restart(.blob)
-        expect(provider.currentBlobEndpoint?.url) == Self.url("blob1")
+        provider.restart(for: .blob)
+        expect(provider.currentBlobSource?.url) == Self.url("blob1")
     }
 
     // MARK: - Threading
 
-    func testConcurrentReportsAdvanceAtMostOncePerEndpoint() {
+    func testConcurrentReportsOfSameSourceAdvanceExactlyOnce() {
         let sources = (0..<100).map { Self.source("\($0)") }
         let provider = Self.apiProvider(sources)
 
-        // Every iteration grabs the current endpoint and reports it unhealthy concurrently. Even
-        // with many threads racing, a single endpoint can only advance the provider once, so the
-        // provider must walk the fallback order one step at a time and never skip ahead.
+        let first = provider.currentAPISource
+        expect(first?.url) == Self.url("0")
+
+        // Many threads report the *same* source concurrently. The first report advances to the next
+        // source; every other report now refers to a superseded url and must be ignored. So no matter
+        // how the threads interleave, the provider advances exactly one step.
         DispatchQueue.concurrentPerform(iterations: 500) { _ in
-            if let endpoint = provider.currentAPIEndpoint {
-                provider.reportUnhealthy(endpoint)
-            }
+            provider.reportUnhealthy(first!)
         }
 
-        // The exact landing point is timing-dependent, but it must be a valid, reachable URL (or
-        // nil if every source happened to be exhausted) — never a corrupted/torn state.
-        if let url = provider.currentAPIEndpoint?.url {
-            expect(sources.map { $0.url }).to(contain(url))
-        }
+        expect(provider.currentAPISource?.url) == Self.url("1")
     }
 
     func testConcurrentReportsNeverSkipSourcesWhenSerialized() {
-        // Drive the provider to exhaustion by always reporting the *current* endpoint. Collect every
+        // Drive the provider to exhaustion by always reporting the *current* source. Collect every
         // distinct URL handed out; because stale reports are ignored, no source may be skipped.
         let sources = (0..<50).map { Self.source("\($0)") }
         let provider = Self.apiProvider(sources)
@@ -270,16 +267,16 @@ final class RemoteConfigSourceProviderTests: TestCase {
         let group = DispatchGroup()
         for _ in 0..<8 {
             DispatchQueue.global().async(group: group) {
-                while let endpoint = provider.currentAPIEndpoint {
-                    seen.modify { $0.insert(endpoint.url) }
-                    provider.reportUnhealthy(endpoint)
+                while let handle = provider.currentAPISource {
+                    seen.modify { $0.insert(handle.url) }
+                    provider.reportUnhealthy(handle)
                 }
             }
         }
         group.wait()
 
         expect(seen.value) == Set(sources.map { $0.url })
-        expect(provider.currentAPIEndpoint).to(beNil())
+        expect(provider.currentAPISource).to(beNil())
     }
 
     // MARK: - Helpers

@@ -11,20 +11,20 @@ import Foundation
 
 final class MockRemoteConfigSourceProvider: RemoteConfigSourceProviderType {
 
-    var stubbedCurrentAPIEndpoint: RemoteConfigEndpoint?
-    var currentAPIEndpoint: RemoteConfigEndpoint? { self.stubbedCurrentAPIEndpoint }
+    var stubbedCurrentAPISource: RemoteConfigSourceHandle?
+    var currentAPISource: RemoteConfigSourceHandle? { self.stubbedCurrentAPISource }
 
-    var stubbedCurrentBlobEndpoint: RemoteConfigEndpoint?
-    var currentBlobEndpoint: RemoteConfigEndpoint? { self.stubbedCurrentBlobEndpoint }
+    var stubbedCurrentBlobSource: RemoteConfigSourceHandle?
+    var currentBlobSource: RemoteConfigSourceHandle? { self.stubbedCurrentBlobSource }
 
-    private(set) var reportedUnhealthyEndpoints: [RemoteConfigEndpoint] = []
-    func reportUnhealthy(_ endpoint: RemoteConfigEndpoint) {
-        self.reportedUnhealthyEndpoints.append(endpoint)
+    private(set) var reportedUnhealthySources: [RemoteConfigSourceHandle] = []
+    func reportUnhealthy(_ handle: RemoteConfigSourceHandle) {
+        self.reportedUnhealthySources.append(handle)
     }
 
-    private(set) var restartedKinds: [RemoteConfigEndpoint.Kind] = []
-    func restart(_ kind: RemoteConfigEndpoint.Kind) {
-        self.restartedKinds.append(kind)
+    private(set) var restartedPurposes: [RemoteConfigSourceHandle.Purpose] = []
+    func restart(for purpose: RemoteConfigSourceHandle.Purpose) {
+        self.restartedPurposes.append(purpose)
     }
 
 }
