@@ -7,84 +7,156 @@
 
 import Foundation
 
-/// A remote config source, plus the metadata used to order sources.
-protocol RemoteConfigSource: WeightedSource {
+/// A remote config source: a URL plus the metadata used to order sources.
+struct RemoteConfigSource: WeightedSource, Equatable {
 
     /// A plain URL or a URL format with placeholders (e.g. `{blob_ref}`), to be resolved by the caller.
-    var url: String { get }
+    let url: String
+    let priority: Int
+    let weight: Int
 
 }
 
-/// An endpoint handed out by a `RemoteConfigSourceProvider`. The `token` lets the provider ignore
-/// `reportUnhealthy(_:)` calls about an endpoint it has already moved past.
-struct RemoteConfigEndpoint<Source: RemoteConfigSource> {
+/// The api and blob sources for the remote config, as provided by the `sources` topic.
+struct RemoteConfigSources: Equatable {
 
-    let source: Source
+    let api: [RemoteConfigSource]
+    let blob: [RemoteConfigSource]
 
-    fileprivate let token: UUID
-
-    var url: String { self.source.url }
-
-    fileprivate init(source: Source, token: UUID) {
-        self.source = source
-        self.token = token
+    init(api: [RemoteConfigSource] = [], blob: [RemoteConfigSource] = []) {
+        self.api = api
+        self.blob = blob
     }
 
 }
 
-/// Hands out the current healthy remote config endpoint and falls back to the next one when the
-/// current endpoint is reported unhealthy. Order is computed once via `WeightedSourceSelector`.
+/// An endpoint handed out by a `RemoteConfigSourceProvider`. Report it back via `reportUnhealthy(_:)`
+/// to fall back to the next source. The `url` is its identity: a report is ignored once the provider
+/// has already moved past that url.
+struct RemoteConfigEndpoint: WeightedSource, Equatable {
+
+    enum Kind {
+        case api
+        case blob
+    }
+
+    let kind: Kind
+
+    /// A plain URL or a URL format with placeholders, to be resolved by the caller.
+    let url: String
+
+    /// Selection metadata, used to order endpoints within a kind.
+    let priority: Int
+    let weight: Int
+
+    init(kind: Kind, url: String, priority: Int = 0, weight: Int = 0) {
+        self.kind = kind
+        self.url = url
+        self.priority = priority
+        self.weight = weight
+    }
+
+}
+
+protocol RemoteConfigSourceProviderType: AnyObject {
+
+    /// The current healthy api endpoint, or `nil` once every api source has been reported unhealthy.
+    var currentAPIEndpoint: RemoteConfigEndpoint? { get }
+
+    /// The current healthy blob endpoint, or `nil` once every blob source has been reported unhealthy.
+    var currentBlobEndpoint: RemoteConfigEndpoint? { get }
+
+    /// Falls back to the next source for the endpoint's kind. No-op if `endpoint` is no longer current.
+    func reportUnhealthy(_ endpoint: RemoteConfigEndpoint)
+
+    /// Rewinds both api and blob to their first source, e.g. to start fresh on a new fetch cycle.
+    func restart()
+
+}
+
+/// The address book for remote config: hands out the current healthy api and blob endpoints and
+/// falls back to the next one when an endpoint is reported unhealthy. Each kind fails over
+/// independently. Sources are deduped by url and ordered once via `WeightedSourceSelector`.
 ///
 /// - Note: Thread-safe.
-final class RemoteConfigSourceProvider<Source: RemoteConfigSource> {
+final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
 
-    private let selector: WeightedSourceSelector<Source>
+    private let api: SourceFailover
+    private let blob: SourceFailover
+
+    init(sources: RemoteConfigSources, randomizer: WeightedSourceRandomizer? = nil) {
+        self.api = SourceFailover(endpoints: Self.endpoints(from: sources.api, kind: .api), randomizer: randomizer)
+        self.blob = SourceFailover(endpoints: Self.endpoints(from: sources.blob, kind: .blob), randomizer: randomizer)
+    }
+
+    var currentAPIEndpoint: RemoteConfigEndpoint? {
+        return self.api.current
+    }
+
+    var currentBlobEndpoint: RemoteConfigEndpoint? {
+        return self.blob.current
+    }
+
+    func reportUnhealthy(_ endpoint: RemoteConfigEndpoint) {
+        switch endpoint.kind {
+        case .api: self.api.reportUnhealthy(url: endpoint.url)
+        case .blob: self.blob.reportUnhealthy(url: endpoint.url)
+        }
+    }
+
+    func restart() {
+        self.api.restart()
+        self.blob.restart()
+    }
+
+    /// Builds the endpoints for a kind, keeping the first occurrence of each url and dropping later
+    /// duplicates. Done once here so endpoints never need to be rebuilt on reads.
+    private static func endpoints(
+        from sources: [RemoteConfigSource],
+        kind: RemoteConfigEndpoint.Kind
+    ) -> [RemoteConfigEndpoint] {
+        var seenURLs = Set<String>()
+        return sources.compactMap { source in
+            guard seenURLs.insert(source.url).inserted else { return nil }
+            return RemoteConfigEndpoint(
+                kind: kind,
+                url: source.url,
+                priority: source.priority,
+                weight: source.weight
+            )
+        }
+    }
+
+}
+
+/// Walks a single list of endpoints in fallback order, using each endpoint's url as its identity so a
+/// stale `reportUnhealthy(url:)` (one the list has already moved past) is ignored.
+///
+/// - Note: Thread-safe.
+private final class SourceFailover {
+
+    private let selector: WeightedSourceSelector<RemoteConfigEndpoint>
     private let lock = Lock()
 
-    /// Regenerated on every `advance()` so previously handed-out endpoints become stale.
-    private var currentToken = UUID()
-
-    init(sources: [Source], randomizer: WeightedSourceRandomizer? = nil) {
-        self.selector = WeightedSourceSelector(sources: sources, randomizer: randomizer)
+    init(endpoints: [RemoteConfigEndpoint], randomizer: WeightedSourceRandomizer?) {
+        self.selector = WeightedSourceSelector(sources: endpoints, randomizer: randomizer)
     }
 
-    /// The current healthy endpoint, or `nil` once every source has been reported unhealthy.
-    var currentEndpoint: RemoteConfigEndpoint<Source>? {
-        return self.lock.perform {
-            self.makeCurrentEndpoint()
-        }
+    var current: RemoteConfigEndpoint? {
+        return self.lock.perform { self.selector.current }
     }
 
-    /// Advances to the next source so the next `currentEndpoint` read returns it. No-op if `endpoint`
-    /// is no longer the current one.
-    func reportUnhealthy(_ endpoint: RemoteConfigEndpoint<Source>) {
+    func reportUnhealthy(url: String) {
         self.lock.perform {
-            // Stale token: a concurrent caller already advanced past this endpoint. Ignore so a
-            // single failing endpoint can't advance the order more than once.
-            guard endpoint.token == self.currentToken else { return }
-            self.advance()
+            // Only advance when the report is about the current endpoint: a url the list has already
+            // moved past (e.g. from a concurrent caller) no longer matches, so it can't advance twice.
+            guard self.selector.current?.url == url else { return }
+            self.selector.advance()
         }
     }
 
-    /// Rewinds to the first source in the fallback order, e.g. to start fresh on a new fetch cycle.
     func restart() {
-        self.lock.perform {
-            self.selector.reset()
-            self.currentToken = UUID()
-        }
-    }
-
-    /// Moves to the next source and invalidates previously handed-out endpoints.
-    /// Must be called while holding `lock`.
-    private func advance() {
-        self.selector.advance()
-        self.currentToken = UUID()
-    }
-
-    /// Must be called while holding `lock`.
-    private func makeCurrentEndpoint() -> RemoteConfigEndpoint<Source>? {
-        guard let source = self.selector.current else { return nil }
-        return RemoteConfigEndpoint(source: source, token: self.currentToken)
+        self.lock.perform { self.selector.reset() }
     }
 
 }
