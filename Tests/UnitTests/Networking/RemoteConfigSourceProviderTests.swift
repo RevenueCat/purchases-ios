@@ -36,7 +36,7 @@ final class RemoteConfigSourceProviderTests: TestCase {
     func testCurrentEndpointIsStableAcrossReads() {
         let provider = Self.apiProvider([Self.source("a"), Self.source("b")])
 
-        expect(provider.currentAPIEndpoint) == provider.currentAPIEndpoint
+        expect(provider.currentAPIEndpoint?.url) == provider.currentAPIEndpoint?.url
     }
 
     // MARK: - reportUnhealthy advances
@@ -156,7 +156,7 @@ final class RemoteConfigSourceProviderTests: TestCase {
         // Two callers grab the same current endpoint.
         let endpointA = provider.currentAPIEndpoint
         let endpointB = provider.currentAPIEndpoint
-        expect(endpointA) == endpointB
+        expect(endpointA?.url) == endpointB?.url
 
         // Caller A reports it unhealthy: the provider advances.
         provider.reportUnhealthy(endpointA!)

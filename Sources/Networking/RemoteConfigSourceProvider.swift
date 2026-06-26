@@ -23,17 +23,12 @@ struct RemoteConfigSources {
     let api: [RemoteConfigSource]
     let blob: [RemoteConfigSource]
 
-    init(api: [RemoteConfigSource], blob: [RemoteConfigSource]) {
-        self.api = api
-        self.blob = blob
-    }
-
 }
 
 /// An endpoint handed out by a `RemoteConfigSourceProvider`. Report it back via `reportUnhealthy(_:)`
 /// to fall back to the next source. The `url` is its identity: a report is ignored once the provider
 /// has already moved past that url.
-struct RemoteConfigEndpoint: WeightedSource, Equatable {
+struct RemoteConfigEndpoint: WeightedSource {
 
     enum Kind {
         case api
@@ -47,10 +42,6 @@ struct RemoteConfigEndpoint: WeightedSource, Equatable {
     var url: String { self.source.url }
     var priority: Int { self.source.priority }
     var weight: Int { self.source.weight }
-
-    static func == (lhs: RemoteConfigEndpoint, rhs: RemoteConfigEndpoint) -> Bool {
-        return lhs.kind == rhs.kind && lhs.url == rhs.url
-    }
 
 }
 
