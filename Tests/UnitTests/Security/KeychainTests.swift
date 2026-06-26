@@ -586,7 +586,7 @@ class AccessGroupTests: TestCase {
     func testAccessGroupCanMatchAppIdentifier() {
         // A common pattern: the app's own bundle ID is also the access group.
         let accessGroup = Keychain.AccessGroup(accessGroup: "com.example.app", appIdentifier: "com.example.app")
-        expect(accessGroup.accessGroup) == ag.appIdentifier
+        expect(accessGroup.accessGroup) == accessGroup.appIdentifier
     }
 
 }
