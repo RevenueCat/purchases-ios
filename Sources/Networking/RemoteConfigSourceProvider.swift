@@ -35,9 +35,7 @@ struct RemoteConfigEndpoint<Source: RemoteConfigSource> {
 /// Hands out the current healthy remote config endpoint and falls back to the next one when the
 /// current endpoint is reported unhealthy. Order is computed once via `WeightedSourceSelector`.
 ///
-/// - Note: Thread-safe. If several callers hold the same endpoint and all report it unhealthy, only
-///   the first report advances; the rest carry a stale `token` and are ignored, so a single failing
-///   endpoint can't advance the order more than once.
+/// - Note: Thread-safe.
 final class RemoteConfigSourceProvider<Source: RemoteConfigSource> {
 
     private let selector: WeightedSourceSelector<Source>
@@ -61,6 +59,8 @@ final class RemoteConfigSourceProvider<Source: RemoteConfigSource> {
     /// is no longer the current one.
     func reportUnhealthy(_ endpoint: RemoteConfigEndpoint<Source>) {
         self.lock.perform {
+            // Stale token: a concurrent caller already advanced past this endpoint. Ignore so a
+            // single failing endpoint can't advance the order more than once.
             guard endpoint.token == self.currentToken else { return }
             self.advance()
         }
