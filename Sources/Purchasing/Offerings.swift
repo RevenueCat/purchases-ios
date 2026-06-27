@@ -121,6 +121,32 @@ public extension Offerings {
         return description
     }
 
+    /// Creates an ``Offerings`` instance containing the provided offerings, without performing a network
+    /// fetch. Intended for previewing/tooling (e.g. the RevenueCat dashboard app rendering a paywall or
+    /// workflow from data it already holds).
+    @_spi(Internal) public static func preview(
+        offerings: [Offering],
+        currentOfferingID: String? = nil
+    ) -> Offerings {
+        return Offerings(
+            offerings: Dictionary(offerings.map { ($0.identifier, $0) }, uniquingKeysWith: { first, _ in first }),
+            currentOfferingID: currentOfferingID,
+            placements: nil,
+            targeting: nil,
+            contents: .init(
+                response: .init(
+                    currentOfferingId: currentOfferingID,
+                    offerings: [],
+                    placements: nil,
+                    targeting: nil,
+                    uiConfig: nil
+                ),
+                httpResponseOriginalSource: .mainServer
+            ),
+            loadedFromDiskCache: false
+        )
+    }
+
     /**
      Retrieves a current offering for a placement identifier, use this to access offerings defined by targeting
      placements configured in the RevenueCat dashboard, 
