@@ -28,6 +28,10 @@
 		88BEB9262BF537F200A3D05F /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88BEB9222BF537F200A3D05F /* Constants.swift */; };
 		88BEB9272BF537F200A3D05F /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88BEB9232BF537F200A3D05F /* Configuration.swift */; };
 		88BEB9282BF537F200A3D05F /* SamplePaywalls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88BEB9242BF537F200A3D05F /* SamplePaywalls.swift */; };
+		C57A20112E4F000000000011 /* LocalPaywallOfferingsOverride.swift in Sources */ = {isa = PBXBuildFile; fileRef = C57A20012E4F000000000001 /* LocalPaywallOfferingsOverride.swift */; };
+		C57A20122E4F000000000012 /* LocalPaywallOfferingsURLProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C57A20022E4F000000000002 /* LocalPaywallOfferingsURLProtocol.swift */; };
+		C57A20132E4F000000000013 /* LocalPaywallOverrideEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C57A20032E4F000000000003 /* LocalPaywallOverrideEditorView.swift */; };
+		C57A20142E4F000000000014 /* LocalPaywallOfferingsOverrideTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C57A20042E4F000000000004 /* LocalPaywallOfferingsOverrideTests.swift */; };
 		88DFC18D2BCF3AD100273B6D /* AsyncButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC18A2BCF3ACA00273B6D /* AsyncButton.swift */; };
 		88DFC18E2BCF3AD100273B6D /* ErrorDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC18B2BCF3ACA00273B6D /* ErrorDisplay.swift */; };
 		DF1A26D5115387F97D465BF3 /* CustomVariablesEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17CBE9A504CBA10F6A8A57C /* CustomVariablesEditorView.swift */; };
@@ -91,6 +95,10 @@
 		88BEB9222BF537F200A3D05F /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Constants.swift; path = Config/Constants.swift; sourceTree = "<group>"; };
 		88BEB9232BF537F200A3D05F /* Configuration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Configuration.swift; path = Config/Configuration.swift; sourceTree = "<group>"; };
 		88BEB9242BF537F200A3D05F /* SamplePaywalls.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SamplePaywalls.swift; path = Config/SamplePaywalls.swift; sourceTree = "<group>"; };
+		C57A20012E4F000000000001 /* LocalPaywallOfferingsOverride.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LocalPaywallOfferingsOverride.swift; path = Config/LocalPaywallOfferingsOverride.swift; sourceTree = "<group>"; };
+		C57A20022E4F000000000002 /* LocalPaywallOfferingsURLProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LocalPaywallOfferingsURLProtocol.swift; path = Config/LocalPaywallOfferingsURLProtocol.swift; sourceTree = "<group>"; };
+		C57A20032E4F000000000003 /* LocalPaywallOverrideEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalPaywallOverrideEditorView.swift; sourceTree = "<group>"; };
+		C57A20042E4F000000000004 /* LocalPaywallOfferingsOverrideTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalPaywallOfferingsOverrideTests.swift; sourceTree = "<group>"; };
 		88DFC18A2BCF3ACA00273B6D /* AsyncButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncButton.swift; sourceTree = "<group>"; };
 		88DFC18B2BCF3ACA00273B6D /* ErrorDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorDisplay.swift; sourceTree = "<group>"; };
 		B17CBE9A504CBA10F6A8A57C /* CustomVariablesEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariablesEditorView.swift; sourceTree = "<group>"; };
@@ -124,6 +132,7 @@
 			isa = PBXGroup;
 			children = (
 				4D2E84DB2D00EDA100C639D9 /* PaywallsTesterTests.swift */,
+				C57A20042E4F000000000004 /* LocalPaywallOfferingsOverrideTests.swift */,
 			);
 			path = PaywallsTesterTests;
 			sourceTree = "<group>";
@@ -193,6 +202,8 @@
 			children = (
 				88BEB9222BF537F200A3D05F /* Constants.swift */,
 				88BEB9232BF537F200A3D05F /* Configuration.swift */,
+				C57A20012E4F000000000001 /* LocalPaywallOfferingsOverride.swift */,
+				C57A20022E4F000000000002 /* LocalPaywallOfferingsURLProtocol.swift */,
 				88BEB9242BF537F200A3D05F /* SamplePaywalls.swift */,
 				4FC882E02A5870C6005BE85E /* Info.plist */,
 				4FC046BF2A572E3700A28BCF /* Assets.xcassets */,
@@ -225,6 +236,7 @@
 				4F71CDD12A992292001B9BEF /* CustomPaywallContent.swift */,
 				2DBCEDFC2AC4BC060064C274 /* PaywallViewMode+Extensions.swift */,
 				B17CBE9A504CBA10F6A8A57C /* CustomVariablesEditorView.swift */,
+				C57A20032E4F000000000003 /* LocalPaywallOverrideEditorView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -368,6 +380,8 @@
 				88A543E92C387DB00039C6A5 /* APIKeyDashboardList.swift in Sources */,
 				88BEB9262BF537F200A3D05F /* Constants.swift in Sources */,
 				88BEB9272BF537F200A3D05F /* Configuration.swift in Sources */,
+				C57A20112E4F000000000011 /* LocalPaywallOfferingsOverride.swift in Sources */,
+				C57A20122E4F000000000012 /* LocalPaywallOfferingsURLProtocol.swift in Sources */,
 				88B2F9B62BE5554100B43E0B /* PaywallsTesterApp.swift in Sources */,
 				4F71CDD22A992292001B9BEF /* CustomPaywallContent.swift in Sources */,
 				4F4EE7CF2A572F5D00D7EAE1 /* DebugView.swift in Sources */,
@@ -378,6 +392,7 @@
 				FD33CD622D0351BE000D13A4 /* CustomerCenterUIKitView.swift in Sources */,
 				4F34FF632A60AD9A00AADF11 /* AppContentView.swift in Sources */,
 				DF1A26D5115387F97D465BF3 /* CustomVariablesEditorView.swift in Sources */,
+				C57A20132E4F000000000013 /* LocalPaywallOverrideEditorView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -386,6 +401,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				83156FF72E1756B400E37C70 /* PaywallsTesterTests.swift in Sources */,
+				C57A20142E4F000000000014 /* LocalPaywallOfferingsOverrideTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
