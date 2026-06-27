@@ -107,7 +107,7 @@ struct TextComponentView: View {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 /// Parses markdown using AttributedString and does not use bundle assets for localization
-private struct NonLocalizedMarkdownText: View {
+struct NonLocalizedMarkdownText: View {
 
     @Environment(\.componentInteractionLogger)
     private var componentInteractionLogger
@@ -119,6 +119,18 @@ private struct NonLocalizedMarkdownText: View {
     let font: Font
     let fontWeight: Font.Weight
     let componentName: String?
+
+    init(
+        text: String,
+        font: Font,
+        fontWeight: Font.Weight,
+        componentName: String? = nil
+    ) {
+        self.text = text
+        self.font = font
+        self.fontWeight = fontWeight
+        self.componentName = componentName
+    }
 
     var markdownText: AttributedString? {
         /*
@@ -153,7 +165,58 @@ private struct NonLocalizedMarkdownText: View {
             }
         }
 
+        // Handle underline with <u>text</u> syntax
+        attrString = Self.applyUnderlines(to: attrString)
+
         return attrString
+    }
+
+    /// Processes `<u>text</u>` syntax and applies underline styling
+    static func applyUnderlines(to attrString: AttributedString) -> AttributedString {
+        var result = attrString
+        let plainString = String(result.characters)
+
+        // Find all <u>...</u> matches
+        guard let regex = NSRegularExpression.underlineHTML else {
+            return result
+        }
+
+        let nsRange = NSRange(plainString.startIndex..., in: plainString)
+        let matches = regex.matches(in: plainString, options: [], range: nsRange)
+
+        // Process in reverse order to preserve indices
+        for match in matches.reversed() {
+            guard let fullRange = Range(match.range, in: plainString),
+                  let contentNSRange = Range(match.range(at: 1), in: plainString) else {
+                continue
+            }
+
+            // Convert String ranges to AttributedString ranges
+            guard let attrFullRange = result.range(of: String(plainString[fullRange])) else {
+                continue
+            }
+
+            let contentString = String(plainString[contentNSRange])
+
+            // Handle empty <u></u> tags by removing them entirely
+            if contentString.isEmpty {
+                result.replaceSubrange(attrFullRange, with: AttributedString())
+                continue
+            }
+
+            guard let attrContentRange = result[attrFullRange].range(of: contentString) else {
+                continue
+            }
+
+            // Extract content with existing attributes, add underline
+            var content = AttributedString(result[attrContentRange])
+            content.underlineStyle = .single
+
+            // Replace <u>content</u> with just the underlined content
+            result.replaceSubrange(attrFullRange, with: content)
+        }
+
+        return result
     }
 
     var body: some View {
@@ -195,6 +258,10 @@ private extension Font.Weight {
             return false
         }
     }
+}
+
+private extension NSRegularExpression {
+    static let underlineHTML = try? NSRegularExpression(pattern: "<u>(.*?)</u>", options: [.dotMatchesLineSeparators])
 }
 
 #if DEBUG
@@ -273,7 +340,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     locale: Locale.current,
                     localizedStrings: [
                         // swiftlint:disable:next line_length
-                        "id_1": .string("Hello, world\n**bold**\n_italic_ \n`code`\n[RevenueCat](https://revenuecat.com)")
+                        "id_1": .string("Hello, world\n**bold**\n_italic_ \n`code`\n<u>underline</u>\n<u>**_underlined italic bold_**</u>\n[RevenueCat](https://revenuecat.com)")
                     ]
                 ),
                 uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
