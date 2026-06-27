@@ -84,6 +84,7 @@ struct Template1View: TemplateViewType {
                         .font(self.font(for: .largeTitle))
                         .fontWeight(.heavy)
                         .padding(.bottom)
+                        .accessibilityAddTraits(.isHeader)
 
                     if let subtitle = self.localization.subtitle {
                         Text(.init(subtitle))
