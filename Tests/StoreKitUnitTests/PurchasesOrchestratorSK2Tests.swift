@@ -51,6 +51,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                               webCheckoutUrl: nil)
         mockStoreKit2TransactionListener?.mockTransaction = .init(transaction.sk2Transaction)
         mockStoreKit2TransactionListener?.mockJWSToken = transaction.jwsRepresentation!
+        // Clear the test session so Product.latestTransaction returns nil.
+        // Otherwise the already-subscribed detection sees the simulated transaction
+        // and throws productAlreadyPurchasedError.
+        self.testSession.clearTransactions()
 
         _ = try await orchestrator.purchase(sk2Product: product,
                                             package: package,
@@ -74,6 +78,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
         let mockTransaction = try await self.simulateAnyPurchase()
         mockStoreKit2TransactionListener?.mockTransaction = .init(mockTransaction.underlyingTransaction)
+        self.testSession.clearTransactions()
 
         let product = try await self.fetchSk2Product()
         let (transaction, customerInfo, userCancelled) = try await orchestrator.purchase(
@@ -114,6 +119,234 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             expect(self.backend.invokedPostReceiptData) == false
             expect(self.mockStoreKit2TransactionListener?.invokedHandle) == false
         }
+    }
+
+    func testPurchaseThrowsAlreadyPurchasedWhenSK2ReturnsExistingTransaction() async throws {
+        let product = try await self.fetchSk2Product()
+
+        let existingTransaction = try await self.simulateAnyPurchase(
+            product: product,
+            finishTransaction: true
+        )
+
+        mockStoreKit2TransactionListener?.mockTransaction = .init(existingTransaction.underlyingTransaction)
+        mockStoreKit2TransactionListener?.mockJWSToken = existingTransaction.jwsRepresentation
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = try CustomerInfo(data: [
+            "request_date": "2099-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
+                "subscriptions": [
+                    StoreKitConfigTestCase.productID: [
+                        "expires_date": "2099-08-16T10:30:42Z",
+                        "purchase_date": "2019-07-17T00:05:54Z"
+                    ]
+                ],
+                "other_purchases": [:] as [String: Any],
+                "original_application_version": "1.0",
+                "original_purchase_date": "2019-07-17T00:05:54Z"
+            ] as [String: Any]
+        ])
+
+        do {
+            _ = try await orchestrator.purchase(
+                sk2Product: product,
+                package: nil,
+                promotionalOffer: nil,
+                winBackOffer: nil,
+                introductoryOfferEligibilityJWS: nil,
+                promotionalOfferOptions: nil
+            )
+            XCTFail("Expected productAlreadyPurchasedError")
+        } catch let purchasesError as PurchasesError {
+            expect(purchasesError.error).to(matchError(ErrorCode.productAlreadyPurchasedError))
+        } catch {
+            XCTFail("Unexpected error type: \(error)")
+        }
+
+        expect(self.backend.invokedPostReceiptData) == false
+    }
+
+    func testPurchaseWithPromotionalOfferSkipsAlreadyPurchasedCheck() async throws {
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let product = try await self.fetchSk2Product()
+        let existingTransaction = try await self.simulateAnyPurchase(product: product)
+        mockStoreKit2TransactionListener?.mockTransaction = .init(existingTransaction.underlyingTransaction)
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = try CustomerInfo(data: [
+            "request_date": "2099-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
+                "subscriptions": [
+                    StoreKitConfigTestCase.productID: [
+                        "expires_date": "2099-08-16T10:30:42Z",
+                        "purchase_date": "2019-07-17T00:05:54Z"
+                    ]
+                ],
+                "other_purchases": [:] as [String: Any],
+                "original_application_version": "1.0",
+                "original_purchase_date": "2019-07-17T00:05:54Z"
+            ] as [String: Any]
+        ])
+
+        let storeProduct = StoreProduct(sk2Product: product)
+        let discount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                currencyCode: product.priceFormatStyle.currencyCode,
+                                                price: 11.1,
+                                                localizedPriceString: "$11.10",
+                                                paymentMode: .payAsYouGo,
+                                                subscriptionPeriod: .init(value: 1, unit: .month),
+                                                numberOfPeriods: 2,
+                                                type: .promotional)
+        let offer = PromotionalOffer.SignedData(identifier: "",
+                                                keyIdentifier: "",
+                                                nonce: UUID(),
+                                                signature: "",
+                                                timestamp: 0)
+        let promoOffer = PromotionalOffer(discount: discount, signedData: offer)
+        let params = PurchaseParams.Builder(product: storeProduct)
+                .with(promotionalOffer: promoOffer)
+                .build()
+
+        let (_, _, error, userCancelled) = await withCheckedContinuation { continuation in
+            orchestrator.purchase(params: params,
+                                  trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(error).to(beNil())
+        expect(userCancelled) == false
+        expect(self.backend.invokedPostReceiptData) == true
+    }
+
+    func testPurchaseAllowsRetryWhenTransactionIsUnfinished() async throws {
+        let product = try await self.fetchSk2Product()
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let existingTransaction = try await self.simulateAnyPurchase(product: product)
+        let storeTransaction = StoreTransaction(
+            sk2Transaction: existingTransaction.underlyingTransaction,
+            jwsRepresentation: existingTransaction.jwsRepresentation
+        )
+
+        mockStoreKit2TransactionListener?.mockTransaction = .init(existingTransaction.underlyingTransaction)
+        mockStoreKit2TransactionListener?.mockJWSToken = existingTransaction.jwsRepresentation
+        mockTransactionFetcher.stubbedUnfinishedTransactions = [storeTransaction]
+
+        let (_, _, userCancelled) = try await orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil
+        )
+
+        expect(userCancelled) == false
+        expect(self.backend.invokedPostReceiptData) == true
+    }
+
+    func testPurchaseAllowsReceiptTransferForDifferentUser() async throws {
+        let product = try await self.fetchSk2Product()
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let existingTransaction = try await self.simulateAnyPurchase(
+            product: product,
+            finishTransaction: true
+        )
+
+        mockStoreKit2TransactionListener?.mockTransaction = .init(existingTransaction.underlyingTransaction)
+        mockStoreKit2TransactionListener?.mockJWSToken = existingTransaction.jwsRepresentation
+
+        // Cached info has no purchases — simulates a different RC user.
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = .emptyInfo
+
+        let (_, _, userCancelled) = try await orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil
+        )
+
+        expect(userCancelled) == false
+        expect(self.backend.invokedPostReceiptData) == true
+    }
+
+    func testPurchaseAllowsExpiredSubscriptionRePurchase() async throws {
+        let product = try await self.fetchSk2Product()
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let existingTransaction = try await self.simulateAnyPurchase(
+            product: product,
+            finishTransaction: true
+        )
+
+        mockStoreKit2TransactionListener?.mockTransaction = .init(existingTransaction.underlyingTransaction)
+        mockStoreKit2TransactionListener?.mockJWSToken = existingTransaction.jwsRepresentation
+
+        // Subscription is expired — user should be able to re-subscribe.
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = try CustomerInfo(data: [
+            "request_date": "2099-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
+                "subscriptions": [
+                    StoreKitConfigTestCase.productID: [
+                        "expires_date": "2020-01-01T00:00:00Z",
+                        "purchase_date": "2019-07-17T00:05:54Z"
+                    ]
+                ],
+                "other_purchases": [:] as [String: Any],
+                "original_application_version": "1.0",
+                "original_purchase_date": "2019-07-17T00:05:54Z"
+            ] as [String: Any]
+        ])
+
+        let (_, _, userCancelled) = try await orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil
+        )
+
+        expect(userCancelled) == false
+        expect(self.backend.invokedPostReceiptData) == true
+    }
+
+    func testPurchaseAllowsThroughWhenCachedCustomerInfoIsNil() async throws {
+        let product = try await self.fetchSk2Product()
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let existingTransaction = try await self.simulateAnyPurchase(
+            product: product,
+            finishTransaction: true
+        )
+
+        mockStoreKit2TransactionListener?.mockTransaction = .init(existingTransaction.underlyingTransaction)
+        mockStoreKit2TransactionListener?.mockJWSToken = existingTransaction.jwsRepresentation
+
+        // No cached customer info — cold start scenario.
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = nil
+
+        let (_, _, userCancelled) = try await orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            promotionalOfferOptions: nil
+        )
+
+        expect(userCancelled) == false
+        expect(self.backend.invokedPostReceiptData) == true
     }
 
     func testPurchaseWithPromotionalOfferPostsReceiptIfSuccessful() async throws {
@@ -263,6 +496,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let transaction = try await self.simulateAnyPurchase()
         mockListener.mockTransaction = .init(transaction.verifiedTransaction)
         mockListener.mockEnvironment = .xcode
+        self.testSession.clearTransactions()
 
         let receipt = StoreKit2Receipt(
             environment: .xcode,
@@ -315,6 +549,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                               webCheckoutUrl: nil)
         mockStoreKit2TransactionListener?.mockTransaction = .init(transaction.sk2Transaction)
         mockStoreKit2TransactionListener?.mockJWSToken = transaction.jwsRepresentation!
+        self.testSession.clearTransactions()
 
         let metadata = ["key": "value"]
         let params = PurchaseParams.Builder(package: package)
@@ -482,6 +717,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
         )
         mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+        self.testSession.clearTransactions()
 
         let product = try await self.fetchSk2Product()
 
@@ -601,6 +837,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
         )
         mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+        self.testSession.clearTransactions()
 
         let product = try await self.fetchSk2Product()
 
@@ -654,6 +891,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
         )
         mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+        self.testSession.clearTransactions()
 
         let product = try await self.fetchSk2Product()
 
@@ -693,6 +931,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
         )
         mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+        self.testSession.clearTransactions()
 
         let product = try await self.fetchSk2Product()
 
@@ -727,6 +966,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                               webCheckoutUrl: nil)
         mockStoreKit2TransactionListener?.mockTransaction = .init(transaction.sk2Transaction)
         mockStoreKit2TransactionListener?.mockJWSToken = transaction.jwsRepresentation!
+        self.testSession.clearTransactions()
 
         _ = try await orchestrator.purchase(sk2Product: product,
                                             package: package,
@@ -756,6 +996,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
         mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+        self.testSession.clearTransactions()
 
         let product = try await self.fetchSk2Product()
         _ = try await self.orchestrator.purchase(
@@ -806,6 +1047,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.attribution.enableAdServicesAttributionTokenCollection()
 
         mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+        self.testSession.clearTransactions()
 
         let product = try await self.fetchSk2Product()
         _ = try await self.orchestrator.purchase(
@@ -2403,6 +2645,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         systemInfo.stubbedStorefront = MockStorefront(countryCode: "USA")
         let mockTransaction = try await self.simulateAnyPurchase()
         mockStoreKit2TransactionListener?.mockTransaction = .init(mockTransaction.underlyingTransaction)
+        self.testSession.clearTransactions()
 
         let product = try await self.fetchSk2Product()
         let (transaction, _, _) = try await orchestrator.purchase(sk2Product: product,
