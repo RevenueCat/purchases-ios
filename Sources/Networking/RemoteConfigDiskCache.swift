@@ -11,7 +11,10 @@ protocol RemoteConfigDiskCacheType: AnyObject {
 
     func read() -> PersistedRemoteConfiguration?
 
-    func write(_ configuration: PersistedRemoteConfiguration)
+    @discardableResult
+    func write(_ configuration: PersistedRemoteConfiguration) -> Bool
+
+    func clear()
 
 }
 
@@ -25,12 +28,12 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
     let lastRefreshAt: Date?
 
     init(
-        domain: String,
+        domain: String = RemoteConfiguration.defaultDomain,
         manifest: String,
-        activeTopics: [String],
-        prefetchBlobs: [String],
-        topicBlobRefs: [String: [String]],
-        lastRefreshAt: Date?
+        activeTopics: [String] = [],
+        prefetchBlobs: [String] = [],
+        topicBlobRefs: [String: [String]] = [:],
+        lastRefreshAt: Date? = nil
     ) {
         self.domain = domain
         self.manifest = manifest
@@ -86,10 +89,18 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
         }
     }
 
-    func write(_ configuration: PersistedRemoteConfiguration) {
-        if !self.cache.set(codable: configuration, forKey: Self.fileName) {
+    @discardableResult
+    func write(_ configuration: PersistedRemoteConfiguration) -> Bool {
+        let didWrite = self.cache.set(codable: configuration, forKey: Self.fileName)
+        if !didWrite {
             Logger.error(Strings.remoteConfig.failedToWriteCache)
         }
+
+        return didWrite
+    }
+
+    func clear() {
+        self.cache.clear()
     }
 
 }

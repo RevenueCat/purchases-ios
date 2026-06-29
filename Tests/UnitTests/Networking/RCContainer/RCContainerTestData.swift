@@ -23,8 +23,9 @@ enum RCContainerTestData {
     static var elementHeaderSize: Int { return Self.checksumSize + Self.uint32Size + Self.uint32Size }
     static var firstPayloadOffset: Int { return Self.headerSize + Self.elementHeaderSize }
 
+    static let workflowBlob = Self.workflowBlobText.asData
+    static let summerWorkflowBlob = Self.summerWorkflowBlobText.asData
     static let configJSON = Self.configJSONText.asData
-    static let entitlementMappingBlob = Self.entitlementMappingText.asData
     static let largeBlob = Data((0..<300).map { UInt8($0 % 256) })
     static let smallBlob = "a".asData
 
@@ -36,17 +37,17 @@ enum RCContainerTestData {
         Fixture(
             fileName: "v1_single_element.bin",
             config: Self.configJSON,
-            contentElements: [Self.entitlementMappingBlob]
+            contentElements: [Self.workflowBlob]
         ),
         Fixture(
             fileName: "v1_multiple_elements.bin",
             config: Self.configJSON,
-            contentElements: [Self.smallBlob, Data(), Self.entitlementMappingBlob, Self.largeBlob]
+            contentElements: [Self.smallBlob, Data(), Self.workflowBlob, Self.largeBlob]
         ),
         Fixture(
             fileName: "v1_empty_config.bin",
             config: Data(),
-            contentElements: [Self.entitlementMappingBlob]
+            contentElements: [Self.workflowBlob]
         ),
         Fixture(
             fileName: "v1_flags_set.bin",
@@ -56,7 +57,7 @@ enum RCContainerTestData {
         Fixture(
             fileName: "v1_duplicate_elements.bin",
             config: Self.configJSON,
-            contentElements: [Self.entitlementMappingBlob, Self.entitlementMappingBlob]
+            contentElements: [Self.workflowBlob, Self.workflowBlob]
         )
     ]
 
@@ -165,41 +166,33 @@ extension RCContainerTestData {
 
 private extension RCContainerTestData {
 
-    static let configJSONText = [
+    static let workflowBlobText = [
         "{",
-        "  \"api_sources\": [",
-        "    {",
-        "      \"id\": \"primary\",",
-        "      \"url\": \"https://api.revenuecat.com/\",",
-        "      \"priority\": 0,",
-        "      \"weight\": 100",
-        "    }",
-        "  ],",
-        "  \"blob_sources\": [",
-        "    {",
-        "      \"id\": \"cloudfront-primary\",",
-        "      \"url_format\": \"https://assets.revenuecat.com/rc_app_1234/{blob_ref}\",",
-        "      \"priority\": 0,",
-        "      \"weight\": 100",
-        "    }",
-        "  ],",
-        "  \"manifest\": {",
-        "    \"topics\": {",
-        "      \"product_entitlement_mapping\": {",
-        "        \"DEFAULT\": {",
-        "          \"blob_ref\": \"6a4d0f53d9f6b8e2f4dca0fd1c7c4f5e3e1b1ef0f45d989e2f8f8d0d91ec1b6a\"",
-        "        }",
-        "      }",
-        "    }",
-        "  }",
+        "  \"id\": \"wf1234\",",
+        "  \"steps\": [ { \"type\": \"paywall\", \"offering\": \"default\" } ]",
         "}"
     ].joined(separator: "\n")
 
-    static let entitlementMappingText = [
+    static let summerWorkflowBlobText = [
         "{",
-        "  \"products\": {",
-        "    \"monthly\": [\"pro\"],",
-        "    \"annual\": [\"pro\", \"plus\"]",
+        "  \"id\": \"wf5678\",",
+        "  \"steps\": [ { \"type\": \"paywall\", \"offering\": \"summerCampaign\" } ]",
+        "}"
+    ].joined(separator: "\n")
+
+    static let configJSONText = [
+        "{",
+        "  \"domain\": \"app\",",
+        "  \"manifest\": \"v1.1710000000.workflows:etag1\",",
+        "  \"active_topics\": [\"workflows\"],",
+        "  \"prefetch_blobs\": [\"\(RCContainerTestData.blobRef(for: RCContainerTestData.workflowBlob))\"],",
+        "  \"topics\": {",
+        "    \"workflows\": {",
+        "      \"wf1234\": { \"offering_identifier\": \"default\", " +
+        "\"blob_ref\": \"\(RCContainerTestData.blobRef(for: RCContainerTestData.workflowBlob))\" },",
+        "      \"wf5678\": { \"offering_identifier\": \"summerCampaign\", " +
+        "\"blob_ref\": \"\(RCContainerTestData.blobRef(for: RCContainerTestData.summerWorkflowBlob))\" }",
+        "    }",
         "  }",
         "}"
     ].joined(separator: "\n")
