@@ -65,7 +65,7 @@ class HTTPRequestTests: TestCase {
         .logIn,
         .postReceiptData,
         .health,
-        .remoteConfig,
+        .remoteConfig(domain: "app"),
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
