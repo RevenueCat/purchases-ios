@@ -8,7 +8,7 @@
 import Foundation
 
 /// A remote config source: a URL plus the metadata used to order sources.
-struct RemoteConfigSource {
+struct RemoteConfigSource: WeightedSource {
 
     /// A plain URL or a URL format with placeholders (e.g. `{blob_ref}`), to be resolved by the caller.
     let url: String
@@ -18,9 +18,10 @@ struct RemoteConfigSource {
 }
 
 /// A source handed out by a `RemoteConfigSourceProvider`, tagged with its purpose (api or blob).
-/// Report it back via `reportUnhealthy(_:)` to fall back to the next source. The `url` is its
-/// identity: a report is ignored once the provider has already moved past that url.
-struct RemoteConfigSourceHandle: WeightedSource {
+/// Report it back via `reportUnhealthy(_:)` to fall back to the next source. The opaque `token`
+/// is its identity: a report is ignored once the provider has moved past it (via fallback or
+/// `restart(for:)`), so stale or concurrent reports can't advance the order more than once.
+struct RemoteConfigSourceHandle {
 
     /// What the source is used for: calling the config api or downloading a blob.
     enum Purpose {
@@ -31,10 +32,18 @@ struct RemoteConfigSourceHandle: WeightedSource {
     let purpose: Purpose
     let source: RemoteConfigSource
 
+    /// Identifies the handout that produced this handle. Opaque to callers; only meaningful to the
+    /// provider, which uses it to discard stale reports.
+    fileprivate let token: Int
+
     /// A plain URL or a URL format with placeholders, to be resolved by the caller.
     var url: String { self.source.url }
-    var priority: Int { self.source.priority }
-    var weight: Int { self.source.weight }
+
+    fileprivate init(purpose: Purpose, source: RemoteConfigSource, token: Int) {
+        self.purpose = purpose
+        self.source = source
+        self.token = token
+    }
 
 }
 
@@ -66,8 +75,8 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
         blobSources: [RemoteConfigSource],
         randomizer: WeightedSourceRandomizer? = nil
     ) {
-        self.api = SourceFailover(handles: Self.handles(from: apiSources, purpose: .api), randomizer: randomizer)
-        self.blob = SourceFailover(handles: Self.handles(from: blobSources, purpose: .blob), randomizer: randomizer)
+        self.api = SourceFailover(purpose: .api, sources: Self.dedupe(apiSources), randomizer: randomizer)
+        self.blob = SourceFailover(purpose: .blob, sources: Self.dedupe(blobSources), randomizer: randomizer)
     }
 
     func getCurrent(for purpose: RemoteConfigSourceHandle.Purpose) -> RemoteConfigSourceHandle? {
@@ -79,8 +88,8 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
 
     func reportUnhealthy(_ handle: RemoteConfigSourceHandle) {
         switch handle.purpose {
-        case .api: self.api.reportUnhealthy(url: handle.url)
-        case .blob: self.blob.reportUnhealthy(url: handle.url)
+        case .api: self.api.reportUnhealthy(handle)
+        case .blob: self.blob.reportUnhealthy(handle)
         }
     }
 
@@ -91,12 +100,9 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
         }
     }
 
-    /// Builds the handles for a purpose, collapsing duplicate urls to the occurrence with the highest
-    /// priority (tie-broken by weight). Done once here so handles never need to be rebuilt on reads.
-    private static func handles(
-        from sources: [RemoteConfigSource],
-        purpose: RemoteConfigSourceHandle.Purpose
-    ) -> [RemoteConfigSourceHandle] {
+    /// Collapses duplicate urls to the occurrence with the highest priority (tie-broken by weight),
+    /// keeping first-seen order. Done once at init so reads never need to re-dedupe.
+    private static func dedupe(_ sources: [RemoteConfigSource]) -> [RemoteConfigSource] {
         var bestByURL: [String: RemoteConfigSource] = [:]
         var order: [String] = []
         for source in sources {
@@ -113,41 +119,54 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
                 bestByURL[source.url] = source
             }
         }
-        return order.compactMap { url in
-            bestByURL[url].map { RemoteConfigSourceHandle(purpose: purpose, source: $0) }
-        }
+        return order.compactMap { bestByURL[$0] }
     }
 
 }
 
-/// Walks a single list of handles in fallback order, using each handle's url as its identity so a
-/// stale `reportUnhealthy(url:)` (one the list has already moved past) is ignored.
+/// Walks a single list of sources in fallback order. Every handout is stamped with the current
+/// `token`, which is bumped whenever the position changes (fallback or `restart()`). A report only
+/// advances if its handle still carries the current token, so stale or concurrent reports - and
+/// reports left over from before a `restart()` - are ignored.
 ///
 /// - Note: Thread-safe.
 private final class SourceFailover {
 
-    private let selector: WeightedSourceSelector<RemoteConfigSourceHandle>
+    private let purpose: RemoteConfigSourceHandle.Purpose
+    private let selector: WeightedSourceSelector<RemoteConfigSource>
     private let lock = Lock()
+    private var token = 0
 
-    init(handles: [RemoteConfigSourceHandle], randomizer: WeightedSourceRandomizer?) {
-        self.selector = WeightedSourceSelector(sources: handles, randomizer: randomizer)
+    init(
+        purpose: RemoteConfigSourceHandle.Purpose,
+        sources: [RemoteConfigSource],
+        randomizer: WeightedSourceRandomizer?
+    ) {
+        self.purpose = purpose
+        self.selector = WeightedSourceSelector(sources: sources, randomizer: randomizer)
     }
 
     var current: RemoteConfigSourceHandle? {
-        return self.lock.perform { self.selector.current }
+        return self.lock.perform {
+            self.selector.current.map {
+                RemoteConfigSourceHandle(purpose: self.purpose, source: $0, token: self.token)
+            }
+        }
     }
 
-    func reportUnhealthy(url: String) {
+    func reportUnhealthy(_ handle: RemoteConfigSourceHandle) {
         self.lock.perform {
-            // Only advance when the report is about the current source: a url the list has already
-            // moved past (e.g. from a concurrent caller) no longer matches, so it can't advance twice.
-            guard self.selector.current?.url == url else { return }
+            guard handle.token == self.token else { return }
             self.selector.advance()
+            self.token += 1
         }
     }
 
     func restart() {
-        self.lock.perform { self.selector.reset() }
+        self.lock.perform {
+            self.selector.reset()
+            self.token += 1
+        }
     }
 
 }

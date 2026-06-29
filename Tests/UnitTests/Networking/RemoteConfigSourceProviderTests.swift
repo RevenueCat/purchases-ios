@@ -101,7 +101,7 @@ final class RemoteConfigSourceProviderTests: TestCase {
 
         // `a` is kept at priority 10, so it outranks `b` (priority 5) despite appearing first at 0.
         expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
-        expect(provider.getCurrent(for: .api)?.priority) == 10
+        expect(provider.getCurrent(for: .api)?.source.priority) == 10
         provider.reportUnhealthy(provider.getCurrent(for: .api)!)
         expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
     }
@@ -112,7 +112,7 @@ final class RemoteConfigSourceProviderTests: TestCase {
             Self.source("a", priority: 0, weight: 100)
         ])
 
-        expect(provider.getCurrent(for: .api)?.weight) == 100
+        expect(provider.getCurrent(for: .api)?.source.weight) == 100
     }
 
     // MARK: - api / blob independence
@@ -234,6 +234,23 @@ final class RemoteConfigSourceProviderTests: TestCase {
 
         provider.restart(for: .blob)
         expect(provider.getCurrent(for: .blob)?.url) == Self.url("blob1")
+    }
+
+    func testStaleReportFromBeforeRestartIsIgnored() {
+        let provider = Self.apiProvider([Self.source("a"), Self.source("b"), Self.source("c")])
+
+        // A caller grabs `a`, then the provider is restarted before that caller reports back.
+        let stale = provider.getCurrent(for: .api)
+        expect(stale?.url) == Self.url("a")
+        provider.restart(for: .api)
+
+        // The stale report belongs to a pre-restart cycle, so it must not advance past `a`.
+        provider.reportUnhealthy(stale!)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+
+        // A handle obtained after the restart still advances normally.
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
     }
 
     // MARK: - Threading
