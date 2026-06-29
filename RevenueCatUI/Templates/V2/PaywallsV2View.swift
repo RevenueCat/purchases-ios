@@ -513,7 +513,7 @@ struct PaywallsV2View: View {
             compontentsData = self.paywallComponentsData
         }
 
-        var data = PaywallEvent.Data(
+        let data = PaywallEvent.Data(
             offering: self.offering,
             paywallComponentsData: compontentsData,
             sessionID: sessionID ?? self.paywallSessionID,
@@ -522,8 +522,6 @@ struct PaywallsV2View: View {
             darkMode: self.colorScheme == .dark,
             source: self.paywallSource
         )
-        data.workflowId = self.workflowId
-        data.stepId = self.stepId
         return data
     }
 

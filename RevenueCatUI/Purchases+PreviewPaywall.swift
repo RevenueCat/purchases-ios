@@ -257,7 +257,7 @@ struct PreviewPaywallPresenter {
                 presentationContext.present(viewController, animated: true)
 
             } catch {
-                Logger.error(Strings.errorFetchingOfferings(error))
+                Logger.error("Error fetching offerings: \(error)")
             }
         }
 
