@@ -184,9 +184,11 @@ class MockSecureItemStorageTests: TestCase {
         do {
             _ = try storage.containsItem(identifier: "key")
             XCTFail("Expected SecureStorageError to be thrown")
-        } catch {
+        } catch let error as SecureStorageError {
             // typed throw — error is SecureStorageError directly
             expect(error.rawValue) == errSecNotAvailable
+        } catch {
+            XCTFail("Unexpected error \(error)")
         }
     }
 
@@ -224,8 +226,10 @@ class MockSecureItemStorageTests: TestCase {
                 attributes: SecureItemAttributes()
             )
             XCTFail("Expected SecureStorageError to be thrown")
-        } catch {
+        } catch let error as SecureStorageError {
             expect(error.rawValue) == errSecIO
+        } catch {
+            XCTFail("Unexpected error \(error)")
         }
     }
 
@@ -238,8 +242,10 @@ class MockSecureItemStorageTests: TestCase {
                 attributes: SecureItemAttributes()
             )
             XCTFail("Expected SecureStorageError to be thrown")
-        } catch {
+        } catch let error as SecureStorageError {
             expect(error.rawValue) == errSecIO
+        } catch {
+            XCTFail("Unexpected error \(error)")
         }
     }
 
