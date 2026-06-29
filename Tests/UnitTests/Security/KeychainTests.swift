@@ -279,7 +279,8 @@ class MockSecureItemStorageTests: TestCase {
 }
 
 // MARK: - Keychain (concrete implementation, exercises real Security framework)
-
+// The simulator requires a real host app to use the keychain
+#if !targetEnvironment(simulator)
 class KeychainTests: TestCase {
 
     private var keychain: Keychain!
@@ -568,6 +569,7 @@ class KeychainTests: TestCase {
     }
 
 }
+#endif
 
 // MARK: - AccessGroup struct
 
