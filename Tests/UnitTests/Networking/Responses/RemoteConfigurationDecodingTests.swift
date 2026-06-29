@@ -325,6 +325,18 @@ final class RemoteConfigurationDecodingTests: TestCase {
         expect(json["prefetched_blobs"] as? [String]) == ["blob-b", "blob-a"]
     }
 
+    func testFirstRunRequestEncodingIncludesEmptyPrefetchedBlobs() throws {
+        let request = RemoteConfigRequest(appUserID: "app-user-id")
+
+        let data = try JSONEncoder.default.encode(request)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        expect(json["app_user_id"] as? String) == "app-user-id"
+        expect(json["domain"]).to(beNil())
+        expect(json["manifest"]).to(beNil())
+        expect(json["prefetched_blobs"] as? [String]).to(beEmpty())
+    }
+
 }
 
 private extension RemoteConfigurationDecodingTests {

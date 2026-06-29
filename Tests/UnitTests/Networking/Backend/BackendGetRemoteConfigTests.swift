@@ -72,7 +72,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(body["app_user_id"] as? String) == Self.appUserID
         expect(body["domain"]).to(beNil())
         expect(body["manifest"]).to(beNil())
-        expect(body["prefetched_blobs"]).to(beNil())
+        expect(body["prefetched_blobs"] as? [String]).to(beEmpty())
     }
 
     func testGetRemoteConfigEncodesCustomManifestRequestBody() throws {

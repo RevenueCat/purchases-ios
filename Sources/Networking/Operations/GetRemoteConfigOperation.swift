@@ -84,9 +84,7 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(self.appUserID, forKey: .appUserID)
         try container.encodeIfPresent(self.manifest, forKey: .manifest)
-        if !self.prefetchedBlobs.isEmpty {
-            try container.encode(self.prefetchedBlobs, forKey: .prefetchedBlobs)
-        }
+        try container.encode(self.prefetchedBlobs, forKey: .prefetchedBlobs)
     }
 
     init(from decoder: Decoder) throws {
