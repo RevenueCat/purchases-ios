@@ -6,7 +6,7 @@ GIT
 
 GIT
   remote: https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal
-  revision: 70bf5c7008bb8581eb95feeecf1f89db01bc7a20
+  revision: dab67655d71eaf08b40f74339e4bb17d16436c32
   specs:
     fastlane-plugin-revenuecat_internal (0.1.0)
       nokogiri
@@ -168,7 +168,7 @@ GEM
     ethon (0.16.0)
       ffi (>= 1.15.0)
     excon (0.112.0)
-    faraday (1.10.5)
+    faraday (1.10.6)
       faraday-em_http (~> 1.0)
       faraday-em_synchrony (~> 1.0)
       faraday-excon (~> 1.1)
