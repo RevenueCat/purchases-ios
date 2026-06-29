@@ -68,6 +68,19 @@ struct WorkflowStepEventTracker {
         )
     }
 
+    /// Emits a `close` for the step the user abandoned the workflow on. Unlike the terminal
+    /// `stepCompleted`, this is a workflow-level abandonment signal and is not gated by `screen_type`,
+    /// so abandonment on a non-paywall step is still captured. The step's position is stamped via
+    /// `isFirstStep`/`isLastStep`; analytics defines "abandonment" from those downstream.
+    func trackClose(_ step: WorkflowStep) {
+        self.sink(
+            .close(
+                .init(),
+                self.data(for: step, fromStepId: nil, toStepId: nil, entryReason: nil)
+            )
+        )
+    }
+
     private func trackStepStarted(_ step: WorkflowStep, fromStepId: String?, entryReason: EntryReason) {
         self.sink(
             .stepStarted(

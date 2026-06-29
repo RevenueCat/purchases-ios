@@ -195,6 +195,7 @@ struct WorkflowPaywallView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.workflowExitOfferOfferingBinding) private var exitOfferOfferingBinding
+    @Environment(\.workflowCompletedInSessionBinding) private var workflowCompletedInSessionBinding
 
     enum DismissalAction: Equatable {
         case dismissWorkflow
@@ -231,6 +232,7 @@ struct WorkflowPaywallView: View {
     @State private var stepEventCoordinator: WorkflowStepEventCoordinator
     @State private var transitionState: WorkflowPageTransitionState<RenderedPage>
     @State private var activeTransitionID: UUID?
+    @State private var hasCompletedWorkflowInSession = false
     /// Every step the user has seen, in first-seen order. Each page is kept mounted so its subtree,
     /// and the state it owns (a tab/toggle selection, the `PackageContext` that `PaywallsV2View`
     /// mutates by reference), survives navigating away and back. Also the per-step page cache:
@@ -347,6 +349,19 @@ struct WorkflowPaywallView: View {
         // and programmatic parent dismiss — without firing during inner step transitions (the outer
         // view stays mounted while pages swap).
         .onDisappear {
+            // Workflow abandonment: fires unless the workflow completed naturally before dismissal.
+            // The completion signal is explicit because UIKit can reset PurchaseHandler before this
+            // view disappears, and restore only completes a workflow when the presenter actually
+            // closes it.
+            self.stepEventCoordinator.trackAbandonment(
+                currentStep: self.navigator.currentStep,
+                hasRenderedPage: self.transitionState.currentPage != nil,
+                hasCompletedInSession: Self.hasCompletedInSession(
+                    hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession,
+                    hasCompletedWorkflowInSession: self.hasCompletedWorkflowInSession ||
+                        self.workflowCompletedInSessionBinding.wrappedValue
+                )
+            )
             self.stepEventCoordinator.trackTerminalCompletion(
                 currentStep: self.navigator.currentStep,
                 hasRenderedPage: self.transitionState.currentPage != nil
@@ -506,6 +521,9 @@ struct WorkflowPaywallView: View {
             hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession
         ) {
         case .dismissWorkflow:
+            if self.purchaseHandler.hasPurchasedInSession {
+                self.markWorkflowCompletedInSession()
+            }
             self.onDismiss()
         case .navigateBack:
             let fromStep = self.navigator.currentStep
@@ -548,6 +566,21 @@ struct WorkflowPaywallView: View {
         currentStepId: String
     ) -> WorkflowExitOfferContext? {
         return context.exitOfferContext(forStepId: currentStepId)
+    }
+
+    private func markWorkflowCompletedInSession() {
+        self.hasCompletedWorkflowInSession = true
+        self.workflowCompletedInSessionBinding.wrappedValue = true
+    }
+
+    /// Whether the workflow reached a natural completion (so dismissing it is not an abandonment).
+    /// Purchase state is kept as a fallback, while restore-driven completion comes from the presenter
+    /// only when restore actually dismisses the workflow.
+    static func hasCompletedInSession(
+        hasPurchasedInSession: Bool,
+        hasCompletedWorkflowInSession: Bool
+    ) -> Bool {
+        return hasPurchasedInSession || hasCompletedWorkflowInSession
     }
 
     static func dismissalAction(

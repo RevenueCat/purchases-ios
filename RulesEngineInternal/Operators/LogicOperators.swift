@@ -28,10 +28,11 @@ enum LogicOperators {
     /// `{"and": [a, b, c]}` — short-circuit AND. Returns the first falsy
     /// value or, if all are truthy, the last value (matches JS / JSON Logic:
     /// `and` returns the actual value, not a coerced boolean). Empty input
-    /// returns `.null`.
+    /// returns `.undefined` (json-logic-js reduces an empty `and` to
+    /// `undefined`, which is falsy but `!== null`).
     static func opAnd(args: Value, vars: Value) throws -> Value {
         let items = Operators.argsAsList(args)
-        var last: Value = .null
+        var last: Value = .undefined
         for item in items {
             last = try Evaluator.evaluateValue(item, vars: vars)
             if !last.isTruthy {
@@ -43,10 +44,11 @@ enum LogicOperators {
 
     /// `{"or": [a, b, c]}` — short-circuit OR. Returns the first truthy
     /// value or, if all are falsy, the last value. Empty input returns
-    /// `.null`.
+    /// `.undefined` (json-logic-js reduces an empty `or` to `undefined`,
+    /// which is falsy but `!== null`).
     static func opOr(args: Value, vars: Value) throws -> Value {
         let items = Operators.argsAsList(args)
-        var last: Value = .null
+        var last: Value = .undefined
         for item in items {
             last = try Evaluator.evaluateValue(item, vars: vars)
             if last.isTruthy {

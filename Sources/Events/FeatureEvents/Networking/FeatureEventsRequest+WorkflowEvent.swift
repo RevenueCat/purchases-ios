@@ -65,30 +65,13 @@ extension FeatureEventsRequest.WorkflowEvent {
 
         do {
             let event = try JSONDecoder.default.decode(StoredWorkflowEvent.self, from: jsonData)
-
-            let eventName: String
-            let fromStepId: String?
-            let toStepId: String?
-            let entryReason: String?
-
-            switch event {
-            case .stepStarted:
-                eventName = Self.stepStartedEventName
-                fromStepId = event.data.fromStepId
-                toStepId = nil
-                entryReason = event.data.entryReason
-            case .stepCompleted:
-                eventName = Self.stepCompletedEventName
-                fromStepId = nil
-                toStepId = event.data.toStepId
-                entryReason = nil
-            }
+            let wire = Self.wireFields(for: event)
 
             self.init(
                 type: Self.typeValue,
                 id: event.creationData.id.uuidString,
                 version: Self.schemaVersion,
-                eventName: eventName,
+                eventName: wire.eventName,
                 timestampMs: event.creationData.date.millisecondsSince1970,
                 appUserID: storedEvent.userID,
                 context: Context(locale: event.data.localeIdentifier),
@@ -96,9 +79,9 @@ extension FeatureEventsRequest.WorkflowEvent {
                     workflowId: event.data.workflowId,
                     stepId: event.data.stepId,
                     traceId: event.data.traceId,
-                    fromStepId: fromStepId,
-                    toStepId: toStepId,
-                    entryReason: entryReason,
+                    fromStepId: wire.fromStepId,
+                    toStepId: wire.toStepId,
+                    entryReason: wire.entryReason,
                     isFirstStep: event.data.isFirstStep,
                     isLastStep: event.data.isLastStep,
                     experimentId: event.data.experimentId,
@@ -112,10 +95,42 @@ extension FeatureEventsRequest.WorkflowEvent {
         }
     }
 
+    /// The event-name and navigation fields that vary per `WorkflowEvent` case. `close` is an
+    /// abandonment signal, not a navigation, so it carries no from/to step or entry reason.
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    private static func wireFields(for event: StoredWorkflowEvent) -> WireFields {
+        switch event {
+        case .stepStarted:
+            return .init(
+                eventName: stepStartedEventName,
+                fromStepId: event.data.fromStepId,
+                toStepId: nil,
+                entryReason: event.data.entryReason
+            )
+        case .stepCompleted:
+            return .init(
+                eventName: stepCompletedEventName,
+                fromStepId: nil,
+                toStepId: event.data.toStepId,
+                entryReason: nil
+            )
+        case .close:
+            return .init(eventName: closeEventName, fromStepId: nil, toStepId: nil, entryReason: nil)
+        }
+    }
+
+    private struct WireFields {
+        let eventName: String
+        let fromStepId: String?
+        let toStepId: String?
+        let entryReason: String?
+    }
+
     private static let schemaVersion = 1
     private static let typeValue = "workflows"
     private static let stepStartedEventName = "workflows_step_started"
     private static let stepCompletedEventName = "workflows_step_completed"
+    private static let closeEventName = "workflows_close"
 
 }
 

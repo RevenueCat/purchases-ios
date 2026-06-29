@@ -285,10 +285,12 @@ public typealias ProductIdentifier = String
                 periodType: subscriptionData.periodType,
                 refundedAt: subscriptionData.refundedAt,
                 storeTransactionId: subscriptionData.storeTransactionId,
+                autoResumeDate: subscriptionData.autoResumeDate,
                 requestDate: response.requestDate,
                 price: subscriptionData.price.map { ProductPaidPrice(currency: $0.currency, amount: $0.amount) },
                 managementURL: subscriptionData.managementUrl,
-                displayName: subscriptionData.displayName
+                displayName: subscriptionData.displayName,
+                productPlanIdentifier: subscriptionData.productPlanIdentifier
             ))
         })
 
