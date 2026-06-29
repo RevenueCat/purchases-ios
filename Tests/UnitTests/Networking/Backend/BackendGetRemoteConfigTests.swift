@@ -291,9 +291,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         let fetchResult = try XCTUnwrap(result?.value)
-        guard case let .container(container, _) = fetchResult else {
-            return XCTFail("Expected remote config container result")
-        }
+        let container = try XCTUnwrap(fetchResult.container)
 
         let contentElementsByChecksum = container.inlineContentElements
 

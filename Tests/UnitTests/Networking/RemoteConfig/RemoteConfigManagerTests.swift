@@ -317,7 +317,7 @@ private extension RemoteConfigFetchResult {
     /// Builds a fetch result through the production initializer. A `nil` container
     /// represents a `204 No Content` response.
     static func test(
-        container: RCContainer?,
+        container: RemoteConfigContainer?,
         verificationResult: VerificationResult = .verified
     ) -> RemoteConfigFetchResult {
         return RemoteConfigFetchResult(response: .init(
