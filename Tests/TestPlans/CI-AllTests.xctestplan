@@ -9,15 +9,7 @@
     }
   ],
   "defaultOptions" : {
-    "codeCoverage" : {
-      "targets" : [
-        {
-          "containerPath" : "container:RevenueCat.xcodeproj",
-          "identifier" : "2DC5621524EC63420031F69B",
-          "name" : "RevenueCat"
-        }
-      ]
-    },
+    "codeCoverage" : false,
     "environmentVariableEntries" : [
       {
         "key" : "RCRunningTests",
@@ -26,8 +18,8 @@
     ],
     "maximumTestExecutionTimeAllowance" : 180,
     "targetForVariableExpansion" : {
-      "containerPath" : "container:RevenueCat.xcodeproj",
-      "identifier" : "2DEAC2D926EFE46E006914ED",
+      "containerPath" : "container:RevenueCatTests.xcodeproj",
+      "identifier" : "081ACE499D6124A345634D8F",
       "name" : "UnitTestsHostApp"
     },
     "testExecutionOrdering" : "random",
@@ -37,29 +29,29 @@
   "testTargets" : [
     {
       "target" : {
-        "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "2DC5621D24EC63430031F69B",
+        "containerPath" : "container:RevenueCatTests.xcodeproj",
+        "identifier" : "35B291DDDEB8B02EB546EFC8",
         "name" : "UnitTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "2DAC5F7126F13C9800C5258F",
+        "containerPath" : "container:RevenueCatTests.xcodeproj",
+        "identifier" : "C25F9047A8576E332D33AA91",
         "name" : "StoreKitUnitTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "5759B330296DF65D002472D5",
+        "containerPath" : "container:RevenueCatTests.xcodeproj",
+        "identifier" : "D50393B16846CEC202A92DE5",
         "name" : "ReceiptParserTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "9F10CFD131109088B9D1C655",
+        "containerPath" : "container:RulesEngineInternal.xcodeproj",
+        "identifier" : "F0748CDFA15F3FA669701260",
         "name" : "RulesEngineInternalTests"
       }
     }

@@ -147,19 +147,34 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(enConfig.title) == "Paywall"
     }
 
-    func testLocalesOrderedByPriority() throws {
-        #if swift(>=5.9)
-        let expected = [
-            "en-US"
-        ]
-        #else
-        let expected = [
-            // `Locale.preferredLanguages` returns `en` before Xcode 15.
-            "en"
-        ]
-        #endif
+    func testLocalesOrderedByPriorityWhenPurchasesIsNotConfigured() throws {
+        Purchases.clearSingleton()
+        defer { Purchases.clearSingleton() }
 
-        expect(PaywallData.localesOrderedByPriority.map(\.identifier)) == expected
+        expect(Purchases.isConfigured) == false
+        expect(PaywallData.localesOrderedByPriority.map(\.identifier)) == Self.normalizedLocaleIdentifiers(
+            from: Locale.preferredLanguages
+        )
+    }
+
+    func testLocalesOrderedByPriorityWhenPurchasesIsConfigured() throws {
+        Purchases.clearSingleton()
+        defer { Purchases.clearSingleton() }
+
+        let preferredLocale = "es_ES"
+        let configuration = Configuration.Builder(withAPIKey: "")
+            .with(preferredUILocaleOverride: preferredLocale)
+            .build()
+
+        _ = Purchases.configure(with: configuration)
+
+        let expected = [preferredLocale] + Locale.preferredLanguages
+
+        expect(Purchases.isConfigured) == true
+        expect(PaywallData.localesOrderedByPriority.map(\.identifier)) == Self.normalizedLocaleIdentifiers(
+            from: expected
+        )
+        expect(PaywallData.localesOrderedByPriority.first?.identifier) == Locale(identifier: preferredLocale).identifier
     }
 
     func testDoesNotFindLocaleWithMissingLanguage() throws {
@@ -202,5 +217,9 @@ class PaywallDataTests: BaseHTTPResponseTest {
 private extension PaywallDataTests {
 
     static let defaultLocale = "en_US"
+
+    static func normalizedLocaleIdentifiers(from identifiers: [String]) -> [String] {
+        return identifiers.map { Locale(identifier: $0).identifier }
+    }
 
 }
