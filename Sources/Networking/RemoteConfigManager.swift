@@ -84,7 +84,10 @@ private extension RemoteConfigManager {
 
     /// Replays only requested prefetch blobs that are still present in the blob store.
     func cachedPrefetchedBlobRefs(from persisted: PersistedRemoteConfiguration?) -> [String] {
-        return persisted?.prefetchBlobs.filter { self.blobStore.contains(ref: $0) } ?? []
+        guard let persisted else { return [] }
+
+        let cachedRefs = self.blobStore.cachedRefs()
+        return persisted.prefetchBlobs.filter { cachedRefs.contains($0) }
     }
 
     /// Persists the config sync state and any valid inline blobs from a successful container response.

@@ -97,6 +97,7 @@ final class RemoteConfigManagerTests: TestCase {
         self.manager.refreshRemoteConfig(isAppBackgrounded: true)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.prefetchedBlobs) == ["cachedBlob"]
+        expect(self.blobStore.invokedCachedRefsCount) == 1
     }
 
     func testContainerResponsePersistsServerManifestAndChangedTopicBlobRefs() throws {
@@ -658,6 +659,7 @@ private final class MockRemoteConfigBlobStore: RemoteConfigBlobStoreType {
     private(set) var invokedWriteCount = 0
     private(set) var invokedWriteParameters: (ref: String, data: Data)?
     private(set) var invokedWriteParametersList: [(ref: String, data: Data)] = []
+    private(set) var invokedCachedRefsCount = 0
     private(set) var invokedRetainOnlyCount = 0
     private(set) var invokedRetainOnlyParameters: Set<String>?
     private(set) var invokedClearCount = 0
@@ -682,7 +684,8 @@ private final class MockRemoteConfigBlobStore: RemoteConfigBlobStoreType {
     }
 
     func cachedRefs() -> Set<String> {
-        return []
+        self.invokedCachedRefsCount += 1
+        return self.stubbedContainsRefs
     }
 
     func retainOnly(_ refs: Set<String>) {
