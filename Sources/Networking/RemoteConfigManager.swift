@@ -56,9 +56,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
             switch result {
             case let .success(fetchResult):
-                if let container = fetchResult.container {
-                    self.persist(container: container, previous: persisted)
-                }
+                self.persist(container: fetchResult.container, previous: persisted)
             case let .failure(error):
                 Logger.error(Strings.remoteConfig.refreshFailed(error))
             }
@@ -82,9 +80,14 @@ private extension RemoteConfigManager {
     }
 
     func persist(
-        container: RCContainer,
+        container: RCContainer?,
         previous: PersistedRemoteConfiguration?
     ) {
+        guard let container else {
+            self.persistLastRefreshAt(previous: previous)
+            return
+        }
+
         do {
             let response = try container.config.withPayloadBytes { bytes in
                 try JSONDecoder.default.decode(
@@ -109,6 +112,19 @@ private extension RemoteConfigManager {
         } catch {
             Logger.error(Strings.remoteConfig.failedToParseResponse(error))
         }
+    }
+
+    func persistLastRefreshAt(previous: PersistedRemoteConfiguration?) {
+        guard let previous else { return }
+
+        self.diskCache.write(PersistedRemoteConfiguration(
+            domain: previous.domain,
+            manifest: previous.manifest,
+            activeTopics: previous.activeTopics,
+            prefetchBlobs: previous.prefetchBlobs,
+            topicBlobRefs: previous.topicBlobRefs,
+            lastRefreshAt: self.dateProvider.now()
+        ))
     }
 
     func mergedTopicBlobRefs(

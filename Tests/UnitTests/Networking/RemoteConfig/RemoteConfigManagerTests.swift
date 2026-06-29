@@ -196,10 +196,33 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.diskCache.invokedWriteParameter?.topicBlobRefs) == ["sources": []]
     }
 
-    func testNoContentResponseLeavesCacheUntouched() {
-        self.diskCache.stubbedRead = Self.persisted(
-            manifest: "v1.1710000100.sources:etag1"
+    func testNoContentResponseUpdatesLastRefreshAtForPersistedCache() {
+        let previous = Self.persisted(
+            domain: "app",
+            manifest: "v1.1710000100.sources:etag1",
+            activeTopics: ["sources"],
+            prefetchBlobs: ["prefetchBlob"],
+            topicBlobRefs: ["sources": ["sourceBlob"]],
+            lastRefreshAt: Date(timeIntervalSince1970: 1)
         )
+        self.diskCache.stubbedRead = previous
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+
+        expect(self.diskCache.invokedWriteCount) == 1
+        expect(self.diskCache.invokedWriteParameter) == PersistedRemoteConfiguration(
+            domain: previous.domain,
+            manifest: previous.manifest,
+            activeTopics: previous.activeTopics,
+            prefetchBlobs: previous.prefetchBlobs,
+            topicBlobRefs: previous.topicBlobRefs,
+            lastRefreshAt: Self.lastRefreshAt
+        )
+    }
+
+    func testNoContentResponseWithNoPersistedCacheLeavesCacheUntouched() {
+        self.diskCache.stubbedRead = nil
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
