@@ -45,6 +45,40 @@ protocol HTTPRequestPath {
 
     /// The fallback relative path for this endpoint, if any.
     var fallbackRelativePath: String? { get }
+
+    /// Additional headers specific to this endpoint.
+    var additionalHeaders: HTTPRequest.Headers { get }
+
+    /// Provides endpoint-specific inputs for response signature verification.
+    var responseSignatureContextProvider: ResponseSignatureContextProvider { get }
+}
+
+/// Provides endpoint-specific inputs for backend response signature verification.
+///
+/// Most endpoints use the raw response body and request body. Specialized endpoints can override
+/// either input.
+protocol ResponseSignatureContextProvider {
+
+    /// Returns the response bytes that should be verified against the backend signature.
+    ///
+    /// This may throw when deriving the signed payload requires validating response structure first.
+    func responsePayloadForSignature(from body: Data?, statusCode: HTTPStatusCode) throws -> Data?
+
+    /// Returns the request body component to include in signature parameters, if any.
+    func requestBodyForSignature(for request: HTTPRequest) -> HTTPRequestBody?
+
+}
+
+struct DefaultResponseSignatureContextProvider: ResponseSignatureContextProvider {
+
+    func responsePayloadForSignature(from body: Data?, statusCode: HTTPStatusCode) throws -> Data? {
+        return body
+    }
+
+    func requestBodyForSignature(for request: HTTPRequest) -> HTTPRequestBody? {
+        return request.requestBody
+    }
+
 }
 
 extension HTTPRequestPath {
@@ -59,6 +93,14 @@ extension HTTPRequestPath {
 
     var fallbackRelativePath: String? {
         return nil
+    }
+
+    var additionalHeaders: HTTPRequest.Headers {
+        return [:]
+    }
+
+    var responseSignatureContextProvider: ResponseSignatureContextProvider {
+        return DefaultResponseSignatureContextProvider()
     }
 
     var url: URL? { return self.url(proxyURL: nil) }
@@ -109,8 +151,7 @@ extension HTTPRequest {
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
-        // WIP: endpoint path and signing requirements subject to change
-        case getRemoteConfig
+        case remoteConfig(domain: String)
 
     }
 
@@ -165,6 +206,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return base
         case let .getWorkflow(_, workflowId):
             return "/workflows/v1/workflows/\(Self.escape(workflowId))"
+        case let .remoteConfig(domain):
+            return "/v1/config/\(Self.escape(domain))"
         default:
             return nil
         }
@@ -208,7 +251,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus,
-                .getRemoteConfig:
+                .remoteConfig:
             return true
 
         case .health,
@@ -237,10 +280,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
-                .rewardVerificationStatus,
-                .getRemoteConfig:
+                .rewardVerificationStatus:
             return true
-        case .health,
+        case .remoteConfig,
+             .health,
              .appHealthReportAvailability:
             return false
         }
@@ -259,7 +302,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getWorkflow,
                 .appHealthReport,
                 .appHealthReportAvailability,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .remoteConfig,
+                .rewardVerificationStatus:
             return true
         case .getIntroEligibility,
                 .postSubscriberAttributes,
@@ -268,12 +313,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
                 .getCustomerCenterConfig,
-                .postCreateTicket,
-                // WIP: Move to true when we have the final endpoint for remote config, and we can remove the fallback
-                .getRemoteConfig:
+                .postCreateTicket:
             return false
-        case .rewardVerificationStatus:
-            return true
         }
     }
 
@@ -286,6 +327,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .health,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
+                .remoteConfig,
                 .rewardVerificationStatus:
             return true
         case .getWorkflow,
@@ -300,19 +342,22 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .appHealthReport,
-                .postCreateTicket,
-                .getRemoteConfig:
+                .postCreateTicket:
             return false
         }
     }
 
-    var relativePath: String {
+    var responseSignatureContextProvider: ResponseSignatureContextProvider {
         switch self {
-        case .getRemoteConfig:
-            return "/v2/\(self.pathComponent)"
+        case .remoteConfig:
+            return RemoteConfigSignatureContextProvider()
         default:
-            return "/v1/\(self.pathComponent)"
+            return DefaultResponseSignatureContextProvider()
         }
+    }
+
+    var relativePath: String {
+        return "/v1/\(self.pathComponent)"
     }
 
     var pathComponent: String {
@@ -383,8 +428,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .rewardVerificationStatus(appUserID, clientTransactionID):
             return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
 
-        case .getRemoteConfig:
-            return "config"
+        case let .remoteConfig(domain):
+            return "config/\(Self.escape(domain))"
         }
     }
 
@@ -452,8 +497,17 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .rewardVerificationStatus:
             return "get_reward_verification_status"
 
-        case .getRemoteConfig:
-            return "get_remote_config"
+        case .remoteConfig:
+            return "remote_config"
+        }
+    }
+
+    var additionalHeaders: HTTPRequest.Headers {
+        switch self {
+        case .remoteConfig:
+            return [HTTPClient.RequestHeader.accept.rawValue: HTTPClient.rcContainerFormatAcceptHeaderValue]
+        default:
+            return [:]
         }
     }
 

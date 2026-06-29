@@ -39,4 +39,10 @@ import Foundation
         guard case .verified(let reward) = self.storage else { return nil }
         return reward
     }
+
+    /// `true` when verification did not complete successfully.
+    var failed: Bool {
+        guard case .failed = self.storage else { return false }
+        return true
+    }
 }

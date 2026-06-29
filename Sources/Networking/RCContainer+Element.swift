@@ -5,6 +5,7 @@
 //  Created by RevenueCat.
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 
+import CryptoKit
 import Foundation
 
 extension RCContainer {
@@ -58,6 +59,31 @@ extension RCContainer {
             return try self.withBytes(in: self.checksumRange, body)
         }
 
+        /// Returns whether the payload bytes match the element's stored checksum.
+        func isChecksumValid() -> Bool {
+            return self.checksum == self.payloadChecksum
+        }
+
+        /// Validates the payload bytes against the element's stored checksum.
+        func validateChecksum() throws {
+            let actual = self.payloadChecksum
+            guard self.checksum == actual else {
+                throw Parser.FormatError.checksumMismatch(
+                    expected: self.checksum,
+                    actual: actual
+                )
+            }
+        }
+
+        private var payloadChecksum: String {
+            var hash = SHA256()
+            self.withPayloadBytes { bytes in
+                hash.update(bufferPointer: bytes)
+            }
+
+            return Self.base64URLString(from: Array(hash.finalize().prefix(Self.checksumSize)))
+        }
+
         private func withBytes<T>(
             in range: Range<Data.Index>,
             _ body: (UnsafeRawBufferPointer) throws -> T
@@ -71,6 +97,20 @@ extension RCContainer {
             }
         }
 
+    }
+
+}
+
+private extension RCContainer.Element {
+
+    static let checksumSize = 24
+
+    static func base64URLString(from bytes: [UInt8]) -> String {
+        return Data(bytes)
+            .base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
     }
 
 }

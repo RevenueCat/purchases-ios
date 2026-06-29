@@ -1690,7 +1690,9 @@ extension Purchases {
     ///
     /// Call when your ad network's reward callback fires, passing the `clientTransactionID` returned by
     /// ``generateRewardVerificationToken(impressionId:)``.
-    /// Invalidates the virtual currencies cache automatically on a verified virtual-currency reward.
+    /// On a verified reward, automatically invalidates the relevant cache so the grant is reflected on the
+    /// next access: the virtual currencies cache for a virtual-currency reward, and the `CustomerInfo`
+    /// cache for an entitlement reward.
     @_spi(Experimental) public func pollRewardVerification(
         clientTransactionID: String
     ) async -> RewardVerificationResult {
@@ -1705,13 +1707,35 @@ extension Purchases {
         poller: RewardVerification.Poller
     ) async -> RewardVerificationResult {
         let outcome = await poller.run(clientTransactionID: clientTransactionID)
+        let result = await self.rewardVerificationResult(for: outcome, clientTransactionID: clientTransactionID)
         Logger.info(AdsStrings.reward_verification_completed(
-            outcome: outcome.logDescription,
+            result: result,
             transactionID: clientTransactionID
         ))
+        return result
+    }
+
+    /// Applies a verified reward's side-effects and returns the result delivered to the caller. A failed
+    /// entitlement `CustomerInfo` refresh downgrades the result to `.failed`.
+    private func rewardVerificationResult(
+        for outcome: RewardVerification.Outcome,
+        clientTransactionID: String
+    ) async -> RewardVerificationResult {
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        if case .verified(let reward) = outcome, reward.virtualCurrency != nil {
-            self.invalidateVirtualCurrenciesCache()
+        if case .verified(let reward) = outcome {
+            if reward.virtualCurrency != nil {
+                Logger.debug(AdsStrings.reward_verification_virtual_currency_invalidating_cache(
+                    transactionID: clientTransactionID
+                ))
+                self.invalidateVirtualCurrenciesCache()
+            }
+            if reward.entitlement != nil,
+               await self.refreshCustomerInfoAfterEntitlementGrant(clientTransactionID: clientTransactionID)
+                == false {
+                // Couldn't reflect the entitlement locally — report `.failed` so the app doesn't act on a
+                // reward it can't honor yet. The grant persists server-side and syncs on a later fetch.
+                return .failed
+            }
         }
         #endif
         switch outcome {
@@ -1719,6 +1743,36 @@ extension Purchases {
         case .failed: return .failed
         }
     }
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    /// Fetches current `CustomerInfo` so an entitlement reward is reflected locally,
+    /// retrying transient failures since `getCustomerInfo` has no built-in retry. Returns whether it
+    /// succeeded.
+    private func refreshCustomerInfoAfterEntitlementGrant(clientTransactionID: String) async -> Bool {
+        Logger.debug(AdsStrings.reward_verification_entitlement_fetching_customer_info(
+            transactionID: clientTransactionID
+        ))
+        let refreshed: CustomerInfo? = await Async.retry(maximumRetries: 3) {
+            do {
+                let info = try await self.customerInfoManager.customerInfo(
+                    appUserID: self.appUserID,
+                    fetchPolicy: .fetchCurrent
+                )
+                return (shouldRetry: false, info)
+            } catch {
+                // Retry only transient failures; a terminal error won't improve on retry.
+                let isTransient = (error as? BackendError)?.isTransient ?? false
+                return (shouldRetry: isTransient, nil)
+            }
+        }
+        if refreshed == nil {
+            Logger.warn(AdsStrings.reward_verification_entitlement_customer_info_refresh_failed(
+                transactionID: clientTransactionID
+            ))
+        }
+        return refreshed != nil
+    }
+    #endif
 
 }
 
