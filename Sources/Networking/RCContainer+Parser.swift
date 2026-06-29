@@ -121,8 +121,10 @@ extension RCContainer {
 
         /// Parses one element and returns an `Element` that points into the original container bytes.
         ///
-        /// The parser reads the stored checksum and payload range, but intentionally does not validate
-        /// payload bytes against the checksum. Callers validate elements according to their domain rules.
+        /// This parser validates only the container structure needed to safely find element boundaries.
+        /// It records the stored checksum and payload range without deciding whether that checksum is a
+        /// trust boundary. Element blob checksums should be validated before the blob is used or written
+        /// to disk; request/response signature verification should be used to verify authenticity.
         mutating func parseElement(index: Int) throws -> Element {
             guard self.hasBytes(Self.elementHeaderSize) else {
                 throw Parser.FormatError.truncatedElementHeader(index: index)
