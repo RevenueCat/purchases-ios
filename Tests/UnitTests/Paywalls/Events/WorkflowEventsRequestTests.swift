@@ -36,7 +36,7 @@ class WorkflowEventsRequestTests: TestCase {
         let stored = try XCTUnwrap(storedEvent(from: event))
         let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
 
-        expect(request.eventName) == "workflows_step_started"
+        expect(request.eventName) == "workflow_step_started"
     }
 
     func testStepCompletedEventNameInWireFormat() throws {
@@ -47,7 +47,7 @@ class WorkflowEventsRequestTests: TestCase {
         let stored = try XCTUnwrap(storedEvent(from: event))
         let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
 
-        expect(request.eventName) == "workflows_step_completed"
+        expect(request.eventName) == "workflow_step_completed"
     }
 
     func testWireFormatCarriesExpectedFields() throws {
@@ -124,7 +124,7 @@ class WorkflowEventsRequestTests: TestCase {
         let stored = try XCTUnwrap(storedEvent(from: event))
         let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
 
-        expect(request.eventName) == "workflows_close"
+        expect(request.eventName) == "workflow_close"
     }
 
     func testClosePropertiesCarryStepPositionAndOmitNavigationFields() throws {
@@ -152,7 +152,7 @@ class WorkflowEventsRequestTests: TestCase {
         )
         let json = try encodedJSON(from: event)
 
-        expect(json).to(contain("\"event_name\":\"workflows_close\""))
+        expect(json).to(contain("\"event_name\":\"workflow_close\""))
         expect(json).to(contain("\"workflow_id\":\"wfl_abc\""))
         expect(json).to(contain("\"step_id\":\"step-1\""))
         expect(json).to(contain("\"is_first_step\":true"))
@@ -278,7 +278,7 @@ class WorkflowEventsRequestTests: TestCase {
 
         expect(json).to(contain("\"type\":\"workflows\""))
         expect(json).to(contain("\"version\":1"))
-        expect(json).to(contain("\"event_name\":\"workflows_step_started\""))
+        expect(json).to(contain("\"event_name\":\"workflow_step_started\""))
         expect(json).to(contain("\"timestamp_ms\":\(date.millisecondsSince1970)"))
         expect(json).to(contain("\"app_user_id\":\"\(Self.userID)\""))
         expect(json).to(contain("\"workflow_id\":\"wfl_abc\""))

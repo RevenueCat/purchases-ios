@@ -237,9 +237,9 @@ private extension WorkflowEvent {
     func workflowEventMap() -> [String: Any] {
         let typeName: String = {
             switch self {
-            case .stepStarted: return "workflows_step_started"
-            case .stepCompleted: return "workflows_step_completed"
-            case .close: return "workflows_close"
+            case .stepStarted: return "workflow_step_started"
+            case .stepCompleted: return "workflow_step_completed"
+            case .close: return "workflow_close"
             }
         }()
 
