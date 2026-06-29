@@ -67,7 +67,6 @@ final class RemoteConfigDiskCacheTests: TestCase {
             "product_entitlement_mapping": ["pemBlob"]
         ]
         let prefetchBlobs = ["blobRefA", "pemBlob"]
-        let prefetchedBlobRefs = ["blobRefA"]
         let lastRefreshAt = Date(timeIntervalSince1970: 1_710_000_100)
 
         self.cache.write(PersistedRemoteConfiguration(
@@ -76,8 +75,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
             activeTopics: activeTopics,
             prefetchBlobs: prefetchBlobs,
             topicBlobRefs: topicBlobRefs,
-            lastRefreshAt: lastRefreshAt,
-            prefetchedBlobRefs: prefetchedBlobRefs
+            lastRefreshAt: lastRefreshAt
         ))
         let read = try XCTUnwrap(self.cache.read())
 
@@ -87,7 +85,6 @@ final class RemoteConfigDiskCacheTests: TestCase {
         expect(read.prefetchBlobs) == prefetchBlobs
         expect(read.topicBlobRefs) == topicBlobRefs
         expect(read.lastRefreshAt) == lastRefreshAt
-        expect(read.prefetchedBlobRefs) == prefetchedBlobRefs
     }
 
     func testInlineOnlyTopicsPersistWithEmptyBlobRefList() throws {
@@ -143,7 +140,6 @@ final class RemoteConfigDiskCacheTests: TestCase {
         expect(read.prefetchBlobs).to(beEmpty())
         expect(read.topicBlobRefs).to(beEmpty())
         expect(read.lastRefreshAt).to(beNil())
-        expect(read.prefetchedBlobRefs).to(beEmpty())
     }
 
     func testWriteCreatesDirectoryWhenAbsent() {
@@ -199,8 +195,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
             activeTopics: [],
             prefetchBlobs: [],
             topicBlobRefs: [:],
-            lastRefreshAt: Date(timeIntervalSince1970: 1),
-            prefetchedBlobRefs: ["old"]
+            lastRefreshAt: Date(timeIntervalSince1970: 1)
         ))
         self.cache.write(PersistedRemoteConfiguration(
             domain: "app",
@@ -208,14 +203,12 @@ final class RemoteConfigDiskCacheTests: TestCase {
             activeTopics: ["sources"],
             prefetchBlobs: [],
             topicBlobRefs: [:],
-            lastRefreshAt: Date(timeIntervalSince1970: 2),
-            prefetchedBlobRefs: ["new"]
+            lastRefreshAt: Date(timeIntervalSince1970: 2)
         ))
 
         let read = try XCTUnwrap(self.cache.read())
 
         expect(read.manifest) == "v1.1710000100.sources:new"
-        expect(read.prefetchedBlobRefs) == ["new"]
     }
 
 }

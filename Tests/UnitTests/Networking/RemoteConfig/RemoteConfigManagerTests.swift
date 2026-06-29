@@ -61,8 +61,8 @@ final class RemoteConfigManagerTests: TestCase {
         self.diskCache.stubbedRead = Self.persisted(
             domain: "custom",
             manifest: persistedManifest,
-            topicBlobRefs: [:],
-            prefetchedBlobRefs: ["prefetchedBlob"]
+            prefetchBlobs: ["prefetchedBlob"],
+            topicBlobRefs: [:]
         )
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: true)
@@ -86,12 +86,12 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.isAppBackgrounded) == true
     }
 
-    func testSubsequentRunSendsOnlyPersistedPrefetchedBlobsStillCachedLocally() throws {
+    func testSubsequentRunSendsOnlyRequestedPrefetchBlobsStillCachedLocally() throws {
         self.blobStore.stubbedContainsRefs = ["cachedBlob"]
         self.diskCache.stubbedRead = PersistedRemoteConfiguration(
             manifest: "v1.1710000100.sources:etag1",
-            topicBlobRefs: [:],
-            prefetchedBlobRefs: ["cachedBlob", "purgedBlob"]
+            prefetchBlobs: ["cachedBlob", "purgedBlob"],
+            topicBlobRefs: [:]
         )
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: true)
@@ -128,7 +128,6 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.diskCache.invokedWriteParameter?.prefetchBlobs) == ["newBlob"]
         expect(self.diskCache.invokedWriteParameter?.topicBlobRefs) == ["sources": ["newBlob"]]
         expect(self.diskCache.invokedWriteParameter?.lastRefreshAt) == Self.lastRefreshAt
-        expect(self.diskCache.invokedWriteParameter?.prefetchedBlobRefs).to(beEmpty())
     }
 
     func testContainerResponseMergesUnchangedTopicRefsAndPrunesDroppedTopics() throws {
@@ -239,8 +238,7 @@ final class RemoteConfigManagerTests: TestCase {
             activeTopics: previous.activeTopics,
             prefetchBlobs: previous.prefetchBlobs,
             topicBlobRefs: previous.topicBlobRefs,
-            lastRefreshAt: Self.lastRefreshAt,
-            prefetchedBlobRefs: previous.prefetchedBlobRefs
+            lastRefreshAt: Self.lastRefreshAt
         )
     }
 
@@ -457,7 +455,7 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobStore.invokedRetainOnlyParameters) == Set([topicBlobRef, prefetchBlobRef])
     }
 
-    func testContainerResponsePersistsOnlyPrefetchBlobRefsHeldInBlobStore() throws {
+    func testContainerResponsePersistsServerPrefetchBlobRefs() throws {
         let cachedRef = RCContainerTestData.blobRef(for: "cached".asData)
         let missingRef = RCContainerTestData.blobRef(for: "missing".asData)
         self.blobStore.stubbedContainsRefs = [cachedRef]
@@ -475,7 +473,7 @@ final class RemoteConfigManagerTests: TestCase {
             with: .success(.container(try Self.container(config: response), verificationResult: .verified))
         )
 
-        expect(self.diskCache.invokedWriteParameter?.prefetchedBlobRefs) == [cachedRef]
+        expect(self.diskCache.invokedWriteParameter?.prefetchBlobs) == [cachedRef, missingRef]
     }
 
     func testContainerResponseDoesNotPruneBlobStoreWhenCacheWriteFails() throws {
@@ -486,6 +484,7 @@ final class RemoteConfigManagerTests: TestCase {
             manifest: "v1.1710000100.sources:etag1",
             topicBlobRefs: ["sources": [oldRef]]
         )
+        let blob = "new".asData
         let response = """
         {
           "domain": "app",
@@ -501,10 +500,14 @@ final class RemoteConfigManagerTests: TestCase {
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
-            with: .success(.container(try Self.container(config: response), verificationResult: .verified))
+            with: .success(.container(
+                try Self.container(config: response, contentElements: [blob]),
+                verificationResult: .verified
+            ))
         )
 
         expect(self.diskCache.invokedWriteCount) == 1
+        expect(self.blobStore.invokedWriteCount) == 0
         expect(self.blobStore.invokedRetainOnlyCount) == 0
     }
 
@@ -518,8 +521,7 @@ private extension RemoteConfigManagerTests {
         activeTopics: [String] = [],
         prefetchBlobs: [String] = [],
         topicBlobRefs: [String: [String]] = [:],
-        lastRefreshAt: Date? = nil,
-        prefetchedBlobRefs: [String] = []
+        lastRefreshAt: Date? = nil
     ) -> PersistedRemoteConfiguration {
         return PersistedRemoteConfiguration(
             domain: domain,
@@ -527,8 +529,7 @@ private extension RemoteConfigManagerTests {
             activeTopics: activeTopics,
             prefetchBlobs: prefetchBlobs,
             topicBlobRefs: topicBlobRefs,
-            lastRefreshAt: lastRefreshAt,
-            prefetchedBlobRefs: prefetchedBlobRefs
+            lastRefreshAt: lastRefreshAt
         )
     }
 

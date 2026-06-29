@@ -82,9 +82,9 @@ private extension RemoteConfigManager {
         self.isRefreshing.value = false
     }
 
-    /// Replays only prefetch blobs that are still present in the blob store.
+    /// Replays only requested prefetch blobs that are still present in the blob store.
     func cachedPrefetchedBlobRefs(from persisted: PersistedRemoteConfiguration?) -> [String] {
-        return persisted?.prefetchedBlobRefs.filter { self.blobStore.contains(ref: $0) } ?? []
+        return persisted?.prefetchBlobs.filter { self.blobStore.contains(ref: $0) } ?? []
     }
 
     /// Persists the config sync state and any valid inline blobs from a successful container response.
@@ -114,20 +114,18 @@ private extension RemoteConfigManager {
                 postSyncTopicBlobRefs: postSyncTopicBlobRefs
             )
 
-            self.extractInlineBlobs(from: container, keepingOnly: postSyncReferencedBlobRefs)
-
             let persistedConfiguration = PersistedRemoteConfiguration(
                 domain: response.domain,
                 manifest: response.manifest,
                 activeTopics: response.activeTopics,
                 prefetchBlobs: response.prefetchBlobs,
                 topicBlobRefs: postSyncTopicBlobRefs,
-                lastRefreshAt: self.dateProvider.now(),
-                prefetchedBlobRefs: response.prefetchBlobs.filter { self.blobStore.contains(ref: $0) }
+                lastRefreshAt: self.dateProvider.now()
             )
 
             guard self.diskCache.write(persistedConfiguration) else { return }
 
+            self.extractInlineBlobs(from: container, keepingOnly: postSyncReferencedBlobRefs)
             self.blobStore.retainOnly(postSyncReferencedBlobRefs)
         } catch {
             Logger.error(Strings.remoteConfig.failedToParseResponse(error))
@@ -143,8 +141,7 @@ private extension RemoteConfigManager {
             activeTopics: previous.activeTopics,
             prefetchBlobs: previous.prefetchBlobs,
             topicBlobRefs: previous.topicBlobRefs,
-            lastRefreshAt: self.dateProvider.now(),
-            prefetchedBlobRefs: previous.prefetchedBlobRefs
+            lastRefreshAt: self.dateProvider.now()
         ))
     }
 
