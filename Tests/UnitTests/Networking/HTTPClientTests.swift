@@ -1029,7 +1029,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     func testRemoteConfigDoesNotUseETagCacheEvenIfResponseIncludesETagHeader() {
         let request = HTTPRequest(
             method: .post(RemoteConfigRequest(appUserID: "app-user-id")),
-            path: .remoteConfig
+            path: .remoteConfig(domain: "app")
         )
         let headerPresent: Atomic<Bool?> = nil
 

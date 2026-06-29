@@ -151,7 +151,7 @@ extension HTTPRequest {
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
-        case remoteConfig
+        case remoteConfig(domain: String)
 
     }
 
@@ -206,8 +206,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return base
         case let .getWorkflow(_, workflowId):
             return "/workflows/v1/workflows/\(Self.escape(workflowId))"
-        case .remoteConfig:
-            return "/v1/config"
+        case let .remoteConfig(domain):
+            return "/v1/config/\(Self.escape(domain))"
         default:
             return nil
         }
@@ -428,8 +428,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .rewardVerificationStatus(appUserID, clientTransactionID):
             return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
 
-        case .remoteConfig:
-            return "config"
+        case let .remoteConfig(domain):
+            return "config/\(Self.escape(domain))"
         }
     }
 

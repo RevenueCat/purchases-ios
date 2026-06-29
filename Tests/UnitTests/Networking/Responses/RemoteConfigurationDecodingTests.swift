@@ -308,20 +308,21 @@ final class RemoteConfigurationDecodingTests: TestCase {
         expect(json["prefetch"]).to(beNil())
     }
 
-    func testRequestEncodeRoundTripPreservesShape() throws {
+    func testRequestEncodingOmitsDomain() throws {
         let request = RemoteConfigRequest(
             appUserID: "app-user-id",
-            domain: "app",
+            domain: "project",
             manifest: "v1.123.sources:sources-etag",
             prefetchedBlobs: ["blob-b", "blob-a"]
         )
 
         let data = try JSONEncoder.default.encode(request)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        let decoded = try JSONDecoder.default.decode(RemoteConfigRequest.self, from: data)
 
         expect(json["app_user_id"] as? String) == "app-user-id"
-        expect(decoded) == request
+        expect(json["domain"]).to(beNil())
+        expect(json["manifest"] as? String) == "v1.123.sources:sources-etag"
+        expect(json["prefetched_blobs"] as? [String]) == ["blob-b", "blob-a"]
     }
 
 }

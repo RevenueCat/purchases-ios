@@ -55,7 +55,6 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
     private enum CodingKeys: String, CodingKey {
         // JSONDecoder.default converts `app_user_id` to `appUserId` before matching CodingKeys.
         case appUserID = "appUserId"
-        case domain
         case manifest
         case prefetchedBlobs
     }
@@ -84,7 +83,6 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(self.appUserID, forKey: .appUserID)
-        try container.encode(self.domain, forKey: .domain)
         try container.encodeIfPresent(self.manifest, forKey: .manifest)
         if !self.prefetchedBlobs.isEmpty {
             try container.encode(self.prefetchedBlobs, forKey: .prefetchedBlobs)
@@ -95,7 +93,7 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         self.appUserID = try container.decode(String.self, forKey: .appUserID)
-        self.domain = try container.decode(String.self, forKey: .domain)
+        self.domain = RemoteConfiguration.defaultDomain
         self.manifest = try container.decodeIfPresent(String.self, forKey: .manifest)
         self.prefetchedBlobs = try container.decodeIfPresent([String].self, forKey: .prefetchedBlobs) ?? []
     }
@@ -108,7 +106,7 @@ extension GetRemoteConfigOperation: @unchecked Sendable {}
 private extension GetRemoteConfigOperation {
 
     func getRemoteConfig(completion: @escaping () -> Void) {
-        let request = HTTPRequest(method: .post(self.request), path: .remoteConfig)
+        let request = HTTPRequest(method: .post(self.request), path: .remoteConfig(domain: self.request.domain))
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<RemoteConfigContainer?>.Result) in
             defer {

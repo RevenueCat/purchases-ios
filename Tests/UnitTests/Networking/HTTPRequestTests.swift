@@ -39,14 +39,14 @@ class HTTPRequestTests: TestCase {
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
         .getWorkflows(appUserID: userID, type: nil),
         .getWorkflow(appUserID: userID, workflowId: "wf_1"),
-        .remoteConfig
+        .remoteConfig(domain: "app")
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
         .health
     ]
     private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
         .health,
-        .remoteConfig
+        .remoteConfig(domain: "app")
     ]
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
@@ -58,7 +58,7 @@ class HTTPRequestTests: TestCase {
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
         .getWorkflows(appUserID: userID, type: nil),
         .getWorkflow(appUserID: userID, workflowId: "wf_1"),
-        .remoteConfig
+        .remoteConfig(domain: "app")
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
@@ -215,7 +215,7 @@ class HTTPRequestTests: TestCase {
                                ["https://api-production.8-lives-cat.io/workflows/v1/workflows/\(workflowId)"])
             case .remoteConfig:
                 XCTAssertEqual(fallbackUrlsPaths,
-                               ["https://api-production.8-lives-cat.io/v1/config"])
+                               ["https://api-production.8-lives-cat.io/v1/config/app"])
             default:
                 XCTAssertTrue(fallbackUrlsPaths.isEmpty)
             }
@@ -228,6 +228,14 @@ class HTTPRequestTests: TestCase {
             path.fallbackUrls.map { $0.absoluteString },
             ["https://api-production.8-lives-cat.io/workflows/v1/workflows?type=PAYWALL"]
         )
+    }
+
+    func testRemoteConfigPathEscapesDomain() {
+        let path = HTTPRequest.Path.remoteConfig(domain: "app workflows/project")
+
+        expect(path.relativePath) == "/v1/config/app%20workflows%2Fproject"
+        expect(path.fallbackUrls.map { $0.absoluteString })
+            == ["https://api-production.8-lives-cat.io/v1/config/app%20workflows%2Fproject"]
     }
 
     func testGetWorkflowFallbackUrlEscapesWorkflowId() {
@@ -320,7 +328,7 @@ class HTTPRequestTests: TestCase {
     func testRemoteConfigUsesRCContainerAcceptHeader() {
         let request: HTTPRequest = .init(
             method: .post(RemoteConfigRequest(appUserID: "app-user-id")),
-            path: .remoteConfig
+            path: .remoteConfig(domain: "app")
         )
         let headers = request.headers(
             with: [:],

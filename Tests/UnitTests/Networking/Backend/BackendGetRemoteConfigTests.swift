@@ -53,8 +53,8 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
             ) { _ in completed() }
         }
 
-        expect(self.httpClient.calls.map { $0.request.path as? HTTPRequest.Path }) == [.remoteConfig]
-        expect(self.httpClient.calls.first?.request.path.relativePath) == "/v1/config"
+        expect(self.httpClient.calls.map { $0.request.path as? HTTPRequest.Path }) == [.remoteConfig(domain: "app")]
+        expect(self.httpClient.calls.first?.request.path.relativePath) == "/v1/config/app"
     }
 
     func testGetRemoteConfigEncodesAppUserIDInRequestBody() throws {
@@ -70,13 +70,13 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let body = try XCTUnwrap(self.httpClient.calls.first?.request.requestBody?.asJSONDictionary())
 
         expect(body["app_user_id"] as? String) == Self.appUserID
-        expect(body["domain"] as? String) == "app"
+        expect(body["domain"]).to(beNil())
         expect(body["manifest"]).to(beNil())
         expect(body["prefetched_blobs"]).to(beNil())
     }
 
     func testGetRemoteConfigEncodesCustomManifestRequestBody() throws {
-        self.mockSuccessfulResponse()
+        self.mockSuccessfulResponse(domain: "project")
 
         let request = RemoteConfigRequest(
             appUserID: Self.appUserID,
@@ -94,8 +94,9 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
         let body = try XCTUnwrap(self.httpClient.calls.first?.request.requestBody?.asJSONDictionary())
 
+        expect(self.httpClient.calls.first?.request.path.relativePath) == "/v1/config/project"
         expect(body["app_user_id"] as? String) == Self.appUserID
-        expect(body["domain"] as? String) == "project"
+        expect(body["domain"]).to(beNil())
         expect(body["manifest"] as? String) == "v1.123.paywalls:etag-paywalls,product_entitlement_mapping:etag-pem"
         expect(body["prefetched_blobs"] as? [String]) == ["blob-b"]
     }
@@ -216,6 +217,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigDoesNotCoalesceSimultaneousRequestsWithDifferentDomains() {
         self.mockSuccessfulResponse(delay: .milliseconds(10))
+        self.mockSuccessfulResponse(domain: "app_workflows", delay: .milliseconds(10))
 
         let responses: Atomic<Int> = .init(0)
 
@@ -231,6 +233,8 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
         expect(responses.value).toEventually(equal(2))
         expect(self.httpClient.calls).to(haveCount(2))
+        expect(self.httpClient.calls.map { $0.request.path.relativePath })
+            .to(contain("/v1/config/app", "/v1/config/app_workflows"))
     }
 
     func testGetRemoteConfigDoesNotCoalesceSimultaneousRequestsWithDifferentAppUserIDs() {
@@ -340,7 +344,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
             }
         )
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: "app"),
             response: .init(statusCode: .success, body: data)
         )
 
@@ -367,7 +371,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
             checksumOverride: { _, _ in Array(repeating: 0, count: RCContainerTestData.checksumSize) }
         )
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: "app"),
             response: .init(statusCode: .success, body: data)
         )
 
@@ -404,7 +408,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigNoContentResponseSucceedsWithNoContainer() throws {
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: "app"),
             response: .init(statusCode: .noContent, body: Data(), verificationResult: .verified)
         )
 
@@ -427,7 +431,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigFailSendsError() {
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: "app"),
             response: .init(error: .unexpectedResponse(nil))
         )
 
@@ -446,7 +450,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let mockedError: NetworkError = .unexpectedResponse(nil)
 
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: "app"),
             response: .init(error: mockedError)
         )
 
@@ -467,7 +471,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let mockedError: NetworkError = .errorResponse(errorResponse, .internalServerError)
 
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: "app"),
             response: .init(error: mockedError)
         )
 
@@ -485,7 +489,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigInvalidRCContainerSendsDecodingError() {
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: "app"),
             response: .init(statusCode: .success, body: "not an rc container".asData)
         )
 
@@ -507,7 +511,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigSuccessfulEmptyResponseSendsDecodingError() {
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: "app"),
             response: .init(statusCode: .success, body: Data())
         )
 
@@ -529,7 +533,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigSuccessfulJSONResponseSendsDecodingError() {
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: "app"),
             response: .init(statusCode: .success, body: #"{"api_sources":[]}"#.asData)
         )
 
@@ -566,11 +570,12 @@ private extension BackendGetRemoteConfigTests {
     }
 
     func mockSuccessfulResponse(
+        domain: String = "app",
         verificationResult: VerificationResult = .defaultValue,
         delay: DispatchTimeInterval = .never
     ) {
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: domain),
             response: .init(
                 statusCode: .success,
                 body: Self.containerData,
