@@ -24,19 +24,19 @@ protocol SecureItemStorage {
     /// - Parameter identifier: the identifier of the item
     /// - Returns: `true` if the secure storage holds the item; `false` otherwise.
     /// - Throws: a ``SecureStorageError`` if an error occurred during lookup
-    func containsItem(identifier: String) throws(SecureStorageError) -> Bool
+    func containsItem(identifier: String) throws -> Bool
 
     /// Return a list of all retrievable identifiers in the secure storage
     ///
     /// - Returns: a list of identifiers
     /// - Throws: a ``SecureStorageError`` if an error occurred during retrieval
-    func allItemIdentifiers() throws(SecureStorageError) -> [String]
+    func allItemIdentifiers() throws -> [String]
 
     /// Read a single secure item
     /// - Parameter identifier: the identifier of the item
     /// - Returns: the item's `Data`, if it exists. Returns `nil` if no item is stored for that identifier.
     /// - Throws: a ``SecureStorageError`` if an error occurred during lookup
-    func readItem(identifier: String) throws(SecureStorageError) -> Data?
+    func readItem(identifier: String) throws -> Data?
 
     /// Save, update, or delete a single secure item.
     ///
@@ -54,7 +54,7 @@ protocol SecureItemStorage {
     ///   - attributes: The item's ``SecureItemAttributes``. This value is ignored
     ///   if the contents are `nil`.
     /// - Throws: a ``SecureStorageError`` if an error occurred during modification.
-    func modifyItem(identifier: String, contents: Data?, attributes: SecureItemAttributes) throws(SecureStorageError)
+    func modifyItem(identifier: String, contents: Data?, attributes: SecureItemAttributes) throws
 
     /// Save or update a single secure item
     ///
@@ -63,7 +63,7 @@ protocol SecureItemStorage {
     ///   - contents: The new or updated contents of the secure item
     ///   - attributes: The item's new or updated ``SecureItemAttributes``.
     /// - Throws: a ``SecureStorageError`` if an error occurred during saving.
-    func saveItem(identifier: String, contents: Data, attributes: SecureItemAttributes) throws(SecureStorageError)
+    func saveItem(identifier: String, contents: Data, attributes: SecureItemAttributes) throws
 
     /// Delete a single secure item, if it exists.
     ///
@@ -71,7 +71,7 @@ protocol SecureItemStorage {
     ///
     /// - Parameter identifier: The identifier of the item to delete
     /// - Throws: a ``SecureStorageError`` if an error occurred during deletion.
-    func deleteItem(identifier: String) throws(SecureStorageError)
+    func deleteItem(identifier: String) throws
 }
 
 /// Storage attributes of secure items
@@ -96,13 +96,13 @@ struct SecureItemAttributes {
 extension SecureItemStorage {
 
     // default implementation
-    func containsItem(identifier: String) throws(SecureStorageError) -> Bool {
+    func containsItem(identifier: String) throws -> Bool {
         let allIdentifiers = try self.allItemIdentifiers()
         return allIdentifiers.contains(identifier)
     }
 
     // default implementation
-    func modifyItem(identifier: String, contents: Data?, attributes: SecureItemAttributes) throws(SecureStorageError) {
+    func modifyItem(identifier: String, contents: Data?, attributes: SecureItemAttributes) throws {
         if let contents {
             try self.saveItem(identifier: identifier, contents: contents, attributes: attributes)
         } else {
@@ -113,14 +113,14 @@ extension SecureItemStorage {
     /// Modify an item, using default ``SecureItemAttributes``.
     ///
     /// - SeeAlso: ``modifyItem(identifier:contents:attributes:)``
-    func modifyItem(identifier: String, contents: Data?) throws(SecureStorageError) {
+    func modifyItem(identifier: String, contents: Data?) throws {
         try self.modifyItem(identifier: identifier, contents: contents, attributes: SecureItemAttributes())
     }
 
     /// Save an item, using default ``SecureItemAttributes``.
     ///
     /// - SeeAlso: ``saveItem(identifier:contents:attributes:)``
-    func saveItem(identifier: String, contents: Data) throws(SecureStorageError) {
+    func saveItem(identifier: String, contents: Data) throws {
         try self.saveItem(identifier: identifier, contents: contents, attributes: SecureItemAttributes())
     }
 
@@ -175,7 +175,7 @@ struct Keychain: SecureItemStorage {
         self.baseQuery = base
     }
 
-    func containsItem(identifier: String) throws(SecureStorageError) -> Bool {
+    func containsItem(identifier: String) throws -> Bool {
         var query = baseQuery
         query[kSecReturnAttributes] = true
         query[kSecAttrAccount] = identifier
@@ -200,7 +200,7 @@ struct Keychain: SecureItemStorage {
         }
     }
 
-    func allItemIdentifiers() throws(SecureStorageError) -> [String] {
+    func allItemIdentifiers() throws -> [String] {
         var query = baseQuery
         query[kSecReturnAttributes] = true
         query[kSecMatchLimit] = kSecMatchLimitAll
@@ -224,7 +224,7 @@ struct Keychain: SecureItemStorage {
         }
     }
 
-    func readItem(identifier: String) throws(SecureStorageError) -> Data? {
+    func readItem(identifier: String) throws -> Data? {
         var query = baseQuery
         query[kSecReturnData] = true
         query[kSecAttrAccount] = identifier
@@ -246,7 +246,7 @@ struct Keychain: SecureItemStorage {
         }
     }
 
-    func saveItem(identifier: String, contents: Data, attributes: SecureItemAttributes) throws(SecureStorageError) {
+    func saveItem(identifier: String, contents: Data, attributes: SecureItemAttributes) throws {
         var query = baseQuery
         query[kSecAttrAccount] = identifier
 
@@ -270,7 +270,7 @@ struct Keychain: SecureItemStorage {
         }
     }
 
-    func deleteItem(identifier: String) throws(SecureStorageError) {
+    func deleteItem(identifier: String) throws {
         guard try self.containsItem(identifier: identifier) else { return }
 
         var query = baseQuery
