@@ -188,8 +188,10 @@ private extension RCContainerTestData {
         "  \"prefetch_blobs\": [\"\(RCContainerTestData.blobRef(for: RCContainerTestData.workflowBlob))\"],",
         "  \"topics\": {",
         "    \"workflows\": {",
-        "      \"wf1234\": { \"offering_identifier\": \"default\", \"blob_ref\": \"\(RCContainerTestData.blobRef(for: RCContainerTestData.workflowBlob))\" },",
-        "      \"wf5678\": { \"offering_identifier\": \"summerCampaign\", \"blob_ref\": \"\(RCContainerTestData.blobRef(for: RCContainerTestData.summerWorkflowBlob))\" }",
+        "      \"wf1234\": { \"offering_identifier\": \"default\", " +
+        "\"blob_ref\": \"\(RCContainerTestData.blobRef(for: RCContainerTestData.workflowBlob))\" },",
+        "      \"wf5678\": { \"offering_identifier\": \"summerCampaign\", " +
+        "\"blob_ref\": \"\(RCContainerTestData.blobRef(for: RCContainerTestData.summerWorkflowBlob))\" }",
         "    }",
         "  }",
         "}"

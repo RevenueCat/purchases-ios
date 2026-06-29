@@ -92,6 +92,14 @@ final class RemoteConfigBlobStoreTests: TestCase {
         expect(self.blobStore.cachedRefs()).to(beEmpty())
     }
 
+    func testRetainOnlyWithMalformedRefDoesNotDeleteBlobs() {
+        self.write(ref: Self.refA, data: Data([1]))
+
+        self.blobStore.retainOnly(["not-a-valid-ref"])
+
+        expect(self.blobStore.contains(ref: Self.refA)) == true
+    }
+
     func testClearDeletesAllBlobs() {
         self.write(ref: Self.refA, data: Data([1]))
         self.write(ref: Self.refB, data: Data([2]))

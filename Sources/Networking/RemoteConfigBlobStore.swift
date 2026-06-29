@@ -8,22 +8,15 @@
 import Foundation
 
 protocol RemoteConfigBlobStoreType: AnyObject {
-
     func contains(ref: String) -> Bool
-
     func read(ref: String) -> Data?
-
     func write(
         ref: String,
         bytes: UnsafeRawBufferPointer
     )
-
     func cachedRefs() -> Set<String>
-
     func retainOnly(_ refs: Set<String>)
-
     func clear()
-
 }
 
 /// Content-addressed disk cache for remote config blobs.
@@ -115,6 +108,8 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
     }
 
     func retainOnly(_ refs: Set<String>) {
+        guard refs.allSatisfy(Self.isValidRef) else { return }
+
         guard let directoryURL = self.directoryURL,
               let contents = try? self.fileManager.contentsOfDirectory(
                 at: directoryURL,
@@ -149,7 +144,6 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
 }
 
 private extension RemoteConfigBlobStore {
-
     static let blobsDirectoryName = "blobs"
     static let validRefPattern = #"^[A-Za-z0-9_-]{32}$"#
 
@@ -174,5 +168,4 @@ private extension RemoteConfigBlobStore {
     func isRegularFile(_ fileURL: URL) -> Bool {
         return (try? fileURL.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true
     }
-
 }
