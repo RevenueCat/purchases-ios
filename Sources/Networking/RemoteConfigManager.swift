@@ -80,7 +80,7 @@ private extension RemoteConfigManager {
     }
 
     func persist(
-        container: RCContainer?,
+        container: RemoteConfigContainer?,
         previous: PersistedRemoteConfiguration?
     ) {
         guard let container else {
@@ -89,7 +89,7 @@ private extension RemoteConfigManager {
         }
 
         do {
-            let response = try container.config.withPayloadBytes { bytes in
+            let response = try container.configElement.withPayloadBytes { bytes in
                 try JSONDecoder.default.decode(
                     RemoteConfiguration.self,
                     from: Data(bytes)

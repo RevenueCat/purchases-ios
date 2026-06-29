@@ -21,16 +21,17 @@ final class RCContainerTests: TestCase {
             productMapping,
             paywall
         ]))
+        let contentElementsByChecksum = RCContainerTestData.contentElements(in: container)
 
-        expect(RCContainerTestData.data(from: container.config)) == config
+        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == config
         expect(container.flags) == 0
-        expect(container.config.size) == config.count
-        expect(container.contentElements).to(haveCount(2))
+        expect(try RCContainerTestData.firstElement(in: container).size) == config.count
+        expect(contentElementsByChecksum).to(haveCount(2))
         expect(RCContainerTestData.data(
-            from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: productMapping)])
+            from: try XCTUnwrap(contentElementsByChecksum[RCContainerTestData.blobRef(for: productMapping)])
         )) == productMapping
         expect(RCContainerTestData.data(
-            from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: paywall)])
+            from: try XCTUnwrap(contentElementsByChecksum[RCContainerTestData.blobRef(for: paywall)])
         )) == paywall
     }
 
@@ -41,11 +42,12 @@ final class RCContainerTests: TestCase {
             config: Data(),
             contentElements: [content]
         ))
+        let contentElementsByChecksum = RCContainerTestData.contentElements(in: container)
 
-        expect(container.config.size) == 0
-        expect(RCContainerTestData.data(from: container.config)).to(beEmpty())
+        expect(try RCContainerTestData.firstElement(in: container).size) == 0
+        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))).to(beEmpty())
         expect(RCContainerTestData.data(
-            from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: content)])
+            from: try XCTUnwrap(contentElementsByChecksum[RCContainerTestData.blobRef(for: content)])
         )) == content
     }
 
@@ -61,11 +63,12 @@ final class RCContainerTests: TestCase {
             config: "config".asData,
             contentElements: contentElements
         ))
+        let contentElementsByChecksum = RCContainerTestData.contentElements(in: container)
 
-        expect(container.contentElements).to(haveCount(contentElements.count))
+        expect(contentElementsByChecksum).to(haveCount(contentElements.count))
         for contentElement in contentElements {
             expect(RCContainerTestData.data(
-                from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: contentElement)])
+                from: try XCTUnwrap(contentElementsByChecksum[RCContainerTestData.blobRef(for: contentElement)])
             )) == contentElement
         }
     }
@@ -76,7 +79,7 @@ final class RCContainerTests: TestCase {
 
         let container = try RCContainer(data: RCContainerTestData.container(config: config, contentElements: [content]))
         let ref = RCContainerTestData.blobRef(for: content)
-        let element = try XCTUnwrap(container.contentElements[ref])
+        let element = try XCTUnwrap(RCContainerTestData.contentElements(in: container)[ref])
 
         expect(ref).to(haveCount(32))
         expect(ref).toNot(contain("="))
@@ -92,10 +95,11 @@ final class RCContainerTests: TestCase {
             content,
             content
         ]))
+        let contentElementsByChecksum = RCContainerTestData.contentElements(in: container)
 
-        expect(container.contentElements).to(haveCount(1))
+        expect(contentElementsByChecksum).to(haveCount(1))
         expect(RCContainerTestData.data(
-            from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: content)])
+            from: try XCTUnwrap(contentElementsByChecksum[RCContainerTestData.blobRef(for: content)])
         )) == content
     }
 
@@ -104,15 +108,15 @@ final class RCContainerTests: TestCase {
 
         let container = try RCContainer(data: RCContainerTestData.container(config: config))
 
-        expect(container.config.size) == 257
-        expect(RCContainerTestData.data(from: container.config)) == config
+        expect(try RCContainerTestData.firstElement(in: container).size) == 257
+        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == config
     }
 
     func testParsesNonZeroFlags() throws {
         let container = try RCContainer(data: RCContainerTestData.container(config: "config".asData, flags: 0x07))
 
         expect(container.flags) == 0x07
-        expect(RCContainerTestData.data(from: container.config)) == "config".asData
+        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == "config".asData
     }
 
     func testIgnoresReservedFields() throws {
@@ -122,8 +126,8 @@ final class RCContainerTests: TestCase {
             elementReserved: 0x01020304
         ))
 
-        expect(RCContainerTestData.data(from: container.config)) == "config".asData
-        expect(container.config.reserved) == 0x01020304
+        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == "config".asData
+        expect(try RCContainerTestData.firstElement(in: container).reserved) == 0x01020304
     }
 
     func testAcceptsOmittedFinalPadding() throws {
@@ -134,7 +138,7 @@ final class RCContainerTests: TestCase {
             omitFinalPadding: true
         ))
 
-        expect(RCContainerTestData.data(from: container.config)) == config
+        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == config
     }
 
     func testAcceptsPartiallyOmittedFinalPadding() throws {
@@ -143,7 +147,7 @@ final class RCContainerTests: TestCase {
 
         let container = try RCContainer(data: data)
 
-        expect(RCContainerTestData.data(from: container.config)) == "abc".asData
+        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == "abc".asData
     }
 
     func testParsesDataSliceWithNonZeroStartIndex() throws {
@@ -153,10 +157,11 @@ final class RCContainerTests: TestCase {
         let slicedData = prefixedData[prefix.count..<prefixedData.endIndex]
 
         let container = try RCContainer(data: slicedData)
+        let contentElementsByChecksum = RCContainerTestData.contentElements(in: container)
 
-        expect(RCContainerTestData.data(from: container.config)) == "config".asData
+        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == "config".asData
         expect(RCContainerTestData.data(
-            from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: "blob".asData)])
+            from: try XCTUnwrap(contentElementsByChecksum[RCContainerTestData.blobRef(for: "blob".asData)])
         )) == "blob".asData
     }
 
@@ -176,7 +181,6 @@ final class RCContainerTests: TestCase {
 
     func testRejectsTruncatedContainers() {
         Self.expectParsing(Data([UInt8(ascii: "R")]), throws: .truncatedHeader)
-        Self.expectParsing(RCContainerTestData.header(), throws: .missingConfigElement)
         Self.expectParsing(
             RCContainerTestData.header() + Data([0]),
             throws: .truncatedElementHeader(index: 0)
@@ -190,6 +194,13 @@ final class RCContainerTests: TestCase {
         Self.expectParsing(truncatedElement, throws: .truncatedElement(index: 0))
     }
 
+    func testParsesStructurallyValidEmptyContainer() throws {
+        let container = try RCContainer(data: RCContainerTestData.header())
+
+        expect(container.elements).to(beEmpty())
+        expect(container.elementsByChecksum).to(beEmpty())
+    }
+
     func testRejectsNonZeroPadding() {
         var data = RCContainerTestData.container(config: "abc".asData)
         let lastIndex = data.index(before: data.endIndex)
@@ -198,23 +209,54 @@ final class RCContainerTests: TestCase {
         Self.expectParsing(data, throws: .nonZeroPadding(index: 0))
     }
 
-    func testRejectsChecksumMismatch() {
+    func testParsesStructurallyValidContainerWithConfigChecksumMismatch() throws {
         var data = RCContainerTestData.container(config: "config".asData)
         data[data.index(data.startIndex, offsetBy: RCContainerTestData.firstPayloadOffset)] = UInt8(ascii: "x")
 
+        let container = try RCContainer(data: data)
+
+        expect(try RCContainerTestData.firstElement(in: container).isChecksumValid()) == false
+        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == "xonfig".asData
+    }
+
+    func testParsesStructurallyValidContainerWithContentChecksumMismatch() throws {
+        let content = "content".asData
+        let data = RCContainerTestData.container(
+            config: "config".asData,
+            contentElements: [content],
+            checksumOverride: { index, payload in
+                return index == 1
+                    ? Array(repeating: 0, count: RCContainerTestData.checksumSize)
+                    : RCContainerTestData.checksum(for: payload)
+            }
+        )
+
+        let container = try RCContainer(data: data)
+        let contentElementsByChecksum = RCContainerTestData.contentElements(in: container)
+        let element = try XCTUnwrap(contentElementsByChecksum["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"])
+
+        expect(element.isChecksumValid()) == false
+        expect(RCContainerTestData.data(from: element)) == content
+    }
+
+    func testElementValidateChecksumThrowsChecksumMismatch() throws {
+        let data = RCContainerTestData.container(
+            config: "config".asData,
+            checksumOverride: { _, _ in Array(repeating: 0, count: RCContainerTestData.checksumSize) }
+        )
+        let container = try RCContainer(data: data)
+
         do {
-            _ = try RCContainer(data: data)
+            try RCContainerTestData.firstElement(in: container).validateChecksum()
             fail("Expected checksum mismatch")
         } catch let error as RCContainer.Parser.FormatError {
-            guard case let .checksumMismatch(index, expected, actual) = error else {
+            guard case let .checksumMismatch(expected, actual) = error else {
                 fail("Expected checksum mismatch, got \(error)")
                 return
             }
 
-            expect(index) == 0
-            expect(expected).to(haveCount(32))
-            expect(actual).to(haveCount(32))
-            expect(expected) != actual
+            expect(expected) == "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            expect(actual) == RCContainerTestData.blobRef(for: "config".asData)
         } catch {
             fail("Expected RCContainer.Parser.FormatError, got \(error)")
         }
@@ -224,10 +266,10 @@ final class RCContainerTests: TestCase {
         let payload = "borrowed bytes".asData
         let container = try RCContainer(data: RCContainerTestData.container(config: payload))
 
-        let size = container.config.withPayloadBytes { bytes in
+        let size = try RCContainerTestData.firstElement(in: container).withPayloadBytes { bytes in
             return bytes.count
         }
-        let bytes = container.config.withPayloadBytes { bytes in
+        let bytes = try RCContainerTestData.firstElement(in: container).withPayloadBytes { bytes in
             return Array(bytes)
         }
 
@@ -243,7 +285,7 @@ final class RCContainerTests: TestCase {
         try data.withUnsafeBytes { containerBytes in
             let containerBaseAddress = UInt(bitPattern: try XCTUnwrap(containerBytes.baseAddress))
 
-            try container.config.withPayloadBytes { payloadBytes in
+            try RCContainerTestData.firstElement(in: container).withPayloadBytes { payloadBytes in
                 let payloadBaseAddress = UInt(bitPattern: try XCTUnwrap(payloadBytes.baseAddress))
 
                 expect(payloadBaseAddress) == containerBaseAddress + UInt(RCContainerTestData.firstPayloadOffset)

@@ -6,6 +6,8 @@
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 
 import Foundation
+import XCTest
+
 @testable import RevenueCat
 
 enum RCContainerTestData {
@@ -106,6 +108,17 @@ enum RCContainerTestData {
 
     static func data(from element: RCContainer.Element) -> Data {
         return element.withPayloadBytes { Data($0) }
+    }
+
+    static func firstElement(in container: RCContainer) throws -> RCContainer.Element {
+        return try XCTUnwrap(container.elements.first)
+    }
+
+    static func contentElements(in container: RCContainer) -> [String: RCContainer.Element] {
+        return Dictionary(
+            container.elements.dropFirst().map { ($0.checksum, $0) },
+            uniquingKeysWith: { _, last in last }
+        )
     }
 
     static func blobRef(for data: Data) -> String {

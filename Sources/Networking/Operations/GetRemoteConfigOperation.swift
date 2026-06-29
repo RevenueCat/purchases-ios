@@ -94,7 +94,7 @@ private extension GetRemoteConfigOperation {
     func getRemoteConfig(completion: @escaping () -> Void) {
         let request = HTTPRequest(method: .post(self.request), path: .remoteConfig)
 
-        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<RCContainer?>.Result) in
+        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<RemoteConfigContainer?>.Result) in
             defer {
                 completion()
             }
@@ -102,7 +102,7 @@ private extension GetRemoteConfigOperation {
             self.callbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(
                     response
-                        .map { RemoteConfigFetchResult(response: $0) }
+                        .map(RemoteConfigFetchResult.init(response:))
                         .mapError(BackendError.networkError)
                 )
             }

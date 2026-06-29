@@ -303,8 +303,8 @@ private extension RemoteConfigManagerTests {
     static func container(
         config: String,
         contentElements: [Data] = []
-    ) throws -> RCContainer {
-        return try RCContainer(data: RCContainerTestData.container(
+    ) throws -> RemoteConfigContainer {
+        return try RemoteConfigContainer(data: RCContainerTestData.container(
             config: config.asData,
             contentElements: contentElements
         ))
@@ -317,7 +317,7 @@ private extension RemoteConfigFetchResult {
     /// Builds a fetch result through the production initializer. A `nil` container
     /// represents a `204 No Content` response.
     static func test(
-        container: RCContainer?,
+        container: RemoteConfigContainer?,
         verificationResult: VerificationResult = .verified
     ) -> RemoteConfigFetchResult {
         return RemoteConfigFetchResult(response: .init(

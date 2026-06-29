@@ -345,7 +345,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(signingRequest.publicKey).toNot(beNil())
     }
 
-    func testValidRemoteConfigSignatureUsesConfigChecksumAsSignedMessage() throws {
+    func testValidRemoteConfigSignatureUsesConfigPayloadAsSignedMessage() throws {
         let config = "config".asData
         let body = Self.rcContainer(config: config, contentElements: ["content".asData])
         self.mockResponse(path: HTTPRequest.Path.remoteConfig,
@@ -354,10 +354,8 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: body)
         self.signing.stubbedVerificationResult = true
 
-        let request = Self.remoteConfigRequest
-
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
-            self.client.perform(request, completionHandler: completion)
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
         expect(response).to(beSuccess())
@@ -367,8 +365,8 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(self.signing.requests).to(haveCount(1))
         let signingRequest = try XCTUnwrap(self.signing.requests.onlyElement)
 
-        expect(signingRequest.parameters.message) == Data(RCContainerTestData.checksum(for: config))
-        expect(signingRequest.parameters.nonce).to(beNil())
+        expect(signingRequest.parameters.message) == config
+        expect(signingRequest.parameters.nonce).toNot(beNil())
         expect(signingRequest.parameters.requestBody).to(beNil())
         expect(signingRequest.parameters.requestDate) == Self.date2.millisecondsSince1970
         expect(signingRequest.signature) == Self.sampleSignature
@@ -382,7 +380,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: Self.rcContainer())
         self.signing.stubbedVerificationResult = true
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -398,7 +396,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           statusCode: .noContent)
         self.signing.stubbedVerificationResult = true
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -406,8 +404,8 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(response?.value?.body).to(beNil())
         expect(response?.value?.verificationResult) == .verified
         expect(self.signing.requests).to(haveCount(1))
-        expect(self.signing.requests.onlyElement?.parameters.message).to(beNil())
-        expect(self.signing.requests.onlyElement?.parameters.nonce).to(beNil())
+        expect(self.signing.requests.onlyElement?.parameters.message) == Data()
+        expect(self.signing.requests.onlyElement?.parameters.nonce).toNot(beNil())
         expect(self.signing.requests.onlyElement?.parameters.requestBody).to(beNil())
     }
 
@@ -419,7 +417,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: Data(),
                           statusCode: .noContent)
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -436,7 +434,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: Data(),
                           statusCode: .noContent)
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -454,7 +452,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: Data(),
                           statusCode: .noContent)
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -475,7 +473,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           statusCode: .noContent)
         self.signing.stubbedVerificationResult = false
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -483,7 +481,8 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(response?.value?.body).to(beNil())
         expect(response?.value?.verificationResult) == .failed
         expect(self.signing.requests).to(haveCount(1))
-        expect(self.signing.requests.onlyElement?.parameters.message).to(beNil())
+        expect(self.signing.requests.onlyElement?.parameters.message) == Data()
+        expect(self.signing.requests.onlyElement?.parameters.nonce).toNot(beNil())
     }
 
     func testRemoteConfigNoContentResponseInvalidSignatureFailsInEnforcedMode() throws {
@@ -495,7 +494,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           statusCode: .noContent)
         self.signing.stubbedVerificationResult = false
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -506,7 +505,8 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 code: .noContent
             )))
         expect(self.signing.requests).to(haveCount(1))
-        expect(self.signing.requests.onlyElement?.parameters.message).to(beNil())
+        expect(self.signing.requests.onlyElement?.parameters.message) == Data()
+        expect(self.signing.requests.onlyElement?.parameters.nonce).toNot(beNil())
     }
 
     func testRemoteConfigSignaturePayloadMissingBodyThrowsMissingBodyError() {
@@ -524,7 +524,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: Self.rcContainer())
         self.signing.stubbedVerificationResult = true
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -541,7 +541,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: Self.rcContainer())
         self.signing.stubbedVerificationResult = true
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -561,7 +561,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: Self.rcContainer())
         self.signing.stubbedVerificationResult = false
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -578,7 +578,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: Self.rcContainer())
         self.signing.stubbedVerificationResult = false
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
@@ -591,8 +591,10 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(self.signing.requests).to(haveCount(1))
     }
 
-    func testRemoteConfigConfigChecksumMismatchFailsDecodingBeforeCallingSigner() throws {
+    func testRemoteConfigConfigChecksumMismatchStillVerifiesConfigPayload() throws {
+        let config = "config".asData
         let body = Self.rcContainer(
+            config: config,
             checksumOverride: { index, data in
                 let checksum = RCContainerTestData.checksum(for: data)
                 return index == 0 ? Array(checksum.reversed()) : checksum
@@ -604,21 +606,15 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: body)
         self.signing.stubbedVerificationResult = true
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
-        // A config checksum mismatch is both a signature-payload failure and an invalid
-        // RC Container. Informational mode does not fail the request for verification alone,
-        // but typed response parsing still fails because there is no valid container to return.
-        expect(response).to(beFailure())
-        switch try XCTUnwrap(response?.error) {
-        case .decoding:
-            break
-        default:
-            fail("Expected decoding error")
-        }
-        expect(self.signing.requests).to(beEmpty())
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .verified
+        expect(self.signing.requests).to(haveCount(1))
+        expect(self.signing.requests.onlyElement?.parameters.message) == config
+        expect(self.signing.requests.onlyElement?.parameters.nonce).toNot(beNil())
     }
 
     func testRemoteConfigCorruptedContentElementDoesNotAffectSignedMessage() throws {
@@ -632,15 +628,13 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: body)
         self.signing.stubbedVerificationResult = true
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
-        expect(response).to(beFailure())
+        expect(response).to(beSuccess())
         expect(self.signing.requests).to(haveCount(1))
-        expect(self.signing.requests.onlyElement?.parameters.message) == Data(
-            RCContainerTestData.checksum(for: config)
-        )
+        expect(self.signing.requests.onlyElement?.parameters.message) == config
     }
 
     func testPerformRequestOverridesVerificationMode() throws {
@@ -1134,8 +1128,10 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         expect(response?.value?.verificationResult) == .failed
     }
 
-    func testRemoteConfigConfigChecksumMismatchFailsRequestBeforeCallingSigner() throws {
+    func testRemoteConfigConfigChecksumMismatchVerifiesConfigPayload() throws {
+        let config = "config".asData
         let body = Self.rcContainer(
+            config: config,
             checksumOverride: { index, data in
                 let checksum = RCContainerTestData.checksum(for: data)
                 return index == 0 ? Array(checksum.reversed()) : checksum
@@ -1147,19 +1143,15 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
                           body: body)
         self.signing.stubbedVerificationResult = true
 
-        let response: VerifiedHTTPResponse<RCContainer?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
-        // Enforced mode turns the failed verification result into a transport failure before
-        // typed RC Container parsing can report the checksum mismatch as a decoding error.
-        expect(response).to(beFailure())
-        expect(response?.error)
-            .to(matchError(NetworkError.signatureVerificationFailed(
-                path: HTTPRequest.Path.remoteConfig,
-                code: .success
-            )))
-        expect(self.signing.requests).to(beEmpty())
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .verified
+        expect(self.signing.requests).to(haveCount(1))
+        expect(self.signing.requests.onlyElement?.parameters.message) == config
+        expect(self.signing.requests.onlyElement?.parameters.nonce).toNot(beNil())
     }
 
     func testFakeSignatureFailuresWithDisabledVerification() {
