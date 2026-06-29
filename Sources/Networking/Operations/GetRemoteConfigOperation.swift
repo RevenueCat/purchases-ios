@@ -53,7 +53,6 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
     let prefetchedBlobs: [String]
 
     private enum CodingKeys: String, CodingKey {
-        // JSONDecoder.default converts `app_user_id` to `appUserId` before matching CodingKeys.
         case appUserID = "appUserId"
         case manifest
         case prefetchedBlobs
