@@ -11,6 +11,8 @@ enum RemoteConfigStrings {
 
     case failedToReadCache(Error)
     case failedToWriteCache
+    case failedToParseResponse(Error)
+    case refreshFailed(BackendError)
 
 }
 
@@ -22,6 +24,11 @@ extension RemoteConfigStrings: LogMessage {
             return "Failed to read remote config cache from disk: \(error.localizedDescription)"
         case .failedToWriteCache:
             return "Failed to write remote config cache to disk."
+        case let .failedToParseResponse(error):
+            return "Failed to parse remote config response. Keeping cached configuration. Error: " +
+            "\(error.localizedDescription)"
+        case let .refreshFailed(error):
+            return "Remote config refresh failed. Keeping cached configuration. Error: \(error)"
         }
     }
 

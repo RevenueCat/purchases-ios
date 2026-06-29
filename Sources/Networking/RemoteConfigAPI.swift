@@ -7,7 +7,19 @@
 
 import Foundation
 
-class RemoteConfigAPI {
+protocol RemoteConfigAPIType: AnyObject {
+
+    typealias RemoteConfigResponseHandler = Backend.ResponseHandler<RemoteConfigFetchResult>
+
+    func getRemoteConfig(
+        request: RemoteConfigRequest,
+        isAppBackgrounded: Bool,
+        completion: @escaping RemoteConfigResponseHandler
+    )
+
+}
+
+class RemoteConfigAPI: RemoteConfigAPIType {
 
     typealias RemoteConfigResponseHandler = Backend.ResponseHandler<RemoteConfigFetchResult>
 
