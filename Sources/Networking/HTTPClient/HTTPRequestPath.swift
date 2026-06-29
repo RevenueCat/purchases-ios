@@ -327,6 +327,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .health,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
+                .remoteConfig,
                 .rewardVerificationStatus:
             return true
         case .getWorkflow,
@@ -342,8 +343,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .appHealthReport,
                 .postCreateTicket:
-            return false
-        case .remoteConfig:
             return false
         }
     }

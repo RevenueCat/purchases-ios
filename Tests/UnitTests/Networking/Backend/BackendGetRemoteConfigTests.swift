@@ -299,7 +299,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(contentElementsByChecksum).to(haveCount(1))
     }
 
-    func testGetRemoteConfigFailsWhenConfigChecksumMismatches() {
+    func testGetRemoteConfigParsesResponseWhenConfigChecksumMismatches() throws {
         let data = RCContainerTestData.container(
             config: Self.config,
             checksumOverride: { _, _ in Array(repeating: 0, count: RCContainerTestData.checksumSize) }
@@ -313,12 +313,10 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
             self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
         }
 
-        guard case let .networkError(.decoding(error, _)) = result?.error else {
-            fail("Expected decoding error, got \(String(describing: result?.error))")
-            return
-        }
+        let fetchResult = try XCTUnwrap(result?.value)
+        let container = try XCTUnwrap(fetchResult.container)
 
-        expect(error.domain) == String(reflecting: RCContainer.Parser.FormatError.self)
+        expect(RCContainerTestData.data(from: container.configElement)) == Self.config
     }
 
     func testGetRemoteConfigReturnsFailedVerificationResultFromHTTPClient() throws {

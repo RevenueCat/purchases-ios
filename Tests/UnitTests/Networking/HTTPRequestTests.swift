@@ -65,6 +65,7 @@ class HTTPRequestTests: TestCase {
         .logIn,
         .postReceiptData,
         .health,
+        .remoteConfig,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
@@ -177,8 +178,7 @@ class HTTPRequestTests: TestCase {
             .getOfferings(appUserID: Self.userID),
             .getProductEntitlementMapping,
             .getWorkflows(appUserID: Self.userID, type: nil),
-            .getWorkflow(appUserID: Self.userID, workflowId: "wf_1"),
-            .remoteConfig
+            .getWorkflow(appUserID: Self.userID, workflowId: "wf_1")
         ]
     }
 

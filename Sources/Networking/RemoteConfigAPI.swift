@@ -79,17 +79,18 @@ struct RemoteConfigContainer {
     /// Inline blob elements delivered with the remote config response, keyed by stored checksum.
     let inlineContentElements: [String: RCContainer.Element]
 
-    /// Parses a remote config response container and validates the required config element.
+    /// Parses a remote config response container and extracts the required config element.
     ///
-    /// Inline content elements are opportunistic cache entries and are validated only when they are
-    /// written to the blob store.
+    /// The config element is authenticated by response signature verification over its payload bytes.
+    /// Inline content elements are opportunistic cache entries and are validated only when they are written
+    /// to the blob store.
     init(data: Data) throws {
         let container = try RCContainer(data: data)
         try self.init(rcContainer: container)
     }
 
     init(rcContainer container: RCContainer) throws {
-        let configElement = try Self.validatedConfigElement(in: container)
+        let configElement = try Self.configElement(in: container)
 
         self.rcContainer = container
         self.configElement = configElement
@@ -114,28 +115,23 @@ extension RemoteConfigContainer {
     /// Parses only the first RC Container element, which remote config defines as the config element.
     ///
     /// This avoids parsing the whole container when signature verification only needs the config
-    /// checksum.
-    static func validatedConfigElement(from data: Data) throws -> RCContainer.Element {
+    /// payload.
+    static func configElement(from data: Data) throws -> RCContainer.Element {
         var parser = RCContainer.ElementParser(data: data)
         try parser.moveToFirstElement()
         guard parser.hasRemainingBytes else {
             throw RCContainer.Parser.FormatError.missingElement(index: 0)
         }
 
-        return try self.validatedConfigElement(parser.parseElement(index: 0))
+        return try parser.parseElement(index: 0)
     }
 
-    static func validatedConfigElement(in container: RCContainer) throws -> RCContainer.Element {
+    static func configElement(in container: RCContainer) throws -> RCContainer.Element {
         guard let configElement = container.elements.first else {
             throw RCContainer.Parser.FormatError.missingElement(index: 0)
         }
 
-        return try self.validatedConfigElement(configElement)
-    }
-
-    private static func validatedConfigElement(_ element: RCContainer.Element) throws -> RCContainer.Element {
-        try element.validateChecksum()
-        return element
+        return configElement
     }
 
 }
