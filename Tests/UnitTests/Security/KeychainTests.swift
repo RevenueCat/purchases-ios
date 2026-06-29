@@ -116,12 +116,12 @@ private class MockSecureItemStorage: SecureItemStorage {
     private(set) var lastSaveAttributes: SecureItemAttributes?
     private(set) var lastDeleteIdentifier: String?
 
-    func allItemIdentifiers() throws(SecureStorageError) -> [String] {
+    func allItemIdentifiers() throws -> [String] {
         if let error = errorToThrow { throw error }
         return Array(storedItems.keys)
     }
 
-    func readItem(identifier: String) throws(SecureStorageError) -> Data? {
+    func readItem(identifier: String) throws -> Data? {
         if let error = errorToThrow { throw error }
         return storedItems[identifier]
     }
@@ -130,7 +130,7 @@ private class MockSecureItemStorage: SecureItemStorage {
         identifier: String,
         contents: Data,
         attributes: SecureItemAttributes
-    ) throws(SecureStorageError) {
+    ) throws {
         if let error = errorToThrow { throw error }
         saveCallCount += 1
         lastSaveIdentifier = identifier
@@ -139,7 +139,7 @@ private class MockSecureItemStorage: SecureItemStorage {
         storedItems[identifier] = contents
     }
 
-    func deleteItem(identifier: String) throws(SecureStorageError) {
+    func deleteItem(identifier: String) throws {
         if let error = errorToThrow { throw error }
         deleteCallCount += 1
         lastDeleteIdentifier = identifier
