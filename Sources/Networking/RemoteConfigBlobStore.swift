@@ -19,10 +19,7 @@ protocol RemoteConfigBlobStoreType: AnyObject {
     func clear()
 }
 
-/// Content-addressed disk cache for remote config blobs.
-///
-/// Blob refs are 32-character URL-safe base64 strings, so valid refs can be used as filenames directly.
-/// Malformed refs are rejected before file access to keep all operations contained to the blobs directory.
+/// Content-addressed disk cache for remote config blobs, keyed by 32-character URL-safe base64 refs.
 final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
 
     private let fileManager: FileManager
@@ -108,7 +105,8 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
     }
 
     func retainOnly(_ refs: Set<String>) {
-        guard refs.allSatisfy(Self.isValidRef) else { return }
+        let validRefs = refs.filter(Self.isValidRef)
+        refs.subtracting(validRefs).forEach { Logger.error(Strings.remoteConfig.malformedBlobRef($0)) }
 
         guard let directoryURL = self.directoryURL,
               let contents = try? self.fileManager.contentsOfDirectory(
@@ -119,7 +117,7 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
             return
         }
 
-        for fileURL in contents where self.isRegularFile(fileURL) && !refs.contains(fileURL.lastPathComponent) {
+        for fileURL in contents where self.isRegularFile(fileURL) && !validRefs.contains(fileURL.lastPathComponent) {
             do {
                 try self.fileManager.removeItem(at: fileURL)
             } catch {
