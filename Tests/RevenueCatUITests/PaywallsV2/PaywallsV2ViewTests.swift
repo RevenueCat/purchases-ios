@@ -197,4 +197,49 @@ final class ShouldReportPaywallImpressionTests: TestCase {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+final class ApplyingWorkflowAttributionTests: TestCase {
+
+    private func makeData(workflowId: String? = nil, stepId: String? = nil) -> PaywallEvent.Data {
+        PaywallEvent.Data(
+            paywallIdentifier: "paywall-abc",
+            offeringIdentifier: "offering-1",
+            paywallRevision: 1,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false,
+            workflowId: workflowId,
+            stepId: stepId
+        )
+    }
+
+    // The seam #7024 wires and the screen_type work removed: a workflow paywall step's impression event
+    // must carry the workflow + step so the post-receipt body sends presented_workflow_id/step_id.
+    func testStampsWorkflowAndStepIdOnWorkflowStep() {
+        let result = PaywallsV2View.applyingWorkflowAttribution(
+            to: self.makeData(),
+            workflowId: "wf_test",
+            stepId: "step_1"
+        )
+
+        expect(result.workflowId) == "wf_test"
+        expect(result.stepId) == "step_1"
+    }
+
+    // Standalone paywalls (and untagged steps with no IDs) carry no attribution, so the post-receipt
+    // body omits presented_workflow_id/step_id rather than sending stale values.
+    func testLeavesAttributionNilForStandalonePaywall() {
+        let result = PaywallsV2View.applyingWorkflowAttribution(
+            to: self.makeData(workflowId: "stale", stepId: "stale"),
+            workflowId: nil,
+            stepId: nil
+        )
+
+        expect(result.workflowId).to(beNil())
+        expect(result.stepId).to(beNil())
+    }
+
+}
+
 #endif

@@ -462,7 +462,10 @@ struct WorkflowPaywallView: View {
             // Drives per-visit paywall_viewed / paywall_close: this page is the current workflow step.
             isActiveWorkflowPage: isActive,
             // Gates impression reporting: only steps tagged as paywalls report a paywall impression.
-            workflowScreenType: page.screenType
+            workflowScreenType: page.screenType,
+            // Workflow attribution on the impression event (#7024), orthogonal to the screen_type gate.
+            workflowId: self.context.workflow.id,
+            stepId: page.stepId
         )
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
         .environment(\.workflowTriggerAction, { componentId in
