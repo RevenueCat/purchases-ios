@@ -92,6 +92,37 @@ final class RemoteConfigBlobStoreTests: TestCase {
         expect(self.blobStore.cachedRefs()).to(beEmpty())
     }
 
+    func testClearDeletesAllBlobs() {
+        self.write(ref: Self.refA, data: Data([1]))
+        self.write(ref: Self.refB, data: Data([2]))
+
+        self.blobStore.clear()
+
+        expect(self.blobStore.cachedRefs()).to(beEmpty())
+        expect(self.blobStore.contains(ref: Self.refA)) == false
+        expect(self.blobStore.contains(ref: Self.refB)) == false
+    }
+
+    func testClearDeletesEntireBlobDirectory() throws {
+        self.write(ref: Self.refA, data: Data([1]))
+        try FileManager.default.createDirectory(
+            at: self.directoryURL.appendingPathComponent("nested", isDirectory: true),
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+        try Data([2]).write(to: self.directoryURL.appendingPathComponent("not-a-valid-ref"))
+
+        self.blobStore.clear()
+
+        expect(FileManager.default.fileExists(atPath: self.directoryURL.path)) == false
+    }
+
+    func testClearIsNoOpWhenNothingHasBeenWritten() {
+        self.blobStore.clear()
+
+        expect(self.blobStore.cachedRefs()).to(beEmpty())
+    }
+
     func testMalformedRefIsRejectedAndCannotEscapeBlobDirectory() {
         let malformedRef = "../escape"
 

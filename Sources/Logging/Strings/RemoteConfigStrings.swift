@@ -10,6 +10,7 @@ import Foundation
 enum RemoteConfigStrings {
 
     case cacheURLNotAvailable
+    case failedToClearBlobStore(Error)
     case failedToDeleteBlob(String, Error)
     case failedToReadBlob(String, Error)
     case failedToReadCache(Error)
@@ -29,6 +30,8 @@ extension RemoteConfigStrings: LogMessage {
         switch self {
         case .cacheURLNotAvailable:
             return "Remote config cache URL is not available."
+        case let .failedToClearBlobStore(error):
+            return "Failed to clear remote config blob store: \(error.localizedDescription)"
         case let .failedToDeleteBlob(ref, error):
             return "Failed to delete unreferenced remote config blob '\(ref)': \(error.localizedDescription)"
         case let .failedToReadBlob(ref, error):

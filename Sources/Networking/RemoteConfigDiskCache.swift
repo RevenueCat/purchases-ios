@@ -14,6 +14,8 @@ protocol RemoteConfigDiskCacheType: AnyObject {
     @discardableResult
     func write(_ configuration: PersistedRemoteConfiguration) -> Bool
 
+    func clear()
+
 }
 
 struct PersistedRemoteConfiguration: Codable, Equatable {
@@ -95,6 +97,10 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
         }
 
         return didWrite
+    }
+
+    func clear() {
+        self.cache.clear()
     }
 
 }

@@ -22,6 +22,8 @@ protocol RemoteConfigBlobStoreType: AnyObject {
 
     func retainOnly(_ refs: Set<String>)
 
+    func clear()
+
 }
 
 /// Content-addressed disk cache for remote config blobs.
@@ -128,6 +130,19 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
             } catch {
                 Logger.error(Strings.remoteConfig.failedToDeleteBlob(fileURL.lastPathComponent, error))
             }
+        }
+    }
+
+    func clear() {
+        guard let directoryURL = self.directoryURL,
+              self.fileManager.fileExists(atPath: directoryURL.path) else {
+            return
+        }
+
+        do {
+            try self.fileManager.removeItem(at: directoryURL)
+        } catch {
+            Logger.error(Strings.remoteConfig.failedToClearBlobStore(error))
         }
     }
 

@@ -25,7 +25,7 @@ final class RCContainerBackwardsCompatibilityTests: TestCase {
 
     func testSingleElementFixtureParses() throws {
         let container = try Self.parseFixture("v1_single_element")
-        let blob = RCContainerTestData.entitlementMappingBlob
+        let blob = RCContainerTestData.workflowBlob
         let contentElementsByChecksum = RCContainerTestData.contentElements(in: container)
         let element = try XCTUnwrap(contentElementsByChecksum[RCContainerTestData.blobRef(for: blob)])
 
@@ -41,7 +41,7 @@ final class RCContainerBackwardsCompatibilityTests: TestCase {
         let expected = [
             RCContainerTestData.smallBlob,
             Data(),
-            RCContainerTestData.entitlementMappingBlob,
+            RCContainerTestData.workflowBlob,
             RCContainerTestData.largeBlob
         ]
         let contentElementsByChecksum = RCContainerTestData.contentElements(in: container)
@@ -63,7 +63,7 @@ final class RCContainerBackwardsCompatibilityTests: TestCase {
 
     func testEmptyConfigFixtureParses() throws {
         let container = try Self.parseFixture("v1_empty_config")
-        let blob = RCContainerTestData.entitlementMappingBlob
+        let blob = RCContainerTestData.workflowBlob
         let contentElementsByChecksum = RCContainerTestData.contentElements(in: container)
 
         expect(try RCContainerTestData.firstElement(in: container).size) == 0
@@ -90,9 +90,9 @@ final class RCContainerBackwardsCompatibilityTests: TestCase {
         expect(contentElementsByChecksum).to(haveCount(1))
         expect(RCContainerTestData.data(
             from: try XCTUnwrap(contentElementsByChecksum[
-                RCContainerTestData.blobRef(for: RCContainerTestData.entitlementMappingBlob)
+                RCContainerTestData.blobRef(for: RCContainerTestData.workflowBlob)
             ])
-        )) == RCContainerTestData.entitlementMappingBlob
+        )) == RCContainerTestData.workflowBlob
     }
 
     func testGenerateFixtures() throws {

@@ -211,4 +211,25 @@ final class RemoteConfigDiskCacheTests: TestCase {
         expect(read.manifest) == "v1.1710000100.sources:new"
     }
 
+    func testClearDeletesPersistedState() {
+        self.cache.write(PersistedRemoteConfiguration(
+            domain: "app",
+            manifest: "v1.1710000100.sources:etag1",
+            activeTopics: ["sources"],
+            prefetchBlobs: [],
+            topicBlobRefs: [:],
+            lastRefreshAt: Date()
+        ))
+
+        self.cache.clear()
+
+        expect(self.cache.read()).to(beNil())
+    }
+
+    func testClearIsNoOpWhenNothingHasBeenPersisted() {
+        self.cache.clear()
+
+        expect(self.cache.read()).to(beNil())
+    }
+
 }
