@@ -121,6 +121,8 @@
 		1D58A16C2ED59AD90086809D /* ConnectionErrorReason.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D58A16B2ED59AD90086809D /* ConnectionErrorReason.swift */; };
 		1D73D6612EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D73D6602EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift */; };
 		1D73D6622EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D73D6602EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift */; };
+		FEDA000000000000000000E1 /* MockRemoteConfigSourceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */; };
+		FEDA000000000000000000E2 /* MockRemoteConfigSourceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */; };
 		1D76F2532F921C8F00863AF8 /* ComponentInteractionData+Factories.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D76F2522F921C8F00863AF8 /* ComponentInteractionData+Factories.swift */; };
 		1D76F25A2F921CA100863AF8 /* PlanSelectionDefaultPackage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D76F2592F921CA100863AF8 /* PlanSelectionDefaultPackage.swift */; };
 		1DB9B2A72E57373900252D58 /* OfferingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DB9B2A62E57373600252D58 /* OfferingTests.swift */; };
@@ -413,6 +415,7 @@
 		37E35C8515C5E2D01B0AF5C1 /* Strings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3507939634ED5A9280544 /* Strings.swift */; };
 		3B41364A5DFC4039B3026F40 /* RemoteConfigAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A2DB969D72432B87F48C5F /* RemoteConfigAPI.swift */; };
 		FEDA000000000000000000B2 /* WeightedSourceSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000A2 /* WeightedSourceSelector.swift */; };
+		FEDA000000000000000000D2 /* RemoteConfigSourceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C2 /* RemoteConfigSourceProvider.swift */; };
 		3DD6C3CC5EC6B69E9DA9571D /* Evaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78483ACCDD62ABD40AF8827 /* Evaluator.swift */; };
 		424117A427E05CDDE5CAB803 /* LogicOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EF5BB0DF2CED359AB0089B4 /* LogicOperators.swift */; };
 		42F1DF385E3C1F9903A07FBF /* ProductsFetcherSK1.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB3CBAA73855779FE828CE2 /* ProductsFetcherSK1.swift */; };
@@ -974,6 +977,7 @@
 		839F343B2E3BC5C8006355B0 /* PlatformBezierPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 839F343A2E3BC5C4006355B0 /* PlatformBezierPath.swift */; };
 		858195FCF0E04E3CAA99F9BB /* RemoteConfigurationDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E31E8A264E9F4375A3B29D78 /* RemoteConfigurationDecodingTests.swift */; };
 		FEDA000000000000000000B1 /* WeightedSourceSelectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000A1 /* WeightedSourceSelectorTests.swift */; };
+		FEDA000000000000000000D1 /* RemoteConfigSourceProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C1 /* RemoteConfigSourceProviderTests.swift */; };
 		887A5FBD2C1D036200E1A461 /* RevenueCatUIDev.h in Headers */ = {isa = PBXBuildFile; fileRef = 887A5FBC2C1D036200E1A461 /* RevenueCatUIDev.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		887A60672C1D037000E1A461 /* PaywallError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FC72C1D037000E1A461 /* PaywallError.swift */; };
 		887A60682C1D037000E1A461 /* TemplateError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FC82C1D037000E1A461 /* TemplateError.swift */; };
@@ -1634,6 +1638,7 @@
 		1D291F712F154834008E4FDA /* CacheStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStrings.swift; sourceTree = "<group>"; };
 		1D58A16B2ED59AD90086809D /* ConnectionErrorReason.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionErrorReason.swift; sourceTree = "<group>"; };
 		1D73D6602EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockHTTPRequestTimeoutManager.swift; sourceTree = "<group>"; };
+		FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRemoteConfigSourceProvider.swift; sourceTree = "<group>"; };
 		1D76F2522F921C8F00863AF8 /* ComponentInteractionData+Factories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ComponentInteractionData+Factories.swift"; sourceTree = "<group>"; };
 		1D76F2592F921CA100863AF8 /* PlanSelectionDefaultPackage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanSelectionDefaultPackage.swift; sourceTree = "<group>"; };
 		1D76F25B2F921D3500863AF8 /* PaywallEventTrackerTestDispatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEventTrackerTestDispatcher.swift; sourceTree = "<group>"; };
@@ -2905,6 +2910,7 @@
 		A1B2C3D42FE200000000000A /* RemoteConfigManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigManagerTests.swift; sourceTree = "<group>"; };
 		E31E8A264E9F4375A3B29D78 /* RemoteConfigurationDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationDecodingTests.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000A1 /* WeightedSourceSelectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightedSourceSelectorTests.swift; sourceTree = "<group>"; };
+		FEDA000000000000000000C1 /* RemoteConfigSourceProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigSourceProviderTests.swift; sourceTree = "<group>"; };
 		E35BAD07C46D469D8CC7C396 /* RemoteConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfiguration.swift; sourceTree = "<group>"; };
 		E51CFC7D19BE49D2BA1A79CC /* CapturingLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CapturingLogger.swift; sourceTree = "<group>"; };
 		E78770053AB84EF380CC0C1D /* TextComponentViewLoadingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TextComponentViewLoadingTests.swift; sourceTree = "<group>"; };
@@ -2913,6 +2919,7 @@
 		F1A05E9E1B04B32B832DB194 /* PaywallCountdownComponent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaywallCountdownComponent.swift; sourceTree = "<group>"; };
 		F3A2DB969D72432B87F48C5F /* RemoteConfigAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigAPI.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000A2 /* WeightedSourceSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightedSourceSelector.swift; sourceTree = "<group>"; };
+		FEDA000000000000000000C2 /* RemoteConfigSourceProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigSourceProvider.swift; sourceTree = "<group>"; };
 		F468C7BCEB786BEC80277ECA /* WorkflowNavigatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowNavigatorTests.swift; sourceTree = "<group>"; };
 		F516BD28282434070083480B /* StoreKit2StorefrontListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2StorefrontListener.swift; sourceTree = "<group>"; };
 		F516BD322828FDD90083480B /* StoreKit2StorefrontListenerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2StorefrontListenerTests.swift; sourceTree = "<group>"; };
@@ -4127,6 +4134,7 @@
 				351B515926D44B6200BD2BD7 /* MockAttributionFetcher.swift */,
 				351B514426D449E600BD2BD7 /* MockAttributionTypeFactory.swift */,
 				1D73D6602EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift */,
+				FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */,
 				351B514026D4498F00BD2BD7 /* MockBackend.swift */,
 				4FA4C9722A16D3AC007D2803 /* MockBackendConfiguration.swift */,
 				A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */,
@@ -4543,6 +4551,7 @@
 				A1B2C3D42FE1000000000008 /* RCContainer+Parser.swift */,
 				F3A2DB969D72432B87F48C5F /* RemoteConfigAPI.swift */,
 				FEDA000000000000000000A2 /* WeightedSourceSelector.swift */,
+				FEDA000000000000000000C2 /* RemoteConfigSourceProvider.swift */,
 				A1B2C3D42FE2000000000001 /* RemoteConfigDiskCache.swift */,
 				A1B2C3D42FE2000000000003 /* RemoteConfigManager.swift */,
 				A1B2C3D42FE1000000000011 /* RemoteConfigSignatureContextProvider.swift */,
@@ -4561,6 +4570,7 @@
 				35D832FF262FAD8000E60AC5 /* ETagManagerTests.swift */,
 				1D20E1D72EBCF82900ABE4CD /* HTTPRequestTimeoutManager.swift */,
 				FEDA000000000000000000A1 /* WeightedSourceSelectorTests.swift */,
+				FEDA000000000000000000C1 /* RemoteConfigSourceProviderTests.swift */,
 				B380D69A27726AB500984578 /* DNSCheckerTests.swift */,
 				576C8AD827D2BCB90058FA6E /* HTTPRequestTests.swift */,
 				57DC9F4927CD37BA00DA6AF9 /* HTTPStatusCodeTests.swift */,
@@ -6994,6 +7004,7 @@
 				57057FF928B0048900995F21 /* TestLogHandler.swift in Sources */,
 				4F69EB0A2A14406E00ED6D4B /* Matchers.swift in Sources */,
 				1D73D6612EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift in Sources */,
+				FEDA000000000000000000E1 /* MockRemoteConfigSourceProvider.swift in Sources */,
 				7571BE9F2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift in Sources */,
 				2D90F8C226FD20F7009B9142 /* MockETagManager.swift in Sources */,
 				2D90F8B526FD2093009B9142 /* MockSystemInfo.swift in Sources */,
@@ -7173,6 +7184,7 @@
 				DB3395E12F840AA60079250C /* WorkflowsAPI.swift in Sources */,
 				3B41364A5DFC4039B3026F40 /* RemoteConfigAPI.swift in Sources */,
 				FEDA000000000000000000B2 /* WeightedSourceSelector.swift in Sources */,
+				FEDA000000000000000000D2 /* RemoteConfigSourceProvider.swift in Sources */,
 				E6B064598F674333A29E0781 /* RemoteConfigCallback.swift in Sources */,
 				A6CC43904EBD4860BFD2BD85 /* GetRemoteConfigOperation.swift in Sources */,
 				D62A9C83BFD14E5FA0452CC7 /* RemoteConfiguration.swift in Sources */,
@@ -7736,6 +7748,7 @@
 				DB7EA7762F964CA200BCC082 /* WorkflowResponseTests.swift in Sources */,
 				858195FCF0E04E3CAA99F9BB /* RemoteConfigurationDecodingTests.swift in Sources */,
 				FEDA000000000000000000B1 /* WeightedSourceSelectorTests.swift in Sources */,
+				FEDA000000000000000000D1 /* RemoteConfigSourceProviderTests.swift in Sources */,
 				A1B2C3D42FE1000000000004 /* RCContainerTests.swift in Sources */,
 				A1B2C3D42FE100000000000D /* RCContainerBackwardsCompatibilityTests.swift in Sources */,
 				A1B2C3D42FE100000000000E /* RCContainerTestData.swift in Sources */,
@@ -7827,6 +7840,7 @@
 				2C8EC6DF2CCD27A500D6CCF8 /* PartialComponentTests.swift in Sources */,
 				351B51A326D450BC00BD2BD7 /* DictionaryExtensionsTests.swift in Sources */,
 				1D73D6622EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift in Sources */,
+				FEDA000000000000000000E2 /* MockRemoteConfigSourceProvider.swift in Sources */,
 				4FB2B5512AA7DBA40087EDB5 /* MockFileHandler.swift in Sources */,
 				758593482E37F77700B8E6CE /* WebBillingProductsDecodingTests.swift in Sources */,
 				03A98CEF2D1EE048009BCA61 /* FallbackComponentTests.swift in Sources */,

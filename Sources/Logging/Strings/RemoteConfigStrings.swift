@@ -11,6 +11,7 @@ enum RemoteConfigStrings {
 
     case failedToReadCache(Error)
     case failedToWriteCache
+    case duplicateSourceURL(String)
     case failedToParseResponse(Error)
     case refreshFailed(BackendError)
 
@@ -24,6 +25,9 @@ extension RemoteConfigStrings: LogMessage {
             return "Failed to read remote config cache from disk: \(error.localizedDescription)"
         case .failedToWriteCache:
             return "Failed to write remote config cache to disk."
+        case let .duplicateSourceURL(url):
+            return "Found remote config sources sharing the same URL with conflicting priority/weight " +
+                "(\(url)). Keeping the highest-priority one, tie-broken by weight."
         case let .failedToParseResponse(error):
             return "Failed to parse remote config response. Keeping cached configuration. Error: " +
             "\(error.localizedDescription)"
