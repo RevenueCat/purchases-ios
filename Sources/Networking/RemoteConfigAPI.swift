@@ -32,7 +32,7 @@ class RemoteConfigAPI: RemoteConfigAPIType {
     }
 
     func getRemoteConfig(
-        request: RemoteConfigRequest = .init(),
+        request: RemoteConfigRequest,
         isAppBackgrounded: Bool,
         completion: @escaping RemoteConfigResponseHandler
     ) {
@@ -73,7 +73,7 @@ struct RemoteConfigContainer {
     /// Underlying generic RC Container parsed from the remote config response.
     let rcContainer: RCContainer
 
-    /// The first RC Container element, interpreted as the remote config payload for `/v1/config`.
+    /// The first RC Container element, interpreted as the remote config payload for `/v1/config/<domain>`.
     let configElement: RCContainer.Element
 
     /// Inline blob elements delivered with the remote config response, keyed by stored checksum.

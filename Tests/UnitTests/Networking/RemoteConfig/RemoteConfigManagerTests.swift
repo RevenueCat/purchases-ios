@@ -13,11 +13,13 @@ import XCTest
 final class RemoteConfigManagerTests: TestCase {
 
     private static let lastRefreshAt = Date(timeIntervalSince1970: 1_710_000_100)
+    private static let appUserID = "app-user-id"
 
     private var remoteConfigAPI: MockRemoteConfigAPI!
     private var diskCache: MockRemoteConfigDiskCache!
     private var dateProvider: MockDateProvider!
     private var blobStore: MockRemoteConfigBlobStore!
+    private var currentUserProvider: MockCurrentUserProvider!
     private var manager: RemoteConfigManager!
 
     override func setUpWithError() throws {
@@ -27,10 +29,12 @@ final class RemoteConfigManagerTests: TestCase {
         self.diskCache = MockRemoteConfigDiskCache()
         self.dateProvider = MockDateProvider(stubbedNow: Self.lastRefreshAt)
         self.blobStore = MockRemoteConfigBlobStore()
+        self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: Self.appUserID)
         self.manager = RemoteConfigManager(
             remoteConfigAPI: self.remoteConfigAPI,
             diskCache: self.diskCache,
             blobStore: self.blobStore,
+            currentUserProvider: self.currentUserProvider,
             dateProvider: self.dateProvider
         )
     }
@@ -39,6 +43,7 @@ final class RemoteConfigManagerTests: TestCase {
         self.manager = nil
         self.dateProvider = nil
         self.blobStore = nil
+        self.currentUserProvider = nil
         self.diskCache = nil
         self.remoteConfigAPI = nil
 
@@ -51,6 +56,7 @@ final class RemoteConfigManagerTests: TestCase {
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.appUserID) == Self.appUserID
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.manifest).to(beNil())
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.prefetchedBlobs).to(beEmpty())
     }
@@ -67,6 +73,7 @@ final class RemoteConfigManagerTests: TestCase {
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: true)
 
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.appUserID) == Self.appUserID
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.domain) == "custom"
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.manifest) == persistedManifest
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.prefetchedBlobs) == ["prefetchedBlob"]
