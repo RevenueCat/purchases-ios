@@ -1138,6 +1138,7 @@
 		9A65E07B2591977500DE00B0 /* NetworkStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E07A2591977500DE00B0 /* NetworkStrings.swift */; };
 		9A65E0A02591A23200DE00B0 /* OfferingStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E09F2591A23200DE00B0 /* OfferingStrings.swift */; };
 		9A65E0A52591A23500DE00B0 /* PurchaseStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A42591A23500DE00B0 /* PurchaseStrings.swift */; };
+		9EA7410B386848B365F44AED /* WebViewCapabilitiesConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = BECBCE280B1AB66FD155FA74 /* WebViewCapabilitiesConfiguration.swift */; };
 		A153288D312E5729B0305553 /* RulesEngineEvaluateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D8E14F3E2F79FAC1C2FA0 /* RulesEngineEvaluateTests.swift */; };
 		A1B2C3D42FE1000000000002 /* RCContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE1000000000001 /* RCContainer.swift */; };
 		A1B2C3D42FE1000000000004 /* RCContainerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE1000000000003 /* RCContainerTests.swift */; };
@@ -2869,6 +2870,8 @@
 		B7BA50D5AA17E5D4A5D3E99D /* Operators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Operators.swift; sourceTree = "<group>"; };
 		B807748D6D88B7836EC273ED /* EqualityOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EqualityOperators.swift; sourceTree = "<group>"; };
 		B8BCBA1A622A35B377B35254 /* ValueTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ValueTests.swift; sourceTree = "<group>"; };
+		BC6D9D5964DA2EA53FAEB2F5 /* WebViewCapabilitiesTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WebViewCapabilitiesTests.swift; sourceTree = "<group>"; };
+		BECBCE280B1AB66FD155FA74 /* WebViewCapabilitiesConfiguration.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WebViewCapabilitiesConfiguration.swift; sourceTree = "<group>"; };
 		BF0DA22F713FAE8939275417 /* RulesEngineEvaluate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RulesEngineEvaluate.swift; sourceTree = "<group>"; };
 		C07759C930F712D2D53B9333 /* WorkflowStepEventTrackerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowStepEventTrackerTests.swift; sourceTree = "<group>"; };
 		C41FD75CE31F51BBE614F9B0 /* WorkflowsCache.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowsCache.swift; sourceTree = "<group>"; };
@@ -3188,6 +3191,7 @@
 				1D76F25F2F921DB800863AF8 /* ButtonComponentViewModelInteractionTests.swift */,
 				808963A62FE168FD008E858C /* TabsComponentStateTests.swift */,
 				8BAF5880071599951932A6A1 /* ImageComponentViewTests.swift */,
+				BC6D9D5964DA2EA53FAEB2F5 /* WebViewCapabilitiesTests.swift */,
 			);
 			path = PaywallsV2;
 			sourceTree = "<group>";
@@ -3383,6 +3387,7 @@
 				88B1BADC2C813A3C001B7EE5 /* Text */,
 				778360772CCA85D1000785B8 /* StickyFooter */,
 				778360742CCA84FA000785B8 /* Root */,
+				44BC398E1A1A1376EEAB0973 /* WebView */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -4736,6 +4741,15 @@
 				2DDF41AA24F6F37C005BC22D /* InAppPurchase.swift */,
 			);
 			path = BasicTypes;
+			sourceTree = "<group>";
+		};
+		44BC398E1A1A1376EEAB0973 /* WebView */ = {
+			isa = PBXGroup;
+			children = (
+				BECBCE280B1AB66FD155FA74 /* WebViewCapabilitiesConfiguration.swift */,
+			);
+			name = WebView;
+			path = WebView;
 			sourceTree = "<group>";
 		};
 		4D3BA5B12D47AB4400668AFC /* Timeline */ = {
@@ -8348,6 +8362,7 @@
 				150BEBF14F59182317CDA8DA /* WorkflowContext.swift in Sources */,
 				C53CDAA4FC3E6B51CC70D724 /* WorkflowPaywallView.swift in Sources */,
 				C1311C20A12B3813D86A2EDF /* WorkflowPreview.swift in Sources */,
+				9EA7410B386848B365F44AED /* WebViewCapabilitiesConfiguration.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
