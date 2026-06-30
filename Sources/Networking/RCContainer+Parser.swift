@@ -153,8 +153,9 @@ extension RCContainer {
             self.offset += Self.elementEncodingFieldSize
 
             let reservedRange = self.offset..<self.offset + Self.elementReservedFieldSize
-            if !self.bytesAreZero(in: reservedRange) {
-                Logger.warn(RCContainerParserStrings.nonZeroElementReservedBytes(index: index))
+            let reservedUpperBits = self.reservedUpperBitsValue(in: reservedRange)
+            if reservedUpperBits != 0 {
+                Logger.warn(RCContainerParserStrings.nonZeroElementReservedBits(reservedUpperBits))
             }
 
             self.offset += Self.elementReservedFieldSize
@@ -244,13 +245,10 @@ extension RCContainer {
             return count >= 0 && self.offset <= self.data.count - count
         }
 
-        /// Validates padding ranges.
-        private func bytesAreZero(in range: Range<Int>) -> Bool {
-            for offset in range where self.byte(at: offset) != 0 {
-                return false
-            }
-
-            return true
+        private func reservedUpperBitsValue(in range: Range<Int>) -> UInt32 {
+            return UInt32(self.byte(at: range.lowerBound)) << 8
+            | UInt32(self.byte(at: range.lowerBound + 1)) << 16
+            | UInt32(self.byte(at: range.lowerBound + 2)) << 24
         }
 
     }
@@ -260,14 +258,15 @@ extension RCContainer {
 private enum RCContainerParserStrings: LogMessage {
 
     case nonZeroHeaderFlags(UInt8)
-    case nonZeroElementReservedBytes(index: Int)
+    case nonZeroElementReservedBits(UInt32)
 
     var description: String {
         switch self {
         case let .nonZeroHeaderFlags(flags):
-            return "RC Container header flags are non-zero (\(flags)); ignoring reserved bits."
-        case let .nonZeroElementReservedBytes(index):
-            return "RC Container element \(index) has non-zero reserved bytes; ignoring reserved bytes."
+            return "RC Container header flags non-zero (0x\(String(flags, radix: 16))); ignoring unknown flags."
+        case let .nonZeroElementReservedBits(reservedBits):
+            return "RC element reserved bits non-zero (0x\(String(reservedBits, radix: 16))); " +
+            "ignoring unknown reserved bits."
         }
     }
 

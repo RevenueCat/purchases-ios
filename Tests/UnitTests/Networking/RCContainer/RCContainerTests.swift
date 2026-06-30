@@ -179,6 +179,26 @@ final class RCContainerTests: TestCase {
         expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == "config".asData
     }
 
+    func testWarnsAndParsesNonZeroHeaderFlags() throws {
+        self.logger.clearMessages()
+
+        let container = try RCContainer(data: RCContainerTestData.container(config: "config".asData, flags: 0x07))
+
+        expect(container.flags) == 0x07
+        self.logger.verifyMessageWasLogged(
+            "RC Container header flags non-zero (0x7); ignoring unknown flags.",
+            level: .warn
+        )
+    }
+
+    func testDoesNotWarnWhenHeaderFlagsAreZero() throws {
+        self.logger.clearMessages()
+
+        _ = try RCContainer(data: RCContainerTestData.container(config: "config".asData, flags: 0))
+
+        expect(self.logger.messages.filter { $0.level == .warn }).to(beEmpty())
+    }
+
     func testRejectsTruncatedContainers() {
         Self.expectParsing(Data([UInt8(ascii: "R")]), throws: .truncatedHeader)
         Self.expectParsing(
@@ -276,6 +296,36 @@ final class RCContainerTests: TestCase {
         let container = try RCContainer(data: data)
 
         expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == "config".asData
+    }
+
+    func testWarnsAndParsesNonZeroElementReservedBytes() throws {
+        var data = RCContainerTestData.container(config: "config".asData)
+        let reservedIndex = data.index(
+            data.startIndex,
+            offsetBy: RCContainerTestData.firstElementEncodingOffset + 1
+        )
+        data[reservedIndex] = 0x01
+
+        self.logger.clearMessages()
+
+        let container = try RCContainer(data: data)
+
+        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == "config".asData
+        self.logger.verifyMessageWasLogged(
+            "RC element reserved bits non-zero (0x100); ignoring unknown reserved bits.",
+            level: .warn
+        )
+    }
+
+    func testDoesNotWarnWhenOnlyElementCodecByteIsSet() throws {
+        self.logger.clearMessages()
+
+        _ = try RCContainer(data: RCContainerTestData.compressedContainer(
+            config: Data(repeating: UInt8(ascii: "a"), count: 2048),
+            configEncoding: .gzip
+        ))
+
+        expect(self.logger.messages.filter { $0.level == .warn }).to(beEmpty())
     }
 
     func testParsesGzipElementAndValidatesChecksumOverDecodedBytes() throws {
