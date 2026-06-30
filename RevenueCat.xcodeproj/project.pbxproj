@@ -2914,6 +2914,7 @@
 		A1B2C3D42FE2000000000008 /* RemoteConfigDiskCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigDiskCacheTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE200000000000A /* RemoteConfigManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigManagerTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE200000000000E /* RemoteConfigBlobStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobStoreTests.swift; sourceTree = "<group>"; };
+		A1B2C3D42FE300000000001 /* ProductionRemoteConfigIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductionRemoteConfigIntegrationTests.swift; sourceTree = "<group>"; };
 		E31E8A264E9F4375A3B29D78 /* RemoteConfigurationDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationDecodingTests.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000A1 /* WeightedSourceSelectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightedSourceSelectorTests.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000C1 /* RemoteConfigSourceProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigSourceProviderTests.swift; sourceTree = "<group>"; };
@@ -4088,6 +4089,7 @@
 			isa = PBXGroup;
 			children = (
 				8337DD6D2E0A7CFE000798BF /* paywall-preview-resources */,
+				A1B2C3D42FE300000000000 /* BackendIntegrationTests */,
 				2DD500EF2C519EB4009C19B7 /* TestingApps */,
 				2DAC5F7326F13C9800C5258F /* StoreKitUnitTests */,
 				57B425A3275800B60075BDC4 /* Test Plans */,
@@ -4613,6 +4615,14 @@
 				A1B2C3D42FE200000000000A /* RemoteConfigManagerTests.swift */,
 			);
 			path = RemoteConfig;
+			sourceTree = "<group>";
+		};
+		A1B2C3D42FE300000000000 /* BackendIntegrationTests */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D42FE300000000001 /* ProductionRemoteConfigIntegrationTests.swift */,
+			);
+			path = BackendIntegrationTests;
 			sourceTree = "<group>";
 		};
 		35E840C1270FB45600899AE2 /* Support */ = {
