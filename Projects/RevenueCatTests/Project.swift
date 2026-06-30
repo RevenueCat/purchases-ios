@@ -69,6 +69,7 @@ let project = Project(
             sources: [
                 "../../Tests/UnitTestsHostApp/**/*.swift"
             ],
+            entitlements: .file(path: "../../Tests/UnitTestsHostApp/UnitTestsHostApp.entitlements"),
             dependencies: [],
             metadata: .metadata(tags: ["RevenueCatTests"])
         ),
@@ -120,6 +121,7 @@ let project = Project(
             sources: [
                 "../../Tests/BackendIntegrationTestApp/**/*.swift"
             ],
+            entitlements: .file(path: "../../Tests/UnitTestsHostApp/UnitTestsHostApp.entitlements"),
             dependencies: [
              .storeKit
             ],
