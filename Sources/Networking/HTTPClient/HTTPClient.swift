@@ -153,8 +153,8 @@ class HTTPClient {
 extension HTTPClient {
 
     static let rcContainerFormatAcceptHeaderValue = "application/x-rc-format"
-    static var rcContainerFormatAcceptEncodingHeaderValue: String {
-        return RCContainer.Element.ContentEncoding.requestAcceptEncodingHeaderValue
+    static var rcContainerFormatElementEncodingHeaderValue: String {
+        return RCContainer.Element.ContentEncoding.requestElementEncodingHeaderValue
     }
 
     static func authorizationHeader(withAPIKey apiKey: String) -> RequestHeaders {
@@ -192,6 +192,7 @@ extension HTTPClient {
         case authorization = "Authorization"
         case accept = "Accept"
         case acceptEncoding = "Accept-Encoding"
+        case acceptRCElementEncoding = "Accept-RC-Element-Encoding"
         case nonce = "X-Nonce"
         case eTag = "X-RevenueCat-ETag"
         case eTagValidationTime = "X-RC-Last-Refresh-Time"

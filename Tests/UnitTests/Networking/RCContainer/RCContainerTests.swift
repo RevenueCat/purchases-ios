@@ -237,12 +237,12 @@ final class RCContainerTests: TestCase {
         )
     }
 
-    func testContentEncodingHTTPHeaderValues() {
-        expect(RCContainer.Element.ContentEncoding.none.acceptEncodingHeaderValue).to(beNil())
-        expect(RCContainer.Element.ContentEncoding.gzip.acceptEncodingHeaderValue) == "gzip"
-        expect(RCContainer.Element.ContentEncoding.brotli.acceptEncodingHeaderValue) == "br"
-        expect(RCContainer.Element.ContentEncoding.zstd.acceptEncodingHeaderValue) == "zstd"
-        expect(RCContainer.Element.ContentEncoding.unsupported(0xff).acceptEncodingHeaderValue).to(beNil())
+    func testContentEncodingElementHeaderValues() {
+        expect(RCContainer.Element.ContentEncoding.none.elementEncodingHeaderValue).to(beNil())
+        expect(RCContainer.Element.ContentEncoding.gzip.elementEncodingHeaderValue) == "gzip"
+        expect(RCContainer.Element.ContentEncoding.brotli.elementEncodingHeaderValue) == "br"
+        expect(RCContainer.Element.ContentEncoding.zstd.elementEncodingHeaderValue) == "zstd"
+        expect(RCContainer.Element.ContentEncoding.unsupported(0xff).elementEncodingHeaderValue).to(beNil())
     }
 
     func testContentEncodingSupport() {
@@ -255,12 +255,13 @@ final class RCContainerTests: TestCase {
     func testSupportedRequestEncodings() {
         if RCContainer.Element.ContentEncoding.brotli.isSupported {
             expect(RCContainer.Element.ContentEncoding.supportedEncodingsInPriorityOrder) == [.brotli, .gzip, .none]
-            expect(RCContainer.Element.ContentEncoding.supportedRequestEncodingsInPriorityOrder) == [.brotli, .gzip]
-            expect(RCContainer.Element.ContentEncoding.requestAcceptEncodingHeaderValue) == "br, gzip"
+            expect(RCContainer.Element.ContentEncoding.supportedRequestElementEncodingsInPriorityOrder)
+                == [.brotli, .gzip]
+            expect(RCContainer.Element.ContentEncoding.requestElementEncodingHeaderValue) == "br, gzip"
         } else {
             expect(RCContainer.Element.ContentEncoding.supportedEncodingsInPriorityOrder) == [.gzip, .none]
-            expect(RCContainer.Element.ContentEncoding.supportedRequestEncodingsInPriorityOrder) == [.gzip]
-            expect(RCContainer.Element.ContentEncoding.requestAcceptEncodingHeaderValue) == "gzip"
+            expect(RCContainer.Element.ContentEncoding.supportedRequestElementEncodingsInPriorityOrder) == [.gzip]
+            expect(RCContainer.Element.ContentEncoding.requestElementEncodingHeaderValue) == "gzip"
         }
     }
 

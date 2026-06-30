@@ -507,8 +507,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .remoteConfig:
             return [
                 HTTPClient.RequestHeader.accept.rawValue: HTTPClient.rcContainerFormatAcceptHeaderValue,
-                HTTPClient.RequestHeader.acceptEncoding.rawValue:
-                    HTTPClient.rcContainerFormatAcceptEncodingHeaderValue
+                HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue:
+                    HTTPClient.rcContainerFormatElementEncodingHeaderValue
             ]
         default:
             return [:]

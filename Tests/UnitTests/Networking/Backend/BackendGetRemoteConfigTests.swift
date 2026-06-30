@@ -113,8 +113,9 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
         expect(self.httpClient.calls.first?.headers[HTTPClient.RequestHeader.accept.rawValue])
             == HTTPClient.rcContainerFormatAcceptHeaderValue
-        expect(self.httpClient.calls.first?.headers[HTTPClient.RequestHeader.acceptEncoding.rawValue])
-            == HTTPClient.rcContainerFormatAcceptEncodingHeaderValue
+        expect(self.httpClient.calls.first?.headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue])
+            == HTTPClient.rcContainerFormatElementEncodingHeaderValue
+        expect(self.httpClient.calls.first?.headers[HTTPClient.RequestHeader.acceptEncoding.rawValue]).to(beNil())
     }
 
     func testGetRemoteConfigDoesNotSendETagHeaders() {

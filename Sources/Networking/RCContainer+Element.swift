@@ -167,7 +167,7 @@ extension RCContainer.Element {
             }
         }
 
-        var acceptEncodingHeaderValue: String? {
+        var elementEncodingHeaderValue: String? {
             switch self {
             case .none:
                 return nil
@@ -201,13 +201,13 @@ extension RCContainer.Element {
             return Self.encodingPreference.filter(\.isSupported)
         }
 
-        static var supportedRequestEncodingsInPriorityOrder: [Self] {
-            return Self.supportedEncodingsInPriorityOrder.filter { $0.acceptEncodingHeaderValue != nil }
+        static var supportedRequestElementEncodingsInPriorityOrder: [Self] {
+            return Self.supportedEncodingsInPriorityOrder.filter { $0.elementEncodingHeaderValue != nil }
         }
 
-        static var requestAcceptEncodingHeaderValue: String {
-            return Self.supportedRequestEncodingsInPriorityOrder
-                .compactMap(\.acceptEncodingHeaderValue)
+        static var requestElementEncodingHeaderValue: String {
+            return Self.supportedRequestElementEncodingsInPriorityOrder
+                .compactMap(\.elementEncodingHeaderValue)
                 .joined(separator: ", ")
         }
 
