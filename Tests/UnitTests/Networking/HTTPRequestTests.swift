@@ -338,5 +338,7 @@ class HTTPRequestTests: TestCase {
         )
 
         expect(headers[HTTPClient.RequestHeader.accept.rawValue]) == HTTPClient.rcContainerFormatAcceptHeaderValue
+        expect(headers[HTTPClient.RequestHeader.acceptEncoding.rawValue])
+            == HTTPClient.rcContainerFormatAcceptEncodingHeaderValue
     }
 }

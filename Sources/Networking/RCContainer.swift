@@ -12,19 +12,25 @@ import Foundation
 /// Layout (all multi-byte integers little-endian):
 /// ```
 /// Header (8 bytes): magic byte[2]="RC" | version u8 | flags u8 | reserved byte[4]
-/// Element:          checksum byte[24]  | element_size u32 | reserved u32 | element[element_size] | pad -> 8
+/// Element:          checksum byte[24]  | wire_size u32 | encoding u8 | reserved byte[3]
+///                   payload[wire_size] | pad -> 8
 /// ```
 /// Elements repeat until the backing data is exhausted (the format stores no count). The final
-/// element may omit trailing padding, but any padding bytes present in the container must be zero.
+/// element may omit trailing padding. Padding length is derived from the element's wire payload size.
 ///
-/// Elements are stored in wire order and are keyed by their checksum encoded as a 32-character
-/// URL-safe base64 string with no padding. `Element` exposes closure-based byte access backed by
-/// the original container data, so parsing does not create per-element `Data` copies.
+/// Elements are stored in wire order and keyed by their checksum encoded as a 32-character URL-safe
+/// base64 string with no padding. Checksums are SHA-256 truncated to 24 bytes over the decoded
+/// payload bytes, so compressed elements must be decompressed before checksum validation.
+///
+/// `Element` exposes raw payload access backed by the original container data, so parsing does not
+/// create per-element `Data` copies. Decoded payload access stays closure-based too, but compressed
+/// elements necessarily materialize temporary decoded bytes.
 struct RCContainer {
 
     /// Format flags from the container header.
     ///
-    /// The parser preserves these bits for future use. Version 1 does not currently interpret them.
+    /// Version 1 does not interpret these bits. Non-zero values are logged and ignored for
+    /// forward compatibility.
     let flags: UInt8
 
     /// Elements in the order they appear in the container.
