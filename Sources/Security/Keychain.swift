@@ -250,19 +250,20 @@ struct Keychain: SecureItemStorage {
         var query = baseQuery
         query[kSecAttrAccount] = identifier
 
-        let status: OSStatus
-        if try containsItem(identifier: identifier) {
-            // update item
+        var addQuery = query
+        addQuery[kSecAttrAccessible] = attributes.accessbility
+        addQuery[kSecValueData] = contents
+
+        // try to save the item immediately. if we get a "duplicate" error, then update it
+        var status = SecItemAdd(addQuery as CFDictionary, nil)
+
+        if status == errSecDuplicateItem {
+            // the item already exists; update it
             let attributes: [CFString: Any] = [
                 kSecAttrAccessible: attributes.accessbility,
                 kSecValueData: contents
             ]
             status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
-        } else {
-            // save item
-            query[kSecAttrAccessible] = attributes.accessbility
-            query[kSecValueData] = contents
-            status = SecItemAdd(query as CFDictionary, nil)
         }
 
         if status != errSecSuccess {
