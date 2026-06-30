@@ -185,24 +185,22 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     ) -> [RemoteConfigSource] {
         switch purpose {
         case .api:
-            return topic == nil
-                ? Self.defaultAPISources
-                : Self.parseSources(topic, item: Self.apiItem, urlKey: Self.urlKey)
+            return topic.map { Self.parseSources($0, item: Self.apiItem, urlKey: Self.urlKey) }
+                ?? Self.defaultAPISources
         case .blob:
-            return topic == nil
-                ? Self.defaultBlobSources
-                : Self.parseSources(topic, item: Self.blobItem, urlKey: Self.urlFormatKey)
+            return topic.map { Self.parseSources($0, item: Self.blobItem, urlKey: Self.urlFormatKey) }
+                ?? Self.defaultBlobSources
         }
     }
 
     /// Extracts the source list from the `sources` topic item `item` (`api` or `blob`), reading each
     /// entry's url from `urlKey` (`url` for api, `url_format` for blob). Malformed entries are skipped.
     private static func parseSources(
-        _ topic: RemoteConfiguration.ConfigTopic?,
+        _ topic: RemoteConfiguration.ConfigTopic,
         item: String,
         urlKey: String
     ) -> [RemoteConfigSource] {
-        guard case .array(let entries)? = topic?[item]?.content[Self.sourcesKey] else {
+        guard case .array(let entries)? = topic[item]?.content[Self.sourcesKey] else {
             return []
         }
         return entries.compactMap { element in
