@@ -120,6 +120,38 @@ extension SwiftUICore.View {
   @_Concurrency.MainActor @preconcurrency public func customPaywallVariables(_ variables: [Swift.String : RevenueCatUI.CustomVariableValue]) -> some SwiftUICore.View
   
 }
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct PaywallWebViewValue : Swift.Sendable, Swift.Equatable, Swift.Hashable {
+  public static func string(_ value: Swift.String) -> RevenueCatUI.PaywallWebViewValue
+  public static func number(_ value: Swift.Double) -> RevenueCatUI.PaywallWebViewValue
+  public static func bool(_ value: Swift.Bool) -> RevenueCatUI.PaywallWebViewValue
+  public static func array(_ value: [RevenueCatUI.PaywallWebViewValue]) -> RevenueCatUI.PaywallWebViewValue
+  public static func object(_ value: [Swift.String : RevenueCatUI.PaywallWebViewValue]) -> RevenueCatUI.PaywallWebViewValue
+  public static let null: RevenueCatUI.PaywallWebViewValue
+  public var stringValue: Swift.String? {
+    get
+  }
+  public var numberValue: Swift.Double? {
+    get
+  }
+  public var boolValue: Swift.Bool? {
+    get
+  }
+  public var arrayValue: [RevenueCatUI.PaywallWebViewValue]? {
+    get
+  }
+  public var objectValue: [Swift.String : RevenueCatUI.PaywallWebViewValue]? {
+    get
+  }
+  public var isNull: Swift.Bool {
+    get
+  }
+  public static func == (a: RevenueCatUI.PaywallWebViewValue, b: RevenueCatUI.PaywallWebViewValue) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
 public struct ResumeAction : Swift.Sendable {
   public init(action: @escaping @Sendable (Swift.Bool) -> Swift.Void)
   @_Concurrency.MainActor public func resume(shouldProceed: Swift.Bool)
