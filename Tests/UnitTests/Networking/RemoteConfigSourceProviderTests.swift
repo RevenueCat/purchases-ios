@@ -20,13 +20,13 @@ final class RemoteConfigSourceProviderTests: TestCase {
         expect(provider.getCurrent(for: .blob)).to(beNil())
     }
 
-    func testCurrentSourcesAreNilWhenSourcesTopicAbsent() {
+    func testCurrentSourcesFallBackToEmbeddedDefaultsWhenSourcesTopicAbsent() {
         let provider = RemoteConfigSourceProvider(
             topicStore: FakeTopicStore(nil),
             randomizer: FakeRandomizer(0)
         )
-        expect(provider.getCurrent(for: .api)).to(beNil())
-        expect(provider.getCurrent(for: .blob)).to(beNil())
+        expect(provider.getCurrent(for: .api)?.url) == "https://api.revenuecat.com"
+        expect(provider.getCurrent(for: .blob)?.url) == "https://config.revenuecat-static.com/{blob_ref}"
     }
 
     func testCurrentSourceReturnsHighestPrioritySource() {
@@ -297,11 +297,11 @@ final class RemoteConfigSourceProviderTests: TestCase {
         expect(provider.getCurrent(for: .api)?.url) == Self.url("y")
     }
 
-    func testSourcesTopicAppearingAfterBeingAbsentBuildsTheList() {
+    func testSourcesTopicAppearingAfterBeingAbsentReplacesTheEmbeddedDefaults() {
         let store = FakeTopicStore(nil)
         let provider = RemoteConfigSourceProvider(topicStore: store, randomizer: FakeRandomizer(0))
 
-        expect(provider.getCurrent(for: .api)).to(beNil())
+        expect(provider.getCurrent(for: .api)?.url) == "https://api.revenuecat.com"
 
         // A sources topic shows up where there was none: the provider builds the list from the top.
         store.sources = Self.sourcesTopic(api: [Self.source("a"), Self.source("b")], blob: [])

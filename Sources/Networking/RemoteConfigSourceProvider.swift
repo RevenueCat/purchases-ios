@@ -74,7 +74,9 @@ protocol RemoteConfigTopicStoreType: AnyObject {
 ///
 /// Reads the `sources` topic lazily from the topic store and rebuilds its ordered lists only when
 /// that topic changes: an unchanged topic keeps failover progress, while a changed one restarts both
-/// lists from the top. Sources are deduped by url and ordered via `WeightedSourceSelector`.
+/// lists from the top. While the topic is absent, it falls back to embedded default sources so the
+/// SDK can reach the config api before any config is fetched. Sources are deduped by url and ordered
+/// via `WeightedSourceSelector`.
 ///
 /// - Note: Thread-safe.
 final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
@@ -88,12 +90,20 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     private static let priorityKey = "priority"
     private static let weightKey = "weight"
 
+    // Embedded defaults used until a `sources` topic is fetched, so the SDK can always reach config.
+    private static let defaultAPISources = [
+        RemoteConfigSource(url: "https://api.revenuecat.com", priority: 0, weight: 1)
+    ]
+    private static let defaultBlobSources = [
+        RemoteConfigSource(url: "https://config.revenuecat-static.com/{blob_ref}", priority: 0, weight: 1)
+    ]
+
     private let topicStore: RemoteConfigTopicStoreType
     private let randomizer: WeightedSourceRandomizer?
     private let lock = Lock()
 
     /// Topic the current failovers were built from. `nil` means there is no sources topic (absent, or
-    /// none seen yet).
+    /// none seen yet), in which case the failovers hold the embedded defaults.
     private var builtTopic: RemoteConfiguration.ConfigTopic?
     private var api: SourceFailover
     private var blob: SourceFailover
@@ -104,8 +114,16 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     ) {
         self.topicStore = topicStore
         self.randomizer = randomizer
-        self.api = SourceFailover(purpose: .api, sources: [], randomizer: randomizer)
-        self.blob = SourceFailover(purpose: .blob, sources: [], randomizer: randomizer)
+        self.api = SourceFailover(
+            purpose: .api,
+            sources: Self.dedupe(Self.sources(from: nil, for: .api)),
+            randomizer: randomizer
+        )
+        self.blob = SourceFailover(
+            purpose: .blob,
+            sources: Self.dedupe(Self.sources(from: nil, for: .blob)),
+            randomizer: randomizer
+        )
     }
 
     func getCurrent(for purpose: RemoteConfigSourceHandle.Purpose) -> RemoteConfigSourceHandle? {
@@ -146,17 +164,35 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
         let nextToken = max(self.api.currentToken, self.blob.currentToken) + 1
         self.api = SourceFailover(
             purpose: .api,
-            sources: Self.dedupe(Self.parseSources(topic, item: Self.apiItem, urlKey: Self.urlKey)),
+            sources: Self.dedupe(Self.sources(from: topic, for: .api)),
             randomizer: self.randomizer,
             initialToken: nextToken
         )
         self.blob = SourceFailover(
             purpose: .blob,
-            sources: Self.dedupe(Self.parseSources(topic, item: Self.blobItem, urlKey: Self.urlFormatKey)),
+            sources: Self.dedupe(Self.sources(from: topic, for: .blob)),
             randomizer: self.randomizer,
             initialToken: nextToken
         )
         self.builtTopic = topic
+    }
+
+    /// The sources for `purpose`: parsed from the `sources` `topic`, or the embedded defaults while the
+    /// topic is absent.
+    private static func sources(
+        from topic: RemoteConfiguration.ConfigTopic?,
+        for purpose: RemoteConfigSourceHandle.Purpose
+    ) -> [RemoteConfigSource] {
+        switch purpose {
+        case .api:
+            return topic == nil
+                ? Self.defaultAPISources
+                : Self.parseSources(topic, item: Self.apiItem, urlKey: Self.urlKey)
+        case .blob:
+            return topic == nil
+                ? Self.defaultBlobSources
+                : Self.parseSources(topic, item: Self.blobItem, urlKey: Self.urlFormatKey)
+        }
     }
 
     /// Extracts the source list from the `sources` topic item `item` (`api` or `blob`), reading each
