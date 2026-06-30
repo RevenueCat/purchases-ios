@@ -142,8 +142,10 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
 
     func restart(for purpose: RemoteConfigSourceHandle.Purpose) {
         self.lock.perform {
-            self.rebuildIfNeeded()
-            self.failover(for: purpose).restart()
+            // A rebuild already starts the new list from the top, so only restart when it didn't happen.
+            if !self.rebuildIfNeeded() {
+                self.failover(for: purpose).restart()
+            }
         }
     }
 
@@ -154,10 +156,12 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
         }
     }
 
-    /// Rebuilds both failovers from the latest `sources` topic when it changed. Callers must hold `lock`.
-    private func rebuildIfNeeded() {
+    /// Rebuilds both failovers from the latest `sources` topic when it changed, returning whether a
+    /// rebuild happened. Callers must hold `lock`.
+    @discardableResult
+    private func rebuildIfNeeded() -> Bool {
         let topic = self.topicStore.topic(Self.sourcesTopic)
-        guard topic != self.builtTopic else { return }
+        guard topic != self.builtTopic else { return false }
 
         // Seed the new generation past any token the previous one could have handed out, so reports
         // left over from before the rebuild are ignored instead of advancing the freshly-restarted list.
@@ -175,6 +179,7 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
             initialToken: nextToken
         )
         self.builtTopic = topic
+        return true
     }
 
     /// The sources for `purpose`: parsed from the `sources` `topic`, or the embedded defaults while the
