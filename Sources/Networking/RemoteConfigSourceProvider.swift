@@ -135,14 +135,16 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
 
     func reportUnhealthy(_ handle: RemoteConfigSourceHandle) {
         self.lock.perform {
-            self.rebuildIfNeeded()
-            self.failover(for: handle.purpose).reportUnhealthy(handle)
+            // Rebuild happened, no need to report unhealthy
+            if !self.rebuildIfNeeded() {
+                self.failover(for: handle.purpose).reportUnhealthy(handle)
+            }
         }
     }
 
     func restart(for purpose: RemoteConfigSourceHandle.Purpose) {
         self.lock.perform {
-            // A rebuild already starts the new list from the top, so only restart when it didn't happen.
+            // Rebuild happened, no need to restart
             if !self.rebuildIfNeeded() {
                 self.failover(for: purpose).restart()
             }
