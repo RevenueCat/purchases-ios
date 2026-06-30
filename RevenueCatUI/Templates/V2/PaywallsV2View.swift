@@ -96,10 +96,11 @@ struct PaywallsV2View: View {
     /// The workflow step's `screen_type` classification, used to gate impression reporting. `nil` for
     /// standalone paywalls and for workflow steps the backend did not tag (see `stepScreenType`).
     private let workflowScreenType: [String]?
-    /// Whether this workflow step is the workflow's `singleStepFallbackId`. Only consulted for untagged
-    /// steps (`nil` `screen_type`), where it restores the structural rule of reporting on the fallback
-    /// step alone. Irrelevant for standalone paywalls and tagged steps.
-    private let isWorkflowSingleStepFallback: Bool
+    /// Workflow attribution for the impression event (`presented_workflow_id` / `presented_step_id` in
+    /// the post-receipt body, see #7024). Orthogonal to `workflowScreenType`: gating decides whether the
+    /// event fires; these identify which workflow step it came from. `nil` for standalone paywalls.
+    private let workflowId: String?
+    private let stepId: String?
     @State
     private var didFinishEligibilityCheck: Bool = {
         #if DEBUG
@@ -136,7 +137,8 @@ struct PaywallsV2View: View {
         selectedPackageContextOverride: PackageContext? = nil,
         isActiveWorkflowPage: Bool? = nil,
         workflowScreenType: [String]? = nil,
-        isWorkflowSingleStepFallback: Bool = false
+        workflowId: String? = nil,
+        stepId: String? = nil
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
@@ -157,7 +159,8 @@ struct PaywallsV2View: View {
         self.closeWorkflowAction = closeWorkflowAction
         self.isActiveWorkflowPage = isActiveWorkflowPage
         self.workflowScreenType = workflowScreenType
-        self.isWorkflowSingleStepFallback = isWorkflowSingleStepFallback
+        self.workflowId = workflowId
+        self.stepId = stepId
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
         ))
@@ -387,12 +390,7 @@ struct PaywallsV2View: View {
             }
             .environment(
                 \.componentInteractionLogger,
-                // A non-paywall workflow step reports no paywall events, so install a no-op logger there
-                // instead of one bound to this page's session. Otherwise component interactions would be
-                // the one paywall event still emitted on a non-paywall step.
-                Self.componentInteractionLogger(tracksPaywallEvents: self.tracksPaywallEvents) {
-                    self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
-                }
+                self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
             )
             .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
                 guard hasPurchased else { return }
@@ -411,46 +409,41 @@ struct PaywallsV2View: View {
 
     }
 
-    /// Whether the current step reports paywall events (impression, close, purchase, cancel, exit offer,
-    /// component interaction). Driven by the backend `screen_type` tag:
-    /// - classified as a `paywall` → reports;
-    /// - tagged without `paywall` (including an empty list) → suppressed;
-    /// - untagged (legacy/pre-rollout payloads with no `screen_type`) → falls back to the structural rule,
-    ///   reporting only on the workflow's `singleStepFallbackId` step. When the workflow has no
-    ///   `singleStepFallbackId` either, no step is the fallback, so no paywall events are reported on any
-    ///   step (only workflow events) — intended, not a regression.
-    /// Standalone paywalls (no workflow) always report.
-    static func shouldTrackPaywallEvents(
+    static func shouldReportPaywallImpression(
         isActiveWorkflowPage: Bool?,
-        workflowScreenType: [String]?,
-        isSingleStepFallback: Bool
+        workflowScreenType: [String]?
     ) -> Bool {
         guard isActiveWorkflowPage != nil else { return true }
-        guard let screenType = workflowScreenType else { return isSingleStepFallback }
+        guard let screenType = workflowScreenType else { return true }
         return screenType.contains(WorkflowScreenType.paywall)
     }
 
-    private var tracksPaywallEvents: Bool {
-        Self.shouldTrackPaywallEvents(
+    private var reportsPaywallImpression: Bool {
+        Self.shouldReportPaywallImpression(
             isActiveWorkflowPage: self.isActiveWorkflowPage,
-            workflowScreenType: self.workflowScreenType,
-            isSingleStepFallback: self.isWorkflowSingleStepFallback
+            workflowScreenType: self.workflowScreenType
         )
     }
 
-    /// The component interaction logger for the current step: the real session-bound logger when the step
-    /// tracks paywall events, otherwise a no-op so non-paywall steps emit no `component_interaction` event.
-    static func componentInteractionLogger(
-        tracksPaywallEvents: Bool,
-        makeLogger: () -> ComponentInteractionLogger
-    ) -> ComponentInteractionLogger {
-        tracksPaywallEvents ? makeLogger() : ComponentInteractionLogger()
+    /// Stamps workflow attribution onto a paywall event's data so the post-receipt body can send
+    /// `presented_workflow_id` / `presented_step_id` (#7024). Orthogonal to the `screen_type` gate
+    /// (``shouldReportPaywallImpression`` decides whether the event fires at all); both are `nil` for
+    /// standalone paywalls. Mirrors Android's `PaywallEvent.Data.withCurrentWorkflowMetadata`.
+    static func applyingWorkflowAttribution(
+        to data: PaywallEvent.Data,
+        workflowId: String?,
+        stepId: String?
+    ) -> PaywallEvent.Data {
+        var data = data
+        data.workflowId = workflowId
+        data.stepId = stepId
+        return data
     }
 
     private func firePaywallImpression(sessionID: PaywallEvent.SessionID? = nil) {
         // A workflow step the backend did not classify as a paywall reports no paywall events. Clear
         // any active session so a purchase here is unattributed, not charged to the prior paywall step.
-        guard self.tracksPaywallEvents else {
+        guard self.reportsPaywallImpression else {
             self.purchaseHandler.clearActivePaywallSession()
             return
         }
@@ -472,7 +465,7 @@ struct PaywallsV2View: View {
     }
 
     private func firePaywallClose() {
-        guard self.tracksPaywallEvents else { return }
+        guard self.reportsPaywallImpression else { return }
 
         if self.isActiveWorkflowPage == nil {
             // Standalone paywall: close whichever session is active (unchanged behavior).
@@ -522,7 +515,7 @@ struct PaywallsV2View: View {
             darkMode: self.colorScheme == .dark,
             source: self.paywallSource
         )
-        return data
+        return Self.applyingWorkflowAttribution(to: data, workflowId: self.workflowId, stepId: self.stepId)
     }
 
 }

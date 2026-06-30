@@ -142,136 +142,102 @@ final class PromoEligibilityPackageInfosTests: TestCase {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-final class ShouldTrackPaywallEventsTests: TestCase {
+final class ShouldReportPaywallImpressionTests: TestCase {
 
     func testStandalonePaywallAlwaysReports() {
         // Standalone paywalls have no workflow screen_type and must keep reporting impressions.
-        expect(PaywallsV2View.shouldTrackPaywallEvents(
+        expect(PaywallsV2View.shouldReportPaywallImpression(
             isActiveWorkflowPage: nil,
-            workflowScreenType: nil,
-            isSingleStepFallback: false
+            workflowScreenType: nil
         )) == true
-        expect(PaywallsV2View.shouldTrackPaywallEvents(
+        expect(PaywallsV2View.shouldReportPaywallImpression(
             isActiveWorkflowPage: nil,
-            workflowScreenType: ["survey"],
-            isSingleStepFallback: false
+            workflowScreenType: ["survey"]
         )) == true
     }
 
     func testWorkflowPaywallStepReports() {
-        // A step tagged as a paywall reports regardless of whether it is the fallback step.
-        expect(PaywallsV2View.shouldTrackPaywallEvents(
+        expect(PaywallsV2View.shouldReportPaywallImpression(
             isActiveWorkflowPage: true,
-            workflowScreenType: [WorkflowScreenType.paywall],
-            isSingleStepFallback: false
+            workflowScreenType: [WorkflowScreenType.paywall]
         )) == true
     }
 
-    func testWorkflowUntaggedStepFallsBackToSingleStepFallback() {
-        // Untagged workflows (nil screen_type, e.g. a backend that has not rolled out screen analytics)
-        // fall back to the structural rule: only the singleStepFallbackId step reports.
-        expect(PaywallsV2View.shouldTrackPaywallEvents(
+    func testWorkflowUntaggedStepReportsToPreserveBehavior() {
+        // Older/untagged workflows (nil screen_type) must keep firing impressions so a backend that
+        // has not rolled out screen analytics is not silently muted.
+        expect(PaywallsV2View.shouldReportPaywallImpression(
             isActiveWorkflowPage: true,
-            workflowScreenType: nil,
-            isSingleStepFallback: true
+            workflowScreenType: nil
         )) == true
-        // Untagged and not the fallback step → suppressed. This also covers the owner-confirmed case of a
-        // workflow with no `singleStepFallbackId` at all: `WorkflowPaywallView` derives `isSingleStepFallback`
-        // as `stepId == singleStepFallbackId`, which is `false` for every step when the optional fallback id
-        // is absent, so no paywall events fire on any step (only workflow events).
-        expect(PaywallsV2View.shouldTrackPaywallEvents(
-            isActiveWorkflowPage: true,
-            workflowScreenType: nil,
-            isSingleStepFallback: false
-        )) == false
     }
 
     func testWorkflowStepTaggedNonPaywallDoesNotReport() {
-        // A tagged step without `paywall` is suppressed even when it is the fallback step.
-        expect(PaywallsV2View.shouldTrackPaywallEvents(
+        expect(PaywallsV2View.shouldReportPaywallImpression(
             isActiveWorkflowPage: true,
-            workflowScreenType: [],
-            isSingleStepFallback: true
+            workflowScreenType: []
         )) == false
-        expect(PaywallsV2View.shouldTrackPaywallEvents(
+        expect(PaywallsV2View.shouldReportPaywallImpression(
             isActiveWorkflowPage: true,
-            workflowScreenType: ["survey"],
-            isSingleStepFallback: false
+            workflowScreenType: ["survey"]
         )) == false
     }
 
     func testInactiveWorkflowPageGatedBySameRule() {
         // `isActiveWorkflowPage == false` is still a workflow page; the screen_type rule applies.
-        expect(PaywallsV2View.shouldTrackPaywallEvents(
+        expect(PaywallsV2View.shouldReportPaywallImpression(
             isActiveWorkflowPage: false,
-            workflowScreenType: [WorkflowScreenType.paywall],
-            isSingleStepFallback: false
+            workflowScreenType: [WorkflowScreenType.paywall]
         )) == true
-        expect(PaywallsV2View.shouldTrackPaywallEvents(
+        expect(PaywallsV2View.shouldReportPaywallImpression(
             isActiveWorkflowPage: false,
-            workflowScreenType: ["survey"],
-            isSingleStepFallback: false
+            workflowScreenType: ["survey"]
         )) == false
     }
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@MainActor
-final class WorkflowComponentInteractionLoggerTests: TestCase {
+final class ApplyingWorkflowAttributionTests: TestCase {
 
-    private static let interactionData = PaywallEvent.ComponentInteractionData(
-        componentType: .text,
-        componentName: "link_copy",
-        componentValue: "navigate_to_url"
-    )
-
-    func testNonPaywallStepGetsNoOpLogger() {
-        var factoryInvoked = false
-        let logger = PaywallsV2View.componentInteractionLogger(tracksPaywallEvents: false) {
-            factoryInvoked = true
-            return ComponentInteractionLogger { _ in true }
-        }
-
-        // A non-paywall step must emit no component_interaction: the real logger is never built and the
-        // installed no-op reports nothing.
-        expect(factoryInvoked) == false
-        expect(logger(Self.interactionData)) == false
-    }
-
-    func testPaywallStepGetsRealLogger() async throws {
-        let tracker = PaywallEventTracker(
-            purchases: MockPurchases(
-                purchase: { _, _, _ in
-                    (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
-                },
-                restorePurchases: { TestData.customerInfo },
-                trackEvent: { _ in },
-                customerInfo: { TestData.customerInfo }
-            ),
-            eventDispatcher: PaywallEventTrackerTestDispatcher.value
-        )
-        let eventData: PaywallEvent.Data = .init(
-            offering: TestData.offeringWithIntroOffer,
-            paywall: TestData.paywallWithIntroOffer,
+    private func makeData(workflowId: String? = nil, stepId: String? = nil) -> PaywallEvent.Data {
+        PaywallEvent.Data(
+            paywallIdentifier: "paywall-abc",
+            offeringIdentifier: "offering-1",
+            paywallRevision: 1,
             sessionID: .init(),
             displayMode: .fullScreen,
-            locale: .init(identifier: "en_US"),
+            localeIdentifier: "en_US",
             darkMode: false,
-            source: nil
+            workflowId: workflowId,
+            stepId: stepId
         )
-        tracker.trackPaywallImpression(eventData)
+    }
 
-        let logger = PaywallsV2View.componentInteractionLogger(tracksPaywallEvents: true) {
-            tracker.componentInteractionLogger(sessionID: eventData.sessionIdentifier)
-        }
+    // The seam #7024 wires and the screen_type work removed: a workflow paywall step's impression event
+    // must carry the workflow + step so the post-receipt body sends presented_workflow_id/step_id.
+    func testStampsWorkflowAndStepIdOnWorkflowStep() {
+        let result = PaywallsV2View.applyingWorkflowAttribution(
+            to: self.makeData(),
+            workflowId: "wf_test",
+            stepId: "step_1"
+        )
 
-        // A paywall step uses the real session-bound logger, which reports the interaction.
-        expect(logger(Self.interactionData)) == true
+        expect(result.workflowId) == "wf_test"
+        expect(result.stepId) == "step_1"
+    }
 
-        await Task(priority: .low) {
-            await Task.yield()
-        }.value
+    // Standalone paywalls (and untagged steps with no IDs) carry no attribution, so the post-receipt
+    // body omits presented_workflow_id/step_id rather than sending stale values.
+    func testLeavesAttributionNilForStandalonePaywall() {
+        let result = PaywallsV2View.applyingWorkflowAttribution(
+            to: self.makeData(workflowId: "stale", stepId: "stale"),
+            workflowId: nil,
+            stepId: nil
+        )
+
+        expect(result.workflowId).to(beNil())
+        expect(result.stepId).to(beNil())
     }
 
 }
