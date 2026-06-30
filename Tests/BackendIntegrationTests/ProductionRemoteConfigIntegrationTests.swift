@@ -20,16 +20,16 @@ import XCTest
 @MainActor
 class BaseProductionRemoteConfigIntegrationTests: BaseBackendIntegrationTests {
 
-    private static let appUserID = "integrationTestRemoteConfigUser"
     private static let domain = RemoteConfiguration.defaultDomain
 
     private lazy var remoteConfigAPI = self.createRemoteConfigAPI()
+    private lazy var appUserID = self.createAppUserID()
 
     func fetchRemoteConfig(manifest: String? = nil) async throws -> RemoteConfigFetchResult {
         return try await withCheckedThrowingContinuation { continuation in
             self.remoteConfigAPI.getRemoteConfig(
                 request: .init(
-                    appUserID: Self.appUserID,
+                    appUserID: self.appUserID,
                     domain: Self.domain,
                     manifest: manifest,
                     prefetchedBlobs: []
@@ -73,6 +73,16 @@ class BaseProductionRemoteConfigIntegrationTests: BaseBackendIntegrationTests {
 }
 
 private extension BaseProductionRemoteConfigIntegrationTests {
+
+    func createAppUserID() -> String {
+        let rawIdentifier = "\(type(of: self)).\(self.name)"
+        let allowedCharacters = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_"))
+        let sanitizedIdentifier = rawIdentifier.unicodeScalars.map { scalar in
+            allowedCharacters.contains(scalar) ? Character(scalar) : "-"
+        }
+
+        return "integrationTestRemoteConfigUser-\(String(sanitizedIdentifier))"
+    }
 
     func createRemoteConfigAPI() -> RemoteConfigAPI {
         let systemInfo = SystemInfo(
