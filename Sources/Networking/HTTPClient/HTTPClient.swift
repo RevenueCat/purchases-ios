@@ -191,7 +191,6 @@ extension HTTPClient {
 
         case authorization = "Authorization"
         case accept = "Accept"
-        case acceptEncoding = "Accept-Encoding"
         case acceptRCElementEncoding = "Accept-RC-Element-Encoding"
         case nonce = "X-Nonce"
         case eTag = "X-RevenueCat-ETag"
