@@ -6,10 +6,10 @@
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 //
 
-
 import Nimble
 import Security
 import XCTest
+
 @testable import RevenueCat
 
 // MARK: - Keychain (concrete implementation, exercises real Security framework)
@@ -508,4 +508,3 @@ class KeychainAccessGroupTests: TestCase {
     }
 
 }
-
