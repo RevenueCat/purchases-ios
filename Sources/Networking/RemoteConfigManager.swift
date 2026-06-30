@@ -105,7 +105,7 @@ private extension RemoteConfigManager {
         }
 
         do {
-            let response = try container.configElement.withPayloadBytes { bytes in
+            let response = try container.configElement.withDecodedPayloadBytes { bytes in
                 try JSONDecoder.default.decode(
                     RemoteConfiguration.self,
                     from: Data(bytes)
@@ -186,13 +186,13 @@ private extension RemoteConfigManager {
         for (ref, element) in container.inlineContentElements {
             guard referencedBlobRefs.contains(ref) else { continue }
 
-            guard element.isChecksumValid() else {
+            do {
+                try element.withDecodedPayloadBytes { bytes in
+                    try element.validateChecksum(decodedPayloadBytes: bytes)
+                    self.blobStore.write(ref: ref, bytes: bytes)
+                }
+            } catch {
                 Logger.error(Strings.remoteConfig.skippingInvalidBlob(ref))
-                continue
-            }
-
-            element.withPayloadBytes { bytes in
-                self.blobStore.write(ref: ref, bytes: bytes)
             }
         }
     }
