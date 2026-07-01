@@ -11,6 +11,8 @@ protocol RemoteConfigManagerType: AnyObject {
 
     func refreshRemoteConfig(isAppBackgrounded: Bool)
 
+    func clearCache()
+
 }
 
 /// Coordinates a single remote config refresh.
@@ -24,9 +26,11 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
     private let remoteConfigAPI: RemoteConfigAPIType
     private let diskCache: RemoteConfigDiskCacheType
-    private let isRefreshing: Atomic<Bool> = false
     private let blobStore: RemoteConfigBlobStoreType
     private let currentUserProvider: CurrentUserProvider
+    private let cacheLock = Lock()
+    private var isRefreshing = false
+    private var epoch = 0
 
     init(
         remoteConfigAPI: RemoteConfigAPIType,
@@ -41,7 +45,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     }
 
     func refreshRemoteConfig(isAppBackgrounded: Bool) {
-        guard self.beginRefreshIfNeeded() else { return }
+        guard let requestEpoch = self.prepareRefreshIfNeeded() else { return }
 
         let persisted = self.diskCache.read()
         let request = RemoteConfigRequest(
@@ -51,19 +55,37 @@ final class RemoteConfigManager: RemoteConfigManagerType {
             prefetchedBlobs: self.cachedPrefetchedBlobRefs(from: persisted)
         )
 
+        guard self.isCurrent(requestEpoch) else { return }
+
         self.remoteConfigAPI.getRemoteConfig(
             request: request,
             isAppBackgrounded: isAppBackgrounded
         ) { [weak self] result in
             guard let self else { return }
-            defer { self.endRefresh() }
 
             switch result {
             case let .success(fetchResult):
-                self.persist(container: fetchResult.container, previous: persisted)
+                self.handleSuccess(
+                    fetchResult,
+                    previous: persisted,
+                    requestEpoch: requestEpoch
+                )
             case let .failure(error):
-                Logger.error(Strings.remoteConfig.refreshFailed(error))
+                self.handleFailure(error, requestEpoch: requestEpoch)
             }
+        }
+    }
+
+    /// Wipes cached remote config state, for example after an identity change.
+    ///
+    /// The epoch bump, refresh-guard release, and cache wipe are serialized with response persistence so a late
+    /// response for a previous user is either fully persisted before the wipe or dropped after the epoch changes.
+    func clearCache() {
+        self.cacheLock.perform {
+            self.epoch += 1
+            self.isRefreshing = false
+            self.diskCache.clear()
+            self.blobStore.clear()
         }
     }
 
@@ -71,16 +93,70 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
 private extension RemoteConfigManager {
 
-    func beginRefreshIfNeeded() -> Bool {
-        return self.isRefreshing.modify { isRefreshing in
-            guard !isRefreshing else { return false }
-            isRefreshing = true
+    func prepareRefreshIfNeeded() -> Int? {
+        return self.cacheLock.perform {
+            guard !self.isRefreshing else { return nil }
+            self.isRefreshing = true
+            return self.epoch
+        }
+    }
+
+    @discardableResult
+    func releaseGuardIfOwned(requestEpoch: Int) -> Bool {
+        return self.cacheLock.perform {
+            guard self.epoch == requestEpoch else { return false }
+            self.isRefreshing = false
             return true
         }
     }
 
-    func endRefresh() {
-        self.isRefreshing.value = false
+    func handleSuccess(
+        _ fetchResult: RemoteConfigFetchResult,
+        previous: PersistedRemoteConfiguration?,
+        requestEpoch: Int
+    ) {
+        guard self.isCurrent(requestEpoch) else { return }
+        guard let container = fetchResult.container else {
+            self.releaseGuardIfOwned(requestEpoch: requestEpoch)
+            return
+        }
+
+        do {
+            let response = try container.configElement.withDecodedPayloadBytes { bytes in
+                try JSONDecoder.default.decode(
+                    RemoteConfiguration.self,
+                    from: Data(bytes)
+                )
+            }
+
+            self.cacheLock.perform {
+                guard self.epoch == requestEpoch else { return }
+                self.persist(
+                    container: container,
+                    previous: previous,
+                    response: response
+                )
+            }
+        } catch {
+            Logger.error(Strings.remoteConfig.failedToParseResponse(error))
+        }
+
+        self.releaseGuardIfOwned(requestEpoch: requestEpoch)
+    }
+
+    func handleFailure(
+        _ error: BackendError,
+        requestEpoch: Int
+    ) {
+        if self.releaseGuardIfOwned(requestEpoch: requestEpoch) {
+            Logger.error(Strings.remoteConfig.refreshFailed(error))
+        }
+    }
+
+    func isCurrent(_ requestEpoch: Int) -> Bool {
+        return self.cacheLock.perform {
+            self.epoch == requestEpoch
+        }
     }
 
     /// Replays only requested prefetch blobs that are still present in the blob store.
@@ -93,43 +169,31 @@ private extension RemoteConfigManager {
 
     /// Persists the config sync state and any valid inline blobs from a successful container response.
     func persist(
-        container: RemoteConfigContainer?,
-        previous: PersistedRemoteConfiguration?
+        container: RemoteConfigContainer,
+        previous: PersistedRemoteConfiguration?,
+        response: RemoteConfiguration
     ) {
-        guard let container else { return }
+        let postSyncTopics = self.postSyncTopics(
+            previous: previous,
+            response: response
+        )
+        let postSyncReferencedBlobRefs = self.postSyncReferencedBlobRefs(
+            response: response,
+            postSyncTopics: postSyncTopics
+        )
 
-        do {
-            let response = try container.configElement.withDecodedPayloadBytes { bytes in
-                try JSONDecoder.default.decode(
-                    RemoteConfiguration.self,
-                    from: Data(bytes)
-                )
-            }
+        let persistedConfiguration = PersistedRemoteConfiguration(
+            domain: response.domain,
+            manifest: response.manifest,
+            activeTopics: response.activeTopics,
+            prefetchBlobs: response.prefetchBlobs,
+            topics: postSyncTopics
+        )
 
-            let postSyncTopics = self.postSyncTopics(
-                previous: previous,
-                response: response
-            )
-            let postSyncReferencedBlobRefs = self.postSyncReferencedBlobRefs(
-                response: response,
-                postSyncTopics: postSyncTopics
-            )
+        guard self.diskCache.write(persistedConfiguration) else { return }
 
-            let persistedConfiguration = PersistedRemoteConfiguration(
-                domain: response.domain,
-                manifest: response.manifest,
-                activeTopics: response.activeTopics,
-                prefetchBlobs: response.prefetchBlobs,
-                topics: postSyncTopics
-            )
-
-            guard self.diskCache.write(persistedConfiguration) else { return }
-
-            self.extractInlineBlobs(from: container, keepingOnly: postSyncReferencedBlobRefs)
-            self.blobStore.retainOnly(postSyncReferencedBlobRefs)
-        } catch {
-            Logger.error(Strings.remoteConfig.failedToParseResponse(error))
-        }
+        self.extractInlineBlobs(from: container, keepingOnly: postSyncReferencedBlobRefs)
+        self.blobStore.retainOnly(postSyncReferencedBlobRefs)
     }
 
     /// Returns the full topic index that should be persisted after this response is applied.
