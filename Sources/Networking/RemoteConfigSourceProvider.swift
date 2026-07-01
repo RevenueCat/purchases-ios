@@ -74,9 +74,10 @@ protocol RemoteConfigTopicStoreType: AnyObject {
 ///
 /// Reads the `sources` topic lazily from the topic store and rebuilds its ordered lists only when
 /// that topic changes: an unchanged topic keeps failover progress, while a changed one restarts both
-/// lists from the top. While the topic is absent, it falls back to embedded default sources so the
-/// SDK can reach the config api before any config is fetched. Sources are deduped by url and ordered
-/// via `WeightedSourceSelector`.
+/// lists from the top. While the topic has no usable api sources, it falls back to an embedded
+/// default so the SDK can reach the config api before any config is fetched. Blob sources have no
+/// embedded default: they are only useful alongside a fetched config, which carries its own. Sources
+/// are deduped by url and ordered via `WeightedSourceSelector`.
 ///
 /// - Note: Thread-safe.
 final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
@@ -90,12 +91,9 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     private static let priorityKey = "priority"
     private static let weightKey = "weight"
 
-    // Embedded defaults used until a `sources` topic is fetched, so the SDK can always reach config.
+    // Embedded api default used until a `sources` topic is fetched, so the SDK can always reach config.
     private static let defaultAPISources = [
         RemoteConfigSource(url: "https://api.revenuecat.com", priority: 0, weight: 1)
-    ]
-    private static let defaultBlobSources = [
-        RemoteConfigSource(url: "https://config.revenuecat-static.com/{blob_ref}", priority: 0, weight: 1)
     ]
 
     private let topicStore: RemoteConfigTopicStoreType
@@ -184,8 +182,8 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
         return true
     }
 
-    /// The sources for `purpose`: parsed from the `sources` `topic`, or the embedded defaults while the
-    /// topic is absent or carries no usable sources.
+    /// The sources for `purpose`, parsed from the `sources` `topic`. Api falls back to the embedded
+    /// default while the topic has no usable api sources; blob has no default, so it can be empty.
     private static func sources(
         from topic: RemoteConfiguration.ConfigTopic?,
         for purpose: RemoteConfigSourceHandle.Purpose
@@ -195,8 +193,7 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
             let parsed = topic.map { Self.parseSources($0, item: Self.apiItem, urlKey: Self.urlKey) } ?? []
             return parsed.isEmpty ? Self.defaultAPISources : parsed
         case .blob:
-            let parsed = topic.map { Self.parseSources($0, item: Self.blobItem, urlKey: Self.urlFormatKey) } ?? []
-            return parsed.isEmpty ? Self.defaultBlobSources : parsed
+            return topic.map { Self.parseSources($0, item: Self.blobItem, urlKey: Self.urlFormatKey) } ?? []
         }
     }
 

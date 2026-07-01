@@ -14,19 +14,21 @@ final class RemoteConfigSourceProviderTests: TestCase {
 
     // MARK: - Initial selection
 
-    func testCurrentSourcesFallBackToEmbeddedDefaultsWhenTopicHasNoSources() {
+    func testCurrentApiSourceFallsBackToEmbeddedDefaultWhenTopicHasNoSources() {
         let provider = Self.provider(api: [], blob: [])
         expect(provider.getCurrent(for: .api)?.url) == "https://api.revenuecat.com"
-        expect(provider.getCurrent(for: .blob)?.url) == "https://config.revenuecat-static.com/{blob_ref}"
+        // Blob has no embedded default, so it stays empty.
+        expect(provider.getCurrent(for: .blob)).to(beNil())
     }
 
-    func testCurrentSourcesFallBackToEmbeddedDefaultsWhenSourcesTopicAbsent() {
+    func testCurrentApiSourceFallsBackToEmbeddedDefaultWhenSourcesTopicAbsent() {
         let provider = RemoteConfigSourceProvider(
             topicStore: FakeTopicStore(nil),
             randomizer: FakeRandomizer(0)
         )
         expect(provider.getCurrent(for: .api)?.url) == "https://api.revenuecat.com"
-        expect(provider.getCurrent(for: .blob)?.url) == "https://config.revenuecat-static.com/{blob_ref}"
+        // Blob has no embedded default, so it stays empty.
+        expect(provider.getCurrent(for: .blob)).to(beNil())
     }
 
     func testCurrentSourceReturnsHighestPrioritySource() {
