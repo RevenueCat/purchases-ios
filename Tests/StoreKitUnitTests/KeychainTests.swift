@@ -352,7 +352,7 @@ class KeychainAccessGroupTests: TestCase {
                     kSecClass: kSecClassGenericPassword,
                     kSecAttrAccount: account,
                     kSecAttrService: "revenuecat-team-id-probe",
-                    kSecReturnAttributes: true,
+                    kSecReturnAttributes: true
                 ]
 
                 var result: AnyObject?
