@@ -2118,6 +2118,7 @@
 		53E33BBA2E095B8900287158 /* SDKHealthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDKHealthManager.swift; sourceTree = "<group>"; };
 		5518006F2FF46C720055FD1B /* SecureItemStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureItemStorageTests.swift; sourceTree = "<group>"; };
 		551800762FF46C8A0055FD1B /* KeychainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTests.swift; sourceTree = "<group>"; };
+		5518007F2FF58D6C0055FD1B /* UnitTestsHostApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = UnitTestsHostApp.entitlements; sourceTree = "<group>"; };
 		552CE0E02FD323EF006E41B4 /* Purchases+PreviewPaywall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+PreviewPaywall.swift"; sourceTree = "<group>"; };
 		552CE0E72FD32413006E41B4 /* Purchases+PreviewPaywallTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+PreviewPaywallTests.swift"; sourceTree = "<group>"; };
 		552CE1012FEF22AC006E41B4 /* Keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
@@ -4224,6 +4225,7 @@
 				2DEAC2DC26EFE46E006914ED /* AppDelegate.swift */,
 				2DEAC2E526EFE470006914ED /* Assets.xcassets */,
 				2DEAC2EA26EFE470006914ED /* Info.plist */,
+				5518007F2FF58D6C0055FD1B /* UnitTestsHostApp.entitlements */,
 			);
 			path = UnitTestsHostApp;
 			sourceTree = "<group>";
@@ -8969,6 +8971,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = Tests/UnitTestsHostApp/UnitTestsHostApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
@@ -9000,6 +9003,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = Tests/UnitTestsHostApp/UnitTestsHostApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;

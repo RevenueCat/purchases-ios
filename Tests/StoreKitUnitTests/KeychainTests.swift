@@ -334,9 +334,8 @@ class KeychainAccessGroupTests: TestCase {
                     ) as? String {
                         macOSPrefix = teamID + "."
                     } else if let groups = SecTaskCopyValueForEntitlement(task,
-                        "keychain-access-groups" as CFString,
-                        nil
-                    ) as? [String],
+                                                                          "keychain-access-groups" as CFString,
+                                                                          nil) as? [String],
                     let first = groups.first,
                     let teamPart = first.split(separator: ".").first {
                         macOSPrefix = String(teamPart) + "."
@@ -350,9 +349,9 @@ class KeychainAccessGroupTests: TestCase {
                 #else
                 let account = "rc-team-id-probe-\(UUID().uuidString)"
                 let query: [CFString: Any] = [
-                    kSecClass:            kSecClassGenericPassword,
-                    kSecAttrAccount:      account,
-                    kSecAttrService:      "revenuecat-team-id-probe",
+                    kSecClass: kSecClassGenericPassword,
+                    kSecAttrAccount: account,
+                    kSecAttrService: "revenuecat-team-id-probe",
                     kSecReturnAttributes: true,
                 ]
 
