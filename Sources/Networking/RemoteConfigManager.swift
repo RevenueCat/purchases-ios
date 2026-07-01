@@ -28,7 +28,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     private let diskCache: RemoteConfigDiskCacheType
     private let blobStore: RemoteConfigBlobStoreType
     private let currentUserProvider: CurrentUserProvider
-    private let cacheLock = Lock()
+    private let lock = Lock()
     private var isRefreshing = false
     private var epoch = 0
 
@@ -68,7 +68,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     /// The epoch bump, refresh-guard release, and cache wipe are serialized with response persistence so a late
     /// response for a previous user is either fully persisted before the wipe or dropped after the epoch changes.
     func clearCache() {
-        self.cacheLock.perform {
+        self.lock.perform {
             self.epoch += 1
             self.isRefreshing = false
             self.diskCache.clear()
@@ -81,7 +81,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 private extension RemoteConfigManager {
 
     func prepareRefreshIfNeeded() -> Int? {
-        return self.cacheLock.perform {
+        return self.lock.perform {
             guard !self.isRefreshing else { return nil }
             self.isRefreshing = true
             return self.epoch
@@ -94,7 +94,7 @@ private extension RemoteConfigManager {
         isAppBackgrounded: Bool,
         requestEpoch: Int
     ) {
-        self.cacheLock.perform {
+        self.lock.perform {
             guard self.epoch == requestEpoch else { return }
 
             self.remoteConfigAPI.getRemoteConfig(
@@ -119,7 +119,7 @@ private extension RemoteConfigManager {
 
     @discardableResult
     func releaseGuardIfOwned(requestEpoch: Int) -> Bool {
-        return self.cacheLock.perform {
+        return self.lock.perform {
             guard self.epoch == requestEpoch else { return false }
             self.isRefreshing = false
             return true
@@ -132,10 +132,9 @@ private extension RemoteConfigManager {
         requestEpoch: Int
     ) {
         guard self.isCurrent(requestEpoch) else { return }
-        guard let container = fetchResult.container else {
-            self.releaseGuardIfOwned(requestEpoch: requestEpoch)
-            return
-        }
+        defer { self.releaseGuardIfOwned(requestEpoch: requestEpoch) }
+
+        guard let container = fetchResult.container else { return }
 
         do {
             let response = try container.configElement.withDecodedPayloadBytes { bytes in
@@ -145,7 +144,7 @@ private extension RemoteConfigManager {
                 )
             }
 
-            self.cacheLock.perform {
+            self.lock.perform {
                 guard self.epoch == requestEpoch else { return }
                 self.persist(
                     container: container,
@@ -157,7 +156,6 @@ private extension RemoteConfigManager {
             Logger.error(Strings.remoteConfig.failedToParseResponse(error))
         }
 
-        self.releaseGuardIfOwned(requestEpoch: requestEpoch)
     }
 
     func handleFailure(
@@ -170,7 +168,7 @@ private extension RemoteConfigManager {
     }
 
     func isCurrent(_ requestEpoch: Int) -> Bool {
-        return self.cacheLock.perform {
+        return self.lock.perform {
             self.epoch == requestEpoch
         }
     }
