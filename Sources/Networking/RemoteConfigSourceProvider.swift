@@ -91,9 +91,12 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     private static let priorityKey = "priority"
     private static let weightKey = "weight"
 
-    // Embedded api default used until a `sources` topic is fetched, so the SDK can always reach config.
+    // Embedded api defaults used until a `sources` topic is fetched, so the SDK can always reach
+    // config. Their very high `priority` numbers keep them below anything a fetched topic provides
+    // (lower number wins), so they only act as a fallback.
     private static let defaultAPISources = [
-        RemoteConfigSource(url: "https://api.revenuecat.com", priority: 0, weight: 1)
+        RemoteConfigSource(url: "https://api.revenuecat.com", priority: 100_000, weight: 1),
+        RemoteConfigSource(url: "https://api.rc-backup.com", priority: 100_001, weight: 1)
     ]
 
     private let topicStore: RemoteConfigTopicStoreType

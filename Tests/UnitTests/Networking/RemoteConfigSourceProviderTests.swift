@@ -31,6 +31,19 @@ final class RemoteConfigSourceProviderTests: TestCase {
         expect(provider.getCurrent(for: .blob)).to(beNil())
     }
 
+    func testEmbeddedApiDefaultsFallBackToBackupWhenPrimaryUnhealthy() {
+        let provider = RemoteConfigSourceProvider(
+            topicStore: FakeTopicStore(nil),
+            randomizer: FakeRandomizer(0)
+        )
+        // The primary default is preferred (lower priority number); the backup is the next fallback.
+        expect(provider.getCurrent(for: .api)?.url) == "https://api.revenuecat.com"
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!)
+        expect(provider.getCurrent(for: .api)?.url) == "https://api.rc-backup.com"
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!)
+        expect(provider.getCurrent(for: .api)).to(beNil())
+    }
+
     func testCurrentSourceReturnsLowestPriorityNumberSource() {
         let low = Self.source("low", priority: 0, weight: 1)
         let high = Self.source("high", priority: 10, weight: 100)
