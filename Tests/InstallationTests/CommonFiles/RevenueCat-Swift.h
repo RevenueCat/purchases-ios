@@ -1130,11 +1130,11 @@ SWIFT_CLASS_NAMED("Builder")
 @end
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
+- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
 @end
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
+- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
 @end
 
 /// Specifies the behavior for a caching API.
