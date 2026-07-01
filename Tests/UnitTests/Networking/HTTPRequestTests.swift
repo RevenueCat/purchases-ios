@@ -325,7 +325,7 @@ class HTTPRequestTests: TestCase {
         expect(request.isRetryable).to(beTrue())
     }
 
-    func testRemoteConfigUsesRCContainerAcceptHeader() {
+    func testRemoteConfigUsesRCContainerAcceptHeaders() {
         let request: HTTPRequest = .init(
             method: .post(RemoteConfigRequest(appUserID: "app-user-id")),
             path: .remoteConfig(domain: "app")
@@ -338,5 +338,8 @@ class HTTPRequestTests: TestCase {
         )
 
         expect(headers[HTTPClient.RequestHeader.accept.rawValue]) == HTTPClient.rcContainerFormatAcceptHeaderValue
+        expect(headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue])
+            == HTTPClient.rcContainerFormatElementEncodingHeaderValue
+        expect(headers["Accept-Encoding"]).to(beNil())
     }
 }

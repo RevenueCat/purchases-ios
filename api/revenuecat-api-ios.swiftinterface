@@ -5,6 +5,7 @@
 import AdServices
 import Combine
 import CommonCrypto
+import Compression
 import CoreText
 import CryptoKit
 import Foundation
@@ -20,6 +21,7 @@ import _StoreKit_SwiftUI
 import _StringProcessing
 import _SwiftConcurrencyShims
 import os
+import zlib
 @objc(RCAttributionNetwork) public enum AttributionNetwork : Swift.Int {
   @available(*, deprecated, message: "use adServices")
   case appleSearchAds = 0

@@ -138,6 +138,32 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.diskCache.invokedWriteParameter?.lastRefreshAt) == Self.lastRefreshAt
     }
 
+    func testContainerResponseDecodesCompressedConfigElement() throws {
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "api": { "url": "https://api.revenuecat.com" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.compressedContainer(
+                config: response,
+                configEncoding: .gzip
+            )))
+        )
+
+        expect(self.diskCache.invokedWriteCount) == 1
+        expect(self.diskCache.invokedWriteParameter?.manifest) == "v1.1710000100.sources:etag2"
+    }
+
     func testContainerResponseMergesUnchangedTopicRefsAndPrunesDroppedTopics() throws {
         self.diskCache.stubbedRead = Self.persisted(
             manifest: "v1.1710000100.product_entitlement_mapping:pemEtag1,sources:etag1",
@@ -365,6 +391,102 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobStore.invokedWriteParameters?.data) == RCContainerTestData.workflowBlob
     }
 
+    func testContainerResponseCachesDecodedCompressedInlineContentElements() throws {
+        let blob = Data(repeating: UInt8(ascii: "b"), count: 2048)
+        let blobRef = RCContainerTestData.blobRef(for: blob)
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "\(blobRef)" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(
+                container: try Self.compressedContainer(
+                    config: response,
+                    contentElements: [(payload: blob, encoding: .gzip)]
+                ),
+                verificationResult: .verified
+            ))
+        )
+
+        expect(self.blobStore.invokedWriteParameters?.ref) == blobRef
+        expect(self.blobStore.invokedWriteParameters?.data) == blob
+    }
+
+    func testContainerResponseSkipsUnsupportedCodecInlineContentElements() throws {
+        let blob = "unsupported codec blob".asData
+        let blobRef = RCContainerTestData.blobRef(for: blob)
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "\(blobRef)" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(
+                container: try Self.compressedContainer(
+                    config: response,
+                    contentElements: [(payload: blob, encoding: .zstd)]
+                ),
+                verificationResult: .verified
+            ))
+        )
+
+        expect(self.blobStore.invokedWriteCount) == 0
+        expect(self.diskCache.invokedWriteParameter?.topicBlobRefs) == ["sources": [blobRef]]
+    }
+
+    func testContainerResponseSkipsGzipInlineContentElementWithTrailingBytes() throws {
+        let blob = Data(repeating: UInt8(ascii: "b"), count: 2048)
+        let blobRef = RCContainerTestData.blobRef(for: blob)
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "\(blobRef)" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(
+                container: try RemoteConfigContainer(
+                    data: RCContainerTestData.compressedContainerWithTrailingGzipContentElement(
+                        config: response.asData,
+                        content: blob,
+                        trailingBytes: Data([0xff])
+                    )
+                ),
+                verificationResult: .verified
+            ))
+        )
+
+        expect(self.blobStore.invokedWriteCount) == 0
+        expect(self.diskCache.invokedWriteParameter?.topicBlobRefs) == ["sources": [blobRef]]
+    }
+
     func testContainerResponseCachesOnlyReferencedInlineContentElements() throws {
         let referencedBlob = "referenced blob".asData
         let unreferencedBlob = "unreferenced blob".asData
@@ -580,6 +702,18 @@ private extension RemoteConfigManagerTests {
     ) throws -> RemoteConfigContainer {
         return try RemoteConfigContainer(data: RCContainerTestData.container(
             config: config.asData,
+            contentElements: contentElements
+        ))
+    }
+
+    static func compressedContainer(
+        config: String,
+        configEncoding: RCContainer.Element.ContentEncoding = .none,
+        contentElements: [(payload: Data, encoding: RCContainer.Element.ContentEncoding)] = []
+    ) throws -> RemoteConfigContainer {
+        return try RemoteConfigContainer(data: RCContainerTestData.compressedContainer(
+            config: config.asData,
+            configEncoding: configEncoding,
             contentElements: contentElements
         ))
     }

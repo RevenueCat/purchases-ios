@@ -935,11 +935,13 @@
 		75FCD4CF2E37FBE100036C02 /* SimulatedStoreProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FCD4CD2E37FBE100036C02 /* SimulatedStoreProductsManagerTests.swift */; };
 		A1B2C3D42FE1000000000002 /* RCContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE1000000000001 /* RCContainer.swift */; };
 		A1B2C3D42FE1000000000004 /* RCContainerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE1000000000003 /* RCContainerTests.swift */; };
+		A1B2C3D42FE5000000000002 /* RCContainer+Compression.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE5000000000001 /* RCContainer+Compression.swift */; };
 		A1B2C3D42FE1000000000005 /* RCContainer+Element.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE1000000000006 /* RCContainer+Element.swift */; };
 		A1B2C3D42FE1000000000007 /* RCContainer+Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE1000000000008 /* RCContainer+Parser.swift */; };
 		A1B2C3D42FE1000000000010 /* RemoteConfigSignatureContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE1000000000011 /* RemoteConfigSignatureContextProvider.swift */; };
 		A1B2C3D42FE100000000000D /* RCContainerBackwardsCompatibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE100000000000A /* RCContainerBackwardsCompatibilityTests.swift */; };
 		A1B2C3D42FE100000000000E /* RCContainerTestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE100000000000B /* RCContainerTestData.swift */; };
+		A1B2C3D42FE4000000000002 /* RCContainerCompressionFixtureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE4000000000001 /* RCContainerCompressionFixtureTests.swift */; };
 		A1B2C3D42FE2000000000002 /* RemoteConfigDiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE2000000000001 /* RemoteConfigDiskCache.swift */; };
 		A1B2C3D42FE2000000000004 /* RemoteConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE2000000000003 /* RemoteConfigManager.swift */; };
 		A1B2C3D42FE200000000000D /* RemoteConfigBlobStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE200000000000C /* RemoteConfigBlobStore.swift */; };
@@ -2901,12 +2903,14 @@
 		E1C0A00ABEEF0001CCDD0001 /* PaywallComponentsConfigHeaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentsConfigHeaderTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE1000000000001 /* RCContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RCContainer.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE1000000000003 /* RCContainerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RCContainerTests.swift; sourceTree = "<group>"; };
+		A1B2C3D42FE5000000000001 /* RCContainer+Compression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RCContainer+Compression.swift"; sourceTree = "<group>"; };
 		A1B2C3D42FE1000000000006 /* RCContainer+Element.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RCContainer+Element.swift"; sourceTree = "<group>"; };
 		A1B2C3D42FE1000000000008 /* RCContainer+Parser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RCContainer+Parser.swift"; sourceTree = "<group>"; };
 		A1B2C3D42FE100000000000A /* RCContainerBackwardsCompatibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RCContainerBackwardsCompatibilityTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE100000000000B /* RCContainerTestData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RCContainerTestData.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE100000000000C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		A1B2C3D42FE1000000000011 /* RemoteConfigSignatureContextProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigSignatureContextProvider.swift; sourceTree = "<group>"; };
+		A1B2C3D42FE4000000000001 /* RCContainerCompressionFixtureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RCContainerCompressionFixtureTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE2000000000001 /* RemoteConfigDiskCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigDiskCache.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE2000000000003 /* RemoteConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigManager.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE200000000000C /* RemoteConfigBlobStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobStore.swift; sourceTree = "<group>"; };
@@ -4557,6 +4561,7 @@
 				DB3395DA2F840A790079250C /* Workflows */,
 				DB3395E02F840AA60079250C /* WorkflowsAPI.swift */,
 				A1B2C3D42FE1000000000001 /* RCContainer.swift */,
+				A1B2C3D42FE5000000000001 /* RCContainer+Compression.swift */,
 				A1B2C3D42FE1000000000006 /* RCContainer+Element.swift */,
 				A1B2C3D42FE1000000000008 /* RCContainer+Parser.swift */,
 				F3A2DB969D72432B87F48C5F /* RemoteConfigAPI.swift */,
@@ -4600,6 +4605,7 @@
 			isa = PBXGroup;
 			children = (
 				A1B2C3D42FE100000000000A /* RCContainerBackwardsCompatibilityTests.swift */,
+				A1B2C3D42FE4000000000001 /* RCContainerCompressionFixtureTests.swift */,
 				A1B2C3D42FE100000000000B /* RCContainerTestData.swift */,
 				A1B2C3D42FE1000000000003 /* RCContainerTests.swift */,
 				A1B2C3D42FE100000000000C /* README.md */,
@@ -7211,6 +7217,7 @@
 				A6CC43904EBD4860BFD2BD85 /* GetRemoteConfigOperation.swift in Sources */,
 				D62A9C83BFD14E5FA0452CC7 /* RemoteConfiguration.swift in Sources */,
 				A1B2C3D42FE1000000000002 /* RCContainer.swift in Sources */,
+				A1B2C3D42FE5000000000002 /* RCContainer+Compression.swift in Sources */,
 				A1B2C3D42FE1000000000005 /* RCContainer+Element.swift in Sources */,
 				A1B2C3D42FE1000000000007 /* RCContainer+Parser.swift in Sources */,
 				A1B2C3D42FE200000000000D /* RemoteConfigBlobStore.swift in Sources */,
@@ -7774,6 +7781,7 @@
 				FEDA000000000000000000D1 /* RemoteConfigSourceProviderTests.swift in Sources */,
 				A1B2C3D42FE1000000000004 /* RCContainerTests.swift in Sources */,
 				A1B2C3D42FE100000000000D /* RCContainerBackwardsCompatibilityTests.swift in Sources */,
+				A1B2C3D42FE4000000000002 /* RCContainerCompressionFixtureTests.swift in Sources */,
 				A1B2C3D42FE100000000000E /* RCContainerTestData.swift in Sources */,
 				A1B2C3D42FE200000000000F /* RemoteConfigBlobStoreTests.swift in Sources */,
 				A1B2C3D42FE2000000000009 /* RemoteConfigDiskCacheTests.swift in Sources */,
