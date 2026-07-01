@@ -20,11 +20,11 @@ extension RCContainer {
         /// The element checksum encoded as a 32-character URL-safe base64 string with no padding.
         let checksum: String
 
-        /// The payload size in bytes, excluding the element header and any alignment padding.
+        /// The wire payload size in bytes, excluding the element header and any alignment padding.
         let size: Int
 
-        /// The element header's reserved field, currently unused and retained for future metadata.
-        let reserved: UInt32
+        /// The per-element payload encoding used on the wire.
+        let encoding: ContentEncoding
 
         private let storage: Data
         private let checksumRange: Range<Data.Index>
@@ -35,13 +35,13 @@ extension RCContainer {
             checksumRange: Range<Data.Index>,
             payloadRange: Range<Data.Index>,
             checksum: String,
-            reserved: UInt32
+            encoding: ContentEncoding
         ) {
             self.storage = storage
             self.checksumRange = checksumRange
             self.payloadRange = payloadRange
             self.checksum = checksum
-            self.reserved = reserved
+            self.encoding = encoding
             self.size = storage.distance(from: payloadRange.lowerBound, to: payloadRange.upperBound)
         }
 
@@ -54,19 +54,34 @@ extension RCContainer {
             return try self.withBytes(in: self.payloadRange, body)
         }
 
+        /// Provides read-only access to the decoded payload bytes for the duration of `body`.
+        ///
+        /// Uncompressed elements borrow from the original container storage. Compressed elements are
+        /// decoded into temporary storage because decompression necessarily materializes new bytes.
+        func withDecodedPayloadBytes<T>(_ body: (UnsafeRawBufferPointer) throws -> T) throws -> T {
+            return try self.withPayloadBytes { bytes in
+                try self.encoding.withDecodedBytes(from: bytes, body)
+            }
+        }
+
         /// Provides read-only access to the raw 24-byte checksum for the duration of `body`.
         func withChecksumBytes<T>(_ body: (UnsafeRawBufferPointer) throws -> T) rethrows -> T {
             return try self.withBytes(in: self.checksumRange, body)
         }
 
-        /// Returns whether the payload bytes match the element's stored checksum.
+        /// Returns whether the decoded payload bytes match the element's stored checksum.
         func isChecksumValid() -> Bool {
-            return self.checksum == self.payloadChecksum
+            return (try? self.checksum == self.payloadChecksum()) == true
         }
 
-        /// Validates the payload bytes against the element's stored checksum.
+        /// Returns whether already-decoded payload bytes match the element's stored checksum.
+        func isChecksumValid(decodedPayloadBytes bytes: UnsafeRawBufferPointer) -> Bool {
+            return self.checksum == self.payloadChecksum(decodedPayloadBytes: bytes)
+        }
+
+        /// Validates the decoded payload bytes against the element's stored checksum.
         func validateChecksum() throws {
-            let actual = self.payloadChecksum
+            let actual = try self.payloadChecksum()
             guard self.checksum == actual else {
                 throw Parser.FormatError.checksumMismatch(
                     expected: self.checksum,
@@ -75,11 +90,26 @@ extension RCContainer {
             }
         }
 
-        private var payloadChecksum: String {
-            var hash = SHA256()
-            self.withPayloadBytes { bytes in
-                hash.update(bufferPointer: bytes)
+        /// Validates already-decoded payload bytes against the element's stored checksum.
+        func validateChecksum(decodedPayloadBytes bytes: UnsafeRawBufferPointer) throws {
+            let actual = self.payloadChecksum(decodedPayloadBytes: bytes)
+            guard self.checksum == actual else {
+                throw Parser.FormatError.checksumMismatch(
+                    expected: self.checksum,
+                    actual: actual
+                )
             }
+        }
+
+        private func payloadChecksum() throws -> String {
+            return try self.withDecodedPayloadBytes { bytes in
+                self.payloadChecksum(decodedPayloadBytes: bytes)
+            }
+        }
+
+        private func payloadChecksum(decodedPayloadBytes bytes: UnsafeRawBufferPointer) -> String {
+            var hash = SHA256()
+            hash.update(bufferPointer: bytes)
 
             return Self.base64URLString(from: Array(hash.finalize().prefix(Self.checksumSize)))
         }
@@ -96,6 +126,92 @@ extension RCContainer {
                 return try body(UnsafeRawBufferPointer(rebasing: bytes[range]))
             }
         }
+
+    }
+
+}
+
+extension RCContainer.Element {
+
+    /// Per-element content encoding stored in the RC Container element header.
+    ///
+    /// Encoding ids match the backend wire format:
+    /// `0 = none`, `1 = gzip`, `2 = brotli`, `3 = zstd`.
+    /// `zstd` is recognized but not decoded by iOS yet. Unknown ids are preserved as
+    /// `unsupported` so structural parsing can succeed while decoded access fails clearly.
+    enum ContentEncoding: Equatable {
+
+        case none
+        case gzip
+        case brotli
+        case zstd
+        case unsupported(UInt8)
+
+        init(rawValue: UInt8) {
+            switch rawValue {
+            case 0: self = .none
+            case 1: self = .gzip
+            case 2: self = .brotli
+            case 3: self = .zstd
+            default: self = .unsupported(rawValue)
+            }
+        }
+
+        var rawValue: UInt8 {
+            switch self {
+            case .none: return 0
+            case .gzip: return 1
+            case .brotli: return 2
+            case .zstd: return 3
+            case let .unsupported(rawValue): return rawValue
+            }
+        }
+
+        var elementEncodingHeaderValue: String? {
+            switch self {
+            case .none:
+                return nil
+            case .gzip:
+                return "gzip"
+            case .brotli:
+                return "br"
+            case .zstd:
+                return "zstd"
+            case .unsupported:
+                return nil
+            }
+        }
+
+        var isSupported: Bool {
+            switch self {
+            case .none, .gzip:
+                return true
+            case .brotli:
+                if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+                    return true
+                } else {
+                    return false
+                }
+            case .zstd, .unsupported:
+                return false
+            }
+        }
+
+        static var supportedEncodingsInPriorityOrder: [Self] {
+            return Self.encodingPreference.filter(\.isSupported)
+        }
+
+        static var supportedRequestElementEncodingsInPriorityOrder: [Self] {
+            return Self.supportedEncodingsInPriorityOrder.filter { $0.elementEncodingHeaderValue != nil }
+        }
+
+        static var requestElementEncodingHeaderValue: String {
+            return Self.supportedRequestElementEncodingsInPriorityOrder
+                .compactMap(\.elementEncodingHeaderValue)
+                .joined(separator: ", ")
+        }
+
+        private static let encodingPreference: [Self] = [.brotli, .gzip, .none]
 
     }
 

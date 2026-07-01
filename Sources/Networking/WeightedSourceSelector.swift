@@ -11,7 +11,7 @@ import Foundation
 /// alternatives.
 protocol WeightedSource {
 
-    /// Higher values are preferred. A tier is exhausted before a lower one is considered.
+    /// Lower values are preferred. A tier is exhausted before a higher one is considered.
     var priority: Int { get }
 
     /// Relative likelihood of being chosen among sources tied at the same `priority`.
@@ -38,7 +38,7 @@ private struct SystemWeightedSourceRandomizer: WeightedSourceRandomizer {
 /// Picks which `Source` to use and exposes `current` so callers can advance through the fallback
 /// order when a source is unusable.
 ///
-/// The order is computed up front: priority tiers from highest to lowest, each tier arranged into a
+/// The order is computed up front: priority tiers from lowest to highest, each tier arranged into a
 /// weight-biased random order. Negative weights are treated as `0`; when a group's weights sum to
 /// `0`, the next source is drawn uniformly at random.
 ///
@@ -80,7 +80,7 @@ class WeightedSourceSelector<Source: WeightedSource> {
     ) -> [Source] {
         let sourcesByPriority = Dictionary(grouping: sources, by: { $0.priority })
         return sourcesByPriority.keys
-            .sorted(by: >)
+            .sorted(by: <)
             .flatMap { weightedShuffle(sourcesByPriority[$0] ?? [], randomizer: randomizer) }
     }
 

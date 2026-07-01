@@ -42,7 +42,7 @@ class BaseProductionRemoteConfigIntegrationTests: BaseBackendIntegrationTests {
     }
 
     func remoteConfiguration(from container: RemoteConfigContainer) throws -> RemoteConfiguration {
-        return try container.configElement.withPayloadBytes { bytes in
+        return try container.configElement.withDecodedPayloadBytes { bytes in
             try JSONDecoder.default.decode(
                 RemoteConfiguration.self,
                 from: Data(bytes)

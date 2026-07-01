@@ -218,8 +218,9 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
         }
     }
 
-    /// Collapses duplicate urls to the occurrence with the highest priority (tie-broken by weight),
-    /// keeping first-seen order. Done once per rebuild so reads never need to re-dedupe.
+    /// Collapses duplicate urls to the occurrence with the highest priority (i.e. the lowest
+    /// `priority` number, tie-broken by weight), keeping first-seen order. Done once per rebuild so
+    /// reads never need to re-dedupe.
     private static func dedupe(_ sources: [RemoteConfigSource]) -> [RemoteConfigSource] {
         var bestByURL: [String: RemoteConfigSource] = [:]
         var order: [String] = []
@@ -232,7 +233,7 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
             if source.priority != existing.priority || source.weight != existing.weight {
                 Logger.warn(Strings.remoteConfig.duplicateSourceURL(source.url))
             }
-            if source.priority > existing.priority ||
+            if source.priority < existing.priority ||
                 (source.priority == existing.priority && source.weight > existing.weight) {
                 bestByURL[source.url] = source
             }

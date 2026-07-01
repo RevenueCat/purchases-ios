@@ -31,13 +31,13 @@ final class RemoteConfigSourceProviderTests: TestCase {
         expect(provider.getCurrent(for: .blob)).to(beNil())
     }
 
-    func testCurrentSourceReturnsHighestPrioritySource() {
-        let low = Self.source("low", priority: 0, weight: 100)
-        let high = Self.source("high", priority: 10, weight: 1)
+    func testCurrentSourceReturnsLowestPriorityNumberSource() {
+        let low = Self.source("low", priority: 0, weight: 1)
+        let high = Self.source("high", priority: 10, weight: 100)
         let provider = Self.apiProvider([low, high])
 
         let handle = provider.getCurrent(for: .api)
-        expect(handle?.url) == Self.url("high")
+        expect(handle?.url) == Self.url("low")
         expect(handle?.purpose) == .api
     }
 
@@ -55,10 +55,10 @@ final class RemoteConfigSourceProviderTests: TestCase {
         let provider = Self.apiProvider([high, low])
 
         let first = provider.getCurrent(for: .api)
-        expect(first?.url) == Self.url("high")
+        expect(first?.url) == Self.url("low")
 
         provider.reportUnhealthy(first!)
-        expect(provider.getCurrent(for: .api)?.url) == Self.url("low")
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("high")
     }
 
     func testCurrentSourceIsNilWhenExhausted() {
@@ -69,9 +69,9 @@ final class RemoteConfigSourceProviderTests: TestCase {
     }
 
     func testReportUnhealthyWalksFullFallbackOrder() {
-        let first = Self.source("1", priority: 30, weight: 1)
+        let first = Self.source("1", priority: 10, weight: 1)
         let second = Self.source("2", priority: 20, weight: 1)
-        let third = Self.source("3", priority: 10, weight: 1)
+        let third = Self.source("3", priority: 30, weight: 1)
         let provider = Self.apiProvider([first, second, third])
 
         expect(provider.getCurrent(for: .api)?.url) == Self.url("1")
@@ -89,7 +89,7 @@ final class RemoteConfigSourceProviderTests: TestCase {
         let provider = Self.apiProvider([
             Self.source("a", priority: 10, weight: 1),
             Self.source("a", priority: 5, weight: 1),
-            Self.source("b", priority: 0, weight: 1)
+            Self.source("b", priority: 20, weight: 1)
         ])
 
         expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
@@ -99,16 +99,17 @@ final class RemoteConfigSourceProviderTests: TestCase {
         expect(provider.getCurrent(for: .api)).to(beNil())
     }
 
-    func testDedupKeepsHighestPriorityRegardlessOfOrder() {
+    func testDedupKeepsLowestPriorityNumberRegardlessOfOrder() {
         let provider = Self.apiProvider([
-            Self.source("a", priority: 0, weight: 1),
             Self.source("a", priority: 10, weight: 1),
+            Self.source("a", priority: 0, weight: 1),
             Self.source("b", priority: 5, weight: 1)
         ])
 
-        // `a` is kept at priority 10, so it outranks `b` (priority 5) despite appearing first at 0.
+        // `a` is kept at priority 0 (lowest number, i.e. highest priority), so it outranks `b`
+        // (priority 5) despite appearing first at 10.
         expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
-        expect(provider.getCurrent(for: .api)?.source.priority) == 10
+        expect(provider.getCurrent(for: .api)?.source.priority) == 0
         provider.reportUnhealthy(provider.getCurrent(for: .api)!)
         expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
     }
@@ -137,8 +138,8 @@ final class RemoteConfigSourceProviderTests: TestCase {
 
     func testReportingAPIUnhealthyDoesNotAffectBlob() {
         let provider = Self.provider(
-            api: [Self.source("api1", priority: 10), Self.source("api2", priority: 0)],
-            blob: [Self.source("blob1", priority: 10), Self.source("blob2", priority: 0)]
+            api: [Self.source("api1", priority: 0), Self.source("api2", priority: 10)],
+            blob: [Self.source("blob1", priority: 0), Self.source("blob2", priority: 10)]
         )
 
         provider.reportUnhealthy(provider.getCurrent(for: .api)!)
@@ -220,8 +221,8 @@ final class RemoteConfigSourceProviderTests: TestCase {
 
     func testRestartOnlyRewindsRequestedPurpose() {
         let provider = Self.provider(
-            api: [Self.source("api1", priority: 10), Self.source("api2", priority: 0)],
-            blob: [Self.source("blob1", priority: 10), Self.source("blob2", priority: 0)]
+            api: [Self.source("api1", priority: 0), Self.source("api2", priority: 10)],
+            blob: [Self.source("blob1", priority: 0), Self.source("blob2", priority: 10)]
         )
 
         provider.reportUnhealthy(provider.getCurrent(for: .api)!)

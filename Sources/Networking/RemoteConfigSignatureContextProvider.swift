@@ -9,7 +9,7 @@ import Foundation
 
 /// Provides the signature inputs for remote config RC Container responses.
 ///
-/// The response signature covers the config element's payload bytes exactly as received. A `204 No Content`
+/// The response signature covers the config element's decoded payload bytes. A `204 No Content`
 /// response verifies the request context with an empty payload.
 struct RemoteConfigSignatureContextProvider: ResponseSignatureContextProvider {
 
@@ -41,7 +41,7 @@ private extension RemoteConfigSignatureContextProvider {
 
         let configElement = try RemoteConfigContainer.configElement(from: data)
 
-        return configElement.withPayloadBytes { bytes in
+        return try configElement.withDecodedPayloadBytes { bytes in
             Data(bytes)
         }
     }
