@@ -71,6 +71,7 @@ let project = Project(
             ],
             entitlements: .file(path: "../../Tests/UnitTestsHostApp/UnitTestsHostApp.entitlements"),
             dependencies: [],
+            settings: .appTarget,
             metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
@@ -125,6 +126,7 @@ let project = Project(
             dependencies: [
              .storeKit
             ],
+            settings: .appTarget,
             metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 

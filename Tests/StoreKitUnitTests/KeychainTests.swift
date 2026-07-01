@@ -308,15 +308,86 @@ class KeychainTests: TestCase {
 
 /// Tests that verify the service-name scoping and namespace isolation introduced by `Keychain.AccessGroup`.
 ///
-/// These tests require the test host to have a keychain access group entitlement matching
-/// `KeychainAccessGroupTests.accessGroupID`. If that entitlement is absent the tests are
+/// These tests require the test host to have a keychain access group entitlement ending in
+/// `KeychainAccessGroupTests.accessGroupSuffix`. If that entitlement is absent the tests are
 /// skipped gracefully rather than failing — add the access group to the UnitTests target's
 /// entitlements to make them run.
 class KeychainAccessGroupTests: TestCase {
 
-    // The access group string used across these tests.
+    // Returns the team identifier prefix (e.g. "A1B2C3D4E5.") by querying
+    // the keychain for the access group iOS automatically assigns to items
+    // stored without an explicit group.
+    private static var accessGroupPrefix: String {
+        get throws {
+            if _accessGroupPrefix == nil {
+                #if os(macOS)
+                // On macOS, SecTaskCreateFromSelf() reads entitlements directly from the
+                // process's own code signature — no keychain round-trip required.
+                // Prefer the explicit team-identifier entitlement; fall back to extracting
+                // the team prefix from the first keychain-access-groups entry.
+                var macOSPrefix: String?
+                if let task = SecTaskCreateFromSelf(nil) {
+                    if let teamID = SecTaskCopyValueForEntitlement(
+                        task,
+                        "com.apple.developer.team-identifier" as CFString,
+                        nil
+                    ) as? String {
+                        macOSPrefix = teamID + "."
+                    } else if let groups = SecTaskCopyValueForEntitlement(task,
+                        "keychain-access-groups" as CFString,
+                        nil
+                    ) as? [String],
+                    let first = groups.first,
+                    let teamPart = first.split(separator: ".").first {
+                        macOSPrefix = String(teamPart) + "."
+                    }
+                }
+                guard let resolved = macOSPrefix else {
+                    throw XCTSkip("Could not determine team identifier prefix from code-signing entitlements")
+                }
+                _accessGroupPrefix = resolved
+                #else
+                let account = "rc-team-id-probe-\(UUID().uuidString)"
+                let query: [CFString: Any] = [
+                    kSecClass:            kSecClassGenericPassword,
+                    kSecAttrAccount:      account,
+                    kSecAttrService:      "revenuecat-team-id-probe",
+                    kSecReturnAttributes: true,
+                ]
+
+                var result: AnyObject?
+                var status = SecItemCopyMatching(query as CFDictionary, &result)
+
+                if status == errSecItemNotFound {
+                    status = SecItemAdd(query as CFDictionary, &result)
+                }
+
+                // Clean up the probe item regardless of what happens next
+                defer { SecItemDelete(query as CFDictionary) }
+
+                guard status == errSecSuccess,
+                      let attrs = result as? [CFString: Any],
+                      let accessGroup = attrs[kSecAttrAccessGroup] as? String,
+                      let prefix = accessGroup.split(separator: ".").first else {
+                    throw XCTSkip("Could not determine team identifier prefix from keychain")
+                }
+
+                _accessGroupPrefix = String(prefix) + "."
+                #endif
+            }
+            return _accessGroupPrefix!
+        }
+    }
+    private static var _accessGroupPrefix: String?
+
+    // The access group suffix used across these tests.
     // Must be listed in the test target's Keychain Access Groups entitlement to run fully.
-    private static let accessGroupID = "com.revenuecat.shared"
+    private static let accessGroupSuffix = "com.revenuecat.shared"
+    private static var accessGroup: String {
+        get throws { try accessGroupPrefix + accessGroupSuffix }
+    }
+
+    private static let keychainAccessGroupsEntitlement = "keychain-access-groups"
 
     private var createdIdentifiers: [(keychain: Keychain, id: String)] = []
 
@@ -335,15 +406,14 @@ class KeychainAccessGroupTests: TestCase {
 
     private func data(byte: UInt8) -> Data { Data([byte, byte &+ 1, byte &+ 2]) }
 
-    /// Builds a `Keychain` using the shared test access group and the given app identifier,
-    /// attempts a probe write to detect missing entitlements, and skips the calling test if the
-    /// Security framework rejects the access group.
+    /// Builds a `Keychain` using the full shared test access group from the host entitlements
+    /// and the given app identifier.
     ///
     /// - Parameter appIdentifier: The `appIdentifier` used to namespace items within the access group.
-    /// - Returns: A ready-to-use `Keychain`, or throws `XCTSkip` when entitlements are absent.
+    /// - Returns: A ready-to-use `Keychain`, or throws `XCTSkip` when the entitlement is absent.
     private func makeAccessGroupKeychain(appIdentifier: String = "com.revenuecat.test") throws -> Keychain {
         let keychain = Keychain(
-            access: .init(accessGroup: Self.accessGroupID, appIdentifier: appIdentifier)
+            access: .init(accessGroup: try Self.accessGroup, appIdentifier: appIdentifier)
         )
 
         return keychain
