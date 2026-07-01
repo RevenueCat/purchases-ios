@@ -141,4 +141,105 @@ final class PromoEligibilityPackageInfosTests: TestCase {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+final class ShouldReportPaywallImpressionTests: TestCase {
+
+    func testStandalonePaywallAlwaysReports() {
+        // Standalone paywalls have no workflow screen_type and must keep reporting impressions.
+        expect(PaywallsV2View.shouldReportPaywallImpression(
+            isActiveWorkflowPage: nil,
+            workflowScreenType: nil
+        )) == true
+        expect(PaywallsV2View.shouldReportPaywallImpression(
+            isActiveWorkflowPage: nil,
+            workflowScreenType: ["survey"]
+        )) == true
+    }
+
+    func testWorkflowPaywallStepReports() {
+        expect(PaywallsV2View.shouldReportPaywallImpression(
+            isActiveWorkflowPage: true,
+            workflowScreenType: [WorkflowScreenType.paywall]
+        )) == true
+    }
+
+    func testWorkflowUntaggedStepReportsToPreserveBehavior() {
+        // Older/untagged workflows (nil screen_type) must keep firing impressions so a backend that
+        // has not rolled out screen analytics is not silently muted.
+        expect(PaywallsV2View.shouldReportPaywallImpression(
+            isActiveWorkflowPage: true,
+            workflowScreenType: nil
+        )) == true
+    }
+
+    func testWorkflowStepTaggedNonPaywallDoesNotReport() {
+        expect(PaywallsV2View.shouldReportPaywallImpression(
+            isActiveWorkflowPage: true,
+            workflowScreenType: []
+        )) == false
+        expect(PaywallsV2View.shouldReportPaywallImpression(
+            isActiveWorkflowPage: true,
+            workflowScreenType: ["survey"]
+        )) == false
+    }
+
+    func testInactiveWorkflowPageGatedBySameRule() {
+        // `isActiveWorkflowPage == false` is still a workflow page; the screen_type rule applies.
+        expect(PaywallsV2View.shouldReportPaywallImpression(
+            isActiveWorkflowPage: false,
+            workflowScreenType: [WorkflowScreenType.paywall]
+        )) == true
+        expect(PaywallsV2View.shouldReportPaywallImpression(
+            isActiveWorkflowPage: false,
+            workflowScreenType: ["survey"]
+        )) == false
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+final class ApplyingWorkflowAttributionTests: TestCase {
+
+    private func makeData(workflowId: String? = nil, stepId: String? = nil) -> PaywallEvent.Data {
+        PaywallEvent.Data(
+            paywallIdentifier: "paywall-abc",
+            offeringIdentifier: "offering-1",
+            paywallRevision: 1,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false,
+            workflowId: workflowId,
+            stepId: stepId
+        )
+    }
+
+    // The seam #7024 wires and the screen_type work removed: a workflow paywall step's impression event
+    // must carry the workflow + step so the post-receipt body sends presented_workflow_id/step_id.
+    func testStampsWorkflowAndStepIdOnWorkflowStep() {
+        let result = PaywallsV2View.applyingWorkflowAttribution(
+            to: self.makeData(),
+            workflowId: "wf_test",
+            stepId: "step_1"
+        )
+
+        expect(result.workflowId) == "wf_test"
+        expect(result.stepId) == "step_1"
+    }
+
+    // Standalone paywalls (and untagged steps with no IDs) carry no attribution, so the post-receipt
+    // body omits presented_workflow_id/step_id rather than sending stale values.
+    func testLeavesAttributionNilForStandalonePaywall() {
+        let result = PaywallsV2View.applyingWorkflowAttribution(
+            to: self.makeData(workflowId: "stale", stepId: "stale"),
+            workflowId: nil,
+            stepId: nil
+        )
+
+        expect(result.workflowId).to(beNil())
+        expect(result.stepId).to(beNil())
+    }
+
+}
+
 #endif

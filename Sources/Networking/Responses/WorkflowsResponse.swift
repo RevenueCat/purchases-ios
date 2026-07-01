@@ -59,13 +59,21 @@ import Foundation
     case unknown
 }
 
+/// Step `screen_type` classification (returned by the backend under `metadata.screen_type`), used to
+/// decide which workflow steps report a paywall impression.
+@_spi(Internal) public enum WorkflowScreenType {
+
+    static let metadataKey = "screen_type"
+
+    public static let paywall = "paywall"
+
+}
+
 @_spi(Internal) public struct WorkflowStep {
 
     public let id: String
     let type: String
     public let screenId: String?
-    @DefaultDecodable.EmptyArray
-    var screenType: [String]
     @DefaultDecodable.EmptyDictionary
     var paramValues: [String: AnyDecodable]
     @DefaultDecodable.EmptyArray
@@ -77,12 +85,24 @@ import Foundation
 
     public var stepTriggers: [WorkflowTrigger] { triggers }
     public var stepTriggerActions: [String: WorkflowTriggerAction] { triggerActions }
-    public var stepScreenType: [String] { screenType }
     let metadata: [String: AnyDecodable]?
 
-    // `screenType`, `paramValues`, `outputs`, and `metadata` carry backend step config that the
-    // renderer doesn't read, and `paramValues`/`outputs`/`metadata` are typed with the internal
-    // `AnyDecodable`, so they're defaulted rather than exposed.
+    /// The step's `screen_type` from the backend (`metadata.screen_type`). `nil` = untagged (older
+    /// workflows), `[]` = tagged with no known type; the distinction drives impression gating. Key is
+    /// literal snake_case: `convertFromSnakeCase` skips keys inside `[String: AnyDecodable]`.
+    public var stepScreenType: [String]? {
+        guard case let .array(values)? = self.metadata?[WorkflowScreenType.metadataKey] else {
+            return nil
+        }
+        return values.compactMap { element in
+            guard case let .string(value) = element else { return nil }
+            return value
+        }
+    }
+
+    // `paramValues`, `outputs`, and `metadata` carry backend step config that the renderer doesn't
+    // read directly (`metadata` is surfaced only via `stepScreenType`), and are typed with the
+    // internal `AnyDecodable`, so they're defaulted rather than exposed.
     @_spi(Internal) public init(
         id: String,
         type: String,
@@ -93,7 +113,6 @@ import Foundation
         self.id = id
         self.type = type
         self.screenId = screenId
-        self.screenType = []
         self.paramValues = [:]
         self.triggers = triggers
         self.outputs = [:]
