@@ -38,7 +38,7 @@ final class RemoteConfigBlobStoreTests: TestCase {
     func testWriteThenReadRoundTripsBlobBytes() throws {
         let data = Data([1, 2, 3, 4, 5])
 
-        self.write(ref: Self.refA, data: data)
+        expect(self.write(ref: Self.refA, data: data)) == true
 
         expect(self.blobStore.read(ref: Self.refA)) == data
     }
@@ -136,7 +136,7 @@ final class RemoteConfigBlobStoreTests: TestCase {
     func testMalformedRefIsRejectedAndCannotEscapeBlobDirectory() {
         let malformedRef = "../escape"
 
-        self.write(ref: malformedRef, data: Data([1, 2, 3]))
+        expect(self.write(ref: malformedRef, data: Data([1, 2, 3]))) == false
 
         expect(self.blobStore.contains(ref: malformedRef)) == false
         expect(self.blobStore.read(ref: malformedRef)).to(beNil())
@@ -153,8 +153,9 @@ private extension RemoteConfigBlobStoreTests {
     static let refA = "AAAABBBBCCCCDDDDEEEEFFFFGGGGHHHH"
     static let refB = "IIIIJJJJKKKKLLLLMMMMNNNNOOOOPPPP"
 
-    func write(ref: String, data: Data) {
-        data.withUnsafeBytes { bytes in
+    @discardableResult
+    func write(ref: String, data: Data) -> Bool {
+        return data.withUnsafeBytes { bytes in
             self.blobStore.write(ref: ref, bytes: bytes)
         }
     }

@@ -10,10 +10,11 @@ import Foundation
 protocol RemoteConfigBlobStoreType: AnyObject {
     func contains(ref: String) -> Bool
     func read(ref: String) -> Data?
+    @discardableResult
     func write(
         ref: String,
         bytes: UnsafeRawBufferPointer
-    )
+    ) -> Bool
     func cachedRefs() -> Set<String>
     func retainOnly(_ refs: Set<String>)
     func clear()
@@ -55,18 +56,19 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
         }
     }
 
+    @discardableResult
     func write(
         ref: String,
         bytes: UnsafeRawBufferPointer
-    ) {
+    ) -> Bool {
         guard let directoryURL = self.directoryURL else {
             Logger.error(Strings.remoteConfig.cacheURLNotAvailable)
-            return
+            return false
         }
 
         guard let fileURL = self.fileURL(for: ref) else {
             Logger.error(Strings.remoteConfig.malformedBlobRef(ref))
-            return
+            return false
         }
 
         do {
@@ -79,8 +81,10 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
             var data = Data()
             data.append(contentsOf: bytes.bindMemory(to: UInt8.self))
             try data.write(to: fileURL, options: .atomic)
+            return true
         } catch {
             Logger.error(Strings.remoteConfig.failedToWriteBlob(ref, error))
+            return false
         }
     }
 
@@ -96,7 +100,7 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
 
         return contents.reduce(into: Set<String>()) { refs, fileURL in
             guard self.isRegularFile(fileURL),
-                  Self.isValidRef(fileURL.lastPathComponent) else {
+                  RemoteConfigBlobRefHelpers.isValid(fileURL.lastPathComponent) else {
                 return
             }
 
@@ -105,7 +109,7 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
     }
 
     func retainOnly(_ refs: Set<String>) {
-        let validRefs = refs.filter(Self.isValidRef)
+        let validRefs = refs.filter(RemoteConfigBlobRefHelpers.isValid)
         refs.subtracting(validRefs).forEach { Logger.error(Strings.remoteConfig.malformedBlobRef($0)) }
 
         guard let directoryURL = self.directoryURL,
@@ -143,20 +147,14 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
 
 private extension RemoteConfigBlobStore {
     static let blobsDirectoryName = "blobs"
-    static let validRefPattern = #"^[A-Za-z0-9_-]{32}$"#
-
     static var defaultDirectoryURL: URL? {
         return DirectoryHelper.baseUrl(for: RemoteConfigDiskCache.directoryType)?
             .appendingPathComponent(RemoteConfigDiskCache.basePath, isDirectory: true)
             .appendingPathComponent(Self.blobsDirectoryName, isDirectory: true)
     }
 
-    static func isValidRef(_ ref: String) -> Bool {
-        return ref.range(of: Self.validRefPattern, options: .regularExpression) != nil
-    }
-
     func fileURL(for ref: String) -> URL? {
-        guard Self.isValidRef(ref) else {
+        guard RemoteConfigBlobRefHelpers.isValid(ref) else {
             return nil
         }
 

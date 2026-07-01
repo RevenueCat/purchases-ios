@@ -17,6 +17,7 @@ final class RemoteConfigManagerTests: TestCase {
     private var remoteConfigAPI: MockRemoteConfigAPI!
     private var diskCache: MockRemoteConfigDiskCache!
     private var blobStore: MockRemoteConfigBlobStore!
+    private var blobFetcher: MockRemoteConfigBlobFetcher!
     private var currentUserProvider: MockCurrentUserProvider!
     private var manager: RemoteConfigManager!
 
@@ -26,17 +27,20 @@ final class RemoteConfigManagerTests: TestCase {
         self.remoteConfigAPI = MockRemoteConfigAPI()
         self.diskCache = MockRemoteConfigDiskCache()
         self.blobStore = MockRemoteConfigBlobStore()
+        self.blobFetcher = MockRemoteConfigBlobFetcher()
         self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: Self.appUserID)
         self.manager = RemoteConfigManager(
             remoteConfigAPI: self.remoteConfigAPI,
             diskCache: self.diskCache,
             blobStore: self.blobStore,
+            blobFetcher: self.blobFetcher,
             currentUserProvider: self.currentUserProvider
         )
     }
 
     override func tearDownWithError() throws {
         self.manager = nil
+        self.blobFetcher = nil
         self.blobStore = nil
         self.currentUserProvider = nil
         self.diskCache = nil
@@ -270,6 +274,7 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.diskCache.invokedWriteCount) == 0
         expect(self.blobStore.invokedWriteCount) == 0
         expect(self.blobStore.invokedRetainOnlyCount) == 0
+        expect(self.blobFetcher.invokedPrefetchCount) == 0
     }
 
     func testNoContentResponseWithNoPersistedCacheLeavesCacheUntouched() {
@@ -281,6 +286,7 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.diskCache.invokedWriteCount) == 0
         expect(self.blobStore.invokedWriteCount) == 0
         expect(self.blobStore.invokedRetainOnlyCount) == 0
+        expect(self.blobFetcher.invokedPrefetchCount) == 0
     }
 
     func testBackendErrorLeavesCacheUntouched() {
@@ -296,6 +302,7 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.diskCache.invokedWriteCount) == 0
         expect(self.blobStore.invokedWriteCount) == 0
         expect(self.blobStore.invokedRetainOnlyCount) == 0
+        expect(self.blobFetcher.invokedPrefetchCount) == 0
     }
 
     func testMalformedConfigPayloadLeavesCacheUntouched() throws {
@@ -307,6 +314,7 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.diskCache.invokedWriteCount) == 0
         expect(self.blobStore.invokedWriteCount) == 0
         expect(self.blobStore.invokedRetainOnlyCount) == 0
+        expect(self.blobFetcher.invokedPrefetchCount) == 0
     }
 
     func testConfigDecodingUsesOnlyContainerConfigElement() throws {
@@ -631,6 +639,29 @@ final class RemoteConfigManagerTests: TestCase {
         )
 
         expect(self.diskCache.invokedWriteParameter?.prefetchBlobs) == [cachedRef, missingRef]
+    }
+
+    func testContainerResponsePrefetchesServerPrefetchBlobRefs() throws {
+        let cachedRef = RCContainerTestData.blobRef(for: "cached".asData)
+        let missingRef = RCContainerTestData.blobRef(for: "missing".asData)
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "prefetch_blobs": ["\(cachedRef)", "\(missingRef)"]
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(
+                container: try Self.container(config: response),
+                verificationResult: .verified
+            ))
+        )
+
+        expect(self.blobFetcher.invokedPrefetchRefs) == [cachedRef, missingRef]
     }
 
     func testContainerResponseDoesNotPruneBlobStoreWhenCacheWriteFails() throws {
@@ -1018,15 +1049,17 @@ private final class MockRemoteConfigBlobStore: RemoteConfigBlobStoreType {
         return nil
     }
 
+    @discardableResult
     func write(
         ref: String,
         bytes: UnsafeRawBufferPointer
-    ) {
+    ) -> Bool {
         self.invokedWriteCount += 1
         var data = Data()
         data.append(contentsOf: bytes.bindMemory(to: UInt8.self))
         self.invokedWriteParameters = (ref, data)
         self.invokedWriteParametersList.append((ref, data))
+        return true
     }
 
     func cachedRefs() -> Set<String> {
@@ -1041,6 +1074,36 @@ private final class MockRemoteConfigBlobStore: RemoteConfigBlobStoreType {
 
     func clear() {
         self.invokedClearCount += 1
+    }
+
+}
+
+private final class MockRemoteConfigBlobFetcher: RemoteConfigBlobFetcherType {
+
+    private(set) var invokedEnsureDownloadedRefs: [String] = []
+    private(set) var invokedEnsureAllDownloadedRefs: [String] = []
+    private(set) var invokedPrefetchCount = 0
+    private(set) var invokedPrefetchRefs: [String] = []
+    private(set) var invokedFetchAndVerifyRefs: [String] = []
+
+    func ensureDownloaded(ref: String) async -> Bool {
+        self.invokedEnsureDownloadedRefs.append(ref)
+        return true
+    }
+
+    func ensureAllDownloaded(refs: [String]) async -> [String: Bool] {
+        self.invokedEnsureAllDownloadedRefs = refs
+        return Dictionary(uniqueKeysWithValues: refs.map { ($0, true) })
+    }
+
+    func prefetch(refs: [String]) {
+        self.invokedPrefetchCount += 1
+        self.invokedPrefetchRefs = refs
+    }
+
+    func fetchAndVerify(ref: String) async -> Bool {
+        self.invokedFetchAndVerifyRefs.append(ref)
+        return true
     }
 
 }
