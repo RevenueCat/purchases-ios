@@ -16,7 +16,7 @@ final class RemoteConfigSourceProviderTests: TestCase {
 
     func testCurrentApiSourceFallsBackToEmbeddedDefaultWhenTopicHasNoSources() {
         let provider = Self.provider(api: [], blob: [])
-        expect(provider.getCurrent(for: .api)?.url) == "https://api.revenuecat.com"
+        expect(provider.getCurrent(for: .api)?.url) == "https://api.revenuecat.com/"
         // Blob has no embedded default, so it stays empty.
         expect(provider.getCurrent(for: .blob)).to(beNil())
     }
@@ -26,7 +26,7 @@ final class RemoteConfigSourceProviderTests: TestCase {
             topicStore: FakeTopicStore(nil),
             randomizer: FakeRandomizer(0)
         )
-        expect(provider.getCurrent(for: .api)?.url) == "https://api.revenuecat.com"
+        expect(provider.getCurrent(for: .api)?.url) == "https://api.revenuecat.com/"
         // Blob has no embedded default, so it stays empty.
         expect(provider.getCurrent(for: .blob)).to(beNil())
     }
@@ -37,9 +37,9 @@ final class RemoteConfigSourceProviderTests: TestCase {
             randomizer: FakeRandomizer(0)
         )
         // The primary default is preferred (lower priority number); the backup is the next fallback.
-        expect(provider.getCurrent(for: .api)?.url) == "https://api.revenuecat.com"
+        expect(provider.getCurrent(for: .api)?.url) == "https://api.revenuecat.com/"
         provider.reportUnhealthy(provider.getCurrent(for: .api)!)
-        expect(provider.getCurrent(for: .api)?.url) == "https://api.rc-backup.com"
+        expect(provider.getCurrent(for: .api)?.url) == "https://api.rc-backup.com/"
         provider.reportUnhealthy(provider.getCurrent(for: .api)!)
         expect(provider.getCurrent(for: .api)).to(beNil())
     }
@@ -317,7 +317,7 @@ final class RemoteConfigSourceProviderTests: TestCase {
         let store = FakeTopicStore(nil)
         let provider = RemoteConfigSourceProvider(topicStore: store, randomizer: FakeRandomizer(0))
 
-        expect(provider.getCurrent(for: .api)?.url) == "https://api.revenuecat.com"
+        expect(provider.getCurrent(for: .api)?.url) == "https://api.revenuecat.com/"
 
         // A sources topic shows up where there was none: the provider builds the list from the top.
         store.sources = Self.sourcesTopic(api: [Self.source("a"), Self.source("b")], blob: [])
