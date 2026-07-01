@@ -5,6 +5,7 @@
 //  Created by RevenueCat.
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 
+import Compression
 import CryptoKit
 import Foundation
 
@@ -187,11 +188,7 @@ extension RCContainer.Element {
             case .none, .gzip:
                 return true
             case .brotli:
-                if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-                    return true
-                } else {
-                    return false
-                }
+                return (try? Self.brotliCompressionAlgorithm) != nil
             case .zstd, .unsupported:
                 return false
             }
@@ -212,6 +209,25 @@ extension RCContainer.Element {
         }
 
         private static let encodingPreference: [Self] = [.brotli, .gzip, .none]
+
+        static var brotliCompressionAlgorithm: Algorithm {
+            get throws {
+                // Apple's docs list Brotli as available earlier, but iOS 15 simulator
+                // runtimes have failed to resolve the Swift Compression enum symbol.
+                // Advertise Brotli only on iOS 16+ equivalents as the conservative path.
+                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                    // Use the C constant instead of `Algorithm.brotli` to avoid a load-time
+                    // link to a Swift enum-case symbol that is missing on some older runtimes.
+                    guard let algorithm = Algorithm(rawValue: COMPRESSION_BROTLI) else {
+                        throw RCContainer.Parser.FormatError.unsupportedContentEncoding(Self.brotli.rawValue)
+                    }
+
+                    return algorithm
+                } else {
+                    throw RCContainer.Parser.FormatError.unsupportedContentEncoding(Self.brotli.rawValue)
+                }
+            }
+        }
 
     }
 

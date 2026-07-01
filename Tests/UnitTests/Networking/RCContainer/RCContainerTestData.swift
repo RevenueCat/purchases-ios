@@ -5,6 +5,8 @@
 //  Created by RevenueCat.
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 
+// swiftlint:disable file_length
+
 import Compression
 import Foundation
 import XCTest
@@ -447,19 +449,15 @@ private extension RCContainerTestData {
     }
 
     static func brotliCompressed(_ data: Data) throws -> Data {
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            return try Self.brotliCompressedOnSupportedOS(data)
-        } else {
-            throw RCContainer.Parser.FormatError.unsupportedContentEncoding(
-                RCContainer.Element.ContentEncoding.brotli.rawValue
-            )
-        }
+        return try Self.brotliCompressedBytes(data)
     }
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    static func brotliCompressedOnSupportedOS(_ data: Data) throws -> Data {
+    static func brotliCompressedBytes(_ data: Data) throws -> Data {
         var output = Data()
-        let filter = try OutputFilter(.compress, using: .brotli) { chunk in
+        let filter = try OutputFilter(
+            .compress,
+            using: try RCContainer.Element.ContentEncoding.brotliCompressionAlgorithm
+        ) { chunk in
             if let chunk {
                 output.append(chunk)
             }
