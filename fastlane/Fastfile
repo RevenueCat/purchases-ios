@@ -774,6 +774,11 @@ platform :ios do
     # See https://developer.apple.com/forums/thread/724068 and `FB12223404`.
     skip_sk_tests = options[:skip_sk_tests]
 
+    # UnitTestsHostApp needs to be signed with its keychain entitlements for the KeychainTests to pass.
+    Dir.chdir("../Tests/UnitTestsHostApp/fastlane") do
+      match(type: "development", readonly: true)
+    end
+
     if generate_snapshots
       if skip_sk_tests
         test_plan = "CI-RevenueCat-Snapshots"
@@ -805,6 +810,12 @@ platform :ios do
   desc "Runs all the tvOS tests"
   lane :test_tvos do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+
+    # UnitTestsHostApp needs to be signed with its keychain entitlements for the KeychainTests to pass.
+    Dir.chdir("../Tests/UnitTestsHostApp/fastlane") do
+      match(type: "development", readonly: true)
+    end
+
     if generate_snapshots
       test_plan = "CI-RevenueCat-Snapshots"
     else
@@ -1796,6 +1807,11 @@ platform :ios do
     test_configuration = generate_snapshots ? "GenerateSnapshots" : "Default"
 
     replace_api_key_integration_tests
+
+    # BackendIntegrationTestsHostApp needs to be signed with its keychain entitlements.
+    Dir.chdir("../Tests/UnitTestsHostApp/fastlane") do
+      match(type: "development", readonly: true)
+    end
 
     success = false
     begin
