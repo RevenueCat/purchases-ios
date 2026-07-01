@@ -18,10 +18,18 @@ import SwiftUI
 extension View {
 
     @ViewBuilder
-    func applyMediaWidth(size: PaywallComponent.Size) -> some View {
+    func applyMediaWidth(size: PaywallComponent.Size, aspectRatio: Double) -> some View {
         switch size.width {
         case .fit:
-            self
+            switch size.height {
+            case .fixed(let value):
+                // Mirror the inverse of applyMediaHeight's height=fit + width=fixed case.
+                // When the image has width=fit and a fixed height, set a fixed width derived
+                // from the aspect ratio so the image is not stretched horizontally.
+                self.frame(width: Double(value) * aspectRatio)
+            default:
+                self
+            }
         case .fill:
             self.frame(maxWidth: .infinity)
         case .fixed(let value):
