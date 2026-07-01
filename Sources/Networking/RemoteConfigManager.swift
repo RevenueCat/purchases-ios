@@ -24,7 +24,6 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
     private let remoteConfigAPI: RemoteConfigAPIType
     private let diskCache: RemoteConfigDiskCacheType
-    private let dateProvider: DateProvider
     private let isRefreshing: Atomic<Bool> = false
     private let blobStore: RemoteConfigBlobStoreType
     private let currentUserProvider: CurrentUserProvider
@@ -33,14 +32,12 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         remoteConfigAPI: RemoteConfigAPIType,
         diskCache: RemoteConfigDiskCacheType,
         blobStore: RemoteConfigBlobStoreType,
-        currentUserProvider: CurrentUserProvider,
-        dateProvider: DateProvider = DateProvider()
+        currentUserProvider: CurrentUserProvider
     ) {
         self.remoteConfigAPI = remoteConfigAPI
         self.diskCache = diskCache
         self.blobStore = blobStore
         self.currentUserProvider = currentUserProvider
-        self.dateProvider = dateProvider
     }
 
     func refreshRemoteConfig(isAppBackgrounded: Bool) {
@@ -99,10 +96,7 @@ private extension RemoteConfigManager {
         container: RemoteConfigContainer?,
         previous: PersistedRemoteConfiguration?
     ) {
-        guard let container else {
-            self.persistLastRefreshAt(previous: previous)
-            return
-        }
+        guard let container else { return }
 
         do {
             let response = try container.configElement.withDecodedPayloadBytes { bytes in
@@ -112,13 +106,13 @@ private extension RemoteConfigManager {
                 )
             }
 
-            let postSyncTopicBlobRefs = self.postSyncTopicBlobRefs(
+            let postSyncTopics = self.postSyncTopics(
                 previous: previous,
                 response: response
             )
             let postSyncReferencedBlobRefs = self.postSyncReferencedBlobRefs(
                 response: response,
-                postSyncTopicBlobRefs: postSyncTopicBlobRefs
+                postSyncTopics: postSyncTopics
             )
 
             let persistedConfiguration = PersistedRemoteConfiguration(
@@ -126,8 +120,7 @@ private extension RemoteConfigManager {
                 manifest: response.manifest,
                 activeTopics: response.activeTopics,
                 prefetchBlobs: response.prefetchBlobs,
-                topicBlobRefs: postSyncTopicBlobRefs,
-                lastRefreshAt: self.dateProvider.now()
+                topics: postSyncTopics
             )
 
             guard self.diskCache.write(persistedConfiguration) else { return }
@@ -139,30 +132,19 @@ private extension RemoteConfigManager {
         }
     }
 
-    func persistLastRefreshAt(previous: PersistedRemoteConfiguration?) {
-        guard let previous else { return }
-
-        self.diskCache.write(PersistedRemoteConfiguration(
-            domain: previous.domain,
-            manifest: previous.manifest,
-            activeTopics: previous.activeTopics,
-            prefetchBlobs: previous.prefetchBlobs,
-            topicBlobRefs: previous.topicBlobRefs,
-            lastRefreshAt: self.dateProvider.now()
-        ))
-    }
-
-    /// Returns the topic blob refs that should be persisted after this response is applied.
+    /// Returns the full topic index that should be persisted after this response is applied.
     ///
-    /// Changed topics overwrite previous refs, unchanged active topics keep previous refs, and inactive topics
+    /// Changed topics overwrite previous entries, unchanged active topics keep previous entries, and inactive topics
     /// are removed.
-    func postSyncTopicBlobRefs(
+    func postSyncTopics(
         previous: PersistedRemoteConfiguration?,
         response: RemoteConfiguration
-    ) -> [String: [String]] {
-        return (previous?.topicBlobRefs ?? [:])
-            .merging(response.topics.topicBlobRefs) { _, changed in changed }
+    ) -> RemoteConfiguration.Topics {
+        let entries = (previous?.topics.entries ?? [:])
+            .merging(response.topics.entries) { _, changed in changed }
             .filter { topic, _ in response.activeTopics.contains(topic) }
+
+        return RemoteConfiguration.Topics(entries: entries)
     }
 
     /// Returns the post-sync set of blob refs the SDK should keep locally.
@@ -171,9 +153,9 @@ private extension RemoteConfigManager {
     /// response topics with previously persisted unchanged topics.
     func postSyncReferencedBlobRefs(
         response: RemoteConfiguration,
-        postSyncTopicBlobRefs: [String: [String]]
+        postSyncTopics: RemoteConfiguration.Topics
     ) -> Set<String> {
-        return Set(response.prefetchBlobs).union(postSyncTopicBlobRefs.values.flatMap { $0 })
+        return Set(response.prefetchBlobs).union(postSyncTopics.blobRefs)
     }
 
     /// Writes valid inline content elements that are referenced by this config response.
@@ -201,11 +183,9 @@ private extension RemoteConfigManager {
 
 fileprivate extension RemoteConfiguration.Topics {
 
-    /// The blob refs each changed topic's items reference, keyed by topic name.
-    var topicBlobRefs: [String: [String]] {
-        return self.entries.mapValues { topic in
-            topic.values.compactMap(\.blobRef).sorted()
-        }
+    /// All blob refs referenced by this topic collection.
+    var blobRefs: Set<String> {
+        return Set(self.entries.values.flatMap { $0.values.compactMap(\.blobRef) })
     }
 
 }

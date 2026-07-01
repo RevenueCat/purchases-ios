@@ -59,23 +59,21 @@ final class RemoteConfigDiskCacheTests: TestCase {
         expect(self.cache.read()).to(beNil())
     }
 
-    func testWriteThenReadRoundTripsManifestAndTopicBlobRefs() throws {
+    func testWriteThenReadRoundTripsManifestAndTopics() throws {
         let manifest = "v1.1710000100.product_entitlement_mapping:etag2,sources:etag1"
         let activeTopics = ["sources", "product_entitlement_mapping"]
-        let topicBlobRefs = [
-            "sources": ["blobRefA"],
-            "product_entitlement_mapping": ["pemBlob"]
-        ]
+        let topics = RemoteConfiguration.Topics(entries: [
+            "sources": ["default": .init(blobRef: "blobRefA")],
+            "product_entitlement_mapping": ["default": .init(blobRef: "pemBlob")]
+        ])
         let prefetchBlobs = ["blobRefA", "pemBlob"]
-        let lastRefreshAt = Date(timeIntervalSince1970: 1_710_000_100)
 
         self.cache.write(PersistedRemoteConfiguration(
             domain: "app",
             manifest: manifest,
             activeTopics: activeTopics,
             prefetchBlobs: prefetchBlobs,
-            topicBlobRefs: topicBlobRefs,
-            lastRefreshAt: lastRefreshAt
+            topics: topics
         ))
         let read = try XCTUnwrap(self.cache.read())
 
@@ -83,25 +81,60 @@ final class RemoteConfigDiskCacheTests: TestCase {
         expect(read.manifest) == manifest
         expect(read.activeTopics) == activeTopics
         expect(read.prefetchBlobs) == prefetchBlobs
-        expect(read.topicBlobRefs) == topicBlobRefs
-        expect(read.lastRefreshAt) == lastRefreshAt
+        expect(read.topics) == topics
     }
 
-    func testInlineOnlyTopicsPersistWithEmptyBlobRefList() throws {
+    func testInlineOnlyTopicsPersistWithContent() throws {
         let manifest = "v1.1710000100.sources:etag1"
-        let topicBlobRefs = ["sources": [String]()]
+        let inlineItem = RemoteConfiguration.ConfigItem(
+            content: [
+                "priority": 100,
+                "url": "https://api.revenuecat.com"
+            ]
+        )
+        let topics = RemoteConfiguration.Topics(entries: [
+            "sources": ["api": inlineItem]
+        ])
 
         self.cache.write(PersistedRemoteConfiguration(
             domain: "app",
             manifest: manifest,
             activeTopics: ["sources"],
             prefetchBlobs: [],
-            topicBlobRefs: topicBlobRefs,
-            lastRefreshAt: Date()
+            topics: topics
         ))
         let read = try XCTUnwrap(self.cache.read())
 
-        expect(read.topicBlobRefs) == topicBlobRefs
+        expect(read.topics) == topics
+    }
+
+    func testTopicsPersistUntypedMetadataRoundTrip() throws {
+        let metadataItem = RemoteConfiguration.ConfigItem(
+            content: [
+                "array": ["one", 2, true],
+                "bool": true,
+                "double": 1.5,
+                "int": 100,
+                "nested": [
+                    "enabled": false,
+                    "name": "nested"
+                ],
+                "null": nil,
+                "string": "value"
+            ]
+        )
+        let topics = RemoteConfiguration.Topics(entries: [
+            "sources": ["api": metadataItem]
+        ])
+
+        self.cache.write(PersistedRemoteConfiguration(
+            manifest: "v1.1710000100.sources:etag1",
+            activeTopics: ["sources"],
+            topics: topics
+        ))
+        let read = try XCTUnwrap(self.cache.read())
+
+        expect(read.topics) == topics
     }
 
     func testReadReturnsNilWhenPersistedFileIsCorrupt() throws {
@@ -115,7 +148,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
         expect(self.cache.read()).to(beNil())
     }
 
-    func testReadToleratesOldFormatByDroppingUnknownTopicBodies() throws {
+    func testReadDefaultsMissingTopicsToEmpty() throws {
         try FileManager.default.createDirectory(
             at: self.fileURL.deletingLastPathComponent(),
             withIntermediateDirectories: true,
@@ -123,23 +156,14 @@ final class RemoteConfigDiskCacheTests: TestCase {
         )
         try """
         {
-          "manifest": "v1.1710000100.sources:etag1",
-          "topics": {
-            "sources": {
-              "default": { "blob_ref": "oldBlob" }
-            }
-          }
+          "manifest": "v1.1710000100.sources:etag1"
         }
         """.asData.write(to: self.fileURL)
 
         let read = try XCTUnwrap(self.cache.read())
 
-        expect(read.domain) == "app"
         expect(read.manifest) == "v1.1710000100.sources:etag1"
-        expect(read.activeTopics).to(beEmpty())
-        expect(read.prefetchBlobs).to(beEmpty())
-        expect(read.topicBlobRefs).to(beEmpty())
-        expect(read.lastRefreshAt).to(beNil())
+        expect(read.topics.entries).to(beEmpty())
     }
 
     func testWriteCreatesDirectoryWhenAbsent() {
@@ -147,9 +171,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
             domain: "app",
             manifest: "v1.1710000100.sources:etag1",
             activeTopics: [],
-            prefetchBlobs: [],
-            topicBlobRefs: [:],
-            lastRefreshAt: Date()
+            prefetchBlobs: []
         ))
 
         expect(FileManager.default.fileExists(atPath: self.fileURL.path)) == true
@@ -160,9 +182,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
             domain: "app",
             manifest: "v1.1710000100.sources:etag1",
             activeTopics: [],
-            prefetchBlobs: [],
-            topicBlobRefs: [:],
-            lastRefreshAt: Date()
+            prefetchBlobs: []
         ))
 
         expect(self.fileURL.deletingLastPathComponent().lastPathComponent) == "remote_config"
@@ -180,9 +200,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
             domain: "app",
             manifest: "v1.1710000100.sources:etag1",
             activeTopics: [],
-            prefetchBlobs: [],
-            topicBlobRefs: [:],
-            lastRefreshAt: nil
+            prefetchBlobs: []
         ))
 
         self.logger.verifyMessageWasLogged(Strings.remoteConfig.failedToWriteCache, level: .error)
@@ -193,17 +211,13 @@ final class RemoteConfigDiskCacheTests: TestCase {
             domain: "app",
             manifest: "v1.1710000100.sources:old",
             activeTopics: [],
-            prefetchBlobs: [],
-            topicBlobRefs: [:],
-            lastRefreshAt: Date(timeIntervalSince1970: 1)
+            prefetchBlobs: []
         ))
         self.cache.write(PersistedRemoteConfiguration(
             domain: "app",
             manifest: "v1.1710000100.sources:new",
             activeTopics: ["sources"],
-            prefetchBlobs: [],
-            topicBlobRefs: [:],
-            lastRefreshAt: Date(timeIntervalSince1970: 2)
+            prefetchBlobs: []
         ))
 
         let read = try XCTUnwrap(self.cache.read())
@@ -216,9 +230,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
             domain: "app",
             manifest: "v1.1710000100.sources:etag1",
             activeTopics: ["sources"],
-            prefetchBlobs: [],
-            topicBlobRefs: [:],
-            lastRefreshAt: Date()
+            prefetchBlobs: []
         ))
 
         self.cache.clear()
