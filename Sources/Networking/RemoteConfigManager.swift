@@ -94,6 +94,8 @@ private extension RemoteConfigManager {
         isAppBackgrounded: Bool,
         requestEpoch: Int
     ) {
+        // Keep the epoch check and operation enqueue atomic with clearCache(), so a clear cannot slip in between them.
+        // This assumes getRemoteConfig only registers/enqueues work and does not synchronously call its completion.
         self.lock.perform {
             guard self.epoch == requestEpoch else { return }
 
