@@ -343,7 +343,8 @@ class KeychainAccessGroupTests: TestCase {
                     }
                 }
                 guard let resolved = macOSPrefix else {
-                    throw XCTSkip("Could not determine team identifier prefix from code-signing entitlements")
+                    XCTFail("Could not determine team identifier prefix from code-signing entitlements")
+                    throw NSError(domain: "revenuecat", code: -1)
                 }
                 _accessGroupPrefix = resolved
                 #else
@@ -369,7 +370,8 @@ class KeychainAccessGroupTests: TestCase {
                       let attrs = result as? [CFString: Any],
                       let accessGroup = attrs[kSecAttrAccessGroup] as? String,
                       let prefix = accessGroup.split(separator: ".").first else {
-                    throw XCTSkip("Could not determine team identifier prefix from keychain")
+                    XCTFail("Could not determine team identifier prefix from code-signing entitlements")
+                    throw NSError(domain: "revenuecat", code: -1)
                 }
 
                 _accessGroupPrefix = String(prefix) + "."

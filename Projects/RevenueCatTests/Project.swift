@@ -71,7 +71,11 @@ let project = Project(
             ],
             entitlements: .file(path: "../../Tests/UnitTestsHostApp/UnitTestsHostApp.entitlements"),
             dependencies: [],
-            settings: .appTarget,
+            settings: .appTarget(including: [
+                "CODE_SIGNING_ALLOWED": "YES",
+                "CODE_SIGNING_REQUIRED": "YES",
+                "CODE_SIGN_IDENTITY": "Apple Development"
+            ].automaticCodeSigning(devTeam: .revenueCatTeamID)),
             metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
@@ -126,7 +130,11 @@ let project = Project(
             dependencies: [
              .storeKit
             ],
-            settings: .appTarget,
+            settings: .appTarget(including: [
+                "CODE_SIGNING_ALLOWED": "YES",
+                "CODE_SIGNING_REQUIRED": "YES",
+                "CODE_SIGN_IDENTITY": "Apple Development"
+            ].automaticCodeSigning(devTeam: .revenueCatTeamID)),
             metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
