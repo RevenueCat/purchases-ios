@@ -55,25 +55,12 @@ final class RemoteConfigManager: RemoteConfigManagerType {
             prefetchedBlobs: self.cachedPrefetchedBlobRefs(from: persisted)
         )
 
-        guard self.isCurrent(requestEpoch) else { return }
-
-        self.remoteConfigAPI.getRemoteConfig(
+        self.enqueueRefreshIfCurrent(
             request: request,
-            isAppBackgrounded: isAppBackgrounded
-        ) { [weak self] result in
-            guard let self else { return }
-
-            switch result {
-            case let .success(fetchResult):
-                self.handleSuccess(
-                    fetchResult,
-                    previous: persisted,
-                    requestEpoch: requestEpoch
-                )
-            case let .failure(error):
-                self.handleFailure(error, requestEpoch: requestEpoch)
-            }
-        }
+            persisted: persisted,
+            isAppBackgrounded: isAppBackgrounded,
+            requestEpoch: requestEpoch
+        )
     }
 
     /// Wipes cached remote config state, for example after an identity change.
@@ -98,6 +85,35 @@ private extension RemoteConfigManager {
             guard !self.isRefreshing else { return nil }
             self.isRefreshing = true
             return self.epoch
+        }
+    }
+
+    func enqueueRefreshIfCurrent(
+        request: RemoteConfigRequest,
+        persisted: PersistedRemoteConfiguration?,
+        isAppBackgrounded: Bool,
+        requestEpoch: Int
+    ) {
+        self.cacheLock.perform {
+            guard self.epoch == requestEpoch else { return }
+
+            self.remoteConfigAPI.getRemoteConfig(
+                request: request,
+                isAppBackgrounded: isAppBackgrounded
+            ) { [weak self] result in
+                guard let self else { return }
+
+                switch result {
+                case let .success(fetchResult):
+                    self.handleSuccess(
+                        fetchResult,
+                        previous: persisted,
+                        requestEpoch: requestEpoch
+                    )
+                case let .failure(error):
+                    self.handleFailure(error, requestEpoch: requestEpoch)
+                }
+            }
         }
     }
 
