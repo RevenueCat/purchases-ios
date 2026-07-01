@@ -79,21 +79,21 @@ private extension RCContainer.Element.ContentEncoding {
     }
 
     static func brotliDecompressed(_ bytes: UnsafeRawBufferPointer) throws -> Data {
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            do {
-                return try Self.brotliDecompressedOnSupportedOS(bytes)
-            } catch {
-                throw RCContainer.Parser.FormatError.contentDecompressionFailed(Self.brotli.rawValue)
-            }
-        } else {
-            throw RCContainer.Parser.FormatError.unsupportedContentEncoding(Self.brotli.rawValue)
+        do {
+            return try Self.brotliDecompressedBytes(bytes)
+        } catch let error as RCContainer.Parser.FormatError {
+            throw error
+        } catch {
+            throw RCContainer.Parser.FormatError.contentDecompressionFailed(Self.brotli.rawValue)
         }
     }
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    static func brotliDecompressedOnSupportedOS(_ bytes: UnsafeRawBufferPointer) throws -> Data {
+    static func brotliDecompressedBytes(_ bytes: UnsafeRawBufferPointer) throws -> Data {
         var offset = 0
-        let filter = try InputFilter(.decompress, using: .brotli) { requestedLength -> Data? in
+        let filter = try InputFilter(
+            .decompress,
+            using: try Self.brotliCompressionAlgorithm
+        ) { requestedLength -> Data? in
             guard offset < bytes.count else { return nil }
 
             let endOffset = min(offset + requestedLength, bytes.count)
