@@ -447,19 +447,18 @@ private extension RCContainerTestData {
     }
 
     static func brotliCompressed(_ data: Data) throws -> Data {
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            return try Self.brotliCompressedOnSupportedOS(data)
-        } else {
+        // Build the algorithm from the C constant instead of referencing `.brotli` directly. See
+        // `RCContainer.Element.ContentEncoding.brotliAlgorithm`: referencing the case strong-links a
+        // symbol that is missing on runtimes before iOS 16 / macOS 13 / tvOS 16 / watchOS 9, which
+        // would crash this test bundle at load time on older simulators.
+        guard let algorithm = RCContainer.Element.ContentEncoding.brotliAlgorithm else {
             throw RCContainer.Parser.FormatError.unsupportedContentEncoding(
                 RCContainer.Element.ContentEncoding.brotli.rawValue
             )
         }
-    }
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    static func brotliCompressedOnSupportedOS(_ data: Data) throws -> Data {
         var output = Data()
-        let filter = try OutputFilter(.compress, using: .brotli) { chunk in
+        let filter = try OutputFilter(.compress, using: algorithm) { chunk in
             if let chunk {
                 output.append(chunk)
             }

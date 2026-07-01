@@ -33,6 +33,21 @@ extension RCContainer.Element.ContentEncoding {
         }
     }
 
+    /// The Compression algorithm used to decode brotli payloads, or `nil` when the running OS
+    /// doesn't provide brotli.
+    ///
+    /// We deliberately avoid referencing `Compression.Algorithm.brotli` directly. The SDK declares
+    /// the whole `Algorithm` enum (including `.brotli`) as available since iOS 13 without a per-case
+    /// availability annotation, so the compiler strong-links the `.brotli` symbol. That symbol only
+    /// exists in the runtime starting on iOS 16 / macOS 13 / tvOS 16 / watchOS 9, so referencing the
+    /// case crashes at load time (`dlopen` "Symbol not found") on earlier runtimes such as an iOS 15
+    /// simulator. Building the algorithm from the `COMPRESSION_BROTLI` C constant emits no such
+    /// symbol and doubles as a runtime capability check: the initializer returns `nil` when the
+    /// running OS doesn't recognize brotli.
+    static var brotliAlgorithm: Algorithm? {
+        return Algorithm(rawValue: COMPRESSION_BROTLI)
+    }
+
 }
 
 private extension RCContainer.Element.ContentEncoding {
@@ -79,35 +94,31 @@ private extension RCContainer.Element.ContentEncoding {
     }
 
     static func brotliDecompressed(_ bytes: UnsafeRawBufferPointer) throws -> Data {
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            do {
-                return try Self.brotliDecompressedOnSupportedOS(bytes)
-            } catch {
-                throw RCContainer.Parser.FormatError.contentDecompressionFailed(Self.brotli.rawValue)
-            }
-        } else {
+        // See `brotliAlgorithm` for why we probe availability this way instead of using `.brotli`.
+        guard let algorithm = Self.brotliAlgorithm else {
             throw RCContainer.Parser.FormatError.unsupportedContentEncoding(Self.brotli.rawValue)
         }
-    }
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    static func brotliDecompressedOnSupportedOS(_ bytes: UnsafeRawBufferPointer) throws -> Data {
-        var offset = 0
-        let filter = try InputFilter(.decompress, using: .brotli) { requestedLength -> Data? in
-            guard offset < bytes.count else { return nil }
+        do {
+            var offset = 0
+            let filter = try InputFilter(.decompress, using: algorithm) { requestedLength -> Data? in
+                guard offset < bytes.count else { return nil }
 
-            let endOffset = min(offset + requestedLength, bytes.count)
-            let chunk = bytes[offset..<endOffset]
-            offset = endOffset
-            return Data(chunk)
+                let endOffset = min(offset + requestedLength, bytes.count)
+                let chunk = bytes[offset..<endOffset]
+                offset = endOffset
+                return Data(chunk)
+            }
+
+            var output = Data()
+            while let chunk = try filter.readData(ofLength: Self.outputChunkSize) {
+                output.append(chunk)
+            }
+
+            return output
+        } catch {
+            throw RCContainer.Parser.FormatError.contentDecompressionFailed(Self.brotli.rawValue)
         }
-
-        var output = Data()
-        while let chunk = try filter.readData(ofLength: Self.outputChunkSize) {
-            output.append(chunk)
-        }
-
-        return output
     }
 
 }

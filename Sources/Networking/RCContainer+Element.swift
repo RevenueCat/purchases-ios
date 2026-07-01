@@ -5,6 +5,7 @@
 //  Created by RevenueCat.
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 
+import Compression
 import CryptoKit
 import Foundation
 
@@ -187,11 +188,11 @@ extension RCContainer.Element {
             case .none, .gzip:
                 return true
             case .brotli:
-                if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-                    return true
-                } else {
-                    return false
-                }
+                // Brotli decoding relies on `Compression.Algorithm.brotli`, whose runtime symbol only
+                // exists on iOS 16+ / macOS 13+ / tvOS 16+ / watchOS 9+. Probe it via the C constant
+                // rather than the case (see `brotliAlgorithm`) so we neither strong-link a missing
+                // symbol nor advertise brotli support on runtimes that lack it.
+                return Self.brotliAlgorithm != nil
             case .zstd, .unsupported:
                 return false
             }
