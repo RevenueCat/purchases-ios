@@ -731,6 +731,39 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 3
     }
 
+    func testStaleContainerResponseDoesNotReleaseNewerRefreshGuard() throws {
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "newBlob" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.clearCache()
+        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+
+        self.remoteConfigAPI.complete(
+            at: 0,
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+        expect(self.diskCache.invokedWriteCount) == 0
+
+        self.remoteConfigAPI.complete(at: 1, with: .success(.test(container: nil)))
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 3
+    }
+
     func testStaleErrorResponseDoesNotReleaseNewerRefreshGuard() {
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.manager.clearCache()
