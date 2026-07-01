@@ -461,11 +461,13 @@ struct WorkflowPaywallView: View {
             selectedPackageContextOverride: page.packageContext,
             // Drives per-visit paywall_viewed / paywall_close: this page is the current workflow step.
             isActiveWorkflowPage: isActive,
-            // Gates impression reporting: only steps tagged as paywalls report a paywall impression.
+            // Gates paywall events: steps tagged as paywalls report; untagged steps fall back to the
+            // single-step-fallback rule.
             workflowScreenType: page.screenType,
             // Workflow attribution on the impression event (#7024), orthogonal to the screen_type gate.
             workflowId: self.context.workflow.id,
-            stepId: page.stepId
+            stepId: page.stepId,
+            isWorkflowSingleStepFallback: page.isSingleStepFallback
         )
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
         .environment(\.workflowTriggerAction, { componentId in
@@ -709,6 +711,7 @@ struct WorkflowPaywallView: View {
             stepId: stepId,
             content: .init(paywallComponents: paywallComponents, offering: offering),
             screenType: step.stepScreenType,
+            isSingleStepFallback: stepId == context.workflow.singleStepFallbackId,
             headerComponent: screen.componentsConfig.base.header,
             showCloseButton: showCloseButton,
             introOfferEligibilityContext: .init(introEligibilityChecker: introEligibilityChecker),
@@ -810,8 +813,11 @@ private struct RenderedPage: Identifiable {
     let stepId: String
     let content: CurrentStepContent
     /// The step's `screen_type` classification (`nil` when the backend did not tag it). Drives whether
-    /// this page reports a paywall impression. See `PaywallsV2View.shouldReportPaywallImpression`.
+    /// this page reports paywall events. See `PaywallsV2View.shouldTrackPaywallEvents`.
     let screenType: [String]?
+    /// Whether this step is the workflow's `singleStepFallbackId`. Only used to gate paywall events on
+    /// untagged steps (`nil` `screenType`), restoring the structural fallback-step-only rule.
+    let isSingleStepFallback: Bool
     let headerComponent: PaywallComponent.HeaderComponent?
     let showCloseButton: Bool
     /// Page-scoped so late async eligibility checks cannot overwrite another workflow step.
