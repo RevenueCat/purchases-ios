@@ -93,6 +93,12 @@ struct PaywallsV2View: View {
     /// activation (becoming / ceasing to be the current step) rather than on SwiftUI's view lifecycle.
     /// `nil` keeps the standalone-paywall behavior of tracking on `onAppear` / `onDisappear`.
     private let isActiveWorkflowPage: Bool?
+    /// The workflow step's `screen_type` classification, used to gate impression reporting. `nil` for
+    /// standalone paywalls and for workflow steps the backend did not tag (see `stepScreenType`).
+    private let workflowScreenType: [String]?
+    /// Workflow attribution for the impression event (`presented_workflow_id` / `presented_step_id` in
+    /// the post-receipt body, see #7024). Orthogonal to `workflowScreenType`: gating decides whether the
+    /// event fires; these identify which workflow step it came from. `nil` for standalone paywalls.
     private let workflowId: String?
     private let stepId: String?
     @State
@@ -130,6 +136,7 @@ struct PaywallsV2View: View {
         introEligibilityContext: IntroOfferEligibilityContext? = nil,
         selectedPackageContextOverride: PackageContext? = nil,
         isActiveWorkflowPage: Bool? = nil,
+        workflowScreenType: [String]? = nil,
         workflowId: String? = nil,
         stepId: String? = nil
     ) {
@@ -151,6 +158,7 @@ struct PaywallsV2View: View {
         self.onDismiss = onDismiss
         self.closeWorkflowAction = closeWorkflowAction
         self.isActiveWorkflowPage = isActiveWorkflowPage
+        self.workflowScreenType = workflowScreenType
         self.workflowId = workflowId
         self.stepId = stepId
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
@@ -324,7 +332,7 @@ struct PaywallsV2View: View {
                 // by `onChangeOf(self.isActiveWorkflowPage)` below. A page mounted while not current
                 // (isActiveWorkflowPage == false) waits until it becomes current.
                 guard self.isActiveWorkflowPage != false else { return }
-                self.firePaywallViewed()
+                self.firePaywallImpression()
             }
             .task {
                 guard !self.didFinishEligibilityCheck else {
@@ -396,12 +404,50 @@ struct PaywallsV2View: View {
                 guard isActive == true else { return }
                 let freshSession: PaywallEvent.SessionID = .init()
                 self.paywallSessionID = freshSession
-                self.firePaywallViewed(sessionID: freshSession)
+                self.firePaywallImpression(sessionID: freshSession)
             }
 
     }
 
-    private func firePaywallViewed(sessionID: PaywallEvent.SessionID? = nil) {
+    static func shouldReportPaywallImpression(
+        isActiveWorkflowPage: Bool?,
+        workflowScreenType: [String]?
+    ) -> Bool {
+        guard isActiveWorkflowPage != nil else { return true }
+        guard let screenType = workflowScreenType else { return true }
+        return screenType.contains(WorkflowScreenType.paywall)
+    }
+
+    private var reportsPaywallImpression: Bool {
+        Self.shouldReportPaywallImpression(
+            isActiveWorkflowPage: self.isActiveWorkflowPage,
+            workflowScreenType: self.workflowScreenType
+        )
+    }
+
+    /// Stamps workflow attribution onto a paywall event's data so the post-receipt body can send
+    /// `presented_workflow_id` / `presented_step_id` (#7024). Orthogonal to the `screen_type` gate
+    /// (``shouldReportPaywallImpression`` decides whether the event fires at all); both are `nil` for
+    /// standalone paywalls. Mirrors Android's `PaywallEvent.Data.withCurrentWorkflowMetadata`.
+    static func applyingWorkflowAttribution(
+        to data: PaywallEvent.Data,
+        workflowId: String?,
+        stepId: String?
+    ) -> PaywallEvent.Data {
+        var data = data
+        data.workflowId = workflowId
+        data.stepId = stepId
+        return data
+    }
+
+    private func firePaywallImpression(sessionID: PaywallEvent.SessionID? = nil) {
+        // A workflow step the backend did not classify as a paywall reports no paywall events. Clear
+        // any active session so a purchase here is unattributed, not charged to the prior paywall step.
+        guard self.reportsPaywallImpression else {
+            self.purchaseHandler.clearActivePaywallSession()
+            return
+        }
+
         let forDefaultPaywall: Bool
         if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
             forDefaultPaywall = true
@@ -419,6 +465,8 @@ struct PaywallsV2View: View {
     }
 
     private func firePaywallClose() {
+        guard self.reportsPaywallImpression else { return }
+
         if self.isActiveWorkflowPage == nil {
             // Standalone paywall: close whichever session is active (unchanged behavior).
             self.purchaseHandler.trackPaywallClose()
@@ -458,7 +506,7 @@ struct PaywallsV2View: View {
             compontentsData = self.paywallComponentsData
         }
 
-        var data = PaywallEvent.Data(
+        let data = PaywallEvent.Data(
             offering: self.offering,
             paywallComponentsData: compontentsData,
             sessionID: sessionID ?? self.paywallSessionID,
@@ -467,9 +515,7 @@ struct PaywallsV2View: View {
             darkMode: self.colorScheme == .dark,
             source: self.paywallSource
         )
-        data.workflowId = self.workflowId
-        data.stepId = self.stepId
-        return data
+        return Self.applyingWorkflowAttribution(to: data, workflowId: self.workflowId, stepId: self.stepId)
     }
 
 }
