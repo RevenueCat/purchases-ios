@@ -81,7 +81,7 @@ protocol RemoteConfigTopicStoreType: AnyObject {
 /// - Note: Thread-safe.
 final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
 
-    private static let sourcesTopic = "sources"
+    private static let sourcesTopicName = "sources"
     private static let apiItem = "api"
     private static let blobItem = "blob"
     private static let sourcesKey = "sources"
@@ -104,7 +104,7 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
 
     /// Topic the current failovers were built from. `nil` means there is no sources topic (absent, or
     /// none seen yet), in which case the failovers hold the embedded defaults.
-    private var builtTopic: RemoteConfiguration.ConfigTopic?
+    private var sourcesTopic: RemoteConfiguration.ConfigTopic?
     private var api: SourceFailover
     private var blob: SourceFailover
 
@@ -162,8 +162,8 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     /// rebuild happened. Callers must hold `lock`.
     @discardableResult
     private func rebuildIfNeeded() -> Bool {
-        let topic = self.topicStore.topic(Self.sourcesTopic)
-        guard topic != self.builtTopic else { return false }
+        let topic = self.topicStore.topic(Self.sourcesTopicName)
+        guard topic != self.sourcesTopic else { return false }
 
         // Seed the new generation past any token the previous one could have handed out, so reports
         // left over from before the rebuild are ignored instead of advancing the freshly-restarted list.
@@ -180,23 +180,23 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
             randomizer: self.randomizer,
             initialToken: nextToken
         )
-        self.builtTopic = topic
+        self.sourcesTopic = topic
         return true
     }
 
     /// The sources for `purpose`: parsed from the `sources` `topic`, or the embedded defaults while the
-    /// topic is absent.
+    /// topic is absent or carries no usable sources.
     private static func sources(
         from topic: RemoteConfiguration.ConfigTopic?,
         for purpose: RemoteConfigSourceHandle.Purpose
     ) -> [RemoteConfigSource] {
         switch purpose {
         case .api:
-            return topic.map { Self.parseSources($0, item: Self.apiItem, urlKey: Self.urlKey) }
-                ?? Self.defaultAPISources
+            let parsed = topic.map { Self.parseSources($0, item: Self.apiItem, urlKey: Self.urlKey) } ?? []
+            return parsed.isEmpty ? Self.defaultAPISources : parsed
         case .blob:
-            return topic.map { Self.parseSources($0, item: Self.blobItem, urlKey: Self.urlFormatKey) }
-                ?? Self.defaultBlobSources
+            let parsed = topic.map { Self.parseSources($0, item: Self.blobItem, urlKey: Self.urlFormatKey) } ?? []
+            return parsed.isEmpty ? Self.defaultBlobSources : parsed
         }
     }
 
