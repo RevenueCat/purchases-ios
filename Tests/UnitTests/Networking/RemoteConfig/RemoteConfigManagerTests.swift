@@ -668,6 +668,195 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobStore.invokedRetainOnlyCount) == 0
     }
 
+    func testClearCacheWipesDiskCacheAndBlobStore() {
+        self.manager.clearCache()
+
+        expect(self.diskCache.invokedClearCount) == 1
+        expect(self.blobStore.invokedClearCount) == 1
+    }
+
+    func testResponseThatArrivesAfterClearCacheDoesNotPersist() throws {
+        self.diskCache.stubbedRead = nil
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "newBlob" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.clearCache()
+        self.remoteConfigAPI.complete(
+            at: 0,
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        expect(self.diskCache.invokedWriteCount) == 0
+        expect(self.blobStore.invokedWriteCount) == 0
+        expect(self.blobStore.invokedRetainOnlyCount) == 0
+    }
+
+    func testClearCacheWhileBuildingRequestDoesNotSendStaleRequest() {
+        self.diskCache.readHandler = { [manager] in
+            manager?.clearCache()
+            return nil
+        }
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
+        expect(self.diskCache.invokedClearCount) == 1
+        expect(self.blobStore.invokedClearCount) == 1
+    }
+
+    func testStaleNoContentResponseDoesNotReleaseNewerRefreshGuard() {
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.clearCache()
+        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+
+        self.remoteConfigAPI.complete(at: 0, with: .success(.test(container: nil)))
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+
+        self.remoteConfigAPI.complete(at: 1, with: .success(.test(container: nil)))
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 3
+    }
+
+    func testStaleContainerResponseDoesNotReleaseNewerRefreshGuard() throws {
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "newBlob" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.clearCache()
+        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+
+        self.remoteConfigAPI.complete(
+            at: 0,
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+        expect(self.diskCache.invokedWriteCount) == 0
+
+        self.remoteConfigAPI.complete(at: 1, with: .success(.test(container: nil)))
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 3
+    }
+
+    func testStaleErrorResponseDoesNotReleaseNewerRefreshGuard() {
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.clearCache()
+        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+
+        self.remoteConfigAPI.complete(
+            at: 0,
+            with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1))))
+        )
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+
+        self.remoteConfigAPI.complete(at: 1, with: .success(.test(container: nil)))
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 3
+    }
+
+    func testManagerCanSyncAgainAfterClearCache() throws {
+        self.diskCache.stubbedRead = nil
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "newBlob" }
+            }
+          }
+        }
+        """
+
+        self.manager.clearCache()
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        expect(self.diskCache.invokedWriteCount) == 1
+    }
+
+    func testClearCacheDuringPersistWaitsAndWipesAfterWrite() throws {
+        self.diskCache.stubbedRead = nil
+        let writeStarted = DispatchSemaphore(value: 0)
+        let releaseWrite = DispatchSemaphore(value: 0)
+        let clearEntered = DispatchSemaphore(value: 0)
+        let writeReleaseResult: Atomic<DispatchTimeoutResult?> = nil
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "newBlob" }
+            }
+          }
+        }
+        """
+        let container = try Self.container(config: response)
+        self.diskCache.writeHandler = { _ in
+            writeStarted.signal()
+            writeReleaseResult.value = releaseWrite.wait(timeout: .now() + .seconds(5))
+            return true
+        }
+        self.diskCache.clearHandler = {
+            clearEntered.signal()
+        }
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        DispatchQueue.global().async {
+            self.remoteConfigAPI.complete(
+                with: .success(.test(container: container))
+            )
+        }
+        expect(writeStarted.wait(timeout: .now() + .seconds(5))) == .success
+
+        DispatchQueue.global().async {
+            self.manager.clearCache()
+        }
+
+        expect(clearEntered.wait(timeout: .now() + .milliseconds(200))) == .timedOut
+
+        releaseWrite.signal()
+        expect(clearEntered.wait(timeout: .now() + .seconds(5))) == .success
+        expect(writeReleaseResult.value) == .success
+        expect(self.diskCache.invokedWriteCount) == 1
+        expect(self.diskCache.invokedClearCount) == 1
+    }
+
 }
 
 private extension RemoteConfigManagerTests {
@@ -747,8 +936,12 @@ private final class MockRemoteConfigAPI: RemoteConfigAPIType {
         request: RemoteConfigRequest,
         isAppBackgrounded: Bool
     )?
+    private(set) var invokedGetRemoteConfigParametersList: [(
+        request: RemoteConfigRequest,
+        isAppBackgrounded: Bool
+    )] = []
 
-    private var completion: Backend.ResponseHandler<RemoteConfigFetchResult>?
+    private var completions: [Backend.ResponseHandler<RemoteConfigFetchResult>] = []
 
     func getRemoteConfig(
         request: RemoteConfigRequest,
@@ -757,11 +950,19 @@ private final class MockRemoteConfigAPI: RemoteConfigAPIType {
     ) {
         self.invokedGetRemoteConfigCount += 1
         self.invokedGetRemoteConfigParameters = (request, isAppBackgrounded)
-        self.completion = completion
+        self.invokedGetRemoteConfigParametersList.append((request, isAppBackgrounded))
+        self.completions.append(completion)
     }
 
     func complete(with result: Result<RemoteConfigFetchResult, BackendError>) {
-        self.completion?(result)
+        self.completions.last?(result)
+    }
+
+    func complete(
+        at index: Int,
+        with result: Result<RemoteConfigFetchResult, BackendError>
+    ) {
+        self.completions[index](result)
     }
 
 }
@@ -770,13 +971,16 @@ private final class MockRemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
     var stubbedRead: PersistedRemoteConfiguration?
     var stubbedWriteResult = true
+    var readHandler: (() -> PersistedRemoteConfiguration?)?
+    var writeHandler: ((PersistedRemoteConfiguration) -> Bool)?
+    var clearHandler: (() -> Void)?
 
     private(set) var invokedWriteCount = 0
     private(set) var invokedWriteParameter: PersistedRemoteConfiguration?
     private(set) var invokedClearCount = 0
 
     func read() -> PersistedRemoteConfiguration? {
-        return self.stubbedRead
+        return self.readHandler?() ?? self.stubbedRead
     }
 
     @discardableResult
@@ -784,11 +988,12 @@ private final class MockRemoteConfigDiskCache: RemoteConfigDiskCacheType {
         self.invokedWriteCount += 1
         self.invokedWriteParameter = configuration
 
-        return self.stubbedWriteResult
+        return self.writeHandler?(configuration) ?? self.stubbedWriteResult
     }
 
     func clear() {
         self.invokedClearCount += 1
+        self.clearHandler?()
     }
 
 }
