@@ -57,7 +57,7 @@ extension Purchases {
         var presentationContext = viewController
 
         if presentationContext == nil {
-            presentationContext = UIApplication.shared
+            presentationContext = UIApplication.extensionSafeApplication?
                                                .connectedScenes
                                                .compactMap { $0 as? UIWindowScene }
                                                .flatMap { scene -> [(UIScene.ActivationState, UIWindow)] in
@@ -262,6 +262,14 @@ struct PreviewPaywallPresenter {
         }
 
         return true
+    }
+
+}
+
+private extension UIApplication {
+
+    static var extensionSafeApplication: UIApplication? {
+        return UIApplication.value(forKey: "sharedApplication") as? UIApplication
     }
 
 }
