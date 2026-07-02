@@ -378,6 +378,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let userDefaults = userDefaults ?? UserDefaults.computeDefault()
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
         let workflowsCache = WorkflowsCache(deviceCache: deviceCache)
+        // No tvOS paywall UI consumes workflows, so leave the cache and manager unwired there.
+        #if os(tvOS)
+        let identityWorkflowsCache: WorkflowsCache? = nil
+        #else
+        let identityWorkflowsCache: WorkflowsCache? = workflowsCache
+        #endif
 
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
             guard diagnosticsEnabled,
@@ -497,8 +503,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
                                               attributeSyncing: subscriberAttributesManager,
-                                              workflowsCache: systemInfo.workflowsEndpointEnabled
-                                              ? workflowsCache : nil,
+                                              workflowsCache: identityWorkflowsCache,
                                               appUserID: appUserID
         )
 
@@ -559,6 +564,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               workflowsCache: workflowsCache,
                                               paywallCache: paywallCache,
                                               operationDispatcher: operationDispatcher)
+        // No tvOS paywall UI consumes workflows (see `identityWorkflowsCache` above).
+        #if os(tvOS)
+        let offeringsWorkflowManager: WorkflowManager? = nil
+        #else
+        let offeringsWorkflowManager: WorkflowManager? = workflowManager
+        #endif
 
         let offeringsManager = OfferingsManager(deviceCache: deviceCache,
                                                 operationDispatcher: operationDispatcher,
@@ -567,8 +578,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 offeringsFactory: offeringsFactory,
                                                 productsManager: productsManager,
                                                 diagnosticsTracker: diagnosticsTracker,
-                                                workflowManager: systemInfo.workflowsEndpointEnabled
-                                                ? workflowManager : nil)
+                                                workflowManager: offeringsWorkflowManager)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
                                                          currentUserProvider: identityManager)

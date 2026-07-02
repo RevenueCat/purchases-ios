@@ -157,7 +157,7 @@ The project uses **Tuist** for managing the Xcode workspace. See **`Contributing
 
 Example combining multiple variables:
 ```bash
-TUIST_RC_API_KEY=appl_xxxxx TUIST_LAUNCH_ARGUMENTS="-EnableWorkflowsEndpoint" tuist generate PaywallsTester
+TUIST_RC_API_KEY=appl_xxxxx TUIST_LAUNCH_ARGUMENTS="-MyFeatureFlag" tuist generate PaywallsTester
 ```
 
 ### Target Specifications

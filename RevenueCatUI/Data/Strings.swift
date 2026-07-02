@@ -14,7 +14,7 @@
 import Foundation
 import RevenueCat
 
-// swiftlint:disable identifier_name file_length
+// swiftlint:disable identifier_name
 
 enum Strings {
 
@@ -110,12 +110,8 @@ enum Strings {
     case video_failed_to_cache(URL, Error)
 
     // Exit Offers
-    case errorFetchingOfferings(Error)
-    case exitOfferNotFound(String)
     case exitOfferSameAsCurrent
-    case prefetchedExitOffer(String)
     case presentingExitOffer(String)
-    case errorLoadingExitOffer(Error)
 
     // Conditional Configurability
     case paywall_contains_unsupported_condition
@@ -363,18 +359,10 @@ extension Strings: CustomStringConvertible {
         case .video_failed_to_cache(let url, let error):
             return "Failed to cache video at \(url): \(error)"
 
-        case .errorFetchingOfferings(let error):
-            return "Error fetching offerings: \(error)"
-        case .exitOfferNotFound(let offeringId):
-            return "Exit offer offering '\(offeringId)' not found"
         case .exitOfferSameAsCurrent:
             return "Exit offer is the same as the current offering, skipping"
-        case .prefetchedExitOffer(let offeringId):
-            return "Prefetched exit offer offering '\(offeringId)'"
         case .presentingExitOffer(let offeringId):
             return "Presenting exit offer paywall for offering '\(offeringId)'"
-        case .errorLoadingExitOffer(let error):
-            return "Error loading exit offer: \(error)"
         case .restore_purchases_gate_start:
             return "Restore Purchases Initiated… waiting for resumable callback to proceed."
         case .restore_purchases_gate_finish(with: let proceed):
