@@ -36,20 +36,24 @@ final class RemoteConfigBlobFetcher: RemoteConfigBlobFetcherType {
         )
     }
 
+    /// Ensures a consumer-requested blob is available locally, enqueueing high-priority work if needed.
     func ensureDownloaded(ref: String) async -> Bool {
         return await self.scheduler.ensureDownloaded(ref: ref)
     }
 
+    /// Ensures multiple consumer-requested blobs are available and returns one result per unique ref.
     func ensureAllDownloaded(refs: [String]) async -> [String: Bool] {
         return await self.scheduler.ensureAllDownloaded(refs: refs)
     }
 
+    /// Starts best-effort low-priority downloads for refs the backend suggests warming.
     func prefetch(refs: [String]) {
         Task {
             await self.scheduler.prefetch(refs: refs)
         }
     }
 
+    /// Downloads, verifies, and stores one blob immediately, bypassing queue priority decisions.
     func fetchAndVerify(ref: String) async -> Bool {
         return await self.scheduler.fetchAndVerify(ref: ref)
     }
@@ -92,12 +96,14 @@ private actor RemoteConfigBlobFetchScheduler {
         self.downloader = downloader
     }
 
+    /// Enqueues a high-priority consumer request and suspends until that ref resolves.
     func ensureDownloaded(ref: String) async -> Bool {
         return await withCheckedContinuation { continuation in
             self.enqueue(ref: ref, priority: .high, continuation: continuation)
         }
     }
 
+    /// Fans out high-priority requests for each unique ref and gathers their success states.
     func ensureAllDownloaded(refs: [String]) async -> [String: Bool] {
         let uniqueRefs = Array(Set(refs))
 
@@ -117,12 +123,14 @@ private actor RemoteConfigBlobFetchScheduler {
         }
     }
 
+    /// Enqueues low-priority work without a waiting continuation.
     func prefetch(refs: [String]) {
         for ref in refs {
             self.enqueue(ref: ref, priority: .low, continuation: nil)
         }
     }
 
+    /// Performs the actual download, source failover, checksum validation, and disk write.
     func fetchAndVerify(ref: String) async -> Bool {
         guard RemoteConfigBlobRefHelpers.isValid(ref) else {
             Logger.error(Strings.remoteConfig.malformedBlobRef(ref))
@@ -163,6 +171,7 @@ private actor RemoteConfigBlobFetchScheduler {
         return false
     }
 
+    /// Adds a ref to the scheduler, coalescing duplicate queued or in-flight requests.
     private func enqueue(
         ref: String,
         priority: Priority,
@@ -179,10 +188,12 @@ private actor RemoteConfigBlobFetchScheduler {
             return
         }
 
+        // Coalesce duplicate queued requests into one future download, keeping every waiting consumer.
         if var download = self.queued[ref] {
             if let continuation {
                 download.continuations.append(continuation)
             }
+            // A consumer request upgrades queued prefetch work, but keeps it behind already queued high-priority work.
             if priority.rawValue > download.priority.rawValue {
                 download.priority = priority
                 download.sequence = self.nextSequence()
@@ -191,6 +202,7 @@ private actor RemoteConfigBlobFetchScheduler {
             return
         }
 
+        // If the download already started, only attach this consumer to the in-flight result.
         if self.inFlight.contains(ref) {
             if let continuation {
                 self.activeContinuations[ref, default: []].append(continuation)
@@ -207,6 +219,7 @@ private actor RemoteConfigBlobFetchScheduler {
         self.scheduleDownloads()
     }
 
+    /// Starts queued downloads until the concurrency limit is reached.
     private func scheduleDownloads() {
         while self.inFlight.count < Self.maxConcurrentDownloads,
               let download = self.nextDownload() {
@@ -221,6 +234,7 @@ private actor RemoteConfigBlobFetchScheduler {
         }
     }
 
+    /// Finishes one in-flight ref, wakes all waiting consumers, then fills any newly opened download slot.
     private func complete(ref: String, result: Bool) {
         let continuations = self.activeContinuations.removeValue(forKey: ref) ?? []
         self.inFlight.remove(ref)
@@ -230,6 +244,7 @@ private actor RemoteConfigBlobFetchScheduler {
         self.scheduleDownloads()
     }
 
+    /// Chooses the next queued item by priority first, then FIFO order within that priority.
     private func nextDownload() -> Download? {
         return self.queued.values.sorted {
             if $0.priority != $1.priority {
@@ -240,11 +255,13 @@ private actor RemoteConfigBlobFetchScheduler {
         }.first
     }
 
+    /// Returns a monotonically increasing sequence number used to preserve FIFO ordering.
     private func nextSequence() -> Int {
         defer { self.sequence += 1 }
         return self.sequence
     }
 
+    /// Builds the concrete blob URL from a source format that contains the blob-ref placeholder.
     private func url(
         for ref: String,
         source: RemoteConfigSourceHandle
