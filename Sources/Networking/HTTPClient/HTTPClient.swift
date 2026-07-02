@@ -270,6 +270,13 @@ internal extension HTTPClient {
         var completionHandler: HTTPClient.Completion<Data>?
         private(set) var fallbackUrlIndex: Int?
 
+        /// The API source this request is currently targeting, captured when the request URL is built.
+        /// Held so a transient failure reports back the exact source that failed (via its token) rather
+        /// than whatever the shared provider considers current at failure time. `nil` when the request
+        /// does not resolve its host from API sources (proxy, pinned host, fallback phase, or opted-out
+        /// paths).
+        var apiSourceHandle: RemoteConfigSourceHandle?
+
         /// Whether the request has been retried.
         var retried: Bool {
             return self.retryCount > 0
@@ -548,8 +555,13 @@ private extension HTTPClient {
                     requestTimeoutResult = .timeoutOnMainBackendForFallbackSupportedEndpoint
                 }
 
-                retryScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
-                                                                               error: error)
+                retryScheduled = self.retryRequestWithNextAPISourceIfNeeded(request: request,
+                                                                            error: error)
+
+                if !retryScheduled {
+                    retryScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
+                                                                                   error: error)
+                }
 
                 if !retryScheduled {
                     retryScheduled = self.retryRequestIfNeeded(request: request,
@@ -595,6 +607,14 @@ private extension HTTPClient {
     }
 
     func start(request: Request) {
+        var request = request
+        // Capture the API source for this attempt at send time (unless one was already assigned by an
+        // API-source failover retry), so the source used to build the URL is the one reported unhealthy
+        // if the request fails.
+        if request.apiSourceHandle == nil {
+            request.apiSourceHandle = self.currentAPISourceHandle(for: request)
+        }
+
         let urlRequest = self.convert(request: request)
 
         guard let urlRequest = urlRequest else {
@@ -680,18 +700,35 @@ private extension HTTPClient {
 
     /// The API base source URL to use for `request`, or `nil` to fall back to the path's `serverHostURL`.
     ///
-    /// API sources apply only when: no proxy is configured (a proxy pins every request to itself), the
-    /// request is not already targeting an endpoint fallback host, the path opts in via `usesAPISources`,
-    /// and `SystemInfo.apiBaseURL` still holds its default (an override pins the host, e.g. in tests).
+    /// Uses the source captured on the request (see `Request.apiSourceHandle`) rather than re-querying
+    /// the provider, so the URL matches the source that will be reported unhealthy on failure.
     private func apiSourceURL(for request: Request) -> URL? {
-        guard SystemInfo.proxyURL == nil,
-              !request.isFallbackURLRequest,
-              request.httpRequest.path.usesAPISources,
-              SystemInfo.apiBaseURL == SystemInfo.defaultApiBaseURL,
-              let source = self.apiSourceProvider?.currentAPISource() else {
+        guard self.usesAPISourceFailover(for: request),
+              let urlString = request.apiSourceHandle?.url else {
             return nil
         }
-        return URL(string: source.url)
+        return URL(string: urlString)
+    }
+
+    /// The current API source to target for `request`, or `nil` when API-source resolution does not
+    /// apply to it.
+    private func currentAPISourceHandle(for request: Request) -> RemoteConfigSourceHandle? {
+        guard self.usesAPISourceFailover(for: request) else {
+            return nil
+        }
+        return self.apiSourceProvider?.currentAPISource()
+    }
+
+    /// Whether `request` resolves its host from API sources (and can fail over across them).
+    ///
+    /// Excluded when: a proxy is set (it pins every request to itself), the request is already on an
+    /// endpoint fallback host, the path opts out via `usesAPISources`, or `SystemInfo.apiBaseURL` is
+    /// overridden (an override pins the host, e.g. in tests).
+    private func usesAPISourceFailover(for request: Request) -> Bool {
+        return SystemInfo.proxyURL == nil
+            && !request.isFallbackURLRequest
+            && request.httpRequest.path.usesAPISources
+            && SystemInfo.apiBaseURL == SystemInfo.defaultApiBaseURL
     }
 
     private func headers(for request: Request, urlRequest: URLRequest) -> HTTPClient.RequestHeaders {
@@ -775,6 +812,42 @@ extension HTTPClient {
     ///   - request: The original `HTTPClient.Request` that may need to be retried.
     ///   - error: The `HTTPClient.NetworkError` that was received.
     /// - Returns: A Boolean value indicating whether the request was retried.
+    /// On a transient failure while in the API-source phase, reports the current source unhealthy and
+    /// retries against the next API source. Returns `false` once the sources are exhausted (so the
+    /// caller can fall through to the endpoint fallback-host phase) or when API-source failover does
+    /// not apply to the request.
+    internal func retryRequestWithNextAPISourceIfNeeded(
+        request: HTTPClient.Request,
+        error: NetworkError
+    ) -> Bool {
+
+        guard error.isAllowedToRetryWithFallbackHost,
+              self.usesAPISourceFailover(for: request),
+              let handle = request.apiSourceHandle,
+              let provider = self.apiSourceProvider else {
+            return false
+        }
+
+        provider.reportUnhealthy(handle)
+
+        guard let nextHandle = provider.currentAPISource() else {
+            // API sources exhausted: let the caller transition to the endpoint fallback-host phase.
+            return false
+        }
+
+        var nextRequest = request
+        nextRequest.apiSourceHandle = nextHandle
+
+        Logger.debug(Strings.network.retrying_request_with_next_api_source(
+            httpMethod: nextRequest.method.httpMethod,
+            path: nextRequest.path
+        ))
+        self.state.modify {
+            $0.queuedRequests.insert(nextRequest, at: 0)
+        }
+        return true
+    }
+
     internal func retryRequestWithNextFallbackHostIfNeeded(
         request: HTTPClient.Request,
         error: NetworkError

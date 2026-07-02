@@ -47,12 +47,17 @@ struct RemoteConfigSourceHandle {
 
 }
 
-/// Narrow interface the networking layer uses to resolve the API base host. Backed by the `.api`
-/// failover of `RemoteConfigSourceProvider`, so the network layer depends only on what it needs.
+/// Narrow interface the networking layer uses to resolve the API base host and drive failover across
+/// API sources. Backed by the `.api` failover of `RemoteConfigSourceProvider`, so the network layer
+/// depends only on what it needs.
 protocol APISourceProviding: AnyObject {
 
     /// The current healthy API base source, or `nil` once every API source has been reported unhealthy.
     func currentAPISource() -> RemoteConfigSourceHandle?
+
+    /// Reports the given API source as unhealthy so the next `currentAPISource()` advances past it.
+    /// No-op if `handle` is no longer the current source (stale/concurrent reports are ignored).
+    func reportUnhealthy(_ handle: RemoteConfigSourceHandle)
 
 }
 
