@@ -165,7 +165,7 @@ private actor RemoteConfigBlobFetchScheduler {
             }
         }
 
-        Logger.error(Strings.remoteConfig.failedToBuildBlobURL(ref))
+        Logger.error(Strings.remoteConfig.exhaustedBlobSources(ref))
         return false
     }
 

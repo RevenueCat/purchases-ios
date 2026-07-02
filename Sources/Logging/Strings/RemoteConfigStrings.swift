@@ -16,6 +16,7 @@ enum RemoteConfigStrings {
     case failedToReadCache(Error)
     case failedToWriteBlob(String, Error)
     case failedToWriteCache
+    case exhaustedBlobSources(String)
     case failedToBuildBlobURL(String)
     case failedToDownloadBlob(String, URL, Error)
     case duplicateSourceURL(String)
@@ -44,6 +45,8 @@ extension RemoteConfigStrings: LogMessage {
             return "Failed to write remote config blob '\(ref)' to disk: \(error.localizedDescription)"
         case .failedToWriteCache:
             return "Failed to write remote config cache to disk."
+        case let .exhaustedBlobSources(ref):
+            return "Failed to download remote config blob '\(ref)': all blob sources were exhausted."
         case let .failedToBuildBlobURL(ref):
             return "Failed to build remote config blob URL for ref '\(ref)'."
         case let .failedToDownloadBlob(ref, url, error):
