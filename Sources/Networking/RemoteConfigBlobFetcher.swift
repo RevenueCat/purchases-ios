@@ -133,28 +133,34 @@ private actor RemoteConfigBlobFetchScheduler {
             return true
         }
 
-        guard let source = self.sourceProvider.getCurrent(for: .blob),
-              let url = self.url(for: ref, source: source) else {
-            Logger.error(Strings.remoteConfig.failedToBuildBlobURL(ref))
-            return false
-        }
-
-        do {
-            let data = try await self.downloader.data(from: url)
-            return data.withUnsafeBytes { bytes in
-                guard RemoteConfigBlobRefHelpers.isValidPayload(bytes, expectedRef: ref) else {
-                    Logger.error(Strings.remoteConfig.skippingInvalidBlob(ref))
-                    return false
-                }
-
-                return self.blobStore.write(ref: ref, bytes: bytes)
+        while let source = self.sourceProvider.getCurrent(for: .blob) {
+            guard let url = self.url(for: ref, source: source) else {
+                Logger.error(Strings.remoteConfig.failedToBuildBlobURL(ref))
+                self.sourceProvider.reportUnhealthy(source)
+                continue
             }
-        } catch {
-            // swiftlint:disable:next todo
-            // TODO: Report source failures to `RemoteConfigSourceProvider` and retry with the next blob source.
-            Logger.error(Strings.remoteConfig.failedToDownloadBlob(ref, url, error))
-            return false
+
+            do {
+                let data = try await self.downloader.data(from: url)
+                return data.withUnsafeBytes { bytes in
+                    guard RemoteConfigBlobRefHelpers.isValidPayload(bytes, expectedRef: ref) else {
+                        Logger.error(Strings.remoteConfig.skippingInvalidBlob(ref))
+                        return false
+                    }
+
+                    return self.blobStore.write(ref: ref, bytes: bytes)
+                }
+            } catch {
+                Logger.error(Strings.remoteConfig.failedToDownloadBlob(ref, url, error))
+                self.sourceProvider.reportUnhealthy(source)
+                if self.blobStore.contains(ref: ref) {
+                    return true
+                }
+            }
         }
+
+        Logger.error(Strings.remoteConfig.failedToBuildBlobURL(ref))
+        return false
     }
 
     private func enqueue(

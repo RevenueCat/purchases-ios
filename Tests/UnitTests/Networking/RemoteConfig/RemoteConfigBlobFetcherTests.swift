@@ -94,6 +94,32 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         expect(self.blobStore.invokedWriteCount) == 0
     }
 
+    func testSourceWithoutBlobRefPlaceholderRetriesNextSource() async {
+        let payload = "valid fallback".asData
+        let ref = Self.ref(for: payload)
+        self.sourceProvider = Self.sourceProvider(urls: [
+            Self.urlWithoutPlaceholder,
+            Self.backupTemplateURL
+        ])
+        self.fetcher = RemoteConfigBlobFetcher(
+            blobStore: self.blobStore,
+            sourceProvider: self.sourceProvider,
+            downloader: self.downloader
+        )
+
+        let task = Task { await self.fetcher.ensureDownloaded(ref: ref) }
+        await self.downloader.waitForRequestCount(1)
+        self.downloader.complete(ref: ref, with: .success(payload))
+
+        let result = await task.value
+
+        expect(result) == true
+        expect(self.downloader.requestedURLs.map(\.absoluteString)) == [
+            Self.backupTemplateURL.replacingOccurrences(of: Self.placeholder, with: ref)
+        ]
+        expect(self.blobStore.invokedWriteParameters?.data) == payload
+    }
+
     func testChecksumMismatchReturnsFalseAndDoesNotWrite() async {
         let ref = Self.ref(for: "expected".asData)
 
@@ -116,6 +142,35 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         let result = await task.value
         expect(result) == false
         expect(self.blobStore.invokedWriteCount) == 0
+    }
+
+    func testNetworkFailureRetriesNextSource() async {
+        let payload = "fallback payload".asData
+        let ref = Self.ref(for: payload)
+        self.sourceProvider = Self.sourceProvider(urls: [
+            Self.templateURL,
+            Self.backupTemplateURL
+        ])
+        self.fetcher = RemoteConfigBlobFetcher(
+            blobStore: self.blobStore,
+            sourceProvider: self.sourceProvider,
+            downloader: self.downloader
+        )
+
+        let task = Task { await self.fetcher.ensureDownloaded(ref: ref) }
+        await self.downloader.waitForRequestCount(1)
+        self.downloader.complete(ref: ref, with: .failure(TestError()))
+        await self.downloader.waitForRequestCount(2)
+        self.downloader.complete(ref: ref, with: .success(payload))
+
+        let result = await task.value
+
+        expect(result) == true
+        expect(self.downloader.requestedURLs.map(\.absoluteString)) == [
+            Self.templateURL.replacingOccurrences(of: Self.placeholder, with: ref),
+            Self.backupTemplateURL.replacingOccurrences(of: Self.placeholder, with: ref)
+        ]
+        expect(self.blobStore.invokedWriteParameters?.data) == payload
     }
 
     func testNetworkFailureReturnsTrueWhenBlobIsCachedConcurrently() async {
@@ -277,6 +332,7 @@ private extension RemoteConfigBlobFetcherTests {
 
     static let placeholder = "{blob_ref}"
     static let templateURL = "https://config.revenuecat-static.com/\(placeholder)"
+    static let backupTemplateURL = "https://config-backup.revenuecat-static.com/\(placeholder)"
     static let urlWithoutPlaceholder = "https://config.revenuecat-static.com/blobs"
 
     static func sourceProvider(url: String) -> RemoteConfigSourceProvider {
@@ -286,10 +342,10 @@ private extension RemoteConfigBlobFetcherTests {
     static func sourceProvider(urls: [String]) -> RemoteConfigSourceProvider {
         let sourcesTopic: RemoteConfiguration.ConfigTopic = [
             "blob": RemoteConfiguration.ConfigItem(content: [
-                "sources": .array(urls.map { url in
+                "sources": .array(urls.enumerated().map { priority, url in
                     .object([
                         "url_format": .string(url),
-                        "priority": .int(0),
+                        "priority": .int(priority),
                         "weight": .int(1)
                     ])
                 })
