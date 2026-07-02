@@ -251,19 +251,6 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         expect(self.downloader.requestedRefs).to(beEmpty())
     }
 
-    func testFetchAndVerifyUsesSameVerificationAndStorePath() async {
-        let payload = "direct fetch".asData
-        let ref = Self.ref(for: payload)
-
-        let task = Task { await self.fetcher.fetchAndVerify(ref: ref) }
-        await self.downloader.waitForRequestCount(1)
-        self.downloader.complete(ref: ref, with: .success(payload))
-
-        let result = await task.value
-        expect(result) == true
-        expect(self.blobStore.invokedWriteParameters?.ref) == ref
-    }
-
     func testConcurrentRequestsForSameRefShareSingleDownload() async {
         let payload = "shared".asData
         let ref = Self.ref(for: payload)
@@ -271,24 +258,6 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         let first = Task { await self.fetcher.ensureDownloaded(ref: ref) }
         await self.downloader.waitForRequestCount(1)
         let second = Task { await self.fetcher.ensureDownloaded(ref: ref) }
-        await self.downloader.waitForRequestCount(1)
-        self.downloader.complete(ref: ref, with: .success(payload))
-
-        let firstResult = await first.value
-        let secondResult = await second.value
-        expect(firstResult) == true
-        expect(secondResult) == true
-        expect(self.downloader.requestedRefs) == [ref]
-        expect(self.blobStore.invokedWriteCount) == 1
-    }
-
-    func testFetchAndVerifyJoinsInFlightDownloadForSameRef() async {
-        let payload = "shared direct fetch".asData
-        let ref = Self.ref(for: payload)
-
-        let first = Task { await self.fetcher.ensureDownloaded(ref: ref) }
-        await self.downloader.waitForRequestCount(1)
-        let second = Task { await self.fetcher.fetchAndVerify(ref: ref) }
         await self.downloader.waitForRequestCount(1)
         self.downloader.complete(ref: ref, with: .success(payload))
 
@@ -363,7 +332,7 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         expect(result) == true
     }
 
-    func testEnsureAllDownloadedReturnsPerRefResults() async {
+    func testEnsureAllDownloadedReturnsFalseWhenAnyRefFails() async {
         let successPayload = "success".asData
         let successRef = Self.ref(for: successPayload)
         let failureRef = Self.ref(for: "failure".asData)
@@ -374,10 +343,7 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         self.downloader.complete(ref: failureRef, with: .failure(TestError()))
 
         let result = await task.value
-        expect(result) == [
-            successRef: true,
-            failureRef: false
-        ]
+        expect(result) == false
     }
 
 }

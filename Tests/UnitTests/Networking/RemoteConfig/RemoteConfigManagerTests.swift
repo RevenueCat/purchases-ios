@@ -1084,26 +1084,20 @@ private final class MockRemoteConfigBlobFetcher: RemoteConfigBlobFetcherType {
     private(set) var invokedEnsureAllDownloadedRefs: [String] = []
     private(set) var invokedPrefetchCount = 0
     private(set) var invokedPrefetchRefs: [String] = []
-    private(set) var invokedFetchAndVerifyRefs: [String] = []
 
     func ensureDownloaded(ref: String) async -> Bool {
         self.invokedEnsureDownloadedRefs.append(ref)
         return true
     }
 
-    func ensureAllDownloaded(refs: [String]) async -> [String: Bool] {
+    func ensureAllDownloaded(refs: [String]) async -> Bool {
         self.invokedEnsureAllDownloadedRefs = refs
-        return Dictionary(uniqueKeysWithValues: refs.map { ($0, true) })
+        return true
     }
 
     func prefetch(refs: [String]) {
         self.invokedPrefetchCount += 1
         self.invokedPrefetchRefs = refs
-    }
-
-    func fetchAndVerify(ref: String) async -> Bool {
-        self.invokedFetchAndVerifyRefs.append(ref)
-        return true
     }
 
 }

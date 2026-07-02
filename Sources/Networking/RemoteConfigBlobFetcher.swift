@@ -10,9 +10,8 @@ import Foundation
 protocol RemoteConfigBlobFetcherType: AnyObject {
 
     func ensureDownloaded(ref: String) async -> Bool
-    func ensureAllDownloaded(refs: [String]) async -> [String: Bool]
+    func ensureAllDownloaded(refs: [String]) async -> Bool
     func prefetch(refs: [String])
-    func fetchAndVerify(ref: String) async -> Bool
 
 }
 
@@ -41,8 +40,8 @@ final class RemoteConfigBlobFetcher: RemoteConfigBlobFetcherType {
         return await self.scheduler.ensureDownloaded(ref: ref)
     }
 
-    /// Ensures multiple consumer-requested blobs are available and returns one result per unique ref.
-    func ensureAllDownloaded(refs: [String]) async -> [String: Bool] {
+    /// Ensures multiple consumer-requested blobs are available and returns whether all unique refs succeeded.
+    func ensureAllDownloaded(refs: [String]) async -> Bool {
         return await self.scheduler.ensureAllDownloaded(refs: refs)
     }
 
@@ -51,11 +50,6 @@ final class RemoteConfigBlobFetcher: RemoteConfigBlobFetcherType {
         Task {
             await self.scheduler.prefetch(refs: refs)
         }
-    }
-
-    /// Ensures a blob is downloaded, verified, and stored through the shared high-priority queue.
-    func fetchAndVerify(ref: String) async -> Bool {
-        return await self.scheduler.fetchAndVerify(ref: ref)
     }
 
 }
@@ -103,23 +97,23 @@ private actor RemoteConfigBlobFetchScheduler {
         }
     }
 
-    /// Fans out high-priority requests for each unique ref and gathers their success states.
-    func ensureAllDownloaded(refs: [String]) async -> [String: Bool] {
+    /// Fans out high-priority requests for each unique ref and succeeds only if every ref is available.
+    func ensureAllDownloaded(refs: [String]) async -> Bool {
         let uniqueRefs = Array(Set(refs))
 
-        return await withTaskGroup(of: (String, Bool).self) { group in
+        return await withTaskGroup(of: Bool.self) { group in
             for ref in uniqueRefs {
                 group.addTask {
-                    return (ref, await self.ensureDownloaded(ref: ref))
+                    return await self.ensureDownloaded(ref: ref)
                 }
             }
 
-            var results: [String: Bool] = [:]
-            for await (ref, result) in group {
-                results[ref] = result
+            var allDownloaded = true
+            for await result in group {
+                allDownloaded = allDownloaded && result
             }
 
-            return results
+            return allDownloaded
         }
     }
 
@@ -128,11 +122,6 @@ private actor RemoteConfigBlobFetchScheduler {
         for ref in refs {
             self.enqueue(ref: ref, priority: .low, continuation: nil)
         }
-    }
-
-    /// Enqueues high-priority fetch work through the same coalescing path used by consumers.
-    func fetchAndVerify(ref: String) async -> Bool {
-        return await self.ensureDownloaded(ref: ref)
     }
 
     /// Performs the actual download, source failover, checksum validation, and disk write.
