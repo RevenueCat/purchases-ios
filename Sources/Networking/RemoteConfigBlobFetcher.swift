@@ -154,7 +154,7 @@ private actor RemoteConfigBlobFetchScheduler {
                 }
             } catch {
                 Logger.error(Strings.remoteConfig.failedToDownloadBlob(ref, url, error))
-                guard !self.isBlobUnavailable(error) else {
+                guard self.shouldReportSourceUnhealthy(for: error) else {
                     return false
                 }
 
@@ -169,17 +169,25 @@ private actor RemoteConfigBlobFetchScheduler {
         return false
     }
 
-    /// Whether a completed download proved the blob unavailable without proving the source unhealthy.
-    private func isBlobUnavailable(_ error: Error) -> Bool {
-        guard let downloaderError = error as? URLSessionRemoteConfigBlobDownloader.Error else {
+    /// Whether a download failure is a source-health signal rather than a request-specific outcome.
+    private func shouldReportSourceUnhealthy(for error: Error) -> Bool {
+        if error is CancellationError {
             return false
+        }
+
+        if let urlError = error as? URLError, urlError.code == .cancelled {
+            return false
+        }
+
+        guard let downloaderError = error as? URLSessionRemoteConfigBlobDownloader.Error else {
+            return true
         }
 
         switch downloaderError {
         case let .unexpectedStatusCode(statusCode):
-            return statusCode == HTTPStatusCode.notFoundError.rawValue
+            return statusCode != HTTPStatusCode.notFoundError.rawValue
         case .invalidResponse:
-            return false
+            return true
         }
     }
 

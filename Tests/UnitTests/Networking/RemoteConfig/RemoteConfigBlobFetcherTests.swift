@@ -175,6 +175,33 @@ final class RemoteConfigBlobFetcherTests: TestCase {
 
     func testNotFoundDoesNotMarkSourceUnhealthyOrRetryNextSource() async {
         let missingRef = Self.ref(for: "missing blob".asData)
+
+        await self.assertFailureDoesNotMarkSourceUnhealthyOrRetryNextSource(
+            failingRef: missingRef,
+            with: .failure(URLSessionRemoteConfigBlobDownloader.Error.unexpectedStatusCode(404))
+        )
+    }
+
+    func testCancellationDoesNotMarkSourceUnhealthyOrRetryNextSource() async {
+        await self.assertFailureDoesNotMarkSourceUnhealthyOrRetryNextSource(
+            failingRef: Self.ref(for: "cancelled blob".asData),
+            with: .failure(CancellationError())
+        )
+    }
+
+    func testURLSessionCancellationDoesNotMarkSourceUnhealthyOrRetryNextSource() async {
+        await self.assertFailureDoesNotMarkSourceUnhealthyOrRetryNextSource(
+            failingRef: Self.ref(for: "url session cancelled blob".asData),
+            with: .failure(URLError(.cancelled))
+        )
+    }
+
+    private func assertFailureDoesNotMarkSourceUnhealthyOrRetryNextSource(
+        failingRef: String,
+        with result: Result<Data, Error>,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async {
         let availablePayload = "available blob".asData
         let availableRef = Self.ref(for: availablePayload)
         self.sourceProvider = Self.sourceProvider(urls: [
@@ -187,24 +214,21 @@ final class RemoteConfigBlobFetcherTests: TestCase {
             downloader: self.downloader
         )
 
-        let missing = Task { await self.fetcher.ensureDownloaded(ref: missingRef) }
-        await self.downloader.waitForRequestCount(1)
-        self.downloader.complete(
-            ref: missingRef,
-            with: .failure(URLSessionRemoteConfigBlobDownloader.Error.unexpectedStatusCode(404))
-        )
+        let failing = Task { await self.fetcher.ensureDownloaded(ref: failingRef) }
+        await self.downloader.waitForRequestCount(1, file: file, line: line)
+        self.downloader.complete(ref: failingRef, with: result)
 
-        let missingResult = await missing.value
-        expect(missingResult) == false
+        let failingResult = await failing.value
+        expect(failingResult) == false
 
         let available = Task { await self.fetcher.ensureDownloaded(ref: availableRef) }
-        await self.downloader.waitForRequestCount(2)
+        await self.downloader.waitForRequestCount(2, file: file, line: line)
         self.downloader.complete(ref: availableRef, with: .success(availablePayload))
 
         let availableResult = await available.value
         expect(availableResult) == true
         expect(self.downloader.requestedURLs.map(\.absoluteString)) == [
-            Self.templateURL.replacingOccurrences(of: Self.placeholder, with: missingRef),
+            Self.templateURL.replacingOccurrences(of: Self.placeholder, with: failingRef),
             Self.templateURL.replacingOccurrences(of: Self.placeholder, with: availableRef)
         ]
     }
