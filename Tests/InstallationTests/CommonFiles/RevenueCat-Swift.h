@@ -4444,6 +4444,9 @@ SWIFT_CLASS_NAMED("SubscriptionInfo")
 /// Date when any grace period for this subscription expires/expired.
 /// nil if the customer has never been in a grace period.
 @property (nonatomic, readonly, copy) NSDate * _Nullable gracePeriodExpiresDate;
+/// Date when a paused subscription is expected to automatically resume.
+/// Only set for Google Play subscriptions that have been paused; nil otherwise.
+@property (nonatomic, readonly, copy) NSDate * _Nullable autoResumeDate;
 /// How the Customer received access to this subscription:
 /// <ul>
 ///   <li>
@@ -4481,6 +4484,9 @@ SWIFT_CLASS_NAMED("SubscriptionInfo")
 @property (nonatomic, readonly, strong) RCProductPaidPrice * _Nullable price;
 /// Management purchase URL
 @property (nonatomic, readonly, copy) NSURL * _Nullable managementURL;
+/// The base plan identifier that unlocked this subscription (Google Play base plans
+/// and Apple purchases with non-upfront billing plans).
+@property (nonatomic, readonly, copy) NSString * _Nullable productPlanIdentifier;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");

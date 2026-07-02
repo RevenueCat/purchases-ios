@@ -5,32 +5,61 @@
 //  Created by RevenueCat.
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 
-import CryptoKit
 import Foundation
 
 extension RCContainer {
 
-    /// Validates and indexes the RC Container binary format.
+    /// Validates and indexes the RC Container binary structure.
     ///
-    /// The parser walks the container with a byte offset cursor, validates each field before advancing
-    /// past it, and records `Data.Index` ranges that point at the retained backing `Data`.
+    /// The parser walks the container with a byte offset cursor, validates structural fields before
+    /// advancing past them, and records `Data.Index` ranges that point at the retained backing `Data`.
+    /// Payload checksum validation is handled by `Element` according to each caller's domain rules.
     struct Parser {
 
         // swiftlint:disable nesting
         /// Typed failures for malformed RC Container bytes.
         enum FormatError: Error, Equatable {
 
+            case missingBody
             case truncatedHeader
             case invalidMagic
             case unsupportedVersion(UInt8)
             case truncatedElementHeader(index: Int)
             case truncatedElement(index: Int)
-            case nonZeroPadding(index: Int)
-            case checksumMismatch(index: Int, expected: String, actual: String)
-            case missingConfigElement
+            case unsupportedContentEncoding(UInt8)
+            case contentDecompressionFailed(UInt8)
+            case checksumMismatch(expected: String, actual: String)
+            case missingElement(index: Int)
 
         }
         // swiftlint:enable nesting
+
+        private var elementParser: ElementParser
+
+        /// Creates a parser over the provided `Data` without copying it.
+        init(data: Data) {
+            self.elementParser = .init(data: data)
+        }
+
+        /// Parses the full container and returns the header flags plus indexed elements.
+        mutating func parse() throws -> (flags: UInt8, elements: [Element]) {
+            let flags = try self.elementParser.parseHeader()
+
+            var elements: [Element] = []
+            while self.elementParser.hasRemainingBytes {
+                elements.append(try self.elementParser.parseElement(index: elements.count))
+            }
+
+            return (flags: flags, elements: elements)
+        }
+
+    }
+
+    /// Cursor-based parser for the generic RC Container wire format.
+    ///
+    /// This type intentionally has no remote-config knowledge. It only knows how to validate the
+    /// container header and parse individual elements from the current cursor position.
+    struct ElementParser {
 
         private static let magicOffset = 0
         private static let magicSize = 2
@@ -48,61 +77,66 @@ extension RCContainer {
         private static let uint32Size = 4
         private static let checksumSize = 24
         private static let elementSizeFieldSize = uint32Size
-        private static let elementReservedFieldSize = uint32Size
-        private static let elementHeaderSize = checksumSize + elementSizeFieldSize + elementReservedFieldSize
+        private static let elementEncodingFieldSize = 1
+        private static let elementReservedFieldSize = 3
+        private static let elementHeaderSize = checksumSize
+            + elementSizeFieldSize
+            + elementEncodingFieldSize
+            + elementReservedFieldSize
 
         private let data: Data
         private var offset = 0
 
-        /// Creates a parser over the provided `Data` without copying it.
+        var hasRemainingBytes: Bool {
+            return self.offset < self.data.count
+        }
+
         init(data: Data) {
             self.data = data
         }
 
-        /// Parses the full container and returns the header flags plus indexed elements.
-        mutating func parse() throws -> (flags: UInt8, elements: [Element]) {
-            let flags = try self.parseHeader()
-
-            var elements: [Element] = []
-            while self.offset < self.data.count {
-                elements.append(try self.parseElement(index: elements.count))
-            }
-
-            return (flags: flags, elements: elements)
+        /// Validates the container header and positions the cursor at the first element.
+        mutating func moveToFirstElement() throws {
+            _ = try self.parseHeader()
         }
 
         /// Parses the fixed-size container header and positions the cursor at the first element.
         ///
-        /// Version 1 preserves the flags byte for future use and skips the reserved bytes so future
-        /// server-side additions do not make older SDKs reject the whole container.
-        private mutating func parseHeader() throws -> UInt8 {
+        /// Version 1 reserves the flags byte for future per-stream options. Non-zero values are logged
+        /// and ignored so older SDKs remain forward-compatible when new options are introduced.
+        mutating func parseHeader() throws -> UInt8 {
             guard self.hasBytes(Self.headerSize) else {
-                throw FormatError.truncatedHeader
+                throw Parser.FormatError.truncatedHeader
             }
 
             guard self.byte(at: Self.magicOffset) == Self.magic.0,
                   self.byte(at: Self.magicOffset + 1) == Self.magic.1 else {
-                throw FormatError.invalidMagic
+                throw Parser.FormatError.invalidMagic
             }
 
             let version = self.byte(at: Self.versionOffset)
             guard version == Self.version else {
-                throw FormatError.unsupportedVersion(version)
+                throw Parser.FormatError.unsupportedVersion(version)
             }
 
             let flags = self.byte(at: Self.flagsOffset)
+            if flags != 0 {
+                Logger.warn(RCContainerParserStrings.nonZeroHeaderFlags(flags))
+            }
+
             self.offset = Self.headerSize
             return flags
         }
 
         /// Parses one element and returns an `Element` that points into the original container bytes.
         ///
-        /// The stored checksum is read before the cursor moves into the payload. The payload checksum
-        /// is then recomputed from the payload range so checksum validation does not depend on mutable
-        /// cursor state after parsing continues.
-        private mutating func parseElement(index: Int) throws -> Element {
+        /// This parser validates only the container structure needed to safely find element boundaries.
+        /// It records the stored checksum and payload range without deciding whether that checksum is a
+        /// trust boundary. Element blob checksums should be validated before the blob is used or written
+        /// to disk; request/response signature verification should be used to verify authenticity.
+        mutating func parseElement(index: Int) throws -> Element {
             guard self.hasBytes(Self.elementHeaderSize) else {
-                throw FormatError.truncatedElementHeader(index: index)
+                throw Parser.FormatError.truncatedElementHeader(index: index)
             }
 
             let checksumStartOffset = self.offset
@@ -114,71 +148,53 @@ extension RCContainer {
             let elementSize = Int(self.littleEndianUInt32(at: self.offset))
             self.offset += Self.elementSizeFieldSize
 
-            let reserved = self.littleEndianUInt32(at: self.offset)
+            let encoding = Element.ContentEncoding(rawValue: self.byte(at: self.offset))
+
+            self.offset += Self.elementEncodingFieldSize
+
+            let reservedRange = self.offset..<self.offset + Self.elementReservedFieldSize
+            let reservedUpperBits = self.reservedUpperBitsValue(in: reservedRange)
+            if reservedUpperBits != 0 {
+                Logger.warn(RCContainerParserStrings.nonZeroElementReservedBits(reservedUpperBits))
+            }
+
             self.offset += Self.elementReservedFieldSize
 
             guard self.hasBytes(elementSize) else {
-                throw FormatError.truncatedElement(index: index)
+                throw Parser.FormatError.truncatedElement(index: index)
             }
 
             let payloadStartOffset = self.offset
             let payloadRange = self.dataRange(offset: payloadStartOffset, count: elementSize)
-            let actualChecksum = self.checksumString(in: payloadStartOffset..<payloadStartOffset + elementSize)
-            guard checksum == actualChecksum else {
-                throw FormatError.checksumMismatch(
-                    index: index,
-                    expected: checksum,
-                    actual: actualChecksum
-                )
-            }
 
             self.offset += elementSize
-            try self.consumePadding(forElementSize: elementSize, elementIndex: index)
+            self.consumePadding(forElementSize: elementSize)
 
             return Element(
                 storage: self.data,
                 checksumRange: checksumRange,
                 payloadRange: payloadRange,
                 checksum: checksum,
-                reserved: reserved
+                encoding: encoding
             )
         }
 
-        /// Consumes zero padding after a payload.
+        /// Consumes alignment padding after a payload.
         ///
         /// Padding length is derived only from the element payload size, not from the absolute container
-        /// offset. The final element may omit trailing padding bytes entirely, but any padding bytes that
-        /// are present still need to be zero.
-        private mutating func consumePadding(forElementSize elementSize: Int, elementIndex: Int) throws {
+        /// offset. The final element may omit trailing padding bytes entirely.
+        private mutating func consumePadding(forElementSize elementSize: Int) {
             let paddingSize = (Self.alignment - elementSize % Self.alignment) % Self.alignment
             guard paddingSize > 0 else {
                 return
             }
 
             let remainingBytes = self.data.count - self.offset
-            let availablePaddingBytes = min(paddingSize, remainingBytes)
-            guard self.bytesAreZero(in: self.offset..<self.offset + availablePaddingBytes) else {
-                throw FormatError.nonZeroPadding(index: elementIndex)
-            }
-
             if remainingBytes < paddingSize {
                 self.offset = self.data.count
             } else {
                 self.offset += paddingSize
             }
-        }
-
-        /// Computes the blob-ref string for a payload range.
-        ///
-        /// Blob refs are the first 24 bytes of the SHA-256 digest encoded as unpadded base64url,
-        /// producing a stable 32-character string that can be used as a content lookup key.
-        private func checksumString(in range: Range<Int>) -> String {
-            var hash = SHA256()
-            self.withUnsafeBytes(in: range) { bytes in
-                hash.update(bufferPointer: bytes)
-            }
-
-            return Self.base64URLString(from: Array(hash.finalize().prefix(Self.checksumSize)))
         }
 
         /// Encodes bytes already present in the container as an unpadded base64url string.
@@ -199,13 +215,6 @@ extension RCContainer {
                 .replacingOccurrences(of: "+", with: "-")
                 .replacingOccurrences(of: "/", with: "_")
                 .replacingOccurrences(of: "=", with: "")
-        }
-
-        /// Re-bases an integer byte range into the `Data` storage for temporary zero-copy access.
-        private func withUnsafeBytes<T>(in range: Range<Int>, _ body: (UnsafeRawBufferPointer) -> T) -> T {
-            return self.data.withUnsafeBytes { bytes in
-                return body(UnsafeRawBufferPointer(rebasing: bytes[range]))
-            }
         }
 
         /// Reads the wire-format little-endian `UInt32` used for payload sizes and reserved metadata.
@@ -236,15 +245,31 @@ extension RCContainer {
             return count >= 0 && self.offset <= self.data.count - count
         }
 
-        /// Validates padding ranges.
-        private func bytesAreZero(in range: Range<Int>) -> Bool {
-            for offset in range where self.byte(at: offset) != 0 {
-                return false
-            }
-
-            return true
+        private func reservedUpperBitsValue(in range: Range<Int>) -> UInt32 {
+            return UInt32(self.byte(at: range.lowerBound)) << 8
+            | UInt32(self.byte(at: range.lowerBound + 1)) << 16
+            | UInt32(self.byte(at: range.lowerBound + 2)) << 24
         }
 
     }
+
+}
+
+private enum RCContainerParserStrings: LogMessage {
+
+    case nonZeroHeaderFlags(UInt8)
+    case nonZeroElementReservedBits(UInt32)
+
+    var description: String {
+        switch self {
+        case let .nonZeroHeaderFlags(flags):
+            return "RC Container header flags non-zero (0x\(String(flags, radix: 16))); ignoring unknown flags."
+        case let .nonZeroElementReservedBits(reservedBits):
+            return "RC element reserved bits non-zero (0x\(String(reservedBits, radix: 16))); " +
+            "ignoring unknown reserved bits."
+        }
+    }
+
+    var category: String { return "rc_container" }
 
 }

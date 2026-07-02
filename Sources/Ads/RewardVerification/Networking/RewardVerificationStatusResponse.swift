@@ -54,10 +54,13 @@ extension RewardVerificationStatusResponse: Decodable {
         case type
         case code
         case amount
+        case identifier
+        case expiresAt
     }
 
     private enum RewardType {
         static let virtualCurrency = "virtual_currency"
+        static let entitlement = "entitlement"
     }
 
     init(from decoder: Decoder) throws {
@@ -121,6 +124,17 @@ extension RewardVerificationStatusResponse: Decodable {
                 return .unsupportedReward
             }
             return .virtualCurrency(payload)
+        case RewardType.entitlement:
+            let identifier = try? rewardContainer.decode(String.self, forKey: .identifier)
+            let expiresAt = try? rewardContainer.decode(Date.self, forKey: .expiresAt)
+            guard let identifier, let expiresAt,
+                  let payload = EntitlementReward(identifier: identifier, expiresAt: expiresAt) else {
+                Logger.warn(
+                    Strings.backendError.malformed_reward_verification_reward_payload(type: rewardType)
+                )
+                return .unsupportedReward
+            }
+            return .entitlement(payload)
         default:
             Logger.warn(
                 Strings.backendError.unsupported_reward_verification_reward_type(type: rewardType)

@@ -48,6 +48,37 @@ protocol HTTPRequestPath {
 
     /// Additional headers specific to this endpoint.
     var additionalHeaders: HTTPRequest.Headers { get }
+
+    /// Provides endpoint-specific inputs for response signature verification.
+    var responseSignatureContextProvider: ResponseSignatureContextProvider { get }
+}
+
+/// Provides endpoint-specific inputs for backend response signature verification.
+///
+/// Most endpoints use the raw response body and request body. Specialized endpoints can override
+/// either input.
+protocol ResponseSignatureContextProvider {
+
+    /// Returns the response bytes that should be verified against the backend signature.
+    ///
+    /// This may throw when deriving the signed payload requires validating response structure first.
+    func responsePayloadForSignature(from body: Data?, statusCode: HTTPStatusCode) throws -> Data?
+
+    /// Returns the request body component to include in signature parameters, if any.
+    func requestBodyForSignature(for request: HTTPRequest) -> HTTPRequestBody?
+
+}
+
+struct DefaultResponseSignatureContextProvider: ResponseSignatureContextProvider {
+
+    func responsePayloadForSignature(from body: Data?, statusCode: HTTPStatusCode) throws -> Data? {
+        return body
+    }
+
+    func requestBodyForSignature(for request: HTTPRequest) -> HTTPRequestBody? {
+        return request.requestBody
+    }
+
 }
 
 extension HTTPRequestPath {
@@ -66,6 +97,10 @@ extension HTTPRequestPath {
 
     var additionalHeaders: HTTPRequest.Headers {
         return [:]
+    }
+
+    var responseSignatureContextProvider: ResponseSignatureContextProvider {
+        return DefaultResponseSignatureContextProvider()
     }
 
     var url: URL? { return self.url(proxyURL: nil) }
@@ -116,7 +151,7 @@ extension HTTPRequest {
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
-        case remoteConfig
+        case remoteConfig(domain: String)
 
     }
 
@@ -171,8 +206,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return base
         case let .getWorkflow(_, workflowId):
             return "/workflows/v1/workflows/\(Self.escape(workflowId))"
-        case .remoteConfig:
-            return "/v2/config"
+        case let .remoteConfig(domain):
+            return "/v1/config/\(Self.escape(domain))"
         default:
             return nil
         }
@@ -267,7 +302,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getWorkflow,
                 .appHealthReport,
                 .appHealthReportAvailability,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .remoteConfig,
+                .rewardVerificationStatus:
             return true
         case .getIntroEligibility,
                 .postSubscriberAttributes,
@@ -278,12 +315,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .postCreateTicket:
             return false
-        case .remoteConfig:
-            // swiftlint:disable:next todo
-            // TODO: Enable signature verification once remote-config binary responses are signed.
-            return false
-        case .rewardVerificationStatus:
-            return true
         }
     }
 
@@ -296,6 +327,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .health,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
+                .remoteConfig,
                 .rewardVerificationStatus:
             return true
         case .getWorkflow,
@@ -312,20 +344,20 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket:
             return false
+        }
+    }
+
+    var responseSignatureContextProvider: ResponseSignatureContextProvider {
+        switch self {
         case .remoteConfig:
-            // swiftlint:disable:next todo
-            // TODO: Require a nonce once remote-config binary responses are signed.
-            return false
+            return RemoteConfigSignatureContextProvider()
+        default:
+            return DefaultResponseSignatureContextProvider()
         }
     }
 
     var relativePath: String {
-        switch self {
-        case .remoteConfig:
-            return "/v2/\(self.pathComponent)"
-        default:
-            return "/v1/\(self.pathComponent)"
-        }
+        return "/v1/\(self.pathComponent)"
     }
 
     var pathComponent: String {
@@ -396,8 +428,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .rewardVerificationStatus(appUserID, clientTransactionID):
             return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
 
-        case .remoteConfig:
-            return "config"
+        case let .remoteConfig(domain):
+            return "config/\(Self.escape(domain))"
         }
     }
 
@@ -473,7 +505,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var additionalHeaders: HTTPRequest.Headers {
         switch self {
         case .remoteConfig:
-            return [HTTPClient.RequestHeader.accept.rawValue: HTTPClient.rcContainerFormatAcceptHeaderValue]
+            return [
+                HTTPClient.RequestHeader.accept.rawValue: HTTPClient.rcContainerFormatAcceptHeaderValue,
+                HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue:
+                    HTTPClient.rcContainerFormatElementEncodingHeaderValue
+            ]
         default:
             return [:]
         }

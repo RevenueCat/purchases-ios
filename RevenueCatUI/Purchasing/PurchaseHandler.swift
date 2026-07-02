@@ -239,8 +239,11 @@ final class PurchaseHandler: ObservableObject {
     /// Resets purchase state for a new paywall session.
     ///
     /// This is called when a paywall appears to ensure we track purchases for the current session only.
-    /// We reset both `sessionPurchaseResult` (used for exit offer logic) and `purchaseResult`
-    /// (used for `onPurchaseCompleted` preference) to avoid stale values triggering handlers.
+    /// We reset `sessionPurchaseResult` (used for exit offer logic), `purchaseResult`
+    /// (used for `onPurchaseCompleted` preference), and `restoredCustomerInfo` (a successful restore is a
+    /// per-session completion signal) to avoid stale values triggering handlers. The handler is held as a
+    /// `@StateObject` by the presenting modifier and reused across present/dismiss cycles, so without this
+    /// a prior session's restore would leak into the next one.
     func resetForNewSession() {
         if let sessionID = self.activePaywallSessionID {
             self.paywallEventTracker.discardSession(sessionID: sessionID)
@@ -248,6 +251,7 @@ final class PurchaseHandler: ObservableObject {
         self.sessionPurchaseResult = nil
         self.consecutiveCancellationRequestID = nil
         self.purchaseResult = nil
+        self.restoredCustomerInfo = nil
         self.activePaywallSessionID = nil
     }
 
@@ -786,6 +790,13 @@ extension PurchaseHandler {
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
         self.activePaywallSessionID = eventData.sessionIdentifier
         self.paywallEventTracker.trackPaywallImpression(eventData)
+    }
+
+    /// Clears the active paywall session (without discarding its tracked events) so subsequent purchase
+    /// events are unattributed until the next impression. Used when a non-paywall workflow step becomes
+    /// current: it reports no impression, and a purchase there must not attribute to the prior step.
+    func clearActivePaywallSession() {
+        self.activePaywallSessionID = nil
     }
 
     func componentInteractionLogger(sessionID: PaywallEvent.SessionID) -> ComponentInteractionLogger {

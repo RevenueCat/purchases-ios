@@ -77,6 +77,13 @@
       "predicate": { "!!": { "missing": [""] } },
       "variables": { "a": 1 },
       "expected": false
+    },
+    {
+      "id": "missing_undefined_key_resolves_to_scope",
+      "description": "missing routes through var; an undefined key (here {\"and\": []}) makes var return the whole scope (neither null nor empty string), so the key is not missing and the result is empty (falsy)",
+      "predicate": { "!!": { "missing": [{ "and": [] }] } },
+      "variables": { "a": 1 },
+      "expected": false
     }
   ]
 }
