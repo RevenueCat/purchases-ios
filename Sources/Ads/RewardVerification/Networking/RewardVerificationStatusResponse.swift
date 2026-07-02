@@ -77,6 +77,8 @@ extension RewardVerificationStatusResponse: Decodable {
     ) -> Status {
         switch rawStatus {
         case "verified":
+            // The backend never sends a null `reward` alongside a non-empty `more_rewards`: the
+            // primary reward is always the first grant, so no promotion/normalization is needed.
             return .verified(
                 reward: Self.decodePrimaryReward(from: container),
                 moreRewards: Self.decodeMoreRewards(from: container)
@@ -107,11 +109,9 @@ extension RewardVerificationStatusResponse: Decodable {
             return .noReward
         }
 
-        guard let wire = try? container.decode(WireReward.self, forKey: .reward) else {
-            Logger.warn(Strings.backendError.unexpected_reward_verification_reward_value)
-            return .unsupportedReward
-        }
-        return wire.reward
+        // `WireReward.init` never throws — it falls back to `.unsupportedReward` internally.
+        let wire = try? container.decode(WireReward.self, forKey: .reward)
+        return wire?.reward ?? .unsupportedReward
     }
 
     private static func decodeMoreRewards(

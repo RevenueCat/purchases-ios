@@ -173,6 +173,53 @@ final class RewardVerificationStatusResponseTests: TestCase {
         )
     }
 
+    func testNonArrayMoreRewardsDecodesAsEmpty() throws {
+        let response = try self.decode([
+            "status": "verified",
+            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10],
+            "more_rewards": "not-an-array"
+        ])
+
+        guard case let .verified(_, moreRewards) = response.status else {
+            return fail("Expected verified, got \(response.status)")
+        }
+        expect(moreRewards).to(beEmpty())
+        self.logger.verifyMessageWasLogged(
+            Strings.backendError.unexpected_reward_verification_reward_value,
+            level: .warn
+        )
+    }
+
+    func testNullElementInMoreRewardsDecodesAsUnsupportedEntry() throws {
+        let response = try self.decode([
+            "status": "verified",
+            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10],
+            "more_rewards": [NSNull()]
+        ])
+
+        guard case let .verified(_, moreRewards) = response.status else {
+            return fail("Expected verified, got \(response.status)")
+        }
+        expect(moreRewards) == [.unsupportedReward]
+        self.logger.verifyMessageWasLogged(
+            Strings.backendError.unexpected_reward_verification_reward_value,
+            level: .warn
+        )
+    }
+
+    func testExplicitNullMoreRewardsDecodesAsEmpty() throws {
+        let response = try self.decode([
+            "status": "verified",
+            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10],
+            "more_rewards": NSNull()
+        ])
+
+        guard case let .verified(_, moreRewards) = response.status else {
+            return fail("Expected verified, got \(response.status)")
+        }
+        expect(moreRewards).to(beEmpty())
+    }
+
     func testMultipleMoreRewardsPreserveOrder() throws {
         let response = try self.decode([
             "status": "verified",
