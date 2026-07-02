@@ -9,6 +9,9 @@ import Foundation
 
 protocol RemoteConfigManagerType: AnyObject {
 
+    /// Whether remote config should be ignored for the current manager lifetime.
+    var isDisabled: Bool { get }
+
     func refreshRemoteConfig(isAppBackgrounded: Bool)
 
     func clearCache()
@@ -31,6 +34,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     private let currentUserProvider: CurrentUserProvider
     private let lock = Lock()
     private var isRefreshing = false
+    private var isDisabledInternal = false
     private var epoch = 0
 
     init(
@@ -45,6 +49,12 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         self.blobStore = blobStore
         self.blobFetcher = blobFetcher
         self.currentUserProvider = currentUserProvider
+    }
+
+    var isDisabled: Bool {
+        return self.lock.perform {
+            self.isDisabledInternal
+        }
     }
 
     func refreshRemoteConfig(isAppBackgrounded: Bool) {
@@ -85,7 +95,8 @@ private extension RemoteConfigManager {
 
     func prepareRefreshIfNeeded() -> Int? {
         return self.lock.perform {
-            guard !self.isRefreshing else { return nil }
+            guard !self.isRefreshing,
+                  !self.isDisabledInternal else { return nil }
             self.isRefreshing = true
             return self.epoch
         }
@@ -167,9 +178,24 @@ private extension RemoteConfigManager {
         _ error: BackendError,
         requestEpoch: Int
     ) {
-        if self.releaseGuardIfOwned(requestEpoch: requestEpoch) {
-            Logger.error(Strings.remoteConfig.refreshFailed(error))
+        let isCurrentFailure = self.lock.perform {
+            guard self.epoch == requestEpoch else { return false }
+
+            self.disableRefreshIfNeeded(for: error)
+            self.isRefreshing = false
+
+            return true
         }
+
+        guard isCurrentFailure else { return }
+
+        Logger.error(Strings.remoteConfig.refreshFailed(error))
+    }
+
+    func disableRefreshIfNeeded(for error: BackendError) {
+        guard error.isRemoteConfigDisablingClientError else { return }
+
+        self.isDisabledInternal = true
     }
 
     func isCurrent(_ requestEpoch: Int) -> Bool {
@@ -267,6 +293,19 @@ private extension RemoteConfigManager {
                 Logger.error(Strings.remoteConfig.skippingInvalidBlob(ref))
             }
         }
+    }
+
+}
+
+private extension BackendError {
+
+    /// Client errors disable remote config refreshes as a safety mechanism for the current manager lifetime.
+    var isRemoteConfigDisablingClientError: Bool {
+        guard case let .networkError(.errorResponse(_, statusCode, _)) = self else {
+            return false
+        }
+
+        return 400...499 ~= statusCode.rawValue
     }
 
 }

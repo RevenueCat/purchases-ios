@@ -49,6 +49,10 @@ final class RemoteConfigManagerTests: TestCase {
         try super.tearDownWithError()
     }
 
+    func testIsDisabledDefaultsToFalse() {
+        expect(self.manager.isDisabled) == false
+    }
+
     func testFirstRunSendsDefaultAppDomainManifest() throws {
         self.diskCache.stubbedRead = nil
 
@@ -303,6 +307,71 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobStore.invokedWriteCount) == 0
         expect(self.blobStore.invokedRetainOnlyCount) == 0
         expect(self.blobFetcher.invokedPrefetchCount) == 0
+    }
+
+    func testFourHundredResponseDisablesRemoteConfig() {
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.sources:etag1"
+        )
+
+        expect(self.manager.isDisabled) == false
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .invalidRequest)))
+        expect(self.manager.isDisabled) == true
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        expect(self.diskCache.invokedReadCount) == 1
+        expect(self.diskCache.invokedWriteCount) == 0
+        expect(self.blobStore.invokedWriteCount) == 0
+        expect(self.blobStore.invokedRetainOnlyCount) == 0
+        expect(self.blobFetcher.invokedPrefetchCount) == 0
+    }
+
+    func testTooManyRequestsResponseDisablesRemoteConfig() {
+        expect(self.manager.isDisabled) == false
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .tooManyRequests)))
+        expect(self.manager.isDisabled) == true
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        expect(self.diskCache.invokedReadCount) == 1
+    }
+
+    func testServerErrorDoesNotDisableRemoteConfig() {
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        expect(self.manager.isDisabled) == false
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+        expect(self.diskCache.invokedReadCount) == 2
+    }
+
+    func testTransportNetworkErrorDoesNotDisableRemoteConfig() {
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1))))
+        )
+        expect(self.manager.isDisabled) == false
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+        expect(self.diskCache.invokedReadCount) == 2
+    }
+
+    func testClearCacheDoesNotReenableDisabledRemoteConfigRefresh() {
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
+        expect(self.manager.isDisabled) == true
+        self.manager.clearCache()
+        expect(self.manager.isDisabled) == true
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        expect(self.diskCache.invokedClearCount) == 1
+        expect(self.blobStore.invokedClearCount) == 1
     }
 
     func testMalformedConfigPayloadLeavesCacheUntouched() throws {
@@ -814,6 +883,23 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 3
     }
 
+    func testStaleFourHundredResponseDoesNotDisableRemoteConfig() {
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.clearCache()
+        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+
+        self.remoteConfigAPI.complete(at: 0, with: .failure(Self.backendError(statusCode: .invalidRequest)))
+        expect(self.manager.isDisabled) == false
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+
+        self.remoteConfigAPI.complete(at: 1, with: .success(.test(container: nil)))
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 3
+    }
+
     func testManagerCanSyncAgainAfterClearCache() throws {
         self.diskCache.stubbedRead = nil
         let response = """
@@ -916,6 +1002,13 @@ private extension RemoteConfigManagerTests {
         }
     }
 
+    static func backendError(statusCode: HTTPStatusCode) -> BackendError {
+        return .networkError(.errorResponse(
+            .init(code: .unknownError, originalCode: BackendErrorCode.unknownError.rawValue),
+            statusCode
+        ))
+    }
+
     static func container(
         config: String,
         contentElements: [Data] = []
@@ -1008,9 +1101,11 @@ private final class MockRemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
     private(set) var invokedWriteCount = 0
     private(set) var invokedWriteParameter: PersistedRemoteConfiguration?
+    private(set) var invokedReadCount = 0
     private(set) var invokedClearCount = 0
 
     func read() -> PersistedRemoteConfiguration? {
+        self.invokedReadCount += 1
         return self.readHandler?() ?? self.stubbedRead
     }
 
