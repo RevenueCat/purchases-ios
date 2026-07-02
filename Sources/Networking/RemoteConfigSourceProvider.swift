@@ -58,6 +58,10 @@ protocol RemoteConfigSourceProviderType: AnyObject {
     /// Rewinds the given purpose to its first source, e.g. to start fresh on a new fetch cycle.
     func restart(for purpose: RemoteConfigSourceHandle.Purpose)
 
+    /// Rewinds the given purpose only if every known source for it has already been exhausted.
+    @discardableResult
+    func restartIfExhausted(for purpose: RemoteConfigSourceHandle.Purpose) -> Bool
+
 }
 
 /// Read-only access to a topic's persisted item index (metadata only — no blob bytes, no waiting).
@@ -149,6 +153,21 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
             if !self.rebuildIfNeeded() {
                 self.failover(for: purpose).restart()
             }
+        }
+    }
+
+    @discardableResult
+    func restartIfExhausted(for purpose: RemoteConfigSourceHandle.Purpose) -> Bool {
+        return self.lock.perform {
+            if self.rebuildIfNeeded() {
+                return true
+            }
+
+            let failover = self.failover(for: purpose)
+            guard failover.current == nil else { return false }
+
+            failover.restart()
+            return true
         }
     }
 

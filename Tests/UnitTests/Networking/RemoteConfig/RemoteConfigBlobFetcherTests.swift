@@ -141,7 +141,51 @@ final class RemoteConfigBlobFetcherTests: TestCase {
 
         let result = await task.value
         expect(result) == false
+        expect(self.downloader.requestedRefs) == [ref]
         expect(self.blobStore.invokedWriteCount) == 0
+    }
+
+    func testEnsureDownloadedRestartsExhaustedSourcesForNewRequest() async {
+        let failingRef = Self.ref(for: "failing".asData)
+        let recoveryPayload = "recovery".asData
+        let recoveryRef = Self.ref(for: recoveryPayload)
+
+        let failing = Task { await self.fetcher.ensureDownloaded(ref: failingRef) }
+        await self.downloader.waitForRequestCount(1)
+        self.downloader.complete(ref: failingRef, with: .failure(TestError()))
+
+        let failingResult = await failing.value
+        expect(failingResult) == false
+
+        let recovery = Task { await self.fetcher.ensureDownloaded(ref: recoveryRef) }
+        await self.downloader.waitForRequestCount(2)
+        self.downloader.complete(ref: recoveryRef, with: .success(recoveryPayload))
+
+        let recoveryResult = await recovery.value
+        expect(recoveryResult) == true
+        expect(self.downloader.requestedRefs) == [failingRef, recoveryRef]
+        expect(self.blobStore.invokedWriteParameters?.data) == recoveryPayload
+    }
+
+    func testPrefetchRestartsExhaustedSourcesForNewRequest() async {
+        let failingRef = Self.ref(for: "failing".asData)
+        let recoveryPayload = "prefetch recovery".asData
+        let recoveryRef = Self.ref(for: recoveryPayload)
+
+        let failing = Task { await self.fetcher.ensureDownloaded(ref: failingRef) }
+        await self.downloader.waitForRequestCount(1)
+        self.downloader.complete(ref: failingRef, with: .failure(TestError()))
+
+        let failingResult = await failing.value
+        expect(failingResult) == false
+
+        self.fetcher.prefetch(refs: [recoveryRef])
+        await self.downloader.waitForRequestCount(2)
+        self.downloader.complete(ref: recoveryRef, with: .success(recoveryPayload))
+        await self.waitForScheduledTaskToReachFetcher()
+
+        expect(self.downloader.requestedRefs) == [failingRef, recoveryRef]
+        expect(self.blobStore.invokedWriteParameters?.data) == recoveryPayload
     }
 
     func testNetworkFailureRetriesNextSource() async {

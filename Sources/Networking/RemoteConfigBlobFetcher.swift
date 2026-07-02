@@ -93,7 +93,12 @@ private actor RemoteConfigBlobFetchScheduler {
     /// Enqueues a high-priority consumer request and suspends until that ref resolves.
     func ensureDownloaded(ref: String) async -> Bool {
         return await withCheckedContinuation { continuation in
-            self.enqueue(ref: ref, priority: .high, continuation: continuation)
+            self.enqueue(
+                ref: ref,
+                priority: .high,
+                continuation: continuation,
+                restartsExhaustedSources: true
+            )
         }
     }
 
@@ -119,6 +124,10 @@ private actor RemoteConfigBlobFetchScheduler {
 
     /// Enqueues low-priority work without a waiting continuation.
     func prefetch(refs: [String]) {
+        if refs.contains(where: { RemoteConfigBlobRefHelpers.isValid($0) && !self.blobStore.contains(ref: $0) }) {
+            self.restartBlobSourcesIfExhausted()
+        }
+
         for ref in refs {
             self.enqueue(ref: ref, priority: .low, continuation: nil)
         }
@@ -195,7 +204,8 @@ private actor RemoteConfigBlobFetchScheduler {
     private func enqueue(
         ref: String,
         priority: Priority,
-        continuation: CheckedContinuation<Bool, Never>?
+        continuation: CheckedContinuation<Bool, Never>?,
+        restartsExhaustedSources: Bool = false
     ) {
         guard RemoteConfigBlobRefHelpers.isValid(ref) else {
             Logger.error(Strings.remoteConfig.malformedBlobRef(ref))
@@ -206,6 +216,10 @@ private actor RemoteConfigBlobFetchScheduler {
         guard !self.blobStore.contains(ref: ref) else {
             continuation?.resume(returning: true)
             return
+        }
+
+        if restartsExhaustedSources {
+            self.restartBlobSourcesIfExhausted()
         }
 
         // Coalesce duplicate queued requests into one future download, keeping every waiting consumer.
@@ -237,6 +251,11 @@ private actor RemoteConfigBlobFetchScheduler {
             continuations: continuation.map { [$0] } ?? []
         )
         self.scheduleDownloads()
+    }
+
+    /// Starts a new blob-source pass when a previous request exhausted every known source.
+    private func restartBlobSourcesIfExhausted() {
+        self.sourceProvider.restartIfExhausted(for: .blob)
     }
 
     /// Starts queued downloads until the concurrency limit is reached.
