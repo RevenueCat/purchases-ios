@@ -383,7 +383,7 @@ import Foundation
         /// - Parameter preferredUILocaleOverride: A locale string in the format "language_region" (e.g., "en_US").
         ///
         /// Defaults to `nil`, which means using the default user locale for RevenueCatUI components.
-        public func with(preferredUILocaleOverride: String?) -> Builder {
+        @objc public func with(preferredUILocaleOverride: String?) -> Builder {
             self.preferredLocale = preferredUILocaleOverride
             return self
         }
