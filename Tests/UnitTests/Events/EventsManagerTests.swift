@@ -523,7 +523,7 @@ class EventsManagerTests: TestCase {
         let map = (event as FeatureEvent).toMap()
 
         expect(map["discriminator"] as? String) == "workflows"
-        expect(map["type"] as? String) == "workflows_step_started"
+        expect(map["type"] as? String) == "workflow_step_started"
         expect(map["id"] as? String) == creationData.id.uuidString
         expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
         expect(map["workflow_id"] as? String) == "wfl_abc"
@@ -540,7 +540,7 @@ class EventsManagerTests: TestCase {
         let map = (event as FeatureEvent).toMap()
 
         expect(map["discriminator"] as? String) == "workflows"
-        expect(map["type"] as? String) == "workflows_step_completed"
+        expect(map["type"] as? String) == "workflow_step_completed"
         expect(map["to_step_id"] as? String) == "step-2"
         expect(map["from_step_id"]).to(beNil())
     }
@@ -562,7 +562,7 @@ class EventsManagerTests: TestCase {
         let map = (event as FeatureEvent).toMap()
 
         expect(map["discriminator"] as? String) == "workflows"
-        expect(map["type"] as? String) == "workflows_close"
+        expect(map["type"] as? String) == "workflow_close"
         expect(map["id"] as? String) == creationData.id.uuidString
         expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
         expect(map["workflow_id"] as? String) == "wfl_abc"
