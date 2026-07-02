@@ -19,7 +19,7 @@ protocol RemoteConfigManagerType: AnyObject {
 ///
 /// This manager currently owns only manifest replay, inline blob extraction, and config-state persistence.
 // swiftlint:disable:next todo
-/// TODO: Remove this interim scope once network blob fetching, topic handler dispatch, and SDK lifecycle wiring land.
+/// TODO: Remove this interim scope once topic handler dispatch and SDK lifecycle wiring land.
 final class RemoteConfigManager: RemoteConfigManagerType {
 
     private static let defaultDomain = "app"
@@ -27,6 +27,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     private let remoteConfigAPI: RemoteConfigAPIType
     private let diskCache: RemoteConfigDiskCacheType
     private let blobStore: RemoteConfigBlobStoreType
+    private let blobFetcher: RemoteConfigBlobFetcherType
     private let currentUserProvider: CurrentUserProvider
     private let lock = Lock()
     private var isRefreshing = false
@@ -36,11 +37,13 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         remoteConfigAPI: RemoteConfigAPIType,
         diskCache: RemoteConfigDiskCacheType,
         blobStore: RemoteConfigBlobStoreType,
+        blobFetcher: RemoteConfigBlobFetcherType,
         currentUserProvider: CurrentUserProvider
     ) {
         self.remoteConfigAPI = remoteConfigAPI
         self.diskCache = diskCache
         self.blobStore = blobStore
+        self.blobFetcher = blobFetcher
         self.currentUserProvider = currentUserProvider
     }
 
@@ -210,6 +213,7 @@ private extension RemoteConfigManager {
 
         self.extractInlineBlobs(from: container, keepingOnly: postSyncReferencedBlobRefs)
         self.blobStore.retainOnly(postSyncReferencedBlobRefs)
+        self.blobFetcher.prefetch(refs: response.prefetchBlobs)
     }
 
     /// Returns the full topic index that should be persisted after this response is applied.
@@ -250,7 +254,13 @@ private extension RemoteConfigManager {
 
             do {
                 try element.withDecodedPayloadBytes { bytes in
-                    try element.validateChecksum(decodedPayloadBytes: bytes)
+                    guard RemoteConfigBlobRefHelpers.isValidPayload(bytes, expectedRef: ref) else {
+                        throw RCContainer.Parser.FormatError.checksumMismatch(
+                            expected: ref,
+                            actual: RemoteConfigBlobRefHelpers.ref(for: bytes)
+                        )
+                    }
+
                     self.blobStore.write(ref: ref, bytes: bytes)
                 }
             } catch {

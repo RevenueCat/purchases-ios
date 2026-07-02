@@ -10,10 +10,11 @@ import Foundation
 protocol RemoteConfigBlobStoreType: AnyObject {
     func contains(ref: String) -> Bool
     func read(ref: String) -> Data?
+    @discardableResult
     func write(
         ref: String,
         bytes: UnsafeRawBufferPointer
-    )
+    ) -> Bool
     func cachedRefs() -> Set<String>
     func retainOnly(_ refs: Set<String>)
     func clear()
@@ -24,6 +25,7 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
 
     private let fileManager: FileManager
     private let directoryURL: URL?
+    private let lock = Lock(.nonRecursive)
 
     init(
         fileManager: FileManager = .default,
@@ -34,6 +36,50 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
     }
 
     func contains(ref: String) -> Bool {
+        return self.lock.perform {
+            return self.containsWithoutLock(ref: ref)
+        }
+    }
+
+    func read(ref: String) -> Data? {
+        return self.lock.perform {
+            return self.readWithoutLock(ref: ref)
+        }
+    }
+
+    @discardableResult
+    func write(
+        ref: String,
+        bytes: UnsafeRawBufferPointer
+    ) -> Bool {
+        return self.lock.perform {
+            return self.writeWithoutLock(ref: ref, bytes: bytes)
+        }
+    }
+
+    func cachedRefs() -> Set<String> {
+        return self.lock.perform {
+            return self.cachedRefsWithoutLock()
+        }
+    }
+
+    func retainOnly(_ refs: Set<String>) {
+        self.lock.perform {
+            self.retainOnlyWithoutLock(refs)
+        }
+    }
+
+    func clear() {
+        self.lock.perform {
+            self.clearWithoutLock()
+        }
+    }
+
+}
+
+private extension RemoteConfigBlobStore {
+
+    func containsWithoutLock(ref: String) -> Bool {
         guard let fileURL = self.fileURL(for: ref) else {
             return false
         }
@@ -41,7 +87,7 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
         return self.isRegularFile(fileURL)
     }
 
-    func read(ref: String) -> Data? {
+    func readWithoutLock(ref: String) -> Data? {
         guard let fileURL = self.fileURL(for: ref),
               self.fileManager.fileExists(atPath: fileURL.path) else {
             return nil
@@ -55,18 +101,18 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
         }
     }
 
-    func write(
+    func writeWithoutLock(
         ref: String,
         bytes: UnsafeRawBufferPointer
-    ) {
+    ) -> Bool {
         guard let directoryURL = self.directoryURL else {
             Logger.error(Strings.remoteConfig.cacheURLNotAvailable)
-            return
+            return false
         }
 
         guard let fileURL = self.fileURL(for: ref) else {
             Logger.error(Strings.remoteConfig.malformedBlobRef(ref))
-            return
+            return false
         }
 
         do {
@@ -79,12 +125,14 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
             var data = Data()
             data.append(contentsOf: bytes.bindMemory(to: UInt8.self))
             try data.write(to: fileURL, options: .atomic)
+            return true
         } catch {
             Logger.error(Strings.remoteConfig.failedToWriteBlob(ref, error))
+            return false
         }
     }
 
-    func cachedRefs() -> Set<String> {
+    func cachedRefsWithoutLock() -> Set<String> {
         guard let directoryURL = self.directoryURL,
               let contents = try? self.fileManager.contentsOfDirectory(
                 at: directoryURL,
@@ -96,7 +144,7 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
 
         return contents.reduce(into: Set<String>()) { refs, fileURL in
             guard self.isRegularFile(fileURL),
-                  Self.isValidRef(fileURL.lastPathComponent) else {
+                  RemoteConfigBlobRefHelpers.isValid(fileURL.lastPathComponent) else {
                 return
             }
 
@@ -104,8 +152,8 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
         }
     }
 
-    func retainOnly(_ refs: Set<String>) {
-        let validRefs = refs.filter(Self.isValidRef)
+    func retainOnlyWithoutLock(_ refs: Set<String>) {
+        let validRefs = refs.filter(RemoteConfigBlobRefHelpers.isValid)
         refs.subtracting(validRefs).forEach { Logger.error(Strings.remoteConfig.malformedBlobRef($0)) }
 
         guard let directoryURL = self.directoryURL,
@@ -126,7 +174,7 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
         }
     }
 
-    func clear() {
+    func clearWithoutLock() {
         guard let directoryURL = self.directoryURL,
               self.fileManager.fileExists(atPath: directoryURL.path) else {
             return
@@ -139,24 +187,15 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
         }
     }
 
-}
-
-private extension RemoteConfigBlobStore {
     static let blobsDirectoryName = "blobs"
-    static let validRefPattern = #"^[A-Za-z0-9_-]{32}$"#
-
     static var defaultDirectoryURL: URL? {
         return DirectoryHelper.baseUrl(for: RemoteConfigDiskCache.directoryType)?
             .appendingPathComponent(RemoteConfigDiskCache.basePath, isDirectory: true)
             .appendingPathComponent(Self.blobsDirectoryName, isDirectory: true)
     }
 
-    static func isValidRef(_ ref: String) -> Bool {
-        return ref.range(of: Self.validRefPattern, options: .regularExpression) != nil
-    }
-
     func fileURL(for ref: String) -> URL? {
-        guard Self.isValidRef(ref) else {
+        guard RemoteConfigBlobRefHelpers.isValid(ref) else {
             return nil
         }
 

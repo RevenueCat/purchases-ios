@@ -38,7 +38,7 @@ final class RemoteConfigBlobStoreTests: TestCase {
     func testWriteThenReadRoundTripsBlobBytes() throws {
         let data = Data([1, 2, 3, 4, 5])
 
-        self.write(ref: Self.refA, data: data)
+        expect(self.write(ref: Self.refA, data: data)) == true
 
         expect(self.blobStore.read(ref: Self.refA)) == data
     }
@@ -136,7 +136,7 @@ final class RemoteConfigBlobStoreTests: TestCase {
     func testMalformedRefIsRejectedAndCannotEscapeBlobDirectory() {
         let malformedRef = "../escape"
 
-        self.write(ref: malformedRef, data: Data([1, 2, 3]))
+        expect(self.write(ref: malformedRef, data: Data([1, 2, 3]))) == false
 
         expect(self.blobStore.contains(ref: malformedRef)) == false
         expect(self.blobStore.read(ref: malformedRef)).to(beNil())
@@ -146,6 +146,38 @@ final class RemoteConfigBlobStoreTests: TestCase {
         ) == false
     }
 
+    func testRetainOnlyWaitsForInProgressWrite() {
+        let fileManager = BlockingFileManager()
+        self.blobStore = RemoteConfigBlobStore(fileManager: fileManager, directoryURL: self.directoryURL)
+
+        let writeFinished = DispatchSemaphore(value: 0)
+        let retainStarted = DispatchSemaphore(value: 0)
+        let retainFinished = DispatchSemaphore(value: 0)
+
+        let data = Data([1])
+        DispatchQueue.global().async {
+            self.write(ref: Self.refA, data: data)
+            writeFinished.signal()
+        }
+
+        expect(fileManager.waitForDirectoryCreation()) == true
+
+        DispatchQueue.global().async {
+            retainStarted.signal()
+            self.blobStore.retainOnly([Self.refA])
+            retainFinished.signal()
+        }
+
+        expect(retainStarted.wait(timeout: .now() + 1)) == .success
+        expect(fileManager.waitForContentsOfDirectory(timeout: .now() + 0.1)) == false
+
+        fileManager.unblockDirectoryCreation()
+
+        expect(writeFinished.wait(timeout: .now() + 1)) == .success
+        expect(retainFinished.wait(timeout: .now() + 1)) == .success
+        expect(fileManager.waitForContentsOfDirectory()) == true
+    }
+
 }
 
 private extension RemoteConfigBlobStoreTests {
@@ -153,10 +185,59 @@ private extension RemoteConfigBlobStoreTests {
     static let refA = "AAAABBBBCCCCDDDDEEEEFFFFGGGGHHHH"
     static let refB = "IIIIJJJJKKKKLLLLMMMMNNNNOOOOPPPP"
 
-    func write(ref: String, data: Data) {
-        data.withUnsafeBytes { bytes in
+    @discardableResult
+    func write(ref: String, data: Data) -> Bool {
+        return data.withUnsafeBytes { bytes in
             self.blobStore.write(ref: ref, bytes: bytes)
         }
+    }
+
+}
+
+private final class BlockingFileManager: FileManager {
+
+    private let enteredDirectoryCreation = DispatchSemaphore(value: 0)
+    private let allowDirectoryCreation = DispatchSemaphore(value: 0)
+    private let enteredContentsOfDirectory = DispatchSemaphore(value: 0)
+
+    override func createDirectory(
+        at url: URL,
+        withIntermediateDirectories createIntermediates: Bool,
+        attributes: [FileAttributeKey: Any]? = nil
+    ) throws {
+        self.enteredDirectoryCreation.signal()
+        _ = self.allowDirectoryCreation.wait(timeout: .now() + 5)
+
+        try super.createDirectory(
+            at: url,
+            withIntermediateDirectories: createIntermediates,
+            attributes: attributes
+        )
+    }
+
+    override func contentsOfDirectory(
+        at url: URL,
+        includingPropertiesForKeys keys: [URLResourceKey]?,
+        options mask: FileManager.DirectoryEnumerationOptions = []
+    ) throws -> [URL] {
+        self.enteredContentsOfDirectory.signal()
+        return try super.contentsOfDirectory(
+            at: url,
+            includingPropertiesForKeys: keys,
+            options: mask
+        )
+    }
+
+    func waitForDirectoryCreation(timeout: DispatchTime = .now() + 1) -> Bool {
+        return self.enteredDirectoryCreation.wait(timeout: timeout) == .success
+    }
+
+    func waitForContentsOfDirectory(timeout: DispatchTime = .now() + 1) -> Bool {
+        return self.enteredContentsOfDirectory.wait(timeout: timeout) == .success
+    }
+
+    func unblockDirectoryCreation() {
+        self.allowDirectoryCreation.signal()
     }
 
 }
