@@ -266,12 +266,4 @@ struct PreviewPaywallPresenter {
 
 }
 
-private extension UIApplication {
-
-    static var extensionSafeApplication: UIApplication? {
-        return UIApplication.value(forKey: "sharedApplication") as? UIApplication
-    }
-
-}
-
 #endif
