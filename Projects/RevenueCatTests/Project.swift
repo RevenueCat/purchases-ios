@@ -126,15 +126,9 @@ let project = Project(
             sources: [
                 "../../Tests/BackendIntegrationTestApp/**/*.swift"
             ],
-            entitlements: .file(path: "../../Tests/UnitTestsHostApp/UnitTestsHostApp.entitlements"),
             dependencies: [
              .storeKit
             ],
-            settings: .appTarget(including: [
-                "CODE_SIGNING_ALLOWED": "YES",
-                "CODE_SIGNING_REQUIRED": "YES",
-                "CODE_SIGN_IDENTITY": "Apple Development"
-            ].automaticCodeSigning(devTeam: .revenueCatTeamID)),
             metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 

@@ -1808,11 +1808,6 @@ platform :ios do
 
     replace_api_key_integration_tests
 
-    # BackendIntegrationTestsHostApp needs to be signed with its keychain entitlements.
-    Dir.chdir("../Tests/UnitTestsHostApp/fastlane") do
-      match(type: "development", readonly: true)
-    end
-
     success = false
     begin
       scan(

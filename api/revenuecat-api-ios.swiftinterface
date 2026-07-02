@@ -12,7 +12,6 @@ import Foundation
 import Foundation/*.Bundle*/
 import Foundation/*.ProcessInfo*/
 import Foundation/*.URL*/
-import LocalAuthentication
 import Security
 import StoreKit
 import Swift

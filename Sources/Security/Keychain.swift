@@ -6,9 +6,6 @@
 //
 
 import Foundation
-#if !os(tvOS)
-import LocalAuthentication
-#endif
 import Security
 
 /// A protocol that defines the interface for reading, writing, updating, and deleting secure items
@@ -163,15 +160,6 @@ struct Keychain: SecureItemStorage {
             base[kSecAttrService] = access.appIdentifier + "-revenuecat"
         }
 
-        #if !os(tvOS)
-        // set a non-interactive LocalAuthentication Context
-        // this means that every item stored will be storable and retrievable without going through
-        // FaceID or TouchID or a passcode screen
-        let authenticationContext = LAContext()
-        authenticationContext.interactionNotAllowed = true
-        base[kSecUseAuthenticationContext] = authenticationContext
-        #endif
-
         self.baseQuery = base
     }
 
@@ -272,8 +260,6 @@ struct Keychain: SecureItemStorage {
     }
 
     func deleteItem(identifier: String) throws {
-        guard try self.containsItem(identifier: identifier) else { return }
-
         var query = baseQuery
         query[kSecAttrAccount] = identifier
 

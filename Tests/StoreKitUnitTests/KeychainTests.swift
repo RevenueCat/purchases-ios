@@ -309,9 +309,7 @@ class KeychainTests: TestCase {
 /// Tests that verify the service-name scoping and namespace isolation introduced by `Keychain.AccessGroup`.
 ///
 /// These tests require the test host to have a keychain access group entitlement ending in
-/// `KeychainAccessGroupTests.accessGroupSuffix`. If that entitlement is absent the tests are
-/// skipped gracefully rather than failing — add the access group to the UnitTests target's
-/// entitlements to make them run.
+/// `KeychainAccessGroupTests.accessGroupSuffix`. 
 class KeychainAccessGroupTests: TestCase {
 
     // Returns the team identifier prefix (e.g. "A1B2C3D4E5.") by querying
@@ -411,7 +409,7 @@ class KeychainAccessGroupTests: TestCase {
     /// and the given app identifier.
     ///
     /// - Parameter appIdentifier: The `appIdentifier` used to namespace items within the access group.
-    /// - Returns: A ready-to-use `Keychain`, or throws `XCTSkip` when the entitlement is absent.
+    /// - Returns: A ready-to-use `Keychain`
     private func makeAccessGroupKeychain(appIdentifier: String = "com.revenuecat.test") throws -> Keychain {
         let keychain = Keychain(
             access: .init(accessGroup: try Self.accessGroup, appIdentifier: appIdentifier)
