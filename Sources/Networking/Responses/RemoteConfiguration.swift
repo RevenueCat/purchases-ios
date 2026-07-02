@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// The `/v2/config` configuration object.
+/// The `/v1/config` configuration object.
 ///
 /// This is returned by the remote config API either as the config JSON inside an `RCContainer`
 /// response or as the plain JSON HTTP response body.
@@ -49,13 +49,16 @@ struct RemoteConfiguration: Equatable {
 
 extension RemoteConfiguration {
 
+    /// A single topic's items, keyed by item name.
+    typealias ConfigTopic = [String: ConfigItem]
+
     struct Topics: Equatable {
 
-        /// Changed topic bodies only: topic name to item name to config item.
-        let entries: [String: [String: ConfigItem]]
+        /// Changed topic bodies only: topic name to topic.
+        let entries: [String: ConfigTopic]
 
         init(
-            entries: [String: [String: ConfigItem]] = [:]
+            entries: [String: ConfigTopic] = [:]
         ) {
             self.entries = entries
         }

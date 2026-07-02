@@ -151,7 +151,7 @@ extension HTTPRequest {
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
-        case remoteConfig
+        case remoteConfig(domain: String)
 
     }
 
@@ -206,8 +206,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return base
         case let .getWorkflow(_, workflowId):
             return "/workflows/v1/workflows/\(Self.escape(workflowId))"
-        case .remoteConfig:
-            return "/v2/config"
+        case let .remoteConfig(domain):
+            return "/v1/config/\(Self.escape(domain))"
         default:
             return nil
         }
@@ -327,6 +327,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .health,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
+                .remoteConfig,
                 .rewardVerificationStatus:
             return true
         case .getWorkflow,
@@ -343,8 +344,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket:
             return false
-        case .remoteConfig:
-            return false
         }
     }
 
@@ -358,12 +357,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
     }
 
     var relativePath: String {
-        switch self {
-        case .remoteConfig:
-            return "/v2/\(self.pathComponent)"
-        default:
-            return "/v1/\(self.pathComponent)"
-        }
+        return "/v1/\(self.pathComponent)"
     }
 
     var pathComponent: String {
@@ -434,8 +428,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .rewardVerificationStatus(appUserID, clientTransactionID):
             return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
 
-        case .remoteConfig:
-            return "config"
+        case let .remoteConfig(domain):
+            return "config/\(Self.escape(domain))"
         }
     }
 
@@ -511,7 +505,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var additionalHeaders: HTTPRequest.Headers {
         switch self {
         case .remoteConfig:
-            return [HTTPClient.RequestHeader.accept.rawValue: HTTPClient.rcContainerFormatAcceptHeaderValue]
+            return [
+                HTTPClient.RequestHeader.accept.rawValue: HTTPClient.rcContainerFormatAcceptHeaderValue,
+                HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue:
+                    HTTPClient.rcContainerFormatElementEncodingHeaderValue
+            ]
         default:
             return [:]
         }

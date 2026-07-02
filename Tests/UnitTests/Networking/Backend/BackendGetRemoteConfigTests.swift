@@ -31,7 +31,11 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         self.mockSuccessfulResponse()
 
         let result = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false,
+                completion: completed
+            )
         }
 
         expect(result).to(beSuccess())
@@ -43,31 +47,39 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         self.mockSuccessfulResponse()
 
         waitUntil { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false) { _ in completed() }
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false
+            ) { _ in completed() }
         }
 
-        expect(self.httpClient.calls.map { $0.request.path as? HTTPRequest.Path }) == [.remoteConfig]
-        expect(self.httpClient.calls.first?.request.path.relativePath) == "/v2/config"
+        expect(self.httpClient.calls.map { $0.request.path as? HTTPRequest.Path }) == [.remoteConfig(domain: "app")]
+        expect(self.httpClient.calls.first?.request.path.relativePath) == "/v1/config/app"
     }
 
-    func testGetRemoteConfigEncodesDefaultManifestRequestBody() throws {
+    func testGetRemoteConfigEncodesAppUserIDInRequestBody() throws {
         self.mockSuccessfulResponse()
 
         waitUntil { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false) { _ in completed() }
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false
+            ) { _ in completed() }
         }
 
         let body = try XCTUnwrap(self.httpClient.calls.first?.request.requestBody?.asJSONDictionary())
 
-        expect(body["domain"] as? String) == "app"
+        expect(body["app_user_id"] as? String) == Self.appUserID
+        expect(body["domain"]).to(beNil())
         expect(body["manifest"]).to(beNil())
-        expect(body["prefetched_blobs"]).to(beNil())
+        expect(body["prefetched_blobs"] as? [String]).to(beEmpty())
     }
 
     func testGetRemoteConfigEncodesCustomManifestRequestBody() throws {
-        self.mockSuccessfulResponse()
+        self.mockSuccessfulResponse(domain: "project")
 
         let request = RemoteConfigRequest(
+            appUserID: Self.appUserID,
             domain: "project",
             manifest: "v1.123.paywalls:etag-paywalls,product_entitlement_mapping:etag-pem",
             prefetchedBlobs: ["blob-b"]
@@ -82,7 +94,9 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
         let body = try XCTUnwrap(self.httpClient.calls.first?.request.requestBody?.asJSONDictionary())
 
-        expect(body["domain"] as? String) == "project"
+        expect(self.httpClient.calls.first?.request.path.relativePath) == "/v1/config/project"
+        expect(body["app_user_id"] as? String) == Self.appUserID
+        expect(body["domain"]).to(beNil())
         expect(body["manifest"] as? String) == "v1.123.paywalls:etag-paywalls,product_entitlement_mapping:etag-pem"
         expect(body["prefetched_blobs"] as? [String]) == ["blob-b"]
     }
@@ -91,18 +105,27 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         self.mockSuccessfulResponse()
 
         waitUntil { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false) { _ in completed() }
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false
+            ) { _ in completed() }
         }
 
         expect(self.httpClient.calls.first?.headers[HTTPClient.RequestHeader.accept.rawValue])
             == HTTPClient.rcContainerFormatAcceptHeaderValue
+        expect(self.httpClient.calls.first?.headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue])
+            == HTTPClient.rcContainerFormatElementEncodingHeaderValue
+        expect(self.httpClient.calls.first?.headers["Accept-Encoding"]).to(beNil())
     }
 
     func testGetRemoteConfigDoesNotSendETagHeaders() {
         self.mockSuccessfulResponse()
 
         waitUntil { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false) { _ in completed() }
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false
+            ) { _ in completed() }
         }
 
         expect(self.httpClient.calls.first?.headers[ETagManager.eTagRequestHeader.rawValue]).to(beNil())
@@ -113,7 +136,10 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         self.mockSuccessfulResponse()
 
         waitUntil { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false) { _ in completed() }
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false
+            ) { _ in completed() }
         }
 
         let headers = self.httpClient.calls.first?.headers
@@ -128,7 +154,11 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         self.mockSuccessfulResponse()
 
         let result = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: true, completion: completed)
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: true,
+                completion: completed
+            )
         }
 
         expect(result).to(beSuccess())
@@ -139,7 +169,11 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         self.mockSuccessfulResponse()
 
         let result = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false,
+                completion: completed
+            )
         }
 
         expect(result).to(beSuccess())
@@ -153,6 +187,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
         let responses: Atomic<Int> = .init(0)
         let request = RemoteConfigRequest(
+            appUserID: Self.appUserID,
             manifest: "v1.10.paywalls:etag-a",
             prefetchedBlobs: ["blob-b", "blob-a"]
         )
@@ -170,12 +205,12 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let responses: Atomic<Int> = .init(0)
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(manifest: "v1.10.paywalls:etag-a"),
+            request: .init(appUserID: Self.appUserID, manifest: "v1.10.paywalls:etag-a"),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(manifest: "v1.10.paywalls:etag-b"),
+            request: .init(appUserID: Self.appUserID, manifest: "v1.10.paywalls:etag-b"),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
@@ -185,16 +220,38 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigDoesNotCoalesceSimultaneousRequestsWithDifferentDomains() {
         self.mockSuccessfulResponse(delay: .milliseconds(10))
+        self.mockSuccessfulResponse(domain: "app_workflows", delay: .milliseconds(10))
 
         let responses: Atomic<Int> = .init(0)
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(domain: "app", manifest: "v1.10.paywalls:etag-a"),
+            request: .init(appUserID: Self.appUserID, domain: "app", manifest: "v1.10.paywalls:etag-a"),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(domain: "app_workflows", manifest: "v1.10.paywalls:etag-a"),
+            request: .init(appUserID: Self.appUserID, domain: "app_workflows", manifest: "v1.10.paywalls:etag-a"),
+            isAppBackgrounded: false
+        ) { _ in responses.value += 1 }
+
+        expect(responses.value).toEventually(equal(2))
+        expect(self.httpClient.calls).to(haveCount(2))
+        expect(self.httpClient.calls.map { $0.request.path.relativePath })
+            .to(contain("/v1/config/app", "/v1/config/app_workflows"))
+    }
+
+    func testGetRemoteConfigDoesNotCoalesceSimultaneousRequestsWithDifferentAppUserIDs() {
+        self.mockSuccessfulResponse(delay: .milliseconds(10))
+
+        let responses: Atomic<Int> = .init(0)
+
+        self.remoteConfigAPI.getRemoteConfig(
+            request: .init(appUserID: "app-user-a", manifest: "v1.10.paywalls:etag-a"),
+            isAppBackgrounded: false
+        ) { _ in responses.value += 1 }
+
+        self.remoteConfigAPI.getRemoteConfig(
+            request: .init(appUserID: "app-user-b", manifest: "v1.10.paywalls:etag-a"),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
@@ -208,12 +265,12 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let responses: Atomic<Int> = .init(0)
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(manifest: "v1.10.paywalls:etag-a", prefetchedBlobs: ["blob-a"]),
+            request: .init(appUserID: Self.appUserID, manifest: "v1.10.paywalls:etag-a", prefetchedBlobs: ["blob-a"]),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(manifest: "v1.10.paywalls:etag-a", prefetchedBlobs: ["blob-b"]),
+            request: .init(appUserID: Self.appUserID, manifest: "v1.10.paywalls:etag-a", prefetchedBlobs: ["blob-b"]),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
@@ -224,8 +281,8 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
     func testCoalescedRequestsLogDebugMessage() {
         self.mockSuccessfulResponse(delay: .milliseconds(10))
 
-        self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false) { _ in }
-        self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false) { _ in }
+        self.remoteConfigAPI.getRemoteConfig(request: Self.defaultRequest, isAppBackgrounded: false) { _ in }
+        self.remoteConfigAPI.getRemoteConfig(request: Self.defaultRequest, isAppBackgrounded: false) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
         expect(self.httpClient.calls).toNever(haveCount(2))
@@ -242,16 +299,22 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         self.mockSuccessfulResponse()
 
         let result: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false,
+                completion: completed
+            )
         }
 
         let fetchResult = try XCTUnwrap(result?.value)
         let container = try XCTUnwrap(fetchResult.container)
 
-        expect(RCContainerTestData.data(from: container.config)) == Self.config
-        expect(container.contentElements).to(haveCount(1))
+        let contentElementsByChecksum = container.inlineContentElements
+
+        expect(RCContainerTestData.data(from: container.configElement)) == Self.config
+        expect(contentElementsByChecksum).to(haveCount(1))
         expect(RCContainerTestData.data(
-            from: try XCTUnwrap(container.contentElements[RCContainerTestData.blobRef(for: Self.content)])
+            from: try XCTUnwrap(contentElementsByChecksum[RCContainerTestData.blobRef(for: Self.content)])
         )) == Self.content
         expect(fetchResult.verificationResult) == .notRequested
     }
@@ -260,7 +323,11 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         self.mockSuccessfulResponse(verificationResult: .verified)
 
         let result: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false,
+                completion: completed
+            )
         }
 
         let fetchResult = try XCTUnwrap(result?.value)
@@ -269,11 +336,71 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(fetchResult.verificationResult) == .verified
     }
 
+    func testGetRemoteConfigKeepsContentElementsWithChecksumMismatch() throws {
+        let data = RCContainerTestData.container(
+            config: Self.config,
+            contentElements: [Self.content],
+            checksumOverride: { index, payload in
+                return index == 1
+                    ? Array(repeating: 0, count: RCContainerTestData.checksumSize)
+                    : RCContainerTestData.checksum(for: payload)
+            }
+        )
+        self.httpClient.mock(
+            requestPath: .remoteConfig(domain: "app"),
+            response: .init(statusCode: .success, body: data)
+        )
+
+        let result: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue { completed in
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false,
+                completion: completed
+            )
+        }
+
+        let fetchResult = try XCTUnwrap(result?.value)
+        let container = try XCTUnwrap(fetchResult.container)
+
+        let contentElementsByChecksum = container.inlineContentElements
+
+        expect(RCContainerTestData.data(from: container.configElement)) == Self.config
+        expect(contentElementsByChecksum).to(haveCount(1))
+    }
+
+    func testGetRemoteConfigParsesResponseWhenConfigChecksumMismatches() throws {
+        let data = RCContainerTestData.container(
+            config: Self.config,
+            checksumOverride: { _, _ in Array(repeating: 0, count: RCContainerTestData.checksumSize) }
+        )
+        self.httpClient.mock(
+            requestPath: .remoteConfig(domain: "app"),
+            response: .init(statusCode: .success, body: data)
+        )
+
+        let result: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue { completed in
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false,
+                completion: completed
+            )
+        }
+
+        let fetchResult = try XCTUnwrap(result?.value)
+        let container = try XCTUnwrap(fetchResult.container)
+
+        expect(RCContainerTestData.data(from: container.configElement)) == Self.config
+    }
+
     func testGetRemoteConfigReturnsFailedVerificationResultFromHTTPClient() throws {
         self.mockSuccessfulResponse(verificationResult: .failed)
 
         let result: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false,
+                completion: completed
+            )
         }
 
         let fetchResult = try XCTUnwrap(result?.value)
@@ -284,12 +411,16 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigNoContentResponseSucceedsWithNoContainer() throws {
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: "app"),
             response: .init(statusCode: .noContent, body: Data(), verificationResult: .verified)
         )
 
         let result: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false,
+                completion: completed
+            )
         }
 
         expect(result).to(beSuccess())
@@ -303,12 +434,16 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigFailSendsError() {
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: "app"),
             response: .init(error: .unexpectedResponse(nil))
         )
 
         let result = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false,
+                completion: completed
+            )
         }
 
         expect(result).to(beFailure())
@@ -318,12 +453,16 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let mockedError: NetworkError = .unexpectedResponse(nil)
 
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: "app"),
             response: .init(error: mockedError)
         )
 
         let result = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false,
+                completion: completed
+            )
         }
 
         expect(result).to(beFailure())
@@ -335,12 +474,16 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let mockedError: NetworkError = .errorResponse(errorResponse, .internalServerError)
 
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: "app"),
             response: .init(error: mockedError)
         )
 
         let result = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false,
+                completion: completed
+            )
         }
 
         expect(result).to(beFailure())
@@ -349,12 +492,16 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigInvalidRCContainerSendsDecodingError() {
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: "app"),
             response: .init(statusCode: .success, body: "not an rc container".asData)
         )
 
         let result = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false,
+                completion: completed
+            )
         }
 
         guard case let .networkError(.decoding(error, _)) = result?.error else {
@@ -367,12 +514,16 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigSuccessfulEmptyResponseSendsDecodingError() {
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: "app"),
             response: .init(statusCode: .success, body: Data())
         )
 
         let result = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false,
+                completion: completed
+            )
         }
 
         guard case let .networkError(.decoding(error, _)) = result?.error else {
@@ -385,12 +536,16 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigSuccessfulJSONResponseSendsDecodingError() {
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: "app"),
             response: .init(statusCode: .success, body: #"{"api_sources":[]}"#.asData)
         )
 
         let result = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfig(isAppBackgrounded: false, completion: completed)
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false,
+                completion: completed
+            )
         }
 
         guard case let .networkError(.decoding(error, _)) = result?.error else {
@@ -407,17 +562,23 @@ private extension BackendGetRemoteConfigTests {
 
     static let config = #"{"manifest":{}}"#.asData
     static let content = #"{"products":[]}"#.asData
+    static let appUserID = "app-user-id"
+
+    static var defaultRequest: RemoteConfigRequest {
+        return .init(appUserID: Self.appUserID)
+    }
 
     static var containerData: Data {
         return RCContainerTestData.container(config: Self.config, contentElements: [Self.content])
     }
 
     func mockSuccessfulResponse(
+        domain: String = "app",
         verificationResult: VerificationResult = .defaultValue,
         delay: DispatchTimeInterval = .never
     ) {
         self.httpClient.mock(
-            requestPath: .remoteConfig,
+            requestPath: .remoteConfig(domain: domain),
             response: .init(
                 statusCode: .success,
                 body: Self.containerData,

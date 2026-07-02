@@ -308,17 +308,33 @@ final class RemoteConfigurationDecodingTests: TestCase {
         expect(json["prefetch"]).to(beNil())
     }
 
-    func testRequestEncodeRoundTripPreservesShape() throws {
+    func testRequestEncodingOmitsDomain() throws {
         let request = RemoteConfigRequest(
-            domain: "app",
+            appUserID: "app-user-id",
+            domain: "project",
             manifest: "v1.123.sources:sources-etag",
             prefetchedBlobs: ["blob-b", "blob-a"]
         )
 
         let data = try JSONEncoder.default.encode(request)
-        let decoded = try JSONDecoder.default.decode(RemoteConfigRequest.self, from: data)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
 
-        expect(decoded) == request
+        expect(json["app_user_id"] as? String) == "app-user-id"
+        expect(json["domain"]).to(beNil())
+        expect(json["manifest"] as? String) == "v1.123.sources:sources-etag"
+        expect(json["prefetched_blobs"] as? [String]) == ["blob-b", "blob-a"]
+    }
+
+    func testFirstRunRequestEncodingIncludesEmptyPrefetchedBlobs() throws {
+        let request = RemoteConfigRequest(appUserID: "app-user-id")
+
+        let data = try JSONEncoder.default.encode(request)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        expect(json["app_user_id"] as? String) == "app-user-id"
+        expect(json["domain"]).to(beNil())
+        expect(json["manifest"]).to(beNil())
+        expect(json["prefetched_blobs"] as? [String]).to(beEmpty())
     }
 
 }

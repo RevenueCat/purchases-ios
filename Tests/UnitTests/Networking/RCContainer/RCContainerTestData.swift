@@ -5,7 +5,13 @@
 //  Created by RevenueCat.
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 
+// swiftlint:disable file_length
+
+import Compression
 import Foundation
+import XCTest
+import zlib
+
 @testable import RevenueCat
 
 enum RCContainerTestData {
@@ -19,10 +25,12 @@ enum RCContainerTestData {
     static let uint32Size = 4
     static var headerVersionOffset: Int { return Self.headerMagicSize }
     static var elementHeaderSize: Int { return Self.checksumSize + Self.uint32Size + Self.uint32Size }
+    static var firstElementEncodingOffset: Int { return Self.headerSize + Self.checksumSize + Self.uint32Size }
     static var firstPayloadOffset: Int { return Self.headerSize + Self.elementHeaderSize }
 
+    static let workflowBlob = Self.workflowBlobText.asData
+    static let summerWorkflowBlob = Self.summerWorkflowBlobText.asData
     static let configJSON = Self.configJSONText.asData
-    static let entitlementMappingBlob = Self.entitlementMappingText.asData
     static let largeBlob = Data((0..<300).map { UInt8($0 % 256) })
     static let smallBlob = "a".asData
 
@@ -34,17 +42,17 @@ enum RCContainerTestData {
         Fixture(
             fileName: "v1_single_element.bin",
             config: Self.configJSON,
-            contentElements: [Self.entitlementMappingBlob]
+            contentElements: [Self.workflowBlob]
         ),
         Fixture(
             fileName: "v1_multiple_elements.bin",
             config: Self.configJSON,
-            contentElements: [Self.smallBlob, Data(), Self.entitlementMappingBlob, Self.largeBlob]
+            contentElements: [Self.smallBlob, Data(), Self.workflowBlob, Self.largeBlob]
         ),
         Fixture(
             fileName: "v1_empty_config.bin",
             config: Data(),
-            contentElements: [Self.entitlementMappingBlob]
+            contentElements: [Self.workflowBlob]
         ),
         Fixture(
             fileName: "v1_flags_set.bin",
@@ -54,7 +62,41 @@ enum RCContainerTestData {
         Fixture(
             fileName: "v1_duplicate_elements.bin",
             config: Self.configJSON,
-            contentElements: [Self.entitlementMappingBlob, Self.entitlementMappingBlob]
+            contentElements: [Self.workflowBlob, Self.workflowBlob]
+        ),
+        Fixture(
+            fileName: "v1_gzip_config.bin",
+            config: Self.configJSON,
+            configEncoding: .gzip
+        ),
+        Fixture(
+            fileName: "v1_gzip_content.bin",
+            config: Self.configJSON,
+            contentElements: [
+                .init(payload: Self.workflowBlob, encoding: .gzip)
+            ]
+        ),
+        Fixture(
+            fileName: "v1_brotli_config.bin",
+            config: Self.configJSON,
+            configEncoding: .brotli
+        ),
+        Fixture(
+            fileName: "v1_brotli_content.bin",
+            config: Self.configJSON,
+            contentElements: [
+                .init(payload: Self.workflowBlob, encoding: .brotli)
+            ]
+        ),
+        Fixture(
+            fileName: "v1_mixed_encodings.bin",
+            config: Self.configJSON,
+            configEncoding: .gzip,
+            contentElements: [
+                .init(payload: Self.smallBlob, encoding: .none),
+                .init(payload: Self.workflowBlob, encoding: .gzip),
+                .init(payload: Self.largeBlob, encoding: .brotli)
+            ]
         )
     ]
 
@@ -84,10 +126,11 @@ enum RCContainerTestData {
         return data
     }
 
-    static func container(fixture: Fixture) -> Data {
-        return Self.container(
+    static func container(fixture: Fixture) throws -> Data {
+        return try Self.compressedContainer(
             config: fixture.config,
-            contentElements: fixture.contentElements,
+            configEncoding: fixture.configEncoding,
+            contentElements: fixture.contentElements.map { ($0.payload, $0.encoding) },
             version: fixture.version,
             flags: fixture.flags
         )
@@ -108,6 +151,21 @@ enum RCContainerTestData {
         return element.withPayloadBytes { Data($0) }
     }
 
+    static func decodedData(from element: RCContainer.Element) throws -> Data {
+        return try element.withDecodedPayloadBytes { Data($0) }
+    }
+
+    static func firstElement(in container: RCContainer) throws -> RCContainer.Element {
+        return try XCTUnwrap(container.elements.first)
+    }
+
+    static func contentElements(in container: RCContainer) -> [String: RCContainer.Element] {
+        return Dictionary(
+            container.elements.dropFirst().map { ($0.checksum, $0) },
+            uniquingKeysWith: { _, last in last }
+        )
+    }
+
     static func blobRef(for data: Data) -> String {
         return Data(Self.checksum(for: data))
             .base64EncodedString()
@@ -120,6 +178,50 @@ enum RCContainerTestData {
         return Array(data.sha256.prefix(Self.checksumSize))
     }
 
+    static func compressedContainer(
+        config: Data,
+        configEncoding: RCContainer.Element.ContentEncoding = .none,
+        contentElements: [(payload: Data, encoding: RCContainer.Element.ContentEncoding)] = [],
+        version: UInt8 = 1,
+        flags: UInt8 = 0
+    ) throws -> Data {
+        var data = Self.header(version: version, flags: flags)
+        try data.appendElement(config, encoding: configEncoding)
+
+        for element in contentElements {
+            try data.appendElement(element.payload, encoding: element.encoding)
+        }
+
+        return data
+    }
+
+    static func compressedContainerWithTrailingGzipBytes(
+        config: Data,
+        trailingBytes: Data,
+        contentElements: [(payload: Data, encoding: RCContainer.Element.ContentEncoding)] = []
+    ) throws -> Data {
+        var data = Self.header()
+        try data.appendGzipElement(config, trailingBytes: trailingBytes)
+
+        for element in contentElements {
+            try data.appendElement(element.payload, encoding: element.encoding)
+        }
+
+        return data
+    }
+
+    static func compressedContainerWithTrailingGzipContentElement(
+        config: Data,
+        content: Data,
+        trailingBytes: Data
+    ) throws -> Data {
+        var data = Self.header()
+        try data.appendElement(config, encoding: .none)
+        try data.appendGzipElement(content, trailingBytes: trailingBytes)
+
+        return data
+    }
+
 }
 
 extension RCContainerTestData {
@@ -130,21 +232,49 @@ extension RCContainerTestData {
         let version: UInt8
         let flags: UInt8
         let config: Data
-        let contentElements: [Data]
+        let configEncoding: RCContainer.Element.ContentEncoding
+        let contentElements: [Element]
 
         init(
             fileName: String,
             version: UInt8 = 1,
             flags: UInt8 = 0,
             config: Data,
+            configEncoding: RCContainer.Element.ContentEncoding = .none,
             contentElements: [Data] = []
+        ) {
+            self.init(
+                fileName: fileName,
+                version: version,
+                flags: flags,
+                config: config,
+                configEncoding: configEncoding,
+                contentElements: contentElements.map { Element(payload: $0, encoding: .none) }
+            )
+        }
+
+        init(
+            fileName: String,
+            version: UInt8 = 1,
+            flags: UInt8 = 0,
+            config: Data,
+            configEncoding: RCContainer.Element.ContentEncoding = .none,
+            contentElements: [Element]
         ) {
             self.fileName = fileName
             self.version = version
             self.flags = flags
             self.config = config
+            self.configEncoding = configEncoding
             self.contentElements = contentElements
         }
+
+    }
+
+    struct Element {
+
+        let payload: Data
+        let encoding: RCContainer.Element.ContentEncoding
 
     }
 
@@ -152,41 +282,33 @@ extension RCContainerTestData {
 
 private extension RCContainerTestData {
 
-    static let configJSONText = [
+    static let workflowBlobText = [
         "{",
-        "  \"api_sources\": [",
-        "    {",
-        "      \"id\": \"primary\",",
-        "      \"url\": \"https://api.revenuecat.com/\",",
-        "      \"priority\": 0,",
-        "      \"weight\": 100",
-        "    }",
-        "  ],",
-        "  \"blob_sources\": [",
-        "    {",
-        "      \"id\": \"cloudfront-primary\",",
-        "      \"url_format\": \"https://assets.revenuecat.com/rc_app_1234/{blob_ref}\",",
-        "      \"priority\": 0,",
-        "      \"weight\": 100",
-        "    }",
-        "  ],",
-        "  \"manifest\": {",
-        "    \"topics\": {",
-        "      \"product_entitlement_mapping\": {",
-        "        \"DEFAULT\": {",
-        "          \"blob_ref\": \"6a4d0f53d9f6b8e2f4dca0fd1c7c4f5e3e1b1ef0f45d989e2f8f8d0d91ec1b6a\"",
-        "        }",
-        "      }",
-        "    }",
-        "  }",
+        "  \"id\": \"wf1234\",",
+        "  \"steps\": [ { \"type\": \"paywall\", \"offering\": \"default\" } ]",
         "}"
     ].joined(separator: "\n")
 
-    static let entitlementMappingText = [
+    static let summerWorkflowBlobText = [
         "{",
-        "  \"products\": {",
-        "    \"monthly\": [\"pro\"],",
-        "    \"annual\": [\"pro\", \"plus\"]",
+        "  \"id\": \"wf5678\",",
+        "  \"steps\": [ { \"type\": \"paywall\", \"offering\": \"summerCampaign\" } ]",
+        "}"
+    ].joined(separator: "\n")
+
+    static let configJSONText = [
+        "{",
+        "  \"domain\": \"app\",",
+        "  \"manifest\": \"v1.1710000000.workflows:etag1\",",
+        "  \"active_topics\": [\"workflows\"],",
+        "  \"prefetch_blobs\": [\"\(RCContainerTestData.blobRef(for: RCContainerTestData.workflowBlob))\"],",
+        "  \"topics\": {",
+        "    \"workflows\": {",
+        "      \"wf1234\": { \"offering_identifier\": \"default\", " +
+        "\"blob_ref\": \"\(RCContainerTestData.blobRef(for: RCContainerTestData.workflowBlob))\" },",
+        "      \"wf5678\": { \"offering_identifier\": \"summerCampaign\", " +
+        "\"blob_ref\": \"\(RCContainerTestData.blobRef(for: RCContainerTestData.summerWorkflowBlob))\" }",
+        "    }",
         "  }",
         "}"
     ].joined(separator: "\n")
@@ -201,16 +323,51 @@ private extension Data {
         omitPadding: Bool = false,
         checksumOverride: [UInt8]? = nil
     ) {
+        precondition(reserved == 0)
+        // The current format uses the old reserved UInt32 slot as `encoding UInt8 + 3 reserved bytes`.
+        // Keeping this helper uncompressed preserves the original fixture bytes when `reserved == 0`.
+        try? self.appendElement(
+            payload,
+            encoding: .none,
+            omitPadding: omitPadding,
+            checksumOverride: checksumOverride
+        )
+    }
+
+    mutating func appendElement(
+        _ payload: Data,
+        encoding: RCContainer.Element.ContentEncoding,
+        omitPadding: Bool = false,
+        checksumOverride: [UInt8]? = nil
+    ) throws {
+        let wirePayload = try RCContainerTestData.wirePayload(for: payload, encoding: encoding)
+
         self.append(contentsOf: checksumOverride ?? RCContainerTestData.checksum(for: payload))
-        self.appendLittleEndianUInt32(UInt32(payload.count))
-        self.appendLittleEndianUInt32(reserved)
-        self.append(payload)
+        self.appendLittleEndianUInt32(UInt32(wirePayload.count))
+        self.append(encoding.rawValue)
+        self.append(contentsOf: [0, 0, 0])
+        self.append(wirePayload)
 
         guard !omitPadding else {
             return
         }
 
-        self.append(Data(repeating: 0, count: (8 - payload.count % 8) % 8))
+        self.append(Data(repeating: 0, count: (8 - wirePayload.count % 8) % 8))
+    }
+
+    mutating func appendGzipElement(
+        _ payload: Data,
+        trailingBytes: Data
+    ) throws {
+        var wirePayload = try RCContainerTestData.gzipCompressed(payload)
+        wirePayload.append(trailingBytes)
+
+        self.append(contentsOf: RCContainerTestData.checksum(for: payload))
+        self.appendLittleEndianUInt32(UInt32(wirePayload.count))
+        self.append(RCContainer.Element.ContentEncoding.gzip.rawValue)
+        self.append(contentsOf: [0, 0, 0])
+        self.append(wirePayload)
+        self.append(Data(repeating: 0, count: (8 - wirePayload.count % 8) % 8))
     }
 
     mutating func appendLittleEndianUInt32(_ value: UInt32) {
@@ -218,6 +375,98 @@ private extension Data {
         self.append(UInt8((value >> 8) & 0xff))
         self.append(UInt8((value >> 16) & 0xff))
         self.append(UInt8((value >> 24) & 0xff))
+    }
+
+}
+
+private extension RCContainerTestData {
+
+    static let outputChunkSize = 64 * 1024
+
+    static func wirePayload(
+        for payload: Data,
+        encoding: RCContainer.Element.ContentEncoding
+    ) throws -> Data {
+        switch encoding {
+        case .none:
+            return payload
+        case .gzip:
+            return try Self.gzipCompressed(payload)
+        case .brotli:
+            return try Self.brotliCompressed(payload)
+        case .zstd, .unsupported:
+            return payload
+        }
+    }
+
+    static func gzipCompressed(_ data: Data) throws -> Data {
+        var stream = z_stream()
+        let streamSize = Int32(MemoryLayout<z_stream>.size)
+        guard deflateInit2_(
+            &stream,
+            Z_BEST_COMPRESSION,
+            Z_DEFLATED,
+            MAX_WBITS + 16,
+            MAX_MEM_LEVEL,
+            Z_DEFAULT_STRATEGY,
+            ZLIB_VERSION,
+            streamSize
+        ) == Z_OK else {
+            throw RCContainer.Parser.FormatError.unsupportedContentEncoding(
+                RCContainer.Element.ContentEncoding.gzip.rawValue
+            )
+        }
+        defer { deflateEnd(&stream) }
+
+        return try data.withUnsafeBytes { inputBytes in
+            stream.next_in = UnsafeMutablePointer<Bytef>(
+                mutating: inputBytes.bindMemory(to: Bytef.self).baseAddress
+            )
+            stream.avail_in = uInt(inputBytes.count)
+
+            var output = Data()
+            var status: Int32 = Z_OK
+            repeat {
+                var chunk = [UInt8](repeating: 0, count: Self.outputChunkSize)
+                try chunk.withUnsafeMutableBytes { outputBytes in
+                    stream.next_out = outputBytes.bindMemory(to: Bytef.self).baseAddress
+                    stream.avail_out = uInt(outputBytes.count)
+
+                    status = deflate(&stream, Z_FINISH)
+                    guard status == Z_OK || status == Z_STREAM_END else {
+                        throw RCContainer.Parser.FormatError.unsupportedContentEncoding(
+                            RCContainer.Element.ContentEncoding.gzip.rawValue
+                        )
+                    }
+
+                    let byteCount = outputBytes.count - Int(stream.avail_out)
+                    output.append(contentsOf: outputBytes.prefix(byteCount))
+                }
+            } while status != Z_STREAM_END
+
+            return output
+        }
+    }
+
+    static func brotliCompressed(_ data: Data) throws -> Data {
+        return try Self.brotliCompressedBytes(data)
+    }
+
+    static func brotliCompressedBytes(_ data: Data) throws -> Data {
+        var output = Data()
+        let filter = try OutputFilter(
+            .compress,
+            using: try RCContainer.Element.ContentEncoding.brotliCompressionAlgorithm
+        ) { chunk in
+            if let chunk {
+                output.append(chunk)
+            }
+        }
+
+        try filter.write(data)
+        try filter.finalize()
+
+        return output
     }
 
 }
