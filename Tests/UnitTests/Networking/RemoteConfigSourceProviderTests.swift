@@ -268,6 +268,56 @@ final class RemoteConfigSourceProviderTests: TestCase {
         expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
     }
 
+    // MARK: - restartIfExhausted
+
+    func testRestartIfExhaustedRewindsAndReturnsTrueOnceSourcesAreExhausted() {
+        let provider = Self.apiProvider([Self.source("a"), Self.source("b")])
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!)
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!)
+        expect(provider.getCurrent(for: .api)).to(beNil())
+
+        expect(provider.restartIfExhausted(for: .api)) == true
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+    }
+
+    func testRestartIfExhaustedIsNoOpAndReturnsFalseWhileSourceIsCurrent() {
+        let provider = Self.apiProvider([Self.source("a"), Self.source("b")])
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
+
+        expect(provider.restartIfExhausted(for: .api)) == false
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
+    }
+
+    func testRestartIfExhaustedOnlyRewindsRequestedPurpose() {
+        let provider = Self.provider(
+            api: [Self.source("api1", priority: 0)],
+            blob: [Self.source("blob1", priority: 0), Self.source("blob2", priority: 10)]
+        )
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!)
+        provider.reportUnhealthy(provider.getCurrent(for: .blob)!)
+        expect(provider.getCurrent(for: .api)).to(beNil())
+
+        expect(provider.restartIfExhausted(for: .api)) == true
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("api1")
+        expect(provider.getCurrent(for: .blob)?.url) == Self.url("blob2")
+    }
+
+    func testRestartIfExhaustedReturnsTrueWhenChangedSourcesTopicAlreadyRearmedTheList() {
+        let store = FakeTopicStore(Self.sourcesTopic(api: [Self.source("a"), Self.source("b")], blob: []))
+        let provider = RemoteConfigSourceProvider(topicStore: store, randomizer: FakeRandomizer(0))
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
+
+        store.sources = Self.sourcesTopic(api: [Self.source("x"), Self.source("y")], blob: [])
+        expect(provider.restartIfExhausted(for: .api)) == true
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("x")
+    }
+
     // MARK: - Sources topic changes
 
     func testChangedSourcesTopicRebuildsAndRestartsFromTheTop() {
