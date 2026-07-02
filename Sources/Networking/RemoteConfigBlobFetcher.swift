@@ -165,6 +165,10 @@ private actor RemoteConfigBlobFetchScheduler {
                 }
             } catch {
                 Logger.error(Strings.remoteConfig.failedToDownloadBlob(ref, url, error))
+                guard !self.isBlobUnavailable(error) else {
+                    return false
+                }
+
                 self.sourceProvider.reportUnhealthy(source)
                 if self.blobStore.contains(ref: ref) {
                     return true
@@ -174,6 +178,20 @@ private actor RemoteConfigBlobFetchScheduler {
 
         Logger.error(Strings.remoteConfig.failedToBuildBlobURL(ref))
         return false
+    }
+
+    /// Whether a completed download proved the blob unavailable without proving the source unhealthy.
+    private func isBlobUnavailable(_ error: Error) -> Bool {
+        guard let downloaderError = error as? URLSessionRemoteConfigBlobDownloader.Error else {
+            return false
+        }
+
+        switch downloaderError {
+        case let .unexpectedStatusCode(statusCode):
+            return statusCode == HTTPStatusCode.notFoundError.rawValue
+        case .invalidResponse:
+            return false
+        }
     }
 
     /// Adds a ref to the scheduler, coalescing duplicate queued or in-flight requests.

@@ -173,6 +173,42 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         expect(self.blobStore.invokedWriteParameters?.data) == payload
     }
 
+    func testNotFoundDoesNotMarkSourceUnhealthyOrRetryNextSource() async {
+        let missingRef = Self.ref(for: "missing blob".asData)
+        let availablePayload = "available blob".asData
+        let availableRef = Self.ref(for: availablePayload)
+        self.sourceProvider = Self.sourceProvider(urls: [
+            Self.templateURL,
+            Self.backupTemplateURL
+        ])
+        self.fetcher = RemoteConfigBlobFetcher(
+            blobStore: self.blobStore,
+            sourceProvider: self.sourceProvider,
+            downloader: self.downloader
+        )
+
+        let missing = Task { await self.fetcher.ensureDownloaded(ref: missingRef) }
+        await self.downloader.waitForRequestCount(1)
+        self.downloader.complete(
+            ref: missingRef,
+            with: .failure(URLSessionRemoteConfigBlobDownloader.Error.unexpectedStatusCode(404))
+        )
+
+        let missingResult = await missing.value
+        expect(missingResult) == false
+
+        let available = Task { await self.fetcher.ensureDownloaded(ref: availableRef) }
+        await self.downloader.waitForRequestCount(2)
+        self.downloader.complete(ref: availableRef, with: .success(availablePayload))
+
+        let availableResult = await available.value
+        expect(availableResult) == true
+        expect(self.downloader.requestedURLs.map(\.absoluteString)) == [
+            Self.templateURL.replacingOccurrences(of: Self.placeholder, with: missingRef),
+            Self.templateURL.replacingOccurrences(of: Self.placeholder, with: availableRef)
+        ]
+    }
+
     func testNetworkFailureReturnsTrueWhenBlobIsCachedConcurrently() async {
         let ref = Self.ref(for: "cached concurrently".asData)
 
