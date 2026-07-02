@@ -11,6 +11,8 @@ protocol RemoteConfigManagerType: AnyObject {
 
     func refreshRemoteConfig(isAppBackgrounded: Bool)
 
+    func clearCache()
+
 }
 
 /// Coordinates a single remote config refresh.
@@ -24,27 +26,26 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
     private let remoteConfigAPI: RemoteConfigAPIType
     private let diskCache: RemoteConfigDiskCacheType
-    private let dateProvider: DateProvider
-    private let isRefreshing: Atomic<Bool> = false
     private let blobStore: RemoteConfigBlobStoreType
     private let currentUserProvider: CurrentUserProvider
+    private let lock = Lock()
+    private var isRefreshing = false
+    private var epoch = 0
 
     init(
         remoteConfigAPI: RemoteConfigAPIType,
         diskCache: RemoteConfigDiskCacheType,
         blobStore: RemoteConfigBlobStoreType,
-        currentUserProvider: CurrentUserProvider,
-        dateProvider: DateProvider = DateProvider()
+        currentUserProvider: CurrentUserProvider
     ) {
         self.remoteConfigAPI = remoteConfigAPI
         self.diskCache = diskCache
         self.blobStore = blobStore
         self.currentUserProvider = currentUserProvider
-        self.dateProvider = dateProvider
     }
 
     func refreshRemoteConfig(isAppBackgrounded: Bool) {
-        guard self.beginRefreshIfNeeded() else { return }
+        guard let requestEpoch = self.prepareRefreshIfNeeded() else { return }
 
         let persisted = self.diskCache.read()
         let request = RemoteConfigRequest(
@@ -54,19 +55,24 @@ final class RemoteConfigManager: RemoteConfigManagerType {
             prefetchedBlobs: self.cachedPrefetchedBlobRefs(from: persisted)
         )
 
-        self.remoteConfigAPI.getRemoteConfig(
+        self.enqueueRefreshIfCurrent(
             request: request,
-            isAppBackgrounded: isAppBackgrounded
-        ) { [weak self] result in
-            guard let self else { return }
-            defer { self.endRefresh() }
+            persisted: persisted,
+            isAppBackgrounded: isAppBackgrounded,
+            requestEpoch: requestEpoch
+        )
+    }
 
-            switch result {
-            case let .success(fetchResult):
-                self.persist(container: fetchResult.container, previous: persisted)
-            case let .failure(error):
-                Logger.error(Strings.remoteConfig.refreshFailed(error))
-            }
+    /// Wipes cached remote config state, for example after an identity change.
+    ///
+    /// The epoch bump, refresh-guard release, and cache wipe are serialized with response persistence so a late
+    /// response for a previous user is either fully persisted before the wipe or dropped after the epoch changes.
+    func clearCache() {
+        self.lock.perform {
+            self.epoch += 1
+            self.isRefreshing = false
+            self.diskCache.clear()
+            self.blobStore.clear()
         }
     }
 
@@ -74,16 +80,99 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
 private extension RemoteConfigManager {
 
-    func beginRefreshIfNeeded() -> Bool {
-        return self.isRefreshing.modify { isRefreshing in
-            guard !isRefreshing else { return false }
-            isRefreshing = true
+    func prepareRefreshIfNeeded() -> Int? {
+        return self.lock.perform {
+            guard !self.isRefreshing else { return nil }
+            self.isRefreshing = true
+            return self.epoch
+        }
+    }
+
+    func enqueueRefreshIfCurrent(
+        request: RemoteConfigRequest,
+        persisted: PersistedRemoteConfiguration?,
+        isAppBackgrounded: Bool,
+        requestEpoch: Int
+    ) {
+        // Keep the epoch check and operation enqueue atomic with clearCache(), so a clear cannot slip in between them.
+        // This assumes getRemoteConfig only registers/enqueues work and does not synchronously call its completion.
+        self.lock.perform {
+            guard self.epoch == requestEpoch else { return }
+
+            self.remoteConfigAPI.getRemoteConfig(
+                request: request,
+                isAppBackgrounded: isAppBackgrounded
+            ) { [weak self] result in
+                guard let self else { return }
+
+                switch result {
+                case let .success(fetchResult):
+                    self.handleSuccess(
+                        fetchResult,
+                        previous: persisted,
+                        requestEpoch: requestEpoch
+                    )
+                case let .failure(error):
+                    self.handleFailure(error, requestEpoch: requestEpoch)
+                }
+            }
+        }
+    }
+
+    @discardableResult
+    func releaseGuardIfOwned(requestEpoch: Int) -> Bool {
+        return self.lock.perform {
+            guard self.epoch == requestEpoch else { return false }
+            self.isRefreshing = false
             return true
         }
     }
 
-    func endRefresh() {
-        self.isRefreshing.value = false
+    func handleSuccess(
+        _ fetchResult: RemoteConfigFetchResult,
+        previous: PersistedRemoteConfiguration?,
+        requestEpoch: Int
+    ) {
+        guard self.isCurrent(requestEpoch) else { return }
+        defer { self.releaseGuardIfOwned(requestEpoch: requestEpoch) }
+
+        guard let container = fetchResult.container else { return }
+
+        do {
+            let response = try container.configElement.withDecodedPayloadBytes { bytes in
+                try JSONDecoder.default.decode(
+                    RemoteConfiguration.self,
+                    from: Data(bytes)
+                )
+            }
+
+            self.lock.perform {
+                guard self.epoch == requestEpoch else { return }
+                self.persist(
+                    container: container,
+                    previous: previous,
+                    response: response
+                )
+            }
+        } catch {
+            Logger.error(Strings.remoteConfig.failedToParseResponse(error))
+        }
+
+    }
+
+    func handleFailure(
+        _ error: BackendError,
+        requestEpoch: Int
+    ) {
+        if self.releaseGuardIfOwned(requestEpoch: requestEpoch) {
+            Logger.error(Strings.remoteConfig.refreshFailed(error))
+        }
+    }
+
+    func isCurrent(_ requestEpoch: Int) -> Bool {
+        return self.lock.perform {
+            self.epoch == requestEpoch
+        }
     }
 
     /// Replays only requested prefetch blobs that are still present in the blob store.
@@ -96,73 +185,46 @@ private extension RemoteConfigManager {
 
     /// Persists the config sync state and any valid inline blobs from a successful container response.
     func persist(
-        container: RemoteConfigContainer?,
-        previous: PersistedRemoteConfiguration?
-    ) {
-        guard let container else {
-            self.persistLastRefreshAt(previous: previous)
-            return
-        }
-
-        do {
-            let response = try container.configElement.withPayloadBytes { bytes in
-                try JSONDecoder.default.decode(
-                    RemoteConfiguration.self,
-                    from: Data(bytes)
-                )
-            }
-
-            let postSyncTopicBlobRefs = self.postSyncTopicBlobRefs(
-                previous: previous,
-                response: response
-            )
-            let postSyncReferencedBlobRefs = self.postSyncReferencedBlobRefs(
-                response: response,
-                postSyncTopicBlobRefs: postSyncTopicBlobRefs
-            )
-
-            let persistedConfiguration = PersistedRemoteConfiguration(
-                domain: response.domain,
-                manifest: response.manifest,
-                activeTopics: response.activeTopics,
-                prefetchBlobs: response.prefetchBlobs,
-                topicBlobRefs: postSyncTopicBlobRefs,
-                lastRefreshAt: self.dateProvider.now()
-            )
-
-            guard self.diskCache.write(persistedConfiguration) else { return }
-
-            self.extractInlineBlobs(from: container, keepingOnly: postSyncReferencedBlobRefs)
-            self.blobStore.retainOnly(postSyncReferencedBlobRefs)
-        } catch {
-            Logger.error(Strings.remoteConfig.failedToParseResponse(error))
-        }
-    }
-
-    func persistLastRefreshAt(previous: PersistedRemoteConfiguration?) {
-        guard let previous else { return }
-
-        self.diskCache.write(PersistedRemoteConfiguration(
-            domain: previous.domain,
-            manifest: previous.manifest,
-            activeTopics: previous.activeTopics,
-            prefetchBlobs: previous.prefetchBlobs,
-            topicBlobRefs: previous.topicBlobRefs,
-            lastRefreshAt: self.dateProvider.now()
-        ))
-    }
-
-    /// Returns the topic blob refs that should be persisted after this response is applied.
-    ///
-    /// Changed topics overwrite previous refs, unchanged active topics keep previous refs, and inactive topics
-    /// are removed.
-    func postSyncTopicBlobRefs(
+        container: RemoteConfigContainer,
         previous: PersistedRemoteConfiguration?,
         response: RemoteConfiguration
-    ) -> [String: [String]] {
-        return (previous?.topicBlobRefs ?? [:])
-            .merging(response.topics.topicBlobRefs) { _, changed in changed }
+    ) {
+        let postSyncTopics = self.postSyncTopics(
+            previous: previous,
+            response: response
+        )
+        let postSyncReferencedBlobRefs = self.postSyncReferencedBlobRefs(
+            response: response,
+            postSyncTopics: postSyncTopics
+        )
+
+        let persistedConfiguration = PersistedRemoteConfiguration(
+            domain: response.domain,
+            manifest: response.manifest,
+            activeTopics: response.activeTopics,
+            prefetchBlobs: response.prefetchBlobs,
+            topics: postSyncTopics
+        )
+
+        guard self.diskCache.write(persistedConfiguration) else { return }
+
+        self.extractInlineBlobs(from: container, keepingOnly: postSyncReferencedBlobRefs)
+        self.blobStore.retainOnly(postSyncReferencedBlobRefs)
+    }
+
+    /// Returns the full topic index that should be persisted after this response is applied.
+    ///
+    /// Changed topics overwrite previous entries, unchanged active topics keep previous entries, and inactive topics
+    /// are removed.
+    func postSyncTopics(
+        previous: PersistedRemoteConfiguration?,
+        response: RemoteConfiguration
+    ) -> RemoteConfiguration.Topics {
+        let entries = (previous?.topics.entries ?? [:])
+            .merging(response.topics.entries) { _, changed in changed }
             .filter { topic, _ in response.activeTopics.contains(topic) }
+
+        return RemoteConfiguration.Topics(entries: entries)
     }
 
     /// Returns the post-sync set of blob refs the SDK should keep locally.
@@ -171,9 +233,9 @@ private extension RemoteConfigManager {
     /// response topics with previously persisted unchanged topics.
     func postSyncReferencedBlobRefs(
         response: RemoteConfiguration,
-        postSyncTopicBlobRefs: [String: [String]]
+        postSyncTopics: RemoteConfiguration.Topics
     ) -> Set<String> {
-        return Set(response.prefetchBlobs).union(postSyncTopicBlobRefs.values.flatMap { $0 })
+        return Set(response.prefetchBlobs).union(postSyncTopics.blobRefs)
     }
 
     /// Writes valid inline content elements that are referenced by this config response.
@@ -186,13 +248,13 @@ private extension RemoteConfigManager {
         for (ref, element) in container.inlineContentElements {
             guard referencedBlobRefs.contains(ref) else { continue }
 
-            guard element.isChecksumValid() else {
+            do {
+                try element.withDecodedPayloadBytes { bytes in
+                    try element.validateChecksum(decodedPayloadBytes: bytes)
+                    self.blobStore.write(ref: ref, bytes: bytes)
+                }
+            } catch {
                 Logger.error(Strings.remoteConfig.skippingInvalidBlob(ref))
-                continue
-            }
-
-            element.withPayloadBytes { bytes in
-                self.blobStore.write(ref: ref, bytes: bytes)
             }
         }
     }
@@ -201,11 +263,9 @@ private extension RemoteConfigManager {
 
 fileprivate extension RemoteConfiguration.Topics {
 
-    /// The blob refs each changed topic's items reference, keyed by topic name.
-    var topicBlobRefs: [String: [String]] {
-        return self.entries.mapValues { topic in
-            topic.values.compactMap(\.blobRef).sorted()
-        }
+    /// All blob refs referenced by this topic collection.
+    var blobRefs: Set<String> {
+        return Set(self.entries.values.flatMap { $0.values.compactMap(\.blobRef) })
     }
 
 }

@@ -505,7 +505,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var additionalHeaders: HTTPRequest.Headers {
         switch self {
         case .remoteConfig:
-            return [HTTPClient.RequestHeader.accept.rawValue: HTTPClient.rcContainerFormatAcceptHeaderValue]
+            return [
+                HTTPClient.RequestHeader.accept.rawValue: HTTPClient.rcContainerFormatAcceptHeaderValue,
+                HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue:
+                    HTTPClient.rcContainerFormatElementEncodingHeaderValue
+            ]
         default:
             return [:]
         }

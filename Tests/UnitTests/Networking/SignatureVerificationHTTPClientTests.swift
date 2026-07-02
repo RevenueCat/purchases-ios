@@ -372,6 +372,50 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(signingRequest.signature) == Self.sampleSignature
     }
 
+    func testValidRemoteConfigSignatureUsesDecodedConfigPayloadAsSignedMessage() throws {
+        let config = Data(repeating: UInt8(ascii: "c"), count: 2048)
+        let body = try RCContainerTestData.compressedContainer(
+            config: config,
+            configEncoding: .gzip,
+            contentElements: [(payload: "content".asData, encoding: .none)]
+        )
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: body)
+        self.signing.stubbedVerificationResult = true
+
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .verified
+        expect(self.signing.requests.onlyElement?.parameters.message) == config
+    }
+
+    func testValidRemoteConfigSignatureIgnoresCompressedInlineContentElements() throws {
+        let config = "config".asData
+        let content = Data(repeating: UInt8(ascii: "b"), count: 2048)
+        let body = try RCContainerTestData.compressedContainer(
+            config: config,
+            contentElements: [(payload: content, encoding: .gzip)]
+        )
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: body)
+        self.signing.stubbedVerificationResult = true
+
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .verified
+        expect(self.signing.requests.onlyElement?.parameters.message) == config
+    }
+
     func testRemoteConfigSignatureIncludesETagIfBackendSendsIt() throws {
         self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,

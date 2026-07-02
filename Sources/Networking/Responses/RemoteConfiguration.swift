@@ -49,13 +49,16 @@ struct RemoteConfiguration: Equatable {
 
 extension RemoteConfiguration {
 
+    /// A single topic's items, keyed by item name.
+    typealias ConfigTopic = [String: ConfigItem]
+
     struct Topics: Equatable {
 
-        /// Changed topic bodies only: topic name to item name to config item.
-        let entries: [String: [String: ConfigItem]]
+        /// Changed topic bodies only: topic name to topic.
+        let entries: [String: ConfigTopic]
 
         init(
-            entries: [String: [String: ConfigItem]] = [:]
+            entries: [String: ConfigTopic] = [:]
         ) {
             self.entries = entries
         }

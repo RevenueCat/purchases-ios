@@ -24,23 +24,20 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
     let manifest: String
     let activeTopics: [String]
     let prefetchBlobs: [String]
-    let topicBlobRefs: [String: [String]]
-    let lastRefreshAt: Date?
+    let topics: RemoteConfiguration.Topics
 
     init(
         domain: String = RemoteConfiguration.defaultDomain,
         manifest: String,
         activeTopics: [String] = [],
         prefetchBlobs: [String] = [],
-        topicBlobRefs: [String: [String]] = [:],
-        lastRefreshAt: Date? = nil
+        topics: RemoteConfiguration.Topics = .init()
     ) {
         self.domain = domain
         self.manifest = manifest
         self.activeTopics = activeTopics
         self.prefetchBlobs = prefetchBlobs
-        self.topicBlobRefs = topicBlobRefs
-        self.lastRefreshAt = lastRefreshAt
+        self.topics = topics
     }
 
     init(from decoder: Decoder) throws {
@@ -50,8 +47,7 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
             manifest: try container.decode(String.self, forKey: .manifest),
             activeTopics: try container.decodeIfPresent([String].self, forKey: .activeTopics) ?? [],
             prefetchBlobs: try container.decodeIfPresent([String].self, forKey: .prefetchBlobs) ?? [],
-            topicBlobRefs: try container.decodeIfPresent([String: [String]].self, forKey: .topicBlobRefs) ?? [:],
-            lastRefreshAt: try container.decodeIfPresent(Date.self, forKey: .lastRefreshAt)
+            topics: try container.decodeIfPresent(RemoteConfiguration.Topics.self, forKey: .topics) ?? .init()
         )
     }
 
@@ -60,8 +56,7 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
         case manifest
         case activeTopics
         case prefetchBlobs
-        case topicBlobRefs
-        case lastRefreshAt
+        case topics
     }
 
 }

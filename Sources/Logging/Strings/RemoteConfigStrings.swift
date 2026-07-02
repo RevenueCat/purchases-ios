@@ -44,7 +44,7 @@ extension RemoteConfigStrings: LogMessage {
             return "Failed to write remote config cache to disk."
         case let .duplicateSourceURL(url):
             return "Found remote config sources sharing the same URL with conflicting priority/weight " +
-                "(\(url)). Keeping the highest-priority one, tie-broken by weight."
+                "(\(url)). Keeping the highest-priority one (lowest priority number), tie-broken by weight."
         case let .failedToParseResponse(error):
             return "Failed to parse remote config response. Keeping cached configuration. Error: " +
             "\(error.localizedDescription)"

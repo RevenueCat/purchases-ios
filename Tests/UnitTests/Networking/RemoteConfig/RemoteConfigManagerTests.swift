@@ -12,12 +12,10 @@ import XCTest
 
 final class RemoteConfigManagerTests: TestCase {
 
-    private static let lastRefreshAt = Date(timeIntervalSince1970: 1_710_000_100)
     private static let appUserID = "app-user-id"
 
     private var remoteConfigAPI: MockRemoteConfigAPI!
     private var diskCache: MockRemoteConfigDiskCache!
-    private var dateProvider: MockDateProvider!
     private var blobStore: MockRemoteConfigBlobStore!
     private var currentUserProvider: MockCurrentUserProvider!
     private var manager: RemoteConfigManager!
@@ -27,21 +25,18 @@ final class RemoteConfigManagerTests: TestCase {
 
         self.remoteConfigAPI = MockRemoteConfigAPI()
         self.diskCache = MockRemoteConfigDiskCache()
-        self.dateProvider = MockDateProvider(stubbedNow: Self.lastRefreshAt)
         self.blobStore = MockRemoteConfigBlobStore()
         self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: Self.appUserID)
         self.manager = RemoteConfigManager(
             remoteConfigAPI: self.remoteConfigAPI,
             diskCache: self.diskCache,
             blobStore: self.blobStore,
-            currentUserProvider: self.currentUserProvider,
-            dateProvider: self.dateProvider
+            currentUserProvider: self.currentUserProvider
         )
     }
 
     override func tearDownWithError() throws {
         self.manager = nil
-        self.dateProvider = nil
         self.blobStore = nil
         self.currentUserProvider = nil
         self.diskCache = nil
@@ -68,7 +63,7 @@ final class RemoteConfigManagerTests: TestCase {
             domain: "custom",
             manifest: persistedManifest,
             prefetchBlobs: ["prefetchedBlob"],
-            topicBlobRefs: [:]
+            topics: .init()
         )
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: true)
@@ -98,7 +93,7 @@ final class RemoteConfigManagerTests: TestCase {
         self.diskCache.stubbedRead = PersistedRemoteConfiguration(
             manifest: "v1.1710000100.sources:etag1",
             prefetchBlobs: ["cachedBlob", "purgedBlob"],
-            topicBlobRefs: [:]
+            topics: .init()
         )
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: true)
@@ -107,7 +102,7 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobStore.invokedCachedRefsCount) == 1
     }
 
-    func testContainerResponsePersistsServerManifestAndChangedTopicBlobRefs() throws {
+    func testContainerResponsePersistsServerManifestAndChangedTopics() throws {
         self.diskCache.stubbedRead = nil
         let response = """
         {
@@ -134,17 +129,42 @@ final class RemoteConfigManagerTests: TestCase {
             == "v1.1710000100.sources:etag2"
         expect(self.diskCache.invokedWriteParameter?.activeTopics) == ["sources"]
         expect(self.diskCache.invokedWriteParameter?.prefetchBlobs) == ["newBlob"]
-        expect(self.diskCache.invokedWriteParameter?.topicBlobRefs) == ["sources": ["newBlob"]]
-        expect(self.diskCache.invokedWriteParameter?.lastRefreshAt) == Self.lastRefreshAt
+        expect(Self.blobRefsByTopic(from: self.diskCache.invokedWriteParameter?.topics)) == ["sources": ["newBlob"]]
     }
 
-    func testContainerResponseMergesUnchangedTopicRefsAndPrunesDroppedTopics() throws {
+    func testContainerResponseDecodesCompressedConfigElement() throws {
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "api": { "url": "https://api.revenuecat.com" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.compressedContainer(
+                config: response,
+                configEncoding: .gzip
+            )))
+        )
+
+        expect(self.diskCache.invokedWriteCount) == 1
+        expect(self.diskCache.invokedWriteParameter?.manifest) == "v1.1710000100.sources:etag2"
+    }
+
+    func testContainerResponseMergesUnchangedTopicsAndPrunesDroppedTopics() throws {
         self.diskCache.stubbedRead = Self.persisted(
             manifest: "v1.1710000100.product_entitlement_mapping:pemEtag1,sources:etag1",
-            topicBlobRefs: [
-                "sources": ["oldSources"],
-                "product_entitlement_mapping": ["pemBlob"]
-            ]
+            topics: .init(entries: [
+                "sources": ["default": .init(blobRef: "oldSources")],
+                "product_entitlement_mapping": ["default": .init(blobRef: "pemBlob")]
+            ])
         )
         let response = """
         {
@@ -164,17 +184,21 @@ final class RemoteConfigManagerTests: TestCase {
             with: .success(.test(container: try Self.container(config: response)))
         )
 
-        expect(self.diskCache.invokedWriteParameter?.topicBlobRefs) == ["sources": ["newSources"]]
+        expect(Self.blobRefsByTopic(from: self.diskCache.invokedWriteParameter?.topics)) == ["sources": ["newSources"]]
         expect(self.blobStore.invokedRetainOnlyParameters) == Set(["newSources"])
     }
 
-    func testContainerResponseKeepsPreviousRefsForUnchangedTopicsStillActive() throws {
+    func testContainerResponseKeepsPreviousEntriesForUnchangedTopicsStillActive() throws {
+        let previousProductMapping = RemoteConfiguration.ConfigItem(
+            blobRef: "pemBlob",
+            content: ["format": "v1"]
+        )
         self.diskCache.stubbedRead = Self.persisted(
             manifest: "v1.1710000100.product_entitlement_mapping:pemEtag1,sources:etag1",
-            topicBlobRefs: [
-                "sources": ["oldSources"],
-                "product_entitlement_mapping": ["pemBlob"]
-            ]
+            topics: .init(entries: [
+                "sources": ["default": .init(blobRef: "oldSources")],
+                "product_entitlement_mapping": ["default": previousProductMapping]
+            ])
         )
         let response = """
         {
@@ -194,13 +218,15 @@ final class RemoteConfigManagerTests: TestCase {
             with: .success(.test(container: try Self.container(config: response)))
         )
 
-        expect(self.diskCache.invokedWriteParameter?.topicBlobRefs) == [
+        expect(Self.blobRefsByTopic(from: self.diskCache.invokedWriteParameter?.topics)) == [
             "sources": ["newSources"],
             "product_entitlement_mapping": ["pemBlob"]
         ]
+        expect(self.diskCache.invokedWriteParameter?.topics.entries["product_entitlement_mapping"]?["default"])
+            == previousProductMapping
     }
 
-    func testContainerResponsePersistsEmptyBlobRefListForInlineOnlyChangedTopics() throws {
+    func testContainerResponsePersistsInlineOnlyChangedTopics() throws {
         let response = """
         {
           "domain": "app",
@@ -222,32 +248,26 @@ final class RemoteConfigManagerTests: TestCase {
             with: .success(.test(container: try Self.container(config: response)))
         )
 
-        expect(self.diskCache.invokedWriteParameter?.topicBlobRefs) == ["sources": []]
+        let item = self.diskCache.invokedWriteParameter?.topics.entries["sources"]?["api"]
+        expect(item?.blobRef).to(beNil())
+        expect(item?.content["url"]) == "https://api.revenuecat.com"
+        expect(item?.content["priority"]) == 100
     }
 
-    func testNoContentResponseUpdatesLastRefreshAtForPersistedCache() {
+    func testNoContentResponseWithPersistedCacheLeavesCacheUntouched() {
         let previous = Self.persisted(
             domain: "app",
             manifest: "v1.1710000100.sources:etag1",
             activeTopics: ["sources"],
             prefetchBlobs: ["prefetchBlob"],
-            topicBlobRefs: ["sources": ["sourceBlob"]],
-            lastRefreshAt: Date(timeIntervalSince1970: 1)
+            topics: .init(entries: ["sources": ["default": .init(blobRef: "sourceBlob")]])
         )
         self.diskCache.stubbedRead = previous
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
 
-        expect(self.diskCache.invokedWriteCount) == 1
-        expect(self.diskCache.invokedWriteParameter) == PersistedRemoteConfiguration(
-            domain: previous.domain,
-            manifest: previous.manifest,
-            activeTopics: previous.activeTopics,
-            prefetchBlobs: previous.prefetchBlobs,
-            topicBlobRefs: previous.topicBlobRefs,
-            lastRefreshAt: Self.lastRefreshAt
-        )
+        expect(self.diskCache.invokedWriteCount) == 0
         expect(self.blobStore.invokedWriteCount) == 0
         expect(self.blobStore.invokedRetainOnlyCount) == 0
     }
@@ -312,7 +332,7 @@ final class RemoteConfigManagerTests: TestCase {
         )
 
         expect(self.diskCache.invokedWriteCount) == 1
-        expect(self.diskCache.invokedWriteParameter?.topicBlobRefs) == ["sources": ["newBlob"]]
+        expect(Self.blobRefsByTopic(from: self.diskCache.invokedWriteParameter?.topics)) == ["sources": ["newBlob"]]
     }
 
     func testContainerResponseCachesInlineContentElements() throws {
@@ -358,11 +378,107 @@ final class RemoteConfigManagerTests: TestCase {
         )
 
         expect(self.diskCache.invokedWriteParameter?.activeTopics) == ["workflows"]
-        expect(self.diskCache.invokedWriteParameter?.topicBlobRefs) == [
-            "workflows": [workflowBlobRef, summerWorkflowBlobRef].sorted()
+        expect(Self.blobRefsByTopic(from: self.diskCache.invokedWriteParameter?.topics)) == [
+            "workflows": [workflowBlobRef, summerWorkflowBlobRef]
         ]
         expect(self.blobStore.invokedWriteParameters?.ref) == workflowBlobRef
         expect(self.blobStore.invokedWriteParameters?.data) == RCContainerTestData.workflowBlob
+    }
+
+    func testContainerResponseCachesDecodedCompressedInlineContentElements() throws {
+        let blob = Data(repeating: UInt8(ascii: "b"), count: 2048)
+        let blobRef = RCContainerTestData.blobRef(for: blob)
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "\(blobRef)" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(
+                container: try Self.compressedContainer(
+                    config: response,
+                    contentElements: [(payload: blob, encoding: .gzip)]
+                ),
+                verificationResult: .verified
+            ))
+        )
+
+        expect(self.blobStore.invokedWriteParameters?.ref) == blobRef
+        expect(self.blobStore.invokedWriteParameters?.data) == blob
+    }
+
+    func testContainerResponseSkipsUnsupportedCodecInlineContentElements() throws {
+        let blob = "unsupported codec blob".asData
+        let blobRef = RCContainerTestData.blobRef(for: blob)
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "\(blobRef)" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(
+                container: try Self.compressedContainer(
+                    config: response,
+                    contentElements: [(payload: blob, encoding: .zstd)]
+                ),
+                verificationResult: .verified
+            ))
+        )
+
+        expect(self.blobStore.invokedWriteCount) == 0
+        expect(Self.blobRefsByTopic(from: self.diskCache.invokedWriteParameter?.topics)) == ["sources": [blobRef]]
+    }
+
+    func testContainerResponseSkipsGzipInlineContentElementWithTrailingBytes() throws {
+        let blob = Data(repeating: UInt8(ascii: "b"), count: 2048)
+        let blobRef = RCContainerTestData.blobRef(for: blob)
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "\(blobRef)" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(
+                container: try RemoteConfigContainer(
+                    data: RCContainerTestData.compressedContainerWithTrailingGzipContentElement(
+                        config: response.asData,
+                        content: blob,
+                        trailingBytes: Data([0xff])
+                    )
+                ),
+                verificationResult: .verified
+            ))
+        )
+
+        expect(self.blobStore.invokedWriteCount) == 0
+        expect(Self.blobRefsByTopic(from: self.diskCache.invokedWriteParameter?.topics)) == ["sources": [blobRef]]
     }
 
     func testContainerResponseCachesOnlyReferencedInlineContentElements() throws {
@@ -523,7 +639,7 @@ final class RemoteConfigManagerTests: TestCase {
         self.diskCache.stubbedWriteResult = false
         self.diskCache.stubbedRead = PersistedRemoteConfiguration(
             manifest: "v1.1710000100.sources:etag1",
-            topicBlobRefs: ["sources": [oldRef]]
+            topics: .init(entries: ["sources": ["default": .init(blobRef: oldRef)]])
         )
         let blob = "new".asData
         let response = """
@@ -552,6 +668,195 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobStore.invokedRetainOnlyCount) == 0
     }
 
+    func testClearCacheWipesDiskCacheAndBlobStore() {
+        self.manager.clearCache()
+
+        expect(self.diskCache.invokedClearCount) == 1
+        expect(self.blobStore.invokedClearCount) == 1
+    }
+
+    func testResponseThatArrivesAfterClearCacheDoesNotPersist() throws {
+        self.diskCache.stubbedRead = nil
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "newBlob" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.clearCache()
+        self.remoteConfigAPI.complete(
+            at: 0,
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        expect(self.diskCache.invokedWriteCount) == 0
+        expect(self.blobStore.invokedWriteCount) == 0
+        expect(self.blobStore.invokedRetainOnlyCount) == 0
+    }
+
+    func testClearCacheWhileBuildingRequestDoesNotSendStaleRequest() {
+        self.diskCache.readHandler = { [manager] in
+            manager?.clearCache()
+            return nil
+        }
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
+        expect(self.diskCache.invokedClearCount) == 1
+        expect(self.blobStore.invokedClearCount) == 1
+    }
+
+    func testStaleNoContentResponseDoesNotReleaseNewerRefreshGuard() {
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.clearCache()
+        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+
+        self.remoteConfigAPI.complete(at: 0, with: .success(.test(container: nil)))
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+
+        self.remoteConfigAPI.complete(at: 1, with: .success(.test(container: nil)))
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 3
+    }
+
+    func testStaleContainerResponseDoesNotReleaseNewerRefreshGuard() throws {
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "newBlob" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.clearCache()
+        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+
+        self.remoteConfigAPI.complete(
+            at: 0,
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+        expect(self.diskCache.invokedWriteCount) == 0
+
+        self.remoteConfigAPI.complete(at: 1, with: .success(.test(container: nil)))
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 3
+    }
+
+    func testStaleErrorResponseDoesNotReleaseNewerRefreshGuard() {
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.clearCache()
+        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+
+        self.remoteConfigAPI.complete(
+            at: 0,
+            with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1))))
+        )
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+
+        self.remoteConfigAPI.complete(at: 1, with: .success(.test(container: nil)))
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 3
+    }
+
+    func testManagerCanSyncAgainAfterClearCache() throws {
+        self.diskCache.stubbedRead = nil
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "newBlob" }
+            }
+          }
+        }
+        """
+
+        self.manager.clearCache()
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        expect(self.diskCache.invokedWriteCount) == 1
+    }
+
+    func testClearCacheDuringPersistWaitsAndWipesAfterWrite() throws {
+        self.diskCache.stubbedRead = nil
+        let writeStarted = DispatchSemaphore(value: 0)
+        let releaseWrite = DispatchSemaphore(value: 0)
+        let clearEntered = DispatchSemaphore(value: 0)
+        let writeReleaseResult: Atomic<DispatchTimeoutResult?> = nil
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "newBlob" }
+            }
+          }
+        }
+        """
+        let container = try Self.container(config: response)
+        self.diskCache.writeHandler = { _ in
+            writeStarted.signal()
+            writeReleaseResult.value = releaseWrite.wait(timeout: .now() + .seconds(5))
+            return true
+        }
+        self.diskCache.clearHandler = {
+            clearEntered.signal()
+        }
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        DispatchQueue.global().async {
+            self.remoteConfigAPI.complete(
+                with: .success(.test(container: container))
+            )
+        }
+        expect(writeStarted.wait(timeout: .now() + .seconds(5))) == .success
+
+        DispatchQueue.global().async {
+            self.manager.clearCache()
+        }
+
+        expect(clearEntered.wait(timeout: .now() + .milliseconds(200))) == .timedOut
+
+        releaseWrite.signal()
+        expect(clearEntered.wait(timeout: .now() + .seconds(5))) == .success
+        expect(writeReleaseResult.value) == .success
+        expect(self.diskCache.invokedWriteCount) == 1
+        expect(self.diskCache.invokedClearCount) == 1
+    }
+
 }
 
 private extension RemoteConfigManagerTests {
@@ -561,17 +866,23 @@ private extension RemoteConfigManagerTests {
         manifest: String,
         activeTopics: [String] = [],
         prefetchBlobs: [String] = [],
-        topicBlobRefs: [String: [String]] = [:],
-        lastRefreshAt: Date? = nil
+        topics: RemoteConfiguration.Topics = .init()
     ) -> PersistedRemoteConfiguration {
         return PersistedRemoteConfiguration(
             domain: domain,
             manifest: manifest,
             activeTopics: activeTopics,
             prefetchBlobs: prefetchBlobs,
-            topicBlobRefs: topicBlobRefs,
-            lastRefreshAt: lastRefreshAt
+            topics: topics
         )
+    }
+
+    static func blobRefsByTopic(from topics: RemoteConfiguration.Topics?) -> [String: Set<String>] {
+        guard let topics else { return [:] }
+
+        return topics.entries.mapValues { topic in
+            Set(topic.values.compactMap(\.blobRef))
+        }
     }
 
     static func container(
@@ -580,6 +891,18 @@ private extension RemoteConfigManagerTests {
     ) throws -> RemoteConfigContainer {
         return try RemoteConfigContainer(data: RCContainerTestData.container(
             config: config.asData,
+            contentElements: contentElements
+        ))
+    }
+
+    static func compressedContainer(
+        config: String,
+        configEncoding: RCContainer.Element.ContentEncoding = .none,
+        contentElements: [(payload: Data, encoding: RCContainer.Element.ContentEncoding)] = []
+    ) throws -> RemoteConfigContainer {
+        return try RemoteConfigContainer(data: RCContainerTestData.compressedContainer(
+            config: config.asData,
+            configEncoding: configEncoding,
             contentElements: contentElements
         ))
     }
@@ -613,8 +936,12 @@ private final class MockRemoteConfigAPI: RemoteConfigAPIType {
         request: RemoteConfigRequest,
         isAppBackgrounded: Bool
     )?
+    private(set) var invokedGetRemoteConfigParametersList: [(
+        request: RemoteConfigRequest,
+        isAppBackgrounded: Bool
+    )] = []
 
-    private var completion: Backend.ResponseHandler<RemoteConfigFetchResult>?
+    private var completions: [Backend.ResponseHandler<RemoteConfigFetchResult>] = []
 
     func getRemoteConfig(
         request: RemoteConfigRequest,
@@ -623,11 +950,19 @@ private final class MockRemoteConfigAPI: RemoteConfigAPIType {
     ) {
         self.invokedGetRemoteConfigCount += 1
         self.invokedGetRemoteConfigParameters = (request, isAppBackgrounded)
-        self.completion = completion
+        self.invokedGetRemoteConfigParametersList.append((request, isAppBackgrounded))
+        self.completions.append(completion)
     }
 
     func complete(with result: Result<RemoteConfigFetchResult, BackendError>) {
-        self.completion?(result)
+        self.completions.last?(result)
+    }
+
+    func complete(
+        at index: Int,
+        with result: Result<RemoteConfigFetchResult, BackendError>
+    ) {
+        self.completions[index](result)
     }
 
 }
@@ -636,13 +971,16 @@ private final class MockRemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
     var stubbedRead: PersistedRemoteConfiguration?
     var stubbedWriteResult = true
+    var readHandler: (() -> PersistedRemoteConfiguration?)?
+    var writeHandler: ((PersistedRemoteConfiguration) -> Bool)?
+    var clearHandler: (() -> Void)?
 
     private(set) var invokedWriteCount = 0
     private(set) var invokedWriteParameter: PersistedRemoteConfiguration?
     private(set) var invokedClearCount = 0
 
     func read() -> PersistedRemoteConfiguration? {
-        return self.stubbedRead
+        return self.readHandler?() ?? self.stubbedRead
     }
 
     @discardableResult
@@ -650,11 +988,12 @@ private final class MockRemoteConfigDiskCache: RemoteConfigDiskCacheType {
         self.invokedWriteCount += 1
         self.invokedWriteParameter = configuration
 
-        return self.stubbedWriteResult
+        return self.writeHandler?(configuration) ?? self.stubbedWriteResult
     }
 
     func clear() {
         self.invokedClearCount += 1
+        self.clearHandler?()
     }
 
 }
