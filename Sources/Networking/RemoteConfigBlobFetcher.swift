@@ -124,7 +124,11 @@ private actor RemoteConfigBlobFetchScheduler {
 
     /// Enqueues low-priority work without a waiting continuation.
     func prefetch(refs: [String]) {
-        if refs.contains(where: { RemoteConfigBlobRefHelpers.isValid($0) && !self.blobStore.contains(ref: $0) }) {
+        let wouldDownload: (String) -> Bool = { ref in
+            RemoteConfigBlobRefHelpers.isValid(ref) && !self.blobStore.contains(ref: ref)
+        }
+
+        if refs.contains(where: wouldDownload) {
             self.restartBlobSourcesIfExhausted()
         }
 
