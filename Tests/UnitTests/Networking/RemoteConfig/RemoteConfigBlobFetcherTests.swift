@@ -246,6 +246,24 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         expect(self.blobStore.invokedWriteCount) == 1
     }
 
+    func testFetchAndVerifyJoinsInFlightDownloadForSameRef() async {
+        let payload = "shared direct fetch".asData
+        let ref = Self.ref(for: payload)
+
+        let first = Task { await self.fetcher.ensureDownloaded(ref: ref) }
+        await self.downloader.waitForRequestCount(1)
+        let second = Task { await self.fetcher.fetchAndVerify(ref: ref) }
+        await self.downloader.waitForRequestCount(1)
+        self.downloader.complete(ref: ref, with: .success(payload))
+
+        let firstResult = await first.value
+        let secondResult = await second.value
+        expect(firstResult) == true
+        expect(secondResult) == true
+        expect(self.downloader.requestedRefs) == [ref]
+        expect(self.blobStore.invokedWriteCount) == 1
+    }
+
     func testDifferentRefsRunConcurrentlyUpToWorkerLimit() async {
         let refs = (0..<6).map { Self.ref(for: "blob-\($0)".asData) }
 

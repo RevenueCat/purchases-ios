@@ -53,7 +53,7 @@ final class RemoteConfigBlobFetcher: RemoteConfigBlobFetcherType {
         }
     }
 
-    /// Downloads, verifies, and stores one blob immediately, bypassing queue priority decisions.
+    /// Ensures a blob is downloaded, verified, and stored through the shared high-priority queue.
     func fetchAndVerify(ref: String) async -> Bool {
         return await self.scheduler.fetchAndVerify(ref: ref)
     }
@@ -130,8 +130,13 @@ private actor RemoteConfigBlobFetchScheduler {
         }
     }
 
-    /// Performs the actual download, source failover, checksum validation, and disk write.
+    /// Enqueues high-priority fetch work through the same coalescing path used by consumers.
     func fetchAndVerify(ref: String) async -> Bool {
+        return await self.ensureDownloaded(ref: ref)
+    }
+
+    /// Performs the actual download, source failover, checksum validation, and disk write.
+    private func downloadVerifyAndStore(ref: String) async -> Bool {
         guard RemoteConfigBlobRefHelpers.isValid(ref) else {
             Logger.error(Strings.remoteConfig.malformedBlobRef(ref))
             return false
@@ -228,7 +233,7 @@ private actor RemoteConfigBlobFetchScheduler {
             self.activeContinuations[download.ref] = download.continuations
 
             Task {
-                let result = await self.fetchAndVerify(ref: download.ref)
+                let result = await self.downloadVerifyAndStore(ref: download.ref)
                 self.complete(ref: download.ref, result: result)
             }
         }
