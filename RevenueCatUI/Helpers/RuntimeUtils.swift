@@ -21,7 +21,7 @@ enum RuntimeUtils {
      }
  }
 
-#if canImport(UIKit)
+#if canImport(UIKit) && !os(wachOS)
 
 import UIKit
 
