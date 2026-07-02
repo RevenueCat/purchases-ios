@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol RemoteConfigBlobFetcherType: AnyObject {
+protocol RemoteConfigBlobFetcherType {
 
     func ensureDownloaded(ref: String) async -> Bool
     func ensureAllDownloaded(refs: [String]) async -> Bool
