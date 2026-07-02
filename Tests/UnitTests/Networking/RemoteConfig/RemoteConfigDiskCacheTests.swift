@@ -244,4 +244,45 @@ final class RemoteConfigDiskCacheTests: TestCase {
         expect(self.cache.read()).to(beNil())
     }
 
+    // MARK: - Topic store adapter
+
+    func testTopicStoreReturnsNilWhenNothingHasBeenPersisted() {
+        let topicStore = RemoteConfigDiskCacheTopicStore(diskCache: self.cache)
+
+        expect(topicStore.topic("sources")).to(beNil())
+    }
+
+    func testTopicStoreReturnsPersistedTopic() throws {
+        let sourcesTopic: RemoteConfiguration.ConfigTopic = ["api": .init(content: ["url": "https://api"])]
+        self.cache.write(PersistedRemoteConfiguration(
+            manifest: "v1.1710000100.sources:etag1",
+            activeTopics: ["sources"],
+            topics: RemoteConfiguration.Topics(entries: ["sources": sourcesTopic])
+        ))
+
+        let topicStore = RemoteConfigDiskCacheTopicStore(diskCache: self.cache)
+
+        expect(topicStore.topic("sources")) == sourcesTopic
+        expect(topicStore.topic("unknown")).to(beNil())
+    }
+
+    func testTopicStoreSnapshotsAtInitAndIgnoresLaterWrites() throws {
+        self.cache.write(PersistedRemoteConfiguration(
+            manifest: "v1.1710000100.sources:old",
+            activeTopics: ["sources"],
+            topics: RemoteConfiguration.Topics(entries: ["sources": ["api": .init(content: ["url": "https://old"])]])
+        ))
+
+        let topicStore = RemoteConfigDiskCacheTopicStore(diskCache: self.cache)
+
+        // A config persisted after the snapshot is taken is not reflected until the next launch.
+        self.cache.write(PersistedRemoteConfiguration(
+            manifest: "v1.1710000100.sources:new",
+            activeTopics: ["sources"],
+            topics: RemoteConfiguration.Topics(entries: ["sources": ["api": .init(content: ["url": "https://new"])]])
+        ))
+
+        expect(topicStore.topic("sources")) == ["api": .init(content: ["url": "https://old"])]
+    }
+
 }

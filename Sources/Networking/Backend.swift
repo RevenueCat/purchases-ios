@@ -40,12 +40,19 @@ class Backend {
         diagnosticsTracker: DiagnosticsTrackerType?,
         dateProvider: DateProvider = DateProvider()
     ) {
+        // Sources the API base host from the shared remote-config source list (with the embedded
+        // defaults as a floor), so requests can fail over across API hosts. Reads its `sources` topic
+        // from the same on-disk remote configuration the remote-config manager persists.
+        let apiSourceProvider = RemoteConfigSourceProvider(
+            topicStore: RemoteConfigDiskCacheTopicStore(diskCache: RemoteConfigDiskCache())
+        )
         let httpClient = HTTPClient(systemInfo: systemInfo,
                                     eTagManager: eTagManager,
                                     signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
                                     diagnosticsTracker: diagnosticsTracker,
                                     requestTimeout: httpClientTimeout,
-                                    operationDispatcher: OperationDispatcher.default)
+                                    operationDispatcher: OperationDispatcher.default,
+                                    apiSourceProvider: apiSourceProvider)
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
