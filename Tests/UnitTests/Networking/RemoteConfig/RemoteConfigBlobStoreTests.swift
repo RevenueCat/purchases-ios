@@ -146,6 +146,38 @@ final class RemoteConfigBlobStoreTests: TestCase {
         ) == false
     }
 
+    func testRetainOnlyWaitsForInProgressWrite() {
+        let fileManager = BlockingFileManager()
+        self.blobStore = RemoteConfigBlobStore(fileManager: fileManager, directoryURL: self.directoryURL)
+
+        let writeFinished = DispatchSemaphore(value: 0)
+        let retainStarted = DispatchSemaphore(value: 0)
+        let retainFinished = DispatchSemaphore(value: 0)
+
+        let data = Data([1])
+        DispatchQueue.global().async {
+            self.write(ref: Self.refA, data: data)
+            writeFinished.signal()
+        }
+
+        expect(fileManager.waitForDirectoryCreation()) == true
+
+        DispatchQueue.global().async {
+            retainStarted.signal()
+            self.blobStore.retainOnly([Self.refA])
+            retainFinished.signal()
+        }
+
+        expect(retainStarted.wait(timeout: .now() + 1)) == .success
+        expect(fileManager.waitForContentsOfDirectory(timeout: .now() + 0.1)) == false
+
+        fileManager.unblockDirectoryCreation()
+
+        expect(writeFinished.wait(timeout: .now() + 1)) == .success
+        expect(retainFinished.wait(timeout: .now() + 1)) == .success
+        expect(fileManager.waitForContentsOfDirectory()) == true
+    }
+
 }
 
 private extension RemoteConfigBlobStoreTests {
@@ -158,6 +190,54 @@ private extension RemoteConfigBlobStoreTests {
         return data.withUnsafeBytes { bytes in
             self.blobStore.write(ref: ref, bytes: bytes)
         }
+    }
+
+}
+
+private final class BlockingFileManager: FileManager {
+
+    private let enteredDirectoryCreation = DispatchSemaphore(value: 0)
+    private let allowDirectoryCreation = DispatchSemaphore(value: 0)
+    private let enteredContentsOfDirectory = DispatchSemaphore(value: 0)
+
+    override func createDirectory(
+        at url: URL,
+        withIntermediateDirectories createIntermediates: Bool,
+        attributes: [FileAttributeKey: Any]? = nil
+    ) throws {
+        self.enteredDirectoryCreation.signal()
+        _ = self.allowDirectoryCreation.wait(timeout: .now() + 5)
+
+        try super.createDirectory(
+            at: url,
+            withIntermediateDirectories: createIntermediates,
+            attributes: attributes
+        )
+    }
+
+    override func contentsOfDirectory(
+        at url: URL,
+        includingPropertiesForKeys keys: [URLResourceKey]?,
+        options mask: FileManager.DirectoryEnumerationOptions = []
+    ) throws -> [URL] {
+        self.enteredContentsOfDirectory.signal()
+        return try super.contentsOfDirectory(
+            at: url,
+            includingPropertiesForKeys: keys,
+            options: mask
+        )
+    }
+
+    func waitForDirectoryCreation(timeout: DispatchTime = .now() + 1) -> Bool {
+        return self.enteredDirectoryCreation.wait(timeout: timeout) == .success
+    }
+
+    func waitForContentsOfDirectory(timeout: DispatchTime = .now() + 1) -> Bool {
+        return self.enteredContentsOfDirectory.wait(timeout: timeout) == .success
+    }
+
+    func unblockDirectoryCreation() {
+        self.allowDirectoryCreation.signal()
     }
 
 }
