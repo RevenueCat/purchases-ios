@@ -100,6 +100,30 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
 }
 
+/// Adapts the persisted remote configuration to the read-only `RemoteConfigTopicStoreType` that
+/// `RemoteConfigSourceProvider` reads its `sources` topic from.
+///
+/// The provider reads the topic store on every source lookup (i.e. once per outgoing request), so this
+/// snapshots the persisted topics once at init instead of hitting disk on that hot path. Before any
+/// config has been fetched the snapshot is empty and the provider falls back to its embedded defaults.
+///
+/// - Note: The snapshot is not refreshed mid-session; a config fetched during the current session is
+///   picked up on the next launch. A live, manager-updated topic store will replace this once the
+///   remote-config lifecycle wiring lands.
+final class RemoteConfigDiskCacheTopicStore: RemoteConfigTopicStoreType {
+
+    private let topics: RemoteConfiguration.Topics
+
+    init(diskCache: RemoteConfigDiskCacheType) {
+        self.topics = diskCache.read()?.topics ?? .init()
+    }
+
+    func topic(_ name: String) -> RemoteConfiguration.ConfigTopic? {
+        return self.topics.entries[name]
+    }
+
+}
+
 extension RemoteConfigDiskCache {
 
     static let basePath = "remote_config"

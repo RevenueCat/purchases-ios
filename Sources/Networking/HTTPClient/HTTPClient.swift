@@ -35,6 +35,7 @@ class HTTPClient {
     private let retriableStatusCodes: Set<HTTPStatusCode>
     private let operationDispatcher: OperationDispatcher
     private let requestTimeoutManager: HTTPRequestTimeoutManagerType
+    private let apiSourceProvider: APISourceProviding?
 
     private let retryBackoffIntervals: [TimeInterval] = [
         TimeInterval(0),
@@ -51,6 +52,7 @@ class HTTPClient {
          requestTimeout: TimeInterval = Configuration.networkTimeoutDefault,
          dateProvider: DateProvider = DateProvider(),
          operationDispatcher: OperationDispatcher,
+         apiSourceProvider: APISourceProviding? = nil,
          timeoutManager: HTTPRequestTimeoutManagerType? = nil
     ) {
         let config = URLSessionConfiguration.ephemeral
@@ -71,6 +73,7 @@ class HTTPClient {
         self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: systemInfo.apiKey)
         self.dateProvider = dateProvider
         self.operationDispatcher = operationDispatcher
+        self.apiSourceProvider = apiSourceProvider
         self.requestTimeoutManager = timeoutManager ?? HTTPRequestTimeoutManager(
             defaultTimeout: timeout,
             dateProvider: dateProvider
@@ -307,9 +310,10 @@ internal extension HTTPClient {
         var method: HTTPRequest.Method { self.httpRequest.method }
         var path: String { self.httpRequest.path.relativePath }
 
-        func getCurrentRequestURL(proxyURL: URL?) -> URL? {
+        func getCurrentRequestURL(proxyURL: URL?, apiSourceURL: URL?) -> URL? {
             return self.httpRequest.path.url(
                 proxyURL: proxyURL,
+                apiSourceURL: apiSourceURL,
                 fallbackUrlIndex: self.fallbackUrlIndex
             )
         }
@@ -328,7 +332,7 @@ internal extension HTTPClient {
             }
             var copy = self
             copy.fallbackUrlIndex = self.fallbackUrlIndex?.advanced(by: 1) ?? 0
-            guard copy.getCurrentRequestURL(proxyURL: nil) != nil else {
+            guard copy.getCurrentRequestURL(proxyURL: nil, apiSourceURL: nil) != nil else {
                 // No more fallback hosts available
                 return nil
             }
@@ -654,7 +658,10 @@ private extension HTTPClient {
     }
 
     func convert(request: Request) -> URLRequest? {
-        guard let requestURL = request.getCurrentRequestURL(proxyURL: SystemInfo.proxyURL) else {
+        guard let requestURL = request.getCurrentRequestURL(
+            proxyURL: SystemInfo.proxyURL,
+            apiSourceURL: self.apiSourceURL(for: request)
+        ) else {
             return nil
         }
         var urlRequest = URLRequest(url: requestURL)
@@ -669,6 +676,22 @@ private extension HTTPClient {
         }
 
         return urlRequest
+    }
+
+    /// The API base source URL to use for `request`, or `nil` to fall back to the path's `serverHostURL`.
+    ///
+    /// API sources apply only when: no proxy is configured (a proxy pins every request to itself), the
+    /// request is not already targeting an endpoint fallback host, the path opts in via `usesAPISources`,
+    /// and `SystemInfo.apiBaseURL` still holds its default (an override pins the host, e.g. in tests).
+    private func apiSourceURL(for request: Request) -> URL? {
+        guard SystemInfo.proxyURL == nil,
+              !request.isFallbackURLRequest,
+              request.httpRequest.path.usesAPISources,
+              SystemInfo.apiBaseURL == SystemInfo.defaultApiBaseURL,
+              let source = self.apiSourceProvider?.currentAPISource() else {
+            return nil
+        }
+        return URL(string: source.url)
     }
 
     private func headers(for request: Request, urlRequest: URLRequest) -> HTTPClient.RequestHeaders {
