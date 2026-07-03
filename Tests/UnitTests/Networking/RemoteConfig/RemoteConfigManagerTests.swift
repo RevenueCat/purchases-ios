@@ -267,7 +267,8 @@ final class RemoteConfigManagerTests: TestCase {
             ])
         )
 
-        let topic = try XCTUnwrap(await self.manager.topic(.sources))
+        let maybeTopic = await self.manager.topic(.sources)
+        let topic = try XCTUnwrap(maybeTopic)
 
         expect(topic["api"]?.content["priority"]) == 100
         expect(topic["api"]?.content["url"]) == "https://api.revenuecat.com"
@@ -300,7 +301,8 @@ final class RemoteConfigManagerTests: TestCase {
             with: .success(.test(container: try Self.container(config: response)))
         )
 
-        let topic = try XCTUnwrap(await task.value)
+        let maybeTopic = await task.value
+        let topic = try XCTUnwrap(maybeTopic)
         expect(topic["api"]?.content["url"]) == "https://api.revenuecat.com"
     }
 
@@ -332,7 +334,8 @@ final class RemoteConfigManagerTests: TestCase {
             with: .success(.test(container: try Self.container(config: response)))
         )
 
-        let topic = try XCTUnwrap(await task.value)
+        let maybeTopic = await task.value
+        let topic = try XCTUnwrap(maybeTopic)
         expect(topic["api"]?.content["url"]) == "https://api.revenuecat.com"
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
     }
@@ -731,7 +734,8 @@ final class RemoteConfigManagerTests: TestCase {
             with: .success(.test(container: try Self.container(config: response)))
         )
 
-        let data = try XCTUnwrap(await task.value)
+        let maybeData = await task.value
+        let data = try XCTUnwrap(maybeData)
         expect(data) == blob
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
     }
@@ -766,7 +770,8 @@ final class RemoteConfigManagerTests: TestCase {
             with: .success(.test(container: try Self.container(config: response)))
         )
 
-        let data = try XCTUnwrap(await task.value)
+        let maybeData = await task.value
+        let data = try XCTUnwrap(maybeData)
         expect(data) == blob
     }
 
