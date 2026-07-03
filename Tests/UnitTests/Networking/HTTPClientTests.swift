@@ -3414,6 +3414,258 @@ extension HTTPClientTests {
         expect(result?.error).to(beNil())
     }
 
+    // MARK: - API source failover
+
+    func testAdvancesToNextAPISourceOnServerError() throws {
+        let provider = RecordingAPISourceProvider(
+            wrapping: Self.apiSourceProvider(hosts: ["api-1.rc-test.com", "api-2.rc-test.com"])
+        )
+        let client = self.createClient(self.systemInfo, apiSourceProvider: provider)
+
+        stub(condition: isHost("api-1.rc-test.com")) { _ in
+            HTTPStubsResponse(data: Data(), statusCode: .internalServerError, headers: nil)
+        }
+        let secondHostHit: Atomic<Bool> = false
+        stub(condition: isHost("api-2.rc-test.com")) { _ in
+            secondHostHit.value = true
+            return .emptySuccessResponse()
+        }
+
+        let result = waitUntilValue { completion in
+            client.perform(HTTPRequest(method: .get, path: .mockPath)) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).to(beSuccess())
+        expect(secondHostHit.value) == true
+        expect(provider.reportedURLs) == ["https://api-1.rc-test.com/"]
+    }
+
+    func testAdvancesToNextAPISourceOnConnectionError() throws {
+        let provider = RecordingAPISourceProvider(
+            wrapping: Self.apiSourceProvider(hosts: ["api-1.rc-test.com", "api-2.rc-test.com"])
+        )
+        let client = self.createClient(self.systemInfo, apiSourceProvider: provider)
+
+        let dnsError = NSError(
+            domain: NSURLErrorDomain,
+            code: NSURLErrorCannotFindHost,
+            userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]
+        )
+        stub(condition: isHost("api-1.rc-test.com")) { _ in HTTPStubsResponse(error: dnsError) }
+        let secondHostHit: Atomic<Bool> = false
+        stub(condition: isHost("api-2.rc-test.com")) { _ in
+            secondHostHit.value = true
+            return .emptySuccessResponse()
+        }
+
+        let result = waitUntilValue { completion in
+            client.perform(HTTPRequest(method: .get, path: .mockPath)) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).to(beSuccess())
+        expect(secondHostHit.value) == true
+        expect(provider.reportedURLs) == ["https://api-1.rc-test.com/"]
+    }
+
+    func testDoesNotAdvanceAPISourceOnClientError() throws {
+        let provider = RecordingAPISourceProvider(
+            wrapping: Self.apiSourceProvider(hosts: ["api-1.rc-test.com", "api-2.rc-test.com"])
+        )
+        let client = self.createClient(self.systemInfo, apiSourceProvider: provider)
+
+        stub(condition: isHost("api-1.rc-test.com")) { _ in
+            HTTPStubsResponse(data: Data(), statusCode: .invalidRequest, headers: nil)
+        }
+        let secondHostHit: Atomic<Bool> = false
+        stub(condition: isHost("api-2.rc-test.com")) { _ in
+            secondHostHit.value = true
+            return .emptySuccessResponse()
+        }
+
+        let result = waitUntilValue { completion in
+            client.perform(HTTPRequest(method: .get, path: .mockPath)) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).to(beFailure())
+        expect(secondHostHit.value) == false
+        expect(provider.reportedURLs).to(beEmpty())
+    }
+
+    func testExhaustedAPISourcesFallBackToEndpointFallbackHost() throws {
+        let request = HTTPRequest(method: .get, path: .mockPathWithFallbacks)
+        let fallbackHost = try XCTUnwrap(request.path.fallbackUrls.first?.host)
+        let provider = RecordingAPISourceProvider(
+            wrapping: Self.apiSourceProvider(hosts: ["api-1.rc-test.com", "api-2.rc-test.com"])
+        )
+        let client = self.createClient(self.systemInfo, apiSourceProvider: provider)
+
+        for host in ["api-1.rc-test.com", "api-2.rc-test.com"] {
+            stub(condition: isHost(host)) { _ in
+                HTTPStubsResponse(data: Data(), statusCode: .internalServerError, headers: nil)
+            }
+        }
+        let fallbackHostHit: Atomic<Bool> = false
+        stub(condition: isHost(fallbackHost)) { _ in
+            fallbackHostHit.value = true
+            return .emptySuccessResponse()
+        }
+
+        let result = waitUntilValue { completion in
+            client.perform(request) { (response: EmptyResponse) in completion(response) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(fallbackHostHit.value) == true
+        expect(provider.reportedURLs) == ["https://api-1.rc-test.com/", "https://api-2.rc-test.com/"]
+    }
+
+    func testExhaustedAPISourcesWithoutFallbackFailsWithLastError() throws {
+        let provider = RecordingAPISourceProvider(
+            wrapping: Self.apiSourceProvider(hosts: ["api-1.rc-test.com", "api-2.rc-test.com"])
+        )
+        let client = self.createClient(self.systemInfo, apiSourceProvider: provider)
+
+        for host in ["api-1.rc-test.com", "api-2.rc-test.com"] {
+            stub(condition: isHost(host)) { _ in
+                HTTPStubsResponse(data: Data(), statusCode: .internalServerError, headers: nil)
+            }
+        }
+
+        // `.mockPath` (.logIn) has no endpoint fallback URL, so it fails once API sources are exhausted.
+        let result = waitUntilValue { completion in
+            client.perform(HTTPRequest(method: .get, path: .mockPath)) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).to(beFailure())
+        expect(provider.reportedURLs) == ["https://api-1.rc-test.com/", "https://api-2.rc-test.com/"]
+    }
+
+    func testAPISourceFailoverPersistsAcrossRequests() throws {
+        let provider = RecordingAPISourceProvider(
+            wrapping: Self.apiSourceProvider(hosts: ["api-1.rc-test.com", "api-2.rc-test.com"])
+        )
+        let client = self.createClient(self.systemInfo, apiSourceProvider: provider)
+
+        stub(condition: isHost("api-1.rc-test.com")) { _ in
+            HTTPStubsResponse(data: Data(), statusCode: .internalServerError, headers: nil)
+        }
+        stub(condition: isHost("api-2.rc-test.com")) { _ in .emptySuccessResponse() }
+
+        let firstResult = waitUntilValue { completion in
+            client.perform(HTTPRequest(method: .get, path: .mockPath)) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+        expect(firstResult).to(beSuccess())
+
+        // The shared provider stays advanced at the second source, so the next request starts there
+        // without touching the first (now-unhealthy) source again.
+        HTTPStubs.removeAllStubs()
+        let firstHostHit: Atomic<Bool> = false
+        let secondHostHit: Atomic<Bool> = false
+        stub(condition: isHost("api-1.rc-test.com")) { _ in
+            firstHostHit.value = true
+            return .emptySuccessResponse()
+        }
+        stub(condition: isHost("api-2.rc-test.com")) { _ in
+            secondHostHit.value = true
+            return .emptySuccessResponse()
+        }
+
+        let secondResult = waitUntilValue { completion in
+            client.perform(HTTPRequest(method: .get, path: .mockPath)) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+
+        expect(secondResult).to(beSuccess())
+        expect(secondHostHit.value) == true
+        expect(firstHostHit.value) == false
+        expect(provider.reportedURLs) == ["https://api-1.rc-test.com/"]
+    }
+
+    func testProxyURLDisablesAPISourceFailover() throws {
+        let proxyURL = try XCTUnwrap(URL(string: "https://proxy.rc-test.com"))
+        SystemInfo.proxyURL = proxyURL
+        defer { SystemInfo.proxyURL = nil }
+
+        let provider = RecordingAPISourceProvider(
+            wrapping: Self.apiSourceProvider(hosts: ["api-1.rc-test.com", "api-2.rc-test.com"])
+        )
+        let client = self.createClient(self.systemInfo, apiSourceProvider: provider)
+
+        stub(condition: isHost("proxy.rc-test.com")) { _ in
+            HTTPStubsResponse(data: Data(), statusCode: .internalServerError, headers: nil)
+        }
+        let apiSourceHostHit: Atomic<Bool> = false
+        for host in ["api-1.rc-test.com", "api-2.rc-test.com"] {
+            stub(condition: isHost(host)) { _ in
+                apiSourceHostHit.value = true
+                return .emptySuccessResponse()
+            }
+        }
+
+        // `.mockPathWithFallbacks` supports a fallback URL, but a proxy disables all failover.
+        let result = waitUntilValue { completion in
+            client.perform(HTTPRequest(method: .get, path: .mockPathWithFallbacks)) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).to(beFailure())
+        expect(apiSourceHostHit.value) == false
+        expect(provider.currentCallCount) == 0
+        expect(provider.reportedURLs).to(beEmpty())
+    }
+
+    func testOverriddenAPIBaseURLDisablesAPISourceFailoverButKeepsEndpointFallback() throws {
+        let pinnedHost = "pinned-api.rc-test.com"
+        SystemInfo.apiBaseURL = try XCTUnwrap(URL(string: "https://\(pinnedHost)"))
+        defer { SystemInfo.apiBaseURL = SystemInfo.defaultApiBaseURL }
+
+        let request = HTTPRequest(method: .get, path: .mockPathWithFallbacks)
+        let fallbackHost = try XCTUnwrap(request.path.fallbackUrls.first?.host)
+        let provider = RecordingAPISourceProvider(
+            wrapping: Self.apiSourceProvider(hosts: ["api-1.rc-test.com", "api-2.rc-test.com"])
+        )
+        let client = self.createClient(self.systemInfo, apiSourceProvider: provider)
+
+        stub(condition: isHost(pinnedHost)) { _ in
+            HTTPStubsResponse(data: Data(), statusCode: .internalServerError, headers: nil)
+        }
+        let apiSourceHostHit: Atomic<Bool> = false
+        for host in ["api-1.rc-test.com", "api-2.rc-test.com"] {
+            stub(condition: isHost(host)) { _ in
+                apiSourceHostHit.value = true
+                return .emptySuccessResponse()
+            }
+        }
+        let fallbackHostHit: Atomic<Bool> = false
+        stub(condition: isHost(fallbackHost)) { _ in
+            fallbackHostHit.value = true
+            return .emptySuccessResponse()
+        }
+
+        let result = waitUntilValue { completion in
+            client.perform(request) { (response: EmptyResponse) in completion(response) }
+        }
+
+        // The pinned host bypasses API sources but the endpoint fallback URL still applies.
+        expect(result).to(beSuccess())
+        expect(fallbackHostHit.value) == true
+        expect(apiSourceHostHit.value) == false
+        expect(provider.currentCallCount) == 0
+        expect(provider.reportedURLs).to(beEmpty())
+    }
+
     func testRetriesWithNextFallbackHostOnDNSError() throws {
         let request = HTTPRequest(method: .get, path: .mockPathWithFallbacks)
         let mainPath = request.path
@@ -3985,31 +4237,62 @@ extension HTTPClientTests {
     /// A real `RemoteConfigSourceProvider` whose only API source is `https://<host>/`, so the resolved
     /// base host is unambiguously provider-driven rather than the default `serverHostURL`.
     fileprivate static func apiSourceProvider(host: String) -> RemoteConfigSourceProvider {
-        return RemoteConfigSourceProvider(topicStore: SingleAPISourceTopicStore(url: "https://\(host)/"))
+        return self.apiSourceProvider(hosts: [host])
+    }
+
+    /// A real `RemoteConfigSourceProvider` whose API sources are `https://<host>/` in the given order
+    /// (deduped and ordered by priority = index), so failover advances through them deterministically.
+    fileprivate static func apiSourceProvider(hosts: [String]) -> RemoteConfigSourceProvider {
+        return RemoteConfigSourceProvider(
+            topicStore: OrderedAPISourceTopicStore(urls: hosts.map { "https://\($0)/" })
+        )
     }
 
 }
 
-/// A minimal `sources` topic store exposing a single API source, matching the backend topic shape.
-private final class SingleAPISourceTopicStore: RemoteConfigTopicStoreType {
+/// A `sources` topic store exposing an ordered list of API sources, matching the backend topic shape.
+private final class OrderedAPISourceTopicStore: RemoteConfigTopicStoreType {
 
-    private let url: String
+    private let urls: [String]
 
-    init(url: String) {
-        self.url = url
+    init(urls: [String]) {
+        self.urls = urls
     }
 
     func topic(_ name: String) -> RemoteConfiguration.ConfigTopic? {
         guard name == "sources" else { return nil }
-        return ["api": RemoteConfiguration.ConfigItem(content: [
-            "sources": .array([
-                .object([
-                    "url": .string(self.url),
-                    "priority": .int(0),
-                    "weight": .int(1)
-                ])
+        let sources: [AnyDecodable] = self.urls.enumerated().map { index, url in
+            .object([
+                "url": .string(url),
+                "priority": .int(index),
+                "weight": .int(1)
             ])
-        ])]
+        }
+        return ["api": RemoteConfiguration.ConfigItem(content: ["sources": .array(sources)])]
+    }
+
+}
+
+/// Wraps a real `RemoteConfigSourceProvider` (for token-correct failover) while recording the calls
+/// `HTTPClient` makes, so tests can assert which sources were consulted and reported unhealthy.
+final class RecordingAPISourceProvider: APISourceProviding {
+
+    private let wrapped: RemoteConfigSourceProvider
+    private(set) var currentCallCount = 0
+    private(set) var reportedURLs: [String] = []
+
+    init(wrapping wrapped: RemoteConfigSourceProvider) {
+        self.wrapped = wrapped
+    }
+
+    func currentAPISource() -> RemoteConfigSourceHandle? {
+        self.currentCallCount += 1
+        return self.wrapped.currentAPISource()
+    }
+
+    func reportUnhealthy(_ handle: RemoteConfigSourceHandle) {
+        self.reportedURLs.append(handle.url)
+        self.wrapped.reportUnhealthy(handle)
     }
 
 }
