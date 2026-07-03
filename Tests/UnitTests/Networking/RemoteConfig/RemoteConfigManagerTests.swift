@@ -775,7 +775,8 @@ final class RemoteConfigManagerTests: TestCase {
         await self.waitForDiskCacheReadCount(2)
         self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
 
-        expect(await task.value).to(beNil())
+        let data = await task.value
+        expect(data).to(beNil())
     }
 
     func testBlobDataFailedRefreshCompletesWaitingRead() async {
@@ -788,7 +789,8 @@ final class RemoteConfigManagerTests: TestCase {
         await self.waitForDiskCacheReadCount(2)
         self.remoteConfigAPI.complete(with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1)))))
 
-        expect(await task.value).to(beNil())
+        let data = await task.value
+        expect(data).to(beNil())
     }
 
     func testBlobDataMalformedRefreshCompletesWaitingRead() async throws {
@@ -803,7 +805,8 @@ final class RemoteConfigManagerTests: TestCase {
             with: .success(.test(container: try Self.container(config: "{ not valid json")))
         )
 
-        expect(await task.value).to(beNil())
+        let data = await task.value
+        expect(data).to(beNil())
     }
 
     func testBlobDataClearCacheCompletesWaitingRead() async {
@@ -816,7 +819,8 @@ final class RemoteConfigManagerTests: TestCase {
         await self.waitForDiskCacheReadCount(2)
         self.manager.clearCache()
 
-        expect(await task.value).to(beNil())
+        let data = await task.value
+        expect(data).to(beNil())
     }
 
     func testBlobDataCloseCompletesWaitingRead() async {
@@ -829,7 +833,8 @@ final class RemoteConfigManagerTests: TestCase {
         await self.waitForDiskCacheReadCount(2)
         self.manager.close()
 
-        expect(await task.value).to(beNil())
+        let data = await task.value
+        expect(data).to(beNil())
     }
 
     func testBlobDataDoesNotTriggerRefreshWhenRemoteConfigIsDisabled() async {
