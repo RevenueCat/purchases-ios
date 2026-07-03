@@ -405,6 +405,19 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             ? SimulatedStoreTransactionFetcher()
             : StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
 
+        // Remote config's shared components, created once and reused across the SDK. The source
+        // provider drives both the API base host (with the embedded defaults as a floor, so requests
+        // can fail over across API hosts) and blob source selection, reading its `sources` topic from
+        // the on-disk remote configuration the manager persists. Only created when remote config is
+        // enabled; otherwise the manager is a no-op and requests stay on `SystemInfo.apiBaseURL`.
+        let remoteConfigComponents: (diskCache: RemoteConfigDiskCache,
+                                     blobStore: RemoteConfigBlobStore,
+                                     sourceProvider: RemoteConfigSourceProvider)? = {
+            guard systemInfo.remoteConfigEnabled else { return nil }
+            let diskCache = RemoteConfigDiskCache()
+            return (diskCache, RemoteConfigBlobStore(), RemoteConfigSourceProvider(topicStore: diskCache))
+        }()
+
         let backend = Backend(
             systemInfo: systemInfo,
             httpClientTimeout: networkTimeout,
@@ -418,7 +431,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 observerMode: observerMode,
                 customEntitlementComputation: systemInfo.dangerousSettings.customEntitlementComputation
             ),
-            diagnosticsTracker: diagnosticsTracker
+            diagnosticsTracker: diagnosticsTracker,
+            apiSourceProvider: remoteConfigComponents?.sourceProvider
         )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
@@ -503,20 +517,17 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               appUserID: appUserID
         )
         let remoteConfigManager: RemoteConfigManagerType = {
-            guard systemInfo.remoteConfigEnabled else { return NoOpRemoteConfigManager() }
+            guard let components = remoteConfigComponents else { return NoOpRemoteConfigManager() }
 
-            let diskCache = RemoteConfigDiskCache()
-            let blobStore = RemoteConfigBlobStore()
-            let sourceProvider = RemoteConfigSourceProvider(topicStore: diskCache)
             let blobFetcher = RemoteConfigBlobFetcher(
-                blobStore: blobStore,
-                sourceProvider: sourceProvider
+                blobStore: components.blobStore,
+                sourceProvider: components.sourceProvider
             )
 
             return RemoteConfigManager(
                 remoteConfigAPI: backend.remoteConfigAPI,
-                diskCache: diskCache,
-                blobStore: blobStore,
+                diskCache: components.diskCache,
+                blobStore: components.blobStore,
                 blobFetcher: blobFetcher,
                 currentUserProvider: identityManager,
                 cacheDurationInSeconds: { isAppBackgrounded in

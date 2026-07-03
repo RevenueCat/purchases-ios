@@ -104,7 +104,8 @@ private extension BaseProductionRemoteConfigIntegrationTests {
                 systemInfo: systemInfo
             ),
             offlineCustomerInfoCreator: nil,
-            diagnosticsTracker: nil
+            diagnosticsTracker: nil,
+            apiSourceProvider: nil
         )
 
         return backend.remoteConfigAPI

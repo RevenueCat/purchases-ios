@@ -274,6 +274,43 @@ class HTTPRequestTests: TestCase {
         expect(path.url(proxyURL: URL(string: "https://test_url"))?.absoluteString) == "https://test_url/v1/health"
     }
 
+    func testURLWithAPISource() {
+        let path: HTTPRequest.Path = .health
+        expect(path.url(apiSourceURL: URL(string: "https://api.rc-backup.com/"))?.absoluteString)
+            == "https://api.rc-backup.com/v1/health"
+    }
+
+    func testURLProxyTakesPrecedenceOverAPISource() {
+        // A proxy pins every request to itself; passing an api source alongside it is a caller error
+        // and must not silently route around the proxy.
+        let path: HTTPRequest.Path = .health
+        expect(path.url(proxyURL: URL(string: "https://test_url"),
+                        apiSourceURL: URL(string: "https://api.rc-backup.com/"))).to(beNil())
+    }
+
+    func testURLFallbackIndexTakesPrecedenceOverAPISource() {
+        let path: HTTPRequest.Path = .getOfferings(appUserID: Self.userID)
+        expect(path.url(apiSourceURL: URL(string: "https://api.rc-backup.com/"),
+                        fallbackUrlIndex: 0)?.absoluteString)
+            == path.fallbackUrls.first?.absoluteString
+    }
+
+    func testMainPathsUseAPISources() {
+        for path in Self.paths {
+            expect(path.usesAPISources).to(beTrue(), description: "Path '\(path)' should use API sources")
+        }
+    }
+
+    func testNonMainPathsDoNotUseAPISources() {
+        let paths: [any HTTPRequestPath] = [
+            HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID),
+            HTTPRequest.DiagnosticsPath.postDiagnostics
+        ]
+        for path in paths {
+            expect(path.usesAPISources).to(beFalse(), description: "Path '\(path)' should not use API sources")
+        }
+    }
+
     func testAddNonceIfRequiredWithExistingNonceDoesNotReplaceNonce() throws {
         let existingNonce = Data.randomNonce()
         let request: HTTPRequest = .init(method: .get, path: .health, nonce: existingNonce)

@@ -47,7 +47,16 @@ struct RemoteConfigSourceHandle {
 
 }
 
-protocol RemoteConfigSourceProviderType: AnyObject {
+/// Narrow interface the networking layer uses to resolve the API base host. Backed by the `.api`
+/// failover of `RemoteConfigSourceProvider`, so the network layer depends only on what it needs.
+protocol APISourceProviding: AnyObject {
+
+    /// The current healthy API base source, or `nil` once every API source has been reported unhealthy.
+    func currentAPISource() -> RemoteConfigSourceHandle?
+
+}
+
+protocol RemoteConfigSourceProviderType: APISourceProviding {
 
     /// The current healthy source for `purpose`, or `nil` once all of its sources are reported unhealthy.
     func getCurrent(for purpose: RemoteConfigSourceHandle.Purpose) -> RemoteConfigSourceHandle?
@@ -61,6 +70,14 @@ protocol RemoteConfigSourceProviderType: AnyObject {
     /// Rewinds the given purpose only if every known source for it has already been exhausted.
     @discardableResult
     func restartIfExhausted(for purpose: RemoteConfigSourceHandle.Purpose) -> Bool
+
+}
+
+extension RemoteConfigSourceProviderType {
+
+    func currentAPISource() -> RemoteConfigSourceHandle? {
+        return self.getCurrent(for: .api)
+    }
 
 }
 
