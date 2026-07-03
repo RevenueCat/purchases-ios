@@ -87,12 +87,29 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     private let currentUserProvider: CurrentUserProvider
     private let dateProvider: DateProvider
     private let cacheDurationInSeconds: (Bool) -> TimeInterval
+
+    /// Serializes refresh ownership, epoch checks, and cache mutations against `clearCache()` and `close()`.
     private let lock = Lock()
+
+    /// Tracks the single config refresh whose completion read APIs may await.
     private var isRefreshing = false
+
+    /// Session-scoped kill switch set by disabling client errors. This is intentionally not reset by cache clears.
     private var isDisabledInternal = false
+
+    /// Teardown guard that prevents new refresh work after `close()`.
     private var isClosed = false
+
+    /// Incremented when local state is invalidated so late responses from older users/sessions are dropped.
     private var epoch = 0
+
+    /// In-memory staleness marker. Only successful `200` and `204` responses mark the config fresh.
     private var lastRefreshedAt: Date?
+
+    /// Read callers waiting for the current refresh to finish before rereading committed config state.
+    ///
+    /// These continuations carry no result because callers decide what to do by rereading disk state after the
+    /// refresh, clear, close, or failure completes.
     private var refreshContinuations: [CheckedContinuation<Void, Never>] = []
 
     init(
@@ -358,6 +375,10 @@ private extension RemoteConfigManager {
         self.lastRefreshedAt = self.dateProvider.now()
     }
 
+    /// Waits for committed config state to become available for read APIs.
+    ///
+    /// A read first joins existing refresh work. If no refresh is in flight and remote config is still enabled, it
+    /// starts one foreground refresh and waits for that attempt before the caller rereads disk state.
     func awaitConfigForRead() async {
         if await self.awaitInFlightRefresh() {
             return
@@ -369,6 +390,10 @@ private extension RemoteConfigManager {
         _ = await self.awaitInFlightRefresh()
     }
 
+    /// Joins the current refresh if one is active.
+    ///
+    /// Returns `true` only when the caller actually waited on refresh completion. Returning `false` lets callers
+    /// decide whether to start a new refresh attempt.
     func awaitInFlightRefresh() async -> Bool {
         var didRegisterWaiter = false
         await withCheckedContinuation { continuation in
@@ -387,12 +412,17 @@ private extension RemoteConfigManager {
         return didRegisterWaiter
     }
 
+    /// Removes and returns all read waiters so they can be resumed outside the lock.
     func drainRefreshContinuations() -> [CheckedContinuation<Void, Never>] {
         defer { self.refreshContinuations = [] }
 
         return self.refreshContinuations
     }
 
+    /// Resolves an external blob item through the high-priority fetch path.
+    ///
+    /// Inline item metadata is returned by `topic(_:)`; this method only returns bytes for items backed by
+    /// `blob_ref`.
     func blobData(for item: RemoteConfiguration.ConfigItem) async -> Data? {
         guard let ref = item.blobRef else { return nil }
 
