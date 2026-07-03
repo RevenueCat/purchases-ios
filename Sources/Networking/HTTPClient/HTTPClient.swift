@@ -271,10 +271,6 @@ internal extension HTTPClient {
         private(set) var fallbackUrlIndex: Int?
 
         /// The API source this request is currently targeting, captured when the request URL is built.
-        /// Held so a transient failure reports back the exact source that failed (via its token) rather
-        /// than whatever the shared provider considers current at failure time. `nil` when the request
-        /// does not resolve its host from API sources (proxy, pinned host, fallback phase, or opted-out
-        /// paths).
         var apiSourceHandle: RemoteConfigSourceHandle?
 
         /// Whether the request has been retried.
