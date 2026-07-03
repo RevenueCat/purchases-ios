@@ -93,7 +93,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     private var isClosed = false
     private var epoch = 0
     private var lastRefreshedAt: Date?
-    private var refreshContinuations: [CheckedContinuation<Bool, Never>] = []
+    private var refreshContinuations: [CheckedContinuation<Void, Never>] = []
 
     init(
         remoteConfigAPI: RemoteConfigAPIType,
@@ -195,7 +195,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
             self.blobStore.clear()
             return self.drainRefreshContinuations()
         }
-        continuations.forEach { $0.resume(returning: true) }
+        continuations.forEach { $0.resume() }
     }
 
     func close() {
@@ -205,7 +205,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
             self.isRefreshing = false
             return self.drainRefreshContinuations()
         }
-        continuations.forEach { $0.resume(returning: true) }
+        continuations.forEach { $0.resume() }
     }
 
 }
@@ -266,13 +266,13 @@ private extension RemoteConfigManager {
     @discardableResult
     func releaseGuardIfOwned(requestEpoch: Int) -> Bool {
         let continuations = self.lock.perform {
-            guard self.epoch == requestEpoch else { return nil as [CheckedContinuation<Bool, Never>]? }
+            guard self.epoch == requestEpoch else { return nil as [CheckedContinuation<Void, Never>]? }
             self.isRefreshing = false
             return self.drainRefreshContinuations()
         }
         guard let continuations else { return false }
 
-        continuations.forEach { $0.resume(returning: true) }
+        continuations.forEach { $0.resume() }
         return true
     }
 
@@ -320,7 +320,7 @@ private extension RemoteConfigManager {
         requestEpoch: Int
     ) {
         let continuations = self.lock.perform {
-            guard self.epoch == requestEpoch else { return nil as [CheckedContinuation<Bool, Never>]? }
+            guard self.epoch == requestEpoch else { return nil as [CheckedContinuation<Void, Never>]? }
 
             self.disableRefreshIfNeeded(for: error)
             self.isRefreshing = false
@@ -329,7 +329,7 @@ private extension RemoteConfigManager {
         }
 
         guard let continuations else { return }
-        continuations.forEach { $0.resume(returning: true) }
+        continuations.forEach { $0.resume() }
 
         Logger.error(Strings.remoteConfig.refreshFailed(error))
     }
@@ -370,21 +370,24 @@ private extension RemoteConfigManager {
     }
 
     func awaitInFlightRefresh() async -> Bool {
-        return await withCheckedContinuation { continuation in
-            let shouldResume = self.lock.perform {
+        var didRegisterWaiter = false
+        await withCheckedContinuation { continuation in
+            didRegisterWaiter = self.lock.perform {
                 guard self.isRefreshing else { return false }
 
                 self.refreshContinuations.append(continuation)
                 return true
             }
 
-            if !shouldResume {
-                continuation.resume(returning: false)
+            if !didRegisterWaiter {
+                continuation.resume()
             }
         }
+
+        return didRegisterWaiter
     }
 
-    func drainRefreshContinuations() -> [CheckedContinuation<Bool, Never>] {
+    func drainRefreshContinuations() -> [CheckedContinuation<Void, Never>] {
         defer { self.refreshContinuations = [] }
 
         return self.refreshContinuations
