@@ -72,7 +72,7 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
     fileprivate final func createClient(
         _ systemInfo: SystemInfo,
         operationDispatcher: OperationDispatcher = MockOperationDispatcher(),
-        apiSourceProvider: APISourceProviding? = nil
+        apiSourceProvider: APISourceProviderType? = nil
     ) -> HTTPClient {
         return HTTPClient(systemInfo: systemInfo,
                           eTagManager: self.eTagManager,
