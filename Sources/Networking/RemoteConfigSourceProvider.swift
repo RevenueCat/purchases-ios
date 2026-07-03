@@ -123,7 +123,7 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
         RemoteConfigSource(url: "https://api.rc-backup.com/", priority: 100_001, weight: 1)
     ]
 
-    private let topicStore: RemoteConfigTopicStoreType
+    private let topicStore: RemoteConfigTopicStoreType?
     private let randomizer: WeightedSourceRandomizer?
     private let lock = Lock()
 
@@ -134,7 +134,7 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     private var blob: SourceFailover
 
     init(
-        topicStore: RemoteConfigTopicStoreType,
+        topicStore: RemoteConfigTopicStoreType?,
         randomizer: WeightedSourceRandomizer? = nil
     ) {
         self.topicStore = topicStore
@@ -202,7 +202,7 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     /// rebuild happened. Callers must hold `lock`.
     @discardableResult
     private func rebuildIfNeeded() -> Bool {
-        let topic = self.topicStore.topic(Self.sourcesTopicName)
+        let topic = self.topicStore?.topic(Self.sourcesTopicName)
         guard topic != self.sourcesTopic else { return false }
 
         // Seed the new generation past any token the previous one could have handed out, so reports
