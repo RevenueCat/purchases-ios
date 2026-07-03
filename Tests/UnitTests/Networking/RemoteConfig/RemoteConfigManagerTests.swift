@@ -878,11 +878,12 @@ final class RemoteConfigManagerTests: TestCase {
         )
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
+        let readCountAfterDisabling = self.diskCache.invokedReadCount
 
         let data = await self.manager.blobData(for: .workflows, itemKey: "default")
 
         expect(data).to(beNil())
-        expect(self.diskCache.invokedReadCount) == 2
+        expect(self.diskCache.invokedReadCount) == readCountAfterDisabling
         expect(self.blobFetcher.invokedEnsureDownloadedRefs).to(beEmpty())
         expect(self.blobStore.invokedReadRefs).to(beEmpty())
     }
