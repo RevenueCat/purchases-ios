@@ -1690,9 +1690,7 @@ extension Purchases {
     ///
     /// Call when your ad network's reward callback fires, passing the `clientTransactionID` returned by
     /// ``generateRewardVerificationToken(impressionId:)``.
-    /// On a verified reward, automatically invalidates the relevant cache so the grant is reflected on the
-    /// next access: the virtual currencies cache for a virtual-currency reward, and the `CustomerInfo`
-    /// cache for an entitlement reward.
+    /// Refreshes local reward state before returning verified rewards.
     @_spi(Experimental) public func pollRewardVerification(
         clientTransactionID: String
     ) async -> RewardVerificationResult {
@@ -1715,39 +1713,38 @@ extension Purchases {
         return result
     }
 
-    /// Applies a verified reward's side-effects and returns the result delivered to the caller. A failed
-    /// entitlement `CustomerInfo` refresh downgrades the result to `.failed`.
+    /// Applies local side effects before building the result delivered to the caller.
     private func rewardVerificationResult(
         for outcome: RewardVerification.Outcome,
         clientTransactionID: String
     ) async -> RewardVerificationResult {
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        if case .verified(let reward) = outcome {
-            if reward.virtualCurrency != nil {
+        if case let .verified(reward, moreRewards) = outcome {
+            let rewards = [reward] + moreRewards
+            if rewards.contains(where: { $0.virtualCurrency != nil }) {
                 Logger.debug(AdsStrings.reward_verification_virtual_currency_invalidating_cache(
                     transactionID: clientTransactionID
                 ))
                 self.invalidateVirtualCurrenciesCache()
             }
-            if reward.entitlement != nil,
+            if rewards.contains(where: { $0.entitlement != nil }),
                await self.refreshCustomerInfoAfterEntitlementGrant(clientTransactionID: clientTransactionID)
                 == false {
-                // Couldn't reflect the entitlement locally — report `.failed` so the app doesn't act on a
-                // reward it can't honor yet. The grant persists server-side and syncs on a later fetch.
+                // Do not surface entitlement rewards that could not be reflected locally yet.
                 return .failed
             }
         }
         #endif
         switch outcome {
-        case .verified(let reward): return .verified(reward)
-        case .failed: return .failed
+        case let .verified(reward, moreRewards):
+            return .verified(reward, moreRewards: moreRewards)
+        case .failed:
+            return .failed
         }
     }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    /// Fetches current `CustomerInfo` so an entitlement reward is reflected locally,
-    /// retrying transient failures since `getCustomerInfo` has no built-in retry. Returns whether it
-    /// succeeded.
+    /// Refreshes `CustomerInfo` after entitlement grants, retrying transient failures.
     private func refreshCustomerInfoAfterEntitlementGrant(clientTransactionID: String) async -> Bool {
         Logger.debug(AdsStrings.reward_verification_entitlement_fetching_customer_info(
             transactionID: clientTransactionID
@@ -1760,7 +1757,6 @@ extension Purchases {
                 )
                 return (shouldRetry: false, info)
             } catch {
-                // Retry only transient failures; a terminal error won't improve on retry.
                 let isTransient = (error as? BackendError)?.isTransient ?? false
                 return (shouldRetry: isTransient, nil)
             }
@@ -1798,8 +1794,8 @@ extension Purchases {
         }
 
         switch response.status {
-        case let .verified(reward):
-            return .verified(reward)
+        case let .verified(reward, moreRewards):
+            return .verified(reward: reward, moreRewards: moreRewards)
         case .pending:
             return .pending
         case let .failed(failure):

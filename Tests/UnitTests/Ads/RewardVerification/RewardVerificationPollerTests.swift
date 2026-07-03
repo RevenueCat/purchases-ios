@@ -28,7 +28,7 @@ final class RewardVerificationPollerTests: TestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .verified(let adReward) = outcome, let earnedReward = adReward.virtualCurrency else {
+        guard case let .verified(adReward, _) = outcome, let earnedReward = adReward.virtualCurrency else {
             return XCTFail("Expected .verified(.virtualCurrency), got \(outcome)")
         }
         XCTAssertEqual(earnedReward, reward)
@@ -90,7 +90,7 @@ final class RewardVerificationPollerTests: TestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .verified(.noReward) = outcome else {
+        guard case .verified(.noReward, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.receivedIDs, ["tx-1", "tx-1", "tx-1"])
@@ -120,7 +120,7 @@ final class RewardVerificationPollerTests: TestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .verified(.noReward) = outcome else {
+        guard case .verified(.noReward, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.receivedIDs.count, 10)
@@ -150,7 +150,7 @@ final class RewardVerificationPollerTests: TestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .verified(.noReward) = outcome else {
+        guard case .verified(.noReward, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.receivedIDs.count, 3)
@@ -198,7 +198,7 @@ final class RewardVerificationPollerTests: TestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .verified(.noReward) = outcome else {
+        guard case .verified(.noReward, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.callCount, 2)
@@ -216,7 +216,7 @@ final class RewardVerificationPollerTests: TestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .verified(.noReward) = outcome else {
+        guard case .verified(.noReward, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.callCount, 3)
@@ -279,7 +279,7 @@ final class RewardVerificationPollerTests: TestCase {
 
             let outcome = await sut.run(clientTransactionID: "tx-1")
 
-            guard case .verified(.noReward) = outcome else {
+            guard case .verified(.noReward, _) = outcome else {
                 return XCTFail("Expected .verified for transient error \(error), got \(outcome)")
             }
             XCTAssertEqual(statusPoller.callCount, 2, "Transient error \(error) should have been retried once")
@@ -298,7 +298,7 @@ final class RewardVerificationPollerTests: TestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .verified(.noReward) = outcome else {
+        guard case .verified(.noReward, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.callCount, 2, "A 5xx should be retried")
@@ -315,7 +315,7 @@ final class RewardVerificationPollerTests: TestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .verified(.noReward) = outcome else {
+        guard case .verified(.noReward, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.callCount, 2, "An unparseable 5xx should still be retried")
@@ -375,7 +375,7 @@ final class RewardVerificationPollerTests: TestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .verified(.noReward) = outcome else {
+        guard case .verified(.noReward, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
         }
         XCTAssertEqual(statusPoller.callCount, 3)
@@ -510,7 +510,7 @@ final class RewardVerificationPollerTests: TestCase {
 
         let outcome = await sut.run(clientTransactionID: "tx-1")
 
-        guard case .verified(.noReward) = outcome else {
+        guard case .verified(.noReward, _) = outcome else {
             return XCTFail("Expected .verified(.noReward) after sleeper failure was swallowed, got \(outcome)")
         }
         XCTAssertEqual(statusPoller.callCount, 2)

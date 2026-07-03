@@ -84,9 +84,6 @@ final class AdRewardTests: TestCase {
 
     // MARK: - Flat (analytics events) encoding
 
-    /// The analytics-events flat encoding only models a currency `code`/`amount`. Entitlement analytics
-    /// is a deferred non-goal, so an entitlement reward flat-encodes its `type` only and round-trips back
-    /// to ``AdReward/unsupportedReward`` (it cannot be reconstructed without identifier/expiry keys).
     func testEntitlementFlatEncodingEmitsTypeOnlyAndDecodesAsUnsupported() throws {
         let reward = AdReward.entitlement(identifier: "pro", expiresAt: Date())
 
@@ -102,7 +99,6 @@ final class AdRewardTests: TestCase {
 
 }
 
-/// Exercises ``AdReward``'s flat `encode`/`decode` helpers (the analytics-events wire shape).
 private struct FlatRewardWrapper: Codable, Equatable {
 
     enum CodingKeys: String, CodingKey {

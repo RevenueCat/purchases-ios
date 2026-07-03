@@ -16,7 +16,6 @@ import XCTest
 
 @_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 
-/// Decoding tests for the reward-verification poll response wire shape.
 final class RewardVerificationStatusResponseTests: TestCase {
 
     private static let expiresAtString = "2026-06-16T12:00:00Z"
@@ -41,7 +40,7 @@ final class RewardVerificationStatusResponseTests: TestCase {
         expect(try self.decode(["status": "some_future_state"]).status) == .unknown
     }
 
-    // MARK: - Reward
+    // MARK: - Primary reward
 
     func testDecodesVirtualCurrencyReward() throws {
         let response = try self.decode([
@@ -49,10 +48,11 @@ final class RewardVerificationStatusResponseTests: TestCase {
             "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
         ])
 
-        guard case let .verified(reward) = response.status else {
+        guard case let .verified(reward, moreRewards) = response.status else {
             return fail("Expected verified, got \(response.status)")
         }
         expect(reward.virtualCurrency) == VirtualCurrencyReward(code: "coins", amount: 10)
+        expect(moreRewards).to(beEmpty())
     }
 
     func testDecodesEntitlementReward() throws {
@@ -61,20 +61,21 @@ final class RewardVerificationStatusResponseTests: TestCase {
             "reward": ["type": "entitlement", "identifier": "pro", "expires_at": Self.expiresAtString]
         ])
 
-        guard case let .verified(reward) = response.status else {
+        guard case let .verified(reward, moreRewards) = response.status else {
             return fail("Expected verified, got \(response.status)")
         }
         let entitlement = try XCTUnwrap(reward.entitlement)
         expect(entitlement.identifier) == "pro"
         expect(entitlement.expiresAt) == Self.expiresAt
+        expect(moreRewards).to(beEmpty())
     }
 
     func testVerifiedWithoutRewardDecodesAsNoReward() throws {
-        expect(try self.decode(["status": "verified"]).status) == .verified(.noReward)
+        let response = try self.decode(["status": "verified"])
+        expect(response.status) == .verified(.noReward)
     }
 
     func testMalformedEntitlementDecodesAsUnsupported() throws {
-        // Entitlement reward missing its `identifier`.
         let response = try self.decode([
             "status": "verified",
             "reward": ["type": "entitlement", "expires_at": Self.expiresAtString]
@@ -110,7 +111,7 @@ final class RewardVerificationStatusResponseTests: TestCase {
         )
     }
 
-    func testUnknownRewardTypeDecodesAsUnsupported() throws {
+    func testUnknownPrimaryRewardTypeDecodesAsUnsupported() throws {
         let response = try self.decode([
             "status": "verified",
             "reward": ["type": "some_future_reward"]
@@ -120,5 +121,120 @@ final class RewardVerificationStatusResponseTests: TestCase {
             Strings.backendError.unsupported_reward_verification_reward_type(type: "some_future_reward"),
             level: .warn
         )
+    }
+
+    // MARK: - moreRewards
+
+    func testMultiGrantDecodesPrimaryAndMoreRewards() throws {
+        let response = try self.decode([
+            "status": "verified",
+            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10],
+            "more_rewards": [
+                ["type": "entitlement", "identifier": "pro", "expires_at": Self.expiresAtString]
+            ]
+        ])
+
+        guard case let .verified(reward, moreRewards) = response.status else {
+            return fail("Expected verified, got \(response.status)")
+        }
+        expect(reward.virtualCurrency) == VirtualCurrencyReward(code: "coins", amount: 10)
+        expect(moreRewards).to(haveCount(1))
+        let entitlement = try XCTUnwrap(moreRewards.first?.entitlement)
+        expect(entitlement.identifier) == "pro"
+        expect(entitlement.expiresAt) == Self.expiresAt
+    }
+
+    func testAbsentMoreRewardsDecodesAsEmpty() throws {
+        let response = try self.decode([
+            "status": "verified",
+            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
+        ])
+
+        guard case let .verified(_, moreRewards) = response.status else {
+            return fail("Expected verified, got \(response.status)")
+        }
+        expect(moreRewards).to(beEmpty())
+    }
+
+    func testUnknownTypeInMoreRewardsDecodesAsUnsupportedEntry() throws {
+        let response = try self.decode([
+            "status": "verified",
+            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10],
+            "more_rewards": [["type": "some_future_reward"]]
+        ])
+
+        guard case let .verified(_, moreRewards) = response.status else {
+            return fail("Expected verified, got \(response.status)")
+        }
+        expect(moreRewards) == [.unsupportedReward]
+        self.logger.verifyMessageWasLogged(
+            Strings.backendError.unsupported_reward_verification_reward_type(type: "some_future_reward"),
+            level: .warn
+        )
+    }
+
+    func testNonArrayMoreRewardsDecodesAsEmpty() throws {
+        let response = try self.decode([
+            "status": "verified",
+            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10],
+            "more_rewards": "not-an-array"
+        ])
+
+        guard case let .verified(_, moreRewards) = response.status else {
+            return fail("Expected verified, got \(response.status)")
+        }
+        expect(moreRewards).to(beEmpty())
+        self.logger.verifyMessageWasLogged(
+            Strings.backendError.unexpected_reward_verification_reward_value,
+            level: .warn
+        )
+    }
+
+    func testNullElementInMoreRewardsDecodesAsUnsupportedEntry() throws {
+        let response = try self.decode([
+            "status": "verified",
+            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10],
+            "more_rewards": [NSNull()]
+        ])
+
+        guard case let .verified(_, moreRewards) = response.status else {
+            return fail("Expected verified, got \(response.status)")
+        }
+        expect(moreRewards) == [.unsupportedReward]
+        self.logger.verifyMessageWasLogged(
+            Strings.backendError.unexpected_reward_verification_reward_value,
+            level: .warn
+        )
+    }
+
+    func testExplicitNullMoreRewardsDecodesAsEmpty() throws {
+        let response = try self.decode([
+            "status": "verified",
+            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10],
+            "more_rewards": NSNull()
+        ])
+
+        guard case let .verified(_, moreRewards) = response.status else {
+            return fail("Expected verified, got \(response.status)")
+        }
+        expect(moreRewards).to(beEmpty())
+    }
+
+    func testMultipleMoreRewardsPreserveOrder() throws {
+        let response = try self.decode([
+            "status": "verified",
+            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10],
+            "more_rewards": [
+                ["type": "entitlement", "identifier": "pro", "expires_at": Self.expiresAtString],
+                ["type": "virtual_currency", "code": "gems", "amount": 5]
+            ]
+        ])
+
+        guard case let .verified(_, moreRewards) = response.status else {
+            return fail("Expected verified, got \(response.status)")
+        }
+        expect(moreRewards).to(haveCount(2))
+        expect(moreRewards[0].entitlement?.identifier) == "pro"
+        expect(moreRewards[1].virtualCurrency) == VirtualCurrencyReward(code: "gems", amount: 5)
     }
 }
