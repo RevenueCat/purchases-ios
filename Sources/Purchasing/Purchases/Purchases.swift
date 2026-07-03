@@ -405,18 +405,16 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             ? SimulatedStoreTransactionFetcher()
             : StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
 
-        // Remote config's shared components, created once and reused across the SDK. The source
-        // provider drives both the API base host (with the embedded defaults as a floor, so requests
-        // can fail over across API hosts) and blob source selection, reading its `sources` topic from
-        // the on-disk remote configuration the manager persists. Only created when remote config is
-        // enabled; otherwise the manager is a no-op and requests stay on `SystemInfo.apiBaseURL`.
-        let remoteConfigComponents: (diskCache: RemoteConfigDiskCache,
-                                     blobStore: RemoteConfigBlobStore,
-                                     sourceProvider: RemoteConfigSourceProvider)? = {
-            guard systemInfo.remoteConfigEnabled else { return nil }
-            let diskCache = RemoteConfigDiskCache()
-            return (diskCache, RemoteConfigBlobStore(), RemoteConfigSourceProvider(topicStore: diskCache))
-        }()
+        // Remote config is opt-in. When enabled, a single on-disk cache backs both the source provider
+        // and the manager: the provider drives the API base host (with the embedded defaults as a floor,
+        // so requests can fail over across API hosts) and blob source selection, reading its `sources`
+        // topic from the config the manager persists. A nil provider keeps requests on
+        // `SystemInfo.apiBaseURL` and makes the manager a no-op. The disk cache is created lazily so
+        // its storage directory isn't touched when remote config is disabled.
+        let remoteConfigDiskCache = systemInfo.remoteConfigEnabled ? RemoteConfigDiskCache() : nil
+        let apiSourceProvider: RemoteConfigSourceProvider? = remoteConfigDiskCache.map {
+            RemoteConfigSourceProvider(topicStore: $0)
+        }
 
         let backend = Backend(
             systemInfo: systemInfo,
@@ -432,7 +430,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 customEntitlementComputation: systemInfo.dangerousSettings.customEntitlementComputation
             ),
             diagnosticsTracker: diagnosticsTracker,
-            apiSourceProvider: remoteConfigComponents?.sourceProvider
+            apiSourceProvider: apiSourceProvider
         )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
@@ -517,17 +515,20 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               appUserID: appUserID
         )
         let remoteConfigManager: RemoteConfigManagerType = {
-            guard let components = remoteConfigComponents else { return NoOpRemoteConfigManager() }
+            // Built only when remote config is enabled (i.e. the provider and its disk cache exist),
+            // reusing the same source provider and disk cache the networking layer was wired with.
+            guard let apiSourceProvider, let remoteConfigDiskCache else { return NoOpRemoteConfigManager() }
 
+            let blobStore = RemoteConfigBlobStore()
             let blobFetcher = RemoteConfigBlobFetcher(
-                blobStore: components.blobStore,
-                sourceProvider: components.sourceProvider
+                blobStore: blobStore,
+                sourceProvider: apiSourceProvider
             )
 
             return RemoteConfigManager(
                 remoteConfigAPI: backend.remoteConfigAPI,
-                diskCache: components.diskCache,
-                blobStore: components.blobStore,
+                diskCache: remoteConfigDiskCache,
+                blobStore: blobStore,
                 blobFetcher: blobFetcher,
                 currentUserProvider: identityManager,
                 cacheDurationInSeconds: { isAppBackgrounded in
