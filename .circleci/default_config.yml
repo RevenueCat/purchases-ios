@@ -1070,6 +1070,31 @@ jobs:
           no_output_timeout: 30m
       - slack-notify-on-fail
 
+  build-app-extension-safe:
+    executor:
+      name: macos-executor
+      xcode_version: "26.5"
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Build RevenueCat with app extension safe APIs
+          command: bundle exec fastlane build_with_app_extension_safe_apis scheme:RevenueCat
+          no_output_timeout: 30m
+      - run:
+          name: Build RevenueCat_CustomEntitlementComputation with app extension safe APIs
+          command: bundle exec fastlane build_with_app_extension_safe_apis scheme:RevenueCat_CustomEntitlementComputation
+          no_output_timeout: 30m
+      - run:
+          name: Build ReceiptParser with app extension safe APIs
+          command: bundle exec fastlane build_with_app_extension_safe_apis scheme:"ReceiptParser (RevenueCat Workspace)"
+          no_output_timeout: 30m
+      - run:
+          name: Build RevenueCatUI with app extension safe APIs
+          command: bundle exec fastlane build_with_app_extension_safe_apis scheme:RevenueCatUI
+          no_output_timeout: 30m
+      - slack-notify-on-fail
+
   run-test-ios-18-and-17:
     executor:
       name: macos-executor
@@ -2417,6 +2442,11 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+      - build-app-extension-safe:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
       - deploy-purchase-tester:
           dry_run: true
           requires:
@@ -2472,6 +2502,7 @@ workflows:
             - installation-tests-carthage
             - api-tests
             - spm-receipt-parser
+            - build-app-extension-safe
             - revenuecat-admob-tests
             - deploy-purchase-tester
             - run-all-maestro-e2e-tests
