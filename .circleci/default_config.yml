@@ -1078,8 +1078,20 @@ jobs:
       - checkout
       - install-dependencies
       - run:
-          name: Build all SDK products with app extension safe APIs
-          command: bundle exec fastlane build_all_app_extension_safe_sdk_products
+          name: Build RevenueCat with app extension safe APIs
+          command: bundle exec fastlane build_with_app_extension_safe_apis scheme:RevenueCat
+          no_output_timeout: 30m
+      - run:
+          name: Build RevenueCat_CustomEntitlementComputation with app extension safe APIs
+          command: bundle exec fastlane build_with_app_extension_safe_apis scheme:RevenueCat_CustomEntitlementComputation
+          no_output_timeout: 30m
+      - run:
+          name: Build ReceiptParser with app extension safe APIs
+          command: bundle exec fastlane build_with_app_extension_safe_apis scheme:"ReceiptParser (RevenueCat Workspace)"
+          no_output_timeout: 30m
+      - run:
+          name: Build RevenueCatUI with app extension safe APIs
+          command: bundle exec fastlane build_with_app_extension_safe_apis scheme:RevenueCatUI
           no_output_timeout: 30m
       - slack-notify-on-fail
 
