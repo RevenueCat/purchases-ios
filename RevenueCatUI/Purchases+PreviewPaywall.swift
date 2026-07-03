@@ -57,7 +57,7 @@ extension Purchases {
         var presentationContext = viewController
 
         if presentationContext == nil {
-            presentationContext = UIApplication.extensionSafeApplication?
+            presentationContext = UIApplication.shared
                                                .connectedScenes
                                                .compactMap { $0 as? UIWindowScene }
                                                .flatMap { scene -> [(UIScene.ActivationState, UIWindow)] in

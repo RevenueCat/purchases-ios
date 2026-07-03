@@ -52,8 +52,8 @@ enum URLUtilities {
     }
 
     static func openURLIfNotAppExtension(_ url: URL) {
-        guard !UIApplication.isAppExtension,
-              let application = UIApplication.extensionSafeApplication else {
+        guard !Self.isAppExtension,
+              let application = Self.sharedUIApplication else {
             return
         }
 
@@ -65,8 +65,8 @@ enum URLUtilities {
     }
 
     static func canOpenURL(_ url: URL) -> Bool {
-        guard !UIApplication.isAppExtension,
-              let application = UIApplication.extensionSafeApplication else {
+        guard !Self.isAppExtension,
+              let application = Self.sharedUIApplication else {
             return false
         }
         return application.canOpenURL(url)
@@ -83,6 +83,18 @@ extension URL {
         default:
             return false
         }
+    }
+
+}
+
+private extension URLUtilities {
+
+    static var isAppExtension: Bool {
+        Bundle.main.bundlePath.hasSuffix(".appex")
+    }
+
+    static var sharedUIApplication: UIApplication? {
+        return UIApplication.value(forKey: "sharedApplication") as? UIApplication
     }
 
 }

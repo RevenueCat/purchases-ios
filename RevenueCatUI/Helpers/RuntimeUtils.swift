@@ -20,21 +20,3 @@ enum RuntimeUtils {
  #endif
      }
  }
-
-#if canImport(UIKit) && !os(watchOS)
-
-import UIKit
-
-extension UIApplication {
-
-    static var isAppExtension: Bool {
-        Bundle.main.bundlePath.hasSuffix(".appex")
-    }
-
-    static var extensionSafeApplication: UIApplication? {
-        return UIApplication.value(forKey: "sharedApplication") as? UIApplication
-    }
-
-}
-
-#endif
