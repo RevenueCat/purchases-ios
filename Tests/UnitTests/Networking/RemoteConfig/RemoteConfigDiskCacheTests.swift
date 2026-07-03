@@ -154,6 +154,41 @@ final class RemoteConfigDiskCacheTests: TestCase {
         expect(self.cache.read()).to(beNil())
     }
 
+    func testReadCachesMissAfterDecodingFailureAndDoesNotReadDiskAgain() throws {
+        try FileManager.default.createDirectory(
+            at: self.fileURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+        try "{ this is not valid json".asData.write(to: self.fileURL)
+
+        // First read fails to decode and caches the miss.
+        expect(self.cache.read()).to(beNil())
+
+        // Persist a valid configuration to disk behind the cache's back.
+        self.makeCache().write(PersistedRemoteConfiguration(
+            manifest: "v1.1710000100.sources:etag1",
+            activeTopics: ["sources"]
+        ))
+
+        // The miss is cached, so disk is not read again.
+        expect(self.cache.read()).to(beNil())
+    }
+
+    func testReadCachesMissWhenNothingPersistedAndDoesNotReadDiskAgain() throws {
+        // First read finds nothing on disk and caches the miss.
+        expect(self.cache.read()).to(beNil())
+
+        // Persist a valid configuration to disk behind the cache's back.
+        self.makeCache().write(PersistedRemoteConfiguration(
+            manifest: "v1.1710000100.sources:etag1",
+            activeTopics: ["sources"]
+        ))
+
+        // The miss is cached, so disk is not read again.
+        expect(self.cache.read()).to(beNil())
+    }
+
     func testReadDefaultsMissingTopicsToEmpty() throws {
         try FileManager.default.createDirectory(
             at: self.fileURL.deletingLastPathComponent(),
