@@ -336,6 +336,41 @@ final class RemoteConfigManagerTests: TestCase {
         expect(topic["api"]?.content["url"]) == "https://api.revenuecat.com"
     }
 
+    func testTopicMissingAfterFreshRefreshDoesNotTriggerAnotherRefresh() async throws {
+        self.diskCache.writeHandler = { configuration in
+            self.diskCache.stubbedRead = configuration
+            return true
+        }
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "api": { "url": "https://api.revenuecat.com" }
+            }
+          }
+        }
+        """
+
+        let firstRead = Task {
+            await self.manager.topic(.workflows)
+        }
+        await self.waitForRemoteConfigRequestCount(1)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        let firstTopic = await firstRead.value
+        expect(firstTopic).to(beNil())
+
+        let secondRead = await self.manager.topic(.workflows)
+
+        expect(secondRead).to(beNil())
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+    }
+
     func testTopicWaitsForInFlightRefreshBeforeReturningMissingTopic() async throws {
         self.diskCache.writeHandler = { configuration in
             self.diskCache.stubbedRead = configuration
@@ -803,6 +838,41 @@ final class RemoteConfigManagerTests: TestCase {
         let maybeData = await task.value
         let data = try XCTUnwrap(maybeData)
         expect(data) == blob
+    }
+
+    func testBlobDataMissingItemAfterFreshRefreshDoesNotTriggerAnotherRefresh() async throws {
+        self.diskCache.writeHandler = { configuration in
+            self.diskCache.stubbedRead = configuration
+            return true
+        }
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.workflows:etag2",
+          "active_topics": ["workflows"],
+          "topics": {
+            "workflows": {
+              "other": { "one": 1 }
+            }
+          }
+        }
+        """
+
+        let firstRead = Task {
+            await self.manager.blobData(for: .workflows, itemKey: "default")
+        }
+        await self.waitForRemoteConfigRequestCount(1)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        let firstData = await firstRead.value
+        expect(firstData).to(beNil())
+
+        let secondRead = await self.manager.blobData(for: .workflows, itemKey: "default")
+
+        expect(secondRead).to(beNil())
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
     }
 
     func testBlobDataColdReadUsesCurrentAppUserIDWhenTriggeringRefresh() async {

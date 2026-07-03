@@ -388,16 +388,16 @@ private extension RemoteConfigManager {
 
     /// Waits for committed config state to become available for read APIs.
     ///
-    /// A read first joins existing refresh work. If no refresh is in flight and remote config is still enabled, it
-    /// starts one foreground refresh and waits for that attempt before the caller rereads disk state.
+    /// A read first joins existing refresh work. If no refresh is in flight and remote config is still readable, it
+    /// starts one foreground refresh only when stale and waits for that attempt before the caller rereads disk state.
     func awaitConfigForRead() async {
         if await self.awaitInFlightRefresh() {
             return
         }
 
-        guard !self.isDisabled else { return }
+        guard self.canReadCommittedState else { return }
 
-        self.refreshRemoteConfig(isAppBackgrounded: false)
+        self.refreshRemoteConfigIfStale(isAppBackgrounded: false)
         _ = await self.awaitInFlightRefresh()
     }
 
