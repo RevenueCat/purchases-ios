@@ -1545,7 +1545,7 @@ extension RevenueCat.PaywallViewMode : Swift.Codable {
     @objc public func with(storeKitVersion version: RevenueCat.StoreKitVersion) -> RevenueCat.Configuration.Builder
     @objc public func with(automaticDeviceIdentifierCollectionEnabled: Swift.Bool) -> RevenueCat.Configuration.Builder
     @objc public func build() -> RevenueCat.Configuration
-    public func with(preferredUILocaleOverride: Swift.String?) -> RevenueCat.Configuration.Builder
+    @objc public func with(preferredUILocaleOverride: Swift.String?) -> RevenueCat.Configuration.Builder
     @objc deinit
   }
   @objc deinit
@@ -2182,7 +2182,7 @@ extension RevenueCat.Purchases {
   public static let paywallImageDownloadSession: Foundation.URLSession
 }
 extension RevenueCat.Purchases {
-  final public func overridePreferredUILocale(_ locale: Swift.String?)
+  @objc final public func overridePreferredUILocale(_ locale: Swift.String?)
 }
 extension RevenueCat.Purchases {
   @discardableResult

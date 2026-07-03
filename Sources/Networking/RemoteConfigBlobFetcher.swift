@@ -127,8 +127,10 @@ private actor RemoteConfigBlobFetchScheduler {
         let wouldDownload: (String) -> Bool = { ref in
             RemoteConfigBlobRefHelpers.isValid(ref) && !self.blobStore.contains(ref: ref)
         }
+        let enqueuedCount = refs.filter(wouldDownload).count
 
-        if refs.contains(where: wouldDownload) {
+        if enqueuedCount > 0 {
+            Logger.verbose(Strings.remoteConfig.prefetchEnqueued(enqueuedCount))
             self.restartBlobSourcesIfExhausted()
         }
 
@@ -163,7 +165,12 @@ private actor RemoteConfigBlobFetchScheduler {
                         return false
                     }
 
-                    return self.blobStore.write(ref: ref, bytes: bytes)
+                    let didWrite = self.blobStore.write(ref: ref, bytes: bytes)
+                    if didWrite {
+                        Logger.verbose(Strings.remoteConfig.storedBlob(ref, byteCount: bytes.count, url))
+                    }
+
+                    return didWrite
                 }
             } catch {
                 Logger.error(Strings.remoteConfig.failedToDownloadBlob(ref, url, error))
@@ -172,6 +179,10 @@ private actor RemoteConfigBlobFetchScheduler {
                 }
 
                 self.sourceProvider.reportUnhealthy(source)
+                Logger.verbose(Strings.remoteConfig.sourceUnhealthy(
+                    ref: ref,
+                    hasNextSource: self.sourceProvider.getCurrent(for: .blob) != nil
+                ))
                 if self.blobStore.contains(ref: ref) {
                     return true
                 }

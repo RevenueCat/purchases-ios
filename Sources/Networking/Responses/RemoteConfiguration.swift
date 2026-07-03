@@ -161,6 +161,15 @@ extension RemoteConfiguration.Topics: Codable {
 
 }
 
+extension RemoteConfiguration.Topics {
+
+    /// All blob refs referenced by this topic collection.
+    var blobRefs: Set<String> {
+        return Set(self.entries.values.flatMap { $0.values.compactMap(\.blobRef) })
+    }
+
+}
+
 private struct DynamicCodingKey: CodingKey, Hashable {
 
     let stringValue: String
