@@ -405,12 +405,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             ? SimulatedStoreTransactionFetcher()
             : StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
 
-        // Remote config is opt-in. When enabled, a single on-disk cache backs both the source provider
-        // and the manager: the provider drives the API base host (with the embedded defaults as a floor,
-        // so requests can fail over across API hosts) and blob source selection, reading its `sources`
-        // topic from the config the manager persists. A nil provider keeps requests on
-        // `SystemInfo.apiBaseURL` and makes the manager a no-op. The disk cache is created lazily so
-        // its storage directory isn't touched when remote config is disabled.
         let remoteConfigDiskCache = systemInfo.remoteConfigEnabled ? RemoteConfigDiskCache() : nil
         let apiSourceProvider: RemoteConfigSourceProvider? = remoteConfigDiskCache.map {
             RemoteConfigSourceProvider(topicStore: $0)
