@@ -33,6 +33,7 @@ class IdentityManager: CurrentUserProvider {
     private let attributeSyncing: AttributeSyncing
     // Nil when the workflows endpoint is disabled, so no workflows state is touched on identity changes.
     private let workflowsCache: WorkflowsCache?
+    // Weak because RemoteConfigManager keeps IdentityManager as its CurrentUserProvider.
     weak var remoteConfigManager: RemoteConfigManagerType?
 
     private static let anonymousRegex = #"\$RCAnonymousID:([a-z0-9]{32})$"#

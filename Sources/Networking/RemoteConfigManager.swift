@@ -217,12 +217,14 @@ private extension RemoteConfigManager {
 
             self.lock.perform {
                 guard self.epoch == requestEpoch else { return }
-                self.persist(
+                let didPersist = self.persist(
                     container: container,
                     previous: previous,
                     response: response
                 )
-                self.markRefreshed()
+                if didPersist {
+                    self.markRefreshed()
+                }
             }
         } catch {
             Logger.error(Strings.remoteConfig.failedToParseResponse(error))
@@ -285,7 +287,7 @@ private extension RemoteConfigManager {
         container: RemoteConfigContainer,
         previous: PersistedRemoteConfiguration?,
         response: RemoteConfiguration
-    ) {
+    ) -> Bool {
         let postSyncTopics = self.postSyncTopics(
             previous: previous,
             response: response
@@ -303,11 +305,13 @@ private extension RemoteConfigManager {
             topics: postSyncTopics
         )
 
-        guard self.diskCache.write(persistedConfiguration) else { return }
+        guard self.diskCache.write(persistedConfiguration) else { return false }
 
         self.extractInlineBlobs(from: container, keepingOnly: postSyncReferencedBlobRefs)
         self.blobStore.retainOnly(postSyncReferencedBlobRefs)
         self.blobFetcher.prefetch(refs: response.prefetchBlobs)
+
+        return true
     }
 
     /// Returns the full topic index that should be persisted after this response is applied.

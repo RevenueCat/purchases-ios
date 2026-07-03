@@ -848,6 +848,25 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobStore.invokedRetainOnlyCount) == 0
     }
 
+    func testContainerResponseDoesNotMarkRefreshAsFreshWhenCacheWriteFails() throws {
+        self.diskCache.stubbedWriteResult = false
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"]
+        }
+        """
+
+        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+    }
+
     func testClearCacheWipesDiskCacheAndBlobStore() {
         self.manager.clearCache()
 
