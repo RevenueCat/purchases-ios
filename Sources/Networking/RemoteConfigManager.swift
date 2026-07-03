@@ -15,8 +15,22 @@ protocol RemoteConfigManagerType: AnyObject {
     var isDisabled: Bool { get }
     func refreshRemoteConfig(isAppBackgrounded: Bool)
     func refreshRemoteConfigIfStale(isAppBackgrounded: Bool)
+
+    /// Returns the committed item index for a known topic.
+    ///
+    /// If the topic is not cached, this waits for an in-flight refresh or triggers one foreground refresh before
+    /// reading again. Returns `nil` when the endpoint is disabled or the topic is still unavailable after refresh.
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic?
+
+    /// Returns the blob payload bytes for an item referenced by `blob_ref`.
+    ///
+    /// Inline item metadata is exposed through `topic(_:)`; items without `blob_ref` return `nil`. Missing items
+    /// wait for an in-flight refresh or trigger one foreground refresh before resolving the blob on demand.
     func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data?
+
+    /// Decodes a blob payload as a concrete `Decodable` type.
+    ///
+    /// Returns `nil` when the item or blob is unavailable. Throws when bytes are available but cannot be decoded.
     func blobData<T: Decodable>(
         for topic: RemoteConfigTopic,
         itemKey: String,
