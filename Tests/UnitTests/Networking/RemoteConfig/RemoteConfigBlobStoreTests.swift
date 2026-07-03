@@ -83,6 +83,17 @@ final class RemoteConfigBlobStoreTests: TestCase {
         expect(self.blobStore.cachedRefs()) == [Self.refA, Self.refB]
     }
 
+    func testCachedRefsRetriesDiskScanAfterTransientDirectoryListingFailure() {
+        self.write(ref: Self.refA, data: Data([1]))
+        let fileManager = FailingFileManager()
+        let reopened = RemoteConfigBlobStore(fileManager: fileManager, directoryURL: self.directoryURL)
+
+        fileManager.failNextContentsOfDirectory = true
+
+        expect(reopened.cachedRefs()).to(beEmpty())
+        expect(reopened.cachedRefs()) == [Self.refA]
+    }
+
     func testReadSelfHealsCachedRefsWhenUnderlyingFileIsGone() throws {
         self.write(ref: Self.refA, data: Data([1]))
         expect(self.blobStore.contains(ref: Self.refA)) == true
@@ -171,6 +182,19 @@ final class RemoteConfigBlobStoreTests: TestCase {
         expect(FileManager.default.fileExists(atPath: self.directoryURL.path)) == false
     }
 
+    func testClearFailureDoesNotMarkExistingRefsAsMissing() {
+        let fileManager = FailingFileManager()
+        self.blobStore = RemoteConfigBlobStore(fileManager: fileManager, directoryURL: self.directoryURL)
+        self.write(ref: Self.refA, data: Data([1]))
+        expect(self.blobStore.contains(ref: Self.refA)) == true
+
+        fileManager.failNextRemoveItem = true
+        self.blobStore.clear()
+
+        expect(self.blobStore.contains(ref: Self.refA)) == true
+        expect(self.blobStore.cachedRefs()) == [Self.refA]
+    }
+
     func testClearIsNoOpWhenNothingHasBeenWritten() {
         self.blobStore.clear()
 
@@ -234,6 +258,39 @@ private extension RemoteConfigBlobStoreTests {
         return data.withUnsafeBytes { bytes in
             self.blobStore.write(ref: ref, bytes: bytes)
         }
+    }
+
+}
+
+private final class FailingFileManager: FileManager {
+
+    var failNextContentsOfDirectory = false
+    var failNextRemoveItem = false
+
+    override func contentsOfDirectory(
+        at url: URL,
+        includingPropertiesForKeys keys: [URLResourceKey]?,
+        options mask: FileManager.DirectoryEnumerationOptions = []
+    ) throws -> [URL] {
+        if self.failNextContentsOfDirectory {
+            self.failNextContentsOfDirectory = false
+            throw CocoaError(.fileReadUnknown)
+        }
+
+        return try super.contentsOfDirectory(
+            at: url,
+            includingPropertiesForKeys: keys,
+            options: mask
+        )
+    }
+
+    override func removeItem(at URL: URL) throws {
+        if self.failNextRemoveItem {
+            self.failNextRemoveItem = false
+            throw CocoaError(.fileWriteUnknown)
+        }
+
+        try super.removeItem(at: URL)
     }
 
 }

@@ -133,7 +133,10 @@ private extension RemoteConfigBlobStore {
             var data = Data()
             data.append(contentsOf: bytes.bindMemory(to: UInt8.self))
             try data.write(to: fileURL, options: .atomic)
-            var refs = self.loadedRefsWithoutLock()
+            guard var refs = self.knownRefs else {
+                return true
+            }
+
             refs.insert(ref)
             self.knownRefs = refs
             return true
@@ -147,13 +150,17 @@ private extension RemoteConfigBlobStore {
         let validRefs = refs.filter(RemoteConfigBlobRefHelpers.isValid)
         refs.subtracting(validRefs).forEach { Logger.error(Strings.remoteConfig.malformedBlobRef($0)) }
 
-        guard let directoryURL = self.directoryURL,
-              let contents = try? self.fileManager.contentsOfDirectory(
+        guard let directoryURL = self.directoryURL else {
+            self.knownRefs = []
+            return
+        }
+
+        guard let contents = try? self.fileManager.contentsOfDirectory(
                 at: directoryURL,
                 includingPropertiesForKeys: [.isRegularFileKey],
                 options: []
               ) else {
-            self.knownRefs = []
+            self.knownRefs = nil
             return
         }
 
@@ -165,7 +172,7 @@ private extension RemoteConfigBlobStore {
             }
         }
 
-        self.knownRefs = self.loadedRefsWithoutLock().intersection(validRefs)
+        self.knownRefs = self.scannedRefsWithoutLock()?.intersection(validRefs)
     }
 
     func clearWithoutLock() {
@@ -177,11 +184,11 @@ private extension RemoteConfigBlobStore {
 
         do {
             try self.fileManager.removeItem(at: directoryURL)
+            self.knownRefs = []
         } catch {
             Logger.error(Strings.remoteConfig.failedToClearBlobStore(error))
+            self.knownRefs = nil
         }
-
-        self.knownRefs = []
     }
 
     static let blobsDirectoryName = "blobs"
@@ -208,14 +215,27 @@ private extension RemoteConfigBlobStore {
             return knownRefs
         }
 
+        guard self.directoryURL != nil else {
+            self.knownRefs = []
+            return []
+        }
+
+        guard let scannedRefs = self.scannedRefsWithoutLock() else {
+            return []
+        }
+
+        self.knownRefs = scannedRefs
+        return scannedRefs
+    }
+
+    func scannedRefsWithoutLock() -> Set<String>? {
         guard let directoryURL = self.directoryURL,
               let contents = try? self.fileManager.contentsOfDirectory(
                 at: directoryURL,
                 includingPropertiesForKeys: [.isRegularFileKey],
                 options: []
               ) else {
-            self.knownRefs = []
-            return []
+            return nil
         }
 
         let scannedRefs = contents.reduce(into: Set<String>()) { refs, fileURL in
@@ -226,7 +246,6 @@ private extension RemoteConfigBlobStore {
 
             refs.insert(fileURL.lastPathComponent)
         }
-        self.knownRefs = scannedRefs
         return scannedRefs
     }
 
