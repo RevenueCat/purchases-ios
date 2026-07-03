@@ -65,7 +65,7 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
     private let cache: SynchronizedLargeItemCache
 
-    private let inMemoryConfiguration: Atomic<CacheState> = .init(.notLoaded)
+    private let snapshot: Atomic<Snapshot> = .init(.notLoaded)
 
     init(
         cache: SynchronizedLargeItemCache = .init(
@@ -78,11 +78,11 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
     }
 
     func read() -> PersistedRemoteConfiguration? {
-        return self.inMemoryConfiguration.modify { state in
-            switch state {
+        return self.snapshot.modify { snapshot in
+            switch snapshot {
             case .notLoaded:
                 let configuration = self.readFromDisk()
-                state = .loaded(configuration)
+                snapshot = .loaded(configuration)
                 return configuration
             case .loaded(let configuration):
                 return configuration
@@ -97,14 +97,14 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
             Logger.error(Strings.remoteConfig.failedToWriteCache)
         }
 
-        self.inMemoryConfiguration.value = .loaded(configuration)
+        self.snapshot.value = .loaded(configuration)
 
         return didWrite
     }
 
     func clear() {
         self.cache.clear()
-        self.inMemoryConfiguration.value = .loaded(nil)
+        self.snapshot.value = .loaded(nil)
     }
 
     private func readFromDisk() -> PersistedRemoteConfiguration? {
@@ -120,10 +120,10 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
 extension RemoteConfigDiskCache {
 
-    /// Tracks whether the persisted configuration has been loaded into memory yet, so `read()`
-    /// only hits disk once. `.loaded(nil)` means we've already checked and nothing is persisted,
-    /// avoiding repeated disk reads while no configuration exists.
-    private enum CacheState {
+    /// In-memory snapshot of the persisted configuration, so `read()` only hits disk once.
+    /// `.loaded(nil)` means we've already checked and nothing is persisted, avoiding repeated
+    /// disk reads while no configuration exists.
+    private enum Snapshot {
         case notLoaded
         case loaded(PersistedRemoteConfiguration?)
     }
