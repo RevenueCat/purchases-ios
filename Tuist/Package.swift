@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 5.8
 @preconcurrency import PackageDescription
 import Foundation
 
@@ -9,6 +9,12 @@ let includeTestDependencies = ProcessInfo.processInfo.environment["TUIST_INCLUDE
 if !includeTestDependencies {
     print("⚠️ TUIST_INCLUDE_TEST_DEPENDENCIES=false: skipping external dependencies. Set to true or unset to include them.")
 }
+
+// swift-snapshot-testing 1.18.x requires swift-tools 6.0, which Swift 5.8.1 (Xcode 14.3.1, the
+// iOS 14/15 lane) can't resolve. That lane sets this flag to fall back to 1.17.7 (swift-tools 5.7).
+let snapshotTestingVersion: PackageDescription.Version = ProcessInfo.processInfo.environment["TUIST_LEGACY_SNAPSHOT_TESTING"]?.lowercased() == "true"
+    ? "1.17.7"
+    : "1.18.9"
 
 #if TUIST
     import ProjectDescription
@@ -46,7 +52,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/pointfreeco/swift-snapshot-testing",
-            exact: "1.18.9"
+            exact: snapshotTestingVersion
         ),
         .package(
             url: "https://github.com/RevenueCat/purchases-ios",

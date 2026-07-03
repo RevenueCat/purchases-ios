@@ -34,5 +34,5 @@ let project = Project(
             ],
             settings: .appTarget
         )
-    ],
+    ]
 )
