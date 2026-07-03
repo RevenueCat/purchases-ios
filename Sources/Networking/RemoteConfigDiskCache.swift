@@ -11,6 +11,8 @@ protocol RemoteConfigDiskCacheType: AnyObject {
 
     func read() -> PersistedRemoteConfiguration?
 
+    func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic?
+
     @discardableResult
     func write(_ configuration: PersistedRemoteConfiguration) -> Bool
 
@@ -102,8 +104,8 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
 extension RemoteConfigDiskCache: RemoteConfigTopicStoreType {
 
-    func topic(_ name: String) -> RemoteConfiguration.ConfigTopic? {
-        return self.read()?.topics.entries[name]
+    func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic? {
+        return self.read()?.topics.entries[topic.wireName]
     }
 
 }

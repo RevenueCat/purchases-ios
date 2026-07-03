@@ -108,6 +108,23 @@ final class RemoteConfigDiskCacheTests: TestCase {
         expect(read.topics) == topics
     }
 
+    func testTopicReturnsTypedTopicMetadata() {
+        let sourcesItem = RemoteConfiguration.ConfigItem(content: ["url": "https://api.revenuecat.com"])
+        let workflowsItem = RemoteConfiguration.ConfigItem(blobRef: "workflowBlob")
+        self.cache.write(PersistedRemoteConfiguration(
+            manifest: "v1.1710000100.sources:etag1,workflows:etag2",
+            activeTopics: ["sources", "workflows"],
+            topics: .init(entries: [
+                "sources": ["api": sourcesItem],
+                "workflows": ["default": workflowsItem]
+            ])
+        ))
+
+        expect(self.cache.topic(.sources)?["api"]) == sourcesItem
+        expect(self.cache.topic(.workflows)?["default"]) == workflowsItem
+        expect(self.cache.topic(.uiConfig)).to(beNil())
+    }
+
     func testTopicsPersistUntypedMetadataRoundTrip() throws {
         let metadataItem = RemoteConfiguration.ConfigItem(
             content: [

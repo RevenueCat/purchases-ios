@@ -950,6 +950,7 @@
 		A1B2C3D42FE2000000000004 /* RemoteConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE2000000000003 /* RemoteConfigManager.swift */; };
 		A1B2C3D42FE200000000000D /* RemoteConfigBlobStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE200000000000C /* RemoteConfigBlobStore.swift */; };
 		A1B2C3D42FE2000000000006 /* RemoteConfigStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE2000000000005 /* RemoteConfigStrings.swift */; };
+		A1B2C3D42FE7000000000002 /* RemoteConfigTopic.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE7000000000001 /* RemoteConfigTopic.swift */; };
 		A1B2C3D42FE6000000000002 /* RemoteConfigBlobRefHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE6000000000001 /* RemoteConfigBlobRefHelpers.swift */; };
 		A1B2C3D42FE6000000000004 /* RemoteConfigBlobDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE6000000000003 /* RemoteConfigBlobDownloader.swift */; };
 		A1B2C3D42FE6000000000006 /* RemoteConfigBlobFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE6000000000005 /* RemoteConfigBlobFetcher.swift */; };
@@ -2929,6 +2930,7 @@
 		A1B2C3D42FE2000000000003 /* RemoteConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigManager.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE200000000000C /* RemoteConfigBlobStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobStore.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE2000000000005 /* RemoteConfigStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigStrings.swift; sourceTree = "<group>"; };
+		A1B2C3D42FE7000000000001 /* RemoteConfigTopic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigTopic.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE6000000000001 /* RemoteConfigBlobRefHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobRefHelpers.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE6000000000003 /* RemoteConfigBlobDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobDownloader.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE6000000000005 /* RemoteConfigBlobFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobFetcher.swift; sourceTree = "<group>"; };
@@ -4595,6 +4597,7 @@
 				A1B2C3D42FE200000000000C /* RemoteConfigBlobStore.swift */,
 				A1B2C3D42FE2000000000001 /* RemoteConfigDiskCache.swift */,
 				A1B2C3D42FE2000000000003 /* RemoteConfigManager.swift */,
+				A1B2C3D42FE7000000000001 /* RemoteConfigTopic.swift */,
 				A1B2C3D42FE1000000000011 /* RemoteConfigSignatureContextProvider.swift */,
 			);
 			path = Networking;
@@ -7257,6 +7260,7 @@
 				A1B2C3D42FE2000000000002 /* RemoteConfigDiskCache.swift in Sources */,
 				A1B2C3D42FE2000000000004 /* RemoteConfigManager.swift in Sources */,
 				A1B2C3D42FE2000000000006 /* RemoteConfigStrings.swift in Sources */,
+				A1B2C3D42FE7000000000002 /* RemoteConfigTopic.swift in Sources */,
 				A1B2C3D42FE1000000000010 /* RemoteConfigSignatureContextProvider.swift in Sources */,
 				DB3395DD2F840A790079250C /* WorkflowResponseAction.swift in Sources */,
 				2CD72944268A826F00BFC976 /* Date+Extensions.swift in Sources */,
