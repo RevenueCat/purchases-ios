@@ -93,6 +93,16 @@ final class RemoteConfigBlobStoreTests: TestCase {
         expect(self.blobStore.contains(ref: Self.refA)) == false
     }
 
+    func testContainsSelfHealsCachedRefsWhenUnderlyingFileIsGone() throws {
+        self.write(ref: Self.refA, data: Data([1]))
+        expect(self.blobStore.contains(ref: Self.refA)) == true
+
+        try FileManager.default.removeItem(at: self.directoryURL.appendingPathComponent(Self.refA))
+
+        expect(self.blobStore.contains(ref: Self.refA)) == false
+        expect(self.blobStore.cachedRefs()).to(beEmpty())
+    }
+
     func testRetainOnlyDeletesUnreferencedBlobs() {
         self.write(ref: Self.refA, data: Data([1]))
         self.write(ref: Self.refB, data: Data([2]))

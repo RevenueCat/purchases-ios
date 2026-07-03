@@ -63,7 +63,7 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
 
     func cachedRefs() -> Set<String> {
         return self.lock.perform {
-            return self.cachedRefsWithoutLock()
+            return self.loadedRefsWithoutLock()
         }
     }
 
@@ -84,7 +84,14 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
 private extension RemoteConfigBlobStore {
 
     func containsWithoutLock(ref: String) -> Bool {
-        return self.loadedRefsWithoutLock().contains(ref)
+        guard self.loadedRefsWithoutLock().contains(ref),
+              let fileURL = self.fileURL(for: ref),
+              self.isRegularFile(fileURL) else {
+            self.knownRefs?.remove(ref)
+            return false
+        }
+
+        return true
     }
 
     func readWithoutLock(ref: String) -> Data? {
@@ -134,10 +141,6 @@ private extension RemoteConfigBlobStore {
             Logger.error(Strings.remoteConfig.failedToWriteBlob(ref, error))
             return false
         }
-    }
-
-    func cachedRefsWithoutLock() -> Set<String> {
-        return self.loadedRefsWithoutLock()
     }
 
     func retainOnlyWithoutLock(_ refs: Set<String>) {
