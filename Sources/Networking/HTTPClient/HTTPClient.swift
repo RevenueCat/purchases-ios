@@ -804,20 +804,9 @@ private extension HTTPClient {
 // MARK: - Request Retry Logic
 extension HTTPClient {
 
-    /// Evaluates whether a request should be retried with the next host in the list of fallback hosts.
-    ///
-    /// This function checks the HTTP response status code to determine if the request should be retried
-    /// with the next fallback hosts. If the retry conditions are met, it schedules the request immediately and
-    /// returns `true` to indicate that the request was retried.
-    ///
-    /// - Parameters:
-    ///   - request: The original `HTTPClient.Request` that may need to be retried.
-    ///   - error: The `HTTPClient.NetworkError` that was received.
-    /// - Returns: A Boolean value indicating whether the request was retried.
-    /// On a transient failure while in the API-source phase, reports the current source unhealthy and
-    /// retries against the next API source. Returns `false` once the sources are exhausted (so the
-    /// caller can fall through to the endpoint fallback-host phase) or when API-source failover does
-    /// not apply to the request.
+    /// On a transient failure in the API-source phase, reports the current source unhealthy and schedules
+    /// a retry against the next API source. Returns `false` when the sources are exhausted (so the caller
+    /// falls through to the endpoint fallback-host phase) or when API-source failover does not apply.
     internal func retryRequestWithNextAPISourceIfNeeded(
         request: HTTPClient.Request,
         error: NetworkError
@@ -849,6 +838,16 @@ extension HTTPClient {
         return true
     }
 
+    /// Evaluates whether a request should be retried with the next host in the list of fallback hosts.
+    ///
+    /// This function checks the HTTP response status code to determine if the request should be retried
+    /// with the next fallback hosts. If the retry conditions are met, it schedules the request immediately and
+    /// returns `true` to indicate that the request was retried.
+    ///
+    /// - Parameters:
+    ///   - request: The original `HTTPClient.Request` that may need to be retried.
+    ///   - error: The `HTTPClient.NetworkError` that was received.
+    /// - Returns: A Boolean value indicating whether the request was retried.
     internal func retryRequestWithNextFallbackHostIfNeeded(
         request: HTTPClient.Request,
         error: NetworkError
