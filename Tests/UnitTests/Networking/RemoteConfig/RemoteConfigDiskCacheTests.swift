@@ -15,6 +15,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
     private var rootURL: URL!
     private var cacheDirectoryURL: URL!
     private var fileURL: URL!
+    private var directoryType: DirectoryHelper.DirectoryType!
     private var cache: RemoteConfigDiskCache!
 
     override func setUpWithError() throws {
@@ -24,19 +25,14 @@ final class RemoteConfigDiskCacheTests: TestCase {
             .appendingPathComponent("RemoteConfigDiskCacheTests-\(UUID().uuidString)", isDirectory: true)
 
         #if os(tvOS)
-        let directoryType = DirectoryHelper.DirectoryType.cache
+        self.directoryType = DirectoryHelper.DirectoryType.cache
         #else
-        let directoryType = DirectoryHelper.DirectoryType.applicationSupport(overrideURL: self.rootURL)
+        self.directoryType = DirectoryHelper.DirectoryType.applicationSupport(overrideURL: self.rootURL)
         #endif
 
-        let synchronizedCache = SynchronizedLargeItemCache(
-            cache: FileManager.default,
-            basePath: RemoteConfigDiskCache.basePath,
-            directoryType: directoryType
-        )
-        self.cache = RemoteConfigDiskCache(cache: synchronizedCache)
+        self.cache = self.makeCache()
 
-        self.cacheDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: directoryType))
+        self.cacheDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: self.directoryType))
             .appendingPathComponent(RemoteConfigDiskCache.basePath, isDirectory: true)
         try? FileManager.default.removeItem(at: self.cacheDirectoryURL)
 
@@ -50,9 +46,19 @@ final class RemoteConfigDiskCacheTests: TestCase {
         self.cache = nil
         self.fileURL = nil
         self.cacheDirectoryURL = nil
+        self.directoryType = nil
         self.rootURL = nil
 
         try super.tearDownWithError()
+    }
+
+    /// A fresh cache pointing at the same directory, with an empty in-memory cache so reads hit disk.
+    private func makeCache() -> RemoteConfigDiskCache {
+        return RemoteConfigDiskCache(cache: SynchronizedLargeItemCache(
+            cache: FileManager.default,
+            basePath: RemoteConfigDiskCache.basePath,
+            directoryType: self.directoryType
+        ))
     }
 
     func testReadReturnsNilWhenNothingHasBeenPersisted() {
@@ -75,7 +81,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
             prefetchBlobs: prefetchBlobs,
             topics: topics
         ))
-        let read = try XCTUnwrap(self.cache.read())
+        let read = try XCTUnwrap(self.makeCache().read())
 
         expect(read.domain) == "app"
         expect(read.manifest) == manifest
@@ -103,7 +109,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
             prefetchBlobs: [],
             topics: topics
         ))
-        let read = try XCTUnwrap(self.cache.read())
+        let read = try XCTUnwrap(self.makeCache().read())
 
         expect(read.topics) == topics
     }
@@ -132,7 +138,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
             activeTopics: ["sources"],
             topics: topics
         ))
-        let read = try XCTUnwrap(self.cache.read())
+        let read = try XCTUnwrap(self.makeCache().read())
 
         expect(read.topics) == topics
     }
@@ -220,7 +226,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
             prefetchBlobs: []
         ))
 
-        let read = try XCTUnwrap(self.cache.read())
+        let read = try XCTUnwrap(self.makeCache().read())
 
         expect(read.manifest) == "v1.1710000100.sources:new"
     }
@@ -236,12 +242,106 @@ final class RemoteConfigDiskCacheTests: TestCase {
         self.cache.clear()
 
         expect(self.cache.read()).to(beNil())
+        expect(self.makeCache().read()).to(beNil())
     }
 
     func testClearIsNoOpWhenNothingHasBeenPersisted() {
         self.cache.clear()
 
         expect(self.cache.read()).to(beNil())
+    }
+
+    func testTopicReturnsPersistedTopic() throws {
+        let sourcesTopic: RemoteConfiguration.ConfigTopic = ["default": .init(blobRef: "blobRefA")]
+        self.cache.write(PersistedRemoteConfiguration(
+            manifest: "v1.1710000100.sources:etag1",
+            activeTopics: ["sources"],
+            topics: RemoteConfiguration.Topics(entries: ["sources": sourcesTopic])
+        ))
+
+        expect(self.cache.topic("sources")) == sourcesTopic
+    }
+
+    func testTopicReturnsNilForUnknownTopic() {
+        self.cache.write(PersistedRemoteConfiguration(
+            manifest: "v1.1710000100.sources:etag1",
+            activeTopics: ["sources"],
+            topics: RemoteConfiguration.Topics(entries: ["sources": ["default": .init(blobRef: "blobRefA")]])
+        ))
+
+        expect(self.cache.topic("unknown")).to(beNil())
+    }
+
+    func testTopicReturnsNilWhenNothingHasBeenPersisted() {
+        expect(self.cache.topic("sources")).to(beNil())
+    }
+
+    func testReadAndTopicServeFromMemoryAfterFirstLoad() throws {
+        let sourcesTopic: RemoteConfiguration.ConfigTopic = ["default": .init(blobRef: "blobRefA")]
+        self.cache.write(PersistedRemoteConfiguration(
+            manifest: "v1.1710000100.sources:etag1",
+            activeTopics: ["sources"],
+            topics: RemoteConfiguration.Topics(entries: ["sources": sourcesTopic])
+        ))
+
+        // Populate the in-memory cache.
+        expect(self.cache.topic("sources")) == sourcesTopic
+
+        // Delete the persisted file behind the cache's back.
+        try FileManager.default.removeItem(at: self.fileURL)
+
+        // Both `read()` and `topic(_:)` are still served from the in-memory cache.
+        expect(self.cache.read()).toNot(beNil())
+        expect(self.cache.topic("sources")) == sourcesTopic
+    }
+
+    func testReadLazilyLoadsFromDiskThenServesFromMemory() throws {
+        // Persist through one instance so the data only lives on disk for a fresh instance.
+        self.cache.write(PersistedRemoteConfiguration(
+            manifest: "v1.1710000100.sources:etag1",
+            activeTopics: ["sources"],
+            topics: RemoteConfiguration.Topics(entries: ["sources": ["default": .init(blobRef: "blobRefA")]])
+        ))
+
+        let freshCache = self.makeCache()
+
+        // First read lazily loads from disk.
+        expect(freshCache.read()?.manifest) == "v1.1710000100.sources:etag1"
+
+        // Once loaded, subsequent reads are served from memory even if the file is gone.
+        try FileManager.default.removeItem(at: self.fileURL)
+        expect(freshCache.read()?.manifest) == "v1.1710000100.sources:etag1"
+    }
+
+    func testTopicReflectsLatestWrite() throws {
+        self.cache.write(PersistedRemoteConfiguration(
+            manifest: "v1.1710000100.sources:old",
+            activeTopics: ["sources"],
+            topics: RemoteConfiguration.Topics(entries: ["sources": ["default": .init(blobRef: "old")]])
+        ))
+        expect(self.cache.topic("sources")) == ["default": .init(blobRef: "old")]
+
+        let newTopic: RemoteConfiguration.ConfigTopic = ["default": .init(blobRef: "new")]
+        self.cache.write(PersistedRemoteConfiguration(
+            manifest: "v1.1710000100.sources:new",
+            activeTopics: ["sources"],
+            topics: RemoteConfiguration.Topics(entries: ["sources": newTopic])
+        ))
+
+        expect(self.cache.topic("sources")) == newTopic
+    }
+
+    func testTopicReturnsNilAfterClear() throws {
+        self.cache.write(PersistedRemoteConfiguration(
+            manifest: "v1.1710000100.sources:etag1",
+            activeTopics: ["sources"],
+            topics: RemoteConfiguration.Topics(entries: ["sources": ["default": .init(blobRef: "blobRefA")]])
+        ))
+        expect(self.cache.topic("sources")).toNot(beNil())
+
+        self.cache.clear()
+
+        expect(self.cache.topic("sources")).to(beNil())
     }
 
 }

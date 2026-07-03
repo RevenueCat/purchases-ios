@@ -65,6 +65,8 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
     private let cache: SynchronizedLargeItemCache
 
+    private let inMemoryConfiguration: Atomic<PersistedRemoteConfiguration?> = .init(nil)
+
     init(
         cache: SynchronizedLargeItemCache = .init(
             cache: FileManager.default,
@@ -76,11 +78,14 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
     }
 
     func read() -> PersistedRemoteConfiguration? {
-        do {
-            return try self.cache.value(forKey: Self.fileName)
-        } catch {
-            Logger.error(Strings.remoteConfig.failedToReadCache(error))
-            return nil
+        return self.inMemoryConfiguration.modify { cached in
+            if let cached {
+                return cached
+            }
+
+            let configuration = self.readFromDisk()
+            cached = configuration
+            return configuration
         }
     }
 
@@ -91,11 +96,23 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
             Logger.error(Strings.remoteConfig.failedToWriteCache)
         }
 
+        self.inMemoryConfiguration.value = configuration
+
         return didWrite
     }
 
     func clear() {
         self.cache.clear()
+        self.inMemoryConfiguration.value = nil
+    }
+
+    private func readFromDisk() -> PersistedRemoteConfiguration? {
+        do {
+            return try self.cache.value(forKey: Self.fileName)
+        } catch {
+            Logger.error(Strings.remoteConfig.failedToReadCache(error))
+            return nil
+        }
     }
 
 }
