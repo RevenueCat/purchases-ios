@@ -271,7 +271,7 @@ internal extension HTTPClient {
         private(set) var fallbackUrlIndex: Int?
 
         /// The API source this request is currently targeting, captured when the request URL is built.
-        var apiSourceHandle: RemoteConfigSourceHandle?
+        private(set) var apiSourceHandle: RemoteConfigSourceHandle?
 
         /// Whether the request has been retried.
         var retried: Bool {
@@ -339,6 +339,13 @@ internal extension HTTPClient {
                 // No more fallback hosts available
                 return nil
             }
+            return copy
+        }
+
+        /// Returns a copy of the request targeting `handle` as its API source (see `apiSourceHandle`).
+        func requestTargetingAPISource(_ handle: RemoteConfigSourceHandle?) -> Self {
+            var copy = self
+            copy.apiSourceHandle = handle
             return copy
         }
 
@@ -608,7 +615,7 @@ private extension HTTPClient {
         // API-source failover retry), so the source used to build the URL is the one reported unhealthy
         // if the request fails.
         if request.apiSourceHandle == nil {
-            request.apiSourceHandle = self.currentAPISourceHandle(for: request)
+            request = request.requestTargetingAPISource(self.currentAPISourceHandle(for: request))
         }
 
         let urlRequest = self.convert(request: request)
@@ -831,8 +838,7 @@ extension HTTPClient {
             return false
         }
 
-        var nextRequest = request
-        nextRequest.apiSourceHandle = nextHandle
+        let nextRequest = request.requestTargetingAPISource(nextHandle)
 
         Logger.debug(Strings.network.retrying_request_with_next_api_source(
             httpMethod: nextRequest.method.httpMethod,
