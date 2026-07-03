@@ -509,8 +509,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               appUserID: appUserID
         )
         let remoteConfigManager: RemoteConfigManagerType = {
-            // Built only when remote config is enabled (i.e. the provider and its disk cache exist),
-            // reusing the same source provider and disk cache the networking layer was wired with.
             guard let apiSourceProvider, let remoteConfigDiskCache else { return NoOpRemoteConfigManager() }
 
             let blobStore = RemoteConfigBlobStore()
