@@ -171,7 +171,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
         guard !self.isDisabled else { return nil }
         if let topic = await self.committedTopic(topic) {
-            return topic
+            return self.isDisabled ? nil : topic
         }
 
         await self.awaitConfigForRead()

@@ -203,6 +203,24 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
     }
 
+    func testTopicReturnsNilWhenRemoteConfigIsDisabledDuringCommittedRead() async {
+        let item = RemoteConfiguration.ConfigItem(content: ["url": "https://api.revenuecat.com"])
+        let persisted = Self.persisted(
+            manifest: "v1.1710000100.sources:etag1",
+            topics: .init(entries: ["sources": ["api": item]])
+        )
+        self.diskCache.stubbedRead = persisted
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.diskCache.readHandler = {
+            self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
+            return persisted
+        }
+
+        let topic = await self.manager.topic(.sources)
+
+        expect(topic).to(beNil())
+    }
+
     @MainActor
     func testTopicReadsCommittedMetadataOffMainThread() async {
         let item = RemoteConfiguration.ConfigItem(content: ["url": "https://api.revenuecat.com"])
