@@ -406,9 +406,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             : StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
 
         let remoteConfigDiskCache = systemInfo.remoteConfigEnabled ? RemoteConfigDiskCache() : nil
-        let apiSourceProvider: RemoteConfigSourceProvider? = remoteConfigDiskCache.map {
-            RemoteConfigSourceProvider(topicStore: $0)
-        }
+        let apiSourceProvider = RemoteConfigSourceProvider(topicStore: remoteConfigDiskCache)
 
         let backend = Backend(
             systemInfo: systemInfo,
@@ -509,7 +507,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               appUserID: appUserID
         )
         let remoteConfigManager: RemoteConfigManagerType = {
-            guard let apiSourceProvider, let remoteConfigDiskCache else { return NoOpRemoteConfigManager() }
+            guard let remoteConfigDiskCache else { return NoOpRemoteConfigManager() }
 
             let blobStore = RemoteConfigBlobStore()
             let blobFetcher = RemoteConfigBlobFetcher(
