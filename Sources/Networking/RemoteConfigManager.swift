@@ -11,13 +11,9 @@ protocol RemoteConfigManagerType: AnyObject {
 
     /// Whether remote config should be ignored for the current manager lifetime.
     var isDisabled: Bool { get }
-
     func refreshRemoteConfig(isAppBackgrounded: Bool)
-
     func refreshRemoteConfigIfStale(isAppBackgrounded: Bool)
-
     func clearCache()
-
     func close()
 
 }
@@ -93,6 +89,10 @@ final class RemoteConfigManager: RemoteConfigManagerType {
             manifest: persisted?.manifest,
             prefetchedBlobs: self.cachedPrefetchedBlobRefs(from: persisted)
         )
+
+        Logger.verbose(Strings.remoteConfig.refreshing(
+            domain: request.domain, manifestPresent: request.manifest != nil, isAppBackgrounded: isAppBackgrounded
+        ))
 
         self.enqueueRefreshIfCurrent(
             request: request,
@@ -203,6 +203,7 @@ private extension RemoteConfigManager {
         defer { self.releaseGuardIfOwned(requestEpoch: requestEpoch) }
 
         guard let container = fetchResult.container else {
+            Logger.debug(Strings.remoteConfig.notModified)
             self.markRefreshedIfCurrent(requestEpoch)
             return
         }
@@ -288,6 +289,10 @@ private extension RemoteConfigManager {
         previous: PersistedRemoteConfiguration?,
         response: RemoteConfiguration
     ) -> Bool {
+        Logger.debug(Strings.remoteConfig.receivedConfiguration(
+            activeTopics: response.activeTopics, changedTopics: Array(response.topics.entries.keys)
+        ))
+
         let postSyncTopics = self.postSyncTopics(
             previous: previous,
             response: response
@@ -309,7 +314,16 @@ private extension RemoteConfigManager {
 
         self.extractInlineBlobs(from: container, keepingOnly: postSyncReferencedBlobRefs)
         self.blobStore.retainOnly(postSyncReferencedBlobRefs)
-        self.blobFetcher.prefetch(refs: response.prefetchBlobs)
+
+        Logger.debug(Strings.remoteConfig.persistedConfiguration(
+            domain: response.domain,
+            activeTopicCount: response.activeTopics.count,
+            referencedBlobCount: postSyncReferencedBlobRefs.count
+        ))
+
+        let refsToPrefetch = response.prefetchBlobs.filter { !self.blobStore.contains(ref: $0) }
+        Logger.verbose(Strings.remoteConfig.prefetchingBlobCount(refsToPrefetch.count))
+        self.blobFetcher.prefetch(refs: refsToPrefetch)
 
         return true
     }
@@ -359,7 +373,9 @@ private extension RemoteConfigManager {
                         )
                     }
 
-                    self.blobStore.write(ref: ref, bytes: bytes)
+                    if self.blobStore.write(ref: ref, bytes: bytes) {
+                        Logger.verbose(Strings.remoteConfig.storedInlineBlob(ref, byteCount: bytes.count))
+                    }
                 }
             } catch {
                 Logger.error(Strings.remoteConfig.skippingInvalidBlob(ref))
@@ -378,15 +394,6 @@ private extension BackendError {
         }
 
         return 400...499 ~= statusCode.rawValue
-    }
-
-}
-
-fileprivate extension RemoteConfiguration.Topics {
-
-    /// All blob refs referenced by this topic collection.
-    var blobRefs: Set<String> {
-        return Set(self.entries.values.flatMap { $0.values.compactMap(\.blobRef) })
     }
 
 }
