@@ -64,14 +64,6 @@ protocol RemoteConfigSourceProviderType: AnyObject {
 
 }
 
-/// Read-only access to a topic's persisted item index (metadata only — no blob bytes, no waiting).
-protocol RemoteConfigTopicStoreType: AnyObject {
-
-    /// The saved items for `topic`, or `nil` when nothing has been persisted yet.
-    func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic?
-
-}
-
 /// The address book for remote config: hands out the current healthy api and blob sources and
 /// falls back to the next one when a source is reported unhealthy. Each purpose fails over
 /// independently.
