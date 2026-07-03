@@ -342,7 +342,6 @@ internal extension HTTPClient {
             return copy
         }
 
-        /// Returns a copy of the request targeting `handle` as its API source (see `apiSourceHandle`).
         func requestTargetingAPISource(_ handle: RemoteConfigSourceHandle?) -> Self {
             var copy = self
             copy.apiSourceHandle = handle
