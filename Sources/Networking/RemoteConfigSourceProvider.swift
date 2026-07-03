@@ -47,9 +47,7 @@ struct RemoteConfigSourceHandle {
 
 }
 
-/// Narrow interface the networking layer uses to resolve the API base host and drive failover across
-/// API sources. Backed by the `.api` failover of `RemoteConfigSourceProvider`, so the network layer
-/// depends only on what it needs.
+/// Used by the networking layer to resolve the API base host and drive failover across API sources
 protocol APISourceProviding: AnyObject {
 
     /// The current healthy API base source, or `nil` once every API source has been reported unhealthy.
