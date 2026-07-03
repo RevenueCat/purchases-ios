@@ -1070,7 +1070,7 @@ jobs:
           no_output_timeout: 30m
       - slack-notify-on-fail
 
-  build-app-extension-safe:
+  check-app-extension-safe-api-usage:
     executor:
       name: macos-executor
       xcode_version: "26.5"
@@ -2442,7 +2442,7 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
-      - build-app-extension-safe:
+      - check-app-extension-safe-api-usage:
           requires:
             - approve-full-tests
           context:
@@ -2502,7 +2502,7 @@ workflows:
             - installation-tests-carthage
             - api-tests
             - spm-receipt-parser
-            - build-app-extension-safe
+            - check-app-extension-safe-api-usage
             - revenuecat-admob-tests
             - deploy-purchase-tester
             - run-all-maestro-e2e-tests
@@ -2761,6 +2761,9 @@ workflows:
       - spm-receipt-parser:
           context:
             - slack-secrets
+      - check-app-extension-safe-api-usage:
+          context:
+            - slack-secrets
       - spm-revenuecat-ui-ios-15:
           context:
             - slack-secrets
@@ -2841,6 +2844,7 @@ workflows:
             - run-test-tvos-and-macos
             - run-test-watchos
             - spm-receipt-parser
+            - check-app-extension-safe-api-usage
             - spm-revenuecat-ui-ios-15
             - spm-revenuecat-ui-ios-16
             - run-revenuecat-ui-ios-18-and-17
