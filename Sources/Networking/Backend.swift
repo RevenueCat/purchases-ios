@@ -38,7 +38,7 @@ class Backend {
         attributionFetcher: AttributionFetcher,
         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
         diagnosticsTracker: DiagnosticsTrackerType?,
-        apiSourceProvider: APISourceProviding?,
+        apiSourceProvider: APISourceProviderType?,
         dateProvider: DateProvider = DateProvider()
     ) {
         let httpClient = HTTPClient(systemInfo: systemInfo,

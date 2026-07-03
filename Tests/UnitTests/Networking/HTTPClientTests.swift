@@ -72,7 +72,7 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
     fileprivate final func createClient(
         _ systemInfo: SystemInfo,
         operationDispatcher: OperationDispatcher = MockOperationDispatcher(),
-        apiSourceProvider: APISourceProviding? = nil
+        apiSourceProvider: APISourceProviderType? = nil
     ) -> HTTPClient {
         return HTTPClient(systemInfo: systemInfo,
                           eTagManager: self.eTagManager,
@@ -4275,7 +4275,7 @@ private final class OrderedAPISourceTopicStore: RemoteConfigTopicStoreType {
 
 /// Wraps a real `RemoteConfigSourceProvider` (for token-correct failover) while recording the calls
 /// `HTTPClient` makes, so tests can assert which sources were consulted and reported unhealthy.
-final class RecordingAPISourceProvider: APISourceProviding {
+final class RecordingAPISourceProvider: APISourceProviderType {
 
     private let wrapped: RemoteConfigSourceProvider
     private(set) var currentCallCount = 0

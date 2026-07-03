@@ -48,7 +48,7 @@ struct RemoteConfigSourceHandle {
 }
 
 /// Used by the networking layer to resolve the API base host and drive failover across API sources
-protocol APISourceProviding: AnyObject {
+protocol APISourceProviderType: AnyObject {
 
     /// The current healthy API base source, or `nil` once every API source has been reported unhealthy.
     func currentAPISource() -> RemoteConfigSourceHandle?
@@ -59,7 +59,7 @@ protocol APISourceProviding: AnyObject {
 
 }
 
-protocol RemoteConfigSourceProviderType: APISourceProviding {
+protocol RemoteConfigSourceProviderType: APISourceProviderType {
 
     /// The current healthy source for `purpose`, or `nil` once all of its sources are reported unhealthy.
     func getCurrent(for purpose: RemoteConfigSourceHandle.Purpose) -> RemoteConfigSourceHandle?
