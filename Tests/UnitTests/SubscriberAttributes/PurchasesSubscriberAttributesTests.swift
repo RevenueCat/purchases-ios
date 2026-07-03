@@ -258,6 +258,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                 paywallCache: MockPaywallCacheWarming(),
                                 operationDispatcher: mockOperationDispatcher
                               ),
+                              remoteConfigManager: NoOpRemoteConfigManager(),
                               offlineEntitlementsManager: mockOfflineEntitlementsManager,
                               purchasesOrchestrator: purchasesOrchestrator,
                               purchasedProductsFetcher: mockPurchasedProductsFetcher,

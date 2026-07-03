@@ -356,6 +356,20 @@ class IdentityManagerTests: TestCase {
         expect(self.mockDeviceCache.clearWorkflowsListResponseCacheCount) == 1
     }
 
+    func testLogInClearsRemoteConfigCache() {
+        self.mockDeviceCache.stubbedAppUserID = "anonymous"
+        let manager = self.create(appUserID: nil)
+        let remoteConfigManager = MockRemoteConfigManager()
+        manager.remoteConfigManager = remoteConfigManager
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
+
+        waitUntil { completed in
+            manager.logIn(appUserID: "myUser") { _ in completed() }
+        }
+
+        expect(remoteConfigManager.invokedClearCacheCount) == 1
+    }
+
     func testLogOutClearsWorkflowsCache() {
         let manager = self.create(appUserID: nil)
         self.mockDeviceCache.stubbedAppUserID = "myUser"
@@ -368,6 +382,19 @@ class IdentityManagerTests: TestCase {
         expect(self.mockDeviceCache.clearWorkflowsListResponseCacheCount) == 1
     }
 
+    func testLogOutClearsRemoteConfigCache() {
+        let manager = self.create(appUserID: nil)
+        let remoteConfigManager = MockRemoteConfigManager()
+        manager.remoteConfigManager = remoteConfigManager
+        self.mockDeviceCache.stubbedAppUserID = "myUser"
+
+        waitUntil { completed in
+            manager.logOut { _ in completed() }
+        }
+
+        expect(remoteConfigManager.invokedClearCacheCount) == 1
+    }
+
     func testSwitchUserClearsWorkflowsCache() {
         let manager = self.create(appUserID: nil)
         self.mockDeviceCache.stubbedAppUserID = "myUser"
@@ -376,6 +403,17 @@ class IdentityManagerTests: TestCase {
         manager.switchUser(to: "newUser")
 
         expect(self.mockDeviceCache.clearWorkflowsListResponseCacheCount) == 1
+    }
+
+    func testSwitchUserClearsRemoteConfigCache() {
+        let manager = self.create(appUserID: nil)
+        let remoteConfigManager = MockRemoteConfigManager()
+        manager.remoteConfigManager = remoteConfigManager
+        self.mockDeviceCache.stubbedAppUserID = "myUser"
+
+        manager.switchUser(to: "newUser")
+
+        expect(remoteConfigManager.invokedClearCacheCount) == 1
     }
 
     func testLogInSyncsAttributes() {

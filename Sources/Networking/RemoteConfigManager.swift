@@ -14,7 +14,25 @@ protocol RemoteConfigManagerType: AnyObject {
 
     func refreshRemoteConfig(isAppBackgrounded: Bool)
 
+    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool)
+
     func clearCache()
+
+    func close()
+
+}
+
+final class NoOpRemoteConfigManager: RemoteConfigManagerType {
+
+    let isDisabled = true
+
+    func refreshRemoteConfig(isAppBackgrounded: Bool) {}
+
+    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool) {}
+
+    func clearCache() {}
+
+    func close() {}
 
 }
 
@@ -32,23 +50,31 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     private let blobStore: RemoteConfigBlobStoreType
     private let blobFetcher: RemoteConfigBlobFetcherType
     private let currentUserProvider: CurrentUserProvider
+    private let dateProvider: DateProvider
+    private let cacheDurationInSeconds: (Bool) -> TimeInterval
     private let lock = Lock()
     private var isRefreshing = false
     private var isDisabledInternal = false
+    private var isClosed = false
     private var epoch = 0
+    private var lastRefreshedAt: Date?
 
     init(
         remoteConfigAPI: RemoteConfigAPIType,
         diskCache: RemoteConfigDiskCacheType,
         blobStore: RemoteConfigBlobStoreType,
         blobFetcher: RemoteConfigBlobFetcherType,
-        currentUserProvider: CurrentUserProvider
+        currentUserProvider: CurrentUserProvider,
+        dateProvider: DateProvider = DateProvider(),
+        cacheDurationInSeconds: @escaping (Bool) -> TimeInterval = { _ in 60 * 5.0 }
     ) {
         self.remoteConfigAPI = remoteConfigAPI
         self.diskCache = diskCache
         self.blobStore = blobStore
         self.blobFetcher = blobFetcher
         self.currentUserProvider = currentUserProvider
+        self.dateProvider = dateProvider
+        self.cacheDurationInSeconds = cacheDurationInSeconds
     }
 
     var isDisabled: Bool {
@@ -76,6 +102,12 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         )
     }
 
+    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool) {
+        guard self.shouldRefresh(isAppBackgrounded: isAppBackgrounded) else { return }
+
+        self.refreshRemoteConfig(isAppBackgrounded: isAppBackgrounded)
+    }
+
     /// Wipes cached remote config state, for example after an identity change.
     ///
     /// The epoch bump, refresh-guard release, and cache wipe are serialized with response persistence so a late
@@ -84,8 +116,17 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         self.lock.perform {
             self.epoch += 1
             self.isRefreshing = false
+            self.lastRefreshedAt = nil
             self.diskCache.clear()
             self.blobStore.clear()
+        }
+    }
+
+    func close() {
+        self.lock.perform {
+            self.epoch += 1
+            self.isClosed = true
+            self.isRefreshing = false
         }
     }
 
@@ -96,9 +137,20 @@ private extension RemoteConfigManager {
     func prepareRefreshIfNeeded() -> Int? {
         return self.lock.perform {
             guard !self.isRefreshing,
-                  !self.isDisabledInternal else { return nil }
+                  !self.isDisabledInternal,
+                  !self.isClosed else { return nil }
             self.isRefreshing = true
             return self.epoch
+        }
+    }
+
+    func shouldRefresh(isAppBackgrounded: Bool) -> Bool {
+        return self.lock.perform {
+            guard !self.isClosed else { return false }
+            guard let lastRefreshedAt = self.lastRefreshedAt else { return true }
+
+            return self.dateProvider.now().timeIntervalSince(lastRefreshedAt)
+                > self.cacheDurationInSeconds(isAppBackgrounded)
         }
     }
 
@@ -150,7 +202,10 @@ private extension RemoteConfigManager {
         guard self.isCurrent(requestEpoch) else { return }
         defer { self.releaseGuardIfOwned(requestEpoch: requestEpoch) }
 
-        guard let container = fetchResult.container else { return }
+        guard let container = fetchResult.container else {
+            self.markRefreshedIfCurrent(requestEpoch)
+            return
+        }
 
         do {
             let response = try container.configElement.withDecodedPayloadBytes { bytes in
@@ -162,11 +217,14 @@ private extension RemoteConfigManager {
 
             self.lock.perform {
                 guard self.epoch == requestEpoch else { return }
-                self.persist(
+                let didPersist = self.persist(
                     container: container,
                     previous: previous,
                     response: response
                 )
+                if didPersist {
+                    self.markRefreshed()
+                }
             }
         } catch {
             Logger.error(Strings.remoteConfig.failedToParseResponse(error))
@@ -204,6 +262,18 @@ private extension RemoteConfigManager {
         }
     }
 
+    func markRefreshedIfCurrent(_ requestEpoch: Int) {
+        self.lock.perform {
+            guard self.epoch == requestEpoch else { return }
+
+            self.markRefreshed()
+        }
+    }
+
+    func markRefreshed() {
+        self.lastRefreshedAt = self.dateProvider.now()
+    }
+
     /// Replays only requested prefetch blobs that are still present in the blob store.
     func cachedPrefetchedBlobRefs(from persisted: PersistedRemoteConfiguration?) -> [String] {
         guard let persisted else { return [] }
@@ -217,7 +287,7 @@ private extension RemoteConfigManager {
         container: RemoteConfigContainer,
         previous: PersistedRemoteConfiguration?,
         response: RemoteConfiguration
-    ) {
+    ) -> Bool {
         let postSyncTopics = self.postSyncTopics(
             previous: previous,
             response: response
@@ -235,11 +305,13 @@ private extension RemoteConfigManager {
             topics: postSyncTopics
         )
 
-        guard self.diskCache.write(persistedConfiguration) else { return }
+        guard self.diskCache.write(persistedConfiguration) else { return false }
 
         self.extractInlineBlobs(from: container, keepingOnly: postSyncReferencedBlobRefs)
         self.blobStore.retainOnly(postSyncReferencedBlobRefs)
         self.blobFetcher.prefetch(refs: response.prefetchBlobs)
+
+        return true
     }
 
     /// Returns the full topic index that should be persisted after this response is applied.

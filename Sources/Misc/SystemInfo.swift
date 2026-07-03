@@ -99,6 +99,17 @@ class SystemInfo {
         return ProcessInfo.processInfo.arguments.contains("-EnableWorkflowsEndpoint")
     }
 
+    /// Whether remote config lifecycle wiring is enabled. Temporary gate while remote config is being rolled out.
+    var remoteConfigEnabled: Bool {
+        guard !self.dangerousSettings.customEntitlementComputation else { return false }
+
+        #if ENABLE_REMOTE_CONFIG
+        return true
+        #else
+        return false
+        #endif
+    }
+
     var isDebugBuild: Bool {
 #if DEBUG
         return true

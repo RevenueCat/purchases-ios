@@ -100,6 +100,14 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
 }
 
+extension RemoteConfigDiskCache: RemoteConfigTopicStoreType {
+
+    func topic(_ name: String) -> RemoteConfiguration.ConfigTopic? {
+        return self.read()?.topics.entries[name]
+    }
+
+}
+
 extension RemoteConfigDiskCache {
 
     static let basePath = "remote_config"
