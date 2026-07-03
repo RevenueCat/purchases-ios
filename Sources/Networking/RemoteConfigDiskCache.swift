@@ -65,7 +65,7 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
     private let cache: SynchronizedLargeItemCache
 
-    private let inMemoryConfiguration: Atomic<PersistedRemoteConfiguration?> = .init(nil)
+    private let inMemoryConfiguration: Atomic<CacheState> = .init(.notLoaded)
 
     init(
         cache: SynchronizedLargeItemCache = .init(
@@ -78,14 +78,15 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
     }
 
     func read() -> PersistedRemoteConfiguration? {
-        return self.inMemoryConfiguration.modify { cached in
-            if let cached {
-                return cached
+        return self.inMemoryConfiguration.modify { state in
+            switch state {
+            case .notLoaded:
+                let configuration = self.readFromDisk()
+                state = .loaded(configuration)
+                return configuration
+            case .loaded(let configuration):
+                return configuration
             }
-
-            let configuration = self.readFromDisk()
-            cached = configuration
-            return configuration
         }
     }
 
@@ -96,14 +97,14 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
             Logger.error(Strings.remoteConfig.failedToWriteCache)
         }
 
-        self.inMemoryConfiguration.value = configuration
+        self.inMemoryConfiguration.value = .loaded(configuration)
 
         return didWrite
     }
 
     func clear() {
         self.cache.clear()
-        self.inMemoryConfiguration.value = nil
+        self.inMemoryConfiguration.value = .loaded(nil)
     }
 
     private func readFromDisk() -> PersistedRemoteConfiguration? {
@@ -113,6 +114,18 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
             Logger.error(Strings.remoteConfig.failedToReadCache(error))
             return nil
         }
+    }
+
+}
+
+extension RemoteConfigDiskCache {
+
+    /// Tracks whether the persisted configuration has been loaded into memory yet, so `read()`
+    /// only hits disk once. `.loaded(nil)` means we've already checked and nothing is persisted,
+    /// avoiding repeated disk reads while no configuration exists.
+    private enum CacheState {
+        case notLoaded
+        case loaded(PersistedRemoteConfiguration?)
     }
 
 }
