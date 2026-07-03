@@ -17,6 +17,7 @@ const JOBS = {
   "backend-integration-tests-custom-entitlements": ["slack-secrets"],
   "backend-integration-tests-offline": ["slack-secrets"],
   "backend-integration-tests-other": ["slack-secrets"],
+  "check-app-extension-safe-api-usage": ["slack-secrets"],
   "build-xcode-265": ["slack-secrets"],
   "build-tv-watch-mac-and-visionos": ["slack-secrets"],
   "check-api-changes-revenuecat": ["slack-secrets-ios"],
