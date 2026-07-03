@@ -822,7 +822,7 @@ extension HTTPClient {
         provider.reportUnhealthy(handle)
 
         guard let nextHandle = provider.currentAPISource() else {
-            // API sources exhausted: let the caller transition to the endpoint fallback-host phase.
+            // API sources exhausted
             return false
         }
 
