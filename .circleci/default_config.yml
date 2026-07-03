@@ -1078,20 +1078,8 @@ jobs:
       - checkout
       - install-dependencies
       - run:
-          name: Build RevenueCat with app extension safe APIs
-          command: xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCat -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES APPLICATION_EXTENSION_API_ONLY=YES build
-          no_output_timeout: 30m
-      - run:
-          name: Build RevenueCat_CustomEntitlementComputation with app extension safe APIs
-          command: xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCat_CustomEntitlementComputation -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES APPLICATION_EXTENSION_API_ONLY=YES build
-          no_output_timeout: 30m
-      - run:
-          name: Build ReceiptParser with app extension safe APIs
-          command: xcodebuild -workspace RevenueCat.xcworkspace -scheme "ReceiptParser (RevenueCat Workspace)" -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES APPLICATION_EXTENSION_API_ONLY=YES build
-          no_output_timeout: 30m
-      - run:
-          name: Build RevenueCatUI with app extension safe APIs
-          command: xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCatUI -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES APPLICATION_EXTENSION_API_ONLY=YES build
+          name: Build all SDK products with app extension safe APIs
+          command: bundle exec fastlane build_all_app_extension_safe_sdk_products
           no_output_timeout: 30m
       - slack-notify-on-fail
 

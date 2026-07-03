@@ -919,6 +919,32 @@ platform :ios do
     build_release(platform: 'visionOS', scheme: 'RevenueCatUI')
   end
 
+  desc "Build all SDK products with app-extension-safe API checks enabled"
+  lane :build_all_app_extension_safe_sdk_products do |options|
+    schemes = options[:scheme] ? [options[:scheme]] : [
+      "RevenueCat",
+      "RevenueCat_CustomEntitlementComputation",
+      "ReceiptParser (RevenueCat Workspace)",
+      "RevenueCatUI"
+    ]
+
+    schemes.each do |scheme|
+      xcodebuild(
+        workspace: "RevenueCat.xcworkspace",
+        scheme: scheme,
+        destination: "generic/platform=iOS",
+        sdk: "iphoneos",
+        configuration: "Release",
+        xcargs: [
+          'CODE_SIGN_IDENTITY=""',
+          "CODE_SIGNING_REQUIRED=NO",
+          "ONLY_ACTIVE_ARCH=YES",
+          "APPLICATION_EXTENSION_API_ONLY=YES"
+        ].join(" ")
+      )
+    end
+  end
+
   desc "macOS build"
   lane :build_mac do |options|
     load_spm_dependencies
