@@ -93,11 +93,11 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
     @discardableResult
     func write(_ configuration: PersistedRemoteConfiguration) -> Bool {
         let didWrite = self.cache.set(codable: configuration, forKey: Self.fileName)
-        if !didWrite {
+        if didWrite {
+            self.snapshot.value = .loaded(configuration)
+        } else {
             Logger.error(Strings.remoteConfig.failedToWriteCache)
         }
-
-        self.snapshot.value = .loaded(configuration)
 
         return didWrite
     }

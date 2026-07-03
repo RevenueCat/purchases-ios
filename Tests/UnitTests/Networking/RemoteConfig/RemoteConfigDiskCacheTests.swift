@@ -247,6 +247,23 @@ final class RemoteConfigDiskCacheTests: TestCase {
         self.logger.verifyMessageWasLogged(Strings.remoteConfig.failedToWriteCache, level: .error)
     }
 
+    func testFailedWriteDoesNotUpdateSnapshot() {
+        self.cache = RemoteConfigDiskCache(cache: .init(
+            cache: MockSimpleCache(cacheDirectory: nil),
+            basePath: RemoteConfigDiskCache.basePath
+        ))
+
+        let didWrite = self.cache.write(PersistedRemoteConfiguration(
+            manifest: "v1.1710000100.sources:etag1",
+            activeTopics: ["sources"],
+            topics: RemoteConfiguration.Topics(entries: ["sources": ["default": .init(blobRef: "blobRefA")]])
+        ))
+
+        expect(didWrite) == false
+        expect(self.cache.read()).to(beNil())
+        expect(self.cache.topic("sources")).to(beNil())
+    }
+
     func testWriteOverwritesPreviousSnapshot() throws {
         self.cache.write(PersistedRemoteConfiguration(
             domain: "app",
