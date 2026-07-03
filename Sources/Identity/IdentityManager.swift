@@ -33,6 +33,7 @@ class IdentityManager: CurrentUserProvider {
     private let attributeSyncing: AttributeSyncing
     // Nil when the workflows endpoint is disabled, so no workflows state is touched on identity changes.
     private let workflowsCache: WorkflowsCache?
+    weak var remoteConfigManager: RemoteConfigManagerType?
 
     private static let anonymousRegex = #"\$RCAnonymousID:([a-z0-9]{32})$"#
 
@@ -164,6 +165,7 @@ private extension IdentityManager {
             if case let .success((customerInfo, _)) = result {
                 self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newAppUserID)
                 self.workflowsCache?.clearCache()
+                self.remoteConfigManager?.clearCache()
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: newAppUserID)
                 self.copySubscriberAttributesToNewUserIfOldIsAnonymous(oldAppUserID: oldAppUserID,
                                                                        newAppUserID: newAppUserID)
@@ -198,6 +200,7 @@ private extension IdentityManager {
     func resetCacheAndSave(newUserID: String) {
         self.deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: newUserID)
         self.workflowsCache?.clearCache()
+        self.remoteConfigManager?.clearCache()
         self.deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
         self.backend.clearHTTPClientCaches()
     }

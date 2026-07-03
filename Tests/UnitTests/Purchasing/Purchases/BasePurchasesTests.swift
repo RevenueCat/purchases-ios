@@ -131,6 +131,7 @@ class BasePurchasesTests: TestCase {
         self.mockStoreMessagesHelper = .init()
         self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
         self.mockVirtualCurrencyManager = MockVirtualCurrencyManager()
+        self.mockRemoteConfigManager = MockRemoteConfigManager()
         self.webPurchaseRedemptionHelper = .init(backend: self.backend,
                                                  identityManager: self.identityManager,
                                                  customerInfoManager: self.customerInfoManager)
@@ -201,6 +202,7 @@ class BasePurchasesTests: TestCase {
     var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
     var diagnosticsTracker: DiagnosticsTrackerType?
     var mockVirtualCurrencyManager: MockVirtualCurrencyManager!
+    var mockRemoteConfigManager: MockRemoteConfigManager!
     var mockLocalTransactionMetadataStore: MockLocalTransactionMetadataStore!
     var transactionMetadataSyncHelper: TransactionMetadataSyncHelper!
 
@@ -349,6 +351,7 @@ class BasePurchasesTests: TestCase {
                                     paywallCache: self.paywallCache,
                                     operationDispatcher: self.mockOperationDispatcher
                                    ),
+                                   remoteConfigManager: self.mockRemoteConfigManager,
                                    offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                    purchasesOrchestrator: self.purchasesOrchestrator,
                                    purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
@@ -670,6 +673,37 @@ extension BasePurchasesTests {
 extension BasePurchasesTests.MockBackend: @unchecked Sendable {}
 extension BasePurchasesTests.MockOfferingsAPI: @unchecked Sendable {}
 
+final class MockRemoteConfigManager: RemoteConfigManagerType {
+
+    var isDisabled = false
+
+    private(set) var invokedRefreshRemoteConfigCount = 0
+    private(set) var invokedRefreshRemoteConfigIfStaleCount = 0
+    private(set) var invokedClearCacheCount = 0
+    private(set) var invokedCloseCount = 0
+    private(set) var invokedRefreshRemoteConfigParametersList: [Bool] = []
+    private(set) var invokedRefreshRemoteConfigIfStaleParametersList: [Bool] = []
+
+    func refreshRemoteConfig(isAppBackgrounded: Bool) {
+        self.invokedRefreshRemoteConfigCount += 1
+        self.invokedRefreshRemoteConfigParametersList.append(isAppBackgrounded)
+    }
+
+    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool) {
+        self.invokedRefreshRemoteConfigIfStaleCount += 1
+        self.invokedRefreshRemoteConfigIfStaleParametersList.append(isAppBackgrounded)
+    }
+
+    func clearCache() {
+        self.invokedClearCacheCount += 1
+    }
+
+    func close() {
+        self.invokedCloseCount += 1
+    }
+
+}
+
 private extension BasePurchasesTests {
 
     func clearReferences() {
@@ -707,6 +741,7 @@ private extension BasePurchasesTests {
         self.paywallCache = nil
         self.eventsManager = nil
         self.webPurchaseRedemptionHelper = nil
+        self.mockRemoteConfigManager = nil
         self.transactionMetadataSyncHelper = nil
         self.mockLocalTransactionMetadataStore = nil
         self.purchases = nil

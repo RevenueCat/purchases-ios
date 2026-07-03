@@ -286,6 +286,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
+    private let remoteConfigManager: RemoteConfigManagerType
 
     private var _adTracker: Any?
 
@@ -501,6 +502,29 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               ? workflowsCache : nil,
                                               appUserID: appUserID
         )
+        let remoteConfigManager: RemoteConfigManagerType = {
+            guard systemInfo.remoteConfigEnabled else { return NoOpRemoteConfigManager() }
+
+            let diskCache = RemoteConfigDiskCache()
+            let blobStore = RemoteConfigBlobStore()
+            let sourceProvider = RemoteConfigSourceProvider(topicStore: diskCache)
+            let blobFetcher = RemoteConfigBlobFetcher(
+                blobStore: blobStore,
+                sourceProvider: sourceProvider
+            )
+
+            return RemoteConfigManager(
+                remoteConfigAPI: backend.remoteConfigAPI,
+                diskCache: diskCache,
+                blobStore: blobStore,
+                blobFetcher: blobFetcher,
+                currentUserProvider: identityManager,
+                cacheDurationInSeconds: { isAppBackgrounded in
+                    deviceCache.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded)
+                }
+            )
+        }()
+        identityManager.remoteConfigManager = remoteConfigManager
 
         let eventsManager: EventsManagerType?
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
@@ -725,6 +749,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   productsManager: productsManager,
                   offeringsManager: offeringsManager,
                   workflowManager: workflowManager,
+                  remoteConfigManager: remoteConfigManager,
                   offlineEntitlementsManager: offlineEntitlementsManager,
                   purchasesOrchestrator: purchasesOrchestrator,
                   purchasedProductsFetcher: purchasedProductsFetcher,
@@ -760,6 +785,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          productsManager: ProductsManagerType,
          offeringsManager: OfferingsManager,
          workflowManager: WorkflowManager,
+         remoteConfigManager: RemoteConfigManagerType,
          offlineEntitlementsManager: OfflineEntitlementsManager,
          purchasesOrchestrator: PurchasesOrchestrator,
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
@@ -814,6 +840,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
         self.workflowManager = workflowManager
+        self.remoteConfigManager = systemInfo.remoteConfigEnabled ? remoteConfigManager : NoOpRemoteConfigManager()
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.purchasesOrchestrator = purchasesOrchestrator
         self.purchasedProductsFetcher = purchasedProductsFetcher
@@ -826,6 +853,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.currentConfiguration = currentConfiguration
 
         super.init()
+
+        self.identityManager.remoteConfigManager = self.remoteConfigManager
 
         Logger.verbose(Strings.configure.purchases_init(self, paymentQueueWrapper))
 
@@ -884,6 +913,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.notificationCenter.removeObserver(self)
         self.paymentQueueWrapper.sk1Wrapper?.delegate = nil
         self.paymentQueueWrapper.sk2Wrapper?.delegate = nil
+        self.remoteConfigManager.close()
         self.customerInfoObservationDisposable?()
         self.privateDelegate = nil
     }
@@ -1055,6 +1085,7 @@ public extension Purchases {
 
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
+                self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isAppBackgrounded)
             }
         }
     }
@@ -1200,6 +1231,7 @@ extension Purchases {
 
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             self.updateOfferingsCache(isAppBackgrounded: isBackgrounded)
+            self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isBackgrounded)
         }
     }
 
@@ -2735,6 +2767,8 @@ private extension Purchases {
         if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
             self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
         }
+
+        self.remoteConfigManager.refreshRemoteConfigIfStale(isAppBackgrounded: isAppBackgrounded)
     }
 
     func updateAllCaches(completion: ((Result<CustomerInfo, PublicError>) -> Void)?) {
@@ -2769,6 +2803,7 @@ private extension Purchases {
         }
 
         self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
+        self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isAppBackgrounded)
     }
 
     // Used when delegate is being set

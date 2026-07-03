@@ -19,6 +19,7 @@ final class RemoteConfigManagerTests: TestCase {
     private var blobStore: MockRemoteConfigBlobStore!
     private var blobFetcher: MockRemoteConfigBlobFetcher!
     private var currentUserProvider: MockCurrentUserProvider!
+    private var dateProvider: MockCurrentDateProvider!
     private var manager: RemoteConfigManager!
 
     override func setUpWithError() throws {
@@ -29,12 +30,18 @@ final class RemoteConfigManagerTests: TestCase {
         self.blobStore = MockRemoteConfigBlobStore()
         self.blobFetcher = MockRemoteConfigBlobFetcher()
         self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: Self.appUserID)
+        self.dateProvider = MockCurrentDateProvider()
+        let dateProvider = self.dateProvider!
         self.manager = RemoteConfigManager(
             remoteConfigAPI: self.remoteConfigAPI,
             diskCache: self.diskCache,
             blobStore: self.blobStore,
             blobFetcher: self.blobFetcher,
-            currentUserProvider: self.currentUserProvider
+            currentUserProvider: self.currentUserProvider,
+            dateProvider: dateProvider,
+            cacheDurationInSeconds: { isAppBackgrounded in
+                isAppBackgrounded ? 10 : 5
+            }
         )
     }
 
@@ -43,6 +50,7 @@ final class RemoteConfigManagerTests: TestCase {
         self.blobFetcher = nil
         self.blobStore = nil
         self.currentUserProvider = nil
+        self.dateProvider = nil
         self.diskCache = nil
         self.remoteConfigAPI = nil
 
@@ -51,6 +59,78 @@ final class RemoteConfigManagerTests: TestCase {
 
     func testIsDisabledDefaultsToFalse() {
         expect(self.manager.isDisabled) == false
+    }
+
+    func testRefreshRemoteConfigIfStaleRefreshesWhenNeverRefreshed() {
+        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+    }
+
+    func testNoContentResponseMarksRefreshAsFresh() {
+        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+
+        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+    }
+
+    func testFailureDoesNotMarkRefreshAsFresh() {
+        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1)))))
+
+        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+    }
+
+    func testRefreshRemoteConfigIfStaleUsesForegroundAndBackgroundDurations() {
+        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+
+        self.dateProvider.advance(by: 6)
+        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: true)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+
+        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+    }
+
+    func testClosePreventsNewRefreshes() {
+        self.manager.close()
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
+    }
+
+    func testResponseThatArrivesAfterCloseDoesNotPersist() throws {
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "default": { "blob_ref": "newBlob" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.close()
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        expect(self.diskCache.invokedWriteCount) == 0
+        expect(self.blobStore.invokedWriteCount) == 0
+        expect(self.blobStore.invokedRetainOnlyCount) == 0
     }
 
     func testFirstRunSendsDefaultAppDomainManifest() throws {
