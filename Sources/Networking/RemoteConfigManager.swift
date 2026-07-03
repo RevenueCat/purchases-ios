@@ -139,6 +139,12 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         }
     }
 
+    private var canReadCommittedState: Bool {
+        return self.lock.perform {
+            !self.isDisabledInternal && !self.isClosed
+        }
+    }
+
     func refreshRemoteConfig(isAppBackgrounded: Bool) {
         guard let requestEpoch = self.prepareRefreshIfNeeded() else { return }
 
@@ -169,24 +175,26 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     }
 
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
-        guard !self.isDisabled else { return nil }
+        guard self.canReadCommittedState else { return nil }
         if let topic = await self.committedTopic(topic) {
-            return self.isDisabled ? nil : topic
+            return self.canReadCommittedState ? topic : nil
         }
 
         await self.awaitConfigForRead()
 
-        return self.isDisabled ? nil : await self.committedTopic(topic)
+        let topic = await self.committedTopic(topic)
+        return self.canReadCommittedState ? topic : nil
     }
 
     func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
-        guard !self.isDisabled else { return nil }
+        guard self.canReadCommittedState else { return nil }
 
         if let item = await self.committedTopic(topic)?[itemKey] {
             return await self.blobData(for: item)
         }
 
         await self.awaitConfigForRead()
+        guard self.canReadCommittedState else { return nil }
         guard let item = await self.committedTopic(topic)?[itemKey] else { return nil }
 
         return await self.blobData(for: item)
@@ -436,10 +444,13 @@ private extension RemoteConfigManager {
     func blobData(for item: RemoteConfiguration.ConfigItem) async -> Data? {
         guard let ref = item.blobRef else { return nil }
 
-        guard !self.isDisabled,
+        guard self.canReadCommittedState,
               await self.blobFetcher.ensureDownloaded(ref: ref) else { return nil }
 
-        return await self.readBlob(ref: ref)
+        guard self.canReadCommittedState else { return nil }
+
+        let data = await self.readBlob(ref: ref)
+        return self.canReadCommittedState ? data : nil
     }
 
     /// Reads committed blob bytes off the caller's executor.

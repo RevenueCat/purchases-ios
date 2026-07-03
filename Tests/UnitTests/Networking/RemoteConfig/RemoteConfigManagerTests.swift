@@ -108,6 +108,36 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
     }
 
+    func testTopicReturnsNilAfterCloseWithoutReadingCache() async {
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.sources:etag1",
+            topics: .init(entries: ["sources": ["api": .init(content: ["url": .string("https://api.revenuecat.com")])]])
+        )
+        self.manager.close()
+
+        let topic = await self.manager.topic(.sources)
+
+        expect(topic).to(beNil())
+        expect(self.diskCache.invokedReadCount) == 0
+    }
+
+    func testBlobDataReturnsNilAfterCloseWithoutReadingOrFetching() async {
+        let ref = RCContainerTestData.blobRef(for: #"{"id":"workflow"}"#.asData)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["default": .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = #"{"id":"workflow"}"#.asData
+        self.manager.close()
+
+        let data = await self.manager.blobData(for: .workflows, itemKey: "default")
+
+        expect(data).to(beNil())
+        expect(self.diskCache.invokedReadCount) == 0
+        expect(self.blobFetcher.invokedEnsureDownloadedRefs).to(beEmpty())
+        expect(self.blobStore.invokedReadRefs).to(beEmpty())
+    }
+
     func testResponseThatArrivesAfterCloseDoesNotPersist() throws {
         let response = """
         {
