@@ -817,7 +817,7 @@ extension HTTPClient {
         error: NetworkError
     ) -> Bool {
 
-        guard error.isAllowedToRetryWithFallbackHost,
+        guard error.isAllowedToRetryWithAlternateHost,
               self.usesAPISourceFailover(for: request),
               let handle = request.apiSourceHandle,
               let provider = self.apiSourceProvider else {
@@ -850,7 +850,7 @@ extension HTTPClient {
     ) -> Bool {
 
         // The request must be able to be retried with a fallback host
-        guard error.isAllowedToRetryWithFallbackHost,
+        guard error.isAllowedToRetryWithAlternateHost,
               let nextRequest = request.requestWithNextFallbackHost(proxyURL: SystemInfo.proxyURL) else {
             return false
         }
@@ -962,9 +962,10 @@ extension HTTPClient {
 // MARK: - Extensions
 
 fileprivate extension NetworkError {
-    /// A request may be retried against a fallback host only for transient failures (connection-level
-    /// errors and 5xx). See ``NetworkError/isTransient``.
-    var isAllowedToRetryWithFallbackHost: Bool {
+    /// A request may be retried against an alternate host — the next API source or the endpoint's
+    /// fallback host — only for transient failures (connection-level errors and 5xx).
+    /// See ``NetworkError/isTransient``.
+    var isAllowedToRetryWithAlternateHost: Bool {
         return self.isTransient
     }
 }
