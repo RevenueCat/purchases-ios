@@ -88,6 +88,9 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     private let dateProvider: DateProvider
     private let cacheDurationInSeconds: (Bool) -> TimeInterval
 
+    /// Runs blocking committed-state reads away from the caller's executor.
+    private let readQueue = DispatchQueue(label: "com.revenuecat.remote-config.read")
+
     /// Serializes refresh ownership, epoch checks, and cache mutations against `clearCache()` and `close()`.
     private let lock = Lock()
 
@@ -167,24 +170,24 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
         guard !self.isDisabled else { return nil }
-        if let topic = self.diskCache.topic(topic) {
+        if let topic = await self.committedTopic(topic) {
             return topic
         }
 
         await self.awaitConfigForRead()
 
-        return self.isDisabled ? nil : self.diskCache.topic(topic)
+        return self.isDisabled ? nil : await self.committedTopic(topic)
     }
 
     func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
         guard !self.isDisabled else { return nil }
 
-        if let item = self.diskCache.topic(topic)?[itemKey] {
+        if let item = await self.committedTopic(topic)?[itemKey] {
             return await self.blobData(for: item)
         }
 
         await self.awaitConfigForRead()
-        guard let item = self.diskCache.topic(topic)?[itemKey] else { return nil }
+        guard let item = await self.committedTopic(topic)?[itemKey] else { return nil }
 
         return await self.blobData(for: item)
     }
@@ -419,6 +422,13 @@ private extension RemoteConfigManager {
         return self.refreshContinuations
     }
 
+    /// Reads committed topic metadata off the caller's executor.
+    func committedTopic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+        return await self.performRead {
+            self.diskCache.topic(topic)
+        }
+    }
+
     /// Resolves an external blob item through the high-priority fetch path.
     ///
     /// Inline item metadata is returned by `topic(_:)`; this method only returns bytes for items backed by
@@ -429,7 +439,23 @@ private extension RemoteConfigManager {
         guard !self.isDisabled,
               await self.blobFetcher.ensureDownloaded(ref: ref) else { return nil }
 
-        return self.blobStore.read(ref: ref)
+        return await self.readBlob(ref: ref)
+    }
+
+    /// Reads committed blob bytes off the caller's executor.
+    func readBlob(ref: String) async -> Data? {
+        return await self.performRead {
+            self.blobStore.read(ref: ref)
+        }
+    }
+
+    /// Performs small blocking cache reads on the manager's read queue.
+    func performRead<T>(_ operation: @escaping () -> T) async -> T {
+        return await withCheckedContinuation { continuation in
+            self.readQueue.async {
+                continuation.resume(returning: operation())
+            }
+        }
     }
 
     /// Replays only requested prefetch blobs that are still present in the blob store.

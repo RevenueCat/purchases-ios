@@ -203,6 +203,28 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
     }
 
+    @MainActor
+    func testTopicReadsCommittedMetadataOffMainThread() async {
+        let item = RemoteConfiguration.ConfigItem(content: ["url": "https://api.revenuecat.com"])
+        let persisted = Self.persisted(
+            manifest: "v1.1710000100.sources:etag1",
+            topics: .init(entries: ["sources": ["api": item]])
+        )
+        let lock = Lock()
+        var readThreadIsMain: Bool?
+        self.diskCache.readHandler = {
+            lock.perform {
+                readThreadIsMain = Thread.isMainThread
+            }
+            return persisted
+        }
+
+        let topic = await self.manager.topic(.sources)
+
+        expect(topic?["api"]) == item
+        expect(lock.perform { readThreadIsMain }) == false
+    }
+
     func testBlobDataReturnsNilForItemWithoutBlobRef() async {
         self.diskCache.stubbedRead = Self.persisted(
             manifest: "v1.1710000100.sources:etag1",
