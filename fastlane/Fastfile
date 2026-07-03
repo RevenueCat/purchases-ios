@@ -786,6 +786,9 @@ platform :ios do
       test_plan = "CI-AllTests"
     end
 
+    result_bundle_path = "fastlane/test_output/xctest/ios/RevenueCat.xcresult"
+    FileUtils.rm_rf(File.expand_path("../#{result_bundle_path}", __dir__))
+
     scan(
       step_name: "scan - iPhone",
       device: ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)",
@@ -795,6 +798,7 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: 'junit',
       result_bundle: true,
+      result_bundle_path: result_bundle_path,
       testplan: test_plan,
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios",
@@ -812,6 +816,9 @@ platform :ios do
       test_plan = "CI-AllTests"
     end
 
+    result_bundle_path = "fastlane/test_output/xctest/tvos/RevenueCat.xcresult"
+    FileUtils.rm_rf(File.expand_path("../#{result_bundle_path}", __dir__))
+
     scan(
       step_name: "scan - Apple TV",
       device: ENV['SCAN_DEVICE'] || "Apple TV",
@@ -821,6 +828,7 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: 'junit',
       result_bundle: true,
+      result_bundle_path: result_bundle_path,
       testplan: test_plan,
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/tvos",
@@ -838,6 +846,9 @@ platform :ios do
       test_plan = "CI-RevenueCat"
     end
 
+    result_bundle_path = "fastlane/test_output/xctest/watchos/RevenueCat.xcresult"
+    FileUtils.rm_rf(File.expand_path("../#{result_bundle_path}", __dir__))
+
     scan(
       step_name: "scan - watchOS",
       device: ENV['SCAN_DEVICE'] || "Apple Watch Series 10 (46mm)",
@@ -847,6 +858,7 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: 'junit',
       result_bundle: true,
+      result_bundle_path: result_bundle_path,
       # Host app isn't available on watchOS
       testplan: test_plan,
       configuration: 'Debug',
@@ -2618,6 +2630,9 @@ platform :mac do
       test_plan = "CI-RevenueCat"
     end
 
+    result_bundle_path = "fastlane/test_output/xctest/macos/RevenueCat.xcresult"
+    FileUtils.rm_rf(File.expand_path("../#{result_bundle_path}", __dir__))
+
     scan(
       step_name: "scan - macOS",
       destination: "platform=macOS,arch=arm64",
@@ -2625,6 +2640,7 @@ platform :mac do
       scheme: "RevenueCatTests",
       output_types: 'junit',
       result_bundle: true,
+      result_bundle_path: result_bundle_path,
       testplan: test_plan,
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/macos",

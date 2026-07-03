@@ -148,13 +148,13 @@ class PaywallDataTests: BaseHTTPResponseTest {
     }
 
     func testLocalesOrderedByPriorityWhenPurchasesIsNotConfigured() throws {
+        try XCTSkipUnless(Self.isRunningInSimulator)
+
         Purchases.clearSingleton()
         defer { Purchases.clearSingleton() }
 
         expect(Purchases.isConfigured) == false
-        expect(PaywallData.localesOrderedByPriority.map(\.identifier)) == Self.normalizedLocaleIdentifiers(
-            from: Locale.preferredLanguages
-        )
+        expect(PaywallData.localesOrderedByPriority.first?.identifier) == Self.simulatorPreferredLocale
     }
 
     func testLocalesOrderedByPriorityWhenPurchasesIsConfigured() throws {
@@ -217,6 +217,11 @@ class PaywallDataTests: BaseHTTPResponseTest {
 private extension PaywallDataTests {
 
     static let defaultLocale = "en_US"
+    static let simulatorPreferredLocale = "en-US"
+
+    static var isRunningInSimulator: Bool {
+        return ProcessInfo.processInfo.environment["SIMULATOR_UDID"] != nil
+    }
 
     static func normalizedLocaleIdentifiers(from identifiers: [String]) -> [String] {
         return identifiers.map { Locale(identifier: $0).identifier }

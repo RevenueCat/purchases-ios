@@ -13,21 +13,17 @@ private let revenueCatTestsTestPlans: [Path] = [
 private let revenueCatTestsLocalePreAction = ExecutionAction.executionAction(
     title: "Set Simulator Locale",
     scriptText: """
-    device="${TARGET_DEVICE_IDENTIFIER:-${TARGET_DEVICE_UDID:-}}"
-    if [ -z "$device" ]; then
-        device="booted"
-    fi
+    sh "$SRCROOT/../../scripts/revenuecat-tests-simulator-locale.sh" set
+    """,
+    target: "UnitTests"
+)
 
-    if [ "$device" != "booted" ]; then
-        xcrun simctl boot "$device" >/dev/null 2>&1 || true
-        xcrun simctl bootstatus "$device" -b >/dev/null 2>&1 || true
-    fi
-
-    xcrun simctl spawn "$device" defaults write NSGlobalDomain AppleLocale en_US
-    xcrun simctl spawn "$device" defaults write NSGlobalDomain AppleLanguages -array en-US
-    xcrun simctl spawn "$device" defaults write com.apple.preferences.datetime timezone UTC
-    xcrun simctl spawn "$device" launchctl setenv TZ UTC
-    """
+private let revenueCatTestsLocalePostAction = ExecutionAction.executionAction(
+    title: "Restore Simulator Locale",
+    scriptText: """
+    sh "$SRCROOT/../../scripts/revenuecat-tests-simulator-locale.sh" restore
+    """,
+    target: "UnitTests"
 )
 
 let project = Project(
@@ -314,7 +310,8 @@ let project = Project(
             buildAction: .buildAction(targets: ["UnitTests"]),
             testAction: .testPlans(
                 revenueCatTestsTestPlans,
-                preActions: [revenueCatTestsLocalePreAction]
+                preActions: [revenueCatTestsLocalePreAction],
+                postActions: [revenueCatTestsLocalePostAction]
             ),
             runAction: .runAction(configuration: "Debug"),
             archiveAction: .archiveAction(configuration: "Release"),
