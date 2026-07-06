@@ -3503,6 +3503,46 @@ extension HTTPClientTests {
         expect(provider.reportedURLs) == ["https://api-1.rc-test.com/"]
     }
 
+    func testETagRetryAfterFailoverStaysOnTheCurrentAPISource() throws {
+        let provider = RecordingAPISourceProvider(
+            wrapping: Self.apiSourceProvider(hosts: ["api-1.rc-test.com", "api-2.rc-test.com"])
+        )
+        let client = self.createClient(self.systemInfo, apiSourceProvider: provider)
+
+        // Source 1 returns a server error, so the request fails over to source 2.
+        let firstHostRequests: Atomic<Int> = .init(0)
+        stub(condition: isHost("api-1.rc-test.com")) { _ in
+            firstHostRequests.value += 1
+            return HTTPStubsResponse(data: Data(), statusCode: .internalServerError, headers: nil)
+        }
+
+        // On source 2 the first attempt is an ETag cache miss, which forces a refresh retry. That retry must
+        // stay on source 2 (the source made current by the failover), not rewind to source 1 or the default.
+        let secondHostRequests: Atomic<Int> = .init(0)
+        stub(condition: isHost("api-2.rc-test.com")) { [eTagManager = self.eTagManager!] _ in
+            defer { secondHostRequests.value += 1 }
+            if secondHostRequests.value == 0 {
+                eTagManager.shouldReturnResultFromBackend = false
+                eTagManager.stubbedHTTPResultFromCacheOrBackendResult = nil
+            } else {
+                eTagManager.shouldReturnResultFromBackend = true
+            }
+            return .emptySuccessResponse()
+        }
+
+        let result = waitUntilValue { completion in
+            client.perform(HTTPRequest(method: .get, path: .mockPath)) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).to(beSuccess())
+        expect(firstHostRequests.value) == 1
+        expect(secondHostRequests.value) == 2
+        // Only source 1 was reported unhealthy: the ETag retry on source 2 must not advance the source.
+        expect(provider.reportedURLs) == ["https://api-1.rc-test.com/"]
+    }
+
     func testDoesNotAdvanceAPISourceOnClientError() throws {
         let provider = RecordingAPISourceProvider(
             wrapping: Self.apiSourceProvider(hosts: ["api-1.rc-test.com", "api-2.rc-test.com"])
