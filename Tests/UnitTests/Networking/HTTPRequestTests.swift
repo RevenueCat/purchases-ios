@@ -302,8 +302,6 @@ class HTTPRequestTests: TestCase {
     }
 
     func testWebBillingPathsUseAPISources() {
-        // Web billing shares the api.revenuecat.com host with the main API, so it resolves its host
-        // from the API source provider too.
         let paths: [any HTTPRequestPath] = [
             HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID),
             HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
