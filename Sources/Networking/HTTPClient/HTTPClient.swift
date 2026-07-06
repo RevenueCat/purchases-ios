@@ -614,7 +614,7 @@ private extension HTTPClient {
         // API-source failover retry), so the source used to build the URL is the one reported unhealthy
         // if the request fails.
         if request.apiSourceHandle == nil {
-            request = request.requestTargetingAPISource(self.currentAPISourceHandle(for: request))
+            request = request.requestTargetingAPISource(self.initialAPISourceHandle(for: request))
         }
 
         let urlRequest = self.convert(request: request)
@@ -712,12 +712,15 @@ private extension HTTPClient {
         return URL(string: urlString)
     }
 
-    /// The current API source to target for `request`, or `nil` when API-source resolution does not
-    /// apply to it.
-    private func currentAPISourceHandle(for request: Request) -> RemoteConfigSourceHandle? {
+    /// The API source to target at the start of `request`, or `nil` when API-source resolution does
+    /// not apply to it. Called once per request (retries reuse the pinned handle), so it also rearms
+    /// exhausted API sources here: a request made after a transient outage burned through every source
+    /// starts over from the top instead of falling straight to the default host.
+    private func initialAPISourceHandle(for request: Request) -> RemoteConfigSourceHandle? {
         guard self.usesAPISourceFailover(for: request) else {
             return nil
         }
+        self.apiSourceProvider?.restartAPISourcesIfExhausted()
         return self.apiSourceProvider?.currentAPISource()
     }
 

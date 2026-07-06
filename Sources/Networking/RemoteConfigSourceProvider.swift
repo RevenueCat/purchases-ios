@@ -57,6 +57,11 @@ protocol APISourceProviderType: AnyObject {
     /// No-op if `handle` is no longer the current source (stale/concurrent reports are ignored).
     func reportUnhealthy(_ handle: RemoteConfigSourceHandle)
 
+    /// Rewinds the API sources to the first one, but only if every API source has been reported
+    /// unhealthy. Lets a new request start over instead of being permanently stuck with no source
+    /// after a transient outage burned through the whole list. No-op while any source is still healthy.
+    func restartAPISourcesIfExhausted()
+
 }
 
 protocol RemoteConfigSourceProviderType: APISourceProviderType {
@@ -80,6 +85,10 @@ extension RemoteConfigSourceProviderType {
 
     func currentAPISource() -> RemoteConfigSourceHandle? {
         return self.getCurrent(for: .api)
+    }
+
+    func restartAPISourcesIfExhausted() {
+        self.restartIfExhausted(for: .api)
     }
 
 }

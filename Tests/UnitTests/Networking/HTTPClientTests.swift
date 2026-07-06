@@ -3592,6 +3592,43 @@ extension HTTPClientTests {
         expect(provider.reportedURLs) == ["https://api-1.rc-test.com/"]
     }
 
+    func testExhaustedAPISourcesAreRearmedForNextRequest() throws {
+        let provider = RecordingAPISourceProvider(
+            wrapping: Self.apiSourceProvider(hosts: ["api-1.rc-test.com", "api-2.rc-test.com"])
+        )
+        let client = self.createClient(self.systemInfo, apiSourceProvider: provider)
+
+        // First request exhausts every source (`.mockPath` has no endpoint fallback URL, so it fails).
+        for host in ["api-1.rc-test.com", "api-2.rc-test.com"] {
+            stub(condition: isHost(host)) { _ in
+                HTTPStubsResponse(data: Data(), statusCode: .internalServerError, headers: nil)
+            }
+        }
+        let firstResult = waitUntilValue { completion in
+            client.perform(HTTPRequest(method: .get, path: .mockPath)) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+        expect(firstResult).to(beFailure())
+        expect(provider.reportedURLs) == ["https://api-1.rc-test.com/", "https://api-2.rc-test.com/"]
+
+        // The next request rearms the exhausted list and starts over from the first source.
+        HTTPStubs.removeAllStubs()
+        let firstHostHit: Atomic<Bool> = false
+        stub(condition: isHost("api-1.rc-test.com")) { _ in
+            firstHostHit.value = true
+            return .emptySuccessResponse()
+        }
+        let secondResult = waitUntilValue { completion in
+            client.perform(HTTPRequest(method: .get, path: .mockPath)) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+
+        expect(secondResult).to(beSuccess())
+        expect(firstHostHit.value) == true
+    }
+
     func testProxyURLDisablesAPISourceFailover() throws {
         let proxyURL = try XCTUnwrap(URL(string: "https://proxy.rc-test.com"))
         SystemInfo.proxyURL = proxyURL
@@ -4280,6 +4317,7 @@ final class RecordingAPISourceProvider: APISourceProviderType {
     private let wrapped: RemoteConfigSourceProvider
     private(set) var currentCallCount = 0
     private(set) var reportedURLs: [String] = []
+    private(set) var restartIfExhaustedCallCount = 0
 
     init(wrapping wrapped: RemoteConfigSourceProvider) {
         self.wrapped = wrapped
@@ -4293,6 +4331,11 @@ final class RecordingAPISourceProvider: APISourceProviderType {
     func reportUnhealthy(_ handle: RemoteConfigSourceHandle) {
         self.reportedURLs.append(handle.url)
         self.wrapped.reportUnhealthy(handle)
+    }
+
+    func restartAPISourcesIfExhausted() {
+        self.restartIfExhaustedCallCount += 1
+        self.wrapped.restartAPISourcesIfExhausted()
     }
 
 }
