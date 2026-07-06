@@ -17,10 +17,8 @@ import XCTest
 
 @_spi(Internal) @testable import RevenueCat
 
-/// `PublishedWorkflow` has a hand-written `Codable` conformance (needed so `uiConfig` can default when
-/// absent, since the remote-config `workflows` topic body no longer embeds it) rather than the fully
-/// synthesized one it used to have. These tests exist specifically to catch a decode/encode mismatch
-/// that synthesis used to rule out for free.
+/// `PublishedWorkflow`'s `Codable` conformance is hand-written, not synthesized, so a decode/encode
+/// mismatch is no longer ruled out for free — these tests catch that.
 class PublishedWorkflowCodableTests: TestCase {
 
     func testEncodeThenDecodeRoundTripsAllFields() throws {
@@ -42,8 +40,6 @@ class PublishedWorkflowCodableTests: TestCase {
     }
 
     func testDecodingWithoutUiConfigDefaultsToEmpty() throws {
-        // The whole point of the custom decoder: the remote-config `workflows` topic body doesn't send
-        // `ui_config` (it's its own topic), unlike the legacy per-workflow response.
         let json = """
         {
           "id": "wf-1",

@@ -7,13 +7,9 @@
 
 import Foundation
 
-/// The topic-specific front door for `ui_config`: four independently-updated blob items — `app`,
-/// `localizations`, `variable_config`, `custom_variables` — that together assemble one ``UIConfig``,
-/// the same shape the legacy offerings response sends pre-assembled in a single JSON object.
-///
-/// Item keys are read through `RemoteConfigManager.blobData(for:itemKey:)` using their literal wire
-/// names (`variable_config`, not `variableConfig`): item keys are raw dictionary keys and are not
-/// affected by `JSONDecoder`'s `.convertFromSnakeCase`, unlike `ConfigItem.content`'s dynamic keys.
+/// Assembles a ``UIConfig`` from the `ui_config` topic's four blob items (`app`, `localizations`,
+/// `variable_config`, `custom_variables`). Item keys are literal wire names, not camelCased: unlike
+/// `ConfigItem.content`, they're raw dictionary keys and aren't run through `.convertFromSnakeCase`.
 final class UiConfigProvider {
 
     private let manager: RemoteConfigManagerType

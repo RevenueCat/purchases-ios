@@ -326,9 +326,7 @@ extension PublishedWorkflow: Codable, Equatable, Sendable {
         self.singleStepFallbackId = try container.decodeIfPresent(String.self, forKey: .singleStepFallbackId)
         self.steps = try container.decode([String: WorkflowStep].self, forKey: .steps)
         self.screens = try container.decode([String: WorkflowScreen].self, forKey: .screens)
-        // Not sent by the remote-config `workflows` topic body (ui_config is its own topic there);
-        // the legacy per-workflow response still embeds it inline, so this stays a fallback rather
-        // than the only path.
+        // Absent from the remote-config `workflows` topic body (ui_config is its own topic there).
         self.uiConfig = try container.decodeIfPresent(UIConfig.self, forKey: .uiConfig) ?? .empty
         self.contentMaxWidth = try container.decodeIfPresent(Int.self, forKey: .contentMaxWidth)
         self.metadata = try container.decodeIfPresent([String: AnyDecodable].self, forKey: .metadata)

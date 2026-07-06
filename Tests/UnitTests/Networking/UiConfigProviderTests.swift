@@ -83,9 +83,6 @@ class UiConfigProviderTests: TestCase {
     }
 
     func testRequestsWireItemKeysNotCamelCased() async throws {
-        // `variable_config`/`custom_variables` are raw dictionary keys, not run through
-        // `.convertFromSnakeCase`: a camelCased request would silently miss them and this
-        // assertion would fail.
         _ = await self.provider.getUiConfig()
 
         let requestedKeys = self.mockManager.invokedBlobDataParameters
