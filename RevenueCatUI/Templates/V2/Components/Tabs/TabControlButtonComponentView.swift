@@ -38,6 +38,9 @@ struct TabControlButtonComponentView: View {
     @Environment(\.componentInteractionLogger)
     private var componentInteractionLogger
 
+    @Environment(\.packageSelectionHapticFeedback)
+    private var hapticFeedback
+
     private let viewModel: TabControlButtonComponentViewModel
     private let onDismiss: () -> Void
 
@@ -57,6 +60,14 @@ struct TabControlButtonComponentView: View {
 
             self.tabControlContext.selectedTabId = destinationTabId
             self.trackTabcomponentInteraction(originTabId: originTabId, destinationTabId: destinationTabId)
+
+            if Self.shouldTriggerHapticFeedback(
+                originTabId: originTabId,
+                destinationTabId: destinationTabId,
+                hapticFeedbackEnabled: self.viewModel.component.hapticFeedbackEnabled ?? true
+            ) {
+                self.hapticFeedback()
+            }
         } label: {
             StackComponentView(
                 viewModel: self.viewModel.stackViewModel,
@@ -81,6 +92,14 @@ struct TabControlButtonComponentView: View {
                 defaultIndex: self.tabControlContext.defaultTabIndex
             )
         ))
+    }
+
+    static func shouldTriggerHapticFeedback(
+        originTabId: String,
+        destinationTabId: String,
+        hapticFeedbackEnabled: Bool
+    ) -> Bool {
+        return hapticFeedbackEnabled && originTabId != destinationTabId
     }
 
 }
