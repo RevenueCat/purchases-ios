@@ -69,8 +69,8 @@ extension RemoteConfiguration {
     ///
     /// Items are arbitrary topic-specific JSON. `blob_ref` and `prefetch` are the only
     /// reserved keys the SDK interprets; every other key is preserved in `content`.
-    /// Payloads may be inline in `content` or external via `blobRef`, depending on what
-    /// the server chooses for a given response.
+    /// An item's blob payload is addressed by `blobRef`; `content` is the inline topic
+    /// metadata exposed through the topic index, not blob bytes returned by `blobData`.
     struct ConfigItem: Codable, Equatable {
         /// When present, the item's payload is an external static blob addressed by this ref.
         let blobRef: String?

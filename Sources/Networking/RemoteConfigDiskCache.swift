@@ -7,7 +7,15 @@
 
 import Foundation
 
-protocol RemoteConfigDiskCacheType: AnyObject {
+/// Read-only access to a topic's persisted item index (metadata only, no blob bytes or waiting).
+protocol RemoteConfigTopicStoreType: AnyObject {
+
+    /// The saved items for `topic`, or `nil` when nothing has been persisted yet.
+    func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic?
+
+}
+
+protocol RemoteConfigDiskCacheType: RemoteConfigTopicStoreType {
 
     func read() -> PersistedRemoteConfiguration?
 
@@ -102,8 +110,8 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
 extension RemoteConfigDiskCache: RemoteConfigTopicStoreType {
 
-    func topic(_ name: String) -> RemoteConfiguration.ConfigTopic? {
-        return self.read()?.topics.entries[name]
+    func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic? {
+        return self.read()?.topics.entries[topic.wireName]
     }
 
 }

@@ -3999,8 +3999,8 @@ private final class SingleAPISourceTopicStore: RemoteConfigTopicStoreType {
         self.url = url
     }
 
-    func topic(_ name: String) -> RemoteConfiguration.ConfigTopic? {
-        guard name == "sources" else { return nil }
+    func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic? {
+        guard topic == .sources else { return nil }
         return ["api": RemoteConfiguration.ConfigItem(content: [
             "sources": .array([
                 .object([

@@ -694,6 +694,22 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         self.invokedRefreshRemoteConfigIfStaleParametersList.append(isAppBackgrounded)
     }
 
+    func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+        return nil
+    }
+
+    func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
+        return nil
+    }
+
+    func blobData<T: Decodable>(
+        for topic: RemoteConfigTopic,
+        itemKey: String,
+        as type: T.Type
+    ) async throws -> T? {
+        return nil
+    }
+
     func clearCache() {
         self.invokedClearCacheCount += 1
     }
