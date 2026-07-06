@@ -347,6 +347,7 @@
                       {
                         "components" : [
                           {
+                            "id" : "1N8dGDHjck",
                             "is_selected_by_default" : true,
                             "name" : "",
                             "package_id" : "$rc_lifetime",
@@ -787,6 +788,7 @@
                             "type" : "package"
                           },
                           {
+                            "id" : "_uZKUeIi_i",
                             "is_selected_by_default" : false,
                             "name" : "",
                             "package_id" : "$rc_monthly",
