@@ -3629,6 +3629,53 @@ extension HTTPClientTests {
         expect(firstHostHit.value) == true
     }
 
+    func testHealthyAPISourcesAreNotRewoundForNextRequest() throws {
+        // Three sources so that after a single failover there is still a healthy current source (api-2),
+        // i.e. the list is not exhausted, so the next request's rearm must be a no-op.
+        let provider = RecordingAPISourceProvider(
+            wrapping: Self.apiSourceProvider(hosts: ["api-1.rc-test.com", "api-2.rc-test.com", "api-3.rc-test.com"])
+        )
+        let client = self.createClient(self.systemInfo, apiSourceProvider: provider)
+
+        // First request fails over from api-1 to api-2, which succeeds and stays the current source.
+        stub(condition: isHost("api-1.rc-test.com")) { _ in
+            HTTPStubsResponse(data: Data(), statusCode: .internalServerError, headers: nil)
+        }
+        stub(condition: isHost("api-2.rc-test.com")) { _ in .emptySuccessResponse() }
+        let firstResult = waitUntilValue { completion in
+            client.perform(HTTPRequest(method: .get, path: .mockPath)) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+        expect(firstResult).to(beSuccess())
+        expect(provider.reportedURLs) == ["https://api-1.rc-test.com/"]
+
+        // The next request must resume from api-2 without rewinding to api-1: while a healthy source
+        // remains, the start-of-request rearm leaves failover progress untouched.
+        HTTPStubs.removeAllStubs()
+        let firstHostHit: Atomic<Bool> = false
+        let secondHostHit: Atomic<Bool> = false
+        stub(condition: isHost("api-1.rc-test.com")) { _ in
+            firstHostHit.value = true
+            return .emptySuccessResponse()
+        }
+        stub(condition: isHost("api-2.rc-test.com")) { _ in
+            secondHostHit.value = true
+            return .emptySuccessResponse()
+        }
+        let secondResult = waitUntilValue { completion in
+            client.perform(HTTPRequest(method: .get, path: .mockPath)) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+
+        expect(secondResult).to(beSuccess())
+        expect(secondHostHit.value) == true
+        expect(firstHostHit.value) == false
+        // The rearm did not rewind the list, so no further source was reported unhealthy.
+        expect(provider.reportedURLs) == ["https://api-1.rc-test.com/"]
+    }
+
     func testProxyURLDisablesAPISourceFailover() throws {
         let proxyURL = try XCTUnwrap(URL(string: "https://proxy.rc-test.com"))
         SystemInfo.proxyURL = proxyURL
