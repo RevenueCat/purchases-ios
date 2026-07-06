@@ -501,7 +501,6 @@ extension BasePurchasesTests {
             let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
             let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
             let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
-            let workflowsAPI = MockWorkflowsAPI()
             let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
             self.init(backendConfig: backendConfig,
@@ -514,7 +513,6 @@ extension BasePurchasesTests {
                       customerCenterConfig: customerCenterConfig,
                       redeemWebPurchaseAPI: redeemWebPurchaseAPI,
                       virtualCurrenciesAPI: virtualCurrenciesAPI,
-                      workflowsAPI: workflowsAPI,
                       adsAPI: mockAdsAPI,
                       remoteConfigAPI: remoteConfigAPI)
         }
