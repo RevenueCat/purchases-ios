@@ -19,8 +19,6 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
     static let serverHostURL = URL(string: "https://api.revenuecat.com")!
 
     var usesAPISources: Bool {
-        // Web billing is hosted on the same api.revenuecat.com host as the main API, so it resolves
-        // its base host from the API source provider (with failover) too.
         return true
     }
 
