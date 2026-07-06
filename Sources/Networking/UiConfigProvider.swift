@@ -18,39 +18,63 @@ final class UiConfigProvider {
         self.manager = manager
     }
 
+#if !os(tvOS)
     /// Assembles a ``UIConfig`` from the `ui_config` topic's parts. Returns `nil` when a required part
-    /// (`app` or `localizations`) is unavailable; `UIConfig`'s own decoding already defaults the rest.
+    /// (`app` or `localizations`) is unavailable or fails to decode.
     ///
-    /// The four parts are unrelated blobs, fetched concurrently rather than one at a time, so a cold
-    /// cache pays for one round trip instead of four sequential ones.
+    /// Each part decodes independently: a malformed `variable_config` or `custom_variables` blob falls
+    /// back to its own default instead of invalidating the whole result, since those parts already have
+    /// defaults `UIConfig` can use elsewhere.
     func getUiConfig() async -> UIConfig? {
-        let parts = await withTaskGroup(of: (String, Any?).self) { group in
-            for key in Self.partKeys {
-                group.addTask {
-                    guard let data = await self.manager.blobData(for: .uiConfig, itemKey: key) else {
-                        return (key, nil)
-                    }
-                    return (key, try? JSONSerialization.jsonObject(with: data))
-                }
-            }
+        async let app = self.decodePart(UIConfig.AppConfig.self, itemKey: Self.appKey)
+        async let localizations = self.decodePart([String: [String: String]].self, itemKey: Self.localizationsKey)
+        async let variableConfig = self.decodePart(UIConfig.VariableConfig.self, itemKey: Self.variableConfigKey)
+        async let customVariables = self.decodePart(
+            [String: UIConfig.CustomVariableDefinition].self,
+            itemKey: Self.customVariablesKey
+        )
 
-            return await group.reduce(into: [String: Any]()) { parts, result in
-                let (key, jsonObject) = result
-                parts[key] = jsonObject
-            }
-        }
-
-        guard parts[Self.appKey] != nil, parts[Self.localizationsKey] != nil else {
+        guard let app = await app, let localizations = await localizations else {
+            Logger.warn(Strings.remoteConfig.uiConfigMissingRequiredPart)
             return nil
         }
 
-        return try? JSONDecoder.default.decode(UIConfig.self, dictionary: parts)
+        return UIConfig(
+            app: app,
+            localizations: localizations,
+            variableConfig: await variableConfig ?? Self.defaultVariableConfig,
+            customVariables: await customVariables ?? [:]
+        )
     }
+
+    private func decodePart<T: Decodable>(_ type: T.Type, itemKey: String) async -> T? {
+        do {
+            return try await self.manager.blobData(for: .uiConfig, itemKey: itemKey, as: type)
+        } catch {
+            Logger.error(Strings.remoteConfig.uiConfigPartDecodeFailed(itemKey: itemKey, error: error))
+            return nil
+        }
+    }
+
+    private static let defaultVariableConfig = UIConfig.VariableConfig(
+        variableCompatibilityMap: [:],
+        functionCompatibilityMap: [:]
+    )
+#else
+    // Paywalls V2 (and therefore workflows) aren't supported on tvOS, where `UIConfig` carries no fields.
+    func getUiConfig() async -> UIConfig? {
+        guard await self.manager.blobData(for: .uiConfig, itemKey: Self.appKey) != nil,
+              await self.manager.blobData(for: .uiConfig, itemKey: Self.localizationsKey) != nil else {
+            Logger.warn(Strings.remoteConfig.uiConfigMissingRequiredPart)
+            return nil
+        }
+        return .empty
+    }
+#endif
 
     private static let appKey = "app"
     private static let localizationsKey = "localizations"
     private static let variableConfigKey = "variable_config"
     private static let customVariablesKey = "custom_variables"
-    private static let partKeys = [appKey, localizationsKey, variableConfigKey, customVariablesKey]
 
 }

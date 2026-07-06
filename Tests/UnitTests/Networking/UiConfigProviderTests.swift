@@ -82,6 +82,28 @@ class UiConfigProviderTests: TestCase {
         expect(uiConfig?.customVariables).to(beEmpty())
     }
 
+    func testMalformedVariableConfigFallsBackToDefaultInsteadOfFailingTheWholeAssembly() async throws {
+        // variable_config is syntactically valid JSON but the wrong shape for VariableConfig, which used
+        // to fail the single merged decode of the whole UIConfig, discarding good app/localizations data.
+        self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{"en_US": {"day": "Day"}}"#,
+                  variableConfig: #"{"variable_compatibility_map": "not-a-dictionary"}"#, customVariables: nil)
+
+        let uiConfig = await self.provider.getUiConfig()
+
+        expect(uiConfig).toNot(beNil())
+        expect(uiConfig?.localizations["en_US"]?["day"]) == "Day"
+        expect(uiConfig?.variableConfig.variableCompatibilityMap).to(beEmpty())
+        self.logger.verifyMessageWasLogged("Failed to decode ui_config part 'variable_config'", level: .error)
+    }
+
+    func testLogsWarningWhenARequiredPartIsMissing() async throws {
+        self.stub(app: nil, localizations: #"{}"#, variableConfig: nil, customVariables: nil)
+
+        _ = await self.provider.getUiConfig()
+
+        self.logger.verifyMessageWasLogged(Strings.remoteConfig.uiConfigMissingRequiredPart, level: .warn)
+    }
+
     func testRequestsWireItemKeysNotCamelCased() async throws {
         _ = await self.provider.getUiConfig()
 
