@@ -195,9 +195,27 @@ import Foundation
 
 }
 
+extension UIConfig {
+
+    /// An empty configuration used when a workflow's `ui_config` topic parts are not yet available.
+    static let empty = UIConfig(
+        app: AppConfig(colors: [:], fonts: [:]),
+        localizations: [:],
+        variableConfig: VariableConfig(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+    )
+
+}
+
 #else
 
 @_spi(Internal) public struct UIConfig: Codable, Equatable, Sendable {
+
+}
+
+extension UIConfig {
+
+    /// An empty configuration used when a workflow's `ui_config` topic parts are not yet available.
+    static let empty = UIConfig()
 
 }
 
