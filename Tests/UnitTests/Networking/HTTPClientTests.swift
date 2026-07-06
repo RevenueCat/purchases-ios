@@ -204,10 +204,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
     func testETagRetryTargetsTheSameAPISourceHost() throws {
         let apiSourceHost = "custom-api.rc-test.com"
-        let client = self.createClient(
-            self.systemInfo,
-            apiSourceProvider: Self.apiSourceProvider(host: apiSourceHost)
-        )
+        let provider = RecordingAPISourceProvider(wrapping: Self.apiSourceProvider(hosts: [apiSourceHost]))
+        let client = self.createClient(self.systemInfo, apiSourceProvider: provider)
 
         // Count requests reaching the API source host. If the ETag refresh retry ignored the API source and
         // fell back to the default host, this host would only be hit once (and the unstubbed default host
@@ -232,6 +230,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         expect(result).to(beSuccess())
         expect(apiSourceRequests.value) == 2
+        // An ETag cache miss must not report the source unhealthy or advance to the next one.
+        expect(provider.reportedURLs).to(beEmpty())
     }
 
     func testPassesHeaders() {
