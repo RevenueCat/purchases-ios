@@ -27,8 +27,11 @@ class PurchasesWorkflowTests: BasePurchasesTests {
     }
 
     func testWorkflowForOfferingIdentifierFallsBackToOfferingIdAsWorkflowId() async throws {
-        // No `workflows` topic has synced, so the offeringId → workflowId map is empty and the offering
-        // identifier itself is used as the workflow lookup key, preserving the prior behavior.
+        // The `workflows` topic has synced, but its "default" item has no `offeringIdentifier` match,
+        // so the offeringId → workflowId scan misses and the offering identifier itself is used as the
+        // workflow lookup key, preserving the prior behavior. (A real `RemoteConfigManager` can't return
+        // blob data for an item absent from the topic, so the topic must be stubbed too, not just the blob.)
+        self.mockRemoteConfigManager.stubbedTopics[.workflows] = ["default": .init(content: [:])]
         self.mockRemoteConfigManager.stubbedBlobData[.workflows] = ["default": try Self.workflowJSON(id: "default")]
         self.mockRemoteConfigManager.stubbedBlobData[.uiConfig] = [
             "app": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
