@@ -60,6 +60,7 @@ import Foundation
         let preferredLocale: String?
         let automaticDeviceIdentifierCollectionEnabled: Bool
         let diagnosticsEnabled: Bool
+        let iamEnabled: Bool
     }
 
     internal let storage: Storage
@@ -82,6 +83,7 @@ import Foundation
         self.storage.automaticDeviceIdentifierCollectionEnabled
     }
     internal var diagnosticsEnabled: Bool { self.storage.diagnosticsEnabled }
+    internal var iamEnabled: Bool { self.storage.iamEnabled }
 
     private init(with builder: Builder) {
         self.storage = Storage(
@@ -98,7 +100,8 @@ import Foundation
             showStoreMessagesAutomatically: builder.showStoreMessagesAutomatically,
             preferredLocale: builder.preferredLocale,
             automaticDeviceIdentifierCollectionEnabled: builder.automaticDeviceIdentifierCollectionEnabled,
-            diagnosticsEnabled: builder.diagnosticsEnabled
+            diagnosticsEnabled: builder.diagnosticsEnabled,
+            iamEnabled: builder.iamEnabled
         )
     }
 
@@ -149,6 +152,7 @@ import Foundation
         private(set) var entitlementVerificationMode: EntitlementVerificationMode = .informational
         private(set) var showStoreMessagesAutomatically: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
+        private(set) var iamEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
 
         /// The preferred locale for the requests.
@@ -356,6 +360,12 @@ import Foundation
         /// by calling ``Purchases/collectDeviceIdentifiers()``
         @objc public func with(automaticDeviceIdentifierCollectionEnabled: Bool) -> Builder {
             self.automaticDeviceIdentifierCollectionEnabled = automaticDeviceIdentifierCollectionEnabled
+            return self
+        }
+
+        @_spi(Experimental)
+        @objc(withIAMEnabled:) public func with(iamEnabled: Bool) -> Builder {
+            self.iamEnabled = iamEnabled
             return self
         }
 

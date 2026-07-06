@@ -345,6 +345,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      diagnosticsEnabled: Bool = false,
                      preferredLocale: String?,
                      automaticDeviceIdentifierCollectionEnabled: Bool = true,
+                     iamEnabled: Bool = false,
                      currentConfiguration: Configuration?
     ) {
         if userDefaults != nil {
@@ -1916,6 +1917,7 @@ public extension Purchases {
                 diagnosticsEnabled: configuration.diagnosticsEnabled,
                 preferredLocale: configuration.preferredLocale,
                 automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled,
+                iamEnabled: configuration.iamEnabled,
                 currentConfiguration: configuration
             ),
             dedupingAgainst: configuration
@@ -2186,7 +2188,8 @@ public extension Purchases {
         showStoreMessagesAutomatically: Bool,
         diagnosticsEnabled: Bool,
         preferredLocale: String?,
-        automaticDeviceIdentifierCollectionEnabled: Bool = true
+        automaticDeviceIdentifierCollectionEnabled: Bool = true,
+        iamEnabled: Bool = false,
     ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
@@ -2204,6 +2207,7 @@ public extension Purchases {
                   diagnosticsEnabled: diagnosticsEnabled,
                   preferredLocale: preferredLocale,
                   automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled,
+                  iamEnabled: iamEnabled,
                   currentConfiguration: nil)
         )
     }
