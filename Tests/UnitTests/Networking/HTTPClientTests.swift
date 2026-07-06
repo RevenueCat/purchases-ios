@@ -202,6 +202,38 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(hostCorrect.value) == true
     }
 
+    func testETagRetryTargetsTheSameAPISourceHost() throws {
+        let apiSourceHost = "custom-api.rc-test.com"
+        let client = self.createClient(
+            self.systemInfo,
+            apiSourceProvider: Self.apiSourceProvider(host: apiSourceHost)
+        )
+
+        // Count requests reaching the API source host. If the ETag refresh retry ignored the API source and
+        // fell back to the default host, this host would only be hit once (and the unstubbed default host
+        // request would not succeed).
+        let apiSourceRequests: Atomic<Int> = .init(0)
+        stub(condition: isHost(apiSourceHost)) { [eTagManager = self.eTagManager!] _ in
+            defer { apiSourceRequests.value += 1 }
+            // On the retry, let the ETag manager return a result so the request completes.
+            if apiSourceRequests.value > 0 {
+                eTagManager.shouldReturnResultFromBackend = true
+            }
+            return .emptySuccessResponse()
+        }
+
+        // First attempt: an ETag cache miss (nil result) forces a refresh retry.
+        self.eTagManager.shouldReturnResultFromBackend = false
+        self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = nil
+
+        let result: DataResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPath)) { completion($0) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(apiSourceRequests.value) == 2
+    }
+
     func testPassesHeaders() {
         let headerPresent: Atomic<Bool> = false
 
