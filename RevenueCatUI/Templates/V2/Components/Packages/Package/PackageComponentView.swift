@@ -82,7 +82,8 @@ struct PackageComponentView: View {
                 packageContext: self.packageContext,
                 package: package,
                 componentName: self.viewModel.componentName,
-                hasPurchaseButton: self.viewModel.hasPurchaseButton
+                hasPurchaseButton: self.viewModel.hasPurchaseButton,
+                hapticFeedbackEnabled: self.viewModel.hapticFeedbackEnabled
             )
         }
     }
@@ -96,30 +97,35 @@ private extension View {
         packageContext: PackageContext,
         package: Package,
         componentName: String?,
-        hasPurchaseButton: Bool
+        hasPurchaseButton: Bool,
+        hapticFeedbackEnabled: Bool
     ) -> some View {
         modifier(PackageSelectorIfNeeded(
             packageContext: packageContext,
             package: package,
             componentName: componentName,
-            hasPurchaseButton: hasPurchaseButton
+            hasPurchaseButton: hasPurchaseButton,
+            hapticFeedbackEnabled: hapticFeedbackEnabled
         ))
     }
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct PackageSelectorIfNeeded: ViewModifier {
+struct PackageSelectorIfNeeded: ViewModifier {
 
     @Environment(\.componentInteractionLogger)
     private var componentInteractionLogger
     @Environment(\.planSelectionDefaultPackage)
     private var planSelectionDefaultPackage
+    @Environment(\.packageSelectionHapticFeedback)
+    private var hapticFeedback
 
     let packageContext: PackageContext
     let package: Package
     let componentName: String?
     let hasPurchaseButton: Bool
+    let hapticFeedbackEnabled: Bool
 
     func body(content: Content) -> some View {
         if hasPurchaseButton {
@@ -140,6 +146,13 @@ private struct PackageSelectorIfNeeded: ViewModifier {
                         )
                     )
                 }
+                if Self.shouldTriggerHapticFeedback(
+                    origin: origin,
+                    destination: self.package,
+                    hapticFeedbackEnabled: self.hapticFeedbackEnabled
+                ) {
+                    self.hapticFeedback()
+                }
                 self.packageContext.update(
                     package: self.package,
                     variableContext: self.packageContext.variableContext
@@ -148,6 +161,14 @@ private struct PackageSelectorIfNeeded: ViewModifier {
                 content
             }
         }
+    }
+
+    static func shouldTriggerHapticFeedback(
+        origin: Package?,
+        destination: Package,
+        hapticFeedbackEnabled: Bool
+    ) -> Bool {
+        return hapticFeedbackEnabled && origin?.identifier != destination.identifier
     }
 }
 
