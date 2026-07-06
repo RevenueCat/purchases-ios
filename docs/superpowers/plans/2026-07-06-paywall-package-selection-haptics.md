@@ -74,25 +74,15 @@ class PackageSelectionHapticFeedbackTests: TestCase {
         expect(fireCount) == 3
     }
 
-    func testDefaultActionDoesNotCrash() {
-        // The default action fires a real UISelectionFeedbackGenerator on iOS and is a
-        // no-op elsewhere. There's no observable return value to assert on; this just
-        // proves it can be invoked without a runtime failure (e.g. under XCTest's headless
-        // environment). Device-level haptic *feel* is covered by manual QA, not this test.
-        let feedback = PackageSelectionHapticFeedback()
-        feedback()
-    }
-
-    func testEnvironmentDefaultValueIsTheRealDefaultAction() {
-        let environment = EnvironmentValues()
-
-        // Just confirms the environment key wires up without crashing and returns
-        // a usable instance; behavior of the default action itself is covered above.
-        environment.packageSelectionHapticFeedback()
-    }
-
 }
 ```
+
+The default action (real `UISelectionFeedbackGenerator` call) and the `EnvironmentKey`
+get/set plumbing are not separately unit tested: there's no observable return value to assert
+on for a UIKit haptic call, and `ComponentInteractionLoggerKey`'s identical get/set forwarding
+has no dedicated test either in this codebase (see `Tests/RevenueCatUITests/Purchasing/ControlInteractionLoggerTests.swift`).
+Both are exercised at runtime through the call sites added in Tasks 5-7. Device-level haptic
+*feel* is verified manually (see Task 8, Step 5).
 
 - [ ] **Step 2: Run test to verify it fails**
 
@@ -162,7 +152,7 @@ import UIKit
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `swift test --filter PackageSelectionHapticFeedbackTests`
-Expected: PASS (4 tests)
+Expected: PASS (2 tests)
 
 - [ ] **Step 5: Commit**
 
