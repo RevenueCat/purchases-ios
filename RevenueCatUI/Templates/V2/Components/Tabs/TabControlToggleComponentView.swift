@@ -38,6 +38,9 @@ struct TabControlToggleComponentView: View {
     @Environment(\.componentInteractionLogger)
     private var componentInteractionLogger
 
+    @Environment(\.packageSelectionHapticFeedback)
+    private var hapticFeedback
+
     private let viewModel: TabControlToggleComponentViewModel
     private let onDismiss: () -> Void
 
@@ -60,6 +63,9 @@ struct TabControlToggleComponentView: View {
                     componentName: self.tabControlContext.name,
                     isOn: newValue
                 ))
+                if self.viewModel.component.hapticFeedbackEnabled ?? true {
+                    self.hapticFeedback()
+                }
             }
         )
     }
