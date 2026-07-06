@@ -41,13 +41,12 @@ class WorkflowManager {
     /// Resolves `workflowId` and delivers it through `completion`, or a `.workflowNotFound` error when
     /// it isn't available from remote config.
     func getWorkflow(workflowId: String, completion: @escaping (Result<WorkflowDataResult, BackendError>) -> Void) {
-        Task {
-            if let result = await self.workflowsConfigProvider.getWorkflow(workflowId: workflowId) {
-                self.warmUpAssets(for: result)
-                completion(.success(result))
-            } else {
-                completion(.failure(.workflowNotFound(workflowId: workflowId)))
+        Async.call(with: completion) {
+            guard let result = await self.workflowsConfigProvider.getWorkflow(workflowId: workflowId) else {
+                return .failure(.workflowNotFound(workflowId: workflowId))
             }
+            self.warmUpAssets(for: result)
+            return .success(result)
         }
     }
 
