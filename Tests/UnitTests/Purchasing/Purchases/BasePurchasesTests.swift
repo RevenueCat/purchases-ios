@@ -694,12 +694,22 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         self.invokedRefreshRemoteConfigIfStaleParametersList.append(isAppBackgrounded)
     }
 
+    var stubbedTopics: [RemoteConfigTopic: RemoteConfiguration.ConfigTopic] = [:]
+    var stubbedBlobData: [RemoteConfigTopic: [String: Data]] = [:]
+    // Atomic because UiConfigProvider now fetches its parts concurrently, so this can be appended to
+    // from multiple tasks at once.
+    private let _invokedBlobDataParameters: Atomic<[(topic: RemoteConfigTopic, itemKey: String)]> = .init([])
+    var invokedBlobDataParameters: [(topic: RemoteConfigTopic, itemKey: String)] {
+        return self._invokedBlobDataParameters.value
+    }
+
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
-        return nil
+        return self.stubbedTopics[topic]
     }
 
     func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
-        return nil
+        self._invokedBlobDataParameters.modify { $0.append((topic, itemKey)) }
+        return self.stubbedBlobData[topic]?[itemKey]
     }
 
     func blobData<T: Decodable>(
@@ -707,7 +717,8 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         itemKey: String,
         as type: T.Type
     ) async throws -> T? {
-        return nil
+        guard let data = await self.blobData(for: topic, itemKey: itemKey) else { return nil }
+        return try JSONDecoder.default.decode(type, from: data)
     }
 
     func clearCache() {

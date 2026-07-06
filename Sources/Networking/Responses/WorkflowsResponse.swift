@@ -201,6 +201,44 @@ import Foundation
         self.metadata = nil
     }
 
+    /// Internal-only full initializer: unlike the public one above, this preserves `metadata`.
+    init(
+        id: String,
+        displayName: String,
+        initialStepId: String,
+        singleStepFallbackId: String?,
+        steps: [String: WorkflowStep],
+        screens: [String: WorkflowScreen],
+        uiConfig: UIConfig,
+        contentMaxWidth: Int?,
+        metadata: [String: AnyDecodable]?
+    ) {
+        self.id = id
+        self.displayName = displayName
+        self.initialStepId = initialStepId
+        self.singleStepFallbackId = singleStepFallbackId
+        self.steps = steps
+        self.screens = screens
+        self.uiConfig = uiConfig
+        self.contentMaxWidth = contentMaxWidth
+        self.metadata = metadata
+    }
+
+    /// Returns a copy with `uiConfig` replaced. Unlike the public initializer, this preserves `metadata`.
+    func withUiConfig(_ uiConfig: UIConfig) -> PublishedWorkflow {
+        return PublishedWorkflow(
+            id: self.id,
+            displayName: self.displayName,
+            initialStepId: self.initialStepId,
+            singleStepFallbackId: self.singleStepFallbackId,
+            steps: self.steps,
+            screens: self.screens,
+            uiConfig: uiConfig,
+            contentMaxWidth: self.contentMaxWidth,
+            metadata: self.metadata
+        )
+    }
+
 }
 
 @_spi(Internal) public struct WorkflowDataResult {
@@ -266,7 +304,51 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
 
 }
 
-extension PublishedWorkflow: Codable, Equatable, Sendable {}
+extension PublishedWorkflow: Codable, Equatable, Sendable {
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case displayName
+        case initialStepId
+        case singleStepFallbackId
+        case steps
+        case screens
+        case uiConfig
+        case contentMaxWidth
+        case metadata
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(String.self, forKey: .id)
+        self.displayName = try container.decode(String.self, forKey: .displayName)
+        self.initialStepId = try container.decode(String.self, forKey: .initialStepId)
+        self.singleStepFallbackId = try container.decodeIfPresent(String.self, forKey: .singleStepFallbackId)
+        self.steps = try container.decode([String: WorkflowStep].self, forKey: .steps)
+        self.screens = try container.decode([String: WorkflowScreen].self, forKey: .screens)
+        // Not sent by the remote-config `workflows` topic body (ui_config is its own topic there);
+        // the legacy per-workflow response still embeds it inline, so this stays a fallback rather
+        // than the only path.
+        self.uiConfig = try container.decodeIfPresent(UIConfig.self, forKey: .uiConfig) ?? .empty
+        self.contentMaxWidth = try container.decodeIfPresent(Int.self, forKey: .contentMaxWidth)
+        self.metadata = try container.decodeIfPresent([String: AnyDecodable].self, forKey: .metadata)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.id, forKey: .id)
+        try container.encode(self.displayName, forKey: .displayName)
+        try container.encode(self.initialStepId, forKey: .initialStepId)
+        try container.encodeIfPresent(self.singleStepFallbackId, forKey: .singleStepFallbackId)
+        try container.encode(self.steps, forKey: .steps)
+        try container.encode(self.screens, forKey: .screens)
+        try container.encode(self.uiConfig, forKey: .uiConfig)
+        try container.encodeIfPresent(self.contentMaxWidth, forKey: .contentMaxWidth)
+        try container.encodeIfPresent(self.metadata, forKey: .metadata)
+    }
+
+}
+
 extension WorkflowDataResult: Codable, Equatable, Sendable {}
 
 extension PublishedWorkflow: HTTPResponseBody {}
