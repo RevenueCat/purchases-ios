@@ -363,6 +363,9 @@ import Foundation
             return self
         }
 
+        /// Set `iamEnabled`. This is *disabled* by default.
+        ///
+        /// Enabling tells the SDK to prefer using token-based user sessions for communicating with the server.
         @_spi(Experimental)
         @objc(withIAMEnabled:) public func with(iamEnabled: Bool) -> Builder {
             self.iamEnabled = iamEnabled

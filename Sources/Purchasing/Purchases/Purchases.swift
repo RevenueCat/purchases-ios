@@ -2189,7 +2189,7 @@ public extension Purchases {
         diagnosticsEnabled: Bool,
         preferredLocale: String?,
         automaticDeviceIdentifierCollectionEnabled: Bool = true,
-        iamEnabled: Bool = false,
+        iamEnabled: Bool = false
     ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
