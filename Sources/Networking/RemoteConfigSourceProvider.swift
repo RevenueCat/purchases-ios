@@ -64,14 +64,6 @@ protocol RemoteConfigSourceProviderType: AnyObject {
 
 }
 
-/// Read-only access to a topic's persisted item index (metadata only — no blob bytes, no waiting).
-protocol RemoteConfigTopicStoreType: AnyObject {
-
-    /// The saved items for `name`, or `nil` when the topic is unknown / nothing has been persisted yet.
-    func topic(_ name: String) -> RemoteConfiguration.ConfigTopic?
-
-}
-
 /// The address book for remote config: hands out the current healthy api and blob sources and
 /// falls back to the next one when a source is reported unhealthy. Each purpose fails over
 /// independently.
@@ -86,7 +78,6 @@ protocol RemoteConfigTopicStoreType: AnyObject {
 /// - Note: Thread-safe.
 final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
 
-    private static let sourcesTopicName = "sources"
     private static let apiItem = "api"
     private static let blobItem = "blob"
     private static let sourcesKey = "sources"
@@ -182,7 +173,7 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     /// rebuild happened. Callers must hold `lock`.
     @discardableResult
     private func rebuildIfNeeded() -> Bool {
-        let topic = self.topicStore.topic(Self.sourcesTopicName)
+        let topic = self.topicStore.topic(.sources)
         guard topic != self.sourcesTopic else { return false }
 
         // Seed the new generation past any token the previous one could have handed out, so reports

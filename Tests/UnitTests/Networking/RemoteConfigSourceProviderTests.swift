@@ -468,8 +468,8 @@ private final class FakeTopicStore: RemoteConfigTopicStoreType {
         self.sources = sources
     }
 
-    func topic(_ name: String) -> RemoteConfiguration.ConfigTopic? {
-        return name == "sources" ? self.sources : nil
+    func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic? {
+        return topic == .sources ? self.sources : nil
     }
 
 }
