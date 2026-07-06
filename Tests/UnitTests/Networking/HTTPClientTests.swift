@@ -4259,8 +4259,8 @@ private final class OrderedAPISourceTopicStore: RemoteConfigTopicStoreType {
         self.urls = urls
     }
 
-    func topic(_ name: String) -> RemoteConfiguration.ConfigTopic? {
-        guard name == "sources" else { return nil }
+    func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic? {
+        guard topic == .sources else { return nil }
         let sources: [AnyDecodable] = self.urls.enumerated().map { index, url in
             .object([
                 "url": .string(url),

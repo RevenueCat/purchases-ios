@@ -466,8 +466,8 @@ private final class BlobFetcherSourceTopicStore: RemoteConfigTopicStoreType {
         self.sourcesTopic = sourcesTopic
     }
 
-    func topic(_ name: String) -> RemoteConfiguration.ConfigTopic? {
-        return name == "sources" ? self.sourcesTopic : nil
+    func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic? {
+        return topic == .sources ? self.sourcesTopic : nil
     }
 
 }
