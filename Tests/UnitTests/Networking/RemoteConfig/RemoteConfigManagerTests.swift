@@ -947,52 +947,44 @@ final class RemoteConfigManagerTests: TestCase {
     }
 
     func testTopicDoesNotReturnStaleReadWhenCacheIsClearedDuringRead() async {
-        let readStarted = DispatchSemaphore(value: 0)
-        let releaseRead = DispatchSemaphore(value: 0)
+        var didClearDuringRead = false
         self.diskCache.readHandler = {
-            readStarted.signal()
-            _ = releaseRead.wait(timeout: .now() + .seconds(5))
+            if !didClearDuringRead {
+                didClearDuringRead = true
+                self.manager.clearCache()
+            }
+
             return Self.persisted(
                 manifest: "v1.1710000100.sources:etag1",
                 topics: .init(entries: ["sources": ["api": .init(content: ["url": .string("stale")])]])
             )
         }
 
-        let task = Task {
-            await self.manager.topic(.sources)
-        }
-        expect(readStarted.wait(timeout: .now() + .seconds(5))) == .success
+        let topic = await self.manager.topic(.sources)
 
-        self.manager.clearCache()
-        releaseRead.signal()
-
-        let topic = await task.value
         expect(topic).to(beNil())
+        expect(self.diskCache.invokedClearCount) == 1
     }
 
     func testBlobDataDoesNotFetchStaleItemWhenCacheIsClearedDuringRead() async {
         let ref = RCContainerTestData.blobRef(for: #"{"id":"workflow"}"#.asData)
-        let readStarted = DispatchSemaphore(value: 0)
-        let releaseRead = DispatchSemaphore(value: 0)
+        var didClearDuringRead = false
         self.diskCache.readHandler = {
-            readStarted.signal()
-            _ = releaseRead.wait(timeout: .now() + .seconds(5))
+            if !didClearDuringRead {
+                didClearDuringRead = true
+                self.manager.clearCache()
+            }
+
             return Self.persisted(
                 manifest: "v1.1710000100.workflows:etag1",
                 topics: .init(entries: ["workflows": ["default": .init(blobRef: ref)]])
             )
         }
 
-        let task = Task {
-            await self.manager.blobData(for: .workflows, itemKey: "default")
-        }
-        expect(readStarted.wait(timeout: .now() + .seconds(5))) == .success
+        let data = await self.manager.blobData(for: .workflows, itemKey: "default")
 
-        self.manager.clearCache()
-        releaseRead.signal()
-
-        let data = await task.value
         expect(data).to(beNil())
+        expect(self.diskCache.invokedClearCount) == 1
         expect(self.blobFetcher.invokedEnsureDownloadedRefs).to(beEmpty())
         expect(self.blobStore.invokedReadRefs).to(beEmpty())
     }
