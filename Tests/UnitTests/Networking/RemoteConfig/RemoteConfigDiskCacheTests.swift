@@ -278,7 +278,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
 
         expect(didWrite) == false
         expect(self.cache.read()).to(beNil())
-        expect(self.cache.topic("sources")).to(beNil())
+        expect(self.cache.topic(.sources)).to(beNil())
     }
 
     func testWriteOverwritesPreviousSnapshot() throws {
@@ -328,21 +328,21 @@ final class RemoteConfigDiskCacheTests: TestCase {
             topics: RemoteConfiguration.Topics(entries: ["sources": sourcesTopic])
         ))
 
-        expect(self.cache.topic("sources")) == sourcesTopic
+        expect(self.cache.topic(.sources)) == sourcesTopic
     }
 
-    func testTopicReturnsNilForUnknownTopic() {
+    func testTopicReturnsNilForTopicNotPersisted() {
         self.cache.write(PersistedRemoteConfiguration(
             manifest: "v1.1710000100.sources:etag1",
             activeTopics: ["sources"],
             topics: RemoteConfiguration.Topics(entries: ["sources": ["default": .init(blobRef: "blobRefA")]])
         ))
 
-        expect(self.cache.topic("unknown")).to(beNil())
+        expect(self.cache.topic(.uiConfig)).to(beNil())
     }
 
     func testTopicReturnsNilWhenNothingHasBeenPersisted() {
-        expect(self.cache.topic("sources")).to(beNil())
+        expect(self.cache.topic(.sources)).to(beNil())
     }
 
     func testReadAndTopicServeFromMemoryAfterFirstLoad() throws {
@@ -354,14 +354,14 @@ final class RemoteConfigDiskCacheTests: TestCase {
         ))
 
         // Populate the in-memory cache.
-        expect(self.cache.topic("sources")) == sourcesTopic
+        expect(self.cache.topic(.sources)) == sourcesTopic
 
         // Delete the persisted file behind the cache's back.
         try FileManager.default.removeItem(at: self.fileURL)
 
         // Both `read()` and `topic(_:)` are still served from the in-memory cache.
         expect(self.cache.read()).toNot(beNil())
-        expect(self.cache.topic("sources")) == sourcesTopic
+        expect(self.cache.topic(.sources)) == sourcesTopic
     }
 
     func testReadLazilyLoadsFromDiskThenServesFromMemory() throws {
@@ -388,7 +388,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
             activeTopics: ["sources"],
             topics: RemoteConfiguration.Topics(entries: ["sources": ["default": .init(blobRef: "old")]])
         ))
-        expect(self.cache.topic("sources")) == ["default": .init(blobRef: "old")]
+        expect(self.cache.topic(.sources)) == ["default": .init(blobRef: "old")]
 
         let newTopic: RemoteConfiguration.ConfigTopic = ["default": .init(blobRef: "new")]
         self.cache.write(PersistedRemoteConfiguration(
@@ -397,7 +397,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
             topics: RemoteConfiguration.Topics(entries: ["sources": newTopic])
         ))
 
-        expect(self.cache.topic("sources")) == newTopic
+        expect(self.cache.topic(.sources)) == newTopic
     }
 
     func testTopicReturnsNilAfterClear() throws {
@@ -406,11 +406,11 @@ final class RemoteConfigDiskCacheTests: TestCase {
             activeTopics: ["sources"],
             topics: RemoteConfiguration.Topics(entries: ["sources": ["default": .init(blobRef: "blobRefA")]])
         ))
-        expect(self.cache.topic("sources")).toNot(beNil())
+        expect(self.cache.topic(.sources)).toNot(beNil())
 
         self.cache.clear()
 
-        expect(self.cache.topic("sources")).to(beNil())
+        expect(self.cache.topic(.sources)).to(beNil())
     }
 
 }
