@@ -99,6 +99,56 @@ final class PackageComponentViewTests: TestCase {
         XCTAssertFalse(viewModel.hapticFeedbackEnabled)
     }
 
+    func testShouldTriggerHapticFeedback_whenSelectionChangesAndEnabled_returnsTrue() {
+        let origin = TestData.weeklyPackage
+        let destination = TestData.monthlyPackage
+
+        XCTAssertTrue(
+            PackageSelectorIfNeeded.shouldTriggerHapticFeedback(
+                origin: origin,
+                destination: destination,
+                hapticFeedbackEnabled: true
+            )
+        )
+    }
+
+    func testShouldTriggerHapticFeedback_whenSelectionUnchanged_returnsFalse() {
+        let package = TestData.monthlyPackage
+
+        XCTAssertFalse(
+            PackageSelectorIfNeeded.shouldTriggerHapticFeedback(
+                origin: package,
+                destination: package,
+                hapticFeedbackEnabled: true
+            )
+        )
+    }
+
+    func testShouldTriggerHapticFeedback_whenDisabled_returnsFalseEvenIfSelectionChanges() {
+        let origin = TestData.weeklyPackage
+        let destination = TestData.monthlyPackage
+
+        XCTAssertFalse(
+            PackageSelectorIfNeeded.shouldTriggerHapticFeedback(
+                origin: origin,
+                destination: destination,
+                hapticFeedbackEnabled: false
+            )
+        )
+    }
+
+    func testShouldTriggerHapticFeedback_whenOriginIsNilAndSelectionChanges_returnsTrue() {
+        let destination = TestData.monthlyPackage
+
+        XCTAssertTrue(
+            PackageSelectorIfNeeded.shouldTriggerHapticFeedback(
+                origin: nil,
+                destination: destination,
+                hapticFeedbackEnabled: true
+            )
+        )
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
