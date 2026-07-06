@@ -301,9 +301,20 @@ class HTTPRequestTests: TestCase {
         }
     }
 
-    func testNonMainPathsDoNotUseAPISources() {
+    func testWebBillingPathsUseAPISources() {
+        // Web billing shares the api.revenuecat.com host with the main API, so it resolves its host
+        // from the API source provider too.
         let paths: [any HTTPRequestPath] = [
             HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID),
+            HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
+        ]
+        for path in paths {
+            expect(path.usesAPISources).to(beTrue(), description: "Path '\(path)' should use API sources")
+        }
+    }
+
+    func testNonMainPathsDoNotUseAPISources() {
+        let paths: [any HTTPRequestPath] = [
             HTTPRequest.DiagnosticsPath.postDiagnostics
         ]
         for path in paths {
