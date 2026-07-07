@@ -19,7 +19,7 @@ Do NOT copy files wholesale from the prototype branches. Port the *contracts and
 - Swift, iOS 15+ / macOS 12+ availability annotations (`@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)`), matching how other Paywalls V2 components are annotated.
 - tvOS: excluded (`#if !os(tvOS)`). watchOS: no WebKit — component renders nothing (`EmptyView`).
 - No new third-party dependencies.
-- No purchase/restore/dismiss message types. No dashboard custom variables over the bridge. No bundle caching or offline rendering. No feature flags.
+- No purchase/restore/dismiss message types. No dashboard custom variables over the bridge. No bundle caching or offline rendering. No feature flags. No fallback-component rendering on load failure (§4.5).
 - Follow `Contributing/SwiftStyleGuide.swift` and keep SwiftLint clean.
 
 ---
@@ -37,6 +37,8 @@ New component type in the core SDK (`Sources/Paywalls/Components/`):
 | `protocol_version` | `protocolVersion` | `Int` | optional in JSON, **default `1`** when absent. Only `1` is supported; other values are decoded and preserved, and cause the handshake to `reject` (§3). |
 | `url` | `url` | `String` | required. A **literal, static HTTPS URL** — never a template. No variable substitution anywhere. |
 | `size` | `size` | `PaywallComponent.Size` | optional; default `width: .fill, height: .fit` |
+
+Exact naming and access, matching the prototype: the type is `PaywallComponent.WebViewComponent` (a `final class` in `Sources/Paywalls/Components/PaywallWebViewComponent.swift`) and is **`@_spi(Internal) public`** — NOT plain `public`. Copy the declaration shape, initializer, and access level from branch `web-view-bridge-wiring` verbatim; only the doc comments may be improved. Decoding relies on `JSONDecoder.default`'s snake_case key strategy like the other component types — follow whichever convention the sibling components in that folder use rather than inventing CodingKeys.
 
 Decoding must tolerate unknown keys (forward compatibility). Wire the new case into:
 
@@ -140,8 +142,12 @@ final class WebViewSession: NSObject, WKScriptMessageHandler {
     var onContentResize: (@MainActor (CGFloat?, CGFloat?) -> Void)?
     private(set) var channelOpen = false
 
-    // THE test seam: production wires webView.evaluateJavaScript, tests inject a capturer.
+    // THE test seams (exactly two, both defaulting to webView-backed closures in production):
+    // outbound delivery, and the web view's current URL for delivery-time origin checks.
+    // `postVariables`/`post` MUST re-check the origin via `currentURL()` at delivery time —
+    // do NOT hold a WKWebView reference on the session for this.
     var evaluateJavaScript: (String) -> Void
+    var currentURL: () -> URL?
 
     let fitAxes: (width: Bool, height: Bool)
 
@@ -152,6 +158,8 @@ final class WebViewSession: NSObject, WKScriptMessageHandler {
 ```
 
 Everything protocol-related lives here: envelope decode, handshake (`connect`/`init`/`reject`), duplicate-connect ignore, `fit` send, channel gating, component-id check, origin check (inbound *and* outbound), `resize` interception, `rc:request-variables` auto-reply, app-handler dispatch, outbound delivery, all limit enforcement, all rejection logging. `WKScriptMessageHandler` conformance extracts (`body`, `frameInfo.isMainFrame`, `webView?.url`) and calls `handle(...)` — so the full logic is testable headlessly by calling `handle` with a JSON string and asserting on captured outbound JS. Register on the user content controller through a small `WeakScriptMessageHandler` shim (WKUserContentController retains handlers strongly — port this one helper from the prototype).
+
+Concurrency note (a known compiler trap): `WKScriptMessageHandler.userContentController(_:didReceive:)` is a nonisolated protocol requirement, while the session is `@MainActor`. WebKit invokes it on the main thread, so implement the conformance as a `nonisolated` method that hops in via `MainActor.assumeIsolated { ... }` (or an equivalent pattern already used in this codebase). Do not weaken the session's `@MainActor` isolation to satisfy the conformance, and do not use `DispatchQueue.main.async` (it would reorder against synchronous test calls).
 
 There is NO separate parser type, dispatcher type, bridge-host protocol, or bridge-configuration struct. There is no per-message controller construction: the public `PaywallWebViewController` holds `weak var session: WebViewSession?` and forwards its two methods.
 
@@ -184,6 +192,7 @@ One SwiftUI view + **one** cross-platform representable:
 - Navigation policy (new, required — see §6): a `WKNavigationDelegate` restricting main-frame navigation.
 - Load path: `Task { guard let rules = await WebViewIsolation.ruleList() else { fail closed }; add rules; load(url) }`.
 - `visible == false` or invalid URL ⇒ render nothing. `componentID == nil` ⇒ render the web view without installing the session (log `paywall_web_view_missing_id`).
+- **Load failure behavior (fixed for v1): do nothing special.** If the page fails to load (network error, HTTP error, blocked by rules), the frame simply stays blank at its laid-out size. Do NOT implement fallback-component rendering, retry logic, or error UI — Android renders a fallback stack here and iOS knowingly diverges in v1; that reconciliation is explicitly out of scope for this mission.
 
 ### 4.6 `PaywallWebViewAPI.swift` — the public surface (see §5)
 
@@ -225,6 +234,12 @@ public struct PaywallWebViewValue: Hashable /* struct wrapping a private storage
     public func postMessage(componentID: String, type: String, variables: [String: PaywallWebViewValue])
 }
 
+/// MainActor closure wrapper used by the environment plumbing (port from the prototype).
+public struct PaywallWebViewMessageAction {
+    public init(_ action: @escaping @MainActor (PaywallWebViewMessage, PaywallWebViewController) -> Void)
+    @MainActor public func callAsFunction(_ message: PaywallWebViewMessage, _ controller: PaywallWebViewController)
+}
+
 extension View {
     public func onPaywallWebViewMessage(
         _ action: @escaping @MainActor (PaywallWebViewMessage, PaywallWebViewController) -> Void
@@ -232,7 +247,16 @@ extension View {
 }
 ```
 
-Copy the exact doc comments/availability from the prototype where they exist (branch `web-view-bridge-wiring`). Internally, `PaywallWebViewValue`'s storage should be `Codable` so the same type serves the wire and the API. Because this adds public API, the `api/revenuecatui-api-*.swiftinterface` baselines must be regenerated (Definition of done) — find the lane with `rg -i swiftinterface fastlane/Fastfile`.
+**Do not invent this surface — diff it against the prototype.** Before writing these files, extract the exact public declarations from the prototype and match them:
+
+```bash
+git fetch origin web-view-bridge-wiring cursor/ios-web-view-bridge-alignment-6044
+git show origin/cursor/ios-web-view-bridge-alignment-6044:RevenueCatUI/Data/PaywallWebViewValue.swift
+git show origin/cursor/ios-web-view-bridge-alignment-6044:RevenueCatUI/Templates/V2/Components/WebView/PaywallWebViewController.swift
+rg -n "public" <each extracted file>
+```
+
+Match names, access levels (`public` vs `@_spi`), `@MainActor` annotations, availability, and the SwiftUI environment key name (`paywallWebViewMessageAction`) exactly; internals may differ freely. Copy the doc comments where they exist. Internally, `PaywallWebViewValue`'s storage should be `Codable` so the same type serves the wire and the API. Because this adds public API, the `api/revenuecatui-api-*.swiftinterface` baselines must be regenerated (Definition of done) — find the lane with `rg -i swiftinterface fastlane/Fastfile`.
 
 ---
 
@@ -317,6 +341,7 @@ Check every box. If any box cannot be checked, the mission is not complete — f
 - [ ] Component renders a WKWebView on iOS and macOS from one shared representable; renders nothing for invalid URL / `visible: false`; `EmptyView` on watchOS; excluded on tvOS.
 - [ ] Full handshake + v1 message set + auto-reply + `fit`/`resize` behave exactly per §3 (proven by the tests in §8).
 - [ ] Public API per §5 compiles against the same call sites as the prototype (`onPaywallWebViewMessage`, controller methods, message/value types).
+- [ ] Every public/`@_spi` declaration matches the prototype in name, access level, `@MainActor`, and availability (proof: extract `rg -n "public|@_spi"` from both trees and diff — differences must be justified in the PR body).
 - [ ] Security posture per §6, including the navigation policy and fail-closed rule loading.
 
 **Simplicity (the mission)**
