@@ -17,9 +17,8 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class WebViewComponentViewModel {
 
-    private let urlTemplate: String
+    private let urlString: String
     private let localizationProvider: LocalizationProvider
-    private let uiConfigProvider: UIConfigProvider
 
     let size: PaywallComponent.Size
     let visible: Bool
@@ -28,9 +27,22 @@ class WebViewComponentViewModel {
     /// bridge. `nil` for legacy/partial configs that omit `id`, in which case the bridge is disabled.
     let componentID: String?
 
+    /// The schema-declared `protocol_version`. Defaults to `1` when omitted.
+    let protocolVersion: Int
+
     /// The locale resolved for this paywall, exposed as an SDK-managed `locale` variable.
     var locale: Locale {
         self.localizationProvider.locale
+    }
+
+    /// The static HTTPS URL to load. Variables never touch the URL.
+    var url: URL? {
+        guard let url = URL(string: self.urlString),
+              url.isValidPaywallWebViewURL else {
+            return nil
+        }
+
+        return url
     }
 
     init(
@@ -38,39 +50,12 @@ class WebViewComponentViewModel {
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider
     ) {
-        self.urlTemplate = component.url
+        self.urlString = component.url
         self.size = component.size
         self.visible = component.visible ?? true
         self.componentID = component.id
+        self.protocolVersion = component.protocolVersion
         self.localizationProvider = localizationProvider
-        self.uiConfigProvider = uiConfigProvider
-    }
-
-    /// Resolves `{{ custom.* }}` template tokens in the URL using the provided custom variables,
-    /// falling back to dashboard-configured defaults. Returns `nil` if the resolved string is
-    /// not a valid URL.
-    func resolvedURL(customVariables: [String: CustomVariableValue]) -> URL? {
-        let handler = VariableHandlerV2(
-            variableCompatibilityMap: uiConfigProvider.variableConfig.variableCompatibilityMap,
-            functionCompatibilityMap: uiConfigProvider.variableConfig.functionCompatibilityMap,
-            discountRelativeToMostExpensivePerMonth: nil,
-            showZeroDecimalPlacePrices: false,
-            customVariables: customVariables,
-            defaultCustomVariables: uiConfigProvider.defaultCustomVariables
-        )
-        let resolved = handler.processVariables(
-            in: urlTemplate,
-            with: nil,
-            locale: localizationProvider.locale,
-            localizations: [:],
-            isEligibleForIntroOffer: false
-        )
-        guard let url = URL(string: resolved),
-              url.isValidPaywallWebViewURL else {
-            return nil
-        }
-
-        return url
     }
 
 }
@@ -79,11 +64,12 @@ class WebViewComponentViewModel {
 extension WebViewComponentViewModel: Hashable {
 
     func hash(into hasher: inout Hasher) {
-        hasher.combine(urlTemplate)
+        hasher.combine(self.urlString)
+        hasher.combine(self.componentID)
     }
 
     static func == (lhs: WebViewComponentViewModel, rhs: WebViewComponentViewModel) -> Bool {
-        lhs.urlTemplate == rhs.urlTemplate
+        lhs.urlString == rhs.urlString && lhs.componentID == rhs.componentID
     }
 
 }

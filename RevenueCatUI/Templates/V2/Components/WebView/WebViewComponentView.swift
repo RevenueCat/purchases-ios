@@ -36,9 +36,6 @@ struct WebViewComponentView: View {
     @State private var dynamicHeight: CGFloat?
     #endif
 
-    @Environment(\.customPaywallVariables)
-    private var customVariables
-
     @Environment(\.paywallWebViewMessageAction)
     private var webViewMessageAction
 
@@ -62,14 +59,14 @@ struct WebViewComponentView: View {
     @ViewBuilder
     private var content: some View {
         #if canImport(UIKit) && canImport(WebKit)
-        if let resolvedURL = viewModel.resolvedURL(customVariables: customVariables) {
+        if let resolvedURL = viewModel.url {
             WebViewRepresentable(url: resolvedURL, height: $dynamicHeight, bridge: bridge)
                 .modifier(WebViewSizeModifier(size: viewModel.size, measuredHeight: dynamicHeight))
                 .clipped()
                 .background(Color.clear)
         }
         #elseif os(macOS)
-        if let resolvedURL = viewModel.resolvedURL(customVariables: customVariables) {
+        if let resolvedURL = viewModel.url {
             let macHeight = dynamicHeight ?? Self.initialHeight
             MacWebViewRepresentable(url: resolvedURL, height: $dynamicHeight, bridge: bridge)
                 .modifier(WebViewSizeModifier(size: viewModel.size, measuredHeight: macHeight))

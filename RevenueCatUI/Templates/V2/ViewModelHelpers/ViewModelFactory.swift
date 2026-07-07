@@ -516,8 +516,7 @@ struct ViewModelFactory {
         case .webView(let component):
             return .webView(WebViewComponentViewModel(
                 component: component,
-                localizationProvider: localizationProvider,
-                uiConfigProvider: uiConfigProvider
+                localizationProvider: localizationProvider
             ))
         case .fallbackHeader:
             // fallbackHeader is filtered out in toStackViewModel and should never reach here.

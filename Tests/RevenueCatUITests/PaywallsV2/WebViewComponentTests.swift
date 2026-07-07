@@ -123,126 +123,45 @@ final class WebViewComponentTests: TestCase {
         XCTAssertFalse(viewModel.visible)
     }
 
-    func testDecodeWebViewComponentWithTemplateURL() throws {
-        let json = """
-        {
-          "type": "web_view",
-          "url": "https://example.com/{{ custom.animal }}.html",
-          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } }
-        }
-        """.data(using: .utf8)!
+    // MARK: - URL validation
 
-        let component = try JSONDecoder.default.decode(PaywallComponent.self, from: json)
+    func testURLReturnsValidHTTPSURL() {
+        let viewModel = Self.makeViewModel(url: "https://example.com/page.html")
 
-        guard case .webView(let webView) = component else {
-            XCTFail("Expected .webView component, got \(component)")
-            return
-        }
-
-        XCTAssertEqual(webView.url, "https://example.com/{{ custom.animal }}.html")
+        XCTAssertEqual(viewModel.url?.absoluteString, "https://example.com/page.html")
     }
 
-    // MARK: - Variable resolution
+    func testURLRejectsHTTPURL() {
+        let viewModel = Self.makeViewModel(url: "http://example.com/page.html")
 
-    func testResolvedURLWithNoTemplateReturnsSameURL() {
-        let viewModel = Self.makeViewModel(urlTemplate: "https://example.com/page.html")
-
-        let result = viewModel.resolvedURL(customVariables: [:])
-
-        XCTAssertEqual(result?.absoluteString, "https://example.com/page.html")
+        XCTAssertNil(viewModel.url)
     }
 
-    func testResolvedURLSubstitutesRuntimeCustomVariable() {
-        let viewModel = Self.makeViewModel(
-            urlTemplate: "https://example.com/{{ custom.animal }}.html",
-            customVariableDefinitions: ["animal": .init(type: "string", defaultValue: "cat")]
-        )
+    func testURLRejectsFileURL() {
+        let viewModel = Self.makeViewModel(url: "file:///tmp/page.html")
 
-        let result = viewModel.resolvedURL(customVariables: ["animal": .string("dog")])
-
-        XCTAssertEqual(result?.absoluteString, "https://example.com/dog.html")
+        XCTAssertNil(viewModel.url)
     }
 
-    func testResolvedURLFallsBackToDashboardDefaultCustomVariable() {
-        let viewModel = Self.makeViewModel(
-            urlTemplate: "https://example.com/{{ custom.animal }}.html",
-            customVariableDefinitions: ["animal": .init(type: "string", defaultValue: "cat")]
-        )
+    func testURLRejectsCustomSchemeURL() {
+        let viewModel = Self.makeViewModel(url: "custom-scheme://example.com/page.html")
 
-        // No runtime variables supplied — should use dashboard default "cat"
-        let result = viewModel.resolvedURL(customVariables: [:])
-
-        XCTAssertEqual(result?.absoluteString, "https://example.com/cat.html")
+        XCTAssertNil(viewModel.url)
     }
 
-    func testResolvedURLRuntimeVariableOverridesDashboardDefault() {
-        let viewModel = Self.makeViewModel(
-            urlTemplate: "https://example.com/{{ custom.animal }}.html",
-            customVariableDefinitions: ["animal": .init(type: "string", defaultValue: "cat")]
-        )
+    func testURLRejectsURLWithoutHost() {
+        let viewModel = Self.makeViewModel(url: "https:/page.html")
 
-        let result = viewModel.resolvedURL(customVariables: ["animal": .string("bird")])
-
-        XCTAssertEqual(result?.absoluteString, "https://example.com/bird.html")
+        XCTAssertNil(viewModel.url)
     }
 
-    func testResolvedURLRejectsHTTPURL() {
-        let viewModel = Self.makeViewModel(urlTemplate: "http://example.com/page.html")
+    func testURLRejectsTemplateURLContainingBraces() {
+        let viewModel = Self.makeViewModel(url: "https://example.com/{{ custom.animal }}.html")
 
-        let result = viewModel.resolvedURL(customVariables: [:])
-
-        XCTAssertNil(result)
+        XCTAssertNil(viewModel.url)
     }
 
-    func testResolvedURLRejectsFileURL() {
-        let viewModel = Self.makeViewModel(urlTemplate: "file:///tmp/page.html")
-
-        let result = viewModel.resolvedURL(customVariables: [:])
-
-        XCTAssertNil(result)
-    }
-
-    func testResolvedURLRejectsCustomSchemeURL() {
-        let viewModel = Self.makeViewModel(urlTemplate: "custom-scheme://example.com/page.html")
-
-        let result = viewModel.resolvedURL(customVariables: [:])
-
-        XCTAssertNil(result)
-    }
-
-    func testResolvedURLRejectsURLWithoutHost() {
-        let viewModel = Self.makeViewModel(urlTemplate: "https:/page.html")
-
-        let result = viewModel.resolvedURL(customVariables: [:])
-
-        XCTAssertNil(result)
-    }
-
-    func testResolvedURLRejectsCustomVariableSubstitutedHTTPURL() {
-        let viewModel = Self.makeViewModel(
-            urlTemplate: "{{ custom.url }}",
-            customVariableDefinitions: ["url": .init(type: "string", defaultValue: "https://example.com/page.html")]
-        )
-
-        let result = viewModel.resolvedURL(customVariables: ["url": .string("http://example.com/page.html")])
-
-        XCTAssertNil(result)
-    }
-
-    func testResolvedURLReturnsNilForUnresolvableTemplate() {
-        // Missing variable with no default → resolves to empty string → invalid URL
-        let viewModel = Self.makeViewModel(
-            urlTemplate: "https://example.com/{{ custom.missing }}.html"
-        )
-
-        // Empty string substituted for unknown variable produces an invalid URL
-        let result = viewModel.resolvedURL(customVariables: [:])
-
-        // "https://example.com/.html" is technically valid, so we just check it ran
-        XCTAssertNotNil(result)
-    }
-
-    // MARK: - Component ID & locale
+    // MARK: - Component ID, locale, protocol version
 
     func testViewModelExposesSchemaComponentID() {
         let viewModel = Self.makeViewModel(
@@ -259,9 +178,23 @@ final class WebViewComponentTests: TestCase {
     }
 
     func testViewModelExposesLocale() {
-        let viewModel = Self.makeViewModel(urlTemplate: "https://example.com")
+        let viewModel = Self.makeViewModel(url: "https://example.com")
 
         XCTAssertEqual(viewModel.locale, Locale(identifier: "en_US"))
+    }
+
+    func testViewModelDefaultsProtocolVersionToOne() {
+        let viewModel = Self.makeViewModel(component: .init(url: "https://example.com"))
+
+        XCTAssertEqual(viewModel.protocolVersion, 1)
+    }
+
+    func testViewModelExposesDecodedProtocolVersion() {
+        let viewModel = Self.makeViewModel(
+            component: .init(protocolVersion: 2, url: "https://example.com")
+        )
+
+        XCTAssertEqual(viewModel.protocolVersion, 2)
     }
 
 }
@@ -271,30 +204,16 @@ final class WebViewComponentTests: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension WebViewComponentTests {
 
-    static func makeViewModel(
-        urlTemplate: String,
-        customVariableDefinitions: [String: UIConfig.CustomVariableDefinition] = [:]
-    ) -> WebViewComponentViewModel {
-        return makeViewModel(
-            component: .init(url: urlTemplate),
-            customVariableDefinitions: customVariableDefinitions
-        )
+    static func makeViewModel(url: String) -> WebViewComponentViewModel {
+        return makeViewModel(component: .init(url: url))
     }
 
     static func makeViewModel(
-        component: PaywallComponent.WebViewComponent,
-        customVariableDefinitions: [String: UIConfig.CustomVariableDefinition] = [:]
+        component: PaywallComponent.WebViewComponent
     ) -> WebViewComponentViewModel {
-        let uiConfig = UIConfig(
-            app: .init(colors: [:], fonts: [:]),
-            localizations: [:],
-            variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:]),
-            customVariables: customVariableDefinitions
-        )
         return WebViewComponentViewModel(
             component: component,
-            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
-            uiConfigProvider: UIConfigProvider(uiConfig: uiConfig)
+            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:])
         )
     }
 
