@@ -1570,6 +1570,31 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.appUserID) == "new-user"
     }
 
+    func testBlobDataColdReadAfterIdentityClearUsesBoundAppUserIDWhenTriggeringRefresh() async {
+        self.currentUserProvider.mockAppUserID = "old-user"
+        self.manager.clearCache(forAppUserID: "new-user")
+
+        let task = Task {
+            await self.manager.blobData(for: .sources, itemKey: "api")
+        }
+        await self.waitForRemoteConfigRequestCount(1)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+        _ = await task.value
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.appUserID) == "new-user"
+    }
+
+    func testRefreshUsesBoundAppUserIDIfIdentityClearRacesRefreshPreparation() {
+        self.currentUserProvider.mockAppUserID = "old-user"
+        self.currentUserProvider.currentAppUserIDRequested = { [weak self] in
+            self?.manager.clearCache(forAppUserID: "new-user")
+        }
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.appUserID) == "new-user"
+    }
+
     func testBlobDataNoContentRefreshCompletesWaitingRead() async {
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
 

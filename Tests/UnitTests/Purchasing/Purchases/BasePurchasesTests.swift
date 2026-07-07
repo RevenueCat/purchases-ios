@@ -681,6 +681,7 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     private(set) var invokedCloseCount = 0
     private(set) var invokedRefreshRemoteConfigParametersList: [Bool] = []
     private(set) var invokedRefreshRemoteConfigIfStaleParametersList: [Bool] = []
+    private(set) var invokedClearCacheAppUserIDs: [String] = []
 
     func refreshRemoteConfig(isAppBackgrounded: Bool) {
         self.invokedRefreshRemoteConfigCount += 1
@@ -783,6 +784,11 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
 
     func clearCache() {
         self.invokedClearCacheCount += 1
+    }
+
+    func clearCache(forAppUserID appUserID: String) {
+        self.invokedClearCacheCount += 1
+        self.invokedClearCacheAppUserIDs.append(appUserID)
     }
 
     func close() {
