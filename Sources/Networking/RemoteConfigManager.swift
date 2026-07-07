@@ -233,6 +233,12 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         let appUserID: String
     }
 
+    fileprivate struct PendingRefreshRequestContext {
+        let epoch: Int
+        let appUserID: String?
+        let canAdoptReboundAppUserID: Bool
+    }
+
     /// Runs blocking committed-state reads away from the caller's executor.
     private let readQueue = DispatchQueue(label: "com.revenuecat.remote-config.read")
 
@@ -298,17 +304,17 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     }
 
     func refreshRemoteConfig(isAppBackgrounded: Bool) {
-        let fallbackAppUserID = self.currentUserProvider.currentAppUserID
-        guard let requestContext = self.prepareRefreshIfNeeded(fallbackAppUserID: fallbackAppUserID) else { return }
+        guard let requestContext = self.prepareRefreshIfNeeded(
+            fallbackAppUserID: { self.currentUserProvider.currentAppUserID }
+        ) else { return }
 
         self.startRefresh(isAppBackgrounded: isAppBackgrounded, requestContext: requestContext)
     }
 
     func refreshRemoteConfigIfStale(isAppBackgrounded: Bool) {
-        let fallbackAppUserID = self.currentUserProvider.currentAppUserID
         guard let requestContext = self.prepareRefreshIfStale(
             isAppBackgrounded: isAppBackgrounded,
-            fallbackAppUserID: fallbackAppUserID
+            fallbackAppUserID: { self.currentUserProvider.currentAppUserID }
         ) else { return }
 
         self.startRefresh(isAppBackgrounded: isAppBackgrounded, requestContext: requestContext)
@@ -382,25 +388,29 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
 private extension RemoteConfigManager {
 
-    func prepareRefreshIfNeeded(fallbackAppUserID: String) -> RefreshRequestContext? {
-        return self.lock.perform {
+    func prepareRefreshIfNeeded(fallbackAppUserID: () -> String) -> RefreshRequestContext? {
+        let pendingContext: PendingRefreshRequestContext? = self.lock.perform {
             guard !self.isRefreshing,
                   !self.isDisabledInternal,
                   !self.isClosed else { return nil }
             self.isRefreshing = true
-            return RefreshRequestContext(
+            return PendingRefreshRequestContext(
                 epoch: self.epoch,
-                appUserID: self.appUserIDForRefreshes ?? fallbackAppUserID
+                appUserID: self.appUserIDForRefreshes,
+                canAdoptReboundAppUserID: true
             )
         }
+        guard let pendingContext else { return nil }
+
+        return self.resolveRefreshRequestContext(pendingContext, fallbackAppUserID: fallbackAppUserID)
     }
 
     func prepareRefreshIfStale(
         isAppBackgrounded: Bool,
-        fallbackAppUserID: String,
+        fallbackAppUserID: () -> String,
         expectedEpoch: Int? = nil
     ) -> RefreshRequestContext? {
-        return self.lock.perform {
+        let pendingContext: PendingRefreshRequestContext? = self.lock.perform {
             guard !self.isRefreshing,
                   !self.isDisabledInternal,
                   !self.isClosed else { return nil }
@@ -413,10 +423,41 @@ private extension RemoteConfigManager {
             }
 
             self.isRefreshing = true
-            return RefreshRequestContext(
+            return PendingRefreshRequestContext(
                 epoch: self.epoch,
-                appUserID: self.appUserIDForRefreshes ?? fallbackAppUserID
+                appUserID: self.appUserIDForRefreshes,
+                canAdoptReboundAppUserID: expectedEpoch == nil
             )
+        }
+        guard let pendingContext else { return nil }
+
+        return self.resolveRefreshRequestContext(pendingContext, fallbackAppUserID: fallbackAppUserID)
+    }
+
+    func resolveRefreshRequestContext(
+        _ pendingContext: PendingRefreshRequestContext,
+        fallbackAppUserID: () -> String
+    ) -> RefreshRequestContext? {
+        if let appUserID = pendingContext.appUserID {
+            return RefreshRequestContext(epoch: pendingContext.epoch, appUserID: appUserID)
+        }
+
+        let fallbackAppUserID = fallbackAppUserID()
+        return self.lock.perform {
+            if self.epoch == pendingContext.epoch {
+                return RefreshRequestContext(epoch: pendingContext.epoch, appUserID: fallbackAppUserID)
+            }
+
+            guard pendingContext.canAdoptReboundAppUserID,
+                  !self.isRefreshing,
+                  !self.isDisabledInternal,
+                  !self.isClosed,
+                  let reboundAppUserID = self.appUserIDForRefreshes else {
+                return nil
+            }
+
+            self.isRefreshing = true
+            return RefreshRequestContext(epoch: self.epoch, appUserID: reboundAppUserID)
         }
     }
 
@@ -588,10 +629,9 @@ private extension RemoteConfigManager {
             guard self.canReadCommittedState else { return }
         }
 
-        let fallbackAppUserID = self.currentUserProvider.currentAppUserID
         if let requestContext = self.prepareRefreshIfStale(
             isAppBackgrounded: false,
-            fallbackAppUserID: fallbackAppUserID,
+            fallbackAppUserID: { self.currentUserProvider.currentAppUserID },
             expectedEpoch: expectedEpoch
         ) {
             self.startRefresh(isAppBackgrounded: false, requestContext: requestContext)

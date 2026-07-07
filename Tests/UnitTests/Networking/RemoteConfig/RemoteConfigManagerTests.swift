@@ -76,6 +76,21 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
     }
 
+    func testFreshRefreshDoesNotReadCurrentAppUserID() {
+        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+
+        var currentAppUserIDReadCount = 0
+        self.currentUserProvider.currentAppUserIDRequested = {
+            currentAppUserIDReadCount += 1
+        }
+
+        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+
+        expect(currentAppUserIDReadCount) == 0
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+    }
+
     func testFailureDoesNotMarkRefreshAsFresh() {
         self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1)))))
