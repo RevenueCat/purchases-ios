@@ -192,7 +192,7 @@ One SwiftUI view + **one** cross-platform representable:
 - WKWebView config: `websiteDataStore = .nonPersistent()`, `allowsInlineMediaPlayback = true`, transparent background, scrolling/bounce/zoom disabled on iOS.
 - Navigation policy (new, required — see §6): a `WKNavigationDelegate` restricting main-frame navigation.
 - Load path: `Task { guard let rules = await WebViewIsolation.ruleList() else { fail closed }; add rules; load(url) }`.
-- `visible == false` or invalid URL ⇒ render nothing. `componentID == nil` ⇒ render the web view without installing the session (log `paywall_web_view_missing_id`).
+- `visible == false` or invalid URL ⇒ render nothing. `componentID == nil` ⇒ **render-only mode** (log `paywall_web_view_missing_id`): no session is created and the `rcWebComponents` script handler is **not registered at all** (the content SDK probes for it, finds nothing, falls back to web transport, and retries `connect` harmlessly — expected, not a bug). **Everything security-related applies identically in render-only mode**: content-blocking rules with fail-closed loading, the same-origin navigation policy, non-persistent data store, macOS data wipe. Consequence to accept, not fix: with no session there is never a `resize`, so `fit` axes keep their placeholders permanently.
 - **Load failure behavior (fixed for v1): do nothing special.** If the page fails to load (network error, HTTP error, blocked by rules), the frame simply stays blank at its laid-out size. Do NOT implement fallback-component rendering, retry logic, or error UI — Android renders a fallback stack here and iOS knowingly diverges in v1; that reconciliation is explicitly out of scope for this mission.
 
 ### 4.6 `PaywallWebViewAPI.swift` — the public surface (see §5)
@@ -257,7 +257,9 @@ git show origin/cursor/ios-web-view-bridge-alignment-6044:RevenueCatUI/Templates
 rg -n "public" <each extracted file>
 ```
 
-Match names, access levels (`public` vs `@_spi`), `@MainActor` annotations, availability, and the SwiftUI environment key name (`paywallWebViewMessageAction`) exactly; internals may differ freely. Copy the doc comments where they exist. Internally, `PaywallWebViewValue`'s storage should be `Codable` so the same type serves the wire and the API. Because this adds public API, the `api/revenuecatui-api-*.swiftinterface` baselines must be regenerated (Definition of done) — find the lane with `rg -i swiftinterface fastlane/Fastfile`.
+Match names, access levels (`public` vs `@_spi`), `@MainActor` annotations, availability, and the SwiftUI environment key name (`paywallWebViewMessageAction`) exactly; internals may differ freely. Copy the doc comments where they exist. Internally, `PaywallWebViewValue`'s storage should be `Codable` so the same type serves the wire and the API.
+
+**Non-finite numbers (decided — do not follow the prototype here):** `.number(_:)` **normalizes** `NaN` and `±infinity` to `.null` at construction, documented in the factory's doc comment. Rationale: JSON cannot represent them (inbound frames containing such tokens are malformed JSON and already dropped); the prototype's outbound path could hit an uncatchable `NSException` via `JSONSerialization` for app-constructed non-finite values, and a throwing `JSONEncoder` alternative would silently kill an entire otherwise-valid message over one bad number. Normalization makes encoding total and removes the `NaN` Hashable-contract hazard (`-0.0` follows plain `Double` equality: `-0.0 == 0.0`). Because this adds public API, the `api/revenuecatui-api-*.swiftinterface` baselines must be regenerated (Definition of done) — find the lane with `rg -i swiftinterface fastlane/Fastfile`.
 
 ---
 
@@ -305,7 +307,7 @@ Tests live in `Tests/RevenueCatUITests/PaywallsV2/`. All message-flow tests cons
 
 **`WebViewEnvelopeTests`** — decode valid connect/message/request frames; reject: wrong channel, unknown kind, missing component_id, non-string type/id/error, non-object payload; byte-size limit (> 65,536 rejected, large-but-under accepted); depth 16 accepted / 17 rejected; encode → decode round-trip preserves all fields; encoded output contains no raw `\n`, U+2028, or U+2029 for hostile string values (`"annual\" }); alert('xss'); //\n</script>\\ end\u{2028}\u{2029}"` survives a JSON round-trip intact).
 
-**`PaywallWebViewValueTests`** — port the prototype's suite: factory/accessor symmetry, Hashable, Codable round-trip for all six cases, number/bool disambiguation, `-0.0`/`NaN` handling documented.
+**`PaywallWebViewValueTests`** — port the prototype's suite: factory/accessor symmetry, Hashable, Codable round-trip for all six cases, number/bool disambiguation. Non-finite normalization (§5): `.number(.nan)`, `.number(.infinity)`, `.number(-.infinity)` each yield `isNull == true` and `numberValue == nil`; an object containing a normalized value encodes successfully (no throw); `.number(-0.0) == .number(0.0)`.
 
 **`WebViewSessionHandshakeTests`** — `connect` v1 → captured `init` with real component_id and channel open; `connect` v2 → captured `reject` with exact error string `Unsupported protocol_version 2; native host supports 1`, channel closed; app message before connect → dropped, nothing captured; duplicate connect while open → ignored (no second init); `connect` with fill×fit size → `fit` message captured after `init` with payload exactly `{"height": true}` (no `width` key); fit×fixed → exactly `{"width": true}`; fit×fit → both keys `true`; fill×fixed → no `fit` message at all; non-main-frame frame → dropped; string body and dictionary body both accepted.
 
