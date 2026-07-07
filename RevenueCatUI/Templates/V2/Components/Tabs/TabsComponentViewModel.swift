@@ -32,6 +32,35 @@ class TabsComponentViewModel {
     let defaultTabId: String?
     let name: String?
 
+    /// Guards the one-time propagation of the initially active tab's package into the parent
+    /// `PackageContext` on first appearance (see `LoadedTabsComponentView`'s `onAppear`).
+    ///
+    /// This lives on the view model rather than as `@State` on the view because SwiftUI's
+    /// `ViewThatFits` (used to decide whether paywall content needs to scroll) evaluates both of
+    /// its candidate branches to measure them, which constructs a second, non-displayed
+    /// `LoadedTabsComponentView` sharing this same view model instance. That duplicate's own
+    /// `onAppear` fires with its own fresh, never-interacted-with tab state; a per-view `@State`
+    /// guard can't prevent it from re-seeding and clobbering a selection the user already made via
+    /// the real, visible instance. Anchoring the guard here makes it visible to every instance
+    /// backed by this view model.
+    var didSeedInitialState = false
+
+    /// The single `TabControlContext` shared by every `LoadedTabsComponentView` instance backed by
+    /// this view model — including `ViewThatFits`'s duplicate measurement candidates.
+    ///
+    /// `TabControlContext` used to be owned per-view (`@StateObject`), so a duplicate instance got
+    /// its own fresh copy defaulting to `defaultTabId` instead of reflecting whichever tab the user
+    /// actually selected. Owning it here means every instance reads and writes the same
+    /// `selectedTabId`, so a duplicate that later becomes the displayed one still shows the tab the
+    /// user picked instead of silently reverting.
+    lazy var tabControlContext = TabControlContext(
+        controlStackViewModel: self.controlStackViewModel,
+        tabIds: self.tabIds,
+        defaultTabId: self.defaultTabId,
+        name: self.name,
+        tabContextNamesById: self.tabContextNamesById
+    )
+
     /// State-store updates, dispatched when the selected tab changes
     /// (e.g. `{ "set": "<tab state key>", "to": "$value" }`, where `$value`
     /// is the newly selected tab id). `nil`/empty when the paywall declares no tab state.
