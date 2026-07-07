@@ -246,8 +246,12 @@ import Foundation
                 case "offer_code":
                     self = .offerCode
                 case "sheet":
-                    let sheet = try container.decode(Sheet.self, forKey: .sheet)
-                    self = .sheet(sheet: sheet)
+                    // `sheet` is optional; when absent, fall back to a no-op instead of failing decode.
+                    if let sheet = try container.decodeIfPresent(Sheet.self, forKey: .sheet) {
+                        self = .sheet(sheet: sheet)
+                    } else {
+                        self = .unknown
+                    }
                 case "terms":
                     let urlPayload = try container.decode(URLPayload.self, forKey: .url)
                     self = .terms(urlLid: urlPayload.urlLid, method: urlPayload.method)
