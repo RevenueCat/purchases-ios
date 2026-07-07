@@ -114,7 +114,7 @@ extension PaywallWebViewValue {
 
     /// The maximum nesting depth allowed when converting a JSON object tree. Mirrors the limit
     /// enforced by the message parser so that conversion and validation agree.
-    static let maxDepth = 32
+    static let maxDepth = 16
 
     /// Creates a value from a Foundation JSON object (as produced by `WKScriptMessage.body` or
     /// `JSONSerialization`). Returns `nil` if the object contains any non-JSON value or exceeds

@@ -23,7 +23,7 @@ import WebKit
 ///
 /// Use it to reply to a `"rc:request-variables"` message with additional variables, or to send any
 /// message that follows the web view protocol envelope. Messages are delivered to the web content
-/// via `window.__revenueCatReceiveMessage(...)`.
+/// via `window.__rcWebComponentsReceive(...)`.
 ///
 /// Modeled as a concrete `struct` (rather than a protocol) following the SDK convention for
 /// callback-supplied action handles, so methods can be added without a source-breaking change.
@@ -37,17 +37,34 @@ public struct PaywallWebViewController {
 
     private let componentID: String
     private let expectedLoadedURL: URL?
+    private let protocolVersion: Int
+    private let channelOpen: () -> Bool
 
     #if canImport(WebKit)
-    init(webView: WKWebView?, componentID: String, expectedLoadedURL: URL?) {
+    init(
+        webView: WKWebView?,
+        componentID: String,
+        expectedLoadedURL: URL?,
+        protocolVersion: Int,
+        channelOpen: @escaping () -> Bool
+    ) {
         self.webView = webView
         self.componentID = componentID
         self.expectedLoadedURL = expectedLoadedURL
+        self.protocolVersion = protocolVersion
+        self.channelOpen = channelOpen
     }
     #else
-    init(componentID: String, expectedLoadedURL: URL?) {
+    init(
+        componentID: String,
+        expectedLoadedURL: URL?,
+        protocolVersion: Int,
+        channelOpen: @escaping () -> Bool
+    ) {
         self.componentID = componentID
         self.expectedLoadedURL = expectedLoadedURL
+        self.protocolVersion = protocolVersion
+        self.channelOpen = channelOpen
     }
     #endif
 
@@ -65,66 +82,89 @@ public struct PaywallWebViewController {
         self.postMessage(
             componentID: componentID,
             type: PaywallWebViewMessageType.variables,
-            variables: variables
+            variables: Self.sanitizeAppProvidedVariables(variables)
         )
     }
 
-    /// Sends a message to the web content following the web view protocol envelope
-    /// `{ "type", "component_id", "variables" }`.
+    /// Sends a message to the web content using the canonical transport envelope.
     ///
     /// - Parameters:
     ///   - componentID: The component to address.
     ///   - type: The message type, e.g. `"rc:variables"`.
-    ///   - variables: The message payload, delivered under the `"variables"` key.
+    ///   - variables: The message payload, delivered flat in the envelope `payload` field.
     public func postMessage(
         componentID: String,
         type: String,
         variables: [String: PaywallWebViewValue]
     ) {
-        guard let script = Self.receiveMessageScript(
+        guard self.channelOpen() else {
+            return
+        }
+
+        let envelope = WebViewEnvelope.build(
+            kind: WebViewEnvelope.kindMessage,
+            protocolVersion: self.protocolVersion,
             componentID: componentID,
             type: type,
-            variables: variables
-        ) else {
+            payload: variables
+        )
+
+        guard let script = Self.receiveEnvelopeScript(envelope: envelope) else {
             return
         }
 
         self.evaluate(script: script)
     }
 
-    /// Builds the envelope `{ "type", "component_id", "variables" }` and wraps it in a guarded call
-    /// to `window.__revenueCatReceiveMessage`. The JSON is produced by `JSONSerialization`, never
-    /// string-interpolated from raw values, so app- or web-supplied strings cannot break out of the
-    /// call. Internal for testability.
-    static func receiveMessageScript(
-        componentID: String,
-        type: String,
-        variables: [String: PaywallWebViewValue]
-    ) -> String? {
-        let envelope: [String: PaywallWebViewValue] = [
-            "type": .string(type),
-            "component_id": .string(componentID),
-            "variables": .object(variables)
-        ]
-
+    /// Builds a guarded call to `window.__rcWebComponentsReceive` for the given transport envelope.
+    /// Internal for testability.
+    static func receiveEnvelopeScript(envelope: [String: PaywallWebViewValue]) -> String? {
         let jsonObject = PaywallWebViewValue.object(envelope).jsonObject
         guard let data = try? JSONSerialization.data(withJSONObject: jsonObject),
               let json = String(data: data, encoding: .utf8) else {
             return nil
         }
 
+        let escaped = Self.escapeForJavaScript(json)
         return """
-        (function(){var m=\(json);if(typeof window.__revenueCatReceiveMessage==='function'){\
-        window.__revenueCatReceiveMessage(m);}})();
+        (function(){var m=\(escaped);if(typeof window.\(WebViewEnvelope.receiveFunction)==='function'){\
+        window.\(WebViewEnvelope.receiveFunction)(m);}})();
         """
+    }
+
+    /// Strips SDK-managed keys from app-provided variable maps.
+    static func sanitizeAppProvidedVariables(
+        _ variables: [String: PaywallWebViewValue]
+    ) -> [String: PaywallWebViewValue] {
+        guard variables.keys.contains("locale") else {
+            return variables
+        }
+
+        Logger.debug(Strings.paywall_web_view_reserved_locale_stripped)
+        return variables.filter { $0.key != "locale" }
+    }
+
+    /// Delivers a pre-built transport envelope to the web content.
+    func deliverEnvelope(_ envelope: [String: PaywallWebViewValue]) {
+        guard self.channelOpen() else {
+            return
+        }
+
+        guard let script = Self.receiveEnvelopeScript(envelope: envelope) else {
+            return
+        }
+
+        self.evaluate(script: script)
     }
 
     private func evaluate(script: String) {
         #if canImport(WebKit)
         guard let webView = self.webView,
-              self.expectedLoadedURL == nil || webView.url == self.expectedLoadedURL else {
-            // The web view was deallocated or navigated elsewhere — don't post into
-            // unrelated content.
+              WebViewOrigin.matches(
+                currentURL: webView.url,
+                expectedURL: self.expectedLoadedURL,
+                allowBeforeNavigation: false
+              ) else {
             Logger.debug(Strings.paywall_web_view_post_message_skipped)
             return
         }
@@ -134,7 +174,17 @@ public struct PaywallWebViewController {
                 Logger.debug(Strings.paywall_web_view_post_message_failed(error))
             }
         }
+        #else
+        _ = script
         #endif
+    }
+
+    /// JSON is a subset of JS object-literal syntax, but U+2028/U+2029 are valid in JSON strings
+    /// yet terminate JS statements. Escape them so the payload is safe to embed.
+    private static func escapeForJavaScript(_ json: String) -> String {
+        json
+            .replacingOccurrences(of: "\u{2028}", with: "\\u2028")
+            .replacingOccurrences(of: "\u{2029}", with: "\\u2029")
     }
 
 }
