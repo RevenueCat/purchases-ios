@@ -36,8 +36,86 @@ protocol RemoteConfigManagerType: AnyObject {
         itemKey: String,
         as type: T.Type
     ) async throws -> T?
+
+    /// Decodes multiple blob payloads into one keyed JSON object.
+    ///
+    /// Each requested item must be backed by `blob_ref`. The merged object is keyed by item key, so item
+    /// `translations` contributes to the `translations` field of `T`.
+    func mergeItemsBlobData<T: Decodable>(
+        for topic: RemoteConfigTopic,
+        itemKeys: [String],
+        as type: T.Type
+    ) async throws -> T?
+
     func clearCache()
     func close()
+
+}
+
+extension RemoteConfigManagerType {
+
+    func mergeItemsBlobData<T: Decodable>(
+        for topic: RemoteConfigTopic,
+        itemKeys: [String],
+        as type: T.Type
+    ) async throws -> T? {
+        let uniqueItemKeys = Self.uniqueItemKeys(itemKeys)
+        guard !uniqueItemKeys.isEmpty else {
+            Logger.warn(Strings.remoteConfig.mergeItemsBlobDataEmpty(topic: topic))
+            return nil
+        }
+        guard !self.isDisabled else {
+            Logger.warn(Strings.remoteConfig.mergeItemsBlobDataDisabled(topic: topic, itemKeys: uniqueItemKeys))
+            return nil
+        }
+
+        let resolvedBlobs = await withTaskGroup(of: (String, Data?).self) { group in
+            for itemKey in uniqueItemKeys {
+                group.addTask {
+                    return (itemKey, await self.blobData(for: topic, itemKey: itemKey))
+                }
+            }
+
+            var resolvedBlobs: [String: Data?] = [:]
+            for await (itemKey, data) in group {
+                resolvedBlobs.updateValue(data, forKey: itemKey)
+            }
+            return resolvedBlobs
+        }
+
+        let unavailableItemKeys = uniqueItemKeys.filter { itemKey in
+            guard let resolvedBlob = resolvedBlobs[itemKey] else { return true }
+            return resolvedBlob == nil
+        }
+        guard unavailableItemKeys.isEmpty else {
+            Logger.warn(Strings.remoteConfig.mergeItemsBlobDataUnavailableItems(
+                topic: topic,
+                itemKeys: unavailableItemKeys
+            ))
+            return nil
+        }
+
+        var mergedBlobValues: [String: Any] = [:]
+        for itemKey in uniqueItemKeys {
+            guard let resolvedBlob = resolvedBlobs[itemKey],
+                  let data = resolvedBlob else { return nil }
+            mergedBlobValues[itemKey] = try JSONDecoder.default.decode(AnyDecodable.self, from: data).asAny
+        }
+
+        let mergedData = try JSONSerialization.data(withJSONObject: mergedBlobValues)
+        return try JSONDecoder.default.decode(type, from: mergedData)
+    }
+
+    private static func uniqueItemKeys(_ itemKeys: [String]) -> [String] {
+        var seen: Set<String> = []
+        var uniqueItemKeys: [String] = []
+
+        for itemKey in itemKeys where seen.insert(itemKey).inserted {
+            uniqueItemKeys.append(itemKey)
+        }
+
+        return uniqueItemKeys
+    }
 
 }
 
