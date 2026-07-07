@@ -20,21 +20,16 @@ import WebKit
 /// WebKit-free content-blocking policy for `web_view` components. Kept separate from the WKWebView
 /// rendering code so it can be unit-tested without instantiating a web view.
 ///
-/// For the initial version every `web_view` is isolated from external sources: customers must
-/// upload everything in a single bundle. The fixed policy blocks remote (third-party) images,
-/// scripts and fonts while allowing same-origin assets, blocks `data:` images and fonts, and
-/// blocks XHR (`raw`) loads entirely.
+/// Same-origin subresources and same-origin fetch/XHR are allowed; `data:` images and fonts are
+/// allowed; cross-origin third-party subresource loads are blocked.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum WebViewCapabilitiesConfiguration {
 
     /// Stable identifier used to cache the compiled `WKContentRuleList` for the fixed isolation
-    /// policy. The policy never varies, so a single identifier is enough.
-    static let contentRuleListIdentifier = "rc-webview-v1-isolation"
+    /// policy. Bump when the policy changes.
+    static let contentRuleListIdentifier = "rc-webview-v2-isolation"
 
-    /// The fixed content-blocking rules (as a JSON string) enforcing full isolation from external
-    /// sources. `raw` is used for XHR (rather than the newer `fetch`/`websocket` resource types) so
-    /// the list compiles on older OS versions; an unknown resource-type would fail the whole list
-    /// closed.
+    /// The fixed content-blocking rules (as a JSON string) enforcing bundle isolation.
     static var contentBlockingRules: String? {
         let rules: [[String: Any]] = [
             // Block remote (third-party) images, scripts and fonts; same-origin assets still load.
@@ -46,19 +41,12 @@ enum WebViewCapabilitiesConfiguration {
                 ],
                 "action": ["type": "block"]
             ],
-            // Block inline `data:` images and fonts.
-            [
-                "trigger": [
-                    "url-filter": "^data:",
-                    "resource-type": ["image", "font"]
-                ],
-                "action": ["type": "block"]
-            ],
-            // Block XHR.
+            // Block third-party XHR/fetch.
             [
                 "trigger": [
                     "url-filter": ".*",
-                    "resource-type": ["raw"]
+                    "resource-type": ["raw"],
+                    "load-type": ["third-party"]
                 ],
                 "action": ["type": "block"]
             ]
@@ -82,17 +70,16 @@ enum WebViewCapabilitiesConfiguration {
 ///
 /// Accessed on the main thread only (`compileContentRuleList`'s completion handler is invoked there).
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-final class WebViewContentRuleListStore {
+class WebViewContentRuleListStore {
 
-    static let shared = WebViewContentRuleListStore()
+    static var shared = WebViewContentRuleListStore()
 
     private var cache: [String: WKContentRuleList] = [:]
 
     private init() {}
 
     /// Returns the compiled rule list for `identifier`, compiling `json` if it isn't cached yet.
-    /// Completes on the main thread; `nil` indicates compilation failed (the caller should fail
-    /// closed by blocking all requests).
+    /// Completes on the main thread; `nil` indicates compilation failed.
     func ruleList(
         forIdentifier identifier: String,
         json: String,

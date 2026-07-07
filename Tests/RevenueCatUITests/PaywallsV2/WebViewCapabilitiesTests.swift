@@ -23,7 +23,7 @@ final class WebViewCapabilitiesTests: TestCase {
     // MARK: - Content-blocking rules
 
     func testContentRuleListIdentifierIsStableConstant() {
-        XCTAssertEqual(WebViewCapabilitiesConfiguration.contentRuleListIdentifier, "rc-webview-v1-isolation")
+        XCTAssertEqual(WebViewCapabilitiesConfiguration.contentRuleListIdentifier, "rc-webview-v2-isolation")
     }
 
     func testContentBlockingRulesAreValidJSON() throws {
@@ -31,9 +31,9 @@ final class WebViewCapabilitiesTests: TestCase {
         XCTAssertNoThrow(try JSONSerialization.jsonObject(with: Data(rules.utf8)))
     }
 
-    func testContentBlockingRulesHaveThreeBlockRules() throws {
+    func testContentBlockingRulesHaveTwoBlockRules() throws {
         let parsed = try Self.parseRules()
-        XCTAssertEqual(parsed.count, 3)
+        XCTAssertEqual(parsed.count, 2)
         for rule in parsed {
             let action = try XCTUnwrap(rule["action"] as? [String: Any])
             XCTAssertEqual(action["type"] as? String, "block")
@@ -44,23 +44,32 @@ final class WebViewCapabilitiesTests: TestCase {
         let trigger = try Self.trigger(matchingResourceTypes: ["image", "script", "font"])
 
         XCTAssertEqual(trigger["url-filter"] as? String, ".*")
-        // Only third-party (remote) loads are blocked, so same-origin assets still load.
         XCTAssertEqual(trigger["load-type"] as? [String], ["third-party"])
     }
 
-    func testDataImagesAndFontsAreBlocked() throws {
-        let trigger = try Self.trigger(matchingResourceTypes: ["image", "font"])
-
-        XCTAssertEqual(trigger["url-filter"] as? String, "^data:")
-        // Block regardless of load type — there is no same-origin carve-out for `data:`.
-        XCTAssertNil(trigger["load-type"])
-    }
-
-    func testXHRIsBlocked() throws {
+    func testThirdPartyXHRIsBlocked() throws {
         let trigger = try Self.trigger(matchingResourceTypes: ["raw"])
 
         XCTAssertEqual(trigger["url-filter"] as? String, ".*")
-        XCTAssertNil(trigger["load-type"])
+        XCTAssertEqual(trigger["load-type"] as? [String], ["third-party"])
+    }
+
+    func testLoadIsolatedDoesNotLoadWhenRuleListCompilationFails() {
+        let webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
+        let originalStore = WebViewContentRuleListStore.shared
+        defer { WebViewContentRuleListStore.shared = originalStore }
+        WebViewContentRuleListStore.shared = FailingWebViewContentRuleListStore()
+
+        let url = URL(string: "https://example.com/bundle.html")!
+        PaywallWebViewScripts.loadIsolated(url: url, on: webView)
+
+        let expectation = self.expectation(description: "rule list callback")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            expectation.fulfill()
+        }
+        self.wait(for: [expectation], timeout: 1)
+
+        XCTAssertNil(webView.url)
     }
 
     // MARK: - Helpers
@@ -71,13 +80,25 @@ final class WebViewCapabilitiesTests: TestCase {
         return try XCTUnwrap(object as? [[String: Any]])
     }
 
-    /// Returns the `trigger` of the single rule whose `resource-type` exactly matches `resourceTypes`.
-    private static func trigger(matchingResourceTypes resourceTypes: [String]) throws -> [String: Any] {
+  private static func trigger(matchingResourceTypes resourceTypes: [String]) throws -> [String: Any] {
         let triggers = try Self.parseRules().compactMap { $0["trigger"] as? [String: Any] }
         let match = triggers.first { trigger in
             (trigger["resource-type"] as? [String]).map(Set.init) == Set(resourceTypes)
         }
         return try XCTUnwrap(match, "No rule blocking resource types \(resourceTypes)")
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class FailingWebViewContentRuleListStore: WebViewContentRuleListStore {
+
+    override func ruleList(
+        forIdentifier identifier: String,
+        json: String,
+        completion: @escaping (WKContentRuleList?) -> Void
+    ) {
+        completion(nil)
     }
 
 }
