@@ -200,7 +200,15 @@ enum PaywallWebViewMessageDispatcher {
                 )
             )
         } else {
-            controller.postVariables(componentID: componentID, variables: bridge.baseVariables)
+            controller.deliverEnvelope(
+                WebViewEnvelope.build(
+                    kind: WebViewEnvelope.kindMessage,
+                    protocolVersion: protocolVersion,
+                    componentID: componentID,
+                    type: PaywallWebViewMessageType.variables,
+                    payload: bridge.baseVariables
+                )
+            )
         }
     }
 

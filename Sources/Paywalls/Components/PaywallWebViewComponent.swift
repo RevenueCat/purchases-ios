@@ -26,9 +26,7 @@ import Foundation
         /// Decoded and preserved; no protocol-version-specific behavior is implemented yet.
         public let protocolVersion: Int
 
-        /// The URL (or URL template) of the web bundle entrypoint to load.
-        /// May contain `{{ custom.variable }}` tokens that are resolved at display time.
-        /// After variable substitution it must resolve to a valid HTTPS URL with a host.
+        /// The static HTTPS URL of the web bundle entrypoint to load.
         public let url: String
 
         public let size: Size
