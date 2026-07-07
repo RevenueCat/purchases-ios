@@ -338,6 +338,38 @@ final class WebViewSessionTests: TestCase {
         )
     }
 
+    func testRenderOnlyWebViewExposesNoBridgeSurface() throws {
+        // Render-only mode (`componentID == nil`) registers NO script message handler, so page
+        // JavaScript must see no native bridge surface at all.
+        let webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
+
+        let loaded = self.expectation(description: "web view finished loading")
+        let delegate = RoundTripNavigationDelegate { loaded.fulfill() }
+        webView.navigationDelegate = delegate
+        webView.loadHTMLString(
+            "<html><body>hi</body></html>",
+            baseURL: URL(string: "https://example.com")!
+        )
+        self.wait(for: [loaded], timeout: 10)
+
+        let probed = self.expectation(description: "probed bridge surface")
+        var bridgeExposed: Bool?
+        webView.evaluateJavaScript(
+            """
+            (typeof window.webkit !== 'undefined' \
+            && typeof window.webkit.messageHandlers !== 'undefined' \
+            && typeof window.webkit.messageHandlers.\(WebViewEnvelope.messageHandlerName) !== 'undefined')
+            """
+        ) { result, _ in
+            bridgeExposed = result as? Bool
+            probed.fulfill()
+        }
+        self.wait(for: [probed], timeout: 10)
+
+        XCTAssertEqual(bridgeExposed, false)
+        withExtendedLifetime(delegate) {}
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

@@ -83,6 +83,19 @@ final class WebViewComponentTests: TestCase {
         }
     }
 
+    func testViewModelWithoutIDSignalsRenderOnlyMode() {
+        // A missing schema `id` puts the component in render-only mode: the view still renders
+        // the (isolated) web view but installs no session/bridge. The view switches on exactly
+        // these two properties, so pin them.
+        let viewModel = WebViewComponentViewModel(
+            component: .init(url: "https://example.com/index.html"),
+            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:])
+        )
+
+        XCTAssertNil(viewModel.componentID)
+        XCTAssertNotNil(viewModel.url)
+    }
+
 }
 
 #endif

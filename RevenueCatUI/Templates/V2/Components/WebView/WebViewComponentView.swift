@@ -105,6 +105,9 @@ private struct BridgedWebViewComponentView: View {
             }
         )
         .webViewSize(viewModel.size, measuredWidth: measuredWidth, measuredHeight: measuredHeight)
+        // Content can momentarily overflow the exact frame mid-resize (fit axes animate through
+        // placeholder -> measured); never paint outside the component's box.
+        .clipped()
     }
 
 }
@@ -122,6 +125,7 @@ private struct RenderOnlyWebViewComponentView: View {
             session: nil
         )
         .webViewSize(viewModel.size, measuredWidth: nil, measuredHeight: nil)
+        .clipped()
     }
 
 }
