@@ -117,9 +117,7 @@ final class PaywallWebViewBridgeTests: TestCase {
 
     func testDispatcherHandlesResizeBeforeAppHandler() {
         var reportedHeight: CGFloat?
-        let bridge = self.bridge(onContentResize: { _, height in
-            reportedHeight = height
-        })
+        var handled = false
 
         let envelope = WebViewEnvelope.Parsed(
             kind: WebViewEnvelope.kindMessage,
@@ -131,7 +129,6 @@ final class PaywallWebViewBridgeTests: TestCase {
             error: nil
         )
 
-        var handled = false
         PaywallWebViewMessageDispatcher.handle(
             envelope: envelope,
             componentID: Self.componentID,
@@ -147,33 +144,92 @@ final class PaywallWebViewBridgeTests: TestCase {
         XCTAssertFalse(handled)
     }
 
-    func testDispatcherAutoRepliesToRequestVariablesMessageForm() throws {
-        let envelope = WebViewEnvelope.build(
-            kind: WebViewEnvelope.kindMessage,
+    func testDispatcherHandlesResizeRequestWithoutForwardingToAppHandler() {
+        var handled = false
+        let envelope = WebViewEnvelope.Parsed(
+            kind: WebViewEnvelope.kindRequest,
             protocolVersion: 1,
             componentID: Self.componentID,
-            type: PaywallWebViewMessageType.variables,
-            payload: ["locale": .string("en-US")]
+            type: PaywallWebViewMessageType.resize,
+            id: "resize-req",
+            payload: ["height": .number(180)],
+            error: nil
         )
-        let script = try XCTUnwrap(PaywallWebViewController.receiveEnvelopeScript(envelope: envelope))
-        XCTAssertTrue(script.contains("\"rc:variables\""))
-        XCTAssertTrue(script.contains("\"locale\":\"en-US\""))
-        XCTAssertFalse(script.contains("\"variables\""))
+
+        PaywallWebViewMessageDispatcher.handle(
+            envelope: envelope,
+            componentID: Self.componentID,
+            protocolVersion: 1,
+            controller: self.makeController(channelOpen: true),
+            bridge: self.bridge(messageAction: { _, _ in handled = true })
+        )
+
+        XCTAssertFalse(handled)
     }
 
-    func testDispatcherAutoRepliesToRequestVariablesRequestForm() throws {
-        let envelope = WebViewEnvelope.build(
-            kind: WebViewEnvelope.kindResponse,
+    func testDispatcherAutoRepliesToRequestVariablesMessageForm() {
+        var delivered: [[String: PaywallWebViewValue]] = []
+        let controller = self.makeController(channelOpen: true) { delivered.append($0) }
+
+        PaywallWebViewMessageDispatcher.handle(
+            envelope: WebViewEnvelope.Parsed(
+                kind: WebViewEnvelope.kindMessage,
+                protocolVersion: 1,
+                componentID: Self.componentID,
+                type: PaywallWebViewMessageType.requestVariables,
+                id: nil,
+                payload: nil,
+                error: nil
+            ),
+            componentID: Self.componentID,
+            protocolVersion: 1,
+            controller: controller,
+            bridge: self.bridge(baseVariables: ["locale": .string("en-US")])
+        )
+
+        XCTAssertEqual(delivered.count, 1)
+        XCTAssertEqual(delivered[0][WebViewEnvelope.Field.kind], .string(WebViewEnvelope.kindMessage))
+        XCTAssertEqual(delivered[0][WebViewEnvelope.Field.type], .string(PaywallWebViewMessageType.variables))
+        XCTAssertEqual(delivered[0][WebViewEnvelope.Field.payload]?.objectValue?["locale"], .string("en-US"))
+    }
+
+    func testDispatcherAutoRepliesToRequestVariablesRequestForm() {
+        var delivered: [[String: PaywallWebViewValue]] = []
+        let controller = self.makeController(channelOpen: true) { delivered.append($0) }
+
+        PaywallWebViewMessageDispatcher.handle(
+            envelope: WebViewEnvelope.Parsed(
+                kind: WebViewEnvelope.kindRequest,
+                protocolVersion: 1,
+                componentID: Self.componentID,
+                type: PaywallWebViewMessageType.requestVariables,
+                id: "req-1",
+                payload: nil,
+                error: nil
+            ),
+            componentID: Self.componentID,
+            protocolVersion: 1,
+            controller: controller,
+            bridge: self.bridge(baseVariables: ["locale": .string("fr-FR")])
+        )
+
+        XCTAssertEqual(delivered.count, 1)
+        XCTAssertEqual(delivered[0][WebViewEnvelope.Field.kind], .string(WebViewEnvelope.kindResponse))
+        XCTAssertEqual(delivered[0][WebViewEnvelope.Field.id], .string("req-1"))
+        XCTAssertEqual(delivered[0][WebViewEnvelope.Field.type], .string(PaywallWebViewMessageType.requestVariables))
+        XCTAssertEqual(delivered[0][WebViewEnvelope.Field.payload]?.objectValue?["locale"], .string("fr-FR"))
+    }
+
+    func testFitEnvelopeDeclaresHostManagedAxes() throws {
+        let envelope = try XCTUnwrap(WebViewMessageBridge.fitEnvelope(
             protocolVersion: 1,
             componentID: Self.componentID,
-            type: PaywallWebViewMessageType.requestVariables,
-            id: "req-1",
-            payload: ["locale": .string("fr-FR")]
-        )
-        let script = try XCTUnwrap(PaywallWebViewController.receiveEnvelopeScript(envelope: envelope))
-        XCTAssertTrue(script.contains("\"kind\":\"response\""))
-        XCTAssertTrue(script.contains("\"id\":\"req-1\""))
-        XCTAssertTrue(script.contains("\"locale\":\"fr-FR\""))
+            size: .init(width: .fill, height: .fit)
+        ))
+
+        XCTAssertEqual(envelope[WebViewEnvelope.Field.type], .string(PaywallWebViewMessageType.fit))
+        XCTAssertEqual(envelope[WebViewEnvelope.Field.payload]?.objectValue?["height"], .bool(true))
+        XCTAssertNil(envelope[WebViewEnvelope.Field.payload]?.objectValue?["width"])
     }
 
     func testRejectEnvelopeFormatForUnsupportedProtocolVersion() throws {
@@ -283,9 +339,12 @@ final class PaywallWebViewBridgeTests: TestCase {
         )
     }
 
-    private func makeController(channelOpen: Bool) -> PaywallWebViewController {
+    private func makeController(
+        channelOpen: Bool,
+        onDeliverEnvelope: (([String: PaywallWebViewValue]) -> Void)? = nil
+    ) -> PaywallWebViewController {
         #if canImport(WebKit)
-        return PaywallWebViewController(
+        let controller = PaywallWebViewController(
             webView: nil,
             componentID: Self.componentID,
             expectedLoadedURL: Self.expectedURL,
@@ -293,13 +352,15 @@ final class PaywallWebViewBridgeTests: TestCase {
             channelOpen: { channelOpen }
         )
         #else
-        return PaywallWebViewController(
+        let controller = PaywallWebViewController(
             componentID: Self.componentID,
             expectedLoadedURL: Self.expectedURL,
             protocolVersion: 1,
             channelOpen: { channelOpen }
         )
         #endif
+        controller.envelopeDeliveryHandler = onDeliverEnvelope
+        return controller
     }
 
     private func embeddedJSON(in script: String) -> String? {

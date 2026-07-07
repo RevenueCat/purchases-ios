@@ -70,13 +70,19 @@ enum WebViewCapabilitiesConfiguration {
 ///
 /// Accessed on the main thread only (`compileContentRuleList`'s completion handler is invoked there).
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class WebViewContentRuleListStore {
+final class WebViewContentRuleListStore {
 
-    static var shared = WebViewContentRuleListStore()
+    static let shared = WebViewContentRuleListStore()
 
     private var cache: [String: WKContentRuleList] = [:]
+    private let compile: (String, String, @escaping (WKContentRuleList?) -> Void) -> Void
 
-    private init() {}
+    init(
+        compile: @escaping (String, String, @escaping (WKContentRuleList?) -> Void) -> Void
+            = WebViewContentRuleListStore.defaultCompile
+    ) {
+        self.compile = compile
+    }
 
     /// Returns the compiled rule list for `identifier`, compiling `json` if it isn't cached yet.
     /// Completes on the main thread; `nil` indicates compilation failed.
@@ -90,6 +96,19 @@ class WebViewContentRuleListStore {
             return
         }
 
+        self.compile(identifier, json) { [weak self] ruleList in
+            if let ruleList {
+                self?.cache[identifier] = ruleList
+            }
+            completion(ruleList)
+        }
+    }
+
+    private static func defaultCompile(
+        identifier: String,
+        json: String,
+        completion: @escaping (WKContentRuleList?) -> Void
+    ) {
         guard let store = WKContentRuleListStore.default() else {
             completion(nil)
             return
@@ -98,12 +117,9 @@ class WebViewContentRuleListStore {
         store.compileContentRuleList(
             forIdentifier: identifier,
             encodedContentRuleList: json
-        ) { [weak self] ruleList, error in
+        ) { ruleList, error in
             if let error {
                 Logger.debug(Strings.paywall_web_view_content_rules_failed(error))
-            }
-            if let ruleList {
-                self?.cache[identifier] = ruleList
             }
             completion(ruleList)
         }

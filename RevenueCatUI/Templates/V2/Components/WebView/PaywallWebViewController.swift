@@ -39,6 +39,7 @@ public struct PaywallWebViewController {
     private let expectedLoadedURL: URL?
     private let protocolVersion: Int
     private let channelOpen: () -> Bool
+    internal var envelopeDeliveryHandler: (([String: PaywallWebViewValue]) -> Void)?
 
     #if canImport(WebKit)
     init(
@@ -154,6 +155,7 @@ public struct PaywallWebViewController {
             return
         }
 
+        self.envelopeDeliveryHandler?(envelope)
         self.evaluate(script: script)
     }
 

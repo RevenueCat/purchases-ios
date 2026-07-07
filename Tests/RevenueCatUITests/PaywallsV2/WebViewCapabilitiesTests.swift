@@ -56,12 +56,12 @@ final class WebViewCapabilitiesTests: TestCase {
 
     func testLoadIsolatedDoesNotLoadWhenRuleListCompilationFails() {
         let webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
-        let originalStore = WebViewContentRuleListStore.shared
-        defer { WebViewContentRuleListStore.shared = originalStore }
-        WebViewContentRuleListStore.shared = FailingWebViewContentRuleListStore()
+        let failingStore = WebViewContentRuleListStore { _, _, completion in
+            completion(nil)
+        }
 
         let url = URL(string: "https://example.com/bundle.html")!
-        PaywallWebViewScripts.loadIsolated(url: url, on: webView)
+        PaywallWebViewScripts.loadIsolated(url: url, on: webView, ruleListStore: failingStore)
 
         let expectation = self.expectation(description: "rule list callback")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -80,25 +80,12 @@ final class WebViewCapabilitiesTests: TestCase {
         return try XCTUnwrap(object as? [[String: Any]])
     }
 
-  private static func trigger(matchingResourceTypes resourceTypes: [String]) throws -> [String: Any] {
+    private static func trigger(matchingResourceTypes resourceTypes: [String]) throws -> [String: Any] {
         let triggers = try Self.parseRules().compactMap { $0["trigger"] as? [String: Any] }
         let match = triggers.first { trigger in
             (trigger["resource-type"] as? [String]).map(Set.init) == Set(resourceTypes)
         }
         return try XCTUnwrap(match, "No rule blocking resource types \(resourceTypes)")
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class FailingWebViewContentRuleListStore: WebViewContentRuleListStore {
-
-    override func ruleList(
-        forIdentifier identifier: String,
-        json: String,
-        completion: @escaping (WKContentRuleList?) -> Void
-    ) {
-        completion(nil)
     }
 
 }

@@ -27,6 +27,8 @@ enum PaywallWebViewMessageType {
 
     /// Native → web messages.
     static let variables = "rc:variables"
+    /// Host → content: which axes the native host sizes to the content (`fit`).
+    static let fit = "fit"
 
 }
 
@@ -103,9 +105,16 @@ struct PaywallWebViewMessageParser {
         }
     }
 
-    private func parseAppMessage(
+    func parseAppMessage(
         envelope: WebViewEnvelope.Parsed
     ) -> Result<ParsedAppMessage, ParseError> {
+        switch envelope.kind {
+        case WebViewEnvelope.kindMessage, WebViewEnvelope.kindRequest:
+            break
+        default:
+            return .failure(.invalidEnvelope)
+        }
+
         guard envelope.componentID == self.expectedComponentID else {
             return .failure(.componentIDMismatch(
                 expected: self.expectedComponentID,

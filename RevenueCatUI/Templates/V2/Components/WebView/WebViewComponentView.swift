@@ -56,15 +56,22 @@ struct WebViewComponentView: View {
             messageAction: webViewMessageAction,
             baseVariables: PaywallWebViewVariables.base(locale: viewModel.locale),
             size: viewModel.size,
-            onContentResize: { width, height in
+            onContentResize: { _, height in
                 if case .fit = viewModel.size.height, let height {
                     dynamicHeight = height
                 }
-                if case .fit = viewModel.size.width, let width {
-                    _ = width
-                }
             }
         )
+    }
+
+    private var measuredHeight: CGFloat? {
+        if let dynamicHeight {
+            return dynamicHeight
+        }
+        if case .fit = viewModel.size.height {
+            return Self.initialHeight
+        }
+        return nil
     }
 
     @ViewBuilder
@@ -72,15 +79,14 @@ struct WebViewComponentView: View {
         #if canImport(UIKit) && canImport(WebKit)
         if let resolvedURL = viewModel.url {
             WebViewRepresentable(url: resolvedURL, height: $dynamicHeight, bridge: bridge)
-                .modifier(WebViewSizeModifier(size: viewModel.size, measuredHeight: dynamicHeight))
+                .modifier(WebViewSizeModifier(size: viewModel.size, measuredHeight: self.measuredHeight))
                 .clipped()
                 .background(Color.clear)
         }
         #elseif os(macOS)
         if let resolvedURL = viewModel.url {
-            let macHeight = dynamicHeight ?? Self.initialHeight
             MacWebViewRepresentable(url: resolvedURL, height: $dynamicHeight, bridge: bridge)
-                .modifier(WebViewSizeModifier(size: viewModel.size, measuredHeight: macHeight))
+                .modifier(WebViewSizeModifier(size: viewModel.size, measuredHeight: self.measuredHeight))
                 .clipped()
                 .background(Color.clear)
         }
@@ -155,14 +161,13 @@ enum PaywallWebViewMessageDispatcher {
             return
         }
 
-        if envelope.kind == WebViewEnvelope.kindMessage,
-           envelope.type == PaywallWebViewMessageType.resize {
+        if envelope.type == PaywallWebViewMessageType.resize {
             Self.handleResize(envelope: envelope, bridge: bridge)
             return
         }
 
         let parser = PaywallWebViewMessageParser(expectedComponentID: componentID)
-        switch parser.parseEnvelope(Self.envelopeDictionary(envelope)) {
+        switch parser.parseAppMessage(envelope: envelope) {
         case .success(let parsed):
             if parsed.message.type == PaywallWebViewMessageType.requestVariables {
                 Self.replyToVariablesRequest(
@@ -234,30 +239,6 @@ enum PaywallWebViewMessageDispatcher {
         return min(CGFloat(value), Self.maxResizeDimension)
     }
 
-    private static func envelopeDictionary(_ envelope: WebViewEnvelope.Parsed) -> [String: Any] {
-        var dictionary: [String: Any] = [
-            WebViewEnvelope.Field.channel: WebViewEnvelope.channel,
-            WebViewEnvelope.Field.protocolVersion: envelope.protocolVersion,
-            WebViewEnvelope.Field.kind: envelope.kind,
-            WebViewEnvelope.Field.componentID: envelope.componentID
-        ]
-
-        if let type = envelope.type {
-            dictionary[WebViewEnvelope.Field.type] = type
-        }
-        if let id = envelope.id {
-            dictionary[WebViewEnvelope.Field.id] = id
-        }
-        if let error = envelope.error {
-            dictionary[WebViewEnvelope.Field.error] = error
-        }
-        if let payload = envelope.payload {
-            dictionary[WebViewEnvelope.Field.payload] = PaywallWebViewValue.object(payload).jsonObject
-        }
-
-        return dictionary
-    }
-
 }
 
 /// Applies the component's ``PaywallComponent/Size`` to the web view. For a `fit` height the
@@ -317,6 +298,13 @@ private extension WebViewComponentView {
 
     static let initialHeight: CGFloat = 100
 
+    static func effectiveFitHeight(for height: PaywallComponent.SizeConstraint) -> CGFloat? {
+        if case .fit = height {
+            return Self.initialHeight
+        }
+        return nil
+    }
+
 }
 
 #endif
@@ -346,13 +334,17 @@ enum PaywallWebViewScripts {
     /// Attaches the content-blocking rule list (compiling it if necessary), then loads `url`. The
     /// load is deferred until the rules are in place so no request is issued before isolation
     /// applies. Fails closed: if compilation fails the page is not loaded.
-    static func loadIsolated(url: URL, on webView: WKWebView) {
+    static func loadIsolated(
+        url: URL,
+        on webView: WKWebView,
+        ruleListStore: WebViewContentRuleListStore = .shared
+    ) {
         guard let json = WebViewCapabilitiesConfiguration.contentBlockingRules else {
             webView.load(URLRequest(url: url))
             return
         }
 
-        WebViewContentRuleListStore.shared.ruleList(
+        ruleListStore.ruleList(
             forIdentifier: WebViewCapabilitiesConfiguration.contentRuleListIdentifier,
             json: json
         ) { [weak webView] ruleList in
@@ -547,6 +539,71 @@ final class WebViewMessageBridge: NSObject, WKScriptMessageHandler {
             expectedURL: bridge.expectedURL,
             allowBeforeNavigation: true
         )
+        self.sendFitIfNeeded(to: webView, bridge: bridge, componentID: componentID)
+    }
+
+    private func sendFitIfNeeded(
+        to webView: WKWebView,
+        bridge: WebViewBridgeConfiguration,
+        componentID: String
+    ) {
+        guard let envelope = Self.fitEnvelope(
+            protocolVersion: bridge.protocolVersion,
+            componentID: componentID,
+            size: bridge.size
+        ) else {
+            return
+        }
+
+        self.deliver(
+            envelope,
+            to: webView,
+            expectedURL: bridge.expectedURL,
+            allowBeforeNavigation: true
+        )
+    }
+
+    static func fitEnvelope(
+        protocolVersion: Int,
+        componentID: String,
+        size: PaywallComponent.Size
+    ) -> [String: PaywallWebViewValue]? {
+        let sizeToContentWidth: Bool
+        let sizeToContentHeight: Bool
+
+        switch size.width {
+        case .fit:
+            sizeToContentWidth = true
+        default:
+            sizeToContentWidth = false
+        }
+
+        switch size.height {
+        case .fit:
+            sizeToContentHeight = true
+        default:
+            sizeToContentHeight = false
+        }
+
+        guard sizeToContentWidth || sizeToContentHeight else {
+            return nil
+        }
+
+        var payload: [String: PaywallWebViewValue] = [:]
+        if sizeToContentWidth {
+            payload["width"] = .bool(true)
+        }
+        if sizeToContentHeight {
+            payload["height"] = .bool(true)
+        }
+
+        return WebViewEnvelope.build(
+            kind: WebViewEnvelope.kindMessage,
+            protocolVersion: protocolVersion,
+            componentID: componentID,
+            type: PaywallWebViewMessageType.fit,
+            payload: payload
+        )
     }
 
     private func deliver(
@@ -618,9 +675,6 @@ private struct WebViewRepresentable: UIViewRepresentable {
         context.coordinator.bridge = bridge
         context.coordinator.registerMessageBridgeIfNeeded(on: webView)
         context.coordinator.currentURL = url
-        if height == nil, case .fit = bridge.size.height {
-            height = WebViewComponentView.initialHeight
-        }
         PaywallWebViewScripts.loadIsolated(url: url, on: webView)
         return webView
     }
@@ -635,8 +689,11 @@ private struct WebViewRepresentable: UIViewRepresentable {
             uiView.load(URLRequest(url: url))
         }
 
-        if let height, let autoSizingWebView = uiView as? AutoSizingWebView {
-            autoSizingWebView.setContentHeight(height)
+        if let autoSizingWebView = uiView as? AutoSizingWebView {
+            let effectiveHeight = height ?? WebViewComponentView.effectiveFitHeight(for: bridge.size.height)
+            if let effectiveHeight {
+                autoSizingWebView.setContentHeight(effectiveHeight)
+            }
         }
     }
 
@@ -737,9 +794,6 @@ private struct MacWebViewRepresentable: NSViewRepresentable {
         context.coordinator.bridge = bridge
         context.coordinator.registerMessageBridgeIfNeeded(on: webView)
         context.coordinator.currentURL = url
-        if height == nil, case .fit = bridge.size.height {
-            height = WebViewComponentView.initialHeight
-        }
         PaywallWebViewScripts.loadIsolated(url: url, on: webView)
 
         return webView
