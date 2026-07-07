@@ -288,6 +288,12 @@ extension BackendError {
 
         /// A workflow lookup found no matching item in the synced remote config.
         case workflowNotFound(workflowId: String)
+
+        /// A workflow lookup found a matching item, but its body couldn't be decoded.
+        case workflowDecodingFailed(workflowId: String, error: NSError)
+
+        /// A workflow resolved, but its `ui_config` couldn't be assembled.
+        case workflowUiConfigUnavailable(workflowId: String)
     }
 
 }
@@ -312,6 +318,10 @@ extension BackendError.UnexpectedBackendResponseError: DescribableError {
             return "Unable to instantiate a CustomerInfoResponse due to malformed json."
         case let .workflowNotFound(workflowId):
             return "Workflow '\(workflowId)' not found in remote config."
+        case let .workflowDecodingFailed(workflowId, error):
+            return "Workflow '\(workflowId)' could not be decoded from remote config: \(error)."
+        case let .workflowUiConfigUnavailable(workflowId):
+            return "Workflow '\(workflowId)' resolved, but its UI config is unavailable."
         }
     }
 
@@ -331,6 +341,29 @@ extension BackendError {
     ) -> Self {
         return .unexpectedBackendResponse(
             .workflowNotFound(workflowId: workflowId),
+            extraContext: nil,
+            .init(file: file, function: function, line: line)
+        )
+    }
+
+    static func workflowDecodingFailed(
+        workflowId: String,
+        error: NSError,
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .unexpectedBackendResponse(
+            .workflowDecodingFailed(workflowId: workflowId, error: error),
+            extraContext: nil,
+            .init(file: file, function: function, line: line)
+        )
+    }
+
+    static func workflowUiConfigUnavailable(
+        workflowId: String,
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .unexpectedBackendResponse(
+            .workflowUiConfigUnavailable(workflowId: workflowId),
             extraContext: nil,
             .init(file: file, function: function, line: line)
         )

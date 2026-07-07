@@ -63,13 +63,13 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(workflowId) == "wf-1"
 
         let result = await self.provider.getWorkflow(workflowId: "wf-1")
-        expect(result).toNot(beNil())
-        expect(result?.workflow.id) == "wf-1"
+        let workflowResult = try XCTUnwrap(result.value)
+        expect(workflowResult.workflow.id) == "wf-1"
         // enrolled_variants is intentionally out of scope for the config-topic path.
-        expect(result?.enrolledVariants).to(beNil())
+        expect(workflowResult.enrolledVariants).to(beNil())
     }
 
-    func testReturnsNilWhenTheWorkflowResolvesButUiConfigIsUnavailable() async throws {
+    func testFailsWithUiConfigUnavailableWhenTheWorkflowResolvesButUiConfigIsUnavailable() async throws {
         // A workflow is never rendered with PublishedWorkflow's decode-time `.empty` placeholder: if
         // ui_config can't be assembled, the whole result fails, matching Android's PaywallViewModel
         // failing the render when its concurrent ui_config fetch fails.
@@ -81,7 +81,7 @@ class WorkflowsConfigProviderTests: TestCase {
 
         let result = await self.provider.getWorkflow(workflowId: "wf-1")
 
-        expect(result).to(beNil())
+        expect(result.error) == .uiConfigUnavailable
     }
 
     func testAssemblesUiConfigFromItsOwnTopicWhenResolvingAWorkflow() async throws {
@@ -100,8 +100,9 @@ class WorkflowsConfigProviderTests: TestCase {
         )
 
         let result = await self.provider.getWorkflow(workflowId: "wf-1")
+        let workflowResult = try XCTUnwrap(result.value)
 
-        expect(result?.workflow.uiConfig.localizations["en_US"]?["day"]) == "Day"
+        expect(workflowResult.workflow.uiConfig.localizations["en_US"]?["day"]) == "Day"
     }
 
     func testPreservesMetadataWhenSubstitutingUiConfig() async throws {
@@ -123,19 +124,20 @@ class WorkflowsConfigProviderTests: TestCase {
         )
 
         let result = await self.provider.getWorkflow(workflowId: "wf-1")
+        let workflowResult = try XCTUnwrap(result.value)
 
-        expect(result?.workflow.metadata?["source"]) == .string("cdn")
+        expect(workflowResult.workflow.metadata?["source"]) == .string("cdn")
     }
 
-    func testReturnsNilForAnUnknownWorkflowId() async {
+    func testFailsWithNotFoundForAnUnknownWorkflowId() async {
         self.commit(workflows: [:])
 
         let result = await self.provider.getWorkflow(workflowId: "missing")
 
-        expect(result).to(beNil())
+        expect(result.error) == .notFound
     }
 
-    func testReturnsNilForAMalformedWorkflowBody() async {
+    func testFailsWithDecodingFailedForAMalformedWorkflowBody() async {
         self.commit(
             workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: [:])],
             blobs: ["wf-1-ref": Data(#"{ "not": "a workflow" }"#.utf8)]
@@ -143,7 +145,10 @@ class WorkflowsConfigProviderTests: TestCase {
 
         let result = await self.provider.getWorkflow(workflowId: "wf-1")
 
-        expect(result).to(beNil())
+        guard case .failure(.decodingFailed) = result else {
+            fail("Expected a decodingFailed failure, got \(result)")
+            return
+        }
     }
 
     func testDoesNotFetchUiConfigWhenTheWorkflowBodyIsMissing() async {
@@ -164,7 +169,7 @@ class WorkflowsConfigProviderTests: TestCase {
 
         let result = await self.provider.getWorkflow(workflowId: "wf-1")
 
-        expect(result).to(beNil()) // "wf-1-ref" was never stored, so the body read misses.
+        expect(result.error) == .notFound // "wf-1-ref" was never stored, so the body read misses.
         // Only the workflow body itself was attempted; ui_config's parts were never touched.
         expect(self.blobFetcher.invokedEnsureDownloadedRefs) == ["wf-1-ref"]
     }

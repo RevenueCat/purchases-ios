@@ -69,7 +69,7 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockPaywallCache.invokedWarmUpWorkflowCachesWorkflow?.id) == "wf_1"
     }
 
-    func testGetWorkflowFailsWithWorkflowNotFoundWhenProviderReturnsNil() {
+    func testGetWorkflowFailsWithWorkflowNotFoundWhenProviderReportsNotFound() {
         let result: Result<WorkflowDataResult, BackendError>? = waitUntilValue { completed in
             self.manager.getWorkflow(workflowId: "missing") { completed($0) }
         }
@@ -77,6 +77,37 @@ class WorkflowManagerTests: TestCase {
         expect(result).to(beFailure())
         expect(result?.error) == .unexpectedBackendResponse(
             .workflowNotFound(workflowId: "missing"),
+            extraContext: nil,
+            .init(file: "", function: "", line: 0)
+        )
+    }
+
+    func testGetWorkflowFailsWithDecodingFailedWhenProviderReportsADecodingFailure() {
+        let underlyingError = NSError(domain: "test", code: 1)
+        self.mockProvider.stubbedGetWorkflowError = ["wf_1": .decodingFailed(underlyingError)]
+
+        let result: Result<WorkflowDataResult, BackendError>? = waitUntilValue { completed in
+            self.manager.getWorkflow(workflowId: "wf_1") { completed($0) }
+        }
+
+        expect(result).to(beFailure())
+        expect(result?.error) == .unexpectedBackendResponse(
+            .workflowDecodingFailed(workflowId: "wf_1", error: underlyingError),
+            extraContext: nil,
+            .init(file: "", function: "", line: 0)
+        )
+    }
+
+    func testGetWorkflowFailsWithUiConfigUnavailableWhenProviderReportsItsMissing() {
+        self.mockProvider.stubbedGetWorkflowError = ["wf_1": .uiConfigUnavailable]
+
+        let result: Result<WorkflowDataResult, BackendError>? = waitUntilValue { completed in
+            self.manager.getWorkflow(workflowId: "wf_1") { completed($0) }
+        }
+
+        expect(result).to(beFailure())
+        expect(result?.error) == .unexpectedBackendResponse(
+            .workflowUiConfigUnavailable(workflowId: "wf_1"),
             extraContext: nil,
             .init(file: "", function: "", line: 0)
         )

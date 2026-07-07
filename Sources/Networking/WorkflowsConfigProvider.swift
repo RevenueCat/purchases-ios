@@ -10,7 +10,22 @@ import Foundation
 protocol WorkflowsConfigProviderType {
 
     func workflowId(forOfferingId offeringId: String) async -> String?
-    func getWorkflow(workflowId: String) async -> WorkflowDataResult?
+    func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError>
+
+}
+
+/// Why ``WorkflowsConfigProviderType/getWorkflow(workflowId:)`` couldn't resolve a workflow, so callers
+/// can tell a genuinely missing workflow apart from a transient or malformed-data failure.
+enum WorkflowResolutionError: Error, Equatable {
+
+    /// No item for this `workflowId` exists in the synced `workflows` topic.
+    case notFound
+
+    /// An item exists, but its body couldn't be decoded as a ``PublishedWorkflow``.
+    case decodingFailed(NSError)
+
+    /// The workflow itself resolved, but its `ui_config` couldn't be assembled.
+    case uiConfigUnavailable
 
 }
 
@@ -50,10 +65,11 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         return matches.keys.first
     }
 
-    /// Resolves `workflowId` into a ``WorkflowDataResult``, or `nil` when the item is unknown, its body
-    /// can't be read or parsed, or `ui_config` isn't available. A workflow is only rendered with real
-    /// styling, never with `PublishedWorkflow`'s decode-time `.empty` placeholder, matching Android's
-    /// `PaywallViewModel` failing the whole render when its concurrent `ui_config` fetch fails.
+    /// Resolves `workflowId` into a ``WorkflowDataResult``, or the specific ``WorkflowResolutionError``
+    /// that prevented it: the item is unknown, its body can't be parsed, or `ui_config` isn't available.
+    /// A workflow is only rendered with real styling, never with `PublishedWorkflow`'s decode-time
+    /// `.empty` placeholder, matching Android's `PaywallViewModel` failing the whole render when its
+    /// concurrent `ui_config` fetch fails.
     ///
     /// `enrolled_variants` is not populated here: per-user A/B enrollment doesn't fit this shared,
     /// content-addressed read model and is being designed separately.
@@ -65,29 +81,38 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     /// workflow render) and `ui_config` is app/domain-level presentation data, not per-user; a stricter
     /// fix would need `RemoteConfigManager` to expose a way to validate both reads landed in the same
     /// sync generation.
-    func getWorkflow(workflowId: String) async -> WorkflowDataResult? {
+    func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
         // Deliberately sequential, not `async let`: an `async let` for `ui_config` started alongside the
         // workflow-body read would still be implicitly awaited (Swift cancels but does not fast-fail an
         // unconsumed `async let` when its scope exits) if the body turns out missing or malformed, so a
         // miss would pay for `ui_config`'s network reads anyway instead of returning immediately.
-        guard var workflow = await self.fetchWorkflow(workflowId: workflowId) else {
-            return nil
+        var workflow: PublishedWorkflow
+        switch await self.fetchWorkflow(workflowId: workflowId) {
+        case let .success(fetched):
+            workflow = fetched
+        case let .failure(error):
+            return .failure(error)
         }
 
         guard let uiConfig = await self.uiConfigProvider.getUiConfig() else {
-            return nil
+            return .failure(.uiConfigUnavailable)
         }
         workflow = workflow.withUiConfig(uiConfig)
 
-        return WorkflowDataResult(workflow: workflow, enrolledVariants: nil)
+        return .success(WorkflowDataResult(workflow: workflow, enrolledVariants: nil))
     }
 
-    private func fetchWorkflow(workflowId: String) async -> PublishedWorkflow? {
+    private func fetchWorkflow(workflowId: String) async -> Result<PublishedWorkflow, WorkflowResolutionError> {
         do {
-            return try await self.manager.blobData(for: .workflows, itemKey: workflowId, as: PublishedWorkflow.self)
+            guard let workflow = try await self.manager.blobData(
+                for: .workflows, itemKey: workflowId, as: PublishedWorkflow.self
+            ) else {
+                return .failure(.notFound)
+            }
+            return .success(workflow)
         } catch {
             Logger.error(Strings.codable.decoding_error(error, PublishedWorkflow.self))
-            return nil
+            return .failure(.decodingFailed(error as NSError))
         }
     }
 

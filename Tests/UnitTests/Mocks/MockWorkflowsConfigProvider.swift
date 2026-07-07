@@ -25,11 +25,18 @@ final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked
     }
 
     var stubbedGetWorkflowResult: [String: WorkflowDataResult] = [:]
+    var stubbedGetWorkflowError: [String: WorkflowResolutionError] = [:]
     private(set) var invokedGetWorkflowParameters: [String] = []
 
-    func getWorkflow(workflowId: String) async -> WorkflowDataResult? {
+    func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
         self.invokedGetWorkflowParameters.append(workflowId)
-        return self.stubbedGetWorkflowResult[workflowId]
+        if let error = self.stubbedGetWorkflowError[workflowId] {
+            return .failure(error)
+        }
+        if let result = self.stubbedGetWorkflowResult[workflowId] {
+            return .success(result)
+        }
+        return .failure(.notFound)
     }
 
 }
