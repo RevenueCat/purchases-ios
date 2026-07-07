@@ -2159,7 +2159,7 @@ extension RevenueCat.Purchases {
   @objc(checkTrialOrIntroDiscountEligibilityForProduct:completion:) final public func checkTrialOrIntroDiscountEligibility(product: RevenueCat.StoreProduct, completion: @escaping (RevenueCat.IntroEligibilityStatus) -> Swift.Void)
   @objc final public func checkTrialOrIntroDiscountEligibility(product: RevenueCat.StoreProduct) async -> RevenueCat.IntroEligibilityStatus
   @objc(checkTrialOrIntroDiscountEligibilityForPackage:completion:) final public func checkTrialOrIntroDiscountEligibility(package: RevenueCat.Package, completion: @escaping (RevenueCat.IntroEligibilityStatus) -> Swift.Void)
-  final public func checkTrialOrIntroDiscountEligibility(package: RevenueCat.Package) async -> RevenueCat.IntroEligibilityStatus
+  @objc final public func checkTrialOrIntroDiscountEligibility(package: RevenueCat.Package) async -> RevenueCat.IntroEligibilityStatus
   @objc(getPromotionalOfferForProductDiscount:withProduct:withCompletion:) final public func getPromotionalOffer(forProductDiscount discount: RevenueCat.StoreProductDiscount, product: RevenueCat.StoreProduct, completion: @escaping (RevenueCat.PromotionalOffer?, RevenueCat.PublicError?) -> Swift.Void)
   @objc final public func promotionalOffer(forProductDiscount discount: RevenueCat.StoreProductDiscount, product: RevenueCat.StoreProduct) async throws -> RevenueCat.PromotionalOffer
   @objc final public func eligiblePromotionalOffers(forProduct product: RevenueCat.StoreProduct) async -> [RevenueCat.PromotionalOffer]
@@ -2325,6 +2325,8 @@ extension RevenueCat.PurchasesAreCompletedBy : Swift.Codable {
   @objc func checkTrialOrIntroDiscountEligibility(productIdentifiers: [Swift.String]) async -> [Swift.String : RevenueCat.IntroEligibility]
   @objc(checkTrialOrIntroDiscountEligibilityForProduct:completion:) func checkTrialOrIntroDiscountEligibility(product: RevenueCat.StoreProduct, completion: @escaping (RevenueCat.IntroEligibilityStatus) -> Swift.Void)
   @objc func checkTrialOrIntroDiscountEligibility(product: RevenueCat.StoreProduct) async -> RevenueCat.IntroEligibilityStatus
+  @objc(checkTrialOrIntroDiscountEligibilityForPackage:completion:) func checkTrialOrIntroDiscountEligibility(package: RevenueCat.Package, completion: @escaping (RevenueCat.IntroEligibilityStatus) -> Swift.Void)
+  @objc func checkTrialOrIntroDiscountEligibility(package: RevenueCat.Package) async -> RevenueCat.IntroEligibilityStatus
   @objc(getPromotionalOfferForProductDiscount:withProduct:withCompletion:) func getPromotionalOffer(forProductDiscount discount: RevenueCat.StoreProductDiscount, product: RevenueCat.StoreProduct, completion: @escaping (RevenueCat.PromotionalOffer?, RevenueCat.PublicError?) -> Swift.Void)
   @objc func promotionalOffer(forProductDiscount discount: RevenueCat.StoreProductDiscount, product: RevenueCat.StoreProduct) async throws -> RevenueCat.PromotionalOffer
   @objc func eligiblePromotionalOffers(forProduct product: RevenueCat.StoreProduct) async -> [RevenueCat.PromotionalOffer]
