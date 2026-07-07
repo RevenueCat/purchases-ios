@@ -27,7 +27,7 @@ class OfferingsManager {
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
     // Nil when the workflows endpoint is disabled, in which case offerings delivery is unchanged.
-    private let offeringsConfigGate: OfferingsConfigGate?
+    private let remoteConfigManager: RemoteConfigManagerType?
 
     init(deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
@@ -37,7 +37,7 @@ class OfferingsManager {
          productsManager: ProductsManagerType,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dateProvider: DateProvider = DateProvider(),
-         offeringsConfigGate: OfferingsConfigGate? = nil) {
+         remoteConfigManager: RemoteConfigManagerType? = nil) {
         self.deviceCache = deviceCache
         self.operationDispatcher = operationDispatcher
         self.systemInfo = systemInfo
@@ -46,7 +46,7 @@ class OfferingsManager {
         self.productsManager = productsManager
         self.diagnosticsTracker = diagnosticsTracker
         self.dateProvider = dateProvider
-        self.offeringsConfigGate = offeringsConfigGate
+        self.remoteConfigManager = remoteConfigManager
     }
 
     func offerings(
@@ -385,15 +385,19 @@ private extension OfferingsManager {
         }
     }
 
-    /// Runs `deliver` once remote config has synced at least once, when a gate is wired. The gate's
-    /// `topic()` read no-ops when already synced and always calls back, so this never hangs. When no
-    /// gate is wired (workflows disabled), `deliver` runs immediately, leaving offerings unchanged.
+    /// Runs `deliver` once remote config has synced at least once, when remote config is wired. The
+    /// manager's `topic()` read no-ops when already synced and always calls back, so this never hangs.
+    /// When no manager is wired (workflows disabled), `deliver` runs immediately, leaving offerings
+    /// unchanged.
     private func deliverWhenConfigReady(deliver: @escaping () -> Void) {
-        guard let offeringsConfigGate = self.offeringsConfigGate else {
+        guard let remoteConfigManager = self.remoteConfigManager else {
             deliver()
             return
         }
-        offeringsConfigGate.awaitReady(completion: deliver)
+        Task {
+            _ = await remoteConfigManager.topic(.workflows)
+            deliver()
+        }
     }
 
     private func fetchProducts(

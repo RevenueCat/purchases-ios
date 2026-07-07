@@ -591,10 +591,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 offeringsFactory: offeringsFactory,
                                                 productsManager: productsManager,
                                                 diagnosticsTracker: diagnosticsTracker,
-                                                offeringsConfigGate: systemInfo.workflowsEndpointEnabled
-                                                ? RemoteConfigOfferingsConfigGate(
-                                                    remoteConfigManager: remoteConfigManager
-                                                  )
+                                                remoteConfigManager: systemInfo.workflowsEndpointEnabled
+                                                && systemInfo.remoteConfigEnabled
+                                                ? remoteConfigManager
                                                 : nil)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,

@@ -1001,13 +1001,13 @@ private extension OfferingsManagerTests {
 
 }
 
-// MARK: - OfferingsConfigGate integration
+// MARK: - Remote config integration
 
 extension OfferingsManagerTests {
 
-    func testGetOfferingsDeliversImmediatelyWhenGateIsNil() {
-        // The default `offeringsManager` is built without a config gate (workflows disabled),
-        // so offerings delivery must be unchanged.
+    func testGetOfferingsDeliversImmediatelyWhenRemoteConfigManagerIsNil() {
+        // The default `offeringsManager` is built without a remote config manager (workflows
+        // disabled), so offerings delivery must be unchanged.
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
         let result = waitUntilValue { completed in
@@ -1017,28 +1017,27 @@ extension OfferingsManagerTests {
         expect(result).to(beSuccess())
     }
 
-    func testGetOfferingsDoesNotDeliverUntilGateReady() {
-        let mockGate = MockOfferingsConfigGate()
-        mockGate.shouldStoreCompletion = true
-        let manager = self.makeOfferingsManager(offeringsConfigGate: mockGate)
+    func testGetOfferingsDoesNotDeliverUntilConfigReady() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.shouldStoreTopicCompletion = true
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
         let delivered: Atomic<Bool> = false
         manager.offerings(appUserID: MockData.anyAppUserID) { _ in delivered.value = true }
 
-        // The gate was awaited, but its completion is held, so offerings must wait.
-        expect(mockGate.invokedAwaitReadyCount).toEventually(beGreaterThan(0))
+        // The topic was awaited, but its completion is held, so offerings must wait.
+        expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
         expect(delivered.value) == false
 
-        mockGate.completeStoredCompletion()
+        mockRemoteConfigManager.completeStoredTopic()
         expect(delivered.value).toEventually(beTrue())
     }
 
     func testGetOfferingsDeliversEvenWhenRemoteConfigHasNoWorkflowsTopic() {
-        // A real gate backed by a manager with no committed `workflows` topic (e.g. never synced) must
-        // still call back, so offerings delivery can never hang.
-        let gate = RemoteConfigOfferingsConfigGate(remoteConfigManager: MockRemoteConfigManager())
-        let manager = self.makeOfferingsManager(offeringsConfigGate: gate)
+        // A manager with no committed `workflows` topic (e.g. never synced) must still call back, so
+        // offerings delivery can never hang.
+        let manager = self.makeOfferingsManager(remoteConfigManager: MockRemoteConfigManager())
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
         let result = waitUntilValue { completed in
@@ -1048,10 +1047,10 @@ extension OfferingsManagerTests {
         expect(result).to(beSuccess())
     }
 
-    func testGetOfferingsFromMemoryCacheWaitsForGate() {
-        let mockGate = MockOfferingsConfigGate()
-        mockGate.shouldStoreCompletion = true
-        let manager = self.makeOfferingsManager(offeringsConfigGate: mockGate)
+    func testGetOfferingsFromMemoryCacheWaitsForConfigReady() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.shouldStoreTopicCompletion = true
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
         // Serve offerings straight from the in-memory cache (the fast path) and keep it fresh so no
         // background refresh runs.
         self.mockDeviceCache.stubbedOfferings = MockData.sampleOfferings
@@ -1060,19 +1059,19 @@ extension OfferingsManagerTests {
         let delivered: Atomic<Bool> = false
         manager.offerings(appUserID: MockData.anyAppUserID) { _ in delivered.value = true }
 
-        // Even on the cached path, the gate is awaited before offerings are delivered.
-        expect(mockGate.invokedAwaitReadyCount).toEventually(beGreaterThan(0))
+        // Even on the cached path, the topic is awaited before offerings are delivered.
+        expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
         expect(delivered.value) == false
 
-        mockGate.completeStoredCompletion()
+        mockRemoteConfigManager.completeStoredTopic()
         expect(delivered.value).toEventually(beTrue())
     }
 
     func testGetOfferingsFromStaleMemoryCacheDeliversImmediately() {
-        let mockGate = MockOfferingsConfigGate()
-        // Hold the gate's completion so a foreground wait, if present, would block delivery.
-        mockGate.shouldStoreCompletion = true
-        let manager = self.makeOfferingsManager(offeringsConfigGate: mockGate)
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        // Hold the topic completion so a foreground wait, if present, would block delivery.
+        mockRemoteConfigManager.shouldStoreTopicCompletion = true
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
         // Cached but stale, so the background refresh runs.
         self.mockDeviceCache.stubbedOfferings = MockData.sampleOfferings
         self.mockDeviceCache.stubbedOfferingCacheStatus = .stale
@@ -1081,13 +1080,17 @@ extension OfferingsManagerTests {
         let delivered: Atomic<Bool> = false
         manager.offerings(appUserID: MockData.anyAppUserID) { _ in delivered.value = true }
 
-        // Cached offerings are delivered immediately, not blocked on the held gate completion.
+        // Cached offerings are delivered immediately, not blocked on the held topic completion.
         expect(delivered.value).toEventually(beTrue())
+
+        // Drain the background refresh's config-ready wait so its `Task` doesn't leak past this test.
+        expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
+        mockRemoteConfigManager.completeStoredTopic()
     }
 
-    func testGetOfferingsNetworkFetchAwaitsGateBeforeDelivering() {
-        let mockGate = MockOfferingsConfigGate()
-        let manager = self.makeOfferingsManager(offeringsConfigGate: mockGate)
+    func testGetOfferingsNetworkFetchAwaitsConfigReadyBeforeDelivering() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
         self.mockDeviceCache.stubbedOfferings = nil // force a network fetch
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
@@ -1096,12 +1099,12 @@ extension OfferingsManagerTests {
         }
 
         expect(result).to(beSuccess())
-        expect(mockGate.invokedAwaitReadyCount) > 0
+        expect(mockRemoteConfigManager.invokedTopicCount) > 0
     }
 
-    func testGetOfferingsServedFromDiskOnFailureStillAwaitsGate() throws {
-        let mockGate = MockOfferingsConfigGate()
-        let manager = self.makeOfferingsManager(offeringsConfigGate: mockGate)
+    func testGetOfferingsServedFromDiskOnFailureStillAwaitsConfigReady() throws {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
         // Offerings backend fails and falls back to the disk cache.
         self.mockDeviceCache.stubbedOfferings = nil
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(.networkError(.serverDown()))
@@ -1111,14 +1114,14 @@ extension OfferingsManagerTests {
             manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
         }
 
-        // Offerings are still delivered from disk, and the gate is awaited so the offeringId →
+        // Offerings are still delivered from disk, and remote config is awaited so the offeringId →
         // workflowId map has a chance to resolve rather than being left unresolved.
         expect(result).to(beSuccess())
         expect(result?.value?.loadedFromDiskCache) == true
-        expect(mockGate.invokedAwaitReadyCount) > 0
+        expect(mockRemoteConfigManager.invokedTopicCount) > 0
     }
 
-    private func makeOfferingsManager(offeringsConfigGate: OfferingsConfigGate?) -> OfferingsManager {
+    private func makeOfferingsManager(remoteConfigManager: RemoteConfigManagerType?) -> OfferingsManager {
         return OfferingsManager(deviceCache: self.mockDeviceCache,
                                 operationDispatcher: self.mockOperationDispatcher,
                                 systemInfo: self.mockSystemInfo,
@@ -1126,7 +1129,7 @@ extension OfferingsManagerTests {
                                 offeringsFactory: self.mockOfferingsFactory,
                                 productsManager: self.mockProductsManager,
                                 diagnosticsTracker: self.mockDiagnosticsTracker,
-                                offeringsConfigGate: offeringsConfigGate)
+                                remoteConfigManager: remoteConfigManager)
     }
 
 }

@@ -703,8 +703,35 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         return self._invokedBlobDataParameters.value
     }
 
+    private let _invokedTopicCount: Atomic<Int> = .init(0)
+    var invokedTopicCount: Int { return self._invokedTopicCount.value }
+    /// When `true`, `topic(_:)` suspends until `completeStoredTopic()` is called, so tests can control
+    /// the timing of a caller awaiting it (e.g. `OfferingsManager`'s config-ready gate).
+    var shouldStoreTopicCompletion = false
+    private let _storedTopicContinuation: Atomic<CheckedContinuation<RemoteConfiguration.ConfigTopic?, Never>?> =
+        .init(nil)
+
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
-        return self.stubbedTopics[topic]
+        guard self.shouldStoreTopicCompletion else {
+            self._invokedTopicCount.modify { $0 += 1 }
+            return self.stubbedTopics[topic]
+        }
+        return await withCheckedContinuation { continuation in
+            // Resume any previously stored continuation so it can't leak if `topic(_:)` is called again
+            // before the prior call's completion is triggered.
+            self._storedTopicContinuation.getAndSet(continuation)?.resume(returning: nil)
+            // Increment only after the continuation is stored, so a test polling `invokedTopicCount`
+            // can never observe readiness before `completeStoredTopic()` has something to resume.
+            self._invokedTopicCount.modify { $0 += 1 }
+        }
+    }
+
+    /// Resumes the continuation captured by a `topic(_:)` call made while `shouldStoreTopicCompletion`
+    /// was `true`. Requires `shouldStoreTopicCompletion == true`.
+    func completeStoredTopic(with result: RemoteConfiguration.ConfigTopic? = nil) {
+        let continuation = self._storedTopicContinuation.value
+        self._storedTopicContinuation.value = nil
+        continuation?.resume(returning: result)
     }
 
     func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
