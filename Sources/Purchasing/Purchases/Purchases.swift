@@ -1065,7 +1065,10 @@ public extension Purchases {
 
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
-                self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isAppBackgrounded)
+                self.remoteConfigManager.refreshRemoteConfig(
+                    isAppBackgrounded: isAppBackgrounded,
+                    appUserID: appUserID
+                )
             }
         }
     }
@@ -1211,7 +1214,10 @@ extension Purchases {
 
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             self.updateOfferingsCache(isAppBackgrounded: isBackgrounded)
-            self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isBackgrounded)
+            self.remoteConfigManager.refreshRemoteConfig(
+                isAppBackgrounded: isBackgrounded,
+                appUserID: newAppUserID
+            )
         }
     }
 
@@ -2754,7 +2760,10 @@ private extension Purchases {
             self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
         }
 
-        self.remoteConfigManager.refreshRemoteConfigIfStale(isAppBackgrounded: isAppBackgrounded)
+        self.remoteConfigManager.refreshRemoteConfigIfStale(
+            isAppBackgrounded: isAppBackgrounded,
+            appUserID: self.appUserID
+        )
     }
 
     func updateAllCaches(completion: ((Result<CustomerInfo, PublicError>) -> Void)?) {
@@ -2789,7 +2798,10 @@ private extension Purchases {
         }
 
         self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
-        self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isAppBackgrounded)
+        self.remoteConfigManager.refreshRemoteConfig(
+            isAppBackgrounded: isAppBackgrounded,
+            appUserID: self.appUserID
+        )
     }
 
     // Used when delegate is being set

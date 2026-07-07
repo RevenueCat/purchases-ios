@@ -83,7 +83,9 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         expect(self.backend.getCustomerInfoCallCount) == 2
         expect(self.identityManager.invokedLogOutCount) == 1
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == baselineRemoteConfigRefreshCount + 1
-        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last) == true
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.isAppBackgrounded) == true
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.appUserID) ==
+            self.identityManager.currentAppUserID
     }
 
     func testLogOutWithFailure() {
@@ -146,7 +148,8 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         self.purchases.internalSwitchUser(to: "test-user-id")
 
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == baselineRefreshCount + 1
-        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last) == true
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.isAppBackgrounded) == true
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.appUserID) == "test-user-id"
     }
 
     func testSwitchUserNoOpIfAppUserIDIsSameAsCurrent() {
@@ -191,7 +194,9 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         let parameters = try XCTUnwrap(self.mockOfferingsManager.invokedUpdateOfferingsCacheParameters)
         expect(parameters.appUserID) == Self.mockLoggedInInfo.originalAppUserId
         expect(parameters.isAppBackgrounded) == isAppBackgrounded
-        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last) == isAppBackgrounded
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.isAppBackgrounded) ==
+            isAppBackgrounded
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.appUserID) == Self.appUserID
     }
 
     func testLogInFailureDoesNotUpdateOfferingsCache() {

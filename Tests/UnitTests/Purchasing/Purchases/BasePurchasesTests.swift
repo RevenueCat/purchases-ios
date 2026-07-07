@@ -673,24 +673,26 @@ extension BasePurchasesTests.MockOfferingsAPI: @unchecked Sendable {}
 
 final class MockRemoteConfigManager: RemoteConfigManagerType {
 
+    private typealias RefreshParameters = (isAppBackgrounded: Bool, appUserID: String)
+
     var isDisabled = false
 
     private(set) var invokedRefreshRemoteConfigCount = 0
     private(set) var invokedRefreshRemoteConfigIfStaleCount = 0
     private(set) var invokedClearCacheCount = 0
     private(set) var invokedCloseCount = 0
-    private(set) var invokedRefreshRemoteConfigParametersList: [Bool] = []
-    private(set) var invokedRefreshRemoteConfigIfStaleParametersList: [Bool] = []
+    private(set) var invokedRefreshRemoteConfigParametersList: [RefreshParameters] = []
+    private(set) var invokedRefreshRemoteConfigIfStaleParametersList: [RefreshParameters] = []
     private(set) var invokedClearCacheAppUserIDs: [String] = []
 
-    func refreshRemoteConfig(isAppBackgrounded: Bool) {
+    func refreshRemoteConfig(isAppBackgrounded: Bool, appUserID: String) {
         self.invokedRefreshRemoteConfigCount += 1
-        self.invokedRefreshRemoteConfigParametersList.append(isAppBackgrounded)
+        self.invokedRefreshRemoteConfigParametersList.append((isAppBackgrounded, appUserID))
     }
 
-    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool) {
+    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool, appUserID: String) {
         self.invokedRefreshRemoteConfigIfStaleCount += 1
-        self.invokedRefreshRemoteConfigIfStaleParametersList.append(isAppBackgrounded)
+        self.invokedRefreshRemoteConfigIfStaleParametersList.append((isAppBackgrounded, appUserID))
     }
 
     var stubbedTopics: [RemoteConfigTopic: RemoteConfiguration.ConfigTopic] = [:]
