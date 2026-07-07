@@ -22,6 +22,9 @@ enum RemoteConfigStrings {
     case duplicateSourceURL(String)
     case failedToParseResponse(Error)
     case malformedBlobRef(String)
+    case mergeItemsBlobDataDisabled(topic: RemoteConfigTopic, itemKeys: [String])
+    case mergeItemsBlobDataEmpty(topic: RemoteConfigTopic)
+    case mergeItemsBlobDataUnavailableItems(topic: RemoteConfigTopic, itemKeys: [String])
     case notModified
     case prefetchEnqueued(Int)
     case prefetchingBlobCount(Int)
@@ -72,6 +75,14 @@ extension RemoteConfigStrings: LogMessage {
             "\(error.localizedDescription)"
         case let .malformedBlobRef(ref):
             return "Refusing remote config blob operation with malformed ref '\(ref)'."
+        case let .mergeItemsBlobDataDisabled(topic, itemKeys):
+            return "Unable to merge remote config blob data for topic '\(topic.wireName)': " +
+                "remote config is disabled. Requested item keys: \(itemKeys.sorted().joined(separator: ", "))."
+        case let .mergeItemsBlobDataEmpty(topic):
+            return "Unable to merge remote config blob data for topic '\(topic.wireName)': no item keys requested."
+        case let .mergeItemsBlobDataUnavailableItems(topic, itemKeys):
+            return "Unable to merge remote config blob data for topic '\(topic.wireName)': " +
+                "unavailable item keys: \(itemKeys.sorted().joined(separator: ", "))."
         case .notModified:
             return "Remote config was not modified. Keeping cached configuration."
         case let .prefetchEnqueued(count):

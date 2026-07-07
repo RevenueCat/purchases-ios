@@ -749,6 +749,17 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         return try JSONDecoder.default.decode(type, from: data)
     }
 
+    var stubbedEnsureBlobsDownloadedResult = true
+    private let _invokedEnsureBlobsDownloadedRefs: Atomic<[[String]]> = .init([])
+    var invokedEnsureBlobsDownloadedRefs: [[String]] {
+        return self._invokedEnsureBlobsDownloadedRefs.value
+    }
+
+    func ensureBlobsDownloaded(_ refs: [String]) async -> Bool {
+        self._invokedEnsureBlobsDownloadedRefs.modify { $0.append(refs) }
+        return self.stubbedEnsureBlobsDownloadedResult
+    }
+
     func clearCache() {
         self.invokedClearCacheCount += 1
     }
