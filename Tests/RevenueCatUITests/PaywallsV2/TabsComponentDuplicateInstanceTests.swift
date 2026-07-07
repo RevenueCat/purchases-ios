@@ -18,27 +18,11 @@ import XCTest
 
 #if os(iOS)
 
-/// Regression test for a bug where a paywall's "manage subscription" footer button (shown/hidden
-/// via a `selected_package_condition` override) froze on the initially active tab's package no
-/// matter which tab the user actually selected.
-///
-/// Root cause: SwiftUI's `ViewThatFits` (used by `scrollableIfNecessaryWhenAvailable` to decide
-/// whether paywall content needs to scroll) evaluates both of its candidate branches to measure
-/// their ideal size. That constructs a second, non-displayed `LoadedTabsComponentView` sharing the
-/// same `TabsComponentViewModel` and parent `PackageContext` as the real, visible one. Before the
-/// fix, that duplicate got its own fresh, per-view `TabControlContext` and `onAppear` guard, so it
-/// defaulted back to the first tab and unconditionally re-seeded that tab's package into the
-/// shared `PackageContext`, clobbering whatever the user actually selected via the real, visible
-/// instance.
-///
-/// Fix: `TabControlContext` and the one-time seed guard now live on the shared
-/// `TabsComponentViewModel`, so every instance — including duplicates — reads and writes the same
-/// selected-tab state.
-///
-/// This test reproduces the duplicate instance directly (bypassing `ViewThatFits` itself, which
-/// isn't practical to drive from a unit test) by hosting two `LoadedTabsComponentView`s backed by
-/// the same `TabsComponentViewModel` and the same shared `PackageContext`, mirroring what SwiftUI
-/// constructs internally when measuring the "fits without scrolling" candidate.
+/// Regression test: `ViewThatFits` measures both of its candidate branches, which constructs a
+/// second, non-displayed `LoadedTabsComponentView` sharing the same view model and parent
+/// `PackageContext` as the real one. That duplicate used to clobber the user's real tab selection
+/// on `onAppear`. Reproduces it directly (`ViewThatFits` itself isn't practical to drive from a
+/// unit test) by hosting two view instances backed by the same view model and `PackageContext`.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 final class TabsComponentDuplicateInstanceTests: TestCase {
@@ -68,9 +52,7 @@ final class TabsComponentDuplicateInstanceTests: TestCase {
         // The real, visible instance seeds tab 1's package on first appearance.
         expect(packageContext.package?.identifier) == tab1Package.identifier
 
-        // The user switches to tab 2 via the real, interactive instance. Production code drives
-        // this through TabControlButtonComponentView tapping the shared context; mutate it
-        // directly to isolate the seeding/sharing behavior from tap-gesture plumbing.
+        // Mutate the shared context directly instead of tapping, to isolate this from gesture plumbing.
         viewModel.tabControlContext.selectedTabId = tab2Id
         RunLoop.main.run(until: Date().addingTimeInterval(0.3))
         realWindow.rootViewController?.view.setNeedsLayout()
@@ -79,9 +61,7 @@ final class TabsComponentDuplicateInstanceTests: TestCase {
 
         expect(packageContext.package?.identifier) == tab2Package.identifier
 
-        // Simulate ViewThatFits' non-displayed measurement candidate: a second
-        // LoadedTabsComponentView backed by the SAME TabsComponentViewModel and the SAME shared
-        // PackageContext.
+        // Simulate ViewThatFits' non-displayed candidate: a second view backed by the same view model.
         let phantomView = Self.makeHostableView(
             viewModel: viewModel,
             packageContext: packageContext,
@@ -97,9 +77,7 @@ final class TabsComponentDuplicateInstanceTests: TestCase {
         // The phantom's onAppear must not clobber the user's real selection.
         expect(packageContext.package?.identifier) == tab2Package.identifier
 
-        // And the phantom shares the SAME tab-selection state as the real instance — so if it were
-        // ever promoted to the displayed instance (e.g. ViewThatFits swapping which candidate is on
-        // screen), the pills would still show tab 2 instead of silently reverting to tab 1.
+        // And the phantom shares the same tab-selection state, not a fresh default.
         expect(viewModel.tabControlContext.selectedTabId) == tab2Id
     }
 

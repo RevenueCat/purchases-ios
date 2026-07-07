@@ -32,27 +32,14 @@ class TabsComponentViewModel {
     let defaultTabId: String?
     let name: String?
 
-    /// Guards the one-time propagation of the initially active tab's package into the parent
-    /// `PackageContext` on first appearance (see `LoadedTabsComponentView`'s `onAppear`).
-    ///
-    /// This lives on the view model rather than as `@State` on the view because SwiftUI's
-    /// `ViewThatFits` (used to decide whether paywall content needs to scroll) evaluates both of
-    /// its candidate branches to measure them, which constructs a second, non-displayed
-    /// `LoadedTabsComponentView` sharing this same view model instance. That duplicate's own
-    /// `onAppear` fires with its own fresh, never-interacted-with tab state; a per-view `@State`
-    /// guard can't prevent it from re-seeding and clobbering a selection the user already made via
-    /// the real, visible instance. Anchoring the guard here makes it visible to every instance
-    /// backed by this view model.
+    /// Guards the one-time propagation of the initial tab's package into the parent
+    /// `PackageContext`. Lives here, not as per-view `@State`, so SwiftUI's duplicate
+    /// `LoadedTabsComponentView` instances (from `ViewThatFits` measuring both of its branches)
+    /// share the guard instead of each re-seeding and clobbering a real tab switch.
     var didSeedInitialState = false
 
-    /// The single `TabControlContext` shared by every `LoadedTabsComponentView` instance backed by
-    /// this view model — including `ViewThatFits`'s duplicate measurement candidates.
-    ///
-    /// `TabControlContext` used to be owned per-view (`@StateObject`), so a duplicate instance got
-    /// its own fresh copy defaulting to `defaultTabId` instead of reflecting whichever tab the user
-    /// actually selected. Owning it here means every instance reads and writes the same
-    /// `selectedTabId`, so a duplicate that later becomes the displayed one still shows the tab the
-    /// user picked instead of silently reverting.
+    /// The `TabControlContext` shared by every `LoadedTabsComponentView` backed by this view
+    /// model, so a `ViewThatFits` duplicate can't diverge from the tab the user actually selected.
     lazy var tabControlContext = TabControlContext(
         controlStackViewModel: self.controlStackViewModel,
         tabIds: self.tabIds,
