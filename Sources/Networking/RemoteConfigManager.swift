@@ -57,6 +57,10 @@ protocol RemoteConfigManagerType: AnyObject {
     /// downloading its blob (or failed). Behaves like `topic(_:)` otherwise: waits for an in-flight
     /// refresh or triggers one foreground refresh before reading, and returns `nil` when the endpoint
     /// is disabled or the topic is still unavailable after refresh.
+    ///
+    /// If the topic is invalidated (e.g. an identity change) while waiting on its blobs, this re-reads
+    /// and waits again on the new snapshot's own prefetch refs rather than returning one paired with
+    /// stale blob-wait results.
     func awaitTopicReady(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic?
 
     func clearCache()
@@ -67,12 +71,19 @@ protocol RemoteConfigManagerType: AnyObject {
 extension RemoteConfigManagerType {
 
     func awaitTopicReady(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
-        guard let committed = await self.topic(topic) else { return nil }
+        guard var committed = await self.topic(topic) else { return nil }
 
-        let prefetchRefs = committed.values.compactMap { $0.prefetch ? $0.blobRef : nil }
-        await self.ensureBlobsDownloaded(prefetchRefs)
+        while true {
+            let prefetchRefs = committed.values.compactMap { $0.prefetch ? $0.blobRef : nil }
+            await self.ensureBlobsDownloaded(prefetchRefs)
 
-        return committed
+            // The topic could have been invalidated and refetched (e.g. an identity change) while
+            // waiting on its blobs. Re-reading and comparing catches that without needing this
+            // generic extension to see RemoteConfigManager's private epoch tracking.
+            guard let latest = await self.topic(topic) else { return nil }
+            guard latest != committed else { return committed }
+            committed = latest
+        }
     }
 
     func mergeItemsBlobData<T: Decodable>(
