@@ -528,6 +528,72 @@ final class RemoteConfigManagerTests: TestCase {
         expect(value) == MergedSnakeCaseWorkflowPayload(favoriteWorkflow: .init(value: "favorite"))
     }
 
+    func testMergeItemsBlobDataPreservesComplexNestedJSONValues() async throws {
+        let firstBlob = """
+        {
+          "metadata": {
+            "title": "Welcome",
+            "enabled": true,
+            "ratio": 0.75,
+            "priority": 2,
+            "tags": ["paywall", "experiment"],
+            "steps": [
+              {
+                "id": "intro",
+                "conditions": {
+                  "countries": ["US", "NL"],
+                  "minimum_version": 3
+                }
+              }
+            ]
+          }
+        }
+        """.asData
+        let secondBlob = """
+        {
+          "flags": {
+            "show_debug": false,
+            "optional_value": null
+          },
+          "variants": [
+            { "id": "control", "weight": 0.4 },
+            { "id": "treatment", "weight": 0.6 }
+          ]
+        }
+        """.asData
+        let firstRef = RCContainerTestData.blobRef(for: firstBlob)
+        let secondRef = RCContainerTestData.blobRef(for: secondBlob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: [
+                "workflows": [
+                    "wf1": .init(blobRef: firstRef),
+                    "wf2": .init(blobRef: secondRef)
+                ]
+            ])
+        )
+        self.blobStore.stubbedReadDataByRef[firstRef] = firstBlob
+        self.blobStore.stubbedReadDataByRef[secondRef] = secondBlob
+
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .workflows,
+            itemKeys: ["wf1", "wf2"],
+            as: MergedComplexPayload.self
+        )
+
+        expect(value?.wf1.metadata.title) == "Welcome"
+        expect(value?.wf1.metadata.enabled) == true
+        expect(value?.wf1.metadata.ratio) == 0.75
+        expect(value?.wf1.metadata.priority) == 2
+        expect(value?.wf1.metadata.tags) == ["paywall", "experiment"]
+        expect(value?.wf1.metadata.steps.first?.conditions.countries) == ["US", "NL"]
+        expect(value?.wf1.metadata.steps.first?.conditions.minimumVersion) == 3
+        expect(value?.wf2.flags.showDebug) == false
+        expect(value?.wf2.flags.optionalValue).to(beNil())
+        expect(value?.wf2.variants.map(\.id)) == ["control", "treatment"]
+        expect(value?.wf2.variants.map(\.weight)) == [0.4, 0.6]
+    }
+
     func testMergeItemsBlobDataDeduplicatesItemKeysPreservingFirstOccurrence() async throws {
         let blob = #"{"value":"one"}"#.asData
         let ref = RCContainerTestData.blobRef(for: blob)
@@ -2105,6 +2171,49 @@ private extension RemoteConfigManagerTests {
     struct MergedPrimitivePayload: Decodable, Equatable {
         let wf1: String
         let wf2: Int
+    }
+
+    struct MergedComplexPayload: Decodable, Equatable {
+        let wf1: ComplexFirstBlob
+        let wf2: ComplexSecondBlob
+    }
+
+    struct ComplexFirstBlob: Decodable, Equatable {
+        let metadata: ComplexMetadata
+    }
+
+    struct ComplexMetadata: Decodable, Equatable {
+        let title: String
+        let enabled: Bool
+        let ratio: Double
+        let priority: Int
+        let tags: [String]
+        let steps: [ComplexStep]
+    }
+
+    struct ComplexStep: Decodable, Equatable {
+        let id: String
+        let conditions: ComplexConditions
+    }
+
+    struct ComplexConditions: Decodable, Equatable {
+        let countries: [String]
+        let minimumVersion: Int
+    }
+
+    struct ComplexSecondBlob: Decodable, Equatable {
+        let flags: ComplexFlags
+        let variants: [ComplexVariant]
+    }
+
+    struct ComplexFlags: Decodable, Equatable {
+        let showDebug: Bool
+        let optionalValue: String?
+    }
+
+    struct ComplexVariant: Decodable, Equatable {
+        let id: String
+        let weight: Double
     }
 
     struct MergedUiConfigLikePayload: Decodable, Equatable {
