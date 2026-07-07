@@ -29,6 +29,8 @@ class UiConfigProviderTests: TestCase {
         self.provider = UiConfigProvider(manager: self.mockManager)
     }
 
+#if !os(tvOS) // For Paywalls V2
+
     func testAssemblesUiConfigFromItsFourParts() async throws {
         self.stub(
             app: #"{"colors": {}, "fonts": {}}"#,
@@ -105,13 +107,38 @@ class UiConfigProviderTests: TestCase {
     }
 
     func testRequestsWireItemKeysNotCamelCased() async throws {
+        self.stub(
+            app: #"{"colors": {}, "fonts": {}}"#,
+            localizations: #"{"en_US": {"day": "Day"}}"#,
+            variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+            customVariables: #"{"user_name": {"type": "string", "default_value": "Friend"}}"#
+        )
+
         _ = await self.provider.getUiConfig()
 
         let requestedKeys = self.mockManager.invokedBlobDataParameters
             .filter { $0.topic == .uiConfig }
             .map(\.itemKey)
-        expect(requestedKeys).to(contain(["app", "localizations", "variable_config", "custom_variables"]))
+
+        expect(Set(requestedKeys)) == Set(["app", "localizations", "variable_config", "custom_variables"])
     }
+
+#else
+
+    func testAssemblesEmptyUiConfigWhenRequiredPartsArePresent() async throws {
+        self.stub(
+            app: #"{"colors": {}, "fonts": {}}"#,
+            localizations: #"{"en_US": {"day": "Day"}}"#,
+            variableConfig: nil,
+            customVariables: nil
+        )
+
+        let uiConfig = await self.provider.getUiConfig()
+
+        expect(uiConfig) == .empty
+    }
+
+#endif
 
     private func stub(app: String?, localizations: String?, variableConfig: String?, customVariables: String?) {
         var data: [String: Data] = [:]
