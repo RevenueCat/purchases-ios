@@ -513,6 +513,13 @@ struct ViewModelFactory {
                     fallbackStackViewModel: fallbackStackViewModel
                 )
             )
+        case .webView(let component):
+            return .webView(
+                WebViewComponentViewModel(
+                    component: component,
+                    localizationProvider: localizationProvider
+                )
+            )
         case .fallbackHeader:
             // fallbackHeader is filtered out in toStackViewModel and should never reach here.
             assertionFailure("fallbackHeader should have been filtered before view model creation")
@@ -586,6 +593,8 @@ struct ViewModelFactory {
             return image.size.width == .fill ? .image : nil
         case .video(let video):
             return video.size.width == .fill ? .video : nil
+        case .webView:
+            return nil
         case .stack(let stack):
             guard let first = stack.components.first(where: {
                 if case .fallbackHeader = $0 { return false }
