@@ -60,7 +60,6 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         }
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     func handle(rawMessage: Any, isMainFrame: Bool, currentURL: URL?) {
         guard isMainFrame else {
             self.logRejected("non-main-frame")
@@ -76,29 +75,14 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
             return
         }
 
-        guard self.channelOpen else {
-            self.logRejected("channel-closed")
-            return
-        }
-        guard envelope.componentID == self.componentID else {
-            self.logRejected("component-id-mismatch")
-            return
-        }
-        guard self.originMatches(currentURL: currentURL, allowBeforeNavigation: false) else {
-            self.logRejected("origin-mismatch")
-            return
-        }
-        guard let type = envelope.type else {
-            self.logRejected("missing-type")
-            return
-        }
-
-        if type == WebViewEnvelope.messageTypeResize {
-            self.handleResize(envelope.payload)
+        guard let type = self.validatedAppFrameType(envelope, currentURL: currentURL) else {
             return
         }
 
         switch type {
+        case WebViewEnvelope.messageTypeResize:
+            // SDK-internal, regardless of kind; never forwarded to the app handler.
+            self.handleResize(envelope.payload)
         case WebViewEnvelope.messageTypeStepLoaded:
             self.deliver(type: type)
         case WebViewEnvelope.messageTypeStepComplete:
@@ -110,6 +94,41 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         default:
             self.logRejected("unknown-message-type")
         }
+    }
+
+    /// Validates a post-handshake frame and returns its app message type, or `nil` (logged) when
+    /// the frame must be dropped.
+    private func validatedAppFrameType(
+        _ envelope: WebViewEnvelope.Envelope,
+        currentURL: URL?
+    ) -> String? {
+        guard self.channelOpen else {
+            self.logRejected("channel-closed")
+            return nil
+        }
+        // App frames ride only `message`/`request`; other kinds (init/reject/response/error)
+        // are host-to-content or reply framing and must never reach the app handler.
+        guard envelope.kind == .message || envelope.kind == .request else {
+            self.logRejected("unsupported-kind")
+            return nil
+        }
+        if envelope.kind == .request, envelope.id == nil {
+            self.logRejected("request-without-id")
+            return nil
+        }
+        guard envelope.componentID == self.componentID else {
+            self.logRejected("component-id-mismatch")
+            return nil
+        }
+        guard self.originMatches(currentURL: currentURL, allowBeforeNavigation: false) else {
+            self.logRejected("origin-mismatch")
+            return nil
+        }
+        guard let type = envelope.type else {
+            self.logRejected("missing-type")
+            return nil
+        }
+        return type
     }
 
     func postVariables(componentID: String, variables: [String: PaywallWebViewValue]) {
@@ -293,7 +312,15 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
     }
 
     private var sdkVariables: [String: PaywallWebViewValue] {
-        ["locale": .string(self.localeIdentifier.replacingOccurrences(of: "_", with: "-"))]
+        ["locale": .string(Self.bcp47Tag(fromLocaleIdentifier: self.localeIdentifier))]
+    }
+
+    nonisolated static func bcp47Tag(fromLocaleIdentifier identifier: String) -> String {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            return Locale(identifier: identifier).identifier(.bcp47)
+        } else {
+            return identifier.replacingOccurrences(of: "_", with: "-")
+        }
     }
 
     private func validResizeValue(_ value: Double?, axisIsFit: Bool) -> CGFloat? {

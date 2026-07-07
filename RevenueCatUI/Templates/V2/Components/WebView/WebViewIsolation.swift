@@ -23,6 +23,7 @@ enum WebViewIsolation {
         """
     }
 
+    @MainActor
     static var compileRuleList: @MainActor (String, String) async -> WKContentRuleList? = { identifier, rules in
         await withCheckedContinuation { continuation in
             WKContentRuleListStore.default().compileContentRuleList(
@@ -30,13 +31,14 @@ enum WebViewIsolation {
                 encodedContentRuleList: rules
             ) { ruleList, error in
                 if let error {
-                    Logger.debug(Strings.paywall_web_view_content_rules_failed(error))
+                    Logger.debug(Strings.paywall_web_view_content_rules_failed(String(describing: error)))
                 }
                 continuation.resume(returning: ruleList)
             }
         }
     }
 
+    @MainActor
     private static var ruleListTask: Task<WKContentRuleList?, Never>?
 
     @MainActor

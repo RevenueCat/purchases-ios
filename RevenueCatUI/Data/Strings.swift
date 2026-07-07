@@ -112,9 +112,9 @@ enum Strings {
     // Paywalls V2 Web View
     case paywall_web_view_missing_id
     case paywall_web_view_message_rejected(reason: String)
-    case paywall_web_view_post_message_failed(Any)
+    case paywall_web_view_post_message_failed(String)
     case paywall_web_view_post_message_skipped
-    case paywall_web_view_content_rules_failed(Any)
+    case paywall_web_view_content_rules_failed(String)
     case paywall_web_view_reserved_locale_stripped
 
     // Exit Offers

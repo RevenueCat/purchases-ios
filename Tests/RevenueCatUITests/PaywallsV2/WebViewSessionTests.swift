@@ -6,6 +6,10 @@
 import XCTest
 // swiftlint:disable force_try
 
+#if canImport(WebKit)
+import WebKit
+#endif
+
 #if !os(tvOS) && canImport(WebKit)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -53,6 +57,54 @@ final class WebViewSessionTests: TestCase {
             isMainFrame: false
         )
         XCTAssertTrue(harness.messages.isEmpty)
+    }
+
+    func testFitMessageDeclaresExactlyTheFitAxes() throws {
+        let widthOnly = Harness(size: (width: true, height: false))
+        widthOnly.handle(.init(kind: .connect, componentID: ""))
+        let widthFit = try XCTUnwrap(widthOnly.outboundEnvelopes().last)
+        XCTAssertEqual(widthFit.type, WebViewEnvelope.messageTypeFit)
+        XCTAssertEqual(widthFit.payload?["width"]?.boolValue, true)
+        XCTAssertNil(widthFit.payload?["height"])
+
+        let both = Harness(size: (width: true, height: true))
+        both.handle(.init(kind: .connect, componentID: ""))
+        let bothFit = try XCTUnwrap(both.outboundEnvelopes().last)
+        XCTAssertEqual(bothFit.type, WebViewEnvelope.messageTypeFit)
+        XCTAssertEqual(bothFit.payload?["width"]?.boolValue, true)
+        XCTAssertEqual(bothFit.payload?["height"]?.boolValue, true)
+
+        let neither = Harness(size: (width: false, height: false))
+        neither.handle(.init(kind: .connect, componentID: ""))
+        XCTAssertEqual(try neither.outboundEnvelopes().map(\.kind), [.`init`])
+    }
+
+    func testDropsAppFramesWithNonAppKinds() {
+        let harness = Harness()
+        harness.connect()
+
+        for kind: WebViewEnvelope.Kind in [.`init`, .reject, .response, .error] {
+            harness.handle(.init(
+                kind: kind,
+                componentID: "web",
+                type: WebViewEnvelope.messageTypeStepLoaded,
+                id: "id-1"
+            ))
+        }
+
+        XCTAssertTrue(harness.messages.isEmpty)
+        XCTAssertTrue(harness.capturedScripts.isEmpty)
+    }
+
+    func testDropsAnyRequestWithoutID() {
+        let harness = Harness()
+        harness.connect()
+
+        harness.handle(.init(kind: .request, componentID: "web", type: WebViewEnvelope.messageTypeStepLoaded))
+        harness.handle(.init(kind: .request, componentID: "web", type: WebViewEnvelope.messageTypeRequestVariables))
+
+        XCTAssertTrue(harness.messages.isEmpty)
+        XCTAssertTrue(harness.capturedScripts.isEmpty)
     }
 
     func testStepLoadedStepCompleteAndErrorReachHandler() {
@@ -186,6 +238,7 @@ final class WebViewSessionTests: TestCase {
             kind: .request,
             componentID: "web",
             type: WebViewEnvelope.messageTypeResize,
+            id: "resize-1",
             payload: ["width": .number(200.5), "height": .number(10_000.5)]
         ))
         harness.handle(.init(
@@ -201,6 +254,103 @@ final class WebViewSessionTests: TestCase {
         XCTAssertEqual(resizes[1].0, 201)
         XCTAssertNil(resizes[1].1)
         XCTAssertTrue(harness.messages.isEmpty)
+    }
+
+    func testResizeIgnoresWidthWhenWidthIsNotFit() {
+        let harness = Harness(size: (width: false, height: true))
+        var resizes: [(CGFloat?, CGFloat?)] = []
+        harness.session.onContentResize = { resizes.append(($0, $1)) }
+        harness.connect()
+
+        harness.handle(.init(
+            kind: .message,
+            componentID: "web",
+            type: WebViewEnvelope.messageTypeResize,
+            payload: ["width": .number(400), "height": .number(500)]
+        ))
+
+        XCTAssertEqual(resizes.count, 1)
+        XCTAssertNil(resizes[0].0)
+        XCTAssertEqual(resizes[0].1, 500)
+    }
+
+    // MARK: - Round trip through a real WKWebView
+
+    func testRoundTripThroughRealWebView() throws {
+        let expectedURL = URL(string: "https://example.com/index.html")!
+        var received: [PaywallWebViewMessage] = []
+        let session = WebViewSession(
+            componentID: "web",
+            protocolVersion: 1,
+            expectedOrigin: "https://example.com",
+            localeIdentifier: "en_US",
+            fitAxes: (width: false, height: false),
+            messageHandler: PaywallWebViewMessageAction { message, _ in received.append(message) }
+        )
+
+        let configuration = WKWebViewConfiguration()
+        configuration.userContentController.add(
+            WeakScriptMessageHandler(session),
+            name: WebViewEnvelope.messageHandlerName
+        )
+        let webView = WKWebView(frame: .zero, configuration: configuration)
+        session.evaluateJavaScript = { [weak webView] script in
+            webView?.evaluateJavaScript(script)
+        }
+        session.currentURL = { [weak webView] in
+            webView?.url
+        }
+
+        let loaded = self.expectation(description: "web view finished loading")
+        let delegate = RoundTripNavigationDelegate { loaded.fulfill() }
+        webView.navigationDelegate = delegate
+        webView.loadHTMLString("<html><body>hi</body></html>", baseURL: expectedURL)
+        self.wait(for: [loaded], timeout: 10)
+
+        webView.evaluateJavaScript(
+            """
+            window.webkit.messageHandlers.\(WebViewEnvelope.messageHandlerName).postMessage(
+            '{"channel":"rc-web-components","protocol_version":1,"kind":"connect","component_id":""}'
+            );
+            window.webkit.messageHandlers.\(WebViewEnvelope.messageHandlerName).postMessage(
+            '{"channel":"rc-web-components","protocol_version":1,"kind":"message",\
+            "component_id":"web","type":"rc:step-loaded"}'
+            ); true
+            """
+        )
+
+        let delivered = self.expectation(description: "message delivered to the app handler")
+        func poll() {
+            if received.contains(where: { $0.type == WebViewEnvelope.messageTypeStepLoaded }) {
+                delivered.fulfill()
+            } else {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { poll() }
+            }
+        }
+        poll()
+        self.wait(for: [delivered], timeout: 10)
+
+        XCTAssertTrue(session.channelOpen)
+        XCTAssertEqual(received.last?.type, WebViewEnvelope.messageTypeStepLoaded)
+        withExtendedLifetime(delegate) {}
+        configuration.userContentController.removeScriptMessageHandler(
+            forName: WebViewEnvelope.messageHandlerName
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class RoundTripNavigationDelegate: NSObject, WKNavigationDelegate {
+
+    private let onFinish: () -> Void
+
+    init(onFinish: @escaping () -> Void) {
+        self.onFinish = onFinish
+    }
+
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        self.onFinish()
     }
 
 }

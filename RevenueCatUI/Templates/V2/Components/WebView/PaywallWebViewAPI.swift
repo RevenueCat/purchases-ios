@@ -138,34 +138,6 @@ public struct PaywallWebViewValue: Sendable, Equatable, Hashable, Codable {
         }
     }
 
-    func maximumDepth() -> Int {
-        switch self.storage {
-        case .array(let values):
-            return 1 + (values.map { $0.maximumDepth() }.max() ?? 0)
-        case .object(let values):
-            return 1 + (values.values.map { $0.maximumDepth() }.max() ?? 0)
-        case .string, .number, .bool, .null:
-            return 0
-        }
-    }
-
-    var objectValueForBridge: Any {
-        switch self.storage {
-        case .string(let value):
-            return value
-        case .number(let value):
-            return value
-        case .bool(let value):
-            return value
-        case .array(let values):
-            return values.map(\.objectValueForBridge)
-        case .object(let values):
-            return values.mapValues(\.objectValueForBridge)
-        case .null:
-            return NSNull()
-        }
-    }
-
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

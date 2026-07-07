@@ -87,19 +87,24 @@ private struct BridgedWebViewComponentView: View {
     }
 
     var body: some View {
-        WebViewRepresentable(url: url, expectedOrigin: session.expectedOrigin, session: session)
-            .onAppear {
-                self.session.messageHandler = self.messageHandler
-                self.session.onContentResize = { width, height in
-                    if let width {
-                        self.measuredWidth = width
-                    }
-                    if let height {
-                        self.measuredHeight = height
-                    }
+        // The handler and resize sink are (re)assigned inside the representable's make/update
+        // (not `.onAppear`) so a handler swapped into the environment after first appearance —
+        // or a connect arriving before `.onAppear` fires — always sees the current values.
+        WebViewRepresentable(
+            url: url,
+            expectedOrigin: session.expectedOrigin,
+            session: session,
+            messageHandler: messageHandler,
+            onContentResize: { width, height in
+                if let width {
+                    self.measuredWidth = width
+                }
+                if let height {
+                    self.measuredHeight = height
                 }
             }
-            .webViewSize(viewModel.size, measuredWidth: measuredWidth, measuredHeight: measuredHeight)
+        )
+        .webViewSize(viewModel.size, measuredWidth: measuredWidth, measuredHeight: measuredHeight)
     }
 
 }
@@ -135,6 +140,8 @@ private struct WebViewRepresentable: PlatformViewRepresentable {
     let url: URL
     let expectedOrigin: String
     weak var session: WebViewSession?
+    var messageHandler: PaywallWebViewMessageAction?
+    var onContentResize: (@MainActor (CGFloat?, CGFloat?) -> Void)?
 
     func makeCoordinator() -> Coordinator {
         Coordinator(expectedOrigin: expectedOrigin)
@@ -194,6 +201,9 @@ private struct WebViewRepresentable: PlatformViewRepresentable {
         webView.navigationDelegate = context.coordinator
 
         #if os(macOS)
+        // There is no public AppKit API for a fully transparent WKWebView background;
+        // `drawsBackground` via KVC is the long-standing, widely-used workaround
+        // (`underPageBackgroundColor` only affects the under-page area, not the page background).
         webView.setValue(false, forKey: "drawsBackground")
         #else
         webView.isOpaque = false
@@ -214,10 +224,12 @@ private struct WebViewRepresentable: PlatformViewRepresentable {
     }
 
     private func configureSession(for webView: PlatformWebView) {
+        self.session?.messageHandler = self.messageHandler
+        self.session?.onContentResize = self.onContentResize
         self.session?.evaluateJavaScript = { [weak webView] script in
             webView?.evaluateJavaScript(script) { _, error in
                 if let error {
-                    Logger.debug(Strings.paywall_web_view_post_message_failed(error))
+                    Logger.debug(Strings.paywall_web_view_post_message_failed(String(describing: error)))
                 }
             }
         }
