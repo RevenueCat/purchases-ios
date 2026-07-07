@@ -7,7 +7,7 @@
 
 import Foundation
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 final class RemoteConfigManagerTests: TestCase {
@@ -464,6 +464,352 @@ final class RemoteConfigManagerTests: TestCase {
         } catch {
             expect(error).toNot(beNil())
         }
+    }
+
+    #if !os(tvOS)
+    func testMergeItemsBlobDataMergesUiConfigBlobJSONUnderItemKeys() async throws {
+        let appBlob = #"{"colors": {}, "fonts": {}}"#.asData
+        let localizationsBlob = #"{"en_US": {"day": "Day"}}"#.asData
+        let variableConfigBlob = """
+        {
+          "variable_compatibility_map": { "title": "string" },
+          "function_compatibility_map": { "uppercase": "string" }
+        }
+        """.asData
+        let customVariablesBlob = #"{"user_name": {"type": "string", "default_value": "Friend"}}"#.asData
+        let appRef = RCContainerTestData.blobRef(for: appBlob)
+        let localizationsRef = RCContainerTestData.blobRef(for: localizationsBlob)
+        let variableConfigRef = RCContainerTestData.blobRef(for: variableConfigBlob)
+        let customVariablesRef = RCContainerTestData.blobRef(for: customVariablesBlob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.ui_config:etag1",
+            topics: .init(entries: [
+                "ui_config": [
+                    "app": .init(blobRef: appRef),
+                    "localizations": .init(blobRef: localizationsRef),
+                    "variable_config": .init(blobRef: variableConfigRef),
+                    "custom_variables": .init(blobRef: customVariablesRef)
+                ]
+            ])
+        )
+        self.blobStore.stubbedReadDataByRef[appRef] = appBlob
+        self.blobStore.stubbedReadDataByRef[localizationsRef] = localizationsBlob
+        self.blobStore.stubbedReadDataByRef[variableConfigRef] = variableConfigBlob
+        self.blobStore.stubbedReadDataByRef[customVariablesRef] = customVariablesBlob
+
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .uiConfig,
+            itemKeys: ["app", "localizations", "variable_config", "custom_variables"],
+            as: UIConfig.self
+        )
+
+        expect(value?.localizations["en_US"]?["day"]) == "Day"
+        expect(value?.variableConfig.variableCompatibilityMap["title"]) == "string"
+        expect(value?.variableConfig.functionCompatibilityMap["uppercase"]) == "string"
+        expect(value?.customVariables["user_name"]?.type) == "string"
+        expect(value?.customVariables["user_name"]?.defaultValue) == "Friend"
+    }
+    #endif
+
+    func testMergeItemsBlobDataUsesItemKeyAsDecodedPropertyName() async throws {
+        let blob = #"{"value":"favorite"}"#.asData
+        let ref = RCContainerTestData.blobRef(for: blob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: [
+                "workflows": ["favorite_workflow": .init(blobRef: ref)]
+            ])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = blob
+
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .workflows,
+            itemKeys: ["favorite_workflow"],
+            as: MergedSnakeCaseWorkflowPayload.self
+        )
+
+        expect(value) == MergedSnakeCaseWorkflowPayload(favoriteWorkflow: .init(value: "favorite"))
+    }
+
+    func testMergeItemsBlobDataDeduplicatesItemKeysPreservingFirstOccurrence() async throws {
+        let blob = #"{"value":"one"}"#.asData
+        let ref = RCContainerTestData.blobRef(for: blob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["wf1": .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = blob
+
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .workflows,
+            itemKeys: ["wf1", "wf1"],
+            as: SingleMergedWorkflowPayload.self
+        )
+
+        expect(value) == SingleMergedWorkflowPayload(wf1: .init(value: "one"))
+        expect(self.blobFetcher.invokedEnsureDownloadedRefs) == [ref]
+        expect(self.blobStore.invokedReadRefs) == [ref]
+    }
+
+    func testMergeItemsBlobDataReturnsNilForEmptyItemKeysWithoutRefreshingOrReadingBlobs() async throws {
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .workflows,
+            itemKeys: [],
+            as: SingleMergedWorkflowPayload.self
+        )
+
+        expect(value).to(beNil())
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
+        expect(self.blobFetcher.invokedEnsureDownloadedRefs).to(beEmpty())
+        expect(self.blobStore.invokedReadRefs).to(beEmpty())
+        self.logger.verifyMessageWasLogged(
+            Strings.remoteConfig.mergeItemsBlobDataEmpty(topic: .workflows),
+            level: .warn
+        )
+    }
+
+    func testMergeItemsBlobDataReturnsNilWhenItemIsMissingAfterRefresh() async throws {
+        self.diskCache.writeHandler = { configuration in
+            self.diskCache.stubbedRead = configuration
+            return true
+        }
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.workflows:etag2",
+          "active_topics": ["workflows"],
+          "topics": {
+            "workflows": {
+              "other": {}
+            }
+          }
+        }
+        """
+
+        let task = Task {
+            try await self.manager.mergeItemsBlobData(
+                for: .workflows,
+                itemKeys: ["wf1"],
+                as: SingleMergedWorkflowPayload.self
+            )
+        }
+        await self.waitForRemoteConfigRequestCount(1)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        let value = try await task.value
+        expect(value).to(beNil())
+        expect(self.blobFetcher.invokedEnsureDownloadedRefs).to(beEmpty())
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        self.logger.verifyMessageWasLogged(
+            Strings.remoteConfig.mergeItemsBlobDataUnavailableItems(topic: .workflows, itemKeys: ["wf1"]),
+            level: .warn
+        )
+    }
+
+    func testMergeItemsBlobDataReturnsNilWhenItemHasNoBlobRef() async throws {
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["wf1": .init(content: ["id": "inline"])]])
+        )
+
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .workflows,
+            itemKeys: ["wf1"],
+            as: SingleMergedWorkflowPayload.self
+        )
+
+        expect(value).to(beNil())
+        expect(self.blobFetcher.invokedEnsureDownloadedRefs).to(beEmpty())
+        self.logger.verifyMessageWasLogged(
+            Strings.remoteConfig.mergeItemsBlobDataUnavailableItems(topic: .workflows, itemKeys: ["wf1"]),
+            level: .warn
+        )
+    }
+
+    func testMergeItemsBlobDataReturnsNilWhenBlobDownloadFails() async throws {
+        let blob = #"{"value":"one"}"#.asData
+        let ref = RCContainerTestData.blobRef(for: blob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["wf1": .init(blobRef: ref)]])
+        )
+        self.blobFetcher.stubbedEnsureDownloadedResult = false
+
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .workflows,
+            itemKeys: ["wf1"],
+            as: SingleMergedWorkflowPayload.self
+        )
+
+        expect(value).to(beNil())
+        expect(self.blobFetcher.invokedEnsureDownloadedRefs) == [ref]
+        expect(self.blobStore.invokedReadRefs).to(beEmpty())
+        self.logger.verifyMessageWasLogged(
+            Strings.remoteConfig.mergeItemsBlobDataUnavailableItems(topic: .workflows, itemKeys: ["wf1"]),
+            level: .warn
+        )
+    }
+
+    func testMergeItemsBlobDataReturnsNilWhenBlobReadFails() async throws {
+        let blob = #"{"value":"one"}"#.asData
+        let ref = RCContainerTestData.blobRef(for: blob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["wf1": .init(blobRef: ref)]])
+        )
+
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .workflows,
+            itemKeys: ["wf1"],
+            as: SingleMergedWorkflowPayload.self
+        )
+
+        expect(value).to(beNil())
+        expect(self.blobFetcher.invokedEnsureDownloadedRefs) == [ref]
+        expect(self.blobStore.invokedReadRefs) == [ref]
+        self.logger.verifyMessageWasLogged(
+            Strings.remoteConfig.mergeItemsBlobDataUnavailableItems(topic: .workflows, itemKeys: ["wf1"]),
+            level: .warn
+        )
+    }
+
+    func testMergeItemsBlobDataColdReadTriggersSingleForegroundRefresh() async throws {
+        let firstBlob = #"{"value":"one"}"#.asData
+        let secondBlob = #"{"value":"two"}"#.asData
+        let firstRef = RCContainerTestData.blobRef(for: firstBlob)
+        let secondRef = RCContainerTestData.blobRef(for: secondBlob)
+        self.diskCache.writeHandler = { configuration in
+            self.diskCache.stubbedRead = configuration
+            return true
+        }
+        self.blobStore.stubbedReadDataByRef[firstRef] = firstBlob
+        self.blobStore.stubbedReadDataByRef[secondRef] = secondBlob
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.workflows:etag2",
+          "active_topics": ["workflows"],
+          "topics": {
+            "workflows": {
+              "wf1": { "blob_ref": "\(firstRef)" },
+              "wf2": { "blob_ref": "\(secondRef)" }
+            }
+          }
+        }
+        """
+
+        let task = Task {
+            try await self.manager.mergeItemsBlobData(
+                for: .workflows,
+                itemKeys: ["wf1", "wf2"],
+                as: MergedWorkflowPayload.self
+            )
+        }
+        await self.waitForRemoteConfigRequestCount(1)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.isAppBackgrounded) == false
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        let value = try await task.value
+        expect(value) == MergedWorkflowPayload(wf1: .init(value: "one"), wf2: .init(value: "two"))
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+    }
+
+    func testMergeItemsBlobDataReturnsNilWhenRemoteConfigIsDisabledWithoutReadingBlobs() async throws {
+        let blob = #"{"value":"one"}"#.asData
+        let ref = RCContainerTestData.blobRef(for: blob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["wf1": .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = blob
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
+
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .workflows,
+            itemKeys: ["wf1"],
+            as: SingleMergedWorkflowPayload.self
+        )
+
+        expect(value).to(beNil())
+        expect(self.blobFetcher.invokedEnsureDownloadedRefs).to(beEmpty())
+        expect(self.blobStore.invokedReadRefs).to(beEmpty())
+        self.logger.verifyMessageWasLogged(
+            Strings.remoteConfig.mergeItemsBlobDataDisabled(topic: .workflows, itemKeys: ["wf1"]),
+            level: .warn
+        )
+    }
+
+    func testMergeItemsBlobDataThrowsWhenBlobDataIsNotValidJSON() async throws {
+        let blob = "{ invalid json".asData
+        let ref = RCContainerTestData.blobRef(for: blob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["wf1": .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = blob
+
+        do {
+            _ = try await self.manager.mergeItemsBlobData(
+                for: .workflows,
+                itemKeys: ["wf1"],
+                as: SingleMergedWorkflowPayload.self
+            )
+            fail("Expected decoding to fail")
+        } catch {
+            expect(error).toNot(beNil())
+        }
+    }
+
+    func testMergeItemsBlobDataThrowsWhenMergedObjectCannotDecode() async throws {
+        let blob = #"{"value":1}"#.asData
+        let ref = RCContainerTestData.blobRef(for: blob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["wf1": .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = blob
+
+        do {
+            _ = try await self.manager.mergeItemsBlobData(
+                for: .workflows,
+                itemKeys: ["wf1"],
+                as: SingleMergedWorkflowPayload.self
+            )
+            fail("Expected decoding to fail")
+        } catch {
+            expect(error).toNot(beNil())
+        }
+    }
+
+    func testMergeItemsBlobDataSupportsNonObjectJSONValues() async throws {
+        let stringBlob = #""hello""#.asData
+        let intBlob = "42".asData
+        let stringRef = RCContainerTestData.blobRef(for: stringBlob)
+        let intRef = RCContainerTestData.blobRef(for: intBlob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: [
+                "workflows": [
+                    "wf1": .init(blobRef: stringRef),
+                    "wf2": .init(blobRef: intRef)
+                ]
+            ])
+        )
+        self.blobStore.stubbedReadDataByRef[stringRef] = stringBlob
+        self.blobStore.stubbedReadDataByRef[intRef] = intBlob
+
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .workflows,
+            itemKeys: ["wf1", "wf2"],
+            as: MergedPrimitivePayload.self
+        )
+
+        expect(value) == MergedPrimitivePayload(wf1: "hello", wf2: 42)
     }
 
     func testContainerResponsePersistsServerManifestAndChangedTopics() throws {
@@ -1740,6 +2086,28 @@ private extension RemoteConfigManagerTests {
 
     struct WorkflowPayload: Decodable, Equatable {
         let id: String
+    }
+
+    struct MergedSection: Decodable, Equatable {
+        let value: String
+    }
+
+    struct MergedWorkflowPayload: Decodable, Equatable {
+        let wf1: MergedSection
+        let wf2: MergedSection
+    }
+
+    struct SingleMergedWorkflowPayload: Decodable, Equatable {
+        let wf1: MergedSection
+    }
+
+    struct MergedSnakeCaseWorkflowPayload: Decodable, Equatable {
+        let favoriteWorkflow: MergedSection
+    }
+
+    struct MergedPrimitivePayload: Decodable, Equatable {
+        let wf1: String
+        let wf2: Int
     }
 
 }
