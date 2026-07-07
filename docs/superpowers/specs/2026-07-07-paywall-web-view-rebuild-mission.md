@@ -34,7 +34,7 @@ Dashboard-authored paywalls may include a component:
 
 The SDK loads the literal HTTPS `url` in a non-persistent `WKWebView`. The URL is static: it is not localized, templated, or resolved against dashboard custom variables. Runtime variables flow only through the bridge.
 
-If the component is invisible, invalid, unsupported, blocked by content isolation setup failure, or fails a determined main-frame load, RevenueCatUI renders the component's decoded generic `fallback` when present. If no fallback exists, it renders nothing.
+If the component is invisible, RevenueCatUI renders nothing. If the component is invalid, unsupported, blocked by content isolation setup failure, or fails a determined main-frame load, RevenueCatUI renders the component's decoded generic `fallback` when present. If no fallback exists, it renders nothing.
 
 ## Canonical wire contract
 
@@ -219,15 +219,15 @@ Suggested files:
 
 - `WebViewComponentViewModel.swift`: resolves visible/style state and validates the literal HTTPS URL.
 - `WebViewComponentView.swift`: SwiftUI view, measured-size state, fallback rendering, and visual modifiers.
-- `WebViewRepresentable.swift`: one file with shared coordinator/session code and small `#if os(macOS)` / `#else` protocol conformances.
+- `WebViewRepresentable.swift`: one file with shared coordinator/session code and small platform conformances gated by `canImport(WebKit)` and explicit `!os(tvOS)` / `!os(watchOS)` checks.
 
-The view owns the session with `@StateObject` and uses SwiftUI identity to manage lifecycle:
+The view owns the session with `@StateObject` on platforms where WebKit rendering is supported and uses SwiftUI identity to manage lifecycle:
 
 ```swift
 .id("\(viewModel.componentID)|\(url.absoluteString)")
 ```
 
-When URL or component id changes, SwiftUI creates a new web view and a new session. Do not manually reuse a session across URLs.
+When URL or component id changes, SwiftUI creates a new web view and a new session. Do not manually reuse a session across URLs. On platforms where `WKWebView` is unavailable or intentionally unsupported, the component should render its fallback or nothing without importing WebKit.
 
 Sizing has one path:
 

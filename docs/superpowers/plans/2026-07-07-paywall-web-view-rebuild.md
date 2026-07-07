@@ -51,7 +51,7 @@ Create or modify these files. If the repository moves files before implementatio
 - Create: `RevenueCatUI/Data/PaywallWebViewMessage.swift`
 - Create: `RevenueCatUI/Data/PaywallWebViewController.swift`
 - Create: `RevenueCatUI/Data/PaywallWebViewMessageEnvironment.swift`
-- Modify: `Tests/APITesters/SwiftAPITester/RevenueCatUITester.swift`
+- Create: `Tests/APITesters/AllAPITests/RevenueCatUISwiftAPITester/PaywallWebViewAPI.swift`
 - Modify: Objective-C API tester only if any new API is exposed to Objective-C; the intended API is SwiftUI-only and does not need Obj-C surface.
 - Test: `Tests/RevenueCatUITests/PaywallsV2/PaywallWebViewValueTests.swift`
 
@@ -142,7 +142,7 @@ final class PaywallWebViewComponentTests: TestCase {
     func testEncodesWebViewComponentWithSnakeCaseType() throws
     func testDecodesGenericFallbackComponent() throws
     func testRejectsMissingProtocolVersion() throws
-    func testRejectsUnsupportedProtocolVersionAtSchemaLayerOnlyWhenBackendContractRequiresStrictOne() throws
+    func testDecodesUnsupportedProtocolVersionForRendererDecision() throws
     func testCacheWarmingSkipsWebViewURL() throws
 }
 ```
@@ -264,6 +264,8 @@ case webView = "web_view"
 
 Add encode and decode switch cases matching existing component patterns.
 
+Unsupported `protocol_version` values must decode into `WebViewComponent.protocolVersion`. The renderer decides whether to render fallback for unsupported versions. Schema decoding should throw for a missing required `protocol_version`, but not for an unsupported numeric value because throwing would discard the decoded fallback.
+
 - [ ] **Step 4: Skip cache warming**
 
 In `PaywallV2CacheWarming`, add `.webView` to the cases that return no image or video URLs. The web view loads the remote HTTPS URL directly and should not be prefetched into the SDK file cache.
@@ -299,7 +301,7 @@ git commit -m "Add Paywalls V2 web view schema"
 - Create: `RevenueCatUI/Data/PaywallWebViewMessage.swift`
 - Create: `RevenueCatUI/Data/PaywallWebViewController.swift`
 - Create: `RevenueCatUI/Data/PaywallWebViewMessageEnvironment.swift`
-- Modify: `Tests/APITesters/SwiftAPITester/RevenueCatUITester.swift`
+- Create: `Tests/APITesters/AllAPITests/RevenueCatUISwiftAPITester/PaywallWebViewAPI.swift`
 - Test: `Tests/RevenueCatUITests/PaywallsV2/PaywallWebViewValueTests.swift`
 
 - [ ] **Step 1: Write value tests**
@@ -415,13 +417,14 @@ Run:
 
 ```bash
 bundle exec fastlane ios test_revenuecatui
-bundle exec fastlane ios run_api_tests
 ```
+
+Do not run `bundle exec fastlane ios run_api_tests` as a required gate in this task. The new public API will require RevenueCatUI swiftinterface baseline handling, which is intentionally centralized in Task 10 after all public surface is stable.
 
 Commit:
 
 ```bash
-git add RevenueCatUI/Data/PaywallWebViewValue.swift RevenueCatUI/Data/PaywallWebViewMessage.swift RevenueCatUI/Data/PaywallWebViewController.swift RevenueCatUI/Data/PaywallWebViewMessageEnvironment.swift Tests/APITesters/SwiftAPITester/RevenueCatUITester.swift Tests/RevenueCatUITests/PaywallsV2/PaywallWebViewValueTests.swift
+git add RevenueCatUI/Data/PaywallWebViewValue.swift RevenueCatUI/Data/PaywallWebViewMessage.swift RevenueCatUI/Data/PaywallWebViewController.swift RevenueCatUI/Data/PaywallWebViewMessageEnvironment.swift Tests/APITesters/AllAPITests/RevenueCatUISwiftAPITester/PaywallWebViewAPI.swift Tests/RevenueCatUITests/PaywallsV2/PaywallWebViewValueTests.swift
 git commit -m "Add web view message API"
 ```
 
@@ -678,6 +681,7 @@ func testUnknownMessageTypeIsDropped() throws
 func testResizeUpdatesMeasuredSizeAndDoesNotReachAppHandler() throws
 func testResizeRequestDoesNotReachAppHandler() throws
 func testPostVariablesStripsReservedLocaleKey() throws
+func testSDKVariablesUseBCP47LocaleIdentifier() throws
 ```
 
 - [ ] **Step 2: Implement SDK variables**
@@ -685,10 +689,10 @@ func testPostVariablesStripsReservedLocaleKey() throws
 SDK-managed variables in v1:
 
 ```swift
-["locale": PaywallWebViewValue(locale.identifier)]
+["locale": PaywallWebViewValue(locale.bcp47Identifier)]
 ```
 
-Use a BCP-47 identifier. If the repository has an existing Locale extension for preferred BCP-47 identifiers, use it; otherwise use `Locale.identifier` and add a test for a stable injected locale.
+Use a BCP-47 identifier with hyphens, for example `en-US`, not the underscore form commonly returned by `Locale.identifier`. If the repository has an existing Locale extension for preferred BCP-47 identifiers, use it. Otherwise, normalize the injected locale identifier by replacing underscores with hyphens and add a test that `Locale(identifier: "en_US")` produces `en-US`.
 
 - [ ] **Step 3: Implement `rc:request-variables`**
 
@@ -862,6 +866,7 @@ final class WebViewComponentViewModelTests: TestCase {
     func testMissingHostIsRejected() throws
     func testURLContainingTemplateSyntaxIsRejected() throws
     func testUnsupportedProtocolVersionIsMarkedUnsupported() throws
+    func testUnsupportedProtocolVersionPreservesFallbackViewModel() throws
     func testHashableIncludesComponentIDAndURL() throws
     func testFallbackViewModelIsBuiltWhenFallbackExists() throws
 }
@@ -945,6 +950,8 @@ Add tests:
 final class WebViewComponentViewTests: TestCase {
     func testInvalidURLRendersFallback() throws
     func testUnsupportedProtocolVersionRendersFallback() throws
+    func testInvisibleComponentRendersNothingEvenWhenFallbackExists() throws
+    func testUnsupportedWebKitPlatformRendersFallbackWhenAvailable() throws
     func testNoFallbackRendersEmptyForInvalidURL() throws
     func testFitHeightUsesMeasuredResizeHeight() throws
     func testFixedHeightIgnoresMeasuredResizeHeight() throws
@@ -978,15 +985,17 @@ Sizing:
 
 - [ ] **Step 3: Implement representable**
 
-Keep one file. Use conditional conformances:
+Keep one file. Gate every WebKit import and representable conformance so watchOS and tvOS builds do not reference unavailable WebKit APIs. Use conditional conformances:
 
 ```swift
-#if os(macOS)
+#if canImport(WebKit) && os(macOS)
 extension WebViewRepresentable: NSViewRepresentable { ... }
-#else
+#elseif canImport(WebKit) && !os(tvOS) && !os(watchOS)
 extension WebViewRepresentable: UIViewRepresentable { ... }
 #endif
 ```
+
+On unsupported platforms, `WebViewComponentView` must compile without importing WebKit and must render fallback or `EmptyView` based on the view model state. The schema and public value/message API may still compile on those platforms.
 
 Shared setup:
 
@@ -1234,7 +1243,7 @@ The final branch must include tests that cover every row.
 
 | Area | Required tests |
 | --- | --- |
-| Schema | decode, encode, missing required protocol version, fallback decode, hash/equality |
+| Schema | decode, encode, missing required protocol version, unsupported protocol version preserved for renderer fallback, fallback decode, hash/equality |
 | Cache warming | web view URL is not image/video cached |
 | URL validation | valid HTTPS accepted; http/file/custom/missing-host/template syntax rejected |
 | Public values | string, number, bool, null, array, object, Codable round trips, depth limit |
@@ -1242,14 +1251,14 @@ The final branch must include tests that cover every row.
 | Origin | default port normalization, case-insensitive host, scheme/port mismatch |
 | Handshake | connect-init, version reject, frames before init dropped |
 | Fit sizing | fit envelope after init, only fit axes included |
-| Variables | request response echoes id/type, message reply uses rc:variables, payload flat |
+| Variables | request response echoes id/type, message reply uses rc:variables, payload flat, locale is BCP-47 hyphenated |
 | App messages | step loaded, step complete responses, error, unknown drop |
 | Resize | updates measured fit axes, clamps values, ignores invalid values, never reaches app handler |
 | Outbound | `postVariables`, `postMessage`, reserved locale stripping, origin-gated delivery |
 | Isolation | exact rule policy, identifier version, compile-once behavior, fail-closed behavior |
 | Navigation | same-origin main-frame allowed, cross-origin main-frame canceled, subframes allowed |
 | Load failure | HTTP 400+ fallback, benign cancellation ignored, non-benign main-frame failure fallback |
-| Rendering | invalid URL fallback, unsupported protocol fallback, no fallback empty, fit-height frame |
+| Rendering | invalid URL fallback, unsupported protocol fallback, invisible renders nothing, unsupported WebKit platform fallback/no-op, no fallback empty, fit-height frame |
 | API | Swift API tester compiles; swiftinterface baselines updated when needed |
 
 ## Definition of done
