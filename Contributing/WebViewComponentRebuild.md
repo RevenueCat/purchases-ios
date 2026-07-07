@@ -1,7 +1,7 @@
 # Mission: rebuild the Paywalls V2 `web_view` component from scratch
 
 **Audience:** an autonomous coding agent working in this repository (`RevenueCat/purchases-ios`), starting from `main`.
-**Goal:** a functionally complete `web_view` component that is materially simpler than the prototype PR stack it replaces: fewer types, one owner for session state, one test seam, one sizing path.
+**Goal:** a functionally complete `web_view` component that is materially simpler than the prototype PR stack it replaces: fewer types, one owner for session state, exactly two explicit test seams (§4.2), one sizing path. Where any summary phrasing in this document conflicts with a numbered section, **the numbered section is authoritative**.
 **You are done when every box in [Definition of done](#definition-of-done) is checked and the [verification loop](#verification-loop) is green.**
 
 ---
@@ -34,7 +34,7 @@ New component type in the core SDK (`Sources/Paywalls/Components/`):
 | `id` | `id` | `String?` | optional. Doubles as the bridge `component_id`. **No `id` ⇒ bridge disabled** (render-only). |
 | `name` | `name` | `String?` | optional |
 | `visible` | `visible` | `Bool?` | optional; treat `nil` as `true` |
-| `protocol_version` | `protocolVersion` | `Int` | optional in JSON, **default `1`** when absent. Only `1` is supported; other values are decoded and preserved, and cause the handshake to `reject` (§3). |
+| `protocol_version` | `protocolVersion` | `Int` | optional in JSON, **default `1`** when absent. Decoded and preserved, but **not** used as the host's capability: the host's supported version is the hard-coded constant `1` (§3). |
 | `url` | `url` | `String` | required. A **literal, static HTTPS URL** — never a template. No variable substitution anywhere. |
 | `size` | `size` | `PaywallComponent.Size` | optional; default `width: .fill, height: .fit` |
 
@@ -79,8 +79,8 @@ Drop silently (debug log only): wrong/missing `channel`, unknown `kind`, non-JSO
 ### Handshake
 
 1. Content sends `kind:"connect"` with its `protocol_version` (`component_id` may be `""`). It retries until answered.
-2. If `envelope.protocol_version == host protocol version` (from the schema, default 1): mark channel **open**, reply `kind:"init"` with the real `component_id`.
-3. Else reply `kind:"reject"`, `component_id:""`, `error:"Unsupported protocol_version N; native host supports M"`. Channel stays closed.
+2. **The host's supported protocol version is the hard-coded constant `1`** (`WebViewEnvelope.defaultProtocolVersion`) — NOT the schema's decoded `protocolVersion`. Rationale: the envelope version is the wire+SDK major the content speaks; this SDK build implements exactly v1, so it must never accept a handshake for a version it cannot service, even if a future schema declares one. (Known deviation from the current Android prototype, which uses the schema value — do not copy that.) If `envelope.protocol_version == 1`: mark channel **open**, reply `kind:"init"` with the real `component_id`.
+3. Else reply `kind:"reject"`, `component_id:""`, `error:"Unsupported protocol_version N; native host supports 1"`. Channel stays closed.
 4. Immediately after `init`, if either size axis is `fit`, send the `fit` message (below).
 5. All `message`/`request` frames received while the channel is closed are dropped (debug log).
 6. A duplicate `connect` while open is ignored (matches Android).
@@ -110,8 +110,8 @@ Valid app messages are delivered to the app handler as `PaywallWebViewMessage` o
 
 ### `fit` / `resize` sizing messages
 
-- Host → content `type:"fit"`, `kind:"message"`, payload with only the host-managed axes: `{"width": true}` and/or `{"height": true}`. Sent once after `init`. Omit the message entirely if neither axis is `fit`.
-- Content → host `type:"resize"`, payload `{"width": <px>, "height": <px>}` (either axis may be absent). Validate: finite, > 0; clamp to **10,000**; ignore invalid values; only apply to axes whose schema size is `fit`.
+- Host → content `type:"fit"`, `kind:"message"`, payload declaring only the axes the host actually manages. **In v1 the host manages height only (§7), so the payload is exactly `{"height": true}`, sent once after `init` when the schema height is `fit` — and the message is omitted entirely otherwise. Never declare `width`, even when the schema width is `fit`** (declaring an axis makes the content suppress its scrollbar there; declaring an axis we never resize would strand the content with neither scrolling nor fitting).
+- Content → host `type:"resize"`, payload `{"width": <px>, "height": <px>}` (either axis may be absent). Validate: finite, > 0; clamp to **10,000**; ignore invalid values. Apply the height to a `fit` height axis; **ignore reported widths entirely in v1**.
 
 ### Limits
 
@@ -290,8 +290,9 @@ Identifier `rc-webview-v2-isolation`. **Fail closed:** if the rules fail to comp
 ## 7. Sizing behavior (fixed)
 
 - `fixed` → exact points. `fill` → expand. `relative` → fraction of parent where the shared size-modifier conventions support it.
-- `fit` height: 100 pt placeholder until the first valid `resize`, then the reported height (clamped ≤ 10,000). `fit` width: same mechanism if straightforward; otherwise placeholder-only is acceptable for v1 — document the choice.
-- Reported sizes only apply to axes that are `fit` in the schema. New session (URL change) starts from the placeholder again (free, since the session is recreated).
+- `fit` height: 100 pt placeholder until the first valid `resize`, then the reported height (clamped ≤ 10,000).
+- `fit` width (decided, no discretion): **treated as `fill` for layout in v1**, with a code comment marking it a documented v1 limitation. No reported width is ever applied, and the `fit` handshake message never declares `width` (§3).
+- Reported heights only apply when the schema height is `fit`. A new session (URL change) starts from the placeholder again (free, since the session is recreated).
 
 ---
 
@@ -303,13 +304,13 @@ Tests live in `Tests/RevenueCatUITests/PaywallsV2/`. All message-flow tests cons
 
 **`PaywallWebViewValueTests`** — port the prototype's suite: factory/accessor symmetry, Hashable, Codable round-trip for all six cases, number/bool disambiguation, `-0.0`/`NaN` handling documented.
 
-**`WebViewSessionHandshakeTests`** — `connect` v1 → captured `init` with real component_id and channel open; `connect` v2 → captured `reject` with exact error string `Unsupported protocol_version 2; native host supports 1`, channel closed; app message before connect → dropped, nothing captured; duplicate connect while open → ignored (no second init); `connect` when size has a `fit` axis → `fit` message captured after `init` with only the fit axes as booleans; no `fit` message when neither axis is fit; non-main-frame frame → dropped; string body and dictionary body both accepted.
+**`WebViewSessionHandshakeTests`** — `connect` v1 → captured `init` with real component_id and channel open; `connect` v2 → captured `reject` with exact error string `Unsupported protocol_version 2; native host supports 1`, channel closed; app message before connect → dropped, nothing captured; duplicate connect while open → ignored (no second init); `connect` when schema height is `fit` → `fit` message captured after `init` with payload exactly `{"height": true}`; no `fit` message when height is not fit — **including when only width is fit** (v1 manages height only, §7); non-main-frame frame → dropped; string body and dictionary body both accepted.
 
 **`WebViewSessionMessagingTests`** — `rc:step-loaded` reaches handler with correct componentID/type; `rc:step-complete` with `payload.responses` → responses extracted; with flat payload → whole payload as responses; with a reserved key in flat payload → dropped; `rc:error` with `payload.error` → error surfaced; missing error → dropped; unknown type → dropped, handler not called; component_id mismatch → dropped; `rc:request-variables` as message → captured `rc:variables` message whose payload == `{"locale": <BCP-47>}` flat (assert **no** `variables` key), then handler invoked; as request with id `req-1` → captured `response` with same id and type `rc:request-variables`, payload = variables; as request without id → dropped entirely; auto-reply fires with `messageHandler == nil`; locale formats as BCP-47 (`en_US` → `en-US`, `zh_Hans_CN` contains no underscore).
 
 **`WebViewSessionOutboundTests`** — `postVariables` strips reserved `locale` key (and logs) but preserves other keys; `post`/`postVariables` while channel closed → nothing captured; outbound after simulated navigation to a different origin → nothing captured; origin comparison: default port 443 equal, host case-insensitive, different port unequal, different scheme unequal; payloads with all six value types serialize correctly.
 
-**`WebViewSessionResizeTests`** — `resize` as `kind:"message"` updates the fit axis and is NOT forwarded to the app handler; `resize` as `kind:"request"` also not forwarded; height applies only when schema height is `.fit`; width report on a non-fit width ignored; non-finite / zero / negative ignored; 99,999 clamps to 10,000.
+**`WebViewSessionResizeTests`** — `resize` as `kind:"message"` updates the fit height and is NOT forwarded to the app handler; `resize` as `kind:"request"` also not forwarded; height applies only when schema height is `.fit`; reported widths are always ignored (even when schema width is `.fit`); non-finite / zero / negative ignored; 99,999 clamps to 10,000.
 
 **`WebViewIsolationTests`** — rules JSON is valid JSON; exactly 2 block rules; image/script/font rule is third-party-only; raw rule is third-party-only; no `data:` blocking rule; identifier == `rc-webview-v2-isolation`; *(integration)* `loadIsolated`-equivalent with an injected failing compile → `webView.url` stays nil (fail closed).
 
@@ -358,7 +359,7 @@ Check every box. If any box cannot be checked, the mission is not complete — f
 - [ ] `api/revenuecatui-api-*.swiftinterface` baselines regenerated (or, if no Mac is available, the PR body states this explicitly and names the lane).
 - [ ] Log strings added to `Strings.swift` with cases covered by the `description` switch.
 - [ ] CHANGELOG untouched (feature is unreleased; release notes happen at ship time).
-- [ ] PR(s) opened as drafts with bodies mapping each §4 file to its purpose and each §8 suite to its coverage. Respect the repo's ~300-hand-written-line PR guidance by stacking (schema → core session/envelope → rendering → public API/wiring) or apply the `skip-pr-lines-changed-check` label with justification.
+- [ ] **One** branch and **one** draft PR (decided — do not stack; stacking multiplies CI-loop cost for an autonomous agent). Use clean logical commits (schema → envelope/session → isolation → rendering → public API/wiring → tests), apply the `skip-pr-lines-changed-check` label with a one-line justification, and note in the PR body that the branch can be split into a review stack later if the team prefers. The body must map each §4 file to its purpose and each §8 suite to its coverage.
 
 ---
 
