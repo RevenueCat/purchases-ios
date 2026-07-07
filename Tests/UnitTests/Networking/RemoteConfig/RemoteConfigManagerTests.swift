@@ -444,6 +444,40 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobFetcher.invokedEnsureAllDownloadedRefs) == refs
     }
 
+    func testAwaitTopicReadyWaitsOnlyForPrefetchFlaggedBlobs() async throws {
+        let prefetchRef = RCContainerTestData.blobRef(for: #"{"id":"wf-1"}"#.asData)
+        let onDemandRef = RCContainerTestData.blobRef(for: #"{"id":"wf-2"}"#.asData)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: [
+                "workflows": [
+                    "wf-1": .init(blobRef: prefetchRef, prefetch: true),
+                    "wf-2": .init(blobRef: onDemandRef, prefetch: false)
+                ]
+            ])
+        )
+
+        let maybeTopic = await self.manager.awaitTopicReady(.workflows)
+        let topic = try XCTUnwrap(maybeTopic)
+
+        expect(topic["wf-1"]?.blobRef) == prefetchRef
+        expect(topic["wf-2"]?.blobRef) == onDemandRef
+        expect(self.blobFetcher.invokedEnsureAllDownloadedRefs) == [prefetchRef]
+    }
+
+    func testAwaitTopicReadyReturnsNilWhenTopicUnavailable() async {
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["wf-1": .init(blobRef: "wf-1-ref", prefetch: true)]])
+        )
+        self.manager.close()
+
+        let topic = await self.manager.awaitTopicReady(.workflows)
+
+        expect(topic).to(beNil())
+        expect(self.blobFetcher.invokedEnsureAllDownloadedRefs).to(beEmpty())
+    }
+
     func testBlobDataReturnsNilWhenExternalBlobDownloadFails() async {
         let ref = RCContainerTestData.blobRef(for: #"{"id":"workflow"}"#.asData)
         self.diskCache.stubbedRead = Self.persisted(

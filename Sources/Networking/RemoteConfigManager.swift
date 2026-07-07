@@ -53,12 +53,27 @@ protocol RemoteConfigManagerType: AnyObject {
         as type: T.Type
     ) async throws -> T?
 
+    /// Returns `topic`'s committed item index once every item flagged for prefetch has also finished
+    /// downloading its blob (or failed). Behaves like `topic(_:)` otherwise: waits for an in-flight
+    /// refresh or triggers one foreground refresh before reading, and returns `nil` when the endpoint
+    /// is disabled or the topic is still unavailable after refresh.
+    func awaitTopicReady(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic?
+
     func clearCache()
     func close()
 
 }
 
 extension RemoteConfigManagerType {
+
+    func awaitTopicReady(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+        guard let committed = await self.topic(topic) else { return nil }
+
+        let prefetchRefs = committed.values.compactMap { $0.prefetch ? $0.blobRef : nil }
+        await self.ensureBlobsDownloaded(prefetchRefs)
+
+        return committed
+    }
 
     func mergeItemsBlobData<T: Decodable>(
         for topic: RemoteConfigTopic,
