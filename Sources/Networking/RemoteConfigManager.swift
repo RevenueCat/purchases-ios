@@ -405,7 +405,7 @@ private extension RemoteConfigManager {
                   !self.isDisabledInternal,
                   !self.isClosed else { return nil }
             if let expectedEpoch {
-                guard self.epoch == expectedEpoch else { return nil }
+                guard self.epoch == expectedEpoch || self.identityBoundAppUserID != nil else { return nil }
             }
             if let lastRefreshedAt = self.lastRefreshedAt {
                 guard self.dateProvider.now().timeIntervalSince(lastRefreshedAt)
@@ -720,9 +720,10 @@ private extension RemoteConfigManager {
 
     /// Performs small blocking cache reads on the manager's read queue.
     func performRead<T>(_ operation: @escaping () -> T) async -> T {
+        let operation = SendableReadOperation(run: operation)
         return await withCheckedContinuation { continuation in
             self.readQueue.async {
-                continuation.resume(returning: operation())
+                continuation.resume(returning: operation.run())
             }
         }
     }
@@ -835,6 +836,12 @@ private extension RemoteConfigManager {
             }
         }
     }
+
+}
+
+private struct SendableReadOperation<T>: @unchecked Sendable {
+
+    let run: () -> T
 
 }
 

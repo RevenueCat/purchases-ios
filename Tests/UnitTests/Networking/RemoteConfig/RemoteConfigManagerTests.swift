@@ -338,7 +338,7 @@ final class RemoteConfigManagerTests: TestCase {
         """
 
         let task = Task {
-            await self.manager.topic(.sources)?["api"]?.content["url"] as? String
+            await self.manager.topic(.sources)?["api"]?.content["url"]
         }
         await self.waitForRemoteConfigRequestCount(1)
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.isAppBackgrounded) == false
@@ -346,7 +346,8 @@ final class RemoteConfigManagerTests: TestCase {
             with: .success(.test(container: try Self.container(config: response)))
         )
 
-        expect(await task.value) == "https://api.revenuecat.com"
+        let apiURL = await task.value
+        expect(apiURL) == AnyDecodable.string("https://api.revenuecat.com")
     }
 
     func testTopicMissingAfterFreshRefreshDoesNotTriggerAnotherRefresh() async throws {
@@ -375,7 +376,8 @@ final class RemoteConfigManagerTests: TestCase {
             with: .success(.test(container: try Self.container(config: response)))
         )
 
-        expect(await firstRead.value) == true
+        let didMissTopic = await firstRead.value
+        expect(didMissTopic) == true
 
         let secondRead = await self.manager.topic(.workflows)
 
@@ -403,7 +405,7 @@ final class RemoteConfigManagerTests: TestCase {
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: false, appUserID: Self.appUserID)
         let task = Task {
-            await self.manager.topic(.sources)?["api"]?.content["url"] as? String
+            await self.manager.topic(.sources)?["api"]?.content["url"]
         }
         await self.waitForRemoteConfigRequestCount(1)
         await self.waitForDiskCacheReadCount(2)
@@ -411,7 +413,8 @@ final class RemoteConfigManagerTests: TestCase {
             with: .success(.test(container: try Self.container(config: response)))
         )
 
-        expect(await task.value) == "https://api.revenuecat.com"
+        let apiURL = await task.value
+        expect(apiURL) == AnyDecodable.string("https://api.revenuecat.com")
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
     }
 
