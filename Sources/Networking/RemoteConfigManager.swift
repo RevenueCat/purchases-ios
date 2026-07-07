@@ -83,7 +83,6 @@ extension RemoteConfigManagerType {
             return resolvedBlobs
         }
 
-        var mergedBlobValues: [String: AnyDecodable] = [:]
         let unavailableItemKeys = uniqueItemKeys.filter { itemKey in
             guard let resolvedBlob = resolvedBlobs[itemKey] else { return true }
             return resolvedBlob == nil
@@ -96,6 +95,7 @@ extension RemoteConfigManagerType {
             return nil
         }
 
+        var mergedBlobValues: [String: AnyDecodable] = [:]
         for itemKey in uniqueItemKeys {
             guard let resolvedBlob = resolvedBlobs[itemKey],
                   let data = resolvedBlob else { return nil }
