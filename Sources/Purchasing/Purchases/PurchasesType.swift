@@ -724,6 +724,59 @@ public protocol PurchasesType: AnyObject {
             -> IntroEligibilityStatus
 
         /**
+         * Computes whether or not a user is eligible for the introductory pricing period of a given package.
+         * You should use this method to determine whether or not you show the user the normal product price or
+         * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
+         * [iOS Introductory  Offers](https://docs.revenuecat.com/docs/ios-subscription-offers).
+         *
+         * - Note: If you're looking to use Promotional Offers instead,
+         * use ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``.
+         *
+         * - Note: Subscription groups are automatically collected for determining eligibility. If RevenueCat can't
+         * definitively compute the eligibility, most likely because of missing group information, it will return
+         * ``IntroEligibilityStatus/unknown``. The best course of action on unknown status is to display the non-intro
+         * pricing, to not create a misleading situation. To avoid this, make sure you are testing with the latest
+         * version of iOS so that the subscription group can be collected by the SDK.
+         *
+         * - Parameter package: The ``Package`` for which you want to compute eligibility.
+         * - Parameter completion: A block that receives an ``IntroEligibilityStatus``.
+         *
+         * ### Related symbols
+         * - ``Purchases/checkTrialOrIntroDiscountEligibility(productIdentifiers:completion:)``
+         * - ``Purchases/checkTrialOrIntroDiscountEligibility(product:completion:)``
+         */
+        @objc(checkTrialOrIntroDiscountEligibilityForPackage:completion:)
+        func checkTrialOrIntroDiscountEligibility(
+            package: Package,
+            completion: @escaping (IntroEligibilityStatus) -> Void
+        )
+
+        /**
+         * Computes whether or not a user is eligible for the introductory pricing period of a given package.
+         * You should use this method to determine whether or not you show the user the normal product price or
+         * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
+         * [iOS Introductory  Offers](https://docs.revenuecat.com/docs/ios-subscription-offers).
+         *
+         * - Note: If you're looking to use Promotional Offers instead,
+         * use ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``.
+         *
+         * - Note: Subscription groups are automatically collected for determining eligibility. If RevenueCat can't
+         * definitively compute the eligibility, most likely because of missing group information, it will return
+         * ``IntroEligibilityStatus/unknown``. The best course of action on unknown status is to display the non-intro
+         * pricing, to not create a misleading situation. To avoid this, make sure you are testing with the latest
+         * version of iOS so that the subscription group can be collected by the SDK.
+         *
+         * - Parameter package: The ``Package`` for which you want to compute eligibility.
+         *
+         * ### Related symbols
+         * - ``Purchases/checkTrialOrIntroDiscountEligibility(productIdentifiers:)``
+         * - ``Purchases/checkTrialOrIntroDiscountEligibility(product:)``
+         */
+        func checkTrialOrIntroDiscountEligibility(package: Package) async
+            -> IntroEligibilityStatus
+
+
+        /**
          * Use this method to fetch ``PromotionalOffer``
          *  to use in ``Purchases/purchase(package:promotionalOffer:)``
          *  or ``Purchases/purchase(product:promotionalOffer:)``.
