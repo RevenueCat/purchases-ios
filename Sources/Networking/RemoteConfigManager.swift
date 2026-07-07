@@ -95,14 +95,14 @@ extension RemoteConfigManagerType {
             return nil
         }
 
-        var mergedBlobValues: [String: AnyDecodable] = [:]
+        var mergedBlobValues: [String: Any] = [:]
         for itemKey in uniqueItemKeys {
             guard let resolvedBlob = resolvedBlobs[itemKey],
                   let data = resolvedBlob else { return nil }
-            mergedBlobValues[itemKey] = try JSONDecoder.default.decode(AnyDecodable.self, from: data)
+            mergedBlobValues[itemKey] = try JSONDecoder.default.decode(AnyDecodable.self, from: data).asAny
         }
 
-        let mergedData = try JSONEncoder.default.encode(mergedBlobValues)
+        let mergedData = try JSONSerialization.data(withJSONObject: mergedBlobValues)
         return try JSONDecoder.default.decode(type, from: mergedData)
     }
 
