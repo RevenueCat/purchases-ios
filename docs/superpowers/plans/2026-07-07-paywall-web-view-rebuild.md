@@ -175,10 +175,11 @@ Use JSON shaped like:
 Expected first run:
 
 ```bash
+bundle exec fastlane ios test_ios
 bundle exec fastlane ios test_revenuecatui
 ```
 
-Expected: tests do not compile because `PaywallComponent.WebViewComponent` does not exist.
+Expected: `test_ios` does not compile because `PaywallComponent.WebViewComponent` does not exist. `test_revenuecatui` may also fail until the UI integration tasks add the view model and renderer.
 
 - [ ] **Step 2: Implement the component type**
 
@@ -275,6 +276,7 @@ In `PaywallV2CacheWarming`, add `.webView` to the cases that return no image or 
 Run:
 
 ```bash
+bundle exec fastlane ios test_ios
 bundle exec fastlane ios test_revenuecatui
 ```
 
@@ -585,7 +587,12 @@ Use an initializer that tests can call without a `WKWebView`. Production can cal
 When inbound envelope is:
 
 ```json
-{ "kind": "connect", "protocol_version": 1 }
+{
+  "channel": "rc-web-components",
+  "protocol_version": 1,
+  "kind": "connect",
+  "component_id": ""
+}
 ```
 
 send:
@@ -633,7 +640,10 @@ If `size.width == .fit` or `size.height == .fit`, send a second envelope after `
 
 ```json
 {
+  "channel": "rc-web-components",
+  "protocol_version": 1,
   "kind": "message",
+  "component_id": "<real component id>",
   "type": "fit",
   "payload": { "height": true }
 }
@@ -700,7 +710,10 @@ If inbound kind is `request`, require `id` and reply:
 
 ```json
 {
+  "channel": "rc-web-components",
+  "protocol_version": 1,
   "kind": "response",
+  "component_id": "<real component id>",
   "id": "<same id>",
   "type": "rc:request-variables",
   "payload": { "locale": "en-US" }
@@ -711,7 +724,10 @@ If inbound kind is `message`, reply:
 
 ```json
 {
+  "channel": "rc-web-components",
+  "protocol_version": 1,
   "kind": "message",
+  "component_id": "<real component id>",
   "type": "rc:variables",
   "payload": { "locale": "en-US" }
 }
@@ -732,7 +748,7 @@ Rules:
 
 - [ ] **Step 5: Implement resize**
 
-If `type == "resize"`, do not call the app handler. Read:
+If `type == "resize"`, do not call the app handler. Read the envelope payload object:
 
 ```json
 { "width": 320, "height": 480 }
@@ -752,7 +768,10 @@ Ignore non-fit axes.
 
 ```json
 {
+  "channel": "rc-web-components",
+  "protocol_version": 1,
   "kind": "message",
+  "component_id": "<real component id>",
   "type": "rc:variables",
   "payload": { ... }
 }
@@ -762,7 +781,10 @@ Ignore non-fit axes.
 
 ```json
 {
+  "channel": "rc-web-components",
+  "protocol_version": 1,
   "kind": "message",
+  "component_id": "<real component id>",
   "type": "<type>",
   "payload": { ... }
 }
@@ -1140,6 +1162,7 @@ Run:
 ```bash
 swift build
 swiftlint
+bundle exec fastlane ios test_ios
 bundle exec fastlane ios test_revenuecatui
 bundle exec fastlane ios run_api_tests
 ```
@@ -1197,6 +1220,7 @@ Run:
 git diff --check
 swift build
 swiftlint
+bundle exec fastlane ios test_ios
 bundle exec fastlane ios test_revenuecatui
 bundle exec fastlane ios run_api_tests
 ```
@@ -1221,6 +1245,7 @@ This builds the component from `main` rather than porting the previous draft sta
 Testing:
 - `swift build`
 - `swiftlint`
+- `bundle exec fastlane ios test_ios`
 - `bundle exec fastlane ios test_revenuecatui`
 - `bundle exec fastlane ios run_api_tests`
 ```
@@ -1267,6 +1292,7 @@ An implementation agent may call the rebuild complete only after fresh evidence 
 
 - [ ] `swift build` exits 0.
 - [ ] `swiftlint` exits 0.
+- [ ] `bundle exec fastlane ios test_ios` exits 0 locally or the PR CI lane exits 0.
 - [ ] `bundle exec fastlane ios test_revenuecatui` exits 0 locally or the PR CI lane exits 0.
 - [ ] `bundle exec fastlane ios run_api_tests` exits 0 locally or the PR CI lane exits 0.
 - [ ] `rg -n "rcWebViewMessage|rcWebViewHeight|RevenueCatWebView|__revenueCatReceiveMessage|__rcMeasureHeight|__rcReportHeight" RevenueCatUI Tests Sources -g "*.swift"` returns no results.
