@@ -17,6 +17,8 @@ import XCTest
 
 @_spi(Internal) @testable import RevenueCat
 
+#if !os(tvOS)
+
 class UiConfigProviderTests: TestCase {
 
     private var mockManager: MockRemoteConfigManager!
@@ -150,3 +152,5 @@ class UiConfigProviderTests: TestCase {
     }
 
 }
+
+#endif

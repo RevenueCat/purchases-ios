@@ -7,7 +7,7 @@
 
 import Foundation
 import Nimble
-@_spi(Internal) @testable import RevenueCat
+@testable import RevenueCat
 import XCTest
 
 final class RemoteConfigManagerTests: TestCase {
@@ -466,14 +466,12 @@ final class RemoteConfigManagerTests: TestCase {
         }
     }
 
-    #if !os(tvOS)
-    func testMergeItemsBlobDataMergesUiConfigBlobJSONUnderItemKeys() async throws {
-        let appBlob = #"{"colors": {}, "fonts": {}}"#.asData
+    func testMergeItemsBlobDataMergesBlobJSONUnderItemKeys() async throws {
+        let appBlob = #"{"enabled": true}"#.asData
         let localizationsBlob = #"{"en_US": {"day": "Day"}}"#.asData
         let variableConfigBlob = """
         {
-          "variable_compatibility_map": { "title": "string" },
-          "function_compatibility_map": { "uppercase": "string" }
+          "title": "string"
         }
         """.asData
         let customVariablesBlob = #"{"user_name": {"type": "string", "default_value": "Friend"}}"#.asData
@@ -500,16 +498,15 @@ final class RemoteConfigManagerTests: TestCase {
         let value = try await self.manager.mergeItemsBlobData(
             for: .uiConfig,
             itemKeys: ["app", "localizations", "variable_config", "custom_variables"],
-            as: UIConfig.self
+            as: MergedUiConfigLikePayload.self
         )
 
+        expect(value?.app.enabled) == true
         expect(value?.localizations["en_US"]?["day"]) == "Day"
-        expect(value?.variableConfig.variableCompatibilityMap["title"]) == "string"
-        expect(value?.variableConfig.functionCompatibilityMap["uppercase"]) == "string"
+        expect(value?.variableConfig.title) == "string"
         expect(value?.customVariables["user_name"]?.type) == "string"
         expect(value?.customVariables["user_name"]?.defaultValue) == "Friend"
     }
-    #endif
 
     func testMergeItemsBlobDataUsesItemKeyAsDecodedPropertyName() async throws {
         let blob = #"{"value":"favorite"}"#.asData
@@ -2108,6 +2105,26 @@ private extension RemoteConfigManagerTests {
     struct MergedPrimitivePayload: Decodable, Equatable {
         let wf1: String
         let wf2: Int
+    }
+
+    struct MergedUiConfigLikePayload: Decodable, Equatable {
+        let app: MergedUiConfigLikeApp
+        let localizations: [String: [String: String]]
+        let variableConfig: MergedUiConfigLikeVariableConfig
+        let customVariables: [String: MergedUiConfigLikeCustomVariable]
+    }
+
+    struct MergedUiConfigLikeApp: Decodable, Equatable {
+        let enabled: Bool
+    }
+
+    struct MergedUiConfigLikeVariableConfig: Decodable, Equatable {
+        let title: String
+    }
+
+    struct MergedUiConfigLikeCustomVariable: Decodable, Equatable {
+        let type: String
+        let defaultValue: String
     }
 
 }
