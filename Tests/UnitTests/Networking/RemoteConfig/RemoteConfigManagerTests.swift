@@ -338,7 +338,7 @@ final class RemoteConfigManagerTests: TestCase {
         """
 
         let task = Task {
-            await self.manager.topic(.sources)
+            await self.manager.topic(.sources)?["api"]?.content["url"] as? String
         }
         await self.waitForRemoteConfigRequestCount(1)
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.isAppBackgrounded) == false
@@ -346,9 +346,7 @@ final class RemoteConfigManagerTests: TestCase {
             with: .success(.test(container: try Self.container(config: response)))
         )
 
-        let maybeTopic = await task.value
-        let topic = try XCTUnwrap(maybeTopic)
-        expect(topic["api"]?.content["url"]) == "https://api.revenuecat.com"
+        expect(await task.value) == "https://api.revenuecat.com"
     }
 
     func testTopicMissingAfterFreshRefreshDoesNotTriggerAnotherRefresh() async throws {
@@ -370,15 +368,14 @@ final class RemoteConfigManagerTests: TestCase {
         """
 
         let firstRead = Task {
-            await self.manager.topic(.workflows)
+            await self.manager.topic(.workflows) == nil
         }
         await self.waitForRemoteConfigRequestCount(1)
         self.remoteConfigAPI.complete(
             with: .success(.test(container: try Self.container(config: response)))
         )
 
-        let firstTopic = await firstRead.value
-        expect(firstTopic).to(beNil())
+        expect(await firstRead.value) == true
 
         let secondRead = await self.manager.topic(.workflows)
 
@@ -406,7 +403,7 @@ final class RemoteConfigManagerTests: TestCase {
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: false, appUserID: Self.appUserID)
         let task = Task {
-            await self.manager.topic(.sources)
+            await self.manager.topic(.sources)?["api"]?.content["url"] as? String
         }
         await self.waitForRemoteConfigRequestCount(1)
         await self.waitForDiskCacheReadCount(2)
@@ -414,9 +411,7 @@ final class RemoteConfigManagerTests: TestCase {
             with: .success(.test(container: try Self.container(config: response)))
         )
 
-        let maybeTopic = await task.value
-        let topic = try XCTUnwrap(maybeTopic)
-        expect(topic["api"]?.content["url"]) == "https://api.revenuecat.com"
+        expect(await task.value) == "https://api.revenuecat.com"
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
     }
 
@@ -899,7 +894,7 @@ final class RemoteConfigManagerTests: TestCase {
             topics: .init(entries: ["workflows": ["wf1": .init(blobRef: ref)]])
         )
         self.blobStore.stubbedReadDataByRef[ref] = blob
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false, appUserID: Self.appUserID)
         self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
 
         let value = try await self.manager.mergeItemsBlobData(
