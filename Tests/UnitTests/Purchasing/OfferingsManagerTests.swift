@@ -1102,6 +1102,25 @@ extension OfferingsManagerTests {
         expect(mockRemoteConfigManager.invokedTopicCount) > 0
     }
 
+    func testGetOfferingsWaitsForPrefetchFlaggedWorkflowBlobsBeforeDelivering() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.stubbedTopics[.workflows] = [
+            // Only this one is prefetch-flagged and blob-backed, so it's the only ref waited on.
+            "wf-1": .init(blobRef: "wf-1-ref", prefetch: true, content: [:]),
+            "wf-2": .init(blobRef: "wf-2-ref", prefetch: false, content: [:]),
+            "wf-3": .init(blobRef: nil, prefetch: true, content: [:])
+        ]
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let result = waitUntilValue { completed in
+            manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(mockRemoteConfigManager.invokedEnsureBlobsDownloadedRefs) == [["wf-1-ref"]]
+    }
+
     func testGetOfferingsServedFromDiskOnFailureStillAwaitsConfigReady() throws {
         let mockRemoteConfigManager = MockRemoteConfigManager()
         let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
