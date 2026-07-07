@@ -110,14 +110,15 @@ Valid app messages are delivered to the app handler as `PaywallWebViewMessage` o
 
 ### `fit` / `resize` sizing messages
 
-- Host → content `type:"fit"`, `kind:"message"`, payload declaring only the axes the host actually manages. **In v1 the host manages height only (§7), so the payload is exactly `{"height": true}`, sent once after `init` when the schema height is `fit` — and the message is omitted entirely otherwise. Never declare `width`, even when the schema width is `fit`** (declaring an axis makes the content suppress its scrollbar there; declaring an axis we never resize would strand the content with neither scrolling nor fitting).
-- Content → host `type:"resize"`, payload `{"width": <px>, "height": <px>}` (either axis may be absent). Validate: finite, > 0; clamp to **10,000**; ignore invalid values. Apply the height to a `fit` height axis; **ignore reported widths entirely in v1**.
+- Host → content `type:"fit"`, `kind:"message"`, payload declaring the axes the host manages — `{"width": true}` and/or `{"height": true}`, exactly the axes whose schema size is `fit`. Sent once after `init`; omit the message entirely when neither axis is `fit`. **Declare an axis if and only if the host applies resizes on that axis** (declaring makes the content suppress its scrollbar there; declaring without applying would strand the content with neither scrolling nor fitting).
+- Content → host `type:"resize"`, payload `{"width": <px>, "height": <px>}` (either axis may be absent). Validate per axis: finite, > 0; clamp to **10,000**; ignore invalid values; apply only to axes whose schema size is `fit`; ignore changes smaller than **1 pt** against the last applied value (guards against sub-pixel churn and report/apply feedback loops — width especially, since HTML content's reported width often just echoes the imposed viewport width).
 
 ### Limits
 
 - Max inbound frame size: **65,536 bytes** (serialized JSON).
 - Max JSON nesting depth: **16**.
-- Initial placeholder height for a `fit` height axis: **100 pt** until the first valid `resize`.
+- Initial placeholders for `fit` axes until the first valid `resize`: **100 pt** height, **300 pt** width (§7).
+- Resize apply threshold: ignore per-axis changes < **1 pt** against the last applied value (§7).
 
 ---
 
@@ -187,7 +188,7 @@ One SwiftUI view + **one** cross-platform representable:
 
 - A ~15-line `PlatformViewRepresentable` shim (`#if os(macOS)` → `NSViewRepresentable`, else `UIViewRepresentable`) so the web view representable is written **once**. Platform differences (iOS scroll/zoom/bounce disabling + zoom user script; macOS website-data wipe on dismantle) are small `#if` blocks inside the single implementation, not duplicated files.
 - The view owns the session as `@StateObject`-style storage and applies `.id(<url>-<componentID>)` so a URL change tears down and recreates view + session + web view. **There is no reload/reset path**: session identity == web view identity == URL. (On iOS 15, use `@StateObject` on an `ObservableObject` session or an equivalent owner object; do not reach for iOS-17-only `@Observable`.)
-- Sizing is **one path**: session's `resize` → `onContentResize` → `@State var measuredSize` → the size modifier (`frame(height: measured ?? 100)` for `.fit` height; `fill`/`fixed`/`relative` map like other components). **No `intrinsicContentSize` subclass, no height `@Binding` into the representable, no state mutation inside `makeUIView`.**
+- Sizing is **one path**: session's `resize` → `onContentResize` → `@State var measuredSize: (width: CGFloat?, height: CGFloat?)` → the size modifier (`frame(height: measuredHeight ?? 100)` for `.fit` height, `frame(width: measuredWidth ?? 300)` for `.fit` width; `fill`/`fixed`/`relative` map like other components). **No `intrinsicContentSize` subclass, no size `@Binding` into the representable, no state mutation inside `makeUIView`.**
 - WKWebView config: `websiteDataStore = .nonPersistent()`, `allowsInlineMediaPlayback = true`, transparent background, scrolling/bounce/zoom disabled on iOS.
 - Navigation policy (new, required — see §6): a `WKNavigationDelegate` restricting main-frame navigation.
 - Load path: `Task { guard let rules = await WebViewIsolation.ruleList() else { fail closed }; add rules; load(url) }`.
@@ -290,9 +291,11 @@ Identifier `rc-webview-v2-isolation`. **Fail closed:** if the rules fail to comp
 ## 7. Sizing behavior (fixed)
 
 - `fixed` → exact points. `fill` → expand. `relative` → fraction of parent where the shared size-modifier conventions support it.
-- `fit` height: 100 pt placeholder until the first valid `resize`, then the reported height (clamped ≤ 10,000).
-- `fit` width (decided, no discretion): **treated as `fill` for layout in v1**, with a code comment marking it a documented v1 limitation. No reported width is ever applied, and the `fit` handshake message never declares `width` (§3).
-- Reported heights only apply when the schema height is `fit`. A new session (URL change) starts from the placeholder again (free, since the session is recreated).
+- `fit` height: **100 pt** placeholder until the first valid `resize`, then the reported height (clamped ≤ 10,000).
+- `fit` width: **300 pt** placeholder until the first valid `resize`, then the reported width (clamped ≤ 10,000). (300 matches the web implementation's `FIT_FALLBACK_SIZE_PX`; 100 for height matches the iOS prototype — keep both as named constants with a comment giving these origins.)
+- Reported sizes apply only to axes that are `fit` in the schema, and only when the new value differs from the last applied value by ≥ 1 pt (§3). A fit axis is rendered with `frame(width:)`/`frame(height:)` pinned to the placeholder-or-measured value — SwiftUI's exact frames mean there is no CSS-style flex-shrink collapse to guard against, but the value must never be nil for a fit axis or a stack parent may collapse it.
+- Width feedback-loop caveat (why the 1 pt threshold and per-axis validation matter): HTML block content has no natural intrinsic width — the content's reported width frequently equals whatever viewport width the host imposed, so an apply → report → apply cycle converges only because same-value applies are no-ops. The `WebViewSessionResizeTests` loop test below is mandatory, not optional.
+- A new session (URL change) starts from placeholders again (free, since the session is recreated).
 
 ---
 
@@ -304,13 +307,13 @@ Tests live in `Tests/RevenueCatUITests/PaywallsV2/`. All message-flow tests cons
 
 **`PaywallWebViewValueTests`** — port the prototype's suite: factory/accessor symmetry, Hashable, Codable round-trip for all six cases, number/bool disambiguation, `-0.0`/`NaN` handling documented.
 
-**`WebViewSessionHandshakeTests`** — `connect` v1 → captured `init` with real component_id and channel open; `connect` v2 → captured `reject` with exact error string `Unsupported protocol_version 2; native host supports 1`, channel closed; app message before connect → dropped, nothing captured; duplicate connect while open → ignored (no second init); `connect` when schema height is `fit` → `fit` message captured after `init` with payload exactly `{"height": true}`; no `fit` message when height is not fit — **including when only width is fit** (v1 manages height only, §7); non-main-frame frame → dropped; string body and dictionary body both accepted.
+**`WebViewSessionHandshakeTests`** — `connect` v1 → captured `init` with real component_id and channel open; `connect` v2 → captured `reject` with exact error string `Unsupported protocol_version 2; native host supports 1`, channel closed; app message before connect → dropped, nothing captured; duplicate connect while open → ignored (no second init); `connect` with fill×fit size → `fit` message captured after `init` with payload exactly `{"height": true}` (no `width` key); fit×fixed → exactly `{"width": true}`; fit×fit → both keys `true`; fill×fixed → no `fit` message at all; non-main-frame frame → dropped; string body and dictionary body both accepted.
 
 **`WebViewSessionMessagingTests`** — `rc:step-loaded` reaches handler with correct componentID/type; `rc:step-complete` with `payload.responses` → responses extracted; with flat payload → whole payload as responses; with a reserved key in flat payload → dropped; `rc:error` with `payload.error` → error surfaced; missing error → dropped; unknown type → dropped, handler not called; component_id mismatch → dropped; `rc:request-variables` as message → captured `rc:variables` message whose payload == `{"locale": <BCP-47>}` flat (assert **no** `variables` key), then handler invoked; as request with id `req-1` → captured `response` with same id and type `rc:request-variables`, payload = variables; as request without id → dropped entirely; auto-reply fires with `messageHandler == nil`; locale formats as BCP-47 (`en_US` → `en-US`, `zh_Hans_CN` contains no underscore).
 
 **`WebViewSessionOutboundTests`** — `postVariables` strips reserved `locale` key (and logs) but preserves other keys; `post`/`postVariables` while channel closed → nothing captured; outbound after simulated navigation to a different origin → nothing captured; origin comparison: default port 443 equal, host case-insensitive, different port unequal, different scheme unequal; payloads with all six value types serialize correctly.
 
-**`WebViewSessionResizeTests`** — `resize` as `kind:"message"` updates the fit height and is NOT forwarded to the app handler; `resize` as `kind:"request"` also not forwarded; height applies only when schema height is `.fit`; reported widths are always ignored (even when schema width is `.fit`); non-finite / zero / negative ignored; 99,999 clamps to 10,000.
+**`WebViewSessionResizeTests`** — `resize` as `kind:"message"` updates fit axes and is NOT forwarded to the app handler; `resize` as `kind:"request"` also not forwarded; height applies only when schema height is `.fit`; width applies only when schema width is `.fit` (width report on a fill-width component ignored); a frame reporting both axes updates both when both are fit; non-finite / zero / negative ignored per axis (a frame with invalid width but valid height still applies the height); 99,999 clamps to 10,000 on either axis; a re-report within 1 pt of the last applied value on an axis does not call `onContentResize` for that axis (threshold/feedback-loop guard — mandatory test); a re-report ≥ 1 pt different does.
 
 **`WebViewIsolationTests`** — rules JSON is valid JSON; exactly 2 block rules; image/script/font rule is third-party-only; raw rule is third-party-only; no `data:` blocking rule; identifier == `rc-webview-v2-isolation`; *(integration)* `loadIsolated`-equivalent with an injected failing compile → `webView.url` stays nil (fail closed).
 
