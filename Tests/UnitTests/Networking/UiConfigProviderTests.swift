@@ -101,21 +101,17 @@ class UiConfigProviderTests: TestCase {
         self.logger.verifyMessageWasLogged(Strings.remoteConfig.uiConfigMissingRequiredPart, level: .warn)
     }
 
-    func testRequestsWireItemKeysNotCamelCased() async throws {
-        self.stub(
-            app: #"{"colors": {}, "fonts": {}}"#,
-            localizations: #"{"en_US": {"day": "Day"}}"#,
-            variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
-            customVariables: #"{"user_name": {"type": "string", "default_value": "Friend"}}"#
-        )
-
+    func testRequestsMergedBlobDataWithWireItemKeysNotCamelCased() async throws {
         _ = await self.provider.getUiConfig()
 
-        let requestedKeys = self.mockManager.invokedBlobDataParameters
-            .filter { $0.topic == .uiConfig }
-            .map(\.itemKey)
-
-        expect(Set(requestedKeys)) == Set(["app", "localizations", "variable_config", "custom_variables"])
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == 1
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.first?.topic) == .uiConfig
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.first?.itemKeys) == [
+            "app",
+            "localizations",
+            "variable_config",
+            "custom_variables"
+        ]
     }
 
 #else

@@ -703,6 +703,11 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     var invokedBlobDataParameters: [(topic: RemoteConfigTopic, itemKey: String)] {
         return self._invokedBlobDataParameters.value
     }
+    private let _invokedMergeItemsBlobDataParameters: Atomic<[(topic: RemoteConfigTopic, itemKeys: [String])]> =
+        .init([])
+    var invokedMergeItemsBlobDataParameters: [(topic: RemoteConfigTopic, itemKeys: [String])] {
+        return self._invokedMergeItemsBlobDataParameters.value
+    }
 
     private let _invokedTopicCount: Atomic<Int> = .init(0)
     var invokedTopicCount: Int { return self._invokedTopicCount.value }
@@ -758,6 +763,25 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     func ensureBlobsDownloaded(_ refs: [String]) async -> Bool {
         self._invokedEnsureBlobsDownloadedRefs.modify { $0.append(refs) }
         return self.stubbedEnsureBlobsDownloadedResult
+    }
+
+    func mergeItemsBlobData<T: Decodable>(
+        for topic: RemoteConfigTopic,
+        itemKeys: [String],
+        as type: T.Type
+    ) async throws -> T? {
+        self._invokedMergeItemsBlobDataParameters.modify { $0.append((topic, itemKeys)) }
+        guard !self.isDisabled, !itemKeys.isEmpty else { return nil }
+
+        var seen: Set<String> = []
+        var mergedBlobValues: [String: AnyDecodable] = [:]
+        for itemKey in itemKeys where seen.insert(itemKey).inserted {
+            guard let data = await self.blobData(for: topic, itemKey: itemKey) else { return nil }
+            mergedBlobValues[itemKey] = try JSONDecoder.default.decode(AnyDecodable.self, from: data)
+        }
+
+        let mergedData = try JSONEncoder.default.encode(mergedBlobValues)
+        return try JSONDecoder.default.decode(type, from: mergedData)
     }
 
     func clearCache() {
