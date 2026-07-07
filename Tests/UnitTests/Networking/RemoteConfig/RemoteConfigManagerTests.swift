@@ -1403,7 +1403,7 @@ final class RemoteConfigManagerTests: TestCase {
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
         expect(self.manager.isDisabled) == true
-        self.manager.clearCache()
+        self.manager.clearCache(forAppUserID: Self.appUserID)
         expect(self.manager.isDisabled) == true
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
 
@@ -1647,7 +1647,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         await self.waitForRemoteConfigRequestCount(1)
         await self.waitForDiskCacheReadCount(2)
-        self.manager.clearCache()
+        self.manager.clearCache(forAppUserID: Self.appUserID)
 
         let data = await task.value
         expect(data).to(beNil())
@@ -1658,7 +1658,7 @@ final class RemoteConfigManagerTests: TestCase {
         self.diskCache.readHandler = {
             if !didClearDuringRead {
                 didClearDuringRead = true
-                self.manager.clearCache()
+                self.manager.clearCache(forAppUserID: Self.appUserID)
             }
 
             return Self.persisted(
@@ -1679,7 +1679,7 @@ final class RemoteConfigManagerTests: TestCase {
         self.diskCache.readHandler = {
             if !didClearDuringRead {
                 didClearDuringRead = true
-                self.manager.clearCache()
+                self.manager.clearCache(forAppUserID: Self.appUserID)
             }
 
             return Self.persisted(
@@ -2149,7 +2149,7 @@ final class RemoteConfigManagerTests: TestCase {
     }
 
     func testClearCacheWipesDiskCacheAndBlobStore() {
-        self.manager.clearCache()
+        self.manager.clearCache(forAppUserID: Self.appUserID)
 
         expect(self.diskCache.invokedClearCount) == 1
         expect(self.blobStore.invokedClearCount) == 1
@@ -2171,7 +2171,7 @@ final class RemoteConfigManagerTests: TestCase {
         """
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.manager.clearCache()
+        self.manager.clearCache(forAppUserID: Self.appUserID)
         self.remoteConfigAPI.complete(
             at: 0,
             with: .success(.test(container: try Self.container(config: response)))
@@ -2184,7 +2184,7 @@ final class RemoteConfigManagerTests: TestCase {
 
     func testClearCacheWhileBuildingRequestDoesNotSendStaleRequest() {
         self.diskCache.readHandler = { [manager] in
-            manager?.clearCache()
+            manager?.clearCache(forAppUserID: Self.appUserID)
             return nil
         }
 
@@ -2197,7 +2197,7 @@ final class RemoteConfigManagerTests: TestCase {
 
     func testStaleNoContentResponseDoesNotReleaseNewerRefreshGuard() {
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.manager.clearCache()
+        self.manager.clearCache(forAppUserID: Self.appUserID)
         self.manager.refreshRemoteConfig(isAppBackgrounded: true)
 
         self.remoteConfigAPI.complete(at: 0, with: .success(.test(container: nil)))
@@ -2226,7 +2226,7 @@ final class RemoteConfigManagerTests: TestCase {
         """
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.manager.clearCache()
+        self.manager.clearCache(forAppUserID: Self.appUserID)
         self.manager.refreshRemoteConfig(isAppBackgrounded: true)
 
         self.remoteConfigAPI.complete(
@@ -2246,7 +2246,7 @@ final class RemoteConfigManagerTests: TestCase {
 
     func testStaleErrorResponseDoesNotReleaseNewerRefreshGuard() {
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.manager.clearCache()
+        self.manager.clearCache(forAppUserID: Self.appUserID)
         self.manager.refreshRemoteConfig(isAppBackgrounded: true)
 
         self.remoteConfigAPI.complete(
@@ -2265,7 +2265,7 @@ final class RemoteConfigManagerTests: TestCase {
 
     func testStaleFourHundredResponseDoesNotDisableRemoteConfig() {
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.manager.clearCache()
+        self.manager.clearCache(forAppUserID: Self.appUserID)
         self.manager.refreshRemoteConfig(isAppBackgrounded: true)
 
         self.remoteConfigAPI.complete(at: 0, with: .failure(Self.backendError(statusCode: .invalidRequest)))
@@ -2295,7 +2295,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.clearCache()
+        self.manager.clearCache(forAppUserID: Self.appUserID)
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(container: try Self.container(config: response)))
@@ -2342,7 +2342,7 @@ final class RemoteConfigManagerTests: TestCase {
         expect(writeStarted.wait(timeout: .now() + .seconds(5))) == .success
 
         DispatchQueue.global().async {
-            self.manager.clearCache()
+            self.manager.clearCache(forAppUserID: Self.appUserID)
         }
 
         expect(clearEntered.wait(timeout: .now() + .milliseconds(200))) == .timedOut

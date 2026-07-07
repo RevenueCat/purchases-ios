@@ -228,7 +228,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     private let dateProvider: DateProvider
     private let cacheDurationInSeconds: (Bool) -> TimeInterval
 
-    private struct RefreshRequestContext {
+    fileprivate struct RefreshRequestContext {
         let epoch: Int
         let appUserID: String
     }
@@ -352,19 +352,13 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     /// The epoch bump, refresh-guard release, and cache wipe are serialized with response persistence so a late
     /// response for a previous user is either fully persisted before the wipe or dropped after the epoch changes.
     func clearCache() {
-        self.clearCache(boundAppUserID: nil)
+        self.clearCache(forAppUserID: self.currentUserProvider.currentAppUserID)
     }
 
     func clearCache(forAppUserID appUserID: String) {
-        self.clearCache(boundAppUserID: appUserID)
-    }
-
-    private func clearCache(boundAppUserID appUserID: String?) {
         let continuations = self.lock.perform {
             self.epoch += 1
-            if let appUserID {
-                self.appUserIDForRefreshes = appUserID
-            }
+            self.appUserIDForRefreshes = appUserID
             self.isRefreshing = false
             self.lastRefreshedAt = nil
             self.diskCache.clear()
@@ -388,7 +382,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
 private extension RemoteConfigManager {
 
-    private func prepareRefreshIfNeeded(fallbackAppUserID: String) -> RefreshRequestContext? {
+    func prepareRefreshIfNeeded(fallbackAppUserID: String) -> RefreshRequestContext? {
         return self.lock.perform {
             guard !self.isRefreshing,
                   !self.isDisabledInternal,
@@ -401,7 +395,7 @@ private extension RemoteConfigManager {
         }
     }
 
-    private func prepareRefreshIfStale(
+    func prepareRefreshIfStale(
         isAppBackgrounded: Bool,
         fallbackAppUserID: String,
         expectedEpoch: Int? = nil
@@ -426,7 +420,7 @@ private extension RemoteConfigManager {
         }
     }
 
-    private func startRefresh(isAppBackgrounded: Bool, requestContext: RefreshRequestContext) {
+    func startRefresh(isAppBackgrounded: Bool, requestContext: RefreshRequestContext) {
         let persisted = self.diskCache.read()
         let request = RemoteConfigRequest(
             appUserID: requestContext.appUserID,
