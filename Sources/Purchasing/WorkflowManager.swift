@@ -60,14 +60,6 @@ class WorkflowManager {
         return await self.workflowsConfigProvider.workflowId(forOfferingId: offeringId)
     }
 
-    /// Synchronous cache seed used to render a workflow paywall without waiting on the async path.
-    /// There is no synchronous read on the remote-config layer, so this always returns `nil`; callers
-    /// already treat a `nil` result as a normal cache miss and fall back to the async
-    /// ``getWorkflow(workflowId:completion:)``.
-    func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
-        return nil
-    }
-
 }
 
 private extension WorkflowManager {

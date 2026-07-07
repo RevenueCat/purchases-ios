@@ -130,14 +130,6 @@ class WorkflowManagerTests: TestCase {
         expect(workflowId).to(beNil())
     }
 
-    // MARK: - cachedWorkflow(forOfferingId:)
-
-    func testCachedWorkflowAlwaysReturnsNil() {
-        // There is no synchronous read on the remote-config layer, so the seed path always misses;
-        // callers already treat this as a normal cache miss and fall back to the async path.
-        expect(self.manager.cachedWorkflow(forOfferingId: "default")).to(beNil())
-    }
-
     // MARK: - Helpers
 
     private static func workflowDataResult(id: String) throws -> WorkflowDataResult {
