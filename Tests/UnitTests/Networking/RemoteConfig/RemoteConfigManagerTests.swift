@@ -2393,13 +2393,22 @@ private final class MockRemoteConfigBlobFetcher: RemoteConfigBlobFetcherType {
 
     var stubbedEnsureDownloadedResult = true
 
-    private(set) var invokedEnsureDownloadedRefs: [String] = []
+    private let lock = Lock()
+    private var _invokedEnsureDownloadedRefs: [String] = []
     private(set) var invokedEnsureAllDownloadedRefs: [String] = []
     private(set) var invokedPrefetchCount = 0
     private(set) var invokedPrefetchRefs: [String] = []
 
+    var invokedEnsureDownloadedRefs: [String] {
+        return self.lock.perform {
+            self._invokedEnsureDownloadedRefs
+        }
+    }
+
     func ensureDownloaded(ref: String) async -> Bool {
-        self.invokedEnsureDownloadedRefs.append(ref)
+        self.lock.perform {
+            self._invokedEnsureDownloadedRefs.append(ref)
+        }
         return self.stubbedEnsureDownloadedResult
     }
 
