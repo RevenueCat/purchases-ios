@@ -673,7 +673,7 @@ extension BasePurchasesTests.MockOfferingsAPI: @unchecked Sendable {}
 
 final class MockRemoteConfigManager: RemoteConfigManagerType {
 
-    private typealias RefreshParameters = (isAppBackgrounded: Bool, appUserID: String)
+    typealias RefreshParameters = (isAppBackgrounded: Bool, appUserID: String)
 
     var isDisabled = false
 
