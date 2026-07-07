@@ -203,16 +203,21 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(workflowId) == "wf-1"
     }
 
-    func testDeterministicallyResolvesAndWarnsOnDuplicateOfferingId() async {
+    func testResolvesAndWarnsOnDuplicateOfferingId() async throws {
+        let logger = TestLogHandler(testIdentifier: self.name)
         self.commit(workflows: [
             "wf-a": .init(blobRef: "a-ref", content: ["offeringIdentifier": "shared"]),
             "wf-b": .init(blobRef: "b-ref", content: ["offeringIdentifier": "shared"])
         ])
 
-        let workflowId = await self.provider.workflowId(forOfferingId: "shared")
+        let result = await self.provider.workflowId(forOfferingId: "shared")
+        let workflowId = try XCTUnwrap(result)
 
-        // Deterministic (lowest id), not whichever the dictionary happens to iterate first.
-        expect(workflowId) == "wf-a"
+        // Whichever the dictionary happens to iterate first, but never nil, and always logged.
+        expect(["wf-a", "wf-b"]).to(contain(workflowId))
+        logger.verifyMessageWasLogged("Duplicate offeringId in workflows response: shared",
+                                      level: .warn,
+                                      expectedCount: 1)
     }
 
     // MARK: - Helpers

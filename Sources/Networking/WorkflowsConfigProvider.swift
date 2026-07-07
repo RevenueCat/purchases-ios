@@ -32,22 +32,22 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     /// `content` keys go through `JSONDecoder`'s `.convertFromSnakeCase`, so the wire field
     /// `offering_identifier` is read as `offeringIdentifier`.
     ///
-    /// A `[String: ConfigItem]` topic has no defined iteration order, so a duplicate `offeringId`
-    /// across items is resolved deterministically (lowest workflow id) rather than picking whichever
-    /// entry the dictionary happens to iterate first, and is logged since it signals a backend issue.
+    /// A duplicate `offeringId` across items signals a backend issue and is logged; whichever match
+    /// the dictionary happens to iterate first wins, since there's no principled way to prefer one
+    /// over another.
     func workflowId(forOfferingId offeringId: String) async -> String? {
         guard let topic = await self.manager.topic(.workflows) else { return nil }
 
         let matches = topic.filter { _, item in
             guard case let .string(value)? = item.content[Self.offeringIdentifierKey] else { return false }
             return value == offeringId
-        }.keys.sorted()
+        }
 
         if matches.count > 1 {
             Logger.warn(Strings.backendError.duplicate_offering_id_in_workflows(offeringId: offeringId))
         }
 
-        return matches.first
+        return matches.keys.first
     }
 
     /// Resolves `workflowId` into a ``WorkflowDataResult``, or `nil` when the item is unknown, its body
