@@ -39,13 +39,14 @@ final class RemoteConfigIntegrationTests: TestCase {
         let directoryType = DirectoryHelper.DirectoryType.applicationSupport(overrideURL: self.rootURL)
         #endif
 
+        let cacheBasePath = "\(RemoteConfigDiskCache.basePath)-\(UUID().uuidString)"
         let synchronizedCache = SynchronizedLargeItemCache(
             cache: FileManager.default,
-            basePath: RemoteConfigDiskCache.basePath,
+            basePath: cacheBasePath,
             directoryType: directoryType
         )
         let cacheDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: directoryType))
-            .appendingPathComponent(RemoteConfigDiskCache.basePath, isDirectory: true)
+            .appendingPathComponent(cacheBasePath, isDirectory: true)
 
         self.diskCache = RemoteConfigDiskCache(cache: synchronizedCache)
         self.blobStore = RemoteConfigBlobStore(

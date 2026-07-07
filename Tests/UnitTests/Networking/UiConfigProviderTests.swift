@@ -42,11 +42,9 @@ class UiConfigProviderTests: TestCase {
         let uiConfig = await self.provider.getUiConfig()
 
         expect(uiConfig).toNot(beNil())
-#if !os(tvOS)
         expect(uiConfig?.localizations["en_US"]?["day"]) == "Day"
         expect(uiConfig?.customVariables["user_name"]?.type) == "string"
         expect(uiConfig?.customVariables["user_name"]?.defaultValue) == "Friend"
-#endif
     }
 
     func testReturnsNilWhenAppPartIsMissing() async throws {
@@ -83,9 +81,7 @@ class UiConfigProviderTests: TestCase {
         let uiConfig = await self.provider.getUiConfig()
 
         expect(uiConfig).toNot(beNil())
-#if !os(tvOS)
         expect(uiConfig?.customVariables).to(beEmpty())
-#endif
     }
 
     func testMalformedVariableConfigFallsBackToDefaultInsteadOfFailingTheWholeAssembly() async throws {
@@ -97,11 +93,9 @@ class UiConfigProviderTests: TestCase {
         let uiConfig = await self.provider.getUiConfig()
 
         expect(uiConfig).toNot(beNil())
-#if !os(tvOS)
         expect(uiConfig?.localizations["en_US"]?["day"]) == "Day"
         expect(uiConfig?.variableConfig.variableCompatibilityMap).to(beEmpty())
         self.logger.verifyMessageWasLogged("Failed to decode ui_config part 'variable_config'", level: .error)
-#endif
     }
 
     func testLogsWarningWhenARequiredPartIsMissing() async throws {
