@@ -1054,7 +1054,9 @@ public extension Purchases {
     @_disfavoredOverload
     @objc(logIn:completion:)
     func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
-        self.identityManager.logIn(appUserID: appUserID) { result in
+        let normalizedAppUserID = appUserID.trimmingWhitespacesAndNewLines
+
+        self.identityManager.logIn(appUserID: normalizedAppUserID) { result in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(result.value?.info, result.value?.created ?? false, result.error?.asPublicError)
             }
@@ -1065,9 +1067,11 @@ public extension Purchases {
 
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
+                // Use the same normalized app user ID passed to IdentityManager for this successful login instead
+                // of rereading `self.appUserID`, which can still return the previous cached user here.
                 self.remoteConfigManager.refreshRemoteConfig(
                     isAppBackgrounded: isAppBackgrounded,
-                    appUserID: appUserID
+                    appUserID: normalizedAppUserID
                 )
             }
         }
@@ -1214,6 +1218,8 @@ extension Purchases {
 
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             self.updateOfferingsCache(isAppBackgrounded: isBackgrounded)
+            // Use the `newAppUserID` passed to `internalSwitchUser` for this refresh instead of rereading
+            // `self.appUserID` from inside this async background-state callback.
             self.remoteConfigManager.refreshRemoteConfig(
                 isAppBackgrounded: isBackgrounded,
                 appUserID: newAppUserID

@@ -44,6 +44,23 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
     }
 
+    func testLogInTrimsAppUserIDForIdentityAndRemoteConfigRefresh() {
+        self.systemInfo.stubbedRemoteConfigEnabled = true
+        Purchases.clearSingleton()
+        self.initializePurchasesInstance(appUserId: nil)
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+
+        waitUntil { completed in
+            self.purchases.logIn("  \(Self.appUserID)  ") { _, _, _ in
+                completed()
+            }
+        }
+
+        expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.appUserID) ==
+            Self.appUserID
+    }
+
     func testLogInWithFailure() {
         let error: BackendError = .networkError(.offlineConnection())
         self.identityManager.mockLogInResult = .failure(error)

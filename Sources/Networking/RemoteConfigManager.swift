@@ -228,9 +228,10 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     private let dateProvider: DateProvider
     private let cacheDurationInSeconds: (Bool) -> TimeInterval
 
+    /// Immutable per-request snapshot chosen under `lock`.
     fileprivate struct RefreshRequestContext {
         let epoch: Int
-        let appUserID: String
+        let requestAppUserID: String
     }
 
     /// Runs blocking committed-state reads away from the caller's executor.
@@ -251,12 +252,13 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     /// Incremented when local state is invalidated so late responses from older users/sessions are dropped.
     private var epoch = 0
 
-    /// User ID to use for refreshes after an identity-bound cache clear.
+    /// App user ID captured by an identity-bound cache clear.
     ///
-    /// Before the first identity change, refreshes use the app user ID passed by the caller. During an identity change,
-    /// this is set atomically with the epoch bump so any refresh that races the device-cache user update syncs for the
-    /// incoming user instead of the previous one.
-    private var appUserIDForRefreshes: String?
+    /// Most refresh callers pass the current user they see at the callsite. During login/switch/logout, `clearCache`
+    /// can bump the epoch before every caller observes the new user from `CurrentUserProvider`. Storing the cleared
+    /// identity under the same lock makes refresh preparation pick `identityBoundAppUserID ?? callerAppUserID` and
+    /// snapshot that with the epoch, so a request is either created for the cleared identity or treated as stale later.
+    private var identityBoundAppUserID: String?
 
     /// In-memory staleness marker. Only successful `200` and `204` responses mark the config fresh.
     private var lastRefreshedAt: Date?
@@ -356,7 +358,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     func clearCache(forAppUserID appUserID: String) {
         let continuations = self.lock.perform {
             self.epoch += 1
-            self.appUserIDForRefreshes = appUserID
+            self.identityBoundAppUserID = appUserID
             self.isRefreshing = false
             self.lastRefreshedAt = nil
             self.diskCache.clear()
@@ -388,7 +390,7 @@ private extension RemoteConfigManager {
             self.isRefreshing = true
             return RefreshRequestContext(
                 epoch: self.epoch,
-                appUserID: self.appUserIDForRefreshes ?? appUserID
+                requestAppUserID: self.identityBoundAppUserID ?? appUserID
             )
         }
     }
@@ -413,7 +415,7 @@ private extension RemoteConfigManager {
             self.isRefreshing = true
             return RefreshRequestContext(
                 epoch: self.epoch,
-                appUserID: self.appUserIDForRefreshes ?? appUserID
+                requestAppUserID: self.identityBoundAppUserID ?? appUserID
             )
         }
     }
@@ -421,7 +423,7 @@ private extension RemoteConfigManager {
     func startRefresh(isAppBackgrounded: Bool, requestContext: RefreshRequestContext) {
         let persisted = self.diskCache.read()
         let request = RemoteConfigRequest(
-            appUserID: requestContext.appUserID,
+            appUserID: requestContext.requestAppUserID,
             domain: persisted?.domain ?? Self.defaultDomain,
             manifest: persisted?.manifest,
             prefetchedBlobs: self.cachedPrefetchedBlobRefs(from: persisted)
