@@ -593,6 +593,7 @@ extension BasePurchasesTests {
             self.callOrder.append(.postReceipt)
             self.postReceiptDataCalled = true
             self.postReceiptDataCallCount += 1
+            self.userID = appUserID
             self.postedReceiptData = receipt
             self.postedIsRestore = postReceiptSource.isRestore
             self.postedAssociatedTransactionIds.append(associatedTransactionId)
