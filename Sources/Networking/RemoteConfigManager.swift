@@ -92,12 +92,12 @@ extension RemoteConfigManagerType {
         as type: T.Type
     ) async throws -> T? {
         let uniqueItemKeys = Self.uniqueItemKeys(itemKeys)
-        guard !uniqueItemKeys.isEmpty else {
-            Logger.warn(Strings.remoteConfig.mergeItemsBlobDataEmpty(topic: topic))
-            return nil
-        }
         guard !self.isDisabled else {
             Logger.warn(Strings.remoteConfig.mergeItemsBlobDataDisabled(topic: topic, itemKeys: uniqueItemKeys))
+            return nil
+        }
+        guard !uniqueItemKeys.isEmpty else {
+            Logger.warn(Strings.remoteConfig.mergeItemsBlobDataEmpty(topic: topic))
             return nil
         }
 
@@ -750,7 +750,8 @@ private extension RemoteConfigManager {
     /// Returns the full topic index that should be persisted after this response is applied.
     ///
     /// Changed topics overwrite previous entries, unchanged active topics keep previous entries, and inactive topics
-    /// are removed.
+    /// are removed. Changed topics are full replacements, not item-level patches, so removed items fall out of
+    /// the persisted topic index and blob retention set.
     func postSyncTopics(
         previous: PersistedRemoteConfiguration?,
         response: RemoteConfiguration

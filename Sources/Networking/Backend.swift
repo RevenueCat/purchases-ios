@@ -49,7 +49,6 @@ class Backend {
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
                                           diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
-                                          workflowsQueue: QueueProvider.createWorkflowsQueue(),
                                           systemInfo: systemInfo,
                                           offlineCustomerInfoCreator: offlineCustomerInfoCreator,
                                           dateProvider: dateProvider)
@@ -249,8 +248,6 @@ extension Backend {
 
     enum QueueProvider {
 
-        private static let maxConcurrentWorkflowOperations = 4
-
         static func createBackendQueue() -> OperationQueue {
             let operationQueue = OperationQueue()
             operationQueue.name = "RC Backend Queue"
@@ -263,16 +260,6 @@ extension Backend {
             operationQueue.name = "RC Diagnostics Queue"
             operationQueue.maxConcurrentOperationCount = 1
             operationQueue.qualityOfService = .background
-            return operationQueue
-        }
-
-        static func createWorkflowsQueue() -> OperationQueue {
-            let operationQueue = OperationQueue()
-            operationQueue.name = "RC Workflows Queue"
-            // No longer used: workflows now read through RemoteConfigManager, not a dedicated
-            // backend endpoint. Left in place pending removal in a follow-up (also removes this
-            // queue's construction/threading through BackendConfiguration).
-            operationQueue.maxConcurrentOperationCount = Self.maxConcurrentWorkflowOperations
             return operationQueue
         }
 
