@@ -28,7 +28,7 @@ final class UiConfigProvider {
                 itemKeys: Self.itemKeys,
                 as: UIConfig.self
             )
-            if uiConfig == nil {
+            if uiConfig == nil, !self.manager.isDisabled {
                 Logger.warn(Strings.remoteConfig.uiConfigMissingRequiredPart)
             }
             return uiConfig
@@ -40,6 +40,7 @@ final class UiConfigProvider {
 #else
     // Paywalls V2 (and therefore workflows) aren't supported on tvOS, where `UIConfig` carries no fields.
     func getUiConfig() async -> UIConfig? {
+        guard !self.manager.isDisabled else { return nil }
         guard await self.manager.blobData(for: .uiConfig, itemKey: Self.appKey) != nil,
               await self.manager.blobData(for: .uiConfig, itemKey: Self.localizationsKey) != nil else {
             Logger.warn(Strings.remoteConfig.uiConfigMissingRequiredPart)
