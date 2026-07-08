@@ -67,6 +67,38 @@ final class PaywallViewControllerExitOfferTests: TestCase {
         )
     }
 
+    func testLateLegacyPrefetchDoesNotRestoreOfferAfterWorkflowReportsNone() {
+        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
+        controller.workflowsEndpointEnabled = true
+
+        // The workflow resolves first and deliberately has no exit offer for this step.
+        controller.simulateWorkflowExitOfferUpdate(nil)
+
+        // A slower legacy prefetch, kicked off before the workflow reported in, resolves after it.
+        controller.simulateLegacyExitOfferPrefetchResult(Self.makeOffering(identifier: "stale-legacy-exit"))
+
+        expect(controller.exitOfferOfferingForTesting).to(
+            beNil(),
+            description: "a late legacy prefetch must not restore an offer once the workflow has reported none"
+        )
+    }
+
+    func testLegacyPrefetchStillWritesAfterControllerInitiatedContentReset() {
+        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "original"))
+        controller.workflowsEndpointEnabled = true
+
+        // A caller replaces the content before the embedded workflow paywall has rendered anything.
+        controller.update(with: Self.makeOffering(identifier: "replacement"))
+
+        // The single legacy prefetch kicked off at load resolves afterward against the new content.
+        controller.simulateLegacyExitOfferPrefetchResult(Self.makeOffering(identifier: "legacy-exit"))
+
+        expect(controller.exitOfferOfferingForTesting).notTo(
+            beNil(),
+            description: "resetting content for a new render must not permanently block the legacy prefetch"
+        )
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)

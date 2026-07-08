@@ -113,6 +113,11 @@ public class PaywallViewController: UIViewController {
     /// The prefetched exit offer, loaded while the main paywall is showing.
     private var exitOfferOffering: Offering?
 
+    /// Whether the embedded workflow paywall has reported its own exit offer at least once
+    /// (even a `nil` one) for the current render, so a slower legacy `prefetchExitOffer` knows
+    /// not to overwrite it.
+    private var hasReceivedWorkflowExitOfferUpdate: Bool = false
+
     // MARK: - Testing Hooks
 
     /// Settable in tests to simulate workflows being enabled without a scheme launch argument.
@@ -122,6 +127,10 @@ public class PaywallViewController: UIViewController {
 
     func simulateWorkflowExitOfferUpdate(_ offering: Offering?) {
         self.updateWorkflowExitOffer(offering)
+    }
+
+    func simulateLegacyExitOfferPrefetchResult(_ offering: Offering?) {
+        self.applyLegacyExitOffer(offering)
     }
 
     /// Whether we're currently showing an exit offer (to prevent multiple presentations).
@@ -364,9 +373,8 @@ public class PaywallViewController: UIViewController {
     @objc(updateWithOffering:)
     public func update(with offering: Offering) {
         // Replacing the offering invalidates the previous workflow's exit offer; the rebuilt
-        // paywall re-emits its own. Routed through updateWorkflowExitOffer so it keeps the
-        // "don't clear while presenting" guard and is a no-op under the legacy (non-workflow) path.
-        self.updateWorkflowExitOffer(nil)
+        // paywall re-emits its own.
+        self.resetExitOfferStateForNewContent()
         self.configuration.content = .offering(offering)
     }
 
@@ -374,7 +382,7 @@ public class PaywallViewController: UIViewController {
     @available(*, deprecated, message: "use init with Offering instead")
     @objc(updateWithOfferingIdentifier:)
     public func update(with offeringIdentifier: String) {
-        self.updateWorkflowExitOffer(nil)
+        self.resetExitOfferStateForNewContent()
         self.configuration.content = .offeringIdentifier(offeringIdentifier, presentedOfferingContext: nil)
     }
 
@@ -382,7 +390,7 @@ public class PaywallViewController: UIViewController {
     @_spi(Internal)
     @objc(updateWithOfferingIdentifier:presentedOfferingContext:)
     public func update(with offeringIdentifier: String, presentedOfferingContext: PresentedOfferingContext?) {
-        self.updateWorkflowExitOffer(nil)
+        self.resetExitOfferStateForNewContent()
         self.configuration.content = .offeringIdentifier(offeringIdentifier,
                                                          presentedOfferingContext: presentedOfferingContext)
     }
@@ -444,19 +452,42 @@ public class PaywallViewController: UIViewController {
             return
         }
         let exitOffer = await ExitOfferHelper.fetchValidExitOffer(for: offering)
+        self.applyLegacyExitOffer(exitOffer)
+    }
 
-        // Don't clobber an exit offer the embedded workflow paywall already supplied while this
-        // legacy fetch was in flight; the workflow's own writes (via updateWorkflowExitOffer) always
-        // take precedence whenever they land, before or after this one.
-        guard self.exitOfferOffering == nil else { return }
-        self.exitOfferOffering = exitOffer
+    /// Writes a legacy-prefetched exit offer, unless the embedded workflow paywall has already
+    /// reported its own (even a `nil` one) for the current render. A plain `exitOfferOffering == nil`
+    /// check can't tell "nothing has set this yet" apart from "the workflow deliberately has no exit
+    /// offer for this step," so this uses a separate flag instead of the value itself.
+    ///
+    /// Known limitation: `prefetchExitOffer` is only ever started once, from `viewDidLoad`. If
+    /// `update(with:)` swaps in different content while that prefetch is still in flight, this can
+    /// still apply an offer fetched for the offering being replaced. Closing that gap properly needs
+    /// exit-offer resolution to key off the single resolved paywall render instead of a separate,
+    /// independently-timed prefetch; tracked as a follow-up rather than solved here.
+    private func applyLegacyExitOffer(_ offering: Offering?) {
+        guard !self.hasReceivedWorkflowExitOfferUpdate else { return }
+        self.exitOfferOffering = offering
+    }
+
+    /// Clears stale exit-offer state before `update(with:)` swaps in new content. This is a fresh
+    /// render, not a report from the embedded workflow paywall, so it resets
+    /// `hasReceivedWorkflowExitOfferUpdate` rather than setting it: the new content may resolve to
+    /// the legacy path (or a workflow-fetch fallback), and `prefetchExitOffer` must still be free to
+    /// write once it resolves.
+    private func resetExitOfferStateForNewContent() {
+        guard self.workflowsEndpointEnabled else { return }
+        self.exitOfferOffering = nil
+        self.hasReceivedWorkflowExitOfferUpdate = false
     }
 
     /// Feeds the embedded workflow paywall's exit offer into `exitOfferOffering` so swipe/close can
     /// surface it. Render-dependent, so verified manually like `prefetchExitOffer`.
     private func updateWorkflowExitOffer(_ offering: Offering?) {
-        // The legacy prefetch owns the offer when workflows are off; don't clobber it.
+        // The legacy prefetch owns the offer when workflows are off; leave it alone.
         guard self.workflowsEndpointEnabled else { return }
+
+        self.hasReceivedWorkflowExitOfferUpdate = true
 
         // Keep the offer once we're presenting it, even if a late nil arrives mid-dismiss.
         guard offering != nil || !self.isShowingExitOffer else { return }
