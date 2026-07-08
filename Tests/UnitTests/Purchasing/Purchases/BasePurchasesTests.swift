@@ -673,7 +673,9 @@ extension BasePurchasesTests.MockOfferingsAPI: @unchecked Sendable {}
 
 final class MockRemoteConfigManager: RemoteConfigManagerType {
 
-    typealias RefreshParameters = (isAppBackgrounded: Bool, appUserID: String)
+    struct RefreshParameters {
+        let isAppBackgrounded: Bool
+    }
 
     var isDisabled = false
 
@@ -685,14 +687,14 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     private(set) var invokedRefreshRemoteConfigIfStaleParametersList: [RefreshParameters] = []
     private(set) var invokedClearCacheAppUserIDs: [String] = []
 
-    func refreshRemoteConfig(isAppBackgrounded: Bool, appUserID: String) {
+    func refreshRemoteConfig(isAppBackgrounded: Bool) {
         self.invokedRefreshRemoteConfigCount += 1
-        self.invokedRefreshRemoteConfigParametersList.append((isAppBackgrounded, appUserID))
+        self.invokedRefreshRemoteConfigParametersList.append(.init(isAppBackgrounded: isAppBackgrounded))
     }
 
-    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool, appUserID: String) {
+    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool) {
         self.invokedRefreshRemoteConfigIfStaleCount += 1
-        self.invokedRefreshRemoteConfigIfStaleParametersList.append((isAppBackgrounded, appUserID))
+        self.invokedRefreshRemoteConfigIfStaleParametersList.append(.init(isAppBackgrounded: isAppBackgrounded))
     }
 
     var stubbedTopics: [RemoteConfigTopic: RemoteConfiguration.ConfigTopic] = [:]

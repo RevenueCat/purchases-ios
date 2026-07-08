@@ -13,8 +13,8 @@ protocol RemoteConfigManagerType: AnyObject {
 
     /// Whether remote config should be ignored for the current manager lifetime.
     var isDisabled: Bool { get }
-    func refreshRemoteConfig(isAppBackgrounded: Bool, appUserID: String)
-    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool, appUserID: String)
+    func refreshRemoteConfig(isAppBackgrounded: Bool)
+    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool)
 
     /// Returns the committed item index for a known topic.
     ///
@@ -179,9 +179,9 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
 
     let isDisabled = true
 
-    func refreshRemoteConfig(isAppBackgrounded: Bool, appUserID: String) {}
+    func refreshRemoteConfig(isAppBackgrounded: Bool) {}
 
-    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool, appUserID: String) {}
+    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool) {}
 
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
         return nil
@@ -254,10 +254,9 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
     /// App user ID captured by an identity-bound cache clear.
     ///
-    /// Most refresh callers pass the current user they see at the callsite. During login/switch/logout, `clearCache`
-    /// can bump the epoch before every caller observes the new user from `CurrentUserProvider`. Storing the cleared
-    /// identity under the same lock makes refresh preparation pick `identityBoundAppUserID ?? callerAppUserID` and
-    /// snapshot that with the epoch, so a request is either created for the cleared identity or treated as stale later.
+    /// During login/switch/logout, `clearCache` can bump the epoch before every caller observes the new user from
+    /// `CurrentUserProvider`. Storing the cleared identity under the same lock makes refresh preparation prefer this
+    /// ID over the provider value, so a request is either created for the cleared identity or treated as stale later.
     private var identityBoundAppUserID: String?
 
     /// In-memory staleness marker. Only successful `200` and `204` responses mark the config fresh.
@@ -299,13 +298,15 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         }
     }
 
-    func refreshRemoteConfig(isAppBackgrounded: Bool, appUserID: String) {
+    func refreshRemoteConfig(isAppBackgrounded: Bool) {
+        let appUserID = self.currentUserProvider.currentAppUserID
         guard let requestContext = self.prepareRefreshIfNeeded(appUserID: appUserID) else { return }
 
         self.startRefresh(isAppBackgrounded: isAppBackgrounded, requestContext: requestContext)
     }
 
-    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool, appUserID: String) {
+    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool) {
+        let appUserID = self.currentUserProvider.currentAppUserID
         guard let requestContext = self.prepareRefreshIfStale(
             isAppBackgrounded: isAppBackgrounded,
             appUserID: appUserID
@@ -387,10 +388,12 @@ private extension RemoteConfigManager {
             guard !self.isRefreshing,
                   !self.isDisabledInternal,
                   !self.isClosed else { return nil }
+
+            let requestAppUserID = self.identityBoundAppUserID ?? appUserID
             self.isRefreshing = true
-            return RefreshRequestContext(
+            return .init(
                 epoch: self.epoch,
-                requestAppUserID: self.identityBoundAppUserID ?? appUserID
+                requestAppUserID: requestAppUserID
             )
         }
     }
@@ -412,10 +415,11 @@ private extension RemoteConfigManager {
                     > self.cacheDurationInSeconds(isAppBackgrounded) else { return nil }
             }
 
+            let requestAppUserID = self.identityBoundAppUserID ?? appUserID
             self.isRefreshing = true
-            return RefreshRequestContext(
+            return .init(
                 epoch: self.epoch,
-                requestAppUserID: self.identityBoundAppUserID ?? appUserID
+                requestAppUserID: requestAppUserID
             )
         }
     }
@@ -588,9 +592,10 @@ private extension RemoteConfigManager {
             guard self.canReadCommittedState else { return }
         }
 
+        let appUserID = self.currentUserProvider.currentAppUserID
         if let requestContext = self.prepareRefreshIfStale(
             isAppBackgrounded: false,
-            appUserID: self.currentUserProvider.currentAppUserID,
+            appUserID: appUserID,
             expectedEpoch: expectedEpoch
         ) {
             self.startRefresh(isAppBackgrounded: false, requestContext: requestContext)

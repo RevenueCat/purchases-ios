@@ -1067,12 +1067,7 @@ public extension Purchases {
 
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
-                // Use the same normalized app user ID passed to IdentityManager for this successful login instead
-                // of rereading `self.appUserID`, which can still return the previous cached user here.
-                self.remoteConfigManager.refreshRemoteConfig(
-                    isAppBackgrounded: isAppBackgrounded,
-                    appUserID: normalizedAppUserID
-                )
+                self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isAppBackgrounded)
             }
         }
     }
@@ -1218,12 +1213,7 @@ extension Purchases {
 
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             self.updateOfferingsCache(isAppBackgrounded: isBackgrounded)
-            // Use the `newAppUserID` passed to `internalSwitchUser` for this refresh instead of rereading
-            // `self.appUserID` from inside this async background-state callback.
-            self.remoteConfigManager.refreshRemoteConfig(
-                isAppBackgrounded: isBackgrounded,
-                appUserID: newAppUserID
-            )
+            self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isBackgrounded)
         }
     }
 
@@ -2767,10 +2757,7 @@ private extension Purchases {
             self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
         }
 
-        self.remoteConfigManager.refreshRemoteConfigIfStale(
-            isAppBackgrounded: isAppBackgrounded,
-            appUserID: self.appUserID
-        )
+        self.remoteConfigManager.refreshRemoteConfigIfStale(isAppBackgrounded: isAppBackgrounded)
     }
 
     func updateAllCaches(completion: ((Result<CustomerInfo, PublicError>) -> Void)?) {
@@ -2805,10 +2792,7 @@ private extension Purchases {
         }
 
         self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
-        self.remoteConfigManager.refreshRemoteConfig(
-            isAppBackgrounded: isAppBackgrounded,
-            appUserID: self.appUserID
-        )
+        self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isAppBackgrounded)
     }
 
     // Used when delegate is being set

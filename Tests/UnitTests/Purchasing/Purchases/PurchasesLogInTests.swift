@@ -49,6 +49,7 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         Purchases.clearSingleton()
         self.initializePurchasesInstance(appUserId: nil)
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+        let baselineRefreshCount = self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount
 
         waitUntil { completed in
             self.purchases.logIn("  \(Self.appUserID)  ") { _, _, _ in
@@ -57,8 +58,7 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         }
 
         expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
-        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.appUserID) ==
-            Self.appUserID
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == baselineRefreshCount + 1
     }
 
     func testLogInWithFailure() {
@@ -101,8 +101,6 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         expect(self.identityManager.invokedLogOutCount) == 1
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == baselineRemoteConfigRefreshCount + 1
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.isAppBackgrounded) == true
-        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.appUserID) ==
-            self.identityManager.currentAppUserID
     }
 
     func testLogOutWithFailure() {
@@ -166,7 +164,6 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
 
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == baselineRefreshCount + 1
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.isAppBackgrounded) == true
-        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.appUserID) == "test-user-id"
     }
 
     func testSwitchUserNoOpIfAppUserIDIsSameAsCurrent() {
@@ -213,7 +210,6 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         expect(parameters.isAppBackgrounded) == isAppBackgrounded
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.isAppBackgrounded) ==
             isAppBackgrounded
-        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.appUserID) == Self.appUserID
     }
 
     func testLogInFailureDoesNotUpdateOfferingsCache() {
