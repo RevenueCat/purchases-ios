@@ -66,12 +66,17 @@ struct BenchmarkMetrics {
         self.errorsByIteration[iteration] = "\(error)"
     }
 
+    /// Errors in the measured (post-warmup) window. Nonzero means the row's timing statistics
+    /// are not valid comparison input, and the process must exit nonzero so automation notices.
+    func postWarmupErrorCount(warmupIterations: Int) -> Int {
+        return self.errorsByIteration.filter { $0.key >= warmupIterations }.count
+    }
+
     func jsonlRow(for command: BenchmarkCommand) -> String {
         let measured = self.measurementsByIteration
             .filter { $0.key >= command.warmupIterations }
             .sorted { $0.key < $1.key }
             .map(\.value)
-        let postWarmupErrors = self.errorsByIteration.filter { $0.key >= command.warmupIterations }
         let totals = measured.map(\.totalMs).sorted()
 
         var row: [String: Any] = [
@@ -87,7 +92,7 @@ struct BenchmarkMetrics {
             "warmup_discarded": command.warmupIterations,
             "measured_iterations": measured.count,
             "error_count": self.errorsByIteration.count,
-            "post_warmup_error_count": postWarmupErrors.count
+            "post_warmup_error_count": self.postWarmupErrorCount(warmupIterations: command.warmupIterations)
         ]
 
         if !totals.isEmpty {

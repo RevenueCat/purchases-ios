@@ -60,11 +60,12 @@ if [[ ! -x "$BINARY" ]]; then
 fi
 
 SDK_COMMIT="$(git -C "$REPO_ROOT" rev-parse --short HEAD)"
+FAILED_ROWS=0
 
 run_row() {
     local mode="$1" scenario="$2" profile="$3" loss="$4"
     echo "Running transport=$TRANSPORT mode=$mode scenario=$scenario profile=$profile loss=$loss%..." >&2
-    "$BINARY" \
+    if ! "$BINARY" \
         --transport "$TRANSPORT" \
         --mode "$mode" \
         --scenario "$scenario" \
@@ -75,7 +76,10 @@ run_row() {
         --paywalls "$PAYWALLS" \
         --workflows "$WORKFLOWS" \
         --seed "$SEED" \
-        --annotation "sdk_commit=$SDK_COMMIT"
+        --annotation "sdk_commit=$SDK_COMMIT"; then
+        echo "Row FAILED (transport=$TRANSPORT mode=$mode scenario=$scenario profile=$profile loss=$loss%)" >&2
+        FAILED_ROWS=$((FAILED_ROWS + 1))
+    fi
 }
 
 for mode in $MODES; do
@@ -96,4 +100,9 @@ if [[ -n "$LOSS_SWEEP" ]]; then
             run_row "$mode" cold lte "$loss"
         done
     done
+fi
+
+if (( FAILED_ROWS > 0 )); then
+    echo "$FAILED_ROWS row(s) failed or produced invalid timings" >&2
+    exit 1
 fi

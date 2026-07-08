@@ -37,8 +37,14 @@ public struct BenchmarkMain {
 
         DispatchQueue.global(qos: .userInitiated).async {
             do {
-                let row = try BenchmarkRunner(command: command).run()
-                print(row)
+                let result = try BenchmarkRunner(command: command).run()
+                print(result.jsonlRow)
+                if result.postWarmupErrorCount > 0 {
+                    let message = "\(result.postWarmupErrorCount) post-warmup iteration(s) failed; " +
+                        "timings are not valid comparison input\n"
+                    FileHandle.standardError.write(Data(message.utf8))
+                    finish(exitCode: 2)
+                }
                 finish(exitCode: 0)
             } catch {
                 FileHandle.standardError.write(Data("\(error)\n".utf8))

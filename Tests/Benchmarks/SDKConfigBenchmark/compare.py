@@ -14,7 +14,7 @@ import sys
 
 
 KEY_FIELDS = ("mode", "transport", "scenario", "profile", "loss_percent",
-              "paywalls", "workflows", "seed")
+              "paywalls", "workflows", "seed", "iterations", "warmup_discarded")
 METRICS = ("p50_ms", "p95_ms", "request_count_mean", "bytes_received_mean")
 
 
@@ -52,12 +52,16 @@ def print_single(rows):
     header = list(KEY_FIELDS) + list(METRICS) + ["errors"]
     print("| " + " | ".join(header) + " |")
     print("|" + "---|" * len(header))
+    invalid = 0
     for key in sorted(rows, key=str):
         row = rows[key]
         cells = [str(part) for part in key]
         cells += [fmt(row.get(metric)) for metric in METRICS]
-        cells.append(str(row.get("error_count", 0)))
+        cells.append(errors_cell(row))
+        if post_warmup_errors(row):
+            invalid += 1
         print("| " + " | ".join(cells) + " |")
+    return invalid
 
 
 def post_warmup_errors(row):
@@ -107,17 +111,19 @@ def print_comparison(baseline, candidate):
             f"\n**⚠️ {invalid} row(s) have post-warmup errors; "
             "their timing deltas are not valid comparison input.**"
         )
+    return invalid
 
 
 def main(argv):
     if len(argv) == 2:
-        print_single(load(argv[1]))
+        invalid = print_single(load(argv[1]))
     elif len(argv) == 3:
-        print_comparison(load(argv[1]), load(argv[2]))
+        invalid = print_comparison(load(argv[1]), load(argv[2]))
     else:
         print(__doc__, file=sys.stderr)
         return 2
-    return 0
+    # Invalid rows must fail automation, not just print a warning.
+    return 1 if invalid else 0
 
 
 if __name__ == "__main__":

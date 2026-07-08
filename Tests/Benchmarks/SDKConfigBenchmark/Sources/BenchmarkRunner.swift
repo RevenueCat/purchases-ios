@@ -1,5 +1,13 @@
 import Foundation
 
+struct BenchmarkRunResult {
+
+    let jsonlRow: String
+    /// Nonzero means the row is visible but its timings are not valid comparison input.
+    let postWarmupErrorCount: Int
+
+}
+
 /// Drives one benchmark configuration: N simulated app launches through the real SDK stack,
 /// against the simulated transport, producing a single JSONL row.
 ///
@@ -17,7 +25,7 @@ final class BenchmarkRunner {
         self.command = command
     }
 
-    func run() throws -> String {
+    func run() throws -> BenchmarkRunResult {
         switch self.command.transport {
         case .simulated:
             guard let profile = NetworkProfile.named(self.command.profileName) else {
@@ -64,7 +72,10 @@ final class BenchmarkRunner {
             }
         }
 
-        return metrics.jsonlRow(for: self.command)
+        return BenchmarkRunResult(
+            jsonlRow: metrics.jsonlRow(for: self.command),
+            postWarmupErrorCount: metrics.postWarmupErrorCount(warmupIterations: self.command.warmupIterations)
+        )
     }
 
 }

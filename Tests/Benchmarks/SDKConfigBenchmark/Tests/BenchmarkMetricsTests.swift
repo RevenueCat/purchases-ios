@@ -77,6 +77,7 @@ final class BenchmarkMetricsTests: BenchmarkTestCase {
         let row = try self.decodeRow(metrics, command: command)
 
         XCTAssertEqual(row["post_warmup_error_count"] as? Int, 1)
+        XCTAssertEqual(metrics.postWarmupErrorCount(warmupIterations: command.warmupIterations), 1)
         let firstError = try XCTUnwrap(row["first_error"] as? String)
         XCTAssertTrue(firstError.hasPrefix("iteration 2:"))
     }
