@@ -875,6 +875,62 @@ final class RemoteConfigManagerTests: TestCase {
         expect(value) == MergedPrimitivePayload(wf1: "hello", wf2: 42)
     }
 
+    func testMergeItemsBlobDataEscapesItemKeysRequiringJSONEscaping() async throws {
+        let blob = #"{"value":"escaped"}"#.asData
+        let itemKey = #"weird"key\slash{brace},colon:end"#
+        let ref = RCContainerTestData.blobRef(for: blob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": [itemKey: .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = blob
+
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .workflows,
+            itemKeys: [itemKey],
+            as: MergedEscapedKeyPayload.self
+        )
+
+        expect(value) == MergedEscapedKeyPayload(escapedKey: .init(value: "escaped"))
+    }
+
+    func testMergeItemsBlobDataSupportsUnicodeItemKeys() async throws {
+        let blob = #"{"value":"unicode"}"#.asData
+        let itemKey = "日本語🎉café"
+        let ref = RCContainerTestData.blobRef(for: blob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": [itemKey: .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = blob
+
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .workflows,
+            itemKeys: [itemKey],
+            as: MergedUnicodeKeyPayload.self
+        )
+
+        expect(value) == MergedUnicodeKeyPayload(unicodeKey: .init(value: "unicode"))
+    }
+
+    func testMergeItemsBlobDataAcceptsBlobsWithSurroundingWhitespace() async throws {
+        let blob = "\n   {\"value\":\"spaced\"}   \n".asData
+        let ref = RCContainerTestData.blobRef(for: blob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["wf1": .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = blob
+
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .workflows,
+            itemKeys: ["wf1"],
+            as: SingleMergedWorkflowPayload.self
+        )
+
+        expect(value) == SingleMergedWorkflowPayload(wf1: .init(value: "spaced"))
+    }
+
     func testContainerResponsePersistsServerManifestAndChangedTopics() throws {
         self.diskCache.stubbedRead = nil
         let response = """
@@ -2166,6 +2222,24 @@ private extension RemoteConfigManagerTests {
 
     struct MergedSnakeCaseWorkflowPayload: Decodable, Equatable {
         let favoriteWorkflow: MergedSection
+    }
+
+    struct MergedEscapedKeyPayload: Decodable, Equatable {
+        let escapedKey: MergedSection
+
+        // swiftlint:disable:next nesting
+        enum CodingKeys: String, CodingKey {
+            case escapedKey = #"weird"key\slash{brace},colon:end"#
+        }
+    }
+
+    struct MergedUnicodeKeyPayload: Decodable, Equatable {
+        let unicodeKey: MergedSection
+
+        // swiftlint:disable:next nesting
+        enum CodingKeys: String, CodingKey {
+            case unicodeKey = "日本語🎉café"
+        }
     }
 
     struct MergedPrimitivePayload: Decodable, Equatable {
