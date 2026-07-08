@@ -63,39 +63,34 @@ class UiConfigProviderTests: TestCase {
         expect(uiConfig).to(beNil())
     }
 
-    func testAssemblesUiConfigWhenVariableConfigPartIsMissing() async throws {
-        // variableConfig has decode-time defaults, so omitting it entirely must not fail assembly.
+    func testReturnsNilWhenVariableConfigPartIsMissing() async throws {
         self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{}"#,
-                  variableConfig: nil, customVariables: nil)
+                  variableConfig: nil, customVariables: #"{}"#)
 
         let uiConfig = await self.provider.getUiConfig()
 
-        expect(uiConfig).toNot(beNil())
+        expect(uiConfig).to(beNil())
     }
 
-    func testAssemblesUiConfigWhenCustomVariablesPartIsMissing() async throws {
-        // customVariables has decode-time defaults, so omitting it entirely must not fail assembly.
+    func testReturnsNilWhenCustomVariablesPartIsMissing() async throws {
         self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{}"#,
-                  variableConfig: nil, customVariables: nil)
+                  variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+                  customVariables: nil)
 
         let uiConfig = await self.provider.getUiConfig()
 
-        expect(uiConfig).toNot(beNil())
-        expect(uiConfig?.customVariables).to(beEmpty())
+        expect(uiConfig).to(beNil())
     }
 
-    func testMalformedVariableConfigFallsBackToDefaultInsteadOfFailingTheWholeAssembly() async throws {
-        // variable_config is syntactically valid JSON but the wrong shape for VariableConfig, which used
-        // to fail the single merged decode of the whole UIConfig, discarding good app/localizations data.
+    func testMalformedVariableConfigFailsMergedAssembly() async throws {
         self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{"en_US": {"day": "Day"}}"#,
-                  variableConfig: #"{"variable_compatibility_map": "not-a-dictionary"}"#, customVariables: nil)
+                  variableConfig: #"{"variable_compatibility_map": "not-a-dictionary"}"#,
+                  customVariables: #"{}"#)
 
         let uiConfig = await self.provider.getUiConfig()
 
-        expect(uiConfig).toNot(beNil())
-        expect(uiConfig?.localizations["en_US"]?["day"]) == "Day"
-        expect(uiConfig?.variableConfig.variableCompatibilityMap).to(beEmpty())
-        self.logger.verifyMessageWasLogged("Failed to decode ui_config part 'variable_config'", level: .error)
+        expect(uiConfig).to(beNil())
+        self.logger.verifyMessageWasLogged("Failed to decode merged ui_config", level: .error)
     }
 
     func testLogsWarningWhenARequiredPartIsMissing() async throws {
