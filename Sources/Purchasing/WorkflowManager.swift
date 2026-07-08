@@ -38,26 +38,35 @@ class WorkflowManager {
         self.operationDispatcher = operationDispatcher
     }
 
-    /// Resolves `workflowId` and delivers it through `completion`, or a `BackendError` distinguishing
-    /// why it couldn't be resolved: genuinely missing, malformed, or missing its `ui_config`.
-    func getWorkflow(workflowId: String, completion: @escaping (Result<WorkflowDataResult, BackendError>) -> Void) {
-        Async.call(with: completion) {
-            switch await self.workflowsConfigProvider.getWorkflow(workflowId: workflowId) {
-            case let .success(result):
-                self.warmUpAssets(for: result)
-                return .success(result)
-            case .failure(.notFound):
-                return .failure(.workflowNotFound(workflowId: workflowId))
-            case let .failure(.decodingFailed(error)):
-                return .failure(.workflowDecodingFailed(workflowId: workflowId, error: error))
-            case .failure(.uiConfigUnavailable):
-                return .failure(.workflowUiConfigUnavailable(workflowId: workflowId))
-            }
+    /// Resolves `workflowId`, or throws the `BackendError` explaining why it couldn't be resolved:
+    /// genuinely missing, malformed, or missing its `ui_config`.
+    func getWorkflow(workflowId: String) async throws -> WorkflowDataResult {
+        switch await self.workflowsConfigProvider.getWorkflow(workflowId: workflowId) {
+        case let .success(result):
+            self.warmUpAssets(for: result)
+            return result
+        case .failure(.notFound):
+            throw BackendError.workflowNotFound(workflowId: workflowId)
+        case let .failure(.decodingFailed(error)):
+            throw BackendError.workflowDecodingFailed(workflowId: workflowId, error: error)
+        case .failure(.uiConfigUnavailable):
+            throw BackendError.workflowUiConfigUnavailable(workflowId: workflowId)
         }
     }
 
     func workflowId(forOfferingId offeringId: String) async -> String? {
         return await self.workflowsConfigProvider.workflowId(forOfferingId: offeringId)
+    }
+
+    /// Resolves `offeringId` to its workflow, combining `workflowId(forOfferingId:)` and
+    /// `getWorkflow(workflowId:)` into the single call `Purchases.workflow(forOfferingIdentifier:)`
+    /// needs, instead of it having to orchestrate both individually.
+    func getWorkflow(forOfferingId offeringId: String) async throws -> WorkflowDataResult {
+        // Prefer the workflowId resolved from remote config (offeringId → workflowId), falling back
+        // to the offering identifier itself, which is also accepted as a workflow key. The mapping is
+        // nil until remote config has synced, so the fallback preserves the original behavior.
+        let workflowId = await self.workflowId(forOfferingId: offeringId) ?? offeringId
+        return try await self.getWorkflow(workflowId: workflowId)
     }
 
 }

@@ -1031,13 +1031,7 @@ public extension Purchases {
 
     @_spi(Internal)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
-        // Prefer the workflowId resolved from remote config (offeringId → workflowId), falling back
-        // to the offering identifier itself, which is also accepted as a workflow key. The mapping is
-        // nil until remote config has synced, so the fallback preserves the original behavior.
-        let workflowId = await self.workflowManager.workflowId(forOfferingId: offeringID) ?? offeringID
-        return try await Async.call { completion in
-            self.workflowManager.getWorkflow(workflowId: workflowId, completion: completion)
-        }
+        return try await self.workflowManager.getWorkflow(forOfferingId: offeringID)
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {

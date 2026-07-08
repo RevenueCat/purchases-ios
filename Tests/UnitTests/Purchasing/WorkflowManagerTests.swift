@@ -39,20 +39,17 @@ class WorkflowManagerTests: TestCase {
 
     // MARK: - getWorkflow
 
-    func testGetWorkflowDelegatesToProviderAndSucceeds() throws {
+    func testGetWorkflowDelegatesToProviderAndSucceeds() async throws {
         let expected = try Self.workflowDataResult(id: "wf_1")
         self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
 
-        let result: Result<WorkflowDataResult, BackendError>? = waitUntilValue { completed in
-            self.manager.getWorkflow(workflowId: "wf_1") { completed($0) }
-        }
+        let result = try await self.manager.getWorkflow(workflowId: "wf_1")
 
-        expect(result).to(beSuccess())
-        expect(result?.value) == expected
+        expect(result) == expected
         expect(self.mockProvider.invokedGetWorkflowParameters) == ["wf_1"]
     }
 
-    func testGetWorkflowWarmsUpAssetsOnSuccess() throws {
+    func testGetWorkflowWarmsUpAssetsOnSuccess() async throws {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
             throw XCTSkip("warmUpWorkflowCaches requires iOS 15+")
         }
@@ -60,57 +57,55 @@ class WorkflowManagerTests: TestCase {
         self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
 
         // MockOperationDispatcher's async dispatchOnWorkerThread blocks until the block finishes, so
-        // warm-up has already run by the time `completion` fires.
-        waitUntil { done in
-            self.manager.getWorkflow(workflowId: "wf_1") { _ in done() }
-        }
+        // warm-up has already run by the time this returns.
+        _ = try await self.manager.getWorkflow(workflowId: "wf_1")
 
         expect(self.mockPaywallCache.invokedWarmUpWorkflowCaches) == true
         expect(self.mockPaywallCache.invokedWarmUpWorkflowCachesWorkflow?.id) == "wf_1"
     }
 
-    func testGetWorkflowFailsWithWorkflowNotFoundWhenProviderReportsNotFound() {
-        let result: Result<WorkflowDataResult, BackendError>? = waitUntilValue { completed in
-            self.manager.getWorkflow(workflowId: "missing") { completed($0) }
+    func testGetWorkflowFailsWithWorkflowNotFoundWhenProviderReportsNotFound() async {
+        do {
+            _ = try await self.manager.getWorkflow(workflowId: "missing")
+            fail("Expected getWorkflow to throw")
+        } catch {
+            expect(error as? BackendError) == .unexpectedBackendResponse(
+                .workflowNotFound(workflowId: "missing"),
+                extraContext: nil,
+                .init(file: "", function: "", line: 0)
+            )
         }
-
-        expect(result).to(beFailure())
-        expect(result?.error) == .unexpectedBackendResponse(
-            .workflowNotFound(workflowId: "missing"),
-            extraContext: nil,
-            .init(file: "", function: "", line: 0)
-        )
     }
 
-    func testGetWorkflowFailsWithDecodingFailedWhenProviderReportsADecodingFailure() {
+    func testGetWorkflowFailsWithDecodingFailedWhenProviderReportsADecodingFailure() async {
         let underlyingError = NSError(domain: "test", code: 1)
         self.mockProvider.stubbedGetWorkflowError = ["wf_1": .decodingFailed(underlyingError)]
 
-        let result: Result<WorkflowDataResult, BackendError>? = waitUntilValue { completed in
-            self.manager.getWorkflow(workflowId: "wf_1") { completed($0) }
+        do {
+            _ = try await self.manager.getWorkflow(workflowId: "wf_1")
+            fail("Expected getWorkflow to throw")
+        } catch {
+            expect(error as? BackendError) == .unexpectedBackendResponse(
+                .workflowDecodingFailed(workflowId: "wf_1", error: underlyingError),
+                extraContext: nil,
+                .init(file: "", function: "", line: 0)
+            )
         }
-
-        expect(result).to(beFailure())
-        expect(result?.error) == .unexpectedBackendResponse(
-            .workflowDecodingFailed(workflowId: "wf_1", error: underlyingError),
-            extraContext: nil,
-            .init(file: "", function: "", line: 0)
-        )
     }
 
-    func testGetWorkflowFailsWithUiConfigUnavailableWhenProviderReportsItsMissing() {
+    func testGetWorkflowFailsWithUiConfigUnavailableWhenProviderReportsItsMissing() async {
         self.mockProvider.stubbedGetWorkflowError = ["wf_1": .uiConfigUnavailable]
 
-        let result: Result<WorkflowDataResult, BackendError>? = waitUntilValue { completed in
-            self.manager.getWorkflow(workflowId: "wf_1") { completed($0) }
+        do {
+            _ = try await self.manager.getWorkflow(workflowId: "wf_1")
+            fail("Expected getWorkflow to throw")
+        } catch {
+            expect(error as? BackendError) == .unexpectedBackendResponse(
+                .workflowUiConfigUnavailable(workflowId: "wf_1"),
+                extraContext: nil,
+                .init(file: "", function: "", line: 0)
+            )
         }
-
-        expect(result).to(beFailure())
-        expect(result?.error) == .unexpectedBackendResponse(
-            .workflowUiConfigUnavailable(workflowId: "wf_1"),
-            extraContext: nil,
-            .init(file: "", function: "", line: 0)
-        )
     }
 
     // MARK: - workflowId(forOfferingId:)
@@ -128,6 +123,31 @@ class WorkflowManagerTests: TestCase {
         let workflowId = await self.manager.workflowId(forOfferingId: "unknown")
 
         expect(workflowId).to(beNil())
+    }
+
+    // MARK: - getWorkflow(forOfferingId:)
+
+    func testGetWorkflowForOfferingIdResolvesWorkflowIdThenFetchesTheWorkflow() async throws {
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
+
+        let result = try await self.manager.getWorkflow(forOfferingId: "default")
+
+        expect(result) == expected
+        expect(self.mockProvider.invokedWorkflowIdForOfferingIdParameters) == ["default"]
+        expect(self.mockProvider.invokedGetWorkflowParameters) == ["wf_1"]
+    }
+
+    func testGetWorkflowForOfferingIdFallsBackToOfferingIdAsWorkflowId() async throws {
+        // No entry in stubbedWorkflowIdForOfferingId, so the mapping is unresolved.
+        let expected = try Self.workflowDataResult(id: "default")
+        self.mockProvider.stubbedGetWorkflowResult = ["default": expected]
+
+        let result = try await self.manager.getWorkflow(forOfferingId: "default")
+
+        expect(result) == expected
+        expect(self.mockProvider.invokedGetWorkflowParameters) == ["default"]
     }
 
     // MARK: - Helpers
