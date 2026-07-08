@@ -579,10 +579,15 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             paywallCache = nil
         }
 
-        let workflowManager = WorkflowManager(backend: backend,
-                                              workflowsCache: workflowsCache,
-                                              paywallCache: paywallCache,
-                                              operationDispatcher: operationDispatcher)
+        if systemInfo.workflowsEnabledWithoutRemoteConfig {
+            Logger.warn(Strings.remoteConfig.workflowsEnabledWithoutRemoteConfig)
+        }
+
+        let workflowManager = WorkflowManager(
+            workflowsConfigProvider: WorkflowsConfigProvider(manager: remoteConfigManager),
+            paywallCache: paywallCache,
+            operationDispatcher: operationDispatcher
+        )
 
         let offeringsManager = OfferingsManager(deviceCache: deviceCache,
                                                 operationDispatcher: operationDispatcher,
@@ -1026,27 +1031,7 @@ public extension Purchases {
 
     @_spi(Internal)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
-        // Prefer the workflowId resolved from the workflows list (offeringId → workflowId), falling
-        // back to the offering identifier itself, which the backend also accepts as a workflow key.
-        // The map is empty until the workflows list has been fetched, so the fallback preserves the
-        // original behavior. `WorkflowManager` handles caching and asset warm-up.
-        let workflowId = self.workflowManager.cachedWorkflowId(forOfferingId: offeringID) ?? offeringID
-        return try await Async.call { completion in
-            self.workflowManager.getWorkflow(
-                appUserID: self.appUserID,
-                workflowId: workflowId,
-                isAppBackgrounded: false,
-                completion: completion
-            )
-        }
-    }
-
-    /// Synchronously returns the cached workflow for `offeringID` when one is present and fresh,
-    /// otherwise `nil`. Used to seed the workflow paywall without a backend round-trip; callers fall
-    /// back to the async ``workflow(forOfferingIdentifier:)`` when this returns `nil`.
-    @_spi(Internal)
-    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
-        return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
+        return try await self.workflowManager.getWorkflow(forOfferingId: offeringID)
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
