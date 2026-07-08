@@ -29,6 +29,9 @@ protocol PaywallPurchasesType: Sendable {
     /// property is only useful for reading the override value.
     var preferredLocaleOverride: String? { get }
 
+    /// Whether remote config (and, with it, paywall workflows) is enabled.
+    var remoteConfigEnabled: Bool { get }
+
     /// Returns a tracker of user's subscription history
     var subscriptionHistoryTracker: SubscriptionHistoryTracker { get }
 

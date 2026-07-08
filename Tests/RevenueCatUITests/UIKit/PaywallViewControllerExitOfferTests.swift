@@ -22,7 +22,7 @@ final class PaywallViewControllerExitOfferTests: TestCase {
 
     func testUpdateDisplayCloseButtonDoesNotClearWorkflowExitOffer() {
         let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
-        controller.workflowsEndpointEnabled = true
+        controller.remoteConfigEnabledForTesting = true
 
         controller.simulateWorkflowExitOfferUpdate(Self.makeOffering(identifier: "exit"))
         expect(controller.exitOfferOfferingForTesting).notTo(beNil(), description: "precondition")
@@ -37,7 +37,7 @@ final class PaywallViewControllerExitOfferTests: TestCase {
 
     func testUpdateFontDoesNotClearWorkflowExitOffer() {
         let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
-        controller.workflowsEndpointEnabled = true
+        controller.remoteConfigEnabledForTesting = true
 
         controller.simulateWorkflowExitOfferUpdate(Self.makeOffering(identifier: "exit"))
         expect(controller.exitOfferOfferingForTesting).notTo(beNil(), description: "precondition")
@@ -54,7 +54,7 @@ final class PaywallViewControllerExitOfferTests: TestCase {
         // Replacing the offering is a legitimate reason to drop the previous exit offer —
         // the new paywall will re-emit one.
         let controller = PaywallViewController(offering: Self.makeOffering(identifier: "original"))
-        controller.workflowsEndpointEnabled = true
+        controller.remoteConfigEnabledForTesting = true
 
         controller.simulateWorkflowExitOfferUpdate(Self.makeOffering(identifier: "exit"))
         expect(controller.exitOfferOfferingForTesting).notTo(beNil(), description: "precondition")
@@ -69,7 +69,7 @@ final class PaywallViewControllerExitOfferTests: TestCase {
 
     func testLateOfferingBasedPrefetchDoesNotRestoreOfferAfterWorkflowReportsNone() {
         let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
-        controller.workflowsEndpointEnabled = true
+        controller.remoteConfigEnabledForTesting = true
 
         // The workflow resolves first and deliberately has no exit offer for this step.
         controller.simulateWorkflowExitOfferUpdate(nil)
@@ -85,7 +85,7 @@ final class PaywallViewControllerExitOfferTests: TestCase {
 
     func testOfferingBasedPrefetchStillWritesAfterControllerInitiatedContentReset() {
         let controller = PaywallViewController(offering: Self.makeOffering(identifier: "original"))
-        controller.workflowsEndpointEnabled = true
+        controller.remoteConfigEnabledForTesting = true
 
         // A caller replaces the content before the embedded workflow paywall has rendered anything.
         controller.update(with: Self.makeOffering(identifier: "replacement"))
