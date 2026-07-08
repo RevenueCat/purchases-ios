@@ -95,22 +95,38 @@ extension RemoteConfigManagerType {
             return nil
         }
 
-        // Each resolved blob is already a valid JSON value, so build `{"<itemKey>":<blobBytes>,...}`
-        // by concatenating the raw bytes verbatim and decoding once.
-        var mergedData = Data([UInt8(ascii: "{")])
-        for (index, itemKey) in uniqueItemKeys.enumerated() {
+        guard let mergedData = try Self.makeJSONEnvelopeData(
+            orderedItemKeys: uniqueItemKeys,
+            resolvedBlobs: resolvedBlobs
+        ) else {
+            return nil
+        }
+
+        return try JSONDecoder.default.decode(type, from: mergedData)
+    }
+
+    /// Builds a keyed JSON object `{"<itemKey>":<blobBytes>,...}` from already-encoded blob payloads.
+    ///
+    /// Each blob is a valid JSON value that is appended verbatim, avoiding a decode -> encode -> decode
+    /// cycle. Item keys keep the order of `orderedItemKeys` and are escaped via `JSONEncoder.default`.
+    /// Returns `nil` if any key has no resolved blob data.
+    private static func makeJSONEnvelopeData(
+        orderedItemKeys: [String],
+        resolvedBlobs: [String: Data?]
+    ) throws -> Data? {
+        var envelope = Data([UInt8(ascii: "{")])
+        for (index, itemKey) in orderedItemKeys.enumerated() {
             guard let resolvedBlob = resolvedBlobs[itemKey],
                   let data = resolvedBlob else { return nil }
             if index > 0 {
-                mergedData.append(UInt8(ascii: ","))
+                envelope.append(UInt8(ascii: ","))
             }
-            mergedData.append(try JSONEncoder.default.encode(itemKey))
-            mergedData.append(UInt8(ascii: ":"))
-            mergedData.append(data)
+            envelope.append(try JSONEncoder.default.encode(itemKey))
+            envelope.append(UInt8(ascii: ":"))
+            envelope.append(data)
         }
-        mergedData.append(UInt8(ascii: "}"))
-
-        return try JSONDecoder.default.decode(type, from: mergedData)
+        envelope.append(UInt8(ascii: "}"))
+        return envelope
     }
 
     private static func uniqueItemKeys(_ itemKeys: [String]) -> [String] {
