@@ -20,9 +20,14 @@ struct IterationMeasurement {
 
     init(totalMs: Double, events: [TransportEvent]) {
         self.totalMs = totalMs
-        self.offeringsMs = Self.span(of: events.filter { $0.path.hasSuffix("/offerings") })
-        self.configMs = Self.span(of: events.filter { $0.path.hasSuffix("/config/app") })
-        self.blobMs = Self.span(of: events.filter { $0.path.contains("/blobs/") })
+        let offerings = events.filter { $0.path.hasSuffix("/offerings") }
+        let config = events.filter { $0.path.hasSuffix("/config/app") }
+        // Blob URLs come from the (real or fixture) config's url_format, so classify them as
+        // everything that is neither an offerings nor a config request.
+        let blobs = events.filter { !$0.path.hasSuffix("/offerings") && !$0.path.hasSuffix("/config/app") }
+        self.offeringsMs = Self.span(of: offerings)
+        self.configMs = Self.span(of: config)
+        self.blobMs = Self.span(of: blobs)
         self.requestCount = events.count
         self.bytesReceived = events.reduce(0) { $0 + $1.bytesReceived }
         self.failedRequestCount = events.filter(\.failed).count
@@ -72,6 +77,7 @@ struct BenchmarkMetrics {
 
         var row: [String: Any] = [
             "mode": command.mode.rawValue,
+            "transport": command.transport.rawValue,
             "scenario": command.scenario.rawValue,
             "profile": command.profileName,
             "loss_percent": command.lossPercent,

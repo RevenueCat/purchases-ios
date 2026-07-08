@@ -70,4 +70,29 @@ final class BenchmarkCommandTests: BenchmarkTestCase {
         XCTAssertThrowsError(try BenchmarkCommand.parse(["--loss-percent", "101"]))
     }
 
+    // MARK: - Transport
+
+    func testTransportDefaultsToSimulated() throws {
+        XCTAssertEqual(try BenchmarkCommand.parse([]).transport, .simulated)
+    }
+
+    func testLiveTransportDefaultsToPinnedProjectAPIKey() throws {
+        let command = try BenchmarkCommand.parse(["--transport", "live"])
+
+        XCTAssertEqual(command.transport, .live)
+        XCTAssertEqual(command.apiKey, BenchmarkProject.testStoreAPIKey)
+    }
+
+    func testLiveTransportKeepsExplicitAPIKey() throws {
+        let command = try BenchmarkCommand.parse(["--transport", "live", "--api-key", "appl_other"])
+
+        XCTAssertEqual(command.apiKey, "appl_other")
+    }
+
+    func testLiveTransportRejectsSimulationOnlyKnobs() {
+        XCTAssertThrowsError(try BenchmarkCommand.parse(["--transport", "live", "--loss-percent", "10"]))
+        XCTAssertThrowsError(try BenchmarkCommand.parse(["--transport", "live", "--profile", "lte"]))
+        XCTAssertThrowsError(try BenchmarkCommand.parse(["--transport", "live", "--mode", "config-killswitch"]))
+    }
+
 }

@@ -38,6 +38,20 @@ RC-Container, `PublishedWorkflow` blobs, `ui_config` blobs) with content-address
 that pass the SDK's checksum validation. StoreKit is replaced by a `ProductsManagerType` fake;
 everything else is production code.
 
+## Transports
+
+- **`--transport simulated`** (default): the in-process network model below. Deterministic,
+  seedable, and the only way to measure loss, degraded profiles, and the forced kill-switch
+  4xx. Use it for controlled A/B comparisons of SDK behavior and for CI regression tracking.
+- **`--transport live`**: real requests against production, pinned to the prepared stress-test
+  project [`5f07e7e3`](https://app.revenuecat.com/projects/5f07e7e3) ("Stress Test Config
+  Endpoint"; keys hardcoded in `BenchmarkProject`, Test Store key by default because the
+  project's packages live on its Test Store app). Requests flow through a recording
+  passthrough, so live rows carry the same per-request metrics: API traffic re-issues through a
+  single-connection pool mirroring `HTTPClient`, blob traffic through a default pool mirroring
+  the production blob downloader. Use it for real-world numbers (CDN, TLS, actual backend
+  latency) and for monitoring the two systems against real project content.
+
 ## Network model
 
 All requests are intercepted in-process by `SimulatedTransportURLProtocol` (every host,
@@ -117,6 +131,28 @@ macOS Release build, commit `c1958bf64`:
 | config | cold | lte | 20 | 1,963.5 | 2,466.3 | 97 | 129,178 |
 | legacy | cold | lte | 30 | 293.1 | 585.1 | 1 | 64,972 |
 | config | cold | lte | 30 | 2,154.8 | 3,038.0 | 70 | 114,617 |
+
+### Live sample numbers
+
+`TRANSPORT=live` matrix (25 iterations, 3 warmup discarded) against the stress-test project,
+run 2026-07-08 from a residential connection:
+
+| mode | scenario | p50 ms | p95 ms | requests (mean) | bytes (mean) |
+|---|---|---:|---:|---:|---:|
+| legacy | cold | 163.6 | 334.9 | 1 | 32,124 |
+| config | cold | 334.1 | 525.4 | 2 | 36,052 |
+| legacy | warm | 122.7 | 321.1 | 1 | 0 |
+| config | warm | 316.4 | 635.0 | 2 | 0 |
+
+Live observations (as of this run):
+
+- The project's `/v1/config` response currently drives **no blob downloads** (2 requests
+  total: config + offerings), so live config cost is simply one extra API round trip,
+  serialized behind offerings by `HTTPClient`'s single-connection queue. As the backend starts
+  serving workflow/paywall blobs for this project, live runs will pick that up automatically.
+- Warm revalidation works end to end against production: offerings answers `304` to
+  `X-RevenueCat-ETag` and config answers `204` to a matching manifest, both with zero content
+  bytes. The runner verifies this and fails the run if it stops happening.
 
 ## Interpretation
 

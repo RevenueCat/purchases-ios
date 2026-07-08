@@ -1,8 +1,18 @@
 # SDKConfigBenchmark
 
 A macOS command-line benchmark that measures the SDK's **legacy offerings flow** against the
-**remote config endpoint flow** (and its kill switch) through the real manager-level code paths,
-under simulated network conditions.
+**remote config endpoint flow** (and its kill switch) through the real manager-level code paths.
+
+Two transports:
+
+- **`--transport simulated`** (default): in-process fixtures with seeded network profiles
+  (ideal/wifi/lte), packet-loss modeling, and a forced kill-switch 4xx. Deterministic and
+  CI-friendly.
+- **`--transport live`**: real requests against the production backend, pinned to the
+  prepared stress-test project
+  ([`5f07e7e3`](https://app.revenuecat.com/projects/5f07e7e3), hardcoded key). Same recorded
+  per-request metrics; real CDN/TLS/latency behavior. Kill-switch, profiles, and loss are
+  simulated-only (you cannot force a 4xx or packet loss on production).
 
 See `CONFIG_ENDPOINT_BENCHMARKS.md` for methodology, scenario definitions, sample numbers, and
 known limitations.
@@ -17,7 +27,8 @@ tuist generate SDKConfigBenchmark SDKConfigBenchmarkTests
 ## Run the matrix
 
 ```sh
-bash Tests/Benchmarks/SDKConfigBenchmark/run-matrix.sh > results.jsonl
+bash Tests/Benchmarks/SDKConfigBenchmark/run-matrix.sh > results.jsonl        # simulated
+TRANSPORT=live bash Tests/Benchmarks/SDKConfigBenchmark/run-matrix.sh > live.jsonl
 ```
 
 Compare two runs (e.g. baseline branch vs candidate branch):
@@ -39,10 +50,11 @@ xcodebuild -workspace RevenueCat-Tuist.xcworkspace -scheme SDKConfigBenchmark \
   -configuration Release -destination platform=macOS build
 
 SDKConfigBenchmark \
-  --mode config \            # legacy | config | config-killswitch
+  --transport simulated \    # simulated | live
+  --mode config \            # legacy | config | config-killswitch (killswitch: simulated only)
   --scenario cold \          # cold | warm
-  --profile lte \            # ideal | wifi | lte
-  --loss-percent 20 \
+  --profile lte \            # ideal | wifi | lte (simulated only)
+  --loss-percent 20 \        # simulated only
   --iterations 25 \
   --warmup-iterations 3 \
   --paywalls 50 \

@@ -8,6 +8,9 @@
 # Requires the Tuist workspace: tuist install && tuist generate SDKConfigBenchmark
 #
 # Override the matrix through environment variables:
+#   TRANSPORT=live            # hit the real backend (pinned stress-test project) instead of
+#                             # the simulated transport; forces ideal profile, no loss, and
+#                             # drops the kill-switch mode (cannot force 4xx on production)
 #   MODES="legacy config config-killswitch"
 #   SCENARIOS="cold warm"
 #   PROFILES="ideal lte"
@@ -22,11 +25,19 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 DERIVED_DATA="${DERIVED_DATA:-$REPO_ROOT/.build/sdk-config-benchmark-derived-data}"
 BINARY="$DERIVED_DATA/Build/Products/Release/SDKConfigBenchmark"
 
-MODES="${MODES:-legacy config config-killswitch}"
+TRANSPORT="${TRANSPORT:-simulated}"
+if [[ "$TRANSPORT" == "live" ]]; then
+    MODES="${MODES:-legacy config}"
+    PROFILES="ideal"
+    LOSSES="0"
+    LOSS_SWEEP=""
+else
+    MODES="${MODES:-legacy config config-killswitch}"
+    PROFILES="${PROFILES:-ideal lte}"
+    LOSSES="${LOSSES:-0}"
+    LOSS_SWEEP="${LOSS_SWEEP:-10 20 30}"
+fi
 SCENARIOS="${SCENARIOS:-cold warm}"
-PROFILES="${PROFILES:-ideal lte}"
-LOSSES="${LOSSES:-0}"
-LOSS_SWEEP="${LOSS_SWEEP:-10 20 30}"
 ITERATIONS="${ITERATIONS:-25}"
 WARMUP="${WARMUP:-3}"
 PAYWALLS="${PAYWALLS:-50}"
@@ -54,8 +65,9 @@ trap 'rm -rf "$BENCH_HOME"' EXIT
 
 run_row() {
     local mode="$1" scenario="$2" profile="$3" loss="$4"
-    echo "Running mode=$mode scenario=$scenario profile=$profile loss=$loss%..." >&2
+    echo "Running transport=$TRANSPORT mode=$mode scenario=$scenario profile=$profile loss=$loss%..." >&2
     HOME="$BENCH_HOME" "$BINARY" \
+        --transport "$TRANSPORT" \
         --mode "$mode" \
         --scenario "$scenario" \
         --profile "$profile" \

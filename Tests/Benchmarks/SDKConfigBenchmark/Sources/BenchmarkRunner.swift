@@ -18,24 +18,30 @@ final class BenchmarkRunner {
     }
 
     func run() throws -> String {
-        guard let profile = NetworkProfile.named(self.command.profileName) else {
-            throw BenchmarkError.invalidArgument("unknown profile \(self.command.profileName)")
+        switch self.command.transport {
+        case .simulated:
+            guard let profile = NetworkProfile.named(self.command.profileName) else {
+                throw BenchmarkError.invalidArgument("unknown profile \(self.command.profileName)")
+            }
+            let factory = BenchmarkPayloadFactory(
+                paywallCount: self.command.paywallCount,
+                workflowCount: self.command.workflowCount
+            )
+            let server = FixtureServer(
+                factory: factory,
+                killSwitchConfig: self.command.mode == .configKillswitch
+            )
+            SimulatedTransportURLProtocol.install(
+                server: server,
+                profile: profile,
+                loss: LossModel(lossPercent: self.command.lossPercent),
+                seed: self.command.seed
+            )
+        case .live:
+            // Requests hit the real backend (the pinned stress-test project) through a
+            // recording passthrough, so live rows carry the same per-request metrics.
+            SimulatedTransportURLProtocol.installPassthrough()
         }
-
-        let factory = BenchmarkPayloadFactory(
-            paywallCount: self.command.paywallCount,
-            workflowCount: self.command.workflowCount
-        )
-        let server = FixtureServer(
-            factory: factory,
-            killSwitchConfig: self.command.mode == .configKillswitch
-        )
-        SimulatedTransportURLProtocol.install(
-            server: server,
-            profile: profile,
-            loss: LossModel(lossPercent: self.command.lossPercent),
-            seed: self.command.seed
-        )
         defer { SimulatedTransportURLProtocol.uninstall() }
 
         var metrics = BenchmarkMetrics()
@@ -61,12 +67,25 @@ final class BenchmarkRunner {
 
 private extension BenchmarkRunner {
 
+    /// Live runs get a per-run nonce so reruns never share server-side per-user state with a
+    /// previous run; simulated runs stay fully deterministic.
+    private static let liveRunNonce = String(Int(Date().timeIntervalSince1970))
+
+    var baseAppUserID: String {
+        switch self.command.transport {
+        case .simulated:
+            return self.command.appUserID
+        case .live:
+            return "\(self.command.appUserID)-\(Self.liveRunNonce)"
+        }
+    }
+
     func appUserID(forIteration iteration: Int) -> String {
         switch self.command.scenario {
         case .cold:
-            return "\(self.command.appUserID)-\(iteration)"
+            return "\(self.baseAppUserID)-\(iteration)"
         case .warm:
-            return self.command.appUserID
+            return self.baseAppUserID
         }
     }
 
@@ -75,10 +94,10 @@ private extension BenchmarkRunner {
         let stack = BenchmarkSDKStack(
             mode: self.command.mode,
             apiKey: self.command.apiKey,
-            appUserID: self.command.appUserID
+            appUserID: self.baseAppUserID
         )
         stack.clearAllDiskState()
-        _ = try self.launch(stack, appUserID: self.command.appUserID)
+        _ = try self.launch(stack, appUserID: self.baseAppUserID)
         _ = SimulatedTransportURLProtocol.drainEvents()
     }
 

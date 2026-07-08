@@ -16,6 +16,32 @@ enum BenchmarkMode: String, CaseIterable {
 
 }
 
+enum BenchmarkTransport: String, CaseIterable {
+
+    /// In-process fixture transport: deterministic, seedable, supports profiles, loss, and the
+    /// forced kill-switch 4xx.
+    case simulated
+
+    /// Real requests against the production backend, recorded for metrics. Pinned to the
+    /// prepared stress-test project (`BenchmarkProject`).
+    case live
+
+}
+
+/// The canonical RevenueCat project live runs measure against:
+/// https://app.revenuecat.com/projects/5f07e7e3 ("Stress Test Config Endpoint"), prepared with
+/// a large number of paywalls and workflows. Keys are the project's client-side public SDK
+/// keys, hardcoded on purpose so every live run measures the same content. The Test Store key
+/// is the default because the project's packages live on its Test Store app; the App Store app
+/// has no products registered, which makes `OfferingsManager` fail with a configuration error.
+enum BenchmarkProject {
+
+    static let dashboardURL = "https://app.revenuecat.com/projects/5f07e7e3"
+    static let testStoreAPIKey = "REDACTED_RESOLVED_VIA_MAFDET"
+    static let appStoreAPIKey = "REDACTED_RESOLVED_VIA_MAFDET"
+
+}
+
 enum BenchmarkScenario: String, CaseIterable {
 
     /// Every iteration starts with empty disk caches and a fresh app user ID.
@@ -30,7 +56,10 @@ enum BenchmarkScenario: String, CaseIterable {
 
 struct BenchmarkCommand {
 
+    static let defaultSimulatedAPIKey = "appl_benchmark"
+
     var mode: BenchmarkMode = .legacy
+    var transport: BenchmarkTransport = .simulated
     var scenario: BenchmarkScenario = .cold
     var profileName: String = "ideal"
     var lossPercent: Int = 0
@@ -40,7 +69,7 @@ struct BenchmarkCommand {
     var workflowCount: Int = 100
     var seed: UInt64 = 42
     var appUserID: String = "benchmark-user"
-    var apiKey: String = "appl_benchmark"
+    var apiKey: String = BenchmarkCommand.defaultSimulatedAPIKey
     /// Extra key=value pairs echoed verbatim into the JSONL row (e.g. sdk_commit=abc123).
     var annotations: [String: String] = [:]
 
@@ -74,6 +103,12 @@ struct BenchmarkCommand {
                     throw BenchmarkError.invalidArgument("unknown mode \(raw)")
                 }
                 command.mode = mode
+            case "--transport":
+                let raw = try value(for: flag)
+                guard let transport = BenchmarkTransport(rawValue: raw) else {
+                    throw BenchmarkError.invalidArgument("unknown transport \(raw)")
+                }
+                command.transport = transport
             case "--scenario":
                 let raw = try value(for: flag)
                 guard let scenario = BenchmarkScenario(rawValue: raw) else {
@@ -121,7 +156,34 @@ struct BenchmarkCommand {
             )
         }
 
+        try command.validateAndDefaultTransport()
+
         return command
+    }
+
+    /// Live runs hit the real backend: the knobs that shape the simulated network (and the
+    /// forced kill-switch 4xx) cannot apply there, and the API key defaults to the pinned
+    /// stress-test project.
+    private mutating func validateAndDefaultTransport() throws {
+        guard self.transport == .live else { return }
+
+        guard self.lossPercent == 0 else {
+            throw BenchmarkError.invalidArgument("--loss-percent requires --transport simulated")
+        }
+        guard self.profileName == "ideal" else {
+            throw BenchmarkError.invalidArgument(
+                "--profile requires --transport simulated; live runs use the real network"
+            )
+        }
+        guard self.mode != .configKillswitch else {
+            throw BenchmarkError.invalidArgument(
+                "config-killswitch cannot force a 4xx on the real backend; use --transport simulated"
+            )
+        }
+
+        if self.apiKey == Self.defaultSimulatedAPIKey {
+            self.apiKey = BenchmarkProject.testStoreAPIKey
+        }
     }
 
 }
