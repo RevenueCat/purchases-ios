@@ -52,17 +52,47 @@ final class FixtureServerTests: BenchmarkTestCase {
         XCTAssertEqual(fallback.body, self.factory.offeringsData)
     }
 
-    func testConfigServes200ContainerThen204OnMatchingManifest() throws {
+    private func configBody(manifest: String? = nil, prefetchedBlobs: [String]? = nil) throws -> Data {
+        var body: [String: Any] = ["app_user_id": "u"]
+        if let manifest {
+            body["manifest"] = manifest
+        }
+        if let prefetchedBlobs {
+            body["prefetched_blobs"] = prefetchedBlobs
+        }
+        return try JSONSerialization.data(withJSONObject: body)
+    }
+
+    func testConfigServes200ContainerThen204OnMatchingManifestAndBlobs() throws {
         let url = "https://api.revenuecat.com/v1/config/app"
 
-        let cold = self.server.response(for: try self.request(url), bodyData: Data(#"{"appUserId":"u"}"#.utf8))
+        let cold = self.server.response(for: try self.request(url), bodyData: try self.configBody())
         XCTAssertEqual(cold.statusCode, 200)
         XCTAssertEqual(cold.body, self.factory.configContainerData)
 
-        let warmBody = Data(#"{"appUserId":"u","manifest":"benchmark-manifest-v1"}"#.utf8)
-        let warm = self.server.response(for: try self.request(url), bodyData: warmBody)
+        // 204 requires the client to prove its config is current AND that it still holds the
+        // prefetched blobs it was told to cache.
+        let warm = self.server.response(
+            for: try self.request(url),
+            bodyData: try self.configBody(
+                manifest: self.factory.configManifest,
+                prefetchedBlobs: Array(self.factory.workflowPrefetchRefs)
+            )
+        )
         XCTAssertEqual(warm.statusCode, 204)
         XCTAssertTrue(warm.body.isEmpty)
+    }
+
+    func testConfigMatchingManifestWithoutCachedBlobProofGets200() throws {
+        let url = "https://api.revenuecat.com/v1/config/app"
+
+        for prefetchedBlobs in [nil, [], Array(self.factory.workflowPrefetchRefs.dropFirst())] as [[String]?] {
+            let response = self.server.response(
+                for: try self.request(url),
+                bodyData: try self.configBody(manifest: self.factory.configManifest, prefetchedBlobs: prefetchedBlobs)
+            )
+            XCTAssertEqual(response.statusCode, 200, "missing blob proof \(String(describing: prefetchedBlobs))")
+        }
     }
 
     func testKillSwitchConfigReturns400ButOfferingsStillServe() throws {

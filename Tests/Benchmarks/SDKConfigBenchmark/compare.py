@@ -76,7 +76,7 @@ def errors_cell(row):
     return f"⚠️ {errors}" if errors else "0"
 
 
-def print_comparison(baseline, candidate):
+def print_comparison(baseline, candidate, allow_missing=False):
     header = list(KEY_FIELDS)
     for metric in ("p50_ms", "p95_ms"):
         header += [f"{metric} base", f"{metric} cand", "Δ"]
@@ -85,6 +85,7 @@ def print_comparison(baseline, candidate):
     print("|" + "---|" * len(header))
 
     invalid = 0
+    missing = sorted(set(baseline) ^ set(candidate), key=str)
     for key in sorted(set(baseline) | set(candidate), key=str):
         base, cand = baseline.get(key, {}), candidate.get(key, {})
         cells = [str(part) for part in key]
@@ -111,18 +112,26 @@ def print_comparison(baseline, candidate):
             f"\n**⚠️ {invalid} row(s) have post-warmup errors; "
             "their timing deltas are not valid comparison input.**"
         )
+    if missing and not allow_missing:
+        print(f"\n**⚠️ {len(missing)} configuration(s) present in only one file:**")
+        for key in missing:
+            side = "candidate" if key in candidate else "baseline"
+            print(f"- only in {side}: {dict(zip(KEY_FIELDS, key))}")
+        invalid += len(missing)
     return invalid
 
 
 def main(argv):
+    allow_missing = "--allow-missing" in argv
+    argv = [arg for arg in argv if arg != "--allow-missing"]
     if len(argv) == 2:
         invalid = print_single(load(argv[1]))
     elif len(argv) == 3:
-        invalid = print_comparison(load(argv[1]), load(argv[2]))
+        invalid = print_comparison(load(argv[1]), load(argv[2]), allow_missing=allow_missing)
     else:
         print(__doc__, file=sys.stderr)
         return 2
-    # Invalid rows must fail automation, not just print a warning.
+    # Invalid or incomplete rows must fail automation, not just print a warning.
     return 1 if invalid else 0
 
 

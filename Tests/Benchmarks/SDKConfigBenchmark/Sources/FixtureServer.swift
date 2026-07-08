@@ -71,9 +71,15 @@ final class FixtureServer {
             if self.killSwitchConfig {
                 return self.killSwitchResponse
             }
+            // 204 requires the client to prove BOTH that its config is current (manifest) and
+            // that it still holds every prefetched blob (`prefetched_blobs`). A client that
+            // stops replaying its cached refs gets a full response, so a regression in that
+            // reporting shows up as warm 200s instead of silently passing.
             if let bodyData,
                let body = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
-               body["manifest"] as? String == self.factory.configManifest {
+               body["manifest"] as? String == self.factory.configManifest,
+               let prefetchedBlobs = body["prefetched_blobs"] as? [String],
+               Set(prefetchedBlobs).isSuperset(of: self.factory.workflowPrefetchRefs) {
                 return self.configNotModifiedResponse
             }
             return self.configResponse

@@ -82,9 +82,9 @@ final class BenchmarkRunner {
 
 private extension BenchmarkRunner {
 
-    /// Live runs get a per-run nonce so reruns never share server-side per-user state with a
-    /// previous run; simulated runs stay fully deterministic.
-    private static let liveRunNonce = String(Int(Date().timeIntervalSince1970))
+    /// Live runs get a per-run nonce so reruns (even parallel or same-second ones) never share
+    /// server-side per-user state; simulated runs stay fully deterministic.
+    private static let liveRunNonce = String(UUID().uuidString.prefix(8))
 
     var baseAppUserID: String {
         switch self.command.transport {
@@ -140,9 +140,12 @@ private extension BenchmarkRunner {
     /// One simulated launch; returns start-to-offerings-delivered wall time in milliseconds.
     /// Runs off the main thread; the offerings completion is delivered on the main queue, which
     /// `BenchmarkMain` keeps pumping via `dispatchMain()`.
+    ///
+    /// The offerings fetch is kicked BEFORE the remote config refresh, matching
+    /// `Purchases.updateAllCaches` exactly: both land on the same serial backend queue and the
+    /// same single-connection host pool, so enqueue order shapes the measured serialization.
     func launch(_ stack: BenchmarkSDKStack, appUserID: String) throws -> Double {
         let start = DispatchTime.now()
-        stack.refreshRemoteConfigIfWired()
 
         let semaphore = DispatchSemaphore(value: 0)
         let failure = Atomic<OfferingsManager.Error?>(nil)
@@ -152,6 +155,7 @@ private extension BenchmarkRunner {
             }
             semaphore.signal()
         }
+        stack.refreshRemoteConfigIfWired()
 
         guard semaphore.wait(timeout: .now() + 120) == .success else {
             throw BenchmarkError.timeout("offerings fetch")

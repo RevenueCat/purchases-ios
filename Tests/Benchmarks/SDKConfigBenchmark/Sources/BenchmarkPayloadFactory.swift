@@ -12,6 +12,9 @@ struct BenchmarkPayloadFactory {
 
     let offeringsData: Data
     let configContainerData: Data
+    /// The refs the config marks for prefetch; a warm relaunch must report exactly these back
+    /// as its locally-cached blobs.
+    let workflowPrefetchRefs: Set<String>
 
     private let blobsByRef: [String: Data]
 
@@ -43,6 +46,7 @@ struct BenchmarkPayloadFactory {
             uiConfigLocalizationsRef: uiConfigLocalizationsRef
         )
         self.configContainerData = RCContainerEncoder.container(config: configJSON, contentElements: [])
+        self.workflowPrefetchRefs = Set(workflowRefs.values)
         self.blobsByRef = blobs
     }
 
