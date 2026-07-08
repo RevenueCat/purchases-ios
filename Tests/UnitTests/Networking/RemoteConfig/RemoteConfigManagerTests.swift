@@ -1056,6 +1056,43 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobStore.invokedRetainOnlyParameters) == Set(["newSources"])
     }
 
+    func testContainerResponsePrunesBlobRefsForItemsDroppedFromChangedTopic() throws {
+        let keptRef = "keptBlob"
+        let removedRef = "removedBlob"
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: [
+                "workflows": [
+                    "kept": .init(blobRef: keptRef),
+                    "removed": .init(blobRef: removedRef)
+                ]
+            ])
+        )
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.workflows:etag2",
+          "active_topics": ["workflows"],
+          "topics": {
+            "workflows": {
+              "kept": { "blob_ref": "\(keptRef)" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        let workflows = try XCTUnwrap(self.diskCache.invokedWriteParameter?.topics.entries["workflows"])
+        expect(Set(workflows.keys)) == Set(["kept"])
+        expect(workflows["kept"]?.blobRef) == keptRef
+        expect(workflows["removed"]).to(beNil())
+        expect(self.blobStore.invokedRetainOnlyParameters) == Set([keptRef])
+    }
+
     func testContainerResponseKeepsPreviousEntriesForUnchangedTopicsStillActive() throws {
         let previousProductMapping = RemoteConfiguration.ConfigItem(
             blobRef: "pemBlob",
