@@ -425,6 +425,7 @@ final class RemoteConfigIntegrationTests: TestCase {
     func testChecksumInvalidInlineBlobIsSkippedWhileValidInlineBlobIsStored() async throws {
         let validBlob = #"{"workflow":"valid"}"#.asData
         let invalidBlob = #"{"workflow":"invalid"}"#.asData
+        let checksumMismatchedBlob = #"{"workflow":"tampered"}"#.asData
         let validRef = RCContainerTestData.blobRef(for: validBlob)
         let invalidRef = RCContainerTestData.blobRef(for: invalidBlob)
         let container = RCContainerTestData.container(
@@ -432,10 +433,11 @@ final class RemoteConfigIntegrationTests: TestCase {
                 "valid": .init(blobRef: validRef),
                 "invalid": .init(blobRef: invalidRef)
             ])),
-            contentElements: [validBlob, invalidBlob],
+            contentElements: [validBlob, checksumMismatchedBlob],
             checksumOverride: { index, data in
-                let checksum = RCContainerTestData.checksum(for: data)
-                return index == 2 ? Array(checksum.reversed()) : checksum
+                return index == 2
+                    ? RCContainerTestData.checksum(for: invalidBlob)
+                    : RCContainerTestData.checksum(for: data)
             }
         )
 
