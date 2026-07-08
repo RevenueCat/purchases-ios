@@ -22,6 +22,9 @@ enum RemoteConfigStrings {
     case duplicateSourceURL(String)
     case failedToParseResponse(Error)
     case malformedBlobRef(String)
+    case mergeItemsBlobDataDisabled(topic: RemoteConfigTopic, itemKeys: [String])
+    case mergeItemsBlobDataEmpty(topic: RemoteConfigTopic)
+    case mergeItemsBlobDataUnavailableItems(topic: RemoteConfigTopic, itemKeys: [String])
     case notModified
     case prefetchEnqueued(Int)
     case prefetchingBlobCount(Int)
@@ -33,8 +36,10 @@ enum RemoteConfigStrings {
     case sourceUnhealthy(ref: String, hasNextSource: Bool)
     case storedBlob(String, byteCount: Int, URL)
     case storedInlineBlob(String, byteCount: Int)
+    case uiConfigDecodeFailed(Error)
     case uiConfigMissingRequiredPart
     case uiConfigPartDecodeFailed(itemKey: String, error: Error)
+    case workflowsEnabledWithoutRemoteConfig
 
 }
 
@@ -71,6 +76,14 @@ extension RemoteConfigStrings: LogMessage {
             "\(error.localizedDescription)"
         case let .malformedBlobRef(ref):
             return "Refusing remote config blob operation with malformed ref '\(ref)'."
+        case let .mergeItemsBlobDataDisabled(topic, itemKeys):
+            return "Unable to merge remote config blob data for topic '\(topic.wireName)': " +
+                "remote config is disabled. Requested item keys: \(itemKeys.sorted().joined(separator: ", "))."
+        case let .mergeItemsBlobDataEmpty(topic):
+            return "Unable to merge remote config blob data for topic '\(topic.wireName)': no item keys requested."
+        case let .mergeItemsBlobDataUnavailableItems(topic, itemKeys):
+            return "Unable to merge remote config blob data for topic '\(topic.wireName)': " +
+                "unavailable item keys: \(itemKeys.sorted().joined(separator: ", "))."
         case .notModified:
             return "Remote config was not modified. Keeping cached configuration."
         case let .prefetchEnqueued(count):
@@ -98,10 +111,15 @@ extension RemoteConfigStrings: LogMessage {
             return "Stored remote config blob '\(ref)' with \(byteCount) bytes downloaded from \(url.absoluteString)."
         case let .storedInlineBlob(ref, byteCount):
             return "Stored inline remote config blob '\(ref)' with \(byteCount) bytes."
+        case let .uiConfigDecodeFailed(error):
+            return "Failed to decode merged ui_config: \(error.localizedDescription)"
         case .uiConfigMissingRequiredPart:
             return "Failed to assemble ui_config: the 'app' or 'localizations' part is unavailable."
         case let .uiConfigPartDecodeFailed(itemKey, error):
             return "Failed to decode ui_config part '\(itemKey)': \(error.localizedDescription)"
+        case .workflowsEnabledWithoutRemoteConfig:
+            return "Workflows are enabled (-EnableWorkflowsEndpoint) but remote config is not " +
+                "(ENABLE_REMOTE_CONFIG is off in this build), so no workflow will ever be found."
         }
     }
 

@@ -16,32 +16,41 @@ import XCTest
 
 @testable @_spi(Internal) import RevenueCat
 
+/// `Purchases.workflow(forOfferingIdentifier:)` reads through `WorkflowManager`/`WorkflowsConfigProvider`
+/// off `RemoteConfigManager` now, not a dedicated `WorkflowsAPI` backend call.
 class PurchasesWorkflowTests: BasePurchasesTests {
-
-    private var mockWorkflowsAPI: MockWorkflowsAPI!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
 
         self.setupPurchases()
-        self.mockWorkflowsAPI = try XCTUnwrap(self.backend.workflowsAPI as? MockWorkflowsAPI)
     }
 
     func testWorkflowForOfferingIdentifierFallsBackToOfferingIdAsWorkflowId() async throws {
-        let expected = try Self.workflowDataResult(id: "default")
-        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+        // The `workflows` topic has synced, but its "default" item has no `offeringIdentifier` match,
+        // so the offeringId → workflowId scan misses and the offering identifier itself is used as the
+        // workflow lookup key, preserving the prior behavior. (A real `RemoteConfigManager` can't return
+        // blob data for an item absent from the topic or without a `blobRef`, so the topic item must be
+        // stubbed with one too, not just the blob bytes.)
+        self.mockRemoteConfigManager.stubbedTopics[.workflows] = ["default": .init(blobRef: "default", content: [:])]
+        self.mockRemoteConfigManager.stubbedBlobData[.workflows] = ["default": try Self.workflowJSON(id: "default")]
+        self.mockRemoteConfigManager.stubbedBlobData[.uiConfig] = [
+            "app": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
+            "localizations": Data(#"{}"#.utf8)
+        ]
 
-        // No workflows list has been fetched yet, so the offeringId → workflowId map is empty and the
-        // offering identifier itself is used as the workflow lookup key, preserving the prior behavior.
         let result = try await self.purchases.workflow(forOfferingIdentifier: "default")
 
-        expect(self.mockWorkflowsAPI.invokedGetWorkflowParameters?.workflowId) == "default"
-        expect(result) == expected
+        expect(result.workflow.id) == "default"
+        let requestedWorkflowKeys = self.mockRemoteConfigManager.invokedBlobDataParameters
+            .filter { $0.topic == .workflows }
+            .map(\.itemKey)
+        expect(requestedWorkflowKeys) == ["default"]
     }
 
     // MARK: - Helpers
 
-    private static func workflowDataResult(id: String) throws -> WorkflowDataResult {
+    private static func workflowJSON(id: String) throws -> Data {
         let json = """
         {
           "id": "\(id)",
@@ -74,16 +83,10 @@ class PurchasesWorkflowTests: BasePurchasesTests {
               },
               "offering_identifier": "default"
             }
-          },
-          "ui_config": {
-            "app": { "colors": {}, "fonts": {} },
-            "localizations": {}
           }
         }
         """
-        let data = try XCTUnwrap(json.data(using: .utf8))
-        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
-        return .init(workflow: workflow, enrolledVariants: nil)
+        return try XCTUnwrap(json.data(using: .utf8))
     }
 
 }
