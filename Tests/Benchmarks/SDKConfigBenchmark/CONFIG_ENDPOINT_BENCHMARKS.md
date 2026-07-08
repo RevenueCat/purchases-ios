@@ -131,75 +131,83 @@ macOS Release build:
 
 | mode | scenario | profile | loss % | p50 ms | p95 ms | requests (mean) | bytes (mean) |
 |---|---|---|---:|---:|---:|---:|---:|
-| legacy | cold | ideal | 0 | 7.2 | 7.5 | 1 | 64,972 |
-| config | cold | ideal | 0 | 24.8 | 27.1 | 102 | 132,550 |
-| config-killswitch | cold | ideal | 0 | 7.6 | 7.9 | 2 | 65,022 |
-| legacy | cold | lte | 0 | 138.2 | 174.2 | 1 | 64,972 |
-| config | cold | lte | 0 | 1,457.7 | 1,522.3 | 102 | 132,550 |
-| config-killswitch | cold | lte | 0 | 234.7 | 273.8 | 2 | 65,022 |
-| legacy | warm | ideal | 0 | 7.6 | 7.8 | 1 | 0 |
-| config | warm | ideal | 0 | 10.4 | 11.2 | 2 | 0 |
-| config-killswitch | warm | ideal | 0 | 8.2 | 8.5 | 2 | 50 |
-| legacy | warm | lte | 0 | 95.5 | 123.0 | 1 | 0 |
-| config | warm | lte | 0 | 184.2 | 233.0 | 2 | 0 |
-| config-killswitch | warm | lte | 0 | 185.3 | 227.7 | 2 | 50 |
-| legacy | cold | lte | 10 | 154.9 | 288.9 | 1 | 64,972 |
-| config | cold | lte | 10 | 1,764.6 | 2,152.9 | 102 | 132,503 |
-| legacy | cold | lte | 20 | 162.2 | 297.3 | 1 | 64,972 |
-| config | cold | lte | 20 | 2,108.9 | 3,011.0 | 94 | 127,878 |
-| legacy | cold | lte | 30 | 219.1 | 626.0 | 1 | 64,972 |
-| config | cold | lte | 30 | 1,967.8 | 2,847.1 | 62 | 110,680 |
+| legacy | cold | ideal | 0 | 6.6 | 7.3 | 1 | 64,972 |
+| config | cold | ideal | 0 | 30.8 | 35.1 | 102 | 132,550 |
+| config-killswitch | cold | ideal | 0 | 6.9 | 7.7 | 2 | 65,022 |
+| legacy | cold | lte | 0 | 146.5 | 176.5 | 1 | 64,972 |
+| config | cold | lte | 0 | 1,653.2 | 1,735.7 | 102 | 132,550 |
+| config-killswitch | cold | lte | 0 | 239.8 | 280.0 | 2 | 65,022 |
+| legacy | warm | ideal | 0 | 7.0 | 7.2 | 1 | 0 |
+| config | warm | ideal | 0 | 8.1 | 8.5 | 2 | 0 |
+| config-killswitch | warm | ideal | 0 | 7.0 | 7.8 | 2 | 50 |
+| legacy | warm | lte | 0 | 102.8 | 131.4 | 1 | 0 |
+| config | warm | lte | 0 | 108.4 | 133.2 | 2 | 0 |
+| config-killswitch | warm | lte | 0 | 198.9 | 237.8 | 2 | 50 |
+| legacy | cold | lte | 10 | 158.3 | 296.2 | 1 | 64,972 |
+| config | cold | lte | 10 | 1,948.1 | 2,577.2 | 102 | 132,503 |
+| legacy | cold | lte | 20 | 169.5 | 300.7 | 1 | 64,972 |
+| config | cold | lte | 20 | 2,352.9 | 3,128.8 | 96 | 128,778 |
+| legacy | cold | lte | 30 | 222.5 | 630.2 | 1 | 64,972 |
+| config | cold | lte | 30 | 2,828.5 | 3,802.0 | 74 | 116,852 |
 
 Every warm row above is verified per iteration: offerings revalidated via 304, config via
-manifest 204 (or the expected 4xx in kill-switch mode), and zero blob re-downloads.
+manifest 204 with the full prefetched-blob proof (or the expected 4xx in kill-switch mode),
+and zero blob re-downloads. Launches fire the exact `updateAllCaches` pair in production
+order (offerings enqueued before the config refresh), and each iteration's accounting
+includes trailing requests that finish after offerings delivery (like the warm config 204).
 
 ### Live sample numbers
 
 `TRANSPORT=live` matrix (25 iterations, 3 warmup discarded) against the stress-test project,
-run 2026-07-08 from a residential connection:
+run 2026-07-09 from a residential connection:
 
 | mode | scenario | p50 ms | p95 ms | requests (mean) | bytes (mean) |
 |---|---|---:|---:|---:|---:|
-| legacy | cold | 163.6 | 334.9 | 1 | 32,124 |
-| config | cold | 334.1 | 525.4 | 2 | 36,052 |
-| legacy | warm | 122.7 | 321.1 | 1 | 0 |
-| config | warm | 316.4 | 635.0 | 2 | 0 |
+| legacy | cold | 133.4 | 331.4 | 1 | 32,124 |
+| config | cold | 280.0 | 564.9 | 2 | 36,052 |
+| legacy | warm | 135.1 | 329.0 | 1 | 0 |
+| config | warm | 142.2 | 398.9 | 2 | 0 |
 
 Live observations (as of this run):
 
 - The project's `/v1/config` response currently drives **no blob downloads** (2 requests
-  total: config + offerings), so live config cost is simply one extra API round trip,
-  serialized behind offerings by `HTTPClient`'s single-connection queue. As the backend starts
-  serving workflow/paywall blobs for this project, live runs will pick that up automatically.
+  total: config + offerings), so live config cost is one extra API round trip. As the backend
+  starts serving workflow/paywall blobs for this project, live runs pick that up automatically.
+- **Warm config launches cost almost nothing extra** (142ms vs 135ms p50): offerings delivery
+  does not wait for the config revalidation when the topics are already on disk, so the 204
+  trails after delivery, exactly like production. Cold config pays the full extra round trip
+  (280ms vs 133ms) because first delivery waits for the config sync.
 - Warm revalidation works end to end against production: offerings answers `304` to
-  `X-RevenueCat-ETag` and config answers `204` to a matching manifest, both with zero content
-  bytes. The runner verifies this and fails the run if it stops happening.
+  `X-RevenueCat-ETag` and config answers `204` to a matching manifest + prefetched-blob set,
+  both with zero content bytes. The runner verifies every measured iteration and fails the
+  run if any falls back to full responses.
 
 ## Interpretation
 
 - **Prefetch gating dominates config cold starts.** With 100 workflows all marked
-  `prefetch: true`, offerings delivery waits for ~100 blob downloads through the fetcher's
-  4-concurrent-download cap: ~25 sequential batches at LTE CDN RTTs is ~1.3-1.5s, which is
-  exactly the gap to legacy (1,493ms vs 146ms p50). This is a **fixture policy worst case**,
-  not an inherent cost of the config system; the real product decision is prefetch scope
-  (current offering only? top N?), and this harness can now measure each option.
-- **Warm launches are where the config design pays off.** A warm config relaunch is 2 tiny
-  revalidation requests (manifest 204 + offerings 304) and zero content bytes; blobs are
-  content-addressed and never re-downloaded. The remaining LTE gap (212ms vs 101ms p50) is one
-  extra API round trip, serialized behind the offerings call by `HTTPClient`'s
-  single-connection-per-host policy; request parallelism is a measurable lever here.
+  `prefetch: true`, first offerings delivery waits for ~100 blob downloads through the
+  fetcher's 4-concurrent cap: ~25 sequential batches at LTE CDN RTTs is the entire gap to
+  legacy (1,653ms vs 147ms p50). This is a **fixture policy worst case**, not an inherent
+  cost of the config system; the real product decision is prefetch scope (current offering
+  only? top N?), and this harness can now measure each option.
+- **Warm launches are where the config design pays off.** A warm config relaunch delivers
+  offerings essentially as fast as legacy (108ms vs 103ms p50 on LTE): the topics are already
+  on disk, so delivery doesn't wait for the manifest 204, which revalidates in the background.
+  Content bytes are zero and blobs are never re-downloaded.
 - **The kill switch is cheap.** Force-failing `/v1/config` with a 4xx costs roughly one API
-  round trip over pure legacy (232ms vs 146ms cold LTE p50), after which the session behaves
-  like legacy. No cascading retries, no blob traffic.
+  round trip over pure legacy on a cold LTE launch (240ms vs 147ms p50), after which the
+  session behaves like legacy. No cascading retries, no blob traffic. Warm kill-switch
+  launches keep paying that round trip each launch (199ms vs 103ms), which is the argument
+  for flipping the switch server-side only briefly.
 - **Loss hurts config more in absolute terms** because it multiplies across ~100 requests
   (and at 30% loss, failed blob downloads start shrinking the request/byte counts as fetches
   give up), while legacy's single request degrades only its own tail. Per request the two
   systems degrade the same way; the difference is request count, which again points at
   prefetch scope and blob layout as the levers that matter.
 - **Bytes double on cold config** (133KB vs 65KB) in this fixture because offerings still
-  carries full `paywall_components` while the config path also downloads workflow and
-  `ui_config` blobs. The "stripped offerings" lever below is the measurement that matters for
-  deciding whether to remove paywall data from `/offerings`.
+  carries full `paywall_components` while the config path also downloads workflow blobs. The
+  "stripped offerings" lever below is the measurement that matters for deciding whether to
+  remove paywall data from `/offerings`.
 
 ## Known limitations
 

@@ -143,11 +143,32 @@ private extension BenchmarkRunner {
 
         // The clock stopped at offerings delivery, but trailing requests from this launch
         // (e.g. the warm config 204 that finishes after offerings, matching production order)
-        // still belong to this iteration's accounting: wait for quiescence, then keep only
-        // this iteration's events so stragglers from earlier launches can't inflate the row.
-        SimulatedTransportURLProtocol.waitUntilIdle()
-        let events = SimulatedTransportURLProtocol.drainEvents().filter { $0.iteration == iteration }
+        // still belong to this iteration's accounting: collect until the transport is idle
+        // AND the config request (when wired) has landed, then keep only this iteration's
+        // events so stragglers from earlier launches can't inflate the row.
+        let events = self.collectEvents(forIteration: iteration)
         return IterationMeasurement(totalMs: totalMs, events: events)
+    }
+
+    /// Drains transport events until quiescence, additionally waiting (bounded) for this
+    /// iteration's config request in config modes: transport idleness alone can race the gap
+    /// between kicking the refresh and its request reaching the transport.
+    func collectEvents(forIteration iteration: Int, timeoutMs: Int = 15_000) -> [TransportEvent] {
+        var events: [TransportEvent] = []
+        let deadline = DispatchTime.now() + .milliseconds(timeoutMs)
+
+        while true {
+            SimulatedTransportURLProtocol.waitUntilIdle()
+            events += SimulatedTransportURLProtocol.drainEvents()
+
+            let configLanded = events.contains { $0.iteration == iteration && $0.kind == .config }
+            if !self.command.mode.usesRemoteConfig || configLanded || DispatchTime.now() >= deadline {
+                break
+            }
+            usleep(5_000)
+        }
+
+        return events.filter { $0.iteration == iteration }
     }
 
     /// One simulated launch; returns start-to-offerings-delivered wall time in milliseconds.
