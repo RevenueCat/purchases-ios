@@ -388,19 +388,16 @@ private extension OfferingsManager {
     /// Runs `deliver` once remote config has synced at least once *and* every workflow flagged for
     /// prefetch has finished downloading (or failed), when remote config is wired. Matches Android's
     /// guarantee that offerings delivery waits for every prefetched workflow body, not just the
-    /// `workflows` topic's metadata. The manager's `topic()` read no-ops when already synced and
-    /// always calls back, so this never hangs. When no manager is wired (workflows disabled), `deliver`
-    /// runs immediately, leaving offerings unchanged.
+    /// `workflows` topic's metadata. The manager's `awaitTopicAndPrefetchBlobsReady()` read no-ops when already synced
+    /// and always calls back, so this never hangs. When no manager is wired (workflows disabled),
+    /// `deliver` runs immediately, leaving offerings unchanged.
     private func deliverWhenConfigReady(deliver: @escaping () -> Void) {
         guard let remoteConfigManager = self.remoteConfigManager else {
             deliver()
             return
         }
         Task {
-            if let topic = await remoteConfigManager.topic(.workflows) {
-                let prefetchRefs = topic.values.compactMap { $0.prefetch ? $0.blobRef : nil }
-                await remoteConfigManager.ensureBlobsDownloaded(prefetchRefs)
-            }
+            _ = await remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
             deliver()
         }
     }
