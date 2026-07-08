@@ -225,6 +225,20 @@ class WorkflowsConfigProviderTests: TestCase {
                                       expectedCount: 1)
     }
 
+    func testOfferingIdMapReflectsATopicChangeInsteadOfServingAStaleCachedMap() async throws {
+        // Regression: workflowId(forOfferingId:) caches its offeringId -> workflowId map keyed by the
+        // topic snapshot it was built from, to avoid rescanning content on every call. This proves a
+        // changed topic (e.g. a resync remapping an offering to a new workflow) invalidates that cache
+        // instead of serving the map built from the previous snapshot.
+        self.commit(workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: ["offeringIdentifier": "premium"])])
+        let firstWorkflowId = await self.provider.workflowId(forOfferingId: "premium")
+        expect(firstWorkflowId) == "wf-1"
+
+        self.commit(workflows: ["wf-2": .init(blobRef: "wf-2-ref", content: ["offeringIdentifier": "premium"])])
+        let secondWorkflowId = await self.provider.workflowId(forOfferingId: "premium")
+        expect(secondWorkflowId) == "wf-2"
+    }
+
     // MARK: - Helpers
 
     private func commit(

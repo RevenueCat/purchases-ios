@@ -38,31 +38,54 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     private let manager: RemoteConfigManagerType
     private let uiConfigProvider: UiConfigProvider
 
+    /// The offeringId → workflowId map built from the last topic snapshot seen, keyed by that snapshot
+    /// so a repeat call with an unchanged topic reuses it instead of rescanning every item's content.
+    private let cachedOfferingIdMap: Atomic<(topic: RemoteConfiguration.ConfigTopic, map: [String: String])?> = nil
+
     init(manager: RemoteConfigManagerType) {
         self.manager = manager
         self.uiConfigProvider = UiConfigProvider(manager: manager)
     }
 
-    /// Resolves `offeringId` to its workflow id by scanning the `workflows` topic's inline content.
+    /// Resolves `offeringId` to its workflow id via an offeringId → workflowId map built from the
+    /// `workflows` topic's inline content, rebuilt only when the topic itself has changed.
     /// `content` keys go through `JSONDecoder`'s `.convertFromSnakeCase`, so the wire field
     /// `offering_identifier` is read as `offeringIdentifier`.
-    ///
-    /// A duplicate `offeringId` across items signals a backend issue and is logged; whichever match
-    /// the dictionary happens to iterate first wins, since there's no principled way to prefer one
-    /// over another.
     func workflowId(forOfferingId offeringId: String) async -> String? {
         guard let topic = await self.manager.topic(.workflows) else { return nil }
 
-        let matches = topic.filter { _, item in
-            guard case let .string(value)? = item.content[Self.offeringIdentifierKey] else { return false }
-            return value == offeringId
+        if let cached = self.cachedOfferingIdMap.value, cached.topic == topic {
+            return cached.map[offeringId]
         }
 
-        if matches.count > 1 {
+        let map = self.buildOfferingIdMap(from: topic)
+        self.cachedOfferingIdMap.value = (topic: topic, map: map)
+        return map[offeringId]
+    }
+
+    /// Builds the offeringId → workflowId map in a single pass over `topic`. A duplicate `offeringId`
+    /// across items signals a backend issue and is logged once per rebuild; whichever match the
+    /// dictionary happens to iterate first wins, since there's no principled way to prefer one over
+    /// another.
+    private func buildOfferingIdMap(from topic: RemoteConfiguration.ConfigTopic) -> [String: String] {
+        var map: [String: String] = [:]
+        var duplicateOfferingIds: Set<String> = []
+
+        for (workflowId, item) in topic {
+            guard case let .string(offeringId)? = item.content[Self.offeringIdentifierKey] else { continue }
+
+            if map[offeringId] != nil {
+                duplicateOfferingIds.insert(offeringId)
+                continue
+            }
+            map[offeringId] = workflowId
+        }
+
+        for offeringId in duplicateOfferingIds.sorted() {
             Logger.warn(Strings.backendError.duplicate_offering_id_in_workflows(offeringId: offeringId))
         }
 
-        return matches.keys.first
+        return map
     }
 
     /// Resolves `workflowId` into a ``WorkflowDataResult``, or the specific ``WorkflowResolutionError``
