@@ -255,6 +255,23 @@ final class RemoteConfigurationDecodingTests: TestCase {
         XCTAssertThrowsError(try JSONDecoder.default.decode(RemoteConfiguration.self, from: payload))
     }
 
+    func testFailsWhenTopicItemIsNotAnObject() {
+        let payload = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag1",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "api": "not-an-object"
+            }
+          }
+        }
+        """.asData
+
+        XCTAssertThrowsError(try JSONDecoder.default.decode(RemoteConfiguration.self, from: payload))
+    }
+
     func testInvalidReservedItemFieldsFallBackWithoutDroppingContent() throws {
         let item = try JSONDecoder.default.decode(
             RemoteConfiguration.ConfigItem.self,
