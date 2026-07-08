@@ -23,14 +23,26 @@ public struct BenchmarkMain {
             exit(1)
         }
 
+        // Every run gets its own disk-cache root: the SDK's container directories ignore
+        // $HOME, so this is the only way concurrent runs stay isolated (and the user's real
+        // Library stays clean).
+        let diskRoot = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SDKConfigBenchmark-\(UUID().uuidString)", isDirectory: true)
+        DirectoryHelper.benchmarkBaseDirectoryOverride = diskRoot
+
+        func finish(exitCode: Int32) -> Never {
+            try? FileManager.default.removeItem(at: diskRoot)
+            exit(exitCode)
+        }
+
         DispatchQueue.global(qos: .userInitiated).async {
             do {
                 let row = try BenchmarkRunner(command: command).run()
                 print(row)
-                exit(0)
+                finish(exitCode: 0)
             } catch {
                 FileHandle.standardError.write(Data("\(error)\n".utf8))
-                exit(1)
+                finish(exitCode: 1)
             }
         }
 

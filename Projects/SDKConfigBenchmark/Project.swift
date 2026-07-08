@@ -6,8 +6,14 @@ import ProjectDescriptionHelpers
 // local-source mode) so the benchmark can drive internal manager-level APIs without
 // exposing new public SDK API. `SDK_CONFIG_BENCHMARK` installs a simulated transport
 // in `HTTPClient`; `ENABLE_REMOTE_CONFIG` turns on the remote config gate.
+//
+// TUIST_SWIFT_CONDITIONS is folded in by hand instead of via
+// `appendingTuistSwiftConditions()`, because that helper replaces the whole
+// SWIFT_ACTIVE_COMPILATION_CONDITIONS value and would silently drop the benchmark flags.
 let benchmarkSwiftConditions: SettingsDictionary = [
-    "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) SDK_CONFIG_BENCHMARK ENABLE_REMOTE_CONFIG"
+    "SWIFT_ACTIVE_COMPILATION_CONDITIONS": SettingValue(stringLiteral: (
+        ["$(inherited)", "SDK_CONFIG_BENCHMARK", "ENABLE_REMOTE_CONFIG"] + Environment.extraSwiftConditions
+    ).joined(separator: " "))
 ]
 
 let project = Project(
@@ -35,7 +41,7 @@ let project = Project(
                 .storeKit
             ],
             settings: .settings(
-                base: benchmarkSwiftConditions.appendingTuistSwiftConditions()
+                base: benchmarkSwiftConditions
             )
         ),
         .target(
@@ -57,7 +63,6 @@ let project = Project(
                 // the binary gives it one, so etags/offerings/remote-config persistence works.
                 base: benchmarkSwiftConditions
                     .merging(["CREATE_INFOPLIST_SECTION_IN_BINARY": "YES"])
-                    .appendingTuistSwiftConditions()
             )
         ),
         .target(
@@ -74,7 +79,7 @@ let project = Project(
                 .target(name: "SDKConfigBenchmarkCore")
             ],
             settings: .settings(
-                base: benchmarkSwiftConditions.appendingTuistSwiftConditions()
+                base: benchmarkSwiftConditions
             )
         )
     ],

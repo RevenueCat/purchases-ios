@@ -68,8 +68,25 @@ delivered asynchronously with:
   exercises the SDK's retry and fallback-host logic.
 
 Profiles: `ideal` (0ms, unlimited), `wifi` (25-40ms API / 10-20ms CDN, ~50 Mbit/s), `lte`
-(55-110ms API / 30-70ms CDN, ~12 Mbit/s). All randomness is seeded (`--seed`), so runs are
-reproducible.
+(55-110ms API / 30-70ms CDN, ~12 Mbit/s).
+
+**Determinism contract.** Every request's network plan (RTT, failure, chunk delays) is derived
+from a stable key: seed, iteration, URL, and per-URL attempt. Request arrival order, which is
+scheduler-dependent, cannot influence sampling. Measured on this machine:
+
+- Loss-free rows are exactly reproducible across processes for the same seed: identical
+  request counts, bytes, and failure counts; timings differ only by wall-clock jitter
+  (a few percent, which the warmup discard and percentiles absorb).
+- Rows with loss keep deterministic per-request plans (identical failure and fallback-host
+  counts across processes), but the SDK's concurrent reaction to failures (blob-fetcher
+  failover and retry scheduling) is real thread-scheduling behavior, so request counts can
+  drift by about one request and timings by a few percent. That residual variation is the
+  system under test, not the harness, and faking it away would distort the measurement.
+
+Each benchmark process isolates all SDK disk caches under its own temporary root (removed on
+exit); concurrent runs cannot corrupt each other and nothing touches the real user Library.
+One caveat: the scratch `UserDefaults` suite is per-user, not per-process, but it only carries
+cache timestamps and identity bookkeeping, never response bodies or ETags.
 
 **Honest caveat:** the loss model approximates TCP behavior; it does not simulate real packet
 loss (retransmission dynamics, congestion control, TLS handshakes). It is good enough to
@@ -84,8 +101,9 @@ loss, use a local HTTP server plus the OS Network Link Conditioner.
   against the retained disk state, simulating an app relaunch. The fixture honors the SDK's
   actual revalidation mechanisms: offerings revalidate via `X-RevenueCat-ETag` -> `304`, config
   revalidates via its manifest token -> `204`, and blobs are content-addressed so they are never
-  re-downloaded. The runner **fails loudly** if a warm run never sees a 304/204, so the scenario
-  can't silently degrade into measuring cold behavior.
+  re-downloaded. The runner **fails loudly** unless every measured warm iteration revalidates
+  (offerings all-304, config all-204 in config mode, zero blob re-downloads), so the scenario
+  can't silently mix cold behavior into the warm distribution.
 
 The first `--warmup-iterations` (default 3) measured iterations are discarded from statistics
 so one-time process costs don't pollute the distribution.
@@ -109,28 +127,31 @@ plus `sdk_commit`, so result files are self-describing.
 ## Sample numbers
 
 Default matrix (25 iterations, 3 warmup discarded, 50 paywalls, 100 workflows, seed 42),
-macOS Release build, commit `c1958bf64`:
+macOS Release build:
 
 | mode | scenario | profile | loss % | p50 ms | p95 ms | requests (mean) | bytes (mean) |
 |---|---|---|---:|---:|---:|---:|---:|
-| legacy | cold | ideal | 0 | 6.8 | 7.6 | 1 | 64,972 |
-| config | cold | ideal | 0 | 25.2 | 28.7 | 102 | 132,647 |
-| config-killswitch | cold | ideal | 0 | 7.3 | 7.6 | 2 | 65,022 |
-| legacy | cold | lte | 0 | 146.5 | 166.4 | 1 | 64,972 |
-| config | cold | lte | 0 | 1,493.0 | 1,589.2 | 103 | 132,704 |
-| config-killswitch | cold | lte | 0 | 232.1 | 274.8 | 2 | 65,022 |
-| legacy | warm | ideal | 0 | 7.2 | 7.4 | 1 | 0 |
-| config | warm | ideal | 0 | 10.4 | 10.9 | 2 | 0 |
-| config-killswitch | warm | ideal | 0 | 8.3 | 11.0 | 2 | 50 |
-| legacy | warm | lte | 0 | 101.0 | 127.8 | 1 | 0 |
-| config | warm | lte | 0 | 212.4 | 231.6 | 2 | 0 |
-| config-killswitch | warm | lte | 0 | 191.1 | 229.4 | 2 | 50 |
-| legacy | cold | lte | 10 | 163.1 | 385.1 | 1 | 64,972 |
-| config | cold | lte | 10 | 1,712.9 | 1,829.5 | 102 | 131,882 |
-| legacy | cold | lte | 20 | 284.2 | 448.0 | 1 | 64,972 |
-| config | cold | lte | 20 | 1,963.5 | 2,466.3 | 97 | 129,178 |
-| legacy | cold | lte | 30 | 293.1 | 585.1 | 1 | 64,972 |
-| config | cold | lte | 30 | 2,154.8 | 3,038.0 | 70 | 114,617 |
+| legacy | cold | ideal | 0 | 7.2 | 7.5 | 1 | 64,972 |
+| config | cold | ideal | 0 | 24.8 | 27.1 | 102 | 132,550 |
+| config-killswitch | cold | ideal | 0 | 7.6 | 7.9 | 2 | 65,022 |
+| legacy | cold | lte | 0 | 138.2 | 174.2 | 1 | 64,972 |
+| config | cold | lte | 0 | 1,457.7 | 1,522.3 | 102 | 132,550 |
+| config-killswitch | cold | lte | 0 | 234.7 | 273.8 | 2 | 65,022 |
+| legacy | warm | ideal | 0 | 7.6 | 7.8 | 1 | 0 |
+| config | warm | ideal | 0 | 10.4 | 11.2 | 2 | 0 |
+| config-killswitch | warm | ideal | 0 | 8.2 | 8.5 | 2 | 50 |
+| legacy | warm | lte | 0 | 95.5 | 123.0 | 1 | 0 |
+| config | warm | lte | 0 | 184.2 | 233.0 | 2 | 0 |
+| config-killswitch | warm | lte | 0 | 185.3 | 227.7 | 2 | 50 |
+| legacy | cold | lte | 10 | 154.9 | 288.9 | 1 | 64,972 |
+| config | cold | lte | 10 | 1,764.6 | 2,152.9 | 102 | 132,503 |
+| legacy | cold | lte | 20 | 162.2 | 297.3 | 1 | 64,972 |
+| config | cold | lte | 20 | 2,108.9 | 3,011.0 | 94 | 127,878 |
+| legacy | cold | lte | 30 | 219.1 | 626.0 | 1 | 64,972 |
+| config | cold | lte | 30 | 1,967.8 | 2,847.1 | 62 | 110,680 |
+
+Every warm row above is verified per iteration: offerings revalidated via 304, config via
+manifest 204 (or the expected 4xx in kill-switch mode), and zero blob re-downloads.
 
 ### Live sample numbers
 

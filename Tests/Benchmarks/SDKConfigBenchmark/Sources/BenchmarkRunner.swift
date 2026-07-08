@@ -51,14 +51,20 @@ final class BenchmarkRunner {
         }
 
         for iteration in 0..<self.command.iterations {
+            SimulatedTransportURLProtocol.beginIteration(iteration)
             do {
-                metrics.record(try self.runIteration(iteration))
+                let measurement = try self.runIteration(iteration)
+                if iteration >= self.command.warmupIterations {
+                    try self.validateScenario(measurement, iteration: iteration)
+                }
+                metrics.record(measurement, iteration: iteration)
+            } catch let error as BenchmarkError {
+                if case .scenarioViolation = error { throw error }
+                metrics.record(error: error, iteration: iteration)
             } catch {
-                metrics.record(error: error)
+                metrics.record(error: error, iteration: iteration)
             }
         }
-
-        try self.verifyScenario(metrics)
 
         return metrics.jsonlRow(for: self.command)
     }
@@ -91,6 +97,7 @@ private extension BenchmarkRunner {
 
     /// Uncounted launch that fills the disk caches the warm iterations relaunch against.
     func primeDiskState() throws {
+        SimulatedTransportURLProtocol.beginIteration(-1)
         let stack = BenchmarkSDKStack(
             mode: self.command.mode,
             apiKey: self.command.apiKey,
@@ -148,16 +155,47 @@ private extension BenchmarkRunner {
         return Double(end.uptimeNanoseconds - start.uptimeNanoseconds) / 1_000_000
     }
 
-    /// Warm runs must prove they actually hit the revalidation paths.
-    func verifyScenario(_ metrics: BenchmarkMetrics) throws {
+    /// Warm runs must prove that EVERY measured iteration hit the revalidation paths; a single
+    /// iteration silently falling back to full 200 responses or re-downloading blobs would mix
+    /// cold behavior into the warm distribution.
+    func validateScenario(_ measurement: IterationMeasurement, iteration: Int) throws {
         guard self.command.scenario == .warm, self.command.lossPercent == 0 else { return }
+        try Self.validateWarmMeasurement(measurement, mode: self.command.mode, iteration: iteration)
+    }
 
-        let statuses = Set(metrics.allStatusCodes)
-        guard statuses.contains(304) else {
-            throw BenchmarkError.scenarioViolation("warm run never revalidated offerings via 304")
+}
+
+extension BenchmarkRunner {
+
+    static func validateWarmMeasurement(
+        _ measurement: IterationMeasurement,
+        mode: BenchmarkMode,
+        iteration: Int
+    ) throws {
+        guard !measurement.offeringsStatusCodes.isEmpty,
+              measurement.offeringsStatusCodes.allSatisfy({ $0 == 304 }) else {
+            throw BenchmarkError.scenarioViolation(
+                "warm iteration \(iteration) did not revalidate offerings via 304 " +
+                "(statuses: \(measurement.offeringsStatusCodes))"
+            )
         }
-        if self.command.mode == .config, !statuses.contains(204) {
-            throw BenchmarkError.scenarioViolation("warm config run never revalidated via manifest 204")
+
+        // Kill-switch mode pays the config 4xx on every launch by design, so only plain config
+        // mode must see manifest 204s.
+        if mode == .config {
+            guard !measurement.configStatusCodes.isEmpty,
+                  measurement.configStatusCodes.allSatisfy({ $0 == 204 }) else {
+                throw BenchmarkError.scenarioViolation(
+                    "warm iteration \(iteration) did not revalidate config via manifest 204 " +
+                    "(statuses: \(measurement.configStatusCodes))"
+                )
+            }
+        }
+
+        guard measurement.blobRequestCount == 0 else {
+            throw BenchmarkError.scenarioViolation(
+                "warm iteration \(iteration) re-downloaded \(measurement.blobRequestCount) blob(s)"
+            )
         }
     }
 

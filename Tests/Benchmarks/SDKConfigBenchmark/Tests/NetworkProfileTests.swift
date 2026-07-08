@@ -78,6 +78,33 @@ final class NetworkProfileTests: BenchmarkTestCase {
         XCTAssertEqual(rate, 0.027, accuracy: 0.008)
     }
 
+    func testRequestPlansAreStableRegardlessOfComputationOrder() throws {
+        let url = try XCTUnwrap(URL(string: "https://cdn.revenuecat.local/blobs/abc"))
+        let otherURL = try XCTUnwrap(URL(string: "https://api.revenuecat.com/v1/config/app"))
+        let loss = LossModel(lossPercent: 20)
+
+        func plan(_ target: URL, iteration: Int = 1, attempt: Int = 0) -> SimulatedTransportURLProtocol.RequestPlan {
+            return SimulatedTransportURLProtocol.requestPlan(
+                key: .init(seed: 42, iteration: iteration, url: target, attempt: attempt),
+                bodyCount: 100_000, profile: .lte, loss: loss
+            )
+        }
+
+        // Same key produces the identical plan no matter what was computed before it: request
+        // arrival order (which is scheduler-dependent) must not influence sampling.
+        let before = plan(url)
+        _ = plan(otherURL)
+        _ = plan(otherURL, attempt: 1)
+        let after = plan(url)
+        XCTAssertEqual(before.rttMs, after.rttMs)
+        XCTAssertEqual(before.fails, after.fails)
+        XCTAssertEqual(before.chunkDelaysMs, after.chunkDelaysMs)
+
+        // Different iterations and attempts get different samples, so distributions stay real.
+        XCTAssertNotEqual(plan(url, iteration: 2).rttMs, before.rttMs)
+        XCTAssertNotEqual(plan(url, attempt: 1).rttMs, before.rttMs)
+    }
+
     func testLossChunkDelaysAreDeterministicForSameSeed() {
         let loss = LossModel(lossPercent: 20)
         var first = SeededRandom(seed: 5)

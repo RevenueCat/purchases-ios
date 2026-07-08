@@ -46,10 +46,18 @@ final class BenchmarkPayloadFactoryTests: BenchmarkTestCase {
         let configData = try container.configElement.withDecodedPayloadBytes { Data($0) }
         let configuration = try JSONDecoder.default.decode(RemoteConfiguration.self, from: configData)
 
-        let referencedRefs = Set(configuration.prefetchBlobs)
-        XCTAssertEqual(referencedRefs.count, 7 + 2)
+        // Prefetch covers exactly the workflow blobs (what offerings delivery awaits);
+        // ui_config blobs are referenced by their topic but intentionally not prefetched.
+        let prefetchRefs = Set(configuration.prefetchBlobs)
+        XCTAssertEqual(prefetchRefs.count, 7)
 
-        for ref in referencedRefs {
+        let topicRefs = configuration.topics.entries.values.flatMap { topic in
+            topic.values.compactMap(\.blobRef)
+        }
+        XCTAssertEqual(Set(topicRefs).count, 7 + 2)
+        XCTAssertTrue(prefetchRefs.isSubset(of: Set(topicRefs)))
+
+        for ref in Set(topicRefs) {
             let blob = try XCTUnwrap(self.factory.blobData(forRef: ref), "missing blob for ref \(ref)")
             XCTAssertEqual(RCContainerEncoder.blobRef(for: blob), ref, "blob refs must be content-addressed")
         }

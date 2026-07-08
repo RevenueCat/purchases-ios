@@ -35,23 +35,39 @@ final class SimulatedTransportURLProtocol: URLProtocol {
 
     private static let lock = NSLock()
     private static var mode: Mode?
-    private static var rng = SeededRandom(seed: 0)
+    private static var seed: UInt64 = 0
+    private static var iterationIndex: Int = 0
+    /// Requests already planned this iteration, keyed by URL, so retries of the same URL get
+    /// distinct (but stable) plans.
+    private static var attemptCountsByURL: [String: Int] = [:]
     private static var events: [TransportEvent] = []
 
-    private static let chunkSize = 16 * 1024
+    static let chunkSize = 16 * 1024
 
     /// Serial per request so header, chunks, and completion arrive in order; separate requests
     /// each get their own queue and overlap freely.
     private let deliveryQueue = DispatchQueue(label: "com.revenuecat.benchmark.transport.request")
     private var pendingWorkItems: [DispatchWorkItem] = []
-    private var passthroughTask: URLSessionDataTask?
-    private let stateLock = NSLock()
+    var passthroughTask: URLSessionDataTask?
+    let stateLock = NSLock()
 
     static func install(server: FixtureServer, profile: NetworkProfile, loss: LossModel, seed: UInt64) {
         self.lock.withLock {
             self.mode = .simulated(server: server, profile: profile, loss: loss)
-            self.rng = SeededRandom(seed: seed)
+            self.seed = seed
+            self.iterationIndex = 0
+            self.attemptCountsByURL = [:]
             self.events = []
+        }
+    }
+
+    /// Marks the start of an iteration. Request plans are keyed by (seed, iteration, URL,
+    /// attempt), so samples stay stable across processes regardless of the order concurrent
+    /// requests happen to reach the transport, while still varying between iterations.
+    static func beginIteration(_ index: Int) {
+        self.lock.withLock {
+            self.iterationIndex = index
+            self.attemptCountsByURL = [:]
         }
     }
 
@@ -148,22 +164,19 @@ private extension SimulatedTransportURLProtocol {
         let bodyData = Self.bodyData(of: self.request)
         let response = server.response(for: self.request, bodyData: bodyData)
 
-        // Sample every random decision up front, under one lock, so the request's timeline is
-        // fixed at start time regardless of delivery interleaving.
-        let plan: (rttMs: Double, fails: Bool, chunkDelaysMs: [Double]) = Self.lock.withLock {
-            let rttMs = profile.rttMs(forHost: host, rng: &Self.rng)
-            let fails = loss.shouldFailRequest(rng: &Self.rng)
-            var chunkDelaysMs: [Double] = []
-            if !fails {
-                var offset = 0
-                while offset < max(response.body.count, 1) {
-                    chunkDelaysMs.append(
-                        loss.chunkRetransmitDelayMs(rttMs: rttMs, rng: &Self.rng)
-                    )
-                    offset += Self.chunkSize
-                }
-            }
-            return (rttMs, fails, chunkDelaysMs)
+        // The plan is derived from a stable per-request key, not drawn from a shared RNG in
+        // arrival order: concurrent requests reach the transport in a scheduler-dependent
+        // order, and order-dependent sampling would make same-seed runs disagree across
+        // processes.
+        let plan = Self.lock.withLock { () -> RequestPlan in
+            let attempt = Self.attemptCountsByURL[url.absoluteString, default: 0]
+            Self.attemptCountsByURL[url.absoluteString] = attempt + 1
+            return Self.requestPlan(
+                key: PlanKey(seed: Self.seed, iteration: Self.iterationIndex, url: url, attempt: attempt),
+                bodyCount: response.body.count,
+                profile: profile,
+                loss: loss
+            )
         }
 
         if plan.fails {
@@ -181,83 +194,7 @@ private extension SimulatedTransportURLProtocol {
 
 }
 
-// MARK: - Passthrough recording (live runs)
-
-extension SimulatedTransportURLProtocol {
-
-    /// Sessions the passthrough re-issues requests on. API traffic mirrors `HTTPClient`'s
-    /// single-connection-per-host pool; everything else (blob CDNs) gets a default pool like
-    /// the production blob downloader's `URLSession.shared`. Injectable for tests.
-    static var passthroughAPISession: URLSession = makePassthroughSession(maxConnectionsPerHost: 1)
-    static var passthroughBlobSession: URLSession = makePassthroughSession(maxConnectionsPerHost: nil)
-
-    private static func makePassthroughSession(maxConnectionsPerHost: Int?) -> URLSession {
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.urlCache = nil
-        if let maxConnectionsPerHost {
-            configuration.httpMaximumConnectionsPerHost = maxConnectionsPerHost
-        }
-        return URLSession(configuration: configuration)
-    }
-
-    static func isAPIHost(_ host: String) -> Bool {
-        return host.contains("revenuecat.com") && host.hasPrefix("api.")
-            || host.contains("8-lives-cat")
-            || host.contains("rc-backup")
-    }
-
-    private func startPassthrough(url: URL, startedAt: DispatchTime) {
-        let host = url.host ?? ""
-        let session = Self.isAPIHost(host) ? Self.passthroughAPISession : Self.passthroughBlobSession
-
-        let task = session.dataTask(with: self.request) { [weak self] data, response, error in
-            guard let self else { return }
-            let ended = DispatchTime.now()
-
-            if let error {
-                Self.record(TransportEvent(
-                    host: host,
-                    path: url.path,
-                    statusCode: 0,
-                    bytesReceived: 0,
-                    startedAt: startedAt,
-                    endedAt: ended,
-                    failed: true
-                ))
-                self.client?.urlProtocol(self, didFailWithError: error)
-                return
-            }
-
-            guard let httpResponse = response as? HTTPURLResponse else {
-                self.client?.urlProtocol(
-                    self,
-                    didFailWithError: BenchmarkError.backendFailure("non-HTTP response from \(host)")
-                )
-                return
-            }
-
-            Self.record(TransportEvent(
-                host: host,
-                path: url.path,
-                statusCode: httpResponse.statusCode,
-                bytesReceived: data?.count ?? 0,
-                startedAt: startedAt,
-                endedAt: ended,
-                failed: false
-            ))
-            self.client?.urlProtocol(self, didReceive: httpResponse, cacheStoragePolicy: .notAllowed)
-            if let data, !data.isEmpty {
-                self.client?.urlProtocol(self, didLoad: data)
-            }
-            self.client?.urlProtocolDidFinishLoading(self)
-        }
-        self.stateLock.withLock {
-            self.passthroughTask = task
-        }
-        task.resume()
-    }
-
-}
+// MARK: - Delivery helpers
 
 private extension SimulatedTransportURLProtocol {
 
@@ -344,6 +281,10 @@ private extension SimulatedTransportURLProtocol {
         }
         self.deliveryQueue.asyncAfter(deadline: .now() + delayMs / 1_000, execute: item)
     }
+
+}
+
+extension SimulatedTransportURLProtocol {
 
     static func record(_ event: TransportEvent) {
         self.lock.withLock {

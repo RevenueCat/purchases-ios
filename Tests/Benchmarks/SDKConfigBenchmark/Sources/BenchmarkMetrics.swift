@@ -15,8 +15,10 @@ struct IterationMeasurement {
     let bytesReceived: Int
     let failedRequestCount: Int
     let fallbackHostRequestCount: Int
-    /// Statuses seen, for warm-scenario verification (304/204).
-    let statusCodes: [Int]
+    /// Per-kind statuses and blob traffic, for strict warm-scenario verification.
+    let offeringsStatusCodes: [Int]
+    let configStatusCodes: [Int]
+    let blobRequestCount: Int
 
     init(totalMs: Double, events: [TransportEvent]) {
         self.totalMs = totalMs
@@ -34,7 +36,9 @@ struct IterationMeasurement {
         self.fallbackHostRequestCount = events
             .filter { $0.host.contains("8-lives-cat") || $0.host.contains("rc-backup") }
             .count
-        self.statusCodes = events.map(\.statusCode)
+        self.offeringsStatusCodes = offerings.map(\.statusCode)
+        self.configStatusCodes = config.map(\.statusCode)
+        self.blobRequestCount = blobs.count
     }
 
     private static func span(of events: [TransportEvent]) -> Double? {
@@ -47,32 +51,30 @@ struct IterationMeasurement {
 
 }
 
-/// Aggregates measured iterations into one JSONL row. The first `warmupIterations` recorded
-/// measurements are excluded from the statistics but counted in `warmup_discarded`, so one-time
-/// process costs (lazy statics, first JSON decoder use) don't pollute the distribution.
+/// Aggregates measured iterations into one JSONL row. Iterations with index below
+/// `warmupIterations` are excluded from the statistics (by index, so a failed warmup iteration
+/// never shifts a slow measured one into the discarded window), and errors are reported both in
+/// total and for the post-warmup window: a run whose candidate "wins" by erroring out of its
+/// slowest iterations must be visibly invalid, not quietly faster.
 struct BenchmarkMetrics {
 
-    private var measurements: [IterationMeasurement] = []
-    private var errors: [String] = []
+    private var measurementsByIteration: [Int: IterationMeasurement] = [:]
+    private var errorsByIteration: [Int: String] = [:]
 
-    mutating func record(_ measurement: IterationMeasurement) {
-        self.measurements.append(measurement)
+    mutating func record(_ measurement: IterationMeasurement, iteration: Int) {
+        self.measurementsByIteration[iteration] = measurement
     }
 
-    mutating func record(error: Error) {
-        self.errors.append("\(error)")
-    }
-
-    var allStatusCodes: [Int] {
-        return self.measurements.flatMap(\.statusCodes)
-    }
-
-    var errorCount: Int {
-        return self.errors.count
+    mutating func record(error: Error, iteration: Int) {
+        self.errorsByIteration[iteration] = "\(error)"
     }
 
     func jsonlRow(for command: BenchmarkCommand) -> String {
-        let measured = Array(self.measurements.dropFirst(command.warmupIterations))
+        let measured = self.measurementsByIteration
+            .filter { $0.key >= command.warmupIterations }
+            .sorted { $0.key < $1.key }
+            .map(\.value)
+        let postWarmupErrors = self.errorsByIteration.filter { $0.key >= command.warmupIterations }
         let totals = measured.map(\.totalMs).sorted()
 
         var row: [String: Any] = [
@@ -85,8 +87,10 @@ struct BenchmarkMetrics {
             "workflows": command.workflowCount,
             "seed": command.seed,
             "iterations": command.iterations,
-            "warmup_discarded": min(command.warmupIterations, self.measurements.count),
-            "error_count": self.errors.count
+            "warmup_discarded": command.warmupIterations,
+            "measured_iterations": measured.count,
+            "error_count": self.errorsByIteration.count,
+            "post_warmup_error_count": postWarmupErrors.count
         ]
 
         if !totals.isEmpty {
@@ -98,24 +102,12 @@ struct BenchmarkMetrics {
             }
         }
 
-        if !measured.isEmpty {
-            let count = Double(measured.count)
-            row["request_count_mean"] = Self.rounded(Double(measured.reduce(0) { $0 + $1.requestCount }) / count)
-            row["bytes_received_mean"] = Self.rounded(Double(measured.reduce(0) { $0 + $1.bytesReceived }) / count)
-            row["failed_requests_total"] = measured.reduce(0) { $0 + $1.failedRequestCount }
-            row["fallback_host_requests_total"] = measured.reduce(0) { $0 + $1.fallbackHostRequestCount }
-
-            for (key, values) in [
-                ("offerings_ms_mean", measured.compactMap(\.offeringsMs)),
-                ("config_ms_mean", measured.compactMap(\.configMs)),
-                ("blob_ms_mean", measured.compactMap(\.blobMs))
-            ] where !values.isEmpty {
-                row[key] = Self.rounded(values.reduce(0, +) / Double(values.count))
-            }
+        for (key, value) in Self.aggregates(of: measured) {
+            row[key] = value
         }
 
-        if !self.errors.isEmpty {
-            row["first_error"] = self.errors[0]
+        if let firstError = self.errorsByIteration.min(by: { $0.key < $1.key }) {
+            row["first_error"] = "iteration \(firstError.key): \(firstError.value)"
         }
 
         for (key, value) in command.annotations {
@@ -128,6 +120,28 @@ struct BenchmarkMetrics {
         } catch {
             preconditionFailure("Could not serialize benchmark row: \(error)")
         }
+    }
+
+    private static func aggregates(of measured: [IterationMeasurement]) -> [String: Any] {
+        guard !measured.isEmpty else { return [:] }
+
+        let count = Double(measured.count)
+        var aggregates: [String: Any] = [
+            "request_count_mean": Self.rounded(Double(measured.reduce(0) { $0 + $1.requestCount }) / count),
+            "bytes_received_mean": Self.rounded(Double(measured.reduce(0) { $0 + $1.bytesReceived }) / count),
+            "failed_requests_total": measured.reduce(0) { $0 + $1.failedRequestCount },
+            "fallback_host_requests_total": measured.reduce(0) { $0 + $1.fallbackHostRequestCount }
+        ]
+
+        for (key, values) in [
+            ("offerings_ms_mean", measured.compactMap(\.offeringsMs)),
+            ("config_ms_mean", measured.compactMap(\.configMs)),
+            ("blob_ms_mean", measured.compactMap(\.blobMs))
+        ] where !values.isEmpty {
+            aggregates[key] = Self.rounded(values.reduce(0, +) / Double(values.count))
+        }
+
+        return aggregates
     }
 
     /// Nearest-rank percentile over an already-sorted array.

@@ -60,13 +60,11 @@ if [[ ! -x "$BINARY" ]]; then
 fi
 
 SDK_COMMIT="$(git -C "$REPO_ROOT" rev-parse --short HEAD)"
-BENCH_HOME="$(mktemp -d)"
-trap 'rm -rf "$BENCH_HOME"' EXIT
 
 run_row() {
     local mode="$1" scenario="$2" profile="$3" loss="$4"
     echo "Running transport=$TRANSPORT mode=$mode scenario=$scenario profile=$profile loss=$loss%..." >&2
-    HOME="$BENCH_HOME" "$BINARY" \
+    "$BINARY" \
         --transport "$TRANSPORT" \
         --mode "$mode" \
         --scenario "$scenario" \

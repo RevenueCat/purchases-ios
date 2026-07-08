@@ -140,8 +140,12 @@ private struct PayloadBuilder {
             ]
         }
 
+        // Only workflow blobs are prefetched: those are what offerings delivery awaits
+        // (`awaitTopicAndPrefetchBlobsReady(.workflows)`). Prefetching ui_config blobs too
+        // would leave downloads running past the measured completion, corrupting the
+        // per-iteration request/byte accounting; they stay fetchable on demand via blob_ref.
         // Sorted so the payload bytes are stable across processes (JSON arrays keep their order).
-        let prefetchBlobs = workflowRefsById.values.sorted() + [uiConfigAppRef, uiConfigLocalizationsRef]
+        let prefetchBlobs = workflowRefsById.values.sorted()
 
         return self.data([
             "domain": "app",
@@ -163,8 +167,8 @@ private struct PayloadBuilder {
                 ],
                 "workflows": workflowsTopic,
                 "ui_config": [
-                    "app": ["blob_ref": uiConfigAppRef, "prefetch": true],
-                    "localizations": ["blob_ref": uiConfigLocalizationsRef, "prefetch": true]
+                    "app": ["blob_ref": uiConfigAppRef],
+                    "localizations": ["blob_ref": uiConfigLocalizationsRef]
                 ]
             ]
         ])

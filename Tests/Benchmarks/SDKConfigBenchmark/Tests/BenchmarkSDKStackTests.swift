@@ -70,9 +70,9 @@ final class BenchmarkSDKStackTests: BenchmarkTestCase {
         XCTAssertTrue(paths.contains { $0.hasSuffix("/offerings") }, "expected an offerings fetch in \(paths)")
 
         // The workflows topic marks every workflow blob prefetch, so offerings delivery waits
-        // for all of them plus the two ui_config blobs.
+        // for all of them. ui_config blobs are not prefetched and must not be fetched here.
         let blobRequests = paths.filter { $0.contains("/blobs/") }
-        XCTAssertEqual(Set(blobRequests).count, 4 + 2)
+        XCTAssertEqual(Set(blobRequests).count, 4)
     }
 
     func testKillSwitchModeStillDeliversOfferings() throws {

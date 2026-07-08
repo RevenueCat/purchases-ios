@@ -57,14 +57,23 @@ def print_single(rows):
         print("| " + " | ".join(cells) + " |")
 
 
+def errors_cell(row):
+    """Rows with post-warmup errors are not valid comparison input; make that loud."""
+    errors = row.get("post_warmup_error_count", row.get("error_count"))
+    if errors is None:
+        return "-"
+    return f"⚠️ {errors}" if errors else "0"
+
+
 def print_comparison(baseline, candidate):
     header = list(KEY_FIELDS)
     for metric in ("p50_ms", "p95_ms"):
         header += [f"{metric} base", f"{metric} cand", "Δ"]
-    header += ["req base", "req cand", "bytes base", "bytes cand"]
+    header += ["req base", "req cand", "bytes base", "bytes cand", "err base", "err cand"]
     print("| " + " | ".join(header) + " |")
     print("|" + "---|" * len(header))
 
+    invalid = 0
     for key in sorted(set(baseline) | set(candidate), key=str):
         base, cand = baseline.get(key, {}), candidate.get(key, {})
         cells = [str(part) for part in key]
@@ -79,8 +88,18 @@ def print_comparison(baseline, candidate):
             fmt(cand.get("request_count_mean")),
             fmt(base.get("bytes_received_mean")),
             fmt(cand.get("bytes_received_mean")),
+            errors_cell(base),
+            errors_cell(cand),
         ]
+        if any(row.get("post_warmup_error_count", row.get("error_count", 0)) for row in (base, cand) if row):
+            invalid += 1
         print("| " + " | ".join(cells) + " |")
+
+    if invalid:
+        print(
+            f"\n**⚠️ {invalid} row(s) have post-warmup errors; "
+            "their timing deltas are not valid comparison input.**"
+        )
 
 
 def main(argv):

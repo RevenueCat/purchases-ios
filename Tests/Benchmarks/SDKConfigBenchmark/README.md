@@ -65,12 +65,9 @@ SDKConfigBenchmark \
 
 Output is one JSON object (a JSONL row) on stdout.
 
-Run the benchmark with a scratch `HOME` (the matrix script does this automatically) so the
-SDK's disk caches don't touch your real user directory:
-
-```sh
-HOME=$(mktemp -d) SDKConfigBenchmark --mode legacy --scenario cold --profile ideal
-```
+Every run isolates the SDK's disk caches (ETags, offerings, remote config, blobs) under a
+fresh temporary directory that is removed on exit, so runs never touch the real user Library
+and concurrent runs cannot corrupt each other.
 
 ## Unit tests
 
