@@ -38,6 +38,7 @@ enum RemoteConfigStrings {
     case storedInlineBlob(String, byteCount: Int)
     case uiConfigDecodeFailed(Error)
     case uiConfigMissingRequiredPart
+    case uiConfigPartDecodeFailed(itemKey: String, error: Error)
     case workflowsEnabledWithoutRemoteConfig
 
 }
@@ -113,7 +114,9 @@ extension RemoteConfigStrings: LogMessage {
         case let .uiConfigDecodeFailed(error):
             return "Failed to decode merged ui_config: \(error.localizedDescription)"
         case .uiConfigMissingRequiredPart:
-            return "Failed to assemble ui_config: one or more blob parts are unavailable."
+            return "Failed to assemble ui_config: the 'app' or 'localizations' part is unavailable."
+        case let .uiConfigPartDecodeFailed(itemKey, error):
+            return "Failed to decode ui_config part '\(itemKey)': \(error.localizedDescription)"
         case .workflowsEnabledWithoutRemoteConfig:
             return "Workflows are enabled (-EnableWorkflowsEndpoint) but remote config is not " +
                 "(ENABLE_REMOTE_CONFIG is off in this build), so no workflow will ever be found."

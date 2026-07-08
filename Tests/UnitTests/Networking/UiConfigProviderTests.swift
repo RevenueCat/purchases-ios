@@ -63,34 +63,42 @@ class UiConfigProviderTests: TestCase {
         expect(uiConfig).to(beNil())
     }
 
-    func testReturnsNilWhenVariableConfigPartIsMissing() async throws {
+    func testUsesDefaultWhenVariableConfigPartIsMissing() async throws {
         self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{}"#,
                   variableConfig: nil, customVariables: #"{}"#)
 
         let uiConfig = await self.provider.getUiConfig()
 
-        expect(uiConfig).to(beNil())
+        expect(uiConfig).toNot(beNil())
+        expect(uiConfig?.variableConfig.variableCompatibilityMap).to(beEmpty())
+        expect(uiConfig?.variableConfig.functionCompatibilityMap).to(beEmpty())
     }
 
-    func testReturnsNilWhenCustomVariablesPartIsMissing() async throws {
+    func testUsesDefaultWhenCustomVariablesPartIsMissing() async throws {
         self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{}"#,
                   variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
                   customVariables: nil)
 
         let uiConfig = await self.provider.getUiConfig()
 
-        expect(uiConfig).to(beNil())
+        expect(uiConfig).toNot(beNil())
+        expect(uiConfig?.customVariables).to(beEmpty())
     }
 
-    func testMalformedVariableConfigFailsMergedAssembly() async throws {
+    func testMalformedVariableConfigFallsBackToDefault() async throws {
         self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{"en_US": {"day": "Day"}}"#,
                   variableConfig: #"{"variable_compatibility_map": "not-a-dictionary"}"#,
                   customVariables: #"{}"#)
 
         let uiConfig = await self.provider.getUiConfig()
 
-        expect(uiConfig).to(beNil())
-        self.logger.verifyMessageWasLogged("Failed to decode merged ui_config", level: .error)
+        expect(uiConfig).toNot(beNil())
+        expect(uiConfig?.variableConfig.variableCompatibilityMap).to(beEmpty())
+        expect(uiConfig?.variableConfig.functionCompatibilityMap).to(beEmpty())
+        self.logger.verifyMessageWasLogged(
+            "Failed to decode ui_config part 'variable_config'",
+            level: .error
+        )
     }
 
     func testLogsWarningWhenARequiredPartIsMissing() async throws {
@@ -114,16 +122,14 @@ class UiConfigProviderTests: TestCase {
         )
     }
 
-    func testRequestsMergedBlobDataWithWireItemKeysNotCamelCased() async throws {
+    func testRequestsMergedBlobDataForRequiredWireItemKeysNotCamelCased() async throws {
         _ = await self.provider.getUiConfig()
 
         expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == 1
         expect(self.mockManager.invokedMergeItemsBlobDataParameters.first?.topic) == .uiConfig
         expect(self.mockManager.invokedMergeItemsBlobDataParameters.first?.itemKeys) == [
             "app",
-            "localizations",
-            "variable_config",
-            "custom_variables"
+            "localizations"
         ]
     }
 
@@ -164,6 +170,9 @@ class UiConfigProviderTests: TestCase {
         if let variableConfig { data["variable_config"] = Data(variableConfig.utf8) }
         if let customVariables { data["custom_variables"] = Data(customVariables.utf8) }
         self.mockManager.stubbedBlobData[.uiConfig] = data
+        self.mockManager.stubbedTopics[.uiConfig] = data.keys.reduce(into: [:]) { topic, key in
+            topic[key] = RemoteConfiguration.ConfigItem()
+        }
     }
 
 }
