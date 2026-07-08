@@ -727,7 +727,8 @@ private extension RemoteConfigManager {
     /// Returns the full topic index that should be persisted after this response is applied.
     ///
     /// Changed topics overwrite previous entries, unchanged active topics keep previous entries, and inactive topics
-    /// are removed.
+    /// are removed. Changed topics are full replacements, not item-level patches, so removed items fall out of
+    /// the persisted topic index and blob retention set.
     func postSyncTopics(
         previous: PersistedRemoteConfiguration?,
         response: RemoteConfiguration
