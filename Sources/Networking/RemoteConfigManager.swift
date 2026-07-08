@@ -114,18 +114,18 @@ extension RemoteConfigManagerType {
         orderedItemKeys: [String],
         resolvedBlobs: [String: Data?]
     ) throws -> Data? {
-        var envelope = Data([UInt8(ascii: "{")])
+        var envelope = Data("{".utf8)
         for (index, itemKey) in orderedItemKeys.enumerated() {
             guard let resolvedBlob = resolvedBlobs[itemKey],
                   let data = resolvedBlob else { return nil }
             if index > 0 {
-                envelope.append(UInt8(ascii: ","))
+                envelope.append(contentsOf: ",".utf8)
             }
             envelope.append(try JSONEncoder.default.encode(itemKey))
-            envelope.append(UInt8(ascii: ":"))
+            envelope.append(contentsOf: ":".utf8)
             envelope.append(data)
         }
-        envelope.append(UInt8(ascii: "}"))
+        envelope.append(contentsOf: "}".utf8)
         return envelope
     }
 
