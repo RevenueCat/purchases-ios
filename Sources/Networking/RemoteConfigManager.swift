@@ -37,6 +37,12 @@ protocol RemoteConfigManagerType: AnyObject {
         as type: T.Type
     ) async throws -> T?
 
+    /// Ensures every blob in `refs` has finished downloading (or failed), joining any already
+    /// in-flight or queued (e.g. prefetch) download for the same ref instead of starting a
+    /// duplicate. Returns once every ref has settled; the `Bool` reports whether all succeeded.
+    @discardableResult
+    func ensureBlobsDownloaded(_ refs: [String]) async -> Bool
+
     /// Decodes multiple blob payloads into one keyed JSON object.
     ///
     /// Each requested item must be backed by `blob_ref`. The merged object is keyed by item key, so item
@@ -141,6 +147,10 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
         as type: T.Type
     ) async throws -> T? {
         return nil
+    }
+
+    func ensureBlobsDownloaded(_ refs: [String]) async -> Bool {
+        return false
     }
 
     func clearCache() {}
@@ -262,6 +272,10 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         guard let data = await self.blobData(for: topic, itemKey: itemKey) else { return nil }
 
         return try JSONDecoder.default.decode(type, from: data)
+    }
+
+    func ensureBlobsDownloaded(_ refs: [String]) async -> Bool {
+        return await self.blobFetcher.ensureAllDownloaded(refs: refs)
     }
 
     /// Wipes cached remote config state, for example after an identity change.

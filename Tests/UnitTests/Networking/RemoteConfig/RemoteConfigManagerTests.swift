@@ -435,6 +435,15 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobStore.invokedReadRefs) == [ref]
     }
 
+    func testEnsureBlobsDownloadedDelegatesToBlobFetcher() async {
+        let refs = ["ref-1", "ref-2"]
+
+        let result = await self.manager.ensureBlobsDownloaded(refs)
+
+        expect(result) == true
+        expect(self.blobFetcher.invokedEnsureAllDownloadedRefs) == refs
+    }
+
     func testBlobDataReturnsNilWhenExternalBlobDownloadFails() async {
         let ref = RCContainerTestData.blobRef(for: #"{"id":"workflow"}"#.asData)
         self.diskCache.stubbedRead = Self.persisted(
