@@ -1716,14 +1716,6 @@ SWIFT_CLASS("_TtC10RevenueCat31GetWebOfferingProductsOperation")
 @interface GetWebOfferingProductsOperation : CacheableNetworkOperation
 @end
 
-SWIFT_CLASS("_TtC10RevenueCat20GetWorkflowOperation")
-@interface GetWorkflowOperation : CacheableNetworkOperation
-@end
-
-SWIFT_CLASS("_TtC10RevenueCat25GetWorkflowsListOperation")
-@interface GetWorkflowsListOperation : CacheableNetworkOperation
-@end
-
 SWIFT_CLASS("_TtC10RevenueCat15HealthOperation")
 @interface HealthOperation : CacheableNetworkOperation
 @end
