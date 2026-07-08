@@ -170,18 +170,3 @@ final class FixtureServerTests: BenchmarkTestCase {
     }
 
 }
-
-private final class LockedValue<Value>: @unchecked Sendable {
-
-    private let lock = NSLock()
-    private var value: Value?
-
-    func set(_ value: Value) {
-        self.lock.withLock { self.value = value }
-    }
-
-    func get() -> Value? {
-        return self.lock.withLock { self.value }
-    }
-
-}

@@ -178,13 +178,23 @@ extension BenchmarkRunner {
             )
         }
 
-        // Kill-switch mode pays the config 4xx on every launch by design, so only plain config
-        // mode must see manifest 204s.
+        // Plain config mode must revalidate via manifest 204s; kill-switch mode must pay the
+        // disabling 4xx on every launch (each iteration is a fresh manager, so the switch
+        // trips again). Anything else means the mode isn't measuring what it claims.
         if mode.expectsWarmConfigRevalidation {
             guard !measurement.configStatusCodes.isEmpty,
                   measurement.configStatusCodes.allSatisfy({ $0 == 204 }) else {
                 throw BenchmarkError.scenarioViolation(
                     "warm iteration \(iteration) did not revalidate config via manifest 204 " +
+                    "(statuses: \(measurement.configStatusCodes))"
+                )
+            }
+        }
+        if mode.forcesConfigFailure {
+            guard !measurement.configStatusCodes.isEmpty,
+                  measurement.configStatusCodes.allSatisfy({ (400...499).contains($0) }) else {
+                throw BenchmarkError.scenarioViolation(
+                    "warm kill-switch iteration \(iteration) did not hit the config 4xx " +
                     "(statuses: \(measurement.configStatusCodes))"
                 )
             }

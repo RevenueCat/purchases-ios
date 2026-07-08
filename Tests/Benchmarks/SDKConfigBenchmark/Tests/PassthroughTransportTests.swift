@@ -35,13 +35,14 @@ final class PassthroughTransportTests: BenchmarkTestCase {
         let url = try XCTUnwrap(URL(string: "https://api.revenuecat.com/v1/subscribers/u/offerings"))
 
         let expectation = self.expectation(description: "request completes")
-        var received: (data: Data?, statusCode: Int?)
+        let result = LockedValue<(data: Data?, statusCode: Int?)>()
         session.dataTask(with: url) { data, response, _ in
-            received = (data, (response as? HTTPURLResponse)?.statusCode)
+            result.set((data, (response as? HTTPURLResponse)?.statusCode))
             expectation.fulfill()
         }.resume()
         self.wait(for: [expectation], timeout: 5)
 
+        let received = try XCTUnwrap(result.get())
         XCTAssertEqual(received.statusCode, 200)
         XCTAssertEqual(received.data, StubBackendURLProtocol.stubBody)
         XCTAssertEqual(StubBackendURLProtocol.requestCount, 1, "request must reach the (stub) backend")

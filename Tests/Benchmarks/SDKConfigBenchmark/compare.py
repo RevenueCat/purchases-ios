@@ -13,7 +13,8 @@ import json
 import sys
 
 
-KEY_FIELDS = ("mode", "scenario", "profile", "loss_percent")
+KEY_FIELDS = ("mode", "transport", "scenario", "profile", "loss_percent",
+              "paywalls", "workflows", "seed")
 METRICS = ("p50_ms", "p95_ms", "request_count_mean", "bytes_received_mean")
 
 
@@ -26,6 +27,8 @@ def load(path):
                 continue
             row = json.loads(line)
             key = tuple(row.get(field) for field in KEY_FIELDS)
+            if key in rows:
+                raise SystemExit(f"{path}: duplicate row for {dict(zip(KEY_FIELDS, key))}")
             rows[key] = row
     return rows
 

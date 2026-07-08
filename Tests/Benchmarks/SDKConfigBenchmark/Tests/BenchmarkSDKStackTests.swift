@@ -29,7 +29,7 @@ final class BenchmarkSDKStackTests: BenchmarkTestCase {
         timeout: TimeInterval = 15
     ) throws -> Offerings {
         let expectation = self.expectation(description: "offerings delivered")
-        let result = LockedResult<Result<Offerings, OfferingsManager.Error>>()
+        let result = LockedValue<Result<Offerings, OfferingsManager.Error>>()
         stack.offeringsManager.offerings(appUserID: appUserID, fetchCurrent: true) { offerings in
             result.set(offerings)
             expectation.fulfill()
@@ -125,21 +125,6 @@ final class BenchmarkSDKStackTests: BenchmarkTestCase {
             statusesByPath.contains { $0.key.contains("/blobs/") },
             "warm relaunch must not re-download blobs, got \(statusesByPath)"
         )
-    }
-
-}
-
-private final class LockedResult<Value>: @unchecked Sendable {
-
-    private let lock = NSLock()
-    private var value: Value?
-
-    func set(_ value: Value) {
-        self.lock.withLock { self.value = value }
-    }
-
-    func get() -> Value? {
-        return self.lock.withLock { self.value }
     }
 
 }

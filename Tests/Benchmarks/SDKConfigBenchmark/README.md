@@ -49,12 +49,15 @@ python3 Tests/Benchmarks/SDKConfigBenchmark/compare.py results.jsonl
 xcodebuild -workspace RevenueCat-Tuist.xcworkspace -scheme SDKConfigBenchmark \
   -configuration Release -destination platform=macOS build
 
+# --transport: simulated | live
+# --mode: legacy | config | config-killswitch (kill switch is simulated-only)
+# --profile (ideal | wifi | lte) and --loss-percent are simulated-only
 SDKConfigBenchmark \
-  --transport simulated \    # simulated | live
-  --mode config \            # legacy | config | config-killswitch (killswitch: simulated only)
-  --scenario cold \          # cold | warm
-  --profile lte \            # ideal | wifi | lte (simulated only)
-  --loss-percent 20 \        # simulated only
+  --transport simulated \
+  --mode config \
+  --scenario cold \
+  --profile lte \
+  --loss-percent 20 \
   --iterations 25 \
   --warmup-iterations 3 \
   --paywalls 50 \

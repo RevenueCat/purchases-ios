@@ -5,19 +5,16 @@ import Foundation
 extension SimulatedTransportURLProtocol {
 
     /// Sessions the passthrough re-issues requests on. API traffic mirrors `HTTPClient`'s
-    /// single-connection-per-host pool; everything else (blob CDNs) gets a default pool like
-    /// the production blob downloader's `URLSession.shared`. Injectable for tests.
-    static var passthroughAPISession: URLSession = makePassthroughSession(maxConnectionsPerHost: 1)
-    static var passthroughBlobSession: URLSession = makePassthroughSession(maxConnectionsPerHost: nil)
-
-    private static func makePassthroughSession(maxConnectionsPerHost: Int?) -> URLSession {
+    /// pool: ephemeral, no URL cache (the SDK does its own ETag caching), one connection per
+    /// host. Blob traffic uses `URLSession.shared`, exactly what the production
+    /// `URLSessionRemoteConfigBlobDownloader` defaults to. Injectable for tests.
+    static var passthroughAPISession: URLSession = {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.urlCache = nil
-        if let maxConnectionsPerHost {
-            configuration.httpMaximumConnectionsPerHost = maxConnectionsPerHost
-        }
+        configuration.httpMaximumConnectionsPerHost = 1
         return URLSession(configuration: configuration)
-    }
+    }()
+    static var passthroughBlobSession: URLSession = .shared
 
     func startPassthrough(url: URL, startedAt: DispatchTime) {
         let session: URLSession

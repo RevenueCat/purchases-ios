@@ -8,6 +8,23 @@ import XCTest
 ///
 /// Every test gets a fresh disk-cache root so tests never touch the real user Library and
 /// never see each other's (or a previous run's) cached state.
+/// Thread-safe box for values written from URLSession completion handlers and read after
+/// `wait(for:)`, shared by every async transport test.
+final class LockedValue<Value>: @unchecked Sendable {
+
+    private let lock = NSLock()
+    private var value: Value?
+
+    func set(_ value: Value) {
+        self.lock.withLock { self.value = value }
+    }
+
+    func get() -> Value? {
+        return self.lock.withLock { self.value }
+    }
+
+}
+
 // swiftlint:disable:next xctestcase_superclass
 class BenchmarkTestCase: XCTestCase {
 

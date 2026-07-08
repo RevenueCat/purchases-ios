@@ -67,12 +67,25 @@ final class BenchmarkRunnerValidationTests: BenchmarkTestCase {
         ))
     }
 
-    func testWarmKillSwitchIterationAllowsConfig4xx() throws {
+    func testWarmKillSwitchIterationRequiresConfig4xx() throws {
         try BenchmarkRunner.validateWarmMeasurement(
             self.measurement(offeringsStatuses: [304], configStatuses: [400]),
             mode: .configKillswitch,
             iteration: 3
         )
+
+        // Missing the config request, or getting a non-4xx, means the kill switch was not
+        // actually exercised and the row would measure something else.
+        XCTAssertThrowsError(try BenchmarkRunner.validateWarmMeasurement(
+            self.measurement(offeringsStatuses: [304]),
+            mode: .configKillswitch,
+            iteration: 3
+        ))
+        XCTAssertThrowsError(try BenchmarkRunner.validateWarmMeasurement(
+            self.measurement(offeringsStatuses: [304], configStatuses: [200]),
+            mode: .configKillswitch,
+            iteration: 3
+        ))
     }
 
     func testWarmIterationReDownloadingBlobsFails() {
