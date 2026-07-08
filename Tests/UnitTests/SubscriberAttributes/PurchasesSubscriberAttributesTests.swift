@@ -253,9 +253,10 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,
                               workflowManager: WorkflowManager(
-                                backend: mockBackend,
-                                workflowsCache: WorkflowsCache(deviceCache: mockDeviceCache),
-                                paywallCache: MockPaywallCacheWarming(),
+                                workflowsConfigProvider: WorkflowsConfigProvider(
+                                    manager: NoOpRemoteConfigManager()
+                                ),
+                                paywallCache: nil,
                                 operationDispatcher: mockOperationDispatcher
                               ),
                               remoteConfigManager: NoOpRemoteConfigManager(),
