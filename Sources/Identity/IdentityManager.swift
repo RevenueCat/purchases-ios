@@ -160,7 +160,6 @@ private extension IdentityManager {
 
         self.backend.identity.logIn(currentAppUserID: oldAppUserID, newAppUserID: newAppUserID) { result in
             if case let .success((customerInfo, _)) = result {
-                self.workflowsCache?.clearCache()
                 self.remoteConfigManager?.clearCache(forAppUserID: newAppUserID)
                 self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newAppUserID)
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: newAppUserID)
@@ -196,7 +195,6 @@ private extension IdentityManager {
 
     func resetCacheAndSave(newUserID: String) {
         let oldAppUserID = self.currentAppUserID
-        self.workflowsCache?.clearCache()
         self.remoteConfigManager?.clearCache(forAppUserID: newUserID)
         self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newUserID)
         self.deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
