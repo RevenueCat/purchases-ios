@@ -440,7 +440,16 @@ struct LoadedTabComponentView: View {
         )
         .environmentObject(self.tabPackageContext)
         // Comparing on tabPackageContext.package but sending tabPackageContext to parent
-        .onChangeOf(self.tabPackageContext.package) { _ in
+        .onChangeOf(self.tabPackageContext.package) { newPackage in
+            // Pre-iOS 17, onChange runs a closure captured from the previous body, where
+            // `tabPackageContext` can still be the previous tab's context. Skip those stale
+            // calls: the tab-switch handler already updated the parent.
+            if TabPackageParentPropagation.isStaleChange(
+                observedPackage: newPackage,
+                capturedTabPackage: self.tabPackageContext.package
+            ) {
+                return
+            }
             if TabPackageParentPropagation.shouldSuppressNotifyingParent(
                 tabPackage: self.tabPackageContext.package,
                 tabPackageIdentifiers: self.tabPackageIdentifiers,
@@ -457,6 +466,15 @@ struct LoadedTabComponentView: View {
 /// Decides when a tab `PackageContext` change should not overwrite the paywall (parent) selection.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum TabPackageParentPropagation {
+
+	/// True when an `onChange` closure captured from a previous body observes a change that
+	/// belongs to a different tab context (pre-iOS 17 `onChange(of:perform:)` behavior).
+	static func isStaleChange(
+		observedPackage: Package?,
+		capturedTabPackage: Package?
+	) -> Bool {
+		return observedPackage?.identifier != capturedTabPackage?.identifier
+	}
 
 	/// When the tab clears local selection to `nil` while the parent holds a root-only package,
 	/// do not notify the parent (avoids clearing the purchase selection).
