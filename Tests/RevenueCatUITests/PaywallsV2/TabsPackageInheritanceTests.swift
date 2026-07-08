@@ -769,6 +769,44 @@ final class TabsPackageInheritanceTests: TestCase {
         ) == false
     }
 
+    // MARK: - Stale onChange invocations (pre-iOS 17)
+
+    func testStaleChangeWhenCapturedContextBelongsToAnotherTab() {
+        expect(
+            TabPackageParentPropagation.isStaleChange(
+                observedPackage: self.parentPackageB,
+                capturedTabPackage: self.tabPackageC
+            )
+        ) == true
+    }
+
+    func testNotStaleChangeWhenCapturedContextHoldsObservedPackage() {
+        expect(
+            TabPackageParentPropagation.isStaleChange(
+                observedPackage: self.tabPackageC,
+                capturedTabPackage: self.tabPackageC
+            )
+        ) == false
+    }
+
+    func testNotStaleChangeWhenBothNil() {
+        expect(
+            TabPackageParentPropagation.isStaleChange(
+                observedPackage: nil,
+                capturedTabPackage: nil
+            )
+        ) == false
+    }
+
+    func testStaleChangeWhenObservedPackageClearedButCapturedContextStillHoldsOne() {
+        expect(
+            TabPackageParentPropagation.isStaleChange(
+                observedPackage: nil,
+                capturedTabPackage: self.tabPackageC
+            )
+        ) == true
+    }
+
     func testTabPackageParentPropagationDoesNotSuppressWhenParentNil() {
         expect(
             TabPackageParentPropagation.shouldSuppressNotifyingParent(
