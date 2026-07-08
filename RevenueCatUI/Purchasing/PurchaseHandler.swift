@@ -438,7 +438,9 @@ extension PurchaseHandler {
 
     /// Routes a resolved offering to its own (legacy) paywall or the workflows endpoint.
     /// `offering.paywall == nil` is the durable marker of a non-legacy paywall: a v1 paywall always
-    /// carries `paywall`, so a legacy offering renders directly without a workflow fetch.
+    /// carries `paywall`, so a legacy offering renders directly without a workflow fetch. If the
+    /// workflow fetch fails, falls back to `paywallComponents` (the offerings-provided paywall) when
+    /// available and the failure is fetch-eligible; otherwise the failure propagates.
     private func resolvePaywallViewData(
         for offering: Offering,
         offerings: Offerings?,
@@ -448,13 +450,28 @@ extension PurchaseHandler {
             return .init(offering: offering, workflowContext: nil)
         }
 
-        let context = try await self.resolveWorkflowContext(
-            identifier: offering.identifier,
-            presentedOfferingContext: offering.presentedOfferingContext,
-            offerings: offerings
-        )
+        do {
+            let context = try await self.resolveWorkflowContext(
+                identifier: offering.identifier,
+                presentedOfferingContext: offering.presentedOfferingContext,
+                offerings: offerings
+            )
 
-        return .init(offering: context.initialOffering, workflowContext: context)
+            return .init(offering: context.initialOffering, workflowContext: context)
+        } catch {
+            guard offering.paywallComponents != nil, error.isWorkflowFetchFallbackEligible else {
+                throw error
+            }
+
+            Logger.warning(
+                Strings.workflow_fetch_failed_falling_back_to_offerings_paywall(
+                    offeringIdentifier: offering.identifier,
+                    error: error
+                )
+            )
+
+            return .init(offering: offering, workflowContext: nil)
+        }
     }
 
     // Callers gate on workflowsEndpointEnabled before reaching this point, so this assumes
@@ -527,6 +544,20 @@ extension PurchaseHandler {
     #endif
 
 }
+
+#if !os(tvOS)
+private extension Error {
+
+    /// Whether this error should fall back to the offerings-provided paywall instead of surfacing.
+    /// Excludes ``PaywallError`` (a structural workflow misconfiguration, not an availability
+    /// failure — matches Android's design, where that failure never throws at all) and
+    /// `CancellationError` (control flow, not a workflow failure).
+    var isWorkflowFetchFallbackEligible: Bool {
+        return !(self is PaywallError) && !(self is CancellationError)
+    }
+
+}
+#endif
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {

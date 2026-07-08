@@ -67,6 +67,38 @@ final class PaywallViewControllerExitOfferTests: TestCase {
         )
     }
 
+    func testLateOfferingBasedPrefetchDoesNotRestoreOfferAfterWorkflowReportsNone() {
+        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
+        controller.workflowsEndpointEnabled = true
+
+        // The workflow resolves first and deliberately has no exit offer for this step.
+        controller.simulateWorkflowExitOfferUpdate(nil)
+
+        // A slower offering-based prefetch, kicked off before the workflow reported in, resolves after it.
+        controller.simulateOfferingBasedExitOfferPrefetchResult(Self.makeOffering(identifier: "stale-exit"))
+
+        expect(controller.exitOfferOfferingForTesting).to(
+            beNil(),
+            description: "a late offering-based prefetch must not restore an offer once the workflow has reported none"
+        )
+    }
+
+    func testOfferingBasedPrefetchStillWritesAfterControllerInitiatedContentReset() {
+        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "original"))
+        controller.workflowsEndpointEnabled = true
+
+        // A caller replaces the content before the embedded workflow paywall has rendered anything.
+        controller.update(with: Self.makeOffering(identifier: "replacement"))
+
+        // The single offering-based prefetch kicked off at load resolves afterward against the new content.
+        controller.simulateOfferingBasedExitOfferPrefetchResult(Self.makeOffering(identifier: "offering-based-exit"))
+
+        expect(controller.exitOfferOfferingForTesting).notTo(
+            beNil(),
+            description: "resetting content for a new render must not permanently block the offering-based prefetch"
+        )
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
