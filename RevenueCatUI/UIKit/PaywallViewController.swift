@@ -129,8 +129,8 @@ public class PaywallViewController: UIViewController {
         self.updateWorkflowExitOffer(offering)
     }
 
-    func simulateLegacyExitOfferPrefetchResult(_ offering: Offering?) {
-        self.applyLegacyExitOffer(offering)
+    func simulateOfferingBasedExitOfferPrefetchResult(_ offering: Offering?) {
+        self.applyOfferingBasedExitOffer(offering)
     }
 
     /// Whether we're currently showing an exit offer (to prevent multiple presentations).
@@ -452,10 +452,10 @@ public class PaywallViewController: UIViewController {
             return
         }
         let exitOffer = await ExitOfferHelper.fetchValidExitOffer(for: offering)
-        self.applyLegacyExitOffer(exitOffer)
+        self.applyOfferingBasedExitOffer(exitOffer)
     }
 
-    /// Writes a legacy-prefetched exit offer, unless the embedded workflow paywall has already
+    /// Writes an offering-based exit offer, unless the embedded workflow paywall has already
     /// reported its own (even a `nil` one) for the current render. A plain `exitOfferOffering == nil`
     /// check can't tell "nothing has set this yet" apart from "the workflow deliberately has no exit
     /// offer for this step," so this uses a separate flag instead of the value itself.
@@ -465,7 +465,7 @@ public class PaywallViewController: UIViewController {
     /// still apply an offer fetched for the offering being replaced. Closing that gap properly needs
     /// exit-offer resolution to key off the single resolved paywall render instead of a separate,
     /// independently-timed prefetch; tracked as a follow-up rather than solved here.
-    private func applyLegacyExitOffer(_ offering: Offering?) {
+    private func applyOfferingBasedExitOffer(_ offering: Offering?) {
         guard !self.hasReceivedWorkflowExitOfferUpdate else { return }
         self.exitOfferOffering = offering
     }
@@ -484,7 +484,7 @@ public class PaywallViewController: UIViewController {
     /// Feeds the embedded workflow paywall's exit offer into `exitOfferOffering` so swipe/close can
     /// surface it. Render-dependent, so verified manually like `prefetchExitOffer`.
     private func updateWorkflowExitOffer(_ offering: Offering?) {
-        // The legacy prefetch owns the offer when workflows are off; leave it alone.
+        // The offering-based prefetch owns the offer when workflows are off; leave it alone.
         guard self.workflowsEndpointEnabled else { return }
 
         self.hasReceivedWorkflowExitOfferUpdate = true
