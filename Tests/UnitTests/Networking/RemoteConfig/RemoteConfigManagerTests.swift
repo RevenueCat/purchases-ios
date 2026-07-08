@@ -958,6 +958,46 @@ final class RemoteConfigManagerTests: TestCase {
         expect(value) == SingleMergedWorkflowPayload(wf1: .init(value: "spaced"))
     }
 
+    func testMergeItemsBlobDataMergesMultipleKeysAndBlobs() async throws {
+        struct MergedMultiPayload: Decodable, Equatable {
+            let wf1: MergedSection
+            let wf2: MergedSection
+            let wf3: MergedSection
+        }
+
+        let firstBlob = #"{"value":"one"}"#.asData
+        let secondBlob = #"{"value":"two"}"#.asData
+        let thirdBlob = #"{"value":"three"}"#.asData
+        let firstRef = RCContainerTestData.blobRef(for: firstBlob)
+        let secondRef = RCContainerTestData.blobRef(for: secondBlob)
+        let thirdRef = RCContainerTestData.blobRef(for: thirdBlob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: [
+                "workflows": [
+                    "wf1": .init(blobRef: firstRef),
+                    "wf2": .init(blobRef: secondRef),
+                    "wf3": .init(blobRef: thirdRef)
+                ]
+            ])
+        )
+        self.blobStore.stubbedReadDataByRef[firstRef] = firstBlob
+        self.blobStore.stubbedReadDataByRef[secondRef] = secondBlob
+        self.blobStore.stubbedReadDataByRef[thirdRef] = thirdBlob
+
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .workflows,
+            itemKeys: ["wf1", "wf2", "wf3"],
+            as: MergedMultiPayload.self
+        )
+
+        expect(value) == MergedMultiPayload(
+            wf1: .init(value: "one"),
+            wf2: .init(value: "two"),
+            wf3: .init(value: "three")
+        )
+    }
+
     func testContainerResponsePersistsServerManifestAndChangedTopics() throws {
         self.diskCache.stubbedRead = nil
         let response = """
