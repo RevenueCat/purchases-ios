@@ -4,27 +4,27 @@ import XCTest
 
 final class BenchmarkRunnerValidationTests: BenchmarkTestCase {
 
+    private func events(path: String, host: String, statuses: [Int]) -> [TransportEvent] {
+        let start = DispatchTime.now()
+        return statuses.compactMap { status in
+            guard let url = URL(string: "https://\(host)\(path)") else { return nil }
+            return TransportEvent(kind: RequestKind(url: url), host: host, path: path,
+                                  statusCode: status, bytesReceived: 0,
+                                  startedAt: start, endedAt: start, failed: false)
+        }
+    }
+
     private func measurement(
         offeringsStatuses: [Int],
         configStatuses: [Int] = [],
         blobPaths: [String] = []
     ) -> IterationMeasurement {
-        let start = DispatchTime.now()
-        var events: [TransportEvent] = []
-        for status in offeringsStatuses {
-            events.append(TransportEvent(host: "api.revenuecat.com", path: "/v1/subscribers/u/offerings",
-                                         statusCode: status, bytesReceived: 0,
-                                         startedAt: start, endedAt: start, failed: false))
-        }
-        for status in configStatuses {
-            events.append(TransportEvent(host: "api.revenuecat.com", path: "/v1/config/app",
-                                         statusCode: status, bytesReceived: 0,
-                                         startedAt: start, endedAt: start, failed: false))
-        }
+        var events = self.events(path: "/v1/subscribers/u/offerings",
+                                 host: "api.revenuecat.com",
+                                 statuses: offeringsStatuses)
+        events += self.events(path: "/v1/config/app", host: "api.revenuecat.com", statuses: configStatuses)
         for path in blobPaths {
-            events.append(TransportEvent(host: "cdn.revenuecat.local", path: path,
-                                         statusCode: 200, bytesReceived: 100,
-                                         startedAt: start, endedAt: start, failed: false))
+            events += self.events(path: path, host: "cdn.revenuecat.local", statuses: [200])
         }
         return IterationMeasurement(totalMs: 1, events: events)
     }

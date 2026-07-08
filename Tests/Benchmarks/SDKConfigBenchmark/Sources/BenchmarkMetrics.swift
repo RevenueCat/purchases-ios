@@ -22,20 +22,17 @@ struct IterationMeasurement {
 
     init(totalMs: Double, events: [TransportEvent]) {
         self.totalMs = totalMs
-        let offerings = events.filter { $0.path.hasSuffix("/offerings") }
-        let config = events.filter { $0.path.hasSuffix("/config/app") }
-        // Blob URLs come from the (real or fixture) config's url_format, so classify them as
-        // everything that is neither an offerings nor a config request.
-        let blobs = events.filter { !$0.path.hasSuffix("/offerings") && !$0.path.hasSuffix("/config/app") }
+        let byKind = Dictionary(grouping: events, by: \.kind)
+        let offerings = byKind[.offerings] ?? []
+        let config = byKind[.config] ?? []
+        let blobs = byKind[.blob] ?? []
         self.offeringsMs = Self.span(of: offerings)
         self.configMs = Self.span(of: config)
         self.blobMs = Self.span(of: blobs)
         self.requestCount = events.count
         self.bytesReceived = events.reduce(0) { $0 + $1.bytesReceived }
         self.failedRequestCount = events.filter(\.failed).count
-        self.fallbackHostRequestCount = events
-            .filter { $0.host.contains("8-lives-cat") || $0.host.contains("rc-backup") }
-            .count
+        self.fallbackHostRequestCount = events.filter(\.isFallbackHostRequest).count
         self.offeringsStatusCodes = offerings.map(\.statusCode)
         self.configStatusCodes = config.map(\.statusCode)
         self.blobRequestCount = blobs.count
@@ -102,9 +99,7 @@ struct BenchmarkMetrics {
             }
         }
 
-        for (key, value) in Self.aggregates(of: measured) {
-            row[key] = value
-        }
+        row += Self.aggregates(of: measured)
 
         if let firstError = self.errorsByIteration.min(by: { $0.key < $1.key }) {
             row["first_error"] = "iteration \(firstError.key): \(firstError.value)"

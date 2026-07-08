@@ -57,9 +57,13 @@ def print_single(rows):
         print("| " + " | ".join(cells) + " |")
 
 
+def post_warmup_errors(row):
+    return row.get("post_warmup_error_count", row.get("error_count"))
+
+
 def errors_cell(row):
     """Rows with post-warmup errors are not valid comparison input; make that loud."""
-    errors = row.get("post_warmup_error_count", row.get("error_count"))
+    errors = post_warmup_errors(row)
     if errors is None:
         return "-"
     return f"⚠️ {errors}" if errors else "0"
@@ -91,7 +95,7 @@ def print_comparison(baseline, candidate):
             errors_cell(base),
             errors_cell(cand),
         ]
-        if any(row.get("post_warmup_error_count", row.get("error_count", 0)) for row in (base, cand) if row):
+        if any(post_warmup_errors(row) for row in (base, cand) if row):
             invalid += 1
         print("| " + " | ".join(cells) + " |")
 

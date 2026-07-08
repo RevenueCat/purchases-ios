@@ -8,8 +8,6 @@ struct BenchmarkPayloadFactory {
 
     static let blobURLFormat = "https://cdn.revenuecat.local/blobs/{blob_ref}"
 
-    let paywallCount: Int
-    let workflowCount: Int
     let configManifest = "benchmark-manifest-v1"
 
     let offeringsData: Data
@@ -18,9 +16,6 @@ struct BenchmarkPayloadFactory {
     private let blobsByRef: [String: Data]
 
     init(paywallCount: Int, workflowCount: Int) {
-        self.paywallCount = paywallCount
-        self.workflowCount = workflowCount
-
         let builder = PayloadBuilder(paywallCount: paywallCount, workflowCount: workflowCount)
         self.offeringsData = builder.offeringsData()
 
@@ -57,10 +52,6 @@ struct BenchmarkPayloadFactory {
 
     var allBlobRefs: [String] {
         return Array(self.blobsByRef.keys)
-    }
-
-    var productIdentifiers: Set<String> {
-        return Set((0..<self.paywallCount).map { PayloadBuilder.productIdentifier(index: $0) })
     }
 
 }

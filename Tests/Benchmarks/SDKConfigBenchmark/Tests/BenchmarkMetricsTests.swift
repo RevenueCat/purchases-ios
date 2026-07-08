@@ -106,7 +106,7 @@ final class BenchmarkMetricsTests: BenchmarkTestCase {
         XCTAssertEqual(row["p50_ms"] as? Double, 42)
     }
 
-    func testMeasurementDerivesPhasesFromEvents() {
+    func testMeasurementDerivesPhasesFromEvents() throws {
         let start = DispatchTime.now()
         func time(_ offsetMs: UInt64) -> DispatchTime {
             return DispatchTime(uptimeNanoseconds: start.uptimeNanoseconds + offsetMs * 1_000_000)
@@ -118,18 +118,20 @@ final class BenchmarkMetricsTests: BenchmarkTestCase {
             until endMs: UInt64,
             status: Int = 200,
             failed: Bool = false
-        ) -> TransportEvent {
-            return TransportEvent(host: host, path: path, statusCode: status, bytesReceived: 100,
+        ) throws -> TransportEvent {
+            let url = try XCTUnwrap(URL(string: "https://\(host)\(path)"))
+            return TransportEvent(kind: RequestKind(url: url), host: host, path: path,
+                                  statusCode: status, bytesReceived: 100,
                                   startedAt: time(startMs), endedAt: time(endMs), failed: failed)
         }
 
         let measurement = IterationMeasurement(totalMs: 100, events: [
-            event(path: "/v1/config/app", from: 0, until: 10),
-            event(path: "/blobs/aaa", host: "cdn.revenuecat.local", from: 10, until: 20),
-            event(path: "/blobs/bbb", host: "cdn.revenuecat.local", from: 12, until: 30),
-            event(path: "/v1/subscribers/u/offerings", from: 5, until: 45),
-            event(path: "/v1/offerings", host: "api-production.8-lives-cat.io",
-                  from: 46, until: 50, status: 0, failed: true)
+            try event(path: "/v1/config/app", from: 0, until: 10),
+            try event(path: "/blobs/aaa", host: "cdn.revenuecat.local", from: 10, until: 20),
+            try event(path: "/blobs/bbb", host: "cdn.revenuecat.local", from: 12, until: 30),
+            try event(path: "/v1/subscribers/u/offerings", from: 5, until: 45),
+            try event(path: "/v1/offerings", host: "api-production.8-lives-cat.io",
+                      from: 46, until: 50, status: 0, failed: true)
         ])
 
         XCTAssertEqual(measurement.requestCount, 5)

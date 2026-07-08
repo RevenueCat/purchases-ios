@@ -6,6 +6,12 @@ final class BenchmarkPayloadFactoryTests: BenchmarkTestCase {
 
     private let factory = BenchmarkPayloadFactory(paywallCount: 5, workflowCount: 7)
 
+    private func decodedConfiguration() throws -> RemoteConfiguration {
+        let container = try RemoteConfigContainer(data: self.factory.configContainerData)
+        let configData = try container.configElement.withDecodedPayloadBytes { Data($0) }
+        return try JSONDecoder.default.decode(RemoteConfiguration.self, from: configData)
+    }
+
     func testOfferingsDataDecodesIntoSDKModel() throws {
         let response = try JSONDecoder.default.decode(OfferingsResponse.self, from: self.factory.offeringsData)
 
@@ -21,9 +27,7 @@ final class BenchmarkPayloadFactoryTests: BenchmarkTestCase {
     }
 
     func testConfigContainerDecodesIntoRemoteConfiguration() throws {
-        let container = try RemoteConfigContainer(data: self.factory.configContainerData)
-        let configData = try container.configElement.withDecodedPayloadBytes { Data($0) }
-        let configuration = try JSONDecoder.default.decode(RemoteConfiguration.self, from: configData)
+        let configuration = try self.decodedConfiguration()
 
         XCTAssertEqual(configuration.domain, "app")
         XCTAssertEqual(configuration.manifest, self.factory.configManifest)
@@ -42,9 +46,7 @@ final class BenchmarkPayloadFactoryTests: BenchmarkTestCase {
     }
 
     func testAllReferencedBlobsResolveAndValidate() throws {
-        let container = try RemoteConfigContainer(data: self.factory.configContainerData)
-        let configData = try container.configElement.withDecodedPayloadBytes { Data($0) }
-        let configuration = try JSONDecoder.default.decode(RemoteConfiguration.self, from: configData)
+        let configuration = try self.decodedConfiguration()
 
         // Prefetch covers exactly the workflow blobs (what offerings delivery awaits);
         // ui_config blobs are referenced by their topic but intentionally not prefetched.
@@ -64,9 +66,7 @@ final class BenchmarkPayloadFactoryTests: BenchmarkTestCase {
     }
 
     func testWorkflowBlobDecodesIntoPublishedWorkflow() throws {
-        let container = try RemoteConfigContainer(data: self.factory.configContainerData)
-        let configData = try container.configElement.withDecodedPayloadBytes { Data($0) }
-        let configuration = try JSONDecoder.default.decode(RemoteConfiguration.self, from: configData)
+        let configuration = try self.decodedConfiguration()
 
         let workflowsTopic = try XCTUnwrap(configuration.topics.entries["workflows"])
         let ref = try XCTUnwrap(workflowsTopic.values.first?.blobRef)

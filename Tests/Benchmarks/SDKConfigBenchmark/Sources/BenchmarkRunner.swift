@@ -29,7 +29,7 @@ final class BenchmarkRunner {
             )
             let server = FixtureServer(
                 factory: factory,
-                killSwitchConfig: self.command.mode == .configKillswitch
+                killSwitchConfig: self.command.mode.forcesConfigFailure
             )
             SimulatedTransportURLProtocol.install(
                 server: server,
@@ -58,10 +58,8 @@ final class BenchmarkRunner {
                     try self.validateScenario(measurement, iteration: iteration)
                 }
                 metrics.record(measurement, iteration: iteration)
-            } catch let error as BenchmarkError {
-                if case .scenarioViolation = error { throw error }
-                metrics.record(error: error, iteration: iteration)
             } catch {
+                if case BenchmarkError.scenarioViolation = error { throw error }
                 metrics.record(error: error, iteration: iteration)
             }
         }
@@ -182,7 +180,7 @@ extension BenchmarkRunner {
 
         // Kill-switch mode pays the config 4xx on every launch by design, so only plain config
         // mode must see manifest 204s.
-        if mode == .config {
+        if mode.expectsWarmConfigRevalidation {
             guard !measurement.configStatusCodes.isEmpty,
                   measurement.configStatusCodes.allSatisfy({ $0 == 204 }) else {
                 throw BenchmarkError.scenarioViolation(

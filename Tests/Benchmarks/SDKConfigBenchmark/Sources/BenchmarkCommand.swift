@@ -14,6 +14,17 @@ enum BenchmarkMode: String, CaseIterable {
         }
     }
 
+    /// Whether the fixture forces `/v1/config` to fail with a 4xx (the kill switch).
+    var forcesConfigFailure: Bool {
+        return self == .configKillswitch
+    }
+
+    /// Whether warm iterations must revalidate config via manifest 204s. Kill-switch mode
+    /// pays a 4xx on every launch instead, by design.
+    var expectsWarmConfigRevalidation: Bool {
+        return self == .config
+    }
+
 }
 
 enum BenchmarkTransport: String, CaseIterable {
@@ -175,7 +186,7 @@ struct BenchmarkCommand {
                 "--profile requires --transport simulated; live runs use the real network"
             )
         }
-        guard self.mode != .configKillswitch else {
+        guard !self.mode.forcesConfigFailure else {
             throw BenchmarkError.invalidArgument(
                 "config-killswitch cannot force a 4xx on the real backend; use --transport simulated"
             )

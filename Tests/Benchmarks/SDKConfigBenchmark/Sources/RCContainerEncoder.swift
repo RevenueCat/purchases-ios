@@ -24,14 +24,10 @@ enum RCContainerEncoder {
         return data
     }
 
-    /// The externally-referenced blob ref for a payload: SHA-256 truncated to 24 bytes,
-    /// URL-safe base64 without padding (32 characters).
+    /// The externally-referenced blob ref for a payload, computed by the same helper the SDK
+    /// uses to validate refs, so fixtures can never drift from the production format.
     static func blobRef(for data: Data) -> String {
-        return self.checksum(for: data)
-            .base64EncodedString()
-            .replacingOccurrences(of: "+", with: "-")
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "=", with: "")
+        return data.withUnsafeBytes { RemoteConfigBlobRefHelpers.ref(for: $0) }
     }
 
 }
@@ -44,7 +40,7 @@ private extension RCContainerEncoder {
 
     static func appendElement(_ payload: Data, to data: inout Data) {
         data.append(self.checksum(for: payload))
-        data.appendLittleEndianUInt32(UInt32(payload.count))
+        data.append(UInt32(payload.count).littleEndianData)
         data.append(0) // ContentEncoding.none
         data.append(contentsOf: [0, 0, 0])
         data.append(payload)
@@ -53,17 +49,6 @@ private extension RCContainerEncoder {
         if remainder != 0 {
             data.append(Data(repeating: 0, count: self.paddingBoundary - remainder))
         }
-    }
-
-}
-
-private extension Data {
-
-    mutating func appendLittleEndianUInt32(_ value: UInt32) {
-        self.append(UInt8(value & 0xff))
-        self.append(UInt8((value >> 8) & 0xff))
-        self.append(UInt8((value >> 16) & 0xff))
-        self.append(UInt8((value >> 24) & 0xff))
     }
 
 }

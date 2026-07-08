@@ -49,8 +49,14 @@ struct NetworkProfile {
         }
     }
 
-    func rttMs(forHost host: String, rng: inout SeededRandom) -> Double {
-        let range = Self.isCDNHost(host) ? self.cdnRTTMs : self.apiRTTMs
+    /// RTT class follows the request kind, the same classification everything else uses:
+    /// offerings and config are dynamic API calls, blobs are CDN downloads.
+    func rttMs(for kind: RequestKind, rng: inout SeededRandom) -> Double {
+        let range: ClosedRange<Double>
+        switch kind {
+        case .offerings, .config: range = self.apiRTTMs
+        case .blob: range = self.cdnRTTMs
+        }
         guard range.lowerBound < range.upperBound else { return range.lowerBound }
         return Double.random(in: range, using: &rng)
     }
@@ -59,10 +65,6 @@ struct NetworkProfile {
     func transferTimeMs(forByteCount byteCount: Int) -> Double {
         guard let bandwidth = self.bandwidthBytesPerSec, bandwidth > 0 else { return 0 }
         return Double(byteCount) / bandwidth * 1_000
-    }
-
-    static func isCDNHost(_ host: String) -> Bool {
-        return host.contains("cdn")
     }
 
 }

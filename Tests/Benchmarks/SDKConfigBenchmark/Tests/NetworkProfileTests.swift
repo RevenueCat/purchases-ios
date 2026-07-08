@@ -21,8 +21,8 @@ final class NetworkProfileTests: BenchmarkTestCase {
         var first = SeededRandom(seed: 9)
         var second = SeededRandom(seed: 9)
 
-        let firstSamples = (0..<32).map { _ in NetworkProfile.lte.rttMs(forHost: "api.revenuecat.com", rng: &first) }
-        let secondSamples = (0..<32).map { _ in NetworkProfile.lte.rttMs(forHost: "api.revenuecat.com", rng: &second) }
+        let firstSamples = (0..<32).map { _ in NetworkProfile.lte.rttMs(for: .offerings, rng: &first) }
+        let secondSamples = (0..<32).map { _ in NetworkProfile.lte.rttMs(for: .offerings, rng: &second) }
 
         XCTAssertEqual(firstSamples, secondSamples)
         for sample in firstSamples {
@@ -30,19 +30,31 @@ final class NetworkProfileTests: BenchmarkTestCase {
         }
     }
 
-    func testCDNHostsSampleFromCDNRange() {
+    func testBlobRequestsSampleFromCDNRange() {
         var rng = SeededRandom(seed: 9)
 
         for _ in 0..<32 {
-            let sample = NetworkProfile.lte.rttMs(forHost: "cdn.revenuecat.local", rng: &rng)
+            let sample = NetworkProfile.lte.rttMs(for: .blob, rng: &rng)
             XCTAssertTrue(NetworkProfile.lte.cdnRTTMs.contains(sample))
         }
+    }
+
+    func testRequestKindClassification() throws {
+        func kind(_ urlString: String) throws -> RequestKind {
+            return RequestKind(url: try XCTUnwrap(URL(string: urlString)))
+        }
+
+        XCTAssertEqual(try kind("https://api.revenuecat.com/v1/subscribers/u/offerings"), .offerings)
+        XCTAssertEqual(try kind("https://api-production.8-lives-cat.io/v1/offerings"), .offerings)
+        XCTAssertEqual(try kind("https://api.revenuecat.com/v1/config/app"), .config)
+        XCTAssertEqual(try kind("https://cdn.revenuecat.local/blobs/abc"), .blob)
+        XCTAssertEqual(try kind("https://d123.cloudfront.net/some/real/cdn/path"), .blob)
     }
 
     func testIdealProfileAddsNoDelay() {
         var rng = SeededRandom(seed: 1)
 
-        XCTAssertEqual(NetworkProfile.ideal.rttMs(forHost: "api.revenuecat.com", rng: &rng), 0)
+        XCTAssertEqual(NetworkProfile.ideal.rttMs(for: .config, rng: &rng), 0)
         XCTAssertEqual(NetworkProfile.ideal.transferTimeMs(forByteCount: 10_000_000), 0)
     }
 

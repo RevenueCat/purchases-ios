@@ -1,8 +1,33 @@
 import Foundation
 
+/// What a benchmark request is for. Classified once, from the URL, and stamped on every
+/// `TransportEvent`, so routing, RTT class, connection pooling, phase attribution, and warm
+/// validation all share one rule instead of re-deriving it from path strings.
+enum RequestKind {
+
+    case offerings
+    case config
+    /// Anything that is neither offerings nor config: blob downloads, whose URLs come from the
+    /// (real or fixture) config's `url_format` and so have no fixed shape.
+    case blob
+
+    init(url: URL) {
+        let path = url.path
+        if path.hasSuffix("/offerings") {
+            self = .offerings
+        } else if path.hasSuffix("/config/app") {
+            self = .config
+        } else {
+            self = .blob
+        }
+    }
+
+}
+
 /// One completed (or failed) simulated request, for phase attribution and byte accounting.
 struct TransportEvent {
 
+    let kind: RequestKind
     let host: String
     let path: String
     let statusCode: Int
@@ -10,6 +35,37 @@ struct TransportEvent {
     let startedAt: DispatchTime
     let endedAt: DispatchTime
     let failed: Bool
+
+    /// The SDK's backup hosts; requests here mean the primary host failed over.
+    var isFallbackHostRequest: Bool {
+        return self.host.contains("8-lives-cat") || self.host.contains("rc-backup")
+    }
+
+    static func failure(url: URL, startedAt: DispatchTime) -> TransportEvent {
+        return TransportEvent(
+            kind: RequestKind(url: url),
+            host: url.host ?? "",
+            path: url.path,
+            statusCode: 0,
+            bytesReceived: 0,
+            startedAt: startedAt,
+            endedAt: DispatchTime.now(),
+            failed: true
+        )
+    }
+
+    static func success(url: URL, statusCode: Int, bytesReceived: Int, startedAt: DispatchTime) -> TransportEvent {
+        return TransportEvent(
+            kind: RequestKind(url: url),
+            host: url.host ?? "",
+            path: url.path,
+            statusCode: statusCode,
+            bytesReceived: bytesReceived,
+            startedAt: startedAt,
+            endedAt: DispatchTime.now(),
+            failed: false
+        )
+    }
 
 }
 
@@ -160,27 +216,22 @@ private extension SimulatedTransportURLProtocol {
         loss: LossModel,
         startedAt: DispatchTime
     ) {
-        let host = url.host ?? ""
         let bodyData = Self.bodyData(of: self.request)
         let response = server.response(for: self.request, bodyData: bodyData)
 
         // The plan is derived from a stable per-request key, not drawn from a shared RNG in
         // arrival order: concurrent requests reach the transport in a scheduler-dependent
         // order, and order-dependent sampling would make same-seed runs disagree across
-        // processes.
-        let plan = Self.lock.withLock { () -> RequestPlan in
+        // processes. Only the attempt counter needs the lock; the plan itself is pure.
+        let key = Self.lock.withLock { () -> PlanKey in
             let attempt = Self.attemptCountsByURL[url.absoluteString, default: 0]
             Self.attemptCountsByURL[url.absoluteString] = attempt + 1
-            return Self.requestPlan(
-                key: PlanKey(seed: Self.seed, iteration: Self.iterationIndex, url: url, attempt: attempt),
-                bodyCount: response.body.count,
-                profile: profile,
-                loss: loss
-            )
+            return PlanKey(seed: Self.seed, iteration: Self.iterationIndex, url: url, attempt: attempt)
         }
+        let plan = Self.requestPlan(key: key, bodyCount: response.body.count, profile: profile, loss: loss)
 
         if plan.fails {
-            self.deliverFailure(host: host, path: url.path, rttMs: plan.rttMs, startedAt: startedAt)
+            self.deliverFailure(url: url, rttMs: plan.rttMs, startedAt: startedAt)
         } else {
             self.deliverResponse(
                 response,
@@ -200,19 +251,11 @@ private extension SimulatedTransportURLProtocol {
 
     /// One retransmission-timeout's worth of waiting before the failure surfaces, so failed
     /// attempts cost time like they do on a real link.
-    func deliverFailure(host: String, path: String, rttMs: Double, startedAt: DispatchTime) {
+    func deliverFailure(url: URL, rttMs: Double, startedAt: DispatchTime) {
         let rtoMs = max(1_000, rttMs * 2)
         self.schedule(afterMs: rtoMs) { [weak self] in
             guard let self else { return }
-            Self.record(TransportEvent(
-                host: host,
-                path: path,
-                statusCode: 0,
-                bytesReceived: 0,
-                startedAt: startedAt,
-                endedAt: DispatchTime.now(),
-                failed: true
-            ))
+            Self.record(.failure(url: url, startedAt: startedAt))
             self.client?.urlProtocol(self, didFailWithError: URLError(.timedOut))
         }
     }
@@ -224,7 +267,6 @@ private extension SimulatedTransportURLProtocol {
         plan: (rttMs: Double, chunkDelaysMs: [Double]),
         startedAt: DispatchTime
     ) {
-        let host = url.host ?? ""
         guard let httpResponse = HTTPURLResponse(
             url: url,
             statusCode: response.statusCode,
@@ -248,9 +290,12 @@ private extension SimulatedTransportURLProtocol {
         var chunkIndex = 0
         while offset < response.body.count {
             let end = min(offset + Self.chunkSize, response.body.count)
-            let chunk = response.body.subdata(in: offset..<end)
+            // A slice, not a copy: the factory retains the parent body for the whole run.
+            let chunk = response.body[offset..<end]
             deliveryOffsetMs += profile.transferTimeMs(forByteCount: chunk.count)
-            deliveryOffsetMs += plan.chunkDelaysMs[min(chunkIndex, plan.chunkDelaysMs.count - 1)]
+            if !plan.chunkDelaysMs.isEmpty {
+                deliveryOffsetMs += plan.chunkDelaysMs[chunkIndex]
+            }
             self.schedule(afterMs: deliveryOffsetMs) { [weak self] in
                 guard let self else { return }
                 self.client?.urlProtocol(self, didLoad: chunk)
@@ -261,14 +306,11 @@ private extension SimulatedTransportURLProtocol {
 
         self.schedule(afterMs: deliveryOffsetMs) { [weak self] in
             guard let self else { return }
-            Self.record(TransportEvent(
-                host: host,
-                path: url.path,
+            Self.record(.success(
+                url: url,
                 statusCode: response.statusCode,
                 bytesReceived: response.body.count,
-                startedAt: startedAt,
-                endedAt: DispatchTime.now(),
-                failed: false
+                startedAt: startedAt
             ))
             self.client?.urlProtocolDidFinishLoading(self)
         }

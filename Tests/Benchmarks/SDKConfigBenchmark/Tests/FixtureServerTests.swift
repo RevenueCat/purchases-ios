@@ -104,80 +104,84 @@ final class FixtureServerTests: BenchmarkTestCase {
 
     // MARK: - Transport integration
 
-    func testTransportDeliversFixtureBodyAndRecordsEvent() throws {
+    private func installTransport(lossPercent: Int = 0) {
         SimulatedTransportURLProtocol.install(
             server: self.server,
             profile: .ideal,
-            loss: LossModel(lossPercent: 0),
+            loss: LossModel(lossPercent: lossPercent),
             seed: 42
         )
+    }
+
+    private func fetch(_ urlString: String, timeout: TimeInterval = 10) throws -> (data: Data?,
+                                                                                   statusCode: Int?,
+                                                                                   error: Error?) {
+        let url = try XCTUnwrap(URL(string: urlString))
         let session = SimulatedTransportURLProtocol.makeSession()
-        let ref = try XCTUnwrap(self.factory.allBlobRefs.first)
-        let url = try XCTUnwrap(URL(string: "https://cdn.revenuecat.local/blobs/\(ref)"))
 
         let expectation = self.expectation(description: "request completes")
-        var received: (data: Data?, statusCode: Int?)
+        let result = LockedValue<(Data?, Int?, Error?)>()
         session.dataTask(with: url) { data, response, error in
-            XCTAssertNil(error)
-            received = (data, (response as? HTTPURLResponse)?.statusCode)
+            result.set((data, (response as? HTTPURLResponse)?.statusCode, error))
             expectation.fulfill()
         }.resume()
-        self.wait(for: [expectation], timeout: 5)
+        self.wait(for: [expectation], timeout: timeout)
 
+        let (data, statusCode, error) = result.get() ?? (nil, nil, nil)
+        return (data, statusCode, error)
+    }
+
+    func testTransportDeliversFixtureBodyAndRecordsEvent() throws {
+        self.installTransport()
+        let ref = try XCTUnwrap(self.factory.allBlobRefs.first)
+
+        let received = try self.fetch("https://cdn.revenuecat.local/blobs/\(ref)")
+
+        XCTAssertNil(received.error)
         XCTAssertEqual(received.statusCode, 200)
         XCTAssertEqual(received.data, self.factory.blobData(forRef: ref))
 
         let events = SimulatedTransportURLProtocol.drainEvents()
         XCTAssertEqual(events.count, 1)
         XCTAssertEqual(events.first?.host, "cdn.revenuecat.local")
+        XCTAssertEqual(events.first?.kind, .blob)
         XCTAssertEqual(events.first?.bytesReceived, self.factory.blobData(forRef: ref)?.count)
         XCTAssertTrue(SimulatedTransportURLProtocol.drainEvents().isEmpty, "drain must clear events")
     }
 
     func testTransportInterceptsRealAPIHostsSoNothingLeaks() throws {
-        SimulatedTransportURLProtocol.install(
-            server: self.server,
-            profile: .ideal,
-            loss: LossModel(lossPercent: 0),
-            seed: 42
-        )
-        let session = SimulatedTransportURLProtocol.makeSession()
-        let url = try XCTUnwrap(URL(string: "https://api.revenuecat.com/v1/subscribers/u/offerings"))
+        self.installTransport()
 
-        let expectation = self.expectation(description: "request completes")
-        var received: Data?
-        session.dataTask(with: url) { data, _, _ in
-            received = data
-            expectation.fulfill()
-        }.resume()
-        self.wait(for: [expectation], timeout: 5)
+        let received = try self.fetch("https://api.revenuecat.com/v1/subscribers/u/offerings")
 
-        XCTAssertEqual(received, self.factory.offeringsData, "real API hosts must resolve to fixtures")
+        XCTAssertEqual(received.data, self.factory.offeringsData, "real API hosts must resolve to fixtures")
     }
 
     func testTransportModelsLossAsTimedOutFailure() throws {
-        SimulatedTransportURLProtocol.install(
-            server: self.server,
-            profile: .ideal,
-            loss: LossModel(lossPercent: 100),
-            seed: 42
-        )
-        let session = SimulatedTransportURLProtocol.makeSession()
-        let url = try XCTUnwrap(URL(string: "https://api.revenuecat.com/v1/subscribers/u/offerings"))
+        self.installTransport(lossPercent: 100)
 
-        let expectation = self.expectation(description: "request fails")
-        var receivedError: Error?
-        session.dataTask(with: url) { _, _, error in
-            receivedError = error
-            expectation.fulfill()
-        }.resume()
-        self.wait(for: [expectation], timeout: 10)
+        let received = try self.fetch("https://api.revenuecat.com/v1/subscribers/u/offerings")
 
-        XCTAssertEqual((receivedError as? URLError)?.code, .timedOut)
+        XCTAssertEqual((received.error as? URLError)?.code, .timedOut)
 
         let events = SimulatedTransportURLProtocol.drainEvents()
         XCTAssertEqual(events.count, 1)
         XCTAssertTrue(events.first?.failed == true)
+    }
+
+}
+
+private final class LockedValue<Value>: @unchecked Sendable {
+
+    private let lock = NSLock()
+    private var value: Value?
+
+    func set(_ value: Value) {
+        self.lock.withLock { self.value = value }
+    }
+
+    func get() -> Value? {
+        return self.lock.withLock { self.value }
     }
 
 }

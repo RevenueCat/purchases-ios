@@ -53,14 +53,6 @@ final class PassthroughTransportTests: BenchmarkTestCase {
         XCTAssertEqual(events.first?.failed, false)
     }
 
-    func testAPIHostClassification() {
-        XCTAssertTrue(SimulatedTransportURLProtocol.isAPIHost("api.revenuecat.com"))
-        XCTAssertTrue(SimulatedTransportURLProtocol.isAPIHost("api-production.8-lives-cat.io"))
-        XCTAssertTrue(SimulatedTransportURLProtocol.isAPIHost("api.rc-backup.com"))
-        XCTAssertFalse(SimulatedTransportURLProtocol.isAPIHost("blobs.revenuecat.com"))
-        XCTAssertFalse(SimulatedTransportURLProtocol.isAPIHost("d1234.cloudfront.net"))
-    }
-
     func testUninstalledTransportDoesNotClaimRequests() {
         SimulatedTransportURLProtocol.uninstall()
 

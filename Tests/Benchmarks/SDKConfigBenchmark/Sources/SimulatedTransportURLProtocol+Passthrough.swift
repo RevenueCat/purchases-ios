@@ -19,50 +19,35 @@ extension SimulatedTransportURLProtocol {
         return URLSession(configuration: configuration)
     }
 
-    static func isAPIHost(_ host: String) -> Bool {
-        return host.contains("revenuecat.com") && host.hasPrefix("api.")
-            || host.contains("8-lives-cat")
-            || host.contains("rc-backup")
-    }
-
     func startPassthrough(url: URL, startedAt: DispatchTime) {
-        let host = url.host ?? ""
-        let session = Self.isAPIHost(host) ? Self.passthroughAPISession : Self.passthroughBlobSession
+        let session: URLSession
+        switch RequestKind(url: url) {
+        case .offerings, .config: session = Self.passthroughAPISession
+        case .blob: session = Self.passthroughBlobSession
+        }
 
         let task = session.dataTask(with: self.request) { [weak self] data, response, error in
             guard let self else { return }
-            let ended = DispatchTime.now()
 
-            if let error {
-                Self.record(TransportEvent(
-                    host: host,
-                    path: url.path,
-                    statusCode: 0,
-                    bytesReceived: 0,
-                    startedAt: startedAt,
-                    endedAt: ended,
-                    failed: true
-                ))
-                self.client?.urlProtocol(self, didFailWithError: error)
+            if error != nil {
+                Self.record(.failure(url: url, startedAt: startedAt))
+                self.client?.urlProtocol(self, didFailWithError: error ?? URLError(.unknown))
                 return
             }
 
             guard let httpResponse = response as? HTTPURLResponse else {
                 self.client?.urlProtocol(
                     self,
-                    didFailWithError: BenchmarkError.backendFailure("non-HTTP response from \(host)")
+                    didFailWithError: BenchmarkError.backendFailure("non-HTTP response from \(url.host ?? "")")
                 )
                 return
             }
 
-            Self.record(TransportEvent(
-                host: host,
-                path: url.path,
+            Self.record(.success(
+                url: url,
                 statusCode: httpResponse.statusCode,
                 bytesReceived: data?.count ?? 0,
-                startedAt: startedAt,
-                endedAt: ended,
-                failed: false
+                startedAt: startedAt
             ))
             self.client?.urlProtocol(self, didReceive: httpResponse, cacheStoragePolicy: .notAllowed)
             if let data, !data.isEmpty {
