@@ -158,7 +158,10 @@ private extension IdentityManager {
             return
         }
 
-        self.backend.identity.logIn(currentAppUserID: oldAppUserID, newAppUserID: newAppUserID) { result in
+        let request = IdentityAPI.LogInRequest(currentAppUserID: oldAppUserID,
+                                               kind: .identifyAs(newAppUserID: newAppUserID))
+
+        self.backend.identity.logIn(request) { result in
             if case let .success((customerInfo, _)) = result {
                 self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newAppUserID)
                 self.remoteConfigManager?.clearCache()

@@ -15,6 +15,15 @@ import Foundation
 
 class IdentityAPI {
 
+    struct LogInRequest {
+        enum Kind {
+            case identifyAs(newAppUserID: String)
+        }
+
+        let currentAppUserID: String
+        let kind: Kind
+    }
+
     typealias LogInResponse = Result<(info: CustomerInfo, created: Bool), BackendError>
     typealias LogInResponseHandler = (LogInResponse) -> Void
 
@@ -24,6 +33,13 @@ class IdentityAPI {
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
         self.logInCallbacksCache = CallbackCache<LogInCallback>()
+    }
+
+    func logIn(_ request: LogInRequest, completion: @escaping LogInResponseHandler) {
+        switch request.kind {
+        case .identifyAs(newAppUserID: let newAppUserID):
+            self.logIn(currentAppUserID: request.currentAppUserID, newAppUserID: newAppUserID, completion: completion)
+        }
     }
 
     func logIn(currentAppUserID: String,
