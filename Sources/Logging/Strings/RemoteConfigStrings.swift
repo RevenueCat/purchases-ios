@@ -36,6 +36,7 @@ enum RemoteConfigStrings {
     case sourceUnhealthy(ref: String, hasNextSource: Bool)
     case storedBlob(String, byteCount: Int, URL)
     case storedInlineBlob(String, byteCount: Int)
+    case uiConfigDecodeFailed(Error)
     case uiConfigMissingRequiredPart
     case uiConfigPartDecodeFailed(itemKey: String, error: Error)
     case workflowsEnabledWithoutRemoteConfig
@@ -110,6 +111,8 @@ extension RemoteConfigStrings: LogMessage {
             return "Stored remote config blob '\(ref)' with \(byteCount) bytes downloaded from \(url.absoluteString)."
         case let .storedInlineBlob(ref, byteCount):
             return "Stored inline remote config blob '\(ref)' with \(byteCount) bytes."
+        case let .uiConfigDecodeFailed(error):
+            return "Failed to decode merged ui_config: \(error.localizedDescription)"
         case .uiConfigMissingRequiredPart:
             return "Failed to assemble ui_config: the 'app' or 'localizations' part is unavailable."
         case let .uiConfigPartDecodeFailed(itemKey, error):

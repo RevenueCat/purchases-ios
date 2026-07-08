@@ -92,12 +92,12 @@ extension RemoteConfigManagerType {
         as type: T.Type
     ) async throws -> T? {
         let uniqueItemKeys = Self.uniqueItemKeys(itemKeys)
-        guard !uniqueItemKeys.isEmpty else {
-            Logger.warn(Strings.remoteConfig.mergeItemsBlobDataEmpty(topic: topic))
-            return nil
-        }
         guard !self.isDisabled else {
             Logger.warn(Strings.remoteConfig.mergeItemsBlobDataDisabled(topic: topic, itemKeys: uniqueItemKeys))
+            return nil
+        }
+        guard !uniqueItemKeys.isEmpty else {
+            Logger.warn(Strings.remoteConfig.mergeItemsBlobDataEmpty(topic: topic))
             return nil
         }
 
