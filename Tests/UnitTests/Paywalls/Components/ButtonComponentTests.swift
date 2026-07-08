@@ -356,13 +356,11 @@ class ButtonComponentCodableTests: TestCase {
         guard case .navigateTo(.sheet(let sheet)) = decodedButton.action else {
             return XCTFail("Expected a .navigateTo(.sheet) action, got \(decodedButton.action)")
         }
-        XCTAssertEqual(sheet.id, "sheet-1")
+        XCTAssertEqual(sheet?.id, "sheet-1")
     }
 
-    func testNavigateToSheetWithoutInlineSheetDecodesToUnknown() throws {
-        // A draft paywall can carry a `destination: "sheet"` action whose inline `sheet` payload
-        // hasn't been populated yet. This must NOT fail the whole decode (the web renderer treats
-        // `sheet` as optional); it degrades to an inert `.unknown` destination.
+    func testNavigateToSheetWithoutInlineSheetDecodesToSheetWithNilContent() throws {
+        // A "sheet" destination without its inline sheet must decode (not throw), so the button renders.
         let jsonString = """
         {
             "type": "button",
@@ -376,10 +374,10 @@ class ButtonComponentCodableTests: TestCase {
         let jsonData = jsonString.data(using: .utf8)!
         let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
 
-        XCTAssertEqual(decodedButton.action, .navigateTo(destination: .unknown))
+        XCTAssertEqual(decodedButton.action, .navigateTo(destination: .sheet(sheet: nil)))
     }
 
-    func testNavigateToSheetWithNullInlineSheetDecodesToUnknown() throws {
+    func testNavigateToSheetWithNullInlineSheetDecodesToSheetWithNilContent() throws {
         let jsonString = """
         {
             "type": "button",
@@ -394,7 +392,7 @@ class ButtonComponentCodableTests: TestCase {
         let jsonData = jsonString.data(using: .utf8)!
         let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
 
-        XCTAssertEqual(decodedButton.action, .navigateTo(destination: .unknown))
+        XCTAssertEqual(decodedButton.action, .navigateTo(destination: .sheet(sheet: nil)))
     }
 
     func testDecodesNameIgnoresExtraIdInJSON() throws {
