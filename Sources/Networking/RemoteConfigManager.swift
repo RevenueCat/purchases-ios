@@ -127,15 +127,38 @@ extension RemoteConfigManagerType {
             return nil
         }
 
-        var mergedBlobValues: [String: Any] = [:]
-        for itemKey in uniqueItemKeys {
-            guard let resolvedBlob = resolvedBlobs[itemKey],
-                  let data = resolvedBlob else { return nil }
-            mergedBlobValues[itemKey] = try JSONDecoder.default.decode(AnyDecodable.self, from: data).asAny
+        guard let mergedData = try Self.makeJSONEnvelopeData(
+            orderedItemKeys: uniqueItemKeys,
+            resolvedBlobs: resolvedBlobs
+        ) else {
+            return nil
         }
 
-        let mergedData = try JSONSerialization.data(withJSONObject: mergedBlobValues)
         return try JSONDecoder.default.decode(type, from: mergedData)
+    }
+
+    /// Builds a keyed JSON object `{"<itemKey>":<blobBytes>,...}` from already-encoded blob payloads.
+    ///
+    /// Each blob is a valid JSON value that is appended verbatim, avoiding a decode -> encode -> decode
+    /// cycle. Item keys keep the order of `orderedItemKeys` and are escaped via `JSONEncoder.default`.
+    /// Returns `nil` if any key has no resolved blob data.
+    private static func makeJSONEnvelopeData(
+        orderedItemKeys: [String],
+        resolvedBlobs: [String: Data?]
+    ) throws -> Data? {
+        var envelope = Data("{".utf8)
+        for (index, itemKey) in orderedItemKeys.enumerated() {
+            guard let resolvedBlob = resolvedBlobs[itemKey],
+                  let data = resolvedBlob else { return nil }
+            if index > 0 {
+                envelope.append(contentsOf: ",".utf8)
+            }
+            envelope.append(try JSONEncoder.default.encode(itemKey))
+            envelope.append(contentsOf: ":".utf8)
+            envelope.append(data)
+        }
+        envelope.append(contentsOf: "}".utf8)
+        return envelope
     }
 
     private static func uniqueItemKeys(_ itemKeys: [String]) -> [String] {
