@@ -85,6 +85,10 @@ extension SynchronizedLargeItemCache {
             }
         }
 
+        func cachedFileExists(at url: URL) -> Bool {
+            self.cachedContentExists(at: url)
+        }
+
         func loadFile(at url: URL) throws -> Data {
             try lock.withLock {
                 loadFileInvocations.append(url)

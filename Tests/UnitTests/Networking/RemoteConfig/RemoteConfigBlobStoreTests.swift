@@ -85,10 +85,10 @@ final class RemoteConfigBlobStoreTests: TestCase {
 
     func testCachedRefsRetriesDiskScanAfterTransientDirectoryListingFailure() {
         self.write(ref: Self.refA, data: Data([1]))
-        let fileManager = FailingFileManager()
-        let reopened = RemoteConfigBlobStore(fileManager: fileManager, directoryURL: self.directoryURL)
+        let cache = FailingCache()
+        let reopened = RemoteConfigBlobStore(cache: cache, directoryURL: self.directoryURL)
 
-        fileManager.failNextContentsOfDirectory = true
+        cache.failNextContentsOfDirectory = true
 
         expect(reopened.cachedRefs()).to(beEmpty())
         expect(reopened.cachedRefs()) == [Self.refA]
@@ -183,12 +183,12 @@ final class RemoteConfigBlobStoreTests: TestCase {
     }
 
     func testClearFailureDoesNotMarkExistingRefsAsMissing() {
-        let fileManager = FailingFileManager()
-        self.blobStore = RemoteConfigBlobStore(fileManager: fileManager, directoryURL: self.directoryURL)
+        let cache = FailingCache()
+        self.blobStore = RemoteConfigBlobStore(cache: cache, directoryURL: self.directoryURL)
         self.write(ref: Self.refA, data: Data([1]))
         expect(self.blobStore.contains(ref: Self.refA)) == true
 
-        fileManager.failNextRemoveItem = true
+        cache.failNextRemoveItem = true
         self.blobStore.clear()
 
         expect(self.blobStore.contains(ref: Self.refA)) == true
@@ -215,8 +215,8 @@ final class RemoteConfigBlobStoreTests: TestCase {
     }
 
     func testRetainOnlyWaitsForInProgressWrite() {
-        let fileManager = BlockingFileManager()
-        self.blobStore = RemoteConfigBlobStore(fileManager: fileManager, directoryURL: self.directoryURL)
+        let cache = BlockingCache()
+        self.blobStore = RemoteConfigBlobStore(cache: cache, directoryURL: self.directoryURL)
 
         let writeFinished = DispatchSemaphore(value: 0)
         let retainStarted = DispatchSemaphore(value: 0)
@@ -228,7 +228,7 @@ final class RemoteConfigBlobStoreTests: TestCase {
             writeFinished.signal()
         }
 
-        expect(fileManager.waitForDirectoryCreation()) == true
+        expect(cache.waitForDirectoryCreation()) == true
 
         DispatchQueue.global().async {
             retainStarted.signal()
@@ -237,13 +237,13 @@ final class RemoteConfigBlobStoreTests: TestCase {
         }
 
         expect(retainStarted.wait(timeout: .now() + 1)) == .success
-        expect(fileManager.waitForContentsOfDirectory(timeout: .now() + 0.1)) == false
+        expect(cache.waitForContentsOfDirectory(timeout: .now() + 0.1)) == false
 
-        fileManager.unblockDirectoryCreation()
+        cache.unblockDirectoryCreation()
 
         expect(writeFinished.wait(timeout: .now() + 1)) == .success
         expect(retainFinished.wait(timeout: .now() + 1)) == .success
-        expect(fileManager.waitForContentsOfDirectory()) == true
+        expect(cache.waitForContentsOfDirectory()) == true
     }
 
 }
@@ -262,7 +262,7 @@ private extension RemoteConfigBlobStoreTests {
 
 }
 
-private final class FailingFileManager: FileManager {
+private final class FailingCache: FileManager {
 
     var failNextContentsOfDirectory = false
     var failNextRemoveItem = false
@@ -295,7 +295,7 @@ private final class FailingFileManager: FileManager {
 
 }
 
-private final class BlockingFileManager: FileManager {
+private final class BlockingCache: FileManager {
 
     private let enteredDirectoryCreation = DispatchSemaphore(value: 0)
     private let allowDirectoryCreation = DispatchSemaphore(value: 0)
