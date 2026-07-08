@@ -775,7 +775,6 @@ public protocol PurchasesType: AnyObject {
         func checkTrialOrIntroDiscountEligibility(package: Package) async
             -> IntroEligibilityStatus
 
-
         /**
          * Use this method to fetch ``PromotionalOffer``
          *  to use in ``Purchases/purchase(package:promotionalOffer:)``
