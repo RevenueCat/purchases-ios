@@ -379,7 +379,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let userDefaults = userDefaults ?? UserDefaults.computeDefault()
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
-        let workflowsCache = WorkflowsCache(deviceCache: deviceCache)
 
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
             guard diagnosticsEnabled,
@@ -499,8 +498,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
                                               attributeSyncing: subscriberAttributesManager,
-                                              workflowsCache: systemInfo.workflowsEndpointEnabled
-                                              ? workflowsCache : nil,
                                               appUserID: appUserID
         )
         let remoteConfigManager: RemoteConfigManagerType = {
@@ -580,10 +577,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             paywallCache = nil
         }
 
-        let workflowManager = WorkflowManager(backend: backend,
-                                              workflowsCache: workflowsCache,
-                                              paywallCache: paywallCache,
-                                              operationDispatcher: operationDispatcher)
+        let workflowManager = WorkflowManager(
+            workflowsConfigProvider: WorkflowsConfigProvider(manager: remoteConfigManager),
+            paywallCache: paywallCache,
+            operationDispatcher: operationDispatcher
+        )
 
         let offeringsManager = OfferingsManager(deviceCache: deviceCache,
                                                 operationDispatcher: operationDispatcher,
@@ -592,8 +590,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 offeringsFactory: offeringsFactory,
                                                 productsManager: productsManager,
                                                 diagnosticsTracker: diagnosticsTracker,
-                                                workflowManager: systemInfo.workflowsEndpointEnabled
-                                                ? workflowManager : nil)
+                                                remoteConfigManager: systemInfo.remoteConfigEnabled
+                                                ? remoteConfigManager
+                                                : nil)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
                                                          currentUserProvider: identityManager)
@@ -1025,27 +1024,7 @@ public extension Purchases {
 
     @_spi(Internal)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
-        // Prefer the workflowId resolved from the workflows list (offeringId → workflowId), falling
-        // back to the offering identifier itself, which the backend also accepts as a workflow key.
-        // The map is empty until the workflows list has been fetched, so the fallback preserves the
-        // original behavior. `WorkflowManager` handles caching and asset warm-up.
-        let workflowId = self.workflowManager.cachedWorkflowId(forOfferingId: offeringID) ?? offeringID
-        return try await Async.call { completion in
-            self.workflowManager.getWorkflow(
-                appUserID: self.appUserID,
-                workflowId: workflowId,
-                isAppBackgrounded: false,
-                completion: completion
-            )
-        }
-    }
-
-    /// Synchronously returns the cached workflow for `offeringID` when one is present and fresh,
-    /// otherwise `nil`. Used to seed the workflow paywall without a backend round-trip; callers fall
-    /// back to the async ``workflow(forOfferingIdentifier:)`` when this returns `nil`.
-    @_spi(Internal)
-    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
-        return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
+        return try await self.workflowManager.getWorkflow(forOfferingId: offeringID)
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
@@ -2420,6 +2399,13 @@ extension Purchases {
     // swiftlint:disable missing_docs
     @_spi(Internal) public var preferredLocaleOverride: String? {
         return self.systemInfo.preferredLocaleOverride
+    }
+
+    // Exposes the single workflows + remote config gate to RevenueCatUI, which can't see the
+    // ENABLE_REMOTE_CONFIG compile flag directly.
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public var remoteConfigEnabled: Bool {
+        return self.systemInfo.remoteConfigEnabled
     }
 
     // swiftlint:disable missing_docs

@@ -37,6 +37,12 @@ protocol RemoteConfigManagerType: AnyObject {
         as type: T.Type
     ) async throws -> T?
 
+    /// Ensures every blob in `refs` has finished downloading (or failed), joining any already
+    /// in-flight or queued (e.g. prefetch) download for the same ref instead of starting a
+    /// duplicate. Returns once every ref has settled; the `Bool` reports whether all succeeded.
+    @discardableResult
+    func ensureBlobsDownloaded(_ refs: [String]) async -> Bool
+
     /// Decodes multiple blob payloads into one keyed JSON object.
     ///
     /// Each requested item must be backed by `blob_ref`. The merged object is keyed by item key, so item
@@ -47,6 +53,16 @@ protocol RemoteConfigManagerType: AnyObject {
         as type: T.Type
     ) async throws -> T?
 
+    /// Returns `topic`'s committed item index once every item flagged for prefetch has also finished
+    /// downloading its blob (or failed). Behaves like `topic(_:)` otherwise: waits for an in-flight
+    /// refresh or triggers one foreground refresh before reading, and returns `nil` when the endpoint
+    /// is disabled or the topic is still unavailable after refresh.
+    ///
+    /// If the topic is invalidated (e.g. an identity change) while waiting on its blobs, this re-reads
+    /// and waits again on the new snapshot's own prefetch refs rather than returning one paired with
+    /// stale blob-wait results.
+    func awaitTopicAndPrefetchBlobsReady(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic?
+
     func clearCache()
     func close()
 
@@ -54,18 +70,34 @@ protocol RemoteConfigManagerType: AnyObject {
 
 extension RemoteConfigManagerType {
 
+    func awaitTopicAndPrefetchBlobsReady(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+        guard var committed = await self.topic(topic) else { return nil }
+
+        while true {
+            let prefetchRefs = committed.values.compactMap { $0.prefetch ? $0.blobRef : nil }
+            await self.ensureBlobsDownloaded(prefetchRefs)
+
+            // The topic could have been invalidated and refetched (e.g. an identity change) while
+            // waiting on its blobs. Re-reading and comparing catches that without needing this
+            // generic extension to see RemoteConfigManager's private epoch tracking.
+            guard let latest = await self.topic(topic) else { return nil }
+            guard latest != committed else { return committed }
+            committed = latest
+        }
+    }
+
     func mergeItemsBlobData<T: Decodable>(
         for topic: RemoteConfigTopic,
         itemKeys: [String],
         as type: T.Type
     ) async throws -> T? {
         let uniqueItemKeys = Self.uniqueItemKeys(itemKeys)
-        guard !uniqueItemKeys.isEmpty else {
-            Logger.warn(Strings.remoteConfig.mergeItemsBlobDataEmpty(topic: topic))
-            return nil
-        }
         guard !self.isDisabled else {
             Logger.warn(Strings.remoteConfig.mergeItemsBlobDataDisabled(topic: topic, itemKeys: uniqueItemKeys))
+            return nil
+        }
+        guard !uniqueItemKeys.isEmpty else {
+            Logger.warn(Strings.remoteConfig.mergeItemsBlobDataEmpty(topic: topic))
             return nil
         }
 
@@ -95,15 +127,38 @@ extension RemoteConfigManagerType {
             return nil
         }
 
-        var mergedBlobValues: [String: Any] = [:]
-        for itemKey in uniqueItemKeys {
-            guard let resolvedBlob = resolvedBlobs[itemKey],
-                  let data = resolvedBlob else { return nil }
-            mergedBlobValues[itemKey] = try JSONDecoder.default.decode(AnyDecodable.self, from: data).asAny
+        guard let mergedData = try Self.makeJSONEnvelopeData(
+            orderedItemKeys: uniqueItemKeys,
+            resolvedBlobs: resolvedBlobs
+        ) else {
+            return nil
         }
 
-        let mergedData = try JSONSerialization.data(withJSONObject: mergedBlobValues)
         return try JSONDecoder.default.decode(type, from: mergedData)
+    }
+
+    /// Builds a keyed JSON object `{"<itemKey>":<blobBytes>,...}` from already-encoded blob payloads.
+    ///
+    /// Each blob is a valid JSON value that is appended verbatim, avoiding a decode -> encode -> decode
+    /// cycle. Item keys keep the order of `orderedItemKeys` and are escaped via `JSONEncoder.default`.
+    /// Returns `nil` if any key has no resolved blob data.
+    private static func makeJSONEnvelopeData(
+        orderedItemKeys: [String],
+        resolvedBlobs: [String: Data?]
+    ) throws -> Data? {
+        var envelope = Data("{".utf8)
+        for (index, itemKey) in orderedItemKeys.enumerated() {
+            guard let resolvedBlob = resolvedBlobs[itemKey],
+                  let data = resolvedBlob else { return nil }
+            if index > 0 {
+                envelope.append(contentsOf: ",".utf8)
+            }
+            envelope.append(try JSONEncoder.default.encode(itemKey))
+            envelope.append(contentsOf: ":".utf8)
+            envelope.append(data)
+        }
+        envelope.append(contentsOf: "}".utf8)
+        return envelope
     }
 
     private static func uniqueItemKeys(_ itemKeys: [String]) -> [String] {
@@ -141,6 +196,10 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
         as type: T.Type
     ) async throws -> T? {
         return nil
+    }
+
+    func ensureBlobsDownloaded(_ refs: [String]) async -> Bool {
+        return false
     }
 
     func clearCache() {}
@@ -262,6 +321,10 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         guard let data = await self.blobData(for: topic, itemKey: itemKey) else { return nil }
 
         return try JSONDecoder.default.decode(type, from: data)
+    }
+
+    func ensureBlobsDownloaded(_ refs: [String]) async -> Bool {
+        return await self.blobFetcher.ensureAllDownloaded(refs: refs)
     }
 
     /// Wipes cached remote config state, for example after an identity change.
@@ -687,7 +750,8 @@ private extension RemoteConfigManager {
     /// Returns the full topic index that should be persisted after this response is applied.
     ///
     /// Changed topics overwrite previous entries, unchanged active topics keep previous entries, and inactive topics
-    /// are removed.
+    /// are removed. Changed topics are full replacements, not item-level patches, so removed items fall out of
+    /// the persisted topic index and blob retention set.
     func postSyncTopics(
         previous: PersistedRemoteConfiguration?,
         response: RemoteConfiguration

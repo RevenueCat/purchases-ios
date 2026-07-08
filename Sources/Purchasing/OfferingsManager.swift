@@ -26,8 +26,8 @@ class OfferingsManager {
     private let productsManager: ProductsManagerType
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
-    // Nil when the workflows endpoint is disabled, in which case offerings delivery is unchanged.
-    private let workflowManager: WorkflowManager?
+    // Nil when remote config is disabled, in which case offerings delivery is unchanged.
+    private let remoteConfigManager: RemoteConfigManagerType?
 
     init(deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
@@ -37,7 +37,7 @@ class OfferingsManager {
          productsManager: ProductsManagerType,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dateProvider: DateProvider = DateProvider(),
-         workflowManager: WorkflowManager? = nil) {
+         remoteConfigManager: RemoteConfigManagerType? = nil) {
         self.deviceCache = deviceCache
         self.operationDispatcher = operationDispatcher
         self.systemInfo = systemInfo
@@ -46,7 +46,7 @@ class OfferingsManager {
         self.productsManager = productsManager
         self.diagnosticsTracker = diagnosticsTracker
         self.dateProvider = dateProvider
-        self.workflowManager = workflowManager
+        self.remoteConfigManager = remoteConfigManager
     }
 
     func offerings(
@@ -109,11 +109,11 @@ class OfferingsManager {
                                           fetchPolicy: fetchPolicy,
                                           completion: nil)
             } else {
-                // Fresh offerings (no background refresh coming): ensure the workflows list is fetched
-                // before delivering, so a caller resolving a workflow right after `getOfferings`
-                // succeeds isn't racing a list fetch from another in-flight call. This is a no-op when
-                // the list is already fresh, which it normally is on this path.
-                self.deliverEnsuringWorkflowsList(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) {
+                // Fresh offerings (no background refresh coming): ensure remote config has synced at
+                // least once before delivering, so a caller resolving a workflow right after
+                // `getOfferings` succeeds isn't racing the first config sync. This is a no-op once the
+                // `workflows` topic is already populated, which it normally is on this path.
+                self.deliverWhenConfigReady {
                     self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(memoryCachedOfferings))
                 }
             }
@@ -149,11 +149,10 @@ class OfferingsManager {
                                                   fetchPolicy: fetchPolicy) { offerings in
                     if let offerings = offerings {
                         Logger.warn(Strings.offering.error_fetching_offerings_using_disk_cache)
-                        // Deliver via the workflows path too, so an offerings backend failure that
-                        // falls back to disk still fetches the list (restoring the offeringId →
-                        // workflowId map / prefetches) instead of leaving it unresolved.
-                        self.deliverEnsuringWorkflowsList(appUserID: appUserID,
-                                                          isAppBackgrounded: isAppBackgrounded) {
+                        // Deliver via the config-ready gate too, so an offerings backend failure that
+                        // falls back to disk still waits for remote config's first sync instead of
+                        // leaving workflow resolution unresolved.
+                        self.deliverWhenConfigReady {
                             self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offerings))
                         }
                     } else {
@@ -329,10 +328,9 @@ private extension OfferingsManager {
                                        preferredLocales: preferredLocales,
                                        appUserID: appUserID)
 
-                // A fresh network offerings fetch forces the workflows list stale so the two refresh
-                // together, then delivers offerings only once the list (and its prefetches) finish.
-                self.workflowManager?.forceWorkflowsListCacheStale()
-                self.deliverEnsuringWorkflowsList(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) {
+                // Delivers offerings only once remote config has synced at least once, so the
+                // `workflows` topic is available for resolving a workflow right after this call.
+                self.deliverWhenConfigReady {
                     self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offeringsResultData))
                 }
 
@@ -387,20 +385,21 @@ private extension OfferingsManager {
         }
     }
 
-    /// Runs `deliver` after ensuring the workflows list is fetched, when the workflows endpoint is
-    /// enabled. `getWorkflowsList` no-ops when the list is fresh and always calls its completion, so
-    /// this never hangs. When the endpoint is disabled (`workflowManager` is nil), `deliver` runs
-    /// immediately, leaving offerings delivery unchanged.
-    private func deliverEnsuringWorkflowsList(appUserID: String,
-                                              isAppBackgrounded: Bool,
-                                              deliver: @escaping () -> Void) {
-        guard let workflowManager = self.workflowManager else {
+    /// Runs `deliver` once remote config has synced at least once *and* every workflow flagged for
+    /// prefetch has finished downloading (or failed), when remote config is wired. Matches Android's
+    /// guarantee that offerings delivery waits for every prefetched workflow body, not just the
+    /// `workflows` topic's metadata. The manager's `awaitTopicAndPrefetchBlobsReady()` read no-ops when already synced
+    /// and always calls back, so this never hangs. When no manager is wired (workflows disabled),
+    /// `deliver` runs immediately, leaving offerings unchanged.
+    private func deliverWhenConfigReady(deliver: @escaping () -> Void) {
+        guard let remoteConfigManager = self.remoteConfigManager else {
             deliver()
             return
         }
-        workflowManager.getWorkflowsList(appUserID: appUserID,
-                                         isAppBackgrounded: isAppBackgrounded,
-                                         onComplete: deliver)
+        Task {
+            _ = await remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
+            deliver()
+        }
     }
 
     private func fetchProducts(
