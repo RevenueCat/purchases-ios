@@ -135,7 +135,7 @@ class UiConfigProviderTests: TestCase {
 
 #else
 
-    func testAssemblesEmptyUiConfigWhenRequiredPartsArePresent() async throws {
+    func testAssemblesUiConfigWhenRequiredPartsArePresent() async throws {
         self.stub(
             app: #"{"colors": {}, "fonts": {}}"#,
             localizations: #"{"en_US": {"day": "Day"}}"#,
