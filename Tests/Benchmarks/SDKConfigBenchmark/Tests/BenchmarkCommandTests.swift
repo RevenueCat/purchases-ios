@@ -1,0 +1,73 @@
+import XCTest
+
+@testable import SDKConfigBenchmarkCore
+
+final class BenchmarkCommandTests: BenchmarkTestCase {
+
+    func testParseDefaults() throws {
+        let command = try BenchmarkCommand.parse([])
+
+        XCTAssertEqual(command.mode, .legacy)
+        XCTAssertEqual(command.scenario, .cold)
+        XCTAssertEqual(command.profileName, "ideal")
+        XCTAssertEqual(command.lossPercent, 0)
+        XCTAssertEqual(command.iterations, 25)
+        XCTAssertEqual(command.warmupIterations, 3)
+        XCTAssertEqual(command.paywallCount, 50)
+        XCTAssertEqual(command.workflowCount, 100)
+        XCTAssertEqual(command.seed, 42)
+        XCTAssertTrue(command.annotations.isEmpty)
+    }
+
+    func testParseFullFlagSet() throws {
+        let command = try BenchmarkCommand.parse([
+            "--mode", "config-killswitch",
+            "--scenario", "warm",
+            "--profile", "lte",
+            "--loss-percent", "20",
+            "--iterations", "100",
+            "--warmup-iterations", "5",
+            "--paywalls", "10",
+            "--workflows", "25",
+            "--seed", "7",
+            "--app-user-id", "user-1",
+            "--api-key", "appl_x",
+            "--annotation", "sdk_commit=abc123"
+        ])
+
+        XCTAssertEqual(command.mode, .configKillswitch)
+        XCTAssertTrue(command.mode.usesRemoteConfig)
+        XCTAssertEqual(command.scenario, .warm)
+        XCTAssertEqual(command.profileName, "lte")
+        XCTAssertEqual(command.lossPercent, 20)
+        XCTAssertEqual(command.iterations, 100)
+        XCTAssertEqual(command.warmupIterations, 5)
+        XCTAssertEqual(command.paywallCount, 10)
+        XCTAssertEqual(command.workflowCount, 25)
+        XCTAssertEqual(command.seed, 7)
+        XCTAssertEqual(command.appUserID, "user-1")
+        XCTAssertEqual(command.apiKey, "appl_x")
+        XCTAssertEqual(command.annotations["sdk_commit"], "abc123")
+    }
+
+    func testParseRejectsUnknownMode() {
+        XCTAssertThrowsError(try BenchmarkCommand.parse(["--mode", "turbo"]))
+    }
+
+    func testParseRejectsUnknownFlag() {
+        XCTAssertThrowsError(try BenchmarkCommand.parse(["--nope"]))
+    }
+
+    func testParseRejectsMissingValue() {
+        XCTAssertThrowsError(try BenchmarkCommand.parse(["--iterations"]))
+    }
+
+    func testParseRejectsWarmupNotBelowIterations() {
+        XCTAssertThrowsError(try BenchmarkCommand.parse(["--iterations", "5", "--warmup-iterations", "5"]))
+    }
+
+    func testParseRejectsOutOfRangeLoss() {
+        XCTAssertThrowsError(try BenchmarkCommand.parse(["--loss-percent", "101"]))
+    }
+
+}

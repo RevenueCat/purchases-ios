@@ -1,0 +1,3 @@
+import SDKConfigBenchmarkCore
+
+BenchmarkMain.run()
