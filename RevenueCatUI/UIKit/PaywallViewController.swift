@@ -433,16 +433,23 @@ public class PaywallViewController: UIViewController {
     // MARK: - Exit Offer Handling
 
     /// Prefetches the exit offer for the current offering.
+    ///
+    /// Always runs, even when workflows are enabled: the embedded workflow paywall normally supplies
+    /// its own exit offer via `updateWorkflowExitOffer`, making this redundant, but `PaywallViewController`
+    /// can't know ahead of time whether `resolvePaywallViewData` will fall back to the legacy (non-workflow)
+    /// paywall on a workflow-fetch failure, and that fallback still needs an exit offer.
     @MainActor
     private func prefetchExitOffer() async {
-        // Under workflows the exit offer comes from the embedded paywall (see updateWorkflowExitOffer),
-        // so skip this legacy prefetch.
-        guard !self.workflowsEndpointEnabled else { return }
-
         guard let offering = await self.purchaseHandler.resolveOffering(for: self.configuration.content) else {
             return
         }
-        self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
+        let exitOffer = await ExitOfferHelper.fetchValidExitOffer(for: offering)
+
+        // Don't clobber an exit offer the embedded workflow paywall already supplied while this
+        // legacy fetch was in flight; the workflow's own writes (via updateWorkflowExitOffer) always
+        // take precedence whenever they land, before or after this one.
+        guard self.exitOfferOffering == nil else { return }
+        self.exitOfferOffering = exitOffer
     }
 
     /// Feeds the embedded workflow paywall's exit offer into `exitOfferOffering` so swipe/close can
