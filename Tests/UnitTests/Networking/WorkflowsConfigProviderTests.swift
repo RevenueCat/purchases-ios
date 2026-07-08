@@ -102,7 +102,9 @@ class WorkflowsConfigProviderTests: TestCase {
         let result = await self.provider.getWorkflow(workflowId: "wf-1")
         let workflowResult = try XCTUnwrap(result.value)
 
-        expect(workflowResult.workflow.uiConfig.localizations["en_US"]?["day"]) == "Day"
+#if !os(tvOS) // For Paywalls V2
+        XCTAssertEqual(workflowResult.workflow.uiConfig.localizations["en_US"]?["day"], "Day")
+#endif
     }
 
     func testPreservesMetadataWhenSubstitutingUiConfig() async throws {
