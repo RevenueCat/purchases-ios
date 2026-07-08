@@ -962,6 +962,7 @@
 		A1B2C3D42FE200000000000F /* RemoteConfigBlobStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE200000000000E /* RemoteConfigBlobStoreTests.swift */; };
 		A1B2C3D42FE6000000000008 /* RemoteConfigBlobFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE6000000000007 /* RemoteConfigBlobFetcherTests.swift */; };
 		A1B2C3D42FE600000000000A /* RemoteConfigBlobDownloaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE6000000000009 /* RemoteConfigBlobDownloaderTests.swift */; };
+		A1B2C3D42FE8000000000002 /* RemoteConfigIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE8000000000001 /* RemoteConfigIntegrationTests.swift */; };
 		7648885717DC2DB5009DD01B /* MinMaxOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = C812AE8BAE0546D2F4ACEF35 /* MinMaxOperators.swift */; };
 		7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */; };
 		7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */; };
@@ -2945,6 +2946,7 @@
 		A1B2C3D42FE200000000000E /* RemoteConfigBlobStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobStoreTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE6000000000007 /* RemoteConfigBlobFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobFetcherTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE6000000000009 /* RemoteConfigBlobDownloaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobDownloaderTests.swift; sourceTree = "<group>"; };
+		A1B2C3D42FE8000000000001 /* RemoteConfigIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigIntegrationTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE300000000001 /* ProductionRemoteConfigIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductionRemoteConfigIntegrationTests.swift; sourceTree = "<group>"; };
 		E31E8A264E9F4375A3B29D78 /* RemoteConfigurationDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationDecodingTests.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000A1 /* WeightedSourceSelectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightedSourceSelectorTests.swift; sourceTree = "<group>"; };
@@ -4656,6 +4658,7 @@
 				A1B2C3D42FE6000000000007 /* RemoteConfigBlobFetcherTests.swift */,
 				A1B2C3D42FE200000000000E /* RemoteConfigBlobStoreTests.swift */,
 				A1B2C3D42FE2000000000008 /* RemoteConfigDiskCacheTests.swift */,
+				A1B2C3D42FE8000000000001 /* RemoteConfigIntegrationTests.swift */,
 				A1B2C3D42FE200000000000A /* RemoteConfigManagerTests.swift */,
 			);
 			path = RemoteConfig;
@@ -7836,6 +7839,7 @@
 				A1B2C3D42FE6000000000008 /* RemoteConfigBlobFetcherTests.swift in Sources */,
 				A1B2C3D42FE600000000000A /* RemoteConfigBlobDownloaderTests.swift in Sources */,
 				A1B2C3D42FE2000000000009 /* RemoteConfigDiskCacheTests.swift in Sources */,
+				A1B2C3D42FE8000000000002 /* RemoteConfigIntegrationTests.swift in Sources */,
 				A1B2C3D42FE200000000000B /* RemoteConfigManagerTests.swift in Sources */,
 				DB7EA7772F964CA200BCC082 /* WorkflowDetailProcessorTests.swift in Sources */,
 				FDC4B60B2FCE1122001E5F96 /* InstallmentsInfoTests.swift in Sources */,

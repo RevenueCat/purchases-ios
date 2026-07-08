@@ -182,7 +182,7 @@ struct ButtonComponentView: View {
                 )
             )
         case .sheet(let sheet):
-            if let sheetStackViewModel = self.viewModel.sheetStackViewModel {
+            if let sheet, let sheetStackViewModel = self.viewModel.sheetStackViewModel {
                 let sheetViewModel = SheetViewModel(
                     sheet: sheet,
                     sheetStackViewModel: sheetStackViewModel
