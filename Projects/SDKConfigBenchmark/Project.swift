@@ -52,7 +52,12 @@ let project = Project(
                 .target(name: "SDKConfigBenchmarkCore")
             ],
             settings: .settings(
-                base: benchmarkSwiftConditions.appendingTuistSwiftConditions()
+                // The SDK's disk caches derive their directory from Bundle.main.bundleIdentifier,
+                // which a bare command-line binary does not have. Embedding the Info.plist into
+                // the binary gives it one, so etags/offerings/remote-config persistence works.
+                base: benchmarkSwiftConditions
+                    .merging(["CREATE_INFOPLIST_SECTION_IN_BINARY": "YES"])
+                    .appendingTuistSwiftConditions()
             )
         ),
         .target(

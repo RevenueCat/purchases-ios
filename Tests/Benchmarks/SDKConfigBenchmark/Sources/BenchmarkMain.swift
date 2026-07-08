@@ -10,17 +10,31 @@ public struct BenchmarkMain {
 
     /// Parses `CommandLine.arguments`, runs the requested benchmark, prints one JSONL row
     /// to stdout, and terminates the process (0 on success, 1 on error).
+    ///
+    /// The benchmark itself runs on a background queue while the main thread sits in
+    /// `dispatchMain()`: `OfferingsManager` delivers its completion on the main queue, so
+    /// blocking the main thread on the run would deadlock every iteration.
     public static func run() -> Never {
+        let command: BenchmarkCommand
         do {
-            let command = try BenchmarkCommand.parse(Array(CommandLine.arguments.dropFirst()))
-            // Placeholder output until the runner lands; proves parsing and target wiring.
-            print("parsed mode=\(command.mode.rawValue) scenario=\(command.scenario.rawValue) " +
-                  "profile=\(command.profileName) iterations=\(command.iterations)")
-            exit(0)
+            command = try BenchmarkCommand.parse(Array(CommandLine.arguments.dropFirst()))
         } catch {
             FileHandle.standardError.write(Data("\(error)\n".utf8))
             exit(1)
         }
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                let row = try BenchmarkRunner(command: command).run()
+                print(row)
+                exit(0)
+            } catch {
+                FileHandle.standardError.write(Data("\(error)\n".utf8))
+                exit(1)
+            }
+        }
+
+        dispatchMain()
     }
 
 }

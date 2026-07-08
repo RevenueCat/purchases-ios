@@ -49,7 +49,7 @@ final class BenchmarkSDKStack {
             )
         )
 
-        guard let userDefaults = UserDefaults(suiteName: "com.revenuecat.SDKConfigBenchmark") else {
+        guard let userDefaults = UserDefaults(suiteName: "com.revenuecat.SDKConfigBenchmark.scratch") else {
             preconditionFailure("Could not create benchmark UserDefaults suite")
         }
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
