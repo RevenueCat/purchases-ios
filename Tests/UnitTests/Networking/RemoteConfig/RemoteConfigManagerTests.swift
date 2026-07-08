@@ -876,6 +876,15 @@ final class RemoteConfigManagerTests: TestCase {
     }
 
     func testMergeItemsBlobDataEscapesItemKeysRequiringJSONEscaping() async throws {
+        struct MergedEscapedKeyPayload: Decodable, Equatable {
+            let escapedKey: MergedSection
+
+            // swiftlint:disable:next nesting
+            enum CodingKeys: String, CodingKey {
+                case escapedKey = #"weird"key\slash{brace},colon:end"#
+            }
+        }
+
         let blob = #"{"value":"escaped"}"#.asData
         let itemKey = #"weird"key\slash{brace},colon:end"#
         let ref = RCContainerTestData.blobRef(for: blob)
@@ -895,6 +904,15 @@ final class RemoteConfigManagerTests: TestCase {
     }
 
     func testMergeItemsBlobDataSupportsUnicodeItemKeys() async throws {
+        struct MergedUnicodeKeyPayload: Decodable, Equatable {
+            let unicodeKey: MergedSection
+
+            // swiftlint:disable:next nesting
+            enum CodingKeys: String, CodingKey {
+                case unicodeKey = "日本語🎉café"
+            }
+        }
+
         let blob = #"{"value":"unicode"}"#.asData
         let itemKey = "日本語🎉café"
         let ref = RCContainerTestData.blobRef(for: blob)
@@ -2222,24 +2240,6 @@ private extension RemoteConfigManagerTests {
 
     struct MergedSnakeCaseWorkflowPayload: Decodable, Equatable {
         let favoriteWorkflow: MergedSection
-    }
-
-    struct MergedEscapedKeyPayload: Decodable, Equatable {
-        let escapedKey: MergedSection
-
-        // swiftlint:disable:next nesting
-        enum CodingKeys: String, CodingKey {
-            case escapedKey = #"weird"key\slash{brace},colon:end"#
-        }
-    }
-
-    struct MergedUnicodeKeyPayload: Decodable, Equatable {
-        let unicodeKey: MergedSection
-
-        // swiftlint:disable:next nesting
-        enum CodingKeys: String, CodingKey {
-            case unicodeKey = "日本語🎉café"
-        }
     }
 
     struct MergedPrimitivePayload: Decodable, Equatable {
