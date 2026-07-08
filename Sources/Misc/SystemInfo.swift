@@ -110,6 +110,13 @@ class SystemInfo {
         #endif
     }
 
+    /// Whether workflows are enabled at runtime but remote config, which workflows now read through,
+    /// is not compiled in. In this state workflows are silently unavailable rather than off: worth its
+    /// own flag so callers can warn instead of quietly failing every workflow lookup.
+    var workflowsEnabledWithoutRemoteConfig: Bool {
+        return self.workflowsEndpointEnabled && !self.remoteConfigEnabled
+    }
+
     var isDebugBuild: Bool {
 #if DEBUG
         return true

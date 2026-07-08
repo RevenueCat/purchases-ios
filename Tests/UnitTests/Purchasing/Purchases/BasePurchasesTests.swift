@@ -346,8 +346,9 @@ class BasePurchasesTests: TestCase {
                                    productsManager: self.mockProductsManager,
                                    offeringsManager: self.mockOfferingsManager,
                                    workflowManager: WorkflowManager(
-                                    backend: self.backend,
-                                    workflowsCache: WorkflowsCache(deviceCache: self.deviceCache),
+                                    workflowsConfigProvider: WorkflowsConfigProvider(
+                                        manager: self.mockRemoteConfigManager
+                                    ),
                                     paywallCache: self.paywallCache,
                                     operationDispatcher: self.mockOperationDispatcher
                                    ),
