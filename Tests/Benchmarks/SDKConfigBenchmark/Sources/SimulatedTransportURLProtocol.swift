@@ -1,74 +1,5 @@
 import Foundation
 
-/// What a benchmark request is for. Classified once, from the URL, and stamped on every
-/// `TransportEvent`, so routing, RTT class, connection pooling, phase attribution, and warm
-/// validation all share one rule instead of re-deriving it from path strings.
-enum RequestKind {
-
-    case offerings
-    case config
-    /// Anything that is neither offerings nor config: blob downloads, whose URLs come from the
-    /// (real or fixture) config's `url_format` and so have no fixed shape.
-    case blob
-
-    init(url: URL) {
-        let path = url.path
-        if path.hasSuffix("/offerings") {
-            self = .offerings
-        } else if path.hasSuffix("/config/app") {
-            self = .config
-        } else {
-            self = .blob
-        }
-    }
-
-}
-
-/// One completed (or failed) simulated request, for phase attribution and byte accounting.
-struct TransportEvent {
-
-    let kind: RequestKind
-    let host: String
-    let path: String
-    let statusCode: Int
-    let bytesReceived: Int
-    let startedAt: DispatchTime
-    let endedAt: DispatchTime
-    let failed: Bool
-
-    /// The SDK's backup hosts; requests here mean the primary host failed over.
-    var isFallbackHostRequest: Bool {
-        return self.host.contains("8-lives-cat") || self.host.contains("rc-backup")
-    }
-
-    static func failure(url: URL, startedAt: DispatchTime) -> TransportEvent {
-        return TransportEvent(
-            kind: RequestKind(url: url),
-            host: url.host ?? "",
-            path: url.path,
-            statusCode: 0,
-            bytesReceived: 0,
-            startedAt: startedAt,
-            endedAt: DispatchTime.now(),
-            failed: true
-        )
-    }
-
-    static func success(url: URL, statusCode: Int, bytesReceived: Int, startedAt: DispatchTime) -> TransportEvent {
-        return TransportEvent(
-            kind: RequestKind(url: url),
-            host: url.host ?? "",
-            path: url.path,
-            statusCode: statusCode,
-            bytesReceived: bytesReceived,
-            startedAt: startedAt,
-            endedAt: DispatchTime.now(),
-            failed: false
-        )
-    }
-
-}
-
 /// The transport used by every URLSession in the benchmark. Two modes:
 ///
 /// **Simulated**: requests resolve against an in-process `FixtureServer`, so no run can ever
@@ -97,6 +28,9 @@ final class SimulatedTransportURLProtocol: URLProtocol {
     /// distinct (but stable) plans.
     private static var attemptCountsByURL: [String: Int] = [:]
     private static var events: [TransportEvent] = []
+    /// Requests started but not yet recorded. Every `startLoading` is balanced by exactly one
+    /// `record`, so zero means the transport is quiescent.
+    private static var inFlightCount = 0
 
     static let chunkSize = 16 * 1024
 
@@ -139,6 +73,22 @@ final class SimulatedTransportURLProtocol: URLProtocol {
             self.mode = nil
             self.events = []
         }
+    }
+
+    /// Blocks until every started request has recorded its event (or the timeout passes).
+    /// Launch measurements stop at offerings delivery, but trailing requests from the same
+    /// launch (e.g. the warm config 204 finishing after offerings) still belong to the
+    /// iteration's accounting, so callers wait for quiescence before draining.
+    @discardableResult
+    static func waitUntilIdle(timeoutMs: Int = 10_000) -> Bool {
+        let deadline = DispatchTime.now() + .milliseconds(timeoutMs)
+        while DispatchTime.now() < deadline {
+            if self.lock.withLock({ self.inFlightCount }) == 0 {
+                return true
+            }
+            usleep(2_000)
+        }
+        return self.lock.withLock { self.inFlightCount } == 0
     }
 
     /// Returns all events recorded since the last drain, oldest first.
@@ -184,11 +134,22 @@ final class SimulatedTransportURLProtocol: URLProtocol {
             return
         }
 
+        let iteration = Self.lock.withLock { () -> Int in
+            Self.inFlightCount += 1
+            return Self.iterationIndex
+        }
         switch mode {
         case let .simulated(server, profile, loss):
-            self.startSimulated(url: url, server: server, profile: profile, loss: loss, startedAt: started)
+            self.startSimulated(
+                url: url,
+                server: server,
+                profile: profile,
+                loss: loss,
+                iteration: iteration,
+                startedAt: started
+            )
         case .passthrough:
-            self.startPassthrough(url: url, startedAt: started)
+            self.startPassthrough(url: url, iteration: iteration, startedAt: started)
         }
     }
 
@@ -209,11 +170,13 @@ final class SimulatedTransportURLProtocol: URLProtocol {
 
 private extension SimulatedTransportURLProtocol {
 
+    // swiftlint:disable:next function_parameter_count
     func startSimulated(
         url: URL,
         server: FixtureServer,
         profile: NetworkProfile,
         loss: LossModel,
+        iteration: Int,
         startedAt: DispatchTime
     ) {
         let bodyData = Self.bodyData(of: self.request)
@@ -231,13 +194,14 @@ private extension SimulatedTransportURLProtocol {
         let plan = Self.requestPlan(key: key, bodyCount: response.body.count, profile: profile, loss: loss)
 
         if plan.fails {
-            self.deliverFailure(url: url, rttMs: plan.rttMs, startedAt: startedAt)
+            self.deliverFailure(url: url, iteration: iteration, rttMs: plan.rttMs, startedAt: startedAt)
         } else {
             self.deliverResponse(
                 response,
                 url: url,
                 profile: profile,
                 plan: (plan.rttMs, plan.chunkDelaysMs),
+                iteration: iteration,
                 startedAt: startedAt
             )
         }
@@ -251,20 +215,22 @@ private extension SimulatedTransportURLProtocol {
 
     /// One retransmission-timeout's worth of waiting before the failure surfaces, so failed
     /// attempts cost time like they do on a real link.
-    func deliverFailure(url: URL, rttMs: Double, startedAt: DispatchTime) {
+    func deliverFailure(url: URL, iteration: Int, rttMs: Double, startedAt: DispatchTime) {
         let rtoMs = max(1_000, rttMs * 2)
         self.schedule(afterMs: rtoMs) { [weak self] in
             guard let self else { return }
-            Self.record(.failure(url: url, startedAt: startedAt))
+            Self.record(.failure(url: url, iteration: iteration, startedAt: startedAt))
             self.client?.urlProtocol(self, didFailWithError: URLError(.timedOut))
         }
     }
 
+    // swiftlint:disable:next function_parameter_count
     func deliverResponse(
         _ response: FixtureServer.Response,
         url: URL,
         profile: NetworkProfile,
         plan: (rttMs: Double, chunkDelaysMs: [Double]),
+        iteration: Int,
         startedAt: DispatchTime
     ) {
         guard let httpResponse = HTTPURLResponse(
@@ -273,6 +239,7 @@ private extension SimulatedTransportURLProtocol {
             httpVersion: "HTTP/1.1",
             headerFields: response.headers
         ) else {
+            Self.record(.failure(url: url, iteration: iteration, startedAt: startedAt))
             self.client?.urlProtocol(
                 self,
                 didFailWithError: BenchmarkError.invalidFixture("Could not create fixture HTTP response")
@@ -308,6 +275,7 @@ private extension SimulatedTransportURLProtocol {
             guard let self else { return }
             Self.record(.success(
                 url: url,
+                iteration: iteration,
                 statusCode: response.statusCode,
                 bytesReceived: response.body.count,
                 startedAt: startedAt
@@ -331,6 +299,7 @@ extension SimulatedTransportURLProtocol {
     static func record(_ event: TransportEvent) {
         self.lock.withLock {
             self.events.append(event)
+            self.inFlightCount -= 1
         }
     }
 

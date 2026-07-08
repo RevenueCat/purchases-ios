@@ -8,7 +8,7 @@ final class BenchmarkRunnerValidationTests: BenchmarkTestCase {
         let start = DispatchTime.now()
         return statuses.compactMap { status in
             guard let url = URL(string: "https://\(host)\(path)") else { return nil }
-            return TransportEvent(kind: RequestKind(url: url), host: host, path: path,
+            return TransportEvent(kind: RequestKind(url: url), iteration: 0, host: host, path: path,
                                   statusCode: status, bytesReceived: 0,
                                   startedAt: start, endedAt: start, failed: false)
         }

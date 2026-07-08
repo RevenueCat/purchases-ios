@@ -114,6 +114,7 @@ private extension BenchmarkRunner {
         )
         stack.clearAllDiskState()
         _ = try self.launch(stack, appUserID: self.baseAppUserID)
+        SimulatedTransportURLProtocol.waitUntilIdle()
         _ = SimulatedTransportURLProtocol.drainEvents()
     }
 
@@ -129,27 +130,42 @@ private extension BenchmarkRunner {
         }
         _ = SimulatedTransportURLProtocol.drainEvents()
 
-        let totalMs = try self.launch(stack, appUserID: appUserID)
+        let totalMs: Double
+        do {
+            totalMs = try self.launch(stack, appUserID: appUserID)
+        } catch {
+            // Quiet the failed stack so its in-flight work stops churning; any straggler
+            // events it still produces carry this iteration's stamp and are filtered out of
+            // later measurements below.
+            stack.remoteConfigManager?.close()
+            throw error
+        }
 
-        return IterationMeasurement(
-            totalMs: totalMs,
-            events: SimulatedTransportURLProtocol.drainEvents()
-        )
+        // The clock stopped at offerings delivery, but trailing requests from this launch
+        // (e.g. the warm config 204 that finishes after offerings, matching production order)
+        // still belong to this iteration's accounting: wait for quiescence, then keep only
+        // this iteration's events so stragglers from earlier launches can't inflate the row.
+        SimulatedTransportURLProtocol.waitUntilIdle()
+        let events = SimulatedTransportURLProtocol.drainEvents().filter { $0.iteration == iteration }
+        return IterationMeasurement(totalMs: totalMs, events: events)
     }
 
     /// One simulated launch; returns start-to-offerings-delivered wall time in milliseconds.
     /// Runs off the main thread; the offerings completion is delivered on the main queue, which
     /// `BenchmarkMain` keeps pumping via `dispatchMain()`.
     ///
-    /// The offerings fetch is kicked BEFORE the remote config refresh, matching
-    /// `Purchases.updateAllCaches` exactly: both land on the same serial backend queue and the
-    /// same single-connection host pool, so enqueue order shapes the measured serialization.
+    /// This calls the exact pair `Purchases.updateAllCaches` calls, in the same order:
+    /// `updateOfferingsCache` (which enqueues the offerings operation synchronously, before
+    /// this method moves on) and then `refreshRemoteConfig`. Both land on the same serial
+    /// backend queue and single-connection host pool, so enqueue order shapes the measured
+    /// serialization; using `offerings(appUserID:)` instead would hop through the main actor
+    /// first and let the config request race ahead.
     func launch(_ stack: BenchmarkSDKStack, appUserID: String) throws -> Double {
         let start = DispatchTime.now()
 
         let semaphore = DispatchSemaphore(value: 0)
         let failure = Atomic<OfferingsManager.Error?>(nil)
-        stack.offeringsManager.offerings(appUserID: appUserID) { result in
+        stack.offeringsManager.updateOfferingsCache(appUserID: appUserID, isAppBackgrounded: false) { result in
             if case let .failure(error) = result {
                 failure.value = error
             }

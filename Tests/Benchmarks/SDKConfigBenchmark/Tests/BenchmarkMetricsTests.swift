@@ -121,7 +121,7 @@ final class BenchmarkMetricsTests: BenchmarkTestCase {
             failed: Bool = false
         ) throws -> TransportEvent {
             let url = try XCTUnwrap(URL(string: "https://\(host)\(path)"))
-            return TransportEvent(kind: RequestKind(url: url), host: host, path: path,
+            return TransportEvent(kind: RequestKind(url: url), iteration: 0, host: host, path: path,
                                   statusCode: status, bytesReceived: 100,
                                   startedAt: time(startMs), endedAt: time(endMs), failed: failed)
         }

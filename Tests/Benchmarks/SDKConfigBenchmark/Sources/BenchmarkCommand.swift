@@ -195,6 +195,11 @@ struct BenchmarkCommand {
         if self.apiKey == Self.defaultSimulatedAPIKey {
             self.apiKey = BenchmarkProject.testStoreAPIKey
         }
+
+        // Fixture-size knobs don't shape live payloads (the pinned project's real content
+        // does), so rows carry 0 rather than a fixture size that was never measured.
+        self.paywallCount = 0
+        self.workflowCount = 0
     }
 
 }

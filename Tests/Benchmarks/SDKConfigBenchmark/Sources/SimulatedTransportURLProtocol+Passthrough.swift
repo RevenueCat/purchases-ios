@@ -16,7 +16,7 @@ extension SimulatedTransportURLProtocol {
     }()
     static var passthroughBlobSession: URLSession = .shared
 
-    func startPassthrough(url: URL, startedAt: DispatchTime) {
+    func startPassthrough(url: URL, iteration: Int, startedAt: DispatchTime) {
         let session: URLSession
         switch RequestKind(url: url) {
         case .offerings, .config: session = Self.passthroughAPISession
@@ -27,12 +27,13 @@ extension SimulatedTransportURLProtocol {
             guard let self else { return }
 
             if error != nil {
-                Self.record(.failure(url: url, startedAt: startedAt))
+                Self.record(.failure(url: url, iteration: iteration, startedAt: startedAt))
                 self.client?.urlProtocol(self, didFailWithError: error ?? URLError(.unknown))
                 return
             }
 
             guard let httpResponse = response as? HTTPURLResponse else {
+                Self.record(.failure(url: url, iteration: iteration, startedAt: startedAt))
                 self.client?.urlProtocol(
                     self,
                     didFailWithError: BenchmarkError.backendFailure("non-HTTP response from \(url.host ?? "")")
@@ -42,6 +43,7 @@ extension SimulatedTransportURLProtocol {
 
             Self.record(.success(
                 url: url,
+                iteration: iteration,
                 statusCode: httpResponse.statusCode,
                 bytesReceived: data?.count ?? 0,
                 startedAt: startedAt

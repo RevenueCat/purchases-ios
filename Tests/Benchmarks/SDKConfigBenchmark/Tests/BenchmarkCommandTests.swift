@@ -83,6 +83,14 @@ final class BenchmarkCommandTests: BenchmarkTestCase {
         XCTAssertEqual(command.apiKey, BenchmarkProject.testStoreAPIKey)
     }
 
+    func testLiveTransportZeroesFixtureSizeKnobs() throws {
+        let command = try BenchmarkCommand.parse(["--transport", "live", "--paywalls", "500", "--workflows", "500"])
+
+        // Live payloads come from the pinned project, so fixture sizes must not label the row.
+        XCTAssertEqual(command.paywallCount, 0)
+        XCTAssertEqual(command.workflowCount, 0)
+    }
+
     func testLiveTransportKeepsExplicitAPIKey() throws {
         let command = try BenchmarkCommand.parse(["--transport", "live", "--api-key", "appl_other"])
 
