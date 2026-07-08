@@ -61,7 +61,7 @@ protocol RemoteConfigManagerType: AnyObject {
     /// If the topic is invalidated (e.g. an identity change) while waiting on its blobs, this re-reads
     /// and waits again on the new snapshot's own prefetch refs rather than returning one paired with
     /// stale blob-wait results.
-    func awaitTopicReady(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic?
+    func awaitTopicAndPrefetchBlobsReady(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic?
 
     func clearCache()
     func close()
@@ -70,7 +70,7 @@ protocol RemoteConfigManagerType: AnyObject {
 
 extension RemoteConfigManagerType {
 
-    func awaitTopicReady(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+    func awaitTopicAndPrefetchBlobsReady(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
         guard var committed = await self.topic(topic) else { return nil }
 
         while true {
