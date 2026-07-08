@@ -26,7 +26,7 @@ class OfferingsManager {
     private let productsManager: ProductsManagerType
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
-    // Nil when the workflows endpoint is disabled, in which case offerings delivery is unchanged.
+    // Nil when remote config is disabled, in which case offerings delivery is unchanged.
     private let remoteConfigManager: RemoteConfigManagerType?
 
     init(deviceCache: DeviceCache,

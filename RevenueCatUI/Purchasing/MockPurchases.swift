@@ -33,6 +33,7 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
     let preferredLocales: [String]
     let preferredLocaleOverride: String?
     var isUIPreviewMode = false
+    var remoteConfigEnabled = false
 
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return _purchasesAreCompletedBy }
@@ -173,6 +174,7 @@ extension PaywallPurchasesType {
         mapped.cachedOfferings = self.cachedOfferings
         mapped.offeringsBlock = { try await self.offerings() }
         mapped.isUIPreviewMode = self.isUIPreviewMode
+        mapped.remoteConfigEnabled = self.remoteConfigEnabled
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
         mapped.trackWorkflowEventBlock = { await self.track(workflowEvent: $0) }
@@ -202,6 +204,7 @@ extension PaywallPurchasesType {
         mapped.cachedOfferings = self.cachedOfferings
         mapped.offeringsBlock = { try await self.offerings() }
         mapped.isUIPreviewMode = self.isUIPreviewMode
+        mapped.remoteConfigEnabled = self.remoteConfigEnabled
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
         mapped.trackWorkflowEventBlock = { await self.track(workflowEvent: $0) }

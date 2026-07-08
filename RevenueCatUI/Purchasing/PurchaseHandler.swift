@@ -64,6 +64,12 @@ final class PurchaseHandler: ObservableObject {
         return purchases.preferredLocaleOverride.map(Locale.init)
     }
 
+    /// Whether remote config (and, with it, paywall workflows) is enabled. The single gate for both:
+    /// they ship together, so there's no separate workflows switch.
+    var remoteConfigEnabled: Bool {
+        return purchases.remoteConfigEnabled
+    }
+
     /// Whether a purchase is currently in progress
     @Published
     var packageBeingPurchased: Package?
@@ -292,26 +298,26 @@ extension PurchaseHandler {
 
     func cachedInitialOffering(for content: PaywallViewConfiguration.Content) -> Offering? {
 #if !os(tvOS)
-        let workflowsEndpointEnabled = ProcessInfo.processInfo.workflowsEndpointEnabled
+        let remoteConfigEnabled = self.remoteConfigEnabled
 #else
         // The workflows endpoint isn't available on tvOS, so always fall through to the cached switch.
-        let workflowsEndpointEnabled = false
+        let remoteConfigEnabled = false
 #endif
 
-        return self.cachedInitialOffering(for: content, workflowsEndpointEnabled: workflowsEndpointEnabled)
+        return self.cachedInitialOffering(for: content, remoteConfigEnabled: remoteConfigEnabled)
     }
 
-    // Exposes the workflow flag so tests can cover both states deterministically without relying on the
-    // `-EnableWorkflowsEndpoint` launch argument being present in the scheme.
+    // Exposes the gate so tests can cover both states deterministically without depending on
+    // ENABLE_REMOTE_CONFIG being compiled in for the test target.
     func cachedInitialOffering(
         for content: PaywallViewConfiguration.Content,
-        workflowsEndpointEnabled: Bool
+        remoteConfigEnabled: Bool
     ) -> Offering? {
         // The passed/cached offering alone can't drive a workflow paywall: under workflows the
         // rendered offering is the workflow screen's offering with its workflow-mapped components,
         // and it needs a WorkflowContext the offering doesn't carry. There is no synchronous seed for
         // a workflow paywall, so this overload returns nil and the async resolve path always runs.
-        if workflowsEndpointEnabled {
+        if remoteConfigEnabled {
             return nil
         }
 
@@ -383,13 +389,13 @@ extension PurchaseHandler {
     ) async throws -> ResolvedPaywallViewData {
         return try await self.resolvePaywallViewData(
             for: content,
-            workflowsEndpointEnabled: ProcessInfo.processInfo.workflowsEndpointEnabled
+            remoteConfigEnabled: self.remoteConfigEnabled
         )
     }
 
     func resolvePaywallViewData(
         for content: PaywallViewConfiguration.Content,
-        workflowsEndpointEnabled: Bool
+        remoteConfigEnabled: Bool
     ) async throws -> ResolvedPaywallViewData {
         switch content {
         case let .offering(offering):
@@ -397,7 +403,7 @@ extension PurchaseHandler {
             return try await self.resolvePaywallViewData(
                 for: offering,
                 offerings: nil,
-                workflowsEndpointEnabled: workflowsEndpointEnabled
+                remoteConfigEnabled: remoteConfigEnabled
             )
         case .defaultOffering:
             let offerings = try await self.purchases.offerings()
@@ -405,7 +411,7 @@ extension PurchaseHandler {
             return try await self.resolvePaywallViewData(
                 for: offering,
                 offerings: offerings,
-                workflowsEndpointEnabled: workflowsEndpointEnabled
+                remoteConfigEnabled: remoteConfigEnabled
             )
         case let .offeringIdentifier(identifier, presentedOfferingContext):
             let offerings = try await self.purchases.offerings()
@@ -423,7 +429,7 @@ extension PurchaseHandler {
             return try await self.resolvePaywallViewData(
                 for: resolvedOffering,
                 offerings: offerings,
-                workflowsEndpointEnabled: workflowsEndpointEnabled
+                remoteConfigEnabled: remoteConfigEnabled
             )
         }
     }
@@ -442,9 +448,9 @@ extension PurchaseHandler {
     private func resolvePaywallViewData(
         for offering: Offering,
         offerings: Offerings?,
-        workflowsEndpointEnabled: Bool
+        remoteConfigEnabled: Bool
     ) async throws -> ResolvedPaywallViewData {
-        guard workflowsEndpointEnabled, offering.paywall == nil else {
+        guard remoteConfigEnabled, offering.paywall == nil else {
             return .init(offering: offering, workflowContext: nil)
         }
 
@@ -457,7 +463,7 @@ extension PurchaseHandler {
         return .init(offering: context.initialOffering, workflowContext: context)
     }
 
-    // Callers gate on workflowsEndpointEnabled before reaching this point, so this assumes
+    // Callers gate on remoteConfigEnabled before reaching this point, so this assumes
     // workflows are enabled and always resolves against the workflow endpoint.
     func resolveWorkflowContext(
         identifier: String,
@@ -891,6 +897,8 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     var preferredLocaleOverride: String? { nil }
 
     var isUIPreviewMode: Bool { false }
+
+    var remoteConfigEnabled: Bool { false }
 
     var subscriptionHistoryTracker: RevenueCat.SubscriptionHistoryTracker {
         SubscriptionHistoryTracker()

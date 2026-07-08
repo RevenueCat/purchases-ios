@@ -576,10 +576,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             paywallCache = nil
         }
 
-        if systemInfo.workflowsEnabledWithoutRemoteConfig {
-            Logger.warn(Strings.remoteConfig.workflowsEnabledWithoutRemoteConfig)
-        }
-
         let workflowManager = WorkflowManager(
             workflowsConfigProvider: WorkflowsConfigProvider(manager: remoteConfigManager),
             paywallCache: paywallCache,
@@ -593,8 +589,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 offeringsFactory: offeringsFactory,
                                                 productsManager: productsManager,
                                                 diagnosticsTracker: diagnosticsTracker,
-                                                remoteConfigManager: systemInfo.workflowsEndpointEnabled
-                                                && systemInfo.remoteConfigEnabled
+                                                remoteConfigManager: systemInfo.remoteConfigEnabled
                                                 ? remoteConfigManager
                                                 : nil)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
@@ -2400,6 +2395,13 @@ extension Purchases {
     // swiftlint:disable missing_docs
     @_spi(Internal) public var preferredLocaleOverride: String? {
         return self.systemInfo.preferredLocaleOverride
+    }
+
+    // Exposes the single workflows + remote config gate to RevenueCatUI, which can't see the
+    // ENABLE_REMOTE_CONFIG compile flag directly.
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public var remoteConfigEnabled: Bool {
+        return self.systemInfo.remoteConfigEnabled
     }
 
     // swiftlint:disable missing_docs

@@ -115,8 +115,13 @@ public class PaywallViewController: UIViewController {
 
     // MARK: - Testing Hooks
 
-    /// Settable in tests to simulate workflows being enabled without a scheme launch argument.
-    var workflowsEndpointEnabled: Bool = ProcessInfo.processInfo.workflowsEndpointEnabled
+    /// Settable in tests to simulate remote config being enabled without a build flag.
+    var remoteConfigEnabledForTesting: Bool?
+
+    /// Whether remote config (and, with it, paywall workflows) is enabled.
+    private var remoteConfigEnabled: Bool {
+        return self.remoteConfigEnabledForTesting ?? self.purchaseHandler.remoteConfigEnabled
+    }
 
     var exitOfferOfferingForTesting: Offering? { self.exitOfferOffering }
 
@@ -437,7 +442,7 @@ public class PaywallViewController: UIViewController {
     private func prefetchExitOffer() async {
         // Under workflows the exit offer comes from the embedded paywall (see updateWorkflowExitOffer),
         // so skip this legacy prefetch.
-        guard !self.workflowsEndpointEnabled else { return }
+        guard !self.remoteConfigEnabled else { return }
 
         guard let offering = await self.purchaseHandler.resolveOffering(for: self.configuration.content) else {
             return
@@ -449,7 +454,7 @@ public class PaywallViewController: UIViewController {
     /// surface it. Render-dependent, so verified manually like `prefetchExitOffer`.
     private func updateWorkflowExitOffer(_ offering: Offering?) {
         // The legacy prefetch owns the offer when workflows are off; don't clobber it.
-        guard self.workflowsEndpointEnabled else { return }
+        guard self.remoteConfigEnabled else { return }
 
         // Keep the offer once we're presenting it, even if a late nil arrives mid-dismiss.
         guard offering != nil || !self.isShowingExitOffer else { return }

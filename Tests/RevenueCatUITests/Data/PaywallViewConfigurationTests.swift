@@ -19,7 +19,7 @@ import XCTest
 final class PaywallViewConfigurationTests: TestCase {
 
 #if !os(tvOS)
-    func testCachedInitialOfferingReturnsNilForAllContentWhenWorkflowsEndpointEnabled() {
+    func testCachedInitialOfferingReturnsNilForAllContentWhenRemoteConfigEnabled() {
         let cachedOffering = TestData.offeringWithNoIntroOffer
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)
@@ -31,19 +31,19 @@ final class PaywallViewConfigurationTests: TestCase {
 
         expect(handler.cachedInitialOffering(
             for: .offering(cachedOffering),
-            workflowsEndpointEnabled: true
+            remoteConfigEnabled: true
         )).to(beNil())
         expect(handler.cachedInitialOffering(
             for: .defaultOffering,
-            workflowsEndpointEnabled: true
+            remoteConfigEnabled: true
         )).to(beNil())
         expect(handler.cachedInitialOffering(
             for: .offeringIdentifier(cachedOffering.identifier, presentedOfferingContext: nil),
-            workflowsEndpointEnabled: true
+            remoteConfigEnabled: true
         )).to(beNil())
     }
 
-    func testCachedInitialOfferingUsesCachedOfferingsWhenWorkflowsEndpointDisabled() {
+    func testCachedInitialOfferingUsesCachedOfferingsWhenRemoteConfigDisabled() {
         let cachedOffering = TestData.offeringWithNoIntroOffer
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)
@@ -55,19 +55,19 @@ final class PaywallViewConfigurationTests: TestCase {
 
         expect(handler.cachedInitialOffering(
             for: .offering(cachedOffering),
-            workflowsEndpointEnabled: false
+            remoteConfigEnabled: false
         )) === cachedOffering
         expect(handler.cachedInitialOffering(
             for: .defaultOffering,
-            workflowsEndpointEnabled: false
+            remoteConfigEnabled: false
         )?.identifier) == cachedOffering.identifier
         expect(handler.cachedInitialOffering(
             for: .offeringIdentifier(cachedOffering.identifier, presentedOfferingContext: nil),
-            workflowsEndpointEnabled: false
+            remoteConfigEnabled: false
         )?.identifier) == cachedOffering.identifier
     }
 
-    func testResolvePaywallViewDataReturnsNilWorkflowContextWhenWorkflowsEndpointDisabled() async throws {
+    func testResolvePaywallViewDataReturnsNilWorkflowContextWhenRemoteConfigDisabled() async throws {
         let initialOffering = Self.createOffering(identifier: "offering_a")
             .withPresentedOfferingContext(Self.createPresentedOfferingContext(offeringIdentifier: "offering_a"))
         let purchases = Self.createMockPurchases()
@@ -80,21 +80,21 @@ final class PaywallViewConfigurationTests: TestCase {
             )
         }
         purchases.workflowBlock = { _ in
-            XCTFail("Workflow endpoint should not be fetched when workflowsEndpointEnabled is false")
+            XCTFail("Workflow endpoint should not be fetched when remoteConfigEnabled is false")
             throw ErrorCode.configurationError
         }
 
         let offeringResult = try await handler.resolvePaywallViewData(
             for: .offering(initialOffering),
-            workflowsEndpointEnabled: false
+            remoteConfigEnabled: false
         )
         let defaultOfferingResult = try await handler.resolvePaywallViewData(
             for: .defaultOffering,
-            workflowsEndpointEnabled: false
+            remoteConfigEnabled: false
         )
         let offeringIdentifierResult = try await handler.resolvePaywallViewData(
             for: .offeringIdentifier(initialOffering.identifier, presentedOfferingContext: nil),
-            workflowsEndpointEnabled: false
+            remoteConfigEnabled: false
         )
 
         expect(offeringResult.offering.identifier) == initialOffering.identifier
@@ -123,7 +123,7 @@ final class PaywallViewConfigurationTests: TestCase {
 
         let result = try await handler.resolvePaywallViewData(
             for: .offering(initialOffering),
-            workflowsEndpointEnabled: true
+            remoteConfigEnabled: true
         )
 
         expect(result.offering.identifier) == workflowOffering.identifier
@@ -159,7 +159,7 @@ final class PaywallViewConfigurationTests: TestCase {
 
         let result = try await handler.resolvePaywallViewData(
             for: .defaultOffering,
-            workflowsEndpointEnabled: true
+            remoteConfigEnabled: true
         )
 
         expect(result.offering.identifier) == workflowOffering.identifier
@@ -190,7 +190,7 @@ final class PaywallViewConfigurationTests: TestCase {
 
         let result = try await handler.resolvePaywallViewData(
             for: .offeringIdentifier(initialOffering.identifier, presentedOfferingContext: presentedOfferingContext),
-            workflowsEndpointEnabled: true
+            remoteConfigEnabled: true
         )
 
         expect(result.offering.identifier) == workflowOffering.identifier
@@ -221,7 +221,7 @@ final class PaywallViewConfigurationTests: TestCase {
         do {
             _ = try await handler.resolvePaywallViewData(
                 for: .offering(initialOffering),
-                workflowsEndpointEnabled: true
+                remoteConfigEnabled: true
             )
             XCTFail("Expected resolvePaywallViewData to throw")
         } catch let PaywallError.offeringNotFound(identifier) {
@@ -246,7 +246,7 @@ final class PaywallViewConfigurationTests: TestCase {
 
         let result = try await handler.resolvePaywallViewData(
             for: .offering(offering),
-            workflowsEndpointEnabled: true
+            remoteConfigEnabled: true
         )
 
         expect(result.offering.identifier) == offering.identifier
@@ -268,7 +268,7 @@ final class PaywallViewConfigurationTests: TestCase {
 
         let result = try await handler.resolvePaywallViewData(
             for: .defaultOffering,
-            workflowsEndpointEnabled: true
+            remoteConfigEnabled: true
         )
 
         expect(result.offering.identifier) == offering.identifier
@@ -291,7 +291,7 @@ final class PaywallViewConfigurationTests: TestCase {
 
         let result = try await handler.resolvePaywallViewData(
             for: .offeringIdentifier(offering.identifier, presentedOfferingContext: presentedOfferingContext),
-            workflowsEndpointEnabled: true
+            remoteConfigEnabled: true
         )
 
         expect(result.offering.identifier) == offering.identifier
