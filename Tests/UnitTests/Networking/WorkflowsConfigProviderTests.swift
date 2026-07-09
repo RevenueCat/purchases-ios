@@ -50,12 +50,18 @@ class WorkflowsConfigProviderTests: TestCase {
             workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: ["offeringIdentifier": "premium_annual"])],
             uiConfig: [
                 "app": .init(blobRef: "app-ref", content: [:]),
-                "localizations": .init(blobRef: "loc-ref", content: [:])
+                "localizations": .init(blobRef: "loc-ref", content: [:]),
+                "variable_config": .init(blobRef: "variable-config-ref", content: [:]),
+                "custom_variables": .init(blobRef: "custom-variables-ref", content: [:])
             ],
             blobs: [
                 "wf-1-ref": workflowJSON,
                 "app-ref": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
-                "loc-ref": Data(#"{}"#.utf8)
+                "loc-ref": Data(#"{}"#.utf8),
+                "variable-config-ref": Data(
+                    #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.utf8
+                ),
+                "custom-variables-ref": Data(#"{}"#.utf8)
             ]
         )
 
@@ -90,12 +96,18 @@ class WorkflowsConfigProviderTests: TestCase {
             workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: [:])],
             uiConfig: [
                 "app": .init(blobRef: "app-ref", content: [:]),
-                "localizations": .init(blobRef: "loc-ref", content: [:])
+                "localizations": .init(blobRef: "loc-ref", content: [:]),
+                "variable_config": .init(blobRef: "variable-config-ref", content: [:]),
+                "custom_variables": .init(blobRef: "custom-variables-ref", content: [:])
             ],
             blobs: [
                 "wf-1-ref": workflowJSON,
                 "app-ref": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
-                "loc-ref": Data(#"{"en_US": {"day": "Day"}}"#.utf8)
+                "loc-ref": Data(#"{"en_US": {"day": "Day"}}"#.utf8),
+                "variable-config-ref": Data(
+                    #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.utf8
+                ),
+                "custom-variables-ref": Data(#"{}"#.utf8)
             ]
         )
 
@@ -116,12 +128,18 @@ class WorkflowsConfigProviderTests: TestCase {
             workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: [:])],
             uiConfig: [
                 "app": .init(blobRef: "app-ref", content: [:]),
-                "localizations": .init(blobRef: "loc-ref", content: [:])
+                "localizations": .init(blobRef: "loc-ref", content: [:]),
+                "variable_config": .init(blobRef: "variable-config-ref", content: [:]),
+                "custom_variables": .init(blobRef: "custom-variables-ref", content: [:])
             ],
             blobs: [
                 "wf-1-ref": workflowJSON,
                 "app-ref": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
-                "loc-ref": Data(#"{}"#.utf8)
+                "loc-ref": Data(#"{}"#.utf8),
+                "variable-config-ref": Data(
+                    #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.utf8
+                ),
+                "custom-variables-ref": Data(#"{}"#.utf8)
             ]
         )
 
