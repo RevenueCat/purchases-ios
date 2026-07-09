@@ -118,6 +118,20 @@ custom_rules:
       - "AdapterSDKs/RevenueCatAdMob/Sources/.*\\.swift"
     regex: '(?s)(?<!@_spi\(Internal\)\s)\bpublic\s+(?:indirect\s+)?enum\s+[A-Z]'
 
+  no_hardcoded_logger_strings:
+    included:
+      - "Sources/.*\\.swift"
+      - "RevenueCatUI/.*\\.swift"
+    excluded:
+      - Sources/Logging/Logger.swift
+      - Sources/Logging/Strings/
+    name: "No hardcoded Logger strings"
+    regex: 'Logger\.\w+\(\s*"'
+    match_kinds:
+      - identifier
+    message: "Use a *Strings.swift enum case instead of an inline string literal (see Sources/Logging/Strings/)."
+    severity: warning
+
   no_leaking_rules_engine_internal_import:
     included: ".*\\.swift"
     name: "No leaking `import RulesEngineInternal`"
