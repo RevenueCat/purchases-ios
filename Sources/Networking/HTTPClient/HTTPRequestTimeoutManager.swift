@@ -10,103 +10,121 @@ import Foundation
 
 protocol HTTPRequestTimeoutManagerType {
 
-    /// Determines the timeout to be used by the HTTP Request for the given path.
+    /// Determines the timeout to be used by an HTTP request attempt.
     ///
     /// - Parameters:
-    ///   - isFallback: Whether this is a fallback request
-    ///   - fallbackAvailable: Whether fallback URLs are available for this request
-    /// - Returns: The timeout interval in seconds
-    func timeout(isFallback: Bool, fallbackAvailable: Bool) -> TimeInterval
+    ///   - host: The resolved host string of the attempt, used to look up the per-host fail-fast memory.
+    ///   - isFallbackHostRequest: Whether this attempt targets a fallback host.
+    ///   - endpointSupportsFallbackURLs: Whether the endpoint has fallback-URL support.
+    ///   - isProxied: Whether a proxy URL is set.
+    /// - Returns: The timeout interval in seconds.
+    func timeout(host: String?,
+                 isFallbackHostRequest: Bool,
+                 endpointSupportsFallbackURLs: Bool,
+                 isProxied: Bool) -> TimeInterval
 
-    /// Updates the internal state in response to the result received from the backend.
+    /// Updates the internal state in response to the result of an HTTP request attempt.
     ///
-    /// - Parameter result: The result of the HTTP request
-    func recordRequestResult(_ result: HTTPRequestTimeoutManager.RequestResult)
+    /// - Parameters:
+    ///   - host: The resolved host string of the attempt.
+    ///   - result: The result of the HTTP request.
+    func recordRequestResult(host: String?, _ result: HTTPRequestTimeoutManager.RequestResult)
 }
 
 class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
 
     enum RequestResult {
 
-        /// Request succeeded on the main backend
+        /// Request succeeded on the main source.
         case successOnMainBackend
 
-        /// Request timed out on the main backend endpoint and supports fallback URLs
-        case timeoutOnMainBackendForFallbackSupportedEndpoint
+        /// Request timed out on the main source.
+        case mainSourceTimedOut
 
-        /// Any other result (non-main backend, non-timeout errors, etc.)
+        /// Any other result (fallback-host request, non-timeout errors, etc.)
         case other
     }
 
-    enum Timeout: TimeInterval {
+    /// Timeout tiers, in seconds, for a main-source request. Fallback-host and proxied requests use
+    /// ``flatTimeout`` instead.
+    enum Timeout {
 
-        /// The default timeout for backend requests that support a fallback
-        case mainBackendRequestSupportingFallback = 5
+        /// Main-source request to an endpoint with no fallback-URL support.
+        static let mainSourceNoFallback: TimeInterval = 15
 
-        /// The reduced timeout for requests with fallback support after timeout
-        case reduced = 2
+        /// Main-source request to an endpoint with no fallback-URL support, when the source recently timed out.
+        static let mainSourceNoFallbackReduced: TimeInterval = 5
+
+        /// Main-source request to an endpoint with fallback-URL support.
+        static let mainSourceSupportingFallback: TimeInterval = 5
+
+        /// Main-source request to an endpoint with fallback-URL support, when the source recently timed out.
+        static let mainSourceSupportingFallbackReduced: TimeInterval = 2
     }
 
-    // The amount of time after which the 'last timeout request received' state can be reset
+    // The amount of time after which a per-host timeout entry expires.
     private static let timeoutResetInterval: TimeInterval = 600 // 10 minutes
 
-    // The last time at which a timeout was received from the main backend
-    private var lastTimeoutRequestTime: Date?
+    // The last time a timeout was recorded, keyed by resolved host string. Guarded by `lock`.
+    private var lastTimeoutByHost: [String: Date] = [:]
 
-    // The default timeout to use
-    private let defaultTimeout: TimeInterval
+    // The flat timeout used for fallback-host and proxied requests. Injected only as a test seam.
+    private let flatTimeout: TimeInterval
 
     private let dateProvider: DateProvider
+    private let lock = Lock()
 
     init(
-        defaultTimeout: TimeInterval,
+        flatTimeout: TimeInterval = 30,
         dateProvider: DateProvider = .init()
     ) {
-        self.defaultTimeout = defaultTimeout
+        self.flatTimeout = flatTimeout
         self.dateProvider = dateProvider
     }
 
-    func timeout(isFallback: Bool, fallbackAvailable: Bool) -> TimeInterval {
-        if shouldResetTimeout {
-            resetLastTimeoutRequestTime()
+    func timeout(host: String?,
+                 isFallbackHostRequest: Bool,
+                 endpointSupportsFallbackURLs: Bool,
+                 isProxied: Bool) -> TimeInterval {
+        // Fallback-host and proxied requests use a flat timeout and never consult the per-host memory.
+        guard !isFallbackHostRequest, !isProxied else {
+            return self.flatTimeout
         }
 
-        let timeout: TimeInterval
+        let sourceRecentlyTimedOut = host.map { self.hasRecentTimeout(forHost: $0) } ?? false
 
-        if isFallback || !fallbackAvailable {
-            timeout = self.defaultTimeout
+        switch (endpointSupportsFallbackURLs, sourceRecentlyTimedOut) {
+        case (true, false): return Timeout.mainSourceSupportingFallback
+        case (true, true): return Timeout.mainSourceSupportingFallbackReduced
+        case (false, false): return Timeout.mainSourceNoFallback
+        case (false, true): return Timeout.mainSourceNoFallbackReduced
         }
-        // Main backend request that supports fallback when a timeout was previously received from the main backend
-        else if lastTimeoutRequestTime != nil {
-            timeout = Timeout.reduced.rawValue
-        }
-        // Main backend request that supports fallback, no timeout received recently
-        else {
-            timeout = Timeout.mainBackendRequestSupportingFallback.rawValue
-        }
-
-        return timeout
     }
 
-    func recordRequestResult(_ result: RequestResult) {
+    func recordRequestResult(host: String?, _ result: RequestResult) {
+        guard let host else { return }
+
         switch result {
         case .successOnMainBackend:
-            resetLastTimeoutRequestTime()
-        case .timeoutOnMainBackendForFallbackSupportedEndpoint:
-            lastTimeoutRequestTime = dateProvider.now()
+            self.lock.perform { _ = self.lastTimeoutByHost.removeValue(forKey: host) }
+        case .mainSourceTimedOut:
+            self.lock.perform { self.lastTimeoutByHost[host] = self.dateProvider.now() }
         case .other:
             break
         }
     }
 
-    private func resetLastTimeoutRequestTime() {
-        lastTimeoutRequestTime = nil
-    }
+    /// Whether `host` has a non-expired timeout entry. Prunes the entry if it has expired.
+    private func hasRecentTimeout(forHost host: String) -> Bool {
+        return self.lock.perform {
+            guard let lastTimeout = self.lastTimeoutByHost[host] else { return false }
 
-    private var shouldResetTimeout: Bool {
-        guard let lastTimeoutRequestTime else { return false }
+            if self.dateProvider.now().timeIntervalSince(lastTimeout) >= Self.timeoutResetInterval {
+                self.lastTimeoutByHost.removeValue(forKey: host)
+                return false
+            }
 
-        let timeElapsed = dateProvider.now().timeIntervalSince(lastTimeoutRequestTime)
-        return timeElapsed >= Self.timeoutResetInterval
+            return true
+        }
     }
 }
