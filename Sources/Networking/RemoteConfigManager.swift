@@ -784,7 +784,7 @@ private extension RemoteConfigManager {
             postSyncTopics: postSyncTopics
         ).filter { !self.blobStore.contains(ref: $0) }
         Logger.verbose(Strings.remoteConfig.prefetchingBlobCount(refsToPrefetch.count))
-        self.blobFetcher.prefetch(refs: refsToPrefetch)
+        self.blobFetcher.prefetch(refs: Array(refsToPrefetch))
 
         return true
     }
@@ -819,32 +819,18 @@ private extension RemoteConfigManager {
     /// Returns the post-sync blob refs the SDK should proactively warm.
     ///
     /// This includes server-requested prefetch blobs plus any active-topic item whose metadata has
-    /// `prefetch: true`, matching the refs `awaitTopicAndPrefetchBlobsReady(_:)` waits on before
-    /// vending a topic to consumers that need warmed blobs.
+    /// `prefetch: true`.
     func postSyncPrefetchBlobRefs(
         response: RemoteConfiguration,
         postSyncTopics: RemoteConfiguration.Topics
-    ) -> [String] {
-        var seen: Set<String> = []
-        var refs: [String] = []
-
-        func appendIfNeeded(_ ref: String) {
-            guard seen.insert(ref).inserted else { return }
-            refs.append(ref)
+    ) -> Set<String> {
+        let itemPrefetchBlobRefs = postSyncTopics.entries.values.flatMap { topic in
+            topic.values
+                .filter(\.prefetch)
+                .compactMap(\.blobRef)
         }
 
-        response.prefetchBlobs.forEach(appendIfNeeded)
-
-        for topicName in postSyncTopics.entries.keys.sorted() {
-            guard let topic = postSyncTopics.entries[topicName] else { continue }
-
-            for itemKey in topic.keys.sorted() {
-                guard let item = topic[itemKey], item.prefetch, let ref = item.blobRef else { continue }
-                appendIfNeeded(ref)
-            }
-        }
-
-        return refs
+        return Set(response.prefetchBlobs).union(itemPrefetchBlobRefs)
     }
 
     /// Writes valid inline content elements that are referenced by this config response.

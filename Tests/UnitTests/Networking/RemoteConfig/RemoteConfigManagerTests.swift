@@ -2145,7 +2145,7 @@ final class RemoteConfigManagerTests: TestCase {
             ))
         )
 
-        expect(self.blobFetcher.invokedPrefetchRefs) == [serverPrefetchRef, itemPrefetchRef]
+        expect(Set(self.blobFetcher.invokedPrefetchRefs)) == Set([serverPrefetchRef, itemPrefetchRef])
     }
 
     func testContainerResponseDoesNotPruneBlobStoreWhenCacheWriteFails() throws {
