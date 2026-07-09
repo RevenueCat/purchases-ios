@@ -212,16 +212,29 @@ class WorkflowsConfigProviderTests: TestCase {
 
     func testResolvesAndWarnsOnDuplicateOfferingId() async throws {
         let logger = TestLogHandler(testIdentifier: self.name)
-        self.commit(workflows: [
-            "wf-a": .init(blobRef: "a-ref", content: ["offeringIdentifier": "shared"]),
-            "wf-b": .init(blobRef: "b-ref", content: ["offeringIdentifier": "shared"])
-        ])
+        let topicsJSON = """
+        {
+          "workflows": {
+            "wf-a": { "blob_ref": "a-ref", "offering_identifier": "shared" },
+            "wf-b": { "blob_ref": "b-ref", "offering_identifier": "shared" }
+          }
+        }
+        """
+        let topics = try JSONDecoder.default.decode(
+            RemoteConfiguration.Topics.self,
+            jsonData: try XCTUnwrap(topicsJSON.data(using: .utf8))
+        )
+        self.diskCache.stubbedRead = PersistedRemoteConfiguration(
+            manifest: "test-manifest",
+            activeTopics: ["workflows"],
+            topics: topics
+        )
 
         let result = await self.provider.workflowId(forOfferingId: "shared")
         let workflowId = try XCTUnwrap(result)
 
-        // Whichever the dictionary happens to iterate first, but never nil, and always logged.
-        expect(["wf-a", "wf-b"]).to(contain(workflowId))
+        // Matches Android's last-wins duplicate handling, using stable workflow-id ordering on iOS.
+        expect(workflowId) == "wf-b"
         logger.verifyMessageWasLogged("Duplicate offeringId in workflows response: shared",
                                       level: .warn,
                                       expectedCount: 1)
