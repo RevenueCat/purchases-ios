@@ -173,16 +173,12 @@ import Foundation
             forKey: .variableConfig
         ) ?? VariableConfig(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
 
-        // Try to decode custom_variables with detailed error logging
-        do {
-            self.customVariables = try container.decodeIfPresent(
-                [String: CustomVariableDefinition].self,
-                forKey: .customVariables
-            ) ?? [:]
-        } catch {
-            Logger.error(Strings.offering.ui_config_custom_variables_decode_error(error: error))
-            self.customVariables = [:]
-        }
+        // `custom_variables` was added after the other fields, so the key may be absent from older responses; fall
+        // back to an empty dictionary in that case. If the key is present but malformed, fail like any other field.
+        self.customVariables = try container.decodeIfPresent(
+            [String: CustomVariableDefinition].self,
+            forKey: .customVariables
+        ) ?? [:]
 
         // Debug logging for custom variables
         let hasCustomVariablesKey = container.contains(.customVariables)
