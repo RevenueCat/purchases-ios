@@ -70,6 +70,14 @@ final class BenchmarkCommandTests: BenchmarkTestCase {
         XCTAssertThrowsError(try BenchmarkCommand.parse(["--loss-percent", "101"]))
     }
 
+    func testParseRejectsReservedAnnotationKeys() {
+        // Annotations overwriting identity or metric fields would let a row lie about what
+        // was measured.
+        for key in ["mode", "p50_ms", "post_warmup_error_count"] {
+            XCTAssertThrowsError(try BenchmarkCommand.parse(["--annotation", "\(key)=x"]), key)
+        }
+    }
+
     // MARK: - Transport
 
     func testTransportDefaultsToSimulated() throws {

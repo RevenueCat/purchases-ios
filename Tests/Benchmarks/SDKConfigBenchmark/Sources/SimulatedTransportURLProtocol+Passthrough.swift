@@ -27,13 +27,13 @@ extension SimulatedTransportURLProtocol {
             guard let self else { return }
 
             if error != nil {
-                Self.record(.failure(url: url, iteration: iteration, startedAt: startedAt))
+                self.recordTerminal(.failure(url: url, iteration: iteration, startedAt: startedAt))
                 self.client?.urlProtocol(self, didFailWithError: error ?? URLError(.unknown))
                 return
             }
 
             guard let httpResponse = response as? HTTPURLResponse else {
-                Self.record(.failure(url: url, iteration: iteration, startedAt: startedAt))
+                self.recordTerminal(.failure(url: url, iteration: iteration, startedAt: startedAt))
                 self.client?.urlProtocol(
                     self,
                     didFailWithError: BenchmarkError.backendFailure("non-HTTP response from \(url.host ?? "")")
@@ -41,7 +41,7 @@ extension SimulatedTransportURLProtocol {
                 return
             }
 
-            Self.record(.success(
+            self.recordTerminal(.success(
                 url: url,
                 iteration: iteration,
                 statusCode: httpResponse.statusCode,

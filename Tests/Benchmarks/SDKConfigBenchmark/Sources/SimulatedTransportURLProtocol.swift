@@ -39,7 +39,25 @@ final class SimulatedTransportURLProtocol: URLProtocol {
     private let deliveryQueue = DispatchQueue(label: "com.revenuecat.benchmark.transport.request")
     private var pendingWorkItems: [DispatchWorkItem] = []
     var passthroughTask: URLSessionDataTask?
+    /// Captured at `startLoading` so a cancellation can still record this request's terminal
+    /// event (URLSession may cancel before any scheduled delivery block runs).
+    private var requestContext: (url: URL, iteration: Int, startedAt: DispatchTime)?
+    private var hasRecordedTerminalEvent = false
     let stateLock = NSLock()
+
+    /// Records the request's single terminal event. Every started request must record exactly
+    /// once (that's what balances the in-flight counter), whether it completes, fails, or is
+    /// cancelled mid-delivery.
+    func recordTerminal(_ event: TransportEvent) {
+        let isFirst = self.stateLock.withLock { () -> Bool in
+            guard !self.hasRecordedTerminalEvent else { return false }
+            self.hasRecordedTerminalEvent = true
+            return true
+        }
+        if isFirst {
+            Self.record(event)
+        }
+    }
 
     static func install(server: FixtureServer, profile: NetworkProfile, loss: LossModel, seed: UInt64) {
         self.lock.withLock {
@@ -138,6 +156,9 @@ final class SimulatedTransportURLProtocol: URLProtocol {
             Self.inFlightCount += 1
             return Self.iterationIndex
         }
+        self.stateLock.withLock {
+            self.requestContext = (url, iteration, started)
+        }
         switch mode {
         case let .simulated(server, profile, loss):
             self.startSimulated(
@@ -154,13 +175,20 @@ final class SimulatedTransportURLProtocol: URLProtocol {
     }
 
     override func stopLoading() {
-        self.stateLock.withLock {
+        let context = self.stateLock.withLock { () -> (url: URL, iteration: Int, startedAt: DispatchTime)? in
             for item in self.pendingWorkItems {
                 item.cancel()
             }
             self.pendingWorkItems = []
             self.passthroughTask?.cancel()
             self.passthroughTask = nil
+            return self.requestContext
+        }
+        // Cancellation can kill the scheduled delivery blocks before they record; backfill the
+        // terminal event so the in-flight counter always balances and cancelled requests show
+        // up as failures instead of disappearing.
+        if let context {
+            self.recordTerminal(.failure(url: context.url, iteration: context.iteration, startedAt: context.startedAt))
         }
     }
 
@@ -219,7 +247,7 @@ private extension SimulatedTransportURLProtocol {
         let rtoMs = max(1_000, rttMs * 2)
         self.schedule(afterMs: rtoMs) { [weak self] in
             guard let self else { return }
-            Self.record(.failure(url: url, iteration: iteration, startedAt: startedAt))
+            self.recordTerminal(.failure(url: url, iteration: iteration, startedAt: startedAt))
             self.client?.urlProtocol(self, didFailWithError: URLError(.timedOut))
         }
     }
@@ -239,7 +267,7 @@ private extension SimulatedTransportURLProtocol {
             httpVersion: "HTTP/1.1",
             headerFields: response.headers
         ) else {
-            Self.record(.failure(url: url, iteration: iteration, startedAt: startedAt))
+            self.recordTerminal(.failure(url: url, iteration: iteration, startedAt: startedAt))
             self.client?.urlProtocol(
                 self,
                 didFailWithError: BenchmarkError.invalidFixture("Could not create fixture HTTP response")
@@ -273,7 +301,7 @@ private extension SimulatedTransportURLProtocol {
 
         self.schedule(afterMs: deliveryOffsetMs) { [weak self] in
             guard let self else { return }
-            Self.record(.success(
+            self.recordTerminal(.success(
                 url: url,
                 iteration: iteration,
                 statusCode: response.statusCode,

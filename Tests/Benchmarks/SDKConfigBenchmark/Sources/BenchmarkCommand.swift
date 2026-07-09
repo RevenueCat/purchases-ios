@@ -69,6 +69,17 @@ struct BenchmarkCommand {
 
     static let defaultSimulatedAPIKey = "appl_benchmark"
 
+    /// Keys `jsonlRow` writes itself; annotations must never overwrite them, or a row could
+    /// lie about what was measured (e.g. `--annotation mode=legacy` on a config run).
+    static let reservedRowKeys: Set<String> = [
+        "mode", "transport", "scenario", "profile", "loss_percent", "paywalls", "workflows",
+        "seed", "iterations", "warmup_discarded", "measured_iterations", "error_count",
+        "post_warmup_error_count", "mean_ms", "min_ms", "max_ms", "p50_ms", "p90_ms", "p95_ms",
+        "p99_ms", "request_count_mean", "bytes_received_mean", "failed_requests_total",
+        "fallback_host_requests_total", "offerings_ms_mean", "config_ms_mean", "blob_ms_mean",
+        "first_error"
+    ]
+
     var mode: BenchmarkMode = .legacy
     var transport: BenchmarkTransport = .simulated
     var scenario: BenchmarkScenario = .cold
@@ -153,6 +164,9 @@ struct BenchmarkCommand {
                 let parts = raw.split(separator: "=", maxSplits: 1).map(String.init)
                 guard parts.count == 2, !parts[0].isEmpty else {
                     throw BenchmarkError.invalidArgument("--annotation expects key=value, got \(raw)")
+                }
+                guard !Self.reservedRowKeys.contains(parts[0]) else {
+                    throw BenchmarkError.invalidArgument("--annotation key \(parts[0]) is a reserved row field")
                 }
                 command.annotations[parts[0]] = parts[1]
             default:
