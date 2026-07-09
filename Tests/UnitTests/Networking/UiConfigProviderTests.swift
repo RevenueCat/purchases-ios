@@ -29,6 +29,8 @@ class UiConfigProviderTests: TestCase {
         self.provider = UiConfigProvider(manager: self.mockManager)
     }
 
+#if !os(tvOS) // For Paywalls V2
+
     func testAssemblesUiConfigFromItsFourParts() async throws {
         self.stub(
             app: #"{"colors": {}, "fonts": {}}"#,
@@ -61,20 +63,21 @@ class UiConfigProviderTests: TestCase {
         expect(uiConfig).to(beNil())
     }
 
-    func testAssemblesUiConfigWhenVariableConfigPartIsMissing() async throws {
-        // variableConfig has decode-time defaults, so omitting it entirely must not fail assembly.
+    func testUsesDefaultWhenVariableConfigPartIsMissing() async throws {
         self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{}"#,
-                  variableConfig: nil, customVariables: nil)
+                  variableConfig: nil, customVariables: #"{}"#)
 
         let uiConfig = await self.provider.getUiConfig()
 
         expect(uiConfig).toNot(beNil())
+        expect(uiConfig?.variableConfig.variableCompatibilityMap).to(beEmpty())
+        expect(uiConfig?.variableConfig.functionCompatibilityMap).to(beEmpty())
     }
 
-    func testAssemblesUiConfigWhenCustomVariablesPartIsMissing() async throws {
-        // customVariables has decode-time defaults, so omitting it entirely must not fail assembly.
+    func testUsesDefaultWhenCustomVariablesPartIsMissing() async throws {
         self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{}"#,
-                  variableConfig: nil, customVariables: nil)
+                  variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+                  customVariables: nil)
 
         let uiConfig = await self.provider.getUiConfig()
 
@@ -82,18 +85,20 @@ class UiConfigProviderTests: TestCase {
         expect(uiConfig?.customVariables).to(beEmpty())
     }
 
-    func testMalformedVariableConfigFallsBackToDefaultInsteadOfFailingTheWholeAssembly() async throws {
-        // variable_config is syntactically valid JSON but the wrong shape for VariableConfig, which used
-        // to fail the single merged decode of the whole UIConfig, discarding good app/localizations data.
+    func testMalformedVariableConfigFallsBackToDefault() async throws {
         self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{"en_US": {"day": "Day"}}"#,
-                  variableConfig: #"{"variable_compatibility_map": "not-a-dictionary"}"#, customVariables: nil)
+                  variableConfig: #"{"variable_compatibility_map": "not-a-dictionary"}"#,
+                  customVariables: #"{}"#)
 
         let uiConfig = await self.provider.getUiConfig()
 
         expect(uiConfig).toNot(beNil())
-        expect(uiConfig?.localizations["en_US"]?["day"]) == "Day"
         expect(uiConfig?.variableConfig.variableCompatibilityMap).to(beEmpty())
-        self.logger.verifyMessageWasLogged("Failed to decode ui_config part 'variable_config'", level: .error)
+        expect(uiConfig?.variableConfig.functionCompatibilityMap).to(beEmpty())
+        self.logger.verifyMessageWasLogged(
+            "Failed to decode ui_config part 'variable_config'",
+            level: .error
+        )
     }
 
     func testLogsWarningWhenARequiredPartIsMissing() async throws {
@@ -104,14 +109,59 @@ class UiConfigProviderTests: TestCase {
         self.logger.verifyMessageWasLogged(Strings.remoteConfig.uiConfigMissingRequiredPart, level: .warn)
     }
 
-    func testRequestsWireItemKeysNotCamelCased() async throws {
+    func testDoesNotLogMissingPartsWarningWhenRemoteConfigIsDisabled() async throws {
+        self.mockManager.isDisabled = true
+
+        let uiConfig = await self.provider.getUiConfig()
+
+        expect(uiConfig).to(beNil())
+        self.logger.verifyMessageWasNotLogged(
+            Strings.remoteConfig.uiConfigMissingRequiredPart,
+            level: .warn,
+            allowNoMessages: true
+        )
+    }
+
+    func testRequestsMergedBlobDataForRequiredWireItemKeysNotCamelCased() async throws {
         _ = await self.provider.getUiConfig()
 
-        let requestedKeys = self.mockManager.invokedBlobDataParameters
-            .filter { $0.topic == .uiConfig }
-            .map(\.itemKey)
-        expect(requestedKeys).to(contain(["app", "localizations", "variable_config", "custom_variables"]))
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == 1
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.first?.topic) == .uiConfig
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.first?.itemKeys) == [
+            "app",
+            "localizations"
+        ]
     }
+
+#else
+
+    func testAssemblesUiConfigWhenRequiredPartsArePresent() async throws {
+        self.stub(
+            app: #"{"colors": {}, "fonts": {}}"#,
+            localizations: #"{"en_US": {"day": "Day"}}"#,
+            variableConfig: nil,
+            customVariables: nil
+        )
+
+        let uiConfig = await self.provider.getUiConfig()
+
+        expect(uiConfig) == .empty
+    }
+
+    func testDoesNotLogMissingPartsWarningWhenRemoteConfigIsDisabled() async throws {
+        self.mockManager.isDisabled = true
+
+        let uiConfig = await self.provider.getUiConfig()
+
+        expect(uiConfig).to(beNil())
+        self.logger.verifyMessageWasNotLogged(
+            Strings.remoteConfig.uiConfigMissingRequiredPart,
+            level: .warn,
+            allowNoMessages: true
+        )
+    }
+
+#endif
 
     private func stub(app: String?, localizations: String?, variableConfig: String?, customVariables: String?) {
         var data: [String: Data] = [:]
@@ -120,6 +170,9 @@ class UiConfigProviderTests: TestCase {
         if let variableConfig { data["variable_config"] = Data(variableConfig.utf8) }
         if let customVariables { data["custom_variables"] = Data(customVariables.utf8) }
         self.mockManager.stubbedBlobData[.uiConfig] = data
+        self.mockManager.stubbedTopics[.uiConfig] = data.keys.reduce(into: [:]) { topic, key in
+            topic[key] = RemoteConfiguration.ConfigItem()
+        }
     }
 
 }

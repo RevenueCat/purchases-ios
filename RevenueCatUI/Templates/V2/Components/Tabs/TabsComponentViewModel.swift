@@ -32,6 +32,22 @@ class TabsComponentViewModel {
     let defaultTabId: String?
     let name: String?
 
+    /// Guards the one-time propagation of the initial tab's package into the parent
+    /// `PackageContext`. Lives here, not as per-view `@State`, so SwiftUI's duplicate
+    /// `LoadedTabsComponentView` instances (from `ViewThatFits` measuring both of its branches)
+    /// share the guard instead of each re-seeding and clobbering a real tab switch.
+    var didSeedInitialState = false
+
+    /// The `TabControlContext` shared by every `LoadedTabsComponentView` backed by this view
+    /// model, so a `ViewThatFits` duplicate can't diverge from the tab the user actually selected.
+    lazy var tabControlContext = TabControlContext(
+        controlStackViewModel: self.controlStackViewModel,
+        tabIds: self.tabIds,
+        defaultTabId: self.defaultTabId,
+        name: self.name,
+        tabContextNamesById: self.tabContextNamesById
+    )
+
     /// State-store updates, dispatched when the selected tab changes
     /// (e.g. `{ "set": "<tab state key>", "to": "$value" }`, where `$value`
     /// is the newly selected tab id). `nil`/empty when the paywall declares no tab state.

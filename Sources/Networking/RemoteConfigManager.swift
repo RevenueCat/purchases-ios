@@ -36,8 +36,142 @@ protocol RemoteConfigManagerType: AnyObject {
         itemKey: String,
         as type: T.Type
     ) async throws -> T?
+
+    /// Ensures every blob in `refs` has finished downloading (or failed), joining any already
+    /// in-flight or queued (e.g. prefetch) download for the same ref instead of starting a
+    /// duplicate. Returns once every ref has settled; the `Bool` reports whether all succeeded.
+    @discardableResult
+    func ensureBlobsDownloaded(_ refs: [String]) async -> Bool
+
+    /// Decodes multiple blob payloads into one keyed JSON object.
+    ///
+    /// Each requested item must be backed by `blob_ref`. The merged object is keyed by item key, so item
+    /// `translations` contributes to the `translations` field of `T`.
+    func mergeItemsBlobData<T: Decodable>(
+        for topic: RemoteConfigTopic,
+        itemKeys: [String],
+        as type: T.Type
+    ) async throws -> T?
+
+    /// Returns `topic`'s committed item index once every item flagged for prefetch has also finished
+    /// downloading its blob (or failed). Behaves like `topic(_:)` otherwise: waits for an in-flight
+    /// refresh or triggers one foreground refresh before reading, and returns `nil` when the endpoint
+    /// is disabled or the topic is still unavailable after refresh.
+    ///
+    /// If the topic is invalidated (e.g. an identity change) while waiting on its blobs, this re-reads
+    /// and waits again on the new snapshot's own prefetch refs rather than returning one paired with
+    /// stale blob-wait results.
+    func awaitTopicAndPrefetchBlobsReady(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic?
+
     func clearCache()
+    func clearCache(forAppUserID appUserID: String)
     func close()
+
+}
+
+extension RemoteConfigManagerType {
+
+    func awaitTopicAndPrefetchBlobsReady(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+        guard var committed = await self.topic(topic) else { return nil }
+
+        while true {
+            let prefetchRefs = committed.values.compactMap { $0.prefetch ? $0.blobRef : nil }
+            await self.ensureBlobsDownloaded(prefetchRefs)
+
+            // The topic could have been invalidated and refetched (e.g. an identity change) while
+            // waiting on its blobs. Re-reading and comparing catches that without needing this
+            // generic extension to see RemoteConfigManager's private epoch tracking.
+            guard let latest = await self.topic(topic) else { return nil }
+            guard latest != committed else { return committed }
+            committed = latest
+        }
+    }
+
+    func mergeItemsBlobData<T: Decodable>(
+        for topic: RemoteConfigTopic,
+        itemKeys: [String],
+        as type: T.Type
+    ) async throws -> T? {
+        let uniqueItemKeys = Self.uniqueItemKeys(itemKeys)
+        guard !self.isDisabled else {
+            Logger.warn(Strings.remoteConfig.mergeItemsBlobDataDisabled(topic: topic, itemKeys: uniqueItemKeys))
+            return nil
+        }
+        guard !uniqueItemKeys.isEmpty else {
+            Logger.warn(Strings.remoteConfig.mergeItemsBlobDataEmpty(topic: topic))
+            return nil
+        }
+
+        let resolvedBlobs = await withTaskGroup(of: (String, Data?).self) { group in
+            for itemKey in uniqueItemKeys {
+                group.addTask {
+                    return (itemKey, await self.blobData(for: topic, itemKey: itemKey))
+                }
+            }
+
+            var resolvedBlobs: [String: Data?] = [:]
+            for await (itemKey, data) in group {
+                resolvedBlobs.updateValue(data, forKey: itemKey)
+            }
+            return resolvedBlobs
+        }
+
+        let unavailableItemKeys = uniqueItemKeys.filter { itemKey in
+            guard let resolvedBlob = resolvedBlobs[itemKey] else { return true }
+            return resolvedBlob == nil
+        }
+        guard unavailableItemKeys.isEmpty else {
+            Logger.warn(Strings.remoteConfig.mergeItemsBlobDataUnavailableItems(
+                topic: topic,
+                itemKeys: unavailableItemKeys
+            ))
+            return nil
+        }
+
+        guard let mergedData = try Self.makeJSONEnvelopeData(
+            orderedItemKeys: uniqueItemKeys,
+            resolvedBlobs: resolvedBlobs
+        ) else {
+            return nil
+        }
+
+        return try JSONDecoder.default.decode(type, from: mergedData)
+    }
+
+    /// Builds a keyed JSON object `{"<itemKey>":<blobBytes>,...}` from already-encoded blob payloads.
+    ///
+    /// Each blob is a valid JSON value that is appended verbatim, avoiding a decode -> encode -> decode
+    /// cycle. Item keys keep the order of `orderedItemKeys` and are escaped via `JSONEncoder.default`.
+    /// Returns `nil` if any key has no resolved blob data.
+    private static func makeJSONEnvelopeData(
+        orderedItemKeys: [String],
+        resolvedBlobs: [String: Data?]
+    ) throws -> Data? {
+        var envelope = Data("{".utf8)
+        for (index, itemKey) in orderedItemKeys.enumerated() {
+            guard let resolvedBlob = resolvedBlobs[itemKey],
+                  let data = resolvedBlob else { return nil }
+            if index > 0 {
+                envelope.append(contentsOf: ",".utf8)
+            }
+            envelope.append(try JSONEncoder.default.encode(itemKey))
+            envelope.append(contentsOf: ":".utf8)
+            envelope.append(data)
+        }
+        envelope.append(contentsOf: "}".utf8)
+        return envelope
+    }
+
+    private static func uniqueItemKeys(_ itemKeys: [String]) -> [String] {
+        var seen: Set<String> = []
+        var uniqueItemKeys: [String] = []
+
+        for itemKey in itemKeys where seen.insert(itemKey).inserted {
+            uniqueItemKeys.append(itemKey)
+        }
+
+        return uniqueItemKeys
+    }
 
 }
 
@@ -65,7 +199,13 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
         return nil
     }
 
+    func ensureBlobsDownloaded(_ refs: [String]) async -> Bool {
+        return false
+    }
+
     func clearCache() {}
+
+    func clearCache(forAppUserID appUserID: String) {}
 
     func close() {}
 
@@ -88,6 +228,12 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     private let dateProvider: DateProvider
     private let cacheDurationInSeconds: (Bool) -> TimeInterval
 
+    /// Immutable per-request snapshot chosen under `lock`.
+    fileprivate struct RefreshRequestContext {
+        let epoch: Int
+        let requestAppUserID: String
+    }
+
     /// Runs blocking committed-state reads away from the caller's executor.
     private let readQueue = DispatchQueue(label: "com.revenuecat.remote-config.read")
 
@@ -105,6 +251,13 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
     /// Incremented when local state is invalidated so late responses from older users/sessions are dropped.
     private var epoch = 0
+
+    /// App user ID captured by an identity-bound cache clear.
+    ///
+    /// During login/switch/logout, `clearCache` can bump the epoch before every caller observes the new user from
+    /// `CurrentUserProvider`. Storing the cleared identity under the same lock makes refresh preparation prefer this
+    /// ID over the provider value, so a request is either created for the cleared identity or treated as stale later.
+    private var identityBoundAppUserID: String?
 
     /// In-memory staleness marker. Only successful `200` and `204` responses mark the config fresh.
     private var lastRefreshedAt: Date?
@@ -146,15 +299,20 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     }
 
     func refreshRemoteConfig(isAppBackgrounded: Bool) {
-        guard let requestEpoch = self.prepareRefreshIfNeeded() else { return }
+        let appUserID = self.currentUserProvider.currentAppUserID
+        guard let requestContext = self.prepareRefreshIfNeeded(appUserID: appUserID) else { return }
 
-        self.startRefresh(isAppBackgrounded: isAppBackgrounded, requestEpoch: requestEpoch)
+        self.startRefresh(isAppBackgrounded: isAppBackgrounded, requestContext: requestContext)
     }
 
     func refreshRemoteConfigIfStale(isAppBackgrounded: Bool) {
-        guard let requestEpoch = self.prepareRefreshIfStale(isAppBackgrounded: isAppBackgrounded) else { return }
+        let appUserID = self.currentUserProvider.currentAppUserID
+        guard let requestContext = self.prepareRefreshIfStale(
+            isAppBackgrounded: isAppBackgrounded,
+            appUserID: appUserID
+        ) else { return }
 
-        self.startRefresh(isAppBackgrounded: isAppBackgrounded, requestEpoch: requestEpoch)
+        self.startRefresh(isAppBackgrounded: isAppBackgrounded, requestContext: requestContext)
     }
 
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
@@ -186,13 +344,22 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         return try JSONDecoder.default.decode(type, from: data)
     }
 
+    func ensureBlobsDownloaded(_ refs: [String]) async -> Bool {
+        return await self.blobFetcher.ensureAllDownloaded(refs: refs)
+    }
+
     /// Wipes cached remote config state, for example after an identity change.
     ///
     /// The epoch bump, refresh-guard release, and cache wipe are serialized with response persistence so a late
     /// response for a previous user is either fully persisted before the wipe or dropped after the epoch changes.
     func clearCache() {
+        self.clearCache(forAppUserID: self.currentUserProvider.currentAppUserID)
+    }
+
+    func clearCache(forAppUserID appUserID: String) {
         let continuations = self.lock.perform {
             self.epoch += 1
+            self.identityBoundAppUserID = appUserID
             self.isRefreshing = false
             self.lastRefreshedAt = nil
             self.diskCache.clear()
@@ -216,41 +383,51 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
 private extension RemoteConfigManager {
 
-    func prepareRefreshIfNeeded() -> Int? {
+    func prepareRefreshIfNeeded(appUserID: String) -> RefreshRequestContext? {
         return self.lock.perform {
             guard !self.isRefreshing,
                   !self.isDisabledInternal,
                   !self.isClosed else { return nil }
+
+            let requestAppUserID = self.identityBoundAppUserID ?? appUserID
             self.isRefreshing = true
-            return self.epoch
+            return .init(
+                epoch: self.epoch,
+                requestAppUserID: requestAppUserID
+            )
         }
     }
 
     func prepareRefreshIfStale(
         isAppBackgrounded: Bool,
+        appUserID: String,
         expectedEpoch: Int? = nil
-    ) -> Int? {
+    ) -> RefreshRequestContext? {
         return self.lock.perform {
             guard !self.isRefreshing,
                   !self.isDisabledInternal,
                   !self.isClosed else { return nil }
             if let expectedEpoch {
-                guard self.epoch == expectedEpoch else { return nil }
+                guard self.epoch == expectedEpoch || self.identityBoundAppUserID != nil else { return nil }
             }
             if let lastRefreshedAt = self.lastRefreshedAt {
                 guard self.dateProvider.now().timeIntervalSince(lastRefreshedAt)
                     > self.cacheDurationInSeconds(isAppBackgrounded) else { return nil }
             }
 
+            let requestAppUserID = self.identityBoundAppUserID ?? appUserID
             self.isRefreshing = true
-            return self.epoch
+            return .init(
+                epoch: self.epoch,
+                requestAppUserID: requestAppUserID
+            )
         }
     }
 
-    func startRefresh(isAppBackgrounded: Bool, requestEpoch: Int) {
+    func startRefresh(isAppBackgrounded: Bool, requestContext: RefreshRequestContext) {
         let persisted = self.diskCache.read()
         let request = RemoteConfigRequest(
-            appUserID: self.currentUserProvider.currentAppUserID,
+            appUserID: requestContext.requestAppUserID,
             domain: persisted?.domain ?? Self.defaultDomain,
             manifest: persisted?.manifest,
             prefetchedBlobs: self.cachedPrefetchedBlobRefs(from: persisted)
@@ -264,7 +441,7 @@ private extension RemoteConfigManager {
             request: request,
             persisted: persisted,
             isAppBackgrounded: isAppBackgrounded,
-            requestEpoch: requestEpoch
+            requestEpoch: requestContext.epoch
         )
     }
 
@@ -415,11 +592,13 @@ private extension RemoteConfigManager {
             guard self.canReadCommittedState else { return }
         }
 
-        if let requestEpoch = self.prepareRefreshIfStale(
+        let appUserID = self.currentUserProvider.currentAppUserID
+        if let requestContext = self.prepareRefreshIfStale(
             isAppBackgrounded: false,
+            appUserID: appUserID,
             expectedEpoch: expectedEpoch
         ) {
-            self.startRefresh(isAppBackgrounded: false, requestEpoch: requestEpoch)
+            self.startRefresh(isAppBackgrounded: false, requestContext: requestContext)
         }
         _ = await self.awaitInFlightRefresh()
     }
@@ -546,9 +725,10 @@ private extension RemoteConfigManager {
 
     /// Performs small blocking cache reads on the manager's read queue.
     func performRead<T>(_ operation: @escaping () -> T) async -> T {
+        let operation = SendableReadOperation(run: operation)
         return await withCheckedContinuation { continuation in
             self.readQueue.async {
-                continuation.resume(returning: operation())
+                continuation.resume(returning: operation.run())
             }
         }
     }
@@ -609,7 +789,8 @@ private extension RemoteConfigManager {
     /// Returns the full topic index that should be persisted after this response is applied.
     ///
     /// Changed topics overwrite previous entries, unchanged active topics keep previous entries, and inactive topics
-    /// are removed.
+    /// are removed. Changed topics are full replacements, not item-level patches, so removed items fall out of
+    /// the persisted topic index and blob retention set.
     func postSyncTopics(
         previous: PersistedRemoteConfiguration?,
         response: RemoteConfiguration
@@ -660,6 +841,12 @@ private extension RemoteConfigManager {
             }
         }
     }
+
+}
+
+private struct SendableReadOperation<T>: @unchecked Sendable {
+
+    let run: () -> T
 
 }
 
