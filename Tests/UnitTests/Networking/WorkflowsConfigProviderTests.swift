@@ -76,9 +76,8 @@ class WorkflowsConfigProviderTests: TestCase {
     }
 
     func testFailsWithUiConfigUnavailableWhenTheWorkflowResolvesButUiConfigIsUnavailable() async throws {
-        // A workflow is never rendered with PublishedWorkflow's decode-time `.empty` placeholder: if
-        // ui_config can't be assembled, the whole result fails, matching Android's PaywallViewModel
-        // failing the render when its concurrent ui_config fetch fails.
+        // A workflow is never rendered without `ui_config`: if it can't be assembled, the whole result
+        // fails, matching Android's PaywallViewModel failing the render when its concurrent fetch fails.
         let workflowJSON = try Self.workflowJSON(id: "wf-1")
         self.commit(
             workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: [:])],
@@ -115,7 +114,7 @@ class WorkflowsConfigProviderTests: TestCase {
         let workflowResult = try XCTUnwrap(result.value)
 
 #if !os(tvOS) // For Paywalls V2
-        XCTAssertEqual(workflowResult.workflow.uiConfig.localizations["en_US"]?["day"], "Day")
+        XCTAssertEqual(workflowResult.workflow.uiConfig?.localizations["en_US"]?["day"], "Day")
 #endif
     }
 

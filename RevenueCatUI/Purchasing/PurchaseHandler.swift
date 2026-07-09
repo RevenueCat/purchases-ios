@@ -526,9 +526,13 @@ extension PurchaseHandler {
             throw PaywallError.offeringNotFound(identifier: screen.offeringIdentifier ?? triggerOfferingIdentifier)
         }
 
+        guard let uiConfig = workflow.uiConfig else {
+            throw PaywallError.workflowUiConfigUnavailable(workflowId: workflow.id)
+        }
+
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
             screen: screen,
-            uiConfig: workflow.uiConfig
+            uiConfig: uiConfig
         )
 
         let initialOffering = baseOffering.withPaywallComponents(paywallComponents)

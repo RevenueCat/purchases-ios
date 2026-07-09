@@ -89,9 +89,8 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
 
     /// Resolves `workflowId` into a ``WorkflowDataResult``, or the specific ``WorkflowResolutionError``
     /// that prevented it: the item is unknown, its body can't be parsed, or `ui_config` isn't available.
-    /// A workflow is only rendered with real styling, never with `PublishedWorkflow`'s decode-time
-    /// `.empty` placeholder, matching Android's `PaywallViewModel` failing the whole render when its
-    /// concurrent `ui_config` fetch fails.
+    /// A workflow is only rendered with styling resolved from the `ui_config` topic, matching Android's
+    /// `PaywallViewModel` failing the whole render when its concurrent `ui_config` fetch fails.
     ///
     /// `enrolled_variants` is not populated here: per-user A/B enrollment doesn't fit this shared,
     /// content-addressed read model and is being designed separately.

@@ -590,6 +590,7 @@ private extension WorkflowPaywallViewTests {
         """
         let data = try XCTUnwrap(json.data(using: .utf8))
         return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+            .withUiConfig(PreviewUIConfig.make())
     }
 
     static func makeScreenJSON(packages: [PackageSpec], offeringId: String) -> String {
@@ -1181,6 +1182,7 @@ private extension WorkflowPaywallViewTests {
         """
         let data = try XCTUnwrap(workflowJSON.data(using: .utf8))
         let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+            .withUiConfig(PreviewUIConfig.make())
 
         let packages = [
             makePackage(identifier: TestData.annualPackage.identifier, offeringId: offeringId),

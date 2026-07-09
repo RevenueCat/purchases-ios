@@ -194,7 +194,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         let imageURLs = Set(screens.flatMap(\.allImageURLs))
         let videoURLs = Set(screens.flatMap(\.allLowResVideoUrls))
         #if !os(tvOS)
-        let fonts = workflow.uiConfig.app.allDownloadableFonts
+        let fonts = workflow.uiConfig?.app.allDownloadableFonts ?? []
         #endif
 
         await withTaskGroup(of: Void.self) { group in
