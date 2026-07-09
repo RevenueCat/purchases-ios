@@ -84,15 +84,22 @@ final class BenchmarkCommandTests: BenchmarkTestCase {
         XCTAssertEqual(try BenchmarkCommand.parse([]).transport, .simulated)
     }
 
-    func testLiveTransportResolvesKeyFromEnvironment() throws {
-        let command = try BenchmarkCommand.parse(
+    func testLiveTransportResolvesKeyFromEnvironmentButRequiresAProjectLabel() throws {
+        // An environment key without a project label could mislabel rows: nothing ties the
+        // key to the pinned default project, and rows from different projects must never
+        // compare as equivalents.
+        XCTAssertThrowsError(try BenchmarkCommand.parse(
             ["--transport", "live"],
             environment: [BenchmarkProject.apiKeyEnvironmentVariable: "test_fromEnv"]
-        )
+        ))
 
+        let command = try BenchmarkCommand.parse(
+            ["--transport", "live", "--project-id", "abc123"],
+            environment: [BenchmarkProject.apiKeyEnvironmentVariable: "test_fromEnv"]
+        )
         XCTAssertEqual(command.transport, .live)
         XCTAssertEqual(command.apiKey, "test_fromEnv")
-        XCTAssertEqual(command.projectID, BenchmarkProject.projectID)
+        XCTAssertEqual(command.projectID, "abc123")
     }
 
     func testLiveTransportWithoutAnyKeyFails() {
@@ -115,7 +122,7 @@ final class BenchmarkCommandTests: BenchmarkTestCase {
 
     func testLiveTransportZeroesFixtureSizeKnobs() throws {
         let command = try BenchmarkCommand.parse(
-            ["--transport", "live", "--paywalls", "500", "--workflows", "500"],
+            ["--transport", "live", "--project-id", "abc123", "--paywalls", "500", "--workflows", "500"],
             environment: [BenchmarkProject.apiKeyEnvironmentVariable: "test_fromEnv"]
         )
 

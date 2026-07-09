@@ -12,6 +12,22 @@
 # (preferring the project's test-store app, whose products actually exist). Exits nonzero
 # with a message on stderr when no key can be resolved.
 
+# Resolves the project id BEFORE any default applies. A custom key via
+# SDK_CONFIG_BENCHMARK_API_KEY requires an explicit PROJECT_ID: otherwise rows would carry
+# the pinned default project label with another project's key, and live rows from different
+# projects would compare as equivalents.
+default_benchmark_project_id() {
+    if [[ -z "${PROJECT_ID:-}" ]]; then
+        if [[ -n "${SDK_CONFIG_BENCHMARK_API_KEY:-}" ]]; then
+            echo "SDK_CONFIG_BENCHMARK_API_KEY requires an explicit PROJECT_ID so rows are labeled with the key's real project" >&2
+            return 1
+        fi
+        printf '5f07e7e3'
+    else
+        printf '%s' "$PROJECT_ID"
+    fi
+}
+
 resolve_benchmark_api_key() {
     local project_id="$1"
     local key

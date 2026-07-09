@@ -27,7 +27,12 @@ DERIVED_DATA_ROOT="${DERIVED_DATA_ROOT:-$REPO_ROOT/.build/sdk-config-benchmark-a
 VARIANTS="${VARIANTS:-legacy config}"
 ITERATIONS="${ITERATIONS:-10}"
 WARMUP="${WARMUP:-2}"
-PROJECT_ID="${PROJECT_ID:-5f07e7e3}"
+
+# Key + project resolution shared with the CLI tier's run-matrix.sh (env override requires
+# an explicit PROJECT_ID; else mafdet against the pinned project; no keys live in source).
+# shellcheck source=../../Benchmarks/SDKConfigBenchmark/resolve-api-key.sh disable=SC1091
+source "$REPO_ROOT/Tests/Benchmarks/SDKConfigBenchmark/resolve-api-key.sh"
+PROJECT_ID="$(default_benchmark_project_id)"
 
 # Package.swift prefers CI.xcconfig over Local.xcconfig, so the variant switch must edit
 # whichever file actually wins.
@@ -56,10 +61,6 @@ restore_xcconfig() {
 }
 trap restore_xcconfig EXIT
 
-# Resolve the API key (shared with the CLI tier's run-matrix.sh: env override, else mafdet;
-# no keys live in source).
-# shellcheck source=../../Benchmarks/SDKConfigBenchmark/resolve-api-key.sh disable=SC1091
-source "$REPO_ROOT/Tests/Benchmarks/SDKConfigBenchmark/resolve-api-key.sh"
 RESOLVED_KEY="$(resolve_benchmark_api_key "$PROJECT_ID")"
 echo "Live target: project $PROJECT_ID" >&2
 

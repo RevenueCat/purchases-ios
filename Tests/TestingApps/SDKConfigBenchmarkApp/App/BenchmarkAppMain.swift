@@ -48,8 +48,10 @@ struct SDKConfigBenchmarkApp: App {
         }
 
         // The config path (config persisted, each blob stored inline vs downloaded) is only
-        // observable through the SDK's log stream, so run verbose and parse. The logging
-        // overhead is inside the measured window but identical across variants.
+        // observable through the SDK's log stream, so run verbose and parse. The observer
+        // sits inside the measured window and is NOT perfectly even across variants (the
+        // config path emits more log lines), but its per-line cost is a few substring scans
+        // (microseconds), orders of magnitude below the hundreds-of-ms deltas measured.
         let observer = model.blobObserver
         Purchases.logLevel = .verbose
         Purchases.verboseLogHandler = { _, message, _, _, _ in

@@ -68,10 +68,11 @@ FAILED_ROWS=0
 PROJECT_ARGS=()
 if [[ "$TRANSPORT" == "live" ]]; then
     # No keys live in source: resolve the target project's key at run time (shared with
-    # the app-launch tier so both tiers always measure the same key for the same project).
-    PROJECT_ID="${PROJECT_ID:-5f07e7e3}"
+    # the app-launch tier so both tiers always measure the same key for the same project;
+    # an env-key override requires an explicit PROJECT_ID so rows are labeled correctly).
     # shellcheck source=resolve-api-key.sh disable=SC1091
     source "$REPO_ROOT/Tests/Benchmarks/SDKConfigBenchmark/resolve-api-key.sh"
+    PROJECT_ID="$(default_benchmark_project_id)"
     RESOLVED_KEY="$(resolve_benchmark_api_key "$PROJECT_ID")"
     echo "Live target: project $PROJECT_ID" >&2
     PROJECT_ARGS=(--api-key "$RESOLVED_KEY" --project-id "$PROJECT_ID")

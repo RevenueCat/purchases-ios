@@ -12,7 +12,8 @@ Two transports:
   prepared stress-test project
   ([`5f07e7e3`](https://app.revenuecat.com/projects/5f07e7e3)). No keys live in source: the
   matrix script resolves the key via mafdet; direct binary runs take `--api-key` or the
-  `SDK_CONFIG_BENCHMARK_API_KEY` environment variable. Same recorded per-request metrics; real
+  `SDK_CONFIG_BENCHMARK_API_KEY` environment variable, either of which also requires
+  `--project-id` so rows are labeled with the key's real project. Same recorded per-request metrics; real
   CDN/TLS/latency behavior. Kill-switch, profiles, and loss are simulated-only (you cannot
   force a 4xx or packet loss on production).
 
@@ -103,7 +104,7 @@ python3 Tests/Benchmarks/SDKConfigBenchmark/compare.py app-launch.jsonl
 
 Rows are `compare.py`-compatible, with `mode` = `app-launch-legacy` / `app-launch-config` and
 `profile` = `simulator` / `device`. Knobs: `ITERATIONS`, `WARMUP`, `PROJECT_ID`,
-`SDK_CONFIG_BENCHMARK_API_KEY` (skips mafdet), and `DESTINATION` (pass
+`SDK_CONFIG_BENCHMARK_API_KEY` (skips mafdet; requires an explicit `PROJECT_ID`), and `DESTINATION` (pass
 `DESTINATION="platform=iOS,id=<udid>"` to measure a physical device's real radio). Live only:
 there is no simulated transport, no kill-switch mode, and no loss model in this tier.
 

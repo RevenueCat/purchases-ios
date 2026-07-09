@@ -224,21 +224,25 @@ struct BenchmarkCommand {
 
         if self.apiKey == Self.defaultSimulatedAPIKey {
             // No keys live in source; resolve from the environment (run-matrix.sh populates
-            // it via mafdet) and assume the pinned project unless labeled otherwise.
+            // it via mafdet).
             guard let environmentKey = environment[BenchmarkProject.apiKeyEnvironmentVariable],
                   !environmentKey.isEmpty else {
                 throw BenchmarkError.invalidArgument(
                     "live runs need an API key: pass --api-key with --project-id, set " +
-                    "\(BenchmarkProject.apiKeyEnvironmentVariable), or use run-matrix.sh " +
-                    "(resolves it via mafdet)"
+                    "\(BenchmarkProject.apiKeyEnvironmentVariable) with --project-id, or use " +
+                    "run-matrix.sh (resolves it via mafdet)"
                 )
             }
             self.apiKey = environmentKey
-            self.projectID = self.projectID ?? BenchmarkProject.projectID
-        } else if self.projectID == nil {
-            // A custom key without a project label would let rows from different projects
-            // collide in comparisons.
-            throw BenchmarkError.invalidArgument("--api-key with --transport live also requires --project-id")
+        }
+        // ANY externally supplied key requires a project label: nothing ties a key to the
+        // pinned default project, and rows from different projects must never compare as
+        // equivalents.
+        guard self.projectID != nil else {
+            throw BenchmarkError.invalidArgument(
+                "a live API key (--api-key or \(BenchmarkProject.apiKeyEnvironmentVariable)) " +
+                "also requires --project-id, so rows are labeled with the key's real project"
+            )
         }
 
         // Fixture-size knobs don't shape live payloads (the pinned project's real content
