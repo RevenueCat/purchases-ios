@@ -312,4 +312,21 @@ class HTTPRequestTests: TestCase {
             == HTTPClient.rcContainerFormatElementEncodingHeaderValue
         expect(headers["Accept-Encoding"]).to(beNil())
     }
+
+    func testRemoteConfigUsesJSONAcceptHeaderWhenRequested() {
+        let request: HTTPRequest = .init(
+            method: .post(RemoteConfigRequest(appUserID: "app-user-id", responseFormat: .json)),
+            path: .remoteConfig(domain: "app", responseFormat: .json)
+        )
+        let headers = request.headers(
+            with: [:],
+            defaultHeaders: [:],
+            verificationMode: .disabled,
+            internalSettings: DangerousSettings.Internal.default
+        )
+
+        expect(headers[HTTPClient.RequestHeader.accept.rawValue]) == "application/json"
+        expect(headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue]).to(beNil())
+        expect(headers["Accept-Encoding"]).to(beNil())
+    }
 }

@@ -1328,22 +1328,9 @@ final class RemoteConfigManagerTests: TestCase {
     }
 
     func testMalformedTopicItemLeavesCacheUntouchedAndReleasesRefreshGuard() throws {
-        let response = """
-        {
-          "domain": "app",
-          "manifest": "v1.1710000100.sources:etag2",
-          "active_topics": ["sources"],
-          "topics": {
-            "sources": {
-              "api": "not-an-object"
-            }
-          }
-        }
-        """
-
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
-            with: .success(.test(container: try Self.container(config: response)))
+            with: .failure(Self.configDecodingError())
         )
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
 
@@ -1422,7 +1409,7 @@ final class RemoteConfigManagerTests: TestCase {
     func testMalformedConfigPayloadLeavesCacheUntouched() throws {
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
-            with: .success(.test(container: try Self.container(config: "{ not valid json")))
+            with: .failure(Self.configDecodingError())
         )
 
         expect(self.diskCache.invokedWriteCount) == 0
@@ -1652,7 +1639,7 @@ final class RemoteConfigManagerTests: TestCase {
         await self.waitForRemoteConfigRequestCount(1)
         await self.waitForDiskCacheReadCount(2)
         self.remoteConfigAPI.complete(
-            with: .success(.test(container: try Self.container(config: "{ not valid json")))
+            with: .failure(Self.configDecodingError())
         )
 
         let data = await task.value
@@ -1784,6 +1771,35 @@ final class RemoteConfigManagerTests: TestCase {
 
         expect(self.blobStore.invokedWriteParameters?.ref) == blobRef
         expect(self.blobStore.invokedWriteParameters?.data) == blob
+    }
+
+    func testJSONResponsePersistsConfigurationWithoutInlineBlobExtraction() throws {
+        let blobRef = RCContainerTestData.blobRef(for: "external blob".asData)
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.workflows:etag2",
+          "active_topics": ["workflows"],
+          "topics": {
+            "workflows": {
+              "default": { "blob_ref": "\(blobRef)" }
+            }
+          }
+        }
+        """
+        let configuration = try JSONDecoder.default.decode(RemoteConfiguration.self, from: response.asData)
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(configuration: configuration, verificationResult: .verified))
+        )
+
+        expect(self.diskCache.invokedWriteParameter?.manifest) == "v1.1710000100.workflows:etag2"
+        expect(Self.blobRefsByTopic(from: self.diskCache.invokedWriteParameter?.topics)) == [
+            "workflows": [blobRef]
+        ]
+        expect(self.blobStore.invokedWriteCount) == 0
+        expect(self.blobStore.invokedRetainOnlyParameters) == Set([blobRef])
     }
 
     func testBlobDataReadsContainerInlineBlobAfterItIsStored() async throws {
@@ -2409,6 +2425,13 @@ private extension RemoteConfigManagerTests {
         ))
     }
 
+    static func configDecodingError() -> BackendError {
+        return .networkError(.decoding(
+            NSError(domain: "RemoteConfigManagerTests", code: 1),
+            Data()
+        ))
+    }
+
     static func container(
         config: String,
         contentElements: [Data] = []
@@ -2564,10 +2587,34 @@ private extension RemoteConfigFetchResult {
         container: RemoteConfigContainer?,
         verificationResult: VerificationResult = .verified
     ) -> RemoteConfigFetchResult {
-        return RemoteConfigFetchResult(response: .init(
+        let response = VerifiedHTTPResponse(
             httpStatusCode: container == nil ? .noContent : .success,
             responseHeaders: [:],
             body: container,
+            verificationResult: verificationResult,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false
+        )
+
+        guard container != nil else {
+            return RemoteConfigFetchResult(noContentResponse: response)
+        }
+
+        do {
+            return try RemoteConfigFetchResult(containerResponse: response)
+        } catch {
+            preconditionFailure("Unexpected invalid remote config test container: \(error)")
+        }
+    }
+
+    static func test(
+        configuration: RemoteConfiguration,
+        verificationResult: VerificationResult = .verified
+    ) -> RemoteConfigFetchResult {
+        return RemoteConfigFetchResult(configurationResponse: .init(
+            httpStatusCode: .success,
+            responseHeaders: [:],
+            body: configuration,
             verificationResult: verificationResult,
             isLoadShedderResponse: false,
             isFallbackUrlResponse: false

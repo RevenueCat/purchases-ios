@@ -7,18 +7,29 @@
 
 import Foundation
 
-/// Provides the signature inputs for remote config RC Container responses.
+/// Provides the signature inputs for remote config responses.
 ///
-/// The response signature covers the config element's decoded payload bytes. A `204 No Content`
-/// response verifies the request context with an empty payload.
+/// RC Container responses sign the config element's decoded payload bytes. JSON responses sign
+/// the raw response body. A `204 No Content` response verifies the request context with an empty payload.
 struct RemoteConfigSignatureContextProvider: ResponseSignatureContextProvider {
+
+    private let responseFormat: RemoteConfigResponseFormat
+
+    init(responseFormat: RemoteConfigResponseFormat = .rcContainer) {
+        self.responseFormat = responseFormat
+    }
 
     func responsePayloadForSignature(from body: Data?, statusCode: HTTPStatusCode) throws -> Data? {
         guard statusCode != .noContent else {
             return Data()
         }
 
-        return try Self.configPayload(from: body)
+        switch self.responseFormat {
+        case .rcContainer:
+            return try Self.configPayload(from: body)
+        case .json:
+            return try Self.jsonPayload(from: body)
+        }
     }
 
     func requestBodyForSignature(for request: HTTPRequest) -> HTTPRequestBody? {
@@ -44,6 +55,14 @@ private extension RemoteConfigSignatureContextProvider {
         return try configElement.withDecodedPayloadBytes { bytes in
             Data(bytes)
         }
+    }
+
+    static func jsonPayload(from data: Data?) throws -> Data {
+        guard let data = data else {
+            throw RCContainer.Parser.FormatError.missingBody
+        }
+
+        return data
     }
 
 }

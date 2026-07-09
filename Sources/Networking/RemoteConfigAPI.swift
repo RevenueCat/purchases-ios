@@ -54,16 +54,75 @@ class RemoteConfigAPI: RemoteConfigAPIType {
 
 }
 
+enum RemoteConfigResponseFormat: String, Codable {
+
+    case rcContainer
+    case json
+
+}
+
 struct RemoteConfigFetchResult {
 
     /// `nil` represents a successful `204 No Content` response. Malformed or undecodable
-    /// container bytes should fail before this result is created.
-    let container: RemoteConfigContainer?
+    /// response bodies should fail before this result is created.
+    let response: RemoteConfigResponse?
     let verificationResult: VerificationResult
 
-    init(response: VerifiedHTTPResponse<RemoteConfigContainer?>) {
-        self.container = response.body
+    var container: RemoteConfigContainer? {
+        return self.response?.container
+    }
+
+    init(containerResponse response: VerifiedHTTPResponse<RemoteConfigContainer?>) throws {
+        self.response = try response.body.map(RemoteConfigResponse.init(container:))
         self.verificationResult = response.verificationResult
+    }
+
+    init(noContentResponse response: VerifiedHTTPResponse<RemoteConfigContainer?>) {
+        self.response = nil
+        self.verificationResult = response.verificationResult
+    }
+
+    init(configurationResponse response: VerifiedHTTPResponse<RemoteConfiguration?>) {
+        self.response = response.body.map(RemoteConfigResponse.init(configuration:))
+        self.verificationResult = response.verificationResult
+    }
+
+}
+
+struct RemoteConfigResponse {
+
+    let configuration: RemoteConfiguration
+    let inlineContentElements: [String: RCContainer.Element]
+
+    fileprivate let container: RemoteConfigContainer?
+
+    init(
+        configuration: RemoteConfiguration,
+        inlineContentElements: [String: RCContainer.Element] = [:],
+        container: RemoteConfigContainer? = nil
+    ) {
+        self.configuration = configuration
+        self.inlineContentElements = inlineContentElements
+        self.container = container
+    }
+
+    init(configuration: RemoteConfiguration) {
+        self.init(configuration: configuration, inlineContentElements: [:], container: nil)
+    }
+
+    init(container: RemoteConfigContainer) throws {
+        let configuration = try container.configElement.withDecodedPayloadBytes { bytes in
+            try JSONDecoder.default.decode(
+                RemoteConfiguration.self,
+                from: Data(bytes)
+            )
+        }
+
+        self.init(
+            configuration: configuration,
+            inlineContentElements: container.inlineContentElements,
+            container: container
+        )
     }
 
 }

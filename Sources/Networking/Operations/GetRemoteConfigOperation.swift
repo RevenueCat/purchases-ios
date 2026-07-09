@@ -51,6 +51,7 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
     let domain: String
     let manifest: String?
     let prefetchedBlobs: [String]
+    let responseFormat: RemoteConfigResponseFormat
 
     private enum CodingKeys: String, CodingKey {
         case appUserID = "appUserId"
@@ -62,18 +63,21 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
         appUserID: String,
         domain: String = RemoteConfiguration.defaultDomain,
         manifest: String? = nil,
-        prefetchedBlobs: [String] = []
+        prefetchedBlobs: [String] = [],
+        responseFormat: RemoteConfigResponseFormat = .rcContainer
     ) {
         self.appUserID = appUserID
         self.domain = domain
         self.manifest = manifest
         self.prefetchedBlobs = prefetchedBlobs
+        self.responseFormat = responseFormat
     }
 
     var cacheKey: String {
         [
             "app_user_id=\(self.appUserID)",
             "domain=\(self.domain)",
+            "response_format=\(self.responseFormat.rawValue)",
             "manifest=\(self.manifest ?? "")",
             "prefetched_blobs=\(self.prefetchedBlobs.sorted().joined(separator: ","))"
         ].joined(separator: "|")
@@ -93,6 +97,7 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
         self.domain = RemoteConfiguration.defaultDomain
         self.manifest = try container.decodeIfPresent(String.self, forKey: .manifest)
         self.prefetchedBlobs = try container.decodeIfPresent([String].self, forKey: .prefetchedBlobs) ?? []
+        self.responseFormat = .rcContainer
     }
 
 }
@@ -103,9 +108,29 @@ extension GetRemoteConfigOperation: @unchecked Sendable {}
 private extension GetRemoteConfigOperation {
 
     func getRemoteConfig(completion: @escaping () -> Void) {
-        let request = HTTPRequest(method: .post(self.request), path: .remoteConfig(domain: self.request.domain))
+        let request = HTTPRequest(
+            method: .post(self.request),
+            path: .remoteConfig(domain: self.request.domain, responseFormat: self.request.responseFormat)
+        )
 
-        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<RemoteConfigContainer?>.Result) in
+        switch self.request.responseFormat {
+        case .rcContainer:
+            self.perform(request, completion: completion) { (response: VerifiedHTTPResponse<RemoteConfigContainer?>) in
+                try RemoteConfigFetchResult(containerResponse: response)
+            }
+        case .json:
+            self.perform(request, completion: completion) { (response: VerifiedHTTPResponse<RemoteConfiguration?>) in
+                RemoteConfigFetchResult(configurationResponse: response)
+            }
+        }
+    }
+
+    func perform<ResponseBody: HTTPResponseBody>(
+        _ request: HTTPRequest,
+        completion: @escaping () -> Void,
+        mapResponse: @escaping (VerifiedHTTPResponse<ResponseBody>) throws -> RemoteConfigFetchResult
+    ) {
+        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<ResponseBody>.Result) in
             defer {
                 completion()
             }
@@ -113,7 +138,9 @@ private extension GetRemoteConfigOperation {
             self.callbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(
                     response
-                        .map(RemoteConfigFetchResult.init(response:))
+                        .flatMap { response in
+                            Result { try mapResponse(response) }.mapError { NetworkError.decoding($0, Data()) }
+                        }
                         .mapError(BackendError.networkError)
                 )
             }

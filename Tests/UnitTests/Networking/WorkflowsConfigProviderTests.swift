@@ -317,7 +317,7 @@ private final class FakeRemoteConfigAPI: RemoteConfigAPIType {
         // `RemoteConfigManager` calls this from inside a lock and documents that it assumes the
         // completion is never invoked synchronously, so this must dispatch asynchronously.
         DispatchQueue.global().async {
-            let result = RemoteConfigFetchResult(response: VerifiedHTTPResponse(
+            let result = RemoteConfigFetchResult(noContentResponse: VerifiedHTTPResponse(
                 httpStatusCode: .noContent,
                 responseHeaders: [:],
                 body: nil,

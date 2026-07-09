@@ -372,6 +372,54 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(signingRequest.signature) == Self.sampleSignature
     }
 
+    func testValidRemoteConfigJSONSignatureUsesRawBodyAsSignedMessage() throws {
+        let body = Self.remoteConfigJSON
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app", responseFormat: .json),
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: body)
+        self.signing.stubbedVerificationResult = true
+
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigJSONRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .verified
+
+        expect(self.signing.requests).to(haveCount(1))
+        let signingRequest = try XCTUnwrap(self.signing.requests.onlyElement)
+
+        expect(signingRequest.parameters.message) == body
+        expect(signingRequest.parameters.nonce).toNot(beNil())
+        expect(signingRequest.parameters.requestBody).to(beNil())
+        expect(signingRequest.parameters.requestDate) == Self.date2.millisecondsSince1970
+        expect(signingRequest.signature) == Self.sampleSignature
+    }
+
+    func testRemoteConfigJSONNoContentSignatureUsesEmptyPayload() throws {
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app", responseFormat: .json),
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: Data(),
+                          statusCode: .noContent)
+        self.signing.stubbedVerificationResult = true
+
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigJSONRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .verified
+
+        expect(self.signing.requests).to(haveCount(1))
+        let signingRequest = try XCTUnwrap(self.signing.requests.onlyElement)
+
+        expect(signingRequest.parameters.message) == Data()
+        expect(signingRequest.parameters.requestBody).to(beNil())
+        expect(signingRequest.signature) == Self.sampleSignature
+    }
+
     func testValidRemoteConfigSignatureUsesDecodedConfigPayloadAsSignedMessage() throws {
         let config = Data(repeating: UInt8(ascii: "c"), count: 2048)
         let body = try RCContainerTestData.compressedContainer(
@@ -1223,6 +1271,24 @@ private extension BaseSignatureVerificationHTTPClientTests {
             method: .post(RemoteConfigRequest(appUserID: "app-user-id")),
             path: HTTPRequest.Path.remoteConfig(domain: "app")
         )
+    }
+
+    static var remoteConfigJSONRequest: HTTPRequest {
+        return .init(
+            method: .post(RemoteConfigRequest(appUserID: "app-user-id", responseFormat: .json)),
+            path: HTTPRequest.Path.remoteConfig(domain: "app", responseFormat: .json)
+        )
+    }
+
+    static var remoteConfigJSON: Data {
+        return """
+        {
+          "domain": "app",
+          "manifest": "v1.test",
+          "active_topics": [],
+          "topics": {}
+        }
+        """.asData
     }
 
     static func rcContainer(

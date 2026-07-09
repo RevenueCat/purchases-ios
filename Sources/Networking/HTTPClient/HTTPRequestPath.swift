@@ -149,7 +149,7 @@ extension HTTPRequest {
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
-        case remoteConfig(domain: String)
+        case remoteConfig(domain: String, responseFormat: RemoteConfigResponseFormat = .rcContainer)
 
     }
 
@@ -196,7 +196,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "/v1/offerings"
         case .getProductEntitlementMapping:
             return "/v1/product_entitlement_mapping"
-        case let .remoteConfig(domain):
+        case let .remoteConfig(domain, _):
             return "/v1/config/\(Self.escape(domain))"
         default:
             return nil
@@ -331,8 +331,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var responseSignatureContextProvider: ResponseSignatureContextProvider {
         switch self {
-        case .remoteConfig:
-            return RemoteConfigSignatureContextProvider()
+        case let .remoteConfig(_, responseFormat):
+            return RemoteConfigSignatureContextProvider(responseFormat: responseFormat)
         default:
             return DefaultResponseSignatureContextProvider()
         }
@@ -400,7 +400,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .rewardVerificationStatus(appUserID, clientTransactionID):
             return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
 
-        case let .remoteConfig(domain):
+        case let .remoteConfig(domain, _):
             return "config/\(Self.escape(domain))"
         }
     }
@@ -470,12 +470,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var additionalHeaders: HTTPRequest.Headers {
         switch self {
-        case .remoteConfig:
-            return [
-                HTTPClient.RequestHeader.accept.rawValue: HTTPClient.rcContainerFormatAcceptHeaderValue,
-                HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue:
-                    HTTPClient.rcContainerFormatElementEncodingHeaderValue
-            ]
+        case let .remoteConfig(_, responseFormat):
+            return responseFormat.additionalHeaders
         default:
             return [:]
         }
@@ -484,4 +480,23 @@ extension HTTPRequest.Path: HTTPRequestPath {
     private static func escape(_ appUserID: String) -> String {
         return appUserID.trimmedAndEscaped
     }
+}
+
+private extension RemoteConfigResponseFormat {
+
+    var additionalHeaders: HTTPRequest.Headers {
+        switch self {
+        case .rcContainer:
+            return [
+                HTTPClient.RequestHeader.accept.rawValue: HTTPClient.rcContainerFormatAcceptHeaderValue,
+                HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue:
+                    HTTPClient.rcContainerFormatElementEncodingHeaderValue
+            ]
+        case .json:
+            return [
+                HTTPClient.RequestHeader.accept.rawValue: "application/json"
+            ]
+        }
+    }
+
 }

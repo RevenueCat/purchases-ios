@@ -497,35 +497,22 @@ private extension RemoteConfigManager {
         guard self.isCurrent(requestEpoch) else { return }
         defer { self.releaseGuardIfOwned(requestEpoch: requestEpoch) }
 
-        guard let container = fetchResult.container else {
+        guard let response = fetchResult.response else {
             Logger.debug(Strings.remoteConfig.notModified)
             self.markRefreshedIfCurrent(requestEpoch)
             return
         }
 
-        do {
-            let response = try container.configElement.withDecodedPayloadBytes { bytes in
-                try JSONDecoder.default.decode(
-                    RemoteConfiguration.self,
-                    from: Data(bytes)
-                )
+        self.lock.perform {
+            guard self.epoch == requestEpoch else { return }
+            let didPersist = self.persist(
+                remoteConfigResponse: response,
+                previous: previous
+            )
+            if didPersist {
+                self.markRefreshed()
             }
-
-            self.lock.perform {
-                guard self.epoch == requestEpoch else { return }
-                let didPersist = self.persist(
-                    container: container,
-                    previous: previous,
-                    response: response
-                )
-                if didPersist {
-                    self.markRefreshed()
-                }
-            }
-        } catch {
-            Logger.error(Strings.remoteConfig.failedToParseResponse(error))
         }
-
     }
 
     func handleFailure(
@@ -741,12 +728,13 @@ private extension RemoteConfigManager {
         return persisted.prefetchBlobs.filter { cachedRefs.contains($0) }
     }
 
-    /// Persists the config sync state and any valid inline blobs from a successful container response.
+    /// Persists the config sync state and any valid inline blobs from a successful response.
     func persist(
-        container: RemoteConfigContainer,
-        previous: PersistedRemoteConfiguration?,
-        response: RemoteConfiguration
+        remoteConfigResponse: RemoteConfigResponse,
+        previous: PersistedRemoteConfiguration?
     ) -> Bool {
+        let response = remoteConfigResponse.configuration
+
         Logger.debug(Strings.remoteConfig.receivedConfiguration(
             activeTopics: response.activeTopics, changedTopics: Array(response.topics.entries.keys)
         ))
@@ -770,7 +758,10 @@ private extension RemoteConfigManager {
 
         guard self.diskCache.write(persistedConfiguration) else { return false }
 
-        self.extractInlineBlobs(from: container, keepingOnly: postSyncReferencedBlobRefs)
+        self.extractInlineBlobs(
+            remoteConfigResponse.inlineContentElements,
+            keepingOnly: postSyncReferencedBlobRefs
+        )
         self.blobStore.retainOnly(postSyncReferencedBlobRefs)
 
         Logger.debug(Strings.remoteConfig.persistedConfiguration(
@@ -817,10 +808,10 @@ private extension RemoteConfigManager {
     ///
     /// Invalid or unreferenced content elements are skipped because inline blobs are opportunistic cache entries.
     func extractInlineBlobs(
-        from container: RemoteConfigContainer,
+        _ inlineContentElements: [String: RCContainer.Element],
         keepingOnly referencedBlobRefs: Set<String>
     ) {
-        for (ref, element) in container.inlineContentElements {
+        for (ref, element) in inlineContentElements {
             guard referencedBlobRefs.contains(ref) else { continue }
 
             do {
