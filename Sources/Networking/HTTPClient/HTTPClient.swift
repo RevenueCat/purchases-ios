@@ -79,7 +79,6 @@ class HTTPClient {
         self.operationDispatcher = operationDispatcher
         self.apiSourceFailover = apiSourceFailover
         self.requestTimeoutManager = timeoutManager ?? HTTPRequestTimeoutManager(
-            defaultTimeout: timeout,
             dateProvider: dateProvider
         )
     }
@@ -602,11 +601,10 @@ private extension HTTPClient {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
 
-                // A timeout on a main backend URL for a request that has a fallback URL
+                // A timeout on any non-fallback (main-source) request, regardless of fallback-URL support
                 if let error = networkError as? URLError, case .timedOut = error.code,
-                    !request.isFallbackURLRequest,
-                    request.httpRequest.path.supportsFallbackURLs {
-                    requestTimeoutResult = .timeoutOnMainBackendForFallbackSupportedEndpoint
+                    !request.isFallbackURLRequest {
+                    requestTimeoutResult = .mainSourceTimedOut
                 }
 
                 // A failure that points at the host (never a device-connectivity error or a 4xx) on a
@@ -704,7 +702,7 @@ private extension HTTPClient {
             request.completionHandler?(response)
         }
 
-        self.requestTimeoutManager.recordRequestResult(requestTimeoutResult)
+        self.requestTimeoutManager.recordRequestResult(host: urlRequest.url?.host, requestTimeoutResult)
 
         self.trackHttpRequestPerformedIfNeeded(request: request,
                                                host: urlRequest.url?.host,
@@ -769,8 +767,10 @@ private extension HTTPClient {
         #endif
 
         finalURLRequest.timeoutInterval = requestTimeoutManager.timeout(
-            isFallback: request.isFallbackURLRequest,
-            fallbackAvailable: request.httpRequest.path.supportsFallbackURLs && SystemInfo.proxyURL == nil
+            host: finalURLRequest.url?.host,
+            isFallbackHostRequest: request.isFallbackURLRequest,
+            endpointSupportsFallbackURLs: request.httpRequest.path.supportsFallbackURLs,
+            isProxied: SystemInfo.proxyURL != nil
         )
 
         // swiftlint:disable:next redundant_void_return
