@@ -117,6 +117,8 @@ private extension GetRemoteConfigOperation {
         case .rcContainer:
             self.perform(request, completion: completion) { (response: VerifiedHTTPResponse<RemoteConfigContainer?>) in
                 try RemoteConfigFetchResult(containerResponse: response)
+            } diagnosticData: { responseBody in
+                responseBody?.configPayloadDataForDiagnostics() ?? Data()
             }
         case .json:
             self.perform(request, completion: completion) { (response: VerifiedHTTPResponse<RemoteConfiguration?>) in
@@ -128,7 +130,8 @@ private extension GetRemoteConfigOperation {
     func perform<ResponseBody: HTTPResponseBody>(
         _ request: HTTPRequest,
         completion: @escaping () -> Void,
-        mapResponse: @escaping (VerifiedHTTPResponse<ResponseBody>) throws -> RemoteConfigFetchResult
+        mapResponse: @escaping (VerifiedHTTPResponse<ResponseBody>) throws -> RemoteConfigFetchResult,
+        diagnosticData: @escaping (ResponseBody) -> Data = { _ in Data() }
     ) {
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<ResponseBody>.Result) in
             defer {
@@ -139,7 +142,9 @@ private extension GetRemoteConfigOperation {
                 callback.completion(
                     response
                         .flatMap { response in
-                            Result { try mapResponse(response) }.mapError { NetworkError.decoding($0, Data()) }
+                            Result { try mapResponse(response) }.mapError {
+                                NetworkError.decoding($0, diagnosticData(response.body))
+                            }
                         }
                         .mapError(BackendError.networkError)
                 )

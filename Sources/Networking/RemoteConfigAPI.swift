@@ -68,10 +68,6 @@ struct RemoteConfigFetchResult {
     let response: RemoteConfigResponse?
     let verificationResult: VerificationResult
 
-    var container: RemoteConfigContainer? {
-        return self.response?.container
-    }
-
     init(containerResponse response: VerifiedHTTPResponse<RemoteConfigContainer?>) throws {
         self.response = try response.body.map(RemoteConfigResponse.init(container:))
         self.verificationResult = response.verificationResult
@@ -112,15 +108,6 @@ enum RemoteConfigResponse {
         }
     }
 
-    fileprivate var container: RemoteConfigContainer? {
-        switch self {
-        case let .rcContainer(container, _):
-            return container
-        case .json:
-            return nil
-        }
-    }
-
     init(configuration: RemoteConfiguration) {
         self = .json(configuration)
     }
@@ -143,6 +130,10 @@ struct RemoteConfigContainer {
     /// Underlying generic RC Container parsed from the remote config response.
     let rcContainer: RCContainer
 
+    /// Original RC Container bytes, retained for diagnostics if config decoding fails after
+    /// structural container parsing succeeds.
+    let rawData: Data?
+
     /// The first RC Container element, interpreted as the remote config payload for `/v1/config/<domain>`.
     let configElement: RCContainer.Element
 
@@ -156,13 +147,14 @@ struct RemoteConfigContainer {
     /// to the blob store.
     init(data: Data) throws {
         let container = try RCContainer(data: data)
-        try self.init(rcContainer: container)
+        try self.init(rcContainer: container, rawData: data)
     }
 
-    init(rcContainer container: RCContainer) throws {
+    init(rcContainer container: RCContainer, rawData: Data? = nil) throws {
         let configElement = try Self.configElement(in: container)
 
         self.rcContainer = container
+        self.rawData = rawData
         self.configElement = configElement
         self.inlineContentElements = Dictionary(
             container.elements.dropFirst().map { ($0.checksum, $0) },
@@ -202,6 +194,10 @@ extension RemoteConfigContainer {
         }
 
         return configElement
+    }
+
+    func configPayloadDataForDiagnostics() -> Data {
+        return (try? self.configElement.withDecodedPayloadBytes { Data($0) }) ?? self.rawData ?? Data()
     }
 
 }

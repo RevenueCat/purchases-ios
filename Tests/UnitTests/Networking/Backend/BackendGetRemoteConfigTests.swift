@@ -347,7 +347,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         let fetchResult = try XCTUnwrap(result?.value)
-        let container = try XCTUnwrap(fetchResult.container)
+        let container = try XCTUnwrap(fetchResult.response?.rcContainer)
 
         let contentElementsByChecksum = container.inlineContentElements
 
@@ -373,7 +373,6 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let fetchResult = try XCTUnwrap(result?.value)
         let response = try XCTUnwrap(fetchResult.response)
 
-        expect(fetchResult.container).to(beNil())
         expect(response.configuration.domain) == "app"
         expect(response.configuration.manifest) == "v1.test"
         expect(response.inlineContentElements).to(beEmpty())
@@ -393,7 +392,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
         let fetchResult = try XCTUnwrap(result?.value)
 
-        expect(fetchResult.container).toNot(beNil())
+        expect(fetchResult.response?.rcContainer).toNot(beNil())
         expect(fetchResult.verificationResult) == .verified
     }
 
@@ -421,7 +420,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         let fetchResult = try XCTUnwrap(result?.value)
-        let container = try XCTUnwrap(fetchResult.container)
+        let container = try XCTUnwrap(fetchResult.response?.rcContainer)
 
         let contentElementsByChecksum = container.inlineContentElements
 
@@ -448,7 +447,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         let fetchResult = try XCTUnwrap(result?.value)
-        let container = try XCTUnwrap(fetchResult.container)
+        let container = try XCTUnwrap(fetchResult.response?.rcContainer)
 
         expect(RCContainerTestData.data(from: container.configElement)) == Self.config
     }
@@ -466,7 +465,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
         let fetchResult = try XCTUnwrap(result?.value)
 
-        expect(fetchResult.container).toNot(beNil())
+        expect(fetchResult.response?.rcContainer).toNot(beNil())
         expect(fetchResult.verificationResult) == .failed
     }
 
@@ -487,7 +486,6 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(result).to(beSuccess())
         let fetchResult = try XCTUnwrap(result?.value)
 
-        expect(fetchResult.container).to(beNil())
         expect(fetchResult.response).to(beNil())
         expect(fetchResult.verificationResult) == .verified
     }
@@ -639,6 +637,33 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(error.domain) == String(reflecting: RCContainer.Parser.FormatError.self)
     }
 
+    func testGetRemoteConfigInvalidConfigPayloadInRCContainerSendsDecodingErrorWithResponseBody() {
+        let malformedConfig = #"{"domain":"app","manifest":}"#
+        let data = RCContainerTestData.container(config: malformedConfig.asData)
+        self.httpClient.mock(
+            requestPath: .remoteConfig(domain: "app"),
+            response: .init(statusCode: .success, body: data)
+        )
+
+        let result = waitUntilValue { completed in
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false,
+                completion: completed
+            )
+        }
+
+        guard case .networkError(.decoding) = result?.error else {
+            fail("Expected decoding error, got \(String(describing: result?.error))")
+            return
+        }
+
+        self.logger.verifyMessageWasLogged(
+            Strings.network.json_data_received(dataString: malformedConfig),
+            level: .error
+        )
+    }
+
     func testGetRemoteConfigInvalidJSONResponseSendsDecodingErrorInJSONMode() {
         self.httpClient.mock(
             requestPath: .remoteConfig(domain: "app", responseFormat: .json),
@@ -699,6 +724,18 @@ private extension BackendGetRemoteConfigTests {
                 delay: delay
             )
         )
+    }
+
+}
+
+private extension RemoteConfigResponse {
+
+    var rcContainer: RemoteConfigContainer? {
+        guard case let .rcContainer(container, _) = self else {
+            return nil
+        }
+
+        return container
     }
 
 }
