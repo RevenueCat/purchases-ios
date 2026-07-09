@@ -372,9 +372,8 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(signingRequest.signature) == Self.sampleSignature
     }
 
-    func testRemoteConfigFallbackSignatureUsesFallbackPathAndConfigPayload() throws {
-        let config = "config".asData
-        let body = Self.rcContainer(config: config, contentElements: ["content".asData])
+    func testRemoteConfigFallbackSignatureUsesFallbackPathAndJSONPayload() throws {
+        let body = Self.remoteConfigJSON
         let request = Self.remoteConfigRequest
         let fallbackURL = try XCTUnwrap(request.path.fallbackUrls.first?.absoluteString)
 
@@ -404,7 +403,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(self.signing.requests).to(haveCount(1))
         let signingRequest = try XCTUnwrap(self.signing.requests.onlyElement)
 
-        expect(signingRequest.parameters.message) == config
+        expect(signingRequest.parameters.message) == body
         expect(signingRequest.parameters.useFallbackPath) == true
         expect(signingRequest.parameters.nonce).to(beNil())
         expect(signingRequest.parameters.requestBody).to(beNil())

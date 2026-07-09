@@ -222,6 +222,8 @@ class HTTPRequestTests: TestCase {
             return
         }
 
+        expect(HTTPRequest.Path.remoteConfig(domain: "app").fallbackRequestPath as? HTTPRequest.Path)
+            == .remoteConfig(domain: "app", responseFormat: .json)
         expect(HTTPRequest.Path.remoteConfig(domain: "app").fallbackNeedsNonceForSigning) == false
     }
 
@@ -235,6 +237,7 @@ class HTTPRequestTests: TestCase {
         }
 
         for path in paths {
+            expect(path.fallbackRequestPath).to(beNil())
             expect(path.fallbackRequestMethod).to(beNil())
             expect(path.fallbackNeedsNonceForSigning).to(beNil())
         }

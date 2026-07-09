@@ -83,6 +83,25 @@ struct RemoteConfigFetchResult {
         self.verificationResult = response.verificationResult
     }
 
+    init(
+        dataResponse response: VerifiedHTTPResponse<Data?>,
+        requestedResponseFormat: RemoteConfigResponseFormat
+    ) throws {
+        self.response = try response.body.map { data in
+            let responseFormat = response.originalSource == .fallbackUrl
+                ? RemoteConfigResponseFormat.json
+                : requestedResponseFormat
+
+            switch responseFormat {
+            case .rcContainer:
+                return try RemoteConfigResponse(container: .init(data: data))
+            case .json:
+                return try RemoteConfigResponse(configuration: RemoteConfiguration.create(with: data))
+            }
+        }
+        self.verificationResult = response.verificationResult
+    }
+
 }
 
 enum RemoteConfigResponse {

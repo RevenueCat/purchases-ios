@@ -379,6 +379,35 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(fetchResult.verificationResult) == .verified
     }
 
+    func testGetRemoteConfigParsesFallbackResponseAsJSON() throws {
+        self.httpClient.mock(
+            requestPath: .remoteConfig(domain: "app"),
+            response: .init(
+                statusCode: .success,
+                body: Self.config,
+                verificationResult: .verified,
+                isFallbackUrlResponse: true
+            )
+        )
+
+        let result: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue { completed in
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false,
+                completion: completed
+            )
+        }
+
+        let fetchResult = try XCTUnwrap(result?.value)
+        let response = try XCTUnwrap(fetchResult.response)
+
+        expect(fetchResult.container).to(beNil())
+        expect(response.configuration.domain) == "app"
+        expect(response.configuration.manifest) == "v1.test"
+        expect(response.inlineContentElements).to(beEmpty())
+        expect(fetchResult.verificationResult) == .verified
+    }
+
     func testGetRemoteConfigReturnsVerificationResultFromHTTPClient() throws {
         self.mockSuccessfulResponse(verificationResult: .verified)
 

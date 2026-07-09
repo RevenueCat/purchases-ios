@@ -65,9 +65,18 @@ class BaseProductionRemoteConfigIntegrationTests: BaseBackendIntegrationTests {
         return configuration
     }
 
+    func verifyRemoteConfigResponse(_ result: RemoteConfigFetchResult) throws -> RemoteConfiguration {
+        expect(result.verificationResult) == .verified
+
+        let response = try XCTUnwrap(result.response)
+        self.verifyRemoteConfiguration(response.configuration)
+
+        return response.configuration
+    }
+
     func verifyNoContentResponse(_ result: RemoteConfigFetchResult) {
         expect(result.verificationResult) == .verified
-        expect(result.container).to(beNil())
+        expect(result.response).to(beNil())
     }
 
 }
@@ -174,7 +183,7 @@ final class FallbackURLProductionRemoteConfigIntegrationTests: BaseProductionRem
     func testCanFetchRemoteConfigFromFallbackURL() async throws {
         let result = try await self.fetchRemoteConfig()
 
-        _ = try self.verifyContainerResponse(result)
+        _ = try self.verifyRemoteConfigResponse(result)
     }
 
 }
@@ -193,7 +202,7 @@ final class EnforcedFallbackURLProductionRemoteConfigIntegrationTests: BaseProdu
     func testVerifiesSignedFallbackResponseWhenVerificationIsEnforced() async throws {
         let result = try await self.fetchRemoteConfig()
 
-        _ = try self.verifyContainerResponse(result)
+        _ = try self.verifyRemoteConfigResponse(result)
     }
 
 }

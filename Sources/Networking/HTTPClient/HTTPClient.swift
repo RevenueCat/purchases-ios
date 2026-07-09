@@ -345,11 +345,19 @@ internal extension HTTPClient {
         }
 
         private mutating func applyFallbackRequestOverrides() {
-            guard let fallbackRequestMethod = self.httpRequest.path.fallbackRequestMethod else {
+            let fallbackRequestPath = self.httpRequest.path.fallbackRequestPath
+            let fallbackRequestMethod = self.httpRequest.path.fallbackRequestMethod
+
+            guard fallbackRequestPath != nil || fallbackRequestMethod != nil else {
                 return
             }
 
-            self.httpRequest.method = fallbackRequestMethod
+            if let fallbackRequestPath {
+                self.httpRequest.path = fallbackRequestPath
+            }
+            if let fallbackRequestMethod {
+                self.httpRequest.method = fallbackRequestMethod
+            }
             self.httpRequest.nonce = nil
             self.headers = self.httpRequest.headers(
                 with: self.authHeaders,

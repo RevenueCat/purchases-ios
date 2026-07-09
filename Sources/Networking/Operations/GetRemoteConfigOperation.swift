@@ -113,17 +113,13 @@ private extension GetRemoteConfigOperation {
             path: .remoteConfig(domain: self.request.domain, responseFormat: self.request.responseFormat)
         )
 
-        switch self.request.responseFormat {
-        case .rcContainer:
-            self.perform(request, completion: completion) { (response: VerifiedHTTPResponse<RemoteConfigContainer?>) in
-                try RemoteConfigFetchResult(containerResponse: response)
-            } diagnosticData: { responseBody in
-                responseBody?.configPayloadDataForDiagnostics() ?? Data()
-            }
-        case .json:
-            self.perform(request, completion: completion) { (response: VerifiedHTTPResponse<RemoteConfiguration?>) in
-                RemoteConfigFetchResult(configurationResponse: response)
-            }
+        self.perform(request, completion: completion) { (response: VerifiedHTTPResponse<Data?>) in
+            try RemoteConfigFetchResult(
+                dataResponse: response,
+                requestedResponseFormat: self.request.responseFormat
+            )
+        } diagnosticData: { responseBody in
+            responseBody ?? Data()
         }
     }
 

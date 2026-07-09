@@ -3313,9 +3313,10 @@ extension HTTPClientTests {
         expect(fallbackRequest.headers[HTTPClient.RequestHeader.postParameters.rawValue]).to(beNil())
         expect(fallbackRequest.headers[HTTPClient.RequestHeader.headerParametersForSignature.rawValue]).to(beNil())
         expect(fallbackRequest.headers[HTTPClient.RequestHeader.accept.rawValue])
-            == HTTPClient.rcContainerFormatAcceptHeaderValue
-        expect(fallbackRequest.headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue])
-            == HTTPClient.rcContainerFormatElementEncodingHeaderValue
+            == "application/json"
+        expect(fallbackRequest.headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue]).to(beNil())
+        expect(fallbackRequest.httpRequest.path as? HTTPRequest.Path)
+            == .remoteConfig(domain: "app", responseFormat: .json)
 
         guard case .get = fallbackRequest.method else {
             fail("Expected remote config fallback request to use GET")

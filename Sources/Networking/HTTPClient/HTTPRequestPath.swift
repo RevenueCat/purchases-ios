@@ -46,6 +46,9 @@ protocol HTTPRequestPath {
     /// The fallback relative path for this endpoint, if any.
     var fallbackRelativePath: String? { get }
 
+    /// The request path to use when retrying with a fallback URL, if it differs from the main request.
+    var fallbackRequestPath: HTTPRequestPath? { get }
+
     /// The request method to use when retrying with a fallback URL, if it differs from the main request.
     var fallbackRequestMethod: HTTPRequest.Method? { get }
 
@@ -98,6 +101,10 @@ extension HTTPRequestPath {
     }
 
     var fallbackRelativePath: String? {
+        return nil
+    }
+
+    var fallbackRequestPath: HTTPRequestPath? {
         return nil
     }
 
@@ -221,6 +228,15 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .remoteConfig:
             return .get
+        default:
+            return nil
+        }
+    }
+
+    var fallbackRequestPath: HTTPRequestPath? {
+        switch self {
+        case let .remoteConfig(domain, _):
+            return HTTPRequest.Path.remoteConfig(domain: domain, responseFormat: .json)
         default:
             return nil
         }
