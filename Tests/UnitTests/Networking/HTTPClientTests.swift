@@ -72,7 +72,7 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
     fileprivate final func createClient(
         _ systemInfo: SystemInfo,
         operationDispatcher: OperationDispatcher = MockOperationDispatcher(),
-        apiSourceProvider: APISourceProviderType? = nil
+        apiSourceProvider: RemoteConfigSourceProviderType? = nil
     ) -> HTTPClient {
         return HTTPClient(systemInfo: systemInfo,
                           eTagManager: self.eTagManager,
@@ -4431,7 +4431,7 @@ private final class OrderedAPISourceTopicStore: RemoteConfigTopicStoreType {
 
 /// Wraps a real `RemoteConfigSourceProvider` (for token-correct failover) while recording the calls
 /// `HTTPClient` makes, so tests can assert which sources were consulted and reported unhealthy.
-final class RecordingAPISourceProvider: APISourceProviderType {
+final class RecordingAPISourceProvider: RemoteConfigSourceProviderType {
 
     private let wrapped: RemoteConfigSourceProvider
     private(set) var currentCallCount = 0
@@ -4442,6 +4442,10 @@ final class RecordingAPISourceProvider: APISourceProviderType {
         self.wrapped = wrapped
     }
 
+    func getCurrent(for purpose: RemoteConfigSourceHandle.Purpose) -> RemoteConfigSourceHandle? {
+        return self.wrapped.getCurrent(for: purpose)
+    }
+
     func currentAPISource() -> RemoteConfigSourceHandle? {
         self.currentCallCount += 1
         return self.wrapped.currentAPISource()
@@ -4450,6 +4454,15 @@ final class RecordingAPISourceProvider: APISourceProviderType {
     func reportUnhealthy(_ handle: RemoteConfigSourceHandle) {
         self.reportedURLs.append(handle.url)
         self.wrapped.reportUnhealthy(handle)
+    }
+
+    func restart(for purpose: RemoteConfigSourceHandle.Purpose) {
+        self.wrapped.restart(for: purpose)
+    }
+
+    @discardableResult
+    func restartIfExhausted(for purpose: RemoteConfigSourceHandle.Purpose) -> Bool {
+        return self.wrapped.restartIfExhausted(for: purpose)
     }
 
     func restartAPISourcesIfExhausted() {

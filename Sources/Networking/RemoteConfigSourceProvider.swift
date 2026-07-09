@@ -47,27 +47,13 @@ struct RemoteConfigSourceHandle {
 
 }
 
-/// Used by the networking layer to resolve the API base host and drive failover across API sources
-protocol APISourceProviderType: AnyObject {
-
-    /// The current healthy API base source, or `nil` once every API source has been reported unhealthy.
-    func currentAPISource() -> RemoteConfigSourceHandle?
-
-    /// Reports the given API source as unhealthy so the next `currentAPISource()` advances past it.
-    /// No-op if `handle` is no longer the current source (stale/concurrent reports are ignored).
-    func reportUnhealthy(_ handle: RemoteConfigSourceHandle)
-
-    /// Rewinds the API sources to the first one, but only if every API source has been reported
-    /// unhealthy. Lets a new request start over instead of being permanently stuck with no source
-    /// after a transient outage burned through the whole list. No-op while any source is still healthy.
-    func restartAPISourcesIfExhausted()
-
-}
-
-protocol RemoteConfigSourceProviderType: APISourceProviderType {
+protocol RemoteConfigSourceProviderType: AnyObject {
 
     /// The current healthy source for `purpose`, or `nil` once all of its sources are reported unhealthy.
     func getCurrent(for purpose: RemoteConfigSourceHandle.Purpose) -> RemoteConfigSourceHandle?
+
+    /// The current healthy API base source, or `nil` once every API source has been reported unhealthy.
+    func currentAPISource() -> RemoteConfigSourceHandle?
 
     /// Falls back to the next source for the handle's purpose. No-op if `handle` is no longer current.
     func reportUnhealthy(_ handle: RemoteConfigSourceHandle)
@@ -78,6 +64,11 @@ protocol RemoteConfigSourceProviderType: APISourceProviderType {
     /// Rewinds the given purpose only if every known source for it has already been exhausted.
     @discardableResult
     func restartIfExhausted(for purpose: RemoteConfigSourceHandle.Purpose) -> Bool
+
+    /// Rewinds the API sources to the first one, but only if every API source has been reported
+    /// unhealthy. Lets a new request start over instead of being permanently stuck with no source
+    /// after a transient outage burned through the whole list. No-op while any source is still healthy.
+    func restartAPISourcesIfExhausted()
 
 }
 
