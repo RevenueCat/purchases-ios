@@ -64,8 +64,8 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     }
 
     /// Builds the offeringId → workflowId map in a stable pass over `topic`. A duplicate `offeringId`
-    /// across items signals a backend issue and is logged once per rebuild; the last workflow id wins,
-    /// matching Android's last-wins behavior without relying on Swift dictionary iteration order.
+    /// across items signals a backend issue and is logged once per rebuild; the last workflow id wins
+    /// without relying on Swift dictionary iteration order.
     private func buildOfferingIdMap(from topic: RemoteConfiguration.ConfigTopic) -> [String: String] {
         var map: [String: String] = [:]
         var duplicateOfferingIds: Set<String> = []
