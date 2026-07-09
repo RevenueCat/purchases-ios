@@ -29,12 +29,14 @@ struct SDKConfigBenchmarkApp: App {
     @StateObject private var model: LaunchModel
 
     init() {
-        let clock = LaunchClock()
-        self.clock = clock
-
+        // Wipe before anchoring the clock: harness cleanup I/O must never count as SDK
+        // launch time (it would inflate every cold phase by the previous launch's litter).
         if CommandLine.arguments.contains("--wipe-state") {
             Self.wipeSDKState()
         }
+
+        let clock = LaunchClock()
+        self.clock = clock
 
         let environment = ProcessInfo.processInfo.environment
         let model = LaunchModel(clock: clock)
@@ -87,9 +89,8 @@ struct SDKConfigBenchmarkApp: App {
         if let bundleID = Bundle.main.bundleIdentifier {
             UserDefaults.standard.removePersistentDomain(forName: bundleID)
         }
-        // The SDK's own suite (UserDefaults.revenueCatSuiteName).
-        UserDefaults(suiteName: "com.revenuecat.user_defaults")?
-            .removePersistentDomain(forName: "com.revenuecat.user_defaults")
+        let sdkSuite = SDKObservedValues.revenueCatUserDefaultsSuiteName
+        UserDefaults(suiteName: sdkSuite)?.removePersistentDomain(forName: sdkSuite)
     }
 
 }
@@ -210,11 +211,6 @@ final class LaunchModel: ObservableObject {
 /// paywall tracks `workflows_step_started` when its first step renders.
 final class PaywallImpressionListener: EventsListener {
 
-    private static let contentAppearedEventTypes: Set<String> = [
-        "paywall_impression",
-        "workflows_step_started"
-    ]
-
     private let clock: LaunchClock
     private let onImpression: (Double) -> Void
 
@@ -225,7 +221,7 @@ final class PaywallImpressionListener: EventsListener {
 
     func onEventTracked(_ event: [String: Any]) {
         guard let type = event["type"] as? String,
-              Self.contentAppearedEventTypes.contains(type) else { return }
+              SDKObservedValues.contentAppearedEventTypes.contains(type) else { return }
         self.onImpression(self.clock.elapsedMs())
     }
 

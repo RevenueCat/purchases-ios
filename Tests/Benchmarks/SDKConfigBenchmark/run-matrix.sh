@@ -67,23 +67,13 @@ FAILED_ROWS=0
 
 PROJECT_ARGS=()
 if [[ "$TRANSPORT" == "live" ]]; then
-    # No keys live in source: resolve the target project's key at run time.
+    # No keys live in source: resolve the target project's key at run time (shared with
+    # the app-launch tier so both tiers always measure the same key for the same project).
     PROJECT_ID="${PROJECT_ID:-5f07e7e3}"
-    if ! command -v mafdet >/dev/null; then
-        echo "live runs resolve the project API key via the mafdet CLI; install it or run the binary directly with --api-key" >&2
-        exit 1
-    fi
-    RESOLVED_KEY="$(mafdet app api-keys --project-id "$PROJECT_ID" 2>/dev/null | python3 -c '
-import json, sys
-keys = json.load(sys.stdin)
-keys.sort(key=lambda entry: entry.get("app_store_type") != "test_store")
-print(keys[0]["key"] if keys else "")
-')"
-    if [[ -z "$RESOLVED_KEY" ]]; then
-        echo "Could not resolve an API key for project $PROJECT_ID via mafdet" >&2
-        exit 1
-    fi
-    echo "Live target: project $PROJECT_ID (key resolved via mafdet)" >&2
+    # shellcheck source=resolve-api-key.sh disable=SC1091
+    source "$REPO_ROOT/Tests/Benchmarks/SDKConfigBenchmark/resolve-api-key.sh"
+    RESOLVED_KEY="$(resolve_benchmark_api_key "$PROJECT_ID")"
+    echo "Live target: project $PROJECT_ID" >&2
     PROJECT_ARGS=(--api-key "$RESOLVED_KEY" --project-id "$PROJECT_ID")
 fi
 

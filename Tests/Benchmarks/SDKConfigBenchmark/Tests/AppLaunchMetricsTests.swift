@@ -1,6 +1,7 @@
 import XCTest
 
-@testable import SDKConfigBenchmarkCore
+// swiftlint:disable:next attributes
+@_spi(Internal) @testable import SDKConfigBenchmarkCore
 
 final class AppLaunchMetricsTests: BenchmarkTestCase {
 
@@ -214,6 +215,43 @@ final class AppLaunchMetricsTests: BenchmarkTestCase {
         ))
         XCTAssertFalse(BlobLogParser.isConfigNotModified(refreshing))
         XCTAssertFalse(BlobLogParser.isConfigRefreshFailed(refreshing))
+    }
+
+    /// The app decides "content appeared" from event-type strings it copies out of the SDK;
+    /// these build the real SDK events and assert the copies still match.
+    func testContentAppearedEventTypesMatchRealSDKEvents() throws {
+        let paywallData = PaywallEvent.Data(
+            paywallIdentifier: nil,
+            offeringIdentifier: "offering",
+            paywallRevision: 0,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil,
+            presentedOfferingContext: .init(offeringIdentifier: "offering")
+        )
+        let impression = PaywallEvent.impression(.init(), paywallData)
+        let impressionType = try XCTUnwrap(impression.toMap()["type"] as? String)
+        XCTAssertTrue(SDKObservedValues.contentAppearedEventTypes.contains(impressionType))
+
+        let stepStarted = WorkflowEvent.stepStarted(.init(), .init(workflowId: "w", stepId: "s"))
+        let stepType = try XCTUnwrap(stepStarted.toMap()["type"] as? String)
+        XCTAssertTrue(SDKObservedValues.contentAppearedEventTypes.contains(stepType))
+    }
+
+    /// The app wipes the SDK's UserDefaults suite by a copied name (the SDK's constant is
+    /// private). Behavioral pin: a value written through the SDK's own suite must be visible
+    /// through a suite created with the copied name.
+    func testRevenueCatUserDefaultsSuiteNameMatchesRealSDKSuite() throws {
+        let key = "benchmark-suite-pin-\(UUID().uuidString)"
+        UserDefaults.revenueCatSuite.set(true, forKey: key)
+        defer { UserDefaults.revenueCatSuite.removeObject(forKey: key) }
+
+        let mirror = try XCTUnwrap(
+            UserDefaults(suiteName: SDKObservedValues.revenueCatUserDefaultsSuiteName)
+        )
+        XCTAssertTrue(mirror.bool(forKey: key))
     }
 
     func testBlobLogParserToleratesLoggerPrefixesAndIgnoresOtherMessages() {

@@ -64,9 +64,28 @@ struct LaunchSample: Codable, Equatable {
     }
 
     static func decode(from json: String) -> LaunchSample? {
-        guard let data = json.data(using: .utf8) else { return nil }
-        return try? JSONDecoder().decode(LaunchSample.self, from: data)
+        return try? JSONDecoder().decode(LaunchSample.self, from: Data(json.utf8))
     }
+
+}
+
+/// SDK values the app copies because the SDK does not export them. Each one is pinned to
+/// the real SDK by a unit test in the benchmark suite, so drift over there fails a test
+/// instead of silently corrupting rows (a stale suite name would stop `--wipe-state` from
+/// wiping and make "cold" rows measure warm behavior; stale event types would time out
+/// every launch).
+enum SDKObservedValues {
+
+    /// Event types meaning "paywall content actually appeared": a classic paywall tracks
+    /// `paywall_impression`; a workflow paywall tracks `workflows_step_started`.
+    static let contentAppearedEventTypes: Set<String> = [
+        "paywall_impression",
+        "workflows_step_started"
+    ]
+
+    /// The UserDefaults suite the SDK persists into (`UserDefaults.revenueCatSuiteName`,
+    /// which is private).
+    static let revenueCatUserDefaultsSuiteName = "com.revenuecat.user_defaults"
 
 }
 

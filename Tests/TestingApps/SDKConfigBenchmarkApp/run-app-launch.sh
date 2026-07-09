@@ -38,9 +38,7 @@ else
 fi
 
 XCCONFIG_BACKUP=""
-XCCONFIG_EXISTED=0
 if [[ -f "$XCCONFIG" ]]; then
-    XCCONFIG_EXISTED=1
     XCCONFIG_BACKUP="$(mktemp)"
     cp "$XCCONFIG" "$XCCONFIG_BACKUP"
 fi
@@ -48,7 +46,7 @@ fi
 VARIANT_MARKER="// sdk-config-benchmark-variant:"
 
 restore_xcconfig() {
-    if [[ "$XCCONFIG_EXISTED" == "1" ]]; then
+    if [[ -n "$XCCONFIG_BACKUP" ]]; then
         cp "$XCCONFIG_BACKUP" "$XCCONFIG"
         rm -f "$XCCONFIG_BACKUP"
     else
@@ -58,25 +56,11 @@ restore_xcconfig() {
 }
 trap restore_xcconfig EXIT
 
-# Resolve the API key: env override, else mafdet (no keys live in source).
-if [[ -n "${SDK_CONFIG_BENCHMARK_API_KEY:-}" ]]; then
-    RESOLVED_KEY="$SDK_CONFIG_BENCHMARK_API_KEY"
-else
-    if ! command -v mafdet >/dev/null; then
-        echo "set SDK_CONFIG_BENCHMARK_API_KEY or install the mafdet CLI to resolve the project key" >&2
-        exit 1
-    fi
-    RESOLVED_KEY="$(mafdet app api-keys --project-id "$PROJECT_ID" 2>/dev/null | python3 -c '
-import json, sys
-keys = json.load(sys.stdin)
-keys.sort(key=lambda entry: entry.get("app_store_type") != "test_store")
-print(keys[0]["key"] if keys else "")
-')"
-fi
-if [[ -z "$RESOLVED_KEY" ]]; then
-    echo "Could not resolve an API key for project $PROJECT_ID" >&2
-    exit 1
-fi
+# Resolve the API key (shared with the CLI tier's run-matrix.sh: env override, else mafdet;
+# no keys live in source).
+# shellcheck source=../../Benchmarks/SDKConfigBenchmark/resolve-api-key.sh disable=SC1091
+source "$REPO_ROOT/Tests/Benchmarks/SDKConfigBenchmark/resolve-api-key.sh"
+RESOLVED_KEY="$(resolve_benchmark_api_key "$PROJECT_ID")"
 echo "Live target: project $PROJECT_ID" >&2
 
 if [[ -z "${DESTINATION:-}" ]]; then
@@ -116,6 +100,15 @@ set_swift_conditions() {
 FAILED_VARIANTS=0
 TOTAL_ROWS=0
 
+# Records a variant failure and discards its log. Rows from a failed or unverified variant
+# must never reach stdout: the tests print BENCHMARK_ROW before their validity assertions,
+# so a leaked row can look clean while measuring the wrong thing. Follow with `continue`.
+fail_variant() {
+    echo "$1" >&2
+    FAILED_VARIANTS=$((FAILED_VARIANTS + 1))
+    rm -f "$LOG"
+}
+
 for variant in $VARIANTS; do
     # BYPASS_SIMULATED_STORE_RELEASE_CHECK: tests build Release (shipping-SDK numbers), and
     # live runs use the project's Test Store key, which the SDK otherwise refuses (by
@@ -150,11 +143,7 @@ for variant in $VARIANTS; do
             test > "$LOG" 2>&1; then
         echo "Variant $variant FAILED; last log lines:" >&2
         tail -25 "$LOG" >&2
-        FAILED_VARIANTS=$((FAILED_VARIANTS + 1))
-        # A failed invocation must not leak rows into the JSONL: the tests print
-        # BENCHMARK_ROW before their validity assertions, so rows from a failed run may
-        # look clean while measuring the wrong thing.
-        rm -f "$LOG"
+        fail_variant "Variant $variant: xcodebuild test failed"
         continue
     fi
 
@@ -165,21 +154,13 @@ for variant in $VARIANTS; do
     if grep -q "SwiftCompile.*RevenueCat" "$LOG"; then
         # The rows claim shipping-SDK numbers: refuse Debug-built frameworks.
         if ! grep -q "Release-iphone" "$LOG"; then
-            echo "Variant $variant compiled without a Release configuration; refusing its rows" >&2
-            FAILED_VARIANTS=$((FAILED_VARIANTS + 1))
-            rm -f "$LOG"
+            fail_variant "Variant $variant compiled without a Release configuration; refusing its rows"
             continue
         fi
-        if [[ "$EXPECT_CONFIG_PATH" == "1" ]] && ! grep -q -- "-DENABLE_REMOTE_CONFIG" "$LOG"; then
-            echo "Variant $variant compiled WITHOUT ENABLE_REMOTE_CONFIG; refusing its rows" >&2
-            FAILED_VARIANTS=$((FAILED_VARIANTS + 1))
-            rm -f "$LOG"
-            continue
-        fi
-        if [[ "$EXPECT_CONFIG_PATH" == "0" ]] && grep -q -- "-DENABLE_REMOTE_CONFIG" "$LOG"; then
-            echo "Variant $variant compiled WITH ENABLE_REMOTE_CONFIG; refusing its rows" >&2
-            FAILED_VARIANTS=$((FAILED_VARIANTS + 1))
-            rm -f "$LOG"
+        HAS_CONFIG_FLAG=0
+        grep -q -- "-DENABLE_REMOTE_CONFIG" "$LOG" && HAS_CONFIG_FLAG=1
+        if [[ "$HAS_CONFIG_FLAG" != "$EXPECT_CONFIG_PATH" ]]; then
+            fail_variant "Variant $variant compiled with ENABLE_REMOTE_CONFIG=$HAS_CONFIG_FLAG, expected $EXPECT_CONFIG_PATH; refusing its rows"
             continue
         fi
     else

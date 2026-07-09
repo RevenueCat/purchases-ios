@@ -137,9 +137,11 @@ final class AppLaunchBenchmarkUITests: XCTestCase {
         attachment.lifetime = .keepAlways
         self.add(attachment)
 
-        let postWarmupErrors = samples.enumerated()
-            .filter { $0.offset >= configuration.warmup }
-            .compactMap { AppLaunchMetrics.errorMessage(for: $0.element) }
+        // One definition of "measured sample" (post-warmup, by index) for every assertion,
+        // matching the window the row's statistics were aggregated from.
+        let measured = samples.enumerated().filter { $0.offset >= configuration.warmup }
+
+        let postWarmupErrors = measured.compactMap { AppLaunchMetrics.errorMessage(for: $0.element) }
         XCTAssertTrue(
             postWarmupErrors.isEmpty,
             "\(postWarmupErrors.count) measured launch(es) failed; first: \(postWarmupErrors.first ?? "")"
@@ -148,7 +150,6 @@ final class AppLaunchBenchmarkUITests: XCTestCase {
         // Runtime variant proof: the launched binary must have actually run (or not run)
         // the config path; a mislabeled row would poison every later comparison.
         if let expectsConfigPath = configuration.expectsConfigPath {
-            let measured = samples.enumerated().filter { $0.offset >= configuration.warmup }
             let mismatches = measured
                 .filter { ($0.element?.configPathActive ?? false) != expectsConfigPath }
             XCTAssertTrue(
