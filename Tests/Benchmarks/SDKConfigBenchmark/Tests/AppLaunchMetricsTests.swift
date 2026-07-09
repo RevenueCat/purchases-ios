@@ -9,9 +9,9 @@ final class AppLaunchMetricsTests: BenchmarkTestCase {
         var sample = LaunchSample()
         sample.configuredMs = total * 0.1
         sample.customerInfoMs = total * 0.4
-        sample.offeringsMs = total * 0.8
-        sample.paywallAppearedMs = total * 0.9
-        sample.paywallImpressionMs = total
+        sample.offeringsMs = total
+        sample.paywallAppearedMs = total * 1.1
+        sample.paywallImpressionMs = total * 1.2
         return sample
     }
 
@@ -58,9 +58,10 @@ final class AppLaunchMetricsTests: BenchmarkTestCase {
         XCTAssertEqual(row["project_id"] as? String, "5f07e7e3")
     }
 
-    func testRowStatisticsUsePaywallImpressionOfPostWarmupSamples() throws {
+    func testRowStatisticsUseOfferingsCompletionOfPostWarmupSamples() throws {
         // Warmup discards by index: the 500ms first launch never enters the stats. The
-        // headline percentiles use the impression mark (content appeared), not the wrapper.
+        // headline percentiles measure configure + getOfferings (matching the CLI tier);
+        // the paywall marks remain secondary phase means.
         let row = try self.decodedRow(
             samples: [Self.sample(500), Self.sample(100), Self.sample(300), Self.sample(200)]
         )
@@ -72,11 +73,11 @@ final class AppLaunchMetricsTests: BenchmarkTestCase {
         XCTAssertEqual(row["p50_ms"] as? Double, 200)
         XCTAssertEqual(row["p95_ms"] as? Double, 300)
         XCTAssertEqual(row["post_warmup_error_count"] as? Int, 0)
-        XCTAssertEqual(row["paywall_impression_ms_mean"] as? Double, 200)
-        XCTAssertEqual(row["paywall_appeared_ms_mean"] as? Double, 180)
+        XCTAssertEqual(row["offerings_ms_mean"] as? Double, 200)
+        XCTAssertEqual(row["paywall_appeared_ms_mean"] as? Double, 220)
+        XCTAssertEqual(row["paywall_impression_ms_mean"] as? Double, 240)
         XCTAssertEqual(row["configured_ms_mean"] as? Double, 20)
         XCTAssertEqual(row["customer_info_ms_mean"] as? Double, 80)
-        XCTAssertEqual(row["offerings_ms_mean"] as? Double, 160)
     }
 
     func testSampleMissingImpressionCountsAsError() {

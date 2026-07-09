@@ -236,9 +236,11 @@ the time until a `PaywallView` actually appears on screen.
   delivered), `offerings` (getOfferings completed), `paywall_appeared` (the PaywallView
   wrapper mounted), and `paywall_impression` (the SDK tracked that paywall CONTENT actually
   appeared: `paywall_impression` for classic paywalls, `workflows_step_started` for workflow
-  paywalls, observed via the SDK's internal events-listener SPI). The row's percentile
-  statistics are over `paywall_impression`; a launch missing any phase counts as an error and
-  fails the run.
+  paywalls, observed via the SDK's internal events-listener SPI). **The row's percentile
+  statistics are over `offerings`: the measurement is `Purchases.configure` + `getOfferings`,
+  with or without workflows compiled in, matching the CLI tier's total.** The paywall marks
+  stay in the row as secondary phase means; a launch missing any phase still counts as an
+  error and fails the run.
 - Config-path phases and blob registration, observed from the stock SDK's log stream (the
   parser is pinned to `RemoteConfigStrings` by unit tests): `config_persisted_ms_mean`,
   `last_blob_stored_ms_mean`, `blobs_inline_mean` vs `blobs_downloaded_mean`, `blob_bytes_mean`,
@@ -266,24 +268,22 @@ Because there is no network control, treat app-tier numbers as end-to-end monito
 real network, not as a controlled A/B; the CLI's simulated transport remains the tool for
 isolating variables.
 
-First Release sample (simulator, live network against the stress project, 3 iterations,
-1 warmup discarded; p50 over time-to-paywall-impression, phase columns are means in ms):
+First Release sample (simulator, live network against the stress project, 4 iterations,
+1 warmup discarded; p50 over configure + getOfferings, phase columns are means in ms):
 
-| mode | scenario | p50 | impression | wrapper | offerings | customer info | config persisted | blobs |
+| mode | scenario | p50 | offerings | config persisted | customer info | wrapper | impression | blobs |
 |---|---|---|---|---|---|---|---|---|
-| app-launch-legacy | cold | 1174 | 1244 | 1095 | 1030 | 706 | - | - |
-| app-launch-config | cold | 1607 | 1674 | 1347 | 1327 | 922 | 716 | 2 inline + 4 CDN, 161KB |
-| app-launch-legacy | warm | 753 | 783 | 762 | 669 | 480 | - | - |
-| app-launch-config | warm | 934 | 973 | 840 | 821 | 577 | - (204) | 0 (already on disk) |
+| app-launch-legacy | cold | 1221 | 1298 | - | 839 | 1405 | 1971 | - |
+| app-launch-config | cold | 1354 | 1551 | 977 | 1009 | 1590 | 2361 | 2 inline + 4 CDN, 161KB |
+| app-launch-legacy | warm | 888 | 921 | - | 690 | 1104 | 1188 | - |
+| app-launch-config | warm | 1094 | 1267 | - (204) | 1008 | 1316 | 2149 | 0 (already on disk) |
 
-Notable in this sample: config cold runs ~35% over legacy end to end; the impression mark
-trails the wrapper mount by ~330ms on config cold (vs ~90ms on legacy warm), which is the
-loading-state gap the wrapper-based timing used to hide; and the blob registration caught a
-real signal on its first Release run: `min_downloaded_blob_bytes` = **65** — a 65-byte blob
-was CDN-fetched despite being far under the inline budget (worth raising with the config
-team: either those blobs should be inlined, or the inline policy is scoped more narrowly
-than "size under budget"). Iteration counts this small are smoke-level; use `ITERATIONS=25`
-or more for numbers worth acting on.
+Notable in this sample: configure + getOfferings runs ~11% over legacy on cold and ~23% on
+warm with workflows compiled in; the blob registration keeps catching the same real signal:
+`min_downloaded_blob_bytes` = **65** — a 65-byte blob CDN-fetched despite being far under
+the inline budget (worth raising with the config team: either those blobs should be inlined,
+or the inline policy is scoped more narrowly than "size under budget"). Iteration counts
+this small are smoke-level; use `ITERATIONS=25` or more for numbers worth acting on.
 
 ## Known limitations
 

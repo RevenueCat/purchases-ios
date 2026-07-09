@@ -64,9 +64,11 @@ enum AppLaunchMetrics {
             "post_warmup_error_count": errors.filter { $0.index >= warmupDiscarded }.count
         ]
 
-        // Headline statistic: time until paywall CONTENT appeared (the SDK's impression
-        // mark), not the wrapper mount, which can precede content by a loading state.
-        let totals = measured.compactMap(\.paywallImpressionMs).sorted()
+        // Headline statistic: `Purchases.configure` + `getOfferings` completed, with or
+        // without workflows compiled in. This matches the CLI tier's total (offerings
+        // delivered), so the two tiers answer the same question; the paywall marks stay in
+        // the row as secondary phase means.
+        let totals = measured.compactMap(\.offeringsMs).sorted()
         if !totals.isEmpty {
             row["mean_ms"] = Self.rounded(totals.reduce(0, +) / Double(totals.count))
             row["min_ms"] = Self.rounded(totals[0])
