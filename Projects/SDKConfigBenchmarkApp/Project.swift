@@ -10,6 +10,19 @@ import ProjectDescriptionHelpers
 // `SWIFT_ACTIVE_COMPILATION_CONDITIONS` from Local.xcconfig (see Package.swift), which the
 // runner script rewrites per variant.
 
+// Injected into the scheme's run environment so the app can be launched straight from Xcode:
+//   TUIST_BENCH_API_KEY=<key> tuist generate SDKConfigBenchmarkApp
+// Without it, a direct run reports "BENCH_API_KEY missing" by design (keys never live in
+// source or in committed scheme files).
+let runEnvironment: [String: EnvironmentVariable] = {
+    var environment: [String: EnvironmentVariable] = [:]
+    if let apiKey = Environment.benchApiKey {
+        environment["BENCH_API_KEY"] = .environmentVariable(value: apiKey, isEnabled: true)
+        environment["BENCH_APP_USER_ID"] = .environmentVariable(value: "bench-xcode-run", isEnabled: true)
+    }
+    return environment
+}()
+
 let project = Project(
     name: "SDKConfigBenchmarkApp",
     organizationName: .revenueCatOrgName,
@@ -59,7 +72,8 @@ let project = Project(
             testAction: .targets(["SDKConfigBenchmarkAppUITests"]),
             runAction: .runAction(
                 configuration: "Debug",
-                executable: "SDKConfigBenchmarkApp"
+                executable: "SDKConfigBenchmarkApp",
+                arguments: .arguments(environmentVariables: runEnvironment)
             )
         )
     ]
