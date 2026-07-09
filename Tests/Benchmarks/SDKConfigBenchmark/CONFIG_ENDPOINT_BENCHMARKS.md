@@ -170,9 +170,13 @@ run 2026-07-09 from a residential connection:
 
 Live observations (as of this run):
 
-- The project's `/v1/config` response currently drives **no blob downloads** (2 requests
-  total: config + offerings), so live config cost is one extra API round trip. As the backend
-  starts serving workflow/paywall blobs for this project, live runs pick that up automatically.
+- The project currently publishes **one workflow**, and khepri delivers its blob **inline in
+  the RC-Container** (config response ~3.9KB vs ~1.2KB of config JSON), so cold launches make
+  2 requests and no CDN fetches. The full chain still runs: inline extraction -> blob store ->
+  offerings delivery gated on the prefetched workflow -> warm 204 with the blob proof. The
+  **CDN download path** (`config.revenuecat-static.com` + failover) only engages once enough
+  workflows/paywalls are published that the response stops inlining; live runs pick that up
+  automatically with no harness changes.
 - **Warm config launches cost almost nothing extra** (142ms vs 135ms p50): offerings delivery
   does not wait for the config revalidation when the topics are already on disk, so the 204
   trails after delivery, exactly like production. Cold config pays the full extra round trip
