@@ -175,11 +175,11 @@ extension HTTPClient {
 
     static func headerParametersForSignatureHeader(
         with headers: RequestHeaders,
-        path: HTTPRequestPath
+        needsNonceForSigning: Bool
     ) -> RequestHeaders {
         if let header = HTTPRequest.headerParametersForSignatureHeader(
             headers: headers,
-            path: path
+            needsNonceForSigning: needsNonceForSigning
         ) {
             return [RequestHeader.headerParametersForSignature.rawValue: header]
         } else {
@@ -280,12 +280,20 @@ internal extension HTTPClient {
             return self.fallbackUrlIndex != nil
         }
 
+        private let authHeaders: HTTPClient.RequestHeaders
+        private let defaultHeaders: HTTPClient.RequestHeaders
+        private let internalSettings: InternalDangerousSettingsType
+
         init<Value: HTTPResponseBody>(httpRequest: HTTPRequest,
                                       authHeaders: HTTPClient.RequestHeaders,
                                       defaultHeaders: HTTPClient.RequestHeaders,
                                       verificationMode: Signing.ResponseVerificationMode,
                                       internalSettings: InternalDangerousSettingsType,
                                       completionHandler: HTTPClient.Completion<Value>?) {
+            self.authHeaders = authHeaders
+            self.defaultHeaders = defaultHeaders
+            self.internalSettings = internalSettings
+
             self.httpRequest = httpRequest.requestAddingNonceIfRequired(with: verificationMode)
             self.headers = self.httpRequest.headers(
                 with: authHeaders,
@@ -332,7 +340,25 @@ internal extension HTTPClient {
                 // No more fallback hosts available
                 return nil
             }
+            copy.applyFallbackRequestOverrides()
             return copy
+        }
+
+        private mutating func applyFallbackRequestOverrides() {
+            guard let fallbackRequestMethod = self.httpRequest.path.fallbackRequestMethod else {
+                return
+            }
+
+            self.httpRequest.method = fallbackRequestMethod
+            self.httpRequest.nonce = nil
+            self.headers = self.httpRequest.headers(
+                with: self.authHeaders,
+                defaultHeaders: self.defaultHeaders,
+                verificationMode: self.verificationMode,
+                internalSettings: self.internalSettings,
+                needsNonceForSigning: self.httpRequest.path.fallbackNeedsNonceForSigning
+            )
+            self.headers[RequestHeader.retryCount.rawValue] = "\(self.retryCount)"
         }
 
         var description: String {
@@ -907,10 +933,12 @@ extension HTTPRequest {
         with authHeaders: HTTPClient.RequestHeaders,
         defaultHeaders: HTTPClient.RequestHeaders,
         verificationMode: Signing.ResponseVerificationMode,
-        internalSettings: InternalDangerousSettingsType
+        internalSettings: InternalDangerousSettingsType,
+        needsNonceForSigning: Bool? = nil
     ) -> HTTPClient.RequestHeaders {
         var result: HTTPClient.RequestHeaders = defaultHeaders
         result += self.path.additionalHeaders
+        let needsNonceForSigning = needsNonceForSigning ?? self.path.needsNonceForSigning
 
         if self.path.authenticated {
             result += authHeaders
@@ -924,7 +952,7 @@ extension HTTPRequest {
            self.path.supportsSignatureVerification {
             let headerParametersSignature = HTTPClient.headerParametersForSignatureHeader(
                 with: defaultHeaders,
-                path: self.path
+                needsNonceForSigning: needsNonceForSigning
             )
 
             #if DEBUG

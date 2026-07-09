@@ -3288,6 +3288,41 @@ extension HTTPClientTests {
         expect(noMoreHostsRequest).to(beNil())
     }
 
+    func testRemoteConfigFallbackRequestUsesGetWithoutBodyOrSigningContext() throws {
+        let httpRequest = HTTPRequest(
+            method: .post(RemoteConfigRequest(appUserID: "app-user-id")),
+            path: .remoteConfig(domain: "app")
+        )
+        let request: HTTPClient.Request = .init(
+            httpRequest: httpRequest,
+            authHeaders: ["Authorization": "Bearer test"],
+            defaultHeaders: self.client.defaultHeaders,
+            verificationMode: .default,
+            internalSettings: DangerousSettings.Internal.default,
+            completionHandler: { (_: DataResponse) in }
+        )
+
+        expect(request.httpRequest.requestBody).toNot(beNil())
+        expect(request.headers[HTTPClient.RequestHeader.nonce.rawValue]).toNot(beNil())
+
+        let fallbackRequest = try XCTUnwrap(request.requestWithNextFallbackHost(proxyURL: nil))
+
+        expect(fallbackRequest.fallbackUrlIndex) == 0
+        expect(fallbackRequest.httpRequest.requestBody).to(beNil())
+        expect(fallbackRequest.headers[HTTPClient.RequestHeader.nonce.rawValue]).to(beNil())
+        expect(fallbackRequest.headers[HTTPClient.RequestHeader.postParameters.rawValue]).to(beNil())
+        expect(fallbackRequest.headers[HTTPClient.RequestHeader.headerParametersForSignature.rawValue]).to(beNil())
+        expect(fallbackRequest.headers[HTTPClient.RequestHeader.accept.rawValue])
+            == HTTPClient.rcContainerFormatAcceptHeaderValue
+        expect(fallbackRequest.headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue])
+            == HTTPClient.rcContainerFormatElementEncodingHeaderValue
+
+        guard case .get = fallbackRequest.method else {
+            fail("Expected remote config fallback request to use GET")
+            return
+        }
+    }
+
     func testRetriesWithNextFallbackHostOnServerError() throws {
         let request = HTTPRequest(method: .get, path: .mockPathWithFallbacks)
         let mainPath = request.path

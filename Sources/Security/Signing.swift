@@ -275,7 +275,7 @@ extension Signing.SignatureParameters {
         let postParameterHash: Data = self.requestBody?.postParameterHeader?.asData ?? .init()
         let headerParametersHash: Data = HTTPRequest.headerParametersForSignatureHeader(
             headers: self.requestHeaders,
-            path: self.path
+            needsNonceForSigning: self.nonce != nil && self.path.needsNonceForSigning
         )?
         .asData ?? .init()
         let requestDate: Data = String(self.requestDate).asData
@@ -296,7 +296,7 @@ extension Signing.SignatureParameters: CustomDebugStringConvertible {
             message: '\(self.messageString.trimmingWhitespacesAndNewLines)'
             headerParametersHash: '\(HTTPRequest.headerParametersForSignatureHeader(
                 headers: self.requestHeaders,
-                path: self.path
+                needsNonceForSigning: self.nonce != nil && self.path.needsNonceForSigning
             ) ?? "")'
             headers: '\(self.requestHeaders)'
             postParameterHeader: '\(self.requestBody?.postParameterHeader ?? "")'

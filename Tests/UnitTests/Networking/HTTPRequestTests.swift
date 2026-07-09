@@ -216,6 +216,30 @@ class HTTPRequestTests: TestCase {
             == ["https://api-production.8-lives-cat.io/v1/config/app%20workflows%2Fproject"]
     }
 
+    func testRemoteConfigFallbackUsesGet() {
+        guard case .get = HTTPRequest.Path.remoteConfig(domain: "app").fallbackRequestMethod else {
+            fail("Expected remote config fallback requests to use GET")
+            return
+        }
+
+        expect(HTTPRequest.Path.remoteConfig(domain: "app").fallbackNeedsNonceForSigning) == false
+    }
+
+    func testPathsWithoutFallbackMethodOverridesReturnNil() {
+        let paths = Self.paths.filter { path in
+            if case .remoteConfig = path {
+                return false
+            } else {
+                return true
+            }
+        }
+
+        for path in paths {
+            expect(path.fallbackRequestMethod).to(beNil())
+            expect(path.fallbackNeedsNonceForSigning).to(beNil())
+        }
+    }
+
     func testUserIDEscaping() {
         let encodeableUserID = "userid with spaces"
         let encodedUserID = "userid%20with%20spaces"

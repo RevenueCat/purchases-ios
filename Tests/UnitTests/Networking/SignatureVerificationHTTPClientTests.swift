@@ -372,6 +372,46 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(signingRequest.signature) == Self.sampleSignature
     }
 
+    func testRemoteConfigFallbackSignatureUsesFallbackPathAndConfigPayload() throws {
+        let config = "config".asData
+        let body = Self.rcContainer(config: config, contentElements: ["content".asData])
+        let request = Self.remoteConfigRequest
+        let fallbackURL = try XCTUnwrap(request.path.fallbackUrls.first?.absoluteString)
+
+        stub(condition: isPath(request.path)) { urlRequest in
+            if urlRequest.url?.absoluteString == fallbackURL {
+                return .init(
+                    data: body,
+                    statusCode: .success,
+                    headers: [
+                        HTTPClient.ResponseHeader.signature.rawValue: Self.sampleSignature,
+                        HTTPClient.ResponseHeader.requestDate.rawValue: String(Self.date2.millisecondsSince1970)
+                    ]
+                )
+            } else {
+                return .init(data: Data(), statusCode: .internalServerError, headers: nil)
+            }
+        }
+        self.signing.stubbedVerificationResult = true
+
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
+            self.client.perform(request, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .verified
+
+        expect(self.signing.requests).to(haveCount(1))
+        let signingRequest = try XCTUnwrap(self.signing.requests.onlyElement)
+
+        expect(signingRequest.parameters.message) == config
+        expect(signingRequest.parameters.useFallbackPath) == true
+        expect(signingRequest.parameters.nonce).to(beNil())
+        expect(signingRequest.parameters.requestBody).to(beNil())
+        expect(signingRequest.parameters.requestDate) == Self.date2.millisecondsSince1970
+        expect(signingRequest.signature) == Self.sampleSignature
+    }
+
     func testValidRemoteConfigJSONSignatureUsesRawBodyAsSignedMessage() throws {
         let body = Self.remoteConfigJSON
         self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app", responseFormat: .json),

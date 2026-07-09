@@ -46,6 +46,12 @@ protocol HTTPRequestPath {
     /// The fallback relative path for this endpoint, if any.
     var fallbackRelativePath: String? { get }
 
+    /// The request method to use when retrying with a fallback URL, if it differs from the main request.
+    var fallbackRequestMethod: HTTPRequest.Method? { get }
+
+    /// Whether fallback requests should include request-signing headers.
+    var fallbackNeedsNonceForSigning: Bool? { get }
+
     /// Additional headers specific to this endpoint.
     var additionalHeaders: HTTPRequest.Headers { get }
 
@@ -92,6 +98,14 @@ extension HTTPRequestPath {
     }
 
     var fallbackRelativePath: String? {
+        return nil
+    }
+
+    var fallbackRequestMethod: HTTPRequest.Method? {
+        return nil
+    }
+
+    var fallbackNeedsNonceForSigning: Bool? {
         return nil
     }
 
@@ -198,6 +212,24 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "/v1/product_entitlement_mapping"
         case let .remoteConfig(domain, _):
             return "/v1/config/\(Self.escape(domain))"
+        default:
+            return nil
+        }
+    }
+
+    var fallbackRequestMethod: HTTPRequest.Method? {
+        switch self {
+        case .remoteConfig:
+            return .get
+        default:
+            return nil
+        }
+    }
+
+    var fallbackNeedsNonceForSigning: Bool? {
+        switch self {
+        case .remoteConfig:
+            return false
         default:
             return nil
         }

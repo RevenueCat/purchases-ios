@@ -91,7 +91,7 @@ private extension BaseProductionRemoteConfigIntegrationTests {
             storeKitVersion: Self.storeKitVersion,
             apiKey: self.apiKey,
             responseVerificationMode: Self.responseVerificationMode,
-            dangerousSettings: DangerousSettings(),
+            dangerousSettings: .init(autoSyncPurchases: true, internalSettings: self),
             isAppBackgrounded: false,
             preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: nil)
         )
@@ -156,6 +156,44 @@ final class EnforcedProductionRemoteConfigIntegrationTests: BaseProductionRemote
         let result = try await self.fetchRemoteConfig(manifest: configuration.manifest)
 
         self.verifyNoContentResponse(result)
+    }
+
+}
+
+final class FallbackURLProductionRemoteConfigIntegrationTests: BaseProductionRemoteConfigIntegrationTests {
+
+    override class var responseVerificationMode: Signing.ResponseVerificationMode {
+        return .informational(Signing.loadPublicKey())
+    }
+
+    override func setUp() async throws {
+        self.mainServerDown()
+        try await super.setUp()
+    }
+
+    func testCanFetchRemoteConfigFromFallbackURL() async throws {
+        let result = try await self.fetchRemoteConfig()
+
+        _ = try self.verifyContainerResponse(result)
+    }
+
+}
+
+final class EnforcedFallbackURLProductionRemoteConfigIntegrationTests: BaseProductionRemoteConfigIntegrationTests {
+
+    override class var responseVerificationMode: Signing.ResponseVerificationMode {
+        return .enforced(Signing.loadPublicKey())
+    }
+
+    override func setUp() async throws {
+        self.mainServerDown()
+        try await super.setUp()
+    }
+
+    func testVerifiesSignedFallbackResponseWhenVerificationIsEnforced() async throws {
+        let result = try await self.fetchRemoteConfig()
+
+        _ = try self.verifyContainerResponse(result)
     }
 
 }
