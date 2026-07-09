@@ -92,7 +92,7 @@ extension RemoteConfigManagerType {
         itemKeys: [String],
         as type: T.Type
     ) async throws -> T? {
-        let uniqueItemKeys = Self.uniqueItemKeys(itemKeys)
+        let uniqueItemKeys = itemKeys.deduplicated()
         guard !self.isDisabled else {
             Logger.warn(Strings.remoteConfig.mergeItemsBlobDataDisabled(topic: topic, itemKeys: uniqueItemKeys))
             return nil
@@ -160,17 +160,6 @@ extension RemoteConfigManagerType {
         }
         envelope.append(contentsOf: "}".utf8)
         return envelope
-    }
-
-    private static func uniqueItemKeys(_ itemKeys: [String]) -> [String] {
-        var seen: Set<String> = []
-        var uniqueItemKeys: [String] = []
-
-        for itemKey in itemKeys where seen.insert(itemKey).inserted {
-            uniqueItemKeys.append(itemKey)
-        }
-
-        return uniqueItemKeys
     }
 
 }
@@ -784,7 +773,7 @@ private extension RemoteConfigManager {
             postSyncTopics: postSyncTopics
         ).filter { !self.blobStore.contains(ref: $0) }
         Logger.verbose(Strings.remoteConfig.prefetchingBlobCount(refsToPrefetch.count))
-        self.blobFetcher.prefetch(refs: Array(refsToPrefetch))
+        self.blobFetcher.prefetch(refs: refsToPrefetch)
 
         return true
     }
@@ -823,14 +812,14 @@ private extension RemoteConfigManager {
     func postSyncPrefetchBlobRefs(
         response: RemoteConfiguration,
         postSyncTopics: RemoteConfiguration.Topics
-    ) -> Set<String> {
+    ) -> [String] {
         let itemPrefetchBlobRefs = postSyncTopics.entries.values.flatMap { topic in
             topic.values
                 .filter(\.prefetch)
                 .compactMap(\.blobRef)
         }
 
-        return Set(response.prefetchBlobs).union(itemPrefetchBlobRefs)
+        return (response.prefetchBlobs + itemPrefetchBlobRefs).deduplicated()
     }
 
     /// Writes valid inline content elements that are referenced by this config response.

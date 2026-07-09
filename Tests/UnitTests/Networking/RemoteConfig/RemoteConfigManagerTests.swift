@@ -2131,7 +2131,8 @@ final class RemoteConfigManagerTests: TestCase {
               "wf-1": { "blob_ref": "\(itemPrefetchRef)", "prefetch": true },
               "wf-2": { "blob_ref": "\(itemOnDemandRef)", "prefetch": false },
               "wf-3": { "blob_ref": "\(cachedItemPrefetchRef)", "prefetch": true },
-              "wf-4": { "prefetch": true }
+              "wf-4": { "prefetch": true },
+              "wf-5": { "blob_ref": "\(serverPrefetchRef)", "prefetch": true }
             }
           }
         }
@@ -2145,7 +2146,7 @@ final class RemoteConfigManagerTests: TestCase {
             ))
         )
 
-        expect(Set(self.blobFetcher.invokedPrefetchRefs)) == Set([serverPrefetchRef, itemPrefetchRef])
+        expect(self.blobFetcher.invokedPrefetchRefs) == [serverPrefetchRef, itemPrefetchRef]
     }
 
     func testContainerResponseDoesNotPruneBlobStoreWhenCacheWriteFails() throws {
