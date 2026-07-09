@@ -1034,6 +1034,58 @@ extension OfferingsManagerTests {
         expect(delivered.value).toEventually(beTrue())
     }
 
+    func testGetOfferingsDoesNotDeliverUntilUiConfigResolved() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        // The workflows topic resolves immediately; ui_config's blob reads are held.
+        mockRemoteConfigManager.shouldStoreBlobDataCompletion = true
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let delivered: Atomic<Bool> = false
+        manager.offerings(appUserID: MockData.anyAppUserID) { _ in delivered.value = true }
+
+        // The ui_config read was started but is held, so offerings must wait.
+        expect(mockRemoteConfigManager.invokedBlobDataParameters).toEventuallyNot(beEmpty())
+        expect(delivered.value) == false
+
+        mockRemoteConfigManager.completeStoredBlobReads()
+        expect(delivered.value).toEventually(beTrue())
+    }
+
+    func testGetOfferingsDeliversWhenUiConfigResolutionFails() {
+        // No ui_config blobs stubbed: resolution fails (nil). Readiness is best-effort, so
+        // delivery must proceed anyway.
+        let manager = self.makeOfferingsManager(remoteConfigManager: MockRemoteConfigManager())
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let result = waitUntilValue { completed in
+            manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
+        }
+
+        expect(result).to(beSuccess())
+    }
+
+    func testGetOfferingsAwaitsWorkflowsAndUiConfigConcurrently() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        // Hold BOTH readiness steps: each must have STARTED before either completes, or one
+        // failing slowly would serialize behind the other.
+        mockRemoteConfigManager.shouldStoreTopicCompletion = true
+        mockRemoteConfigManager.shouldStoreBlobDataCompletion = true
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let delivered: Atomic<Bool> = false
+        manager.offerings(appUserID: MockData.anyAppUserID) { _ in delivered.value = true }
+
+        expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
+        expect(mockRemoteConfigManager.invokedBlobDataParameters).toEventuallyNot(beEmpty())
+        expect(delivered.value) == false
+
+        mockRemoteConfigManager.completeStoredTopic()
+        mockRemoteConfigManager.completeStoredBlobReads()
+        expect(delivered.value).toEventually(beTrue())
+    }
+
     func testGetOfferingsDeliversEvenWhenRemoteConfigHasNoWorkflowsTopic() {
         // A manager with no committed `workflows` topic (e.g. never synced) must still call back, so
         // offerings delivery can never hang.
@@ -1067,9 +1119,8 @@ extension OfferingsManagerTests {
         expect(delivered.value).toEventually(beTrue())
     }
 
-    func testGetOfferingsFromStaleMemoryCacheDeliversImmediately() {
+    func testGetOfferingsFromStaleMemoryCacheGatesDeliveryAndStillRefreshes() {
         let mockRemoteConfigManager = MockRemoteConfigManager()
-        // Hold the topic completion so a foreground wait, if present, would block delivery.
         mockRemoteConfigManager.shouldStoreTopicCompletion = true
         let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
         // Cached but stale, so the background refresh runs.
@@ -1080,12 +1131,15 @@ extension OfferingsManagerTests {
         let delivered: Atomic<Bool> = false
         manager.offerings(appUserID: MockData.anyAppUserID) { _ in delivered.value = true }
 
-        // Cached offerings are delivered immediately, not blocked on the held topic completion.
-        expect(delivered.value).toEventually(beTrue())
-
-        // Drain the background refresh's config-ready wait so its `Task` doesn't leak past this test.
+        // The background refresh starts regardless of the gate...
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserID).toEventually(beTrue())
+        // ...but even stale cached offerings must not be delivered before config readiness:
+        // getOfferings returning means the paywall config data is queryable.
         expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
+        expect(delivered.value) == false
+
         mockRemoteConfigManager.completeStoredTopic()
+        expect(delivered.value).toEventually(beTrue())
     }
 
     func testGetOfferingsNetworkFetchAwaitsConfigReadyBeforeDelivering() {

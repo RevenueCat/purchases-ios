@@ -28,6 +28,9 @@ class OfferingsManager {
     private let dateProvider: DateProvider
     // Nil when remote config is disabled, in which case offerings delivery is unchanged.
     private let remoteConfigManager: RemoteConfigManagerType?
+    // Derived from `remoteConfigManager`; resolves the `ui_config` body the delivery gate
+    // waits on. Nil exactly when the manager is.
+    private let uiConfigProvider: UiConfigProvider?
 
     init(deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
@@ -47,6 +50,7 @@ class OfferingsManager {
         self.diagnosticsTracker = diagnosticsTracker
         self.dateProvider = dateProvider
         self.remoteConfigManager = remoteConfigManager
+        self.uiConfigProvider = remoteConfigManager.map { UiConfigProvider(manager: $0) }
     }
 
     func offerings(
@@ -99,23 +103,19 @@ class OfferingsManager {
                                                  notFoundProductIds: nil)
 
             if cacheStatus == .stale {
-                // Serve the cached offerings immediately and refresh in the background, preserving the
-                // existing "return fast, update later" behavior. The background update goes through the
-                // same workflows-aware delivery path, so it refreshes the workflows list too. Gating
-                // here as well would both block delivery and double-fetch the list.
-                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(memoryCachedOfferings))
+                // Kick the background refresh before the gated delivery below; the readiness
+                // gate must not delay it.
                 self.updateOfferingsCache(appUserID: appUserID,
                                           isAppBackgrounded: isAppBackgrounded,
                                           fetchPolicy: fetchPolicy,
                                           completion: nil)
-            } else {
-                // Fresh offerings (no background refresh coming): ensure remote config has synced at
-                // least once before delivering, so a caller resolving a workflow right after
-                // `getOfferings` succeeds isn't racing the first config sync. This is a no-op once the
-                // `workflows` topic is already populated, which it normally is on this path.
-                self.deliverWhenConfigReady {
-                    self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(memoryCachedOfferings))
-                }
+            }
+            // Cached delivery (fresh or stale) goes through the readiness gate: `getOfferings`
+            // returning means the paywall config data is queryable. The gate is a no-op once
+            // config has synced, so the stale path's "return fast, update later" behavior is
+            // preserved everywhere but the very first launch.
+            self.deliverWhenConfigReady {
+                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(memoryCachedOfferings))
             }
         }
     }
@@ -391,13 +391,24 @@ private extension OfferingsManager {
     /// `workflows` topic's metadata. The manager's `awaitTopicAndPrefetchBlobsReady()` read no-ops when already synced
     /// and always calls back, so this never hangs. When no manager is wired (workflows disabled),
     /// `deliver` runs immediately, leaving offerings unchanged.
+    /// Invokes `deliver` once the config-endpoint paywall data `getOfferings` depends on is
+    /// ready, resolved concurrently:
+    /// - the `workflows` topic is synced (with its prefetch-flagged blobs downloaded), so
+    ///   workflow resolution right after `getOfferings` doesn't race the first config sync; and
+    /// - the `ui_config` body is resolved, so a paywall render has its styling in hand without
+    ///   a further round trip.
+    ///
+    /// Both steps are best-effort: each returns nil on failure rather than throwing, so
+    /// delivery can never be stranded on either.
     private func deliverWhenConfigReady(deliver: @escaping () -> Void) {
         guard let remoteConfigManager = self.remoteConfigManager else {
             deliver()
             return
         }
         Task {
-            _ = await remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
+            async let workflowsReady = remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
+            async let uiConfigReady = self.uiConfigProvider?.getUiConfig()
+            _ = await (workflowsReady, uiConfigReady)
             deliver()
         }
     }

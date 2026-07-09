@@ -743,9 +743,36 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         continuation?.resume(returning: result)
     }
 
+    /// When `true`, `blobData(for:itemKey:)` suspends until `completeStoredBlobReads()` is called,
+    /// so tests can control the timing of a caller awaiting blob-backed resolution (e.g.
+    /// `OfferingsManager`'s config-ready gate resolving `ui_config`).
+    var shouldStoreBlobDataCompletion = false
+    private typealias StoredBlobRead = (
+        topic: RemoteConfigTopic, itemKey: String, continuation: CheckedContinuation<Data?, Never>
+    )
+    private let _storedBlobReads: Atomic<[StoredBlobRead]> = .init([])
+
     func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
-        self._invokedBlobDataParameters.modify { $0.append((topic, itemKey)) }
-        return self.stubbedBlobData[topic]?[itemKey]
+        guard self.shouldStoreBlobDataCompletion else {
+            self._invokedBlobDataParameters.modify { $0.append((topic, itemKey)) }
+            return self.stubbedBlobData[topic]?[itemKey]
+        }
+        return await withCheckedContinuation { continuation in
+            // Store before recording the invocation, so a test polling the invocation list can
+            // never observe readiness before `completeStoredBlobReads()` has something to resume.
+            self._storedBlobReads.modify { $0.append((topic, itemKey, continuation)) }
+            self._invokedBlobDataParameters.modify { $0.append((topic, itemKey)) }
+        }
+    }
+
+    /// Resumes every blob read held while `shouldStoreBlobDataCompletion` was `true` with the
+    /// stubbed data for its key, and stops holding subsequent reads, so sequential read chains
+    /// (like `mergeItemsBlobData`'s loop) run to completion.
+    func completeStoredBlobReads() {
+        self.shouldStoreBlobDataCompletion = false
+        for read in self._storedBlobReads.getAndSet([]) {
+            read.continuation.resume(returning: self.stubbedBlobData[read.topic]?[read.itemKey])
+        }
     }
 
     func blobData<T: Decodable>(
