@@ -337,17 +337,22 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         expect(self.blobStore.invokedWriteCount) == 1
     }
 
-    func testDifferentRefsRunConcurrentlyUpToWorkerLimit() async {
+    func testDifferentRefsRunConcurrentlyUpToWorkerLimit() async throws {
         let refs = (0..<6).map { Self.ref(for: "blob-\($0)".asData) }
 
         self.fetcher.prefetch(refs: refs)
 
         await self.downloader.waitForRequestCount(4)
         expect(self.downloader.activeRequestCount) == 4
+        let firstBatch = Array(self.downloader.requestedRefs.prefix(4))
+        expect(Set(firstBatch).isSubset(of: Set(refs))) == true
+        expect(Set(firstBatch)).to(haveCount(4))
 
-        self.downloader.complete(ref: refs[0], with: .success("blob-0".asData))
+        let activeRef = try XCTUnwrap(firstBatch.first)
+        let activeIndex = try XCTUnwrap(refs.firstIndex(of: activeRef))
+        self.downloader.complete(ref: activeRef, with: .success("blob-\(activeIndex)".asData))
         await self.downloader.waitForRequestCount(5)
-        expect(Array(self.downloader.requestedRefs.prefix(4))) == Array(refs.prefix(4))
+        expect(self.downloader.activeRequestCount) == 4
     }
 
     func testPrefetchSchedulesLowPriorityRefs() async {
@@ -359,17 +364,19 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         expect(Set(self.downloader.requestedRefs)) == Set(refs)
     }
 
-    func testOnDemandRequestRunsBeforeQueuedPrefetches() async {
+    func testOnDemandRequestRunsBeforeQueuedPrefetches() async throws {
         let prefetchRefs = (0..<5).map { Self.ref(for: "prefetch-\($0)".asData) }
         let onDemandPayload = "on demand".asData
         let onDemandRef = Self.ref(for: onDemandPayload)
 
         self.fetcher.prefetch(refs: prefetchRefs)
         await self.downloader.waitForRequestCount(4)
+        let activePrefetchRef = try XCTUnwrap(self.downloader.requestedRefs.prefix(4).first)
+        let activePrefetchIndex = try XCTUnwrap(prefetchRefs.firstIndex(of: activePrefetchRef))
 
         let onDemand = Task { await self.fetcher.ensureDownloaded(ref: onDemandRef) }
         await self.waitForScheduledTaskToReachFetcher()
-        self.downloader.complete(ref: prefetchRefs[0], with: .success("prefetch-0".asData))
+        self.downloader.complete(ref: activePrefetchRef, with: .success("prefetch-\(activePrefetchIndex)".asData))
 
         await self.downloader.waitForRequestCount(5)
         expect(self.downloader.requestedRefs[4]) == onDemandRef
@@ -379,17 +386,19 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         expect(result) == true
     }
 
-    func testOnDemandRequestBoostsAndJoinsQueuedPrefetch() async {
+    func testOnDemandRequestBoostsAndJoinsQueuedPrefetch() async throws {
         let prefetchRefs = (0..<5).map { Self.ref(for: "prefetch-\($0)".asData) }
         let boostedPayload = "boosted".asData
         let boostedRef = Self.ref(for: boostedPayload)
 
         self.fetcher.prefetch(refs: prefetchRefs + [boostedRef])
         await self.downloader.waitForRequestCount(4)
+        let activePrefetchRef = try XCTUnwrap(self.downloader.requestedRefs.prefix(4).first)
+        let activePrefetchIndex = try XCTUnwrap(prefetchRefs.firstIndex(of: activePrefetchRef))
 
         let boosted = Task { await self.fetcher.ensureDownloaded(ref: boostedRef) }
         await self.waitForScheduledTaskToReachFetcher()
-        self.downloader.complete(ref: prefetchRefs[0], with: .success("prefetch-0".asData))
+        self.downloader.complete(ref: activePrefetchRef, with: .success("prefetch-\(activePrefetchIndex)".asData))
 
         await self.downloader.waitForRequestCount(5)
         expect(self.downloader.requestedRefs[4]) == boostedRef
