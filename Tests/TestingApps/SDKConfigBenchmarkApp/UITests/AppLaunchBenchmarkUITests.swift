@@ -46,15 +46,17 @@ final class AppLaunchBenchmarkUITests: XCTestCase {
         let configuration = try self.configuration()
 
         // A fresh user and wiped state every launch: each iteration is a true cold start.
+        var retries = 0
         let samples = (0..<configuration.iterations).map { iteration in
-            self.launchAndCollect(
+            self.launchCollectingWithRetry(
                 configuration: configuration,
                 appUserID: "bench-app-cold-\(configuration.runNonce)-\(iteration)",
-                wipeState: true
+                wipeState: true,
+                retries: &retries
             )
         }
 
-        self.report(samples: samples, scenario: "cold", configuration: configuration)
+        self.report(samples: samples, scenario: "cold", configuration: configuration, retries: retries)
     }
 
     func testWarmLaunches() throws {
@@ -70,11 +72,17 @@ final class AppLaunchBenchmarkUITests: XCTestCase {
             return
         }
 
+        var retries = 0
         let samples = (0..<configuration.iterations).map { _ in
-            self.launchAndCollect(configuration: configuration, appUserID: appUserID, wipeState: false)
+            self.launchCollectingWithRetry(
+                configuration: configuration,
+                appUserID: appUserID,
+                wipeState: false,
+                retries: &retries
+            )
         }
 
-        self.report(samples: samples, scenario: "warm", configuration: configuration)
+        self.report(samples: samples, scenario: "warm", configuration: configuration, retries: retries)
     }
 
     // MARK: -
@@ -105,6 +113,28 @@ final class AppLaunchBenchmarkUITests: XCTestCase {
         )
     }
 
+    /// One launch, retried once when it produced nothing at all (element never appeared:
+    /// a simulator hiccup or a >90s stall). At hundreds of iterations a ~1% harness flake
+    /// is expected; a retry is a fresh, unbiased sample, and the retry COUNT lands in the
+    /// row so censored launches stay visible. A sample that reports an error is NOT
+    /// retried: that is a real measured failure.
+    private func launchCollectingWithRetry(
+        configuration: Configuration,
+        appUserID: String,
+        wipeState: Bool,
+        retries: inout Int
+    ) -> LaunchSample? {
+        if let sample = self.launchAndCollect(
+            configuration: configuration, appUserID: appUserID, wipeState: wipeState
+        ) {
+            return sample
+        }
+        retries += 1
+        return self.launchAndCollect(
+            configuration: configuration, appUserID: appUserID, wipeState: wipeState
+        )
+    }
+
     private func launchAndCollect(
         configuration: Configuration,
         appUserID: String,
@@ -126,14 +156,28 @@ final class AppLaunchBenchmarkUITests: XCTestCase {
         return LaunchSample.decode(from: result.label)
     }
 
-    private func report(samples: [LaunchSample?], scenario: String, configuration: Configuration) {
+    private func report(
+        samples: [LaunchSample?],
+        scenario: String,
+        configuration: Configuration,
+        retries: Int
+    ) {
+        // A retried launch is a fresh sample, but the retry budget stays small: pervasive
+        // retries mean the environment is unstable and the whole round is suspect.
+        let retryBudget = max(1, configuration.iterations / 50)
+        XCTAssertLessThanOrEqual(
+            retries, retryBudget,
+            "\(retries) launches produced nothing and were retried (budget \(retryBudget)); environment unstable"
+        )
+
         let row = AppLaunchMetrics.row(
             mode: configuration.modeLabel,
             scenario: scenario,
             profile: Self.profile,
             projectID: configuration.projectID,
             warmupDiscarded: configuration.warmup,
-            samples: samples
+            samples: samples,
+            launchRetries: retries
         )
 
         // The script greps this prefix out of the xcodebuild log to build the JSONL file.

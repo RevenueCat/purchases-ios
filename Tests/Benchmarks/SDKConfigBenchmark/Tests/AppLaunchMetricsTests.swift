@@ -107,6 +107,16 @@ final class AppLaunchMetricsTests: BenchmarkTestCase {
         XCTAssertTrue(firstError.contains("BENCH_API_KEY missing"))
     }
 
+    func testRowCarriesLaunchRetries() throws {
+        let row = AppLaunchMetrics.row(
+            mode: "app-launch-config", scenario: "cold", profile: "simulator",
+            projectID: "p", warmupDiscarded: 0,
+            samples: [Self.sample(100)], launchRetries: 2
+        )
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(row.utf8)) as? [String: Any])
+        XCTAssertEqual(object["launch_retries"] as? Int, 2)
+    }
+
     func testWarmupWindowErrorsAreCountedButNotPostWarmup() throws {
         var failed = Self.sample(50)
         failed.error = "boom"

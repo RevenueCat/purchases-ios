@@ -80,6 +80,7 @@ struct BenchmarkCommand {
         "fallback_host_requests_total", "offerings_ms_mean", "config_ms_mean", "blob_ms_mean",
         "blobs_inline_mean", "blobs_downloaded_mean", "blob_bytes_mean", "blobs_by_topic", "max_inline_blob_bytes",
         "min_downloaded_blob_bytes", "config_persisted_ms_mean", "last_blob_stored_ms_mean",
+        "launch_retries",
         "first_error", "project_id"
     ]
 

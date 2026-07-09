@@ -29,7 +29,8 @@ enum AppLaunchMetrics {
         profile: String,
         projectID: String,
         warmupDiscarded: Int,
-        samples: [LaunchSample?]
+        samples: [LaunchSample?],
+        launchRetries: Int = 0
     ) -> String {
         let indexed = samples.enumerated()
         let errors: [(index: Int, message: String)] = indexed.compactMap { index, sample in
@@ -61,7 +62,10 @@ enum AppLaunchMetrics {
             "project_id": projectID,
             "measured_iterations": measured.count,
             "error_count": errors.count,
-            "post_warmup_error_count": errors.filter { $0.index >= warmupDiscarded }.count
+            "post_warmup_error_count": errors.filter { $0.index >= warmupDiscarded }.count,
+            // Launches that produced nothing and were relaunched once (censored samples);
+            // visible so a round's stability can be judged, bounded by the runner.
+            "launch_retries": launchRetries
         ]
 
         // Headline statistic: `Purchases.configure` + `getOfferings` completed, with or
