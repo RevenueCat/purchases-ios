@@ -35,7 +35,7 @@ class HTTPClient {
     private let retriableStatusCodes: Set<HTTPStatusCode>
     private let operationDispatcher: OperationDispatcher
     private let requestTimeoutManager: HTTPRequestTimeoutManagerType
-    private let apiSourceProvider: APISourceProviderType?
+    private let apiSourceProvider: RemoteConfigSourceProviderType?
 
     private let retryBackoffIntervals: [TimeInterval] = [
         TimeInterval(0),
@@ -52,7 +52,7 @@ class HTTPClient {
          requestTimeout: TimeInterval = Configuration.networkTimeoutDefault,
          dateProvider: DateProvider = DateProvider(),
          operationDispatcher: OperationDispatcher,
-         apiSourceProvider: APISourceProviderType?,
+         apiSourceProvider: RemoteConfigSourceProviderType?,
          timeoutManager: HTTPRequestTimeoutManagerType? = nil
     ) {
         let config = URLSessionConfiguration.ephemeral
