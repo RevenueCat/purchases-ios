@@ -969,7 +969,12 @@ private extension OfferingsManagerTests {
         static let unexpectedBackendResponseError: BackendError = .unexpectedBackendResponse(
             .customerInfoNil
         )
-        static let sampleOfferings: Offerings = .init(
+        static let sampleOfferings: Offerings = MockData.makeSampleOfferings()
+
+        /// A fresh `Offerings` instance per call, for tests that need two distinguishable snapshots.
+        // swiftlint:disable:next function_body_length
+        static func makeSampleOfferings() -> Offerings {
+            return .init(
             offerings: MockData.anyBackendOfferingsContents.response.offerings
                 .map { offering in
                     Offering(
@@ -996,7 +1001,8 @@ private extension OfferingsManagerTests {
             targeting: nil,
             contents: MockData.anyBackendOfferingsContents,
             loadedFromDiskCache: false
-        )
+            )
+        }
     }
 
 }
@@ -1067,8 +1073,7 @@ extension OfferingsManagerTests {
 
     func testGetOfferingsAwaitsWorkflowsAndUiConfigConcurrently() {
         let mockRemoteConfigManager = MockRemoteConfigManager()
-        // Hold BOTH readiness steps: each must have STARTED before either completes, or one
-        // failing slowly would serialize behind the other.
+        // Hold BOTH readiness steps: each must have started before either completes.
         mockRemoteConfigManager.shouldStoreTopicCompletion = true
         mockRemoteConfigManager.shouldStoreBlobDataCompletion = true
         let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
@@ -1133,13 +1138,34 @@ extension OfferingsManagerTests {
 
         // The background refresh starts regardless of the gate...
         expect(self.mockOfferings.invokedGetOfferingsForAppUserID).toEventually(beTrue())
-        // ...but even stale cached offerings must not be delivered before config readiness:
-        // getOfferings returning means the paywall config data is queryable.
+        // ...but delivery, even from a stale cache, waits for config readiness.
         expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
         expect(delivered.value) == false
 
         mockRemoteConfigManager.completeStoredTopic()
         expect(delivered.value).toEventually(beTrue())
+    }
+
+    func testGetOfferingsFromStaleCacheDeliversRefreshedOfferingsWhenRefreshWinsTheGate() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.shouldStoreTopicCompletion = true
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
+        self.mockDeviceCache.stubbedOfferings = MockData.makeSampleOfferings()
+        self.mockDeviceCache.stubbedOfferingCacheStatus = .stale
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let delivered: Atomic<Offerings?> = .init(nil)
+        manager.offerings(appUserID: MockData.anyAppUserID) { result in delivered.value = result.value }
+
+        // While delivery waits on the gate, the background refresh lands fresh offerings.
+        expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
+        let refreshedOfferings = MockData.makeSampleOfferings()
+        self.mockDeviceCache.stubbedOfferings = refreshedOfferings
+
+        mockRemoteConfigManager.completeStoredTopic()
+        // The caller waited through the refresh; it must get the fresh snapshot, not the
+        // stale one captured before the gate.
+        expect(delivered.value).toEventually(be(refreshedOfferings))
     }
 
     func testGetOfferingsNetworkFetchAwaitsConfigReadyBeforeDelivering() {

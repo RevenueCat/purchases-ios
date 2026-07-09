@@ -103,19 +103,18 @@ class OfferingsManager {
                                                  notFoundProductIds: nil)
 
             if cacheStatus == .stale {
-                // Kick the background refresh before the gated delivery below; the readiness
-                // gate must not delay it.
+                // The readiness gate below must not delay this background refresh.
                 self.updateOfferingsCache(appUserID: appUserID,
                                           isAppBackgrounded: isAppBackgrounded,
                                           fetchPolicy: fetchPolicy,
                                           completion: nil)
             }
-            // Cached delivery (fresh or stale) goes through the readiness gate: `getOfferings`
-            // returning means the paywall config data is queryable. The gate is a no-op once
-            // config has synced, so the stale path's "return fast, update later" behavior is
-            // preserved everywhere but the very first launch.
+            // Cached delivery waits for config readiness (a no-op once config has synced),
+            // re-reading the cache afterwards: if the stale path's refresh finished while
+            // waiting, the caller gets the fresh offerings it already paid for.
             self.deliverWhenConfigReady {
-                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(memoryCachedOfferings))
+                let offerings = self.cachedOfferings ?? memoryCachedOfferings
+                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offerings))
             }
         }
     }
@@ -391,15 +390,10 @@ private extension OfferingsManager {
     /// `workflows` topic's metadata. The manager's `awaitTopicAndPrefetchBlobsReady()` read no-ops when already synced
     /// and always calls back, so this never hangs. When no manager is wired (workflows disabled),
     /// `deliver` runs immediately, leaving offerings unchanged.
-    /// Invokes `deliver` once the config-endpoint paywall data `getOfferings` depends on is
-    /// ready, resolved concurrently:
-    /// - the `workflows` topic is synced (with its prefetch-flagged blobs downloaded), so
-    ///   workflow resolution right after `getOfferings` doesn't race the first config sync; and
-    /// - the `ui_config` body is resolved, so a paywall render has its styling in hand without
-    ///   a further round trip.
-    ///
-    /// Both steps are best-effort: each returns nil on failure rather than throwing, so
-    /// delivery can never be stranded on either.
+    /// Invokes `deliver` once the paywall config data `getOfferings` depends on is ready:
+    /// the `workflows` topic (with its prefetch-flagged blobs) and the `ui_config` body,
+    /// resolved concurrently. Both are best-effort (nil on failure, never throwing), so
+    /// delivery can never be stranded.
     private func deliverWhenConfigReady(deliver: @escaping () -> Void) {
         guard let remoteConfigManager = self.remoteConfigManager else {
             deliver()
