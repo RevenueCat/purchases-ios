@@ -352,6 +352,7 @@ class IdentityManagerTests: TestCase {
         }
 
         expect(remoteConfigManager.invokedClearCacheCount) == 1
+        expect(remoteConfigManager.invokedClearCacheAppUserIDs) == ["myUser"]
     }
 
     func testLogOutClearsRemoteConfigCache() {
@@ -365,6 +366,8 @@ class IdentityManagerTests: TestCase {
         }
 
         expect(remoteConfigManager.invokedClearCacheCount) == 1
+        expect(remoteConfigManager.invokedClearCacheAppUserIDs.first) == self.mockDeviceCache.clearCachesCalleNewUserID
+        expect(remoteConfigManager.invokedClearCacheAppUserIDs.first) != "myUser"
     }
 
     func testSwitchUserClearsRemoteConfigCache() {
@@ -376,6 +379,7 @@ class IdentityManagerTests: TestCase {
         manager.switchUser(to: "newUser")
 
         expect(remoteConfigManager.invokedClearCacheCount) == 1
+        expect(remoteConfigManager.invokedClearCacheAppUserIDs) == ["newUser"]
     }
 
     func testLogInSyncsAttributes() {

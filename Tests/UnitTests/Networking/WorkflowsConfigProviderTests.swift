@@ -333,73 +333,128 @@ private final class FakeRemoteConfigAPI: RemoteConfigAPIType {
 
 private final class FakeRemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
-    var stubbedRead: PersistedRemoteConfiguration?
+    private let lock = Lock()
+    private var _stubbedRead: PersistedRemoteConfiguration?
+    var stubbedRead: PersistedRemoteConfiguration? {
+        get {
+            return self.lock.perform {
+                self._stubbedRead
+            }
+        }
+        set {
+            self.lock.perform {
+                self._stubbedRead = newValue
+            }
+        }
+    }
 
     func read() -> PersistedRemoteConfiguration? {
-        return self.stubbedRead
+        return self.lock.perform {
+            self._stubbedRead
+        }
     }
 
     func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic? {
-        return self.stubbedRead?.topics.entries[topic.wireName]
+        return self.lock.perform {
+            self._stubbedRead?.topics.entries[topic.wireName]
+        }
     }
 
     @discardableResult
     func write(_ configuration: PersistedRemoteConfiguration) -> Bool {
-        self.stubbedRead = configuration
+        self.lock.perform {
+            self._stubbedRead = configuration
+        }
         return true
     }
 
     func clear() {
-        self.stubbedRead = nil
+        self.lock.perform {
+            self._stubbedRead = nil
+        }
     }
 
 }
 
 private final class FakeRemoteConfigBlobStore: RemoteConfigBlobStoreType {
 
-    var stubbedData: [String: Data] = [:]
+    private let lock = Lock()
+    private var _stubbedData: [String: Data] = [:]
+    var stubbedData: [String: Data] {
+        get {
+            return self.lock.perform {
+                self._stubbedData
+            }
+        }
+        set {
+            self.lock.perform {
+                self._stubbedData = newValue
+            }
+        }
+    }
 
     func contains(ref: String) -> Bool {
-        return self.stubbedData[ref] != nil
+        return self.lock.perform {
+            self._stubbedData[ref] != nil
+        }
     }
 
     func read(ref: String) -> Data? {
-        return self.stubbedData[ref]
+        return self.lock.perform {
+            self._stubbedData[ref]
+        }
     }
 
     @discardableResult
     func write(ref: String, bytes: UnsafeRawBufferPointer) -> Bool {
         var data = Data()
         data.append(contentsOf: bytes.bindMemory(to: UInt8.self))
-        self.stubbedData[ref] = data
+        self.lock.perform {
+            self._stubbedData[ref] = data
+        }
         return true
     }
 
     func cachedRefs() -> Set<String> {
-        return Set(self.stubbedData.keys)
+        return self.lock.perform {
+            Set(self._stubbedData.keys)
+        }
     }
 
     func retainOnly(_ refs: Set<String>) {
-        self.stubbedData = self.stubbedData.filter { refs.contains($0.key) }
+        self.lock.perform {
+            self._stubbedData = self._stubbedData.filter { refs.contains($0.key) }
+        }
     }
 
     func clear() {
-        self.stubbedData = [:]
+        self.lock.perform {
+            self._stubbedData = [:]
+        }
     }
 
 }
 
 private final class FakeRemoteConfigBlobFetcher: RemoteConfigBlobFetcherType {
 
+    private let lock = Lock()
     private let blobStore: FakeRemoteConfigBlobStore
-    private(set) var invokedEnsureDownloadedRefs: [String] = []
+    private var _invokedEnsureDownloadedRefs: [String] = []
+
+    var invokedEnsureDownloadedRefs: [String] {
+        return self.lock.perform {
+            self._invokedEnsureDownloadedRefs
+        }
+    }
 
     init(blobStore: FakeRemoteConfigBlobStore) {
         self.blobStore = blobStore
     }
 
     func ensureDownloaded(ref: String) async -> Bool {
-        self.invokedEnsureDownloadedRefs.append(ref)
+        self.lock.perform {
+            self._invokedEnsureDownloadedRefs.append(ref)
+        }
         // The store is pre-populated in these tests, so "downloading" is just confirming it's there.
         return self.blobStore.contains(ref: ref)
     }

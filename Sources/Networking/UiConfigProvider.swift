@@ -110,3 +110,5 @@ final class UiConfigProvider {
     }
 
 }
+
+extension UiConfigProvider: @unchecked Sendable {}

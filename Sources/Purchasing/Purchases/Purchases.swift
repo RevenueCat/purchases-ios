@@ -1054,7 +1054,9 @@ public extension Purchases {
     @_disfavoredOverload
     @objc(logIn:completion:)
     func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
-        self.identityManager.logIn(appUserID: appUserID) { result in
+        let normalizedAppUserID = appUserID.trimmingWhitespacesAndNewLines
+
+        self.identityManager.logIn(appUserID: normalizedAppUserID) { result in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(result.value?.info, result.value?.created ?? false, result.error?.asPublicError)
             }
@@ -1513,12 +1515,13 @@ public extension Purchases {
         productID: String,
         completion: @escaping (StoreTransaction?, PublicError?) -> Void
     ) {
+        let completion = SendableRecordPurchaseCompletion(run: completion)
         Task {
             let result = await StoreKit.Transaction.latest(for: productID)
 
             guard let result = result else {
                 OperationDispatcher.dispatchOnMainActor {
-                    completion(nil, NewErrorUtils.storeProblemError(
+                    completion.run(nil, NewErrorUtils.storeProblemError(
                         withMessage: "No transaction found for product ID: \(productID)"
                     ).asPublicError)
                 }
@@ -1528,12 +1531,12 @@ public extension Purchases {
             do {
                 let transaction = try await self.recordPurchase(.success(result))
                 OperationDispatcher.dispatchOnMainActor {
-                    completion(transaction, nil)
+                    completion.run(transaction, nil)
                 }
             } catch {
                 let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
                 OperationDispatcher.dispatchOnMainActor {
-                    completion(nil, publicError)
+                    completion.run(nil, publicError)
                 }
             }
         }
@@ -2829,6 +2832,12 @@ private extension Purchases {
             await cache.warmUpPaywallFontsCache(offerings: offerings)
         }
     }
+
+}
+
+private struct SendableRecordPurchaseCompletion: @unchecked Sendable {
+
+    let run: (StoreTransaction?, PublicError?) -> Void
 
 }
 
