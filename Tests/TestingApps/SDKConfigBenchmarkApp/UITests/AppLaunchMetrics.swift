@@ -64,7 +64,9 @@ enum AppLaunchMetrics {
             "post_warmup_error_count": errors.filter { $0.index >= warmupDiscarded }.count
         ]
 
-        let totals = measured.compactMap(\.paywallAppearedMs).sorted()
+        // Headline statistic: time until paywall CONTENT appeared (the SDK's impression
+        // mark), not the wrapper mount, which can precede content by a loading state.
+        let totals = measured.compactMap(\.paywallImpressionMs).sorted()
         if !totals.isEmpty {
             row["mean_ms"] = Self.rounded(totals.reduce(0, +) / Double(totals.count))
             row["min_ms"] = Self.rounded(totals[0])
@@ -78,9 +80,24 @@ enum AppLaunchMetrics {
             ("configured_ms_mean", measured.compactMap(\.configuredMs)),
             ("customer_info_ms_mean", measured.compactMap(\.customerInfoMs)),
             ("offerings_ms_mean", measured.compactMap(\.offeringsMs)),
-            ("paywall_appeared_ms_mean", measured.compactMap(\.paywallAppearedMs))
+            ("paywall_appeared_ms_mean", measured.compactMap(\.paywallAppearedMs)),
+            ("paywall_impression_ms_mean", measured.compactMap(\.paywallImpressionMs)),
+            ("config_persisted_ms_mean", measured.compactMap(\.configPersistedMs)),
+            ("last_blob_stored_ms_mean", measured.compactMap(\.lastBlobStoredMs)),
+            ("blobs_inline_mean", measured.map { Double($0.blobsInline) }),
+            ("blobs_downloaded_mean", measured.map { Double($0.blobsDownloaded) }),
+            ("blob_bytes_mean", measured.map { Double($0.blobBytes) })
         ] where !values.isEmpty {
             row[key] = Self.rounded(values.reduce(0, +) / Double(values.count))
+        }
+
+        // Size extremes across the run: together they bracket the backend's inline-size
+        // budget (largest blob seen inline vs smallest blob that needed a CDN download).
+        if let maxInline = measured.compactMap(\.maxInlineBlobBytes).max() {
+            row["max_inline_blob_bytes"] = maxInline
+        }
+        if let minDownloaded = measured.compactMap(\.minDownloadedBlobBytes).min() {
+            row["min_downloaded_blob_bytes"] = minDownloaded
         }
 
         if let firstError = errors.first {
@@ -104,7 +121,8 @@ enum AppLaunchMetrics {
             ("configuredMs", sample.configuredMs),
             ("customerInfoMs", sample.customerInfoMs),
             ("offeringsMs", sample.offeringsMs),
-            ("paywallAppearedMs", sample.paywallAppearedMs)
+            ("paywallAppearedMs", sample.paywallAppearedMs),
+            ("paywallImpressionMs", sample.paywallImpressionMs)
         ] where value == nil {
             return "sample missing \(phase)"
         }

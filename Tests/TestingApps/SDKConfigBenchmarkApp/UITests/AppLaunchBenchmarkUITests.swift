@@ -31,6 +31,10 @@ final class AppLaunchBenchmarkUITests: XCTestCase {
         let warmup: Int
         let projectID: String
         let runNonce: String
+        /// When set (via `BENCH_EXPECT_CONFIG_PATH` = "1"/"0"), every measured launch must
+        /// report the matching `configPathActive`: runtime proof, from inside the launched
+        /// binary, that the SDK build variant matches the row's label even on cached builds.
+        let expectsConfigPath: Bool?
     }
 
     override func setUpWithError() throws {
@@ -90,7 +94,8 @@ final class AppLaunchBenchmarkUITests: XCTestCase {
             iterations: iterations,
             warmup: warmup,
             projectID: environment["BENCH_PROJECT_ID"] ?? "5f07e7e3",
-            runNonce: UUID().uuidString.lowercased().prefix(8).description
+            runNonce: UUID().uuidString.lowercased().prefix(8).description,
+            expectsConfigPath: environment["BENCH_EXPECT_CONFIG_PATH"].map { $0 == "1" }
         )
     }
 
@@ -139,6 +144,19 @@ final class AppLaunchBenchmarkUITests: XCTestCase {
             postWarmupErrors.isEmpty,
             "\(postWarmupErrors.count) measured launch(es) failed; first: \(postWarmupErrors.first ?? "")"
         )
+
+        // Runtime variant proof: the launched binary must have actually run (or not run)
+        // the config path; a mislabeled row would poison every later comparison.
+        if let expectsConfigPath = configuration.expectsConfigPath {
+            let mismatches = samples.enumerated()
+                .filter { $0.offset >= configuration.warmup }
+                .filter { ($0.element?.configPathActive ?? false) != expectsConfigPath }
+            XCTAssertTrue(
+                mismatches.isEmpty,
+                "\(mismatches.count) launch(es) contradict the \(configuration.modeLabel) label " +
+                "(expected configPathActive == \(expectsConfigPath)); wrong SDK variant in the binary?"
+            )
+        }
     }
 
     private static var profile: String {

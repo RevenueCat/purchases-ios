@@ -12,6 +12,9 @@ final class BenchmarkSDKStack {
 
     let offeringsManager: OfferingsManager
     let remoteConfigManager: RemoteConfigManagerType?
+    /// The manager's content-addressed blob store, exposed so the runner can attribute
+    /// per-iteration blob storage (inline vs downloaded) and sizes. Nil in legacy mode.
+    let blobStore: RemoteConfigBlobStoreType?
     let httpClient: HTTPClient
     let deviceCache: DeviceCache
 
@@ -55,10 +58,12 @@ final class BenchmarkSDKStack {
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
         self.deviceCache = deviceCache
 
-        let remoteConfigManager = mode.usesRemoteConfig
+        let remoteConfigStack = mode.usesRemoteConfig
             ? Self.makeRemoteConfigManager(backendConfiguration: backendConfiguration, appUserID: appUserID)
             : nil
+        let remoteConfigManager = remoteConfigStack?.manager
         self.remoteConfigManager = remoteConfigManager
+        self.blobStore = remoteConfigStack?.blobStore
 
         self.offeringsManager = OfferingsManager(
             deviceCache: deviceCache,
@@ -109,7 +114,7 @@ private extension BenchmarkSDKStack {
     static func makeRemoteConfigManager(
         backendConfiguration: BackendConfiguration,
         appUserID: String
-    ) -> RemoteConfigManagerType {
+    ) -> (manager: RemoteConfigManagerType, blobStore: RemoteConfigBlobStoreType) {
         let diskCache = RemoteConfigDiskCache()
         let blobStore = RemoteConfigBlobStore()
         let sourceProvider = RemoteConfigSourceProvider(topicStore: diskCache)
@@ -120,13 +125,14 @@ private extension BenchmarkSDKStack {
                 session: SimulatedTransportURLProtocol.makeSession()
             )
         )
-        return RemoteConfigManager(
+        let manager = RemoteConfigManager(
             remoteConfigAPI: RemoteConfigAPI(backendConfig: backendConfiguration),
             diskCache: diskCache,
             blobStore: blobStore,
             blobFetcher: blobFetcher,
             currentUserProvider: BenchmarkCurrentUserProvider(appUserID: appUserID)
         )
+        return (manager, blobStore)
     }
 
 }

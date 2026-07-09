@@ -69,7 +69,12 @@ let project = Project(
             name: "SDKConfigBenchmarkApp",
             shared: true,
             buildAction: .buildAction(targets: ["SDKConfigBenchmarkApp"]),
-            testAction: .targets(["SDKConfigBenchmarkAppUITests"]),
+            // Release: the rows claim to measure the shipping SDK, so Debug-built
+            // (unoptimized, assertion-enabled) frameworks would misrepresent it.
+            testAction: .targets(
+                ["SDKConfigBenchmarkAppUITests"],
+                configuration: "Release"
+            ),
             runAction: .runAction(
                 configuration: "Debug",
                 executable: "SDKConfigBenchmarkApp",

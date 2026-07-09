@@ -11,7 +11,7 @@
 //
 //  Created by Facundo Menzella on 9/7/26.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import RevenueCatUI
 import SwiftUI
 
@@ -45,13 +45,24 @@ struct SDKConfigBenchmarkApp: App {
             return
         }
 
-        Purchases.logLevel = .warn
+        // The config path (config persisted, each blob stored inline vs downloaded) is only
+        // observable through the SDK's log stream, so run verbose and parse. The logging
+        // overhead is inside the measured window but identical across variants.
+        let observer = model.blobObserver
+        Purchases.logLevel = .verbose
+        Purchases.verboseLogHandler = { _, message, _, _, _ in
+            observer.ingest(message)
+        }
         Purchases.configure(
             with: .builder(withAPIKey: apiKey)
                 .with(appUserID: environment["BENCH_APP_USER_ID"])
                 .build()
         )
         model.recordConfigured()
+        // The impression event fires when the paywall CONTENT view appears (resolved paywall
+        // or explicit fallback), unlike the wrapper's onAppear, which can precede it while a
+        // loading state shows. It is the headline "user sees the paywall" mark.
+        Purchases.shared.eventsListener = model.impressionListener
         model.startObserving()
     }
 
@@ -90,12 +101,22 @@ final class LaunchModel: ObservableObject {
     @Published private(set) var offering: Offering?
     @Published private(set) var finishedSampleJSON: String?
 
+    let blobObserver: BlobObserver
+    /// Retained here: the SDK does not keep the events listener alive.
+    private(set) var impressionListener: PaywallImpressionListener!
+
     private let clock: LaunchClock
     private var sample = LaunchSample()
     private var paywallAppeared = false
 
     init(clock: LaunchClock) {
         self.clock = clock
+        self.blobObserver = BlobObserver(clock: clock)
+        self.impressionListener = PaywallImpressionListener(clock: clock) { [weak self] elapsedMs in
+            Task { @MainActor in
+                self?.recordPaywallImpression(elapsedMs: elapsedMs)
+            }
+        }
     }
 
     nonisolated func fail(_ message: String) {
@@ -155,11 +176,18 @@ final class LaunchModel: ObservableObject {
         self.finishIfComplete()
     }
 
+    private func recordPaywallImpression(elapsedMs: Double) {
+        guard self.sample.paywallImpressionMs == nil else { return }
+        self.sample.paywallImpressionMs = elapsedMs
+        self.finishIfComplete()
+    }
+
     private func finishIfComplete() {
         guard self.finishedSampleJSON == nil else { return }
         let done = self.sample.customerInfoMs != nil
             && self.sample.offeringsMs != nil
             && self.sample.paywallAppearedMs != nil
+            && self.sample.paywallImpressionMs != nil
         if done {
             self.finish()
         }
@@ -167,10 +195,38 @@ final class LaunchModel: ObservableObject {
 
     private func finish() {
         guard self.finishedSampleJSON == nil else { return }
+        self.blobObserver.apply(to: &self.sample)
         let json = self.sample.jsonString()
         self.finishedSampleJSON = json
         // Also visible in the unified log for smoke testing without the XCUITest runner.
         NSLog("BENCH_SAMPLE %@", json)
+    }
+
+}
+
+/// Stamps the moment the SDK tracks that paywall content actually appeared (via the SDK's
+/// internal events listener SPI), unlike the wrapper's `onAppear`, which can fire while a
+/// loading state still shows. A classic paywall tracks `paywall_impression`; a workflow
+/// paywall tracks `workflows_step_started` when its first step renders.
+final class PaywallImpressionListener: EventsListener {
+
+    private static let contentAppearedEventTypes: Set<String> = [
+        "paywall_impression",
+        "workflows_step_started"
+    ]
+
+    private let clock: LaunchClock
+    private let onImpression: (Double) -> Void
+
+    init(clock: LaunchClock, onImpression: @escaping (Double) -> Void) {
+        self.clock = clock
+        self.onImpression = onImpression
+    }
+
+    func onEventTracked(_ event: [String: Any]) {
+        guard let type = event["type"] as? String,
+              Self.contentAppearedEventTypes.contains(type) else { return }
+        self.onImpression(self.clock.elapsedMs())
     }
 
 }

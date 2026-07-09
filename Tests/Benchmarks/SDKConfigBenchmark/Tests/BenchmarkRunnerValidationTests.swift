@@ -96,4 +96,60 @@ final class BenchmarkRunnerValidationTests: BenchmarkTestCase {
         ))
     }
 
+    // MARK: - Blob accounting
+
+    func testBlobAccountingCountsOnlyRefsStoredThisIterationAndAttributesByRequest() throws {
+        let store = InMemoryBlobStore(contents: [
+            "pre-existing": Data(count: 100),
+            "inline-new": Data(count: 2_000),
+            "cdn-new": Data(count: 8_000)
+        ])
+        let url = try XCTUnwrap(URL(string: "https://cdn.revenuecat.local/blobs/cdn-new"))
+        let events = [
+            TransportEvent.success(url: url, iteration: 0, statusCode: 200,
+                                   bytesReceived: 8_000, startedAt: DispatchTime.now())
+        ]
+
+        let accounting = BenchmarkRunner.blobAccounting(
+            blobStore: store,
+            refsBeforeLaunch: ["pre-existing"],
+            events: events
+        )
+
+        XCTAssertEqual(accounting.inlineCount, 1)
+        XCTAssertEqual(accounting.downloadedCount, 1)
+        XCTAssertEqual(accounting.totalBytes, 10_000)
+        XCTAssertEqual(accounting.maxInlineBytes, 2_000)
+        XCTAssertEqual(accounting.minDownloadedBytes, 8_000)
+    }
+
+    func testBlobAccountingIsEmptyForLegacyModeWithoutABlobStore() {
+        let accounting = BenchmarkRunner.blobAccounting(blobStore: nil, refsBeforeLaunch: [], events: [])
+
+        XCTAssertEqual(accounting.inlineCount, 0)
+        XCTAssertEqual(accounting.downloadedCount, 0)
+        XCTAssertNil(accounting.maxInlineBytes)
+        XCTAssertNil(accounting.minDownloadedBytes)
+    }
+
+}
+
+private final class InMemoryBlobStore: RemoteConfigBlobStoreType {
+
+    private var contents: [String: Data]
+
+    init(contents: [String: Data]) {
+        self.contents = contents
+    }
+
+    func contains(ref: String) -> Bool { return self.contents[ref] != nil }
+    func read(ref: String) -> Data? { return self.contents[ref] }
+    func write(ref: String, bytes: UnsafeRawBufferPointer) -> Bool {
+        self.contents[ref] = Data(bytes.bindMemory(to: UInt8.self))
+        return true
+    }
+    func cachedRefs() -> Set<String> { return Set(self.contents.keys) }
+    func retainOnly(_ refs: Set<String>) { self.contents = self.contents.filter { refs.contains($0.key) } }
+    func clear() { self.contents = [:] }
+
 }

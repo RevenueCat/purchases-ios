@@ -233,11 +233,30 @@ the time until a `PaywallView` actually appears on screen.
   `run-app-launch.sh` rewrites that file per variant, forces a manifest re-evaluation, and
   verifies from the build log that the flag actually reached the SDK compile.
 - Phases per launch: `configured` (configure returned), `customer_info` (first CustomerInfo
-  delivered), `offerings` (getOfferings completed), `paywall_appeared` (PaywallView onAppear).
-  The row's percentile statistics are over `paywall_appeared`; a launch missing any phase
-  counts as an error and fails the run.
+  delivered), `offerings` (getOfferings completed), `paywall_appeared` (the PaywallView
+  wrapper mounted), and `paywall_impression` (the SDK tracked that paywall CONTENT actually
+  appeared: `paywall_impression` for classic paywalls, `workflows_step_started` for workflow
+  paywalls, observed via the SDK's internal events-listener SPI). The row's percentile
+  statistics are over `paywall_impression`; a launch missing any phase counts as an error and
+  fails the run.
+- Config-path phases and blob registration, observed from the stock SDK's log stream (the
+  parser is pinned to `RemoteConfigStrings` by unit tests): `config_persisted_ms_mean`,
+  `last_blob_stored_ms_mean`, `blobs_inline_mean` vs `blobs_downloaded_mean`, `blob_bytes_mean`,
+  and the size extremes `max_inline_blob_bytes` / `min_downloaded_blob_bytes`. The extremes
+  bracket the backend's inline-size budget empirically (blobs under the budget, currently
+  ~3MB, should arrive inline; a small blob arriving via CDN is a regression signal). The CLI
+  tier registers the same fields via its blob store and transport events.
+- Tests build and run under **Release** (the rows claim shipping-SDK numbers), and every
+  measured launch must prove at runtime which SDK variant is inside the binary: the config
+  path's refresh log fires on every config-variant launch, and the runner fails on any launch
+  whose `configPathActive` contradicts the row's label, cached builds included.
 - Rows carry `mode` = `app-launch-legacy` / `app-launch-config` and `profile` = `simulator` /
   `device`, so `compare.py` never mixes app-tier rows with CLI rows or simulator with device.
+
+The goal of this tier is to run the real app N times, via any automation that can drive
+`xcodebuild test` (locally, CI, or tooling like the baguette CLI), and get the same kind of
+comparable, gateable JSONL the CLI benchmark produces, measuring both systems end to end
+exactly as a customer app experiences them.
 
 Run it with `bash Tests/TestingApps/SDKConfigBenchmarkApp/run-app-launch.sh > app-launch.jsonl`.
 Because there is no network control, treat app-tier numbers as end-to-end monitoring on a

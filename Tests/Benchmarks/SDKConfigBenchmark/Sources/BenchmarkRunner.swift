@@ -129,6 +129,7 @@ private extension BenchmarkRunner {
             stack.clearAllDiskState()
         }
         _ = SimulatedTransportURLProtocol.drainEvents()
+        let blobRefsBeforeLaunch = stack.blobStore?.cachedRefs() ?? []
 
         let totalMs: Double
         do {
@@ -147,7 +148,15 @@ private extension BenchmarkRunner {
         // AND the config request (when wired) has landed, then keep only this iteration's
         // events so stragglers from earlier launches can't inflate the row.
         let events = self.collectEvents(forIteration: iteration)
-        return IterationMeasurement(totalMs: totalMs, events: events)
+        return IterationMeasurement(
+            totalMs: totalMs,
+            events: events,
+            blobAccounting: Self.blobAccounting(
+                blobStore: stack.blobStore,
+                refsBeforeLaunch: blobRefsBeforeLaunch,
+                events: events
+            )
+        )
     }
 
     /// Drains transport events until quiescence, additionally waiting (bounded) for this
@@ -216,6 +225,30 @@ private extension BenchmarkRunner {
 }
 
 extension BenchmarkRunner {
+
+    /// Attributes this iteration's newly stored blobs (all disk reads happen after the timed
+    /// window): a new ref with a successful blob request was downloaded; any other new ref can
+    /// only have arrived inline in the config container.
+    static func blobAccounting(
+        blobStore: RemoteConfigBlobStoreType?,
+        refsBeforeLaunch: Set<String>,
+        events: [TransportEvent]
+    ) -> BlobAccounting {
+        guard let blobStore else { return .empty }
+
+        let newRefs = blobStore.cachedRefs().subtracting(refsBeforeLaunch)
+        guard !newRefs.isEmpty else { return .empty }
+
+        let downloadedRefs = Set(
+            events
+                .filter { $0.kind == .blob && !$0.failed }
+                .map { ($0.path as NSString).lastPathComponent }
+        )
+        let newRefSizes = newRefs.reduce(into: [String: Int]()) { sizes, ref in
+            sizes[ref] = blobStore.read(ref: ref)?.count ?? 0
+        }
+        return BlobAccounting(newRefSizes: newRefSizes, downloadedRefs: downloadedRefs)
+    }
 
     static func validateWarmMeasurement(
         _ measurement: IterationMeasurement,

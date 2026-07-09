@@ -4,8 +4,11 @@ import XCTest
 
 final class BenchmarkMetricsTests: BenchmarkTestCase {
 
-    private func measurement(totalMs: Double) -> IterationMeasurement {
-        return IterationMeasurement(totalMs: totalMs, events: [])
+    private func measurement(
+        totalMs: Double,
+        blobAccounting: BlobAccounting = .empty
+    ) -> IterationMeasurement {
+        return IterationMeasurement(totalMs: totalMs, events: [], blobAccounting: blobAccounting)
     }
 
     func testNearestRankPercentiles() {
@@ -142,6 +145,60 @@ final class BenchmarkMetricsTests: BenchmarkTestCase {
         XCTAssertEqual(measurement.configMs ?? 0, 10, accuracy: 0.001)
         XCTAssertEqual(measurement.blobMs ?? 0, 20, accuracy: 0.001)
         XCTAssertEqual(measurement.offeringsMs ?? 0, 45, accuracy: 0.001)
+    }
+
+    // MARK: - Blob accounting
+
+    func testBlobAccountingAttributesInlineVersusDownloadedAndTracksExtremes() {
+        let accounting = BlobAccounting(
+            newRefSizes: ["inline-big": 30_000, "inline-small": 500, "cdn-a": 9_000, "cdn-b": 12_000],
+            downloadedRefs: ["cdn-a", "cdn-b", "cdn-never-stored"]
+        )
+
+        XCTAssertEqual(accounting.inlineCount, 2)
+        XCTAssertEqual(accounting.downloadedCount, 2)
+        XCTAssertEqual(accounting.totalBytes, 51_500)
+        // The extremes bracket the backend's inline-size budget.
+        XCTAssertEqual(accounting.maxInlineBytes, 30_000)
+        XCTAssertEqual(accounting.minDownloadedBytes, 9_000)
+    }
+
+    func testJSONLRowCarriesBlobAccountingAggregates() throws {
+        var command = BenchmarkCommand()
+        command.iterations = 2
+        command.warmupIterations = 0
+
+        var metrics = BenchmarkMetrics()
+        metrics.record(self.measurement(totalMs: 10, blobAccounting: BlobAccounting(
+            newRefSizes: ["i1": 1_000, "d1": 4_000], downloadedRefs: ["d1"]
+        )), iteration: 0)
+        metrics.record(self.measurement(totalMs: 20, blobAccounting: BlobAccounting(
+            newRefSizes: ["i2": 3_000, "d2": 2_000], downloadedRefs: ["d2"]
+        )), iteration: 1)
+
+        let row = try self.decodeRow(metrics, command: command)
+
+        XCTAssertEqual(row["blobs_inline_mean"] as? Double, 1)
+        XCTAssertEqual(row["blobs_downloaded_mean"] as? Double, 1)
+        XCTAssertEqual(row["blob_bytes_mean"] as? Double, 5_000)
+        XCTAssertEqual(row["max_inline_blob_bytes"] as? Int, 3_000)
+        XCTAssertEqual(row["min_downloaded_blob_bytes"] as? Int, 2_000)
+    }
+
+    func testJSONLRowOmitsBlobExtremesWhenNoBlobsWereStored() throws {
+        var command = BenchmarkCommand()
+        command.iterations = 1
+        command.warmupIterations = 0
+
+        var metrics = BenchmarkMetrics()
+        metrics.record(self.measurement(totalMs: 10), iteration: 0)
+
+        let row = try self.decodeRow(metrics, command: command)
+
+        XCTAssertEqual(row["blobs_inline_mean"] as? Double, 0)
+        XCTAssertEqual(row["blobs_downloaded_mean"] as? Double, 0)
+        XCTAssertNil(row["max_inline_blob_bytes"])
+        XCTAssertNil(row["min_downloaded_blob_bytes"])
     }
 
 }

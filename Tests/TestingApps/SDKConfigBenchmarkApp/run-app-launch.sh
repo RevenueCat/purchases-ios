@@ -123,11 +123,14 @@ for variant in $VARIANTS; do
 
     LOG="$(mktemp)"
     DERIVED_DATA="$DERIVED_DATA_ROOT/$variant"
+    EXPECT_CONFIG_PATH=0
+    [[ -n "$CONDITIONS" ]] && EXPECT_CONFIG_PATH=1
     if ! env TEST_RUNNER_BENCH_API_KEY="$RESOLVED_KEY" \
              TEST_RUNNER_BENCH_MODE_LABEL="app-launch-$variant" \
              TEST_RUNNER_BENCH_ITERATIONS="$ITERATIONS" \
              TEST_RUNNER_BENCH_WARMUP="$WARMUP" \
              TEST_RUNNER_BENCH_PROJECT_ID="$PROJECT_ID" \
+             TEST_RUNNER_BENCH_EXPECT_CONFIG_PATH="$EXPECT_CONFIG_PATH" \
         xcodebuild -workspace "$REPO_ROOT/RevenueCat-Tuist.xcworkspace" \
             -scheme SDKConfigBenchmarkApp \
             -destination "$DESTINATION" \
@@ -139,8 +142,17 @@ for variant in $VARIANTS; do
     fi
 
     # Prove the variant flag reached the SDK compile (guards the manifest-cache hazard).
-    # Only checkable when this run actually compiled the SDK; cached builds get a warning.
+    # Only checkable when this run actually compiled the SDK; cached builds still get
+    # runtime verification via BENCH_EXPECT_CONFIG_PATH (each launched binary reports
+    # whether the config path ran, and the tests fail on a mismatch).
     if grep -q "SwiftCompile.*RevenueCat" "$LOG"; then
+        # The rows claim shipping-SDK numbers: refuse Debug-built frameworks.
+        if ! grep -q "Release-iphone" "$LOG"; then
+            echo "Variant $variant compiled without a Release configuration; refusing its rows" >&2
+            FAILED_VARIANTS=$((FAILED_VARIANTS + 1))
+            rm -f "$LOG"
+            continue
+        fi
         if [[ -n "$CONDITIONS" ]] && ! grep -q -- "-DENABLE_REMOTE_CONFIG" "$LOG"; then
             echo "Variant $variant compiled WITHOUT ENABLE_REMOTE_CONFIG; refusing its rows" >&2
             FAILED_VARIANTS=$((FAILED_VARIANTS + 1))

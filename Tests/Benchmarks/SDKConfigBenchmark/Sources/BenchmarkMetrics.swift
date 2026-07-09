@@ -1,5 +1,68 @@
 import Foundation
 
+/// Blobs stored during one iteration, split by how they arrived: written from the config
+/// container (inline) vs fetched from a blob source (downloaded). The size extremes bracket
+/// the backend's inline-size budget empirically: the largest blob seen inline and the
+/// smallest blob that needed a download.
+struct BlobAccounting {
+
+    let inlineCount: Int
+    let downloadedCount: Int
+    let totalBytes: Int
+    let maxInlineBytes: Int?
+    let minDownloadedBytes: Int?
+
+    static let empty = BlobAccounting(
+        inlineCount: 0,
+        downloadedCount: 0,
+        totalBytes: 0,
+        maxInlineBytes: nil,
+        minDownloadedBytes: nil
+    )
+
+    /// Attributes newly stored refs: a new ref that has a successful blob request this
+    /// iteration was downloaded; any other new ref can only have come from the container.
+    init(newRefSizes: [String: Int], downloadedRefs: Set<String>) {
+        var inlineCount = 0
+        var downloadedCount = 0
+        var totalBytes = 0
+        var maxInlineBytes: Int?
+        var minDownloadedBytes: Int?
+
+        for (ref, byteCount) in newRefSizes {
+            totalBytes += byteCount
+            if downloadedRefs.contains(ref) {
+                downloadedCount += 1
+                minDownloadedBytes = min(minDownloadedBytes ?? .max, byteCount)
+            } else {
+                inlineCount += 1
+                maxInlineBytes = max(maxInlineBytes ?? .min, byteCount)
+            }
+        }
+
+        self.inlineCount = inlineCount
+        self.downloadedCount = downloadedCount
+        self.totalBytes = totalBytes
+        self.maxInlineBytes = maxInlineBytes
+        self.minDownloadedBytes = minDownloadedBytes
+    }
+
+    private init(
+        inlineCount: Int,
+        downloadedCount: Int,
+        totalBytes: Int,
+        maxInlineBytes: Int?,
+        minDownloadedBytes: Int?
+    ) {
+        self.inlineCount = inlineCount
+        self.downloadedCount = downloadedCount
+        self.totalBytes = totalBytes
+        self.maxInlineBytes = maxInlineBytes
+        self.minDownloadedBytes = minDownloadedBytes
+    }
+
+}
+
 /// One measured simulated launch, with phases attributed from the transport event log.
 struct IterationMeasurement {
 
@@ -19,8 +82,10 @@ struct IterationMeasurement {
     let offeringsStatusCodes: [Int]
     let configStatusCodes: [Int]
     let blobRequestCount: Int
+    /// Blobs stored this iteration, attributed inline vs downloaded via the blob store.
+    let blobs: BlobAccounting
 
-    init(totalMs: Double, events: [TransportEvent]) {
+    init(totalMs: Double, events: [TransportEvent], blobAccounting: BlobAccounting = .empty) {
         self.totalMs = totalMs
         let byKind = Dictionary(grouping: events, by: \.kind)
         let offerings = byKind[.offerings] ?? []
@@ -36,6 +101,7 @@ struct IterationMeasurement {
         self.offeringsStatusCodes = offerings.map(\.statusCode)
         self.configStatusCodes = config.map(\.statusCode)
         self.blobRequestCount = blobs.count
+        self.blobs = blobAccounting
     }
 
     private static func span(of events: [TransportEvent]) -> Double? {
@@ -140,9 +206,20 @@ struct BenchmarkMetrics {
         for (key, values) in [
             ("offerings_ms_mean", measured.compactMap(\.offeringsMs)),
             ("config_ms_mean", measured.compactMap(\.configMs)),
-            ("blob_ms_mean", measured.compactMap(\.blobMs))
+            ("blob_ms_mean", measured.compactMap(\.blobMs)),
+            ("blobs_inline_mean", measured.map { Double($0.blobs.inlineCount) }),
+            ("blobs_downloaded_mean", measured.map { Double($0.blobs.downloadedCount) }),
+            ("blob_bytes_mean", measured.map { Double($0.blobs.totalBytes) })
         ] where !values.isEmpty {
             aggregates[key] = Self.rounded(values.reduce(0, +) / Double(values.count))
+        }
+
+        // Size extremes across the run bracket the backend's inline-size budget.
+        if let maxInline = measured.compactMap(\.blobs.maxInlineBytes).max() {
+            aggregates["max_inline_blob_bytes"] = maxInline
+        }
+        if let minDownloaded = measured.compactMap(\.blobs.minDownloadedBytes).min() {
+            aggregates["min_downloaded_blob_bytes"] = minDownloaded
         }
 
         return aggregates

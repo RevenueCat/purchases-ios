@@ -107,6 +107,14 @@ Rows are `compare.py`-compatible, with `mode` = `app-launch-legacy` / `app-launc
 `DESTINATION="platform=iOS,id=<udid>"` to measure a physical device's real radio). Live only:
 there is no simulated transport, no kill-switch mode, and no loss model in this tier.
 
+Each launch also registers the config path when it runs: config persisted time, blob counts
+split inline vs CDN-downloaded with byte totals, and size extremes that bracket the backend's
+inline-size budget. The headline percentile is time to `paywall_impression` (content actually
+on screen); tests run under Release and fail if a launch's observed SDK variant contradicts
+the row's label. The intent is that any automation able to drive `xcodebuild test` (CI, the
+baguette CLI, a cron box) can run the app N times and collect the same gateable JSONL as the
+CLI matrix.
+
 ## Unit tests
 
 ```sh
