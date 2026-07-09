@@ -148,14 +148,30 @@ final class AppLaunchBenchmarkUITests: XCTestCase {
         // Runtime variant proof: the launched binary must have actually run (or not run)
         // the config path; a mislabeled row would poison every later comparison.
         if let expectsConfigPath = configuration.expectsConfigPath {
-            let mismatches = samples.enumerated()
-                .filter { $0.offset >= configuration.warmup }
+            let measured = samples.enumerated().filter { $0.offset >= configuration.warmup }
+            let mismatches = measured
                 .filter { ($0.element?.configPathActive ?? false) != expectsConfigPath }
             XCTAssertTrue(
                 mismatches.isEmpty,
                 "\(mismatches.count) launch(es) contradict the \(configuration.modeLabel) label " +
                 "(expected configPathActive == \(expectsConfigPath)); wrong SDK variant in the binary?"
             )
+
+            // An active config path is not enough: a failed refresh silently falls back to
+            // legacy delivery, so the row would measure the wrong system with clean timings.
+            // Cold launches must persist a fresh config; warm launches may revalidate (204).
+            if expectsConfigPath {
+                let acceptedOutcomes = scenario == "cold" ? ["persisted"] : ["persisted", "not_modified"]
+                let badOutcomes = measured
+                    .map { ($0.offset, $0.element?.configOutcome ?? "none") }
+                    .filter { !acceptedOutcomes.contains($0.1) }
+                XCTAssertTrue(
+                    badOutcomes.isEmpty,
+                    "\(badOutcomes.count) config-variant launch(es) lack a successful config outcome " +
+                    "(accepted: \(acceptedOutcomes)); first: iteration \(badOutcomes.first?.0 ?? -1) " +
+                    "= \(badOutcomes.first?.1 ?? "")"
+                )
+            }
         }
     }
 

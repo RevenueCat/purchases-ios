@@ -151,6 +151,11 @@ for variant in $VARIANTS; do
         echo "Variant $variant FAILED; last log lines:" >&2
         tail -25 "$LOG" >&2
         FAILED_VARIANTS=$((FAILED_VARIANTS + 1))
+        # A failed invocation must not leak rows into the JSONL: the tests print
+        # BENCHMARK_ROW before their validity assertions, so rows from a failed run may
+        # look clean while measuring the wrong thing.
+        rm -f "$LOG"
+        continue
     fi
 
     # Prove the variant flag reached the SDK compile (guards the manifest-cache hazard).

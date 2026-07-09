@@ -124,6 +124,8 @@ final class AppLaunchMetricsTests: BenchmarkTestCase {
         sample.blobBytes = 40_000
         sample.maxInlineBlobBytes = 30_000
         sample.minDownloadedBlobBytes = 10_000
+        sample.configPathActive = true
+        sample.configOutcome = "persisted"
         let decoded = try XCTUnwrap(LaunchSample.decode(from: sample.jsonString()))
         XCTAssertEqual(decoded, sample)
     }
@@ -204,6 +206,14 @@ final class AppLaunchMetricsTests: BenchmarkTestCase {
         ).description
         XCTAssertTrue(BlobLogParser.isConfigRefreshStarted(refreshing))
         XCTAssertFalse(BlobLogParser.isConfigRefreshStarted(persisted))
+
+        // Terminal outcomes: a failed refresh must never pass as a config-path measurement.
+        XCTAssertTrue(BlobLogParser.isConfigNotModified(RemoteConfigStrings.notModified.description))
+        XCTAssertTrue(BlobLogParser.isConfigRefreshFailed(
+            RemoteConfigStrings.refreshFailed(.missingAppUserID()).description
+        ))
+        XCTAssertFalse(BlobLogParser.isConfigNotModified(refreshing))
+        XCTAssertFalse(BlobLogParser.isConfigRefreshFailed(refreshing))
     }
 
     func testBlobLogParserToleratesLoggerPrefixesAndIgnoresOtherMessages() {
