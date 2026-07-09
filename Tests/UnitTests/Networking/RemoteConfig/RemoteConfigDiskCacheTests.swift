@@ -224,6 +224,33 @@ final class RemoteConfigDiskCacheTests: TestCase {
         expect(read.topics.entries).to(beEmpty())
     }
 
+    func testReadIgnoresUnknownFields() throws {
+        try FileManager.default.createDirectory(
+            at: self.fileURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+        try """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag1",
+          "active_topics": ["sources"],
+          "prefetch_blobs": [],
+          "topics": {},
+          "future_field": {
+            "value": "ignored"
+          }
+        }
+        """.asData.write(to: self.fileURL)
+
+        let read = try XCTUnwrap(self.cache.read())
+
+        expect(read.domain) == "app"
+        expect(read.manifest) == "v1.1710000100.sources:etag1"
+        expect(read.activeTopics) == ["sources"]
+        expect(read.topics.entries).to(beEmpty())
+    }
+
     func testWriteCreatesDirectoryWhenAbsent() {
         self.cache.write(PersistedRemoteConfiguration(
             domain: "app",

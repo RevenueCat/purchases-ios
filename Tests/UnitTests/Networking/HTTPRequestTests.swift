@@ -37,8 +37,6 @@ class HTTPRequestTests: TestCase {
         .health,
         .getProductEntitlementMapping,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
-        .getWorkflows(appUserID: userID, type: nil),
-        .getWorkflow(appUserID: userID, workflowId: "wf_1"),
         .remoteConfig(domain: "app")
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
@@ -56,8 +54,6 @@ class HTTPRequestTests: TestCase {
         .getOfferings(appUserID: userID),
         .getProductEntitlementMapping,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
-        .getWorkflows(appUserID: userID, type: nil),
-        .getWorkflow(appUserID: userID, workflowId: "wf_1"),
         .remoteConfig(domain: "app")
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
@@ -176,9 +172,7 @@ class HTTPRequestTests: TestCase {
 
         expect(staticEndpoints) == [
             .getOfferings(appUserID: Self.userID),
-            .getProductEntitlementMapping,
-            .getWorkflows(appUserID: Self.userID, type: nil),
-            .getWorkflow(appUserID: Self.userID, workflowId: "wf_1")
+            .getProductEntitlementMapping
         ]
     }
 
@@ -205,14 +199,6 @@ class HTTPRequestTests: TestCase {
             case .getOfferings:
                 XCTAssertEqual(fallbackUrlsPaths,
                                ["https://api-production.8-lives-cat.io/v1/offerings"])
-            case .getWorkflows(_, let type):
-                let expected = type.map {
-                    "https://api-production.8-lives-cat.io/workflows/v1/workflows?type=\($0)"
-                } ?? "https://api-production.8-lives-cat.io/workflows/v1/workflows"
-                XCTAssertEqual(fallbackUrlsPaths, [expected])
-            case let .getWorkflow(_, workflowId):
-                XCTAssertEqual(fallbackUrlsPaths,
-                               ["https://api-production.8-lives-cat.io/workflows/v1/workflows/\(workflowId)"])
             case .remoteConfig:
                 XCTAssertEqual(fallbackUrlsPaths,
                                ["https://api-production.8-lives-cat.io/v1/config/app"])
@@ -222,28 +208,12 @@ class HTTPRequestTests: TestCase {
         }
     }
 
-    func testGetWorkflowsFallbackUrlIncludesTypeParam() {
-        let path = HTTPRequest.Path.getWorkflows(appUserID: Self.userID, type: "PAYWALL")
-        XCTAssertEqual(
-            path.fallbackUrls.map { $0.absoluteString },
-            ["https://api-production.8-lives-cat.io/workflows/v1/workflows?type=PAYWALL"]
-        )
-    }
-
     func testRemoteConfigPathEscapesDomain() {
         let path = HTTPRequest.Path.remoteConfig(domain: "app workflows/project")
 
         expect(path.relativePath) == "/v1/config/app%20workflows%2Fproject"
         expect(path.fallbackUrls.map { $0.absoluteString })
             == ["https://api-production.8-lives-cat.io/v1/config/app%20workflows%2Fproject"]
-    }
-
-    func testGetWorkflowFallbackUrlEscapesWorkflowId() {
-        let path = HTTPRequest.Path.getWorkflow(appUserID: Self.userID, workflowId: "wf id/with special")
-        XCTAssertEqual(
-            path.fallbackUrls.map { $0.absoluteString },
-            ["https://api-production.8-lives-cat.io/workflows/v1/workflows/wf%20id%2Fwith%20special"]
-        )
     }
 
     func testUserIDEscaping() {
