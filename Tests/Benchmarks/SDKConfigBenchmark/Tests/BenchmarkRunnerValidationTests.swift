@@ -96,6 +96,54 @@ final class BenchmarkRunnerValidationTests: BenchmarkTestCase {
         ))
     }
 
+    // MARK: - Cold validation
+
+    /// A cold config iteration whose config refresh failed still delivers offerings through
+    /// the legacy fallback, so without this check the row would pass as a config measurement.
+    func testColdConfigModeRequiresASuccessfulConfigRequest() throws {
+        XCTAssertThrowsError(try BenchmarkRunner.validateColdMeasurement(
+            self.measurement(configStatusCodes: []), mode: .config, iteration: 1
+        ))
+        XCTAssertThrowsError(try BenchmarkRunner.validateColdMeasurement(
+            self.measurement(configStatusCodes: [500, 503]), mode: .config, iteration: 1
+        ))
+        XCTAssertNoThrow(try BenchmarkRunner.validateColdMeasurement(
+            self.measurement(configStatusCodes: [500, 200]), mode: .config, iteration: 1
+        ))
+    }
+
+    func testColdKillswitchModeRequiresThe4xx() throws {
+        XCTAssertNoThrow(try BenchmarkRunner.validateColdMeasurement(
+            self.measurement(configStatusCodes: [400]), mode: .configKillswitch, iteration: 0
+        ))
+        XCTAssertThrowsError(try BenchmarkRunner.validateColdMeasurement(
+            self.measurement(configStatusCodes: [200]), mode: .configKillswitch, iteration: 0
+        ))
+        XCTAssertThrowsError(try BenchmarkRunner.validateColdMeasurement(
+            self.measurement(configStatusCodes: []), mode: .configKillswitch, iteration: 0
+        ))
+    }
+
+    func testColdLegacyModeNeedsNoConfigRequest() throws {
+        XCTAssertNoThrow(try BenchmarkRunner.validateColdMeasurement(
+            self.measurement(configStatusCodes: []), mode: .legacy, iteration: 0
+        ))
+    }
+
+    private static let configURL = URL(string: "https://api.revenuecat.com/v1/config/app")
+
+    private func measurement(configStatusCodes: [Int]) -> IterationMeasurement {
+        guard let url = Self.configURL else {
+            preconditionFailure("static config URL failed to parse")
+        }
+        let events: [TransportEvent] = configStatusCodes.map { status in
+            TransportEvent.success(
+                url: url, iteration: 0, statusCode: status, bytesReceived: 10, startedAt: .now()
+            )
+        }
+        return IterationMeasurement(totalMs: 10, events: events)
+    }
+
     // MARK: - Blob accounting
 
     func testBlobAccountingCountsOnlyRefsStoredThisIterationAndAttributesByRequest() throws {

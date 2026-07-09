@@ -171,13 +171,15 @@ for variant in $VARIANTS; do
     ROW_COUNT=0
     if [[ -n "$ROWS" ]]; then
         ROW_COUNT="$(printf '%s\n' "$ROWS" | wc -l | tr -d ' ')"
-        printf '%s\n' "$ROWS"
     fi
-    TOTAL_ROWS=$((TOTAL_ROWS + ROW_COUNT))
+    # Validate the count BEFORE emitting: a partial set means one scenario silently
+    # produced nothing, and callers capture stdout as the JSONL artifact.
     if [[ "$ROW_COUNT" -lt 2 ]]; then
-        echo "Variant $variant produced $ROW_COUNT row(s), expected 2 (cold + warm)" >&2
-        FAILED_VARIANTS=$((FAILED_VARIANTS + 1))
+        fail_variant "Variant $variant produced $ROW_COUNT row(s), expected 2 (cold + warm); refusing them"
+        continue
     fi
+    printf '%s\n' "$ROWS"
+    TOTAL_ROWS=$((TOTAL_ROWS + ROW_COUNT))
     rm -f "$LOG"
 done
 

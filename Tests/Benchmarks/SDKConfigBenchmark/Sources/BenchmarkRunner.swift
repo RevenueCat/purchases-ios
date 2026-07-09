@@ -214,12 +214,19 @@ private extension BenchmarkRunner {
         return Double(end.uptimeNanoseconds - start.uptimeNanoseconds) / 1_000_000
     }
 
-    /// Warm runs must prove that EVERY measured iteration hit the revalidation paths; a single
-    /// iteration silently falling back to full 200 responses or re-downloading blobs would mix
-    /// cold behavior into the warm distribution.
+    /// Every measured iteration must prove it exercised the path its row claims: warm runs
+    /// must hit the revalidation paths, and cold config runs must complete a successful
+    /// config request (a failed refresh silently delivers offerings via the legacy fallback,
+    /// which would let a "config" row measure the wrong system). Skipped under packet loss,
+    /// where transient failures are the thing being measured.
     func validateScenario(_ measurement: IterationMeasurement, iteration: Int) throws {
-        guard self.command.scenario == .warm, self.command.lossPercent == 0 else { return }
-        try Self.validateWarmMeasurement(measurement, mode: self.command.mode, iteration: iteration)
+        guard self.command.lossPercent == 0 else { return }
+        switch self.command.scenario {
+        case .warm:
+            try Self.validateWarmMeasurement(measurement, mode: self.command.mode, iteration: iteration)
+        case .cold:
+            try Self.validateColdMeasurement(measurement, mode: self.command.mode, iteration: iteration)
+        }
     }
 
 }
@@ -248,6 +255,34 @@ extension BenchmarkRunner {
             sizes[ref] = blobStore.read(ref: ref)?.count ?? 0
         }
         return BlobAccounting(newRefSizes: newRefSizes, downloadedRefs: downloadedRefs)
+    }
+
+    /// Cold config iterations must have actually completed the config exchange their mode
+    /// claims: a success for plain config mode, the disabling 4xx for the kill switch.
+    static func validateColdMeasurement(
+        _ measurement: IterationMeasurement,
+        mode: BenchmarkMode,
+        iteration: Int
+    ) throws {
+        guard mode.usesRemoteConfig else { return }
+
+        if mode.forcesConfigFailure {
+            guard !measurement.configStatusCodes.isEmpty,
+                  measurement.configStatusCodes.allSatisfy({ (400...499).contains($0) }) else {
+                throw BenchmarkError.scenarioViolation(
+                    "cold kill-switch iteration \(iteration) did not hit the config 4xx " +
+                    "(statuses: \(measurement.configStatusCodes))"
+                )
+            }
+            return
+        }
+
+        guard measurement.configStatusCodes.contains(where: { (200...299).contains($0) }) else {
+            throw BenchmarkError.scenarioViolation(
+                "cold config iteration \(iteration) never completed a successful config request " +
+                "(statuses: \(measurement.configStatusCodes)); the row would measure legacy fallback"
+            )
+        }
     }
 
     static func validateWarmMeasurement(

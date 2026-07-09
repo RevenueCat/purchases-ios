@@ -62,8 +62,14 @@ final class AppLaunchBenchmarkUITests: XCTestCase {
         let appUserID = "bench-app-warm-\(configuration.runNonce)"
 
         // One uncounted priming launch populates the disk caches; measured launches then
-        // relaunch with retained state and the same user.
-        _ = self.launchAndCollect(configuration: configuration, appUserID: appUserID, wipeState: true)
+        // relaunch with retained state and the same user. The priming launch must succeed:
+        // if it left the caches empty, every "warm" sample would actually be a cold start.
+        let priming = self.launchAndCollect(configuration: configuration, appUserID: appUserID, wipeState: true)
+        if let primingError = AppLaunchMetrics.errorMessage(for: priming) {
+            XCTFail("Warm priming launch failed (\(primingError)); samples would measure cold starts")
+            return
+        }
+
         let samples = (0..<configuration.iterations).map { _ in
             self.launchAndCollect(configuration: configuration, appUserID: appUserID, wipeState: false)
         }
@@ -160,9 +166,11 @@ final class AppLaunchBenchmarkUITests: XCTestCase {
 
             // An active config path is not enough: a failed refresh silently falls back to
             // legacy delivery, so the row would measure the wrong system with clean timings.
-            // Cold launches must persist a fresh config; warm launches may revalidate (204).
+            // Cold launches must persist a fresh config; warm launches must revalidate via
+            // the manifest 204 (a fresh persist on warm means the caches were not warm),
+            // matching the CLI tier's warm validation.
             if expectsConfigPath {
-                let acceptedOutcomes = scenario == "cold" ? ["persisted"] : ["persisted", "not_modified"]
+                let acceptedOutcomes = scenario == "cold" ? ["persisted"] : ["not_modified"]
                 let badOutcomes = measured
                     .map { ($0.offset, $0.element?.configOutcome ?? "none") }
                     .filter { !acceptedOutcomes.contains($0.1) }
