@@ -214,11 +214,56 @@ Live observations (as of this run):
   "stripped offerings" lever below is the measurement that matters for deciding whether to
   remove paywall data from `/offerings`.
 
+## App-launch tier
+
+The CLI measures the manager-level fetch flows in isolation on macOS. The app-launch tier
+(`Tests/TestingApps/SDKConfigBenchmarkApp/`) measures what the CLI cannot: a real iOS app
+that calls `Purchases.configure` like a customer app does, on iOS hardware or simulator,
+including process cold start, customer-info and offerings contention on the launch path, and
+the time until a `PaywallView` actually appears on screen.
+
+- The app links the **stock** `RevenueCat`/`RevenueCatUI` products (no benchmark hooks, no
+  simulated transport), so it exercises exactly the binary that ships. It is live-only,
+  against the same pinned stress-test project.
+- An XCUITest terminates and relaunches the app once per iteration, so every sample is a
+  true process cold start. `cold` wipes all SDK disk state and uses a fresh app user per
+  launch; `warm` primes once and relaunches with retained disk state and the same user.
+- The legacy/config variant switch is the `ENABLE_REMOTE_CONFIG` compile condition, which
+  the SPM-built SDK reads from `Local.xcconfig` (`Package.swift` parses it).
+  `run-app-launch.sh` rewrites that file per variant, forces a manifest re-evaluation, and
+  verifies from the build log that the flag actually reached the SDK compile.
+- Phases per launch: `configured` (configure returned), `customer_info` (first CustomerInfo
+  delivered), `offerings` (getOfferings completed), `paywall_appeared` (PaywallView onAppear).
+  The row's percentile statistics are over `paywall_appeared`; a launch missing any phase
+  counts as an error and fails the run.
+- Rows carry `mode` = `app-launch-legacy` / `app-launch-config` and `profile` = `simulator` /
+  `device`, so `compare.py` never mixes app-tier rows with CLI rows or simulator with device.
+
+Run it with `bash Tests/TestingApps/SDKConfigBenchmarkApp/run-app-launch.sh > app-launch.jsonl`.
+Because there is no network control, treat app-tier numbers as end-to-end monitoring on a
+real network, not as a controlled A/B; the CLI's simulated transport remains the tool for
+isolating variables.
+
+First sample (simulator, live network against the stress project with 2 inline workflow
+blobs published, 4 iterations, 1 warmup discarded; ms to paywall appeared):
+
+| mode | scenario | p50 | offerings mean | customer info mean | configure mean |
+|---|---|---|---|---|---|
+| app-launch-legacy | cold | 1209 | 1160 | 694 | 18 |
+| app-launch-config | cold | 1365 | 1342 | 835 | 22 |
+| app-launch-legacy | warm | 915 | 829 | 635 | 18 |
+| app-launch-config | warm | 1050 | 1068 | 792 | 19 |
+
+The config variant's cold overhead end to end (~13% here) is far below the CLI fixture's
+worst case, because this project's published blobs arrive inline in the container instead
+of as 100 prefetch-gated CDN downloads. Iteration counts this small are smoke-level; use
+`ITERATIONS=25` or more for numbers worth acting on.
+
 ## Known limitations
 
-- **macOS CPU, not device CPU.** Decode and CPU costs are measured on desktop hardware. The
-  comparison between modes is valid; absolute numbers on device will differ. If absolute
-  launch-time claims are needed, wrap the same runner in an iOS app target.
+- **macOS CPU, not device CPU** for the CLI tier. Decode and CPU costs are measured on
+  desktop hardware. The comparison between modes is valid; absolute numbers on device will
+  differ. The app-launch tier above covers absolute, on-device launch timings.
 - **Loss is approximated**, see the network model section above.
 - **Fixture payloads are simpler than production.** Paywall component trees are minimal (one
   stack + one text component per paywall). Byte counts scale with `--paywalls`/`--workflows`,

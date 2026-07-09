@@ -86,6 +86,27 @@ Every run isolates the SDK's disk caches (ETags, offerings, remote config, blobs
 fresh temporary directory that is removed on exit, so runs never touch the real user Library
 and concurrent runs cannot corrupt each other.
 
+## App-launch tier (simulator or device)
+
+The CLI above measures the manager-level flows in isolation. The app-host tier measures what
+a customer actually experiences: a real iOS app (`SDKConfigBenchmarkApp`, linking the stock
+`RevenueCat`/`RevenueCatUI` products) that runs `Purchases.configure` and reports the time to
+configure, first customer info, offerings, and paywall appeared. An XCUITest relaunches the
+app once per iteration, so every sample is a true process cold start; the runner script
+builds the app twice, once per SDK variant, by rewriting `SWIFT_ACTIVE_COMPILATION_CONDITIONS`
+in `Local.xcconfig` (restored on exit):
+
+```sh
+bash Tests/TestingApps/SDKConfigBenchmarkApp/run-app-launch.sh > app-launch.jsonl
+python3 Tests/Benchmarks/SDKConfigBenchmark/compare.py app-launch.jsonl
+```
+
+Rows are `compare.py`-compatible, with `mode` = `app-launch-legacy` / `app-launch-config` and
+`profile` = `simulator` / `device`. Knobs: `ITERATIONS`, `WARMUP`, `PROJECT_ID`,
+`SDK_CONFIG_BENCHMARK_API_KEY` (skips mafdet), and `DESTINATION` (pass
+`DESTINATION="platform=iOS,id=<udid>"` to measure a physical device's real radio). Live only:
+there is no simulated transport, no kill-switch mode, and no loss model in this tier.
+
 ## Unit tests
 
 ```sh
