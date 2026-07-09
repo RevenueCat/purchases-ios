@@ -16,7 +16,9 @@ import XCTest
 
 @testable import RevenueCat
 
-#if !os(macOS)
+// Mac Catalyst detects sandbox the same way as macOS (via the receipt environment, not the
+// receipt URL path), so it uses the macOS test branch below.
+#if !os(macOS) && !targetEnvironment(macCatalyst)
 
 class SandboxEnvironmentDetectorTests: TestCase {
 
@@ -42,7 +44,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
 
 #else
 
-// `macOS` sandbox detection does not rely on receipt path
+// `macOS` and Mac Catalyst sandbox detection does not rely on receipt path
 class SandboxEnvironmentDetectorTests: TestCase {
 
     func testIsNotSandboxIfReceiptIsProduction() throws {

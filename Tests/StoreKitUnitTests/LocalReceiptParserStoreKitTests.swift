@@ -49,7 +49,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
         let receipt = try self.parser.parse(from: data)
 
         expect(receipt.bundleId) == "com.revenuecat.StoreKitUnitTestsHostApp"
-        #if os(macOS)
+        #if os(macOS) || targetEnvironment(macCatalyst)
         expect(receipt.applicationVersion) == SystemInfo.frameworkVersion.replacingOccurrences(
             of: "-SNAPSHOT",
             with: ""
