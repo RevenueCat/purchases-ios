@@ -89,25 +89,40 @@ struct RemoteConfigFetchResult {
 
 }
 
-struct RemoteConfigResponse {
+enum RemoteConfigResponse {
 
-    let configuration: RemoteConfiguration
-    let inlineContentElements: [String: RCContainer.Element]
+    case rcContainer(RemoteConfigContainer, configuration: RemoteConfiguration)
+    case json(RemoteConfiguration)
 
-    fileprivate let container: RemoteConfigContainer?
+    var configuration: RemoteConfiguration {
+        switch self {
+        case let .rcContainer(_, configuration):
+            return configuration
+        case let .json(configuration):
+            return configuration
+        }
+    }
 
-    init(
-        configuration: RemoteConfiguration,
-        inlineContentElements: [String: RCContainer.Element] = [:],
-        container: RemoteConfigContainer? = nil
-    ) {
-        self.configuration = configuration
-        self.inlineContentElements = inlineContentElements
-        self.container = container
+    var inlineContentElements: [String: RCContainer.Element] {
+        switch self {
+        case let .rcContainer(container, _):
+            return container.inlineContentElements
+        case .json:
+            return [:]
+        }
+    }
+
+    fileprivate var container: RemoteConfigContainer? {
+        switch self {
+        case let .rcContainer(container, _):
+            return container
+        case .json:
+            return nil
+        }
     }
 
     init(configuration: RemoteConfiguration) {
-        self.init(configuration: configuration, inlineContentElements: [:], container: nil)
+        self = .json(configuration)
     }
 
     init(container: RemoteConfigContainer) throws {
@@ -118,11 +133,7 @@ struct RemoteConfigResponse {
             )
         }
 
-        self.init(
-            configuration: configuration,
-            inlineContentElements: container.inlineContentElements,
-            container: container
-        )
+        self = .rcContainer(container, configuration: configuration)
     }
 
 }
