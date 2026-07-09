@@ -15,6 +15,9 @@ final class BenchmarkSDKStack {
     /// The manager's content-addressed blob store, exposed so the runner can attribute
     /// per-iteration blob storage (inline vs downloaded) and sizes. Nil in legacy mode.
     let blobStore: RemoteConfigBlobStoreType?
+    /// The manager's disk cache, exposed so the runner can join stored blob refs against
+    /// the persisted topic index (which topic each blob belongs to). Nil in legacy mode.
+    let remoteConfigDiskCache: RemoteConfigDiskCacheType?
     let httpClient: HTTPClient
     let deviceCache: DeviceCache
 
@@ -64,6 +67,7 @@ final class BenchmarkSDKStack {
         let remoteConfigManager = remoteConfigStack?.manager
         self.remoteConfigManager = remoteConfigManager
         self.blobStore = remoteConfigStack?.blobStore
+        self.remoteConfigDiskCache = remoteConfigStack?.diskCache
 
         self.offeringsManager = OfferingsManager(
             deviceCache: deviceCache,
@@ -114,7 +118,11 @@ private extension BenchmarkSDKStack {
     static func makeRemoteConfigManager(
         backendConfiguration: BackendConfiguration,
         appUserID: String
-    ) -> (manager: RemoteConfigManagerType, blobStore: RemoteConfigBlobStoreType) {
+    ) -> (
+        manager: RemoteConfigManagerType,
+        blobStore: RemoteConfigBlobStoreType,
+        diskCache: RemoteConfigDiskCacheType
+    ) {
         let diskCache = RemoteConfigDiskCache()
         let blobStore = RemoteConfigBlobStore()
         let sourceProvider = RemoteConfigSourceProvider(topicStore: diskCache)
@@ -132,7 +140,7 @@ private extension BenchmarkSDKStack {
             blobFetcher: blobFetcher,
             currentUserProvider: BenchmarkCurrentUserProvider(appUserID: appUserID)
         )
-        return (manager, blobStore)
+        return (manager, blobStore, diskCache)
     }
 
 }

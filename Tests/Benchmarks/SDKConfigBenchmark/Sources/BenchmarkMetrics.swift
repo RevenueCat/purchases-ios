@@ -6,28 +6,37 @@ import Foundation
 /// smallest blob that needed a download.
 struct BlobAccounting {
 
+    /// Label for stored refs the persisted topic index does not reference. Should be empty
+    /// in practice (`retainOnly` prunes them); nonzero is itself a signal worth seeing.
+    static let unreferencedTopic = "unreferenced"
+
     let inlineCount: Int
     let downloadedCount: Int
     let totalBytes: Int
     let maxInlineBytes: Int?
     let minDownloadedBytes: Int?
+    /// Newly stored blobs grouped by the topic that references them (e.g. "workflows",
+    /// "ui_config"), so rows say WHAT was fetched, not just how much.
+    let countsByTopic: [String: Int]
+    let bytesByTopic: [String: Int]
 
-    static let empty = BlobAccounting(
-        inlineCount: 0,
-        downloadedCount: 0,
-        totalBytes: 0,
-        maxInlineBytes: nil,
-        minDownloadedBytes: nil
-    )
+    static let empty = BlobAccounting(newRefSizes: [:], downloadedRefs: [])
 
     /// Attributes newly stored refs: a new ref that has a successful blob request this
     /// iteration was downloaded; any other new ref can only have come from the container.
-    init(newRefSizes: [String: Int], downloadedRefs: Set<String>) {
+    /// `topicByRef` (from the persisted topic index) labels each ref with its topic.
+    init(
+        newRefSizes: [String: Int],
+        downloadedRefs: Set<String>,
+        topicByRef: [String: String] = [:]
+    ) {
         var inlineCount = 0
         var downloadedCount = 0
         var totalBytes = 0
         var maxInlineBytes: Int?
         var minDownloadedBytes: Int?
+        var countsByTopic: [String: Int] = [:]
+        var bytesByTopic: [String: Int] = [:]
 
         for (ref, byteCount) in newRefSizes {
             totalBytes += byteCount
@@ -38,6 +47,9 @@ struct BlobAccounting {
                 inlineCount += 1
                 maxInlineBytes = max(maxInlineBytes ?? .min, byteCount)
             }
+            let topic = topicByRef[ref] ?? Self.unreferencedTopic
+            countsByTopic[topic, default: 0] += 1
+            bytesByTopic[topic, default: 0] += byteCount
         }
 
         self.inlineCount = inlineCount
@@ -45,20 +57,8 @@ struct BlobAccounting {
         self.totalBytes = totalBytes
         self.maxInlineBytes = maxInlineBytes
         self.minDownloadedBytes = minDownloadedBytes
-    }
-
-    private init(
-        inlineCount: Int,
-        downloadedCount: Int,
-        totalBytes: Int,
-        maxInlineBytes: Int?,
-        minDownloadedBytes: Int?
-    ) {
-        self.inlineCount = inlineCount
-        self.downloadedCount = downloadedCount
-        self.totalBytes = totalBytes
-        self.maxInlineBytes = maxInlineBytes
-        self.minDownloadedBytes = minDownloadedBytes
+        self.countsByTopic = countsByTopic
+        self.bytesByTopic = bytesByTopic
     }
 
 }
@@ -220,6 +220,24 @@ struct BenchmarkMetrics {
         }
         if let minDownloaded = measured.compactMap(\.blobs.minDownloadedBytes).min() {
             aggregates["min_downloaded_blob_bytes"] = minDownloaded
+        }
+
+        // Per-topic attribution: what was fetched, not just how much. Mean per iteration.
+        var topicCounts: [String: Int] = [:]
+        var topicBytes: [String: Int] = [:]
+        for iteration in measured {
+            topicCounts.merge(iteration.blobs.countsByTopic, uniquingKeysWith: +)
+            topicBytes.merge(iteration.blobs.bytesByTopic, uniquingKeysWith: +)
+        }
+        if !topicCounts.isEmpty {
+            var byTopic: [String: [String: Double]] = [:]
+            for topic in topicCounts.keys {
+                byTopic[topic] = [
+                    "count_mean": Self.rounded(Double(topicCounts[topic] ?? 0) / count),
+                    "bytes_mean": Self.rounded(Double(topicBytes[topic] ?? 0) / count)
+                ]
+            }
+            aggregates["blobs_by_topic"] = byTopic
         }
 
         return aggregates

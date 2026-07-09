@@ -78,7 +78,7 @@ struct BenchmarkCommand {
         "post_warmup_error_count", "mean_ms", "min_ms", "max_ms", "p50_ms", "p90_ms", "p95_ms",
         "p99_ms", "request_count_mean", "bytes_received_mean", "failed_requests_total",
         "fallback_host_requests_total", "offerings_ms_mean", "config_ms_mean", "blob_ms_mean",
-        "blobs_inline_mean", "blobs_downloaded_mean", "blob_bytes_mean", "max_inline_blob_bytes",
+        "blobs_inline_mean", "blobs_downloaded_mean", "blob_bytes_mean", "blobs_by_topic", "max_inline_blob_bytes",
         "min_downloaded_blob_bytes", "config_persisted_ms_mean", "last_blob_stored_ms_mean",
         "first_error", "project_id"
     ]

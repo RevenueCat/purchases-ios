@@ -163,6 +163,19 @@ final class BenchmarkMetricsTests: BenchmarkTestCase {
         XCTAssertEqual(accounting.minDownloadedBytes, 9_000)
     }
 
+    func testBlobAccountingAttributesRefsToTopics() {
+        // Which topic each stored blob belongs to, from the persisted topic index; a stored
+        // ref no topic references is labeled explicitly rather than dropped.
+        let accounting = BlobAccounting(
+            newRefSizes: ["wf-1": 40_000, "wf-2": 30_000, "ui-app": 5_000, "mystery": 100],
+            downloadedRefs: ["ui-app"],
+            topicByRef: ["wf-1": "workflows", "wf-2": "workflows", "ui-app": "ui_config"]
+        )
+
+        XCTAssertEqual(accounting.countsByTopic, ["workflows": 2, "ui_config": 1, "unreferenced": 1])
+        XCTAssertEqual(accounting.bytesByTopic, ["workflows": 70_000, "ui_config": 5_000, "unreferenced": 100])
+    }
+
     func testJSONLRowCarriesBlobAccountingAggregates() throws {
         var command = BenchmarkCommand()
         command.iterations = 2
@@ -170,10 +183,12 @@ final class BenchmarkMetricsTests: BenchmarkTestCase {
 
         var metrics = BenchmarkMetrics()
         metrics.record(self.measurement(totalMs: 10, blobAccounting: BlobAccounting(
-            newRefSizes: ["i1": 1_000, "d1": 4_000], downloadedRefs: ["d1"]
+            newRefSizes: ["i1": 1_000, "d1": 4_000], downloadedRefs: ["d1"],
+            topicByRef: ["i1": "workflows", "d1": "ui_config"]
         )), iteration: 0)
         metrics.record(self.measurement(totalMs: 20, blobAccounting: BlobAccounting(
-            newRefSizes: ["i2": 3_000, "d2": 2_000], downloadedRefs: ["d2"]
+            newRefSizes: ["i2": 3_000, "d2": 2_000], downloadedRefs: ["d2"],
+            topicByRef: ["i2": "workflows", "d2": "ui_config"]
         )), iteration: 1)
 
         let row = try self.decodeRow(metrics, command: command)
@@ -183,6 +198,12 @@ final class BenchmarkMetricsTests: BenchmarkTestCase {
         XCTAssertEqual(row["blob_bytes_mean"] as? Double, 5_000)
         XCTAssertEqual(row["max_inline_blob_bytes"] as? Int, 3_000)
         XCTAssertEqual(row["min_downloaded_blob_bytes"] as? Int, 2_000)
+
+        let byTopic = try XCTUnwrap(row["blobs_by_topic"] as? [String: [String: Double]])
+        XCTAssertEqual(byTopic["workflows"]?["count_mean"], 1)
+        XCTAssertEqual(byTopic["workflows"]?["bytes_mean"], 2_000)
+        XCTAssertEqual(byTopic["ui_config"]?["count_mean"], 1)
+        XCTAssertEqual(byTopic["ui_config"]?["bytes_mean"], 3_000)
     }
 
     func testJSONLRowOmitsBlobExtremesWhenNoBlobsWereStored() throws {

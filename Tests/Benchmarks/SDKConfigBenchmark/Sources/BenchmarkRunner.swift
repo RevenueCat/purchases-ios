@@ -154,7 +154,8 @@ private extension BenchmarkRunner {
             blobAccounting: Self.blobAccounting(
                 blobStore: stack.blobStore,
                 refsBeforeLaunch: blobRefsBeforeLaunch,
-                events: events
+                events: events,
+                topics: stack.remoteConfigDiskCache?.read()?.topics
             )
         )
     }
@@ -235,11 +236,13 @@ extension BenchmarkRunner {
 
     /// Attributes this iteration's newly stored blobs (all disk reads happen after the timed
     /// window): a new ref with a successful blob request was downloaded; any other new ref can
-    /// only have arrived inline in the config container.
+    /// only have arrived inline in the config container. `topics` (the persisted topic index)
+    /// labels each ref with the topic that references it.
     static func blobAccounting(
         blobStore: RemoteConfigBlobStoreType?,
         refsBeforeLaunch: Set<String>,
-        events: [TransportEvent]
+        events: [TransportEvent],
+        topics: RemoteConfiguration.Topics? = nil
     ) -> BlobAccounting {
         guard let blobStore else { return .empty }
 
@@ -254,7 +257,27 @@ extension BenchmarkRunner {
         let newRefSizes = newRefs.reduce(into: [String: Int]()) { sizes, ref in
             sizes[ref] = blobStore.read(ref: ref)?.count ?? 0
         }
-        return BlobAccounting(newRefSizes: newRefSizes, downloadedRefs: downloadedRefs)
+        return BlobAccounting(
+            newRefSizes: newRefSizes,
+            downloadedRefs: downloadedRefs,
+            topicByRef: Self.topicByRef(from: topics)
+        )
+    }
+
+    /// Inverts the persisted topic index into ref → topic name. A ref referenced by several
+    /// topics keeps the alphabetically first, deterministically.
+    static func topicByRef(from topics: RemoteConfiguration.Topics?) -> [String: String] {
+        guard let topics else { return [:] }
+
+        var topicByRef: [String: String] = [:]
+        for (topicName, items) in topics.entries {
+            for item in items.values {
+                guard let ref = item.blobRef else { continue }
+                if let existing = topicByRef[ref], existing <= topicName { continue }
+                topicByRef[ref] = topicName
+            }
+        }
+        return topicByRef
     }
 
     /// Cold config iterations must have actually completed the config exchange their mode
