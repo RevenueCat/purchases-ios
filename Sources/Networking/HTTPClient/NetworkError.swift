@@ -274,6 +274,37 @@ extension NetworkError {
         }
     }
 
+    /// Whether this error was caused by the *device* lacking connectivity, as opposed to the host being
+    /// unreachable. Switching API sources or fallback hosts cannot help when the device itself is offline,
+    /// so these failures must not trigger a host switch.
+    ///
+    /// Only device-side `URLError` codes qualify. Host-side or ambiguous failures — `.cannotConnectToHost`,
+    /// `.cannotFindHost`, `.dnsLookupFailed`, `.timedOut`, and DNS blocking (``NetworkError/dnsError``) —
+    /// stay switch-eligible, since a different host may still succeed.
+    var isDeviceConnectivityError: Bool {
+        switch self {
+        case let .networkError(error, _):
+            return error.domain == NSURLErrorDomain
+                && Self.deviceConnectivityURLErrorCodes.contains(error.code)
+        case .decoding,
+             .dnsError,
+             .unableToCreateRequest,
+             .unexpectedResponse,
+             .errorResponse,
+             .signatureVerificationFailed:
+            return false
+        }
+    }
+
+    /// `URLError` codes that indicate the device has no working connection to any host.
+    private static let deviceConnectivityURLErrorCodes: Set<Int> = [
+        NSURLErrorNotConnectedToInternet,
+        NSURLErrorNetworkConnectionLost,
+        NSURLErrorInternationalRoamingOff,
+        NSURLErrorCallIsActive,
+        NSURLErrorDataNotAllowed
+    ]
+
 }
 
 extension NetworkError {
