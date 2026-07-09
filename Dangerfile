@@ -4,7 +4,11 @@ require 'pathname'
 require 'set'
 
 EXCLUDED_SWIFT_PATH_PREFIXES = [
-  'Tests/APITesters/'
+  'Tests/APITesters/',
+  # Tuist-only benchmark targets (Projects/SDKConfigBenchmark and
+  # Projects/SDKConfigBenchmarkApp); intentionally absent from RevenueCat.xcodeproj.
+  'Tests/Benchmarks/',
+  'Tests/TestingApps/SDKConfigBenchmarkApp/'
 ].freeze
 
 COMMENT_MARKER = "<!-- purchases-ios-danger -->"
