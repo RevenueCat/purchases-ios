@@ -13,7 +13,8 @@ var projects: [Path] = [
     "./Projects/PaywallValidationTester",
     "./Projects/BinarySizeTest",
     "./Projects/RCTTester",
-    "./Projects/SDKConfigBenchmark"
+    "./Projects/SDKConfigBenchmark",
+    "./Projects/SDKConfigBenchmarkApp"
 ]
 
 // These projects depend on external packages (Nimble, SnapshotTesting, OHHTTPStubs, GoogleMobileAds).
