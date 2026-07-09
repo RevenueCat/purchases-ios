@@ -20,6 +20,12 @@ protocol HTTPRequestPath {
     /// The base URL for requests to this path.
     static var serverHostURL: URL { get }
 
+    /// A path-specific base URL override.
+    ///
+    /// Most requests use ``serverHostURL``. A small number of static endpoints are intentionally served
+    /// from a different host without going through HTTPClient's retry-to-fallback-host flow.
+    var serverHostURLOverride: URL? { get }
+
     /// The fallback URLs to use when the main server is down.
     ///
     /// Not all endpoints have a fallback URL, but some do.
@@ -87,6 +93,10 @@ extension HTTPRequestPath {
         return []
     }
 
+    var serverHostURLOverride: URL? {
+        return nil
+    }
+
     var supportsFallbackURLs: Bool {
         !fallbackUrls.isEmpty
     }
@@ -118,7 +128,7 @@ extension HTTPRequestPath {
         } else if let fallbackUrlIndex {
             return self.fallbackUrls[safe: fallbackUrlIndex]
         } else {
-            baseURL = Self.serverHostURL
+            baseURL = self.serverHostURLOverride ?? Self.serverHostURL
         }
         return URL(string: self.relativePath, relativeTo: baseURL)
     }
@@ -150,6 +160,7 @@ extension HTTPRequest {
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
         case remoteConfig(domain: String)
+        case fallbackConfig(domain: String)
 
     }
 
@@ -190,14 +201,21 @@ extension HTTPRequest.Path: HTTPRequestPath {
         URL(string: "https://api-production.8-lives-cat.io")
     ]
 
+    var serverHostURLOverride: URL? {
+        switch self {
+        case .fallbackConfig:
+            return Self.fallbackServerHostURLs.first ?? nil
+        default:
+            return nil
+        }
+    }
+
     var fallbackRelativePath: String? {
         switch self {
         case .getOfferings:
             return "/v1/offerings"
         case .getProductEntitlementMapping:
             return "/v1/product_entitlement_mapping"
-        case let .remoteConfig(domain):
-            return "/v1/config/\(Self.escape(domain))"
         default:
             return nil
         }
@@ -239,7 +257,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus,
-                .remoteConfig:
+                .remoteConfig,
+                .fallbackConfig:
             return true
 
         case .health,
@@ -269,6 +288,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .rewardVerificationStatus:
             return true
         case .remoteConfig,
+             .fallbackConfig,
              .health,
              .appHealthReportAvailability:
             return false
@@ -288,6 +308,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
+                .fallbackConfig,
                 .rewardVerificationStatus:
             return true
         case .getIntroEligibility,
@@ -315,6 +336,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .rewardVerificationStatus:
             return true
         case .getOfferings,
+                .fallbackConfig,
                 .getIntroEligibility,
                 .postSubscriberAttributes,
                 .postAttributionData,
@@ -333,6 +355,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .remoteConfig:
             return RemoteConfigSignatureContextProvider()
+        case .fallbackConfig:
+            return FallbackConfigSignatureContextProvider()
         default:
             return DefaultResponseSignatureContextProvider()
         }
@@ -400,7 +424,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .rewardVerificationStatus(appUserID, clientTransactionID):
             return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
 
-        case let .remoteConfig(domain):
+        case let .remoteConfig(domain),
+             let .fallbackConfig(domain):
             return "config/\(Self.escape(domain))"
         }
     }
@@ -465,6 +490,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .remoteConfig:
             return "remote_config"
+        case .fallbackConfig:
+            return "fallback_config"
         }
     }
 
@@ -475,6 +502,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 HTTPClient.RequestHeader.accept.rawValue: HTTPClient.rcContainerFormatAcceptHeaderValue,
                 HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue:
                     HTTPClient.rcContainerFormatElementEncodingHeaderValue
+            ]
+        case .fallbackConfig:
+            return [
+                HTTPClient.RequestHeader.accept.rawValue: "application/json"
             ]
         default:
             return [:]

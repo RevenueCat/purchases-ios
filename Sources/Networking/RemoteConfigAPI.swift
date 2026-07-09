@@ -10,6 +10,7 @@ import Foundation
 protocol RemoteConfigAPIType: AnyObject {
 
     typealias RemoteConfigResponseHandler = Backend.ResponseHandler<RemoteConfigFetchResult>
+    typealias RemoteConfigFallbackResponseHandler = Backend.ResponseHandler<RemoteConfigFallbackFetchResult>
 
     func getRemoteConfig(
         request: RemoteConfigRequest,
@@ -17,18 +18,27 @@ protocol RemoteConfigAPIType: AnyObject {
         completion: @escaping RemoteConfigResponseHandler
     )
 
+    func getFallbackConfig(
+        domain: String,
+        isAppBackgrounded: Bool,
+        completion: @escaping RemoteConfigFallbackResponseHandler
+    )
+
 }
 
 class RemoteConfigAPI: RemoteConfigAPIType {
 
     typealias RemoteConfigResponseHandler = Backend.ResponseHandler<RemoteConfigFetchResult>
+    typealias RemoteConfigFallbackResponseHandler = Backend.ResponseHandler<RemoteConfigFallbackFetchResult>
 
     private let callbackCache: CallbackCache<RemoteConfigCallback>
+    private let fallbackCallbackCache: CallbackCache<RemoteConfigFallbackCallback>
     private let backendConfig: BackendConfiguration
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
         self.callbackCache = .init()
+        self.fallbackCallbackCache = .init()
     }
 
     func getRemoteConfig(
@@ -52,6 +62,27 @@ class RemoteConfigAPI: RemoteConfigAPIType {
         )
     }
 
+    func getFallbackConfig(
+        domain: String,
+        isAppBackgrounded: Bool,
+        completion: @escaping RemoteConfigFallbackResponseHandler
+    ) {
+        let factory = GetFallbackConfigOperation.createFactory(
+            configuration: self.backendConfig,
+            callbackCache: self.fallbackCallbackCache,
+            domain: domain
+        )
+
+        let callback = RemoteConfigFallbackCallback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.fallbackCallbackCache.add(callback)
+
+        self.backendConfig.addCacheableOperation(
+            with: factory,
+            delay: .default(forBackgroundedApp: isAppBackgrounded),
+            cacheStatus: cacheStatus
+        )
+    }
+
 }
 
 struct RemoteConfigFetchResult {
@@ -63,6 +94,19 @@ struct RemoteConfigFetchResult {
 
     init(response: VerifiedHTTPResponse<RemoteConfigContainer?>) {
         self.container = response.body
+        self.verificationResult = response.verificationResult
+    }
+
+}
+
+struct RemoteConfigFallbackFetchResult {
+
+    /// `nil` represents a successful `204 No Content` response.
+    let configuration: RemoteConfiguration?
+    let verificationResult: VerificationResult
+
+    init(response: VerifiedHTTPResponse<RemoteConfiguration?>) {
+        self.configuration = response.body
         self.verificationResult = response.verificationResult
     }
 

@@ -553,6 +553,59 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(self.signing.requests.onlyElement?.parameters.nonce).toNot(beNil())
     }
 
+    func testFallbackConfigSignatureUsesRawJSONPayloadWithoutNonceOrRequestBody() throws {
+        let body = """
+        {
+          "domain": "app",
+          "manifest": "v1.test",
+          "active_topics": [],
+          "topics": {}
+        }
+        """.asData
+        self.mockResponse(path: HTTPRequest.Path.fallbackConfig(domain: "app"),
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: body)
+        self.signing.stubbedVerificationResult = true
+
+        let response: VerifiedHTTPResponse<RemoteConfiguration?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.fallbackConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .verified
+
+        expect(self.signing.requests).to(haveCount(1))
+        let signingRequest = try XCTUnwrap(self.signing.requests.onlyElement)
+
+        expect(signingRequest.parameters.message) == body
+        expect(signingRequest.parameters.nonce).to(beNil())
+        expect(signingRequest.parameters.requestBody).to(beNil())
+        expect(signingRequest.parameters.requestDate) == Self.date2.millisecondsSince1970
+        expect(signingRequest.signature) == Self.sampleSignature
+    }
+
+    func testFallbackConfigNoContentResponseUsesEmptySignaturePayloadWithoutNonce() throws {
+        self.mockResponse(path: HTTPRequest.Path.fallbackConfig(domain: "app"),
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: "not json".asData,
+                          statusCode: .noContent)
+        self.signing.stubbedVerificationResult = true
+
+        let response: VerifiedHTTPResponse<RemoteConfiguration?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.fallbackConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.body).to(beNil())
+        expect(response?.value?.verificationResult) == .verified
+        expect(self.signing.requests).to(haveCount(1))
+        expect(self.signing.requests.onlyElement?.parameters.message) == Data()
+        expect(self.signing.requests.onlyElement?.parameters.nonce).to(beNil())
+        expect(self.signing.requests.onlyElement?.parameters.requestBody).to(beNil())
+    }
+
     func testRemoteConfigSignaturePayloadMissingBodyThrowsMissingBodyError() {
         let provider = RemoteConfigSignatureContextProvider()
 
@@ -1222,6 +1275,13 @@ private extension BaseSignatureVerificationHTTPClientTests {
         return .init(
             method: .post(RemoteConfigRequest(appUserID: "app-user-id")),
             path: HTTPRequest.Path.remoteConfig(domain: "app")
+        )
+    }
+
+    static var fallbackConfigRequest: HTTPRequest {
+        return .init(
+            method: .get,
+            path: HTTPRequest.Path.fallbackConfig(domain: "app")
         )
     }
 

@@ -358,6 +358,24 @@ private final class FakeRemoteConfigAPI: RemoteConfigAPIType {
         }
     }
 
+    func getFallbackConfig(
+        domain: String,
+        isAppBackgrounded: Bool,
+        completion: @escaping Backend.ResponseHandler<RemoteConfigFallbackFetchResult>
+    ) {
+        DispatchQueue.global().async {
+            let result = RemoteConfigFallbackFetchResult(response: VerifiedHTTPResponse(
+                httpStatusCode: .noContent,
+                responseHeaders: [:],
+                body: nil,
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
+            ))
+            completion(.success(result))
+        }
+    }
+
 }
 
 private final class FakeRemoteConfigDiskCache: RemoteConfigDiskCacheType {

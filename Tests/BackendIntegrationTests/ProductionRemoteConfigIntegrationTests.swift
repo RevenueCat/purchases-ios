@@ -41,6 +41,17 @@ class BaseProductionRemoteConfigIntegrationTests: BaseBackendIntegrationTests {
         }
     }
 
+    func fetchFallbackConfig() async throws -> RemoteConfigFallbackFetchResult {
+        return try await withCheckedThrowingContinuation { continuation in
+            self.remoteConfigAPI.getFallbackConfig(
+                domain: Self.domain,
+                isAppBackgrounded: false
+            ) { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
     func remoteConfiguration(from container: RemoteConfigContainer) throws -> RemoteConfiguration {
         return try container.configElement.withDecodedPayloadBytes { bytes in
             try JSONDecoder.default.decode(
@@ -68,6 +79,13 @@ class BaseProductionRemoteConfigIntegrationTests: BaseBackendIntegrationTests {
     func verifyNoContentResponse(_ result: RemoteConfigFetchResult) {
         expect(result.verificationResult) == .verified
         expect(result.container).to(beNil())
+    }
+
+    func verifyFallbackConfigResponse(_ result: RemoteConfigFallbackFetchResult) throws {
+        expect(result.verificationResult) == .verified
+
+        let configuration = try XCTUnwrap(result.configuration)
+        self.verifyRemoteConfiguration(configuration)
     }
 
 }
@@ -134,6 +152,12 @@ final class ProductionRemoteConfigIntegrationTests: BaseProductionRemoteConfigIn
         self.verifyNoContentResponse(result)
     }
 
+    func testCanFetchRemoteConfigFromStaticFallbackURL() async throws {
+        let result = try await self.fetchFallbackConfig()
+
+        try self.verifyFallbackConfigResponse(result)
+    }
+
 }
 
 final class EnforcedProductionRemoteConfigIntegrationTests: BaseProductionRemoteConfigIntegrationTests {
@@ -156,6 +180,12 @@ final class EnforcedProductionRemoteConfigIntegrationTests: BaseProductionRemote
         let result = try await self.fetchRemoteConfig(manifest: configuration.manifest)
 
         self.verifyNoContentResponse(result)
+    }
+
+    func testVerifiesStaticFallbackResponseWhenVerificationIsEnforced() async throws {
+        let result = try await self.fetchFallbackConfig()
+
+        try self.verifyFallbackConfigResponse(result)
     }
 
 }
