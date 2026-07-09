@@ -45,6 +45,8 @@ if [[ -f "$XCCONFIG" ]]; then
     cp "$XCCONFIG" "$XCCONFIG_BACKUP"
 fi
 
+VARIANT_MARKER="// sdk-config-benchmark-variant:"
+
 restore_xcconfig() {
     if [[ "$XCCONFIG_EXISTED" == "1" ]]; then
         cp "$XCCONFIG_BACKUP" "$XCCONFIG"
@@ -52,7 +54,7 @@ restore_xcconfig() {
     else
         rm -f "$XCCONFIG"
     fi
-    touch "$REPO_ROOT/Package.swift"
+    sed -i '' "/^${VARIANT_MARKER//\//\\/}/d" "$REPO_ROOT/Package.swift"
 }
 trap restore_xcconfig EXIT
 
@@ -103,18 +105,30 @@ set_swift_conditions() {
         # shellcheck disable=SC2016 # $(inherited) is an xcconfig token, not shell
         printf '\nSWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) %s\n' "$conditions" >> "$XCCONFIG"
     fi
-    # SwiftPM caches manifest evaluations; the xcconfig is not part of the cache key, so
-    # force a re-evaluation or a stale flag set could silently build the wrong variant.
-    touch "$REPO_ROOT/Package.swift"
+    # SwiftPM caches manifest evaluations by Package.swift CONTENT (mtime is ignored), and
+    # the xcconfig is not part of the cache key: without a content change, a reused derived
+    # data path silently builds the previous variant's flags. A marker comment carrying the
+    # current conditions (removed on exit) forces re-evaluation exactly when they change.
+    sed -i '' "/^${VARIANT_MARKER//\//\\/}/d" "$REPO_ROOT/Package.swift"
+    printf '%s %s\n' "$VARIANT_MARKER" "$conditions" >> "$REPO_ROOT/Package.swift"
 }
 
 FAILED_VARIANTS=0
 TOTAL_ROWS=0
 
 for variant in $VARIANTS; do
+    # BYPASS_SIMULATED_STORE_RELEASE_CHECK: tests build Release (shipping-SDK numbers), and
+    # live runs use the project's Test Store key, which the SDK otherwise refuses (by
+    # crashing) in Release builds. This is the SDK's designed opt-out for that guard.
     case "$variant" in
-        legacy) CONDITIONS="" ;;
-        config) CONDITIONS="ENABLE_REMOTE_CONFIG" ;;
+        legacy)
+            CONDITIONS="BYPASS_SIMULATED_STORE_RELEASE_CHECK"
+            EXPECT_CONFIG_PATH=0
+            ;;
+        config)
+            CONDITIONS="ENABLE_REMOTE_CONFIG BYPASS_SIMULATED_STORE_RELEASE_CHECK"
+            EXPECT_CONFIG_PATH=1
+            ;;
         *) echo "Unknown variant $variant (expected legacy or config)" >&2; exit 1 ;;
     esac
 
@@ -123,8 +137,6 @@ for variant in $VARIANTS; do
 
     LOG="$(mktemp)"
     DERIVED_DATA="$DERIVED_DATA_ROOT/$variant"
-    EXPECT_CONFIG_PATH=0
-    [[ -n "$CONDITIONS" ]] && EXPECT_CONFIG_PATH=1
     if ! env TEST_RUNNER_BENCH_API_KEY="$RESOLVED_KEY" \
              TEST_RUNNER_BENCH_MODE_LABEL="app-launch-$variant" \
              TEST_RUNNER_BENCH_ITERATIONS="$ITERATIONS" \
@@ -153,13 +165,13 @@ for variant in $VARIANTS; do
             rm -f "$LOG"
             continue
         fi
-        if [[ -n "$CONDITIONS" ]] && ! grep -q -- "-DENABLE_REMOTE_CONFIG" "$LOG"; then
+        if [[ "$EXPECT_CONFIG_PATH" == "1" ]] && ! grep -q -- "-DENABLE_REMOTE_CONFIG" "$LOG"; then
             echo "Variant $variant compiled WITHOUT ENABLE_REMOTE_CONFIG; refusing its rows" >&2
             FAILED_VARIANTS=$((FAILED_VARIANTS + 1))
             rm -f "$LOG"
             continue
         fi
-        if [[ -z "$CONDITIONS" ]] && grep -q -- "-DENABLE_REMOTE_CONFIG" "$LOG"; then
+        if [[ "$EXPECT_CONFIG_PATH" == "0" ]] && grep -q -- "-DENABLE_REMOTE_CONFIG" "$LOG"; then
             echo "Variant $variant compiled WITH ENABLE_REMOTE_CONFIG; refusing its rows" >&2
             FAILED_VARIANTS=$((FAILED_VARIANTS + 1))
             rm -f "$LOG"

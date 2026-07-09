@@ -249,7 +249,10 @@ the time until a `PaywallView` actually appears on screen.
 - Tests build and run under **Release** (the rows claim shipping-SDK numbers), and every
   measured launch must prove at runtime which SDK variant is inside the binary: the config
   path's refresh log fires on every config-variant launch, and the runner fails on any launch
-  whose `configPathActive` contradicts the row's label, cached builds included.
+  whose `configPathActive` contradicts the row's label, cached builds included. Because live
+  runs use the project's Test Store key, which the SDK refuses (by crashing) in Release
+  builds, both variants also compile the SDK's designed opt-out for that guard,
+  `BYPASS_SIMULATED_STORE_RELEASE_CHECK`.
 - Rows carry `mode` = `app-launch-legacy` / `app-launch-config` and `profile` = `simulator` /
   `device`, so `compare.py` never mixes app-tier rows with CLI rows or simulator with device.
 
@@ -263,20 +266,24 @@ Because there is no network control, treat app-tier numbers as end-to-end monito
 real network, not as a controlled A/B; the CLI's simulated transport remains the tool for
 isolating variables.
 
-First sample (simulator, live network against the stress project with 2 inline workflow
-blobs published, 4 iterations, 1 warmup discarded; ms to paywall appeared):
+First Release sample (simulator, live network against the stress project, 3 iterations,
+1 warmup discarded; p50 over time-to-paywall-impression, phase columns are means in ms):
 
-| mode | scenario | p50 | offerings mean | customer info mean | configure mean |
-|---|---|---|---|---|---|
-| app-launch-legacy | cold | 1209 | 1160 | 694 | 18 |
-| app-launch-config | cold | 1365 | 1342 | 835 | 22 |
-| app-launch-legacy | warm | 915 | 829 | 635 | 18 |
-| app-launch-config | warm | 1050 | 1068 | 792 | 19 |
+| mode | scenario | p50 | impression | wrapper | offerings | customer info | config persisted | blobs |
+|---|---|---|---|---|---|---|---|---|
+| app-launch-legacy | cold | 1174 | 1244 | 1095 | 1030 | 706 | - | - |
+| app-launch-config | cold | 1607 | 1674 | 1347 | 1327 | 922 | 716 | 2 inline + 4 CDN, 161KB |
+| app-launch-legacy | warm | 753 | 783 | 762 | 669 | 480 | - | - |
+| app-launch-config | warm | 934 | 973 | 840 | 821 | 577 | - (204) | 0 (already on disk) |
 
-The config variant's cold overhead end to end (~13% here) is far below the CLI fixture's
-worst case, because this project's published blobs arrive inline in the container instead
-of as 100 prefetch-gated CDN downloads. Iteration counts this small are smoke-level; use
-`ITERATIONS=25` or more for numbers worth acting on.
+Notable in this sample: config cold runs ~35% over legacy end to end; the impression mark
+trails the wrapper mount by ~330ms on config cold (vs ~90ms on legacy warm), which is the
+loading-state gap the wrapper-based timing used to hide; and the blob registration caught a
+real signal on its first Release run: `min_downloaded_blob_bytes` = **65** — a 65-byte blob
+was CDN-fetched despite being far under the inline budget (worth raising with the config
+team: either those blobs should be inlined, or the inline policy is scoped more narrowly
+than "size under budget"). Iteration counts this small are smoke-level; use `ITERATIONS=25`
+or more for numbers worth acting on.
 
 ## Known limitations
 
