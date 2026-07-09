@@ -2114,6 +2114,40 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobFetcher.invokedPrefetchRefs) == [cachedRef, missingRef]
     }
 
+    func testContainerResponsePrefetchesItemLevelPrefetchBlobRefs() throws {
+        let serverPrefetchRef = RCContainerTestData.blobRef(for: "server prefetch".asData)
+        let itemPrefetchRef = RCContainerTestData.blobRef(for: "item prefetch".asData)
+        let itemOnDemandRef = RCContainerTestData.blobRef(for: "item on demand".asData)
+        let cachedItemPrefetchRef = RCContainerTestData.blobRef(for: "cached item prefetch".asData)
+        self.blobStore.stubbedContainsRefs = [cachedItemPrefetchRef]
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.workflows:etag2",
+          "active_topics": ["workflows"],
+          "prefetch_blobs": ["\(serverPrefetchRef)"],
+          "topics": {
+            "workflows": {
+              "wf-1": { "blob_ref": "\(itemPrefetchRef)", "prefetch": true },
+              "wf-2": { "blob_ref": "\(itemOnDemandRef)", "prefetch": false },
+              "wf-3": { "blob_ref": "\(cachedItemPrefetchRef)", "prefetch": true },
+              "wf-4": { "prefetch": true }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(
+                container: try Self.container(config: response),
+                verificationResult: .verified
+            ))
+        )
+
+        expect(self.blobFetcher.invokedPrefetchRefs) == [serverPrefetchRef, itemPrefetchRef]
+    }
+
     func testContainerResponseDoesNotPruneBlobStoreWhenCacheWriteFails() throws {
         let oldRef = RCContainerTestData.blobRef(for: "old".asData)
         let newRef = RCContainerTestData.blobRef(for: "new".asData)

@@ -779,7 +779,10 @@ private extension RemoteConfigManager {
             referencedBlobCount: postSyncReferencedBlobRefs.count
         ))
 
-        let refsToPrefetch = response.prefetchBlobs.filter { !self.blobStore.contains(ref: $0) }
+        let refsToPrefetch = self.postSyncPrefetchBlobRefs(
+            response: response,
+            postSyncTopics: postSyncTopics
+        ).filter { !self.blobStore.contains(ref: $0) }
         Logger.verbose(Strings.remoteConfig.prefetchingBlobCount(refsToPrefetch.count))
         self.blobFetcher.prefetch(refs: refsToPrefetch)
 
@@ -811,6 +814,37 @@ private extension RemoteConfigManager {
         postSyncTopics: RemoteConfiguration.Topics
     ) -> Set<String> {
         return Set(response.prefetchBlobs).union(postSyncTopics.blobRefs)
+    }
+
+    /// Returns the post-sync blob refs the SDK should proactively warm.
+    ///
+    /// This includes server-requested prefetch blobs plus any active-topic item whose metadata has
+    /// `prefetch: true`, matching the refs `awaitTopicAndPrefetchBlobsReady(_:)` waits on before
+    /// vending a topic to consumers that need warmed blobs.
+    func postSyncPrefetchBlobRefs(
+        response: RemoteConfiguration,
+        postSyncTopics: RemoteConfiguration.Topics
+    ) -> [String] {
+        var seen: Set<String> = []
+        var refs: [String] = []
+
+        func appendIfNeeded(_ ref: String) {
+            guard seen.insert(ref).inserted else { return }
+            refs.append(ref)
+        }
+
+        response.prefetchBlobs.forEach(appendIfNeeded)
+
+        for topicName in postSyncTopics.entries.keys.sorted() {
+            guard let topic = postSyncTopics.entries[topicName] else { continue }
+
+            for itemKey in topic.keys.sorted() {
+                guard let item = topic[itemKey], item.prefetch, let ref = item.blobRef else { continue }
+                appendIfNeeded(ref)
+            }
+        }
+
+        return refs
     }
 
     /// Writes valid inline content elements that are referenced by this config response.
