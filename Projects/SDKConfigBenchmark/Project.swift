@@ -73,7 +73,11 @@ let project = Project(
             deploymentTargets: .macOS("13.0"),
             infoPlist: .default,
             sources: [
-                "../../Tests/Benchmarks/SDKConfigBenchmark/Tests/**/*.swift"
+                "../../Tests/Benchmarks/SDKConfigBenchmark/Tests/**/*.swift",
+                // App-host tier helpers, shared into this target so their aggregation
+                // logic is unit-testable without booting a simulator.
+                "../../Tests/TestingApps/SDKConfigBenchmarkApp/App/LaunchMeasurement.swift",
+                "../../Tests/TestingApps/SDKConfigBenchmarkApp/UITests/AppLaunchMetrics.swift"
             ],
             dependencies: [
                 .target(name: "SDKConfigBenchmarkCore")

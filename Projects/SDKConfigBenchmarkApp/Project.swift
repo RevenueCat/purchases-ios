@@ -31,6 +31,24 @@ let project = Project(
                 .revenueCatUI
             ],
             settings: .appTarget(including: ([:] as SettingsDictionary).appendingTuistSwiftConditions())
+        ),
+        .target(
+            name: "SDKConfigBenchmarkAppUITests",
+            destinations: [.iPhone],
+            product: .uiTests,
+            bundleId: "com.revenuecat.SDKConfigBenchmarkAppUITests",
+            deploymentTargets: .iOS("16.0"),
+            infoPlist: .default,
+            sources: [
+                "../../Tests/TestingApps/SDKConfigBenchmarkApp/UITests/**/*.swift",
+                // Shared with the app target: the runner decodes the same LaunchSample
+                // the app encodes.
+                "../../Tests/TestingApps/SDKConfigBenchmarkApp/App/LaunchMeasurement.swift"
+            ],
+            dependencies: [
+                .target(name: "SDKConfigBenchmarkApp")
+            ],
+            settings: .appTarget
         )
     ],
     schemes: [
@@ -38,6 +56,7 @@ let project = Project(
             name: "SDKConfigBenchmarkApp",
             shared: true,
             buildAction: .buildAction(targets: ["SDKConfigBenchmarkApp"]),
+            testAction: .targets(["SDKConfigBenchmarkAppUITests"]),
             runAction: .runAction(
                 configuration: "Debug",
                 executable: "SDKConfigBenchmarkApp"
