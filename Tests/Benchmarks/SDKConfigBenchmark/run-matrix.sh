@@ -66,9 +66,11 @@ SDK_COMMIT="$(git -C "$REPO_ROOT" rev-parse --short HEAD)"
 FAILED_ROWS=0
 
 PROJECT_ARGS=()
-if [[ "$TRANSPORT" == "live" && -n "${PROJECT_ID:-}" ]]; then
+if [[ "$TRANSPORT" == "live" ]]; then
+    # No keys live in source: resolve the target project's key at run time.
+    PROJECT_ID="${PROJECT_ID:-5f07e7e3}"
     if ! command -v mafdet >/dev/null; then
-        echo "PROJECT_ID requires the mafdet CLI to resolve the project's API key" >&2
+        echo "live runs resolve the project API key via the mafdet CLI; install it or run the binary directly with --api-key" >&2
         exit 1
     fi
     RESOLVED_KEY="$(mafdet app api-keys --project-id "$PROJECT_ID" 2>/dev/null | python3 -c '

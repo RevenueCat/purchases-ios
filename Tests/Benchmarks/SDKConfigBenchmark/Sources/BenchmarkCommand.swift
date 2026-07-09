@@ -41,16 +41,16 @@ enum BenchmarkTransport: String, CaseIterable {
 
 /// The canonical RevenueCat project live runs measure against:
 /// https://app.revenuecat.com/projects/5f07e7e3 ("Stress Test Config Endpoint"), prepared with
-/// a large number of paywalls and workflows. Keys are the project's client-side public SDK
-/// keys, hardcoded on purpose so every live run measures the same content. The Test Store key
-/// is the default because the project's packages live on its Test Store app; the App Store app
-/// has no products registered, which makes `OfferingsManager` fail with a configuration error.
+/// a large number of paywalls and workflows. No keys live in source: live runs read the key
+/// from `--api-key`, the `SDK_CONFIG_BENCHMARK_API_KEY` environment variable, or (via
+/// `run-matrix.sh`) mafdet resolution. Use the project's Test Store app key: its packages live
+/// there; the App Store app has no products registered, which makes `OfferingsManager` fail
+/// with a configuration error.
 enum BenchmarkProject {
 
     static let projectID = "5f07e7e3"
     static let dashboardURL = "https://app.revenuecat.com/projects/5f07e7e3"
-    static let testStoreAPIKey = "REDACTED_RESOLVED_VIA_MAFDET"
-    static let appStoreAPIKey = "REDACTED_RESOLVED_VIA_MAFDET"
+    static let apiKeyEnvironmentVariable = "SDK_CONFIG_BENCHMARK_API_KEY"
 
 }
 
@@ -100,7 +100,10 @@ struct BenchmarkCommand {
     var annotations: [String: String] = [:]
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
-    static func parse(_ args: [String]) throws -> BenchmarkCommand {
+    static func parse(
+        _ args: [String],
+        environment: [String: String] = ProcessInfo.processInfo.environment
+    ) throws -> BenchmarkCommand {
         var command = BenchmarkCommand()
         var index = 0
 
@@ -187,7 +190,7 @@ struct BenchmarkCommand {
             )
         }
 
-        try command.validateAndDefaultTransport()
+        try command.validateAndDefaultTransport(environment: environment)
 
         return command
     }
@@ -195,7 +198,7 @@ struct BenchmarkCommand {
     /// Live runs hit the real backend: the knobs that shape the simulated network (and the
     /// forced kill-switch 4xx) cannot apply there, and the API key defaults to the pinned
     /// stress-test project.
-    private mutating func validateAndDefaultTransport() throws {
+    private mutating func validateAndDefaultTransport(environment: [String: String]) throws {
         guard self.transport == .live else {
             guard self.projectID == nil else {
                 throw BenchmarkError.invalidArgument("--project-id only applies to --transport live")
@@ -218,7 +221,17 @@ struct BenchmarkCommand {
         }
 
         if self.apiKey == Self.defaultSimulatedAPIKey {
-            self.apiKey = BenchmarkProject.testStoreAPIKey
+            // No keys live in source; resolve from the environment (run-matrix.sh populates
+            // it via mafdet) and assume the pinned project unless labeled otherwise.
+            guard let environmentKey = environment[BenchmarkProject.apiKeyEnvironmentVariable],
+                  !environmentKey.isEmpty else {
+                throw BenchmarkError.invalidArgument(
+                    "live runs need an API key: pass --api-key with --project-id, set " +
+                    "\(BenchmarkProject.apiKeyEnvironmentVariable), or use run-matrix.sh " +
+                    "(resolves it via mafdet)"
+                )
+            }
+            self.apiKey = environmentKey
             self.projectID = self.projectID ?? BenchmarkProject.projectID
         } else if self.projectID == nil {
             // A custom key without a project label would let rows from different projects

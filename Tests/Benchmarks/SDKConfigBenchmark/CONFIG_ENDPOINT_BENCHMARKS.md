@@ -43,10 +43,11 @@ everything else is production code.
 - **`--transport simulated`** (default): the in-process network model below. Deterministic,
   seedable, and the only way to measure loss, degraded profiles, and the forced kill-switch
   4xx. Use it for controlled A/B comparisons of SDK behavior and for CI regression tracking.
-- **`--transport live`**: real requests against production, pinned to the prepared stress-test
-  project [`5f07e7e3`](https://app.revenuecat.com/projects/5f07e7e3) ("Stress Test Config
-  Endpoint"; keys hardcoded in `BenchmarkProject`, Test Store key by default because the
-  project's packages live on its Test Store app). Requests flow through a recording
+- **`--transport live`**: real requests against production, defaulting to the prepared
+  stress-test project [`5f07e7e3`](https://app.revenuecat.com/projects/5f07e7e3) ("Stress Test
+  Config Endpoint"). No keys live in source: `run-matrix.sh` resolves the project's key via
+  mafdet (Test Store app preferred, since the project's packages live there); direct binary
+  runs take `--api-key` or `SDK_CONFIG_BENCHMARK_API_KEY`. Requests flow through a recording
   passthrough, so live rows carry the same per-request metrics: API traffic re-issues through a
   single-connection pool mirroring `HTTPClient`, blob traffic through a default pool mirroring
   the production blob downloader. Use it for real-world numbers (CDN, TLS, actual backend

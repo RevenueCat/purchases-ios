@@ -8,11 +8,13 @@ Two transports:
 - **`--transport simulated`** (default): in-process fixtures with seeded network profiles
   (ideal/wifi/lte), packet-loss modeling, and a forced kill-switch 4xx. Deterministic and
   CI-friendly.
-- **`--transport live`**: real requests against the production backend, pinned to the
+- **`--transport live`**: real requests against the production backend, defaulting to the
   prepared stress-test project
-  ([`5f07e7e3`](https://app.revenuecat.com/projects/5f07e7e3), hardcoded key). Same recorded
-  per-request metrics; real CDN/TLS/latency behavior. Kill-switch, profiles, and loss are
-  simulated-only (you cannot force a 4xx or packet loss on production).
+  ([`5f07e7e3`](https://app.revenuecat.com/projects/5f07e7e3)). No keys live in source: the
+  matrix script resolves the key via mafdet; direct binary runs take `--api-key` or the
+  `SDK_CONFIG_BENCHMARK_API_KEY` environment variable. Same recorded per-request metrics; real
+  CDN/TLS/latency behavior. Kill-switch, profiles, and loss are simulated-only (you cannot
+  force a 4xx or packet loss on production).
 
 See `CONFIG_ENDPOINT_BENCHMARKS.md` for methodology, scenario definitions, sample numbers, and
 known limitations.
