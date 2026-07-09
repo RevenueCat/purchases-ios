@@ -91,18 +91,30 @@ final class BenchmarkCommandTests: BenchmarkTestCase {
         XCTAssertEqual(command.apiKey, BenchmarkProject.testStoreAPIKey)
     }
 
+    func testLiveTransportLabelsThePinnedProjectByDefault() throws {
+        XCTAssertEqual(try BenchmarkCommand.parse(["--transport", "live"]).projectID, BenchmarkProject.projectID)
+    }
+
+    func testLiveTransportWithCustomKeyRequiresProjectID() throws {
+        XCTAssertThrowsError(try BenchmarkCommand.parse(["--transport", "live", "--api-key", "appl_other"]))
+
+        let labeled = try BenchmarkCommand.parse(
+            ["--transport", "live", "--api-key", "appl_other", "--project-id", "abc123"]
+        )
+        XCTAssertEqual(labeled.projectID, "abc123")
+        XCTAssertEqual(labeled.apiKey, "appl_other")
+    }
+
+    func testSimulatedTransportRejectsProjectID() {
+        XCTAssertThrowsError(try BenchmarkCommand.parse(["--project-id", "abc123"]))
+    }
+
     func testLiveTransportZeroesFixtureSizeKnobs() throws {
         let command = try BenchmarkCommand.parse(["--transport", "live", "--paywalls", "500", "--workflows", "500"])
 
         // Live payloads come from the pinned project, so fixture sizes must not label the row.
         XCTAssertEqual(command.paywallCount, 0)
         XCTAssertEqual(command.workflowCount, 0)
-    }
-
-    func testLiveTransportKeepsExplicitAPIKey() throws {
-        let command = try BenchmarkCommand.parse(["--transport", "live", "--api-key", "appl_other"])
-
-        XCTAssertEqual(command.apiKey, "appl_other")
     }
 
     func testLiveTransportRejectsSimulationOnlyKnobs() {

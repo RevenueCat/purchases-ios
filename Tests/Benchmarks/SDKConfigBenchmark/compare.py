@@ -14,7 +14,7 @@ import sys
 
 
 KEY_FIELDS = ("mode", "transport", "scenario", "profile", "loss_percent",
-              "paywalls", "workflows", "seed", "iterations", "warmup_discarded")
+              "paywalls", "workflows", "seed", "iterations", "warmup_discarded", "project_id")
 METRICS = ("p50_ms", "p95_ms", "request_count_mean", "bytes_received_mean")
 
 

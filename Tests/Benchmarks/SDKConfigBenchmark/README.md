@@ -31,6 +31,18 @@ bash Tests/Benchmarks/SDKConfigBenchmark/run-matrix.sh > results.jsonl        # 
 TRANSPORT=live bash Tests/Benchmarks/SDKConfigBenchmark/run-matrix.sh > live.jsonl
 ```
 
+Live runs default to the pinned stress-test project. To measure a different project, pass its
+id; the key is resolved via the mafdet CLI (test-store app preferred) and every row is labeled
+with `project_id`, so results from different projects can never be compared as equivalents:
+
+```sh
+PROJECT_ID=<dashboard-project-id> TRANSPORT=live \
+  bash Tests/Benchmarks/SDKConfigBenchmark/run-matrix.sh > other-project.jsonl
+```
+
+(The target project's keyed app needs at least one package with a product attached, or the
+offerings fetch fails with a configuration error.)
+
 Compare two runs (e.g. baseline branch vs candidate branch):
 
 ```sh

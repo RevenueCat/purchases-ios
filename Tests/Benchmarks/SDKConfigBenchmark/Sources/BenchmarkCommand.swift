@@ -47,6 +47,7 @@ enum BenchmarkTransport: String, CaseIterable {
 /// has no products registered, which makes `OfferingsManager` fail with a configuration error.
 enum BenchmarkProject {
 
+    static let projectID = "5f07e7e3"
     static let dashboardURL = "https://app.revenuecat.com/projects/5f07e7e3"
     static let testStoreAPIKey = "REDACTED_RESOLVED_VIA_MAFDET"
     static let appStoreAPIKey = "REDACTED_RESOLVED_VIA_MAFDET"
@@ -77,7 +78,7 @@ struct BenchmarkCommand {
         "post_warmup_error_count", "mean_ms", "min_ms", "max_ms", "p50_ms", "p90_ms", "p95_ms",
         "p99_ms", "request_count_mean", "bytes_received_mean", "failed_requests_total",
         "fallback_host_requests_total", "offerings_ms_mean", "config_ms_mean", "blob_ms_mean",
-        "first_error"
+        "first_error", "project_id"
     ]
 
     var mode: BenchmarkMode = .legacy
@@ -92,6 +93,9 @@ struct BenchmarkCommand {
     var seed: UInt64 = 42
     var appUserID: String = "benchmark-user"
     var apiKey: String = BenchmarkCommand.defaultSimulatedAPIKey
+    /// Which RevenueCat project a live run measures; labels the row so results from different
+    /// projects can never be compared as equivalents. Nil for simulated runs.
+    var projectID: String?
     /// Extra key=value pairs echoed verbatim into the JSONL row (e.g. sdk_commit=abc123).
     var annotations: [String: String] = [:]
 
@@ -159,6 +163,8 @@ struct BenchmarkCommand {
                 command.appUserID = try value(for: flag)
             case "--api-key":
                 command.apiKey = try value(for: flag)
+            case "--project-id":
+                command.projectID = try value(for: flag)
             case "--annotation":
                 let raw = try value(for: flag)
                 let parts = raw.split(separator: "=", maxSplits: 1).map(String.init)
@@ -190,7 +196,12 @@ struct BenchmarkCommand {
     /// forced kill-switch 4xx) cannot apply there, and the API key defaults to the pinned
     /// stress-test project.
     private mutating func validateAndDefaultTransport() throws {
-        guard self.transport == .live else { return }
+        guard self.transport == .live else {
+            guard self.projectID == nil else {
+                throw BenchmarkError.invalidArgument("--project-id only applies to --transport live")
+            }
+            return
+        }
 
         guard self.lossPercent == 0 else {
             throw BenchmarkError.invalidArgument("--loss-percent requires --transport simulated")
@@ -208,6 +219,11 @@ struct BenchmarkCommand {
 
         if self.apiKey == Self.defaultSimulatedAPIKey {
             self.apiKey = BenchmarkProject.testStoreAPIKey
+            self.projectID = self.projectID ?? BenchmarkProject.projectID
+        } else if self.projectID == nil {
+            // A custom key without a project label would let rows from different projects
+            // collide in comparisons.
+            throw BenchmarkError.invalidArgument("--api-key with --transport live also requires --project-id")
         }
 
         // Fixture-size knobs don't shape live payloads (the pinned project's real content

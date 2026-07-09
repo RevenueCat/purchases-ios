@@ -11,6 +11,9 @@
 #   TRANSPORT=live            # hit the real backend (pinned stress-test project) instead of
 #                             # the simulated transport; forces ideal profile, no loss, and
 #                             # drops the kill-switch mode (cannot force 4xx on production)
+#   PROJECT_ID=<id>           # live only: measure a different RevenueCat project; the key is
+#                             # resolved via mafdet (test-store app preferred) and rows are
+#                             # labeled so cross-project comparisons never mix
 #   MODES="legacy config config-killswitch"
 #   SCENARIOS="cold warm"
 #   PROFILES="ideal lte"
@@ -62,6 +65,26 @@ fi
 SDK_COMMIT="$(git -C "$REPO_ROOT" rev-parse --short HEAD)"
 FAILED_ROWS=0
 
+PROJECT_ARGS=()
+if [[ "$TRANSPORT" == "live" && -n "${PROJECT_ID:-}" ]]; then
+    if ! command -v mafdet >/dev/null; then
+        echo "PROJECT_ID requires the mafdet CLI to resolve the project's API key" >&2
+        exit 1
+    fi
+    RESOLVED_KEY="$(mafdet app api-keys --project-id "$PROJECT_ID" 2>/dev/null | python3 -c '
+import json, sys
+keys = json.load(sys.stdin)
+keys.sort(key=lambda entry: entry.get("app_store_type") != "test_store")
+print(keys[0]["key"] if keys else "")
+')"
+    if [[ -z "$RESOLVED_KEY" ]]; then
+        echo "Could not resolve an API key for project $PROJECT_ID via mafdet" >&2
+        exit 1
+    fi
+    echo "Live target: project $PROJECT_ID (key resolved via mafdet)" >&2
+    PROJECT_ARGS=(--api-key "$RESOLVED_KEY" --project-id "$PROJECT_ID")
+fi
+
 run_row() {
     local mode="$1" scenario="$2" profile="$3" loss="$4"
     echo "Running transport=$TRANSPORT mode=$mode scenario=$scenario profile=$profile loss=$loss%..." >&2
@@ -76,7 +99,8 @@ run_row() {
         --paywalls "$PAYWALLS" \
         --workflows "$WORKFLOWS" \
         --seed "$SEED" \
-        --annotation "sdk_commit=$SDK_COMMIT"; then
+        --annotation "sdk_commit=$SDK_COMMIT" \
+        ${PROJECT_ARGS[@]+"${PROJECT_ARGS[@]}"}; then
         echo "Row FAILED (transport=$TRANSPORT mode=$mode scenario=$scenario profile=$profile loss=$loss%)" >&2
         FAILED_ROWS=$((FAILED_ROWS + 1))
     fi

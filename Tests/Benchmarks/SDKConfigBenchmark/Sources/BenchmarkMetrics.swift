@@ -106,6 +106,10 @@ struct BenchmarkMetrics {
 
         row += Self.aggregates(of: measured)
 
+        if let projectID = command.projectID {
+            row["project_id"] = projectID
+        }
+
         if let firstError = self.errorsByIteration.min(by: { $0.key < $1.key }) {
             row["first_error"] = "iteration \(firstError.key): \(firstError.value)"
         }
