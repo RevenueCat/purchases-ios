@@ -972,7 +972,6 @@ private extension OfferingsManagerTests {
         static let sampleOfferings: Offerings = MockData.makeSampleOfferings()
 
         /// A fresh `Offerings` instance per call, for tests that need two distinguishable snapshots.
-        // swiftlint:disable:next function_body_length
         static func makeSampleOfferings() -> Offerings {
             return .init(
             offerings: MockData.anyBackendOfferingsContents.response.offerings
@@ -1146,26 +1145,48 @@ extension OfferingsManagerTests {
         expect(delivered.value).toEventually(beTrue())
     }
 
-    func testGetOfferingsFromStaleCacheDeliversRefreshedOfferingsWhenRefreshWinsTheGate() {
+    func testGatedFreshCacheDeliveryNeverReadsTheSharedCacheSlot() {
         let mockRemoteConfigManager = MockRemoteConfigManager()
         mockRemoteConfigManager.shouldStoreTopicCompletion = true
         let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
+        let captured = MockData.makeSampleOfferings()
+        self.mockDeviceCache.stubbedOfferings = captured
+        self.mockDeviceCache.stubbedOfferingCacheStatus = .valid
+
+        let delivered: Atomic<Offerings?> = .init(nil)
+        manager.offerings(appUserID: MockData.anyAppUserID) { result in delivered.value = result.value }
+
+        // While delivery waits on the gate, an unrelated write (identity change, another
+        // request) repopulates the shared cache slot. It must not leak into this request.
+        expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
         self.mockDeviceCache.stubbedOfferings = MockData.makeSampleOfferings()
+
+        mockRemoteConfigManager.completeStoredTopic()
+        expect(delivered.value).toEventually(beIdenticalTo(captured))
+    }
+
+    func testGatedStaleCacheDeliveryNeverDeliversAnUnrelatedCacheWrite() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.shouldStoreTopicCompletion = true
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
+        let captured = MockData.makeSampleOfferings()
+        self.mockDeviceCache.stubbedOfferings = captured
         self.mockDeviceCache.stubbedOfferingCacheStatus = .stale
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
         let delivered: Atomic<Offerings?> = .init(nil)
         manager.offerings(appUserID: MockData.anyAppUserID) { result in delivered.value = result.value }
 
-        // While delivery waits on the gate, the background refresh lands fresh offerings.
+        // While delivery waits on the gate, an unrelated write repopulates the slot.
         expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
-        let refreshedOfferings = MockData.makeSampleOfferings()
-        self.mockDeviceCache.stubbedOfferings = refreshedOfferings
+        let unrelated = MockData.makeSampleOfferings()
+        self.mockDeviceCache.stubbedOfferings = unrelated
 
         mockRemoteConfigManager.completeStoredTopic()
-        // The caller waited through the refresh; it must get the fresh snapshot, not the
-        // stale one captured before the gate.
-        expect(delivered.value).toEventually(be(refreshedOfferings))
+        // Delivery is the captured stale snapshot or this request's own refresh result
+        // (whichever the scheduler resolves first); the unrelated slot write, never.
+        expect(delivered.value).toEventuallyNot(beNil())
+        expect(delivered.value).toNot(beIdenticalTo(unrelated))
     }
 
     func testGetOfferingsNetworkFetchAwaitsConfigReadyBeforeDelivering() {
