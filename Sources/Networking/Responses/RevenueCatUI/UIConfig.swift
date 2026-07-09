@@ -168,10 +168,10 @@ import Foundation
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.app = try container.decode(AppConfig.self, forKey: .app)
         self.localizations = try container.decode([String: [String: String]].self, forKey: .localizations)
-        self.variableConfig = try container.decodeIfPresent(
+        self.variableConfig = try container.decode(
             VariableConfig.self,
             forKey: .variableConfig
-        ) ?? VariableConfig(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+        )
 
         // `custom_variables` was added after the other fields, so the key may be absent from older responses; fall
         // back to an empty dictionary in that case. If the key is present but malformed, fail like any other field.
@@ -193,7 +193,7 @@ import Foundation
 
 extension UIConfig {
 
-    /// An empty configuration used when a workflow's `ui_config` topic parts are not yet available.
+    /// Empty configuration used by tests and platform stubs.
     static let empty = UIConfig(
         app: AppConfig(colors: [:], fonts: [:]),
         localizations: [:],
@@ -210,7 +210,7 @@ extension UIConfig {
 
 extension UIConfig {
 
-    /// An empty configuration used when a workflow's `ui_config` topic parts are not yet available.
+    /// Empty configuration used by tests and platform stubs.
     static let empty = UIConfig()
 
 }

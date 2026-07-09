@@ -96,6 +96,31 @@ class UiConfigProviderTests: TestCase {
         )
     }
 
+    func testMalformedCustomVariablesReturnsNil() async throws {
+        self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{"en_US": {"day": "Day"}}"#,
+                  variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+                  customVariables: #"{"user_name": "not-a-definition"}"#)
+
+        let uiConfig = await self.provider.getUiConfig()
+
+        expect(uiConfig).to(beNil())
+        self.logger.verifyMessageWasLogged(
+            "Failed to decode merged ui_config",
+            level: .error
+        )
+    }
+
+    func testNullCustomVariablesReturnsUiConfigWithEmptyCustomVariables() async throws {
+        self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{"en_US": {"day": "Day"}}"#,
+                  variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+                  customVariables: #"null"#)
+
+        let uiConfig = await self.provider.getUiConfig()
+
+        expect(uiConfig).toNot(beNil())
+        expect(uiConfig?.customVariables).to(beEmpty())
+    }
+
     func testLogsWarningWhenARequiredPartIsMissing() async throws {
         self.stub(app: nil, localizations: #"{}"#, variableConfig: nil, customVariables: nil)
 
