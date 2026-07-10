@@ -536,7 +536,7 @@ private extension RemoteConfigManager {
             return
         }
 
-        self.enqueueFallbackConfigIfCurrent(
+        self.enqueueRemoteConfigStaticFallbackIfCurrent(
             domain: request.domain,
             previous: previous,
             isAppBackgrounded: isAppBackgrounded,
@@ -552,7 +552,7 @@ private extension RemoteConfigManager {
         return previous?.domain == domain
     }
 
-    func enqueueFallbackConfigIfCurrent(
+    func enqueueRemoteConfigStaticFallbackIfCurrent(
         domain: String,
         previous: PersistedRemoteConfiguration?,
         isAppBackgrounded: Bool,
@@ -562,7 +562,7 @@ private extension RemoteConfigManager {
         self.lock.perform {
             guard self.epoch == requestEpoch else { return }
 
-            self.remoteConfigAPI.getFallbackConfig(
+            self.remoteConfigAPI.getRemoteConfigStaticFallback(
                 domain: domain,
                 isAppBackgrounded: isAppBackgrounded
             ) { [weak self] result in
@@ -570,7 +570,7 @@ private extension RemoteConfigManager {
 
                 switch result {
                 case let .success(fallbackResult):
-                    self.handleFallbackSuccess(
+                    self.handleRemoteConfigStaticFallbackSuccess(
                         fallbackResult,
                         previous: previous,
                         requestEpoch: requestEpoch
@@ -582,8 +582,8 @@ private extension RemoteConfigManager {
         }
     }
 
-    func handleFallbackSuccess(
-        _ fallbackResult: RemoteConfigFallbackFetchResult,
+    func handleRemoteConfigStaticFallbackSuccess(
+        _ fallbackResult: RemoteConfigStaticFallbackFetchResult,
         previous: PersistedRemoteConfiguration?,
         requestEpoch: Int
     ) {

@@ -356,7 +356,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .remoteConfig:
             return RemoteConfigSignatureContextProvider()
         case .remoteConfigStaticFallback:
-            return FallbackConfigSignatureContextProvider()
+            return StaticFallbackSignatureContextProvider()
         default:
             return DefaultResponseSignatureContextProvider()
         }

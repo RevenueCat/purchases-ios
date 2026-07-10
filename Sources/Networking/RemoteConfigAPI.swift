@@ -10,7 +10,7 @@ import Foundation
 protocol RemoteConfigAPIType: AnyObject {
 
     typealias RemoteConfigResponseHandler = Backend.ResponseHandler<RemoteConfigFetchResult>
-    typealias RemoteConfigFallbackResponseHandler = Backend.ResponseHandler<RemoteConfigFallbackFetchResult>
+    typealias StaticFallbackResponseHandler = Backend.ResponseHandler<RemoteConfigStaticFallbackFetchResult>
 
     func getRemoteConfig(
         request: RemoteConfigRequest,
@@ -18,10 +18,10 @@ protocol RemoteConfigAPIType: AnyObject {
         completion: @escaping RemoteConfigResponseHandler
     )
 
-    func getFallbackConfig(
+    func getRemoteConfigStaticFallback(
         domain: String,
         isAppBackgrounded: Bool,
-        completion: @escaping RemoteConfigFallbackResponseHandler
+        completion: @escaping StaticFallbackResponseHandler
     )
 
 }
@@ -29,16 +29,16 @@ protocol RemoteConfigAPIType: AnyObject {
 class RemoteConfigAPI: RemoteConfigAPIType {
 
     typealias RemoteConfigResponseHandler = Backend.ResponseHandler<RemoteConfigFetchResult>
-    typealias RemoteConfigFallbackResponseHandler = Backend.ResponseHandler<RemoteConfigFallbackFetchResult>
+    typealias StaticFallbackResponseHandler = Backend.ResponseHandler<RemoteConfigStaticFallbackFetchResult>
 
     private let callbackCache: CallbackCache<RemoteConfigCallback>
-    private let fallbackCallbackCache: CallbackCache<RemoteConfigFallbackCallback>
+    private let staticFallbackCallbackCache: CallbackCache<RemoteConfigStaticFallbackCallback>
     private let backendConfig: BackendConfiguration
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
         self.callbackCache = .init()
-        self.fallbackCallbackCache = .init()
+        self.staticFallbackCallbackCache = .init()
     }
 
     func getRemoteConfig(
@@ -62,19 +62,19 @@ class RemoteConfigAPI: RemoteConfigAPIType {
         )
     }
 
-    func getFallbackConfig(
+    func getRemoteConfigStaticFallback(
         domain: String,
         isAppBackgrounded: Bool,
-        completion: @escaping RemoteConfigFallbackResponseHandler
+        completion: @escaping StaticFallbackResponseHandler
     ) {
-        let factory = GetFallbackConfigOperation.createFactory(
+        let factory = GetRemoteConfigStaticFallbackOperation.createFactory(
             configuration: self.backendConfig,
-            callbackCache: self.fallbackCallbackCache,
+            callbackCache: self.staticFallbackCallbackCache,
             domain: domain
         )
 
-        let callback = RemoteConfigFallbackCallback(cacheKey: factory.cacheKey, completion: completion)
-        let cacheStatus = self.fallbackCallbackCache.add(callback)
+        let callback = RemoteConfigStaticFallbackCallback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.staticFallbackCallbackCache.add(callback)
 
         self.backendConfig.addCacheableOperation(
             with: factory,
@@ -99,7 +99,7 @@ struct RemoteConfigFetchResult {
 
 }
 
-struct RemoteConfigFallbackFetchResult {
+struct RemoteConfigStaticFallbackFetchResult {
 
     /// `nil` represents a successful `204 No Content` response.
     let configuration: RemoteConfiguration?

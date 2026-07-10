@@ -88,7 +88,7 @@ final class RemoteConfigManagerTests: TestCase {
     func testFailureDoesNotMarkRefreshAsFresh() {
         self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1)))))
-        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        self.remoteConfigAPI.completeStaticFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
 
         self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
 
@@ -1321,7 +1321,7 @@ final class RemoteConfigManagerTests: TestCase {
         self.remoteConfigAPI.complete(
             with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1))))
         )
-        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        self.remoteConfigAPI.completeStaticFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
 
         expect(self.diskCache.invokedWriteCount) == 0
         expect(self.blobStore.invokedWriteCount) == 0
@@ -1389,7 +1389,7 @@ final class RemoteConfigManagerTests: TestCase {
     func testServerErrorDoesNotDisableRemoteConfig() {
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
-        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        self.remoteConfigAPI.completeStaticFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
         expect(self.manager.isDisabled) == false
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
 
@@ -1401,9 +1401,9 @@ final class RemoteConfigManagerTests: TestCase {
         self.manager.refreshRemoteConfig(isAppBackgrounded: true)
         self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
 
-        expect(self.remoteConfigAPI.invokedGetFallbackConfigCount) == 1
-        expect(self.remoteConfigAPI.invokedGetFallbackConfigParameters?.domain) == "app"
-        expect(self.remoteConfigAPI.invokedGetFallbackConfigParameters?.isAppBackgrounded) == true
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigStaticFallbackCount) == 1
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigStaticFallbackParameters?.domain) == "app"
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigStaticFallbackParameters?.isAppBackgrounded) == true
     }
 
     func testPrimaryServerErrorWithPersistedCacheDoesNotTriggerFallbackConfigRequest() {
@@ -1413,7 +1413,7 @@ final class RemoteConfigManagerTests: TestCase {
         self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
 
         expect(self.manager.isDisabled) == false
-        expect(self.remoteConfigAPI.invokedGetFallbackConfigCount) == 0
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigStaticFallbackCount) == 0
         expect(self.diskCache.invokedWriteCount) == 0
     }
 
@@ -1422,7 +1422,7 @@ final class RemoteConfigManagerTests: TestCase {
         self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
 
         expect(self.manager.isDisabled) == true
-        expect(self.remoteConfigAPI.invokedGetFallbackConfigCount) == 0
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigStaticFallbackCount) == 0
     }
 
     func testFallbackConfigSuccessPersistsConfigurationWithoutInlineBlobExtraction() {
@@ -1440,7 +1440,7 @@ final class RemoteConfigManagerTests: TestCase {
 
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
-        self.remoteConfigAPI.completeFallback(with: .success(.test(configuration: configuration)))
+        self.remoteConfigAPI.completeStaticFallback(with: .success(.test(configuration: configuration)))
 
         expect(self.diskCache.invokedWriteCount) == 1
         expect(self.diskCache.invokedWriteParameter?.manifest) == "v1.1710000100.workflows:etag2"
@@ -1455,7 +1455,7 @@ final class RemoteConfigManagerTests: TestCase {
     func testFallbackConfigFailureLeavesCacheUntouchedAndDoesNotMarkRefreshFresh() {
         self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
-        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        self.remoteConfigAPI.completeStaticFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
 
         self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
 
@@ -1471,7 +1471,7 @@ final class RemoteConfigManagerTests: TestCase {
         self.remoteConfigAPI.complete(
             with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1))))
         )
-        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        self.remoteConfigAPI.completeStaticFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
         expect(self.manager.isDisabled) == false
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
 
@@ -1711,7 +1711,7 @@ final class RemoteConfigManagerTests: TestCase {
         await self.waitForRemoteConfigRequestCount(1)
         await self.waitForDiskCacheReadCount(2)
         self.remoteConfigAPI.complete(with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1)))))
-        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        self.remoteConfigAPI.completeStaticFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
 
         let data = await task.value
         expect(data).to(beNil())
@@ -2685,15 +2685,15 @@ private extension RemoteConfigFetchResult {
 
 }
 
-private extension RemoteConfigFallbackFetchResult {
+private extension RemoteConfigStaticFallbackFetchResult {
 
     /// Builds a fallback fetch result through the production initializer. A `nil` configuration
     /// represents a `204 No Content` response.
     static func test(
         configuration: RemoteConfiguration?,
         verificationResult: VerificationResult = .verified
-    ) -> RemoteConfigFallbackFetchResult {
-        return RemoteConfigFallbackFetchResult(response: .init(
+    ) -> RemoteConfigStaticFallbackFetchResult {
+        return RemoteConfigStaticFallbackFetchResult(response: .init(
             httpStatusCode: configuration == nil ? .noContent : .success,
             responseHeaders: [:],
             body: configuration,
@@ -2716,18 +2716,18 @@ private final class MockRemoteConfigAPI: RemoteConfigAPIType {
         request: RemoteConfigRequest,
         isAppBackgrounded: Bool
     )] = []
-    private(set) var invokedGetFallbackConfigCount = 0
-    private(set) var invokedGetFallbackConfigParameters: (
+    private(set) var invokedGetRemoteConfigStaticFallbackCount = 0
+    private(set) var invokedGetRemoteConfigStaticFallbackParameters: (
         domain: String,
         isAppBackgrounded: Bool
     )?
-    private(set) var invokedGetFallbackConfigParametersList: [(
+    private(set) var invokedGetRemoteConfigStaticFallbackParametersList: [(
         domain: String,
         isAppBackgrounded: Bool
     )] = []
 
     private var completions: [Backend.ResponseHandler<RemoteConfigFetchResult>] = []
-    private var fallbackCompletions: [Backend.ResponseHandler<RemoteConfigFallbackFetchResult>] = []
+    private var staticFallbackCompletions: [Backend.ResponseHandler<RemoteConfigStaticFallbackFetchResult>] = []
 
     func getRemoteConfig(
         request: RemoteConfigRequest,
@@ -2740,23 +2740,23 @@ private final class MockRemoteConfigAPI: RemoteConfigAPIType {
         self.completions.append(completion)
     }
 
-    func getFallbackConfig(
+    func getRemoteConfigStaticFallback(
         domain: String,
         isAppBackgrounded: Bool,
-        completion: @escaping Backend.ResponseHandler<RemoteConfigFallbackFetchResult>
+        completion: @escaping Backend.ResponseHandler<RemoteConfigStaticFallbackFetchResult>
     ) {
-        self.invokedGetFallbackConfigCount += 1
-        self.invokedGetFallbackConfigParameters = (domain, isAppBackgrounded)
-        self.invokedGetFallbackConfigParametersList.append((domain, isAppBackgrounded))
-        self.fallbackCompletions.append(completion)
+        self.invokedGetRemoteConfigStaticFallbackCount += 1
+        self.invokedGetRemoteConfigStaticFallbackParameters = (domain, isAppBackgrounded)
+        self.invokedGetRemoteConfigStaticFallbackParametersList.append((domain, isAppBackgrounded))
+        self.staticFallbackCompletions.append(completion)
     }
 
     func complete(with result: Result<RemoteConfigFetchResult, BackendError>) {
         self.completions.last?(result)
     }
 
-    func completeFallback(with result: Result<RemoteConfigFallbackFetchResult, BackendError>) {
-        self.fallbackCompletions.last?(result)
+    func completeStaticFallback(with result: Result<RemoteConfigStaticFallbackFetchResult, BackendError>) {
+        self.staticFallbackCompletions.last?(result)
     }
 
     func complete(

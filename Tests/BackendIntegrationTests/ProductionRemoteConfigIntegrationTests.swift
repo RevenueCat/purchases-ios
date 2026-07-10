@@ -41,9 +41,9 @@ class BaseProductionRemoteConfigIntegrationTests: BaseBackendIntegrationTests {
         }
     }
 
-    func fetchFallbackConfig() async throws -> RemoteConfigFallbackFetchResult {
+    func fetchRemoteConfigStaticFallback() async throws -> RemoteConfigStaticFallbackFetchResult {
         return try await withCheckedThrowingContinuation { continuation in
-            self.remoteConfigAPI.getFallbackConfig(
+            self.remoteConfigAPI.getRemoteConfigStaticFallback(
                 domain: Self.domain,
                 isAppBackgrounded: false
             ) { result in
@@ -81,7 +81,7 @@ class BaseProductionRemoteConfigIntegrationTests: BaseBackendIntegrationTests {
         expect(result.container).to(beNil())
     }
 
-    func verifyFallbackConfigResponse(_ result: RemoteConfigFallbackFetchResult) throws {
+    func verifyRemoteConfigStaticFallbackResponse(_ result: RemoteConfigStaticFallbackFetchResult) throws {
         expect(result.verificationResult) == .verified
 
         let configuration = try XCTUnwrap(result.configuration)
@@ -153,9 +153,9 @@ final class ProductionRemoteConfigIntegrationTests: BaseProductionRemoteConfigIn
     }
 
     func testCanFetchRemoteConfigFromStaticFallbackURL() async throws {
-        let result = try await self.fetchFallbackConfig()
+        let result = try await self.fetchRemoteConfigStaticFallback()
 
-        try self.verifyFallbackConfigResponse(result)
+        try self.verifyRemoteConfigStaticFallbackResponse(result)
     }
 
 }
@@ -183,9 +183,9 @@ final class EnforcedProductionRemoteConfigIntegrationTests: BaseProductionRemote
     }
 
     func testVerifiesStaticFallbackResponseWhenVerificationIsEnforced() async throws {
-        let result = try await self.fetchFallbackConfig()
+        let result = try await self.fetchRemoteConfigStaticFallback()
 
-        try self.verifyFallbackConfigResponse(result)
+        try self.verifyRemoteConfigStaticFallbackResponse(result)
     }
 
 }
