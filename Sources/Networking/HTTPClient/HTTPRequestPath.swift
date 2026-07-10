@@ -160,7 +160,7 @@ extension HTTPRequest {
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
         case remoteConfig(domain: String)
-        case fallbackConfig(domain: String)
+        case remoteConfigStaticFallback(domain: String)
 
     }
 
@@ -203,7 +203,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var serverHostURLOverride: URL? {
         switch self {
-        case .fallbackConfig:
+        case .remoteConfigStaticFallback:
             return Self.fallbackServerHostURLs.first ?? nil
         default:
             return nil
@@ -258,7 +258,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus,
                 .remoteConfig,
-                .fallbackConfig:
+                .remoteConfigStaticFallback:
             return true
 
         case .health,
@@ -288,7 +288,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .rewardVerificationStatus:
             return true
         case .remoteConfig,
-             .fallbackConfig,
+             .remoteConfigStaticFallback,
              .health,
              .appHealthReportAvailability:
             return false
@@ -308,7 +308,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
-                .fallbackConfig,
+                .remoteConfigStaticFallback,
                 .rewardVerificationStatus:
             return true
         case .getIntroEligibility,
@@ -336,7 +336,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .rewardVerificationStatus:
             return true
         case .getOfferings,
-                .fallbackConfig,
+                .remoteConfigStaticFallback,
                 .getIntroEligibility,
                 .postSubscriberAttributes,
                 .postAttributionData,
@@ -355,7 +355,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .remoteConfig:
             return RemoteConfigSignatureContextProvider()
-        case .fallbackConfig:
+        case .remoteConfigStaticFallback:
             return FallbackConfigSignatureContextProvider()
         default:
             return DefaultResponseSignatureContextProvider()
@@ -425,7 +425,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
 
         case let .remoteConfig(domain),
-             let .fallbackConfig(domain):
+             let .remoteConfigStaticFallback(domain):
             return "config/\(Self.escape(domain))"
         }
     }
@@ -490,8 +490,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .remoteConfig:
             return "remote_config"
-        case .fallbackConfig:
-            return "fallback_config"
+        case .remoteConfigStaticFallback:
+            return "remote_config_static_fallback"
         }
     }
 
@@ -503,7 +503,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue:
                     HTTPClient.rcContainerFormatElementEncodingHeaderValue
             ]
-        case .fallbackConfig:
+        case .remoteConfigStaticFallback:
             return [
                 HTTPClient.RequestHeader.accept.rawValue: "application/json"
             ]

@@ -562,14 +562,14 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
           "topics": {}
         }
         """.asData
-        self.mockResponse(path: HTTPRequest.Path.fallbackConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfigStaticFallback(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
         self.signing.stubbedVerificationResult = true
 
         let response: VerifiedHTTPResponse<RemoteConfiguration?>.Result? = waitUntilValue { completion in
-            self.client.perform(Self.fallbackConfigRequest, completionHandler: completion)
+            self.client.perform(Self.remoteConfigStaticFallbackRequest, completionHandler: completion)
         }
 
         expect(response).to(beSuccess())
@@ -586,7 +586,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testFallbackConfigNoContentResponseUsesEmptySignaturePayloadWithoutNonce() throws {
-        self.mockResponse(path: HTTPRequest.Path.fallbackConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfigStaticFallback(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: "not json".asData,
@@ -594,7 +594,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         self.signing.stubbedVerificationResult = true
 
         let response: VerifiedHTTPResponse<RemoteConfiguration?>.Result? = waitUntilValue { completion in
-            self.client.perform(Self.fallbackConfigRequest, completionHandler: completion)
+            self.client.perform(Self.remoteConfigStaticFallbackRequest, completionHandler: completion)
         }
 
         expect(response).to(beSuccess())
@@ -1278,10 +1278,10 @@ private extension BaseSignatureVerificationHTTPClientTests {
         )
     }
 
-    static var fallbackConfigRequest: HTTPRequest {
+    static var remoteConfigStaticFallbackRequest: HTTPRequest {
         return .init(
             method: .get,
-            path: HTTPRequest.Path.fallbackConfig(domain: "app")
+            path: HTTPRequest.Path.remoteConfigStaticFallback(domain: "app")
         )
     }
 

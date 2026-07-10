@@ -132,7 +132,8 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(result).to(beSuccess())
         expect(self.httpClient.calls).to(haveCount(1))
         expect(self.httpClient.calls.first?.request.method.httpMethod) == "GET"
-        expect(self.httpClient.calls.first?.request.path as? HTTPRequest.Path) == .fallbackConfig(domain: "app")
+        expect(self.httpClient.calls.first?.request.path as? HTTPRequest.Path)
+            == .remoteConfigStaticFallback(domain: "app")
         expect(self.httpClient.calls.first?.request.path.url?.absoluteString)
             == "https://api-production.8-lives-cat.io/v1/config/app"
         expect(self.httpClient.calls.first?.request.requestBody).to(beNil())
@@ -632,7 +633,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetFallbackConfigNoContentResponseSucceedsWithNoConfiguration() throws {
         self.httpClient.mock(
-            requestPath: .fallbackConfig(domain: "app"),
+            requestPath: .remoteConfigStaticFallback(domain: "app"),
             response: .init(statusCode: .noContent, body: Data(), verificationResult: .verified)
         )
 
@@ -653,7 +654,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetFallbackConfigInvalidJSONSendsDecodingError() {
         self.httpClient.mock(
-            requestPath: .fallbackConfig(domain: "app"),
+            requestPath: .remoteConfigStaticFallback(domain: "app"),
             response: .init(statusCode: .success, body: "not json".asData)
         )
 
@@ -677,7 +678,7 @@ private extension BackendGetRemoteConfigTests {
 
     static let config = #"{"manifest":{}}"#.asData
     static let content = #"{"products":[]}"#.asData
-    static let fallbackConfig = """
+    static let remoteConfigStaticFallback = """
     {
       "domain": "app",
       "manifest": "v1.test",
@@ -729,10 +730,10 @@ private extension BackendGetRemoteConfigTests {
         verificationResult: VerificationResult = .defaultValue
     ) {
         self.httpClient.mock(
-            requestPath: .fallbackConfig(domain: domain),
+            requestPath: .remoteConfigStaticFallback(domain: domain),
             response: .init(
                 statusCode: .success,
-                body: Self.fallbackConfig,
+                body: Self.remoteConfigStaticFallback,
                 verificationResult: verificationResult
             )
         )
