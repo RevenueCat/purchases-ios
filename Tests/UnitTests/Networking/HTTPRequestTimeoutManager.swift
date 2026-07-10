@@ -134,6 +134,21 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         )
     }
 
+    func testMultipleHostsRetainIndependentReducedState() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+        manager.recordRequestResult(host: Self.hostB, .mainSourceTimedOut)
+
+        // Both hosts are reduced at the same time, each resolving to its own endpoint tier.
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: false),
+            HTTPRequestTimeoutManager.Timeout.mainSourceNoFallbackReduced
+        )
+        XCTAssertEqual(
+            timeout(host: Self.hostB, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
+        )
+    }
+
     func testSuccessOnMainBackendClearsOnlyThatHostEntry() {
         manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
         XCTAssertEqual(
@@ -185,6 +200,43 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         dateProvider.advance(by: 6 * 60)
 
         // 11 minutes since the first timeout, but only 6 since the second: still reduced
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
+        )
+    }
+
+    func testPerHostExpiryIsIndependent() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        dateProvider.advance(by: 5 * 60)
+        manager.recordRequestResult(host: Self.hostB, .mainSourceTimedOut)
+
+        // 6 more minutes: host A is 11 minutes old (expired), host B is 6 minutes old (still valid).
+        dateProvider.advance(by: 6 * 60)
+
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
+        )
+        XCTAssertEqual(
+            timeout(host: Self.hostB, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
+        )
+    }
+
+    func testHostBecomesReducedAgainAfterEntryExpiresAndTimesOutAgain() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        // Let the entry expire: back to base.
+        dateProvider.advance(by: 11 * 60)
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
+        )
+
+        // A fresh timeout re-arms the reduced tier.
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
         XCTAssertEqual(
             timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
             HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
