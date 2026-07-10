@@ -125,6 +125,29 @@ class UIConfigDecodingTests: BaseHTTPResponseTest {
         expect(uiConfig.customVariables).to(beEmpty())
     }
 
+    func testFailsToDecodeMalformedCustomVariables() throws {
+        // When `custom_variables` is present but not the expected object shape, decoding should fail rather than
+        // silently falling back to an empty dictionary (which would hide a malformed response).
+        let json = """
+        {
+            "app": {
+                "colors": {},
+                "fonts": {}
+            },
+            "localizations": {},
+            "variable_config": {
+                "variable_compatibility_map": {},
+                "function_compatibility_map": {}
+            },
+            "custom_variables": "not an object"
+        }
+        """
+
+        expect {
+            try JSONDecoder.default.decode(UIConfig.self, from: json.data(using: .utf8)!)
+        }.to(throwError())
+    }
+
 }
 
 #endif
