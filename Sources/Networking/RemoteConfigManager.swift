@@ -592,6 +592,7 @@ private extension RemoteConfigManager {
 
         guard let configuration = fallbackResult.configuration else {
             Logger.debug(Strings.remoteConfig.notModified)
+            self.markRefreshedIfCurrent(requestEpoch)
             return
         }
 
