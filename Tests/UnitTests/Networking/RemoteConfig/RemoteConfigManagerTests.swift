@@ -1428,6 +1428,18 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.diskCache.invokedWriteCount) == 0
     }
 
+    func testPrimaryServerErrorWithProxyURLDoesNotTriggerFallbackConfigRequest() throws {
+        SystemInfo.proxyURL = try XCTUnwrap(URL(string: "https://proxy.revenuecat.com"))
+        defer { SystemInfo.proxyURL = nil }
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
+
+        expect(self.manager.isDisabled) == false
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigFallbackCount) == 0
+        expect(self.diskCache.invokedWriteCount) == 0
+    }
+
     func testPrimaryClientErrorDisablesRemoteConfigAndDoesNotTriggerFallbackConfigRequest() {
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))

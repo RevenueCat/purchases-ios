@@ -536,6 +536,11 @@ private extension RemoteConfigManager {
             return
         }
 
+        guard SystemInfo.proxyURL == nil else {
+            self.handleFinalFailure(error, requestEpoch: requestEpoch, shouldDisableRefresh: false)
+            return
+        }
+
         self.enqueueRemoteConfigFallbackIfCurrent(
             domain: request.domain,
             previous: previous,
