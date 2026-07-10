@@ -220,7 +220,7 @@ class HTTPRequestTests: TestCase {
             == "https://api-production.8-lives-cat.io/v1/config/app%20workflows%2Fproject"
         expect(path.fallbackUrls).to(beEmpty())
         expect(path.authenticated).to(beTrue())
-        expect(path.shouldSendEtag).to(beFalse())
+        expect(path.shouldSendEtag).to(beTrue())
         expect(path.supportsSignatureVerification).to(beTrue())
         expect(path.needsNonceForSigning).to(beFalse())
         expect(path.name) == "remote_config_fallback"

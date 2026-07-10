@@ -169,7 +169,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(self.httpClient.calls.first?.headers[ETagManager.eTagValidationTimeRequestHeader.rawValue]).to(beNil())
     }
 
-    func testGetRemoteConfigFallbackDoesNotSendETagHeadersOrSignatureRequestHeaders() {
+    func testGetRemoteConfigFallbackDoesNotSendSignatureRequestHeaders() {
         self.mockSuccessfulFallbackResponse()
 
         waitUntil { completed in
@@ -180,8 +180,6 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         let headers = self.httpClient.calls.first?.headers
-        expect(headers?[ETagManager.eTagRequestHeader.rawValue]).to(beNil())
-        expect(headers?[ETagManager.eTagValidationTimeRequestHeader.rawValue]).to(beNil())
         expect(headers?[HTTPClient.RequestHeader.nonce.rawValue]).to(beNil())
         expect(headers?[HTTPClient.RequestHeader.headerParametersForSignature.rawValue]).to(beNil())
         expect(headers?[HTTPClient.RequestHeader.postParameters.rawValue]).to(beNil())

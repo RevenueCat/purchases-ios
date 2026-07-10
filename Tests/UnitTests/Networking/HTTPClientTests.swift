@@ -749,6 +749,41 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(self.eTagManager.invokedHTTPResultFromCacheOrBackendCount) == 1
     }
 
+    func testRemoteConfigFallbackSendsETagHeaders() {
+        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        let request = HTTPRequest(method: .get, path: path)
+        let responseData = "{\"domain\":\"app\",\"manifest\":\"test\",\"active_topics\":[],\"topics\":{}}".asData
+        let eTag = "fallback-etag"
+        let eTagValidationTime = Date(timeIntervalSince1970: 1234567)
+
+        self.eTagManager.stubResponseEtag(eTag, validationTime: eTagValidationTime)
+
+        stub(condition: isPath(path)) { request in
+            expect(request.allHTTPHeaderFields?[ETagManager.eTagRequestHeader.rawValue]) == eTag
+            expect(request.allHTTPHeaderFields?[ETagManager.eTagValidationTimeRequestHeader.rawValue])
+            == eTagValidationTime.millisecondsSince1970.description
+
+            return HTTPStubsResponse(
+                data: responseData,
+                statusCode: .success,
+                headers: nil
+            )
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: DataResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).toNot(beNil())
+        expect(result).to(beSuccess())
+        expect(result?.value?.body) == responseData
+
+        expect(self.eTagManager.invokedETagHeader).to(beTrue())
+        expect(self.eTagManager.invokedHTTPResultFromCacheOrBackend) == true
+    }
+
     func testResponseOriginalSourceIsLoadShedderWhenHeaderIsTrue() throws {
         let request = HTTPRequest(method: .get, path: .mockPath)
         let responseData = "{\"message\": \"something is great up in the cloud\"}".asData

@@ -505,7 +505,7 @@ extension HTTPRequest.FallbackPath: HTTPRequestPath {
     var shouldSendEtag: Bool {
         switch self {
         case .remoteConfig:
-            return false
+            return true
         }
     }
 
