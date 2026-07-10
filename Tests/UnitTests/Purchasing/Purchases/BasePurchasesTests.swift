@@ -720,9 +720,22 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     private let _storedTopicContinuations: Atomic<[CheckedContinuation<RemoteConfiguration.ConfigTopic?, Never>]> =
         .init([])
 
+    /// When non-empty, successive `topic(_:)` calls return (and consume) these values in order,
+    /// so a test can model the committed topic changing between reads (e.g. a refresh landing
+    /// mid-assembly). Falls back to `stubbedTopics` once exhausted.
+    private let _topicSequence: Atomic<[RemoteConfiguration.ConfigTopic?]> = .init([])
+    var stubbedTopicSequence: [RemoteConfiguration.ConfigTopic?] {
+        get { self._topicSequence.value }
+        set { self._topicSequence.value = newValue }
+    }
+
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
         guard self.shouldStoreTopicCompletion else {
             self._invokedTopicCount.modify { $0 += 1 }
+            let sequenced: RemoteConfiguration.ConfigTopic?? = self._topicSequence.modify { seq in
+                seq.isEmpty ? nil : .some(seq.removeFirst())
+            }
+            if let sequenced { return sequenced }
             return self.stubbedTopics[topic]
         }
         return await withCheckedContinuation { continuation in

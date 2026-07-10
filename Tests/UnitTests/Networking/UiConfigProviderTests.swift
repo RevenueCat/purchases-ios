@@ -162,6 +162,49 @@ class UiConfigProviderTests: TestCase {
         expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == mergesAfterFirst
     }
 
+    func testDoesNotCacheWhenTopicChangesDuringAssembly() async throws {
+        self.stub(
+            app: #"{"colors": {}, "fonts": {}}"#,
+            localizations: #"{"en_US": {"day": "Day"}}"#,
+            variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+            customVariables: #"{}"#
+        )
+        // The cache-key read sees topic A, the post-assembly re-read sees topic B: a refresh
+        // landed mid-decode, so the value must NOT be memoized under A.
+        let topicA: RemoteConfiguration.ConfigTopic = ["app": .init(blobRef: "app-a", prefetch: false, content: [:])]
+        let topicB: RemoteConfiguration.ConfigTopic = ["app": .init(blobRef: "app-b", prefetch: false, content: [:])]
+        self.mockManager.stubbedTopicSequence = [topicA, topicB]
+
+        _ = await self.provider.getUiConfig()
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == 1
+
+        // Sequence exhausted; topic() now returns the stubbed topic (A). Nothing was cached
+        // under A, so this re-decodes rather than serving a value assembled during the race.
+        self.mockManager.stubbedTopics[.uiConfig] = topicA
+        _ = await self.provider.getUiConfig()
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == 2
+    }
+
+    func testDoesNotServeStaleUiConfigAfterTopicBecomesNil() async throws {
+        self.stub(
+            app: #"{"colors": {}, "fonts": {}}"#,
+            localizations: #"{"en_US": {"day": "Day"}}"#,
+            variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+            customVariables: #"{}"#
+        )
+        let cached = await self.provider.getUiConfig()
+        expect(cached).toNot(beNil())
+
+        // Simulate an identity-bound clear: the committed topic and its blobs are gone. The
+        // cached value keyed on the old topic must not be served.
+        self.mockManager.stubbedTopics[.uiConfig] = nil
+        self.mockManager.stubbedBlobData[.uiConfig] = [:]
+
+        let afterClear = await self.provider.getUiConfig()
+
+        expect(afterClear).to(beNil())
+    }
+
     func testReDecodesWhenUiConfigTopicChanges() async throws {
         self.stub(
             app: #"{"colors": {}, "fonts": {}}"#,
