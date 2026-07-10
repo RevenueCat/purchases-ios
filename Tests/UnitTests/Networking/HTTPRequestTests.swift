@@ -37,16 +37,14 @@ class HTTPRequestTests: TestCase {
         .health,
         .getProductEntitlementMapping,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
-        .remoteConfig(domain: "app"),
-        .remoteConfigStaticFallback(domain: "app")
+        .remoteConfig(domain: "app")
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
         .health
     ]
     private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
         .health,
-        .remoteConfig(domain: "app"),
-        .remoteConfigStaticFallback(domain: "app")
+        .remoteConfig(domain: "app")
     ]
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
@@ -56,8 +54,7 @@ class HTTPRequestTests: TestCase {
         .getOfferings(appUserID: userID),
         .getProductEntitlementMapping,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
-        .remoteConfig(domain: "app"),
-        .remoteConfigStaticFallback(domain: "app")
+        .remoteConfig(domain: "app")
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
@@ -175,8 +172,7 @@ class HTTPRequestTests: TestCase {
 
         expect(staticEndpoints) == [
             .getOfferings(appUserID: Self.userID),
-            .getProductEntitlementMapping,
-            .remoteConfigStaticFallback(domain: "app")
+            .getProductEntitlementMapping
         ]
     }
 
@@ -217,12 +213,17 @@ class HTTPRequestTests: TestCase {
     }
 
     func testFallbackConfigPathUsesFallbackHostAndEscapesDomain() {
-        let path = HTTPRequest.Path.remoteConfigStaticFallback(domain: "app workflows/project")
+        let path = HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app workflows/project")
 
         expect(path.relativePath) == "/v1/config/app%20workflows%2Fproject"
         expect(path.url?.absoluteString)
             == "https://api-production.8-lives-cat.io/v1/config/app%20workflows%2Fproject"
         expect(path.fallbackUrls).to(beEmpty())
+        expect(path.authenticated).to(beTrue())
+        expect(path.shouldSendEtag).to(beFalse())
+        expect(path.supportsSignatureVerification).to(beTrue())
+        expect(path.needsNonceForSigning).to(beFalse())
+        expect(path.name) == "remote_config_static_fallback"
     }
 
     func testUserIDEscaping() {
@@ -307,7 +308,7 @@ class HTTPRequestTests: TestCase {
     func testRemoteConfigUsesRCContainerAcceptHeaders() {
         let request: HTTPRequest = .init(
             method: .post(RemoteConfigRequest(appUserID: "app-user-id")),
-            path: .remoteConfig(domain: "app")
+            path: HTTPRequest.Path.remoteConfig(domain: "app")
         )
         let headers = request.headers(
             with: [:],
@@ -325,7 +326,7 @@ class HTTPRequestTests: TestCase {
     func testFallbackConfigUsesJSONAcceptHeaders() {
         let request: HTTPRequest = .init(
             method: .get,
-            path: .remoteConfigStaticFallback(domain: "app")
+            path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app")
         )
         let headers = request.headers(
             with: [:],

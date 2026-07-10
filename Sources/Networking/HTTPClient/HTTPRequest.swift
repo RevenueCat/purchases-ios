@@ -45,6 +45,15 @@ struct HTTPRequest {
 
     init(
         method: Method,
+        path: HTTPRequest.StaticFallbackPath,
+        nonce: Data? = nil,
+        isRetryable: Bool = false
+    ) {
+        self.init(method: method, requestPath: path, nonce: nonce, isRetryable: isRetryable)
+    }
+
+    init(
+        method: Method,
         path: HTTPRequest.DiagnosticsPath,
         nonce: Data? = nil,
         isRetryable: Bool = false

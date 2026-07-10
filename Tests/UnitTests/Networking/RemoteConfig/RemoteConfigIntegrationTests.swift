@@ -582,7 +582,7 @@ private extension RemoteConfigIntegrationTests {
         verificationResult: VerificationResult = .verified
     ) {
         self.httpClient.mock(
-            requestPath: .remoteConfig(domain: RemoteConfiguration.defaultDomain),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain),
             response: .init(statusCode: statusCode, body: body, verificationResult: verificationResult)
         )
     }
@@ -593,14 +593,14 @@ private extension RemoteConfigIntegrationTests {
         verificationResult: VerificationResult = .verified
     ) {
         self.httpClient.mock(
-            requestPath: .remoteConfigStaticFallback(domain: RemoteConfiguration.defaultDomain),
+            requestPath: HTTPRequest.StaticFallbackPath.remoteConfig(domain: RemoteConfiguration.defaultDomain),
             response: .init(statusCode: statusCode, body: body, verificationResult: verificationResult)
         )
     }
 
     func mockRemoteConfigError(_ error: NetworkError) {
         self.httpClient.mock(
-            requestPath: .remoteConfig(domain: RemoteConfiguration.defaultDomain),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain),
             response: .init(error: error)
         )
     }
@@ -614,7 +614,7 @@ private extension RemoteConfigIntegrationTests {
     var remoteConfigStaticFallbackRequestCount: Int {
         return self.httpClient.calls.filter {
             $0.request.path.url
-                == HTTPRequest.Path.remoteConfigStaticFallback(domain: RemoteConfiguration.defaultDomain).url
+                == HTTPRequest.StaticFallbackPath.remoteConfig(domain: RemoteConfiguration.defaultDomain).url
         }.count
     }
 

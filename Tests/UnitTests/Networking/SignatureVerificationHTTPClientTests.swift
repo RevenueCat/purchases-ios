@@ -555,7 +555,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
     func testFallbackConfigSignatureUsesRawJSONPayloadWithoutNonceOrRequestBody() throws {
         let body = Self.remoteConfigStaticFallbackBody
-        self.mockResponse(path: HTTPRequest.Path.remoteConfigStaticFallback(domain: "app"),
+        self.mockResponse(path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
@@ -579,7 +579,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testFallbackConfigSignatureIncludesETagIfBackendSendsIt() throws {
-        self.mockResponse(path: HTTPRequest.Path.remoteConfigStaticFallback(domain: "app"),
+        self.mockResponse(path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           eTag: Self.eTag,
@@ -595,7 +595,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testFallbackConfigNoContentResponseUsesEmptySignaturePayloadWithoutNonce() throws {
-        self.mockResponse(path: HTTPRequest.Path.remoteConfigStaticFallback(domain: "app"),
+        self.mockResponse(path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: "not json".asData,
@@ -617,7 +617,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
     func testFallbackConfigInvalidSignatureReturnsFailedVerification() throws {
         let body = Self.remoteConfigStaticFallbackBody
-        self.mockResponse(path: HTTPRequest.Path.remoteConfigStaticFallback(domain: "app"),
+        self.mockResponse(path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
@@ -637,7 +637,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
     func testFallbackConfigInvalidSignatureFailsInEnforcedMode() throws {
         self.changeClientToEnforced()
-        self.mockResponse(path: HTTPRequest.Path.remoteConfigStaticFallback(domain: "app"),
+        self.mockResponse(path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: Self.remoteConfigStaticFallbackBody)
@@ -650,7 +650,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(response).to(beFailure())
         expect(response?.error)
             .to(matchError(NetworkError.signatureVerificationFailed(
-                path: HTTPRequest.Path.remoteConfigStaticFallback(domain: "app"),
+                path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app"),
                 code: .success
             )))
         expect(self.signing.requests).to(haveCount(1))
@@ -1331,7 +1331,7 @@ private extension BaseSignatureVerificationHTTPClientTests {
     static var remoteConfigStaticFallbackRequest: HTTPRequest {
         return .init(
             method: .get,
-            path: HTTPRequest.Path.remoteConfigStaticFallback(domain: "app")
+            path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app")
         )
     }
 

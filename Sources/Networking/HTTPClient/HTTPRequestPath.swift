@@ -20,12 +20,6 @@ protocol HTTPRequestPath {
     /// The base URL for requests to this path.
     static var serverHostURL: URL { get }
 
-    /// A path-specific base URL override.
-    ///
-    /// Most requests use ``serverHostURL``. A small number of static endpoints are intentionally served
-    /// from a different host without going through HTTPClient's retry-to-fallback-host flow.
-    var serverHostURLOverride: URL? { get }
-
     /// The fallback URLs to use when the main server is down.
     ///
     /// Not all endpoints have a fallback URL, but some do.
@@ -93,10 +87,6 @@ extension HTTPRequestPath {
         return []
     }
 
-    var serverHostURLOverride: URL? {
-        return nil
-    }
-
     var supportsFallbackURLs: Bool {
         !fallbackUrls.isEmpty
     }
@@ -128,7 +118,7 @@ extension HTTPRequestPath {
         } else if let fallbackUrlIndex {
             return self.fallbackUrls[safe: fallbackUrlIndex]
         } else {
-            baseURL = self.serverHostURLOverride ?? Self.serverHostURL
+            baseURL = Self.serverHostURL
         }
         return URL(string: self.relativePath, relativeTo: baseURL)
     }
@@ -160,7 +150,12 @@ extension HTTPRequest {
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
         case remoteConfig(domain: String)
-        case remoteConfigStaticFallback(domain: String)
+
+    }
+
+    enum StaticFallbackPath: Hashable {
+
+        case remoteConfig(domain: String)
 
     }
 
@@ -200,15 +195,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
     private static let fallbackServerHostURLs = [
         URL(string: "https://api-production.8-lives-cat.io")
     ]
-
-    var serverHostURLOverride: URL? {
-        switch self {
-        case .remoteConfigStaticFallback:
-            return Self.fallbackServerHostURLs.first ?? nil
-        default:
-            return nil
-        }
-    }
 
     var fallbackRelativePath: String? {
         switch self {
@@ -257,8 +243,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus,
-                .remoteConfig,
-                .remoteConfigStaticFallback:
+                .remoteConfig:
             return true
 
         case .health,
@@ -288,7 +273,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .rewardVerificationStatus:
             return true
         case .remoteConfig,
-             .remoteConfigStaticFallback,
              .health,
              .appHealthReportAvailability:
             return false
@@ -308,7 +292,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
-                .remoteConfigStaticFallback,
                 .rewardVerificationStatus:
             return true
         case .getIntroEligibility,
@@ -336,7 +319,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .rewardVerificationStatus:
             return true
         case .getOfferings,
-                .remoteConfigStaticFallback,
                 .getIntroEligibility,
                 .postSubscriberAttributes,
                 .postAttributionData,
@@ -355,8 +337,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .remoteConfig:
             return RemoteConfigSignatureContextProvider()
-        case .remoteConfigStaticFallback:
-            return StaticFallbackSignatureContextProvider()
         default:
             return DefaultResponseSignatureContextProvider()
         }
@@ -424,8 +404,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .rewardVerificationStatus(appUserID, clientTransactionID):
             return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
 
-        case let .remoteConfig(domain),
-             let .remoteConfigStaticFallback(domain):
+        case let .remoteConfig(domain):
             return "config/\(Self.escape(domain))"
         }
     }
@@ -490,8 +469,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .remoteConfig:
             return "remote_config"
-        case .remoteConfigStaticFallback:
-            return "remote_config_static_fallback"
         }
     }
 
@@ -503,10 +480,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue:
                     HTTPClient.rcContainerFormatElementEncodingHeaderValue
             ]
-        case .remoteConfigStaticFallback:
-            return [
-                HTTPClient.RequestHeader.accept.rawValue: "application/json"
-            ]
         default:
             return [:]
         }
@@ -515,4 +488,69 @@ extension HTTPRequest.Path: HTTPRequestPath {
     private static func escape(_ appUserID: String) -> String {
         return appUserID.trimmedAndEscaped
     }
+}
+
+extension HTTPRequest.StaticFallbackPath: HTTPRequestPath {
+
+    // swiftlint:disable:next force_unwrapping
+    static let serverHostURL = URL(string: "https://api-production.8-lives-cat.io")!
+
+    var authenticated: Bool {
+        switch self {
+        case .remoteConfig:
+            return true
+        }
+    }
+
+    var shouldSendEtag: Bool {
+        switch self {
+        case .remoteConfig:
+            return false
+        }
+    }
+
+    var supportsSignatureVerification: Bool {
+        switch self {
+        case .remoteConfig:
+            return true
+        }
+    }
+
+    var needsNonceForSigning: Bool {
+        switch self {
+        case .remoteConfig:
+            return false
+        }
+    }
+
+    var responseSignatureContextProvider: ResponseSignatureContextProvider {
+        switch self {
+        case .remoteConfig:
+            return StaticFallbackSignatureContextProvider()
+        }
+    }
+
+    var relativePath: String {
+        switch self {
+        case let .remoteConfig(domain):
+            return "/v1/config/\(domain.trimmedAndEscaped)"
+        }
+    }
+
+    var name: String {
+        switch self {
+        case .remoteConfig:
+            return "remote_config_static_fallback"
+        }
+    }
+
+    var additionalHeaders: HTTPRequest.Headers {
+        switch self {
+        case .remoteConfig:
+            return [
+                HTTPClient.RequestHeader.accept.rawValue: "application/json"
+            ]
+        }
+    }
+
 }
