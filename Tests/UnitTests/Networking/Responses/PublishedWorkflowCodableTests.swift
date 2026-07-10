@@ -21,7 +21,7 @@ import XCTest
 /// mismatch is no longer ruled out for free — these tests catch that.
 class PublishedWorkflowCodableTests: TestCase {
 
-    func testEncodeThenDecodeRoundTripsAllFields() throws {
+    func testEncodeThenDecodeRoundTripsCodableFields() throws {
         let original = PublishedWorkflow(
             id: "wf-1",
             displayName: "Test workflow",
@@ -29,7 +29,6 @@ class PublishedWorkflowCodableTests: TestCase {
             singleStepFallbackId: "step-2",
             steps: [:],
             screens: [:],
-            uiConfig: .empty,
             contentMaxWidth: 400
         )
 
@@ -39,7 +38,23 @@ class PublishedWorkflowCodableTests: TestCase {
         expect(decoded) == original
     }
 
-    func testDecodingWithoutUiConfigDefaultsToEmpty() throws {
+    func testEncodingOmitsUiConfig() throws {
+        let workflow = PublishedWorkflow(
+            id: "wf-1",
+            displayName: "Test workflow",
+            initialStepId: "step-1",
+            singleStepFallbackId: nil,
+            steps: [:],
+            screens: [:]
+        )
+
+        let data = try JSONEncoder.default.encode(value: workflow)
+        let json = try XCTUnwrap(String(data: data, encoding: .utf8))
+
+        expect(json).toNot(contain("ui_config"))
+    }
+
+    func testDecodingWithoutUiConfigSucceeds() throws {
         let json = """
         {
           "id": "wf-1",
@@ -54,7 +69,30 @@ class PublishedWorkflowCodableTests: TestCase {
             jsonData: try XCTUnwrap(json.data(using: .utf8))
         )
 
-        expect(decoded.uiConfig) == .empty
+        expect(decoded.id) == "wf-1"
+    }
+
+    func testDecodingIgnoresEmbeddedUiConfig() throws {
+        let json = """
+        {
+          "id": "wf-1",
+          "display_name": "Test",
+          "initial_step_id": "step-1",
+          "steps": {},
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": { "en_US": { "day": "Day" } },
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """
+        let decoded = try JSONDecoder.default.decode(
+            PublishedWorkflow.self,
+            jsonData: try XCTUnwrap(json.data(using: .utf8))
+        )
+
+        expect(decoded.id) == "wf-1"
     }
 
     func testDecodingWithMetadataPreservesIt() throws {
