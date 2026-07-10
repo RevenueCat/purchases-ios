@@ -323,6 +323,9 @@ private extension OfferingsManager {
                                        preferredLocales: preferredLocales,
                                        appUserID: appUserID)
 
+                // A background refresh (nil completion) only updates the cache; skip the
+                // readiness gate so it doesn't await (and decode) config for a no-op delivery.
+                guard let completion else { return }
                 // Delivers offerings only once remote config has synced at least once, so the
                 // `workflows` topic is available for resolving a workflow right after this call.
                 self.deliverWhenConfigReady {
