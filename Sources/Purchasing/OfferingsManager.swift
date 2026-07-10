@@ -91,13 +91,6 @@ class OfferingsManager {
 
             let cacheStatus = self.deviceCache.offeringsCacheStatus(isAppBackgrounded: isAppBackgrounded)
             Logger.debug(Strings.offering.vending_offerings_cache_from_memory)
-            self.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
-                                                 startTime: startTime,
-                                                 cacheStatus: cacheStatus,
-                                                 error: nil,
-                                                 requestedProductIds: nil,
-                                                 notFoundProductIds: nil)
-
             if cacheStatus == .stale {
                 // Refresh in the background; the readiness gate below must not delay it.
                 self.updateOfferingsCache(appUserID: appUserID,
@@ -110,6 +103,14 @@ class OfferingsManager {
             // even if the background refresh finished first; that matches the stale-cache
             // model, and the refresh still updates the cache for the next call.
             self.deliverWhenConfigReady {
+                // Tracked inside the gate so the recorded latency includes the readiness
+                // wait this delivery now pays, not just the cache lookup.
+                self.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
+                                                     startTime: startTime,
+                                                     cacheStatus: cacheStatus,
+                                                     error: nil,
+                                                     requestedProductIds: nil,
+                                                     notFoundProductIds: nil)
                 self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(memoryCachedOfferings))
             }
         }
