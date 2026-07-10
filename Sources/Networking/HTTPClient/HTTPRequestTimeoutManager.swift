@@ -45,8 +45,7 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
         case other
     }
 
-    /// Timeout tiers, in seconds, for a main-source request. Fallback-host and proxied requests use
-    /// ``flatTimeout`` instead.
+    /// Timeout tiers, in seconds.
     enum Timeout {
 
         /// Main-source request to an endpoint with no fallback-URL support.
@@ -60,6 +59,9 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
 
         /// Main-source request to an endpoint with fallback-URL support, when the source recently timed out.
         static let mainSourceSupportingFallbackReduced: TimeInterval = 2
+
+        /// Fallback-host and proxied requests (flat, never reduced).
+        static let flat: TimeInterval = 30
     }
 
     // The amount of time after which a per-host timeout entry expires.
@@ -75,7 +77,7 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
     private let lock = Lock()
 
     init(
-        flatTimeout: TimeInterval = 30,
+        flatTimeout: TimeInterval = Timeout.flat,
         dateProvider: DateProvider = .init()
     ) {
         self.flatTimeout = flatTimeout
