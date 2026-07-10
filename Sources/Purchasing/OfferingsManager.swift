@@ -91,31 +91,27 @@ class OfferingsManager {
 
             let cacheStatus = self.deviceCache.offeringsCacheStatus(isAppBackgrounded: isAppBackgrounded)
             Logger.debug(Strings.offering.vending_offerings_cache_from_memory)
-            self.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
-                                                 startTime: startTime,
-                                                 cacheStatus: cacheStatus,
-                                                 error: nil,
-                                                 requestedProductIds: nil,
-                                                 notFoundProductIds: nil)
-
             if cacheStatus == .stale {
-                // Serve the cached offerings immediately and refresh in the background, preserving the
-                // existing "return fast, update later" behavior. The background update goes through the
-                // same workflows-aware delivery path, so it refreshes the workflows list too. Gating
-                // here as well would both block delivery and double-fetch the list.
-                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(memoryCachedOfferings))
+                // Refresh in the background; the readiness gate below must not delay it.
                 self.updateOfferingsCache(appUserID: appUserID,
                                           isAppBackgrounded: isAppBackgrounded,
                                           fetchPolicy: fetchPolicy,
                                           completion: nil)
-            } else {
-                // Fresh offerings (no background refresh coming): ensure remote config has synced at
-                // least once before delivering, so a caller resolving a workflow right after
-                // `getOfferings` succeeds isn't racing the first config sync. This is a no-op once the
-                // `workflows` topic is already populated, which it normally is on this path.
-                self.deliverWhenConfigReady {
-                    self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(memoryCachedOfferings))
-                }
+            }
+            // Cached offerings, stale ones included, wait for config readiness before
+            // delivery (a no-op once config has synced). A stale snapshot may be returned
+            // even if the background refresh finished first; that matches the stale-cache
+            // model, and the refresh still updates the cache for the next call.
+            self.deliverWhenConfigReady {
+                // Tracked inside the gate so the recorded latency includes the readiness
+                // wait this delivery now pays, not just the cache lookup.
+                self.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
+                                                     startTime: startTime,
+                                                     cacheStatus: cacheStatus,
+                                                     error: nil,
+                                                     requestedProductIds: nil,
+                                                     notFoundProductIds: nil)
+                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(memoryCachedOfferings))
             }
         }
     }
@@ -328,6 +324,9 @@ private extension OfferingsManager {
                                        preferredLocales: preferredLocales,
                                        appUserID: appUserID)
 
+                // A background refresh (nil completion) only updates the cache; skip the
+                // readiness gate so it doesn't await (and decode) config for a no-op delivery.
+                guard let completion else { return }
                 // Delivers offerings only once remote config has synced at least once, so the
                 // `workflows` topic is available for resolving a workflow right after this call.
                 self.deliverWhenConfigReady {
@@ -385,19 +384,19 @@ private extension OfferingsManager {
         }
     }
 
-    /// Runs `deliver` once remote config has synced at least once *and* every workflow flagged for
-    /// prefetch has finished downloading (or failed), when remote config is wired. Matches Android's
-    /// guarantee that offerings delivery waits for every prefetched workflow body, not just the
-    /// `workflows` topic's metadata. The manager's `awaitTopicAndPrefetchBlobsReady()` read no-ops when already synced
-    /// and always calls back, so this never hangs. When no manager is wired (workflows disabled),
-    /// `deliver` runs immediately, leaving offerings unchanged.
+    /// Invokes `deliver` once the paywall config data `getOfferings` depends on is ready:
+    /// the `workflows` topic (with its prefetch-flagged blobs) and the `ui_config` body,
+    /// resolved concurrently. Both are best-effort (nil on failure, never throwing), so
+    /// delivery can never be stranded; when no manager is wired, `deliver` runs immediately.
     private func deliverWhenConfigReady(deliver: @escaping () -> Void) {
         guard let remoteConfigManager = self.remoteConfigManager else {
             deliver()
             return
         }
         Task {
-            _ = await remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
+            async let workflowsReady = remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
+            async let uiConfigReady = UiConfigProvider(manager: remoteConfigManager).getUiConfig()
+            _ = await (workflowsReady, uiConfigReady)
             deliver()
         }
     }

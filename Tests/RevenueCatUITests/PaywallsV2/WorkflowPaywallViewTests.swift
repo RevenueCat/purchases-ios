@@ -533,6 +533,7 @@ private extension WorkflowPaywallViewTests {
         )
         return WorkflowContext(
             workflow: workflow,
+            uiConfig: PreviewUIConfig.make(),
             allOfferings: offerings,
             initialOffering: offering,
             presentedOfferingContext: nil
@@ -1213,6 +1214,7 @@ private extension WorkflowPaywallViewTests {
         )
         return WorkflowContext(
             workflow: workflow,
+            uiConfig: PreviewUIConfig.make(),
             allOfferings: offerings,
             initialOffering: offering,
             presentedOfferingContext: nil

@@ -241,6 +241,23 @@ final class PaywallViewConfigurationTests: TestCase {
         }
     }
 
+    func testResolvePaywallViewDataThrowsWhenWorkflowUiConfigUnavailableEvenWithFallbackAvailable() async throws {
+        let (offering, _, purchases, handler) = try Self.createOfferingWithFallbackFixture()
+        purchases.workflowBlock = { _ in
+            throw WorkflowError.uiConfigUnavailable(workflowId: "wf_test")
+        }
+
+        do {
+            _ = try await handler.resolvePaywallViewData(
+                for: .offering(offering),
+                remoteConfigEnabled: true
+            )
+            XCTFail("Expected resolvePaywallViewData to throw")
+        } catch let PaywallError.workflowUiConfigUnavailable(workflowId) {
+            expect(workflowId) == "wf_test"
+        }
+    }
+
     func testResolvePaywallViewDataThrowsOnCancellationEvenWithFallbackAvailable() async throws {
         // Cancellation must propagate even with a fallback available: mirrors
         // isWorkflowFetchFallbackEligible's CancellationError exclusion.
@@ -466,6 +483,7 @@ private extension PaywallViewConfigurationTests {
     static func createWorkflowDataResult(offeringIdentifier: String) throws -> WorkflowDataResult {
         return .init(
             workflow: try self.createWorkflow(offeringIdentifier: offeringIdentifier),
+            uiConfig: PreviewUIConfig.make(),
             enrolledVariants: nil
         )
     }
@@ -523,7 +541,7 @@ private extension PaywallViewConfigurationTests {
     static func createPaywallComponents(offeringIdentifier: String) throws -> Offering.PaywallComponents {
         let workflow = try Self.createWorkflow(offeringIdentifier: offeringIdentifier)
         let screen = try XCTUnwrap(workflow.screens["screen_1"])
-        return WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: workflow.uiConfig)
+        return WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: PreviewUIConfig.make())
     }
 
     /// A non-legacy offering with a fallback paywall already available, wired into a handler whose

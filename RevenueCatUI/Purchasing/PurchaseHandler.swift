@@ -487,19 +487,24 @@ extension PurchaseHandler {
         presentedOfferingContext: PresentedOfferingContext?,
         offerings: Offerings? = nil
     ) async throws -> WorkflowContext {
-        async let fetchResultTask = self.purchases.workflow(forOfferingIdentifier: identifier)
+        do {
+            async let fetchResultTask = self.purchases.workflow(forOfferingIdentifier: identifier)
 
-        // Reuse the caller's snapshot if provided; otherwise fetch concurrently with the workflow above.
-        let allOfferings = try await self.resolveOfferings(offerings)
+            // Reuse the caller's snapshot if provided; otherwise fetch concurrently with the workflow above.
+            let allOfferings = try await self.resolveOfferings(offerings)
 
-        let fetchResult = try await fetchResultTask
+            let fetchResult = try await fetchResultTask
 
-        return try Self.makeWorkflowContext(
-            workflow: fetchResult.workflow,
-            allOfferings: allOfferings,
-            presentedOfferingContext: presentedOfferingContext,
-            triggerOfferingIdentifier: identifier
-        )
+            return try Self.makeWorkflowContext(
+                workflow: fetchResult.workflow,
+                uiConfig: fetchResult.uiConfig,
+                allOfferings: allOfferings,
+                presentedOfferingContext: presentedOfferingContext,
+                triggerOfferingIdentifier: identifier
+            )
+        } catch WorkflowError.uiConfigUnavailable(let workflowId) {
+            throw PaywallError.workflowUiConfigUnavailable(workflowId: workflowId)
+        }
     }
 
     /// Builds a ``WorkflowContext`` from already-resolved `workflow` + `allOfferings`. The context's
@@ -512,6 +517,7 @@ extension PurchaseHandler {
     /// `allOfferings` (reporting the screen's own offering identifier that was actually missing).
     static func makeWorkflowContext(
         workflow: PublishedWorkflow,
+        uiConfig: UIConfig,
         allOfferings: Offerings,
         presentedOfferingContext: PresentedOfferingContext?,
         triggerOfferingIdentifier: String
@@ -528,7 +534,7 @@ extension PurchaseHandler {
 
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
             screen: screen,
-            uiConfig: workflow.uiConfig
+            uiConfig: uiConfig
         )
 
         let initialOffering = baseOffering.withPaywallComponents(paywallComponents)
@@ -542,6 +548,7 @@ extension PurchaseHandler {
 
         return WorkflowContext(
             workflow: workflow,
+            uiConfig: uiConfig,
             allOfferings: allOfferings,
             initialOffering: offering,
             presentedOfferingContext: presentedOfferingContext
