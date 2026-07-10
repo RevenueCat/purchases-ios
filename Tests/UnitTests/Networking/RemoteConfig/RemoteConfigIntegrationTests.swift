@@ -519,6 +519,7 @@ private extension RemoteConfigIntegrationTests {
             blobFetcher: RemoteConfigBlobFetcher(
                 blobStore: blobStore,
                 sourceProvider: self.sourceProvider,
+                timeoutManager: MockHTTPRequestTimeoutManager(defaultTimeout: 15),
                 downloader: self.downloader
             ),
             currentUserProvider: MockCurrentUserProvider(mockAppUserID: "integration-test-user")

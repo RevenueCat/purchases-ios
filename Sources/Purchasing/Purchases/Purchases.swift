@@ -408,6 +408,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let remoteConfigDiskCache = systemInfo.remoteConfigEnabled ? RemoteConfigDiskCache() : nil
         let apiSourceProvider = RemoteConfigSourceProvider(topicStore: remoteConfigDiskCache)
 
+        // Shared so blob-source downloads reuse the same per-host fail-fast memory as API requests.
+        let requestTimeoutManager = HTTPRequestTimeoutManager()
+
         let backend = Backend(
             systemInfo: systemInfo,
             httpClientTimeout: networkTimeout,
@@ -422,7 +425,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 customEntitlementComputation: systemInfo.dangerousSettings.customEntitlementComputation
             ),
             diagnosticsTracker: diagnosticsTracker,
-            apiSourceProvider: apiSourceProvider
+            apiSourceProvider: apiSourceProvider,
+            timeoutManager: requestTimeoutManager
         )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
@@ -510,7 +514,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             let blobStore = RemoteConfigBlobStore()
             let blobFetcher = RemoteConfigBlobFetcher(
                 blobStore: blobStore,
-                sourceProvider: apiSourceProvider
+                sourceProvider: apiSourceProvider,
+                timeoutManager: requestTimeoutManager
             )
 
             return RemoteConfigManager(
