@@ -125,9 +125,7 @@ class UIConfigDecodingTests: BaseHTTPResponseTest {
         expect(uiConfig.customVariables).to(beEmpty())
     }
 
-    func testFailsToDecodeMalformedCustomVariables() throws {
-        // When `custom_variables` is present but not the expected object shape, decoding should fail rather than
-        // silently falling back to an empty dictionary (which would hide a malformed response).
+    func testDecodesNullCustomVariablesAsEmpty() throws {
         let json = """
         {
             "app": {
@@ -139,12 +137,61 @@ class UIConfigDecodingTests: BaseHTTPResponseTest {
                 "variable_compatibility_map": {},
                 "function_compatibility_map": {}
             },
-            "custom_variables": "not an object"
+            "custom_variables": null
+        }
+        """
+
+        let uiConfig = try JSONDecoder.default.decode(
+            UIConfig.self,
+            from: json.data(using: .utf8)!
+        )
+
+        expect(uiConfig.customVariables).to(beEmpty())
+    }
+
+    func testThrowsWhenCustomVariablesAreMalformed() throws {
+        let json = """
+        {
+            "app": {
+                "colors": {},
+                "fonts": {}
+            },
+            "localizations": {},
+            "variable_config": {
+                "variable_compatibility_map": {},
+                "function_compatibility_map": {}
+            },
+            "custom_variables": {
+                "player_name": "not-a-definition"
+            }
         }
         """
 
         expect {
-            try JSONDecoder.default.decode(UIConfig.self, from: json.data(using: .utf8)!)
+            try JSONDecoder.default.decode(
+                UIConfig.self,
+                from: json.data(using: .utf8)!
+            )
+        }.to(throwError())
+    }
+
+    func testThrowsWithoutVariableConfig() throws {
+        let json = """
+        {
+            "app": {
+                "colors": {},
+                "fonts": {}
+            },
+            "localizations": {},
+            "custom_variables": {}
+        }
+        """
+
+        expect {
+            try JSONDecoder.default.decode(
+                UIConfig.self,
+                from: json.data(using: .utf8)!
+            )
         }.to(throwError())
     }
 
