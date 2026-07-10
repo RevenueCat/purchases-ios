@@ -580,8 +580,8 @@ private extension RemoteConfigManager {
                         previous: previous,
                         requestEpoch: requestEpoch
                     )
-                case .failure:
-                    self.handleFinalFailure(originalError, requestEpoch: requestEpoch, shouldDisableRefresh: false)
+                case let .failure(fallbackError):
+                    self.handleFinalFailure(fallbackError, requestEpoch: requestEpoch, shouldDisableRefresh: true)
                 }
             }
         }

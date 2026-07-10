@@ -1397,6 +1397,19 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.diskCache.invokedReadCount) == 2
     }
 
+    func testFallbackClientErrorDisablesRemoteConfig() {
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .invalidRequest)))
+        expect(self.manager.isDisabled) == true
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigFallbackCount) == 1
+        expect(self.diskCache.invokedReadCount) == 1
+    }
+
     func testPrimaryServerErrorTriggersFallbackConfigRequest() {
         self.manager.refreshRemoteConfig(isAppBackgrounded: true)
         self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
