@@ -799,9 +799,8 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         self._invokedMergeItemsBlobDataParameters.modify { $0.append((topic, itemKeys)) }
         guard !self.isDisabled, !itemKeys.isEmpty else { return nil }
 
-        var seen: Set<String> = []
         var mergedBlobValues: [String: AnyDecodable] = [:]
-        for itemKey in itemKeys where seen.insert(itemKey).inserted {
+        for itemKey in itemKeys.deduplicated() {
             guard let data = await self.blobData(for: topic, itemKey: itemKey) else { return nil }
             mergedBlobValues[itemKey] = try JSONDecoder.default.decode(AnyDecodable.self, from: data)
         }

@@ -25,11 +25,17 @@ import Foundation
     @_spi(Internal) public static func makeContext(
         workflow: PublishedWorkflow,
         offerings: [Offering],
+        uiConfig: UIConfig = UIConfig(
+            app: .init(colors: [:], fonts: [:]),
+            localizations: [:],
+            variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+        ),
         presentedOfferingContext: PresentedOfferingContext? = nil
     ) throws -> WorkflowContext {
         let allOfferings = Offerings.preview(offerings: offerings)
         return try PurchaseHandler.makeWorkflowContext(
             workflow: workflow,
+            uiConfig: uiConfig,
             allOfferings: allOfferings,
             presentedOfferingContext: presentedOfferingContext,
             triggerOfferingIdentifier: workflow.id

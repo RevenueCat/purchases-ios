@@ -50,12 +50,18 @@ class WorkflowsConfigProviderTests: TestCase {
             workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: ["offeringIdentifier": "premium_annual"])],
             uiConfig: [
                 "app": .init(blobRef: "app-ref", content: [:]),
-                "localizations": .init(blobRef: "loc-ref", content: [:])
+                "localizations": .init(blobRef: "loc-ref", content: [:]),
+                "variable_config": .init(blobRef: "variable-config-ref", content: [:]),
+                "custom_variables": .init(blobRef: "custom-variables-ref", content: [:])
             ],
             blobs: [
                 "wf-1-ref": workflowJSON,
                 "app-ref": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
-                "loc-ref": Data(#"{}"#.utf8)
+                "loc-ref": Data(#"{}"#.utf8),
+                "variable-config-ref": Data(
+                    #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.utf8
+                ),
+                "custom-variables-ref": Data(#"{}"#.utf8)
             ]
         )
 
@@ -70,9 +76,8 @@ class WorkflowsConfigProviderTests: TestCase {
     }
 
     func testFailsWithUiConfigUnavailableWhenTheWorkflowResolvesButUiConfigIsUnavailable() async throws {
-        // A workflow is never rendered with PublishedWorkflow's decode-time `.empty` placeholder: if
-        // ui_config can't be assembled, the whole result fails, matching Android's PaywallViewModel
-        // failing the render when its concurrent ui_config fetch fails.
+        // A workflow is never rendered without `ui_config`: if it can't be assembled, the whole result
+        // fails, matching Android's PaywallViewModel failing the render when its concurrent fetch fails.
         let workflowJSON = try Self.workflowJSON(id: "wf-1")
         self.commit(
             workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: [:])],
@@ -90,12 +95,18 @@ class WorkflowsConfigProviderTests: TestCase {
             workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: [:])],
             uiConfig: [
                 "app": .init(blobRef: "app-ref", content: [:]),
-                "localizations": .init(blobRef: "loc-ref", content: [:])
+                "localizations": .init(blobRef: "loc-ref", content: [:]),
+                "variable_config": .init(blobRef: "variable-config-ref", content: [:]),
+                "custom_variables": .init(blobRef: "custom-variables-ref", content: [:])
             ],
             blobs: [
                 "wf-1-ref": workflowJSON,
                 "app-ref": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
-                "loc-ref": Data(#"{"en_US": {"day": "Day"}}"#.utf8)
+                "loc-ref": Data(#"{"en_US": {"day": "Day"}}"#.utf8),
+                "variable-config-ref": Data(
+                    #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.utf8
+                ),
+                "custom-variables-ref": Data(#"{}"#.utf8)
             ]
         )
 
@@ -103,25 +114,30 @@ class WorkflowsConfigProviderTests: TestCase {
         let workflowResult = try XCTUnwrap(result.value)
 
 #if !os(tvOS) // For Paywalls V2
-        XCTAssertEqual(workflowResult.workflow.uiConfig.localizations["en_US"]?["day"], "Day")
+        XCTAssertEqual(workflowResult.uiConfig.localizations["en_US"]?["day"], "Day")
 #endif
     }
 
-    func testPreservesMetadataWhenSubstitutingUiConfig() async throws {
-        // Regression: the uiConfig substitution used to go through PublishedWorkflow's public
-        // initializer, which always resets `metadata` to nil, silently dropping it whenever ui_config
-        // was available.
+    func testPreservesWorkflowMetadataWhenAssemblingUiConfig() async throws {
+        // Regression: resolving ui_config must not rebuild the workflow through the public
+        // initializer, which always resets `metadata` to nil.
         let workflowJSON = try Self.workflowJSON(id: "wf-1", metadataJSON: #""metadata": { "source": "cdn" }"#)
         self.commit(
             workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: [:])],
             uiConfig: [
                 "app": .init(blobRef: "app-ref", content: [:]),
-                "localizations": .init(blobRef: "loc-ref", content: [:])
+                "localizations": .init(blobRef: "loc-ref", content: [:]),
+                "variable_config": .init(blobRef: "variable-config-ref", content: [:]),
+                "custom_variables": .init(blobRef: "custom-variables-ref", content: [:])
             ],
             blobs: [
                 "wf-1-ref": workflowJSON,
                 "app-ref": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
-                "loc-ref": Data(#"{}"#.utf8)
+                "loc-ref": Data(#"{}"#.utf8),
+                "variable-config-ref": Data(
+                    #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.utf8
+                ),
+                "custom-variables-ref": Data(#"{}"#.utf8)
             ]
         )
 
@@ -212,16 +228,29 @@ class WorkflowsConfigProviderTests: TestCase {
 
     func testResolvesAndWarnsOnDuplicateOfferingId() async throws {
         let logger = TestLogHandler(testIdentifier: self.name)
-        self.commit(workflows: [
-            "wf-a": .init(blobRef: "a-ref", content: ["offeringIdentifier": "shared"]),
-            "wf-b": .init(blobRef: "b-ref", content: ["offeringIdentifier": "shared"])
-        ])
+        let topicsJSON = """
+        {
+          "workflows": {
+            "wf-a": { "blob_ref": "a-ref", "offering_identifier": "shared" },
+            "wf-b": { "blob_ref": "b-ref", "offering_identifier": "shared" }
+          }
+        }
+        """
+        let topics = try JSONDecoder.default.decode(
+            RemoteConfiguration.Topics.self,
+            jsonData: try XCTUnwrap(topicsJSON.data(using: .utf8))
+        )
+        self.diskCache.stubbedRead = PersistedRemoteConfiguration(
+            manifest: "test-manifest",
+            activeTopics: ["workflows"],
+            topics: topics
+        )
 
         let result = await self.provider.workflowId(forOfferingId: "shared")
         let workflowId = try XCTUnwrap(result)
 
-        // Whichever the dictionary happens to iterate first, but never nil, and always logged.
-        expect(["wf-a", "wf-b"]).to(contain(workflowId))
+        // Matches Android's last-wins duplicate handling, using stable workflow-id ordering on iOS.
+        expect(workflowId) == "wf-b"
         logger.verifyMessageWasLogged("Duplicate offeringId in workflows response: shared",
                                       level: .warn,
                                       expectedCount: 1)
