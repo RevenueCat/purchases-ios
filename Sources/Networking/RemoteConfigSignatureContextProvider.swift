@@ -34,10 +34,6 @@ struct RemoteConfigSignatureContextProvider: ResponseSignatureContextProvider {
 struct FallbackSignatureContextProvider: ResponseSignatureContextProvider {
 
     func responsePayloadForSignature(from body: Data?, statusCode: HTTPStatusCode) throws -> Data? {
-        guard statusCode != .noContent else {
-            return Data()
-        }
-
         guard let body else {
             throw RCContainer.Parser.FormatError.missingBody
         }

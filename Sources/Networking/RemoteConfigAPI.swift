@@ -101,11 +101,10 @@ struct RemoteConfigFetchResult {
 
 struct RemoteConfigFallbackFetchResult {
 
-    /// `nil` represents a successful `204 No Content` response.
-    let configuration: RemoteConfiguration?
+    let configuration: RemoteConfiguration
     let verificationResult: VerificationResult
 
-    init(response: VerifiedHTTPResponse<RemoteConfiguration?>) {
+    init(response: VerifiedHTTPResponse<RemoteConfiguration>) {
         self.configuration = response.body
         self.verificationResult = response.verificationResult
     }

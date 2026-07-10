@@ -85,17 +85,6 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
     }
 
-    func testFallbackNoContentResponseMarksRefreshAsFresh() {
-        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
-        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
-        self.remoteConfigAPI.completeFallback(with: .success(.test(configuration: nil)))
-
-        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
-
-        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
-        expect(self.remoteConfigAPI.invokedGetRemoteConfigFallbackCount) == 1
-    }
-
     func testFailureDoesNotMarkRefreshAsFresh() {
         self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1)))))
@@ -2710,14 +2699,12 @@ private extension RemoteConfigFetchResult {
 
 private extension RemoteConfigFallbackFetchResult {
 
-    /// Builds a fallback fetch result through the production initializer. A `nil` configuration
-    /// represents a `204 No Content` response.
     static func test(
-        configuration: RemoteConfiguration?,
+        configuration: RemoteConfiguration,
         verificationResult: VerificationResult = .verified
     ) -> RemoteConfigFallbackFetchResult {
         return RemoteConfigFallbackFetchResult(response: .init(
-            httpStatusCode: configuration == nil ? .noContent : .success,
+            httpStatusCode: .success,
             responseHeaders: [:],
             body: configuration,
             verificationResult: verificationResult,

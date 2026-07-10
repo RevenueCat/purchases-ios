@@ -595,18 +595,12 @@ private extension RemoteConfigManager {
         guard self.isCurrent(requestEpoch) else { return }
         defer { self.releaseGuardIfOwned(requestEpoch: requestEpoch) }
 
-        guard let configuration = fallbackResult.configuration else {
-            Logger.debug(Strings.remoteConfig.notModified)
-            self.markRefreshedIfCurrent(requestEpoch)
-            return
-        }
-
         self.lock.perform {
             guard self.epoch == requestEpoch else { return }
             let didPersist = self.persist(
                 container: nil,
                 previous: previous,
-                response: configuration
+                response: fallbackResult.configuration
             )
             if didPersist {
                 self.markRefreshed()

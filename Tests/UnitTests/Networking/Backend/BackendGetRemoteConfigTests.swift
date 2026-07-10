@@ -621,32 +621,11 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         let fetchResult = try XCTUnwrap(result?.value)
-        let configuration = try XCTUnwrap(fetchResult.configuration)
+        let configuration = fetchResult.configuration
 
         expect(configuration.domain) == "app"
         expect(configuration.manifest) == "v1.test"
         expect(configuration.activeTopics) == ["sources"]
-        expect(fetchResult.verificationResult) == .verified
-    }
-
-    func testGetRemoteConfigFallbackNoContentResponseSucceedsWithNoConfiguration() throws {
-        self.httpClient.mock(
-            requestPath: HTTPRequest.FallbackPath.remoteConfig(domain: "app"),
-            response: .init(statusCode: .noContent, body: Data(), verificationResult: .verified)
-        )
-
-        let result: Result<RemoteConfigFallbackFetchResult, BackendError>? = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfigFallback(
-                domain: "app",
-                isAppBackgrounded: false,
-                completion: completed
-            )
-        }
-
-        expect(result).to(beSuccess())
-        let fetchResult = try XCTUnwrap(result?.value)
-
-        expect(fetchResult.configuration).to(beNil())
         expect(fetchResult.verificationResult) == .verified
     }
 

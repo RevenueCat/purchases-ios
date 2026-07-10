@@ -364,15 +364,7 @@ private final class FakeRemoteConfigAPI: RemoteConfigAPIType {
         completion: @escaping Backend.ResponseHandler<RemoteConfigFallbackFetchResult>
     ) {
         DispatchQueue.global().async {
-            let result = RemoteConfigFallbackFetchResult(response: VerifiedHTTPResponse(
-                httpStatusCode: .noContent,
-                responseHeaders: [:],
-                body: nil,
-                verificationResult: .verified,
-                isLoadShedderResponse: false,
-                isFallbackUrlResponse: false
-            ))
-            completion(.success(result))
+            completion(.failure(.networkError(.unexpectedResponse(nil))))
         }
     }
 

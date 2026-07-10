@@ -784,6 +784,48 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(self.eTagManager.invokedHTTPResultFromCacheOrBackend) == true
     }
 
+    func testRemoteConfigFallbackGetsCachedResponseWhenStatusCodeIsNotModified() {
+        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        let request = HTTPRequest(method: .get, path: path)
+        let cachedResponseData = """
+        {"domain":"app","manifest":"cached","active_topics":[],"topics":{}}
+        """.asData
+        let eTag = "fallback-etag"
+
+        self.eTagManager.stubResponseEtag(eTag)
+        self.eTagManager.shouldReturnResultFromBackend = false
+        self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
+            httpStatusCode: .success,
+            responseHeaders: [:],
+            body: cachedResponseData,
+            verificationResult: .verified,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false
+        )
+
+        stub(condition: isPath(path)) { request in
+            expect(request.allHTTPHeaderFields?[ETagManager.eTagRequestHeader.rawValue]) == eTag
+
+            return HTTPStubsResponse(
+                data: Data(),
+                statusCode: .notModified,
+                headers: nil
+            )
+        }
+
+        let response: VerifiedHTTPResponse<RemoteConfiguration>.Result? = waitUntilValue { completion in
+            self.client.perform(request) { (response: VerifiedHTTPResponse<RemoteConfiguration>.Result) in
+                completion(response)
+            }
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.httpStatusCode) == .success
+        expect(response?.value?.body.domain) == "app"
+        expect(response?.value?.body.manifest) == "cached"
+        expect(self.eTagManager.invokedHTTPResultFromCacheOrBackend) == true
+    }
+
     func testResponseOriginalSourceIsLoadShedderWhenHeaderIsTrue() throws {
         let request = HTTPRequest(method: .get, path: .mockPath)
         let responseData = "{\"message\": \"something is great up in the cloud\"}".asData

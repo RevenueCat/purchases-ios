@@ -84,8 +84,7 @@ class BaseProductionRemoteConfigIntegrationTests: BaseBackendIntegrationTests {
     func verifyRemoteConfigFallbackResponse(_ result: RemoteConfigFallbackFetchResult) throws {
         expect(result.verificationResult) == .verified
 
-        let configuration = try XCTUnwrap(result.configuration)
-        self.verifyRemoteConfiguration(configuration)
+        self.verifyRemoteConfiguration(result.configuration)
     }
 
 }

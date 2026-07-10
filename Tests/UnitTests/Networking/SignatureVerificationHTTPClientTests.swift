@@ -561,7 +561,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: body)
         self.signing.stubbedVerificationResult = true
 
-        let response: VerifiedHTTPResponse<RemoteConfiguration?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<RemoteConfiguration>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigFallbackRequest, completionHandler: completion)
         }
 
@@ -586,33 +586,12 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: Self.remoteConfigFallbackBody)
         self.signing.stubbedVerificationResult = true
 
-        let response: VerifiedHTTPResponse<RemoteConfiguration?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<RemoteConfiguration>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigFallbackRequest, completionHandler: completion)
         }
 
         expect(response).to(beSuccess())
         expect(self.signing.requests.onlyElement?.parameters.etag) == Self.eTag
-    }
-
-    func testFallbackConfigNoContentResponseUsesEmptySignaturePayloadWithoutNonce() throws {
-        self.mockResponse(path: HTTPRequest.FallbackPath.remoteConfig(domain: "app"),
-                          signature: Self.sampleSignature,
-                          requestDate: Self.date2,
-                          body: "not json".asData,
-                          statusCode: .noContent)
-        self.signing.stubbedVerificationResult = true
-
-        let response: VerifiedHTTPResponse<RemoteConfiguration?>.Result? = waitUntilValue { completion in
-            self.client.perform(Self.remoteConfigFallbackRequest, completionHandler: completion)
-        }
-
-        expect(response).to(beSuccess())
-        expect(response?.value?.body).to(beNil())
-        expect(response?.value?.verificationResult) == .verified
-        expect(self.signing.requests).to(haveCount(1))
-        expect(self.signing.requests.onlyElement?.parameters.message) == Data()
-        expect(self.signing.requests.onlyElement?.parameters.nonce).to(beNil())
-        expect(self.signing.requests.onlyElement?.parameters.requestBody).to(beNil())
     }
 
     func testFallbackConfigInvalidSignatureReturnsFailedVerification() throws {
@@ -623,7 +602,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: body)
         self.signing.stubbedVerificationResult = false
 
-        let response: VerifiedHTTPResponse<RemoteConfiguration?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<RemoteConfiguration>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigFallbackRequest, completionHandler: completion)
         }
 
@@ -643,7 +622,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           body: Self.remoteConfigFallbackBody)
         self.signing.stubbedVerificationResult = false
 
-        let response: VerifiedHTTPResponse<RemoteConfiguration?>.Result? = waitUntilValue { completion in
+        let response: VerifiedHTTPResponse<RemoteConfiguration>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigFallbackRequest, completionHandler: completion)
         }
 
