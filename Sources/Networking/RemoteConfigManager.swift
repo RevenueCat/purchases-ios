@@ -92,7 +92,7 @@ extension RemoteConfigManagerType {
         itemKeys: [String],
         as type: T.Type
     ) async throws -> T? {
-        let uniqueItemKeys = Self.uniqueItemKeys(itemKeys)
+        let uniqueItemKeys = itemKeys.deduplicated()
         guard !self.isDisabled else {
             Logger.warn(Strings.remoteConfig.mergeItemsBlobDataDisabled(topic: topic, itemKeys: uniqueItemKeys))
             return nil
@@ -160,17 +160,6 @@ extension RemoteConfigManagerType {
         }
         envelope.append(contentsOf: "}".utf8)
         return envelope
-    }
-
-    private static func uniqueItemKeys(_ itemKeys: [String]) -> [String] {
-        var seen: Set<String> = []
-        var uniqueItemKeys: [String] = []
-
-        for itemKey in itemKeys where seen.insert(itemKey).inserted {
-            uniqueItemKeys.append(itemKey)
-        }
-
-        return uniqueItemKeys
     }
 
 }
@@ -779,7 +768,10 @@ private extension RemoteConfigManager {
             referencedBlobCount: postSyncReferencedBlobRefs.count
         ))
 
-        let refsToPrefetch = response.prefetchBlobs.filter { !self.blobStore.contains(ref: $0) }
+        let refsToPrefetch = self.postSyncPrefetchBlobRefs(
+            response: response,
+            postSyncTopics: postSyncTopics
+        ).filter { !self.blobStore.contains(ref: $0) }
         Logger.verbose(Strings.remoteConfig.prefetchingBlobCount(refsToPrefetch.count))
         self.blobFetcher.prefetch(refs: refsToPrefetch)
 
@@ -811,6 +803,23 @@ private extension RemoteConfigManager {
         postSyncTopics: RemoteConfiguration.Topics
     ) -> Set<String> {
         return Set(response.prefetchBlobs).union(postSyncTopics.blobRefs)
+    }
+
+    /// Returns the post-sync blob refs the SDK should proactively warm.
+    ///
+    /// This includes server-requested prefetch blobs plus any active-topic item whose metadata has
+    /// `prefetch: true`.
+    func postSyncPrefetchBlobRefs(
+        response: RemoteConfiguration,
+        postSyncTopics: RemoteConfiguration.Topics
+    ) -> [String] {
+        let itemPrefetchBlobRefs = postSyncTopics.entries.values.flatMap { topic in
+            topic.values
+                .filter(\.prefetch)
+                .compactMap(\.blobRef)
+        }
+
+        return (response.prefetchBlobs + itemPrefetchBlobRefs).deduplicated()
     }
 
     /// Writes valid inline content elements that are referenced by this config response.

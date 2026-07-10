@@ -859,6 +859,64 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(result?.value?.originalSource) == .fallbackUrl
     }
 
+    func testDoesNotRetryWithFallbackHostOnDeviceConnectivityError() throws {
+        let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+        let fallbackURL = try XCTUnwrap(request.path.fallbackUrls.first)
+        // A device-side URLError: switching hosts can't help when the device itself is offline.
+        let deviceError = NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet)
+
+        let fallbackRequestCount: Atomic<Int> = .init(0)
+        stub(condition: isPath(request.path)) { urlRequest in
+            if urlRequest.url?.absoluteString == fallbackURL.absoluteString {
+                fallbackRequestCount.value += 1
+                return HTTPStubsResponse(data: "{\"mapping\": {}}".asData, statusCode: .success, headers: nil)
+            }
+
+            let response = HTTPStubsResponse.emptySuccessResponse()
+            response.error = deviceError
+            return response
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: DataResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).to(beFailure())
+        expect(fallbackRequestCount.value) == 0
+    }
+
+    func testRetriesWithFallbackHostOnHostConnectivityError() throws {
+        let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+        let responseData = "{\"mapping\": {}}".asData
+        let fallbackURL = try XCTUnwrap(request.path.fallbackUrls.first)
+        // A host-side URLError: a different host may still succeed, so a fallback retry is warranted.
+        let hostError = NSError(domain: NSURLErrorDomain, code: NSURLErrorCannotConnectToHost)
+
+        let fallbackRequestCount: Atomic<Int> = .init(0)
+        stub(condition: isPath(request.path)) { urlRequest in
+            if urlRequest.url?.absoluteString == fallbackURL.absoluteString {
+                fallbackRequestCount.value += 1
+                return HTTPStubsResponse(data: responseData, statusCode: .success, headers: nil)
+            }
+
+            let response = HTTPStubsResponse.emptySuccessResponse()
+            response.error = hostError
+            return response
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: DataResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).to(beSuccess())
+        expect(result?.value?.originalSource) == .fallbackUrl
+        expect(fallbackRequestCount.value) == 1
+    }
+
     func testResponseOriginalSourceIsNotFallbackUrlWhenNotUsingFallbackHost() throws {
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
         let responseData = "{\"mapping\": {}}".asData
