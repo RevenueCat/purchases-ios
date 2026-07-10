@@ -1,5 +1,5 @@
 //
-//  GetRemoteConfigStaticFallbackOperation.swift
+//  GetRemoteConfigFallbackOperation.swift
 //  RevenueCat
 //
 //  Created by Rick van der Linden on 09/07/2026.
@@ -8,16 +8,16 @@
 
 import Foundation
 
-final class GetRemoteConfigStaticFallbackOperation: CacheableNetworkOperation {
+final class GetRemoteConfigFallbackOperation: CacheableNetworkOperation {
 
-    private let callbackCache: CallbackCache<RemoteConfigStaticFallbackCallback>
+    private let callbackCache: CallbackCache<RemoteConfigFallbackCallback>
     private let domain: String
 
     static func createFactory(
         configuration: NetworkConfiguration,
-        callbackCache: CallbackCache<RemoteConfigStaticFallbackCallback>,
+        callbackCache: CallbackCache<RemoteConfigFallbackCallback>,
         domain: String
-    ) -> CacheableNetworkOperationFactory<GetRemoteConfigStaticFallbackOperation> {
+    ) -> CacheableNetworkOperationFactory<GetRemoteConfigFallbackOperation> {
         return .init({ cacheKey in
                 .init(
                     configuration: configuration,
@@ -31,7 +31,7 @@ final class GetRemoteConfigStaticFallbackOperation: CacheableNetworkOperation {
 
     private init(
         configuration: NetworkConfiguration,
-        callbackCache: CallbackCache<RemoteConfigStaticFallbackCallback>,
+        callbackCache: CallbackCache<RemoteConfigFallbackCallback>,
         domain: String,
         cacheKey: String
     ) {
@@ -41,18 +41,18 @@ final class GetRemoteConfigStaticFallbackOperation: CacheableNetworkOperation {
     }
 
     override func begin(completion: @escaping () -> Void) {
-        self.getRemoteConfigStaticFallback(completion: completion)
+        self.getRemoteConfigFallback(completion: completion)
     }
 
 }
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
-extension GetRemoteConfigStaticFallbackOperation: @unchecked Sendable {}
+extension GetRemoteConfigFallbackOperation: @unchecked Sendable {}
 
-private extension GetRemoteConfigStaticFallbackOperation {
+private extension GetRemoteConfigFallbackOperation {
 
-    func getRemoteConfigStaticFallback(completion: @escaping () -> Void) {
-        let request = HTTPRequest(method: .get, path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: self.domain))
+    func getRemoteConfigFallback(completion: @escaping () -> Void) {
+        let request = HTTPRequest(method: .get, path: HTTPRequest.FallbackPath.remoteConfig(domain: self.domain))
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<RemoteConfiguration?>.Result) in
             defer {
@@ -62,7 +62,7 @@ private extension GetRemoteConfigStaticFallbackOperation {
             self.callbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(
                     response
-                        .map(RemoteConfigStaticFallbackFetchResult.init(response:))
+                        .map(RemoteConfigFallbackFetchResult.init(response:))
                         .mapError(BackendError.networkError)
                 )
             }

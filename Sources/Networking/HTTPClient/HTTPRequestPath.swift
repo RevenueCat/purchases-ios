@@ -153,7 +153,7 @@ extension HTTPRequest {
 
     }
 
-    enum StaticFallbackPath: Hashable {
+    enum FallbackPath: Hashable {
 
         case remoteConfig(domain: String)
 
@@ -490,7 +490,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
     }
 }
 
-extension HTTPRequest.StaticFallbackPath: HTTPRequestPath {
+extension HTTPRequest.FallbackPath: HTTPRequestPath {
 
     // swiftlint:disable:next force_unwrapping
     static let serverHostURL = URL(string: "https://api-production.8-lives-cat.io")!
@@ -526,7 +526,7 @@ extension HTTPRequest.StaticFallbackPath: HTTPRequestPath {
     var responseSignatureContextProvider: ResponseSignatureContextProvider {
         switch self {
         case .remoteConfig:
-            return StaticFallbackSignatureContextProvider()
+            return FallbackSignatureContextProvider()
         }
     }
 
@@ -540,7 +540,7 @@ extension HTTPRequest.StaticFallbackPath: HTTPRequestPath {
     var name: String {
         switch self {
         case .remoteConfig:
-            return "remote_config_static_fallback"
+            return "remote_config_fallback"
         }
     }
 

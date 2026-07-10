@@ -118,11 +118,11 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(self.httpClient.calls.first?.headers["Accept-Encoding"]).to(beNil())
     }
 
-    func testGetRemoteConfigStaticFallbackUsesGetMethodAndFallbackPath() {
+    func testGetRemoteConfigFallbackUsesGetMethodAndFallbackPath() {
         self.mockSuccessfulFallbackResponse()
 
         let result = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfigStaticFallback(
+            self.remoteConfigAPI.getRemoteConfigFallback(
                 domain: "app",
                 isAppBackgrounded: false,
                 completion: completed
@@ -132,18 +132,18 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(result).to(beSuccess())
         expect(self.httpClient.calls).to(haveCount(1))
         expect(self.httpClient.calls.first?.request.method.httpMethod) == "GET"
-        expect(self.httpClient.calls.first?.request.path as? HTTPRequest.StaticFallbackPath)
-            == HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app")
+        expect(self.httpClient.calls.first?.request.path as? HTTPRequest.FallbackPath)
+            == HTTPRequest.FallbackPath.remoteConfig(domain: "app")
         expect(self.httpClient.calls.first?.request.path.url?.absoluteString)
             == "https://api-production.8-lives-cat.io/v1/config/app"
         expect(self.httpClient.calls.first?.request.requestBody).to(beNil())
     }
 
-    func testGetRemoteConfigStaticFallbackDoesNotRequestRCContainerFormat() {
+    func testGetRemoteConfigFallbackDoesNotRequestRCContainerFormat() {
         self.mockSuccessfulFallbackResponse()
 
         waitUntil { completed in
-            self.remoteConfigAPI.getRemoteConfigStaticFallback(
+            self.remoteConfigAPI.getRemoteConfigFallback(
                 domain: "app",
                 isAppBackgrounded: false
             ) { _ in completed() }
@@ -169,11 +169,11 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(self.httpClient.calls.first?.headers[ETagManager.eTagValidationTimeRequestHeader.rawValue]).to(beNil())
     }
 
-    func testGetRemoteConfigStaticFallbackDoesNotSendETagHeadersOrSignatureRequestHeaders() {
+    func testGetRemoteConfigFallbackDoesNotSendETagHeadersOrSignatureRequestHeaders() {
         self.mockSuccessfulFallbackResponse()
 
         waitUntil { completed in
-            self.remoteConfigAPI.getRemoteConfigStaticFallback(
+            self.remoteConfigAPI.getRemoteConfigFallback(
                 domain: "app",
                 isAppBackgrounded: false
             ) { _ in completed() }
@@ -611,11 +611,11 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(error.domain) == String(reflecting: RCContainer.Parser.FormatError.self)
     }
 
-    func testGetRemoteConfigStaticFallbackParsesJSONResponse() throws {
+    func testGetRemoteConfigFallbackParsesJSONResponse() throws {
         self.mockSuccessfulFallbackResponse(verificationResult: .verified)
 
-        let result: Result<RemoteConfigStaticFallbackFetchResult, BackendError>? = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfigStaticFallback(
+        let result: Result<RemoteConfigFallbackFetchResult, BackendError>? = waitUntilValue { completed in
+            self.remoteConfigAPI.getRemoteConfigFallback(
                 domain: "app",
                 isAppBackgrounded: false,
                 completion: completed
@@ -631,14 +631,14 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(fetchResult.verificationResult) == .verified
     }
 
-    func testGetRemoteConfigStaticFallbackNoContentResponseSucceedsWithNoConfiguration() throws {
+    func testGetRemoteConfigFallbackNoContentResponseSucceedsWithNoConfiguration() throws {
         self.httpClient.mock(
-            requestPath: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app"),
+            requestPath: HTTPRequest.FallbackPath.remoteConfig(domain: "app"),
             response: .init(statusCode: .noContent, body: Data(), verificationResult: .verified)
         )
 
-        let result: Result<RemoteConfigStaticFallbackFetchResult, BackendError>? = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfigStaticFallback(
+        let result: Result<RemoteConfigFallbackFetchResult, BackendError>? = waitUntilValue { completed in
+            self.remoteConfigAPI.getRemoteConfigFallback(
                 domain: "app",
                 isAppBackgrounded: false,
                 completion: completed
@@ -652,14 +652,14 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(fetchResult.verificationResult) == .verified
     }
 
-    func testGetRemoteConfigStaticFallbackInvalidJSONSendsDecodingError() {
+    func testGetRemoteConfigFallbackInvalidJSONSendsDecodingError() {
         self.httpClient.mock(
-            requestPath: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app"),
+            requestPath: HTTPRequest.FallbackPath.remoteConfig(domain: "app"),
             response: .init(statusCode: .success, body: "not json".asData)
         )
 
         let result = waitUntilValue { completed in
-            self.remoteConfigAPI.getRemoteConfigStaticFallback(
+            self.remoteConfigAPI.getRemoteConfigFallback(
                 domain: "app",
                 isAppBackgrounded: false,
                 completion: completed
@@ -678,7 +678,7 @@ private extension BackendGetRemoteConfigTests {
 
     static let config = #"{"manifest":{}}"#.asData
     static let content = #"{"products":[]}"#.asData
-    static let remoteConfigStaticFallback = """
+    static let remoteConfigFallback = """
     {
       "domain": "app",
       "manifest": "v1.test",
@@ -730,10 +730,10 @@ private extension BackendGetRemoteConfigTests {
         verificationResult: VerificationResult = .defaultValue
     ) {
         self.httpClient.mock(
-            requestPath: HTTPRequest.StaticFallbackPath.remoteConfig(domain: domain),
+            requestPath: HTTPRequest.FallbackPath.remoteConfig(domain: domain),
             response: .init(
                 statusCode: .success,
-                body: Self.remoteConfigStaticFallback,
+                body: Self.remoteConfigFallback,
                 verificationResult: verificationResult
             )
         )

@@ -554,15 +554,15 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testFallbackConfigSignatureUsesRawJSONPayloadWithoutNonceOrRequestBody() throws {
-        let body = Self.remoteConfigStaticFallbackBody
-        self.mockResponse(path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app"),
+        let body = Self.remoteConfigFallbackBody
+        self.mockResponse(path: HTTPRequest.FallbackPath.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
         self.signing.stubbedVerificationResult = true
 
         let response: VerifiedHTTPResponse<RemoteConfiguration?>.Result? = waitUntilValue { completion in
-            self.client.perform(Self.remoteConfigStaticFallbackRequest, completionHandler: completion)
+            self.client.perform(Self.remoteConfigFallbackRequest, completionHandler: completion)
         }
 
         expect(response).to(beSuccess())
@@ -579,15 +579,15 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testFallbackConfigSignatureIncludesETagIfBackendSendsIt() throws {
-        self.mockResponse(path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.FallbackPath.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           eTag: Self.eTag,
-                          body: Self.remoteConfigStaticFallbackBody)
+                          body: Self.remoteConfigFallbackBody)
         self.signing.stubbedVerificationResult = true
 
         let response: VerifiedHTTPResponse<RemoteConfiguration?>.Result? = waitUntilValue { completion in
-            self.client.perform(Self.remoteConfigStaticFallbackRequest, completionHandler: completion)
+            self.client.perform(Self.remoteConfigFallbackRequest, completionHandler: completion)
         }
 
         expect(response).to(beSuccess())
@@ -595,7 +595,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testFallbackConfigNoContentResponseUsesEmptySignaturePayloadWithoutNonce() throws {
-        self.mockResponse(path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.FallbackPath.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: "not json".asData,
@@ -603,7 +603,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         self.signing.stubbedVerificationResult = true
 
         let response: VerifiedHTTPResponse<RemoteConfiguration?>.Result? = waitUntilValue { completion in
-            self.client.perform(Self.remoteConfigStaticFallbackRequest, completionHandler: completion)
+            self.client.perform(Self.remoteConfigFallbackRequest, completionHandler: completion)
         }
 
         expect(response).to(beSuccess())
@@ -616,15 +616,15 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testFallbackConfigInvalidSignatureReturnsFailedVerification() throws {
-        let body = Self.remoteConfigStaticFallbackBody
-        self.mockResponse(path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app"),
+        let body = Self.remoteConfigFallbackBody
+        self.mockResponse(path: HTTPRequest.FallbackPath.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
         self.signing.stubbedVerificationResult = false
 
         let response: VerifiedHTTPResponse<RemoteConfiguration?>.Result? = waitUntilValue { completion in
-            self.client.perform(Self.remoteConfigStaticFallbackRequest, completionHandler: completion)
+            self.client.perform(Self.remoteConfigFallbackRequest, completionHandler: completion)
         }
 
         expect(response).to(beSuccess())
@@ -637,20 +637,20 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
     func testFallbackConfigInvalidSignatureFailsInEnforcedMode() throws {
         self.changeClientToEnforced()
-        self.mockResponse(path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.FallbackPath.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
-                          body: Self.remoteConfigStaticFallbackBody)
+                          body: Self.remoteConfigFallbackBody)
         self.signing.stubbedVerificationResult = false
 
         let response: VerifiedHTTPResponse<RemoteConfiguration?>.Result? = waitUntilValue { completion in
-            self.client.perform(Self.remoteConfigStaticFallbackRequest, completionHandler: completion)
+            self.client.perform(Self.remoteConfigFallbackRequest, completionHandler: completion)
         }
 
         expect(response).to(beFailure())
         expect(response?.error)
             .to(matchError(NetworkError.signatureVerificationFailed(
-                path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app"),
+                path: HTTPRequest.FallbackPath.remoteConfig(domain: "app"),
                 code: .success
             )))
         expect(self.signing.requests).to(haveCount(1))
@@ -1328,14 +1328,14 @@ private extension BaseSignatureVerificationHTTPClientTests {
         )
     }
 
-    static var remoteConfigStaticFallbackRequest: HTTPRequest {
+    static var remoteConfigFallbackRequest: HTTPRequest {
         return .init(
             method: .get,
-            path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app")
+            path: HTTPRequest.FallbackPath.remoteConfig(domain: "app")
         )
     }
 
-    static var remoteConfigStaticFallbackBody: Data {
+    static var remoteConfigFallbackBody: Data {
         return """
         {
           "domain": "app",

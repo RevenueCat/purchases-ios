@@ -213,7 +213,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testFallbackConfigPathUsesFallbackHostAndEscapesDomain() {
-        let path = HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app workflows/project")
+        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app workflows/project")
 
         expect(path.relativePath) == "/v1/config/app%20workflows%2Fproject"
         expect(path.url?.absoluteString)
@@ -223,7 +223,7 @@ class HTTPRequestTests: TestCase {
         expect(path.shouldSendEtag).to(beFalse())
         expect(path.supportsSignatureVerification).to(beTrue())
         expect(path.needsNonceForSigning).to(beFalse())
-        expect(path.name) == "remote_config_static_fallback"
+        expect(path.name) == "remote_config_fallback"
     }
 
     func testUserIDEscaping() {
@@ -326,7 +326,7 @@ class HTTPRequestTests: TestCase {
     func testFallbackConfigDoesNotRequestRCContainerFormat() {
         let request: HTTPRequest = .init(
             method: .get,
-            path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app")
+            path: HTTPRequest.FallbackPath.remoteConfig(domain: "app")
         )
         let headers = request.headers(
             with: [:],

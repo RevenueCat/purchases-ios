@@ -41,9 +41,9 @@ class BaseProductionRemoteConfigIntegrationTests: BaseBackendIntegrationTests {
         }
     }
 
-    func fetchRemoteConfigStaticFallback() async throws -> RemoteConfigStaticFallbackFetchResult {
+    func fetchRemoteConfigFallback() async throws -> RemoteConfigFallbackFetchResult {
         return try await withCheckedThrowingContinuation { continuation in
-            self.remoteConfigAPI.getRemoteConfigStaticFallback(
+            self.remoteConfigAPI.getRemoteConfigFallback(
                 domain: Self.domain,
                 isAppBackgrounded: false
             ) { result in
@@ -81,7 +81,7 @@ class BaseProductionRemoteConfigIntegrationTests: BaseBackendIntegrationTests {
         expect(result.container).to(beNil())
     }
 
-    func verifyRemoteConfigStaticFallbackResponse(_ result: RemoteConfigStaticFallbackFetchResult) throws {
+    func verifyRemoteConfigFallbackResponse(_ result: RemoteConfigFallbackFetchResult) throws {
         expect(result.verificationResult) == .verified
 
         let configuration = try XCTUnwrap(result.configuration)
@@ -152,10 +152,10 @@ final class ProductionRemoteConfigIntegrationTests: BaseProductionRemoteConfigIn
         self.verifyNoContentResponse(result)
     }
 
-    func testCanFetchRemoteConfigFromStaticFallbackURL() async throws {
-        let result = try await self.fetchRemoteConfigStaticFallback()
+    func testCanFetchRemoteConfigFromFallbackURL() async throws {
+        let result = try await self.fetchRemoteConfigFallback()
 
-        try self.verifyRemoteConfigStaticFallbackResponse(result)
+        try self.verifyRemoteConfigFallbackResponse(result)
     }
 
 }
@@ -182,10 +182,10 @@ final class EnforcedProductionRemoteConfigIntegrationTests: BaseProductionRemote
         self.verifyNoContentResponse(result)
     }
 
-    func testVerifiesStaticFallbackResponseWhenVerificationIsEnforced() async throws {
-        let result = try await self.fetchRemoteConfigStaticFallback()
+    func testVerifiesFallbackResponseWhenVerificationIsEnforced() async throws {
+        let result = try await self.fetchRemoteConfigFallback()
 
-        try self.verifyRemoteConfigStaticFallbackResponse(result)
+        try self.verifyRemoteConfigFallbackResponse(result)
     }
 
 }

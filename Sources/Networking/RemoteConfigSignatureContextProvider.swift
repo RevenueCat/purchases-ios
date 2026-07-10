@@ -29,9 +29,9 @@ struct RemoteConfigSignatureContextProvider: ResponseSignatureContextProvider {
 
 /// Provides signature inputs for static JSON remote config fallback responses.
 ///
-/// Static fallback config signs the JSON response body directly. It does not include request body
-/// parameters because the fallback endpoint is a static-style `GET`.
-struct StaticFallbackSignatureContextProvider: ResponseSignatureContextProvider {
+/// Fallback config signs the JSON response body directly. It does not include request body
+/// parameters because the fallback endpoint is a fallback `GET`.
+struct FallbackSignatureContextProvider: ResponseSignatureContextProvider {
 
     func responsePayloadForSignature(from body: Data?, statusCode: HTTPStatusCode) throws -> Data? {
         guard statusCode != .noContent else {

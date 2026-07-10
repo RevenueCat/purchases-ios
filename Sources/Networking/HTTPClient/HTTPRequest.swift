@@ -45,7 +45,7 @@ struct HTTPRequest {
 
     init(
         method: Method,
-        path: HTTPRequest.StaticFallbackPath,
+        path: HTTPRequest.FallbackPath,
         nonce: Data? = nil,
         isRetryable: Bool = false
     ) {

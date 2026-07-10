@@ -358,13 +358,13 @@ private final class FakeRemoteConfigAPI: RemoteConfigAPIType {
         }
     }
 
-    func getRemoteConfigStaticFallback(
+    func getRemoteConfigFallback(
         domain: String,
         isAppBackgrounded: Bool,
-        completion: @escaping Backend.ResponseHandler<RemoteConfigStaticFallbackFetchResult>
+        completion: @escaping Backend.ResponseHandler<RemoteConfigFallbackFetchResult>
     ) {
         DispatchQueue.global().async {
-            let result = RemoteConfigStaticFallbackFetchResult(response: VerifiedHTTPResponse(
+            let result = RemoteConfigFallbackFetchResult(response: VerifiedHTTPResponse(
                 httpStatusCode: .noContent,
                 responseHeaders: [:],
                 body: nil,
