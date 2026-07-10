@@ -28,11 +28,16 @@ enum PaywallsV2LayoutFixtures {
             "hero_subtitle": .string("Tall hero on root z-layer layout."),
             "footer_copy": .string("Subscribe for $79.99/yr"),
             "footer_cta": .string("Continue"),
-            "footer_restore": .string("Restore Purchases")
+            "footer_restore": .string("Restore Purchases"),
+            "feature_row": .string("✓ Premium feature"),
+            "small_body_title": .string("Unlock everything"),
+            "workflow_header_title": .string("Step 1 of 2")
         ]
     )
 
     static let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
+
+    private static let fixtureBackground: PaywallComponent.Background = .color(.init(light: .hex("#FDFDFD")))
 
     static let offering = Offering(
         identifier: "layout-fixture",
@@ -93,7 +98,33 @@ enum PaywallsV2LayoutFixtures {
             backgroundColor: .init(light: .hex("#FFFFFF"))
         )
 
-        let footerStack = PaywallComponent.StackComponent(
+        return try makeRootViewModel(
+            componentsConfig: .init(
+                stack: rootZLayer,
+                stickyFooter: .init(stack: standardOpaqueFooterStack()),
+                background: .color(.init(light: .hex("#FFFFFF")))
+            )
+        )
+    }
+
+    /// The dark CTA button reused by every fixture footer that just needs "a continue button" without varying it.
+    private static func footerCTAText() -> PaywallComponent {
+        .text(.init(
+            text: "footer_cta",
+            fontWeight: .semibold,
+            color: .init(light: .hex("#FFFFFF")),
+            backgroundColor: .init(light: .hex("#111111")),
+            padding: .init(top: 14, bottom: 14, leading: 16, trailing: 16),
+            margin: .zero,
+            fontSize: 16,
+            horizontalAlignment: .center
+        ))
+    }
+
+    /// The opaque footer used by [makeStickyFooterRootZLayerViewModel], reused wherever a fixture just needs "a
+    /// footer" without varying its content.
+    private static func standardOpaqueFooterStack() -> PaywallComponent.StackComponent {
+        PaywallComponent.StackComponent(
             components: [
                 .text(.init(
                     text: "footer_copy",
@@ -103,16 +134,7 @@ enum PaywallsV2LayoutFixtures {
                     fontSize: 14,
                     horizontalAlignment: .center
                 )),
-                .text(.init(
-                    text: "footer_cta",
-                    fontWeight: .semibold,
-                    color: .init(light: .hex("#FFFFFF")),
-                    backgroundColor: .init(light: .hex("#111111")),
-                    padding: .init(top: 14, bottom: 14, leading: 16, trailing: 16),
-                    margin: .zero,
-                    fontSize: 16,
-                    horizontalAlignment: .center
-                )),
+                footerCTAText(),
                 .text(.init(
                     text: "footer_restore",
                     color: .init(light: .hex("#888888")),
@@ -128,12 +150,146 @@ enum PaywallsV2LayoutFixtures {
             backgroundColor: .init(light: .hex("#FFFFFF")),
             padding: .init(top: 12, bottom: 12, leading: 16, trailing: 16)
         )
+    }
+
+    private static func makeFeatureRows(count: Int) -> [PaywallComponent] {
+        let row = PaywallComponent.text(.init(
+            text: "feature_row",
+            color: .init(light: .hex("#272727")),
+            padding: .zero,
+            margin: .init(top: 8, bottom: 8, leading: 0, trailing: 0),
+            fontSize: 16,
+            horizontalAlignment: .leading
+        ))
+        return Array(repeating: row, count: count)
+    }
+
+    /// A centered title, used wherever a fixture just needs "a small body" without varying its content.
+    private static func centeredBodyStack() -> PaywallComponent.StackComponent {
+        PaywallComponent.StackComponent(
+            components: [
+                .text(.init(
+                    text: "small_body_title",
+                    fontWeight: .bold,
+                    color: .init(light: .hex("#272727")),
+                    padding: .zero,
+                    margin: .zero,
+                    fontSize: 22,
+                    horizontalAlignment: .center
+                ))
+            ],
+            dimension: .vertical(.center, .center),
+            size: .init(width: .fill, height: .fill)
+        )
+    }
+
+    /// A long scrollable feature list behind a translucent sticky footer, so the content is visible through the
+    /// footer while scrolling, and the last row scrolls clear of it.
+    static func makeTransparentFooterOverScrollableContentViewModel() throws -> RootViewModel {
+        // Enough rows that, at rest (scrolled to the top), the tail of the list is naturally positioned
+        // behind the footer's on-screen region — this is what makes the overlap visible in a static snapshot.
+        let rootStack = PaywallComponent.StackComponent(
+            components: makeFeatureRows(count: 35),
+            dimension: .vertical(.leading, .start),
+            size: .init(width: .fill, height: .fill),
+            spacing: 0,
+            padding: .init(top: 32, bottom: 16, leading: 32, trailing: 32)
+        )
+
+        // Semi-transparent, tinted footer background so the scrolled content behind it stays visible.
+        let footerStack = PaywallComponent.StackComponent(
+            components: [
+                .text(.init(
+                    text: "footer_cta",
+                    fontWeight: .bold,
+                    color: .init(light: .hex("#FFFFFF")),
+                    backgroundColor: .init(light: .hex("#057C5B")),
+                    padding: .init(top: 16, bottom: 16, leading: 32, trailing: 32),
+                    margin: .zero,
+                    fontSize: 16,
+                    horizontalAlignment: .center
+                ))
+            ],
+            dimension: .vertical(.center, .start),
+            size: .init(width: .fill, height: .fit),
+            backgroundColor: .init(light: .hex("#057C5B99")),
+            padding: .init(top: 16, bottom: 16, leading: 32, trailing: 32)
+        )
 
         return try makeRootViewModel(
             componentsConfig: .init(
-                stack: rootZLayer,
+                stack: rootStack,
                 stickyFooter: .init(stack: footerStack),
-                background: .color(.init(light: .hex("#FFFFFF")))
+                background: fixtureBackground
+            )
+        )
+    }
+
+    /// A small, vertically-centered body with an opaque sticky footer. The body must center within the space
+    /// *above* the footer (matching the pre-overlap behavior), not the whole screen.
+    static func makeSmallCenteredBodyAboveFooterViewModel() throws -> RootViewModel {
+        try makeRootViewModel(
+            componentsConfig: .init(
+                stack: centeredBodyStack(),
+                stickyFooter: .init(stack: standardOpaqueFooterStack()),
+                background: fixtureBackground
+            )
+        )
+    }
+
+    /// A sticky footer taller than half the screen, to verify the reserved bottom clearance scales with it.
+    static func makeTallFooterViewModel() throws -> RootViewModel {
+        let footerStack = PaywallComponent.StackComponent(
+            components: [footerCTAText()],
+            dimension: .vertical(.center, .center),
+            size: .init(width: .fill, height: .fit),
+            backgroundColor: .init(light: .hex("#EEEEEE")),
+            padding: .init(top: 220, bottom: 220, leading: 16, trailing: 16)
+        )
+
+        return try makeRootViewModel(
+            componentsConfig: .init(
+                stack: centeredBodyStack(),
+                stickyFooter: .init(stack: footerStack),
+                background: fixtureBackground
+            )
+        )
+    }
+
+    /// A step with both a (non-overlaid) header and a sticky footer, guarding that the footer overlap change
+    /// doesn't affect header layout.
+    static func makeHeaderAndFooterViewModel() throws -> RootViewModel {
+        let headerStack = PaywallComponent.StackComponent(
+            components: [
+                .text(.init(
+                    text: "workflow_header_title",
+                    fontWeight: .semibold,
+                    color: .init(light: .hex("#272727")),
+                    padding: .init(top: 12, bottom: 12, leading: 16, trailing: 16),
+                    margin: .zero,
+                    fontSize: 14,
+                    horizontalAlignment: .center
+                ))
+            ],
+            dimension: .vertical(.center, .start),
+            size: .init(width: .fill, height: .fit),
+            backgroundColor: .init(light: .hex("#EEEEEE"))
+        )
+
+        let rootStack = PaywallComponent.StackComponent(
+            components: makeFeatureRows(count: 10),
+            dimension: .vertical(.leading, .start),
+            size: .init(width: .fill, height: .fill),
+            spacing: 0,
+            padding: .init(top: 32, bottom: 16, leading: 32, trailing: 32)
+        )
+
+        return try makeRootViewModel(
+            componentsConfig: .init(
+                stack: rootStack,
+                header: .init(stack: headerStack),
+                stickyFooter: .init(stack: standardOpaqueFooterStack()),
+                background: fixtureBackground
             )
         )
     }

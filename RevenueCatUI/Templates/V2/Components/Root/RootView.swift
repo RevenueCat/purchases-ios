@@ -43,6 +43,7 @@ struct RootView: View {
     @State private var packageSelectionSheetComponentName: String?
     @State private var packageBeforeOpeningSheet: Package?
     @State private var overlaidHeaderHeight: CGFloat = 0
+    @State private var overlaidFooterHeight: CGFloat = 0
 
     internal init(
         viewModel: RootViewModel,
@@ -85,7 +86,8 @@ struct RootView: View {
                 StackComponentView(
                     viewModel: viewModel.stackViewModel,
                     isScrollableByDefault: true,
-                    onDismiss: onDismiss
+                    onDismiss: onDismiss,
+                    additionalPadding: EdgeInsets(top: 0, leading: 0, bottom: overlaidFooterHeight, trailing: 0)
                 )
                 .environment(\.overlaidHeaderHeight, overlaidHeaderHeight)
 
@@ -108,19 +110,28 @@ struct RootView: View {
             .onPreferenceChange(OverlaidHeaderHeightKey.self) { height in
                 overlaidHeaderHeight = height
             }
-
-            if let stickyFooterViewModel = viewModel.stickyFooterViewModel {
-                StackComponentView(
-                    viewModel: stickyFooterViewModel.stackViewModel,
-                    onDismiss: onDismiss,
-                    additionalPadding: EdgeInsets(
-                        top: 0,
-                        leading: 0,
-                        bottom: safeAreaInsets.bottom,
-                        trailing: 0
+            // Sticky footer is pinned to the bottom and drawn on top of the main content (rather than
+            // stacked below it), so a transparent/translucent footer lets the content show through.
+            // The content above reserves bottom clearance equal to the footer's measured height (via
+            // overlaidFooterHeight), so an opaque footer still looks identical to a stacked layout.
+            .overlay(alignment: .bottom) {
+                if let stickyFooterViewModel = viewModel.stickyFooterViewModel {
+                    StackComponentView(
+                        viewModel: stickyFooterViewModel.stackViewModel,
+                        onDismiss: onDismiss,
+                        additionalPadding: EdgeInsets(top: 0, leading: 0, bottom: safeAreaInsets.bottom, trailing: 0)
                     )
-                )
-                .fixedSize(horizontal: false, vertical: true)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .overlay(GeometryReader { proxy in
+                        Color.clear.preference(
+                            key: OverlaidFooterHeightKey.self,
+                            value: proxy.size.height
+                        )
+                    })
+                }
+            }
+            .onPreferenceChange(OverlaidFooterHeightKey.self) { height in
+                overlaidFooterHeight = height
             }
         }
         .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer)
@@ -190,6 +201,15 @@ struct RootView: View {
 /// PreferenceKey that propagates the measured height of the overlaid header.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct OverlaidHeaderHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+/// PreferenceKey that propagates the measured height of the overlaid sticky footer.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct OverlaidFooterHeightKey: PreferenceKey {
     static let defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = max(value, nextValue())
