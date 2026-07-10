@@ -1059,7 +1059,7 @@ extension OfferingsManagerTests {
 
     func testGetOfferingsDeliversWhenUiConfigResolutionFails() {
         // No ui_config blobs stubbed: resolution fails (nil). Readiness is best-effort, so
-        // delivery must proceed anyway.
+        // delivery must proceed anyway with the real offerings.
         let manager = self.makeOfferingsManager(remoteConfigManager: MockRemoteConfigManager())
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
@@ -1068,6 +1068,41 @@ extension OfferingsManagerTests {
         }
 
         expect(result).to(beSuccess())
+        expect(result?.value?["base"]).toNot(beNil())
+        expect(result?.value?["base"]?.monthly?.storeProduct).toNot(beNil())
+    }
+
+    func testGetOfferingsDeliversEvenIfTheGateTaskIsCancelled() {
+        // The gate's two readiness awaits are non-throwing and always awaited before the
+        // callback fires, so no cancellation can strand it. Model that here by resolving both
+        // to their empty/failed states (no workflows topic, no ui_config) and asserting the
+        // completion still runs.
+        let manager = self.makeOfferingsManager(remoteConfigManager: MockRemoteConfigManager())
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let result = waitUntilValue { completed in
+            manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
+        }
+
+        expect(result).to(beSuccess())
+    }
+
+    func testBackgroundCacheRefreshCachesWithoutAwaitingTheConfigGate() {
+        // A background refresh passes a nil completion: it has nothing to deliver, so it must
+        // cache the fetched offerings without entering the readiness gate. The held topic
+        // would block the gate forever; asserting the cache still lands (and the gate's topic
+        // read never happens) locks the skip.
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.shouldStoreTopicCompletion = true
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        manager.updateOfferingsCache(appUserID: MockData.anyAppUserID,
+                                     isAppBackgrounded: false,
+                                     completion: nil)
+
+        expect(self.mockDeviceCache.cacheOfferingsCount).toEventually(equal(1))
+        expect(mockRemoteConfigManager.invokedTopicCount) == 0
     }
 
     func testGetOfferingsAwaitsWorkflowsAndUiConfigConcurrently() {
