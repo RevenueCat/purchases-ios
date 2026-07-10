@@ -199,9 +199,6 @@ class HTTPRequestTests: TestCase {
             case .getOfferings:
                 XCTAssertEqual(fallbackUrlsPaths,
                                ["https://api-production.8-lives-cat.io/v1/offerings"])
-            case .remoteConfig:
-                XCTAssertEqual(fallbackUrlsPaths,
-                               ["https://api-production.8-lives-cat.io/v1/config/app"])
             default:
                 XCTAssertTrue(fallbackUrlsPaths.isEmpty)
             }
@@ -212,8 +209,21 @@ class HTTPRequestTests: TestCase {
         let path = HTTPRequest.Path.remoteConfig(domain: "app workflows/project")
 
         expect(path.relativePath) == "/v1/config/app%20workflows%2Fproject"
-        expect(path.fallbackUrls.map { $0.absoluteString })
-            == ["https://api-production.8-lives-cat.io/v1/config/app%20workflows%2Fproject"]
+        expect(path.fallbackUrls).to(beEmpty())
+    }
+
+    func testFallbackConfigPathUsesFallbackHostAndEscapesDomain() {
+        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app workflows/project")
+
+        expect(path.relativePath) == "/v1/config/app%20workflows%2Fproject"
+        expect(path.url?.absoluteString)
+            == "https://api-production.8-lives-cat.io/v1/config/app%20workflows%2Fproject"
+        expect(path.fallbackUrls).to(beEmpty())
+        expect(path.authenticated).to(beTrue())
+        expect(path.shouldSendEtag).to(beTrue())
+        expect(path.supportsSignatureVerification).to(beTrue())
+        expect(path.needsNonceForSigning).to(beFalse())
+        expect(path.name) == "remote_config_fallback"
     }
 
     func testUserIDEscaping() {
@@ -298,7 +308,7 @@ class HTTPRequestTests: TestCase {
     func testRemoteConfigUsesRCContainerAcceptHeaders() {
         let request: HTTPRequest = .init(
             method: .post(RemoteConfigRequest(appUserID: "app-user-id")),
-            path: .remoteConfig(domain: "app")
+            path: HTTPRequest.Path.remoteConfig(domain: "app")
         )
         let headers = request.headers(
             with: [:],
@@ -310,6 +320,23 @@ class HTTPRequestTests: TestCase {
         expect(headers[HTTPClient.RequestHeader.accept.rawValue]) == HTTPClient.rcContainerFormatAcceptHeaderValue
         expect(headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue])
             == HTTPClient.rcContainerFormatElementEncodingHeaderValue
+        expect(headers["Accept-Encoding"]).to(beNil())
+    }
+
+    func testFallbackConfigDoesNotRequestRCContainerFormat() {
+        let request: HTTPRequest = .init(
+            method: .get,
+            path: HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        )
+        let headers = request.headers(
+            with: [:],
+            defaultHeaders: [:],
+            verificationMode: .disabled,
+            internalSettings: DangerousSettings.Internal.default
+        )
+
+        expect(headers[HTTPClient.RequestHeader.accept.rawValue]).to(beNil())
+        expect(headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue]).to(beNil())
         expect(headers["Accept-Encoding"]).to(beNil())
     }
 }

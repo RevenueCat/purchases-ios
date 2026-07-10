@@ -153,6 +153,12 @@ extension HTTPRequest {
 
     }
 
+    enum FallbackPath: Hashable {
+
+        case remoteConfig(domain: String)
+
+    }
+
     enum FeatureEventsPath: Hashable {
 
         case postEvents
@@ -196,8 +202,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "/v1/offerings"
         case .getProductEntitlementMapping:
             return "/v1/product_entitlement_mapping"
-        case let .remoteConfig(domain):
-            return "/v1/config/\(Self.escape(domain))"
         default:
             return nil
         }
@@ -484,4 +488,67 @@ extension HTTPRequest.Path: HTTPRequestPath {
     private static func escape(_ appUserID: String) -> String {
         return appUserID.trimmedAndEscaped
     }
+}
+
+extension HTTPRequest.FallbackPath: HTTPRequestPath {
+
+    // swiftlint:disable:next force_unwrapping
+    static let serverHostURL = URL(string: "https://api-production.8-lives-cat.io")!
+
+    var authenticated: Bool {
+        switch self {
+        case .remoteConfig:
+            return true
+        }
+    }
+
+    var shouldSendEtag: Bool {
+        switch self {
+        case .remoteConfig:
+            return true
+        }
+    }
+
+    var supportsSignatureVerification: Bool {
+        switch self {
+        case .remoteConfig:
+            return true
+        }
+    }
+
+    var needsNonceForSigning: Bool {
+        switch self {
+        case .remoteConfig:
+            return false
+        }
+    }
+
+    var responseSignatureContextProvider: ResponseSignatureContextProvider {
+        switch self {
+        case .remoteConfig:
+            return FallbackSignatureContextProvider()
+        }
+    }
+
+    var relativePath: String {
+        switch self {
+        case let .remoteConfig(domain):
+            return "/v1/config/\(domain.trimmedAndEscaped)"
+        }
+    }
+
+    var name: String {
+        switch self {
+        case .remoteConfig:
+            return "remote_config_fallback"
+        }
+    }
+
+    var additionalHeaders: HTTPRequest.Headers {
+        switch self {
+        case .remoteConfig:
+            return [:]
+        }
+    }
+
 }

@@ -229,6 +229,27 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(self.blobStore.read(ref: ref)) == blob
     }
 
+    func testFallbackConfigDownloadsExternalBlobThroughFacade() async throws {
+        let blob = #"{"workflow":"fallback"}"#.asData
+        let ref = RCContainerTestData.blobRef(for: blob)
+        let source = Self.blobSource("primary")
+        let topics = Self.topics(
+            sources: Self.sourcesTopic(blobSources: [source]),
+            workflows: Self.workflowTopic(ref: ref)
+        )
+        await self.downloader.setResponse(.success(blob), for: source, ref: ref)
+
+        await self.refreshFromFallback(with: try Self.configData(topics: topics))
+
+        let maybeData = await self.manager.blobData(for: .workflows, itemKey: "default")
+        let data = try XCTUnwrap(maybeData)
+        let requestedURLs = await self.downloader.requestedURLStrings()
+
+        expect(data) == blob
+        expect(requestedURLs) == [Self.url(source, ref: ref)]
+        expect(self.blobStore.read(ref: ref)) == blob
+    }
+
     func testMixedInlineAndExternalBlobsOnlyDownloadsExternalBlob() async throws {
         let inlineBlob = #"{"workflow":"inline"}"#.asData
         let externalBlob = #"{"workflow":"external"}"#.asData
@@ -539,20 +560,47 @@ private extension RemoteConfigIntegrationTests {
         await self.waitForPersistedManifest(Self.manifest)
     }
 
+    func refreshFromFallback(
+        with body: Data,
+        verificationResult: VerificationResult = .verified
+    ) async {
+        self.mockRemoteConfigError(.errorResponse(
+            .init(code: .unknownError, originalCode: BackendErrorCode.unknownError.rawValue),
+            .internalServerError
+        ))
+        self.mockRemoteConfigFallbackResponse(body: body, verificationResult: verificationResult)
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(1)
+        await self.waitForRemoteConfigFallbackRequestCount(1)
+        await self.waitForPersistedManifest(Self.manifest)
+    }
+
     func mockRemoteConfigResponse(
         statusCode: HTTPStatusCode = .success,
         body: Data,
         verificationResult: VerificationResult = .verified
     ) {
         self.httpClient.mock(
-            requestPath: .remoteConfig(domain: RemoteConfiguration.defaultDomain),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain),
+            response: .init(statusCode: statusCode, body: body, verificationResult: verificationResult)
+        )
+    }
+
+    func mockRemoteConfigFallbackResponse(
+        statusCode: HTTPStatusCode = .success,
+        body: Data,
+        verificationResult: VerificationResult = .verified
+    ) {
+        self.httpClient.mock(
+            requestPath: HTTPRequest.FallbackPath.remoteConfig(domain: RemoteConfiguration.defaultDomain),
             response: .init(statusCode: statusCode, body: body, verificationResult: verificationResult)
         )
     }
 
     func mockRemoteConfigError(_ error: NetworkError) {
         self.httpClient.mock(
-            requestPath: .remoteConfig(domain: RemoteConfiguration.defaultDomain),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain),
             response: .init(error: error)
         )
     }
@@ -563,6 +611,13 @@ private extension RemoteConfigIntegrationTests {
         }.count
     }
 
+    var remoteConfigFallbackRequestCount: Int {
+        return self.httpClient.calls.filter {
+            $0.request.path.url
+                == HTTPRequest.FallbackPath.remoteConfig(domain: RemoteConfiguration.defaultDomain).url
+        }.count
+    }
+
     func waitForRemoteConfigRequestCount(
         _ count: Int,
         file: StaticString = #filePath,
@@ -570,6 +625,16 @@ private extension RemoteConfigIntegrationTests {
     ) async {
         await self.waitUntil(file: file, line: line) {
             self.remoteConfigRequestCount >= count
+        }
+    }
+
+    func waitForRemoteConfigFallbackRequestCount(
+        _ count: Int,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async {
+        await self.waitUntil(file: file, line: line) {
+            self.remoteConfigFallbackRequestCount >= count
         }
     }
 

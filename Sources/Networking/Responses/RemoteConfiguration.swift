@@ -147,6 +147,8 @@ extension RemoteConfiguration: Codable {
 
 }
 
+extension RemoteConfiguration: HTTPResponseBody {}
+
 extension RemoteConfiguration.Topics: Codable {
 
     init(from decoder: Decoder) throws {
