@@ -530,7 +530,8 @@ private extension RemoteConfigManager {
         isAppBackgrounded: Bool,
         requestEpoch: Int
     ) {
-        guard error.isRemoteConfigFallbackEligible else {
+        guard error.isRemoteConfigFallbackEligible,
+              !self.hasUsableCachedConfig(previous, for: request.domain) else {
             self.handleFinalFailure(error, requestEpoch: requestEpoch, shouldDisableRefresh: true)
             return
         }
@@ -542,6 +543,13 @@ private extension RemoteConfigManager {
             requestEpoch: requestEpoch,
             originalError: error
         )
+    }
+
+    func hasUsableCachedConfig(
+        _ previous: PersistedRemoteConfiguration?,
+        for domain: String
+    ) -> Bool {
+        return previous?.domain == domain
     }
 
     func enqueueFallbackConfigIfCurrent(

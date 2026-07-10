@@ -578,6 +578,22 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(signingRequest.signature) == Self.sampleSignature
     }
 
+    func testFallbackConfigSignatureIncludesETagIfBackendSendsIt() throws {
+        self.mockResponse(path: HTTPRequest.Path.remoteConfigStaticFallback(domain: "app"),
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          eTag: Self.eTag,
+                          body: Self.remoteConfigStaticFallbackBody)
+        self.signing.stubbedVerificationResult = true
+
+        let response: VerifiedHTTPResponse<RemoteConfiguration?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigStaticFallbackRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(self.signing.requests.onlyElement?.parameters.etag) == Self.eTag
+    }
+
     func testFallbackConfigNoContentResponseUsesEmptySignaturePayloadWithoutNonce() throws {
         self.mockResponse(path: HTTPRequest.Path.remoteConfigStaticFallback(domain: "app"),
                           signature: Self.sampleSignature,

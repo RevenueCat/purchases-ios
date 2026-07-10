@@ -1406,6 +1406,17 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetFallbackConfigParameters?.isAppBackgrounded) == true
     }
 
+    func testPrimaryServerErrorWithPersistedCacheDoesNotTriggerFallbackConfigRequest() {
+        self.diskCache.stubbedRead = Self.persisted(domain: "app", manifest: "cached-manifest")
+
+        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
+
+        expect(self.manager.isDisabled) == false
+        expect(self.remoteConfigAPI.invokedGetFallbackConfigCount) == 0
+        expect(self.diskCache.invokedWriteCount) == 0
+    }
+
     func testPrimaryClientErrorDisablesRemoteConfigAndDoesNotTriggerFallbackConfigRequest() {
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
@@ -1439,38 +1450,6 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobStore.invokedWriteCount) == 0
         expect(self.blobStore.invokedRetainOnlyParameters) == Set([prefetchedRef, retainedRef])
         expect(self.blobFetcher.invokedPrefetchRefs) == [prefetchedRef]
-    }
-
-    func testFallbackConfigSuccessMergesUnchangedTopicsAndPrunesDroppedTopics() {
-        let keptRef = RCContainerTestData.blobRef(for: #"{"id":"kept"}"#.asData)
-        let prunedRef = RCContainerTestData.blobRef(for: #"{"id":"pruned"}"#.asData)
-        self.diskCache.stubbedRead = Self.persisted(
-            manifest: "v1.1710000100.sources:etag1,workflows:etag1",
-            activeTopics: ["sources", "workflows"],
-            topics: .init(entries: [
-                "sources": ["api": .init(blobRef: keptRef)],
-                "workflows": ["removed": .init(blobRef: prunedRef)]
-            ])
-        )
-        let configuration = RemoteConfiguration(
-            domain: "app",
-            manifest: "v1.1710000100.sources:etag1,ui_config:etag2",
-            activeTopics: ["sources", "ui_config"],
-            topics: .init(entries: [
-                "ui_config": ["app": .init(content: ["enabled": true])]
-            ])
-        )
-
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
-        self.remoteConfigAPI.completeFallback(with: .success(.test(configuration: configuration)))
-
-        expect(self.diskCache.invokedWriteParameter?.activeTopics) == ["sources", "ui_config"]
-        expect(Self.blobRefsByTopic(from: self.diskCache.invokedWriteParameter?.topics)) == [
-            "sources": [keptRef],
-            "ui_config": []
-        ]
-        expect(self.blobStore.invokedRetainOnlyParameters) == Set([keptRef])
     }
 
     func testFallbackConfigFailureLeavesCacheUntouchedAndDoesNotMarkRefreshFresh() {
