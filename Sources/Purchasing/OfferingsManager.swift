@@ -102,24 +102,53 @@ class OfferingsManager {
                                                  requestedProductIds: nil,
                                                  notFoundProductIds: nil)
 
-            // When THIS request's stale refresh finishes before the gate opens, deliver its
-            // result instead of the captured snapshot. Recorded through the refresh's own
-            // completion, never by re-reading the shared cache slot after the gate: a
-            // concurrent identity or locale change repopulating that slot must not leak
-            // another request's offerings into this one.
-            let refreshedOfferings: Atomic<Offerings?> = .init(nil)
-            if cacheStatus == .stale {
-                // The readiness gate below must not delay this background refresh.
-                self.updateOfferingsCache(appUserID: appUserID,
-                                          isAppBackgrounded: isAppBackgrounded,
-                                          fetchPolicy: fetchPolicy) { result in
-                    refreshedOfferings.value = result.value?.offerings
-                }
-            }
-            // Cached delivery waits for config readiness (a no-op once config has synced).
-            self.deliverWhenConfigReady {
-                let offerings = refreshedOfferings.value ?? memoryCachedOfferings
-                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offerings))
+            let refreshedOfferings = self.refreshStaleOfferingsInBackground(
+                cacheStatus: cacheStatus,
+                appUserID: appUserID,
+                isAppBackgrounded: isAppBackgrounded,
+                fetchPolicy: fetchPolicy
+            )
+            self.deliverCachedOfferingsWhenConfigReady(memoryCachedOfferings,
+                                                       refreshedOfferings: refreshedOfferings,
+                                                       completion: completion)
+        }
+    }
+
+    /// Kicks the background refresh a stale cache requires (before the readiness gate, which
+    /// must not delay it) and returns where its result lands. Recorded through the refresh's
+    /// own completion, never by re-reading the shared cache slot after the gate: a concurrent
+    /// identity or locale change repopulating that slot must not leak another request's
+    /// offerings into this one.
+    private func refreshStaleOfferingsInBackground(
+        cacheStatus: CacheStatus,
+        appUserID: String,
+        isAppBackgrounded: Bool,
+        fetchPolicy: FetchPolicy
+    ) -> Atomic<Offerings?> {
+        let refreshedOfferings: Atomic<Offerings?> = .init(nil)
+        guard cacheStatus == .stale else { return refreshedOfferings }
+
+        self.updateOfferingsCache(appUserID: appUserID,
+                                  isAppBackgrounded: isAppBackgrounded,
+                                  fetchPolicy: fetchPolicy) { result in
+            refreshedOfferings.value = result.value?.offerings
+        }
+        return refreshedOfferings
+    }
+
+    /// Delivers memory-cached offerings once config is ready (a no-op once config has
+    /// synced), preferring this request's own refresh result when one landed. The recorded
+    /// result is read on the main actor, where the refresh's completion also writes it, so a
+    /// refresh whose completion was enqueued first is always visible to this delivery.
+    private func deliverCachedOfferingsWhenConfigReady(
+        _ memoryCachedOfferings: Offerings,
+        refreshedOfferings: Atomic<Offerings?>,
+        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
+    ) {
+        self.deliverWhenConfigReady {
+            guard let completion else { return }
+            self.operationDispatcher.dispatchOnMainActor {
+                completion(.success(refreshedOfferings.value ?? memoryCachedOfferings))
             }
         }
     }
