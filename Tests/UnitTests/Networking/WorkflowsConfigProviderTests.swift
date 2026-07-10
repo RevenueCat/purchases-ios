@@ -114,14 +114,13 @@ class WorkflowsConfigProviderTests: TestCase {
         let workflowResult = try XCTUnwrap(result.value)
 
 #if !os(tvOS) // For Paywalls V2
-        XCTAssertEqual(workflowResult.workflow.uiConfig?.localizations["en_US"]?["day"], "Day")
+        XCTAssertEqual(workflowResult.uiConfig.localizations["en_US"]?["day"], "Day")
 #endif
     }
 
-    func testPreservesMetadataWhenSubstitutingUiConfig() async throws {
-        // Regression: the uiConfig substitution used to go through PublishedWorkflow's public
-        // initializer, which always resets `metadata` to nil, silently dropping it whenever ui_config
-        // was available.
+    func testPreservesWorkflowMetadataWhenAssemblingUiConfig() async throws {
+        // Regression: resolving ui_config must not rebuild the workflow through the public
+        // initializer, which always resets `metadata` to nil.
         let workflowJSON = try Self.workflowJSON(id: "wf-1", metadataJSON: #""metadata": { "source": "cdn" }"#)
         self.commit(
             workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: [:])],

@@ -698,14 +698,13 @@ struct WorkflowPaywallView: View {
         guard let step = context.workflow.steps[stepId],
               let screenId = step.screenId,
               let screen = context.workflow.screens[screenId],
-              let offering = context.offering(for: screen.offeringIdentifier),
-              let uiConfig = context.workflow.uiConfig else {
+              let offering = context.offering(for: screen.offeringIdentifier) else {
             return nil
         }
 
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
             screen: screen,
-            uiConfig: uiConfig
+            uiConfig: context.uiConfig
         )
 
         return .init(

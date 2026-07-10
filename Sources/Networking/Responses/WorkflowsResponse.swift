@@ -175,7 +175,6 @@ import Foundation
     public let singleStepFallbackId: String?
     public let steps: [String: WorkflowStep]
     public let screens: [String: WorkflowScreen]
-    public let uiConfig: UIConfig?
     let contentMaxWidth: Int?
     let metadata: [String: AnyDecodable]?
 
@@ -187,7 +186,6 @@ import Foundation
         singleStepFallbackId: String?,
         steps: [String: WorkflowStep],
         screens: [String: WorkflowScreen],
-        uiConfig: UIConfig?,
         contentMaxWidth: Int? = nil
     ) {
         self.id = id
@@ -196,7 +194,6 @@ import Foundation
         self.singleStepFallbackId = singleStepFallbackId
         self.steps = steps
         self.screens = screens
-        self.uiConfig = uiConfig
         self.contentMaxWidth = contentMaxWidth
         self.metadata = nil
     }
@@ -209,7 +206,6 @@ import Foundation
         singleStepFallbackId: String?,
         steps: [String: WorkflowStep],
         screens: [String: WorkflowScreen],
-        uiConfig: UIConfig?,
         contentMaxWidth: Int?,
         metadata: [String: AnyDecodable]?
     ) {
@@ -219,24 +215,8 @@ import Foundation
         self.singleStepFallbackId = singleStepFallbackId
         self.steps = steps
         self.screens = screens
-        self.uiConfig = uiConfig
         self.contentMaxWidth = contentMaxWidth
         self.metadata = metadata
-    }
-
-    /// Returns a copy with `uiConfig` replaced. Unlike the public initializer, this preserves `metadata`.
-    func withUiConfig(_ uiConfig: UIConfig) -> PublishedWorkflow {
-        return PublishedWorkflow(
-            id: self.id,
-            displayName: self.displayName,
-            initialStepId: self.initialStepId,
-            singleStepFallbackId: self.singleStepFallbackId,
-            steps: self.steps,
-            screens: self.screens,
-            uiConfig: uiConfig,
-            contentMaxWidth: self.contentMaxWidth,
-            metadata: self.metadata
-        )
     }
 
 }
@@ -244,6 +224,7 @@ import Foundation
 @_spi(Internal) public struct WorkflowDataResult {
 
     public let workflow: PublishedWorkflow
+    public let uiConfig: UIConfig
     public let enrolledVariants: [String: String]?
 
 }
@@ -325,8 +306,6 @@ extension PublishedWorkflow: Codable, Equatable, Sendable {
         self.singleStepFallbackId = try container.decodeIfPresent(String.self, forKey: .singleStepFallbackId)
         self.steps = try container.decode([String: WorkflowStep].self, forKey: .steps)
         self.screens = try container.decode([String: WorkflowScreen].self, forKey: .screens)
-        // Ignored in workflow bodies: `ui_config` is resolved from its own remote-config topic.
-        self.uiConfig = nil
         self.contentMaxWidth = try container.decodeIfPresent(Int.self, forKey: .contentMaxWidth)
         self.metadata = try container.decodeIfPresent([String: AnyDecodable].self, forKey: .metadata)
     }

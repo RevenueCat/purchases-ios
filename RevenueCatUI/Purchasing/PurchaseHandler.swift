@@ -496,6 +496,7 @@ extension PurchaseHandler {
 
         return try Self.makeWorkflowContext(
             workflow: fetchResult.workflow,
+            uiConfig: fetchResult.uiConfig,
             allOfferings: allOfferings,
             presentedOfferingContext: presentedOfferingContext,
             triggerOfferingIdentifier: identifier
@@ -512,6 +513,7 @@ extension PurchaseHandler {
     /// `allOfferings` (reporting the screen's own offering identifier that was actually missing).
     static func makeWorkflowContext(
         workflow: PublishedWorkflow,
+        uiConfig: UIConfig,
         allOfferings: Offerings,
         presentedOfferingContext: PresentedOfferingContext?,
         triggerOfferingIdentifier: String
@@ -524,10 +526,6 @@ extension PurchaseHandler {
 
         guard let baseOffering = allOfferings.offering(identifier: screen.offeringIdentifier) else {
             throw PaywallError.offeringNotFound(identifier: screen.offeringIdentifier ?? triggerOfferingIdentifier)
-        }
-
-        guard let uiConfig = workflow.uiConfig else {
-            throw PaywallError.workflowUiConfigUnavailable(workflowId: workflow.id)
         }
 
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
@@ -546,6 +544,7 @@ extension PurchaseHandler {
 
         return WorkflowContext(
             workflow: workflow,
+            uiConfig: uiConfig,
             allOfferings: allOfferings,
             initialOffering: offering,
             presentedOfferingContext: presentedOfferingContext

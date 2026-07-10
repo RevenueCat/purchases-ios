@@ -34,7 +34,7 @@ protocol PaywallCacheWarmingType: Sendable {
     func warmUpPaywallFontsCache(offerings: Offerings) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func warmUpWorkflowCaches(workflow: PublishedWorkflow) async
+    func warmUpWorkflowCaches(workflow: PublishedWorkflow, uiConfig: UIConfig) async
 
 #if !os(tvOS) // For Paywalls
 
@@ -177,7 +177,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
     }
 
-    func warmUpWorkflowCaches(workflow: PublishedWorkflow) async {
+    func warmUpWorkflowCaches(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
         guard !self.warmedWorkflowIDs.contains(workflow.id) else { return }
         self.warmedWorkflowIDs.insert(workflow.id)
 
@@ -194,7 +194,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         let imageURLs = Set(screens.flatMap(\.allImageURLs))
         let videoURLs = Set(screens.flatMap(\.allLowResVideoUrls))
         #if !os(tvOS)
-        let fonts = workflow.uiConfig?.app.allDownloadableFonts ?? []
+        let fonts = uiConfig.app.allDownloadableFonts
         #endif
 
         await withTaskGroup(of: Void.self) { group in

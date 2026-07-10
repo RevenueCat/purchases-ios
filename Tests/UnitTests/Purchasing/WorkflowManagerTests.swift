@@ -62,6 +62,7 @@ class WorkflowManagerTests: TestCase {
 
         expect(self.mockPaywallCache.invokedWarmUpWorkflowCaches) == true
         expect(self.mockPaywallCache.invokedWarmUpWorkflowCachesWorkflow?.id) == "wf_1"
+        expect(self.mockPaywallCache.invokedWarmUpWorkflowCachesUiConfig) == expected.uiConfig
     }
 
     func testGetWorkflowFailsWithWorkflowNotFoundWhenProviderReportsNotFound() async {
@@ -153,7 +154,7 @@ class WorkflowManagerTests: TestCase {
     // MARK: - Helpers
 
     private static func workflowDataResult(id: String) throws -> WorkflowDataResult {
-        return .init(workflow: try self.publishedWorkflow(id: id), enrolledVariants: nil)
+        return .init(workflow: try self.publishedWorkflow(id: id), uiConfig: .empty, enrolledVariants: nil)
     }
 
     private static func publishedWorkflow(id: String) throws -> PublishedWorkflow {

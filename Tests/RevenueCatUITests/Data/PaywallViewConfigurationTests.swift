@@ -466,6 +466,7 @@ private extension PaywallViewConfigurationTests {
     static func createWorkflowDataResult(offeringIdentifier: String) throws -> WorkflowDataResult {
         return .init(
             workflow: try self.createWorkflow(offeringIdentifier: offeringIdentifier),
+            uiConfig: PreviewUIConfig.make(),
             enrolledVariants: nil
         )
     }
@@ -516,7 +517,6 @@ private extension PaywallViewConfigurationTests {
         """
         let data = try XCTUnwrap(json.data(using: .utf8))
         return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
-            .withUiConfig(PreviewUIConfig.make())
     }
 
     /// A dashboard-authored V2 paywall independent of any workflow, built from the same screen shape
@@ -524,8 +524,7 @@ private extension PaywallViewConfigurationTests {
     static func createPaywallComponents(offeringIdentifier: String) throws -> Offering.PaywallComponents {
         let workflow = try Self.createWorkflow(offeringIdentifier: offeringIdentifier)
         let screen = try XCTUnwrap(workflow.screens["screen_1"])
-        let uiConfig = try XCTUnwrap(workflow.uiConfig)
-        return WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+        return WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: PreviewUIConfig.make())
     }
 
     /// A non-legacy offering with a fallback paywall already available, wired into a handler whose

@@ -79,7 +79,7 @@ private extension WorkflowManager {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *), let paywallCache else { return }
 
         self.operationDispatcher.dispatchOnWorkerThread {
-            await paywallCache.warmUpWorkflowCaches(workflow: result.workflow)
+            await paywallCache.warmUpWorkflowCaches(workflow: result.workflow, uiConfig: result.uiConfig)
         }
     }
 

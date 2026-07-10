@@ -29,7 +29,6 @@ class PublishedWorkflowCodableTests: TestCase {
             singleStepFallbackId: "step-2",
             steps: [:],
             screens: [:],
-            uiConfig: nil,
             contentMaxWidth: 400
         )
 
@@ -46,8 +45,7 @@ class PublishedWorkflowCodableTests: TestCase {
             initialStepId: "step-1",
             singleStepFallbackId: nil,
             steps: [:],
-            screens: [:],
-            uiConfig: .empty
+            screens: [:]
         )
 
         let data = try JSONEncoder.default.encode(value: workflow)
@@ -56,7 +54,7 @@ class PublishedWorkflowCodableTests: TestCase {
         expect(json).toNot(contain("ui_config"))
     }
 
-    func testDecodingWithoutUiConfigDefaultsToNil() throws {
+    func testDecodingWithoutUiConfigSucceeds() throws {
         let json = """
         {
           "id": "wf-1",
@@ -71,7 +69,7 @@ class PublishedWorkflowCodableTests: TestCase {
             jsonData: try XCTUnwrap(json.data(using: .utf8))
         )
 
-        expect(decoded.uiConfig).to(beNil())
+        expect(decoded.id) == "wf-1"
     }
 
     func testDecodingIgnoresEmbeddedUiConfig() throws {
@@ -94,7 +92,7 @@ class PublishedWorkflowCodableTests: TestCase {
             jsonData: try XCTUnwrap(json.data(using: .utf8))
         )
 
-        expect(decoded.uiConfig).to(beNil())
+        expect(decoded.id) == "wf-1"
     }
 
     func testDecodingWithMetadataPreservesIt() throws {

@@ -107,7 +107,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         // workflow-body read would still be implicitly awaited (Swift cancels but does not fast-fail an
         // unconsumed `async let` when its scope exits) if the body turns out missing or malformed, so a
         // miss would pay for `ui_config`'s network reads anyway instead of returning immediately.
-        var workflow: PublishedWorkflow
+        let workflow: PublishedWorkflow
         switch await self.fetchWorkflow(workflowId: workflowId) {
         case let .success(fetched):
             workflow = fetched
@@ -118,9 +118,8 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         guard let uiConfig = await self.uiConfigProvider.getUiConfig() else {
             return .failure(.uiConfigUnavailable)
         }
-        workflow = workflow.withUiConfig(uiConfig)
 
-        return .success(WorkflowDataResult(workflow: workflow, enrolledVariants: nil))
+        return .success(WorkflowDataResult(workflow: workflow, uiConfig: uiConfig, enrolledVariants: nil))
     }
 
     private func fetchWorkflow(workflowId: String) async -> Result<PublishedWorkflow, WorkflowResolutionError> {
