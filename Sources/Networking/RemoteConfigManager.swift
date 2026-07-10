@@ -966,13 +966,13 @@ private extension BackendError {
         return 400...499 ~= statusCode.rawValue
     }
 
-    /// Transient failures are eligible for the static JSON fallback config request.
+    /// Failures that can retry against a fallback host are eligible for the JSON fallback config request.
     var isRemoteConfigFallbackEligible: Bool {
         guard case let .networkError(networkError) = self else {
             return false
         }
 
-        return networkError.isTransient
+        return networkError.isAllowedToRetryWithFallbackHost
     }
 
 }

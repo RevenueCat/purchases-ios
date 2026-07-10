@@ -304,6 +304,14 @@ extension NetworkError {
         NSURLErrorDataNotAllowed
     ]
 
+    /// A request may be retried against a fallback host only for transient failures (connection-level
+    /// errors and 5xx) that point at the host rather than the device. A device-connectivity failure
+    /// (see ``NetworkError/isDeviceConnectivityError``) can't be fixed by switching hosts, so it is
+    /// excluded. See ``NetworkError/isTransient``.
+    var isAllowedToRetryWithFallbackHost: Bool {
+        return self.isTransient && !self.isDeviceConnectivityError
+    }
+
 }
 
 extension NetworkError {
