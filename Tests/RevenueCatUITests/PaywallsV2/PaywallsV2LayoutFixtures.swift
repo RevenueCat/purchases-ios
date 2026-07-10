@@ -186,10 +186,17 @@ enum PaywallsV2LayoutFixtures {
     /// A long scrollable feature list behind a translucent sticky footer, so the content is visible through the
     /// footer while scrolling, and the last row scrolls clear of it.
     static func makeTransparentFooterOverScrollableContentViewModel() throws -> RootViewModel {
-        // Enough rows that, at rest (scrolled to the top), the tail of the list is naturally positioned
-        // behind the footer's on-screen region — this is what makes the overlap visible in a static snapshot.
+        // A fixed-height filler (rather than relying on enough text rows to naturally overflow) makes the
+        // overflow amount deterministic across platforms/OS versions: text line-wrapping depends on font
+        // metrics that differ slightly between OS versions, which previously made this snapshot flaky.
+        let filler = PaywallComponent.stack(.init(
+            components: [],
+            size: .init(width: .fill, height: .fixed(600)),
+            backgroundColor: .init(light: .hex("#E3F2FD"))
+        ))
+
         let rootStack = PaywallComponent.StackComponent(
-            components: makeFeatureRows(count: 35),
+            components: makeFeatureRows(count: 8) + [filler],
             dimension: .vertical(.leading, .start),
             size: .init(width: .fill, height: .fill),
             spacing: 0,
