@@ -47,11 +47,7 @@ class PublishedWorkflowCodableTests: TestCase {
             singleStepFallbackId: nil,
             steps: [:],
             screens: [:],
-            uiConfig: UIConfig(
-                app: .init(colors: [:], fonts: [:]),
-                localizations: ["en_US": ["day": "Day"]],
-                variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
-            )
+            uiConfig: .empty
         )
 
         let data = try JSONEncoder.default.encode(value: workflow)
