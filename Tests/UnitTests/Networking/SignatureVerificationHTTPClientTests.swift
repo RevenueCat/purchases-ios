@@ -554,14 +554,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testFallbackConfigSignatureUsesRawJSONPayloadWithoutNonceOrRequestBody() throws {
-        let body = """
-        {
-          "domain": "app",
-          "manifest": "v1.test",
-          "active_topics": [],
-          "topics": {}
-        }
-        """.asData
+        let body = Self.remoteConfigStaticFallbackBody
         self.mockResponse(path: HTTPRequest.Path.remoteConfigStaticFallback(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
@@ -604,6 +597,47 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(self.signing.requests.onlyElement?.parameters.message) == Data()
         expect(self.signing.requests.onlyElement?.parameters.nonce).to(beNil())
         expect(self.signing.requests.onlyElement?.parameters.requestBody).to(beNil())
+    }
+
+    func testFallbackConfigInvalidSignatureReturnsFailedVerification() throws {
+        let body = Self.remoteConfigStaticFallbackBody
+        self.mockResponse(path: HTTPRequest.Path.remoteConfigStaticFallback(domain: "app"),
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: body)
+        self.signing.stubbedVerificationResult = false
+
+        let response: VerifiedHTTPResponse<RemoteConfiguration?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigStaticFallbackRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .failed
+        expect(self.signing.requests).to(haveCount(1))
+        expect(self.signing.requests.onlyElement?.parameters.message) == body
+        expect(self.signing.requests.onlyElement?.parameters.nonce).to(beNil())
+        expect(self.signing.requests.onlyElement?.parameters.requestBody).to(beNil())
+    }
+
+    func testFallbackConfigInvalidSignatureFailsInEnforcedMode() throws {
+        self.changeClientToEnforced()
+        self.mockResponse(path: HTTPRequest.Path.remoteConfigStaticFallback(domain: "app"),
+                          signature: Self.sampleSignature,
+                          requestDate: Self.date2,
+                          body: Self.remoteConfigStaticFallbackBody)
+        self.signing.stubbedVerificationResult = false
+
+        let response: VerifiedHTTPResponse<RemoteConfiguration?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigStaticFallbackRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beFailure())
+        expect(response?.error)
+            .to(matchError(NetworkError.signatureVerificationFailed(
+                path: HTTPRequest.Path.remoteConfigStaticFallback(domain: "app"),
+                code: .success
+            )))
+        expect(self.signing.requests).to(haveCount(1))
     }
 
     func testRemoteConfigSignaturePayloadMissingBodyThrowsMissingBodyError() {
@@ -1283,6 +1317,17 @@ private extension BaseSignatureVerificationHTTPClientTests {
             method: .get,
             path: HTTPRequest.Path.remoteConfigStaticFallback(domain: "app")
         )
+    }
+
+    static var remoteConfigStaticFallbackBody: Data {
+        return """
+        {
+          "domain": "app",
+          "manifest": "v1.test",
+          "active_topics": [],
+          "topics": {}
+        }
+        """.asData
     }
 
     static func rcContainer(
