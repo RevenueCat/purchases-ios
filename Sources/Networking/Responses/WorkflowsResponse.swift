@@ -175,7 +175,6 @@ import Foundation
     public let singleStepFallbackId: String?
     public let steps: [String: WorkflowStep]
     public let screens: [String: WorkflowScreen]
-    public let uiConfig: UIConfig
     let contentMaxWidth: Int?
     let metadata: [String: AnyDecodable]?
 
@@ -187,7 +186,6 @@ import Foundation
         singleStepFallbackId: String?,
         steps: [String: WorkflowStep],
         screens: [String: WorkflowScreen],
-        uiConfig: UIConfig,
         contentMaxWidth: Int? = nil
     ) {
         self.id = id
@@ -196,7 +194,6 @@ import Foundation
         self.singleStepFallbackId = singleStepFallbackId
         self.steps = steps
         self.screens = screens
-        self.uiConfig = uiConfig
         self.contentMaxWidth = contentMaxWidth
         self.metadata = nil
     }
@@ -209,7 +206,6 @@ import Foundation
         singleStepFallbackId: String?,
         steps: [String: WorkflowStep],
         screens: [String: WorkflowScreen],
-        uiConfig: UIConfig,
         contentMaxWidth: Int?,
         metadata: [String: AnyDecodable]?
     ) {
@@ -219,24 +215,8 @@ import Foundation
         self.singleStepFallbackId = singleStepFallbackId
         self.steps = steps
         self.screens = screens
-        self.uiConfig = uiConfig
         self.contentMaxWidth = contentMaxWidth
         self.metadata = metadata
-    }
-
-    /// Returns a copy with `uiConfig` replaced. Unlike the public initializer, this preserves `metadata`.
-    func withUiConfig(_ uiConfig: UIConfig) -> PublishedWorkflow {
-        return PublishedWorkflow(
-            id: self.id,
-            displayName: self.displayName,
-            initialStepId: self.initialStepId,
-            singleStepFallbackId: self.singleStepFallbackId,
-            steps: self.steps,
-            screens: self.screens,
-            uiConfig: uiConfig,
-            contentMaxWidth: self.contentMaxWidth,
-            metadata: self.metadata
-        )
     }
 
 }
@@ -244,7 +224,15 @@ import Foundation
 @_spi(Internal) public struct WorkflowDataResult {
 
     public let workflow: PublishedWorkflow
+    public let uiConfig: UIConfig
     public let enrolledVariants: [String: String]?
+
+}
+
+@_spi(Internal) public enum WorkflowError: Error, Equatable, Sendable {
+
+    /// The workflow itself resolved, but its `ui_config` couldn't be assembled.
+    case uiConfigUnavailable(workflowId: String)
 
 }
 
@@ -313,7 +301,6 @@ extension PublishedWorkflow: Codable, Equatable, Sendable {
         case singleStepFallbackId
         case steps
         case screens
-        case uiConfig
         case contentMaxWidth
         case metadata
     }
@@ -326,8 +313,6 @@ extension PublishedWorkflow: Codable, Equatable, Sendable {
         self.singleStepFallbackId = try container.decodeIfPresent(String.self, forKey: .singleStepFallbackId)
         self.steps = try container.decode([String: WorkflowStep].self, forKey: .steps)
         self.screens = try container.decode([String: WorkflowScreen].self, forKey: .screens)
-        // Absent from the remote-config `workflows` topic body (ui_config is its own topic there).
-        self.uiConfig = try container.decodeIfPresent(UIConfig.self, forKey: .uiConfig) ?? .empty
         self.contentMaxWidth = try container.decodeIfPresent(Int.self, forKey: .contentMaxWidth)
         self.metadata = try container.decodeIfPresent([String: AnyDecodable].self, forKey: .metadata)
     }
@@ -340,7 +325,6 @@ extension PublishedWorkflow: Codable, Equatable, Sendable {
         try container.encodeIfPresent(self.singleStepFallbackId, forKey: .singleStepFallbackId)
         try container.encode(self.steps, forKey: .steps)
         try container.encode(self.screens, forKey: .screens)
-        try container.encode(self.uiConfig, forKey: .uiConfig)
         try container.encodeIfPresent(self.contentMaxWidth, forKey: .contentMaxWidth)
         try container.encodeIfPresent(self.metadata, forKey: .metadata)
     }
