@@ -714,11 +714,11 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
 
     private let _invokedTopicCount: Atomic<Int> = .init(0)
     var invokedTopicCount: Int { return self._invokedTopicCount.value }
-    /// When `true`, `topic(_:)` suspends until `completeStoredTopic()` is called, so tests can control
-    /// the timing of a caller awaiting it (e.g. `OfferingsManager`'s config-ready gate).
+    /// When `true`, `topic(_:)` suspends until `completeStoredTopic()` resumes every stored
+    /// waiter (there can be several: e.g. a gated delivery plus a background refresh).
     var shouldStoreTopicCompletion = false
-    private let _storedTopicContinuation: Atomic<CheckedContinuation<RemoteConfiguration.ConfigTopic?, Never>?> =
-        .init(nil)
+    private let _storedTopicContinuations: Atomic<[CheckedContinuation<RemoteConfiguration.ConfigTopic?, Never>]> =
+        .init([])
 
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
         guard self.shouldStoreTopicCompletion else {
@@ -726,26 +726,49 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
             return self.stubbedTopics[topic]
         }
         return await withCheckedContinuation { continuation in
-            // Resume any previously stored continuation so it can't leak if `topic(_:)` is called again
-            // before the prior call's completion is triggered.
-            self._storedTopicContinuation.getAndSet(continuation)?.resume(returning: nil)
-            // Increment only after the continuation is stored, so a test polling `invokedTopicCount`
-            // can never observe readiness before `completeStoredTopic()` has something to resume.
+            // Store before incrementing, so a test polling `invokedTopicCount` can never
+            // observe readiness before `completeStoredTopic()` has something to resume.
+            self._storedTopicContinuations.modify { $0.append(continuation) }
             self._invokedTopicCount.modify { $0 += 1 }
         }
     }
 
-    /// Resumes the continuation captured by a `topic(_:)` call made while `shouldStoreTopicCompletion`
-    /// was `true`. Requires `shouldStoreTopicCompletion == true`.
+    /// Resumes every waiter held while `shouldStoreTopicCompletion` was `true`, and stops
+    /// holding subsequent calls.
     func completeStoredTopic(with result: RemoteConfiguration.ConfigTopic? = nil) {
-        let continuation = self._storedTopicContinuation.value
-        self._storedTopicContinuation.value = nil
-        continuation?.resume(returning: result)
+        self.shouldStoreTopicCompletion = false
+        for continuation in self._storedTopicContinuations.getAndSet([]) {
+            continuation.resume(returning: result)
+        }
     }
 
+    /// When `true`, `blobData(for:itemKey:)` suspends until `completeStoredBlobReads()` is
+    /// called, so tests can control the timing of a caller resolving blob-backed data.
+    var shouldStoreBlobDataCompletion = false
+    private typealias StoredBlobRead = (
+        topic: RemoteConfigTopic, itemKey: String, continuation: CheckedContinuation<Data?, Never>
+    )
+    private let _storedBlobReads: Atomic<[StoredBlobRead]> = .init([])
+
     func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
-        self._invokedBlobDataParameters.modify { $0.append((topic, itemKey)) }
-        return self.stubbedBlobData[topic]?[itemKey]
+        guard self.shouldStoreBlobDataCompletion else {
+            self._invokedBlobDataParameters.modify { $0.append((topic, itemKey)) }
+            return self.stubbedBlobData[topic]?[itemKey]
+        }
+        return await withCheckedContinuation { continuation in
+            // Store before recording, so a poller can't observe readiness with nothing to resume.
+            self._storedBlobReads.modify { $0.append((topic, itemKey, continuation)) }
+            self._invokedBlobDataParameters.modify { $0.append((topic, itemKey)) }
+        }
+    }
+
+    /// Resumes every held blob read with its key's stubbed data and stops holding subsequent
+    /// reads, so sequential read chains (like `mergeItemsBlobData`'s loop) run to completion.
+    func completeStoredBlobReads() {
+        self.shouldStoreBlobDataCompletion = false
+        for read in self._storedBlobReads.getAndSet([]) {
+            read.continuation.resume(returning: self.stubbedBlobData[read.topic]?[read.itemKey])
+        }
     }
 
     func blobData<T: Decodable>(
