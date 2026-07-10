@@ -139,7 +139,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(self.httpClient.calls.first?.request.requestBody).to(beNil())
     }
 
-    func testGetRemoteConfigStaticFallbackRequestsJSONFormat() {
+    func testGetRemoteConfigStaticFallbackDoesNotRequestRCContainerFormat() {
         self.mockSuccessfulFallbackResponse()
 
         waitUntil { completed in
@@ -149,7 +149,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
             ) { _ in completed() }
         }
 
-        expect(self.httpClient.calls.first?.headers[HTTPClient.RequestHeader.accept.rawValue]) == "application/json"
+        expect(self.httpClient.calls.first?.headers[HTTPClient.RequestHeader.accept.rawValue]).to(beNil())
         expect(self.httpClient.calls.first?.headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue])
             .to(beNil())
         expect(self.httpClient.calls.first?.headers["Accept-Encoding"]).to(beNil())

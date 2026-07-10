@@ -323,7 +323,7 @@ class HTTPRequestTests: TestCase {
         expect(headers["Accept-Encoding"]).to(beNil())
     }
 
-    func testFallbackConfigUsesJSONAcceptHeaders() {
+    func testFallbackConfigDoesNotRequestRCContainerFormat() {
         let request: HTTPRequest = .init(
             method: .get,
             path: HTTPRequest.StaticFallbackPath.remoteConfig(domain: "app")
@@ -335,7 +335,7 @@ class HTTPRequestTests: TestCase {
             internalSettings: DangerousSettings.Internal.default
         )
 
-        expect(headers[HTTPClient.RequestHeader.accept.rawValue]) == "application/json"
+        expect(headers[HTTPClient.RequestHeader.accept.rawValue]).to(beNil())
         expect(headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue]).to(beNil())
         expect(headers["Accept-Encoding"]).to(beNil())
     }

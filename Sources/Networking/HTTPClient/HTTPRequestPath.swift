@@ -547,9 +547,7 @@ extension HTTPRequest.StaticFallbackPath: HTTPRequestPath {
     var additionalHeaders: HTTPRequest.Headers {
         switch self {
         case .remoteConfig:
-            return [
-                HTTPClient.RequestHeader.accept.rawValue: "application/json"
-            ]
+            return [:]
         }
     }
 
