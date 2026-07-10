@@ -170,7 +170,9 @@ class UiConfigProviderTests: TestCase {
             customVariables: #"{}"#
         )
         // The cache-key read sees topic A, the post-assembly re-read sees topic B: a refresh
-        // landed mid-decode, so the value must NOT be memoized under A.
+        // landed mid-decode, so the value must NOT be memoized under A. This relies on the mock's
+        // `mergeItemsBlobData` not calling `topic()`; `getUiConfig` makes exactly two topic reads
+        // per call, so the two-element sequence maps to (cache-key read, post-assembly re-read).
         let topicA: RemoteConfiguration.ConfigTopic = ["app": .init(blobRef: "app-a", prefetch: false, content: [:])]
         let topicB: RemoteConfiguration.ConfigTopic = ["app": .init(blobRef: "app-b", prefetch: false, content: [:])]
         self.mockManager.stubbedTopicSequence = [topicA, topicB]

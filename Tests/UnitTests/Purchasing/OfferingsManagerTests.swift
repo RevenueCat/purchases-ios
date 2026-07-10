@@ -1117,8 +1117,10 @@ extension OfferingsManagerTests {
         let delivered: Atomic<Bool> = false
         manager.offerings(appUserID: MockData.anyAppUserID) { _ in delivered.value = true }
 
-        // Both readiness branches block on their topic read.
-        expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
+        // Both readiness branches block on their topic read concurrently (workflows readiness
+        // and ui_config resolution), so at least two topic reads are in flight before either
+        // completes; getOfferings must not serialize them.
+        expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThanOrEqualTo(2))
         expect(delivered.value) == false
 
         // Topics resolve; ui_config resolution now reaches (and blocks on) its blob reads.
