@@ -28,8 +28,6 @@ class OfferingsManager {
     private let dateProvider: DateProvider
     // Nil when remote config is disabled, in which case offerings delivery is unchanged.
     private let remoteConfigManager: RemoteConfigManagerType?
-    // Resolves the `ui_config` body the delivery gate waits on. Nil when the manager is.
-    private let uiConfigProvider: UiConfigProvider?
 
     init(deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
@@ -49,7 +47,6 @@ class OfferingsManager {
         self.diagnosticsTracker = diagnosticsTracker
         self.dateProvider = dateProvider
         self.remoteConfigManager = remoteConfigManager
-        self.uiConfigProvider = remoteConfigManager.map { UiConfigProvider(manager: $0) }
     }
 
     func offerings(
@@ -101,50 +98,19 @@ class OfferingsManager {
                                                  requestedProductIds: nil,
                                                  notFoundProductIds: nil)
 
-            let refreshedOfferings = self.refreshStaleOfferingsInBackground(
-                cacheStatus: cacheStatus,
-                appUserID: appUserID,
-                isAppBackgrounded: isAppBackgrounded,
-                fetchPolicy: fetchPolicy
-            )
-            self.deliverCachedOfferingsWhenConfigReady(memoryCachedOfferings,
-                                                       refreshedOfferings: refreshedOfferings,
-                                                       completion: completion)
-        }
-    }
-
-    /// Starts the background refresh a stale cache needs and returns where its result lands.
-    /// Captured from the refresh's own completion, not the shared cache slot, which a
-    /// concurrent identity/locale change could repopulate with another request's offerings.
-    private func refreshStaleOfferingsInBackground(
-        cacheStatus: CacheStatus,
-        appUserID: String,
-        isAppBackgrounded: Bool,
-        fetchPolicy: FetchPolicy
-    ) -> Atomic<Offerings?> {
-        let refreshedOfferings: Atomic<Offerings?> = .init(nil)
-        guard cacheStatus == .stale else { return refreshedOfferings }
-
-        self.updateOfferingsCache(appUserID: appUserID,
-                                  isAppBackgrounded: isAppBackgrounded,
-                                  fetchPolicy: fetchPolicy) { result in
-            refreshedOfferings.value = result.value?.offerings
-        }
-        return refreshedOfferings
-    }
-
-    /// Delivers cached offerings once config is ready, preferring this request's own refresh
-    /// result. Read on the main actor, where the refresh also writes it, so an earlier refresh
-    /// is visible.
-    private func deliverCachedOfferingsWhenConfigReady(
-        _ memoryCachedOfferings: Offerings,
-        refreshedOfferings: Atomic<Offerings?>,
-        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
-    ) {
-        self.deliverWhenConfigReady {
-            guard let completion else { return }
-            self.operationDispatcher.dispatchOnMainActor {
-                completion(.success(refreshedOfferings.value ?? memoryCachedOfferings))
+            if cacheStatus == .stale {
+                // Refresh in the background; the readiness gate below must not delay it.
+                self.updateOfferingsCache(appUserID: appUserID,
+                                          isAppBackgrounded: isAppBackgrounded,
+                                          fetchPolicy: fetchPolicy,
+                                          completion: nil)
+            }
+            // Cached offerings, stale ones included, wait for config readiness before
+            // delivery (a no-op once config has synced). A stale snapshot may be returned
+            // even if the background refresh finished first; that matches the stale-cache
+            // model, and the refresh still updates the cache for the next call.
+            self.deliverWhenConfigReady {
+                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(memoryCachedOfferings))
             }
         }
     }
@@ -414,16 +380,10 @@ private extension OfferingsManager {
         }
     }
 
-    /// Runs `deliver` once remote config has synced at least once *and* every workflow flagged for
-    /// prefetch has finished downloading (or failed), when remote config is wired. Matches Android's
-    /// guarantee that offerings delivery waits for every prefetched workflow body, not just the
-    /// `workflows` topic's metadata. The manager's `awaitTopicAndPrefetchBlobsReady()` read no-ops when already synced
-    /// and always calls back, so this never hangs. When no manager is wired (workflows disabled),
-    /// `deliver` runs immediately, leaving offerings unchanged.
     /// Invokes `deliver` once the paywall config data `getOfferings` depends on is ready:
     /// the `workflows` topic (with its prefetch-flagged blobs) and the `ui_config` body,
     /// resolved concurrently. Both are best-effort (nil on failure, never throwing), so
-    /// delivery can never be stranded.
+    /// delivery can never be stranded; when no manager is wired, `deliver` runs immediately.
     private func deliverWhenConfigReady(deliver: @escaping () -> Void) {
         guard let remoteConfigManager = self.remoteConfigManager else {
             deliver()
@@ -431,7 +391,7 @@ private extension OfferingsManager {
         }
         Task {
             async let workflowsReady = remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
-            async let uiConfigReady = self.uiConfigProvider?.getUiConfig()
+            async let uiConfigReady = UiConfigProvider(manager: remoteConfigManager).getUiConfig()
             _ = await (workflowsReady, uiConfigReady)
             deliver()
         }

@@ -1165,7 +1165,7 @@ extension OfferingsManagerTests {
         expect(delivered.value).toEventually(beIdenticalTo(captured))
     }
 
-    func testGatedStaleCacheDeliveryNeverDeliversAnUnrelatedCacheWrite() {
+    func testGatedStaleCacheDeliversTheCapturedSnapshotNotALaterCacheWrite() {
         let mockRemoteConfigManager = MockRemoteConfigManager()
         mockRemoteConfigManager.shouldStoreTopicCompletion = true
         let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
@@ -1177,16 +1177,14 @@ extension OfferingsManagerTests {
         let delivered: Atomic<Offerings?> = .init(nil)
         manager.offerings(appUserID: MockData.anyAppUserID) { result in delivered.value = result.value }
 
-        // While delivery waits on the gate, an unrelated write repopulates the slot.
+        // While delivery waits on the gate, the background refresh writes a new slot value.
         expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
-        let unrelated = MockData.makeSampleOfferings()
-        self.mockDeviceCache.stubbedOfferings = unrelated
+        self.mockDeviceCache.stubbedOfferings = MockData.makeSampleOfferings()
 
         mockRemoteConfigManager.completeStoredTopic()
-        // Delivery is the captured stale snapshot or this request's own refresh result
-        // (whichever the scheduler resolves first); the unrelated slot write, never.
-        expect(delivered.value).toEventuallyNot(beNil())
-        expect(delivered.value).toNot(beIdenticalTo(unrelated))
+        // Stale delivery returns the snapshot captured for this request, never a later
+        // cache write (the refresh's, or another request's).
+        expect(delivered.value).toEventually(beIdenticalTo(captured))
     }
 
     func testGetOfferingsNetworkFetchAwaitsConfigReadyBeforeDelivering() {
