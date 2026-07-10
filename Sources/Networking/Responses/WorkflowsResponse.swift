@@ -229,6 +229,13 @@ import Foundation
 
 }
 
+@_spi(Internal) public enum WorkflowError: Error, Equatable, Sendable {
+
+    /// The workflow itself resolved, but its `ui_config` couldn't be assembled.
+    case uiConfigUnavailable(workflowId: String)
+
+}
+
 // MARK: - Codable
 
 extension WorkflowTrigger: Codable, Equatable, Sendable {}

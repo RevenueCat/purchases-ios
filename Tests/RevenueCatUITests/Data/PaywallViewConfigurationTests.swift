@@ -241,6 +241,23 @@ final class PaywallViewConfigurationTests: TestCase {
         }
     }
 
+    func testResolvePaywallViewDataThrowsWhenWorkflowUiConfigUnavailableEvenWithFallbackAvailable() async throws {
+        let (offering, _, purchases, handler) = try Self.createOfferingWithFallbackFixture()
+        purchases.workflowBlock = { _ in
+            throw WorkflowError.uiConfigUnavailable(workflowId: "wf_test")
+        }
+
+        do {
+            _ = try await handler.resolvePaywallViewData(
+                for: .offering(offering),
+                remoteConfigEnabled: true
+            )
+            XCTFail("Expected resolvePaywallViewData to throw")
+        } catch let PaywallError.workflowUiConfigUnavailable(workflowId) {
+            expect(workflowId) == "wf_test"
+        }
+    }
+
     func testResolvePaywallViewDataThrowsOnCancellationEvenWithFallbackAvailable() async throws {
         // Cancellation must propagate even with a fallback available: mirrors
         // isWorkflowFetchFallbackEligible's CancellationError exclusion.

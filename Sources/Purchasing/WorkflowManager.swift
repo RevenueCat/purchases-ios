@@ -38,8 +38,8 @@ class WorkflowManager {
         self.operationDispatcher = operationDispatcher
     }
 
-    /// Resolves `workflowId`, or throws the `BackendError` explaining why it couldn't be resolved:
-    /// genuinely missing, malformed, or missing its `ui_config`.
+    /// Resolves `workflowId`, or throws the error explaining why it couldn't be resolved: genuinely
+    /// missing, malformed, or missing its `ui_config`.
     func getWorkflow(workflowId: String) async throws -> WorkflowDataResult {
         switch await self.workflowsConfigProvider.getWorkflow(workflowId: workflowId) {
         case let .success(result):
@@ -50,7 +50,7 @@ class WorkflowManager {
         case let .failure(.decodingFailed(error)):
             throw BackendError.workflowDecodingFailed(workflowId: workflowId, error: error)
         case .failure(.uiConfigUnavailable):
-            throw BackendError.workflowUiConfigUnavailable(workflowId: workflowId)
+            throw WorkflowError.uiConfigUnavailable(workflowId: workflowId)
         }
     }
 

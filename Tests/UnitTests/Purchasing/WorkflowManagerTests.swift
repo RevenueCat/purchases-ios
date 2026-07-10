@@ -100,12 +100,10 @@ class WorkflowManagerTests: TestCase {
         do {
             _ = try await self.manager.getWorkflow(workflowId: "wf_1")
             fail("Expected getWorkflow to throw")
+        } catch WorkflowError.uiConfigUnavailable(let workflowId) {
+            expect(workflowId) == "wf_1"
         } catch {
-            expect(error as? BackendError) == .unexpectedBackendResponse(
-                .workflowUiConfigUnavailable(workflowId: "wf_1"),
-                extraContext: nil,
-                .init(file: "", function: "", line: 0)
-            )
+            fail("Unexpected error: \(error)")
         }
     }
 
