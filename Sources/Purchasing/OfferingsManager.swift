@@ -28,8 +28,7 @@ class OfferingsManager {
     private let dateProvider: DateProvider
     // Nil when remote config is disabled, in which case offerings delivery is unchanged.
     private let remoteConfigManager: RemoteConfigManagerType?
-    // Derived from `remoteConfigManager`; resolves the `ui_config` body the delivery gate
-    // waits on. Nil exactly when the manager is.
+    // Resolves the `ui_config` body the delivery gate waits on. Nil when the manager is.
     private let uiConfigProvider: UiConfigProvider?
 
     init(deviceCache: DeviceCache,
@@ -114,11 +113,9 @@ class OfferingsManager {
         }
     }
 
-    /// Kicks the background refresh a stale cache requires (before the readiness gate, which
-    /// must not delay it) and returns where its result lands. Recorded through the refresh's
-    /// own completion, never by re-reading the shared cache slot after the gate: a concurrent
-    /// identity or locale change repopulating that slot must not leak another request's
-    /// offerings into this one.
+    /// Starts the background refresh a stale cache needs and returns where its result lands.
+    /// Captured from the refresh's own completion, not the shared cache slot, which a
+    /// concurrent identity/locale change could repopulate with another request's offerings.
     private func refreshStaleOfferingsInBackground(
         cacheStatus: CacheStatus,
         appUserID: String,
@@ -136,10 +133,9 @@ class OfferingsManager {
         return refreshedOfferings
     }
 
-    /// Delivers memory-cached offerings once config is ready (a no-op once config has
-    /// synced), preferring this request's own refresh result when one landed. The recorded
-    /// result is read on the main actor, where the refresh's completion also writes it, so a
-    /// refresh whose completion was enqueued first is always visible to this delivery.
+    /// Delivers cached offerings once config is ready, preferring this request's own refresh
+    /// result. Read on the main actor, where the refresh also writes it, so an earlier refresh
+    /// is visible.
     private func deliverCachedOfferingsWhenConfigReady(
         _ memoryCachedOfferings: Offerings,
         refreshedOfferings: Atomic<Offerings?>,
