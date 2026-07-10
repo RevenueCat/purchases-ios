@@ -142,6 +142,47 @@ class UiConfigProviderTests: TestCase {
         )
     }
 
+    func testCachesDecodedUiConfigAndSkipsDiskWorkOnUnchangedTopic() async throws {
+        self.stub(
+            app: #"{"colors": {}, "fonts": {}}"#,
+            localizations: #"{"en_US": {"day": "Day"}}"#,
+            variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+            customVariables: #"{}"#
+        )
+
+        let first = await self.provider.getUiConfig()
+        let mergesAfterFirst = self.mockManager.invokedMergeItemsBlobDataParameters.count
+        expect(first).toNot(beNil())
+        expect(mergesAfterFirst) == 1
+
+        let second = await self.provider.getUiConfig()
+
+        // The unchanged `ui_config` topic serves the decoded value from memory: no extra decode.
+        expect(second?.localizations["en_US"]?["day"]) == "Day"
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == mergesAfterFirst
+    }
+
+    func testReDecodesWhenUiConfigTopicChanges() async throws {
+        self.stub(
+            app: #"{"colors": {}, "fonts": {}}"#,
+            localizations: #"{"en_US": {"day": "Day"}}"#,
+            variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+            customVariables: #"{}"#
+        )
+        _ = await self.provider.getUiConfig()
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == 1
+
+        // A new revision changes the topic (content-addressed blob refs move), which must
+        // invalidate the cached value and force a re-decode.
+        self.mockManager.stubbedTopics[.uiConfig] = [
+            "app": .init(blobRef: "app-v2", prefetch: false, content: [:]),
+            "localizations": .init(blobRef: "localizations-v2", prefetch: false, content: [:])
+        ]
+        _ = await self.provider.getUiConfig()
+
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == 2
+    }
+
     func testRequestsMergedBlobDataForWireItemKeysNotCamelCased() async throws {
         _ = await self.provider.getUiConfig()
 

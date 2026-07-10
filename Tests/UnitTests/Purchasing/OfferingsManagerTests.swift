@@ -1105,9 +1105,10 @@ extension OfferingsManagerTests {
         expect(mockRemoteConfigManager.invokedTopicCount) == 0
     }
 
-    func testGetOfferingsAwaitsWorkflowsAndUiConfigConcurrently() {
+    func testGetOfferingsAwaitsBothWorkflowsTopicAndUiConfigBlobs() {
         let mockRemoteConfigManager = MockRemoteConfigManager()
-        // Hold BOTH readiness steps: each must have started before either completes.
+        // Hold the topic reads first (both the workflows-readiness and ui_config branches
+        // read a topic), then the ui_config blob reads: delivery must clear both to proceed.
         mockRemoteConfigManager.shouldStoreTopicCompletion = true
         mockRemoteConfigManager.shouldStoreBlobDataCompletion = true
         let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
@@ -1116,11 +1117,16 @@ extension OfferingsManagerTests {
         let delivered: Atomic<Bool> = false
         manager.offerings(appUserID: MockData.anyAppUserID) { _ in delivered.value = true }
 
+        // Both readiness branches block on their topic read.
         expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
+        expect(delivered.value) == false
+
+        // Topics resolve; ui_config resolution now reaches (and blocks on) its blob reads.
+        mockRemoteConfigManager.completeStoredTopic()
         expect(mockRemoteConfigManager.invokedBlobDataParameters).toEventuallyNot(beEmpty())
         expect(delivered.value) == false
 
-        mockRemoteConfigManager.completeStoredTopic()
+        // Only once the ui_config blobs resolve too does delivery fire.
         mockRemoteConfigManager.completeStoredBlobReads()
         expect(delivered.value).toEventually(beTrue())
     }
