@@ -24,26 +24,42 @@ final class URLSessionRemoteConfigBlobDownloader: RemoteConfigBlobDownloaderType
         case unexpectedStatusCode(Int)
     }
 
-    static let timeout: TimeInterval = 5
-
     private let session: URLSession
+    private let timeoutManager: HTTPRequestTimeoutManagerType
 
-    init(session: URLSession = URLSession(
-        configuration: URLSessionRemoteConfigBlobDownloader.defaultSessionConfiguration()
-    )) {
+    init(timeoutManager: HTTPRequestTimeoutManagerType, session: URLSession = .shared) {
+        self.timeoutManager = timeoutManager
         self.session = session
     }
 
-    static func defaultSessionConfiguration() -> URLSessionConfiguration {
-        let configuration = URLSessionConfiguration.default
-        configuration.timeoutIntervalForRequest = Self.timeout
-        configuration.timeoutIntervalForResource = Self.timeout
-        return configuration
+    func data(from url: URL) async throws -> Data {
+        let host = url.host
+        // Blob sources never support fallback URLs, so each attempt uses the no-fallback tier (15s base, 5s if this
+        // host timed out recently), keyed by the source host and sharing the per-host memory with API requests.
+        let timeout = self.timeoutManager.timeout(host: host,
+                                                  isFallbackHostRequest: false,
+                                                  endpointSupportsFallbackURLs: false,
+                                                  isProxied: false)
+
+        var request = URLRequest(url: url)
+        request.timeoutInterval = timeout
+
+        do {
+            let data = try await self.performRequest(request)
+            // The source answered, so clear any fail-fast memory for it.
+            self.timeoutManager.recordRequestResult(host: host, .successOnMainBackend)
+            return data
+        } catch {
+            // A timeout arms the source's fail-fast memory so a re-hit within 10 min bails out sooner.
+            let isTimeout = (error as? URLError)?.code == .timedOut
+            self.timeoutManager.recordRequestResult(host: host, isTimeout ? .mainSourceTimedOut : .other)
+            throw error
+        }
     }
 
-    func data(from url: URL) async throws -> Data {
+    private func performRequest(_ request: URLRequest) async throws -> Data {
         return try await withCheckedThrowingContinuation { continuation in
-            let task = self.session.dataTask(with: url) { data, response, error in
+            let task = self.session.dataTask(with: request) { data, response, error in
                 if let error {
                     continuation.resume(throwing: error)
                     return

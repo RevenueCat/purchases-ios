@@ -38,6 +38,7 @@ class Backend {
         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
         diagnosticsTracker: DiagnosticsTrackerType?,
         apiSourceProvider: RemoteConfigSourceProviderType?,
+        timeoutManager: HTTPRequestTimeoutManagerType? = nil,
         dateProvider: DateProvider = DateProvider()
     ) {
         // One `apiSourceFailover` for both HTTPClients, so they walk one source list and one
@@ -50,7 +51,7 @@ class Backend {
         }
         // `timeoutManager` is shared by both HTTPClients: a timeout on a host fast-fails the other's
         // next request to it, and a success on either clears it for both.
-        let timeoutManager = HTTPRequestTimeoutManager(networkTimeout: httpClientTimeout)
+        let timeoutManager = timeoutManager ?? HTTPRequestTimeoutManager(networkTimeout: httpClientTimeout)
         let httpClient = HTTPClient(systemInfo: systemInfo,
                                     eTagManager: eTagManager,
                                     signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
