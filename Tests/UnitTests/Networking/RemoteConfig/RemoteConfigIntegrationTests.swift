@@ -276,6 +276,9 @@ final class RemoteConfigIntegrationTests: TestCase {
         await self.downloader.setResponse(.success(blob), for: source, ref: ref)
 
         await self.refresh(with: container)
+        await self.waitUntil(file: #filePath, line: #line) {
+            failingBlobStore.writeCount == 1
+        }
 
         expect(failingBlobStore.writeCount) == 1
         expect(self.blobStore.read(ref: ref)).to(beNil())
@@ -712,9 +715,13 @@ private extension RemoteConfigIntegrationTests {
 private final class FailsFirstWriteBlobStore: RemoteConfigBlobStoreType {
 
     private let delegate: RemoteConfigBlobStoreType
+    private let lock = Lock(.nonRecursive)
     private var remainingWriteFailures = 1
+    private var writeCountValue = 0
 
-    private(set) var writeCount = 0
+    var writeCount: Int {
+        return self.lock.perform { self.writeCountValue }
+    }
 
     init(delegate: RemoteConfigBlobStoreType) {
         self.delegate = delegate
@@ -732,9 +739,16 @@ private final class FailsFirstWriteBlobStore: RemoteConfigBlobStoreType {
         ref: String,
         bytes: UnsafeRawBufferPointer
     ) -> Bool {
-        self.writeCount += 1
-        guard self.remainingWriteFailures == 0 else {
-            self.remainingWriteFailures -= 1
+        let shouldFail = self.lock.perform {
+            self.writeCountValue += 1
+            guard self.remainingWriteFailures == 0 else {
+                self.remainingWriteFailures -= 1
+                return true
+            }
+
+            return false
+        }
+        if shouldFail {
             return false
         }
 
