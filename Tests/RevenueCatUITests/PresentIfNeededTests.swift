@@ -81,6 +81,70 @@ class PresentIfNeededTests: TestCase {
         expect(customerInfo).toEventually(be(TestData.customerInfo))
     }
 
+    func testInlinePresentWithPurchaseHandlerDismissesOnce() throws {
+        let handler: PurchaseHandler = .mock()
+        var customerInfo: CustomerInfo?
+        var dismissCount = 0
+
+        let dispose = try Text("")
+            .presentPaywallIfNeeded(offering: Self.offering,
+                                    introEligibility: .producing(eligibility: .eligible),
+                                    purchaseHandler: handler,
+                                    presentationMode: .inline()) { _ in
+                return true
+            } purchaseCompleted: {
+                customerInfo = $0
+            } onDismiss: {
+                dismissCount += 1
+            } customerInfoFetcher: {
+                return TestData.customerInfo
+            }
+            .addToHierarchy()
+
+        defer { dispose() }
+
+        Task {
+            _ = try await handler.purchase(package: Self.package)
+        }
+
+        expect(customerInfo).toEventually(be(TestData.customerInfo))
+        expect(dismissCount).toEventually(equal(1))
+    }
+
+    func testInlinePresentWithPurchaseHandlerDismissesAfterCustomerInfoRefresh() throws {
+        let handler: PurchaseHandler = .mock()
+        let scenePhaseController = ScenePhaseController()
+        var dismissCount = 0
+
+        let dispose = try InlinePaywall(
+            scenePhaseController: scenePhaseController,
+            purchaseHandler: handler,
+            onDismiss: {
+                dismissCount += 1
+            }
+        )
+        .addToHierarchy()
+
+        defer { dispose() }
+
+        Task {
+            _ = try await handler.purchase(package: Self.package)
+        }
+
+        expect(dismissCount).toEventually(equal(1))
+
+        scenePhaseController.scenePhase = .inactive
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        scenePhaseController.scenePhase = .active
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+
+        Task {
+            _ = try await handler.purchase(package: Self.package)
+        }
+
+        expect(dismissCount).toEventually(equal(2))
+    }
+
     func testPresentWithPurchaseFailureHandler() throws {
         var error: NSError?
 
@@ -286,6 +350,40 @@ class PresentIfNeededTests: TestCase {
         .mock(purchasesAreCompletedBy: .myApp,
               performPurchase: performPurchase,
               performRestore: performRestore)
+    }
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+private final class ScenePhaseController: ObservableObject {
+
+    @Published
+    var scenePhase: ScenePhase = .active
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+private struct InlinePaywall: View {
+
+    @ObservedObject
+    var scenePhaseController: ScenePhaseController
+
+    let purchaseHandler: PurchaseHandler
+    let onDismiss: () -> Void
+
+    var body: some View {
+        Text("")
+            .presentPaywallIfNeeded(offering: TestData.offeringWithNoIntroOffer,
+                                    introEligibility: .producing(eligibility: .eligible),
+                                    purchaseHandler: self.purchaseHandler,
+                                    presentationMode: .inline()) { _ in
+                return true
+            } onDismiss: {
+                self.onDismiss()
+            } customerInfoFetcher: {
+                return TestData.customerInfo
+            }
+            .environment(\.scenePhase, self.scenePhaseController.scenePhase)
     }
 
 }
