@@ -91,9 +91,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
 
         let player: AVPlayer
 
-        private var previousCategory: AVAudioSession.Category?
-        private var previousMode: AVAudioSession.Mode?
-        private var previousOptions: AVAudioSession.CategoryOptions?
+        private let audioSessionHandler: VideoAudioSessionHandler
 
         private let autoplayHandler: VideoAutoplayHandler
         private var loopObserver: NSObjectProtocol?
@@ -119,20 +117,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
             #endif
 
             self.player = avPlayer
-
-            let audioSession = AVAudioSession.sharedInstance()
-            self.previousCategory = audioSession.category
-            self.previousMode = audioSession.mode
-            self.previousOptions = audioSession.categoryOptions
-            do {
-                try audioSession.setCategory(
-                    .ambient,
-                    mode: .default,
-                    options: [.mixWithOthers]
-                )
-            } catch {
-                Logger.warning(Strings.video_failed_to_set_audio_session_category(error))
-            }
+            self.audioSessionHandler = VideoAudioSessionHandler()
 
             self.autoplayHandler = VideoAutoplayHandler(
                 playbackController: avPlayer,
@@ -182,22 +167,6 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         deinit {
             if let loopObserver = self.loopObserver {
                 NotificationCenter.default.removeObserver(loopObserver)
-            }
-
-            guard let category = previousCategory,
-                  let mode = previousMode,
-                  let options = previousOptions else {
-                return
-            }
-
-            do {
-                try AVAudioSession.sharedInstance().setCategory(
-                    category,
-                    mode: mode,
-                    options: options
-                )
-            } catch {
-                Logger.warning(Strings.video_failed_to_set_audio_session_category(error))
             }
         }
 
