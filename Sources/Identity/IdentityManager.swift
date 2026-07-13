@@ -13,7 +13,7 @@
 
 import Foundation
 
-protocol CurrentUserProvider: Sendable {
+protocol CurrentUserProvider: AnyObject, Sendable {
 
     var currentAppUserID: String { get }
     var currentUserIsAnonymous: Bool { get }
@@ -190,7 +190,7 @@ private extension IdentityManager {
             case .success(let token):
                 #warning("DAVE: THIS IS PROBABLY NOT CORRECT")
 
-                self.logIn(appUserID: token.idToken ?? "", completion: completion)
+                self.logIn(appUserID: oldAppUserID, completion: completion)
             case .failure(let error):
                 completion(.failure(error))
             }

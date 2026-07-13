@@ -25,29 +25,27 @@ class TokenAPI {
         self.tokenCallbacksCache = CallbackCache<TokenCallback>()
     }
 
-    func logIn(currentAppUserID: String?, token: ExternalToken, completion: @escaping TokenResponseHandler) {
-        #warning("DAVE: What if we don't have a user id")
+    func logIn(currentAppUserID: String, token: ExternalToken, completion: @escaping TokenResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: currentAppUserID ?? "")
+                                                                appUserID: currentAppUserID)
 
         let factory = TokenLogInOperation.createFactory(configuration: config,
                                                         token: token.authToken,
                                                         tokenCallbackCache: self.tokenCallbacksCache)
 
-        let tokenCallback = TokenCallback(cacheKey: factory.cacheKey) { response in
-            // TODO: use the completion()
-            switch response {
-            case .success(let token):
-                #warning("DAVE: Save the token")
-
-            case .failure(let error):
-                completion(.failure(error))
+        let tokenCallback = TokenCallback(cacheKey: factory.cacheKey) { result in
+            if case .success(let token) = result {
+                self.tokenManager.saveTokens(refreshToken: token.refreshToken,
+                                             accessToken: token.accessToken,
+                                             idToken: token.idToken,
+                                             for: currentAppUserID)
             }
+
+            completion(result)
         }
         let cacheStatus = self.tokenCallbacksCache.add(tokenCallback)
 
         self.backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
-
     }
 
 }

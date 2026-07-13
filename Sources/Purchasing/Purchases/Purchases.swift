@@ -525,6 +525,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             )
         }()
         identityManager.remoteConfigManager = remoteConfigManager
+        tokenManager.currentUserProvider = identityManager
 
         let eventsManager: EventsManagerType?
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),

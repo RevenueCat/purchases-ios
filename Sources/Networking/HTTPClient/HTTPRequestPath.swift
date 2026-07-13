@@ -152,7 +152,8 @@ extension HTTPRequest {
         case remoteConfig(domain: String)
 
         case tokenLogin
-
+        case tokenRefresh
+        case tokenLogOut
     }
 
     enum FeatureEventsPath: Hashable {
@@ -242,7 +243,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus,
                 .remoteConfig,
-                .tokenLogin:
+                .tokenLogin,
+                .tokenRefresh,
+                .tokenLogOut:
             return true
 
         case .health,
@@ -270,7 +273,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus,
-                .tokenLogin:
+                .tokenLogin,
+                .tokenRefresh,
+                .tokenLogOut:
             return true
         case .remoteConfig,
              .health,
@@ -293,7 +298,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
                 .rewardVerificationStatus,
-                .tokenLogin:
+                .tokenLogin,
+                .tokenRefresh,
+                .tokenLogOut:
             return true
         case .getIntroEligibility,
                 .postSubscriberAttributes,
@@ -318,7 +325,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
                 .rewardVerificationStatus,
-                .tokenLogin:
+                .tokenLogin,
+                .tokenRefresh,
+                .tokenLogOut:
             return true
         case .getOfferings,
                 .getIntroEligibility,
@@ -409,8 +418,14 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .remoteConfig(domain):
             return "config/\(Self.escape(domain))"
 
-        case let .tokenLogin:
+        case .tokenLogin:
             return "auth/login"
+
+        case .tokenRefresh:
+            return "auth/token"
+
+        case .tokenLogOut:
+            return "auth/revoke"
         }
     }
 
@@ -477,6 +492,12 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .tokenLogin:
             return "token_login"
+
+        case .tokenRefresh:
+            return "token_refresh"
+
+        case .tokenLogOut:
+            return "token_logout"
         }
     }
 

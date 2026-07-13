@@ -26,27 +26,55 @@ class TokenManager {
     let enabled: Bool
     private let storage: any SecureItemStorage
 
+    weak var currentUserProvider: CurrentUserProvider?
+
+    private var currentUser: String? { currentUserProvider?.currentAppUserID }
+
     init(enabled: Bool, storage: any SecureItemStorage) {
         self.enabled = enabled
         self.storage = storage
     }
 
-    func refreshToken(for userID: String) -> String? {
-        guard enabled else { return nil }
-        return storage.string(for: .refresh(userID))
+    var currentRefreshToken: String? {
+        get {
+            guard enabled == true else { return nil }
+            guard let user = currentUser else { return nil }
+            return storage.string(for: .refresh(user))
+        }
+        set {
+            guard enabled == true else { return }
+            guard let user = currentUser else { return }
+            storage.setString(newValue, for: .refresh(user))
+        }
     }
 
-    func accessToken(for userID: String) -> String? {
-        guard enabled else { return nil }
-        return storage.string(for: .access(userID))
+    var currentAccessToken: String? {
+        get {
+            guard enabled == true else { return nil }
+            guard let user = currentUser else { return nil }
+            return storage.string(for: .access(user))
+        }
+        set {
+            guard enabled == true else { return }
+            guard let user = currentUser else { return }
+            storage.setString(newValue, for: .access(user))
+        }
     }
 
-    func idToken(for userID: String) -> String? {
-        guard enabled else { return nil }
-        return storage.string(for: .id(userID))
+    var currentIDToken: String? {
+        get {
+            guard enabled == true else { return nil }
+            guard let user = currentUser else { return nil }
+            return storage.string(for: .id(user))
+        }
+        set {
+            guard enabled == true else { return }
+            guard let user = currentUser else { return }
+            storage.setString(newValue, for: .id(user))
+        }
     }
 
-    func saveTokens(refreshToken: String, accessToken: String, idToken: String?, for userID: String) {
+    func saveTokens(refreshToken: String?, accessToken: String, idToken: String?, for userID: String) {
         storage.setString(refreshToken, for: .refresh(userID))
         storage.setString(accessToken, for: .access(userID))
         storage.setString(idToken, for: .id(userID))
@@ -56,6 +84,16 @@ class TokenManager {
         storage.setString(nil, for: .refresh(userID))
         storage.setString(nil, for: .access(userID))
         storage.setString(nil, for: .id(userID))
+    }
+
+    func authorizationHeaders(for urlRequest: URLRequest) -> [String: String] {
+        guard enabled else { return [:] }
+        guard let currentAccessToken else { return [:] }
+
+        return [
+            HTTPClient.RequestHeader.authorization.rawValue: "Bearer \(currentAccessToken)"
+        ]
+
     }
 
 }

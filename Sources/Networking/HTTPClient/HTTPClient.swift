@@ -86,6 +86,8 @@ class HTTPClient {
         with verificationMode: Signing.ResponseVerificationMode? = nil,
         completionHandler: Completion<Value>?
     ) {
+        // NOTE: these authHeaders will not include any token-based Authorization headers
+        // Those are applied immediately before the request begins executing
         self.perform(request: .init(httpRequest: request,
                                     authHeaders: self.authHeaders,
                                     defaultHeaders: self.defaultHeaders,
@@ -686,7 +688,14 @@ private extension HTTPClient {
             headers = headers.merging(eTagHeader)
         }
 
-        #warning("DAVE: This is where the authorization header gets injected")
+        if request.httpRequest.path.authenticated {
+            // NOTE: it's almost guaranteed that the request will already have an "Authorization" header,
+            // because it's how the API key is sent up
+            // if the TokenManager produces a new authorization header, it will override
+            // any existing authorization header present
+            let authorization = self.tokenManager.authorizationHeaders(for: urlRequest)
+            headers = headers.merging(authorization)
+        }
 
         return headers
     }
