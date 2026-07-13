@@ -2321,6 +2321,7 @@ workflows:
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
+      - run-test-ios-27
       - run-test-ios-26
       - run-test-ios-18-and-17
       - run-test-ios-16
@@ -2337,6 +2338,7 @@ workflows:
       - spm-revenuecat-ui-ios-16
       - run-revenuecat-ui-ios-18-and-17
       - run-revenuecat-ui-ios-26
+      - run-revenuecat-ui-ios-27
       - spm-revenuecat-ui-watchos
 
   # Runs on every PR branch push. The reduced test suite runs automatically;
