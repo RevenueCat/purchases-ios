@@ -37,11 +37,21 @@ extension StoreKitConfigTestCase {
                                                   finishTransaction: finishTransaction).underlyingTransaction
     }
 
+    /// - Parameters:
+    ///   - product: An optional `SK2Product` to be purchased. If `nil`, a default product will be fetched.
+    ///   - finishTransaction: A Boolean flag indicating whether to call `finish()`
+    ///   on the transaction after a successful purchase.
+    ///   - retryPurchaseOnUserCancelled: A Boolean flag indicating whether to
+    ///   retry the purchase up to 3 times if the user cancels. The retry backoff interval is equal to the number of
+    ///   attempts in seconds (1s, then 2s, etc.). This is helpful in CI environments where StoreKit may not be
+    ///   ready to make a purchase immediately. In this case, it sometimes returns a `userCancelled` PurchaseResult
+    ///   for purchases.
     /// - Returns: `SK2Transaction` ater the purchase succeeded.
     @discardableResult
     func simulateAnyPurchase(
         product: SK2Product? = nil,
-        finishTransaction: Bool = false
+        finishTransaction: Bool = false,
+        retryPurchaseOnUserCancelled: Bool = false
     ) async throws -> StoreKit.VerificationResult<SK2Transaction> {
         let productToPurchase: SK2Product
         if let product = product {
@@ -50,8 +60,26 @@ extension StoreKitConfigTestCase {
             productToPurchase = try await self.fetchSk2Product()
         }
 
-        let result = try await productToPurchase.purchase()
-        let verificationResult = try XCTUnwrap(result.verificationResult, "Purchase did not succeed: \(result)")
+        var result: Product.PurchaseResult?
+
+        var attempts = 0
+        let maxAttempts = 3
+        while attempts < maxAttempts {
+            result = try await productToPurchase.purchase()
+
+            if case .userCancelled = result {
+                attempts += 1
+                try await Task.sleep(nanoseconds: UInt64(attempts) * 1_000_000_000)
+                continue
+            }
+
+            break
+        }
+
+        let unwrappedResult = try XCTUnwrap(result, "Purchase attempt did not yield a result")
+        let verificationResult = try XCTUnwrap(
+            unwrappedResult.verificationResult, "Purchase did not succeed: \(unwrappedResult)"
+        )
 
         if finishTransaction {
             await verificationResult.underlyingTransaction.finish()
