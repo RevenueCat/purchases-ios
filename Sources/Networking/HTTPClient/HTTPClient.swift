@@ -49,7 +49,7 @@ class HTTPClient {
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
          retriableStatusCodes: Set<HTTPStatusCode> = Set([.tooManyRequests]),
-         requestTimeout: TimeInterval = Configuration.networkTimeoutDefault,
+         networkTimeout: NetworkTimeout = .default,
          dateProvider: DateProvider = DateProvider(),
          operationDispatcher: OperationDispatcher,
          apiSourceProvider: RemoteConfigSourceProviderType?,
@@ -57,8 +57,8 @@ class HTTPClient {
     ) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
-        config.timeoutIntervalForRequest = requestTimeout
-        config.timeoutIntervalForResource = requestTimeout
+        config.timeoutIntervalForRequest = networkTimeout.timeoutInterval
+        config.timeoutIntervalForResource = networkTimeout.timeoutInterval
         config.urlCache = nil // We implement our own caching with `ETagManager`.
         self.session = URLSession(configuration: config,
                                   delegate: RedirectLoggerSessionDelegate(),
@@ -69,12 +69,13 @@ class HTTPClient {
         self.diagnosticsTracker = diagnosticsTracker
         self.dnsChecker = dnsChecker
         self.retriableStatusCodes = retriableStatusCodes
-        self.timeout = requestTimeout
+        self.timeout = networkTimeout.timeoutInterval
         self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: systemInfo.apiKey)
         self.dateProvider = dateProvider
         self.operationDispatcher = operationDispatcher
         self.apiSourceProvider = apiSourceProvider
         self.requestTimeoutManager = timeoutManager ?? HTTPRequestTimeoutManager(
+            networkTimeout: networkTimeout,
             dateProvider: dateProvider
         )
     }

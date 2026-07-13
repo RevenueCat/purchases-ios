@@ -31,7 +31,7 @@ class Backend {
 
     convenience init(
         systemInfo: SystemInfo,
-        httpClientTimeout: TimeInterval = Configuration.networkTimeoutDefault,
+        httpClientTimeout: NetworkTimeout = .default,
         eTagManager: ETagManager,
         operationDispatcher: OperationDispatcher,
         attributionFetcher: AttributionFetcher,
@@ -44,7 +44,7 @@ class Backend {
                                     eTagManager: eTagManager,
                                     signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
                                     diagnosticsTracker: diagnosticsTracker,
-                                    requestTimeout: httpClientTimeout,
+                                    networkTimeout: httpClientTimeout,
                                     operationDispatcher: OperationDispatcher.default,
                                     apiSourceProvider: apiSourceProvider)
         let config = BackendConfiguration(httpClient: httpClient,
