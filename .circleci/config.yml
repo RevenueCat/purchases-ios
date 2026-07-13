@@ -34,15 +34,6 @@ executors:
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
-  macos-executor-for-macos-12_6:
-    parameters:
-      xcode_version:
-        type: string
-        default: "16.4"
-    macos:
-      # circleci-lint: disable=unknown-xcode-version
-      xcode: << parameters.xcode_version >>
-    resource_class: macos.m1.medium.gen1
 
 aliases:
   release-branches: &release-branches
@@ -85,23 +76,38 @@ commands:
       runtime-name:
         type: string
     steps:
-      # - install-brew-dependency:
-      #     dependency_name: 'xcodes'
-      # - run:
-      #     name: Install simulator
-      #     command: | # Print all available simulators and install required one
-      #         xcodes runtimes
-      #         sudo xcodes runtimes install "<< parameters.runtime-name >>"
-      # Xcodes got broken with latest iOS 18 betas. This is a temporary workaround. https://github.com/XcodesOrg/xcodes/issues/368
+      - restore_cache:
+          keys:
+            - v1-xcodes-2.0.3-{{ arch }}
       - run:
-          name: Install fixed xcodes version
+          name: Install xcodes 2.0.3
           command: |
-              mint install https://github.com/alvar-bolt/xcodes.git@alvar/ios-18-quickfix
+            # Pinned to 2.0.3: it handles Apple's simulator runtime catalog
+            # `authentication: none` entries that break older xcodes versions.
+            # https://github.com/XcodesOrg/xcodes/releases/tag/2.0.3
+            # We install the prebuilt universal binary into /opt/homebrew/bin (on PATH
+            # and reachable under sudo, used by the runtime install step below).
+            # Match on the exact version so a pre-installed/older xcodes is replaced.
+            if xcodes version 2>/dev/null | grep -q "2.0.3"; then
+                echo "xcodes 2.0.3 already installed, skipping."
+                exit 0
+            fi
+            curl -fsSL -o /tmp/xcodes.tar.gz \
+              https://github.com/XcodesOrg/xcodes/releases/download/2.0.3/xcodes-2.0.3.macos.arm64.bottle.tar.gz
+            echo "d0251244b8a02b5af1eb5fa5618c6efff6e387d51f749b631b9c7cceee476fae  /tmp/xcodes.tar.gz" | shasum -a 256 -c -
+            tar -xzf /tmp/xcodes.tar.gz -C /tmp
+            sudo mv /tmp/xcodes/2.0.3/bin/xcodes /opt/homebrew/bin/xcodes
+            sudo chmod +x /opt/homebrew/bin/xcodes
+            xcodes version
+      - save_cache:
+          key: v1-xcodes-2.0.3-{{ arch }}
+          paths:
+            - /opt/homebrew/bin/xcodes
       - run:
           name: Install simulator
           command: | # Print all available simulators and install required one
-              $HOME/.mint/bin/xcodes runtimes
-              sudo $HOME/.mint/bin/xcodes runtimes install "<< parameters.runtime-name >>"
+              xcodes runtimes
+              sudo xcodes runtimes install "<< parameters.runtime-name >>"
 
   install-bundle-dependencies:
     parameters:
@@ -595,6 +601,41 @@ jobs:
           path: fastlane/test_output
           destination: scan-test-output
 
+  spm-revenuecat-ui-ios-26:
+    executor:
+      name: macos-executor
+      xcode_version: "26.5"
+    steps:
+      - checkout
+      # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      - install-dependencies:
+          install_xcbeautify: false
+      - update-spm-installation-commit
+      - run:
+          name: SPM RevenueCatUI Release Build
+          command: swift build -c release --target RevenueCatUI
+          no_output_timeout: 5m
+      - run:
+          name: SPM RevenueCatUI Tests
+          command: bundle exec fastlane test_revenuecatui
+          no_output_timeout: 15m
+          environment:
+            DEVICE: iPhone 17,OS=26.5
+            # No iOS 26 reference snapshots yet: run unit tests, skip snapshot tests.
+            REVENUECATUI_TEST_PLAN: RevenueCatUI-UnitTests
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          job: "create_snapshots_repo_pr"
+          version: "revenuecatui-26"
+      - compress_result_bundle:
+          directory: fastlane/test_output
+          bundle_name: revenuecatui
+      - store_test_results:
+          path: fastlane/test_output/revenuecatui/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: scan-test-output
+
   spm-revenuecat-ui-watchos:
     executor:
       name: macos-executor
@@ -765,6 +806,41 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
+  run-test-ios-14:
+    executor:
+      name: macos-executor
+      # iOS 14 requires Xcode 14, and 14.3.1 is the latest Xcode 14 available on CircleCI.
+      # See https://circleci.com/docs/using-macos/#supported-xcode-versions
+      xcode_version: "14.3.1"
+    steps:
+      - checkout
+      - install-dependencies:
+          install_xcbeautify: false
+          install_mint: true
+          install_swiftlint: false
+      - install-xcbeautify-for-xcode14
+      - update-spm-installation-commit
+      - install-runtime:
+          runtime-name: iOS 14.5
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios skip_sk_tests:true
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 12 (14.5)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_snapshots >>
+          job: "create_snapshot_pr"
+          version: "ios-14"
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
   run-test-tvos:
     executor:
       name: macos-executor
@@ -805,112 +881,6 @@ jobs:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "watchos"
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
-
-  run-test-ios-14:
-    executor:
-      name: macos-executor-for-macos-12_6
-      # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
-      # See https://circleci.com/docs/using-macos/#supported-xcode-versions
-      xcode_version: "14.2.0"
-    steps:
-      - checkout
-      - install-dependencies:
-          install_xcbeautify: false
-          # Mint 0.17.5 is required here as newer versions of Mint don't support macOS 12.
-          install_mint_0_17_5: true
-          install_swiftlint: false
-      - install-xcbeautify-for-xcode14
-      - update-spm-installation-commit
-      - install-runtime:
-          runtime-name: iOS 14.5
-      - run:
-          name: Run tests
-          command: bundle exec fastlane test_ios skip_sk_tests:true
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 12 (14.5)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
-          job: "create_snapshot_pr"
-          version: "ios-14"
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
-
-  run-test-ios-13:
-    executor:
-      name: macos-executor-for-macos-12_6
-      xcode_version: "14.2.0"
-    steps:
-      - checkout
-      - install-dependencies:
-          install_xcbeautify: false
-          # Mint 0.17.5 is required here as newer versions of Mint don't support macOS 12.
-          install_mint_0_17_5: true
-          install_swiftlint: false
-      - macos/install-rosetta
-      - install-xcbeautify-for-xcode14
-      - update-spm-installation-commit
-      - install-runtime:
-          runtime-name: iOS 13.7
-      - run:
-          name: Run tests
-          command: bundle exec fastlane test_ios
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 11 (13.7)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
-          job: "create_snapshot_pr"
-          version: "ios-13"
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
-
-  run-test-ios-12:
-    executor:
-      name: macos-executor-for-macos-12_6
-      xcode_version: "14.2.0"
-    steps:
-      - checkout
-      - install-dependencies:
-          install_xcbeautify: false
-          # Mint 0.17.5 is required here as newer versions of Mint don't support macOS 12.
-          install_mint_0_17_5: true
-          install_swiftlint: false
-      - macos/install-rosetta
-      - install-xcbeautify-for-xcode14
-      - update-spm-installation-commit
-      - install-runtime:
-          runtime-name: iOS 12.4
-      - run:
-          name: Run tests
-          command: bundle exec fastlane test_ios
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 6 (12.4)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
-          job: "create_snapshot_pr"
-          version: "ios-12"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -1337,8 +1307,6 @@ workflows:
       - run-test-ios-16
       - run-test-ios-15
       - run-test-ios-14
-      - run-test-ios-13
-      - run-test-ios-12
       - run-test-macos
       - run-test-watchos
 
@@ -1365,21 +1333,16 @@ workflows:
       - spm-revenuecat-ui-ios-15
       - spm-revenuecat-ui-ios-16
       - spm-revenuecat-ui-ios-17
+      - spm-revenuecat-ui-ios-26
       - spm-revenuecat-ui-watchos
       - run-test-macos
       - run-test-ios-18
       - run-test-ios-17
       - run-test-ios-16
       - run-test-ios-15
+      - run-test-ios-14
       - run-test-watchos
       - run-test-tvos
-      # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
-      # See https://circleci.com/docs/using-macos/#supported-xcode-versions
-      - run-test-ios-14
-      - run-test-ios-13:
-          <<: *release-branches-and-main
-      - run-test-ios-12:
-          <<: *release-branches-and-main
       - build-tv-watch-and-macos
       - build-visionos
       - backend-integration-tests-SK1:
