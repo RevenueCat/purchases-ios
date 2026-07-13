@@ -22,17 +22,16 @@ class MockIdentityAPI: IdentityAPI {
 
     var invokedLogIn = false
     var invokedLogInCount = 0
-    var invokedLogInParameters: (currentAppUserID: String, newAppUserID: String)?
-    var invokedLogInParametersList = [(currentAppUserID: String, newAppUserID: String)]()
+    var invokedLogInParameters: IdentityAPI.LogInRequest?
+    var invokedLogInParametersList = [IdentityAPI.LogInRequest]()
     var stubbedLogInCompletionResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
 
-    override func logIn(currentAppUserID: String,
-                        newAppUserID: String,
-                        completion: @escaping LogInResponseHandler) {
+    override func logIn(_ request: IdentityAPI.LogInRequest,
+                        completion: @escaping IdentityAPI.LogInResponseHandler) {
         invokedLogIn = true
         invokedLogInCount += 1
-        invokedLogInParameters = (currentAppUserID, newAppUserID)
-        invokedLogInParametersList.append((currentAppUserID, newAppUserID))
+        invokedLogInParameters = request
+        invokedLogInParametersList.append(request)
         if let result = stubbedLogInCompletionResult {
             completion(result)
         }
