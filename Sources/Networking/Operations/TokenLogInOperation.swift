@@ -14,20 +14,20 @@ import Foundation
 
 final class TokenLogInOperation: CacheableNetworkOperation {
 
-    private let loginCallbackCache: CallbackCache<LogInCallback>
+    private let tokenCallbackCache: CallbackCache<TokenCallback>
     private let configuration: UserSpecificConfiguration
     private let token: ExternalAuthToken
 
     static func createFactory(
         configuration: UserSpecificConfiguration,
         token: ExternalAuthToken,
-        loginCallbackCache: CallbackCache<LogInCallback>
+        tokenCallbackCache: CallbackCache<TokenCallback>
     ) -> CacheableNetworkOperationFactory<TokenLogInOperation> {
         return .init({
             .init(
                 configuration: configuration,
                 token: token,
-                loginCallbackCache: loginCallbackCache,
+                tokenCallbackCache: tokenCallbackCache,
                 cacheKey: $0
             ) },
                      individualizedCacheKeyPart: token.cacheIdentifier)
@@ -36,12 +36,12 @@ final class TokenLogInOperation: CacheableNetworkOperation {
     private init(
         configuration: UserSpecificConfiguration,
         token: ExternalAuthToken,
-        loginCallbackCache: CallbackCache<LogInCallback>,
+        tokenCallbackCache: CallbackCache<TokenCallback>,
         cacheKey: String
     ) {
         self.configuration = configuration
         self.token = token
-        self.loginCallbackCache = loginCallbackCache
+        self.tokenCallbackCache = tokenCallbackCache
 
         super.init(configuration: configuration, cacheKey: cacheKey)
     }
@@ -59,7 +59,7 @@ private extension TokenLogInOperation {
 
     func logIn(completion: @escaping () -> Void) {
         guard self.token.tokenData.isEmpty == false else {
-            self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
+            self.tokenCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(.failure(.missingAppUserID()))
             }
             completion()
@@ -78,8 +78,8 @@ private extension TokenLogInOperation {
 
         let request = HTTPRequest(method: .post(body), path: .logIn)
 
-        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<CustomerInfo>.Result) in
-            self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
+        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<TokenResponse>.Result) in
+            self.tokenCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                 self.handleLogin(response, completion: callbackObject.completion)
             }
 
@@ -87,15 +87,11 @@ private extension TokenLogInOperation {
         }
     }
 
-    func handleLogin(_ result: VerifiedHTTPResponse<CustomerInfo>.Result,
-                     completion: IdentityAPI.LogInResponseHandler) {
-        let result: Result<(info: CustomerInfo, created: Bool), BackendError> = result
+    func handleLogin(_ result: VerifiedHTTPResponse<TokenResponse>.Result,
+                     completion: TokenAPI.TokenResponseHandler) {
+        let result: Result<TokenResponse, BackendError> = result
             .map { response in
-                (
-                    response.body.copy(with: response.verificationResult,
-                                       httpResponseOriginalSource: response.originalSource),
-                    created: response.httpStatusCode == .createdSuccess
-                )
+                response.body
             }
             .mapError(BackendError.networkError)
 

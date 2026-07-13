@@ -169,10 +169,7 @@ private extension IdentityManager {
             return
         }
 
-        let request = IdentityAPI.LogInRequest(currentAppUserID: oldAppUserID,
-                                               kind: .identifyAs(newAppUserID: newAppUserID))
-
-        self.backend.identity.logIn(request) { result in
+        self.backend.identity.logIn(currentAppUserID: oldAppUserID, newAppUserID: newAppUserID) { result in
             if case let .success((customerInfo, _)) = result {
                 self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newAppUserID)
                 self.remoteConfigManager?.clearCache()
@@ -188,27 +185,15 @@ private extension IdentityManager {
     func performLogIn(token: ExternalToken, completion: @escaping IdentityAPI.LogInResponseHandler) {
         let oldAppUserID = self.currentAppUserID
 
-        let request = IdentityAPI.LogInRequest(currentAppUserID: oldAppUserID,
-                                               kind: .switchTo(token))
-
-        /*
-         NOTE: we don't have a "newAppUserID", because we just have an opaque authentication blob.
-         We rely on the server to validate the blob and extract information, and send it back to us
-         */
-
-        self.backend.identity.logIn(request) { result in
-            if case let .success((customerInfo, _)) = result {
+        self.backend.token.logIn(currentAppUserID: oldAppUserID, token: token) { result in
+            switch result {
+            case .success(let token):
                 #warning("DAVE: THIS IS PROBABLY NOT CORRECT")
-                let newAppUserID = customerInfo.originalAppUserId
 
-                self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newAppUserID)
-                self.remoteConfigManager?.clearCache()
-                self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: newAppUserID)
-                self.copySubscriberAttributesToNewUserIfOldIsAnonymous(oldAppUserID: oldAppUserID,
-                                                                       newAppUserID: newAppUserID)
+                self.logIn(appUserID: token.idToken ?? "", completion: completion)
+            case .failure(let error):
+                completion(.failure(error))
             }
-
-            completion(result)
         }
     }
 

@@ -14,21 +14,11 @@
 import Foundation
 
 class IdentityAPI {
-
-    struct LogInRequest: Equatable {
-        enum Kind: Equatable {
-            case identifyAs(newAppUserID: String)
-            case switchTo(ExternalToken)
-        }
-
-        let currentAppUserID: String
-        let kind: Kind
-    }
-
     typealias LogInResponse = Result<(info: CustomerInfo, created: Bool), BackendError>
     typealias LogInResponseHandler = (LogInResponse) -> Void
 
     private let logInCallbacksCache: CallbackCache<LogInCallback>
+
     private let backendConfig: BackendConfiguration
 
     init(backendConfig: BackendConfiguration) {
@@ -36,38 +26,20 @@ class IdentityAPI {
         self.logInCallbacksCache = CallbackCache<LogInCallback>()
     }
 
-    func logIn(_ request: LogInRequest, completion: @escaping LogInResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: request.currentAppUserID)
-
-        switch request.kind {
-        case .identifyAs(newAppUserID: let newAppUserID):
-            let factory = LogInOperation.createFactory(configuration: config,
-                                                       newAppUserID: newAppUserID,
-                                                       loginCallbackCache: self.logInCallbacksCache)
-
-            let loginCallback = LogInCallback(cacheKey: factory.cacheKey, completion: completion)
-            let cacheStatus = self.logInCallbacksCache.add(loginCallback)
-
-            self.backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
-        case .switchTo(let token):
-            let factory = TokenLogInOperation.createFactory(configuration: config,
-                                                            token: token.authToken,
-                                                            loginCallbackCache: self.logInCallbacksCache)
-
-            let loginCallback = LogInCallback(cacheKey: factory.cacheKey, completion: completion)
-            let cacheStatus = self.logInCallbacksCache.add(loginCallback)
-
-            self.backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
-        }
-    }
-
-    #warning("DAVE: STILL USED BY UNIT TESTS: BackendLoginTests.swift")
     func logIn(currentAppUserID: String,
                newAppUserID: String,
                completion: @escaping LogInResponseHandler) {
-        let request = LogInRequest(currentAppUserID: currentAppUserID, kind: .identifyAs(newAppUserID: newAppUserID))
-        self.logIn(request, completion: completion)
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+                                                                appUserID: currentAppUserID)
+
+        let factory = LogInOperation.createFactory(configuration: config,
+                                                   newAppUserID: newAppUserID,
+                                                   loginCallbackCache: self.logInCallbacksCache)
+
+        let loginCallback = LogInCallback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.logInCallbacksCache.add(loginCallback)
+
+        self.backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
     }
 
 }

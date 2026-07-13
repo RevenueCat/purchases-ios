@@ -145,6 +145,8 @@ class HTTPClient {
             headers["X-UI-Preview-Mode"] = "\(true)"
         }
 
+        #warning("DAVE: This could be about where the authorization header gets injected")
+
         return headers
     }
 
@@ -308,6 +310,7 @@ internal extension HTTPClient {
         var path: String { self.httpRequest.path.relativePath }
 
         func getCurrentRequestURL(proxyURL: URL?) -> URL? {
+            #warning("DAVE: This could be where path alteration happens")
             return self.httpRequest.path.url(
                 proxyURL: proxyURL,
                 fallbackUrlIndex: self.fallbackUrlIndex
@@ -528,6 +531,8 @@ private extension HTTPClient {
             case let .failure(error):
                 let httpURLResponse = urlResponse as? HTTPURLResponse
 
+                #warning("DAVE: This is about where token checking would go")
+
                 Logger.debug(Strings.network.api_request_failed(request.httpRequest,
                                                                 httpCode: httpURLResponse?.httpStatusCode,
                                                                 error: error,
@@ -672,6 +677,7 @@ private extension HTTPClient {
     }
 
     private func headers(for request: Request, urlRequest: URLRequest) -> HTTPClient.RequestHeaders {
+        #warning("DAVE: This could be about where the authorization header gets injected")
         if request.httpRequest.path.shouldSendEtag {
             let eTagHeader = self.eTagManager.eTagHeader(
                 for: urlRequest,
