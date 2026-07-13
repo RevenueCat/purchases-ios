@@ -24,11 +24,11 @@ class HTTPClient {
     let systemInfo: SystemInfo
     let timeout: TimeInterval
     let authHeaders: RequestHeaders
+    let tokenManager: TokenManager
 
     private let session: URLSession
     private let state: Atomic<State> = .init(.initial)
     private let eTagManager: ETagManager
-    private let tokenManager: TokenManager
     private let dnsChecker: DNSCheckerType.Type
     private let signing: SigningType
     private let diagnosticsTracker: DiagnosticsTrackerType?
@@ -147,8 +147,6 @@ class HTTPClient {
         if self.systemInfo.dangerousSettings.uiPreviewMode {
             headers["X-UI-Preview-Mode"] = "\(true)"
         }
-
-        #warning("DAVE: This could be about where the authorization header gets injected")
 
         return headers
     }
@@ -680,17 +678,17 @@ private extension HTTPClient {
     }
 
     private func headers(for request: Request, urlRequest: URLRequest) -> HTTPClient.RequestHeaders {
-        #warning("DAVE: This could be about where the authorization header gets injected")
+        var headers = request.headers
         if request.httpRequest.path.shouldSendEtag {
-            let eTagHeader = self.eTagManager.eTagHeader(
-                for: urlRequest,
-                withSignatureVerification: request.verificationMode.isEnabled,
-                refreshETag: request.retried
-            )
-            return request.headers.merging(eTagHeader)
-        } else {
-            return request.headers
+            let eTagHeader = self.eTagManager.eTagHeader(for: urlRequest,
+                                                         withSignatureVerification: request.verificationMode.isEnabled,
+                                                         refreshETag: request.retried)
+            headers = headers.merging(eTagHeader)
         }
+
+        #warning("DAVE: This is where the authorization header gets injected")
+
+        return headers
     }
 
     private func signing(for request: HTTPRequest) -> SigningType {

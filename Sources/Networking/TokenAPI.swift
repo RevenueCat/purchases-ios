@@ -14,10 +14,14 @@ class TokenAPI {
 
     private let tokenCallbacksCache: CallbackCache<TokenCallback>
 
+    private let tokenManager: TokenManager
     private let backendConfig: BackendConfiguration
+
+    var enabled: Bool { tokenManager.enabled }
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
+        self.tokenManager = backendConfig.httpClient.tokenManager
         self.tokenCallbacksCache = CallbackCache<TokenCallback>()
     }
 

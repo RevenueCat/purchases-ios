@@ -23,7 +23,7 @@ class TokenManager {
         }
     }
 
-    private let enabled: Bool
+    let enabled: Bool
     private let storage: any SecureItemStorage
 
     init(enabled: Bool, storage: any SecureItemStorage) {

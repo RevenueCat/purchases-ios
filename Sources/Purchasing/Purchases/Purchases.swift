@@ -1089,6 +1089,12 @@ public extension Purchases {
     @_spi(Experimental)
     @objc(logInUsingToken:completion:)
     func logIn(using token: ExternalToken, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
+        guard self.backend.token.enabled else {
+            let error = NewErrorUtils.unsupportedError(message: "Token login requires .with(iamEnabled: true)")
+            completion(nil, false, error.asPublicError)
+            return
+        }
+
         self.identityManager.logIn(externalToken: token) { result in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(result.value?.info, result.value?.created ?? false, result.error?.asPublicError)

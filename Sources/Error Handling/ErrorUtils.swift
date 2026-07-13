@@ -571,8 +571,20 @@ enum ErrorUtils {
     static func unsupportedInUIPreviewModeError(
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
+        return ErrorUtils.unsupportedError(message: "Operation not supported in UI preview mode",
+                                           fileName: fileName,
+                                           functionName: functionName,
+                                           line: line)
+    }
+
+    /**
+     * Constructs an Error with the ``ErrorCode/unsupportedError`` code.
+     */
+    static func unsupportedError(
+        message: String, fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> PurchasesError {
         return ErrorUtils.error(with: .unsupportedError,
-                                message: "Operation not supported in UI preview mode",
+                                message: message,
                                 fileName: fileName,
                                 functionName: functionName,
                                 line: line)
