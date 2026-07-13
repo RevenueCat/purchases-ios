@@ -110,10 +110,7 @@ struct RootView: View {
             .onPreferenceChange(OverlaidHeaderHeightKey.self) { height in
                 overlaidHeaderHeight = height
             }
-            // Sticky footer is pinned to the bottom and drawn on top of the main content (rather than
-            // stacked below it), so a transparent/translucent footer lets the content show through.
-            // The content above reserves bottom clearance equal to the footer's measured height (via
-            // overlaidFooterHeight), so an opaque footer still looks identical to a stacked layout.
+            // Overlay the footer while reserving its measured height in the main content.
             .overlay(alignment: .bottom) {
                 if let stickyFooterViewModel = viewModel.stickyFooterViewModel {
                     StackComponentView(

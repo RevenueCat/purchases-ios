@@ -23,7 +23,7 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        // The form sheet presentation renders inconsistently on iOS 15. Skip on iOS 15 as a temporary fix.
+        // These snapshots render inconsistently on iOS 15.
         guard #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) else {
             throw XCTSkip("Snapshot is inconsistent on iOS 15")
         }

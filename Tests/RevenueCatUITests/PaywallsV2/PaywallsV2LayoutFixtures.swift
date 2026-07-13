@@ -107,7 +107,6 @@ enum PaywallsV2LayoutFixtures {
         )
     }
 
-    /// The dark CTA button reused by every fixture footer that just needs "a continue button" without varying it.
     private static func footerCTAText() -> PaywallComponent {
         .text(.init(
             text: "footer_cta",
@@ -121,8 +120,6 @@ enum PaywallsV2LayoutFixtures {
         ))
     }
 
-    /// The opaque footer used by [makeStickyFooterRootZLayerViewModel], reused wherever a fixture just needs "a
-    /// footer" without varying its content.
     private static func standardOpaqueFooterStack() -> PaywallComponent.StackComponent {
         PaywallComponent.StackComponent(
             components: [
@@ -164,7 +161,6 @@ enum PaywallsV2LayoutFixtures {
         return Array(repeating: row, count: count)
     }
 
-    /// A centered title, used wherever a fixture just needs "a small body" without varying its content.
     private static func centeredBodyStack() -> PaywallComponent.StackComponent {
         PaywallComponent.StackComponent(
             components: [
@@ -183,12 +179,8 @@ enum PaywallsV2LayoutFixtures {
         )
     }
 
-    /// A long scrollable feature list behind a translucent sticky footer, so the content is visible through the
-    /// footer while scrolling, and the last row scrolls clear of it.
     static func makeTransparentFooterOverScrollableContentViewModel() throws -> RootViewModel {
-        // A fixed-height filler (rather than relying on enough text rows to naturally overflow) makes the
-        // overflow amount deterministic across platforms/OS versions: text line-wrapping depends on font
-        // metrics that differ slightly between OS versions, which previously made this snapshot flaky.
+        // Fixed height avoids snapshot differences from OS-specific font metrics.
         let filler = PaywallComponent.stack(.init(
             components: [],
             size: .init(width: .fill, height: .fixed(600)),
@@ -203,7 +195,6 @@ enum PaywallsV2LayoutFixtures {
             padding: .init(top: 32, bottom: 16, leading: 32, trailing: 32)
         )
 
-        // Semi-transparent, tinted footer background so the scrolled content behind it stays visible.
         let footerStack = PaywallComponent.StackComponent(
             components: [
                 .text(.init(
@@ -232,8 +223,6 @@ enum PaywallsV2LayoutFixtures {
         )
     }
 
-    /// A small, vertically-centered body with an opaque sticky footer. The body must center within the space
-    /// *above* the footer (matching the pre-overlap behavior), not the whole screen.
     static func makeSmallCenteredBodyAboveFooterViewModel() throws -> RootViewModel {
         try makeRootViewModel(
             componentsConfig: .init(
@@ -244,7 +233,6 @@ enum PaywallsV2LayoutFixtures {
         )
     }
 
-    /// A sticky footer taller than half the screen, to verify the reserved bottom clearance scales with it.
     static func makeTallFooterViewModel() throws -> RootViewModel {
         let footerStack = PaywallComponent.StackComponent(
             components: [footerCTAText()],
@@ -263,8 +251,6 @@ enum PaywallsV2LayoutFixtures {
         )
     }
 
-    /// A step with both a (non-overlaid) header and a sticky footer, guarding that the footer overlap change
-    /// doesn't affect header layout.
     static func makeHeaderAndFooterViewModel() throws -> RootViewModel {
         let headerStack = PaywallComponent.StackComponent(
             components: [
