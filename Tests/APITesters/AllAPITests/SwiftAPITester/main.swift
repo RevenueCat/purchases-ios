@@ -72,5 +72,9 @@ func main() -> Int {
 
     checkDangerousSettingsAPI()
 
+    checkAdRewardAPI()
+    checkVirtualCurrencyRewardAPI()
+    checkEntitlementRewardAPI()
+
     return 0
 }

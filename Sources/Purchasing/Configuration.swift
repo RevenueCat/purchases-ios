@@ -60,6 +60,7 @@ import Foundation
         let preferredLocale: String?
         let automaticDeviceIdentifierCollectionEnabled: Bool
         let diagnosticsEnabled: Bool
+        let iamEnabled: Bool
     }
 
     internal let storage: Storage
@@ -82,6 +83,7 @@ import Foundation
         self.storage.automaticDeviceIdentifierCollectionEnabled
     }
     internal var diagnosticsEnabled: Bool { self.storage.diagnosticsEnabled }
+    internal var iamEnabled: Bool { self.storage.iamEnabled }
 
     private init(with builder: Builder) {
         self.storage = Storage(
@@ -98,7 +100,8 @@ import Foundation
             showStoreMessagesAutomatically: builder.showStoreMessagesAutomatically,
             preferredLocale: builder.preferredLocale,
             automaticDeviceIdentifierCollectionEnabled: builder.automaticDeviceIdentifierCollectionEnabled,
-            diagnosticsEnabled: builder.diagnosticsEnabled
+            diagnosticsEnabled: builder.diagnosticsEnabled,
+            iamEnabled: builder.iamEnabled
         )
     }
 
@@ -149,6 +152,7 @@ import Foundation
         private(set) var entitlementVerificationMode: EntitlementVerificationMode = .informational
         private(set) var showStoreMessagesAutomatically: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
+        private(set) var iamEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
 
         /// The preferred locale for the requests.
@@ -359,6 +363,15 @@ import Foundation
             return self
         }
 
+        /// Set `iamEnabled`. This is *disabled* by default.
+        ///
+        /// Enabling tells the SDK to prefer using token-based user sessions for communicating with the server.
+        @_spi(Experimental)
+        @objc(withIAMEnabled:) public func with(iamEnabled: Bool) -> Builder {
+            self.iamEnabled = iamEnabled
+            return self
+        }
+
         /// Generate a ``Configuration`` object given the values configured by this builder.
         @objc public func build() -> Configuration {
             return Configuration(with: self)
@@ -383,7 +396,7 @@ import Foundation
         /// - Parameter preferredUILocaleOverride: A locale string in the format "language_region" (e.g., "en_US").
         ///
         /// Defaults to `nil`, which means using the default user locale for RevenueCatUI components.
-        public func with(preferredUILocaleOverride: String?) -> Builder {
+        @objc public func with(preferredUILocaleOverride: String?) -> Builder {
             self.preferredLocale = preferredUILocaleOverride
             return self
         }

@@ -18,6 +18,8 @@ protocol HTTPResponseBody {
 
     static func create(with data: Data) throws -> Self
 
+    static func create(with data: Data, httpStatusCode: HTTPStatusCode) throws -> Self
+
     /// Returns a copy of this response body updating only the request date
     /// This is useful for types that include a response date (like `CustomerInfo`), that need to
     /// get the most up-to-date time coming from the response header.
@@ -28,6 +30,10 @@ protocol HTTPResponseBody {
 }
 
 extension HTTPResponseBody {
+
+    static func create(with data: Data, httpStatusCode: HTTPStatusCode) throws -> Self {
+        return try Self.create(with: data)
+    }
 
     func copy(with newRequestDate: Date) -> Self { return self }
 
@@ -68,6 +74,14 @@ extension Optional: HTTPResponseBody where Wrapped: HTTPResponseBody {
 
     static func create(with data: Data) throws -> Wrapped? {
         return try Wrapped.create(with: data)
+    }
+
+    static func create(with data: Data, httpStatusCode: HTTPStatusCode) throws -> Wrapped? {
+        guard httpStatusCode != .noContent else {
+            return nil
+        }
+
+        return try Wrapped.create(with: data, httpStatusCode: httpStatusCode)
     }
 
 }

@@ -37,14 +37,14 @@ class HTTPRequestTests: TestCase {
         .health,
         .getProductEntitlementMapping,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
-        .getWorkflows(appUserID: userID, type: nil),
-        .getWorkflow(appUserID: userID, workflowId: "wf_1")
+        .remoteConfig(domain: "app")
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
         .health
     ]
     private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
-        .health
+        .health,
+        .remoteConfig(domain: "app")
     ]
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
@@ -54,14 +54,14 @@ class HTTPRequestTests: TestCase {
         .getOfferings(appUserID: userID),
         .getProductEntitlementMapping,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
-        .getWorkflows(appUserID: userID, type: nil),
-        .getWorkflow(appUserID: userID, workflowId: "wf_1")
+        .remoteConfig(domain: "app")
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
         .logIn,
         .postReceiptData,
         .health,
+        .remoteConfig(domain: "app"),
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
@@ -172,9 +172,7 @@ class HTTPRequestTests: TestCase {
 
         expect(staticEndpoints) == [
             .getOfferings(appUserID: Self.userID),
-            .getProductEntitlementMapping,
-            .getWorkflows(appUserID: Self.userID, type: nil),
-            .getWorkflow(appUserID: Self.userID, workflowId: "wf_1")
+            .getProductEntitlementMapping
         ]
     }
 
@@ -201,34 +199,31 @@ class HTTPRequestTests: TestCase {
             case .getOfferings:
                 XCTAssertEqual(fallbackUrlsPaths,
                                ["https://api-production.8-lives-cat.io/v1/offerings"])
-            case .getWorkflows(_, let type):
-                let expected = type.map {
-                    "https://api-production.8-lives-cat.io/workflows/v1/workflows?type=\($0)"
-                } ?? "https://api-production.8-lives-cat.io/workflows/v1/workflows"
-                XCTAssertEqual(fallbackUrlsPaths, [expected])
-            case let .getWorkflow(_, workflowId):
-                XCTAssertEqual(fallbackUrlsPaths,
-                               ["https://api-production.8-lives-cat.io/workflows/v1/workflows/\(workflowId)"])
             default:
                 XCTAssertTrue(fallbackUrlsPaths.isEmpty)
             }
         }
     }
 
-    func testGetWorkflowsFallbackUrlIncludesTypeParam() {
-        let path = HTTPRequest.Path.getWorkflows(appUserID: Self.userID, type: "PAYWALL")
-        XCTAssertEqual(
-            path.fallbackUrls.map { $0.absoluteString },
-            ["https://api-production.8-lives-cat.io/workflows/v1/workflows?type=PAYWALL"]
-        )
+    func testRemoteConfigPathEscapesDomain() {
+        let path = HTTPRequest.Path.remoteConfig(domain: "app workflows/project")
+
+        expect(path.relativePath) == "/v1/config/app%20workflows%2Fproject"
+        expect(path.fallbackUrls).to(beEmpty())
     }
 
-    func testGetWorkflowFallbackUrlEscapesWorkflowId() {
-        let path = HTTPRequest.Path.getWorkflow(appUserID: Self.userID, workflowId: "wf id/with special")
-        XCTAssertEqual(
-            path.fallbackUrls.map { $0.absoluteString },
-            ["https://api-production.8-lives-cat.io/workflows/v1/workflows/wf%20id%2Fwith%20special"]
-        )
+    func testFallbackConfigPathUsesFallbackHostAndEscapesDomain() {
+        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app workflows/project")
+
+        expect(path.relativePath) == "/v1/config/app%20workflows%2Fproject"
+        expect(path.url?.absoluteString)
+            == "https://api-production.8-lives-cat.io/v1/config/app%20workflows%2Fproject"
+        expect(path.fallbackUrls).to(beEmpty())
+        expect(path.authenticated).to(beTrue())
+        expect(path.shouldSendEtag).to(beTrue())
+        expect(path.supportsSignatureVerification).to(beTrue())
+        expect(path.needsNonceForSigning).to(beFalse())
+        expect(path.name) == "remote_config_fallback"
     }
 
     func testUserIDEscaping() {
@@ -308,5 +303,40 @@ class HTTPRequestTests: TestCase {
     func testRequestIsRetryableIfSet() {
         let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"), isRetryable: true)
         expect(request.isRetryable).to(beTrue())
+    }
+
+    func testRemoteConfigUsesRCContainerAcceptHeaders() {
+        let request: HTTPRequest = .init(
+            method: .post(RemoteConfigRequest(appUserID: "app-user-id")),
+            path: HTTPRequest.Path.remoteConfig(domain: "app")
+        )
+        let headers = request.headers(
+            with: [:],
+            defaultHeaders: [:],
+            verificationMode: .disabled,
+            internalSettings: DangerousSettings.Internal.default
+        )
+
+        expect(headers[HTTPClient.RequestHeader.accept.rawValue]) == HTTPClient.rcContainerFormatAcceptHeaderValue
+        expect(headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue])
+            == HTTPClient.rcContainerFormatElementEncodingHeaderValue
+        expect(headers["Accept-Encoding"]).to(beNil())
+    }
+
+    func testFallbackConfigDoesNotRequestRCContainerFormat() {
+        let request: HTTPRequest = .init(
+            method: .get,
+            path: HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        )
+        let headers = request.headers(
+            with: [:],
+            defaultHeaders: [:],
+            verificationMode: .disabled,
+            internalSettings: DangerousSettings.Internal.default
+        )
+
+        expect(headers[HTTPClient.RequestHeader.accept.rawValue]).to(beNil())
+        expect(headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue]).to(beNil())
+        expect(headers["Accept-Encoding"]).to(beNil())
     }
 }

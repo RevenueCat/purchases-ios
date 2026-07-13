@@ -92,6 +92,11 @@ private struct WorkflowExitOfferOfferingBindingKey: EnvironmentKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct WorkflowCompletedInSessionBindingKey: EnvironmentKey {
+    static let defaultValue: Binding<Bool> = .constant(false)
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension EnvironmentValues {
     /// Called when a button with a component `id` is tapped inside a workflow paywall.
     /// Returns `true` if the workflow consumed the trigger (navigator found a matching step),
@@ -125,6 +130,13 @@ extension EnvironmentValues {
     var workflowExitOfferOfferingBinding: Binding<Offering?> {
         get { self[WorkflowExitOfferOfferingBindingKey.self] }
         set { self[WorkflowExitOfferOfferingBindingKey.self] = newValue }
+    }
+
+    /// A binding injected by the outer presenter so restore-driven dismissal can mark the workflow
+    /// as completed before the embedded workflow view disappears. Regular paywalls do not read this.
+    var workflowCompletedInSessionBinding: Binding<Bool> {
+        get { self[WorkflowCompletedInSessionBindingKey.self] }
+        set { self[WorkflowCompletedInSessionBindingKey.self] = newValue }
     }
 }
 

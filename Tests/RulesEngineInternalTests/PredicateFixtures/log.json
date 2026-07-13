@@ -50,12 +50,12 @@
       "expectedLogs": ["42"]
     },
     {
-      "id": "log_empty_args_returns_null",
-      "description": "no operand resolves to null, which stringifies to \"null\"",
+      "id": "log_empty_args_returns_undefined",
+      "description": "no operand resolves to undefined, which stringifies to \"undefined\"",
       "predicate": { "log": [] },
       "variables": {},
       "expected": false,
-      "expectedLogs": ["null"]
+      "expectedLogs": ["undefined"]
     },
     {
       "id": "log_emits_positive_infinity",

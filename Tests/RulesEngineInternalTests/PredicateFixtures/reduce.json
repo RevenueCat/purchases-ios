@@ -420,6 +420,20 @@
         "seed": 42
       },
       "expected": true
+    },
+    {
+      "id": "reduce_missing_predicate_strict_not_null",
+      "description": "reduce is function(scopedData, scopedLogic, accumulator); a missing predicate is undefined, so apply(undefined, …) returns undefined for each step, folding to undefined. undefined !== null",
+      "predicate": { "===": [{ "reduce": [[1, 2]] }, null] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "reduce_missing_predicate_loose_equal_null",
+      "description": "the same undefined result is loosely equal to null (undefined == null), confirming the fold produced undefined",
+      "predicate": { "==": [{ "reduce": [[1, 2]] }, null] },
+      "variables": {},
+      "expected": true
     }
   ]
 }

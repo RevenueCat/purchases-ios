@@ -17,7 +17,7 @@ import SnapshotTesting
 import SwiftUI
 import XCTest
 
-#if !os(watchOS) && !os(tvOS)
+#if !os(watchOS) && !os(tvOS) && !os(macOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TextComponentViewLoadingTests: BaseSnapshotTest {

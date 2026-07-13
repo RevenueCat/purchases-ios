@@ -161,6 +161,70 @@ final class WorkflowStepEventCoordinatorTests: TestCase {
         expect(self.recorded).to(haveCount(1))
     }
 
+    // MARK: - Abandonment (workflows_close)
+
+    func testAbandonmentEmitsCloseForCurrentStepWhenNotPurchased() throws {
+        let workflow = try Self.makeWorkflow()
+        let coordinator = self.makeCoordinator(workflow: workflow)
+        let step = try XCTUnwrap(workflow.steps["step_1"])
+
+        coordinator.trackAbandonment(currentStep: step, hasRenderedPage: true, hasCompletedInSession: false)
+
+        expect(self.recorded).to(haveCount(1))
+        let data = try XCTUnwrap(Self.closeData(self.recorded[0]))
+        expect(data.stepId) == "step_1"
+        // step_1 navigates to step_2, so it is the first but not the terminal step.
+        expect(data.isFirstStep) == true
+        expect(data.isLastStep) == false
+    }
+
+    func testAbandonmentStampsTerminalStepPosition() throws {
+        // workflows_close is not gated by step position; it just stamps it. On the terminal step
+        // isLastStep is true (analytics decides downstream whether that counts as abandonment).
+        let workflow = try Self.makeWorkflow()
+        let coordinator = self.makeCoordinator(workflow: workflow)
+        let step = try XCTUnwrap(workflow.steps["step_2"])
+
+        coordinator.trackAbandonment(currentStep: step, hasRenderedPage: true, hasCompletedInSession: false)
+
+        let data = try XCTUnwrap(Self.closeData(self.recorded.first))
+        expect(data.stepId) == "step_2"
+        expect(data.isFirstStep) == false
+        expect(data.isLastStep) == true
+    }
+
+    func testAbandonmentDoesNotEmitWhenCompleted() throws {
+        // A completed purchase or successful restore is a natural exit, not an abandonment.
+        let workflow = try Self.makeWorkflow()
+        let coordinator = self.makeCoordinator(workflow: workflow)
+        let step = try XCTUnwrap(workflow.steps["step_1"])
+
+        coordinator.trackAbandonment(currentStep: step, hasRenderedPage: true, hasCompletedInSession: true)
+
+        expect(self.recorded).to(beEmpty())
+    }
+
+    func testAbandonmentDoesNotEmitWhenNoPageRendered() throws {
+        let workflow = try Self.makeWorkflow()
+        let coordinator = self.makeCoordinator(workflow: workflow)
+        let step = try XCTUnwrap(workflow.steps["step_1"])
+
+        coordinator.trackAbandonment(currentStep: step, hasRenderedPage: false, hasCompletedInSession: false)
+
+        expect(self.recorded).to(beEmpty())
+    }
+
+    func testAbandonmentFiresOnlyOnce() throws {
+        let workflow = try Self.makeWorkflow()
+        let coordinator = self.makeCoordinator(workflow: workflow)
+        let step = try XCTUnwrap(workflow.steps["step_1"])
+
+        coordinator.trackAbandonment(currentStep: step, hasRenderedPage: true, hasCompletedInSession: false)
+        coordinator.trackAbandonment(currentStep: step, hasRenderedPage: true, hasCompletedInSession: false)
+
+        expect(self.recorded).to(haveCount(1))
+    }
+
     // MARK: - Trace id continuity
 
     func testFullJourneyEmitsExpectedSequenceSharingOneTraceId() throws {
@@ -291,10 +355,16 @@ private extension WorkflowStepEventCoordinatorTests {
         return data
     }
 
+    static func closeData(_ event: WorkflowEvent?) -> WorkflowEvent.Data? {
+        guard case let .close(_, data) = event else { return nil }
+        return data
+    }
+
     static func kind(_ event: WorkflowEvent) -> String {
         switch event {
         case .stepStarted: return "started"
         case .stepCompleted: return "completed"
+        case .close: return "close"
         }
     }
 

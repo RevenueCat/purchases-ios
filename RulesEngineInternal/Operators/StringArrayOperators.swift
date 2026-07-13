@@ -59,10 +59,12 @@ enum StringArrayOperators {
     /// at `start`. Code-point-based, not byte-based — see type docs.
     /// `json-logic-js` declares `substr` as
     /// `function(source, start, end)`, so a missing `start` defaults
-    /// to `0` and arguments past the third are silently ignored.
+    /// to `0` and arguments past the third are silently ignored. A
+    /// missing `source` is `undefined`, which stringifies to
+    /// `"undefined"` (not `"null"`).
     static func opSubstr(args: Value, vars: Value) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
-        let source = evaluated.first ?? .null
+        let source = evaluated.first ?? .undefined
         let start = evaluated.indices.contains(1) ? evaluated[1] : .null
         let length: Value? = evaluated.indices.contains(2) ? evaluated[2] : nil
 

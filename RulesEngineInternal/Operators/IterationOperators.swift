@@ -110,12 +110,16 @@ enum IterationOperators {
     /// scope to seed the accumulator, then the predicate is evaluated
     /// once per item with `vars` rebound to
     /// `{"current": item, "accumulator": acc}`. A non-array source
-    /// returns the seed unchanged. A missing initial accumulator
-    /// defaults to `.null` and arguments past the third are ignored.
+    /// returns the seed unchanged. A missing predicate defaults to
+    /// `.undefined` (so it evaluates to `.undefined` per item, matching
+    /// `json-logic-js`'s `apply(undefined, …)`). A missing initial
+    /// accumulator defaults to `.null` — `json-logic-js` seeds the fold
+    /// with `typeof values[2] !== "undefined" ? values[2] : null`.
+    /// Arguments past the third are ignored.
     static func opReduce(args: Value, vars: Value) throws -> Value {
         let raw = Operators.argsAsList(args)
         let sourceArg: Value = raw.indices.contains(0) ? raw[0] : .null
-        let predicate: Value = raw.indices.contains(1) ? raw[1] : .null
+        let predicate: Value = raw.indices.contains(1) ? raw[1] : .undefined
         let source = try Evaluator.evaluateValue(sourceArg, vars: vars)
         var accumulator: Value = raw.indices.contains(2)
             ? try Evaluator.evaluateValue(raw[2], vars: vars)
@@ -139,7 +143,9 @@ enum IterationOperators {
     /// does not resolve to an array, so callers can distinguish a
     /// non-array source from a genuinely empty one (`some`/`all` treat
     /// both as `false`, but `none`/`map`/`filter`/`reduce` need the
-    /// distinction). A missing predicate defaults to `.null` and
+    /// distinction). A missing predicate defaults to `.undefined` (so it
+    /// evaluates to `.undefined` per item, matching `json-logic-js`'s
+    /// `apply(undefined, …)`; observable via `map`'s raw results) and
     /// arguments past the second are ignored, matching `json-logic-js`'s
     /// `function(scopedData, scopedLogic)` signature.
     private static func parseIterationArgs(
@@ -148,7 +154,7 @@ enum IterationOperators {
     ) throws -> (items: [Value]?, predicate: Value) {
         let raw = Operators.argsAsList(args)
         let sourceArg: Value = raw.indices.contains(0) ? raw[0] : .null
-        let predicate: Value = raw.indices.contains(1) ? raw[1] : .null
+        let predicate: Value = raw.indices.contains(1) ? raw[1] : .undefined
         let source = try Evaluator.evaluateValue(sourceArg, vars: vars)
         guard case .array(let items) = source else { return (nil, predicate) }
         return (items, predicate)

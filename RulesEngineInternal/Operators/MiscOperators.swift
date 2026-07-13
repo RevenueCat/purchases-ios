@@ -14,9 +14,10 @@ enum MiscOperators {
     /// (identity passthrough).
     /// Mirrors json-logic-js `function(a){ console.log(a); return a; }`: a
     /// debug aid that never affects a rule's outcome. A missing argument is
-    /// `null`; operands beyond the first are ignored.
+    /// `undefined` (logged as `"undefined"`); operands beyond the first are
+    /// ignored.
     static func opLog(args: Value, vars: Value) throws -> Value {
-        let value = try Operators.evalArgs(args, vars: vars).first ?? .null
+        let value = try Operators.evalArgs(args, vars: vars).first ?? .undefined
         RulesEngine.logger.log(jsString(value))
         return value
     }

@@ -195,6 +195,7 @@ struct WorkflowPaywallView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.workflowExitOfferOfferingBinding) private var exitOfferOfferingBinding
+    @Environment(\.workflowCompletedInSessionBinding) private var workflowCompletedInSessionBinding
 
     enum DismissalAction: Equatable {
         case dismissWorkflow
@@ -231,6 +232,7 @@ struct WorkflowPaywallView: View {
     @State private var stepEventCoordinator: WorkflowStepEventCoordinator
     @State private var transitionState: WorkflowPageTransitionState<RenderedPage>
     @State private var activeTransitionID: UUID?
+    @State private var hasCompletedWorkflowInSession = false
     /// Every step the user has seen, in first-seen order. Each page is kept mounted so its subtree,
     /// and the state it owns (a tab/toggle selection, the `PackageContext` that `PaywallsV2View`
     /// mutates by reference), survives navigating away and back. Also the per-step page cache:
@@ -347,6 +349,19 @@ struct WorkflowPaywallView: View {
         // and programmatic parent dismiss — without firing during inner step transitions (the outer
         // view stays mounted while pages swap).
         .onDisappear {
+            // Workflow abandonment: fires unless the workflow completed naturally before dismissal.
+            // The completion signal is explicit because UIKit can reset PurchaseHandler before this
+            // view disappears, and restore only completes a workflow when the presenter actually
+            // closes it.
+            self.stepEventCoordinator.trackAbandonment(
+                currentStep: self.navigator.currentStep,
+                hasRenderedPage: self.transitionState.currentPage != nil,
+                hasCompletedInSession: Self.hasCompletedInSession(
+                    hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession,
+                    hasCompletedWorkflowInSession: self.hasCompletedWorkflowInSession ||
+                        self.workflowCompletedInSessionBinding.wrappedValue
+                )
+            )
             self.stepEventCoordinator.trackTerminalCompletion(
                 currentStep: self.navigator.currentStep,
                 hasRenderedPage: self.transitionState.currentPage != nil
@@ -445,7 +460,14 @@ struct WorkflowPaywallView: View {
             introEligibilityContext: page.introOfferEligibilityContext,
             selectedPackageContextOverride: page.packageContext,
             // Drives per-visit paywall_viewed / paywall_close: this page is the current workflow step.
-            isActiveWorkflowPage: isActive
+            isActiveWorkflowPage: isActive,
+            // Gates paywall events: steps tagged as paywalls report; untagged steps fall back to the
+            // single-step-fallback rule.
+            workflowScreenType: page.screenType,
+            // Workflow attribution on the impression event (#7024), orthogonal to the screen_type gate.
+            workflowId: self.context.workflow.id,
+            stepId: page.stepId,
+            isWorkflowSingleStepFallback: page.isSingleStepFallback
         )
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
         .environment(\.workflowTriggerAction, { componentId in
@@ -504,6 +526,9 @@ struct WorkflowPaywallView: View {
             hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession
         ) {
         case .dismissWorkflow:
+            if self.purchaseHandler.hasPurchasedInSession {
+                self.markWorkflowCompletedInSession()
+            }
             self.onDismiss()
         case .navigateBack:
             let fromStep = self.navigator.currentStep
@@ -546,6 +571,21 @@ struct WorkflowPaywallView: View {
         currentStepId: String
     ) -> WorkflowExitOfferContext? {
         return context.exitOfferContext(forStepId: currentStepId)
+    }
+
+    private func markWorkflowCompletedInSession() {
+        self.hasCompletedWorkflowInSession = true
+        self.workflowCompletedInSessionBinding.wrappedValue = true
+    }
+
+    /// Whether the workflow reached a natural completion (so dismissing it is not an abandonment).
+    /// Purchase state is kept as a fallback, while restore-driven completion comes from the presenter
+    /// only when restore actually dismisses the workflow.
+    static func hasCompletedInSession(
+        hasPurchasedInSession: Bool,
+        hasCompletedWorkflowInSession: Bool
+    ) -> Bool {
+        return hasPurchasedInSession || hasCompletedWorkflowInSession
     }
 
     static func dismissalAction(
@@ -664,12 +704,14 @@ struct WorkflowPaywallView: View {
 
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
             screen: screen,
-            uiConfig: context.workflow.uiConfig
+            uiConfig: context.uiConfig
         )
 
         return .init(
             stepId: stepId,
             content: .init(paywallComponents: paywallComponents, offering: offering),
+            screenType: step.stepScreenType,
+            isSingleStepFallback: stepId == context.workflow.singleStepFallbackId,
             headerComponent: screen.componentsConfig.base.header,
             showCloseButton: showCloseButton,
             introOfferEligibilityContext: .init(introEligibilityChecker: introEligibilityChecker),
@@ -770,6 +812,12 @@ private struct RenderedPage: Identifiable {
     let id = UUID()
     let stepId: String
     let content: CurrentStepContent
+    /// The step's `screen_type` classification (`nil` when the backend did not tag it). Drives whether
+    /// this page reports paywall events. See `PaywallsV2View.shouldTrackPaywallEvents`.
+    let screenType: [String]?
+    /// Whether this step is the workflow's `singleStepFallbackId`. Only used to gate paywall events on
+    /// untagged steps (`nil` `screenType`), restoring the structural fallback-step-only rule.
+    let isSingleStepFallback: Bool
     let headerComponent: PaywallComponent.HeaderComponent?
     let showCloseButton: Bool
     /// Page-scoped so late async eligibility checks cannot overwrite another workflow step.

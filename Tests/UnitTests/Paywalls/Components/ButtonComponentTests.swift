@@ -334,6 +334,67 @@ class ButtonComponentCodableTests: TestCase {
         XCTAssertNotEqual(closeWorkflow, navigateBack)
     }
 
+    func testNavigateToSheetWithInlineSheetDecoding() throws {
+        let jsonString = """
+        {
+            "type": "button",
+            "action": {
+                "type": "navigate_to",
+                "destination": "sheet",
+                "sheet": {
+                    "id": "sheet-1",
+                    "background_blur": false,
+                    "stack": \(jsonStringDefaultStack)
+                }
+            },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
+
+        guard case .navigateTo(.sheet(let sheet)) = decodedButton.action else {
+            return XCTFail("Expected a .navigateTo(.sheet) action, got \(decodedButton.action)")
+        }
+        XCTAssertEqual(sheet?.id, "sheet-1")
+    }
+
+    func testNavigateToSheetWithoutInlineSheetDecodesToSheetWithNilContent() throws {
+        // A "sheet" destination without its inline sheet must decode (not throw), so the button renders.
+        let jsonString = """
+        {
+            "type": "button",
+            "action": {
+                "type": "navigate_to",
+                "destination": "sheet"
+            },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
+
+        XCTAssertEqual(decodedButton.action, .navigateTo(destination: .sheet(sheet: nil)))
+    }
+
+    func testNavigateToSheetWithNullInlineSheetDecodesToSheetWithNilContent() throws {
+        let jsonString = """
+        {
+            "type": "button",
+            "action": {
+                "type": "navigate_to",
+                "destination": "sheet",
+                "sheet": null
+            },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
+
+        XCTAssertEqual(decodedButton.action, .navigateTo(destination: .sheet(sheet: nil)))
+    }
+
     func testDecodesNameIgnoresExtraIdInJSON() throws {
         let jsonString = """
         {

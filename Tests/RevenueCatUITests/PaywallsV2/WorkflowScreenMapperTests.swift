@@ -148,7 +148,11 @@ private extension WorkflowScreenMapperTests {
         let json = """
         {
             "app": { "colors": {}, "fonts": {} },
-            "localizations": {}
+            "localizations": {},
+            "variable_config": {
+                "variable_compatibility_map": {},
+                "function_compatibility_map": {}
+            }
         }
         """
         let data = try XCTUnwrap(json.data(using: .utf8))

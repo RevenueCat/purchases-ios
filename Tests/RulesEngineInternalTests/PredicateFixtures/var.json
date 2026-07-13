@@ -169,6 +169,20 @@
       "variables": { "a": null },
       "expected": true,
       "expectedWarnings": { "contains": [] }
+    },
+    {
+      "id": "var_undefined_path_returns_full_scope",
+      "description": "json-logic-js returns the entire data scope when the path arg is undefined (typeof a === 'undefined'); {\"and\": []} evaluates to undefined, so var yields the whole data object, which is truthy",
+      "predicate": { "!!": { "var": { "and": [] } } },
+      "variables": { "a": 1 },
+      "expected": true
+    },
+    {
+      "id": "var_undefined_default_coerces_to_null",
+      "description": "json-logic-js sets not_found = (default === undefined) ? null : default, so an undefined default ({\"and\": []}) is returned as null when the path is missing",
+      "predicate": { "===": [{ "var": ["missing_key", { "and": [] }] }, null] },
+      "variables": {},
+      "expected": true
     }
   ]
 }

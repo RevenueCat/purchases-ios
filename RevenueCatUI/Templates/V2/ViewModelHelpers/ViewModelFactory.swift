@@ -170,7 +170,7 @@ struct ViewModelFactory {
 
             var sheetStackViewModel: StackComponentViewModel?
 
-            if case let .navigateTo(.sheet(sheet)) = component.action {
+            if case let .navigateTo(.sheet(sheet)) = component.action, let sheet {
                 sheetStackViewModel = try toStackViewModel(
                     component: sheet.stack,
                     packageValidator: packageValidator,
