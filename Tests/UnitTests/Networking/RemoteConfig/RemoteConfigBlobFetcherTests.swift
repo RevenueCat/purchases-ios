@@ -28,7 +28,6 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         self.fetcher = RemoteConfigBlobFetcher(
             blobStore: self.blobStore,
             sourceProvider: self.sourceProvider,
-            timeoutManager: MockHTTPRequestTimeoutManager(defaultTimeout: 15),
             downloader: self.downloader
         )
     }
@@ -88,7 +87,6 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         self.fetcher = RemoteConfigBlobFetcher(
             blobStore: self.blobStore,
             sourceProvider: self.sourceProvider,
-            timeoutManager: MockHTTPRequestTimeoutManager(defaultTimeout: 15),
             downloader: self.downloader
         )
 
@@ -109,7 +107,6 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         self.fetcher = RemoteConfigBlobFetcher(
             blobStore: self.blobStore,
             sourceProvider: self.sourceProvider,
-            timeoutManager: MockHTTPRequestTimeoutManager(defaultTimeout: 15),
             downloader: self.downloader
         )
 
@@ -204,7 +201,6 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         self.fetcher = RemoteConfigBlobFetcher(
             blobStore: self.blobStore,
             sourceProvider: self.sourceProvider,
-            timeoutManager: MockHTTPRequestTimeoutManager(defaultTimeout: 15),
             downloader: self.downloader
         )
 
@@ -295,7 +291,6 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         self.fetcher = RemoteConfigBlobFetcher(
             blobStore: self.blobStore,
             sourceProvider: self.sourceProvider,
-            timeoutManager: MockHTTPRequestTimeoutManager(defaultTimeout: 15),
             downloader: self.downloader
         )
 
@@ -350,7 +345,6 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         self.fetcher = RemoteConfigBlobFetcher(
             blobStore: self.blobStore,
             sourceProvider: self.sourceProvider,
-            timeoutManager: MockHTTPRequestTimeoutManager(defaultTimeout: 15),
             downloader: self.downloader
         )
         let ref = Self.ref(for: "missing source".asData)
