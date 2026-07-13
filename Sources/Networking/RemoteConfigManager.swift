@@ -208,7 +208,7 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
 final class RemoteConfigManager: RemoteConfigManagerType {
 
     private static let defaultDomain = "app"
-    private static let refreshAttemptCooldownInSeconds: TimeInterval = 30
+    private static let refreshAttemptCooldownInSeconds: TimeInterval = 60
 
     private let remoteConfigAPI: RemoteConfigAPIType
     private let diskCache: RemoteConfigDiskCacheType

@@ -13,6 +13,7 @@ import XCTest
 final class RemoteConfigManagerTests: TestCase {
 
     private static let appUserID = "app-user-id"
+    private static let refreshAttemptCooldownElapsedInterval: TimeInterval = 61
 
     private var remoteConfigAPI: MockRemoteConfigAPI!
     private var diskCache: MockRemoteConfigDiskCache!
@@ -94,7 +95,7 @@ final class RemoteConfigManagerTests: TestCase {
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
 
-        self.dateProvider.advance(by: 31)
+        self.dateProvider.advance(by: Self.refreshAttemptCooldownElapsedInterval)
         self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
@@ -426,7 +427,7 @@ final class RemoteConfigManagerTests: TestCase {
         expect(secondTopic).to(beNil())
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
 
-        self.dateProvider.advance(by: 31)
+        self.dateProvider.advance(by: Self.refreshAttemptCooldownElapsedInterval)
         let thirdRead = Task {
             await self.manager.topic(.sources)
         }
@@ -1545,7 +1546,7 @@ final class RemoteConfigManagerTests: TestCase {
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
 
-        self.dateProvider.advance(by: 31)
+        self.dateProvider.advance(by: Self.refreshAttemptCooldownElapsedInterval)
         self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
@@ -2365,7 +2366,7 @@ final class RemoteConfigManagerTests: TestCase {
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
 
-        self.dateProvider.advance(by: 31)
+        self.dateProvider.advance(by: Self.refreshAttemptCooldownElapsedInterval)
         self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
