@@ -2568,11 +2568,13 @@ workflows:
             - check-api-changes-revenuecat
             - check-api-changes-revenuecatui
             - run-test-ios-26
-            - run-test-ios-27
+            # Xcode 27 beta: runs on every commit (invoked above) but doesn't block this gate yet.
+            # - run-test-ios-27
             - build-xcode-265
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
-            - run-revenuecat-ui-ios-27
+            # Xcode 27 beta: runs on every commit (invoked above) but doesn't block this gate yet.
+            # - run-revenuecat-ui-ios-27
             - emerge_purchases_ui_snapshot_tests
             - emerge_binary_size_analysis
             - build-tv-watch-mac-and-visionos
@@ -2899,6 +2901,9 @@ workflows:
       - run-test-ios-26:
           context:
             - slack-secrets
+      - run-test-ios-27:
+          context:
+            - slack-secrets
       - build-xcode-265:
           context:
             - slack-secrets
@@ -2906,6 +2911,9 @@ workflows:
           context:
             - slack-secrets
       - run-revenuecat-ui-ios-26:
+          context:
+            - slack-secrets
+      - run-revenuecat-ui-ios-27:
           context:
             - slack-secrets
       - emerge_purchases_ui_snapshot_tests:
@@ -2922,9 +2930,13 @@ workflows:
             - run-all-maestro-e2e-tests
             - lint
             - run-test-ios-26
+            # Xcode 27 beta: runs for releases (invoked above) but doesn't block this gate yet.
+            # - run-test-ios-27
             - build-xcode-265
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
+            # Xcode 27 beta: runs for releases (invoked above) but doesn't block this gate yet.
+            # - run-revenuecat-ui-ios-27
             - emerge_purchases_ui_snapshot_tests
             - backend-integration-tests-SK1
             - backend-integration-tests-SK2
