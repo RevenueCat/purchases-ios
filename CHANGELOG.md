@@ -1,3 +1,117 @@
+## 5.80.3
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Fix decode for sheet actions without inline sheet (#7158) via Monika Mateska (@MonikaMateska)
+* Expose preferred UI locale override APIs to Objective-C (#7121) via Álvaro Brey (@AlvaroBrey)
+
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* fix(paywalls-v2): fix package selection resetting unexpectedly when switching tabs (#7148) via Facundo Menzella (@facumenzella)
+### Paywallv2
+#### 🐞 Bugfixes
+* fix(paywalls-v2): skip stale onChange invocations when propagating tab package to parent (#7168) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* other(workflows): unify workflows and remote config into a single gate (#7166) via Facundo Menzella (@facumenzella)
+* perf(remote-config): merge blob data via byte concatenation (#7163) via Antonio Pallares (@ajpallares)
+* other(paywalls): fall back to the offerings paywall when the workflow fetch fails (#7143) via Facundo Menzella (@facumenzella)
+* test(remote-config): add additional regression test coverage (#7164) via Rick (@rickvdl)
+* feat(remote-config): use merged blobs helper for ui config (#7153) via Rick (@rickvdl)
+* other(networking): remove unused workflows OperationQueue and HTTP path cases (#7145) via Facundo Menzella (@facumenzella)
+* other(networking): delete the dead workflows endpoint (#7144) via Facundo Menzella (@facumenzella)
+* other(paywalls): read workflows from remote config (#7141) via Facundo Menzella (@facumenzella)
+* refactor(remote-config): encapsulate topic-ready waiting on RemoteConfigManager (#7157) via Facundo Menzella (@facumenzella)
+* test(remote-config): add integration test coverage with mocked API responses (#7147) via Rick (@rickvdl)
+* other(paywalls): gate getOfferings on remote-config readiness (#7142) via Facundo Menzella (@facumenzella)
+* feat(remote-config): add merged blob data API (#7149) via Rick (@rickvdl)
+* other(remote-config): read ui_config via remote config (#7140) via Facundo Menzella (@facumenzella)
+* fix(remote-config): use RemoteConfigTopic enum in disk cache tests (#7139) via Antonio Pallares (@ajpallares)
+* perf(remote-config): cache persisted config in memory in RemoteConfigDiskCache (#7136) via Antonio Pallares (@ajpallares)
+* feat(remote-config): add APIs for reading topic/blob data from RemoteConfigManager (#7134) via Rick (@rickvdl)
+* Add SecureItemStorage (#7094) via Dave DeLong (@davedelong)
+* Decode id on PaywallComponent.PackageComponent (#7135) via Facundo Menzella (@facumenzella)
+* feat(remote-config): add observability logs (#7132) via Rick (@rickvdl)
+* feat(remote-config): wire up remote config manager behind feature flag (#7130) via Rick (@rickvdl)
+* Support multi-grant reward + moreRewards in reward verification (#7039) via Pol Miro (@polmiro)
+* Add CI build step for app extension safe API checks (#7131) via Rick (@rickvdl)
+* fix(remote-config): rearm exhausted blob sources + in memory knownRefs (#7120) via Rick (@rickvdl)
+* feat(remote-config): disable refresh after client errors (#7118) via Rick (@rickvdl)
+
+## 5.80.2
+## RevenueCat SDK
+### 🐞 Bugfixes
+* UIApplication may not be available in extensions (#7124) via Dave DeLong (@davedelong)
+
+### 🔄 Other Changes
+* feat(remote-config): add blob fetcher (#7115) via Rick (@rickvdl)
+* feat(remote-config): RemoteConfigManager cache invalidation (#7111) via Rick (@rickvdl)
+
+## 5.80.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* [EXTERNAL] Fix T-SAN crash due to memory misalignment when building with Xcode 27.0 (b1 and b2) (#7070) via @salling (#7105) via Antonio Pallares (@ajpallares)
+
+### 🔄 Other Changes
+* feat(remote-config): persist full topic index (#7110) via Rick (@rickvdl)
+* fix(remote-config): avoid using Brotli compression on iOS versions below 16.0 (#7113) via Rick (@rickvdl)
+* feat(remote-config): drive RemoteConfigSourceProvider from a topic store (#7106) via Antonio Pallares (@ajpallares)
+* refactor(remote-config): prefer lowest priority number for source ordering (#7112) via Antonio Pallares (@ajpallares)
+* feat(remote-config): add rc container compression support (#7107) via Rick (@rickvdl)
+* feat(workflows): gate all paywall events by step screen_type (#7109) via Facundo Menzella (@facumenzella)
+* feat(workflows): gate paywall impressions by step screen_type (#7104) via Facundo Menzella (@facumenzella)
+* feat(remote-config): add production signing integration tests (#7097) via Rick (@rickvdl)
+* Workflow preview injection via (@_spi) (#7103) via Facundo Menzella (@facumenzella)
+* Chore(deps): Bump faraday from 1.10.5 to 1.10.6 in /Tests/InstallationTests/CocoapodsInstallation (#7101) via dependabot[bot] (@dependabot[bot])
+* Chore(deps): Bump faraday from 1.10.5 to 1.10.6 (#7102) via dependabot[bot] (@dependabot[bot])
+* Chore(deps): Bump fastlane-plugin-revenuecat_internal from `70bf5c7` to `dab6765` (#7100) via dependabot[bot] (@dependabot[bot])
+* feat(remote-config): switch config request to v1 and send app user id (#7080) via Rick (@rickvdl)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#7096) via RevenueCat Git Bot (@RCGitBot)
+* feat(remote-config): store inlined blobs to disk (#7073) via Rick (@rickvdl)
+* refactor(remote-config): make rc container validation domain-specific (#7074) via Rick (@rickvdl)
+* feat(remote-config): add RemoteConfigSourceProvider for source failover (#7093) via Antonio Pallares (@ajpallares)
+* feat(remote-config): add RemoteConfigManager (#7067) via Rick (@rickvdl)
+* Add WeightedSourceSelector for remote config source selection (#7077) via Antonio Pallares (@ajpallares)
+* feat(remote-config): add manifest disk persistence (#7076) via Rick (@rickvdl)
+* Make LargeItemCache writes atomic (#7081) via Rick (@rickvdl)
+* feat(remote-config): verify RC container signatures (#7046) via Rick (@rickvdl)
+
+## 5.80.0
+## RevenueCat SDK
+### ✨ New Features
+* Expose `autoResumeDate` and `productPlanIdentifier` on `SubscriptionInfo` (#7049) via Álvaro Brey (@AlvaroBrey)
+* Log reward verification failure reason (#6892) via Pol Miro (@polmiro)
+* Report ad event capture method (#7020) via Pol Miro (@polmiro)
+
+## RevenueCatUI SDK
+### ✨ New Features
+* Preview paywalls via deep link (#6922) via Dave DeLong (@davedelong)
+### Paywallv2
+#### 🐞 Bugfixes
+* Extract ImageRenderPlan and add unit tests (#7069) via Alexander Repty (@alexrepty)
+
+### 🔄 Other Changes
+* fix: align RulesEngineInternal with json-logic-js (undefined & missing_some) (#7066) via Antonio Pallares (@ajpallares)
+* feat(remote-config): update request and response models according to spec (#7022) via Rick (@rickvdl)
+* fix(ci): install pinned xcodes prebuilt binary for visionOS support (#7065) via Antonio Pallares (@ajpallares)
+* feat(workflows): add workflows_close abandonment event (#7040) via Facundo Menzella (@facumenzella)
+* test(ads): add api signature test for newly exposed reward primitives (#7045) via Peter Porfy (@peterporfy)
+* Model entitlement reward variant in reward verification (#7038) via Pol Miro (@polmiro)
+* Chore(deps): Bump nokogiri from 1.19.3 to 1.19.4 in /Tests/InstallationTests/CocoapodsInstallation (#7063) via dependabot[bot] (@dependabot[bot])
+* Chore(deps): Bump concurrent-ruby from 1.3.6 to 1.3.7 in /Tests/InstallationTests/CocoapodsInstallation (#7062) via dependabot[bot] (@dependabot[bot])
+* Send `presented_workflow_id` and `presented_step_id` in post-receipt body (#7024) via Cesar de la Vega (@vegaro)
+* Chore(deps): Bump nokogiri from 1.19.3 to 1.19.4 (#7061) via dependabot[bot] (@dependabot[bot])
+* Chore(deps): Bump danger from 9.5.3 to 9.6.0 (#7060) via dependabot[bot] (@dependabot[bot])
+* feat(remote-config): support RC Container format in network stack and use for remote-config request (#7037) via Rick (@rickvdl)
+* Bump sdks-common-config orb to 4.1.0 (#7050) via Álvaro Brey (@AlvaroBrey)
+* feat(remote-config): add RC Container format V1 + parser (#7030) via Rick (@rickvdl)
+* Upload paywall rendering validation screenshots to Emerge in PRs (#6979) via JayShortway (@JayShortway)
+* Remove unused pollRewardVerificationStatus (#7042) via Pol Miro (@polmiro)
+* Add Danger check to discourage large PRs (#7041) via Toni Rico (@tonidero)
+* Update baseline swiftinterface files for `main` (#7036) via RevenueCat Git Bot (@RCGitBot)
+* refactor(ads): reuse SDK retry classification for poll errors (#7009) via Antonio Pallares (@ajpallares)
+* Migrate update_error_codes to the outputs parameter (#7035) via Álvaro Brey (@AlvaroBrey)
+* refactor(ads): move reward verification to coresdk (#6895) via Peter Porfy (@peterporfy)
+
 ## 5.79.0
 ## RevenueCat SDK
 ### ✨ New Features

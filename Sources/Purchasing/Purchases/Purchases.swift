@@ -286,6 +286,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
+    private let remoteConfigManager: RemoteConfigManagerType
 
     private var _adTracker: Any?
 
@@ -344,6 +345,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      diagnosticsEnabled: Bool = false,
                      preferredLocale: String?,
                      automaticDeviceIdentifierCollectionEnabled: Bool = true,
+                     iamEnabled: Bool = false,
                      currentConfiguration: Configuration?
     ) {
         if userDefaults != nil {
@@ -377,7 +379,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let userDefaults = userDefaults ?? UserDefaults.computeDefault()
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
-        let workflowsCache = WorkflowsCache(deviceCache: deviceCache)
 
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
             guard diagnosticsEnabled,
@@ -497,10 +498,31 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
                                               attributeSyncing: subscriberAttributesManager,
-                                              workflowsCache: systemInfo.workflowsEndpointEnabled
-                                              ? workflowsCache : nil,
                                               appUserID: appUserID
         )
+        let remoteConfigManager: RemoteConfigManagerType = {
+            guard systemInfo.remoteConfigEnabled else { return NoOpRemoteConfigManager() }
+
+            let diskCache = RemoteConfigDiskCache()
+            let blobStore = RemoteConfigBlobStore()
+            let sourceProvider = RemoteConfigSourceProvider(topicStore: diskCache)
+            let blobFetcher = RemoteConfigBlobFetcher(
+                blobStore: blobStore,
+                sourceProvider: sourceProvider
+            )
+
+            return RemoteConfigManager(
+                remoteConfigAPI: backend.remoteConfigAPI,
+                diskCache: diskCache,
+                blobStore: blobStore,
+                blobFetcher: blobFetcher,
+                currentUserProvider: identityManager,
+                cacheDurationInSeconds: { isAppBackgrounded in
+                    deviceCache.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded)
+                }
+            )
+        }()
+        identityManager.remoteConfigManager = remoteConfigManager
 
         let eventsManager: EventsManagerType?
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
@@ -555,10 +577,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             paywallCache = nil
         }
 
-        let workflowManager = WorkflowManager(backend: backend,
-                                              workflowsCache: workflowsCache,
-                                              paywallCache: paywallCache,
-                                              operationDispatcher: operationDispatcher)
+        let workflowManager = WorkflowManager(
+            workflowsConfigProvider: WorkflowsConfigProvider(manager: remoteConfigManager),
+            paywallCache: paywallCache,
+            operationDispatcher: operationDispatcher
+        )
 
         let offeringsManager = OfferingsManager(deviceCache: deviceCache,
                                                 operationDispatcher: operationDispatcher,
@@ -567,8 +590,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 offeringsFactory: offeringsFactory,
                                                 productsManager: productsManager,
                                                 diagnosticsTracker: diagnosticsTracker,
-                                                workflowManager: systemInfo.workflowsEndpointEnabled
-                                                ? workflowManager : nil)
+                                                remoteConfigManager: systemInfo.remoteConfigEnabled
+                                                ? remoteConfigManager
+                                                : nil)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
                                                          currentUserProvider: identityManager)
@@ -725,6 +749,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   productsManager: productsManager,
                   offeringsManager: offeringsManager,
                   workflowManager: workflowManager,
+                  remoteConfigManager: remoteConfigManager,
                   offlineEntitlementsManager: offlineEntitlementsManager,
                   purchasesOrchestrator: purchasesOrchestrator,
                   purchasedProductsFetcher: purchasedProductsFetcher,
@@ -760,6 +785,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          productsManager: ProductsManagerType,
          offeringsManager: OfferingsManager,
          workflowManager: WorkflowManager,
+         remoteConfigManager: RemoteConfigManagerType,
          offlineEntitlementsManager: OfflineEntitlementsManager,
          purchasesOrchestrator: PurchasesOrchestrator,
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
@@ -814,6 +840,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
         self.workflowManager = workflowManager
+        self.remoteConfigManager = systemInfo.remoteConfigEnabled ? remoteConfigManager : NoOpRemoteConfigManager()
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.purchasesOrchestrator = purchasesOrchestrator
         self.purchasedProductsFetcher = purchasedProductsFetcher
@@ -826,6 +853,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.currentConfiguration = currentConfiguration
 
         super.init()
+
+        self.identityManager.remoteConfigManager = self.remoteConfigManager
 
         Logger.verbose(Strings.configure.purchases_init(self, paymentQueueWrapper))
 
@@ -884,6 +913,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.notificationCenter.removeObserver(self)
         self.paymentQueueWrapper.sk1Wrapper?.delegate = nil
         self.paymentQueueWrapper.sk2Wrapper?.delegate = nil
+        self.remoteConfigManager.close()
         self.customerInfoObservationDisposable?()
         self.privateDelegate = nil
     }
@@ -994,27 +1024,7 @@ public extension Purchases {
 
     @_spi(Internal)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
-        // Prefer the workflowId resolved from the workflows list (offeringId → workflowId), falling
-        // back to the offering identifier itself, which the backend also accepts as a workflow key.
-        // The map is empty until the workflows list has been fetched, so the fallback preserves the
-        // original behavior. `WorkflowManager` handles caching and asset warm-up.
-        let workflowId = self.workflowManager.cachedWorkflowId(forOfferingId: offeringID) ?? offeringID
-        return try await Async.call { completion in
-            self.workflowManager.getWorkflow(
-                appUserID: self.appUserID,
-                workflowId: workflowId,
-                isAppBackgrounded: false,
-                completion: completion
-            )
-        }
-    }
-
-    /// Synchronously returns the cached workflow for `offeringID` when one is present and fresh,
-    /// otherwise `nil`. Used to seed the workflow paywall without a backend round-trip; callers fall
-    /// back to the async ``workflow(forOfferingIdentifier:)`` when this returns `nil`.
-    @_spi(Internal)
-    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
-        return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
+        return try await self.workflowManager.getWorkflow(forOfferingId: offeringID)
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
@@ -1044,7 +1054,9 @@ public extension Purchases {
     @_disfavoredOverload
     @objc(logIn:completion:)
     func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
-        self.identityManager.logIn(appUserID: appUserID) { result in
+        let normalizedAppUserID = appUserID.trimmingWhitespacesAndNewLines
+
+        self.identityManager.logIn(appUserID: normalizedAppUserID) { result in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(result.value?.info, result.value?.created ?? false, result.error?.asPublicError)
             }
@@ -1055,6 +1067,7 @@ public extension Purchases {
 
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
+                self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isAppBackgrounded)
             }
         }
     }
@@ -1200,6 +1213,7 @@ extension Purchases {
 
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             self.updateOfferingsCache(isAppBackgrounded: isBackgrounded)
+            self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isBackgrounded)
         }
     }
 
@@ -1501,12 +1515,13 @@ public extension Purchases {
         productID: String,
         completion: @escaping (StoreTransaction?, PublicError?) -> Void
     ) {
+        let completion = SendableRecordPurchaseCompletion(run: completion)
         Task {
             let result = await StoreKit.Transaction.latest(for: productID)
 
             guard let result = result else {
                 OperationDispatcher.dispatchOnMainActor {
-                    completion(nil, NewErrorUtils.storeProblemError(
+                    completion.run(nil, NewErrorUtils.storeProblemError(
                         withMessage: "No transaction found for product ID: \(productID)"
                     ).asPublicError)
                 }
@@ -1516,12 +1531,12 @@ public extension Purchases {
             do {
                 let transaction = try await self.recordPurchase(.success(result))
                 OperationDispatcher.dispatchOnMainActor {
-                    completion(transaction, nil)
+                    completion.run(transaction, nil)
                 }
             } catch {
                 let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
                 OperationDispatcher.dispatchOnMainActor {
-                    completion(nil, publicError)
+                    completion.run(nil, publicError)
                 }
             }
         }
@@ -1690,7 +1705,7 @@ extension Purchases {
     ///
     /// Call when your ad network's reward callback fires, passing the `clientTransactionID` returned by
     /// ``generateRewardVerificationToken(impressionId:)``.
-    /// Invalidates the virtual currencies cache automatically on a verified virtual-currency reward.
+    /// Refreshes local reward state before returning verified rewards.
     @_spi(Experimental) public func pollRewardVerification(
         clientTransactionID: String
     ) async -> RewardVerificationResult {
@@ -1705,20 +1720,70 @@ extension Purchases {
         poller: RewardVerification.Poller
     ) async -> RewardVerificationResult {
         let outcome = await poller.run(clientTransactionID: clientTransactionID)
+        let result = await self.rewardVerificationResult(for: outcome, clientTransactionID: clientTransactionID)
         Logger.info(AdsStrings.reward_verification_completed(
-            outcome: outcome.logDescription,
+            result: result,
             transactionID: clientTransactionID
         ))
+        return result
+    }
+
+    /// Applies local side effects before building the result delivered to the caller.
+    private func rewardVerificationResult(
+        for outcome: RewardVerification.Outcome,
+        clientTransactionID: String
+    ) async -> RewardVerificationResult {
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        if case .verified(let reward) = outcome, reward.virtualCurrency != nil {
-            self.invalidateVirtualCurrenciesCache()
+        if case let .verified(reward, moreRewards) = outcome {
+            let rewards = [reward] + moreRewards
+            if rewards.contains(where: { $0.virtualCurrency != nil }) {
+                Logger.debug(AdsStrings.reward_verification_virtual_currency_invalidating_cache(
+                    transactionID: clientTransactionID
+                ))
+                self.invalidateVirtualCurrenciesCache()
+            }
+            if rewards.contains(where: { $0.entitlement != nil }),
+               await self.refreshCustomerInfoAfterEntitlementGrant(clientTransactionID: clientTransactionID)
+                == false {
+                // Do not surface entitlement rewards that could not be reflected locally yet.
+                return .failed
+            }
         }
         #endif
         switch outcome {
-        case .verified(let reward): return .verified(reward)
-        case .failed: return .failed
+        case let .verified(reward, moreRewards):
+            return .verified(reward, moreRewards: moreRewards)
+        case .failed:
+            return .failed
         }
     }
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    /// Refreshes `CustomerInfo` after entitlement grants, retrying transient failures.
+    private func refreshCustomerInfoAfterEntitlementGrant(clientTransactionID: String) async -> Bool {
+        Logger.debug(AdsStrings.reward_verification_entitlement_fetching_customer_info(
+            transactionID: clientTransactionID
+        ))
+        let refreshed: CustomerInfo? = await Async.retry(maximumRetries: 3) {
+            do {
+                let info = try await self.customerInfoManager.customerInfo(
+                    appUserID: self.appUserID,
+                    fetchPolicy: .fetchCurrent
+                )
+                return (shouldRetry: false, info)
+            } catch {
+                let isTransient = (error as? BackendError)?.isTransient ?? false
+                return (shouldRetry: isTransient, nil)
+            }
+        }
+        if refreshed == nil {
+            Logger.warn(AdsStrings.reward_verification_entitlement_customer_info_refresh_failed(
+                transactionID: clientTransactionID
+            ))
+        }
+        return refreshed != nil
+    }
+    #endif
 
 }
 
@@ -1744,8 +1809,8 @@ extension Purchases {
         }
 
         switch response.status {
-        case let .verified(reward):
-            return .verified(reward)
+        case let .verified(reward, moreRewards):
+            return .verified(reward: reward, moreRewards: moreRewards)
         case .pending:
             return .pending
         case let .failed(failure):
@@ -1766,7 +1831,7 @@ extension Purchases {
     ///
     /// Setting this will affect the display of RevenueCat UI components, such as the Paywalls.
     /// - Important: This method only takes effect after `Purchases` has been configured.
-    public func overridePreferredUILocale(_ locale: String?) {
+    @objc public func overridePreferredUILocale(_ locale: String?) {
         guard locale != self.systemInfo.preferredLocaleOverride else {
             return
         }
@@ -1834,6 +1899,7 @@ public extension Purchases {
                 diagnosticsEnabled: configuration.diagnosticsEnabled,
                 preferredLocale: configuration.preferredLocale,
                 automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled,
+                iamEnabled: configuration.iamEnabled,
                 currentConfiguration: configuration
             ),
             dedupingAgainst: configuration
@@ -2104,7 +2170,8 @@ public extension Purchases {
         showStoreMessagesAutomatically: Bool,
         diagnosticsEnabled: Bool,
         preferredLocale: String?,
-        automaticDeviceIdentifierCollectionEnabled: Bool = true
+        automaticDeviceIdentifierCollectionEnabled: Bool = true,
+        iamEnabled: Bool = false
     ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
@@ -2122,6 +2189,7 @@ public extension Purchases {
                   diagnosticsEnabled: diagnosticsEnabled,
                   preferredLocale: preferredLocale,
                   automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled,
+                  iamEnabled: iamEnabled,
                   currentConfiguration: nil)
         )
     }
@@ -2334,6 +2402,13 @@ extension Purchases {
     // swiftlint:disable missing_docs
     @_spi(Internal) public var preferredLocaleOverride: String? {
         return self.systemInfo.preferredLocaleOverride
+    }
+
+    // Exposes the single workflows + remote config gate to RevenueCatUI, which can't see the
+    // ENABLE_REMOTE_CONFIG compile flag directly.
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public var remoteConfigEnabled: Bool {
+        return self.systemInfo.remoteConfigEnabled
     }
 
     // swiftlint:disable missing_docs
@@ -2681,6 +2756,8 @@ private extension Purchases {
         if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
             self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
         }
+
+        self.remoteConfigManager.refreshRemoteConfigIfStale(isAppBackgrounded: isAppBackgrounded)
     }
 
     func updateAllCaches(completion: ((Result<CustomerInfo, PublicError>) -> Void)?) {
@@ -2715,6 +2792,7 @@ private extension Purchases {
         }
 
         self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
+        self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isAppBackgrounded)
     }
 
     // Used when delegate is being set
@@ -2754,6 +2832,12 @@ private extension Purchases {
             await cache.warmUpPaywallFontsCache(offerings: offerings)
         }
     }
+
+}
+
+private struct SendableRecordPurchaseCompletion: @unchecked Sendable {
+
+    let run: (StoreTransaction?, PublicError?) -> Void
 
 }
 

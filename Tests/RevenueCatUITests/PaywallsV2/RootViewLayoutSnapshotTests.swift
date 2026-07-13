@@ -11,6 +11,7 @@
 //
 
 @_spi(Internal) @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 
 #if !os(tvOS) && !os(watchOS) && !os(macOS)
@@ -19,13 +20,16 @@ import XCTest
 @MainActor
 final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
 
-    func testStickyFooterRootZLayerOnIPadFormSheet() throws {
-        // The form sheet presentation renders differently on iOS 15, producing an
-        // inconsistent snapshot. Skip on iOS 15 as a temporary fix.
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        // These snapshots render inconsistently on iOS 15.
         guard #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) else {
             throw XCTSkip("Snapshot is inconsistent on iOS 15")
         }
+    }
 
+    func testStickyFooterRootZLayerOnIPadFormSheet() throws {
         let viewModel = try PaywallsV2LayoutFixtures.makeStickyFooterRootZLayerViewModel()
         let view = PaywallsV2LayoutFixtures.makeRootView(
             viewModel: viewModel,
@@ -40,11 +44,6 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
     }
 
     func testStickyFooterRootZLayerOnIPhoneFullScreen() throws {
-        // The snapshot renders inconsistently on iOS 15. Skip on iOS 15 as a temporary fix.
-        guard #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) else {
-            throw XCTSkip("Snapshot is inconsistent on iOS 15")
-        }
-
         let viewModel = try PaywallsV2LayoutFixtures.makeStickyFooterRootZLayerViewModel()
         let view = PaywallsV2LayoutFixtures.makeRootView(
             viewModel: viewModel,
@@ -56,6 +55,42 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
             record: Self.shouldRecordSnapshots,
             separateOSVersions: false
         )
+    }
+
+    func testTransparentFooterOverlapsScrollableContent() throws {
+        let view = try makeFullScreenSnapshotView(
+            PaywallsV2LayoutFixtures.makeTransparentFooterOverScrollableContentViewModel
+        )
+
+        view.snapshot(
+            size: Self.fullScreenSize,
+            record: Self.shouldRecordSnapshots,
+            separateOSVersions: false
+        )
+    }
+
+    func testSmallBodyCentersAboveFooter() throws {
+        let view = try makeFullScreenSnapshotView(PaywallsV2LayoutFixtures.makeSmallCenteredBodyAboveFooterViewModel)
+
+        view.snapshot(
+            size: Self.fullScreenSize,
+            record: Self.shouldRecordSnapshots,
+            separateOSVersions: false
+        )
+    }
+
+    func testHeaderAndFooterStepReservesHeaderClearance() throws {
+        let view = try makeFullScreenSnapshotView(PaywallsV2LayoutFixtures.makeHeaderAndFooterViewModel)
+
+        view.snapshot(
+            size: Self.fullScreenSize,
+            record: Self.shouldRecordSnapshots,
+            separateOSVersions: false
+        )
+    }
+
+    private func makeFullScreenSnapshotView(_ makeViewModel: () throws -> RootViewModel) throws -> some View {
+        PaywallsV2LayoutFixtures.makeRootView(viewModel: try makeViewModel(), size: Self.fullScreenSize)
     }
 
 }

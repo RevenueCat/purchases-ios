@@ -208,9 +208,6 @@ commands:
       install_mint:
         type: boolean
         default: false
-      install_xcodes:
-        type: boolean
-        default: false
     steps:
       - install-bundle-dependencies:
           directory: << parameters.directory >>
@@ -219,7 +216,6 @@ commands:
           command: |
             echo "xcbeautify:<< parameters.install_xcbeautify >>" > .homebrew-deps
             echo "mint:<< parameters.install_mint >>" >> .homebrew-deps
-            echo "xcodes:<< parameters.install_xcodes >>" >> .homebrew-deps
       - restore_cache:
           keys:
             - v2-homebrew-cache-{{ checksum ".homebrew-deps" }}-{{ arch }}
@@ -233,16 +229,10 @@ commands:
           steps:
             - install-brew-dependency:
                 dependency_name: "mint"
-      - when:
-          condition: << parameters.install_xcodes >>
-          steps:
-            - install-brew-dependency:
-                dependency_name: "xcodes"
       - save_cache:
           key: v2-homebrew-cache-{{ checksum ".homebrew-deps" }}-{{ arch }}
           paths:
             - /opt/homebrew/Cellar/xcbeautify/
-            - /opt/homebrew/Cellar/xcodes/
             - /Users/$USER/Library/Caches/Homebrew/
 
   install-brew-dependency:
@@ -301,6 +291,37 @@ commands:
           key: mint-xcbeautify-2.30.1-{{ arch }}
           paths:
             - ~/.mint
+
+  install-xcodes-for-xcode14:
+    description: "Installs the xcodes 2.0.3 prebuilt binary"
+    steps:
+      - restore_cache:
+          keys:
+            - v1-xcodes-2.0.3-{{ arch }}
+      - run:
+          name: Install xcodes 2.0.3
+          command: |
+            # Pinned to 2.0.3: it handles Apple's simulator runtime catalog
+            # `authentication: none` entries.
+            # https://github.com/XcodesOrg/xcodes/releases/tag/2.0.3
+            # We install the prebuilt universal binary into /opt/homebrew/bin (on PATH
+            # and reachable under sudo, used by the runtime install script).
+            # Match on the exact version so a pre-installed/older xcodes is replaced.
+            if xcodes version 2>/dev/null | grep -q "2.0.3"; then
+                echo "xcodes 2.0.3 already installed, skipping."
+                exit 0
+            fi
+            curl -fsSL -o /tmp/xcodes.tar.gz \
+              https://github.com/XcodesOrg/xcodes/releases/download/2.0.3/xcodes-2.0.3.macos.arm64.bottle.tar.gz
+            echo "d0251244b8a02b5af1eb5fa5618c6efff6e387d51f749b631b9c7cceee476fae  /tmp/xcodes.tar.gz" | shasum -a 256 -c -
+            tar -xzf /tmp/xcodes.tar.gz -C /tmp
+            sudo mv /tmp/xcodes/2.0.3/bin/xcodes /opt/homebrew/bin/xcodes
+            sudo chmod +x /opt/homebrew/bin/xcodes
+            xcodes version
+      - save_cache:
+          key: v1-xcodes-2.0.3-{{ arch }}
+          paths:
+            - /opt/homebrew/bin/xcodes
 
   install-rubydocker-dependencies:
     steps:
@@ -1132,6 +1153,31 @@ jobs:
           no_output_timeout: 30m
       - slack-notify-on-fail
 
+  check-app-extension-safe-api-usage:
+    executor:
+      name: macos-executor
+      xcode_version: "26.5"
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Build RevenueCat with app extension safe APIs
+          command: bundle exec fastlane build_with_app_extension_safe_apis scheme:RevenueCat
+          no_output_timeout: 30m
+      - run:
+          name: Build RevenueCat_CustomEntitlementComputation with app extension safe APIs
+          command: bundle exec fastlane build_with_app_extension_safe_apis scheme:RevenueCat_CustomEntitlementComputation
+          no_output_timeout: 30m
+      - run:
+          name: Build ReceiptParser with app extension safe APIs
+          command: bundle exec fastlane build_with_app_extension_safe_apis scheme:"ReceiptParser (RevenueCat Workspace)"
+          no_output_timeout: 30m
+      - run:
+          name: Build RevenueCatUI with app extension safe APIs
+          command: bundle exec fastlane build_with_app_extension_safe_apis scheme:RevenueCatUI
+          no_output_timeout: 30m
+      - slack-notify-on-fail
+
   run-test-ios-18-and-17:
     executor:
       name: macos-executor
@@ -1272,7 +1318,7 @@ jobs:
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
-          install_xcodes: true
+      - install-xcodes-for-xcode14
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
 
@@ -1830,7 +1876,7 @@ jobs:
     parameters:
       xcode_version:
         type: string
-        default: "16.4"
+        default: "26.5"
     executor:
       name: macos-executor-large
       xcode_version: << parameters.xcode_version >>
@@ -2197,13 +2243,12 @@ jobs:
       - revenuecat/setup-git-credentials
       - revenuecat/trust-github-key
       - run:
-          name: Clone purchases-ios and push to purchases-ios-spm
+          name: Mirror purchases-ios tags to purchases-ios-spm (main not mirrored)
           command: |
             git clone git@github.com:RevenueCat/purchases-ios.git
             cd purchases-ios
             git fetch --tags
             git remote set-url origin git@github.com:RevenueCat/purchases-ios-spm.git
-            git push origin
             git push --tags
 
   deploy-to-purchases-ios-admob:
@@ -2478,13 +2523,6 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
-      - installation-tests-carthage:
-          name: installation-tests-carthage-xcode-27
-          xcode_version: "27.0.0"
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
 
       # SPM / Other Build Tests
       - api-tests:
@@ -2493,6 +2531,11 @@ workflows:
           context:
             - slack-secrets
       - spm-receipt-parser:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - check-app-extension-safe-api-usage:
           requires:
             - approve-full-tests
           context:
@@ -2552,9 +2595,9 @@ workflows:
             - record-and-upload-paywalls-v2-snapshots
             - installation-tests-all-but-carthage
             - installation-tests-carthage
-            - installation-tests-carthage-xcode-27
             - api-tests
             - spm-receipt-parser
+            - check-app-extension-safe-api-usage
             - revenuecat-admob-tests
             - deploy-purchase-tester
             - run-all-maestro-e2e-tests
@@ -2813,6 +2856,9 @@ workflows:
       - spm-receipt-parser:
           context:
             - slack-secrets
+      - check-app-extension-safe-api-usage:
+          context:
+            - slack-secrets
       - spm-revenuecat-ui-ios-15:
           context:
             - slack-secrets
@@ -2832,11 +2878,6 @@ workflows:
           context:
             - slack-secrets
       - installation-tests-carthage:
-          context:
-            - slack-secrets
-      - installation-tests-carthage:
-          name: installation-tests-carthage-xcode-27
-          xcode_version: "27.0.0"
           context:
             - slack-secrets
       - api-tests:
@@ -2898,6 +2939,7 @@ workflows:
             - run-test-tvos-and-macos
             - run-test-watchos
             - spm-receipt-parser
+            - check-app-extension-safe-api-usage
             - spm-revenuecat-ui-ios-15
             - spm-revenuecat-ui-ios-16
             - run-revenuecat-ui-ios-18-and-17
@@ -2905,8 +2947,6 @@ workflows:
             - record-and-upload-paywalls-v1-snapshots
             - installation-tests-all-but-carthage
             - installation-tests-carthage
-            # Xcode 27 is still beta; run it but don't block releases on it yet.
-            # - installation-tests-carthage-xcode-27
             - api-tests
             - revenuecat-admob-tests
             - deploy-purchase-tester

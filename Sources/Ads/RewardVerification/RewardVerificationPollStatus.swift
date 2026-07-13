@@ -16,8 +16,8 @@ import Foundation
 /// Result of a single ad reward verification status poll.
 enum RewardVerificationPollStatus: Sendable, Equatable {
 
-    /// Verified by the backend, with the granted reward payload.
-    case verified(AdReward)
+    /// `moreRewards` contains additional rewards only; it does not repeat `reward`.
+    case verified(reward: AdReward, moreRewards: [AdReward])
 
     /// Verification has not yet completed; the caller should keep polling.
     case pending

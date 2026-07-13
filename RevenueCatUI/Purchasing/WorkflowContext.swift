@@ -14,9 +14,13 @@ import Foundation
 
 #if !os(tvOS)
 
+/// Render-ready input for a workflow paywall. Built internally (from a backend fetch, a warm cache,
+/// or `WorkflowPreview.makeContext` for injected data) and passed into ``PaywallView``; it has no
+/// public initializer because callers never assemble it directly.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct WorkflowContext {
+@_spi(Internal) public struct WorkflowContext {
     let workflow: PublishedWorkflow
+    let uiConfig: UIConfig
     let allOfferings: Offerings
     let initialOffering: Offering
     /// Preserved so every subsequent step's offering can carry the same placement/targeting metadata.
@@ -26,11 +30,13 @@ struct WorkflowContext {
 
     init(
         workflow: PublishedWorkflow,
+        uiConfig: UIConfig,
         allOfferings: Offerings,
         initialOffering: Offering,
         presentedOfferingContext: PresentedOfferingContext?
     ) {
         self.workflow = workflow
+        self.uiConfig = uiConfig
         self.allOfferings = allOfferings
         self.initialOffering = initialOffering
         self.presentedOfferingContext = presentedOfferingContext
@@ -272,15 +278,6 @@ struct WorkflowPackageContext {
         self.packages = packages
         self.promoOfferCodesByPackageId = promoOfferCodesByPackageId
     }
-}
-
-// Temporary launch-argument gate — remove once workflows are fully released.
-extension ProcessInfo {
-
-    var workflowsEndpointEnabled: Bool {
-        arguments.contains("-EnableWorkflowsEndpoint")
-    }
-
 }
 
 #endif
