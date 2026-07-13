@@ -486,6 +486,7 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         await self.refresh(with: container)
 
+        await self.waitForCachedBlobRefs([ref])
         expect(self.blobStore.cachedRefs()) == [ref]
         let firstData = await self.manager.blobData(for: .workflows, itemKey: "first")
         let secondData = await self.manager.blobData(for: .workflows, itemKey: "second")
@@ -558,10 +559,6 @@ private extension RemoteConfigIntegrationTests {
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
         await self.waitForPersistedManifest(Self.manifest)
-        // The manifest is written before inline blobs within the same persist critical section, and it is observable
-        // via the disk cache without holding the manager lock. A manager read acquires that lock, so it cannot return
-        // until the whole persist (manifest + blob writes) has completed, making direct blob store reads safe.
-        _ = await self.manager.topic(.workflows)
     }
 
     func refreshFromFallback(
@@ -649,6 +646,20 @@ private extension RemoteConfigIntegrationTests {
     ) async {
         await self.waitUntil(file: file, line: line) {
             self.diskCache.read()?.manifest == manifest
+        }
+    }
+
+    /// Waits until the blob store reflects the expected refs.
+    ///
+    /// Inline blobs are written after the manifest within the same persist pass, so a persisted manifest does not
+    /// guarantee the blobs are on disk yet. Tests reading the blob store directly should wait on this instead.
+    func waitForCachedBlobRefs(
+        _ refs: [String],
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async {
+        await self.waitUntil(file: file, line: line) {
+            self.blobStore.cachedRefs() == refs
         }
     }
 
