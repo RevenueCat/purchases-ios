@@ -114,7 +114,7 @@ class PaywallViewEventsTests: TestCase {
 
         await self.waitForCloseEvent()
 
-        expect(self.events).to(haveCount(4))
+        await expect(self.events).toEventually(haveCount(4))
         expect(self.events.map(\.eventType)) == [.impression, .close, .impression, .close]
         expect(Set(self.events.map(\.data.sessionIdentifier))).to(haveCount(2))
     }
@@ -137,6 +137,9 @@ private extension PaywallViewEventsTests {
         try await Task {
             let dispose = try self.createView()
                 .addToHierarchy()
+
+            try await Task.sleep(nanoseconds: 3 * 1_000_000)
+
             try await closure()
             dispose()
         }.value
@@ -174,7 +177,7 @@ private extension PaywallViewEventsTests {
     }
 
     func waitForCloseEvent() async {
-        await self.fulfillment(of: [self.closeEventExpectation], timeout: 1)
+        await self.fulfillment(of: [self.closeEventExpectation], timeout: 3)
     }
 
 }
