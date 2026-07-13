@@ -203,6 +203,29 @@ final class RemoteConfigBlobDownloaderTests: TestCase {
         expect(captured) == HTTPRequestTimeoutManager.Timeout.mainSourceNoFallback
     }
 
+    func testNonTimeoutFailureDoesNotArmTheSourceMemory() async throws {
+        let url = try XCTUnwrap(URL(string: "https://blob.example.com/blob"))
+        let downloader = self.downloader(dateProvider: MockCurrentDateProvider())
+
+        try await self.failWithStatus(downloader, url: url, statusCode: 404)
+        let captured = try await self.captureRequestTimeout(downloader, url: url)
+
+        // Only timeouts arm the reduced tier, so a plain failure leaves the source on the base timeout.
+        expect(captured) == HTTPRequestTimeoutManager.Timeout.mainSourceNoFallback
+    }
+
+    func testNonTimeoutFailureDoesNotClearTheSourceMemory() async throws {
+        let url = try XCTUnwrap(URL(string: "https://blob.example.com/blob"))
+        let downloader = self.downloader(dateProvider: MockCurrentDateProvider())
+
+        try await self.timeOut(downloader, url: url)
+        try await self.failWithStatus(downloader, url: url, statusCode: 404)
+        let captured = try await self.captureRequestTimeout(downloader, url: url)
+
+        // A non-timeout failure must not clear the armed memory, so the source stays on the reduced timeout.
+        expect(captured) == HTTPRequestTimeoutManager.Timeout.mainSourceNoFallbackReduced
+    }
+
 }
 
 private extension RemoteConfigBlobDownloaderTests {
@@ -238,6 +261,21 @@ private extension RemoteConfigBlobDownloaderTests {
             fail("Expected the attempt to time out")
         } catch {
             // Expected: the timeout is recorded for the host.
+        }
+    }
+
+    /// Runs one attempt that fails with a non-timeout HTTP status so the source memory is exercised without a timeout.
+    func failWithStatus(
+        _ downloader: URLSessionRemoteConfigBlobDownloader,
+        url: URL,
+        statusCode: Int
+    ) async throws {
+        Self.respond(statusCode: statusCode)
+        do {
+            _ = try await downloader.data(from: url)
+            fail("Expected the attempt to fail with status \(statusCode)")
+        } catch {
+            // Expected: a non-timeout failure is recorded as `.other`.
         }
     }
 
