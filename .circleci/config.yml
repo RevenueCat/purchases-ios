@@ -1400,6 +1400,8 @@ workflows:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
       - run-test-ios-18
+      - run-test-ios-27
+      - run-test-ios-26
       - run-test-ios-17
       - run-test-ios-16
       - run-test-ios-15
