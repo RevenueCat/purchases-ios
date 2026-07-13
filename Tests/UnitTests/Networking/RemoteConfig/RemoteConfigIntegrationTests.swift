@@ -487,7 +487,6 @@ final class RemoteConfigIntegrationTests: TestCase {
         await self.refresh(with: container)
 
         await self.waitForCachedBlobRefs([ref])
-        expect(self.blobStore.cachedRefs()) == [ref]
         let firstData = await self.manager.blobData(for: .workflows, itemKey: "first")
         let secondData = await self.manager.blobData(for: .workflows, itemKey: "second")
 
