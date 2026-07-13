@@ -129,7 +129,9 @@ class PresentIfNeededTests: TestCase {
             dispose()
         }
 
-        expect(started).toEventually(beTrue())
+        // Newer simulators (iOS 26+) can be slower to present the paywall and wire up
+        // the restore handler, so allow more time than Nimble's 1s default.
+        expect(started).toEventually(beTrue(), timeout: .seconds(5))
         task.cancel()
     }
 
