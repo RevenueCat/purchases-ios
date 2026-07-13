@@ -653,13 +653,12 @@ private extension RemoteConfigIntegrationTests {
     /// Inline blobs are written after the manifest within the same persist pass, so a persisted manifest does not
     /// guarantee the blobs are on disk yet. Tests reading the blob store directly should wait on this instead.
     func waitForCachedBlobRefs(
-        _ refs: [String],
-        file: StaticString = #filePath,
+        _ refs: Set<String>,
+        file: FileString = #filePath,
         line: UInt = #line
     ) async {
-        await self.waitUntil(file: file, line: line) {
-            self.blobStore.cachedRefs() == refs
-        }
+        await expect(file: file, line: line, self.blobStore.cachedRefs())
+            .toEventually(equal(refs), timeout: .seconds(2), pollInterval: .milliseconds(10))
     }
 
     func waitUntil(
