@@ -27,8 +27,8 @@
     "maximumTestExecutionTimeAllowance" : 180,
     "maximumTestRepetitions" : 5,
     "targetForVariableExpansion" : {
-      "containerPath" : "container:RevenueCat.xcodeproj",
-      "identifier" : "4F6BEE042A27B02400CD9322",
+      "containerPath" : "container:RevenueCatTests.xcodeproj",
+      "identifier" : "1E4DD1A74419689AD33D88BD",
       "name" : "BackendCustomEntitlementsIntegrationTests"
     },
     "testExecutionOrdering" : "random",
@@ -38,8 +38,8 @@
   "testTargets" : [
     {
       "target" : {
-        "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "4F6BEE042A27B02400CD9322",
+        "containerPath" : "container:RevenueCatTests.xcodeproj",
+        "identifier" : "1E4DD1A74419689AD33D88BD",
         "name" : "BackendCustomEntitlementsIntegrationTests"
       }
     }

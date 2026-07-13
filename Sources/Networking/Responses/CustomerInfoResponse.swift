@@ -65,6 +65,7 @@ extension CustomerInfoResponse {
         var gracePeriodExpiresDate: Date?
         var refundedAt: Date?
         var storeTransactionId: String?
+        var autoResumeDate: Date?
 
         var displayName: String?
 

@@ -40,7 +40,7 @@ enum ArithmeticOperators {
     static func opMul(args: Value, vars: Value) throws -> Value {
         let evaluated = try Operators.evalArgs(args, vars: vars)
         guard let head = evaluated.first else {
-            throw RuleError.typeMismatch(message: "operator '*' requires at least 1 argument")
+            throw RulesEngine.EvaluationError.typeMismatch(message: "operator '*' requires at least 1 argument")
         }
         guard evaluated.count > 1 else { return head }
         let product = evaluated.dropFirst().reduce(jsParseFloat(head)) { $0 * jsParseFloat($1) }

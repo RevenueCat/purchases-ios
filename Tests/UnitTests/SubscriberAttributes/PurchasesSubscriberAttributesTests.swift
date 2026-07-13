@@ -252,6 +252,14 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               eventsManager: nil,
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,
+                              workflowManager: WorkflowManager(
+                                workflowsConfigProvider: WorkflowsConfigProvider(
+                                    manager: NoOpRemoteConfigManager()
+                                ),
+                                paywallCache: nil,
+                                operationDispatcher: mockOperationDispatcher
+                              ),
+                              remoteConfigManager: NoOpRemoteConfigManager(),
                               offlineEntitlementsManager: mockOfflineEntitlementsManager,
                               purchasesOrchestrator: purchasesOrchestrator,
                               purchasedProductsFetcher: mockPurchasedProductsFetcher,

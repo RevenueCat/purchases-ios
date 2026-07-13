@@ -24,8 +24,8 @@ class Backend {
     let customerCenterConfig: CustomerCenterConfigAPI
     let redeemWebPurchaseAPI: RedeemWebPurchaseAPI
     let virtualCurrenciesAPI: VirtualCurrenciesAPI
-    let workflowsAPI: WorkflowsAPI
     let adsAPI: AdsAPI
+    let remoteConfigAPI: RemoteConfigAPI
 
     private let config: BackendConfiguration
 
@@ -65,8 +65,8 @@ class Backend {
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
         let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
-        let workflowsAPI = WorkflowsAPI(backendConfig: backendConfig)
         let adsAPI = AdsAPI(backendConfig: backendConfig)
+        let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
@@ -78,8 +78,8 @@ class Backend {
                   customerCenterConfig: customerCenterConfig,
                   redeemWebPurchaseAPI: redeemWebPurchaseAPI,
                   virtualCurrenciesAPI: virtualCurrenciesAPI,
-                  workflowsAPI: workflowsAPI,
-                  adsAPI: adsAPI)
+                  adsAPI: adsAPI,
+                  remoteConfigAPI: remoteConfigAPI)
     }
 
     required init(backendConfig: BackendConfiguration,
@@ -92,8 +92,8 @@ class Backend {
                   customerCenterConfig: CustomerCenterConfigAPI,
                   redeemWebPurchaseAPI: RedeemWebPurchaseAPI,
                   virtualCurrenciesAPI: VirtualCurrenciesAPI,
-                  workflowsAPI: WorkflowsAPI,
-                  adsAPI: AdsAPI) {
+                  adsAPI: AdsAPI,
+                  remoteConfigAPI: RemoteConfigAPI) {
         self.config = backendConfig
 
         self.customer = customerAPI
@@ -105,8 +105,8 @@ class Backend {
         self.customerCenterConfig = customerCenterConfig
         self.redeemWebPurchaseAPI = redeemWebPurchaseAPI
         self.virtualCurrenciesAPI = virtualCurrenciesAPI
-        self.workflowsAPI = workflowsAPI
         self.adsAPI = adsAPI
+        self.remoteConfigAPI = remoteConfigAPI
     }
 
     func clearHTTPClientCaches() {

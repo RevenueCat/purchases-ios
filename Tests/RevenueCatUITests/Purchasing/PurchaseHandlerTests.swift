@@ -87,6 +87,20 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.restoreError).to(beNil())
     }
 
+    @MainActor
+    func testResetForNewSessionClearsRestoredCustomerInfo() async throws {
+        // The handler is held as a @StateObject and reused across present/dismiss cycles, so a successful
+        // restore from one session must not leak into the next (it is a per-session completion signal that
+        // gates workflows_close abandonment).
+        let handler: PurchaseHandler = .mock()
+        handler.setRestored(TestData.customerInfo, success: true)
+        expect(handler.restoredCustomerInfo?.success) == true
+
+        handler.resetForNewSession()
+
+        expect(handler.restoredCustomerInfo).to(beNil())
+    }
+
     func testCancelEventContainsProductIdentifierWhenCompletedByRevenueCat() async throws {
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])
 
@@ -487,6 +501,63 @@ class PurchaseHandlerTests: TestCase {
         let result3 = handler.trackPaywallClose()
         expect(result3) == false
 
+    }
+
+    func testTrackPaywallCloseBySessionClosesThatSpecificSessionNotJustTheActiveOne() async throws {
+        let handler: PurchaseHandler = .mock()
+
+        func impressionData(_ sessionID: PaywallEvent.SessionID) -> PaywallEvent.Data {
+            return .init(
+                paywallIdentifier: TestData.paywallWithIntroOffer.id,
+                offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+                paywallRevision: TestData.paywallWithIntroOffer.revision,
+                sessionID: sessionID,
+                displayMode: .fullScreen,
+                localeIdentifier: "en_US",
+                darkMode: false,
+                source: nil
+            )
+        }
+
+        let sessionA: PaywallEvent.SessionID = .init()
+        let sessionB: PaywallEvent.SessionID = .init()
+
+        // Two paywall pages are impressed (as in a workflow). `activePaywallSessionID` now points at B.
+        handler.trackPaywallImpression(impressionData(sessionA))
+        handler.trackPaywallImpression(impressionData(sessionB))
+
+        // The earlier session (A) must still be closeable by id, even though it is not the active one.
+        // `trackPaywallClose()` (no arg) would only ever close B, leaving A dangling open.
+        expect(handler.trackPaywallClose(sessionID: sessionA)) == true
+        expect(handler.trackPaywallClose(sessionID: sessionB)) == true
+
+        // Closing an already-closed session is a no-op.
+        expect(handler.trackPaywallClose(sessionID: sessionA)) == false
+    }
+
+    func testClearActivePaywallSessionMakesPurchaseEventsUnattributed() async throws {
+        let handler: PurchaseHandler = .mock()
+
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
+        )
+
+        // A paywall step is impressed, so purchase events resolve against its session.
+        handler.trackPaywallImpression(eventData)
+        expect(handler.createPurchaseInitiatedEvent(package: TestData.packageWithIntroOffer)).toNot(beNil())
+
+        // Navigating onto a non-paywall workflow step clears the active session (see the gate in
+        // `PaywallsV2View.firePaywallImpression`). A purchase there is now unattributed rather than
+        // charged to the prior paywall step's session.
+        handler.clearActivePaywallSession()
+        expect(handler.createPurchaseInitiatedEvent(package: TestData.packageWithIntroOffer)).to(beNil())
     }
 
     func testPaywallSourceIsPropagatedToTrackedEvents() async throws {

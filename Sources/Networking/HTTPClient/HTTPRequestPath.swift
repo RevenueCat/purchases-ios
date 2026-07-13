@@ -45,6 +45,40 @@ protocol HTTPRequestPath {
 
     /// The fallback relative path for this endpoint, if any.
     var fallbackRelativePath: String? { get }
+
+    /// Additional headers specific to this endpoint.
+    var additionalHeaders: HTTPRequest.Headers { get }
+
+    /// Provides endpoint-specific inputs for response signature verification.
+    var responseSignatureContextProvider: ResponseSignatureContextProvider { get }
+}
+
+/// Provides endpoint-specific inputs for backend response signature verification.
+///
+/// Most endpoints use the raw response body and request body. Specialized endpoints can override
+/// either input.
+protocol ResponseSignatureContextProvider {
+
+    /// Returns the response bytes that should be verified against the backend signature.
+    ///
+    /// This may throw when deriving the signed payload requires validating response structure first.
+    func responsePayloadForSignature(from body: Data?, statusCode: HTTPStatusCode) throws -> Data?
+
+    /// Returns the request body component to include in signature parameters, if any.
+    func requestBodyForSignature(for request: HTTPRequest) -> HTTPRequestBody?
+
+}
+
+struct DefaultResponseSignatureContextProvider: ResponseSignatureContextProvider {
+
+    func responsePayloadForSignature(from body: Data?, statusCode: HTTPStatusCode) throws -> Data? {
+        return body
+    }
+
+    func requestBodyForSignature(for request: HTTPRequest) -> HTTPRequestBody? {
+        return request.requestBody
+    }
+
 }
 
 extension HTTPRequestPath {
@@ -59,6 +93,14 @@ extension HTTPRequestPath {
 
     var fallbackRelativePath: String? {
         return nil
+    }
+
+    var additionalHeaders: HTTPRequest.Headers {
+        return [:]
+    }
+
+    var responseSignatureContextProvider: ResponseSignatureContextProvider {
+        return DefaultResponseSignatureContextProvider()
     }
 
     var url: URL? { return self.url(proxyURL: nil) }
@@ -103,12 +145,17 @@ extension HTTPRequest {
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
         case getVirtualCurrencies(appUserID: String)
-        case getWorkflow(appUserID: String, workflowId: String)
-        case getWorkflows(appUserID: String, type: String?)
         case postRedeemWebPurchase
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
+        case remoteConfig(domain: String)
+
+    }
+
+    enum FallbackPath: Hashable {
+
+        case remoteConfig(domain: String)
 
     }
 
@@ -181,8 +228,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .getCustomerInfo,
                 .getOfferings,
-                .getWorkflow,
-                .getWorkflows,
                 .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
@@ -197,7 +242,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
-                .rewardVerificationStatus:
+                .rewardVerificationStatus,
+                .remoteConfig:
             return true
 
         case .health,
@@ -210,8 +256,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .getCustomerInfo,
                 .getOfferings,
-                .getWorkflow,
-                .getWorkflows,
                 .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
@@ -228,7 +272,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus:
             return true
-        case .health,
+        case .remoteConfig,
+             .health,
              .appHealthReportAvailability:
             return false
         }
@@ -243,11 +288,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getOfferings,
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
-                .getWorkflow,
-                .getWorkflows,
                 .appHealthReport,
                 .appHealthReportAvailability,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .remoteConfig,
+                .rewardVerificationStatus:
             return true
         case .getIntroEligibility,
                 .postSubscriberAttributes,
@@ -258,8 +303,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .postCreateTicket:
             return false
-        case .rewardVerificationStatus:
-            return true
         }
     }
 
@@ -272,11 +315,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .health,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
+                .remoteConfig,
                 .rewardVerificationStatus:
             return true
-        case .getWorkflow,
-                .getWorkflows,
-                .getOfferings,
+        case .getOfferings,
                 .getIntroEligibility,
                 .postSubscriberAttributes,
                 .postAttributionData,
@@ -288,6 +330,15 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket:
             return false
+        }
+    }
+
+    var responseSignatureContextProvider: ResponseSignatureContextProvider {
+        switch self {
+        case .remoteConfig:
+            return RemoteConfigSignatureContextProvider()
+        default:
+            return DefaultResponseSignatureContextProvider()
         }
     }
 
@@ -345,16 +396,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .getVirtualCurrencies(appUserID):
             return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
 
-        case let .getWorkflow(appUserID, workflowId):
-            return "subscribers/\(Self.escape(appUserID))/workflows/\(Self.escape(workflowId))"
-
-        case let .getWorkflows(appUserID, type):
-            let base = "subscribers/\(Self.escape(appUserID))/workflows"
-            if let type = type {
-                return "\(base)?type=\(Self.escape(type))"
-            }
-            return base
-
         case .postCreateTicket:
             return "customercenter/support/create-ticket"
         case let .isPurchaseAllowedByRestoreBehavior(appUserID):
@@ -362,6 +403,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case let .rewardVerificationStatus(appUserID, clientTransactionID):
             return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
+
+        case let .remoteConfig(domain):
+            return "config/\(Self.escape(domain))"
         }
     }
 
@@ -372,12 +416,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .getOfferings:
             return "get_offerings"
-
-        case .getWorkflow:
-            return "get_workflow"
-
-        case .getWorkflows:
-            return "get_workflows"
 
         case .getIntroEligibility:
             return "get_intro_eligibility"
@@ -428,10 +466,89 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .rewardVerificationStatus:
             return "get_reward_verification_status"
+
+        case .remoteConfig:
+            return "remote_config"
+        }
+    }
+
+    var additionalHeaders: HTTPRequest.Headers {
+        switch self {
+        case .remoteConfig:
+            return [
+                HTTPClient.RequestHeader.accept.rawValue: HTTPClient.rcContainerFormatAcceptHeaderValue,
+                HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue:
+                    HTTPClient.rcContainerFormatElementEncodingHeaderValue
+            ]
+        default:
+            return [:]
         }
     }
 
     private static func escape(_ appUserID: String) -> String {
         return appUserID.trimmedAndEscaped
     }
+}
+
+extension HTTPRequest.FallbackPath: HTTPRequestPath {
+
+    // swiftlint:disable:next force_unwrapping
+    static let serverHostURL = URL(string: "https://api-production.8-lives-cat.io")!
+
+    var authenticated: Bool {
+        switch self {
+        case .remoteConfig:
+            return true
+        }
+    }
+
+    var shouldSendEtag: Bool {
+        switch self {
+        case .remoteConfig:
+            return true
+        }
+    }
+
+    var supportsSignatureVerification: Bool {
+        switch self {
+        case .remoteConfig:
+            return true
+        }
+    }
+
+    var needsNonceForSigning: Bool {
+        switch self {
+        case .remoteConfig:
+            return false
+        }
+    }
+
+    var responseSignatureContextProvider: ResponseSignatureContextProvider {
+        switch self {
+        case .remoteConfig:
+            return FallbackSignatureContextProvider()
+        }
+    }
+
+    var relativePath: String {
+        switch self {
+        case let .remoteConfig(domain):
+            return "/v1/config/\(domain.trimmedAndEscaped)"
+        }
+    }
+
+    var name: String {
+        switch self {
+        case .remoteConfig:
+            return "remote_config_fallback"
+        }
+    }
+
+    var additionalHeaders: HTTPRequest.Headers {
+        switch self {
+        case .remoteConfig:
+            return [:]
+        }
+    }
+
 }

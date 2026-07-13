@@ -130,10 +130,12 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 case .navigateTo(let destination):
                     switch destination {
                     case .sheet(sheet: let sheet):
-                        urls += self.collectAllImageURLs(
-                            in: sheet.stack,
-                            includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
-                        )
+                        if let sheet {
+                            urls += self.collectAllImageURLs(
+                                in: sheet.stack,
+                                includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                            )
+                        }
                     case .customerCenter, .offerCode, .privacyPolicy, .terms, .webPaywallLink, .url, .unknown:
                         break
                     }

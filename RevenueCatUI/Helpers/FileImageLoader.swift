@@ -113,14 +113,13 @@ final class DecodedImageCache {
     static let shared = DecodedImageCache()
 
     private let cache = NSCache<NSURL, Entry>()
-    private let queue = DispatchQueue(label: "com.revenuecat.DecodedImageCache", attributes: .concurrent)
 
     private init() {}
 
     func imageAndSize(for url: URL) -> (Image, CGSize)? {
         let key = url as NSURL
 
-        if let hit = self.queue.sync(execute: { self.cache.object(forKey: key) }) {
+        if let hit = self.cache.object(forKey: key) {
             return (hit.image, hit.size)
         }
 
@@ -128,9 +127,7 @@ final class DecodedImageCache {
             return nil
         }
 
-        self.queue.async(flags: .barrier) {
-            self.cache.setObject(Entry(image: decoded.0, size: decoded.1), forKey: key)
-        }
+        self.cache.setObject(Entry(image: decoded.0, size: decoded.1), forKey: key)
 
         return decoded
     }

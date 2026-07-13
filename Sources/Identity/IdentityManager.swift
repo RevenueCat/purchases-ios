@@ -31,6 +31,8 @@ class IdentityManager: CurrentUserProvider {
     private let backend: Backend
     private let customerInfoManager: CustomerInfoManager
     private let attributeSyncing: AttributeSyncing
+    // Weak because RemoteConfigManager keeps IdentityManager as its CurrentUserProvider.
+    weak var remoteConfigManager: RemoteConfigManagerType?
 
     private static let anonymousRegex = #"\$RCAnonymousID:([a-z0-9]{32})$"#
 
@@ -158,6 +160,7 @@ private extension IdentityManager {
 
         self.backend.identity.logIn(currentAppUserID: oldAppUserID, newAppUserID: newAppUserID) { result in
             if case let .success((customerInfo, _)) = result {
+                self.remoteConfigManager?.clearCache(forAppUserID: newAppUserID)
                 self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newAppUserID)
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: newAppUserID)
                 self.copySubscriberAttributesToNewUserIfOldIsAnonymous(oldAppUserID: oldAppUserID,
@@ -191,7 +194,9 @@ extension IdentityManager: @unchecked Sendable {}
 private extension IdentityManager {
 
     func resetCacheAndSave(newUserID: String) {
-        self.deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: newUserID)
+        let oldAppUserID = self.currentAppUserID
+        self.remoteConfigManager?.clearCache(forAppUserID: newUserID)
+        self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newUserID)
         self.deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
         self.backend.clearHTTPClientCaches()
     }

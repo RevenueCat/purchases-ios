@@ -8,6 +8,8 @@ excluded:
   - vendor
   - scan_derived_data
   - .git
+  - build
+  - "**/DerivedSources/GeneratedAssetSymbols.swift"
   - .build
   - ./**/Project.swift
 

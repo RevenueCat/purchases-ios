@@ -36,11 +36,8 @@ class BaseBackendTests: TestCase {
     private(set) var customerCenterConfig: CustomerCenterConfigAPI!
     private(set) var redeemWebPurchaseAPI: RedeemWebPurchaseAPI!
     private(set) var virtualCurrenciesAPI: VirtualCurrenciesAPI!
-    private(set) var workflowsAPI: WorkflowsAPI!
     private(set) var adsAPI: AdsAPI!
-    /// Controls what the CDN fetch returns. Tests can reassign this before triggering a `use_cdn` response
-    /// because the closure registered with `WorkflowsAPI` captures `self` and reads this property at call time.
-    var stubbedCdnFetch: WorkflowCdnFetch = { _, _, completion in completion(.success(Data())) }
+    private(set) var remoteConfigAPI: RemoteConfigAPI!
 
     static let apiKey = "asharedsecret"
     static let userID = "user"
@@ -98,11 +95,8 @@ class BaseBackendTests: TestCase {
         self.customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         self.redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
         self.virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
-        self.workflowsAPI = WorkflowsAPI(backendConfig: backendConfig,
-                                         cdnFetch: { [weak self] cdnUrl, hash, completion in
-            self?.stubbedCdnFetch(cdnUrl, hash, completion) ?? completion(.success(Data()))
-        })
         self.adsAPI = AdsAPI(backendConfig: backendConfig)
+        self.remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
         self.backend = Backend(backendConfig: backendConfig,
                                customerAPI: customer,
@@ -114,8 +108,8 @@ class BaseBackendTests: TestCase {
                                customerCenterConfig: self.customerCenterConfig,
                                redeemWebPurchaseAPI: self.redeemWebPurchaseAPI,
                                virtualCurrenciesAPI: self.virtualCurrenciesAPI,
-                               workflowsAPI: self.workflowsAPI,
-                               adsAPI: self.adsAPI)
+                               adsAPI: self.adsAPI,
+                               remoteConfigAPI: self.remoteConfigAPI)
     }
 
     var verificationMode: Configuration.EntitlementVerificationMode {

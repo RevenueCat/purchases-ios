@@ -114,6 +114,54 @@ class WorkflowEventsRequestTests: TestCase {
         expect(request.properties.entryReason).to(beNil())
     }
 
+    // MARK: - Close wire format
+
+    func testCloseEventNameInWireFormat() throws {
+        let event = WorkflowEvent.close(
+            .init(id: id, date: date),
+            .init(workflowId: "wfl_abc", stepId: "step-1", isFirstStep: true, isLastStep: false)
+        )
+        let stored = try XCTUnwrap(storedEvent(from: event))
+        let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
+
+        expect(request.eventName) == "workflows_close"
+    }
+
+    func testClosePropertiesCarryStepPositionAndOmitNavigationFields() throws {
+        let event = WorkflowEvent.close(
+            .init(id: id, date: date),
+            .init(workflowId: "wfl_abc", stepId: "step-1", isFirstStep: false, isLastStep: true)
+        )
+        let stored = try XCTUnwrap(storedEvent(from: event))
+        let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
+
+        expect(request.properties.workflowId) == "wfl_abc"
+        expect(request.properties.stepId) == "step-1"
+        expect(request.properties.isFirstStep) == false
+        expect(request.properties.isLastStep) == true
+        // Close is not a navigation event: it has no from/to step and no entry reason.
+        expect(request.properties.fromStepId).to(beNil())
+        expect(request.properties.toStepId).to(beNil())
+        expect(request.properties.entryReason).to(beNil())
+    }
+
+    func testKhepriCompatibleShapeForClose() throws {
+        let event = WorkflowEvent.close(
+            .init(id: id, date: date),
+            .init(workflowId: "wfl_abc", stepId: "step-1", isFirstStep: true, isLastStep: false)
+        )
+        let json = try encodedJSON(from: event)
+
+        expect(json).to(contain("\"event_name\":\"workflows_close\""))
+        expect(json).to(contain("\"workflow_id\":\"wfl_abc\""))
+        expect(json).to(contain("\"step_id\":\"step-1\""))
+        expect(json).to(contain("\"is_first_step\":true"))
+        expect(json).to(contain("\"is_last_step\":false"))
+        expect(json).toNot(contain("from_step_id"))
+        expect(json).toNot(contain("to_step_id"))
+        expect(json).toNot(contain("entry_reason"))
+    }
+
     // MARK: - JSON serialization
 
     func testTypePresentInJSON() throws {

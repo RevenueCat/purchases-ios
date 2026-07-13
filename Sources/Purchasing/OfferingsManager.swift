@@ -26,6 +26,8 @@ class OfferingsManager {
     private let productsManager: ProductsManagerType
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
+    // Nil when remote config is disabled, in which case offerings delivery is unchanged.
+    private let remoteConfigManager: RemoteConfigManagerType?
 
     init(deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
@@ -34,7 +36,8 @@ class OfferingsManager {
          offeringsFactory: OfferingsFactory,
          productsManager: ProductsManagerType,
          diagnosticsTracker: DiagnosticsTrackerType?,
-         dateProvider: DateProvider = DateProvider()) {
+         dateProvider: DateProvider = DateProvider(),
+         remoteConfigManager: RemoteConfigManagerType? = nil) {
         self.deviceCache = deviceCache
         self.operationDispatcher = operationDispatcher
         self.systemInfo = systemInfo
@@ -43,6 +46,7 @@ class OfferingsManager {
         self.productsManager = productsManager
         self.diagnosticsTracker = diagnosticsTracker
         self.dateProvider = dateProvider
+        self.remoteConfigManager = remoteConfigManager
     }
 
     func offerings(
@@ -87,21 +91,27 @@ class OfferingsManager {
 
             let cacheStatus = self.deviceCache.offeringsCacheStatus(isAppBackgrounded: isAppBackgrounded)
             Logger.debug(Strings.offering.vending_offerings_cache_from_memory)
-            self.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
-                                                 startTime: startTime,
-                                                 cacheStatus: cacheStatus,
-                                                 error: nil,
-                                                 requestedProductIds: nil,
-                                                 notFoundProductIds: nil)
-
-            self.dispatchCompletionOnMainThreadIfPossible(completion,
-                                                          value: .success(memoryCachedOfferings))
-
             if cacheStatus == .stale {
+                // Refresh in the background; the readiness gate below must not delay it.
                 self.updateOfferingsCache(appUserID: appUserID,
                                           isAppBackgrounded: isAppBackgrounded,
                                           fetchPolicy: fetchPolicy,
                                           completion: nil)
+            }
+            // Cached offerings, stale ones included, wait for config readiness before
+            // delivery (a no-op once config has synced). A stale snapshot may be returned
+            // even if the background refresh finished first; that matches the stale-cache
+            // model, and the refresh still updates the cache for the next call.
+            self.deliverWhenConfigReady {
+                // Tracked inside the gate so the recorded latency includes the readiness
+                // wait this delivery now pays, not just the cache lookup.
+                self.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
+                                                     startTime: startTime,
+                                                     cacheStatus: cacheStatus,
+                                                     error: nil,
+                                                     requestedProductIds: nil,
+                                                     notFoundProductIds: nil)
+                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(memoryCachedOfferings))
             }
         }
     }
@@ -123,18 +133,24 @@ class OfferingsManager {
             case let .success(contents):
                 self.handleOfferingsBackendResult(with: contents,
                                                   appUserID: appUserID,
+                                                  isAppBackgrounded: isAppBackgrounded,
                                                   fetchPolicy: fetchPolicy,
                                                   preferredLocales: preferredLocales,
                                                   completion: completion)
 
-            case let .failure(backendError) where backendError.shouldFallBackToCachedOfferings:
+            case let .failure(backendError) where backendError.shouldFallBackToCache:
 
                 // If error fetching offerings, attempt to load them from disk cache.
                 self.fetchCachedOfferingsFromDisk(appUserID: appUserID,
                                                   fetchPolicy: fetchPolicy) { offerings in
                     if let offerings = offerings {
                         Logger.warn(Strings.offering.error_fetching_offerings_using_disk_cache)
-                        self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offerings))
+                        // Deliver via the config-ready gate too, so an offerings backend failure that
+                        // falls back to disk still waits for remote config's first sync instead of
+                        // leaving workflow resolution unresolved.
+                        self.deliverWhenConfigReady {
+                            self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offerings))
+                        }
                     } else {
                         self.handleOfferingsUpdateError(.backendError(backendError),
                                                         completion: completion)
@@ -244,13 +260,15 @@ private extension OfferingsManager {
 
         self.fetchProducts(withIdentifiers: productIdentifiers, fromResponse: contents.response) { result in
             let products = result.value ?? []
+            let apiKeyValidationResult = self.systemInfo.apiKeyValidationResult
 
             guard products.isEmpty == false else {
                 // Check if empty products is likely caused by https://github.com/RevenueCat/purchases-ios/issues/4954
                 // There is a widely reported bug in the iOS 18.4 Simulator affecting some HTTP requests
                 let showSimulatorWarning = self.systemInfo.isSubjectToKnownIssue_18_4_sim()
                 completion(.failure(Self.createErrorForEmptyResult(result.error,
-                                                                   showSimulatorWarning: showSimulatorWarning)))
+                                                                   showSimulatorWarning: showSimulatorWarning,
+                                                                   apiKeyValidationResult: apiKeyValidationResult)))
                 return
             }
 
@@ -262,18 +280,23 @@ private extension OfferingsManager {
                 switch fetchPolicy {
                 case .ignoreNotFoundProducts:
                     Logger.appleWarning(
-                        Strings.offering.cannot_find_product_configuration_error(identifiers: missingProductIDs)
+                        Strings.offering.cannot_find_product_configuration_error(
+                            identifiers: missingProductIDs,
+                            apiKeyValidationResult: apiKeyValidationResult)
                     )
 
                 case .failIfProductsAreMissing:
-                    completion(.failure(.missingProducts(identifiers: missingProductIDs)))
+                    completion(.failure(.missingProducts(identifiers: missingProductIDs,
+                                                         apiKeyValidationResult: apiKeyValidationResult)))
                     return
                 }
             }
 
-            if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID,
-                                                                            contents: contents,
-                                                                            loadedFromDiskCache: loadedFromDiskCache) {
+            if let createdOfferings = self.offeringsFactory.createOfferings(
+                from: productsByID,
+                contents: contents,
+                loadedFromDiskCache: loadedFromDiskCache
+            ) {
                 completion(.success(OfferingsResultData(offerings: createdOfferings,
                                                         requestedProductIds: productIdentifiers,
                                                         notFoundProductIds: missingProductIDs)))
@@ -283,9 +306,11 @@ private extension OfferingsManager {
         }
     }
 
+    // swiftlint:disable:next function_parameter_count
     func handleOfferingsBackendResult(
         with contents: Offerings.Contents,
         appUserID: String,
+        isAppBackgrounded: Bool,
         fetchPolicy: FetchPolicy,
         preferredLocales: [String],
         completion: (@MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void)?
@@ -298,7 +323,15 @@ private extension OfferingsManager {
                 self.deviceCache.cache(offerings: offeringsResultData.offerings,
                                        preferredLocales: preferredLocales,
                                        appUserID: appUserID)
-                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offeringsResultData))
+
+                // A background refresh (nil completion) only updates the cache; skip the
+                // readiness gate so it doesn't await (and decode) config for a no-op delivery.
+                guard let completion else { return }
+                // Delivers offerings only once remote config has synced at least once, so the
+                // `workflows` topic is available for resolving a workflow right after this call.
+                self.deliverWhenConfigReady {
+                    self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offeringsResultData))
+                }
 
             case let .failure(error):
                 self.handleOfferingsUpdateError(error, completion: completion)
@@ -306,17 +339,28 @@ private extension OfferingsManager {
         }
     }
 
-    private static func createErrorForEmptyResult(_ error: PurchasesError?,
-                                                  showSimulatorWarning: Bool = false) -> OfferingsManager.Error {
+    private static func createErrorForEmptyResult(
+        _ error: PurchasesError?,
+        showSimulatorWarning: Bool = false,
+        apiKeyValidationResult: Configuration.APIKeyValidationResult
+    ) -> OfferingsManager.Error {
         if let purchasesError = error,
            case ErrorCode.productRequestTimedOut = purchasesError.error {
             return .timeout(purchasesError)
         } else if showSimulatorWarning {
-            return .configurationError(Strings.offering.known_issue_ios_18_4_simulator_products_not_found.description,
-                                       underlyingError: error?.asPublicError)
+            return .configurationError(
+                Strings.offering.known_issue_ios_18_4_simulator_products_not_found(
+                    apiKeyValidationResult: apiKeyValidationResult
+                ).description,
+                underlyingError: error?.asPublicError
+            )
         } else {
-            return .configurationError(Strings.offering.configuration_error_products_not_found.description,
-                                       underlyingError: error?.asPublicError)
+            return .configurationError(
+                Strings.offering.configuration_error_products_not_found(
+                    apiKeyValidationResult: apiKeyValidationResult
+                ).description,
+                underlyingError: error?.asPublicError
+            )
         }
     }
 
@@ -337,6 +381,23 @@ private extension OfferingsManager {
             self.operationDispatcher.dispatchOnMainActor {
                 completion(value)
             }
+        }
+    }
+
+    /// Invokes `deliver` once the paywall config data `getOfferings` depends on is ready:
+    /// the `workflows` topic (with its prefetch-flagged blobs) and the `ui_config` body,
+    /// resolved concurrently. Both are best-effort (nil on failure, never throwing), so
+    /// delivery can never be stranded; when no manager is wired, `deliver` runs immediately.
+    private func deliverWhenConfigReady(deliver: @escaping () -> Void) {
+        guard let remoteConfigManager = self.remoteConfigManager else {
+            deliver()
+            return
+        }
+        Task {
+            async let workflowsReady = remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
+            async let uiConfigReady = UiConfigProvider(manager: remoteConfigManager).getUiConfig()
+            _ = await (workflowsReady, uiConfigReady)
+            deliver()
         }
     }
 
@@ -496,7 +557,9 @@ extension OfferingsManager {
         case configurationError(String, PublicError?, ErrorSource)
         case timeout(PurchasesError)
         case noOfferingsFound(ErrorSource)
-        case missingProducts(identifiers: Set<String>, ErrorSource)
+        case missingProducts(identifiers: Set<String>,
+                             apiKeyValidationResult: Configuration.APIKeyValidationResult,
+                             ErrorSource)
 
     }
 
@@ -524,9 +587,12 @@ extension OfferingsManager.Error: PurchasesErrorConvertible {
                                                              functionName: source.function,
                                                              line: source.line)
 
-        case let .missingProducts(identifiers, source):
+        case let .missingProducts(identifiers, apiKeyValidationResult, source):
             return ErrorUtils.configurationError(
-                message: Strings.offering.cannot_find_product_configuration_error(identifiers: identifiers).description,
+                message: Strings.offering.cannot_find_product_configuration_error(
+                    identifiers: identifiers,
+                    apiKeyValidationResult: apiKeyValidationResult
+                ).description,
                 fileName: source.file,
                 functionName: source.function,
                 line: source.line
@@ -554,11 +620,14 @@ extension OfferingsManager.Error: PurchasesErrorConvertible {
 
     static func missingProducts(
         identifiers: Set<String>,
+        apiKeyValidationResult: Configuration.APIKeyValidationResult,
         file: String = #fileID,
         function: String = #function,
         line: UInt = #line
     ) -> Self {
-        return .missingProducts(identifiers: identifiers, .init(file: file, function: function, line: line))
+        return .missingProducts(identifiers: identifiers,
+                                apiKeyValidationResult: apiKeyValidationResult,
+                                .init(file: file, function: function, line: line))
     }
 
 }

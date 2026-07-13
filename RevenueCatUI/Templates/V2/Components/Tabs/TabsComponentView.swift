@@ -110,20 +110,22 @@ struct LoadedTabsComponentView: View {
 
     @Environment(\.customPaywallVariables)
     private var customVariables
+
     @Environment(\.selectedPackageId)
     private var selectedPackageId
+
+    @Environment(\.paywallStateStore)
+    private var stateStore
 
     private let viewModel: TabsComponentViewModel
     private let workflowDefaultPackage: Package?
     private let onDismiss: () -> Void
 
-    @StateObject
+    @ObservedObject
     private var tabControlContext: TabControlContext
 
     @State
     private var tierPackageContexts: [String: PackageContext]
-
-    @State var wasConfigured: Bool = false
 
     // MARK: - Parent's Own Selection Tracking
     //
@@ -165,8 +167,9 @@ struct LoadedTabsComponentView: View {
         }
     }
 
-    /// `tabControlContext` is nil in production (the view owns its context); tests may pass
-    /// an external instance to drive tab switches programmatically without UI interaction.
+    /// `tabControlContext` is nil in production (the view reuses the shared instance owned by
+    /// `viewModel`); tests may pass an external instance to drive tab switches programmatically
+    /// without UI interaction.
     init(viewModel: TabsComponentViewModel,
          parentPackageContext: PackageContext,
          workflowDefaultPackage: Package? = nil,
@@ -176,13 +179,7 @@ struct LoadedTabsComponentView: View {
         self.workflowDefaultPackage = workflowDefaultPackage
         self.onDismiss = onDismiss
 
-        self._tabControlContext = .init(wrappedValue: tabControlContext ?? TabControlContext(
-            controlStackViewModel: viewModel.controlStackViewModel,
-            tabIds: viewModel.tabIds,
-            defaultTabId: viewModel.defaultTabId,
-            name: viewModel.name,
-            tabContextNamesById: viewModel.tabContextNamesById
-        ))
+        self.tabControlContext = tabControlContext ?? viewModel.tabControlContext
 
         // Store the parent's initial selection for restoration when switching to package-less tabs
         self._parentOwnedPackage = .init(initialValue: parentPackageContext.package)
@@ -287,8 +284,12 @@ struct LoadedTabsComponentView: View {
                 self.workflowDefaultPackage ?? activeTabViewModel.defaultSelectedPackage
             )
             .onAppear {
-                if !wasConfigured {
-                    self.wasConfigured = true
+                if !self.viewModel.didSeedInitialState {
+                    self.viewModel.didSeedInitialState = true
+                    // Seed the store with the initial selection so components that react to the tab
+                    // render their correct state on first appearance. A no-op when the declared
+                    // default already matches the initial tab.
+                    self.publishSelectedTabState(self.tabControlContext.selectedTabId)
                     // Propagate the initial tab's package to parent context for the purchase button.
                     // Subsequent changes are handled by the onChange callback in LoadedTabComponentView.
                     if let package = tierPackageContext.package {
@@ -311,6 +312,10 @@ struct LoadedTabsComponentView: View {
             //    - Otherwise → use tab's default
             //
             .onChangeOf(self.tabControlContext.selectedTabId) { newTabId in
+                // Publish the new selection before the package-restoration guard so dependent
+                // components re-resolve their `state` conditions even for tabs without packages.
+                self.publishSelectedTabState(newTabId)
+
                 guard let newTabViewModel = self.viewModel.tabViewModels[newTabId],
                       let newTierPackageContext = self.tierPackageContexts[newTabId] else {
                     return
@@ -390,6 +395,16 @@ struct LoadedTabsComponentView: View {
         }
     }
 
+    private func publishSelectedTabState(_ tabId: String) {
+        guard let stateStore = self.stateStore,
+              let stateUpdates = self.viewModel.stateUpdates,
+              !stateUpdates.isEmpty else {
+            return
+        }
+
+        stateStore.apply(stateUpdates, payload: .string(tabId))
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -425,7 +440,16 @@ struct LoadedTabComponentView: View {
         )
         .environmentObject(self.tabPackageContext)
         // Comparing on tabPackageContext.package but sending tabPackageContext to parent
-        .onChangeOf(self.tabPackageContext.package) { _ in
+        .onChangeOf(self.tabPackageContext.package) { newPackage in
+            // Pre-iOS 17, onChange runs a closure captured from the previous body, where
+            // `tabPackageContext` can still be the previous tab's context. Skip those stale
+            // calls: the tab-switch handler already updated the parent.
+            if TabPackageParentPropagation.isStaleChange(
+                observedPackage: newPackage,
+                capturedTabPackage: self.tabPackageContext.package
+            ) {
+                return
+            }
             if TabPackageParentPropagation.shouldSuppressNotifyingParent(
                 tabPackage: self.tabPackageContext.package,
                 tabPackageIdentifiers: self.tabPackageIdentifiers,
@@ -442,6 +466,15 @@ struct LoadedTabComponentView: View {
 /// Decides when a tab `PackageContext` change should not overwrite the paywall (parent) selection.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum TabPackageParentPropagation {
+
+	/// True when an `onChange` closure captured from a previous body observes a change that
+	/// belongs to a different tab context (pre-iOS 17 `onChange(of:perform:)` behavior).
+	static func isStaleChange(
+		observedPackage: Package?,
+		capturedTabPackage: Package?
+	) -> Bool {
+		return observedPackage?.identifier != capturedTabPackage?.identifier
+	}
 
 	/// When the tab clears local selection to `nil` while the parent holds a root-only package,
 	/// do not notify the parent (avoids clearing the purchase selection).

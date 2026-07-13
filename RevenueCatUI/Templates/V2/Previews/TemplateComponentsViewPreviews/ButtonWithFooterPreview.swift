@@ -519,6 +519,24 @@ struct ButtonWithSheetPreview_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 1")
+
+        PaywallsV2View(
+            paywallComponents: ButtonWithSheetPreview.paywallComponents,
+            offering: .init(identifier: "default",
+                            serverDescription: "",
+                            availablePackages: [weeklyPackage, monthlyPackage],
+                            webCheckoutUrl: URL(string: "https://pay.revenuecat.com/abcd1234/the-app-user-id")!),
+            purchaseHandler: PurchaseHandler.default(),
+            introEligibilityChecker: .default(),
+            showZeroDecimalPlacePrices: true,
+            onDismiss: { },
+            failedToLoadFont: { _ in },
+            colorScheme: .light
+        )
+        .environment(\.paywallLoadingOverride, true)
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.fixed(width: 400, height: 800))
+        .previewDisplayName("Template 1 (Loading)")
     }
 }
 

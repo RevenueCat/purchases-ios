@@ -251,3 +251,30 @@ extension Offerings.Contents: Codable {
     }
 
 }
+
+@_spi(Internal) public extension Offerings {
+
+    /// Builds an `Offerings` bundle from a list of offerings for injected/preview rendering, with no
+    /// network fetch. Only the offerings dictionary and `offering(identifier:)` lookups are used by
+    /// the workflow preview path, so the backing response is empty.
+    static func preview(offerings: [Offering], currentOfferingID: String? = nil) -> Offerings {
+        return Offerings(
+            offerings: Dictionary(offerings.map { ($0.identifier, $0) }, uniquingKeysWith: { first, _ in first }),
+            currentOfferingID: currentOfferingID,
+            placements: nil,
+            targeting: nil,
+            contents: .init(
+                response: .init(
+                    currentOfferingId: currentOfferingID,
+                    offerings: [],
+                    placements: nil,
+                    targeting: nil,
+                    uiConfig: nil
+                ),
+                httpResponseOriginalSource: .mainServer
+            ),
+            loadedFromDiskCache: false
+        )
+    }
+
+}

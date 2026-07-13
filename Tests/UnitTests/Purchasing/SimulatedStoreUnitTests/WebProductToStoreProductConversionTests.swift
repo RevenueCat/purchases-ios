@@ -35,7 +35,72 @@ class WebProductToStoreProductConversionTests: TestCase {
         expect(storeProduct.subscriptionGroupIdentifier) == nil
         expect(storeProduct.subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .year)
 
-        // For now, free trials and intro offers are not supported for TestStoreProducts coming from WebProducts
+        expect(storeProduct.introductoryDiscount).to(beNil())
+        expect(storeProduct.discounts).to(beEmpty())
+    }
+
+    func testSubscriptionWebProductWithFreeTrialIncludesFreeTrialIntroductoryDiscount() throws {
+        let product = SimulatedStoreMockData.yearlyProductWithFreeTrial
+
+        let storeProduct = try product.convertToStoreProduct(locale: Locale(identifier: "es_ES"))
+
+        expect(storeProduct.price) == 99.99
+        expect(storeProduct.localizedPriceString) == "99,99\u{00A0}€"
+        expect(storeProduct.subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .year)
+
+        let discount = try XCTUnwrap(storeProduct.introductoryDiscount)
+        expect(discount.paymentMode) == .freeTrial
+        expect(discount.type) == .introductory
+        expect(discount.price) == 0
+        expect(discount.localizedPriceString) == "0,00\u{00A0}€"
+        expect(discount.subscriptionPeriod) == SubscriptionPeriod(value: 7, unit: .day)
+        expect(discount.numberOfPeriods) == 1
+        expect(discount.offerIdentifier) == "$rc_free_trial"
+
+        expect(storeProduct.discounts).to(beEmpty())
+    }
+
+    func testSubscriptionWebProductWithIntroPriceIncludesPayAsYouGoIntroductoryDiscount() throws {
+        let product = SimulatedStoreMockData.yearlyProductWithIntroPrice
+
+        let storeProduct = try product.convertToStoreProduct(locale: Locale(identifier: "es_ES"))
+
+        expect(storeProduct.price) == 99.99
+        expect(storeProduct.subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .year)
+
+        let discount = try XCTUnwrap(storeProduct.introductoryDiscount)
+        expect(discount.paymentMode) == .payAsYouGo
+        expect(discount.type) == .introductory
+        expect(discount.price) == 1.99
+        expect(discount.localizedPriceString) == "1,99\u{00A0}€"
+        expect(discount.subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .month)
+        expect(discount.numberOfPeriods) == 3
+        expect(discount.offerIdentifier) == "$rc_intro_price"
+
+        expect(storeProduct.discounts).to(beEmpty())
+    }
+
+    func testSubscriptionWebProductWithFreeTrialAndIntroPricePrefersFreeTrial() throws {
+        let product = SimulatedStoreMockData.yearlyProductWithFreeTrialAndIntroPrice
+
+        let storeProduct = try product.convertToStoreProduct(locale: Locale(identifier: "es_ES"))
+
+        let discount = try XCTUnwrap(storeProduct.introductoryDiscount)
+        expect(discount.paymentMode) == .freeTrial
+        expect(discount.offerIdentifier) == "$rc_free_trial"
+        expect(discount.subscriptionPeriod) == SubscriptionPeriod(value: 7, unit: .day)
+        expect(discount.price) == 0
+
+        expect(storeProduct.discounts).to(beEmpty())
+    }
+
+    func testSubscriptionWebProductWithMalformedTrialPeriodSkipsIntroductoryDiscount() throws {
+        let product = SimulatedStoreMockData.yearlyProductWithMalformedTrialPeriod
+
+        let storeProduct = try product.convertToStoreProduct(locale: Locale(identifier: "es_ES"))
+
+        expect(storeProduct.price) == 99.99
+        expect(storeProduct.subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .year)
         expect(storeProduct.introductoryDiscount).to(beNil())
         expect(storeProduct.discounts).to(beEmpty())
     }

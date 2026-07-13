@@ -128,6 +128,7 @@ public struct PaywallView: View {
         displayCloseButton: Bool = false,
         useDraftPaywall: Bool,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        simulatePromoEligible: Bool = false,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
@@ -140,9 +141,37 @@ public struct PaywallView: View {
                 displayCloseButton: displayCloseButton,
                 useDraftPaywall: useDraftPaywall,
                 introEligibility: introEligibility,
-                purchaseHandler: purchaseHandler
+                purchaseHandler: purchaseHandler,
+                promoOfferCache: simulatePromoEligible ? PaywallPromoOfferCache(simulateEligible: true) : nil
             )
         )
+    }
+
+    /// Renders a workflow paywall from an injected ``WorkflowContext`` (built via
+    /// `WorkflowPreview.makeContext`), bypassing the backend `/workflows` fetch. Used to preview
+    /// dashboard workflows (including drafts) in a companion app.
+    // swiftlint:disable:next missing_docs
+    @_spi(Internal) public init(
+        workflowContext: WorkflowContext,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
+    ) {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
+
+        var configuration = PaywallViewConfiguration(
+            content: .offering(workflowContext.initialOffering),
+            mode: .fullScreen,
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            introEligibility: introEligibility,
+            purchaseHandler: purchaseHandler
+        )
+        configuration.injectedWorkflowContext = workflowContext
+
+        self.init(configuration: configuration)
     }
 
     init(configuration: PaywallViewConfiguration, paywallViewOwnsPurchaseHandler: Bool = true) {
@@ -159,10 +188,16 @@ public struct PaywallView: View {
 
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
 
+        // An injected workflow context (preview/injection path) is used directly; there is no
+        // synchronous cache seed for a workflow paywall, so otherwise the seed is nil and the async
+        // resolve path always takes over, falling back to the cached offering in the meantime.
+        let seededWorkflowContext = configuration.injectedWorkflowContext
+        self._workflowContext = .init(initialValue: seededWorkflowContext)
         self._offering = .init(
-            initialValue: configuration.purchaseHandler.cachedInitialOffering(
-                for: configuration.content
-            )
+            initialValue: seededWorkflowContext?.initialOffering
+                ?? configuration.purchaseHandler.cachedInitialOffering(
+                    for: configuration.content
+                )
         )
         self._customerInfo = .init(
             initialValue: configuration.customerInfo ?? Self.loadCachedCustomerInfoIfPossible()

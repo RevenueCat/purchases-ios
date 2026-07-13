@@ -13,7 +13,7 @@ import Foundation
 /// operators (`and`, `or`, `if`) iterate manually.
 enum Operators {
 
-    /// Dispatch a JSON Logic operator. Throws `RuleError.unsupportedOperator`
+    /// Dispatch a JSON Logic operator. Throws `RulesEngine.EvaluationError.unsupportedOperator`
     /// when the operator name isn't implemented in this slice.
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     static func dispatch(
@@ -22,6 +22,7 @@ enum Operators {
         vars: Value
     ) throws -> Value {
         switch operatorName {
+        // Accessors
         case "var":
             return try AccessorOperators.opVar(args: args, vars: vars)
         case "missing":
@@ -29,6 +30,7 @@ enum Operators {
         case "missing_some":
             return try AccessorOperators.opMissingSome(args: args, vars: vars)
 
+        // Equality
         case "==":
             return try EqualityOperators.opLooseEq(args: args, vars: vars)
         case "!=":
@@ -38,6 +40,7 @@ enum Operators {
         case "!==":
             return try EqualityOperators.opStrictNe(args: args, vars: vars)
 
+        // Logic
         case "!":
             return try LogicOperators.opNot(args: args, vars: vars)
         case "!!":
@@ -49,6 +52,7 @@ enum Operators {
         case "if":
             return try LogicOperators.opIf(args: args, vars: vars)
 
+        // Arithmetic
         case "+":
             return try ArithmeticOperators.opAdd(args: args, vars: vars)
         case "-":
@@ -60,6 +64,13 @@ enum Operators {
         case "%":
             return try ArithmeticOperators.opMod(args: args, vars: vars)
 
+        // Min and max
+        case "min":
+            return try MinMaxOperators.opMin(args: args, vars: vars)
+        case "max":
+            return try MinMaxOperators.opMax(args: args, vars: vars)
+
+        // Comparison
         case "<":
             return try ComparisonOperators.opLt(args: args, vars: vars)
         case "<=":
@@ -69,6 +80,7 @@ enum Operators {
         case ">=":
             return try ComparisonOperators.opGe(args: args, vars: vars)
 
+        // String and array
         case "in":
             return try StringArrayOperators.opIn(args: args, vars: vars)
         case "cat":
@@ -78,8 +90,26 @@ enum Operators {
         case "merge":
             return try StringArrayOperators.opMerge(args: args, vars: vars)
 
+        // Iteration
+        case "some":
+            return try IterationOperators.opSome(args: args, vars: vars)
+        case "all":
+            return try IterationOperators.opAll(args: args, vars: vars)
+        case "none":
+            return try IterationOperators.opNone(args: args, vars: vars)
+        case "map":
+            return try IterationOperators.opMap(args: args, vars: vars)
+        case "filter":
+            return try IterationOperators.opFilter(args: args, vars: vars)
+        case "reduce":
+            return try IterationOperators.opReduce(args: args, vars: vars)
+
+        // Miscellaneous
+        case "log":
+            return try MiscOperators.opLog(args: args, vars: vars)
+
         default:
-            throw RuleError.unsupportedOperator(name: operatorName)
+            throw RulesEngine.EvaluationError.unsupportedOperator(name: operatorName)
         }
     }
 
@@ -103,16 +133,17 @@ enum Operators {
     /// Evaluate exactly two arguments. Used by binary operators (`==`,
     /// `!=`, `===`, `!==`).
     /// Evaluate args and return the first two operands. Missing
-    /// operands default to `.null` (standing in for JS `undefined`)
-    /// and extras are silently discarded — matches `json-logic-js`'s
-    /// `function(a, b)` operator signatures.
+    /// operands default to `.undefined` (JS omitted-argument semantics:
+    /// `function(a, b)` sees `undefined` for absent args, so e.g.
+    /// `{"===": [{"and": []}]}` is `undefined === undefined`) and extras
+    /// are silently discarded.
     static func evalTwo(
         _ args: Value,
         vars: Value
     ) throws -> (Value, Value) {
         let evaluated = try evalArgs(args, vars: vars)
-        let lhs = evaluated.first ?? .null
-        let rhs = evaluated.indices.contains(1) ? evaluated[1] : .null
+        let lhs = evaluated.first ?? .undefined
+        let rhs = evaluated.indices.contains(1) ? evaluated[1] : .undefined
         return (lhs, rhs)
     }
 

@@ -127,7 +127,7 @@ struct PurchaseButtonComponentView: View {
             guard result else { return }
         }
 
-        let promoOffer = self.paywallPromoOfferCache.get(for: selectedPackage)
+        let promoOffer = self.paywallPromoOfferCache.purchasableOffer(for: selectedPackage)
 
         _ = try await self.purchaseHandler.purchase(package: selectedPackage, promotionalOffer: promoOffer)
     }

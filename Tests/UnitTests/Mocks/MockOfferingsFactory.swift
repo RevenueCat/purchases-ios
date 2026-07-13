@@ -10,6 +10,10 @@ class MockOfferingsFactory: OfferingsFactory {
     var emptyOfferings = false
     var nilOfferings = false
 
+    override init(systemInfo: SystemInfo = MockSystemInfo(finishTransactions: true)) {
+        super.init(systemInfo: systemInfo)
+    }
+
     override func createOfferings(
         from storeProductsByID: [String: StoreProduct],
         contents: Offerings.Contents,

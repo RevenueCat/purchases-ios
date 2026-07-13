@@ -109,7 +109,9 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
                                                          operationDispatcher: self.operationDispatcher,
                                                          systemInfo: self.systemInfo,
                                                          backend: self.backend,
-                                                         offeringsFactory: OfferingsFactory(),
+                                                         offeringsFactory: OfferingsFactory(
+                                                            systemInfo: self.systemInfo
+                                                         ),
                                                          productsManager: self.productsManager,
                                                          diagnosticsTracker: self.diagnosticsTracker)
 

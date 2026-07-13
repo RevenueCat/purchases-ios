@@ -35,9 +35,20 @@ internal final class PaywallPromoOfferCache: ObservableObject {
     private var hasAnySubscriptionHistory: Bool = false
     private var cancellable: AnyCancellable?
 
+    /// When true, eligibility is fabricated locally (dummy signed offers) instead of fetched from the
+    /// backend, so paywall previews/mocks can show promo components and pricing without a real
+    /// subscriber or a backend-signed offer.
+    private let simulateEligible: Bool
+
     // MARK: - Init
 
-    init(subscriptionHistoryTracker: SubscriptionHistoryTracker) {
+    init(subscriptionHistoryTracker: SubscriptionHistoryTracker?, simulateEligible: Bool = false) {
+        self.simulateEligible = simulateEligible
+
+        // Simulate mode passes no tracker: it only ever produces `.signedEligible`/absent entries,
+        // which never consult `hasAnySubscriptionHistory`, so we skip the tracker's StoreKit work.
+        guard let subscriptionHistoryTracker else { return }
+
         Task { @MainActor [weak self] in
             guard let self else { return }
             self.cancellable = await subscriptionHistoryTracker.status
@@ -46,6 +57,14 @@ internal final class PaywallPromoOfferCache: ObservableObject {
                     self?.hasAnySubscriptionHistory = status == .hasHistory
                 }
         }
+    }
+
+    /// Builds a cache that fabricates dummy signed promo offers for matching packages, for paywall
+    /// previews/mocks. No network or real subscription required. Seeding happens during the view's
+    /// eligibility `.task`, so it does not run in Xcode Previews / Emerge snapshots (where that task
+    /// is skipped); it does run in a normally-launched preview app.
+    convenience init(simulateEligible: Bool) {
+        self.init(subscriptionHistoryTracker: nil, simulateEligible: simulateEligible)
     }
 
     // MARK: - Public API
@@ -76,6 +95,12 @@ internal final class PaywallPromoOfferCache: ObservableObject {
         return nil
     }
 
+    /// The signed offer to forward to a real purchase. Returns `nil` in simulate mode so a fabricated
+    /// offer (sentinel signing data) never reaches StoreKit; display paths still use `get(for:)`.
+    func purchasableOffer(for package: Package?) -> PromotionalOffer? {
+        return self.simulateEligible ? nil : self.get(for: package)
+    }
+
     // MARK: - Internal Logic
 
     private func checkSignedEligibility(packageInfos: [PackageInfo]) async {
@@ -88,6 +113,13 @@ internal final class PaywallPromoOfferCache: ObservableObject {
             let storeProduct = packageInfo.package.storeProduct
             if let productCode = packageInfo.promotionalOfferProductCode,
                let discount = storeProduct.discounts.first(where: { $0.offerIdentifier == productCode }) {
+
+                if self.simulateEligible {
+                    newCacheEntries[storeProduct.productIdentifier] = .signedEligible(
+                        Self.makeSimulatedOffer(for: discount)
+                    )
+                    continue
+                }
 
                 do {
                     let promoOffer = try await Purchases.shared.promotionalOffer(
@@ -107,5 +139,17 @@ internal final class PaywallPromoOfferCache: ObservableObject {
             updatedCache[key] = value
         }
         self.cache = updatedCache
+    }
+
+    /// Fabricates a dummy signed offer for previews. The signing values are sentinels: this offer is
+    /// only used to drive promo display/pricing in a mock, never sent to the backend.
+    private static func makeSimulatedOffer(for discount: StoreProductDiscount) -> PromotionalOffer {
+        return discount.promotionalOffer(
+            withSignedDataIdentifier: "preview",
+            keyIdentifier: "preview",
+            nonce: UUID(),
+            signature: "preview",
+            timestamp: 0
+        )
     }
 }

@@ -16,7 +16,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class PostReceiptDataOperationFactoryTests: TestCase {
 
@@ -435,6 +435,248 @@ class PostReceiptDataOperationFactoryTests: TestCase {
 
         // Cache keys should be the same when both transaction IDs are nil
         expect(factory1.cacheKey) == factory2.cacheKey
+    }
+
+    func testPresentedWorkflowIdAndStepIdAreAtTopLevelWhenPaywallHasWorkflowData() throws {
+        let paywallData = PaywallEvent.Data(
+            paywallIdentifier: "paywall-abc",
+            offeringIdentifier: "offering-1",
+            paywallRevision: 1,
+            sessionID: UUID(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false,
+            workflowId: "workflow-xyz",
+            stepId: "step-123"
+        )
+
+        let transactionData = PurchasedTransactionData(
+            presentedOfferingContext: nil,
+            presentedPaywall: .impression(.init(), paywallData),
+            unsyncedAttributes: nil,
+            storeCountry: nil
+        )
+
+        let postData = PostReceiptDataOperation.PostData(
+            transactionData: transactionData,
+            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: false,
+            purchaseCompletedBy: .revenueCat,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
+        )
+
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(postData)
+        let json = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: data) as? [String: Any]
+        )
+
+        // presented_workflow_id and presented_step_id must be top-level
+        expect(json["presented_workflow_id"] as? String) == "workflow-xyz"
+        expect(json["presented_step_id"] as? String) == "step-123"
+
+        // They must NOT leak into the nested paywall object
+        let paywall = try XCTUnwrap(json["paywall"] as? [String: Any])
+        expect(paywall["workflow_id"]).to(beNil())
+        expect(paywall["step_id"]).to(beNil())
+    }
+
+    func testPresentedWorkflowIdAndStepIdAreAbsentWhenNoPaywall() throws {
+        let transactionData = PurchasedTransactionData(
+            presentedOfferingContext: nil,
+            presentedPaywall: nil,
+            unsyncedAttributes: nil,
+            storeCountry: nil
+        )
+
+        let postData = PostReceiptDataOperation.PostData(
+            transactionData: transactionData,
+            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: false,
+            purchaseCompletedBy: .revenueCat,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
+        )
+
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(postData)
+        let json = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: data) as? [String: Any]
+        )
+
+        expect(json["presented_workflow_id"]).to(beNil())
+        expect(json["presented_step_id"]).to(beNil())
+        expect(json["paywall"]).to(beNil())
+    }
+
+    func testPresentedWorkflowIdAndStepIdAreAbsentWhenPaywallHasNoWorkflowData() throws {
+        let paywallData = PaywallEvent.Data(
+            paywallIdentifier: "paywall-abc",
+            offeringIdentifier: "offering-1",
+            paywallRevision: 1,
+            sessionID: UUID(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false
+            // workflowId and stepId intentionally omitted (nil)
+        )
+
+        let transactionData = PurchasedTransactionData(
+            presentedOfferingContext: nil,
+            presentedPaywall: .impression(.init(), paywallData),
+            unsyncedAttributes: nil,
+            storeCountry: nil
+        )
+
+        let postData = PostReceiptDataOperation.PostData(
+            transactionData: transactionData,
+            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: false,
+            purchaseCompletedBy: .revenueCat,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
+        )
+
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(postData)
+        let json = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: data) as? [String: Any]
+        )
+
+        expect(json["presented_workflow_id"]).to(beNil())
+        expect(json["presented_step_id"]).to(beNil())
+    }
+
+    func testCacheKeyIsUnchangedByWorkflowIdAndStepId() {
+        let paywallDataWithWorkflow = PaywallEvent.Data(
+            paywallIdentifier: "paywall-abc",
+            offeringIdentifier: "offering-1",
+            paywallRevision: 1,
+            sessionID: UUID(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false,
+            workflowId: "workflow-xyz",
+            stepId: "step-123"
+        )
+
+        let config = self.createConfig()
+
+        let postDataWithoutWorkflow = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                presentedOfferingContext: nil,
+                unsyncedAttributes: nil,
+                storeCountry: nil
+            ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: false,
+            purchaseCompletedBy: .revenueCat,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
+        )
+
+        let postDataWithWorkflow = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                presentedOfferingContext: nil,
+                presentedPaywall: .impression(.init(), paywallDataWithWorkflow),
+                unsyncedAttributes: nil,
+                storeCountry: nil
+            ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: false,
+            purchaseCompletedBy: .revenueCat,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
+        )
+
+        let factory1 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postDataWithoutWorkflow,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        let factory2 = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postDataWithWorkflow,
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        // workflowId/stepId are step-specific metadata; the cache is receipt-centric,
+        // so two posts that differ only in workflow data should share a cache key.
+        expect(factory1.cacheKey) == factory2.cacheKey
+    }
+
+    func testPresentedWorkflowIdIsEncodedAloneWhenStepIdIsNil() throws {
+        let paywallData = PaywallEvent.Data(
+            paywallIdentifier: "paywall-abc",
+            offeringIdentifier: "offering-1",
+            paywallRevision: 1,
+            sessionID: UUID(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false,
+            workflowId: "workflow-xyz"
+            // stepId intentionally omitted (nil)
+        )
+
+        let transactionData = PurchasedTransactionData(
+            presentedOfferingContext: nil,
+            presentedPaywall: .impression(.init(), paywallData),
+            unsyncedAttributes: nil,
+            storeCountry: nil
+        )
+
+        let postData = PostReceiptDataOperation.PostData(
+            transactionData: transactionData,
+            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: false,
+            purchaseCompletedBy: .revenueCat,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
+        )
+
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(postData)
+        let json = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: data) as? [String: Any]
+        )
+
+        // workflowId is present but stepId is nil — each is encoded independently
+        expect(json["presented_workflow_id"] as? String) == "workflow-xyz"
+        expect(json["presented_step_id"]).to(beNil())
     }
 
     func testCacheKeyDifferenceWhenSdkOriginatedChanges() {

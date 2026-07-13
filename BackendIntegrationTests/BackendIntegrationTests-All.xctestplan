@@ -25,8 +25,8 @@
       }
     ],
     "targetForVariableExpansion" : {
-      "containerPath" : "container:RevenueCat.xcodeproj",
-      "identifier" : "2DE20B7E26409EB7004C597D",
+      "containerPath" : "container:RevenueCatTests.xcodeproj",
+      "identifier" : "1F16AE39220495C80A46E7A7",
       "name" : "BackendIntegrationTestsHostApp"
     },
     "testExecutionOrdering" : "random"
@@ -34,15 +34,15 @@
   "testTargets" : [
     {
       "target" : {
-        "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "2DE20B6B264087FB004C597D",
+        "containerPath" : "container:RevenueCatTests.xcodeproj",
+        "identifier" : "7CA426A0D9710B0C11153872",
         "name" : "BackendIntegrationTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "4F6BEE042A27B02400CD9322",
+        "containerPath" : "container:RevenueCatTests.xcodeproj",
+        "identifier" : "1E4DD1A74419689AD33D88BD",
         "name" : "BackendCustomEntitlementsIntegrationTests"
       }
     }

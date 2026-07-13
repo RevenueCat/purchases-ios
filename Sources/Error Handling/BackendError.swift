@@ -204,6 +204,11 @@ extension BackendError {
         return self.networkError?.isServerDown == true
     }
 
+    /// Whether this error is transient and worth retrying. See ``NetworkError/isTransient``.
+    var isTransient: Bool {
+        return self.networkError?.isTransient ?? false
+    }
+
     private var networkError: NetworkError? {
         switch self {
         case let .networkError(networkError):
@@ -280,6 +285,12 @@ extension BackendError {
 
         /// A call that is supposed to retrieve a CustomerInfo failed because the json object couldn't be parsed.
         case customerInfoResponseParsing(error: NSError, json: String)
+
+        /// A workflow lookup found no matching item in the synced remote config.
+        case workflowNotFound(workflowId: String)
+
+        /// A workflow lookup found a matching item, but its body couldn't be decoded.
+        case workflowDecodingFailed(workflowId: String, error: NSError)
     }
 
 }
@@ -302,6 +313,10 @@ extension BackendError.UnexpectedBackendResponseError: DescribableError {
             return "Unable to instantiate a CustomerInfoResponse, CustomerInfo in response was nil."
         case .customerInfoResponseParsing:
             return "Unable to instantiate a CustomerInfoResponse due to malformed json."
+        case let .workflowNotFound(workflowId):
+            return "Workflow '\(workflowId)' not found in remote config."
+        case let .workflowDecodingFailed(workflowId, error):
+            return "Workflow '\(workflowId)' could not be decoded from remote config: \(error)."
         }
     }
 
@@ -315,11 +330,39 @@ extension BackendError {
 
 extension BackendError {
 
-    /// Whether to fall back to cached offerings in case of this error when fetching offerings.
-    var shouldFallBackToCachedOfferings: Bool {
+    static func workflowNotFound(
+        workflowId: String,
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .unexpectedBackendResponse(
+            .workflowNotFound(workflowId: workflowId),
+            extraContext: nil,
+            .init(file: file, function: function, line: line)
+        )
+    }
+
+    static func workflowDecodingFailed(
+        workflowId: String,
+        error: NSError,
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .unexpectedBackendResponse(
+            .workflowDecodingFailed(workflowId: workflowId, error: error),
+            extraContext: nil,
+            .init(file: file, function: function, line: line)
+        )
+    }
+
+}
+
+extension BackendError {
+
+    /// Whether to fall back to the last cached response for this error. See
+    /// ``NetworkError/shouldFallBackToCache``.
+    var shouldFallBackToCache: Bool {
         switch self {
         case .networkError(let networkError):
-            return networkError.shouldFallBackToCachedOfferings
+            return networkError.shouldFallBackToCache
         default:
             return true
         }

@@ -424,6 +424,7 @@ private extension CustomerInfoManager {
             completion(CustomerInfoDataResult(result: .success(previewCustomerInfo)))
             return
         }
+
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             _ = Task<Void, Never> {
                 let transactions = await self.transactionFetcher.unfinishedVerifiedTransactions

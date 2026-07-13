@@ -21,6 +21,9 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct BadgeModifier: ViewModifier {
 
+    @Environment(\.colorScheme)
+    private var colorScheme
+
     let badge: BadgeInfo?
 
     struct BadgeInfo {
@@ -40,7 +43,13 @@ struct BadgeModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         if let badge = badge {
-            content.apply(badge: badge)
+            content.apply(
+                badge: badge,
+                shadow: badge.stack.shadow?.shadow(
+                    uiConfigProvider: badge.uiConfigProvider,
+                    colorScheme: self.colorScheme
+                )
+            )
         } else {
             content
         }
@@ -51,10 +60,10 @@ struct BadgeModifier: ViewModifier {
 fileprivate extension View {
 
     @ViewBuilder
-    func apply(badge: BadgeModifier.BadgeInfo) -> some View {
+    func apply(badge: BadgeModifier.BadgeInfo, shadow: ShadowModifier.ShadowInfo?) -> some View {
         switch badge.style {
         case .edgeToEdge:
-            self.applyBadgeEdgeToEdge(badge: badge)
+            self.applyBadgeEdgeToEdge(badge: badge, shadow: shadow)
         case .overlaid:
             self.overlay(
                 VStack(alignment: .leading) {
@@ -63,6 +72,7 @@ fileprivate extension View {
                             .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: badge.stackBorder, shape: effectiveShape(badge: badge))
+                            .shadow(shadow: shadow, shape: effectiveShape(badge: badge)?.toInsettableShape())
                     }
                     .fixedSize()
                     .padding(effectiveMargin(badge: badge).edgeInsets)
@@ -82,6 +92,7 @@ fileprivate extension View {
                             .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: badge.stackBorder, shape: effectiveShape(badge: badge))
+                            .shadow(shadow: shadow, shape: effectiveShape(badge: badge)?.toInsettableShape())
                     }
                     .fixedSize()
                     .padding(effectiveMargin(badge: badge).edgeInsets)
@@ -98,10 +109,10 @@ fileprivate extension View {
 
     // Helper to apply the edge-to-edge badge style
     @ViewBuilder
-    private func applyBadgeEdgeToEdge(badge: BadgeModifier.BadgeInfo) -> some View {
+    private func applyBadgeEdgeToEdge(badge: BadgeModifier.BadgeInfo, shadow: ShadowModifier.ShadowInfo?) -> some View {
         switch badge.alignment {
         case .top, .bottom:
-            self.modifier(EdgeToEdgeTopBottomModifier(badge: badge))
+            self.modifier(EdgeToEdgeTopBottomModifier(badge: badge, shadow: shadow))
         case .bottomLeading, .bottomTrailing, .topLeading, .topTrailing:
             self.overlay(
                 VStack(alignment: .leading) {
@@ -110,6 +121,7 @@ fileprivate extension View {
                             .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: badge.stackBorder, shape: effectiveShape(badge: badge))
+                            .shadow(shadow: shadow, shape: effectiveShape(badge: badge)?.toInsettableShape())
                     }
                     .fixedSize()
                 }
@@ -296,6 +308,7 @@ struct EdgeToEdgeTopBottomModifier: ViewModifier {
 
     @State private var stackSize: CGSize = .zero
     var badge: BadgeModifier.BadgeInfo
+    var shadow: ShadowModifier.ShadowInfo?
 
     var badgeView: some View {
         VStack {
@@ -324,6 +337,10 @@ struct EdgeToEdgeTopBottomModifier: ViewModifier {
                 .shape(border: badge.stackBorder,
                        shape: effectiveShape(badge: badge,
                                              pillStackRadius: min(stackSize.width, stackSize.height)/2))
+                .shadow(shadow: shadow,
+                        shape: effectiveShape(badge: badge,
+                                              pillStackRadius: min(stackSize.width, stackSize.height)/2)?
+                    .toInsettableShape())
         }
     }
 

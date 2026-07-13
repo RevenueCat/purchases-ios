@@ -1,0 +1,25 @@
+{
+  "fixtures": [
+    {
+      "id": "merge_flattens_arrays_one_level",
+      "description": "merge returns an array; this engine's loose == is false for array-vs-array, so the flattened result is compared via its JS string coercion (\"1,2,3,4\")",
+      "predicate": { "==": [{ "merge": [[1, 2], [3, 4]] }, "1,2,3,4"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "merge_promotes_scalars_to_singletons",
+      "description": "{\"merge\": [1, 2, [3, 4]]} flattens to [1, 2, 3, 4], compared via its JS string coercion (\"1,2,3,4\")",
+      "predicate": { "==": [{ "merge": [1, 2, [3, 4]] }, "1,2,3,4"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "merge_zero_args_returns_empty_array",
+      "description": "an empty array coerces to the empty string under JS string coercion",
+      "predicate": { "==": [{ "merge": [] }, ""] },
+      "variables": {},
+      "expected": true
+    }
+  ]
+}

@@ -14,9 +14,13 @@ import Foundation
 
 #if !os(tvOS)
 
+/// Render-ready input for a workflow paywall. Built internally (from a backend fetch, a warm cache,
+/// or `WorkflowPreview.makeContext` for injected data) and passed into ``PaywallView``; it has no
+/// public initializer because callers never assemble it directly.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct WorkflowContext {
+@_spi(Internal) public struct WorkflowContext {
     let workflow: PublishedWorkflow
+    let uiConfig: UIConfig
     let allOfferings: Offerings
     let initialOffering: Offering
     /// Preserved so every subsequent step's offering can carry the same placement/targeting metadata.
@@ -26,11 +30,13 @@ struct WorkflowContext {
 
     init(
         workflow: PublishedWorkflow,
+        uiConfig: UIConfig,
         allOfferings: Offerings,
         initialOffering: Offering,
         presentedOfferingContext: PresentedOfferingContext?
     ) {
         self.workflow = workflow
+        self.uiConfig = uiConfig
         self.allOfferings = allOfferings
         self.initialOffering = initialOffering
         self.presentedOfferingContext = presentedOfferingContext
@@ -119,12 +125,16 @@ struct WorkflowContext {
         }
 
         if let matched = base.packages.first(where: { $0.identifier == preferredPackage.identifier }) {
-            return .init(selectedPackage: matched, packages: base.packages)
+            return .init(selectedPackage: matched,
+                         packages: base.packages,
+                         promoOfferCodesByPackageId: base.promoOfferCodesByPackageId)
         }
 
         if let wfDefault = wfContext?.selectedPackage,
            let matched = base.packages.first(where: { $0.identifier == wfDefault.identifier }) {
-            return .init(selectedPackage: matched, packages: base.packages)
+            return .init(selectedPackage: matched,
+                         packages: base.packages,
+                         promoOfferCodesByPackageId: base.promoOfferCodesByPackageId)
         }
 
         return base
@@ -186,9 +196,16 @@ struct WorkflowContext {
             return nil
         }
 
+        let promoOfferCodes = packages.reduce(into: [String: String]()) { result, entry in
+            if let code = entry.promoOfferCode {
+                result[entry.package.identifier] = code
+            }
+        }
+
         return .init(
             selectedPackage: selectedPackage,
-            packages: packages.map(\.package)
+            packages: packages.map(\.package),
+            promoOfferCodesByPackageId: promoOfferCodes
         )
     }
 
@@ -220,12 +237,14 @@ struct WorkflowContext {
     private static func collectPackages(
         in components: [PaywallComponent],
         offering: Offering
-    ) -> [(package: Package, isSelectedByDefault: Bool)] {
+    ) -> [(package: Package, isSelectedByDefault: Bool, promoOfferCode: String?)] {
         return components.reduce(into: []) { result, component in
             switch component {
             case .package(let pkg):
                 if let rcPackage = offering.package(identifier: pkg.packageID) {
-                    result.append((package: rcPackage, isSelectedByDefault: pkg.isSelectedByDefault))
+                    result.append((package: rcPackage,
+                                   isSelectedByDefault: pkg.isSelectedByDefault,
+                                   promoOfferCode: pkg.applePromoOfferProductCode))
                 }
             case .stack(let stack):
                 result += Self.collectPackages(in: stack.components, offering: offering)
@@ -246,15 +265,19 @@ struct WorkflowContext {
 struct WorkflowPackageContext {
     let selectedPackage: Package
     let packages: [Package]
-}
+    /// Apple promo offer product code per package identifier, used to resolve `promo_offer_condition`
+    /// on a workflow step that inherits this package set but hosts no package component of its own.
+    let promoOfferCodesByPackageId: [String: String]
 
-// Temporary launch-argument gate — remove once workflows are fully released.
-extension ProcessInfo {
-
-    var workflowsEndpointEnabled: Bool {
-        arguments.contains("-EnableWorkflowsEndpoint")
+    init(
+        selectedPackage: Package,
+        packages: [Package],
+        promoOfferCodesByPackageId: [String: String] = [:]
+    ) {
+        self.selectedPackage = selectedPackage
+        self.packages = packages
+        self.promoOfferCodesByPackageId = promoOfferCodesByPackageId
     }
-
 }
 
 #endif

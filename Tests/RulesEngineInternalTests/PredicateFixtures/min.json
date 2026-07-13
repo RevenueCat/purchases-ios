@@ -1,0 +1,341 @@
+{
+  "fixtures": [
+    {
+      "id": "min_returns_smallest_of_many_args",
+      "predicate": {
+        "===": [
+          {
+            "min": [
+              1,
+              2,
+              3
+            ]
+          },
+          1
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_single_arg_returns_value",
+      "predicate": {
+        "===": [
+          {
+            "min": [
+              7
+            ]
+          },
+          7
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_mixes_ints_and_floats",
+      "predicate": {
+        "===": [
+          {
+            "min": [
+              1.5,
+              2,
+              3
+            ]
+          },
+          1.5
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_works_with_negatives",
+      "predicate": {
+        "===": [
+          {
+            "min": [
+              -5,
+              -10,
+              -1
+            ]
+          },
+          -10
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_coerces_numeric_strings",
+      "predicate": {
+        "===": [
+          {
+            "min": [
+              "3",
+              "9",
+              "5"
+            ]
+          },
+          3
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_coerces_bools",
+      "description": "false coerces to 0",
+      "predicate": {
+        "===": [
+          {
+            "min": [
+              true,
+              false,
+              5
+            ]
+          },
+          0
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_null_coerces_to_zero",
+      "predicate": {
+        "===": [
+          {
+            "min": [
+              null,
+              1
+            ]
+          },
+          0
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_operand_singleton_array_coerces",
+      "description": "[2] stringifies to \"2\" which is Number 2 (matches JS Math.min(5, [2]) === 2)",
+      "predicate": {
+        "===": [
+          {
+            "min": [
+              5,
+              [
+                2
+              ]
+            ]
+          },
+          2
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_operand_object_is_nan",
+      "description": "an object operand becomes NaN; x != x is true iff x is NaN",
+      "predicate": {
+        "!=": [
+          {
+            "log": {
+              "min": [
+                1,
+                {}
+              ]
+            }
+          },
+          {
+            "min": [
+              1,
+              {}
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["NaN"]
+    },
+    {
+      "id": "min_operand_multi_array_is_nan",
+      "description": "[1,2] stringifies to \"1,2\" which is NaN; x != x is true iff x is NaN",
+      "predicate": {
+        "!=": [
+          {
+            "log": {
+              "min": [
+                1,
+                [
+                  1,
+                  2
+                ]
+              ]
+            }
+          },
+          {
+            "min": [
+              1,
+              [
+                1,
+                2
+              ]
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["NaN"]
+    },
+    {
+      "id": "min_operand_unparseable_string_is_nan",
+      "description": "an unparseable string operand becomes NaN; x != x is true iff x is NaN",
+      "predicate": {
+        "!=": [
+          {
+            "log": {
+              "min": [
+                1,
+                "abc"
+              ]
+            }
+          },
+          {
+            "min": [
+              1,
+              "abc"
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true,
+      "expectedLogs": ["NaN"]
+    },
+    {
+      "id": "min_of_empty_args_is_positive_infinity",
+      "description": "{\"min\": []} is +Infinity (matches JS Math.min())",
+      "predicate": {
+        "===": [
+          {
+            "min": []
+          },
+          {
+            "var": "+Infinity"
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_single_non_list_arg_wrapped",
+      "description": "{\"min\": 5} is implicitly wrapped as {\"min\": [5]}",
+      "predicate": {
+        "===": [
+          {
+            "min": 5
+          },
+          5
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "min_resolves_scalar_var_operands",
+      "description": "operands resolved from variables, the realistic predicate shape",
+      "predicate": {
+        "===": [
+          {
+            "min": [
+              {
+                "var": "a"
+              },
+              {
+                "var": "b"
+              }
+            ]
+          },
+          1
+        ]
+      },
+      "variables": {
+        "a": 5,
+        "b": 1
+      },
+      "expected": true
+    },
+    {
+      "id": "min_single_array_var_arg_is_nan",
+      "description": "{\"min\": {\"var\": \"scores\"}} does NOT min over the list: the single array arg stringifies to \"1,2,3\" which is NaN (matches JS Math.min([1,2,3])); x != x is true iff x is NaN",
+      "predicate": {
+        "!=": [
+          {
+            "log": {
+              "min": {
+                "var": "scores"
+              }
+            }
+          },
+          {
+            "min": {
+              "var": "scores"
+            }
+          }
+        ]
+      },
+      "variables": {
+        "scores": [
+          1,
+          2,
+          3
+        ]
+      },
+      "expected": true,
+      "expectedLogs": ["NaN"]
+    },
+    {
+      "id": "min_nan_result_fails_closed_against_threshold",
+      "description": "a poisoned min (NaN) makes <= n come out false, the fail-closed behavior for malformed predicates",
+      "predicate": {
+        "<=": [
+          {
+            "log": {
+              "min": [
+                1,
+                {}
+              ]
+            }
+          },
+          0
+        ]
+      },
+      "variables": {},
+      "expected": false,
+      "expectedLogs": ["NaN"]
+    },
+    {
+      "id": "min_empty_args_fails_closed_against_threshold",
+      "description": "{\"min\": []} is +Infinity, so <= n is false: an empty operand list (e.g. a var resolving to nothing) fails closed",
+      "predicate": {
+        "<=": [
+          {
+            "log": {
+              "min": []
+            }
+          },
+          0
+        ]
+      },
+      "variables": {},
+      "expected": false,
+      "expectedLogs": ["Infinity"]
+    }
+  ]
+}

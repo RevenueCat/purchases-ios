@@ -22,9 +22,15 @@ protocol PaywallPurchasesType: Sendable {
     /// Returns the preferred locales, including the locale override if set.
     var preferredLocales: [String] { get }
 
+    /// Whether the SDK is running in UI preview mode.
+    var isUIPreviewMode: Bool { get }
+
     /// `preferredLocales` will always include the preferred locale override if set, so this
     /// property is only useful for reading the override value.
     var preferredLocaleOverride: String? { get }
+
+    /// Whether remote config (and, with it, paywall workflows) is enabled.
+    var remoteConfigEnabled: Bool { get }
 
     /// Returns a tracker of user's subscription history
     var subscriptionHistoryTracker: SubscriptionHistoryTracker { get }
@@ -54,6 +60,9 @@ protocol PaywallPurchasesType: Sendable {
 
     @Sendable
     func track(paywallEvent: PaywallEvent) async
+
+    @Sendable
+    func track(workflowEvent: WorkflowEvent) async
 
     @Sendable
     func cachePurchaseData(

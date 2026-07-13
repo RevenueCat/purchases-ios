@@ -93,6 +93,19 @@ class SystemInfo {
         return self._isSandbox
     }
 
+    /// Whether remote config lifecycle wiring is enabled. Temporary gate while remote config is being
+    /// rolled out. Paywall workflows read entirely through remote config, so this is also the single
+    /// gate for workflows: there's no separate workflows switch, since the two ship together.
+    var remoteConfigEnabled: Bool {
+        guard !self.dangerousSettings.customEntitlementComputation else { return false }
+
+        #if ENABLE_REMOTE_CONFIG
+        return true
+        #else
+        return false
+        #endif
+    }
+
     var isDebugBuild: Bool {
 #if DEBUG
         return true
@@ -106,7 +119,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.76.0-SNAPSHOT"
+        return "5.81.0-SNAPSHOT"
     }
 
     static var installationMethod: String {

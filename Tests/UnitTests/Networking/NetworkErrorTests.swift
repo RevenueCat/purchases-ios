@@ -318,7 +318,7 @@ class NetworkErrorTests: TestCase {
         }
     }
 
-    func testShouldFallBackToCachedOfferingsTrue() {
+    func testShouldFallBackToCacheTrue() {
         let errors = [
             error(NetworkError.decodingError()),
             error(Self.offlineError),
@@ -333,15 +333,15 @@ class NetworkErrorTests: TestCase {
         ]
 
         for error in errors {
-            check(error.0.shouldFallBackToCachedOfferings,
+            check(error.0.shouldFallBackToCache,
                   condition: beTrue(),
-                  descrition: "Expected error's shouldFallBackToCachedOfferings to be true",
+                  descrition: "Expected error's shouldFallBackToCache to be true",
                   file: error.1,
                   line: error.2)
         }
     }
 
-    func testShouldFallBackToCachedOfferingsFalse() {
+    func testShouldFallBackToCacheFalse() {
         let errors = [
             error(Self.responseError(.invalidRequest)),
             error(Self.responseError(.unauthorized)),
@@ -351,11 +351,71 @@ class NetworkErrorTests: TestCase {
         ]
 
         for error in errors {
-            check(error.0.shouldFallBackToCachedOfferings,
+            check(error.0.shouldFallBackToCache,
                   condition: beFalse(),
-                  descrition: "Expected error's shouldFallBackToCachedOfferings to be false",
+                  descrition: "Expected error's shouldFallBackToCache to be false",
                   file: error.1,
                   line: error.2)
+        }
+    }
+
+    func testIsDeviceConnectivityErrorTrueForDeviceSideURLErrorCodes() {
+        for code in Self.deviceConnectivityURLErrorCodes {
+            expect(Self.urlError(code).isDeviceConnectivityError)
+                .to(beTrue(), description: "URLError code \(code) should be a device connectivity error")
+        }
+    }
+
+    func testIsDeviceConnectivityErrorFalseForHostSideURLErrorCodes() {
+        // Host-side or ambiguous failures must stay switch-eligible: a different host may still succeed.
+        let hostSideCodes = [
+            NSURLErrorCannotConnectToHost,
+            NSURLErrorCannotFindHost,
+            NSURLErrorDNSLookupFailed,
+            NSURLErrorTimedOut
+        ]
+
+        for code in hostSideCodes {
+            expect(Self.urlError(code).isDeviceConnectivityError)
+                .to(beFalse(), description: "URLError code \(code) should not be a device connectivity error")
+        }
+    }
+
+    func testIsDeviceConnectivityErrorFalseForNonNetworkErrors() {
+        let errors = [
+            error(NetworkError.decodingError()),
+            error(Self.dnsError),
+            error(Self.unableToCreateRequestError),
+            error(Self.unexpectedResponseError),
+            error(Self.responseError(.internalServerError)),
+            error(Self.responseError(.invalidRequest)),
+            error(Self.signatureVerificationFailed)
+        ]
+
+        for error in errors {
+            check(error.0.isDeviceConnectivityError,
+                  condition: beFalse(),
+                  descrition: "Expected error to not be a device connectivity error",
+                  file: error.1,
+                  line: error.2)
+        }
+    }
+
+    func testIsDeviceConnectivityErrorFalseWhenNotInURLErrorDomain() {
+        // A device-side code in a different error domain is not a URLError and must not qualify.
+        let error: NetworkError = .networkError(
+            NSError(domain: "com.some.other.domain", code: NSURLErrorNotConnectedToInternet)
+        )
+
+        expect(error.isDeviceConnectivityError) == false
+    }
+
+    /// `isTransient` must stay `true` for device-connectivity errors: it also feeds cache fallback and
+    /// generic retry, which should keep working. Only host switching is gated separately.
+    func testDeviceConnectivityErrorsRemainTransient() {
+        for code in Self.deviceConnectivityURLErrorCodes {
+            expect(Self.urlError(code).isTransient)
+                .to(beTrue(), description: "URLError code \(code) should remain transient")
         }
     }
 
@@ -404,6 +464,19 @@ class NetworkErrorTests: TestCase {
                           message: nil),
             statusCode
         )
+    }
+
+    /// `URLError` codes that indicate the *device* has no working connection to any host.
+    fileprivate static let deviceConnectivityURLErrorCodes = [
+        NSURLErrorNotConnectedToInternet,
+        NSURLErrorNetworkConnectionLost,
+        NSURLErrorInternationalRoamingOff,
+        NSURLErrorCallIsActive,
+        NSURLErrorDataNotAllowed
+    ]
+
+    private static func urlError(_ code: Int) -> NetworkError {
+        return .networkError(NSError(domain: NSURLErrorDomain, code: code))
     }
 }
 

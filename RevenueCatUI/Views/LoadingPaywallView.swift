@@ -161,6 +161,10 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
     var preferredLocaleOverride: String? { nil }
 
+    var isUIPreviewMode: Bool { false }
+
+    var remoteConfigEnabled: Bool { false }
+
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return .myApp }
         set { _ = newValue }
@@ -197,6 +201,10 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
     }
 
     func track(paywallEvent: PaywallEvent) async {
+        // Ignoring events from loading paywall view
+    }
+
+    func track(workflowEvent: WorkflowEvent) async {
         // Ignoring events from loading paywall view
     }
 

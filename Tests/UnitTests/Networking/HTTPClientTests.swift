@@ -705,6 +705,18 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         self.logger.verifyMessageWasNotLogged("Queued request GET /v1/subscribers/identify for retry in 0.0 seconds.")
     }
 
+    func testNoContentResponseBodyDataConvertsNilToEmptyData() {
+        expect(HTTPClient.responseBodyData(statusCode: .noContent, data: nil)) == Data()
+    }
+
+    func testNotModifiedResponseBodyDataIsNil() {
+        expect(HTTPClient.responseBodyData(statusCode: .notModified, data: Data())) == nil
+    }
+
+    func testSuccessfulResponseBodyDataPreservesNilData() {
+        expect(HTTPClient.responseBodyData(statusCode: .success, data: nil)).to(beNil())
+    }
+
     func testServerSide200WithETagInRequest() {
         let request = HTTPRequest(method: .get, path: .mockPath)
         let responseData = "{\"message\": \"something is great up in the cloud\"}".asData
@@ -735,6 +747,83 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         expect(self.eTagManager.invokedHTTPResultFromCacheOrBackend) == true
         expect(self.eTagManager.invokedHTTPResultFromCacheOrBackendCount) == 1
+    }
+
+    func testRemoteConfigFallbackSendsETagHeaders() {
+        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        let request = HTTPRequest(method: .get, path: path)
+        let responseData = "{\"domain\":\"app\",\"manifest\":\"test\",\"active_topics\":[],\"topics\":{}}".asData
+        let eTag = "fallback-etag"
+        let eTagValidationTime = Date(timeIntervalSince1970: 1234567)
+
+        self.eTagManager.stubResponseEtag(eTag, validationTime: eTagValidationTime)
+
+        stub(condition: isPath(path)) { request in
+            expect(request.allHTTPHeaderFields?[ETagManager.eTagRequestHeader.rawValue]) == eTag
+            expect(request.allHTTPHeaderFields?[ETagManager.eTagValidationTimeRequestHeader.rawValue])
+            == eTagValidationTime.millisecondsSince1970.description
+
+            return HTTPStubsResponse(
+                data: responseData,
+                statusCode: .success,
+                headers: nil
+            )
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: DataResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).toNot(beNil())
+        expect(result).to(beSuccess())
+        expect(result?.value?.body) == responseData
+
+        expect(self.eTagManager.invokedETagHeader).to(beTrue())
+        expect(self.eTagManager.invokedHTTPResultFromCacheOrBackend) == true
+    }
+
+    func testRemoteConfigFallbackGetsCachedResponseWhenStatusCodeIsNotModified() {
+        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        let request = HTTPRequest(method: .get, path: path)
+        let cachedResponseData = """
+        {"domain":"app","manifest":"cached","active_topics":[],"topics":{}}
+        """.asData
+        let eTag = "fallback-etag"
+
+        self.eTagManager.stubResponseEtag(eTag)
+        self.eTagManager.shouldReturnResultFromBackend = false
+        self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
+            httpStatusCode: .success,
+            responseHeaders: [:],
+            body: cachedResponseData,
+            verificationResult: .verified,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false
+        )
+
+        stub(condition: isPath(path)) { request in
+            expect(request.allHTTPHeaderFields?[ETagManager.eTagRequestHeader.rawValue]) == eTag
+
+            return HTTPStubsResponse(
+                data: Data(),
+                statusCode: .notModified,
+                headers: nil
+            )
+        }
+
+        let response: VerifiedHTTPResponse<RemoteConfiguration>.Result? = waitUntilValue { completion in
+            self.client.perform(request) { (response: VerifiedHTTPResponse<RemoteConfiguration>.Result) in
+                completion(response)
+            }
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.httpStatusCode) == .success
+        expect(response?.value?.body.domain) == "app"
+        expect(response?.value?.body.manifest) == "cached"
+        expect(self.eTagManager.invokedHTTPResultFromCacheOrBackend) == true
     }
 
     func testResponseOriginalSourceIsLoadShedderWhenHeaderIsTrue() throws {
@@ -845,6 +934,64 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(result).toNot(beNil())
         expect(result).to(beSuccess())
         expect(result?.value?.originalSource) == .fallbackUrl
+    }
+
+    func testDoesNotRetryWithFallbackHostOnDeviceConnectivityError() throws {
+        let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+        let fallbackURL = try XCTUnwrap(request.path.fallbackUrls.first)
+        // A device-side URLError: switching hosts can't help when the device itself is offline.
+        let deviceError = NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet)
+
+        let fallbackRequestCount: Atomic<Int> = .init(0)
+        stub(condition: isPath(request.path)) { urlRequest in
+            if urlRequest.url?.absoluteString == fallbackURL.absoluteString {
+                fallbackRequestCount.value += 1
+                return HTTPStubsResponse(data: "{\"mapping\": {}}".asData, statusCode: .success, headers: nil)
+            }
+
+            let response = HTTPStubsResponse.emptySuccessResponse()
+            response.error = deviceError
+            return response
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: DataResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).to(beFailure())
+        expect(fallbackRequestCount.value) == 0
+    }
+
+    func testRetriesWithFallbackHostOnHostConnectivityError() throws {
+        let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+        let responseData = "{\"mapping\": {}}".asData
+        let fallbackURL = try XCTUnwrap(request.path.fallbackUrls.first)
+        // A host-side URLError: a different host may still succeed, so a fallback retry is warranted.
+        let hostError = NSError(domain: NSURLErrorDomain, code: NSURLErrorCannotConnectToHost)
+
+        let fallbackRequestCount: Atomic<Int> = .init(0)
+        stub(condition: isPath(request.path)) { urlRequest in
+            if urlRequest.url?.absoluteString == fallbackURL.absoluteString {
+                fallbackRequestCount.value += 1
+                return HTTPStubsResponse(data: responseData, statusCode: .success, headers: nil)
+            }
+
+            let response = HTTPStubsResponse.emptySuccessResponse()
+            response.error = hostError
+            return response
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: DataResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).to(beSuccess())
+        expect(result?.value?.originalSource) == .fallbackUrl
+        expect(fallbackRequestCount.value) == 1
     }
 
     func testResponseOriginalSourceIsNotFallbackUrlWhenNotUsingFallbackHost() throws {
@@ -1012,6 +1159,33 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         expect(headerPresent.value) == false
         expect(self.eTagManager.invokedETagHeader) == false
+    }
+
+    func testRemoteConfigDoesNotUseETagCacheEvenIfResponseIncludesETagHeader() {
+        let request = HTTPRequest(
+            method: .post(RemoteConfigRequest(appUserID: "app-user-id")),
+            path: HTTPRequest.Path.remoteConfig(domain: "app")
+        )
+        let headerPresent: Atomic<Bool?> = nil
+
+        stub(condition: isPath(request.path)) { request in
+            headerPresent.value = request.allHTTPHeaderFields?.keys.contains(
+                ETagManager.eTagRequestHeader.rawValue
+            ) == true
+            return HTTPStubsResponse(
+                data: Data(),
+                statusCode: .success,
+                headers: [ETagManager.eTagResponseHeader.rawValue: "ETAG"]
+            )
+        }
+
+        waitUntil { completion in
+            self.client.perform(request, with: .disabled) { (_: DataResponse) in completion() }
+        }
+
+        expect(headerPresent.value) == false
+        expect(self.eTagManager.invokedETagHeader) == false
+        expect(self.eTagManager.invokedHTTPResultFromCacheOrBackend) == false
     }
 
     func testAlwaysPassesClientVersion() {

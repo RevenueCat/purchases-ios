@@ -1077,6 +1077,7 @@ final class PurchasesOrchestrator {
     ) {
         // We can't inject StoreKit2PurchaseIntentListener in the constructor since
         // it has different availability requirements than the constructor.
+        guard !self.systemInfo.isSimulatedStoreAPIKey else { return }
 
         if systemInfo.storeKitVersion == .storeKit2 {
             self._storeKit2PurchaseIntentListener = storeKit2PurchaseIntentListener
@@ -2337,7 +2338,12 @@ extension PurchasesOrchestrator {
     }
 
     private func setSK2DelegateAndStartListening() async {
+        // The Simulated Store ("Test Store") never produces StoreKit transactions, so there's no
+        // delegate to notify and no point observing `StoreKit.Transaction.updates`.
+        guard !self.systemInfo.isSimulatedStoreAPIKey else { return }
+
         await storeKit2TransactionListener.set(delegate: self)
+
         if systemInfo.storeKitVersion == .storeKit2 {
             await storeKit2TransactionListener.listenForTransactions()
         }

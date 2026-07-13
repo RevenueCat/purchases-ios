@@ -15,7 +15,7 @@ import XCTest
 
 class OfferingsTests: TestCase {
 
-    private let offeringsFactory = OfferingsFactory()
+    private let offeringsFactory = OfferingsFactory(systemInfo: MockSystemInfo(finishTransactions: true))
 
     func testPackageIsNotCreatedIfNoValidProducts() {
         let package = self.offeringsFactory.createPackage(

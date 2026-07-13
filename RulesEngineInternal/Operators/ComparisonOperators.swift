@@ -76,7 +76,7 @@ enum ComparisonOperators {
     /// primitives pass through unchanged.
     private static func toPrimitiveForComparison(_ value: Value) -> Value {
         switch value {
-        case .string, .null, .bool, .int, .float:
+        case .string, .null, .undefined, .bool, .int, .float:
             return value
         case .array, .object:
             return .string(jsString(value))

@@ -239,6 +239,7 @@ private extension WorkflowEvent {
             switch self {
             case .stepStarted: return "workflows_step_started"
             case .stepCompleted: return "workflows_step_completed"
+            case .close: return "workflows_close"
             }
         }()
 

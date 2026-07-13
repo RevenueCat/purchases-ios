@@ -96,7 +96,9 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                          operationDispatcher: self.operationDispatcher,
                                                          systemInfo: self.systemInfo,
                                                          backend: self.backend,
-                                                         offeringsFactory: OfferingsFactory(),
+                                                         offeringsFactory: OfferingsFactory(
+                                                            systemInfo: self.systemInfo
+                                                         ),
                                                          productsManager: self.productsManager,
                                                          diagnosticsTracker: self.mockDiagnosticsTracker)
         self.setUpStoreKit1Wrapper()

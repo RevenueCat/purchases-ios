@@ -27,8 +27,8 @@
     "maximumTestExecutionTimeAllowance" : 180,
     "maximumTestRepetitions" : 5,
     "targetForVariableExpansion" : {
-      "containerPath" : "container:RevenueCat.xcodeproj",
-      "identifier" : "2DE20B7E26409EB7004C597D",
+      "containerPath" : "container:RevenueCatTests.xcodeproj",
+      "identifier" : "1F16AE39220495C80A46E7A7",
       "name" : "BackendIntegrationTestsHostApp"
     },
     "testExecutionOrdering" : "random",
@@ -307,8 +307,8 @@
         "VirtualCurrencyStoreKit2IntegrationTests"
       ],
       "target" : {
-        "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "4B547C7901622A3858C2D9BC",
+        "containerPath" : "container:RevenueCatTests.xcodeproj",
+        "identifier" : "7CA426A0D9710B0C11153872",
         "name" : "BackendIntegrationTests"
       }
     }

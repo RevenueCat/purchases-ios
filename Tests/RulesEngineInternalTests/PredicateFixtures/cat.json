@@ -1,0 +1,85 @@
+{
+  "fixtures": [
+    {
+      "id": "cat_concatenates_strings",
+      "predicate": {
+        "===": [
+          { "cat": ["I love ", "pie"] },
+          "I love pie"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "cat_stringifies_mixed_operand_types",
+      "predicate": {
+        "===": [
+          { "cat": ["count=", 7, ", active=", true] },
+          "count=7, active=true"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "cat_zero_args_returns_empty_string",
+      "predicate": {
+        "===": [
+          { "cat": [] },
+          ""
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "cat_singleton_shorthand",
+      "description": "{\"cat\":\"hello\"} is shorthand for {\"cat\":[\"hello\"]}",
+      "predicate": {
+        "===": [
+          { "cat": "hello" },
+          "hello"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "cat_renders_null_operand_as_empty",
+      "description": "cat is Array.prototype.join(\"\"), so a null operand renders as an empty string",
+      "predicate": {
+        "===": [
+          { "cat": ["x=", null] },
+          "x="
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "cat_stringifies_array_with_comma_join",
+      "description": "mirrors JS Array.prototype.toString",
+      "predicate": {
+        "===": [
+          { "cat": ["vals=", [1, 2]] },
+          "vals=1,2"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "cat_stringifies_null_array_elements_as_empty",
+      "description": "Array.prototype.join renders null/undefined elements as empty strings, so String([1,null,2]) is \"1,,2\"",
+      "predicate": {
+        "===": [
+          { "cat": [[1, null, 2]] },
+          "1,,2"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    }
+  ]
+}

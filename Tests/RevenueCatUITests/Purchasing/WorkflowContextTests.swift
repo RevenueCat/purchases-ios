@@ -11,7 +11,7 @@
 
 import Nimble
 @_spi(Internal) @testable import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
 #if !os(tvOS) // For Paywalls V2
@@ -500,21 +500,6 @@ final class WorkflowContextTests: TestCase {
 
         // No singleStepFallbackId — triggering step is not resolved (mirrors Android's dismissExitOffer).
         expect(context.exitOfferTriggeringStepId).to(beNil())
-    }
-
-    // MARK: - resolveWorkflowContext
-
-    func testResolveWorkflowContextThrowsWhenFlagIsOff() async throws {
-        // In the unit test environment -EnableWorkflowsEndpoint is not a launch argument,
-        // so workflowsEndpointEnabled returns false and resolveWorkflowContext must throw.
-        let handler: PurchaseHandler = .mock()
-
-        await expect {
-            try await handler.resolveWorkflowContext(
-                identifier: "offering_a",
-                presentedOfferingContext: nil
-            )
-        }.to(throwError(PaywallError.offeringNotFound(identifier: "offering_a")))
     }
 
 }
@@ -1020,6 +1005,29 @@ private extension WorkflowContextTests {
           }\(exitOffersJSON)
         }
         """
+    }
+
+}
+
+#endif
+
+#if !os(tvOS) // For Paywalls V2
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension WorkflowContext {
+
+    init(
+        workflow: PublishedWorkflow,
+        allOfferings: Offerings,
+        initialOffering: Offering,
+        presentedOfferingContext: PresentedOfferingContext?
+    ) {
+        self.init(
+            workflow: workflow,
+            uiConfig: .empty,
+            allOfferings: allOfferings,
+            initialOffering: initialOffering,
+            presentedOfferingContext: presentedOfferingContext
+        )
     }
 
 }

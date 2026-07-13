@@ -1255,9 +1255,10 @@ private extension DeviceCacheTests {
         )
 
         let offering = try XCTUnwrap(
-            OfferingsFactory().createOffering(from: products,
-                                              offering: offeringsData,
-                                              uiConfig: nil)
+            OfferingsFactory(systemInfo: MockSystemInfo(finishTransactions: true))
+                .createOffering(from: products,
+                                offering: offeringsData,
+                                uiConfig: nil)
         )
         return Offerings(
             offerings: [offeringIdentifier: offering],

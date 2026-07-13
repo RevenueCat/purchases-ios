@@ -16,6 +16,7 @@ class MockSystemInfo: SystemInfo {
     var stubbedIsApplicationBackgrounded: Bool?
     var stubbedIsSandbox: Bool?
     var stubbedIsDebugBuild: Bool?
+    var stubbedRemoteConfigEnabled: Bool?
     var stubbedStorefront: StorefrontType?
     var stubbedApiKeyValidationResult: Configuration.APIKeyValidationResult?
 
@@ -99,6 +100,12 @@ class MockSystemInfo: SystemInfo {
 
     override var isSandbox: Bool {
         return self.stubbedIsSandbox ?? super.isSandbox
+    }
+
+    override var remoteConfigEnabled: Bool {
+        guard !self.dangerousSettings.customEntitlementComputation else { return false }
+
+        return self.stubbedRemoteConfigEnabled ?? super.remoteConfigEnabled
     }
 
     override var isDebugBuild: Bool {

@@ -39,8 +39,8 @@ final class ValueTests: XCTestCase {
 
     func testParseErrorForMalformedJSON() {
         XCTAssertThrowsError(try Value.fromJSONString("{not json")) { error in
-            guard case RuleError.parse = error else {
-                return XCTFail("expected RuleError.parse, got \(error)")
+            guard case RulesEngine.EvaluationError.parse = error else {
+                return XCTFail("expected RulesEngine.EvaluationError.parse, got \(error)")
             }
         }
     }

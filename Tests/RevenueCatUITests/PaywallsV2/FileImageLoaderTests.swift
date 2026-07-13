@@ -154,6 +154,41 @@ final class FileImageLoaderTests: TestCase {
         expect(backToFirstImageData) == firstImageData
     }
 
+    func testConcurrentDecodedImageLoadsDoNotDeadlockSwiftConcurrency() async throws {
+        let imageCount = max(ProcessInfo.processInfo.activeProcessorCount * 8, 128)
+        let data = try Self.makeImageData(variant: .red)
+        let urls = try (0..<imageCount).map { index -> URL in
+            let url = Self.makeLocalURL(filename: "test-concurrent-\(UUID().uuidString)-\(index).png")
+            try Self.writeImageData(data, to: url)
+            return url
+        }
+
+        let completion = self.expectation(description: "Concurrent decoded image loads complete")
+        let task = Task {
+            // Simulates first paywall presentation loading many images from Swift concurrency.
+            let allImagesLoaded = await withTaskGroup(of: Bool.self, returning: Bool.self) { group in
+                for url in urls {
+                    group.addTask {
+                        return url.asImageAndSize != nil
+                    }
+                }
+
+                var allImagesLoaded = true
+                for await didLoadImage in group {
+                    allImagesLoaded = allImagesLoaded && didLoadImage
+                }
+
+                return allImagesLoaded
+            }
+
+            expect(allImagesLoaded) == true
+            completion.fulfill()
+        }
+        defer { task.cancel() }
+
+        await self.fulfillment(of: [completion], timeout: 5)
+    }
+
     // MARK: - Helpers
 
     private func makeFileRepository() -> FileRepository {

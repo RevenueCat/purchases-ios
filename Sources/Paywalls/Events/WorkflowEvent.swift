@@ -21,6 +21,10 @@ import Foundation
 
     case stepStarted(CreationData, Data)
     case stepCompleted(CreationData, Data)
+    /// The user abandoned the workflow before completing it (e.g. dismissed it without purchasing).
+    /// Distinct from a paywall close: it is a workflow-level signal that fires on any step, including
+    /// non-paywall ones, so abandonment that happens before the paywall step is still captured.
+    case close(CreationData, Data)
 
 }
 
@@ -110,6 +114,7 @@ extension WorkflowEvent {
         switch self {
         case let .stepStarted(creationData, _): return creationData
         case let .stepCompleted(creationData, _): return creationData
+        case let .close(creationData, _): return creationData
         }
     }
 
@@ -117,6 +122,7 @@ extension WorkflowEvent {
         switch self {
         case let .stepStarted(_, data): return data
         case let .stepCompleted(_, data): return data
+        case let .close(_, data): return data
         }
     }
 

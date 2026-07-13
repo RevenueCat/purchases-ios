@@ -99,7 +99,7 @@ class BackendPostRedeemWebPurchaseTests: BaseBackendTests {
         let error: PurchasesError? = result?.error?.asPurchasesError
         expect(error?.errorCode).to(equal(ErrorCode.purchaseBelongsToOtherUser.rawValue))
         expect(error?.localizedDescription).to(equal(
-            "The web purchase already belongs to other user. Purchase belongs to other user."
+            "The web purchase already belongs to another user. Purchase belongs to other user."
         ))
     }
 

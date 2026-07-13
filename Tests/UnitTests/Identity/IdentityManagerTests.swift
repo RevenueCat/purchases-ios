@@ -340,6 +340,48 @@ class IdentityManagerTests: TestCase {
         expect(self.mockBackend.invokedClearHTTPClientCachesCount) == 1
     }
 
+    func testLogInClearsRemoteConfigCache() {
+        self.mockDeviceCache.stubbedAppUserID = "anonymous"
+        let manager = self.create(appUserID: nil)
+        let remoteConfigManager = MockRemoteConfigManager()
+        manager.remoteConfigManager = remoteConfigManager
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
+
+        waitUntil { completed in
+            manager.logIn(appUserID: "myUser") { _ in completed() }
+        }
+
+        expect(remoteConfigManager.invokedClearCacheCount) == 1
+        expect(remoteConfigManager.invokedClearCacheAppUserIDs) == ["myUser"]
+    }
+
+    func testLogOutClearsRemoteConfigCache() {
+        let manager = self.create(appUserID: nil)
+        let remoteConfigManager = MockRemoteConfigManager()
+        manager.remoteConfigManager = remoteConfigManager
+        self.mockDeviceCache.stubbedAppUserID = "myUser"
+
+        waitUntil { completed in
+            manager.logOut { _ in completed() }
+        }
+
+        expect(remoteConfigManager.invokedClearCacheCount) == 1
+        expect(remoteConfigManager.invokedClearCacheAppUserIDs.first) == self.mockDeviceCache.clearCachesCalleNewUserID
+        expect(remoteConfigManager.invokedClearCacheAppUserIDs.first) != "myUser"
+    }
+
+    func testSwitchUserClearsRemoteConfigCache() {
+        let manager = self.create(appUserID: nil)
+        let remoteConfigManager = MockRemoteConfigManager()
+        manager.remoteConfigManager = remoteConfigManager
+        self.mockDeviceCache.stubbedAppUserID = "myUser"
+
+        manager.switchUser(to: "newUser")
+
+        expect(remoteConfigManager.invokedClearCacheCount) == 1
+        expect(remoteConfigManager.invokedClearCacheAppUserIDs) == ["newUser"]
+    }
+
     func testLogInSyncsAttributes() {
         let manager = self.create(appUserID: "old_user")
 

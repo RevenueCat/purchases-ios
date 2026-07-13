@@ -249,13 +249,67 @@ extension NetworkError {
         return self.errorStatusCode?.isServerError == true
     }
 
-    /// Whether to fall back to cached offerings in case of this error when fetching offerings.
-    var shouldFallBackToCachedOfferings: Bool {
+    /// Whether to fall back to the last cached response for this error. A 5xx or a connection-level
+    /// failure (no status code) is transient, so serving the last cached copy is appropriate; a 4xx
+    /// is the backend authoritatively rejecting the request, so stale data should not be served.
+    var shouldFallBackToCache: Bool {
         if let errorStatusCode {
             return errorStatusCode.isServerError
         } else {
             return true
         }
+    }
+
+    /// Whether this error is transient and therefore worth retrying: connection-level failures
+    /// (no HTTP status code) and `5xx` server responses. `4xx` responses are terminal — the backend
+    /// authoritatively rejected the request, so retrying won't yield a different result.
+    var isTransient: Bool {
+        switch self {
+        case .decoding, .unableToCreateRequest, .signatureVerificationFailed:
+            return false
+        case .dnsError, .networkError, .unexpectedResponse:
+            return true
+        case let .errorResponse(_, statusCode, _):
+            return statusCode.isServerError
+        }
+    }
+
+    /// Whether this error was caused by the *device* lacking connectivity, as opposed to the host being
+    /// unreachable.
+    ///
+    /// Only device-side `URLError` codes qualify. Host-side or ambiguous failures — `.cannotConnectToHost`,
+    /// `.cannotFindHost`, `.dnsLookupFailed`, `.timedOut`, and DNS blocking (``NetworkError/dnsError``) — are
+    /// not considered device connectivity errors, since a different host may still succeed.
+    var isDeviceConnectivityError: Bool {
+        switch self {
+        case let .networkError(error, _):
+            return error.domain == NSURLErrorDomain
+                && Self.deviceConnectivityURLErrorCodes.contains(error.code)
+        case .decoding,
+             .dnsError,
+             .unableToCreateRequest,
+             .unexpectedResponse,
+             .errorResponse,
+             .signatureVerificationFailed:
+            return false
+        }
+    }
+
+    /// `URLError` codes that indicate the device has no working connection to any host.
+    private static let deviceConnectivityURLErrorCodes: Set<Int> = [
+        NSURLErrorNotConnectedToInternet,
+        NSURLErrorNetworkConnectionLost,
+        NSURLErrorInternationalRoamingOff,
+        NSURLErrorCallIsActive,
+        NSURLErrorDataNotAllowed
+    ]
+
+    /// A request may be retried against a fallback host only for transient failures (connection-level
+    /// errors and 5xx) that point at the host rather than the device. A device-connectivity failure
+    /// (see ``NetworkError/isDeviceConnectivityError``) can't be fixed by switching hosts, so it is
+    /// excluded. See ``NetworkError/isTransient``.
+    var isAllowedToRetryWithFallbackHost: Bool {
+        return self.isTransient && !self.isDeviceConnectivityError
     }
 
 }

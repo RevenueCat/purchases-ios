@@ -157,7 +157,7 @@ The project uses **Tuist** for managing the Xcode workspace. See **`Contributing
 
 Example combining multiple variables:
 ```bash
-TUIST_RC_API_KEY=appl_xxxxx TUIST_LAUNCH_ARGUMENTS="-EnableWorkflowsEndpoint" tuist generate PaywallsTester
+TUIST_RC_API_KEY=appl_xxxxx TUIST_SWIFT_CONDITIONS="ENABLE_REMOTE_CONFIG" tuist generate PaywallsTester
 ```
 
 ### Target Specifications
@@ -181,7 +181,22 @@ For snapshot testing, sample applications, pre-commit hooks, and release process
 - `api/*.swiftinterface` - Public API surface tracking
 - `swiftlint-baseline.json` - Pre-existing SwiftLint violations grandfathered by the linter (notably for `no_new_public_enums`)
 
-### Pull Request Labels
+## Pull Requests
+
+### Size & Structure
+
+- **Prefer smaller, self-contained stacked PRs** when possible. "Self-contained" means the PR compiles, passes tests, and is reviewable on its own. As a rule of thumb, aim to keep the diff under ~300 lines of hand-written source — excluding generated, serialized, or non-reviewed files (e.g. JSON, snapshots, lockfiles, `api/*.swiftinterface`) and test or example app files. For larger tasks, plan the PR breakdown up front and stack interdependent changes instead of bundling everything into one large PR.
+
+### Description
+
+- **Use the repo's PR template** (`.github/PULL_REQUEST_TEMPLATE.md`), applying the rules below.
+- **Keep PR descriptions concise and easy to read.** The description answers one question: *what does the reviewer need that the diff doesn't already show?* Concretely:
+  - **Motivation: 1–2 sentences.** State why the change exists; don't recap the whole backstory.
+  - **Don't restate the diff** — no file-by-file or change-by-change enumeration.
+  - **No "Commits" section**.
+  - **Testing: only mention what the diff doesn't show**. Don't enumerate added test cases.
+
+### Labels
 
 When creating a pull request, **always add one of these labels** to categorize the change. These labels determine automatic version bumps and changelog generation:
 

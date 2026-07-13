@@ -1,0 +1,315 @@
+{
+  "fixtures": [
+    {
+      "id": "all_returns_true_when_every_item_matches",
+      "predicate": {
+        "all": [
+          [
+            1,
+            2,
+            3
+          ],
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "all_returns_false_on_first_failure",
+      "predicate": {
+        "all": [
+          [
+            1,
+            2,
+            -3
+          ],
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_returns_false_for_empty_array_per_json_logic_spec",
+      "description": "json-logic-js returns false for all over an empty array",
+      "predicate": {
+        "all": [
+          [],
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_returns_false_for_null_source",
+      "predicate": {
+        "all": [
+          null,
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_returns_false_for_object_source",
+      "predicate": {
+        "all": [
+          {
+            "foo": 1,
+            "bar": 2
+          },
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_returns_false_for_string_source",
+      "predicate": {
+        "all": [
+          "abc",
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_predicate_sees_current_item_via_empty_var",
+      "predicate": {
+        "all": [
+          [
+            true,
+            true,
+            true
+          ],
+          {
+            "var": ""
+          }
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "all_ignores_args_beyond_second",
+      "description": "json-logic-js discards arguments past the second",
+      "predicate": {
+        "all": [
+          [
+            1,
+            2
+          ],
+          {
+            ">": [
+              {
+                "var": ""
+              },
+              0
+            ]
+          },
+          999
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "all_nested_some_inside_all_rebounds_item_scope",
+      "description": "for every customer at least one product must be active; nested iteration rebinds the item scope at each level",
+      "predicate": {
+        "all": [
+          {
+            "var": "customers"
+          },
+          {
+            "some": [
+              {
+                "var": "products"
+              },
+              {
+                "==": [
+                  {
+                    "var": "status"
+                  },
+                  "active"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "customers": [
+          {
+            "products": [
+              {
+                "status": "expired"
+              },
+              {
+                "status": "active"
+              }
+            ]
+          },
+          {
+            "products": [
+              {
+                "status": "active"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "all_returns_true_when_every_object_in_array_matches",
+      "description": "object array source where every item satisfies the predicate returns true",
+      "predicate": {
+        "all": [
+          {
+            "var": "subscriptions"
+          },
+          {
+            "==": [
+              {
+                "var": "status"
+              },
+              "active"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "subscriptions": [
+          {
+            "status": "active"
+          },
+          {
+            "status": "active"
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "all_returns_false_when_one_object_in_array_does_not_match",
+      "description": "object array source where one item fails the predicate returns false",
+      "predicate": {
+        "all": [
+          {
+            "var": "subscriptions"
+          },
+          {
+            "==": [
+              {
+                "var": "status"
+              },
+              "active"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "subscriptions": [
+          {
+            "status": "active"
+          },
+          {
+            "status": "active"
+          },
+          {
+            "status": "trialing"
+          }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "all_with_literal_false_predicate_returns_false",
+      "description": "a non-logic literal predicate is returned as-is per item; a falsy literal makes a non-empty source return false",
+      "predicate": {
+        "all": [
+          [
+            1,
+            2
+          ],
+          false
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "all_with_non_boolean_truthy_predicate_result",
+      "description": "predicate results go through JSON Logic truthiness, not a strict boolean check: a non-empty string is truthy for every item",
+      "predicate": {
+        "all": [
+          {
+            "var": "items"
+          },
+          {
+            "var": "label"
+          }
+        ]
+      },
+      "variables": {
+        "items": [
+          {
+            "label": "a"
+          },
+          {
+            "label": "b"
+          }
+        ]
+      },
+      "expected": true
+    }
+  ]
+}

@@ -17,9 +17,17 @@ import StoreKit
 
 class OfferingsFactory {
 
-    func createOfferings(from storeProductsByID: [String: StoreProduct],
-                         contents: Offerings.Contents,
-                         loadedFromDiskCache: Bool) -> Offerings? {
+    private let systemInfo: SystemInfo
+
+    init(systemInfo: SystemInfo) {
+        self.systemInfo = systemInfo
+    }
+
+    func createOfferings(
+        from storeProductsByID: [String: StoreProduct],
+        contents: Offerings.Contents,
+        loadedFromDiskCache: Bool
+    ) -> Offerings? {
         let data = contents.response
         let offerings: [String: Offering] = data
             .offerings
@@ -52,10 +60,13 @@ class OfferingsFactory {
         }
 
         guard !availablePackages.isEmpty else {
+            let apiKeyValidationResult = self.systemInfo.apiKeyValidationResult
             #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION && !DEBUG
-            Logger.debug(Strings.offering.offering_empty(offeringIdentifier: offering.identifier))
+            Logger.debug(Strings.offering.offering_empty(offeringIdentifier: offering.identifier,
+                                                         apiKeyValidationResult: apiKeyValidationResult))
             #else
-            Logger.warn(Strings.offering.offering_empty(offeringIdentifier: offering.identifier))
+            Logger.warn(Strings.offering.offering_empty(offeringIdentifier: offering.identifier,
+                                                        apiKeyValidationResult: apiKeyValidationResult))
             #endif
             return nil
         }

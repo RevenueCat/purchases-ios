@@ -72,14 +72,21 @@ final class UIConfigProvider {
     }
 
     /// Creates a `ConditionContext` by merging developer-provided custom variables with dashboard defaults.
+    /// `stateValues` / `stateDefaults` carry the presentation session's state-store snapshot for
+    /// `state` condition evaluation; they default to empty for call sites without a store (wired
+    /// per component in later state-driven-paywalls phases).
     func conditionContext(
         selectedPackageId: String?,
-        customVariables: [String: CustomVariableValue]
+        customVariables: [String: CustomVariableValue],
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:]
     ) -> ConditionContext {
         ConditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
-            defaultCustomVariables: self.defaultCustomVariables
+            defaultCustomVariables: self.defaultCustomVariables,
+            stateValues: stateValues,
+            stateDefaults: stateDefaults
         )
     }
 

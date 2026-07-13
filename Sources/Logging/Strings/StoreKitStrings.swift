@@ -77,6 +77,8 @@ enum StoreKitStrings {
 
     case sk2_unknown_transaction_reason(String)
 
+    case sk2_unknown_revocation_reason(String)
+
     case sk2_error_encoding_receipt(Error)
 
     case sk2_error_fetching_app_transaction(Error)
@@ -233,6 +235,9 @@ extension StoreKitStrings: LogMessage {
 
         case let .sk2_unknown_transaction_reason(reason):
             return "Unrecognized StoreKit Transaction Reason: \(reason)"
+
+        case let .sk2_unknown_revocation_reason(reason):
+            return "Unrecognized StoreKit Transaction Revocation Reason: \(reason)"
 
         case let .sk2_error_encoding_receipt(error):
             return "Error encoding SK2 receipt: '\(error)'"
