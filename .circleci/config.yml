@@ -656,7 +656,7 @@ jobs:
           no_output_timeout: 15m
           environment:
             DEVICE: iPhone 17,OS=27.0
-            # No iOS 27 reference snapshots yet: run unit tests, skip snapshot tests.
+            # No iOS 27 reference snapshots: run unit tests, skip snapshot tests.
             REVENUECATUI_TEST_PLAN: RevenueCatUI-UnitTests
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
