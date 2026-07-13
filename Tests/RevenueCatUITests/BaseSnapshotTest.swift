@@ -150,6 +150,9 @@ extension View {
 
         window.makeKeyAndVisible()
 
+        // Wait for views to render
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+
         return {
             controller.beginAppearanceTransition(false, animated: false)
             controller.view.removeFromSuperview()
@@ -157,6 +160,7 @@ extension View {
             controller.endAppearanceTransition()
             window.rootViewController = nil
             window.resignKey()
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
         }
     }
 
