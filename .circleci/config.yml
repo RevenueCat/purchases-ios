@@ -744,6 +744,68 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
+  run-test-ios-26:
+    executor:
+      name: macos-executor
+      # Pinned to 26.3: a StoreKit bug (FB22500243) breaks StoreKit unit tests on
+      # Xcode 26.4+ (products fail to fetch with an SKConfig file).
+      xcode_version: "26.3"
+    steps:
+      - checkout
+      - install-dependencies:
+          install_swiftlint: false
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 15m
+          environment:
+            SCAN_DEVICE: iPhone 17 (26.2)
+            # No iOS 26 reference snapshots in v4: run tests, skip snapshot comparisons.
+            RC_SKIP_SNAPSHOT_TESTS: "1"
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_snapshots >>
+          job: "create_snapshot_pr"
+          version: "ios-26"
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
+  run-test-ios-27:
+    executor:
+      name: macos-executor
+      xcode_version: "27.0.0"
+    steps:
+      - checkout
+      - install-dependencies:
+          install_swiftlint: false
+      - run:
+          name: Run tests
+          # StoreKit unit tests are skipped: a StoreKit bug (FB22500243) breaks product
+          # fetching with an SKConfig file on Xcode 26.4+ (which includes Xcode 27).
+          command: bundle exec fastlane test_ios skip_sk_tests:true
+          no_output_timeout: 15m
+          environment:
+            SCAN_DEVICE: iPhone 17 (27.0)
+            # No iOS 27 reference snapshots in v4: run tests, skip snapshot comparisons.
+            RC_SKIP_SNAPSHOT_TESTS: "1"
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_snapshots >>
+          job: "create_snapshot_pr"
+          version: "ios-27"
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
   run-test-ios-17:
     executor:
       name: macos-executor
@@ -1373,6 +1435,8 @@ workflows:
       - spm-revenuecat-ui-watchos
       - run-test-macos
       - run-test-ios-18
+      - run-test-ios-27
+      - run-test-ios-26
       - run-test-ios-17
       - run-test-ios-16
       - run-test-ios-15
