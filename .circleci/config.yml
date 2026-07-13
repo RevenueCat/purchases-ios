@@ -34,15 +34,6 @@ executors:
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
-  macos-executor-for-macos-12_6:
-    parameters:
-      xcode_version:
-        type: string
-        default: "16.4"
-    macos:
-      # circleci-lint: disable=unknown-xcode-version
-      xcode: << parameters.xcode_version >>
-    resource_class: macos.m1.medium.gen1
 
 aliases:
   release-branches: &release-branches
@@ -861,76 +852,6 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
-  run-test-ios-13:
-    executor:
-      name: macos-executor-for-macos-12_6
-      xcode_version: "14.2.0"
-    steps:
-      - checkout
-      - install-dependencies:
-          install_xcbeautify: false
-          # Mint 0.17.5 is required here as newer versions of Mint don't support macOS 12.
-          install_mint_0_17_5: true
-          install_swiftlint: false
-      - macos/install-rosetta
-      - install-xcbeautify-for-xcode14
-      - update-spm-installation-commit
-      - install-runtime:
-          runtime-name: iOS 13.7
-      - run:
-          name: Run tests
-          command: bundle exec fastlane test_ios
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 11 (13.7)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
-          job: "create_snapshot_pr"
-          version: "ios-13"
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
-
-  run-test-ios-12:
-    executor:
-      name: macos-executor-for-macos-12_6
-      xcode_version: "14.2.0"
-    steps:
-      - checkout
-      - install-dependencies:
-          install_xcbeautify: false
-          # Mint 0.17.5 is required here as newer versions of Mint don't support macOS 12.
-          install_mint_0_17_5: true
-          install_swiftlint: false
-      - macos/install-rosetta
-      - install-xcbeautify-for-xcode14
-      - update-spm-installation-commit
-      - install-runtime:
-          runtime-name: iOS 12.4
-      - run:
-          name: Run tests
-          command: bundle exec fastlane test_ios
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 6 (12.4)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
-          job: "create_snapshot_pr"
-          version: "ios-12"
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
-
   build-tv-watch-and-macos:
     executor:
       name: macos-executor
@@ -1350,8 +1271,6 @@ workflows:
       - run-test-ios-17
       - run-test-ios-16
       - run-test-ios-15
-      - run-test-ios-13
-      - run-test-ios-12
       - run-test-macos
       - run-test-watchos
 
@@ -1387,12 +1306,6 @@ workflows:
       - run-test-ios-15
       - run-test-watchos
       - run-test-tvos
-      # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
-      # See https://circleci.com/docs/using-macos/#supported-xcode-versions
-      - run-test-ios-13:
-          <<: *release-branches-and-main
-      - run-test-ios-12:
-          <<: *release-branches-and-main
       - build-tv-watch-and-macos
       - build-visionos
       - backend-integration-tests-SK1:
