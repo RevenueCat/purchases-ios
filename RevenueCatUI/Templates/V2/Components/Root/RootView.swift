@@ -119,16 +119,8 @@ struct RootView: View {
                         additionalPadding: EdgeInsets(top: 0, leading: 0, bottom: safeAreaInsets.bottom, trailing: 0)
                     )
                     .fixedSize(horizontal: false, vertical: true)
-                    .overlay(GeometryReader { proxy in
-                        Color.clear.preference(
-                            key: OverlaidFooterHeightKey.self,
-                            value: proxy.size.height
-                        )
-                    })
+                    .onSizeChange { overlaidFooterHeight = $0.height }
                 }
-            }
-            .onPreferenceChange(OverlaidFooterHeightKey.self) { height in
-                overlaidFooterHeight = height
             }
         }
         .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer)
@@ -198,15 +190,6 @@ struct RootView: View {
 /// PreferenceKey that propagates the measured height of the overlaid header.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct OverlaidHeaderHeightKey: PreferenceKey {
-    static let defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = max(value, nextValue())
-    }
-}
-
-/// PreferenceKey that propagates the measured height of the overlaid sticky footer.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct OverlaidFooterHeightKey: PreferenceKey {
     static let defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = max(value, nextValue())
