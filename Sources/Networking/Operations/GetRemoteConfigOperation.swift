@@ -103,7 +103,10 @@ extension GetRemoteConfigOperation: @unchecked Sendable {}
 private extension GetRemoteConfigOperation {
 
     func getRemoteConfig(completion: @escaping () -> Void) {
-        let request = HTTPRequest(method: .post(self.request), path: .remoteConfig(domain: self.request.domain))
+        let request = HTTPRequest(
+            method: .post(self.request),
+            path: HTTPRequest.Path.remoteConfig(domain: self.request.domain)
+        )
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<RemoteConfigContainer?>.Result) in
             defer {
