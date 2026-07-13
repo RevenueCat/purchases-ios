@@ -151,6 +151,8 @@ extension HTTPRequest {
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
         case remoteConfig(domain: String)
 
+        case tokenLogin
+
     }
 
     enum FeatureEventsPath: Hashable {
@@ -239,7 +241,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus,
-                .remoteConfig:
+                .remoteConfig,
+                .tokenLogin:
             return true
 
         case .health,
@@ -266,7 +269,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
-                .rewardVerificationStatus:
+                .rewardVerificationStatus,
+                .tokenLogin:
             return true
         case .remoteConfig,
              .health,
@@ -288,7 +292,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
-                .rewardVerificationStatus:
+                .rewardVerificationStatus,
+                .tokenLogin:
             return true
         case .getIntroEligibility,
                 .postSubscriberAttributes,
@@ -312,7 +317,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
-                .rewardVerificationStatus:
+                .rewardVerificationStatus,
+                .tokenLogin:
             return true
         case .getOfferings,
                 .getIntroEligibility,
@@ -402,6 +408,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case let .remoteConfig(domain):
             return "config/\(Self.escape(domain))"
+
+        case let .tokenLogin:
+            return "auth/login"
         }
     }
 
@@ -465,6 +474,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .remoteConfig:
             return "remote_config"
+
+        case .tokenLogin:
+            return "token_login"
         }
     }
 
