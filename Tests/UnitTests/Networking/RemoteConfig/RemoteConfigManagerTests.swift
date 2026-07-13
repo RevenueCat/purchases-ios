@@ -122,10 +122,15 @@ final class RemoteConfigManagerTests: TestCase {
 
         self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
 
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+
+        self.dateProvider.advance(by: Self.refreshAttemptCooldownElapsedInterval)
+        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
     }
 
-    func testClearCacheClearsFailureCooldown() {
+    func testClearCacheClearsRefreshAttemptCooldown() {
         self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1)))))
         self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
