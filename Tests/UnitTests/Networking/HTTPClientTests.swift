@@ -79,7 +79,7 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
                           signing: self.signing,
                           diagnosticsTracker: self.diagnosticsTracker,
                           dnsChecker: MockDNSChecker.self,
-                          requestTimeout: defaultRequestTimeout,
+                          networkTimeout: .custom(defaultRequestTimeout),
                           operationDispatcher: operationDispatcher,
                           apiSourceProvider: apiSourceProvider,
                           timeoutManager: timeoutManager)
@@ -91,7 +91,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     override func setUpWithError() throws {
         self.eTagManager = MockETagManager()
         self.timeoutManager = HTTPRequestTimeoutManager(
-            flatTimeout: defaultRequestTimeout,
+            networkTimeout: .default,
             dateProvider: MockCurrentDateProvider()
         )
 
@@ -869,6 +869,83 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(self.eTagManager.invokedHTTPResultFromCacheOrBackendCount) == 1
     }
 
+    func testRemoteConfigFallbackSendsETagHeaders() {
+        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        let request = HTTPRequest(method: .get, path: path)
+        let responseData = "{\"domain\":\"app\",\"manifest\":\"test\",\"active_topics\":[],\"topics\":{}}".asData
+        let eTag = "fallback-etag"
+        let eTagValidationTime = Date(timeIntervalSince1970: 1234567)
+
+        self.eTagManager.stubResponseEtag(eTag, validationTime: eTagValidationTime)
+
+        stub(condition: isPath(path)) { request in
+            expect(request.allHTTPHeaderFields?[ETagManager.eTagRequestHeader.rawValue]) == eTag
+            expect(request.allHTTPHeaderFields?[ETagManager.eTagValidationTimeRequestHeader.rawValue])
+            == eTagValidationTime.millisecondsSince1970.description
+
+            return HTTPStubsResponse(
+                data: responseData,
+                statusCode: .success,
+                headers: nil
+            )
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: DataResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).toNot(beNil())
+        expect(result).to(beSuccess())
+        expect(result?.value?.body) == responseData
+
+        expect(self.eTagManager.invokedETagHeader).to(beTrue())
+        expect(self.eTagManager.invokedHTTPResultFromCacheOrBackend) == true
+    }
+
+    func testRemoteConfigFallbackGetsCachedResponseWhenStatusCodeIsNotModified() {
+        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        let request = HTTPRequest(method: .get, path: path)
+        let cachedResponseData = """
+        {"domain":"app","manifest":"cached","active_topics":[],"topics":{}}
+        """.asData
+        let eTag = "fallback-etag"
+
+        self.eTagManager.stubResponseEtag(eTag)
+        self.eTagManager.shouldReturnResultFromBackend = false
+        self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
+            httpStatusCode: .success,
+            responseHeaders: [:],
+            body: cachedResponseData,
+            verificationResult: .verified,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false
+        )
+
+        stub(condition: isPath(path)) { request in
+            expect(request.allHTTPHeaderFields?[ETagManager.eTagRequestHeader.rawValue]) == eTag
+
+            return HTTPStubsResponse(
+                data: Data(),
+                statusCode: .notModified,
+                headers: nil
+            )
+        }
+
+        let response: VerifiedHTTPResponse<RemoteConfiguration>.Result? = waitUntilValue { completion in
+            self.client.perform(request) { (response: VerifiedHTTPResponse<RemoteConfiguration>.Result) in
+                completion(response)
+            }
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.httpStatusCode) == .success
+        expect(response?.value?.body.domain) == "app"
+        expect(response?.value?.body.manifest) == "cached"
+        expect(self.eTagManager.invokedHTTPResultFromCacheOrBackend) == true
+    }
+
     func testResponseOriginalSourceIsLoadShedderWhenHeaderIsTrue() throws {
         let request = HTTPRequest(method: .get, path: .mockPath)
         let responseData = "{\"message\": \"something is great up in the cloud\"}".asData
@@ -1207,7 +1284,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     func testRemoteConfigDoesNotUseETagCacheEvenIfResponseIncludesETagHeader() {
         let request = HTTPRequest(
             method: .post(RemoteConfigRequest(appUserID: "app-user-id")),
-            path: .remoteConfig(domain: "app")
+            path: HTTPRequest.Path.remoteConfig(domain: "app")
         )
         let headerPresent: Atomic<Bool?> = nil
 
@@ -1390,7 +1467,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         stub(condition: isAbsoluteURLString(fallbackUrl)) { request in
 
             // Make sure it uses the flat timeout because it's a fallback-host request
-            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
+            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
             return .emptySuccessResponse()
         }
 
@@ -1491,7 +1568,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let fallbackUrl = try XCTUnwrap(request.path.fallbackUrls.first?.absoluteString)
         stub(condition: isAbsoluteURLString(fallbackUrl)) { request in
             // Fallback-host request should use the flat timeout
-            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
+            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
             return .emptySuccessResponse()
         }
 
@@ -1572,7 +1649,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             // The fallback-host request should use the flat timeout
             XCTAssertEqual(
                 request.timeoutInterval,
-                self.defaultRequestTimeout
+                HTTPRequestTimeoutManager.Timeout.flat
             )
 
             fallbackCalled = true
@@ -1641,7 +1718,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             // With a proxy URL, the request should use the default timeout
             // because fallback URLs are disabled and the short timeout is only
             // useful when fallback can catch a timeout.
-            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
+            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
             return .emptySuccessResponse()
         }
 
@@ -1672,7 +1749,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         stub(condition: isHost("proxy.revenuecat.com")) { request in
             // Even after a previous timeout, with a proxy URL set the request
             // should use the flat timeout, not a reduced tier (proxied requests never consult the memory).
-            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
+            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
             return .emptySuccessResponse()
         }
 

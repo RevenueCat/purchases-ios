@@ -358,6 +358,16 @@ private final class FakeRemoteConfigAPI: RemoteConfigAPIType {
         }
     }
 
+    func getRemoteConfigFallback(
+        domain: String,
+        isAppBackgrounded: Bool,
+        completion: @escaping Backend.ResponseHandler<RemoteConfigFallbackFetchResult>
+    ) {
+        DispatchQueue.global().async {
+            completion(.failure(.networkError(.unexpectedResponse(nil))))
+        }
+    }
+
 }
 
 private final class FakeRemoteConfigDiskCache: RemoteConfigDiskCacheType {

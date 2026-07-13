@@ -86,7 +86,7 @@ class MockHTTPClient: HTTPClient {
          eTagManager: ETagManager,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
-         requestTimeout: TimeInterval = 7,
+         networkTimeout: NetworkTimeout = .custom(7),
          sourceTestFile: StaticString = #file) {
         self.sourceTestFile = sourceTestFile
 
@@ -95,7 +95,7 @@ class MockHTTPClient: HTTPClient {
                    signing: FakeSigning.default,
                    diagnosticsTracker: diagnosticsTracker,
                    dnsChecker: dnsChecker,
-                   requestTimeout: requestTimeout,
+                   networkTimeout: networkTimeout,
                    operationDispatcher: MockOperationDispatcher(),
                    apiSourceProvider: nil)
     }
@@ -155,6 +155,10 @@ class MockHTTPClient: HTTPClient {
     }
 
     func mock(requestPath: HTTPRequest.DiagnosticsPath, response: Response) {
+        self.mock(path: requestPath, response: response)
+    }
+
+    func mock(requestPath: HTTPRequest.FallbackPath, response: Response) {
         self.mock(path: requestPath, response: response)
     }
 

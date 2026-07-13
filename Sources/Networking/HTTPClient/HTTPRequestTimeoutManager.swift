@@ -45,8 +45,7 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
         case other
     }
 
-    /// Timeout tiers, in seconds, for a main-source request. Fallback-host and proxied requests use
-    /// ``flatTimeout`` instead.
+    /// Timeout tiers, in seconds.
     enum Timeout {
 
         /// Main-source request to an endpoint with no fallback-URL support.
@@ -60,6 +59,9 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
 
         /// Main-source request to an endpoint with fallback-URL support, when the source recently timed out.
         static let mainSourceSupportingFallbackReduced: TimeInterval = 2
+
+        /// Fallback-host and proxied requests (flat, never reduced).
+        static let flat: TimeInterval = 30
     }
 
     // The amount of time after which a per-host timeout entry expires.
@@ -68,17 +70,17 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
     // The last time a timeout was recorded, keyed by resolved host string. Guarded by `lock`.
     private var lastTimeoutByHost: [String: Date] = [:]
 
-    // The flat timeout used for fallback-host and proxied requests. Injected only as a test seam.
-    private let flatTimeout: TimeInterval
+    // When the developer sets a custom `networkTimeout`, it replaces the built-in base/flat tiers.
+    private let networkTimeout: NetworkTimeout
 
     private let dateProvider: DateProvider
     private let lock = Lock()
 
     init(
-        flatTimeout: TimeInterval = 30,
+        networkTimeout: NetworkTimeout = .default,
         dateProvider: DateProvider = .init()
     ) {
-        self.flatTimeout = flatTimeout
+        self.networkTimeout = networkTimeout
         self.dateProvider = dateProvider
     }
 
@@ -88,16 +90,25 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
                  isProxied: Bool) -> TimeInterval {
         // Fallback-host and proxied requests use a flat timeout and never consult the per-host memory.
         guard !isFallbackHostRequest, !isProxied else {
-            return self.flatTimeout
+            return self.baseTimeout(default: Timeout.flat)
         }
 
         let sourceRecentlyTimedOut = host.map { self.hasRecentTimeout(forHost: $0) } ?? false
 
+        // Base tiers honor a custom `networkTimeout`; the reduced fail-fast tiers stay fixed.
         switch (endpointSupportsFallbackURLs, sourceRecentlyTimedOut) {
-        case (true, false): return Timeout.mainSourceSupportingFallback
+        case (true, false): return self.baseTimeout(default: Timeout.mainSourceSupportingFallback)
         case (true, true): return Timeout.mainSourceSupportingFallbackReduced
-        case (false, false): return Timeout.mainSourceNoFallback
+        case (false, false): return self.baseTimeout(default: Timeout.mainSourceNoFallback)
         case (false, true): return Timeout.mainSourceNoFallbackReduced
+        }
+    }
+
+    /// The base/flat timeout to use: the developer's custom value when set, otherwise the built-in tier.
+    private func baseTimeout(default defaultValue: TimeInterval) -> TimeInterval {
+        switch self.networkTimeout {
+        case .default: return defaultValue
+        case let .custom(value): return value
         }
     }
 
