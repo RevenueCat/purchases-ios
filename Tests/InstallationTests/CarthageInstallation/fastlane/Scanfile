@@ -1,8 +1,4 @@
-# Run the Carthage installation tests on an iOS 26 simulator.
-#
-# `fastlane scan` otherwise defaults to the newest *pre-installed* simulator, which on the
-# Xcode 26.5 CI image is an iOS 18.6 runtime. Running that old runtime under Xcode 26.5's
-# CoreSimulator makes the simulator's networking hang, so `testCanFetchCustomerInfo` (a live
-# backend call) deterministically times out. Pinning to `iPhone 17` forces an iOS 26.x runtime
-# (the device doesn't exist on older iOS versions), matching the Xcode toolchain.
-devices(["iPhone 17"])
+# On the Xcode 26 image, `scan` defaults to a stale iOS 18 simulator whose networking hangs,
+# timing out the live-network test. Newer Xcodes already select a matching runtime on their own.
+xcode_major = Integer(`xcodebuild -version`[/Xcode (\d+)/, 1])
+devices(["iPhone 17"]) if xcode_major == 26
