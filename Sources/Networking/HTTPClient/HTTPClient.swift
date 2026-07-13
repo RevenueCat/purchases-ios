@@ -28,6 +28,7 @@ class HTTPClient {
     private let session: URLSession
     private let state: Atomic<State> = .init(.initial)
     private let eTagManager: ETagManager
+    private let tokenManager: TokenManager
     private let dnsChecker: DNSCheckerType.Type
     private let signing: SigningType
     private let diagnosticsTracker: DiagnosticsTrackerType?
@@ -44,6 +45,7 @@ class HTTPClient {
 
     init(systemInfo: SystemInfo,
          eTagManager: ETagManager,
+         tokenManager: TokenManager,
          signing: SigningType,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
@@ -63,6 +65,7 @@ class HTTPClient {
                                   delegateQueue: nil)
         self.systemInfo = systemInfo
         self.eTagManager = eTagManager
+        self.tokenManager = tokenManager
         self.signing = signing
         self.diagnosticsTracker = diagnosticsTracker
         self.dnsChecker = dnsChecker

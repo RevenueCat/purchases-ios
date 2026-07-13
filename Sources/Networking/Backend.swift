@@ -34,6 +34,7 @@ class Backend {
         systemInfo: SystemInfo,
         httpClientTimeout: TimeInterval = Configuration.networkTimeoutDefault,
         eTagManager: ETagManager,
+        tokenManager: TokenManager,
         operationDispatcher: OperationDispatcher,
         attributionFetcher: AttributionFetcher,
         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
@@ -42,6 +43,7 @@ class Backend {
     ) {
         let httpClient = HTTPClient(systemInfo: systemInfo,
                                     eTagManager: eTagManager,
+                                    tokenManager: tokenManager,
                                     signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
                                     diagnosticsTracker: diagnosticsTracker,
                                     requestTimeout: httpClientTimeout,
