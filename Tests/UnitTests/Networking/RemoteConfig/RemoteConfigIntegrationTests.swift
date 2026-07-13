@@ -558,6 +558,10 @@ private extension RemoteConfigIntegrationTests {
         self.manager.refreshRemoteConfig(isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
         await self.waitForPersistedManifest(Self.manifest)
+        // The manifest is written before inline blobs within the same persist critical section, and it is observable
+        // via the disk cache without holding the manager lock. A manager read acquires that lock, so it cannot return
+        // until the whole persist (manifest + blob writes) has completed, making direct blob store reads safe.
+        _ = await self.manager.topic(.workflows)
     }
 
     func refreshFromFallback(
