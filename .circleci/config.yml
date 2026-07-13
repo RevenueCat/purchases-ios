@@ -861,42 +861,6 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
-  run-test-ios-14:
-    executor:
-      name: macos-executor-for-macos-12_6
-      # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
-      # See https://circleci.com/docs/using-macos/#supported-xcode-versions
-      xcode_version: "14.2.0"
-    steps:
-      - checkout
-      - install-dependencies:
-          install_xcbeautify: false
-          # Mint 0.17.5 is required here as newer versions of Mint don't support macOS 12.
-          install_mint_0_17_5: true
-          install_swiftlint: false
-      - install-xcbeautify-for-xcode14
-      - update-spm-installation-commit
-      - install-runtime:
-          runtime-name: iOS 14.5
-      - run:
-          name: Run tests
-          command: bundle exec fastlane test_ios skip_sk_tests:true
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 12 (14.5)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
-          job: "create_snapshot_pr"
-          version: "ios-14"
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
-
   run-test-ios-13:
     executor:
       name: macos-executor-for-macos-12_6
@@ -1386,7 +1350,6 @@ workflows:
       - run-test-ios-17
       - run-test-ios-16
       - run-test-ios-15
-      - run-test-ios-14
       - run-test-ios-13
       - run-test-ios-12
       - run-test-macos
@@ -1426,7 +1389,6 @@ workflows:
       - run-test-tvos
       # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
       # See https://circleci.com/docs/using-macos/#supported-xcode-versions
-      - run-test-ios-14
       - run-test-ios-13:
           <<: *release-branches-and-main
       - run-test-ios-12:
