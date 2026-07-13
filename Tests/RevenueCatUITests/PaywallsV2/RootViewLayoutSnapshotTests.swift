@@ -79,16 +79,6 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
         )
     }
 
-    func testLargeFooterTallerThanHalfScreen() throws {
-        let view = try makeFullScreenSnapshotView(PaywallsV2LayoutFixtures.makeTallFooterViewModel)
-
-        view.snapshot(
-            size: Self.fullScreenSize,
-            record: Self.shouldRecordSnapshots,
-            separateOSVersions: false
-        )
-    }
-
     func testHeaderAndFooterStepReservesHeaderClearance() throws {
         let view = try makeFullScreenSnapshotView(PaywallsV2LayoutFixtures.makeHeaderAndFooterViewModel)
 

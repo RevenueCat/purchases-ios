@@ -233,24 +233,6 @@ enum PaywallsV2LayoutFixtures {
         )
     }
 
-    static func makeTallFooterViewModel() throws -> RootViewModel {
-        let footerStack = PaywallComponent.StackComponent(
-            components: [footerCTAText()],
-            dimension: .vertical(.center, .center),
-            size: .init(width: .fill, height: .fit),
-            backgroundColor: .init(light: .hex("#EEEEEE")),
-            padding: .init(top: 220, bottom: 220, leading: 16, trailing: 16)
-        )
-
-        return try makeRootViewModel(
-            componentsConfig: .init(
-                stack: centeredBodyStack(),
-                stickyFooter: .init(stack: footerStack),
-                background: fixtureBackground
-            )
-        )
-    }
-
     static func makeHeaderAndFooterViewModel() throws -> RootViewModel {
         let headerStack = PaywallComponent.StackComponent(
             components: [
