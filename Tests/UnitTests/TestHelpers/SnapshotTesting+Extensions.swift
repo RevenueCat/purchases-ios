@@ -34,6 +34,11 @@ func assertSnapshot<Value, Format>(
   testName: String = #function,
   line: UInt = #line
 ) {
+    // Skip snapshot comparisons when there are no reference snapshots for the
+    // current OS (e.g. new iOS versions). Image snapshots are skipped in
+    // `BaseSnapshotTest`; this covers JSON/text snapshots too.
+    guard ProcessInfo.processInfo.environment["RC_SKIP_SNAPSHOT_TESTS"] != "1" else { return }
+
     let failure = verifySnapshot(
         matching: try value(),
         as: snapshotting,
