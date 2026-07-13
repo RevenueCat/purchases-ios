@@ -297,11 +297,9 @@ final class RemoteConfigIntegrationTests: TestCase {
         await self.downloader.setResponse(.success(blob), for: source, ref: ref)
 
         await self.refresh(with: container)
-        await self.waitUntil(file: #filePath, line: #line) {
-            failingBlobStore.writeCount == 1
-        }
+        await expect(failingBlobStore.writeCount)
+            .toEventually(equal(1), timeout: Self.pollTimeout, pollInterval: Self.pollInterval)
 
-        expect(failingBlobStore.writeCount) == 1
         expect(self.blobStore.read(ref: ref)).to(beNil())
 
         let maybeData = await self.manager.blobData(for: .workflows, itemKey: "default")
@@ -618,34 +616,34 @@ private extension RemoteConfigIntegrationTests {
         }.count
     }
 
+    static let pollTimeout: NimbleTimeInterval = .seconds(2)
+    static let pollInterval: NimbleTimeInterval = .milliseconds(10)
+
     func waitForRemoteConfigRequestCount(
         _ count: Int,
-        file: StaticString = #filePath,
+        file: FileString = #filePath,
         line: UInt = #line
     ) async {
-        await self.waitUntil(file: file, line: line) {
-            self.remoteConfigRequestCount >= count
-        }
+        await expect(file: file, line: line, self.remoteConfigRequestCount)
+            .toEventually(beGreaterThanOrEqualTo(count), timeout: Self.pollTimeout, pollInterval: Self.pollInterval)
     }
 
     func waitForRemoteConfigFallbackRequestCount(
         _ count: Int,
-        file: StaticString = #filePath,
+        file: FileString = #filePath,
         line: UInt = #line
     ) async {
-        await self.waitUntil(file: file, line: line) {
-            self.remoteConfigFallbackRequestCount >= count
-        }
+        await expect(file: file, line: line, self.remoteConfigFallbackRequestCount)
+            .toEventually(beGreaterThanOrEqualTo(count), timeout: Self.pollTimeout, pollInterval: Self.pollInterval)
     }
 
     func waitForPersistedManifest(
         _ manifest: String,
-        file: StaticString = #filePath,
+        file: FileString = #filePath,
         line: UInt = #line
     ) async {
-        await self.waitUntil(file: file, line: line) {
-            self.diskCache.read()?.manifest == manifest
-        }
+        await expect(file: file, line: line, self.diskCache.read()?.manifest)
+            .toEventually(equal(manifest), timeout: Self.pollTimeout, pollInterval: Self.pollInterval)
     }
 
     /// Waits until the blob store reflects the expected refs.
@@ -658,24 +656,7 @@ private extension RemoteConfigIntegrationTests {
         line: UInt = #line
     ) async {
         await expect(file: file, line: line, self.blobStore.cachedRefs())
-            .toEventually(equal(refs), timeout: .seconds(2), pollInterval: .milliseconds(10))
-    }
-
-    func waitUntil(
-        file: StaticString,
-        line: UInt,
-        condition: @escaping () -> Bool
-    ) async {
-        let deadline = Date().addingTimeInterval(2)
-        while Date() < deadline {
-            if condition() {
-                return
-            }
-
-            try? await Task.sleep(nanoseconds: 10_000_000)
-        }
-
-        XCTFail("Timed out waiting for remote config integration condition", file: file, line: line)
+            .toEventually(equal(refs), timeout: Self.pollTimeout, pollInterval: Self.pollInterval)
     }
 
     static func containerData(
