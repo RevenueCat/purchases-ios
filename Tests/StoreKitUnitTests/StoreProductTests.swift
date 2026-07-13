@@ -688,7 +688,8 @@ extension StoreProductTests {
             .product(withIdentifier: "\(Self.productIDWithBillingPlans):monthly")
         expect(storeProduct.productIdentifier).to(equal(Self.productIDWithBillingPlans))
         expect(storeProduct.id).to(equal("\(Self.productIDWithBillingPlans):monthly"))
-        expect(storeProduct.price).to(equal(11.88))
+        // For a monthly billing plan, `price` returns the billing plan's total commitment price
+        expect(storeProduct.price).to(equal(6))
 
         // InstallmentsInfo
         let installmentsInfo: InstallmentsInfo = try XCTUnwrap(storeProduct.installmentsInfo)
