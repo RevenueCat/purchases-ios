@@ -140,9 +140,6 @@ class BasePaywallViewEventsTests: TestCase {
 
         await self.waitForCloseEvent()
 
-        // `waitForCloseEvent` already waits for both close events (expectedFulfillmentCount = 2),
-        // so all four events are present here. A synchronous check is used because v4 ships
-        // Nimble 10, whose async `await ... toEventually` (main uses it via Nimble 13) is unreliable.
         expect(self.events).to(haveCount(4))
         expect(self.events.map(\.eventType)) == [.impression, .close, .impression, .close]
         expect(Set(self.events.map(\.data.sessionIdentifier))).to(haveCount(2))
