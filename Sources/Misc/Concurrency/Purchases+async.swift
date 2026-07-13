@@ -39,6 +39,15 @@ extension Purchases {
         }
     }
 
+    func logInAsync(_ token: ExternalToken) async throws -> (customerInfo: CustomerInfo, created: Bool) {
+        return try await withUnsafeThrowingContinuation { continuation in
+            logIn(using: token) { customerInfo, created, error in
+                continuation.resume(with: Result(customerInfo, error)
+                    .map { ($0, created) })
+            }
+        }
+    }
+
     func logOutAsync() async throws -> CustomerInfo {
         return try await withUnsafeThrowingContinuation { continuation in
             logOut { customerInfo, error in

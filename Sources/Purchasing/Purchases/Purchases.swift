@@ -1084,6 +1084,30 @@ public extension Purchases {
         return try await self.logInAsync(appUserID)
     }
 
+    @_spi(Experimental)
+    @objc(logInUsingToken:completion:)
+    func logIn(using token: ExternalToken, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
+        self.identityManager.logIn(externalToken: token) { result in
+            self.operationDispatcher.dispatchOnMainThread {
+                completion(result.value?.info, result.value?.created ?? false, result.error?.asPublicError)
+            }
+
+            guard case .success = result else {
+                return
+            }
+
+            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+                self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
+                self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isAppBackgrounded)
+            }
+        }
+    }
+
+    @_spi(Experimental)
+    func logIn(using token: ExternalToken) async throws -> (customerInfo: CustomerInfo, created: Bool) {
+        return try await self.logInAsync(token)
+    }
+
     @objc func logOut(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
         guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
             completion?(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
