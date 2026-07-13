@@ -88,7 +88,7 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
                           signing: self.signing,
                           diagnosticsTracker: self.diagnosticsTracker,
                           dnsChecker: MockDNSChecker.self,
-                          requestTimeout: defaultRequestTimeout,
+                          networkTimeout: .custom(defaultRequestTimeout),
                           operationDispatcher: operationDispatcher,
                           apiSourceFailover: apiSourceFailover,
                           timeoutManager: timeoutManager)
@@ -100,7 +100,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     override func setUpWithError() throws {
         self.eTagManager = MockETagManager()
         self.timeoutManager = HTTPRequestTimeoutManager(
-            flatTimeout: defaultRequestTimeout,
+            networkTimeout: .default,
             dateProvider: MockCurrentDateProvider()
         )
 
@@ -1801,7 +1801,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         stub(condition: isAbsoluteURLString(fallbackUrl)) { request in
 
             // Make sure it uses the flat timeout because it's a fallback-host request
-            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
+            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
             return .emptySuccessResponse()
         }
 
@@ -1902,7 +1902,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let fallbackUrl = try XCTUnwrap(request.path.fallbackUrls.first?.absoluteString)
         stub(condition: isAbsoluteURLString(fallbackUrl)) { request in
             // Fallback-host request should use the flat timeout
-            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
+            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
             return .emptySuccessResponse()
         }
 
@@ -1983,7 +1983,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             // The fallback-host request should use the flat timeout
             XCTAssertEqual(
                 request.timeoutInterval,
-                self.defaultRequestTimeout
+                HTTPRequestTimeoutManager.Timeout.flat
             )
 
             fallbackCalled = true
@@ -2052,7 +2052,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             // With a proxy URL, the request should use the default timeout
             // because fallback URLs are disabled and the short timeout is only
             // useful when fallback can catch a timeout.
-            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
+            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
             return .emptySuccessResponse()
         }
 
@@ -2083,7 +2083,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         stub(condition: isHost("proxy.revenuecat.com")) { request in
             // Even after a previous timeout, with a proxy URL set the request
             // should use the flat timeout, not a reduced tier (proxied requests never consult the memory).
-            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
+            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
             return .emptySuccessResponse()
         }
 

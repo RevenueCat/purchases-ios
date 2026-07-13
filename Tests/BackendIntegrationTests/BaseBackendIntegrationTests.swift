@@ -80,7 +80,7 @@ class BaseBackendIntegrationTests: TestCase {
                             responseVerificationMode: Self.responseVerificationMode,
                             storeKitVersion: Self.storeKitVersion,
                             storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
-                            networkTimeout: Configuration.networkTimeoutDefault,
+                            networkTimeout: .default,
                             dangerousSettings: self.dangerousSettings,
                             showStoreMessagesAutomatically: true,
                             diagnosticsEnabled: false,
