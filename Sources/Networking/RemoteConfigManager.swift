@@ -459,7 +459,13 @@ private extension RemoteConfigManager {
                         requestEpoch: requestEpoch
                     )
                 case let .failure(error):
-                    self.handleFailure(error, requestEpoch: requestEpoch)
+                    self.handleFailure(
+                        error,
+                        request: request,
+                        previous: persisted,
+                        isAppBackgrounded: isAppBackgrounded,
+                        requestEpoch: requestEpoch
+                    )
                 }
             }
         }
@@ -519,12 +525,100 @@ private extension RemoteConfigManager {
 
     func handleFailure(
         _ error: BackendError,
+        request: RemoteConfigRequest,
+        previous: PersistedRemoteConfiguration?,
+        isAppBackgrounded: Bool,
         requestEpoch: Int
+    ) {
+        guard error.isRemoteConfigFallbackEligible,
+              !self.hasUsableCachedConfig(previous, for: request.domain) else {
+            self.handleFinalFailure(error, requestEpoch: requestEpoch, shouldDisableRefresh: true)
+            return
+        }
+
+        guard SystemInfo.proxyURL == nil else {
+            self.handleFinalFailure(error, requestEpoch: requestEpoch, shouldDisableRefresh: false)
+            return
+        }
+
+        self.enqueueRemoteConfigFallbackIfCurrent(
+            domain: request.domain,
+            previous: previous,
+            isAppBackgrounded: isAppBackgrounded,
+            requestEpoch: requestEpoch,
+            originalError: error
+        )
+    }
+
+    func hasUsableCachedConfig(
+        _ previous: PersistedRemoteConfiguration?,
+        for domain: String
+    ) -> Bool {
+        return previous?.domain == domain
+    }
+
+    func enqueueRemoteConfigFallbackIfCurrent(
+        domain: String,
+        previous: PersistedRemoteConfiguration?,
+        isAppBackgrounded: Bool,
+        requestEpoch: Int,
+        originalError: BackendError
+    ) {
+        self.lock.perform {
+            guard self.epoch == requestEpoch else { return }
+
+            self.remoteConfigAPI.getRemoteConfigFallback(
+                domain: domain,
+                isAppBackgrounded: isAppBackgrounded
+            ) { [weak self] result in
+                guard let self else { return }
+
+                switch result {
+                case let .success(fallbackResult):
+                    self.handleRemoteConfigFallbackSuccess(
+                        fallbackResult,
+                        previous: previous,
+                        requestEpoch: requestEpoch
+                    )
+                case let .failure(fallbackError):
+                    self.handleFinalFailure(fallbackError, requestEpoch: requestEpoch, shouldDisableRefresh: true)
+                }
+            }
+        }
+    }
+
+    func handleRemoteConfigFallbackSuccess(
+        _ fallbackResult: RemoteConfigFallbackFetchResult,
+        previous: PersistedRemoteConfiguration?,
+        requestEpoch: Int
+    ) {
+        guard self.isCurrent(requestEpoch) else { return }
+        defer { self.releaseGuardIfOwned(requestEpoch: requestEpoch) }
+
+        self.lock.perform {
+            guard self.epoch == requestEpoch else { return }
+            let didPersist = self.persist(
+                container: nil,
+                previous: previous,
+                response: fallbackResult.configuration
+            )
+            if didPersist {
+                self.markRefreshed()
+            }
+        }
+    }
+
+    func handleFinalFailure(
+        _ error: BackendError,
+        requestEpoch: Int,
+        shouldDisableRefresh: Bool
     ) {
         let continuations = self.lock.perform {
             guard self.epoch == requestEpoch else { return nil as [CheckedContinuation<Void, Never>]? }
 
-            self.disableRefreshIfNeeded(for: error)
+            if shouldDisableRefresh {
+                self.disableRefreshIfNeeded(for: error)
+            }
             self.isRefreshing = false
 
             return self.drainRefreshContinuations()
@@ -732,7 +826,7 @@ private extension RemoteConfigManager {
 
     /// Persists the config sync state and any valid inline blobs from a successful container response.
     func persist(
-        container: RemoteConfigContainer,
+        container: RemoteConfigContainer?,
         previous: PersistedRemoteConfiguration?,
         response: RemoteConfiguration
     ) -> Bool {
@@ -759,7 +853,9 @@ private extension RemoteConfigManager {
 
         guard self.diskCache.write(persistedConfiguration) else { return false }
 
-        self.extractInlineBlobs(from: container, keepingOnly: postSyncReferencedBlobRefs)
+        if let container {
+            self.extractInlineBlobs(from: container, keepingOnly: postSyncReferencedBlobRefs)
+        }
         self.blobStore.retainOnly(postSyncReferencedBlobRefs)
 
         Logger.debug(Strings.remoteConfig.persistedConfiguration(
@@ -868,6 +964,15 @@ private extension BackendError {
         }
 
         return 400...499 ~= statusCode.rawValue
+    }
+
+    /// Failures that can retry against a fallback host are eligible for the JSON fallback config request.
+    var isRemoteConfigFallbackEligible: Bool {
+        guard case let .networkError(networkError) = self else {
+            return false
+        }
+
+        return networkError.isAllowedToRetryWithFallbackHost
     }
 
 }
