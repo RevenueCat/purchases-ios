@@ -98,6 +98,17 @@ class IdentityManager: CurrentUserProvider {
         }
     }
 
+    func logIn(externalToken: ExternalToken, completion: @escaping IdentityAPI.LogInResponseHandler) {
+        guard self.currentAppUserID != Self.uiPreviewModeAppUserID else {
+            completion(.failure(.unsupportedInUIPreviewMode()))
+            return
+        }
+
+        self.attributeSyncing.syncSubscriberAttributes(currentAppUserID: self.currentAppUserID) {
+            self.performLogIn(token: externalToken, completion: completion)
+        }
+    }
+
     func logOut(completion: @escaping (PurchasesError?) -> Void) {
         guard self.currentAppUserID != Self.uiPreviewModeAppUserID else {
             completion(ErrorUtils.unsupportedInUIPreviewModeError())
@@ -163,6 +174,33 @@ private extension IdentityManager {
 
         self.backend.identity.logIn(request) { result in
             if case let .success((customerInfo, _)) = result {
+                self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newAppUserID)
+                self.remoteConfigManager?.clearCache()
+                self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: newAppUserID)
+                self.copySubscriberAttributesToNewUserIfOldIsAnonymous(oldAppUserID: oldAppUserID,
+                                                                       newAppUserID: newAppUserID)
+            }
+
+            completion(result)
+        }
+    }
+
+    func performLogIn(token: ExternalToken, completion: @escaping IdentityAPI.LogInResponseHandler) {
+        let oldAppUserID = self.currentAppUserID
+
+        let request = IdentityAPI.LogInRequest(currentAppUserID: oldAppUserID,
+                                               kind: .switchTo(token))
+
+        /*
+         NOTE: we don't have a "newAppUserID", because we just have an opaque authentication blob.
+         We rely on the server to validate the blob and extract information, and send it back to us
+         */
+
+        self.backend.identity.logIn(request) { result in
+            if case let .success((customerInfo, _)) = result {
+                #warning("DAVE: THIS IS PROBABLY NOT CORRECT")
+                let newAppUserID = customerInfo.originalAppUserId
+
                 self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newAppUserID)
                 self.remoteConfigManager?.clearCache()
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: newAppUserID)
