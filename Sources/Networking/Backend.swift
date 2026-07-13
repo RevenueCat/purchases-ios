@@ -38,7 +38,7 @@ class Backend {
         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
         diagnosticsTracker: DiagnosticsTrackerType?,
         apiSourceProvider: RemoteConfigSourceProviderType?,
-        timeoutManager: HTTPRequestTimeoutManagerType? = nil,
+        timeoutManager: HTTPRequestTimeoutManagerType?,
         dateProvider: DateProvider = DateProvider()
     ) {
         let httpClient = HTTPClient(systemInfo: systemInfo,
