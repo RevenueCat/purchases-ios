@@ -52,10 +52,31 @@ class Backend {
                                           systemInfo: systemInfo,
                                           offlineCustomerInfoCreator: offlineCustomerInfoCreator,
                                           dateProvider: dateProvider)
-        self.init(backendConfig: config, attributionFetcher: attributionFetcher)
+        // Dedicated remote-config lane: its own HTTPClient (own serial request state + own
+        // connection) and its own queue, so `/config` overlaps `/offerings` instead of
+        // serializing behind it on the shared pipe.
+        let remoteConfigHTTPClient = HTTPClient(systemInfo: systemInfo,
+                                                eTagManager: eTagManager,
+                                                signing: Signing(apiKey: systemInfo.apiKey,
+                                                                 clock: systemInfo.clock),
+                                                diagnosticsTracker: diagnosticsTracker,
+                                                requestTimeout: httpClientTimeout,
+                                                operationDispatcher: OperationDispatcher.default)
+        let remoteConfigConfig = BackendConfiguration(httpClient: remoteConfigHTTPClient,
+                                                      operationDispatcher: operationDispatcher,
+                                                      operationQueue: QueueProvider.createRemoteConfigQueue(),
+                                                      diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
+                                                      systemInfo: systemInfo,
+                                                      offlineCustomerInfoCreator: offlineCustomerInfoCreator,
+                                                      dateProvider: dateProvider)
+        self.init(backendConfig: config,
+                  remoteConfigBackendConfig: remoteConfigConfig,
+                  attributionFetcher: attributionFetcher)
     }
 
-    convenience init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
+    convenience init(backendConfig: BackendConfiguration,
+                     remoteConfigBackendConfig: BackendConfiguration? = nil,
+                     attributionFetcher: AttributionFetcher) {
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let identity = IdentityAPI(backendConfig: backendConfig)
         let offerings = OfferingsAPI(backendConfig: backendConfig)
@@ -66,7 +87,7 @@ class Backend {
         let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
         let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
         let adsAPI = AdsAPI(backendConfig: backendConfig)
-        let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
+        let remoteConfigAPI = RemoteConfigAPI(backendConfig: remoteConfigBackendConfig ?? backendConfig)
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
@@ -260,6 +281,15 @@ extension Backend {
             operationQueue.name = "RC Diagnostics Queue"
             operationQueue.maxConcurrentOperationCount = 1
             operationQueue.qualityOfService = .background
+            return operationQueue
+        }
+
+        /// Dedicated lane for the remote-config request so it runs off the shared serial
+        /// `RC Backend Queue` instead of queuing behind `/offerings`.
+        static func createRemoteConfigQueue() -> OperationQueue {
+            let operationQueue = OperationQueue()
+            operationQueue.name = "RC Remote Config Queue"
+            operationQueue.maxConcurrentOperationCount = 1
             return operationQueue
         }
 
