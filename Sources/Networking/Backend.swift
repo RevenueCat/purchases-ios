@@ -52,23 +52,17 @@ class Backend {
                                           systemInfo: systemInfo,
                                           offlineCustomerInfoCreator: offlineCustomerInfoCreator,
                                           dateProvider: dateProvider)
-        // Dedicated remote-config lane: its own HTTPClient (own serial request state + own
-        // connection) and its own queue, so `/config` overlaps `/offerings` instead of
-        // serializing behind it on the shared pipe.
-        let remoteConfigHTTPClient = HTTPClient(systemInfo: systemInfo,
-                                                eTagManager: eTagManager,
-                                                signing: Signing(apiKey: systemInfo.apiKey,
-                                                                 clock: systemInfo.clock),
-                                                diagnosticsTracker: diagnosticsTracker,
-                                                requestTimeout: httpClientTimeout,
-                                                operationDispatcher: OperationDispatcher.default)
-        let remoteConfigConfig = BackendConfiguration(httpClient: remoteConfigHTTPClient,
-                                                      operationDispatcher: operationDispatcher,
-                                                      operationQueue: QueueProvider.createRemoteConfigQueue(),
-                                                      diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
-                                                      systemInfo: systemInfo,
-                                                      offlineCustomerInfoCreator: offlineCustomerInfoCreator,
-                                                      dateProvider: dateProvider)
+        let remoteConfigConfig = BackendConfiguration(
+            httpClient: .dedicatedRemoteConfig(systemInfo: systemInfo,
+                                               eTagManager: eTagManager,
+                                               diagnosticsTracker: diagnosticsTracker,
+                                               requestTimeout: httpClientTimeout),
+            operationDispatcher: operationDispatcher,
+            operationQueue: QueueProvider.createRemoteConfigQueue(),
+            diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
+            systemInfo: systemInfo,
+            offlineCustomerInfoCreator: offlineCustomerInfoCreator,
+            dateProvider: dateProvider)
         self.init(backendConfig: config,
                   remoteConfigBackendConfig: remoteConfigConfig,
                   attributionFetcher: attributionFetcher)
@@ -284,8 +278,6 @@ extension Backend {
             return operationQueue
         }
 
-        /// Dedicated lane for the remote-config request so it runs off the shared serial
-        /// `RC Backend Queue` instead of queuing behind `/offerings`.
         static func createRemoteConfigQueue() -> OperationQueue {
             let operationQueue = OperationQueue()
             operationQueue.name = "RC Remote Config Queue"
@@ -293,6 +285,24 @@ extension Backend {
             return operationQueue
         }
 
+    }
+
+}
+
+private extension HTTPClient {
+
+    static func dedicatedRemoteConfig(
+        systemInfo: SystemInfo,
+        eTagManager: ETagManager,
+        diagnosticsTracker: DiagnosticsTrackerType?,
+        requestTimeout: TimeInterval
+    ) -> HTTPClient {
+        HTTPClient(systemInfo: systemInfo,
+                   eTagManager: eTagManager,
+                   signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
+                   diagnosticsTracker: diagnosticsTracker,
+                   requestTimeout: requestTimeout,
+                   operationDispatcher: OperationDispatcher.default)
     }
 
 }
