@@ -93,7 +93,43 @@ class TokenManager {
         return [
             HTTPClient.RequestHeader.authorization.rawValue: "Bearer \(currentAccessToken)"
         ]
+    }
 
+    // MARK: - Refreshing Tokens
+
+    func tokenRefreshRequest(for initialRequest: HTTPClient.Request,
+                             response: HTTPURLResponse?) -> HTTPRequest? {
+        guard self.enabled else { return nil }
+
+        // IAM requests do not trigger a token refresh
+        if initialRequest.httpRequest.path.isIAMPath { return nil }
+
+        // only "401 Unauthorized" responses will trigger a refresh
+        guard let response else { return nil }
+        guard response.httpStatusCode == .unauthorized else { return nil }
+
+        // we can only refresh if we have a refresh token
+        guard let currentRefreshToken else { return nil }
+
+        let body = TokenRefreshOperation.Body(grantType: "refresh_token", refreshToken: currentRefreshToken)
+        let request = HTTPRequest(method: .post(body), path: .tokenRefresh, isRetryable: false)
+
+        return request
+    }
+
+    func handleTokenRefreshResponse(_ result: VerifiedHTTPResponse<TokenResponse>.Result) -> Bool {
+        guard self.enabled else { return false }
+
+        // make sure this response is a successful one
+        guard case .success(let response) = result else { return false }
+        guard response.httpStatusCode == .success else { return false }
+
+        let tokens = response.body
+
+        self.currentRefreshToken = tokens.refreshToken
+        self.currentAccessToken = tokens.accessToken
+        self.currentIDToken = tokens.idToken
+        return true
     }
 
 }

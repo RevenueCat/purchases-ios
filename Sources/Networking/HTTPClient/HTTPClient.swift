@@ -499,7 +499,7 @@ private extension HTTPClient {
                 requestStartTime: Date) {
         RCTestAssertNotMainThread()
 
-        let response = self.parse(urlResponse: urlResponse,
+        let result = self.parse(urlResponse: urlResponse,
                                   request: request,
                                   urlRequest: urlRequest,
                                   data: data,
@@ -508,11 +508,11 @@ private extension HTTPClient {
 
         var requestTimeoutResult: HTTPRequestTimeoutManager.RequestResult = .other
 
-        if let response = response {
+        if let result = result {
             let httpURLResponse = urlResponse as? HTTPURLResponse
             var retryScheduled = false
 
-            switch response {
+            switch result {
             case let .success(response):
                 Logger.debug(Strings.network.api_request_completed(
                     request.httpRequest,
@@ -534,13 +534,11 @@ private extension HTTPClient {
             case let .failure(error):
                 let httpURLResponse = urlResponse as? HTTPURLResponse
 
-                if httpURLResponse?.httpStatusCode == .unauthorized && tokenManager.enabled {
-                    // we got back a 401 Unauthorized and we are running with access token support
-                    // get a new access token and try again
-#warning("DAVE: This is about where token checking would go")
-
-                    retryScheduled = true
-                }
+                // if we got back a 401 Unauthorized and we are running with access token support,
+                // then get a new access token and try again
+                retryScheduled = self.reauthorizeRequestIfNeeded(request: request,
+                                                                 basedOn: result,
+                                                                 response: httpURLResponse)
 
                 if !retryScheduled {
                     Logger.debug(Strings.network.api_request_failed(request.httpRequest,
@@ -570,7 +568,7 @@ private extension HTTPClient {
             }
 
             if !retryScheduled {
-                request.completionHandler?(response)
+                request.completionHandler?(result)
             }
         } else {
             Logger.debug(Strings.network.retrying_request(httpMethod: request.method.httpMethod, path: request.path))
@@ -585,7 +583,7 @@ private extension HTTPClient {
         self.trackHttpRequestPerformedIfNeeded(request: request,
                                                host: urlRequest.url?.host,
                                                requestStartTime: requestStartTime,
-                                               result: response)
+                                               result: result)
 
         self.beginNextRequest()
     }
@@ -761,6 +759,58 @@ private extension HTTPClient {
             }
         }
     }
+}
+
+// MARK: - Request Reauthorize Logic
+extension HTTPClient {
+
+    internal func reauthorizeRequestIfNeeded(request: HTTPClient.Request,
+                                             basedOn originalResult: VerifiedHTTPResponse<Data>.Result,
+                                             response: HTTPURLResponse?) -> Bool {
+
+        guard let reauthRequest = self.tokenManager.tokenRefreshRequest(for: request, response: response) else {
+            return false
+        }
+
+        let clientRequest = Request(httpRequest: reauthRequest,
+                                    authHeaders: self.authHeaders,
+                                    defaultHeaders: self.defaultHeaders,
+                                    verificationMode: self.systemInfo.responseVerificationMode,
+                                    internalSettings: self.systemInfo.dangerousSettings.internalSettings,
+                                    completionHandler: { (result: VerifiedHTTPResponse<TokenResponse>.Result) in
+
+            self.handleReauthorizationResponse(reauthResult: result,
+                                               originalRequest: request,
+                                               originalResult: originalResult)
+        })
+
+        self.state.modify {
+            $0.queuedRequests.insert(clientRequest, at: 0)
+        }
+
+        return true
+    }
+
+    private func handleReauthorizationResponse(reauthResult: VerifiedHTTPResponse<TokenResponse>.Result,
+                                               originalRequest: HTTPClient.Request,
+                                               originalResult: VerifiedHTTPResponse<Data>.Result) {
+
+        let handled = self.tokenManager.handleTokenRefreshResponse(reauthResult)
+
+        if handled {
+            let retried = originalRequest.retriedRequest()
+
+            self.state.modify {
+                $0.queuedRequests.insert(retried, at: 0)
+            }
+        } else {
+            // the original request needs to be failed
+            // re-use the original 401 Unauthorized
+            originalRequest.completionHandler?(originalResult)
+        }
+
+    }
+
 }
 
 // MARK: - Request Retry Logic

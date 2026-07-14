@@ -112,7 +112,7 @@ extension TokenLogInOperation {
         // swiftlint:disable:next nesting
         fileprivate enum CodingKeys: String, CodingKey {
             case method = "app_user_id"
-            case scope = "new_app_user_id"
+            case scope = "scope"
             case idToken = "id_token"
             case linkToID = "link_to_id"
         }

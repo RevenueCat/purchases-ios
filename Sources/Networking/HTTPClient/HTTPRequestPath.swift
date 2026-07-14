@@ -51,6 +51,9 @@ protocol HTTPRequestPath {
 
     /// Provides endpoint-specific inputs for response signature verification.
     var responseSignatureContextProvider: ResponseSignatureContextProvider { get }
+
+    /// Whether this path corresponds to an IAM request
+    var isIAMPath: Bool { get }
 }
 
 /// Provides endpoint-specific inputs for backend response signature verification.
@@ -101,6 +104,10 @@ extension HTTPRequestPath {
 
     var responseSignatureContextProvider: ResponseSignatureContextProvider {
         return DefaultResponseSignatureContextProvider()
+    }
+
+    var isIAMPath: Bool {
+        return false
     }
 
     var url: URL? { return self.url(proxyURL: nil) }
@@ -515,6 +522,14 @@ extension HTTPRequest.Path: HTTPRequestPath {
             ]
         default:
             return [:]
+        }
+    }
+
+    var isIAMPath: Bool {
+        switch self {
+        case .tokenLogin, .tokenRefresh, .tokenLogOut:
+            return true
+        default: return false
         }
     }
 
