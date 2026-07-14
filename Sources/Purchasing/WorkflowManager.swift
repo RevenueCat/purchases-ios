@@ -58,6 +58,10 @@ class WorkflowManager {
         return await self.workflowsConfigProvider.workflowId(forOfferingId: offeringId)
     }
 
+    func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
+        return self.workflowsConfigProvider.cachedWorkflow(forOfferingId: offeringId)
+    }
+
     /// Resolves `offeringId` to its workflow, combining `workflowId(forOfferingId:)` and
     /// `getWorkflow(workflowId:)` into the single call `Purchases.workflow(forOfferingIdentifier:)`
     /// needs, instead of it having to orchestrate both individually.
