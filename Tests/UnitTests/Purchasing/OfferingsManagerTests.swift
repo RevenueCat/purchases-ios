@@ -1255,6 +1255,29 @@ extension OfferingsManagerTests {
         expect(mockRemoteConfigManager.invokedEnsureBlobsDownloadedRefs) == [["wf-1-ref"]]
     }
 
+    func testGetOfferingsDeliversEvenWhenPrefetchBlobDownloadFails() {
+        // A permanently failing prefetch blob (dead CDN, 404, checksum mismatch) must not strand
+        // delivery: the gate waits for the download to settle, not to succeed. Blocking or retrying
+        // on failure would turn a transient CDN problem into a total paywall outage.
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.stubbedTopics[.workflows] = [
+            "wf-1": .init(blobRef: "wf-1-ref", prefetch: true, content: [:])
+        ]
+        mockRemoteConfigManager.stubbedEnsureBlobsDownloadedResult = false
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let result = waitUntilValue { completed in
+            manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
+        }
+
+        // The prefetch blob download was attempted (failure path exercised) and offerings still
+        // delivered, with the real offerings.
+        expect(mockRemoteConfigManager.invokedEnsureBlobsDownloadedRefs) == [["wf-1-ref"]]
+        expect(result).to(beSuccess())
+        expect(result?.value?["base"]).toNot(beNil())
+    }
+
     func testGetOfferingsServedFromDiskOnFailureStillAwaitsConfigReady() throws {
         let mockRemoteConfigManager = MockRemoteConfigManager()
         let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
