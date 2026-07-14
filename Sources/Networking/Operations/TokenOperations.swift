@@ -211,7 +211,7 @@ extension TokenLogInOperation.Body: HTTPRequestBody {
             (Self.CodingKeys.method.stringValue, self.method),
             (Self.CodingKeys.scope.stringValue, self.scope),
             (Self.CodingKeys.idToken.stringValue, self.idToken),
-            (Self.CodingKeys.linkToID.stringValue, self.linkToID),
+            (Self.CodingKeys.linkToID.stringValue, self.linkToID)
         ]
     }
 

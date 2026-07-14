@@ -140,7 +140,7 @@ extension SecureItemStorage {
         guard let data = try? self.readItem(identifier: key.identifier) else {
             return nil
         }
-        return String(decoding: data, as: UTF8.self)
+        return String(bytes: data, encoding: .utf8)
     }
 
     fileprivate func setString(_ string: String?, for key: TokenManager.Key) {

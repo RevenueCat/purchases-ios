@@ -510,11 +510,11 @@ private extension HTTPClient {
         RCTestAssertNotMainThread()
 
         let result = self.parse(urlResponse: urlResponse,
-                                  request: request,
-                                  urlRequest: urlRequest,
-                                  data: data,
-                                  error: networkError,
-                                  requestStartTime: requestStartTime)
+                                request: request,
+                                urlRequest: urlRequest,
+                                data: data,
+                                error: networkError,
+                                requestStartTime: requestStartTime)
 
         var requestTimeoutResult: HTTPRequestTimeoutManager.RequestResult = .other
 

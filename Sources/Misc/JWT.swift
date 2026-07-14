@@ -13,8 +13,8 @@ struct JWT {
         case invalidJWT
     }
 
-    let header: Dictionary<String, Any>
-    let payload: Dictionary<String, Any>
+    let header: [String: Any]
+    let payload: [String: Any]
     let signature: String
 
     var issuer: String? { payload["iss"] as? String }
@@ -30,7 +30,10 @@ struct JWT {
         guard let signatureData = Data(base64Encoded: String(slices[2])) else {
             throw Error.invalidJWT
         }
-        self.signature = String(decoding: signatureData, as: UTF8.self)
+        guard let signature = String(bytes: signatureData, encoding: .utf8) else {
+            throw Error.invalidJWT
+        }
+        self.signature = signature
 
         /*
          NOTE:
@@ -43,14 +46,14 @@ struct JWT {
 
 }
 
-private func decode(_ slice: String.SubSequence) throws -> Dictionary<String, Any> {
+private func decode(_ slice: String.SubSequence) throws -> [String: Any] {
     guard let data = Data(base64Encoded: String(slice)) else {
         throw JWT.Error.invalidJWT
     }
 
     let decoded = try JSONSerialization.jsonObject(with: data)
 
-    guard let object = decoded as? Dictionary<String, Any> else {
+    guard let object = decoded as? [String: Any] else {
         throw JWT.Error.invalidJWT
     }
 
