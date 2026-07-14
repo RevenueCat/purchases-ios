@@ -74,7 +74,7 @@ let project = Project(
             ],
             settings: .appTarget
         )
-    ],
+    ].addingXcode27DeploymentTargetOverrides(),
     schemes: [
         .scheme(
             name: "XCFrameworkInstallationTests",

@@ -92,7 +92,7 @@ let project = Project(
             ],
             settings: .framework
         ),
-    ],
+    ].addingXcode27DeploymentTargetOverrides(),
     schemes: [
         .scheme(
             name: "PurchaseTester",
