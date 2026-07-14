@@ -680,6 +680,7 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     }
 
     var isDisabled = false
+    var configGeneration = 0
 
     private(set) var invokedRefreshRemoteConfigCount = 0
     private(set) var invokedRefreshRemoteConfigIfStaleCount = 0
@@ -722,11 +723,15 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     /// When `true`, `topic(_:)` suspends until `completeStoredTopic()` resumes every stored
     /// waiter (there can be several: e.g. a gated delivery plus a background refresh).
     var shouldStoreTopicCompletion = false
+    /// Restricts held topic reads when `shouldStoreTopicCompletion` is true. `nil` preserves the
+    /// default behavior of holding every topic.
+    var storedTopicCompletionTopics: Set<RemoteConfigTopic>?
     private let _storedTopicContinuations: Atomic<[CheckedContinuation<RemoteConfiguration.ConfigTopic?, Never>]> =
         .init([])
 
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
-        guard self.shouldStoreTopicCompletion else {
+        guard self.shouldStoreTopicCompletion,
+              self.storedTopicCompletionTopics?.contains(topic) ?? true else {
             self._invokedTopicCount.modify { $0 += 1 }
             return self.stubbedTopics[topic]
         }
@@ -815,10 +820,12 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     }
 
     func clearCache() {
+        self.configGeneration += 1
         self.invokedClearCacheCount += 1
     }
 
     func clearCache(forAppUserID appUserID: String) {
+        self.configGeneration += 1
         self.invokedClearCacheCount += 1
         self.invokedClearCacheAppUserIDs.append(appUserID)
     }

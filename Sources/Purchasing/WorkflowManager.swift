@@ -58,6 +58,10 @@ class WorkflowManager {
         return await self.workflowsConfigProvider.workflowId(forOfferingId: offeringId)
     }
 
+    func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
+        return self.workflowsConfigProvider.cachedWorkflow(forOfferingId: offeringId)
+    }
+
     /// Resolves `offeringId` to its workflow for `Purchases.workflow(forOfferingIdentifier:)`. Fails
     /// fast when the offering has no mapped workflow: the config path has no lazy offering→workflow
     /// conversion, so a missing mapping means the offering simply has no workflow attached. It surfaces

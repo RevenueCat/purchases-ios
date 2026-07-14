@@ -13,6 +13,10 @@ protocol RemoteConfigManagerType: AnyObject {
 
     /// Whether remote config should be ignored for the current manager lifetime.
     var isDisabled: Bool { get }
+
+    /// Monotonically increases whenever committed remote config state is replaced or invalidated.
+    var configGeneration: Int { get }
+
     func refreshRemoteConfig(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool)
     func refreshRemoteConfigIfStale(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool)
 
@@ -70,6 +74,24 @@ protocol RemoteConfigManagerType: AnyObject {
 }
 
 extension RemoteConfigManagerType {
+
+    func topicCacheSnapshot(_ topic: RemoteConfigTopic) async
+    -> GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>? {
+        guard let configTopic = await self.topic(topic) else { return nil }
+        return .init(generation: self.configGeneration, key: configTopic)
+    }
+
+    func isCurrent(
+        _ snapshot: GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>,
+        for topic: RemoteConfigTopic
+    ) async -> Bool {
+        guard self.configGeneration == snapshot.generation,
+              await self.topic(topic) == snapshot.key else {
+            return false
+        }
+
+        return true
+    }
 
     func awaitTopicAndPrefetchBlobsReady(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
         guard var committed = await self.topic(topic) else { return nil }
@@ -167,6 +189,7 @@ extension RemoteConfigManagerType {
 final class NoOpRemoteConfigManager: RemoteConfigManagerType {
 
     let isDisabled = true
+    let configGeneration = 0
 
     func refreshRemoteConfig(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {}
 
@@ -248,6 +271,10 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     /// Incremented when local state is invalidated so late responses from older users/sessions are dropped.
     private var epoch = 0
 
+    /// Incremented whenever committed config changes or becomes invalid. Async cache warmers use this
+    /// as a stale-write guard so older work cannot repopulate memory after a newer config is active.
+    private var generation = 0
+
     /// App user ID captured by an identity-bound cache clear.
     ///
     /// During login/switch/logout, `clearCache` can bump the epoch before every caller observes the new user from
@@ -285,6 +312,12 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     var isDisabled: Bool {
         return self.lock.perform {
             self.isDisabledInternal
+        }
+    }
+
+    var configGeneration: Int {
+        return self.lock.perform {
+            self.generation
         }
     }
 
@@ -359,6 +392,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     func clearCache(forAppUserID appUserID: String) {
         let continuations = self.lock.perform {
             self.epoch += 1
+            self.generation += 1
             self.identityBoundAppUserID = appUserID
             self.isRefreshing = false
             self.lastRefreshedAt = nil
@@ -372,6 +406,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     func close() {
         let continuations = self.lock.perform {
             self.epoch += 1
+            self.generation += 1
             self.isClosed = true
             self.isRefreshing = false
             return self.drainRefreshContinuations()
@@ -538,6 +573,7 @@ private extension RemoteConfigManager {
                     response: response
                 )
                 if didPersist {
+                    self.generation += 1
                     self.markRefreshed()
                 }
             }
@@ -627,6 +663,7 @@ private extension RemoteConfigManager {
                 response: fallbackResult.configuration
             )
             if didPersist {
+                self.generation += 1
                 self.markRefreshed()
             }
         }
@@ -658,6 +695,7 @@ private extension RemoteConfigManager {
         guard error.isRemoteConfigDisablingClientError else { return }
 
         self.isDisabledInternal = true
+        self.generation += 1
     }
 
     func isCurrent(_ requestEpoch: Int) -> Bool {

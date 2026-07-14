@@ -577,8 +577,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             paywallCache = nil
         }
 
+        let uiConfigProvider = UiConfigProvider(manager: remoteConfigManager)
+        let workflowsConfigProvider = WorkflowsConfigProvider(
+            manager: remoteConfigManager,
+            uiConfigProvider: uiConfigProvider
+        )
+
         let workflowManager = WorkflowManager(
-            workflowsConfigProvider: WorkflowsConfigProvider(manager: remoteConfigManager),
+            workflowsConfigProvider: workflowsConfigProvider,
             paywallCache: paywallCache,
             operationDispatcher: operationDispatcher
         )
@@ -592,6 +598,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 diagnosticsTracker: diagnosticsTracker,
                                                 remoteConfigManager: systemInfo.remoteConfigEnabled
                                                 ? remoteConfigManager
+                                                : nil,
+                                                uiConfigProvider: systemInfo.remoteConfigEnabled
+                                                ? uiConfigProvider
+                                                : nil,
+                                                workflowsConfigProvider: systemInfo.remoteConfigEnabled
+                                                ? workflowsConfigProvider
                                                 : nil)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
@@ -1025,6 +1037,11 @@ public extension Purchases {
     @_spi(Internal)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
         return try await self.workflowManager.getWorkflow(forOfferingId: offeringID)
+    }
+
+    @_spi(Internal)
+    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
+        return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
