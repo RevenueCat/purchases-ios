@@ -18,7 +18,7 @@ struct JWT {
     let signature: String
 
     var issuer: String? { payload["iss"] as? String }
-    var appUserID: String? { payload ["rc.app_user_id"] as? String }
+    var appUserID: String? { payload["rc.app_user_id"] as? String }
 
     init(from token: String) throws {
         let slices = token.split(separator: ".")
