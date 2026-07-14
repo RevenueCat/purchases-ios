@@ -24,6 +24,8 @@ if !includeTestDependencies {
         "SnapshotTesting", "OHHTTPStubs", "OHHTTPStubsSwift"
     ]
 
+    // Our own frameworks and their binary dependencies, built as dynamic frameworks (the default for
+    // several of these would otherwise be `.staticFramework`).
     var productTypes: [String: ProjectDescription.Product] = [
         "RevenueCat": .framework,
         "RevenueCatUI": .framework,

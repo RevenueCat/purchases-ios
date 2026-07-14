@@ -8,8 +8,7 @@ import ProjectDescription
 
 extension Target {
 
-    /// Returns a copy of the target with SDK-conditional deployment-target overrides, mirroring the
-    /// conditional overrides committed to `RevenueCat.xcodeproj`.
+    /// Returns a copy of the target with SDK-conditional deployment-target overrides.
     ///
     /// Newer Xcode SDKs raise the minimum deployment target they'll build (e.g. Xcode 27 enforces
     /// iOS 15 / tvOS 15 / watchOS 9 / macOS 12). Instead of raising the SDK's true minimums everywhere
