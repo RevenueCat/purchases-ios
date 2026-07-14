@@ -24,10 +24,21 @@ final class URLSessionRemoteConfigBlobDownloader: RemoteConfigBlobDownloaderType
         case unexpectedStatusCode(Int)
     }
 
+    static let timeout: TimeInterval = 5
+
     private let session: URLSession
 
-    init(session: URLSession = .shared) {
+    init(session: URLSession = URLSession(
+        configuration: URLSessionRemoteConfigBlobDownloader.defaultSessionConfiguration()
+    )) {
         self.session = session
+    }
+
+    static func defaultSessionConfiguration() -> URLSessionConfiguration {
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = Self.timeout
+        configuration.timeoutIntervalForResource = Self.timeout
+        return configuration
     }
 
     func data(from url: URL) async throws -> Data {
