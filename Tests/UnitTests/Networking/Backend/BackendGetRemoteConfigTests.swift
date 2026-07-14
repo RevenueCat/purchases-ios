@@ -354,6 +354,25 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(self.httpClient.calls).to(haveCount(2))
     }
 
+    func testGetRemoteConfigDoesNotCoalesceSimultaneousRequestsWithDifferentFetchContexts() {
+        self.mockSuccessfulResponse(delay: .milliseconds(10))
+
+        let responses: Atomic<Int> = .init(0)
+
+        self.remoteConfigAPI.getRemoteConfig(
+            request: .init(fetchContext: .appStart, appUserID: Self.appUserID, manifest: "v1.10.paywalls:etag-a"),
+            isAppBackgrounded: false
+        ) { _ in responses.value += 1 }
+
+        self.remoteConfigAPI.getRemoteConfig(
+            request: .init(fetchContext: .read, appUserID: Self.appUserID, manifest: "v1.10.paywalls:etag-a"),
+            isAppBackgrounded: false
+        ) { _ in responses.value += 1 }
+
+        expect(responses.value).toEventually(equal(2))
+        expect(self.httpClient.calls).to(haveCount(2))
+    }
+
     func testCoalescedRequestsLogDebugMessage() {
         self.mockSuccessfulResponse(delay: .milliseconds(10))
 
