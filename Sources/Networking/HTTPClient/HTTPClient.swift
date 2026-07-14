@@ -893,14 +893,6 @@ extension HTTPClient {
 
 // MARK: - Extensions
 
-fileprivate extension NetworkError {
-    /// A request may be retried against a fallback host only for transient failures (connection-level
-    /// errors and 5xx). See ``NetworkError/isTransient``.
-    var isAllowedToRetryWithFallbackHost: Bool {
-        return self.isTransient
-    }
-}
-
 extension HTTPClient {
 
     /// Information from a response to help identify a request.

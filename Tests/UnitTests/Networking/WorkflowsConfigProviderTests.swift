@@ -50,12 +50,18 @@ class WorkflowsConfigProviderTests: TestCase {
             workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: ["offeringIdentifier": "premium_annual"])],
             uiConfig: [
                 "app": .init(blobRef: "app-ref", content: [:]),
-                "localizations": .init(blobRef: "loc-ref", content: [:])
+                "localizations": .init(blobRef: "loc-ref", content: [:]),
+                "variable_config": .init(blobRef: "variable-config-ref", content: [:]),
+                "custom_variables": .init(blobRef: "custom-variables-ref", content: [:])
             ],
             blobs: [
                 "wf-1-ref": workflowJSON,
                 "app-ref": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
-                "loc-ref": Data(#"{}"#.utf8)
+                "loc-ref": Data(#"{}"#.utf8),
+                "variable-config-ref": Data(
+                    #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.utf8
+                ),
+                "custom-variables-ref": Data(#"{}"#.utf8)
             ]
         )
 
@@ -70,9 +76,8 @@ class WorkflowsConfigProviderTests: TestCase {
     }
 
     func testFailsWithUiConfigUnavailableWhenTheWorkflowResolvesButUiConfigIsUnavailable() async throws {
-        // A workflow is never rendered with PublishedWorkflow's decode-time `.empty` placeholder: if
-        // ui_config can't be assembled, the whole result fails, matching Android's PaywallViewModel
-        // failing the render when its concurrent ui_config fetch fails.
+        // A workflow is never rendered without `ui_config`: if it can't be assembled, the whole result
+        // fails, matching Android's PaywallViewModel failing the render when its concurrent fetch fails.
         let workflowJSON = try Self.workflowJSON(id: "wf-1")
         self.commit(
             workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: [:])],
@@ -90,12 +95,18 @@ class WorkflowsConfigProviderTests: TestCase {
             workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: [:])],
             uiConfig: [
                 "app": .init(blobRef: "app-ref", content: [:]),
-                "localizations": .init(blobRef: "loc-ref", content: [:])
+                "localizations": .init(blobRef: "loc-ref", content: [:]),
+                "variable_config": .init(blobRef: "variable-config-ref", content: [:]),
+                "custom_variables": .init(blobRef: "custom-variables-ref", content: [:])
             ],
             blobs: [
                 "wf-1-ref": workflowJSON,
                 "app-ref": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
-                "loc-ref": Data(#"{"en_US": {"day": "Day"}}"#.utf8)
+                "loc-ref": Data(#"{"en_US": {"day": "Day"}}"#.utf8),
+                "variable-config-ref": Data(
+                    #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.utf8
+                ),
+                "custom-variables-ref": Data(#"{}"#.utf8)
             ]
         )
 
@@ -103,25 +114,30 @@ class WorkflowsConfigProviderTests: TestCase {
         let workflowResult = try XCTUnwrap(result.value)
 
 #if !os(tvOS) // For Paywalls V2
-        XCTAssertEqual(workflowResult.workflow.uiConfig.localizations["en_US"]?["day"], "Day")
+        XCTAssertEqual(workflowResult.uiConfig.localizations["en_US"]?["day"], "Day")
 #endif
     }
 
-    func testPreservesMetadataWhenSubstitutingUiConfig() async throws {
-        // Regression: the uiConfig substitution used to go through PublishedWorkflow's public
-        // initializer, which always resets `metadata` to nil, silently dropping it whenever ui_config
-        // was available.
+    func testPreservesWorkflowMetadataWhenAssemblingUiConfig() async throws {
+        // Regression: resolving ui_config must not rebuild the workflow through the public
+        // initializer, which always resets `metadata` to nil.
         let workflowJSON = try Self.workflowJSON(id: "wf-1", metadataJSON: #""metadata": { "source": "cdn" }"#)
         self.commit(
             workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: [:])],
             uiConfig: [
                 "app": .init(blobRef: "app-ref", content: [:]),
-                "localizations": .init(blobRef: "loc-ref", content: [:])
+                "localizations": .init(blobRef: "loc-ref", content: [:]),
+                "variable_config": .init(blobRef: "variable-config-ref", content: [:]),
+                "custom_variables": .init(blobRef: "custom-variables-ref", content: [:])
             ],
             blobs: [
                 "wf-1-ref": workflowJSON,
                 "app-ref": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
-                "loc-ref": Data(#"{}"#.utf8)
+                "loc-ref": Data(#"{}"#.utf8),
+                "variable-config-ref": Data(
+                    #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.utf8
+                ),
+                "custom-variables-ref": Data(#"{}"#.utf8)
             ]
         )
 
@@ -212,16 +228,29 @@ class WorkflowsConfigProviderTests: TestCase {
 
     func testResolvesAndWarnsOnDuplicateOfferingId() async throws {
         let logger = TestLogHandler(testIdentifier: self.name)
-        self.commit(workflows: [
-            "wf-a": .init(blobRef: "a-ref", content: ["offeringIdentifier": "shared"]),
-            "wf-b": .init(blobRef: "b-ref", content: ["offeringIdentifier": "shared"])
-        ])
+        let topicsJSON = """
+        {
+          "workflows": {
+            "wf-a": { "blob_ref": "a-ref", "offering_identifier": "shared" },
+            "wf-b": { "blob_ref": "b-ref", "offering_identifier": "shared" }
+          }
+        }
+        """
+        let topics = try JSONDecoder.default.decode(
+            RemoteConfiguration.Topics.self,
+            jsonData: try XCTUnwrap(topicsJSON.data(using: .utf8))
+        )
+        self.diskCache.stubbedRead = PersistedRemoteConfiguration(
+            manifest: "test-manifest",
+            activeTopics: ["workflows"],
+            topics: topics
+        )
 
         let result = await self.provider.workflowId(forOfferingId: "shared")
         let workflowId = try XCTUnwrap(result)
 
-        // Whichever the dictionary happens to iterate first, but never nil, and always logged.
-        expect(["wf-a", "wf-b"]).to(contain(workflowId))
+        // Matches Android's last-wins duplicate handling, using stable workflow-id ordering on iOS.
+        expect(workflowId) == "wf-b"
         logger.verifyMessageWasLogged("Duplicate offeringId in workflows response: shared",
                                       level: .warn,
                                       expectedCount: 1)
@@ -329,77 +358,142 @@ private final class FakeRemoteConfigAPI: RemoteConfigAPIType {
         }
     }
 
+    func getRemoteConfigFallback(
+        domain: String,
+        isAppBackgrounded: Bool,
+        completion: @escaping Backend.ResponseHandler<RemoteConfigFallbackFetchResult>
+    ) {
+        DispatchQueue.global().async {
+            completion(.failure(.networkError(.unexpectedResponse(nil))))
+        }
+    }
+
 }
 
 private final class FakeRemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
-    var stubbedRead: PersistedRemoteConfiguration?
+    private let lock = Lock()
+    private var _stubbedRead: PersistedRemoteConfiguration?
+    var stubbedRead: PersistedRemoteConfiguration? {
+        get {
+            return self.lock.perform {
+                self._stubbedRead
+            }
+        }
+        set {
+            self.lock.perform {
+                self._stubbedRead = newValue
+            }
+        }
+    }
 
     func read() -> PersistedRemoteConfiguration? {
-        return self.stubbedRead
+        return self.lock.perform {
+            self._stubbedRead
+        }
     }
 
     func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic? {
-        return self.stubbedRead?.topics.entries[topic.wireName]
+        return self.lock.perform {
+            self._stubbedRead?.topics.entries[topic.wireName]
+        }
     }
 
     @discardableResult
     func write(_ configuration: PersistedRemoteConfiguration) -> Bool {
-        self.stubbedRead = configuration
+        self.lock.perform {
+            self._stubbedRead = configuration
+        }
         return true
     }
 
     func clear() {
-        self.stubbedRead = nil
+        self.lock.perform {
+            self._stubbedRead = nil
+        }
     }
 
 }
 
 private final class FakeRemoteConfigBlobStore: RemoteConfigBlobStoreType {
 
-    var stubbedData: [String: Data] = [:]
+    private let lock = Lock()
+    private var _stubbedData: [String: Data] = [:]
+    var stubbedData: [String: Data] {
+        get {
+            return self.lock.perform {
+                self._stubbedData
+            }
+        }
+        set {
+            self.lock.perform {
+                self._stubbedData = newValue
+            }
+        }
+    }
 
     func contains(ref: String) -> Bool {
-        return self.stubbedData[ref] != nil
+        return self.lock.perform {
+            self._stubbedData[ref] != nil
+        }
     }
 
     func read(ref: String) -> Data? {
-        return self.stubbedData[ref]
+        return self.lock.perform {
+            self._stubbedData[ref]
+        }
     }
 
     @discardableResult
     func write(ref: String, bytes: UnsafeRawBufferPointer) -> Bool {
         var data = Data()
         data.append(contentsOf: bytes.bindMemory(to: UInt8.self))
-        self.stubbedData[ref] = data
+        self.lock.perform {
+            self._stubbedData[ref] = data
+        }
         return true
     }
 
     func cachedRefs() -> Set<String> {
-        return Set(self.stubbedData.keys)
+        return self.lock.perform {
+            Set(self._stubbedData.keys)
+        }
     }
 
     func retainOnly(_ refs: Set<String>) {
-        self.stubbedData = self.stubbedData.filter { refs.contains($0.key) }
+        self.lock.perform {
+            self._stubbedData = self._stubbedData.filter { refs.contains($0.key) }
+        }
     }
 
     func clear() {
-        self.stubbedData = [:]
+        self.lock.perform {
+            self._stubbedData = [:]
+        }
     }
 
 }
 
 private final class FakeRemoteConfigBlobFetcher: RemoteConfigBlobFetcherType {
 
+    private let lock = Lock()
     private let blobStore: FakeRemoteConfigBlobStore
-    private(set) var invokedEnsureDownloadedRefs: [String] = []
+    private var _invokedEnsureDownloadedRefs: [String] = []
+
+    var invokedEnsureDownloadedRefs: [String] {
+        return self.lock.perform {
+            self._invokedEnsureDownloadedRefs
+        }
+    }
 
     init(blobStore: FakeRemoteConfigBlobStore) {
         self.blobStore = blobStore
     }
 
     func ensureDownloaded(ref: String) async -> Bool {
-        self.invokedEnsureDownloadedRefs.append(ref)
+        self.lock.perform {
+            self._invokedEnsureDownloadedRefs.append(ref)
+        }
         // The store is pre-populated in these tests, so "downloading" is just confirming it's there.
         return self.blobStore.contains(ref: ref)
     }

@@ -36,7 +36,11 @@ class PurchasesWorkflowTests: BasePurchasesTests {
         self.mockRemoteConfigManager.stubbedBlobData[.workflows] = ["default": try Self.workflowJSON(id: "default")]
         self.mockRemoteConfigManager.stubbedBlobData[.uiConfig] = [
             "app": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
-            "localizations": Data(#"{}"#.utf8)
+            "localizations": Data(#"{}"#.utf8),
+            "variable_config": Data(
+                #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.utf8
+            ),
+            "custom_variables": Data(#"{}"#.utf8)
         ]
 
         let result = try await self.purchases.workflow(forOfferingIdentifier: "default")

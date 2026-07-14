@@ -54,7 +54,6 @@ enum OfferingStrings {
     // Custom Variables
     case ui_config_no_custom_variables
     case ui_config_custom_variables_decoded(keys: [String])
-    case ui_config_custom_variables_decode_error(error: Error)
     case ui_config_custom_variables_status(keyPresent: Bool, count: Int, keys: [String])
 
 }
@@ -248,9 +247,6 @@ extension OfferingStrings: LogMessage {
 
         case .ui_config_custom_variables_decoded(let keys):
             return "UIConfig decoded with custom_variables: \(keys)"
-
-        case .ui_config_custom_variables_decode_error(let error):
-            return "Failed to decode custom_variables from UIConfig: \(error.localizedDescription)"
 
         case .ui_config_custom_variables_status(let keyPresent, let count, let keys):
             // swiftlint:disable:next line_length

@@ -171,8 +171,8 @@ private extension IdentityManager {
 
         self.backend.identity.logIn(currentAppUserID: oldAppUserID, newAppUserID: newAppUserID) { result in
             if case let .success((customerInfo, _)) = result {
+                self.remoteConfigManager?.clearCache(forAppUserID: newAppUserID)
                 self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newAppUserID)
-                self.remoteConfigManager?.clearCache()
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: newAppUserID)
                 self.copySubscriberAttributesToNewUserIfOldIsAnonymous(oldAppUserID: oldAppUserID,
                                                                        newAppUserID: newAppUserID)
@@ -220,8 +220,9 @@ extension IdentityManager: @unchecked Sendable {}
 private extension IdentityManager {
 
     func resetCacheAndSave(newUserID: String) {
-        self.deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: newUserID)
-        self.remoteConfigManager?.clearCache()
+        let oldAppUserID = self.currentAppUserID
+        self.remoteConfigManager?.clearCache(forAppUserID: newUserID)
+        self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newUserID)
         self.deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
         self.backend.clearHTTPClientCaches()
     }

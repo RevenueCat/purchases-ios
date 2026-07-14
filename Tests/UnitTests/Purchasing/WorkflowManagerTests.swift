@@ -62,6 +62,7 @@ class WorkflowManagerTests: TestCase {
 
         expect(self.mockPaywallCache.invokedWarmUpWorkflowCaches) == true
         expect(self.mockPaywallCache.invokedWarmUpWorkflowCachesWorkflow?.id) == "wf_1"
+        expect(self.mockPaywallCache.invokedWarmUpWorkflowCachesUiConfig) == expected.uiConfig
     }
 
     func testGetWorkflowFailsWithWorkflowNotFoundWhenProviderReportsNotFound() async {
@@ -99,12 +100,10 @@ class WorkflowManagerTests: TestCase {
         do {
             _ = try await self.manager.getWorkflow(workflowId: "wf_1")
             fail("Expected getWorkflow to throw")
+        } catch WorkflowError.uiConfigUnavailable(let workflowId) {
+            expect(workflowId) == "wf_1"
         } catch {
-            expect(error as? BackendError) == .unexpectedBackendResponse(
-                .workflowUiConfigUnavailable(workflowId: "wf_1"),
-                extraContext: nil,
-                .init(file: "", function: "", line: 0)
-            )
+            fail("Unexpected error: \(error)")
         }
     }
 
@@ -153,7 +152,7 @@ class WorkflowManagerTests: TestCase {
     // MARK: - Helpers
 
     private static func workflowDataResult(id: String) throws -> WorkflowDataResult {
-        return .init(workflow: try self.publishedWorkflow(id: id), enrolledVariants: nil)
+        return .init(workflow: try self.publishedWorkflow(id: id), uiConfig: .empty, enrolledVariants: nil)
     }
 
     private static func publishedWorkflow(id: String) throws -> PublishedWorkflow {

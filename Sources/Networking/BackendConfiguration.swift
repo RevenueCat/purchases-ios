@@ -58,9 +58,9 @@ extension BackendConfiguration {
         cacheStatus: CallbackCacheStatus,
         queue: OperationQueue? = nil
     ) {
-        let targetQueue = queue ?? self.operationQueue
+        let targetQueue = SendableOperationQueue(value: queue ?? self.operationQueue)
         self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
-            targetQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
+            targetQueue.value.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
         }
     }
 
@@ -80,3 +80,9 @@ extension BackendConfiguration {
 // - `OperationQueue` is not `Sendable` as of Swift 5.7
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension BackendConfiguration: @unchecked Sendable {}
+
+private struct SendableOperationQueue: @unchecked Sendable {
+
+    let value: OperationQueue
+
+}

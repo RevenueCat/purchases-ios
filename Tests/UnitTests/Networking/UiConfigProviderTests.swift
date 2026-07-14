@@ -63,42 +63,62 @@ class UiConfigProviderTests: TestCase {
         expect(uiConfig).to(beNil())
     }
 
-    func testUsesDefaultWhenVariableConfigPartIsMissing() async throws {
+    func testReturnsNilWhenVariableConfigPartIsMissing() async throws {
         self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{}"#,
                   variableConfig: nil, customVariables: #"{}"#)
 
         let uiConfig = await self.provider.getUiConfig()
 
-        expect(uiConfig).toNot(beNil())
-        expect(uiConfig?.variableConfig.variableCompatibilityMap).to(beEmpty())
-        expect(uiConfig?.variableConfig.functionCompatibilityMap).to(beEmpty())
+        expect(uiConfig).to(beNil())
     }
 
-    func testUsesDefaultWhenCustomVariablesPartIsMissing() async throws {
+    func testReturnsNilWhenCustomVariablesPartIsMissing() async throws {
         self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{}"#,
                   variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
                   customVariables: nil)
 
         let uiConfig = await self.provider.getUiConfig()
 
-        expect(uiConfig).toNot(beNil())
-        expect(uiConfig?.customVariables).to(beEmpty())
+        expect(uiConfig).to(beNil())
     }
 
-    func testMalformedVariableConfigFallsBackToDefault() async throws {
+    func testMalformedVariableConfigReturnsNil() async throws {
         self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{"en_US": {"day": "Day"}}"#,
                   variableConfig: #"{"variable_compatibility_map": "not-a-dictionary"}"#,
                   customVariables: #"{}"#)
 
         let uiConfig = await self.provider.getUiConfig()
 
-        expect(uiConfig).toNot(beNil())
-        expect(uiConfig?.variableConfig.variableCompatibilityMap).to(beEmpty())
-        expect(uiConfig?.variableConfig.functionCompatibilityMap).to(beEmpty())
+        expect(uiConfig).to(beNil())
         self.logger.verifyMessageWasLogged(
-            "Failed to decode ui_config part 'variable_config'",
+            "Failed to decode merged ui_config",
             level: .error
         )
+    }
+
+    func testMalformedCustomVariablesReturnsNil() async throws {
+        self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{"en_US": {"day": "Day"}}"#,
+                  variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+                  customVariables: #"{"user_name": "not-a-definition"}"#)
+
+        let uiConfig = await self.provider.getUiConfig()
+
+        expect(uiConfig).to(beNil())
+        self.logger.verifyMessageWasLogged(
+            "Failed to decode merged ui_config",
+            level: .error
+        )
+    }
+
+    func testNullCustomVariablesReturnsUiConfigWithEmptyCustomVariables() async throws {
+        self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{"en_US": {"day": "Day"}}"#,
+                  variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+                  customVariables: #"null"#)
+
+        let uiConfig = await self.provider.getUiConfig()
+
+        expect(uiConfig).toNot(beNil())
+        expect(uiConfig?.customVariables).to(beEmpty())
     }
 
     func testLogsWarningWhenARequiredPartIsMissing() async throws {
@@ -122,20 +142,22 @@ class UiConfigProviderTests: TestCase {
         )
     }
 
-    func testRequestsMergedBlobDataForRequiredWireItemKeysNotCamelCased() async throws {
+    func testRequestsMergedBlobDataForWireItemKeysNotCamelCased() async throws {
         _ = await self.provider.getUiConfig()
 
         expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == 1
         expect(self.mockManager.invokedMergeItemsBlobDataParameters.first?.topic) == .uiConfig
         expect(self.mockManager.invokedMergeItemsBlobDataParameters.first?.itemKeys) == [
             "app",
-            "localizations"
+            "localizations",
+            "variable_config",
+            "custom_variables"
         ]
     }
 
 #else
 
-    func testAssemblesEmptyUiConfigWhenRequiredPartsArePresent() async throws {
+    func testAssemblesUiConfigWhenRequiredPartsArePresent() async throws {
         self.stub(
             app: #"{"colors": {}, "fonts": {}}"#,
             localizations: #"{"en_US": {"day": "Day"}}"#,
