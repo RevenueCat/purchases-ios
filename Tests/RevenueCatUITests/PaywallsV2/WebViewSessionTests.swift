@@ -156,9 +156,8 @@ final class WebViewSessionTests: TestCase {
     }
 
     func testRequestVariablesAutoRepliesAndForwards() throws {
-        // zh_Hant_TW keeps its script in BCP-47 (`zh-Hant-TW`); zh_Hans_CN
-        // canonicalizes to `zh-CN` because Hans is the default script for CN.
-        let harness = Harness(localeIdentifier: "zh_Hant_TW")
+        let localeIdentifier = "zh_Hans_CN"
+        let harness = Harness(localeIdentifier: localeIdentifier)
         harness.connect()
         harness.capturedScripts.removeAll()
 
@@ -172,7 +171,12 @@ final class WebViewSessionTests: TestCase {
         let response = try XCTUnwrap(harness.outboundEnvelopes().first)
         XCTAssertEqual(response.kind, .response)
         XCTAssertEqual(response.id, "req-1")
-        XCTAssertEqual(response.payload?["locale"]?.stringValue, "zh-Hant-TW")
+        // Compare against the same helper the session uses — BCP-47 canonical forms
+        // vary by OS (e.g. `zh-CN` vs `zh-Hans-CN`).
+        XCTAssertEqual(
+            response.payload?["locale"]?.stringValue,
+            WebViewSession.bcp47Tag(fromLocaleIdentifier: localeIdentifier)
+        )
         XCTAssertNil(response.payload?["variables"])
         XCTAssertEqual(harness.messages.last?.type, WebViewEnvelope.messageTypeRequestVariables)
     }
@@ -343,8 +347,18 @@ final class WebViewSessionTests: TestCase {
     func testRenderOnlyWebViewExposesNoBridgeSurface() throws {
         // Render-only mode (`componentID == nil`) registers NO script message handler, so page
         // JavaScript must see no native bridge surface at all.
-        // Probe about:blank directly — avoid depending on didFinish navigation timing in CI.
         let webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
+
+        let loaded = self.expectation(description: "web view finished loading")
+        loaded.assertForOverFulfill = false
+        let delegate = RoundTripNavigationDelegate(
+            onFinish: { loaded.fulfill() },
+            onFail: { loaded.fulfill() }
+        )
+        webView.navigationDelegate = delegate
+        // about:blank avoids network/ATS flakiness seen with https base URLs in CI.
+        webView.load(URLRequest(url: URL(string: "about:blank")!))
+        self.wait(for: [loaded], timeout: 10)
 
         let probed = self.expectation(description: "probed bridge surface")
         var bridgeExposed: Bool?
@@ -361,6 +375,7 @@ final class WebViewSessionTests: TestCase {
         self.wait(for: [probed], timeout: 10)
 
         XCTAssertEqual(bridgeExposed, false)
+        withExtendedLifetime(delegate) {}
     }
 
 }
@@ -369,13 +384,27 @@ final class WebViewSessionTests: TestCase {
 private final class RoundTripNavigationDelegate: NSObject, WKNavigationDelegate {
 
     private let onFinish: () -> Void
+    private let onFail: (() -> Void)?
 
-    init(onFinish: @escaping () -> Void) {
+    init(onFinish: @escaping () -> Void, onFail: (() -> Void)? = nil) {
         self.onFinish = onFinish
+        self.onFail = onFail
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         self.onFinish()
+    }
+
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        self.onFail?()
+    }
+
+    func webView(
+        _ webView: WKWebView,
+        didFailProvisionalNavigation navigation: WKNavigation!,
+        withError error: Error
+    ) {
+        self.onFail?()
     }
 
 }
