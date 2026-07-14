@@ -20,7 +20,6 @@ class BackendConfiguration {
     let operationDispatcher: OperationDispatcher
     let operationQueue: OperationQueue
     let diagnosticsQueue: OperationQueue
-    let workflowsQueue: OperationQueue
     let dateProvider: DateProvider
     let systemInfo: SystemInfo
     let offlineCustomerInfoCreator: OfflineCustomerInfoCreator?
@@ -29,7 +28,6 @@ class BackendConfiguration {
          operationDispatcher: OperationDispatcher,
          operationQueue: OperationQueue,
          diagnosticsQueue: OperationQueue,
-         workflowsQueue: OperationQueue,
          systemInfo: SystemInfo,
          offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
          dateProvider: DateProvider = DateProvider()) {
@@ -37,7 +35,6 @@ class BackendConfiguration {
         self.operationDispatcher = operationDispatcher
         self.operationQueue = operationQueue
         self.diagnosticsQueue = diagnosticsQueue
-        self.workflowsQueue = workflowsQueue
         self.offlineCustomerInfoCreator = offlineCustomerInfoCreator
         self.dateProvider = dateProvider
         self.systemInfo = systemInfo
@@ -54,16 +51,16 @@ extension BackendConfiguration: NetworkConfiguration {}
 extension BackendConfiguration {
 
     /// Adds the `operation` to an `OperationQueue` (based on `CallbackCacheStatus`) potentially adding a random delay.
-    /// Defaults to the shared serial `operationQueue`; pass `workflowsQueue` to run concurrently off the serial queue.
+    /// Defaults to the shared serial `operationQueue`; pass a different `queue` to run concurrently off it.
     func addCacheableOperation<T: CacheableNetworkOperation>(
         with factory: CacheableNetworkOperationFactory<T>,
         delay: JitterableDelay,
         cacheStatus: CallbackCacheStatus,
         queue: OperationQueue? = nil
     ) {
-        let targetQueue = queue ?? self.operationQueue
+        let targetQueue = SendableOperationQueue(value: queue ?? self.operationQueue)
         self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
-            targetQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
+            targetQueue.value.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
         }
     }
 
@@ -83,3 +80,9 @@ extension BackendConfiguration {
 // - `OperationQueue` is not `Sendable` as of Swift 5.7
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension BackendConfiguration: @unchecked Sendable {}
+
+private struct SendableOperationQueue: @unchecked Sendable {
+
+    let value: OperationQueue
+
+}

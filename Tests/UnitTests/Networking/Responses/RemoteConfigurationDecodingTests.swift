@@ -37,6 +37,52 @@ final class RemoteConfigurationDecodingTests: TestCase {
         try self.expectFullPayloadSources(in: response)
     }
 
+    func testDeserializesFallbackConfigResponseShape() throws {
+        let payload = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:sources-etag,ui_config:ui-etag,workflows:workflows-etag",
+          "active_topics": ["sources", "ui_config", "workflows"],
+          "prefetch_blobs": ["AAECAwQFBgcICQoLDA0ODxAREhMUFRYX"],
+          "topics": {
+            "sources": {
+              "blob": {
+                "sources": [
+                  {
+                    "id": "assets",
+                    "url_format": "https://assets.revenuecat.com/app/{blob_ref}",
+                    "priority": 0,
+                    "weight": 100
+                  }
+                ]
+              }
+            },
+            "ui_config": {
+              "app": {
+                "blob_ref": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYX",
+                "prefetch": true
+              }
+            },
+            "workflows": {
+              "default": {
+                "blob_ref": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcY"
+              }
+            }
+          }
+        }
+        """.asData
+
+        let response = try JSONDecoder.default.decode(RemoteConfiguration.self, from: payload)
+
+        expect(response.domain) == "app"
+        expect(response.activeTopics) == ["sources", "ui_config", "workflows"]
+        expect(response.prefetchBlobs) == ["AAECAwQFBgcICQoLDA0ODxAREhMUFRYX"]
+        expect(response.topics.entries["sources"]?["blob"]?.content["sources"]).toNot(beNil())
+        expect(response.topics.entries["ui_config"]?["app"]?.blobRef) == "AAECAwQFBgcICQoLDA0ODxAREhMUFRYX"
+        expect(response.topics.entries["ui_config"]?["app"]?.prefetch) == true
+        expect(response.topics.entries["workflows"]?["default"]?.blobRef) == "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcY"
+    }
+
     private func expectFullPayloadSources(in response: RemoteConfiguration) throws {
         let sourcesTopic = try XCTUnwrap(response.topics.entries["sources"])
 
@@ -249,6 +295,23 @@ final class RemoteConfigurationDecodingTests: TestCase {
         {
           "domain": "app",
           "manifest": "v1.0."
+        }
+        """.asData
+
+        XCTAssertThrowsError(try JSONDecoder.default.decode(RemoteConfiguration.self, from: payload))
+    }
+
+    func testFailsWhenTopicItemIsNotAnObject() {
+        let payload = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag1",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "api": "not-an-object"
+            }
+          }
         }
         """.asData
 

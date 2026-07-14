@@ -969,7 +969,11 @@ private extension OfferingsManagerTests {
         static let unexpectedBackendResponseError: BackendError = .unexpectedBackendResponse(
             .customerInfoNil
         )
-        static let sampleOfferings: Offerings = .init(
+        static let sampleOfferings: Offerings = MockData.makeSampleOfferings()
+
+        /// A fresh `Offerings` instance per call, for tests that need two distinguishable snapshots.
+        static func makeSampleOfferings() -> Offerings {
+            return .init(
             offerings: MockData.anyBackendOfferingsContents.response.offerings
                 .map { offering in
                     Offering(
@@ -996,18 +1000,19 @@ private extension OfferingsManagerTests {
             targeting: nil,
             contents: MockData.anyBackendOfferingsContents,
             loadedFromDiskCache: false
-        )
+            )
+        }
     }
 
 }
 
-// MARK: - WorkflowManager integration
+// MARK: - Remote config integration
 
 extension OfferingsManagerTests {
 
-    func testGetOfferingsDeliversImmediatelyWhenWorkflowManagerIsNil() {
-        // The default `offeringsManager` is built without a workflow manager (workflows disabled),
-        // so offerings delivery must be unchanged.
+    func testGetOfferingsDeliversImmediatelyWhenRemoteConfigManagerIsNil() {
+        // The default `offeringsManager` is built without a remote config manager (workflows
+        // disabled), so offerings delivery must be unchanged.
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
         let result = waitUntilValue { completed in
@@ -1017,35 +1022,62 @@ extension OfferingsManagerTests {
         expect(result).to(beSuccess())
     }
 
-    func testGetOfferingsDoesNotDeliverUntilGetWorkflowsListCompletes() {
-        let mockWorkflowManager = MockWorkflowManager()
-        mockWorkflowManager.shouldStoreOnComplete = true
-        let manager = self.makeOfferingsManager(workflowManager: mockWorkflowManager)
+    func testGetOfferingsDoesNotDeliverUntilConfigReady() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.shouldStoreTopicCompletion = true
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
         let delivered: Atomic<Bool> = false
         manager.offerings(appUserID: MockData.anyAppUserID) { _ in delivered.value = true }
 
-        // The workflows list fetch was triggered, but its completion is held, so offerings must wait.
-        expect(mockWorkflowManager.invokedGetWorkflowsList).toEventually(beTrue())
+        // The topic was awaited, but its completion is held, so offerings must wait.
+        expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
         expect(delivered.value) == false
 
-        mockWorkflowManager.completeStoredOnComplete()
+        mockRemoteConfigManager.completeStoredTopic()
         expect(delivered.value).toEventually(beTrue())
     }
 
-    func testGetOfferingsDeliversEvenWhenWorkflowsListFetchFails() throws {
-        // A real WorkflowManager whose workflows-list fetch fails must still call onComplete,
-        // so offerings delivery can never hang.
-        let mockWorkflowsAPI = try XCTUnwrap(self.mockBackend.workflowsAPI as? MockWorkflowsAPI)
-        mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
-        let workflowManager = WorkflowManager(
-            backend: self.mockBackend,
-            workflowsCache: WorkflowsCache(deviceCache: self.mockDeviceCache),
-            paywallCache: nil,
-            operationDispatcher: self.mockOperationDispatcher
-        )
-        let manager = self.makeOfferingsManager(workflowManager: workflowManager)
+    func testGetOfferingsDoesNotDeliverUntilUiConfigResolved() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        // The workflows topic resolves immediately; ui_config's blob reads are held.
+        mockRemoteConfigManager.shouldStoreBlobDataCompletion = true
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let delivered: Atomic<Bool> = false
+        manager.offerings(appUserID: MockData.anyAppUserID) { _ in delivered.value = true }
+
+        // The ui_config read was started but is held, so offerings must wait.
+        expect(mockRemoteConfigManager.invokedBlobDataParameters).toEventuallyNot(beEmpty())
+        expect(delivered.value) == false
+
+        mockRemoteConfigManager.completeStoredBlobReads()
+        expect(delivered.value).toEventually(beTrue())
+    }
+
+    func testGetOfferingsDeliversWhenUiConfigResolutionFails() {
+        // No ui_config blobs stubbed: resolution fails (nil). Readiness is best-effort, so
+        // delivery must proceed anyway with the real offerings.
+        let manager = self.makeOfferingsManager(remoteConfigManager: MockRemoteConfigManager())
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let result = waitUntilValue { completed in
+            manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(result?.value?["base"]).toNot(beNil())
+        expect(result?.value?["base"]?.monthly?.storeProduct).toNot(beNil())
+    }
+
+    func testGetOfferingsDeliversEvenIfTheGateTaskIsCancelled() {
+        // The gate's two readiness awaits are non-throwing and always awaited before the
+        // callback fires, so no cancellation can strand it. Model that here by resolving both
+        // to their empty/failed states (no workflows topic, no ui_config) and asserting the
+        // completion still runs.
+        let manager = self.makeOfferingsManager(remoteConfigManager: MockRemoteConfigManager())
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
         let result = waitUntilValue { completed in
@@ -1055,10 +1087,61 @@ extension OfferingsManagerTests {
         expect(result).to(beSuccess())
     }
 
-    func testGetOfferingsFromMemoryCacheWaitsForGetWorkflowsList() {
-        let mockWorkflowManager = MockWorkflowManager()
-        mockWorkflowManager.shouldStoreOnComplete = true
-        let manager = self.makeOfferingsManager(workflowManager: mockWorkflowManager)
+    func testBackgroundCacheRefreshCachesWithoutAwaitingTheConfigGate() {
+        // A background refresh passes a nil completion: it has nothing to deliver, so it must
+        // cache the fetched offerings without entering the readiness gate. The held topic
+        // would block the gate forever; asserting the cache still lands (and the gate's topic
+        // read never happens) locks the skip.
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.shouldStoreTopicCompletion = true
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        manager.updateOfferingsCache(appUserID: MockData.anyAppUserID,
+                                     isAppBackgrounded: false,
+                                     completion: nil)
+
+        expect(self.mockDeviceCache.cacheOfferingsCount).toEventually(equal(1))
+        expect(mockRemoteConfigManager.invokedTopicCount) == 0
+    }
+
+    func testGetOfferingsAwaitsWorkflowsAndUiConfigConcurrently() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        // Hold BOTH readiness steps: each must have started before either completes.
+        mockRemoteConfigManager.shouldStoreTopicCompletion = true
+        mockRemoteConfigManager.shouldStoreBlobDataCompletion = true
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let delivered: Atomic<Bool> = false
+        manager.offerings(appUserID: MockData.anyAppUserID) { _ in delivered.value = true }
+
+        expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
+        expect(mockRemoteConfigManager.invokedBlobDataParameters).toEventuallyNot(beEmpty())
+        expect(delivered.value) == false
+
+        mockRemoteConfigManager.completeStoredTopic()
+        mockRemoteConfigManager.completeStoredBlobReads()
+        expect(delivered.value).toEventually(beTrue())
+    }
+
+    func testGetOfferingsDeliversEvenWhenRemoteConfigHasNoWorkflowsTopic() {
+        // A manager with no committed `workflows` topic (e.g. never synced) must still call back, so
+        // offerings delivery can never hang.
+        let manager = self.makeOfferingsManager(remoteConfigManager: MockRemoteConfigManager())
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let result = waitUntilValue { completed in
+            manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
+        }
+
+        expect(result).to(beSuccess())
+    }
+
+    func testGetOfferingsFromMemoryCacheWaitsForConfigReady() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.shouldStoreTopicCompletion = true
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
         // Serve offerings straight from the in-memory cache (the fast path) and keep it fresh so no
         // background refresh runs.
         self.mockDeviceCache.stubbedOfferings = MockData.sampleOfferings
@@ -1067,21 +1150,18 @@ extension OfferingsManagerTests {
         let delivered: Atomic<Bool> = false
         manager.offerings(appUserID: MockData.anyAppUserID) { _ in delivered.value = true }
 
-        // Even on the cached path, the workflows list is fetched before offerings are delivered.
-        expect(mockWorkflowManager.invokedGetWorkflowsList).toEventually(beTrue())
+        // Even on the cached path, the topic is awaited before offerings are delivered.
+        expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
         expect(delivered.value) == false
-        // The cached path must not force the list stale; that's only for network refreshes.
-        expect(mockWorkflowManager.invokedForceWorkflowsListCacheStale) == false
 
-        mockWorkflowManager.completeStoredOnComplete()
+        mockRemoteConfigManager.completeStoredTopic()
         expect(delivered.value).toEventually(beTrue())
     }
 
-    func testGetOfferingsFromStaleMemoryCacheDeliversImmediatelyAndFetchesWorkflowsOnceInBackground() {
-        let mockWorkflowManager = MockWorkflowManager()
-        // Hold any workflows completion so a foreground gate, if present, would block delivery.
-        mockWorkflowManager.shouldStoreOnComplete = true
-        let manager = self.makeOfferingsManager(workflowManager: mockWorkflowManager)
+    func testGetOfferingsFromStaleMemoryCacheGatesDeliveryAndStillRefreshes() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.shouldStoreTopicCompletion = true
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
         // Cached but stale, so the background refresh runs.
         self.mockDeviceCache.stubbedOfferings = MockData.sampleOfferings
         self.mockDeviceCache.stubbedOfferingCacheStatus = .stale
@@ -1090,16 +1170,61 @@ extension OfferingsManagerTests {
         let delivered: Atomic<Bool> = false
         manager.offerings(appUserID: MockData.anyAppUserID) { _ in delivered.value = true }
 
-        // Cached offerings are delivered immediately, not blocked on the held workflows completion.
+        // The background refresh starts regardless of the gate...
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserID).toEventually(beTrue())
+        // ...but delivery, even from a stale cache, waits for config readiness.
+        expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
+        expect(delivered.value) == false
+
+        mockRemoteConfigManager.completeStoredTopic()
         expect(delivered.value).toEventually(beTrue())
-        // Only the background refresh fetches the list (no duplicate foreground fetch).
-        expect(mockWorkflowManager.invokedGetWorkflowsListCount) == 1
-        expect(mockWorkflowManager.invokedForceWorkflowsListCacheStale) == true
     }
 
-    func testGetOfferingsNetworkFetchForcesWorkflowsListStaleBeforeFetching() {
-        let mockWorkflowManager = MockWorkflowManager()
-        let manager = self.makeOfferingsManager(workflowManager: mockWorkflowManager)
+    func testGatedFreshCacheDeliveryNeverReadsTheSharedCacheSlot() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.shouldStoreTopicCompletion = true
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
+        let captured = MockData.makeSampleOfferings()
+        self.mockDeviceCache.stubbedOfferings = captured
+        self.mockDeviceCache.stubbedOfferingCacheStatus = .valid
+
+        let delivered: Atomic<Offerings?> = .init(nil)
+        manager.offerings(appUserID: MockData.anyAppUserID) { result in delivered.value = result.value }
+
+        // While delivery waits on the gate, an unrelated write (identity change, another
+        // request) repopulates the shared cache slot. It must not leak into this request.
+        expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
+        self.mockDeviceCache.stubbedOfferings = MockData.makeSampleOfferings()
+
+        mockRemoteConfigManager.completeStoredTopic()
+        expect(delivered.value).toEventually(beIdenticalTo(captured))
+    }
+
+    func testGatedStaleCacheDeliversTheCapturedSnapshotNotALaterCacheWrite() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.shouldStoreTopicCompletion = true
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
+        let captured = MockData.makeSampleOfferings()
+        self.mockDeviceCache.stubbedOfferings = captured
+        self.mockDeviceCache.stubbedOfferingCacheStatus = .stale
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let delivered: Atomic<Offerings?> = .init(nil)
+        manager.offerings(appUserID: MockData.anyAppUserID) { result in delivered.value = result.value }
+
+        // While delivery waits on the gate, the background refresh writes a new slot value.
+        expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
+        self.mockDeviceCache.stubbedOfferings = MockData.makeSampleOfferings()
+
+        mockRemoteConfigManager.completeStoredTopic()
+        // Stale delivery returns the snapshot captured for this request, never a later
+        // cache write (the refresh's, or another request's).
+        expect(delivered.value).toEventually(beIdenticalTo(captured))
+    }
+
+    func testGetOfferingsNetworkFetchAwaitsConfigReadyBeforeDelivering() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
         self.mockDeviceCache.stubbedOfferings = nil // force a network fetch
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
@@ -1108,13 +1233,31 @@ extension OfferingsManagerTests {
         }
 
         expect(result).to(beSuccess())
-        expect(mockWorkflowManager.invokedForceWorkflowsListCacheStale) == true
-        expect(mockWorkflowManager.invokedGetWorkflowsList) == true
+        expect(mockRemoteConfigManager.invokedTopicCount) > 0
     }
 
-    func testGetOfferingsServedFromDiskOnFailureStillFetchesWorkflowsList() throws {
-        let mockWorkflowManager = MockWorkflowManager()
-        let manager = self.makeOfferingsManager(workflowManager: mockWorkflowManager)
+    func testGetOfferingsWaitsForPrefetchFlaggedWorkflowBlobsBeforeDelivering() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.stubbedTopics[.workflows] = [
+            // Only this one is prefetch-flagged and blob-backed, so it's the only ref waited on.
+            "wf-1": .init(blobRef: "wf-1-ref", prefetch: true, content: [:]),
+            "wf-2": .init(blobRef: "wf-2-ref", prefetch: false, content: [:]),
+            "wf-3": .init(blobRef: nil, prefetch: true, content: [:])
+        ]
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let result = waitUntilValue { completed in
+            manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(mockRemoteConfigManager.invokedEnsureBlobsDownloadedRefs) == [["wf-1-ref"]]
+    }
+
+    func testGetOfferingsServedFromDiskOnFailureStillAwaitsConfigReady() throws {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
         // Offerings backend fails and falls back to the disk cache.
         self.mockDeviceCache.stubbedOfferings = nil
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(.networkError(.serverDown()))
@@ -1124,14 +1267,14 @@ extension OfferingsManagerTests {
             manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
         }
 
-        // Offerings are still delivered from disk, and the workflows list is fetched so the
-        // offeringId → workflowId map gets restored rather than left unresolved.
+        // Offerings are still delivered from disk, and remote config is awaited so the offeringId →
+        // workflowId map has a chance to resolve rather than being left unresolved.
         expect(result).to(beSuccess())
         expect(result?.value?.loadedFromDiskCache) == true
-        expect(mockWorkflowManager.invokedGetWorkflowsList) == true
+        expect(mockRemoteConfigManager.invokedTopicCount) > 0
     }
 
-    private func makeOfferingsManager(workflowManager: WorkflowManager?) -> OfferingsManager {
+    private func makeOfferingsManager(remoteConfigManager: RemoteConfigManagerType?) -> OfferingsManager {
         return OfferingsManager(deviceCache: self.mockDeviceCache,
                                 operationDispatcher: self.mockOperationDispatcher,
                                 systemInfo: self.mockSystemInfo,
@@ -1139,7 +1282,7 @@ extension OfferingsManagerTests {
                                 offeringsFactory: self.mockOfferingsFactory,
                                 productsManager: self.mockProductsManager,
                                 diagnosticsTracker: self.mockDiagnosticsTracker,
-                                workflowManager: workflowManager)
+                                remoteConfigManager: remoteConfigManager)
     }
 
 }

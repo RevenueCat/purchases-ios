@@ -24,7 +24,6 @@ class Backend {
     let customerCenterConfig: CustomerCenterConfigAPI
     let redeemWebPurchaseAPI: RedeemWebPurchaseAPI
     let virtualCurrenciesAPI: VirtualCurrenciesAPI
-    let workflowsAPI: WorkflowsAPI
     let adsAPI: AdsAPI
     let remoteConfigAPI: RemoteConfigAPI
 
@@ -50,14 +49,28 @@ class Backend {
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
                                           diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
-                                          workflowsQueue: QueueProvider.createWorkflowsQueue(),
                                           systemInfo: systemInfo,
                                           offlineCustomerInfoCreator: offlineCustomerInfoCreator,
                                           dateProvider: dateProvider)
-        self.init(backendConfig: config, attributionFetcher: attributionFetcher)
+        let remoteConfigConfig = BackendConfiguration(
+            httpClient: .dedicatedRemoteConfig(systemInfo: systemInfo,
+                                               eTagManager: eTagManager,
+                                               diagnosticsTracker: diagnosticsTracker,
+                                               requestTimeout: httpClientTimeout),
+            operationDispatcher: operationDispatcher,
+            operationQueue: QueueProvider.createRemoteConfigQueue(),
+            diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
+            systemInfo: systemInfo,
+            offlineCustomerInfoCreator: offlineCustomerInfoCreator,
+            dateProvider: dateProvider)
+        self.init(backendConfig: config,
+                  remoteConfigBackendConfig: remoteConfigConfig,
+                  attributionFetcher: attributionFetcher)
     }
 
-    convenience init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
+    convenience init(backendConfig: BackendConfiguration,
+                     remoteConfigBackendConfig: BackendConfiguration? = nil,
+                     attributionFetcher: AttributionFetcher) {
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let identity = IdentityAPI(backendConfig: backendConfig)
         let offerings = OfferingsAPI(backendConfig: backendConfig)
@@ -67,9 +80,8 @@ class Backend {
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
         let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
-        let workflowsAPI = WorkflowsAPI(backendConfig: backendConfig)
         let adsAPI = AdsAPI(backendConfig: backendConfig)
-        let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
+        let remoteConfigAPI = RemoteConfigAPI(backendConfig: remoteConfigBackendConfig ?? backendConfig)
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
@@ -81,7 +93,6 @@ class Backend {
                   customerCenterConfig: customerCenterConfig,
                   redeemWebPurchaseAPI: redeemWebPurchaseAPI,
                   virtualCurrenciesAPI: virtualCurrenciesAPI,
-                  workflowsAPI: workflowsAPI,
                   adsAPI: adsAPI,
                   remoteConfigAPI: remoteConfigAPI)
     }
@@ -96,7 +107,6 @@ class Backend {
                   customerCenterConfig: CustomerCenterConfigAPI,
                   redeemWebPurchaseAPI: RedeemWebPurchaseAPI,
                   virtualCurrenciesAPI: VirtualCurrenciesAPI,
-                  workflowsAPI: WorkflowsAPI,
                   adsAPI: AdsAPI,
                   remoteConfigAPI: RemoteConfigAPI) {
         self.config = backendConfig
@@ -110,7 +120,6 @@ class Backend {
         self.customerCenterConfig = customerCenterConfig
         self.redeemWebPurchaseAPI = redeemWebPurchaseAPI
         self.virtualCurrenciesAPI = virtualCurrenciesAPI
-        self.workflowsAPI = workflowsAPI
         self.adsAPI = adsAPI
         self.remoteConfigAPI = remoteConfigAPI
     }
@@ -254,8 +263,6 @@ extension Backend {
 
     enum QueueProvider {
 
-        private static let maxConcurrentWorkflowOperations = 4
-
         static func createBackendQueue() -> OperationQueue {
             let operationQueue = OperationQueue()
             operationQueue.name = "RC Backend Queue"
@@ -271,18 +278,31 @@ extension Backend {
             return operationQueue
         }
 
-        static func createWorkflowsQueue() -> OperationQueue {
+        static func createRemoteConfigQueue() -> OperationQueue {
             let operationQueue = OperationQueue()
-            operationQueue.name = "RC Workflows Queue"
-            // Workflow prefetches run here so their CDN asset downloads overlap instead of serializing
-            // on the single backend queue. Capped at 4; each GetWorkflowOperation holds its slot
-            // through the CDN download, so this bounds concurrent CDN downloads at 4 too.
-            // Intentionally no `.background` QoS (unlike the diagnostics queue): these prefetches gate
-            // offerings delivery, so they keep the default QoS like the main backend queue.
-            operationQueue.maxConcurrentOperationCount = Self.maxConcurrentWorkflowOperations
+            operationQueue.name = "RC Remote Config Queue"
+            operationQueue.maxConcurrentOperationCount = 1
             return operationQueue
         }
 
+    }
+
+}
+
+private extension HTTPClient {
+
+    static func dedicatedRemoteConfig(
+        systemInfo: SystemInfo,
+        eTagManager: ETagManager,
+        diagnosticsTracker: DiagnosticsTrackerType?,
+        requestTimeout: TimeInterval
+    ) -> HTTPClient {
+        HTTPClient(systemInfo: systemInfo,
+                   eTagManager: eTagManager,
+                   signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
+                   diagnosticsTracker: diagnosticsTracker,
+                   requestTimeout: requestTimeout,
+                   operationDispatcher: OperationDispatcher.default)
     }
 
 }

@@ -79,7 +79,7 @@ private extension WorkflowPreviewTests {
     }
 
     /// Builds a single-screen workflow using the `@_spi(Internal)` initializers (C-1), sourcing the
-    /// `componentsConfig`/`uiConfig` sub-objects from JSON since hand-building them is impractical.
+    /// `componentsConfig` sub-object from JSON since hand-building it is impractical.
     static func makeWorkflow(screenOfferingIdentifier: String) throws -> PublishedWorkflow {
         let screen = WorkflowScreen(
             name: nil,
@@ -98,8 +98,7 @@ private extension WorkflowPreviewTests {
             initialStepId: "step_1",
             singleStepFallbackId: nil,
             steps: ["step_1": step],
-            screens: ["screen_1": screen],
-            uiConfig: try Self.makeUIConfig()
+            screens: ["screen_1": screen]
         )
     }
 
@@ -124,17 +123,6 @@ private extension WorkflowPreviewTests {
         """
         let data = try XCTUnwrap(json.data(using: .utf8))
         return try JSONDecoder.default.decode(PaywallComponentsData.ComponentsConfig.self, from: data)
-    }
-
-    static func makeUIConfig() throws -> UIConfig {
-        let json = """
-        {
-          "app": { "colors": {}, "fonts": {} },
-          "localizations": {}
-        }
-        """
-        let data = try XCTUnwrap(json.data(using: .utf8))
-        return try JSONDecoder.default.decode(UIConfig.self, from: data)
     }
 
 }

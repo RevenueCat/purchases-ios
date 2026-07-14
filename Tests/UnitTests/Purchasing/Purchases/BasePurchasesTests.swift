@@ -81,7 +81,6 @@ class BasePurchasesTests: TestCase {
                                           operationDispatcher: self.mockOperationDispatcher,
                                           operationQueue: MockBackend.QueueProvider.createBackendQueue(),
                                           diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
-                                          workflowsQueue: MockBackend.QueueProvider.createWorkflowsQueue(),
                                           systemInfo: self.systemInfo,
                                           offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
                                           dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
@@ -346,8 +345,9 @@ class BasePurchasesTests: TestCase {
                                    productsManager: self.mockProductsManager,
                                    offeringsManager: self.mockOfferingsManager,
                                    workflowManager: WorkflowManager(
-                                    backend: self.backend,
-                                    workflowsCache: WorkflowsCache(deviceCache: self.deviceCache),
+                                    workflowsConfigProvider: WorkflowsConfigProvider(
+                                        manager: self.mockRemoteConfigManager
+                                    ),
                                     paywallCache: self.paywallCache,
                                     operationDispatcher: self.mockOperationDispatcher
                                    ),
@@ -500,7 +500,6 @@ extension BasePurchasesTests {
             let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
             let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
             let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
-            let workflowsAPI = MockWorkflowsAPI()
             let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
             self.init(backendConfig: backendConfig,
@@ -513,7 +512,6 @@ extension BasePurchasesTests {
                       customerCenterConfig: customerCenterConfig,
                       redeemWebPurchaseAPI: redeemWebPurchaseAPI,
                       virtualCurrenciesAPI: virtualCurrenciesAPI,
-                      workflowsAPI: workflowsAPI,
                       adsAPI: mockAdsAPI,
                       remoteConfigAPI: remoteConfigAPI)
         }
@@ -595,6 +593,7 @@ extension BasePurchasesTests {
             self.callOrder.append(.postReceipt)
             self.postReceiptDataCalled = true
             self.postReceiptDataCallCount += 1
+            self.userID = appUserID
             self.postedReceiptData = receipt
             self.postedIsRestore = postReceiptSource.isRestore
             self.postedAssociatedTransactionIds.append(associatedTransactionId)
@@ -675,23 +674,28 @@ extension BasePurchasesTests.MockOfferingsAPI: @unchecked Sendable {}
 
 final class MockRemoteConfigManager: RemoteConfigManagerType {
 
+    struct RefreshParameters {
+        let isAppBackgrounded: Bool
+    }
+
     var isDisabled = false
 
     private(set) var invokedRefreshRemoteConfigCount = 0
     private(set) var invokedRefreshRemoteConfigIfStaleCount = 0
     private(set) var invokedClearCacheCount = 0
     private(set) var invokedCloseCount = 0
-    private(set) var invokedRefreshRemoteConfigParametersList: [Bool] = []
-    private(set) var invokedRefreshRemoteConfigIfStaleParametersList: [Bool] = []
+    private(set) var invokedRefreshRemoteConfigParametersList: [RefreshParameters] = []
+    private(set) var invokedRefreshRemoteConfigIfStaleParametersList: [RefreshParameters] = []
+    private(set) var invokedClearCacheAppUserIDs: [String] = []
 
     func refreshRemoteConfig(isAppBackgrounded: Bool) {
         self.invokedRefreshRemoteConfigCount += 1
-        self.invokedRefreshRemoteConfigParametersList.append(isAppBackgrounded)
+        self.invokedRefreshRemoteConfigParametersList.append(.init(isAppBackgrounded: isAppBackgrounded))
     }
 
     func refreshRemoteConfigIfStale(isAppBackgrounded: Bool) {
         self.invokedRefreshRemoteConfigIfStaleCount += 1
-        self.invokedRefreshRemoteConfigIfStaleParametersList.append(isAppBackgrounded)
+        self.invokedRefreshRemoteConfigIfStaleParametersList.append(.init(isAppBackgrounded: isAppBackgrounded))
     }
 
     var stubbedTopics: [RemoteConfigTopic: RemoteConfiguration.ConfigTopic] = [:]
@@ -702,14 +706,69 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     var invokedBlobDataParameters: [(topic: RemoteConfigTopic, itemKey: String)] {
         return self._invokedBlobDataParameters.value
     }
-
-    func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
-        return self.stubbedTopics[topic]
+    private let _invokedMergeItemsBlobDataParameters: Atomic<[(topic: RemoteConfigTopic, itemKeys: [String])]> =
+        .init([])
+    var invokedMergeItemsBlobDataParameters: [(topic: RemoteConfigTopic, itemKeys: [String])] {
+        return self._invokedMergeItemsBlobDataParameters.value
     }
 
+    private let _invokedTopicCount: Atomic<Int> = .init(0)
+    var invokedTopicCount: Int { return self._invokedTopicCount.value }
+    /// When `true`, `topic(_:)` suspends until `completeStoredTopic()` resumes every stored
+    /// waiter (there can be several: e.g. a gated delivery plus a background refresh).
+    var shouldStoreTopicCompletion = false
+    private let _storedTopicContinuations: Atomic<[CheckedContinuation<RemoteConfiguration.ConfigTopic?, Never>]> =
+        .init([])
+
+    func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+        guard self.shouldStoreTopicCompletion else {
+            self._invokedTopicCount.modify { $0 += 1 }
+            return self.stubbedTopics[topic]
+        }
+        return await withCheckedContinuation { continuation in
+            // Store before incrementing, so a test polling `invokedTopicCount` can never
+            // observe readiness before `completeStoredTopic()` has something to resume.
+            self._storedTopicContinuations.modify { $0.append(continuation) }
+            self._invokedTopicCount.modify { $0 += 1 }
+        }
+    }
+
+    /// Resumes every waiter held while `shouldStoreTopicCompletion` was `true`, and stops
+    /// holding subsequent calls.
+    func completeStoredTopic(with result: RemoteConfiguration.ConfigTopic? = nil) {
+        self.shouldStoreTopicCompletion = false
+        for continuation in self._storedTopicContinuations.getAndSet([]) {
+            continuation.resume(returning: result)
+        }
+    }
+
+    /// When `true`, `blobData(for:itemKey:)` suspends until `completeStoredBlobReads()` is
+    /// called, so tests can control the timing of a caller resolving blob-backed data.
+    var shouldStoreBlobDataCompletion = false
+    private typealias StoredBlobRead = (
+        topic: RemoteConfigTopic, itemKey: String, continuation: CheckedContinuation<Data?, Never>
+    )
+    private let _storedBlobReads: Atomic<[StoredBlobRead]> = .init([])
+
     func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
-        self._invokedBlobDataParameters.modify { $0.append((topic, itemKey)) }
-        return self.stubbedBlobData[topic]?[itemKey]
+        guard self.shouldStoreBlobDataCompletion else {
+            self._invokedBlobDataParameters.modify { $0.append((topic, itemKey)) }
+            return self.stubbedBlobData[topic]?[itemKey]
+        }
+        return await withCheckedContinuation { continuation in
+            // Store before recording, so a poller can't observe readiness with nothing to resume.
+            self._storedBlobReads.modify { $0.append((topic, itemKey, continuation)) }
+            self._invokedBlobDataParameters.modify { $0.append((topic, itemKey)) }
+        }
+    }
+
+    /// Resumes every held blob read with its key's stubbed data and stops holding subsequent
+    /// reads, so sequential read chains (like `mergeItemsBlobData`'s loop) run to completion.
+    func completeStoredBlobReads() {
+        self.shouldStoreBlobDataCompletion = false
+        for read in self._storedBlobReads.getAndSet([]) {
+            read.continuation.resume(returning: self.stubbedBlobData[read.topic]?[read.itemKey])
+        }
     }
 
     func blobData<T: Decodable>(
@@ -721,8 +780,42 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         return try JSONDecoder.default.decode(type, from: data)
     }
 
+    var stubbedEnsureBlobsDownloadedResult = true
+    private let _invokedEnsureBlobsDownloadedRefs: Atomic<[[String]]> = .init([])
+    var invokedEnsureBlobsDownloadedRefs: [[String]] {
+        return self._invokedEnsureBlobsDownloadedRefs.value
+    }
+
+    func ensureBlobsDownloaded(_ refs: [String]) async -> Bool {
+        self._invokedEnsureBlobsDownloadedRefs.modify { $0.append(refs) }
+        return self.stubbedEnsureBlobsDownloadedResult
+    }
+
+    func mergeItemsBlobData<T: Decodable>(
+        for topic: RemoteConfigTopic,
+        itemKeys: [String],
+        as type: T.Type
+    ) async throws -> T? {
+        self._invokedMergeItemsBlobDataParameters.modify { $0.append((topic, itemKeys)) }
+        guard !self.isDisabled, !itemKeys.isEmpty else { return nil }
+
+        var mergedBlobValues: [String: AnyDecodable] = [:]
+        for itemKey in itemKeys.deduplicated() {
+            guard let data = await self.blobData(for: topic, itemKey: itemKey) else { return nil }
+            mergedBlobValues[itemKey] = try JSONDecoder.default.decode(AnyDecodable.self, from: data)
+        }
+
+        let mergedData = try JSONEncoder.default.encode(mergedBlobValues)
+        return try JSONDecoder.default.decode(type, from: mergedData)
+    }
+
     func clearCache() {
         self.invokedClearCacheCount += 1
+    }
+
+    func clearCache(forAppUserID appUserID: String) {
+        self.invokedClearCacheCount += 1
+        self.invokedClearCacheAppUserIDs.append(appUserID)
     }
 
     func close() {

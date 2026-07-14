@@ -293,32 +293,33 @@ commands:
             - ~/.mint
 
   install-xcodes-for-xcode14:
-    description: "Installs the xcodes 1.6.2 prebuilt binary"
+    description: "Installs the xcodes 2.0.3 prebuilt binary"
     steps:
       - restore_cache:
           keys:
-            - v1-xcodes-1.6.2-{{ arch }}
+            - v1-xcodes-2.0.3-{{ arch }}
       - run:
-          name: Install xcodes 1.6.2
+          name: Install xcodes 2.0.3
           command: |
-            # Pinned to 1.6.2: it supports the visionOS (com.apple.platform.xros)
-            # runtime index entry that breaks older xcodes, and unlike 2.x it has a
-            # Ventura bottle (2.x has none, so brew can't install it on this runner).
+            # Pinned to 2.0.3: it handles Apple's simulator runtime catalog
+            # `authentication: none` entries.
+            # https://github.com/XcodesOrg/xcodes/releases/tag/2.0.3
             # We install the prebuilt universal binary into /opt/homebrew/bin (on PATH
             # and reachable under sudo, used by the runtime install script).
             # Match on the exact version so a pre-installed/older xcodes is replaced.
-            if xcodes version 2>/dev/null | grep -q "1.6.2"; then
-                echo "xcodes 1.6.2 already installed, skipping."
+            if xcodes version 2>/dev/null | grep -q "2.0.3"; then
+                echo "xcodes 2.0.3 already installed, skipping."
                 exit 0
             fi
             curl -fsSL -o /tmp/xcodes.tar.gz \
-              https://github.com/XcodesOrg/xcodes/releases/download/1.6.2/xcodes-1.6.2.macos.arm64.tar.gz
+              https://github.com/XcodesOrg/xcodes/releases/download/2.0.3/xcodes-2.0.3.macos.arm64.bottle.tar.gz
+            echo "d0251244b8a02b5af1eb5fa5618c6efff6e387d51f749b631b9c7cceee476fae  /tmp/xcodes.tar.gz" | shasum -a 256 -c -
             tar -xzf /tmp/xcodes.tar.gz -C /tmp
-            sudo mv /tmp/xcodes/1.6.2/bin/xcodes /opt/homebrew/bin/xcodes
+            sudo mv /tmp/xcodes/2.0.3/bin/xcodes /opt/homebrew/bin/xcodes
             sudo chmod +x /opt/homebrew/bin/xcodes
             xcodes version
       - save_cache:
-          key: v1-xcodes-1.6.2-{{ arch }}
+          key: v1-xcodes-2.0.3-{{ arch }}
           paths:
             - /opt/homebrew/bin/xcodes
 
@@ -1254,13 +1255,9 @@ jobs:
       - run:
           name: Start iOS 14.5 runtime installation (background)
           command: |
-            # Temporarily disabled while waiting for xcodes to handle Apple's
-            # simulator runtime catalog `authentication: none` entries.
-            # https://github.com/XcodesOrg/xcodes/releases
-            # scripts/install-ios-runtime.sh "iOS 14.5" &
-            # disown
-            # echo "Started iOS 14.5 runtime installation in background"
-            echo "Skipping iOS 14.5 runtime installation"
+            scripts/install-ios-runtime.sh "iOS 14.5" &
+            disown
+            echo "Started iOS 14.5 runtime installation in background"
 
       # === iOS 15 tests ===
       # When generating snapshots, skip StoreKit tests on iOS 15.
@@ -1305,59 +1302,39 @@ jobs:
           destination: scan-test-output-ios-15
       - run:
           name: Clean test output before iOS 14 run
-          command: |
-            # rm -rf fastlane/test_output
-            echo "Skipping iOS 14 test output cleanup"
+          command: rm -rf fastlane/test_output
 
       # === iOS 14 tests ===
       - run:
           name: Wait for iOS 14.5 runtime installation
-          command: |
-            # scripts/wait-for-ios-runtime.sh
-            echo "Skipping iOS 14.5 runtime installation wait"
+          command: scripts/wait-for-ios-runtime.sh
           no_output_timeout: 30m
       - run:
           name: Run iOS 14 tests
-          command: |
-            # bundle exec fastlane test_ios skip_sk_tests:true
-            echo "Skipping iOS 14 tests until xcodes runtime catalog parsing is fixed"
+          command: bundle exec fastlane test_ios skip_sk_tests:true
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 12 (14.5)
-      - run:
-          name: Compress iOS 14 result bundle
-          command: |
-            # - compress_result_bundle:
-            #     directory: fastlane/test_output/xctest/ios
-            #     bundle_name: RevenueCat
-            echo "Skipping iOS 14 result bundle compression"
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
       - run:
           name: Preserve iOS 14 result bundle
           when: always
           command: |
-            # cd fastlane/test_output/xctest/ios 2>/dev/null || exit 0
-            # if [ -f RevenueCat.xcresult.tar.gz ]; then
-            #   mv RevenueCat.xcresult.tar.gz RevenueCat-iOS14.xcresult.tar.gz
-            # fi
-            echo "Skipping iOS 14 result bundle preservation"
+            cd fastlane/test_output/xctest/ios 2>/dev/null || exit 0
+            if [ -f RevenueCat.xcresult.tar.gz ]; then
+              mv RevenueCat.xcresult.tar.gz RevenueCat-iOS14.xcresult.tar.gz
+            fi
       - create-snapshot-pr-if-needed:
-          # condition: << pipeline.parameters.generate_snapshots >>
-          condition: false
+          condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-14"
-      - run:
-          name: Store iOS 14 test results
-          command: |
-            # - store_test_results:
-            #     path: fastlane/test_output
-            echo "Skipping iOS 14 test result storage"
-      - run:
-          name: Store iOS 14 artifacts
-          command: |
-            # - store_artifacts:
-            #     path: fastlane/test_output/xctest
-            #     destination: scan-test-output-ios-14
-            echo "Skipping iOS 14 artifact storage"
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output-ios-14
       - slack-notify-on-fail
 
   run-test-watchos:
@@ -2179,13 +2156,12 @@ jobs:
       - revenuecat/setup-git-credentials
       - revenuecat/trust-github-key
       - run:
-          name: Clone purchases-ios and push to purchases-ios-spm
+          name: Mirror purchases-ios tags to purchases-ios-spm (main not mirrored)
           command: |
             git clone git@github.com:RevenueCat/purchases-ios.git
             cd purchases-ios
             git fetch --tags
             git remote set-url origin git@github.com:RevenueCat/purchases-ios-spm.git
-            git push origin
             git push --tags
 
   deploy-to-purchases-ios-admob:

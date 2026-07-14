@@ -130,6 +130,7 @@ final class TabsPackageSelectionResolverTests: TestCase {
         expect(plan.tabUpdate).to(beNil())
         expect(plan.parentUpdate).to(beNil())
     }
+
 }
 
 #endif
