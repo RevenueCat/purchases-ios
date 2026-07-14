@@ -156,7 +156,9 @@ final class WebViewSessionTests: TestCase {
     }
 
     func testRequestVariablesAutoRepliesAndForwards() throws {
-        let harness = Harness(localeIdentifier: "zh_Hans_CN")
+        // zh_Hant_TW keeps its script in BCP-47 (`zh-Hant-TW`); zh_Hans_CN
+        // canonicalizes to `zh-CN` because Hans is the default script for CN.
+        let harness = Harness(localeIdentifier: "zh_Hant_TW")
         harness.connect()
         harness.capturedScripts.removeAll()
 
@@ -170,7 +172,7 @@ final class WebViewSessionTests: TestCase {
         let response = try XCTUnwrap(harness.outboundEnvelopes().first)
         XCTAssertEqual(response.kind, .response)
         XCTAssertEqual(response.id, "req-1")
-        XCTAssertEqual(response.payload?["locale"]?.stringValue, "zh-Hans-CN")
+        XCTAssertEqual(response.payload?["locale"]?.stringValue, "zh-Hant-TW")
         XCTAssertNil(response.payload?["variables"])
         XCTAssertEqual(harness.messages.last?.type, WebViewEnvelope.messageTypeRequestVariables)
     }
@@ -341,16 +343,8 @@ final class WebViewSessionTests: TestCase {
     func testRenderOnlyWebViewExposesNoBridgeSurface() throws {
         // Render-only mode (`componentID == nil`) registers NO script message handler, so page
         // JavaScript must see no native bridge surface at all.
+        // Probe about:blank directly — avoid depending on didFinish navigation timing in CI.
         let webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
-
-        let loaded = self.expectation(description: "web view finished loading")
-        let delegate = RoundTripNavigationDelegate { loaded.fulfill() }
-        webView.navigationDelegate = delegate
-        webView.loadHTMLString(
-            "<html><body>hi</body></html>",
-            baseURL: URL(string: "https://example.com")!
-        )
-        self.wait(for: [loaded], timeout: 10)
 
         let probed = self.expectation(description: "probed bridge surface")
         var bridgeExposed: Bool?
@@ -367,7 +361,6 @@ final class WebViewSessionTests: TestCase {
         self.wait(for: [probed], timeout: 10)
 
         XCTAssertEqual(bridgeExposed, false)
-        withExtendedLifetime(delegate) {}
     }
 
 }

@@ -114,12 +114,6 @@
 		16F00A002FE0000000000005 /* WebViewEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F00A002FE0000000000015 /* WebViewEnvelope.swift */; };
 		16F00A002FE0000000000006 /* WebViewIsolation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F00A002FE0000000000016 /* WebViewIsolation.swift */; };
 		16F00A002FE0000000000007 /* WebViewSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F00A002FE0000000000017 /* WebViewSession.swift */; };
-		16F00A002FE0000000000008 /* WebViewEnvelopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F00A002FE0000000000018 /* WebViewEnvelopeTests.swift */; };
-		16F00A002FE0000000000009 /* PaywallWebViewValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F00A002FE0000000000019 /* PaywallWebViewValueTests.swift */; };
-		16F00A002FE000000000000A /* WebViewSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F00A002FE000000000001A /* WebViewSessionTests.swift */; };
-		16F00A002FE000000000000B /* WebViewComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F00A002FE000000000001B /* WebViewComponentTests.swift */; };
-		16F00A002FE000000000000C /* WebViewIsolationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F00A002FE000000000001C /* WebViewIsolationTests.swift */; };
-		16F00A002FE000000000000D /* WebViewNavigationPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F00A002FE000000000001D /* WebViewNavigationPolicyTests.swift */; };
 		16DA8F1E2E4FB6E200283940 /* ImageComponent.json in Resources */ = {isa = PBXBuildFile; fileRef = 16DA8F1B2E4FB6E200283940 /* ImageComponent.json */; };
 		16DA8F1F2E4FB6E200283940 /* VideoComponent.json in Resources */ = {isa = PBXBuildFile; fileRef = 16DA8F1C2E4FB6E200283940 /* VideoComponent.json */; };
 		16E146AD2E99F3480089B609 /* TransactionNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E146AB2E99F1E20089B609 /* TransactionNotifications.swift */; };
@@ -7830,12 +7824,6 @@
 				351B51BA26D450E800BD2BD7 /* ProductRequestDataExtensions.swift in Sources */,
 				57E6C27E29723F9E001AFE98 /* SigningTests.swift in Sources */,
 				16DA8EF42E4F7A2500283940 /* VideoComponentTests.swift in Sources */,
-				16F00A002FE0000000000008 /* WebViewEnvelopeTests.swift in Sources */,
-				16F00A002FE0000000000009 /* PaywallWebViewValueTests.swift in Sources */,
-				16F00A002FE000000000000A /* WebViewSessionTests.swift in Sources */,
-				16F00A002FE000000000000B /* WebViewComponentTests.swift in Sources */,
-				16F00A002FE000000000000C /* WebViewIsolationTests.swift in Sources */,
-				16F00A002FE000000000000D /* WebViewNavigationPolicyTests.swift in Sources */,
 				574A2F3F282D75E300150D40 /* OfferingsDecodingTests.swift in Sources */,
 				3AC9CEA8FC6D49A3EB7D7393 /* PublishedWorkflowCodableTests.swift in Sources */,
 				35E840CE2710E2EB00899AE2 /* MockManageSubscriptionsHelper.swift in Sources */,
