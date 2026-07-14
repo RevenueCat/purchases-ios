@@ -136,7 +136,7 @@ let project = Project(
             ],
             metadata: .metadata(tags: ["APITester"])
         )
-    ].addingXcode27DeploymentTargetOverrides(),
+    ].addingXcodeDeploymentTargetOverrides(),
     schemes: [
         .scheme(
             name: "All API Tests",

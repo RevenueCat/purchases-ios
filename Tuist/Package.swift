@@ -13,8 +13,8 @@ if !includeTestDependencies {
 #if TUIST
     import ProjectDescription
 
-    // SDK-conditional deployment-target overrides for the Xcode 27 SDKs, mirroring `Target+Xcode27.swift`.
-    let xcode27DeploymentTargetOverrides: SettingsDictionary = [
+    // SDK-conditional deployment-target overrides, mirroring `Target+DeploymentTargetOverrides.swift`.
+    let xcodeDeploymentTargetOverrides: SettingsDictionary = [
         "IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]": "15.0",
         "IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]": "15.0",
         "TVOS_DEPLOYMENT_TARGET[sdk=appletvos27*]": "15.0",
@@ -24,13 +24,13 @@ if !includeTestDependencies {
         "MACOSX_DEPLOYMENT_TARGET[sdk=macosx27*]": "12.0"
     ]
 
-    let xcode27TargetSettings: [String: Settings] = [
+    let xcodeTargetSettings: [String: Settings] = [
         "Nimble", "NimbleObjectiveC",
         "CwlPreconditionTesting", "CwlPosixPreconditionTesting",
         "CwlCatchException", "CwlCatchExceptionSupport", "CwlMachBadInstructionHandler",
         "SnapshotTesting", "OHHTTPStubs", "OHHTTPStubsSwift"
     ].reduce(into: [:]) { result, target in
-        result[target] = .settings(base: xcode27DeploymentTargetOverrides)
+        result[target] = .settings(base: xcodeDeploymentTargetOverrides)
     }
 
     let packageSettings = PackageSettings(
@@ -53,7 +53,7 @@ if !includeTestDependencies {
             "OHHTTPStubs": .framework,
             "OHHTTPStubsSwift": .framework
         ],
-        targetSettings: xcode27TargetSettings
+        targetSettings: xcodeTargetSettings
     )
 
 #endif

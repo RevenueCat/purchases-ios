@@ -1,5 +1,5 @@
 //
-//  Target+Xcode27.swift
+//  Target+DeploymentTargetOverrides.swift
 //
 //  Created by Antonio Pallares.
 //
@@ -8,20 +8,20 @@ import ProjectDescription
 
 extension Target {
 
-    /// Returns a copy of the target with SDK-conditional deployment-target overrides for the Xcode 27
-    /// SDKs, mirroring the conditional overrides committed to `RevenueCat.xcodeproj`.
+    /// Returns a copy of the target with SDK-conditional deployment-target overrides, mirroring the
+    /// conditional overrides committed to `RevenueCat.xcodeproj`.
     ///
-    /// Xcode 27 refuses to build targets whose deployment target is below iOS 15 / tvOS 15 /
-    /// watchOS 9 / macOS 12. Instead of raising the SDK's true minimums everywhere (which would drop
-    /// support for older OSes on every Xcode), this adds `[sdk=*27*]` overrides that only take effect
-    /// when building against an Xcode 27 SDK. The base deployment target — and every other SDK — is
-    /// left untouched, so a single generated workspace builds on both Xcode 26 and Xcode 27 with no
-    /// environment flag.
+    /// Newer Xcode SDKs raise the minimum deployment target they'll build (e.g. Xcode 27 enforces
+    /// iOS 15 / tvOS 15 / watchOS 9 / macOS 12). Instead of raising the SDK's true minimums everywhere
+    /// (which would drop support for older OSes on every Xcode), this adds `[sdk=*]`-conditional
+    /// overrides that only take effect when building against those newer SDKs. The base deployment
+    /// target — and every other SDK — is left untouched, so a single generated workspace keeps
+    /// building across Xcode versions with no environment flag. Add future SDK floors here.
     ///
-    /// It is safe to apply to every target: only platforms whose deployment target is *below* the
-    /// Xcode 27 floor are raised, so targets already at or above the floor are returned unchanged and
-    /// no platform is ever lowered.
-    public func addingXcode27DeploymentTargetOverrides() -> Target {
+    /// It is safe to apply to every target: only platforms whose deployment target is *below* a floor
+    /// are raised, so targets already at or above the floor are returned unchanged and no platform is
+    /// ever lowered.
+    public func addingXcodeDeploymentTargetOverrides() -> Target {
         guard let deploymentTargets else { return self }
 
         var overrides: SettingsDictionary = [:]
@@ -32,6 +32,7 @@ extension Target {
             overrides["\(buildSetting)[sdk=\(simulatorSDK)27*]"] = .string(floor)
         }
 
+        // Xcode 27 floors.
         raiseToFloor(deploymentTargets.iOS, floor: "15.0",
                      deviceSDK: "iphoneos", simulatorSDK: "iphonesimulator",
                      buildSetting: "IPHONEOS_DEPLOYMENT_TARGET")
@@ -59,9 +60,9 @@ extension Target {
 
 extension [Target] {
 
-    /// Applies ``Target/addingXcode27DeploymentTargetOverrides()`` to every target in the array.
-    public func addingXcode27DeploymentTargetOverrides() -> [Target] {
-        map { $0.addingXcode27DeploymentTargetOverrides() }
+    /// Applies ``Target/addingXcodeDeploymentTargetOverrides()`` to every target in the array.
+    public func addingXcodeDeploymentTargetOverrides() -> [Target] {
+        map { $0.addingXcodeDeploymentTargetOverrides() }
     }
 }
 
