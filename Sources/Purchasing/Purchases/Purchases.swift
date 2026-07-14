@@ -1067,7 +1067,10 @@ public extension Purchases {
 
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
-                self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isAppBackgrounded)
+                self.remoteConfigManager.refreshRemoteConfig(
+                    fetchContext: .identityChange,
+                    isAppBackgrounded: isAppBackgrounded
+                )
             }
         }
     }
@@ -1102,7 +1105,7 @@ public extension Purchases {
                 return
             }
 
-            self.updateAllCaches {
+            self.updateAllCaches(fetchContext: .identityChange) {
                 completion?($0.value, $0.error)
             }
         }
@@ -1213,7 +1216,10 @@ extension Purchases {
 
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             self.updateOfferingsCache(isAppBackgrounded: isBackgrounded)
-            self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isBackgrounded)
+            self.remoteConfigManager.refreshRemoteConfig(
+                fetchContext: .identityChange,
+                isAppBackgrounded: isBackgrounded
+            )
         }
     }
 
@@ -2700,7 +2706,11 @@ private extension Purchases {
             guard !isBackgrounded, let self = self else { return }
 
             self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
-                self?.updateAllCaches(isAppBackgrounded: isBackgrounded, completion: nil)
+                self?.updateAllCaches(
+                    isAppBackgrounded: isBackgrounded,
+                    fetchContext: .appStart,
+                    completion: nil
+                )
 
                 // Run the health check after all cache operations have been
                 // enqueued on the serial queue, so it doesn't block user-facing requests.
@@ -2757,18 +2767,28 @@ private extension Purchases {
             self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
         }
 
-        self.remoteConfigManager.refreshRemoteConfigIfStale(isAppBackgrounded: isAppBackgrounded)
+        self.remoteConfigManager.refreshRemoteConfigIfStale(
+            fetchContext: .foreground,
+            isAppBackgrounded: isAppBackgrounded
+        )
     }
 
-    func updateAllCaches(completion: ((Result<CustomerInfo, PublicError>) -> Void)?) {
+    func updateAllCaches(
+        fetchContext: RemoteConfigFetchContext,
+        completion: ((Result<CustomerInfo, PublicError>) -> Void)?
+    ) {
         self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            self.updateAllCaches(isAppBackgrounded: isAppBackgrounded,
-                                 completion: completion)
+            self.updateAllCaches(
+                isAppBackgrounded: isAppBackgrounded,
+                fetchContext: fetchContext,
+                completion: completion
+            )
         }
     }
 
     func updateAllCaches(
         isAppBackgrounded: Bool,
+        fetchContext: RemoteConfigFetchContext,
         completion: ((Result<CustomerInfo, PublicError>) -> Void)?
     ) {
         Logger.verbose(Strings.purchase.updating_all_caches)
@@ -2792,7 +2812,10 @@ private extension Purchases {
         }
 
         self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
-        self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isAppBackgrounded)
+        self.remoteConfigManager.refreshRemoteConfig(
+            fetchContext: fetchContext,
+            isAppBackgrounded: isAppBackgrounded
+        )
     }
 
     // Used when delegate is being set

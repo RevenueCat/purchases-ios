@@ -414,7 +414,7 @@ final class RemoteConfigIntegrationTests: TestCase {
             code: .success
         ))
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
 
         expect(self.diskCache.read()).to(beNil())
@@ -495,7 +495,7 @@ final class RemoteConfigIntegrationTests: TestCase {
     func testEndpointDisabledPreventsReadTriggeredNetworkWork() async throws {
         self.mockRemoteConfigError(Self.disablingNetworkError)
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
 
         let topic = await self.manager.topic(.workflows)
@@ -513,7 +513,7 @@ final class RemoteConfigIntegrationTests: TestCase {
     func testMalformedRawContainerResponseDoesNotPersistConfigOrBlobs() async throws {
         self.mockRemoteConfigResponse(body: #"{"not":"an rc container"}"#.asData)
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
 
         expect(self.diskCache.read()).to(beNil())
@@ -553,7 +553,7 @@ private extension RemoteConfigIntegrationTests {
     ) async {
         self.mockRemoteConfigResponse(body: body, verificationResult: verificationResult)
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
         await self.waitForPersistedManifest(Self.manifest)
     }
@@ -568,7 +568,7 @@ private extension RemoteConfigIntegrationTests {
         ))
         self.mockRemoteConfigFallbackResponse(body: body, verificationResult: verificationResult)
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
         await self.waitForRemoteConfigFallbackRequestCount(1)
         await self.waitForPersistedManifest(Self.manifest)
