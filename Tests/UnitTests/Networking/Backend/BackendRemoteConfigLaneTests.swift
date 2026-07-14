@@ -15,6 +15,8 @@
 
 import Foundation
 import Nimble
+import OHHTTPStubs
+import OHHTTPStubsSwift
 import XCTest
 
 @testable import RevenueCat
@@ -97,6 +99,87 @@ private extension BackendRemoteConfigLaneTests {
     func makeAttributionFetcher() -> AttributionFetcher {
         return AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                   systemInfo: self.systemInfo)
+    }
+
+}
+
+/// Proves the dedicated lane actually runs `/config` in parallel with `/offerings`, using real
+/// `HTTPClient`s (each serial internally) and a stubbed transport: a hung `/offerings` on the
+/// shared client must not block `/config` on the lane.
+final class BackendRemoteConfigLaneParallelTests: TestCase {
+
+    private static let userID = "lane-user"
+
+    override func tearDown() {
+        HTTPStubs.removeAllStubs()
+        super.tearDown()
+    }
+
+    func testConfigCompletesWhileOfferingsHangsOnSeparateLane() throws {
+        #if os(watchOS)
+        throw XCTSkip("OHHTTPStubs does not support watchOS")
+        #endif
+
+        let systemInfo = MockSystemInfo(finishTransactions: true)
+        let eTagManager = MockETagManager()
+
+        func makeClient() -> HTTPClient {
+            return HTTPClient(systemInfo: systemInfo,
+                              eTagManager: eTagManager,
+                              signing: MockSigning(),
+                              diagnosticsTracker: nil,
+                              requestTimeout: 30,
+                              operationDispatcher: OperationDispatcher())
+        }
+
+        func makeConfig(_ client: HTTPClient, _ queue: OperationQueue) -> BackendConfiguration {
+            return BackendConfiguration(httpClient: client,
+                                        operationDispatcher: OperationDispatcher(),
+                                        operationQueue: queue,
+                                        diagnosticsQueue: Backend.QueueProvider.createDiagnosticsQueue(),
+                                        systemInfo: systemInfo,
+                                        offlineCustomerInfoCreator: nil,
+                                        dateProvider: DateProvider())
+        }
+
+        let backend = Backend(
+            backendConfig: makeConfig(makeClient(), Backend.QueueProvider.createBackendQueue()),
+            remoteConfigBackendConfig: makeConfig(makeClient(), Backend.QueueProvider.createRemoteConfigQueue()),
+            attributionFetcher: AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
+                                                   systemInfo: systemInfo)
+        )
+
+        // `/offerings` stays in flight for the whole test; `/config` returns immediately. If config
+        // shared the offerings client, it would queue behind the hung `/offerings` and time out.
+        let offeringsDispatched: Atomic<Bool> = false
+        let offeringsCompleted: Atomic<Bool> = false
+
+        stub(condition: pathEndsWith("/offerings")) { _ in
+            offeringsDispatched.value = true
+            return HTTPStubsResponse(data: Data("{}".utf8), statusCode: 200, headers: nil)
+                .responseTime(10)
+        }
+        stub(condition: pathEndsWith("/config/app")) { _ in
+            return HTTPStubsResponse(data: Data(), statusCode: 204, headers: nil)
+        }
+
+        backend.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false) { _ in
+            offeringsCompleted.value = true
+        }
+
+        let configResult: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue(
+            timeout: .seconds(5)
+        ) { completed in
+            backend.remoteConfigAPI.getRemoteConfig(
+                request: .init(appUserID: Self.userID),
+                isAppBackgrounded: false,
+                completion: completed
+            )
+        }
+
+        expect(configResult).to(beSuccess())
+        expect(offeringsDispatched.value).toEventually(beTrue())
+        expect(offeringsCompleted.value) == false
     }
 
 }
