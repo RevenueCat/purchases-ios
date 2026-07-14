@@ -534,30 +534,38 @@ private extension HTTPClient {
             case let .failure(error):
                 let httpURLResponse = urlResponse as? HTTPURLResponse
 
-                #warning("DAVE: This is about where token checking would go")
+                if httpURLResponse?.httpStatusCode == .unauthorized && tokenManager.enabled {
+                    // we got back a 401 Unauthorized and we are running with access token support
+                    // get a new access token and try again
+#warning("DAVE: This is about where token checking would go")
 
-                Logger.debug(Strings.network.api_request_failed(request.httpRequest,
-                                                                httpCode: httpURLResponse?.httpStatusCode,
-                                                                error: error,
-                                                                metadata: httpURLResponse?.metadata))
-
-                if httpURLResponse?.isLoadShedder == true {
-                    Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
+                    retryScheduled = true
                 }
-
-                // A timeout on a main backend URL for a request that has a fallback URL
-                if let error = networkError as? URLError, case .timedOut = error.code,
-                    !request.isFallbackURLRequest,
-                    request.httpRequest.path.supportsFallbackURLs {
-                    requestTimeoutResult = .timeoutOnMainBackendForFallbackSupportedEndpoint
-                }
-
-                retryScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
-                                                                               error: error)
 
                 if !retryScheduled {
-                    retryScheduled = self.retryRequestIfNeeded(request: request,
-                                                               httpURLResponse: httpURLResponse)
+                    Logger.debug(Strings.network.api_request_failed(request.httpRequest,
+                                                                    httpCode: httpURLResponse?.httpStatusCode,
+                                                                    error: error,
+                                                                    metadata: httpURLResponse?.metadata))
+
+                    if httpURLResponse?.isLoadShedder == true {
+                        Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
+                    }
+
+                    // A timeout on a main backend URL for a request that has a fallback URL
+                    if let error = networkError as? URLError, case .timedOut = error.code,
+                       !request.isFallbackURLRequest,
+                       request.httpRequest.path.supportsFallbackURLs {
+                        requestTimeoutResult = .timeoutOnMainBackendForFallbackSupportedEndpoint
+                    }
+
+                    retryScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
+                                                                                   error: error)
+
+                    if !retryScheduled {
+                        retryScheduled = self.retryRequestIfNeeded(request: request,
+                                                                   httpURLResponse: httpURLResponse)
+                    }
                 }
             }
 
