@@ -138,3 +138,27 @@ extension TokenLogInOperation.Body: HTTPRequestBody {
     }
 
 }
+
+// this is an enum because "TokenRefreshOperations" don't exist like the TokenLogInOperation.
+// token refreshing happens directly in the TokenManager. This enum exists for
+// namespacing consistency and recognizability.
+enum TokenRefreshOperation {
+
+    struct Body: Encodable, HTTPRequestBody {
+        private enum CodingKeys: String, CodingKey {
+            case grantType = "grant_type"
+            case refreshToken = "refresh_token"
+        }
+
+        let grantType: String
+        let refreshToken: String
+
+        var contentForSignature: [(key: String, value: String?)] {
+            return [
+                (Self.CodingKeys.grantType.stringValue, self.grantType),
+                (Self.CodingKeys.refreshToken.stringValue, self.refreshToken)
+            ]
+        }
+    }
+
+}
