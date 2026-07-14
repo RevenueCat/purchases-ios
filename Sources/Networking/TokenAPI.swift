@@ -35,7 +35,7 @@ class TokenAPI {
                                                         tokenCallbackCache: self.tokenCallbacksCache)
 
         let tokenCallback = TokenCallback(cacheKey: factory.cacheKey) { result in
-            if case .success(let token, let userID) = result {
+            if case .success(let (token, userID)) = result {
                 self.tokenManager.saveTokens(refreshToken: token.refreshToken,
                                              accessToken: token.accessToken,
                                              idToken: token.idToken,

@@ -43,6 +43,9 @@ protocol HTTPRequestPath {
     /// The full relative path for this endpoint.
     var relativePath: String { get }
 
+    /// The full relative path for this endpoint when using IAM tokens.
+    var relativeIAMPath: String { get }
+
     /// The fallback relative path for this endpoint, if any.
     var fallbackRelativePath: String? { get }
 
@@ -98,6 +101,10 @@ extension HTTPRequestPath {
         return nil
     }
 
+    var relativeIAMPath: String {
+        return self.relativePath
+    }
+
     var additionalHeaders: HTTPRequest.Headers {
         return [:]
     }
@@ -110,9 +117,7 @@ extension HTTPRequestPath {
         return false
     }
 
-    var url: URL? { return self.url(proxyURL: nil) }
-
-    func url(proxyURL: URL? = nil, fallbackUrlIndex: Int? = nil) -> URL? {
+    func url(proxyURL: URL? = nil, fallbackUrlIndex: Int? = nil, preferIAMPath: Bool) -> URL? {
         let baseURL: URL
         if let proxyURL {
             // When a Proxy URL is set, we don't support fallback URLs
@@ -127,7 +132,9 @@ extension HTTPRequestPath {
         } else {
             baseURL = Self.serverHostURL
         }
-        return URL(string: self.relativePath, relativeTo: baseURL)
+
+        let path = preferIAMPath ? self.relativeIAMPath : self.relativePath
+        return URL(string: path, relativeTo: baseURL)
     }
 }
 
@@ -368,6 +375,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
         return "/v1/\(self.pathComponent)"
     }
 
+    var relativeIAMPath: String {
+        return "/v1/\(self.iamPathComponent)"
+    }
+
     var pathComponent: String {
         switch self {
         case let .getCustomerInfo(appUserID):
@@ -425,6 +436,78 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case let .rewardVerificationStatus(appUserID, clientTransactionID):
             return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
+
+        case let .remoteConfig(domain):
+            return "config/\(Self.escape(domain))"
+
+        case .tokenLogin:
+            return "auth/login"
+
+        case .tokenRefresh:
+            return "auth/token"
+
+        case .tokenLogOut:
+            return "auth/revoke"
+        }
+    }
+
+    var iamPathComponent: String {
+        switch self {
+        case .getCustomerInfo:
+            return "subscribers"
+
+        case .getOfferings:
+            return "subscribers/offerings"
+
+        case .getIntroEligibility:
+            return "subscribers/intro_eligibility"
+
+        case .appHealthReport:
+            return "subscribers/health_report"
+
+        case .appHealthReportAvailability:
+            return "subscribers/health_report_availability"
+
+        case .logIn:
+            return "subscribers/identify"
+
+        case .postAttributionData:
+            return "subscribers/attribution"
+
+        case .postAdServicesToken:
+            return "subscribers/adservices_attribution"
+
+        case .postOfferForSigning:
+            return "offers"
+
+        case .postReceiptData:
+            return "receipts"
+
+        case .postSubscriberAttributes:
+            return "subscribers/attributes"
+
+        case .health:
+            return "health"
+
+        case .getProductEntitlementMapping:
+            return "product_entitlement_mapping"
+
+        case .getCustomerCenterConfig:
+            return "customercenter"
+
+        case .postRedeemWebPurchase:
+            return "subscribers/redeem_purchase"
+
+        case .getVirtualCurrencies:
+            return "subscribers/virtual_currencies"
+
+        case .postCreateTicket:
+            return "customercenter/support/create-ticket"
+        case .isPurchaseAllowedByRestoreBehavior:
+            return "subscribers/restore/eligibility"
+
+        case let .rewardVerificationStatus(_, clientTransactionID):
+            return "subscribers/ads/reward_verifications/\(Self.escape(clientTransactionID))"
 
         case let .remoteConfig(domain):
             return "config/\(Self.escape(domain))"
