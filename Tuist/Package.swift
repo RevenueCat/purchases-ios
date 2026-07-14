@@ -13,6 +13,26 @@ if !includeTestDependencies {
 #if TUIST
     import ProjectDescription
 
+    // SDK-conditional deployment-target overrides for the Xcode 27 SDKs, mirroring `Target+Xcode27.swift`.
+    let xcode27DeploymentTargetOverrides: SettingsDictionary = [
+        "IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]": "15.0",
+        "IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]": "15.0",
+        "TVOS_DEPLOYMENT_TARGET[sdk=appletvos27*]": "15.0",
+        "TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator27*]": "15.0",
+        "WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]": "9.0",
+        "WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]": "9.0",
+        "MACOSX_DEPLOYMENT_TARGET[sdk=macosx27*]": "12.0"
+    ]
+
+    let xcode27TargetSettings: [String: Settings] = [
+        "Nimble", "NimbleObjectiveC",
+        "CwlPreconditionTesting", "CwlPosixPreconditionTesting",
+        "CwlCatchException", "CwlCatchExceptionSupport", "CwlMachBadInstructionHandler",
+        "SnapshotTesting", "OHHTTPStubs", "OHHTTPStubsSwift"
+    ].reduce(into: [:]) { result, target in
+        result[target] = .settings(base: xcode27DeploymentTargetOverrides)
+    }
+
     let packageSettings = PackageSettings(
         productTypes: [
             // Nimble and its dependencies must be dynamic frameworks
@@ -32,7 +52,8 @@ if !includeTestDependencies {
             "GoogleMobileAds": .framework,
             "OHHTTPStubs": .framework,
             "OHHTTPStubsSwift": .framework
-        ]
+        ],
+        targetSettings: xcode27TargetSettings
     )
 
 #endif

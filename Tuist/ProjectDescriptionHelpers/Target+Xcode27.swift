@@ -1,0 +1,81 @@
+//
+//  Target+Xcode27.swift
+//
+//  Created by Antonio Pallares.
+//
+
+import ProjectDescription
+
+extension Target {
+
+    /// Returns a copy of the target with SDK-conditional deployment-target overrides for the Xcode 27
+    /// SDKs, mirroring the conditional overrides committed to `RevenueCat.xcodeproj`.
+    ///
+    /// Xcode 27 refuses to build targets whose deployment target is below iOS 15 / tvOS 15 /
+    /// watchOS 9 / macOS 12. Instead of raising the SDK's true minimums everywhere (which would drop
+    /// support for older OSes on every Xcode), this adds `[sdk=*27*]` overrides that only take effect
+    /// when building against an Xcode 27 SDK. The base deployment target — and every other SDK — is
+    /// left untouched, so a single generated workspace builds on both Xcode 26 and Xcode 27 with no
+    /// environment flag.
+    ///
+    /// It is safe to apply to every target: only platforms whose deployment target is *below* the
+    /// Xcode 27 floor are raised, so targets already at or above the floor are returned unchanged and
+    /// no platform is ever lowered.
+    public func addingXcode27DeploymentTargetOverrides() -> Target {
+        guard let deploymentTargets else { return self }
+
+        var overrides: SettingsDictionary = [:]
+
+        func raiseToFloor(_ current: String?, floor: String, deviceSDK: String, simulatorSDK: String, buildSetting: String) {
+            guard let current, current.rc_isVersionBelow(floor) else { return }
+            overrides["\(buildSetting)[sdk=\(deviceSDK)27*]"] = .string(floor)
+            overrides["\(buildSetting)[sdk=\(simulatorSDK)27*]"] = .string(floor)
+        }
+
+        raiseToFloor(deploymentTargets.iOS, floor: "15.0",
+                     deviceSDK: "iphoneos", simulatorSDK: "iphonesimulator",
+                     buildSetting: "IPHONEOS_DEPLOYMENT_TARGET")
+        raiseToFloor(deploymentTargets.tvOS, floor: "15.0",
+                     deviceSDK: "appletvos", simulatorSDK: "appletvsimulator",
+                     buildSetting: "TVOS_DEPLOYMENT_TARGET")
+        raiseToFloor(deploymentTargets.watchOS, floor: "9.0",
+                     deviceSDK: "watchos", simulatorSDK: "watchsimulator",
+                     buildSetting: "WATCHOS_DEPLOYMENT_TARGET")
+
+        // macOS exposes a single SDK name (no separate simulator), matching the committed .xcodeproj.
+        if let macOS = deploymentTargets.macOS, macOS.rc_isVersionBelow("12.0") {
+            overrides["MACOSX_DEPLOYMENT_TARGET[sdk=macosx27*]"] = "12.0"
+        }
+
+        guard !overrides.isEmpty else { return self }
+
+        var target = self
+        var settings = target.settings ?? .settings()
+        settings.base = settings.base.merging(overrides)
+        target.settings = settings
+        return target
+    }
+}
+
+extension [Target] {
+
+    /// Applies ``Target/addingXcode27DeploymentTargetOverrides()`` to every target in the array.
+    public func addingXcode27DeploymentTargetOverrides() -> [Target] {
+        map { $0.addingXcode27DeploymentTargetOverrides() }
+    }
+}
+
+private extension String {
+
+    /// Compares dotted version strings (e.g. "13.0" < "15.0") numerically, component by component.
+    func rc_isVersionBelow(_ other: String) -> Bool {
+        let lhs = split(separator: ".").map { Int($0) ?? 0 }
+        let rhs = other.split(separator: ".").map { Int($0) ?? 0 }
+        for index in 0..<Swift.max(lhs.count, rhs.count) {
+            let left = index < lhs.count ? lhs[index] : 0
+            let right = index < rhs.count ? rhs[index] : 0
+            if left != right { return left < right }
+        }
+        return false
+    }
+}
