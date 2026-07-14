@@ -191,10 +191,8 @@ private extension IdentityManager {
 
         self.backend.token.logIn(currentAppUserID: oldAppUserID, token: token) { result in
             switch result {
-            case .success(let token):
-                #warning("DAVE: THIS IS NOT CORRECT")
-
-                self.logIn(appUserID: oldAppUserID, completion: completion)
+            case .success(let (_, userID)):
+                self.logIn(appUserID: userID, completion: completion)
             case .failure(let error):
                 completion(.failure(error))
             }

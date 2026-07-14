@@ -89,17 +89,29 @@ private extension TokenLogInOperation {
 
     func handleLogin(_ result: VerifiedHTTPResponse<TokenResponse>.Result,
                      completion: TokenAPI.TokenResponseHandler) {
-        let result: Result<TokenResponse, BackendError> = result
-            .map { response in
-                response.body
-            }
-            .mapError(BackendError.networkError)
+        let finalResult: TokenAPI.TokenResult
 
-        if case .success = result {
-            Logger.user(Strings.identity.login_success)
+        switch result {
+        case .success(let response):
+            do {
+                let jwt = try JWT(from: response.body.accessToken)
+                guard let userID = jwt.appUserID else {
+                    throw BackendError.unexpectedBackendResponse(.loginResponseDecoding,
+                                                                 extraContext: "JWT missing RC user ID")
+                }
+
+                finalResult = .success((response.body, userID))
+                Logger.user(Strings.identity.login_success)
+            } catch let error as BackendError {
+                finalResult = .failure(error)
+            } catch {
+                finalResult = .failure(BackendError.unexpectedBackendResponse(.loginResponseDecoding))
+            }
+        case .failure(let networkError):
+            finalResult = .failure(BackendError.networkError(networkError))
         }
 
-        completion(result)
+        completion(finalResult)
     }
 }
 

@@ -8,7 +8,7 @@
 import Foundation
 
 class TokenAPI {
-    typealias TokenResult = Result<TokenResponse, BackendError>
+    typealias TokenResult = Result<(TokenResponse, String), BackendError>
     typealias TokenResponseHandler = (TokenResult) -> Void
 
     private let tokenCallbacksCache: CallbackCache<TokenCallback>
@@ -35,11 +35,11 @@ class TokenAPI {
                                                         tokenCallbackCache: self.tokenCallbacksCache)
 
         let tokenCallback = TokenCallback(cacheKey: factory.cacheKey) { result in
-            if case .success(let token) = result {
+            if case .success(let token, let userID) = result {
                 self.tokenManager.saveTokens(refreshToken: token.refreshToken,
                                              accessToken: token.accessToken,
                                              idToken: token.idToken,
-                                             for: currentAppUserID)
+                                             for: userID)
             }
 
             completion(result)
