@@ -281,12 +281,22 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let responses: Atomic<Int> = .init(0)
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(fetchContext: .appStart, appUserID: Self.appUserID, domain: "app", manifest: "v1.10.paywalls:etag-a"),
+            request: .init(
+                fetchContext: .appStart,
+                appUserID: Self.appUserID,
+                domain: "app",
+                manifest: "v1.10.paywalls:etag-a"
+            ),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(fetchContext: .appStart, appUserID: Self.appUserID, domain: "app_workflows", manifest: "v1.10.paywalls:etag-a"),
+            request: .init(
+                fetchContext: .appStart,
+                appUserID: Self.appUserID,
+                domain: "app_workflows",
+                manifest: "v1.10.paywalls:etag-a"
+            ),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
@@ -321,12 +331,22 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let responses: Atomic<Int> = .init(0)
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(fetchContext: .appStart, appUserID: Self.appUserID, manifest: "v1.10.paywalls:etag-a", prefetchedBlobs: ["blob-a"]),
+            request: .init(
+                fetchContext: .appStart,
+                appUserID: Self.appUserID,
+                manifest: "v1.10.paywalls:etag-a",
+                prefetchedBlobs: ["blob-a"]
+            ),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(fetchContext: .appStart, appUserID: Self.appUserID, manifest: "v1.10.paywalls:etag-a", prefetchedBlobs: ["blob-b"]),
+            request: .init(
+                fetchContext: .appStart,
+                appUserID: Self.appUserID,
+                manifest: "v1.10.paywalls:etag-a",
+                prefetchedBlobs: ["blob-b"]
+            ),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
