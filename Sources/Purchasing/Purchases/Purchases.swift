@@ -2641,7 +2641,7 @@ private extension Purchases {
         // Note: it's important that we observe "will enter foreground" instead of
         // "did become active" so that we don't trigger cache updates in the middle
         // of purchases due to pop-ups stealing focus from the app.
-        self.updateAllCachesIfNeeded(isAppBackgrounded: false)
+        self.updateAllCachesIfNeeded(isAppBackgrounded: false, fetchContext: .foreground)
         self.dispatchSyncSubscriberAttributes()
         self.transactionMetadataSyncHelper.syncIfNeeded(
             allowSharingAppStoreAccount: self.purchasesOrchestrator.allowSharingAppStoreAccount
@@ -2746,7 +2746,7 @@ private extension Purchases {
     }
     #endif
 
-    func updateAllCachesIfNeeded(isAppBackgrounded: Bool) {
+    func updateAllCachesIfNeeded(isAppBackgrounded: Bool, fetchContext: RemoteConfigFetchContext) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
             // No need to update caches every time when in UI preview mode.
             // Only needed at configuration time
@@ -2768,7 +2768,7 @@ private extension Purchases {
         }
 
         self.remoteConfigManager.refreshRemoteConfigIfStale(
-            fetchContext: .foreground,
+            fetchContext: fetchContext,
             isAppBackgrounded: isAppBackgrounded
         )
     }
