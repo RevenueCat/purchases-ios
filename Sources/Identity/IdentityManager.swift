@@ -116,7 +116,11 @@ class IdentityManager: CurrentUserProvider {
         }
 
         self.attributeSyncing.syncSubscriberAttributes(currentAppUserID: self.currentAppUserID) {
-            self.performLogOut(completion: completion)
+            if self.backend.token.enabled {
+                self.performTokenRevocation(for: self.currentAppUserID, completion: completion)
+            } else {
+                self.performLogOut(completion: completion)
+            }
         }
     }
 
@@ -188,11 +192,21 @@ private extension IdentityManager {
         self.backend.token.logIn(currentAppUserID: oldAppUserID, token: token) { result in
             switch result {
             case .success(let token):
-                #warning("DAVE: THIS IS PROBABLY NOT CORRECT")
+                #warning("DAVE: THIS IS NOT CORRECT")
 
                 self.logIn(appUserID: oldAppUserID, completion: completion)
             case .failure(let error):
                 completion(.failure(error))
+            }
+        }
+    }
+
+    func performTokenRevocation(for appUserID: String, completion: @escaping (PurchasesError?) -> Void) {
+        self.backend.token.revokeTokens(for: appUserID) { error in
+            if let purchasesError = error?.asPurchasesError {
+                completion(purchasesError)
+            } else {
+                self.performLogOut(completion: completion)
             }
         }
     }

@@ -76,7 +76,7 @@ private extension TokenLogInOperation {
                         linkToID: self.configuration.appUserID)
         }
 
-        let request = HTTPRequest(method: .post(body), path: .logIn)
+        let request = HTTPRequest(method: .post(body), path: .tokenLogin)
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<TokenResponse>.Result) in
             self.tokenCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
@@ -102,6 +102,72 @@ private extension TokenLogInOperation {
         completion(result)
     }
 }
+
+final class TokenRevocationOperation: CacheableNetworkOperation, @unchecked Sendable {
+
+    private let callbackCache: CallbackCache<TokenRevokeCallback>
+    private let configuration: UserSpecificConfiguration
+    private let refreshToken: String
+    private let appUserID: String
+
+    static func createFactory(
+        configuration: UserSpecificConfiguration,
+        refreshToken: String,
+        appUserID: String,
+        callbackCache: CallbackCache<TokenRevokeCallback>
+    ) -> CacheableNetworkOperationFactory<TokenRevocationOperation> {
+        return .init({
+            .init(
+                configuration: configuration,
+                refreshToken: refreshToken,
+                appUserID: appUserID,
+                callbackCache: callbackCache,
+                cacheKey: $0
+            ) },
+                     individualizedCacheKeyPart: appUserID)
+    }
+
+    private init(
+        configuration: UserSpecificConfiguration,
+        refreshToken: String,
+        appUserID: String,
+        callbackCache: CallbackCache<TokenRevokeCallback>,
+        cacheKey: String
+    ) {
+        self.configuration = configuration
+        self.refreshToken = refreshToken
+        self.appUserID = appUserID
+        self.callbackCache = callbackCache
+
+        super.init(configuration: configuration, cacheKey: cacheKey)
+    }
+
+    override func begin(completion: @escaping () -> Void) {
+        guard self.refreshToken.isNotEmpty else {
+            self.callbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
+                callback.completion(BackendError.missingAppUserID())
+            }
+            completion()
+
+            return
+        }
+
+        let body = Body(token: refreshToken, tokenTypeHint: "refresh_token")
+
+        let request = HTTPRequest(method: .post(body), path: .tokenLogOut)
+
+        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<Data>.Result) in
+            self.callbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
+                let mappedResponse = response.mapError(BackendError.networkError)
+                callbackObject.completion(mappedResponse.error)
+            }
+
+            completion()
+        }
+    }
+}
+
+// MARK: - Request Bodies
 
 extension TokenLogInOperation {
 
@@ -145,6 +211,7 @@ extension TokenLogInOperation.Body: HTTPRequestBody {
 enum TokenRefreshOperation {
 
     struct Body: Encodable, HTTPRequestBody {
+        // swiftlint:disable:next nesting
         private enum CodingKeys: String, CodingKey {
             case grantType = "grant_type"
             case refreshToken = "refresh_token"
@@ -159,6 +226,30 @@ enum TokenRefreshOperation {
                 (Self.CodingKeys.refreshToken.stringValue, self.refreshToken)
             ]
         }
+    }
+
+}
+
+extension TokenRevocationOperation {
+
+    struct Body: Encodable, HTTPRequestBody {
+
+        // swiftlint:disable:next nesting
+        private enum CodingKeys: String, CodingKey {
+            case token = "token"
+            case tokenTypeHint = "token_type_hint"
+        }
+
+        let token: String
+        let tokenTypeHint: String
+
+        var contentForSignature: [(key: String, value: String?)] {
+            return [
+                (Self.CodingKeys.token.stringValue, self.token),
+                (Self.CodingKeys.tokenTypeHint.stringValue, self.tokenTypeHint)
+            ]
+        }
+
     }
 
 }

@@ -58,6 +58,7 @@ class Backend {
         let remoteConfigConfig = BackendConfiguration(
             httpClient: .dedicatedRemoteConfig(systemInfo: systemInfo,
                                                eTagManager: eTagManager,
+                                               tokenManager: tokenManager,
                                                diagnosticsTracker: diagnosticsTracker,
                                                requestTimeout: httpClientTimeout),
             operationDispatcher: operationDispatcher,
@@ -301,11 +302,13 @@ private extension HTTPClient {
     static func dedicatedRemoteConfig(
         systemInfo: SystemInfo,
         eTagManager: ETagManager,
+        tokenManager: TokenManager,
         diagnosticsTracker: DiagnosticsTrackerType?,
         requestTimeout: TimeInterval
     ) -> HTTPClient {
         HTTPClient(systemInfo: systemInfo,
                    eTagManager: eTagManager,
+                   tokenManager: tokenManager,
                    signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
                    diagnosticsTracker: diagnosticsTracker,
                    requestTimeout: requestTimeout,

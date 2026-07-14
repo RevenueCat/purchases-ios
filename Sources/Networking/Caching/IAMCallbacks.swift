@@ -14,7 +14,7 @@ struct TokenCallback: CacheKeyProviding {
 
 }
 
-struct TokenLogOutCallback: CacheKeyProviding {
-
+struct TokenRevokeCallback: CacheKeyProviding {
     let cacheKey: String
+    let completion: (BackendError?) -> Void
 }
