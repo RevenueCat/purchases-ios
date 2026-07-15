@@ -39,6 +39,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
 
     private let manager: RemoteConfigManagerType
     private let uiConfigProvider: UiConfigProvider
+    private let paywallCache: PaywallCacheWarmingType?
 
     /// The offeringId → workflowId map built from the last topic snapshot seen, keyed by that snapshot
     /// so a repeat call with an unchanged topic reuses it instead of rescanning every item's content.
@@ -49,9 +50,14 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         PrefetchedWorkflowCache
     >()
 
-    init(manager: RemoteConfigManagerType, uiConfigProvider: UiConfigProvider? = nil) {
+    init(
+        manager: RemoteConfigManagerType,
+        uiConfigProvider: UiConfigProvider? = nil,
+        paywallCache: PaywallCacheWarmingType? = nil
+    ) {
         self.manager = manager
         self.uiConfigProvider = uiConfigProvider ?? UiConfigProvider(manager: manager)
+        self.paywallCache = paywallCache
     }
 
     /// Resolves `offeringId` to its workflow id via an offeringId → workflowId map built from the
@@ -161,6 +167,8 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
             .init(offeringIdMap: offeringIdMap, workflows: workflows),
             for: snapshot
         )
+
+        await self.warmPrefetchedWorkflowAssets(workflows)
     }
 
     func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
@@ -235,6 +243,19 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
                 }
             }
             return workflows
+        }
+    }
+
+    private func warmPrefetchedWorkflowAssets(_ workflows: [String: PublishedWorkflow]) async {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
+              let paywallCache,
+              let uiConfig = await self.uiConfigProvider.getUiConfig() else {
+            return
+        }
+
+        for workflowId in workflows.keys.sorted() {
+            guard let workflow = workflows[workflowId] else { continue }
+            await paywallCache.warmUpWorkflowCaches(workflow: workflow, uiConfig: uiConfig)
         }
     }
 

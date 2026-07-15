@@ -313,6 +313,40 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(self.blobFetcher.invokedEnsureDownloadedRefs).toNot(contain("wf-on-demand-ref"))
     }
 
+    func testWarmPrefetchedWorkflowsWarmsAssetsForPrefetchTrueBodies() async throws {
+        let paywallCache = MockPaywallCacheWarming()
+        self.provider = WorkflowsConfigProvider(
+            manager: self.manager,
+            uiConfigProvider: self.uiConfigProvider,
+            paywallCache: paywallCache
+        )
+        self.commit(
+            workflows: [
+                "wf-prefetch": .init(
+                    blobRef: "wf-prefetch-ref",
+                    prefetch: true,
+                    content: ["offeringIdentifier": "premium"]
+                ),
+                "wf-on-demand": .init(
+                    blobRef: "wf-on-demand-ref",
+                    prefetch: false,
+                    content: ["offeringIdentifier": "basic"]
+                )
+            ],
+            uiConfig: Self.uiConfigTopic,
+            blobs: Self.uiConfigBlobs.merging([
+                "wf-prefetch-ref": try Self.workflowJSON(id: "wf-prefetch"),
+                "wf-on-demand-ref": try Self.workflowJSON(id: "wf-on-demand")
+            ]) { current, _ in current }
+        )
+
+        await self.provider.warmPrefetchedWorkflows()
+
+        expect(paywallCache.invokedWarmUpWorkflowCachesCount) == 1
+        expect(paywallCache.invokedWarmUpWorkflowCachesWorkflow?.id) == "wf-prefetch"
+        expect(paywallCache.invokedWarmUpWorkflowCachesUiConfig) == self.uiConfigProvider.cachedUiConfig()
+    }
+
     func testCachedPrefetchedWorkflowMissesAfterGenerationInvalidates() async throws {
         self.commit(
             workflows: [
