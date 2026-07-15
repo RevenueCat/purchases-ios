@@ -280,7 +280,6 @@ final class WebViewSessionTests: TestCase {
         XCTAssertEqual(resizes[0].1, 500)
     }
 
-
     func testReconnectAfterDocumentReset() throws {
         let harness = Harness()
         harness.connect()
