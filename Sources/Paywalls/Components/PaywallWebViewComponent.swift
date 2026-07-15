@@ -17,8 +17,7 @@ import Foundation
 
     final class WebViewComponent: PaywallComponentBase {
 
-        /// Wire `type` value. `ComponentType.webView` is registered in the activation PR.
-        let type: String
+        let type: ComponentType
         public let id: String?
         public let name: String?
         public let visible: Bool?
@@ -40,7 +39,7 @@ import Foundation
             url: String,
             size: Size = .init(width: .fill, height: .fit)
         ) {
-            self.type = "web_view"
+            self.type = .webView
             self.id = id
             self.name = name
             self.visible = visible
@@ -61,16 +60,7 @@ import Foundation
 
         required public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            let decodedType = try container.decode(String.self, forKey: .type)
-            guard decodedType == "web_view" else {
-                throw DecodingError.dataCorrupted(
-                    .init(
-                        codingPath: container.codingPath,
-                        debugDescription: "Expected type web_view, got \(decodedType)"
-                    )
-                )
-            }
-            self.type = decodedType
+            self.type = try container.decode(ComponentType.self, forKey: .type)
             self.id = try container.decodeIfPresent(String.self, forKey: .id)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
             self.visible = try container.decodeIfPresent(Bool.self, forKey: .visible)

@@ -4,6 +4,7 @@
 
 @_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 // swiftlint:disable force_try
 
@@ -23,7 +24,7 @@ final class WebViewComponentTests: TestCase {
         XCTAssertEqual(minimal.size.width, .fill)
         XCTAssertEqual(minimal.size.height, .fit)
         XCTAssertEqual(minimal.url, "https://example.com")
-        XCTAssertEqual(minimal.type, "web_view")
+        XCTAssertEqual(minimal.type, .webView)
     }
 
     func testDecodesExplicitFields() throws {
@@ -95,6 +96,72 @@ final class WebViewComponentTests: TestCase {
 
         XCTAssertNil(viewModel.componentID)
         XCTAssertNotNil(viewModel.url)
+    }
+
+    func testDecodesFullJSONThroughPaywallComponent() throws {
+        let full = try JSONDecoder.default.decode(PaywallComponent.self, from: Data("""
+        {
+          "type": "web_view",
+          "id": "web",
+          "name": "Survey",
+          "visible": false,
+          "protocol_version": 2,
+          "url": "https://example.com/index.html",
+          "size": { "width": { "type": "fixed", "value": 320 }, "height": { "type": "fit" } },
+          "unknown": true
+        }
+        """.utf8))
+
+        guard case .webView(let fullComponent) = full else {
+            return XCTFail("Expected web_view")
+        }
+        XCTAssertEqual(fullComponent.id, "web")
+        XCTAssertEqual(fullComponent.name, "Survey")
+        XCTAssertEqual(fullComponent.visible, false)
+        XCTAssertEqual(fullComponent.protocolVersion, 2)
+        XCTAssertEqual(fullComponent.url, "https://example.com/index.html")
+        XCTAssertEqual(fullComponent.type, .webView)
+    }
+
+    func testViewModelFactoryBuildsWebViewViewModel() throws {
+        let component = try JSONDecoder.default.decode(PaywallComponent.self, from: Data("""
+        { "type": "web_view", "id": "web", "url": "https://example.com/index.html" }
+        """.utf8))
+
+        let uiConfigJSON = Data("""
+        {
+          "app": { "colors": {}, "fonts": {} },
+          "localizations": {},
+          "variable_config": {
+            "variable_compatibility_map": {},
+            "function_compatibility_map": {}
+          }
+        }
+        """.utf8)
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let uiConfig = try decoder.decode(UIConfig.self, from: uiConfigJSON)
+
+        let result = try ViewModelFactory().toViewModel(
+            component: component,
+            packageValidator: PackageValidator(),
+            offering: .init(
+                identifier: "test_offering",
+                serverDescription: "Test Offering",
+                metadata: [:],
+                availablePackages: [],
+                webCheckoutUrl: nil
+            ),
+            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
+            uiConfigProvider: UIConfigProvider(uiConfig: uiConfig),
+            colorScheme: .light
+        )
+
+        guard case .webView(let built) = result else {
+            return XCTFail("Expected .webView view model")
+        }
+        XCTAssertEqual(built.componentID, "web")
+        XCTAssertEqual(built.url?.absoluteString, "https://example.com/index.html")
     }
 
 }
