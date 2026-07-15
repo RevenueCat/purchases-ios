@@ -13,8 +13,8 @@ protocol RemoteConfigManagerType: AnyObject {
 
     /// Whether remote config should be ignored for the current manager lifetime.
     var isDisabled: Bool { get }
-    func refreshRemoteConfig(isAppBackgrounded: Bool)
-    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool)
+    func refreshRemoteConfig(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool)
+    func refreshRemoteConfigIfStale(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool)
 
     /// Returns the committed item index for a known topic.
     ///
@@ -168,9 +168,9 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
 
     let isDisabled = true
 
-    func refreshRemoteConfig(isAppBackgrounded: Bool) {}
+    func refreshRemoteConfig(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {}
 
-    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool) {}
+    func refreshRemoteConfigIfStale(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {}
 
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
         return nil
@@ -221,6 +221,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     fileprivate struct RefreshRequestContext {
         let epoch: Int
         let requestAppUserID: String
+        let fetchContext: RemoteConfigFetchContext
     }
 
     /// Runs blocking committed-state reads away from the caller's executor.
@@ -287,16 +288,20 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         }
     }
 
-    func refreshRemoteConfig(isAppBackgrounded: Bool) {
+    func refreshRemoteConfig(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {
         let appUserID = self.currentUserProvider.currentAppUserID
-        guard let requestContext = self.prepareRefreshIfNeeded(appUserID: appUserID) else { return }
+        guard let requestContext = self.prepareRefreshIfNeeded(
+            fetchContext: fetchContext,
+            appUserID: appUserID
+        ) else { return }
 
         self.startRefresh(isAppBackgrounded: isAppBackgrounded, requestContext: requestContext)
     }
 
-    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool) {
+    func refreshRemoteConfigIfStale(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {
         let appUserID = self.currentUserProvider.currentAppUserID
         guard let requestContext = self.prepareRefreshIfStale(
+            fetchContext: fetchContext,
             isAppBackgrounded: isAppBackgrounded,
             appUserID: appUserID
         ) else { return }
@@ -372,7 +377,10 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
 private extension RemoteConfigManager {
 
-    func prepareRefreshIfNeeded(appUserID: String) -> RefreshRequestContext? {
+    func prepareRefreshIfNeeded(
+        fetchContext: RemoteConfigFetchContext,
+        appUserID: String
+    ) -> RefreshRequestContext? {
         return self.lock.perform {
             guard !self.isRefreshing,
                   !self.isDisabledInternal,
@@ -382,12 +390,14 @@ private extension RemoteConfigManager {
             self.isRefreshing = true
             return .init(
                 epoch: self.epoch,
-                requestAppUserID: requestAppUserID
+                requestAppUserID: requestAppUserID,
+                fetchContext: fetchContext
             )
         }
     }
 
     func prepareRefreshIfStale(
+        fetchContext: RemoteConfigFetchContext,
         isAppBackgrounded: Bool,
         appUserID: String,
         expectedEpoch: Int? = nil
@@ -408,7 +418,8 @@ private extension RemoteConfigManager {
             self.isRefreshing = true
             return .init(
                 epoch: self.epoch,
-                requestAppUserID: requestAppUserID
+                requestAppUserID: requestAppUserID,
+                fetchContext: fetchContext
             )
         }
     }
@@ -416,6 +427,7 @@ private extension RemoteConfigManager {
     func startRefresh(isAppBackgrounded: Bool, requestContext: RefreshRequestContext) {
         let persisted = self.diskCache.read()
         let request = RemoteConfigRequest(
+            fetchContext: requestContext.fetchContext,
             appUserID: requestContext.requestAppUserID,
             domain: persisted?.domain ?? Self.defaultDomain,
             manifest: persisted?.manifest,
@@ -677,6 +689,7 @@ private extension RemoteConfigManager {
 
         let appUserID = self.currentUserProvider.currentAppUserID
         if let requestContext = self.prepareRefreshIfStale(
+            fetchContext: .read,
             isAppBackgrounded: false,
             appUserID: appUserID,
             expectedEpoch: expectedEpoch
