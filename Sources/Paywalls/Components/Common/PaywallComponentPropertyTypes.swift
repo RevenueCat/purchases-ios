@@ -480,6 +480,21 @@ import Foundation
 
         }
 
+        public static func == (lhs: SizeConstraint, rhs: SizeConstraint) -> Bool {
+            switch (lhs, rhs) {
+            case let (.fit(left), .fit(right)):
+                return left == right
+            case (.fill, .fill):
+                return true
+            case let (.fixed(left), .fixed(right)):
+                return left == right
+            case let (.relative(left), .relative(right)):
+                return left == right
+            default:
+                return false
+            }
+        }
+
     }
 
     enum FlexDistribution: String, Codable, Sendable, Hashable, Equatable {
