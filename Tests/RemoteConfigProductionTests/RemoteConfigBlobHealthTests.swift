@@ -50,11 +50,12 @@ final class RemoteConfigBlobHealthTests: TestCase {
 
         let (blobRefs, recorder) = try await self.resolveWorkflowBlobs(apiKey: Self.cdnApiKey)
 
-        // Every workflows blob was served from the CDN, none failed, all from a single host.
+        // Every workflows blob was served from the CDN, and none failed. No workflows failure also
+        // means no fallback to another host, since a fallback only happens after a failure.
         expect(blobRefs.allSatisfy { recorder.didDownload(ref: $0) })
             .to(beTrue(), description: "Not every workflows blob was downloaded from the CDN.")
-        expect(recorder.failureCount) == 0
-        expect(recorder.distinctHostCount) == 1
+        expect(blobRefs.contains { recorder.didFail(ref: $0) })
+            .to(beFalse(), description: "A workflows blob download failed or fell back to another source.")
     }
 
     // The inline project: blobs arrive inside the config response, so nothing hits the CDN.
@@ -66,10 +67,11 @@ final class RemoteConfigBlobHealthTests: TestCase {
 
         let (blobRefs, recorder) = try await self.resolveWorkflowBlobs(apiKey: Self.inlineApiKey)
 
-        // No workflows blob was fetched from the CDN (they arrive inline), and nothing failed trying.
+        // No workflows blob touched the CDN: none downloaded, none failed trying (they arrive inline).
         expect(blobRefs.contains { recorder.didDownload(ref: $0) })
             .to(beFalse(), description: "A workflows blob was unexpectedly downloaded from the CDN.")
-        expect(recorder.failureCount) == 0
+        expect(blobRefs.contains { recorder.didFail(ref: $0) })
+            .to(beFalse(), description: "A workflows blob download failed.")
     }
 
     /// Builds a real manager for `apiKey`, resolves the workflows topic's blobs through the real

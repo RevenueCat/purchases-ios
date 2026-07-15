@@ -9,9 +9,9 @@
 //
 //  RecordingBlobDownloader.swift
 //
-//  Wraps the real blob downloader and records what actually crossed the network, so a real-backend
-//  test can check whether a specific blob was served from the CDN (its ref appears in a download
-//  URL), how many downloads failed, and how many distinct hosts were hit.
+//  Wraps the real blob downloader and records the URL of every download attempt by outcome, so a
+//  real-backend test can check a SPECIFIC blob's transport (its ref is substituted into the source
+//  URL) rather than a global count that mixes in unrelated topics fetched during the same sync.
 
 import Foundation
 @testable import RevenueCat
@@ -22,21 +22,20 @@ final class RecordingBlobDownloader: RemoteConfigBlobDownloaderType {
     private let lock = NSLock()
 
     private var _downloadedURLs: [URL] = []
-    private var _failureCount = 0
+    private var _failedURLs: [URL] = []
 
     init(wrapping wrapped: RemoteConfigBlobDownloaderType = URLSessionRemoteConfigBlobDownloader()) {
         self.wrapped = wrapped
     }
 
-    var failureCount: Int { self.lock.withLock { self._failureCount } }
-
-    var distinctHostCount: Int {
-        self.lock.withLock { Set(self._downloadedURLs.compactMap(\.host)).count }
-    }
-
     /// Whether this blob ref was downloaded from the CDN (the ref is substituted into the source URL).
     func didDownload(ref: String) -> Bool {
         self.lock.withLock { self._downloadedURLs.contains { $0.absoluteString.contains(ref) } }
+    }
+
+    /// Whether a download attempt for this blob ref failed (a primary that later fell over counts).
+    func didFail(ref: String) -> Bool {
+        self.lock.withLock { self._failedURLs.contains { $0.absoluteString.contains(ref) } }
     }
 
     func data(from url: URL) async throws -> Data {
@@ -45,7 +44,7 @@ final class RecordingBlobDownloader: RemoteConfigBlobDownloaderType {
             self.lock.withLock { self._downloadedURLs.append(url) }
             return data
         } catch {
-            self.lock.withLock { self._failureCount += 1 }
+            self.lock.withLock { self._failedURLs.append(url) }
             throw error
         }
     }
