@@ -144,14 +144,28 @@ public struct PaywallWebViewValue: Sendable, Equatable, Hashable, Codable {
 @MainActor
 public struct PaywallWebViewController {
 
+    #if canImport(WebKit)
+    weak var session: WebViewSession?
+    #endif
+
     init() {}
 
+    #if canImport(WebKit)
+    init(session: WebViewSession?) {
+        self.session = session
+    }
+    #endif
+
     public func postVariables(componentID: String, variables: [String: PaywallWebViewValue]) {
-        // Session wiring lands in a later PR; public API is inert until then.
+        #if canImport(WebKit)
+        self.session?.postVariables(componentID: componentID, variables: variables)
+        #endif
     }
 
     public func postMessage(componentID: String, type: String, variables: [String: PaywallWebViewValue]) {
-        // Session wiring lands in a later PR; public API is inert until then.
+        #if canImport(WebKit)
+        self.session?.post(componentID: componentID, type: type, variables: variables)
+        #endif
     }
 
 }

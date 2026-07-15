@@ -111,6 +111,10 @@ enum Strings {
 
     // WebView
     case paywall_web_view_content_rules_failed(String)
+    case paywall_web_view_message_rejected(reason: String)
+    case paywall_web_view_post_message_failed(String)
+    case paywall_web_view_post_message_skipped
+    case paywall_web_view_reserved_locale_stripped
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -369,6 +373,14 @@ extension Strings: CustomStringConvertible {
 
         case .paywall_web_view_content_rules_failed(let error):
             return "Paywalls V2 web_view content rules failed: \(error)"
+        case .paywall_web_view_message_rejected(let reason):
+            return "Paywalls V2 web_view message rejected: \(reason)"
+        case .paywall_web_view_post_message_failed(let error):
+            return "Paywalls V2 web_view postMessage failed: \(error)"
+        case .paywall_web_view_post_message_skipped:
+            return "Paywalls V2 web_view postMessage skipped because the channel is not ready or origin changed."
+        case .paywall_web_view_reserved_locale_stripped:
+            return "Paywalls V2 web_view variable 'locale' is SDK-managed and was stripped."
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
