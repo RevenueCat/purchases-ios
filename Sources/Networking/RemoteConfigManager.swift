@@ -234,7 +234,8 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     private var isRefreshing = false
 
     /// Forces the first committed refresh of the session to report `.appStart`, regardless of the caller's context,
-    /// so the backend always sees `app_start` on a fresh app open. Set once, under `lock`, when the request is committed.
+    /// so the backend always sees `app_start` on a fresh app open. Set once, under `lock`, when the request is
+    /// committed.
     private var hasCommittedInitialRefresh = false
 
     /// Session-scoped kill switch set by disabling client errors. This is intentionally not reset by cache clears.
