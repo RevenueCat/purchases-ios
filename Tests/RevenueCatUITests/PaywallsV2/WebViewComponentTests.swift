@@ -113,9 +113,6 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
             localeIdentifier: "en_US",
             fitAxes: (width: false, height: false)
         )
-        session.channelOpen = true
-        // Simulate a connected channel without going through connect handshake helpers.
-        // `channelOpen` is private(set); open it via connect.
         let data = try! JSONEncoder().encode(WebViewEnvelope.Envelope(kind: .connect, componentID: ""))
         session.handle(
             rawMessage: String(data: data, encoding: .utf8)!,
