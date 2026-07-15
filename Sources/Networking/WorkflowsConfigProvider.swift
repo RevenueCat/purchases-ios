@@ -40,6 +40,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     private let manager: RemoteConfigManagerType
     private let uiConfigProvider: UiConfigProvider
     private let paywallCache: PaywallCacheWarmingType?
+    private let operationDispatcher: OperationDispatcher
 
     /// The offeringId → workflowId map built from the last topic snapshot seen, keyed by that snapshot
     /// so a repeat call with an unchanged topic reuses it instead of rescanning every item's content.
@@ -53,11 +54,13 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     init(
         manager: RemoteConfigManagerType,
         uiConfigProvider: UiConfigProvider? = nil,
-        paywallCache: PaywallCacheWarmingType? = nil
+        paywallCache: PaywallCacheWarmingType? = nil,
+        operationDispatcher: OperationDispatcher = .default
     ) {
         self.manager = manager
         self.uiConfigProvider = uiConfigProvider ?? UiConfigProvider(manager: manager)
         self.paywallCache = paywallCache
+        self.operationDispatcher = operationDispatcher
     }
 
     /// Resolves `offeringId` to its workflow id via an offeringId → workflowId map built from the
@@ -168,7 +171,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
             for: snapshot
         )
 
-        await self.warmPrefetchedWorkflowAssets(workflows)
+        self.warmPrefetchedWorkflowAssetsInBackground(workflows)
     }
 
     func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
@@ -243,6 +246,12 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
                 }
             }
             return workflows
+        }
+    }
+
+    private func warmPrefetchedWorkflowAssetsInBackground(_ workflows: [String: PublishedWorkflow]) {
+        self.operationDispatcher.dispatchOnWorkerThread {
+            await self.warmPrefetchedWorkflowAssets(workflows)
         }
     }
 
