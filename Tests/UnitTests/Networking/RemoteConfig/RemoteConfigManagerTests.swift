@@ -58,16 +58,51 @@ final class RemoteConfigManagerTests: TestCase {
     }
 
     func testRefreshRemoteConfigIfStaleSendsForegroundFetchContext() {
+        // The first committed request is forced to `.appStart`, so prime it before asserting a `.foreground` refresh.
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+        self.dateProvider.advance(by: 6)
+
         self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
 
-        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .foreground
     }
 
     func testRefreshRemoteConfigSendsPassedFetchContext() {
+        // The first committed request is forced to `.appStart`, so prime it before asserting the passed context.
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .identityChange
+    }
+
+    func testFirstRefreshIsForcedToAppStartRegardlessOfRequestedContext() {
         self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+    }
+
+    func testFirstStaleRefreshIsForcedToAppStartRegardlessOfRequestedContext() {
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+    }
+
+    func testOnlyTheFirstRefreshIsForcedToAppStart() {
+        // First request forced to `.appStart`; the next committed request reports its own context.
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .identityChange
     }
 
@@ -1628,10 +1663,15 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
+        // The first committed request is forced to `.appStart`, so prime it before asserting the cold read's `.read`.
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+        self.dateProvider.advance(by: 6)
+
         let task = Task {
             await self.manager.blobData(for: .workflows, itemKey: "default")
         }
-        await self.waitForRemoteConfigRequestCount(1)
+        await self.waitForRemoteConfigRequestCount(2)
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.isAppBackgrounded) == false
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .read
         self.remoteConfigAPI.complete(

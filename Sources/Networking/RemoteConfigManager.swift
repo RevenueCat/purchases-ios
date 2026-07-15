@@ -233,6 +233,11 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     /// Tracks the single config refresh whose completion read APIs may await.
     private var isRefreshing = false
 
+    /// Forces the first committed refresh of the session to report `.appStart`, regardless of the caller's context,
+    /// so the backend always sees `app_start` on a fresh app open even when another trigger (e.g. a `read` from
+    /// `getOfferings`) wins the race to start the first request. Set once, under `lock`, when the request is committed.
+    private var hasCommittedInitialRefresh = false
+
     /// Session-scoped kill switch set by disabling client errors. This is intentionally not reset by cache clears.
     private var isDisabledInternal = false
 
@@ -377,6 +382,16 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
 private extension RemoteConfigManager {
 
+    /// Overrides the first committed refresh's context to `.appStart`, so the backend always sees `app_start`
+    /// first on a fresh app open. Must be called within `lock`, at the point a request is committed.
+    func fetchContextForCommittedRefresh(_ requested: RemoteConfigFetchContext) -> RemoteConfigFetchContext {
+        guard self.hasCommittedInitialRefresh else {
+            self.hasCommittedInitialRefresh = true
+            return .appStart
+        }
+        return requested
+    }
+
     func prepareRefreshIfNeeded(
         fetchContext: RemoteConfigFetchContext,
         appUserID: String
@@ -391,7 +406,7 @@ private extension RemoteConfigManager {
             return .init(
                 epoch: self.epoch,
                 requestAppUserID: requestAppUserID,
-                fetchContext: fetchContext
+                fetchContext: self.fetchContextForCommittedRefresh(fetchContext)
             )
         }
     }
@@ -419,7 +434,7 @@ private extension RemoteConfigManager {
             return .init(
                 epoch: self.epoch,
                 requestAppUserID: requestAppUserID,
-                fetchContext: fetchContext
+                fetchContext: self.fetchContextForCommittedRefresh(fetchContext)
             )
         }
     }
