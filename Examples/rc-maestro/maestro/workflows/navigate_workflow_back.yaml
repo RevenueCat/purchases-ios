@@ -40,10 +40,7 @@ env:
 - tapOn:
     text: "Back"
 
-# Back on screen 1. Screen 1's headline is only present in the tree while it is the
-# foreground step (a forward step hides the previous page), so its reappearance proves
-# the back navigation. We do not assert screen 2 is gone: visited steps stay mounted
-# (parked) and remain in the accessibility tree after back navigation.
+# Back on screen 1
 - extendedWaitUntil:
     visible: "Start Your Free Week And Reclaim 30+ Minutes Daily"
     timeout: 15000
