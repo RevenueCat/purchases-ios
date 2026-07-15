@@ -371,11 +371,7 @@ struct APIKeyDashboardList: View {
 
     @ViewBuilder
     private func workflowPaywallView(for offering: Offering) -> some View {
-        PaywallView(configuration: .init(
-            content: .offeringIdentifier(offering.identifier, presentedOfferingContext: nil),
-            displayCloseButton: true,
-            purchaseHandler: .default()
-        ))
+        PaywallView(offering: offering, displayCloseButton: true)
         #if DEBUG
         .environment(\.workflowExitOfferOfferingBinding, self.$workflowExitOfferOffering)
         #endif

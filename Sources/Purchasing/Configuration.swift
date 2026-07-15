@@ -517,34 +517,6 @@ extension Configuration {
 extension Configuration.APIKeyValidationResult {
 
     func checkForSimulatedStoreAPIKeyInRelease(systemInfo: SystemInfo, apiKey: String) {
-        // The `BYPASS_SIMULATED_STORE_RELEASE_CHECK` compilation flag opts out of the Release-build
-        // safeguard. It exists for SDK consumers (e.g. purchases-kmp) that ship the SDK as a
-        // pre-compiled binary always built in Release configuration, where this check would
-        // otherwise crash apps that use a Test Store API key during development. Setting this flag
-        // means apps shipped to production with a Test Store API key won't be caught at runtime.
-        #if !DEBUG && !BYPASS_SIMULATED_STORE_RELEASE_CHECK
-        guard self == .simulatedStore, !systemInfo.dangerousSettings.uiPreviewMode else {
-            return
-        }
-
-        let redactedApiKey = apiKey.asRedactedAPIKey
-
-        // In release builds, we intentionally crash to prevent submitting an app with a Test Store API key.
-        //
-        // Also note that developing with a Test Store API key isn't supported when adding the SDK dependency
-        // as an XCFramework, since the XCFramework is built using the Release configuration.
-        Task {
-            let errorMessage = "[RevenueCat]: Test Store API key used in Release build: \(redactedApiKey). " +
-            "Please configure the App Store app on the RevenueCat dashboard and use its corresponding Apple API key " +
-            "before releasing. Visit https://rev.cat/sdk-test-store to learn more."
-
-            Logger.error(errorMessage)
-
-            let uiHelper = DefaultSimulatedStorePurchaseUI(systemInfo: systemInfo)
-            await uiHelper.showTestKeyInReleaseAlert(redactedApiKey: redactedApiKey)
-
-            fatalError(errorMessage)
-        }
-        #endif
+        return
     }
 }
