@@ -2629,6 +2629,7 @@ workflows:
     jobs:
       - remote-config-production-tests:
           context:
+            - config-endpoint-tests
             - slack-secrets
 
   daily-loadshedder-integration-tests:
