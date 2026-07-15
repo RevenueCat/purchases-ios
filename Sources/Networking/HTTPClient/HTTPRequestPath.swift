@@ -372,11 +372,15 @@ extension HTTPRequest.Path: HTTPRequestPath {
     }
 
     var relativePath: String {
-        return "/v1/\(self.pathComponent)"
+        let component = self.pathComponent
+        if component.hasPrefix("/") { return component }
+        return "/v1/\(component)"
     }
 
     var relativeIAMPath: String {
-        return "/v1/\(self.iamPathComponent)"
+        let component = self.iamPathComponent
+        if component.hasPrefix("/") { return component }
+        return "/v1/\(component)"
     }
 
     var pathComponent: String {
@@ -441,13 +445,13 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "config/\(Self.escape(domain))"
 
         case .tokenLogin:
-            return "auth/login"
+            return "/auth/login"
 
         case .tokenRefresh:
-            return "auth/token"
+            return "/auth/token"
 
         case .tokenLogOut:
-            return "auth/revoke"
+            return "/auth/revoke"
         }
     }
 
@@ -513,13 +517,13 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "config/\(Self.escape(domain))"
 
         case .tokenLogin:
-            return "auth/login"
+            return "/auth/login"
 
         case .tokenRefresh:
-            return "auth/token"
+            return "/auth/token"
 
         case .tokenLogOut:
-            return "auth/revoke"
+            return "/auth/revoke"
         }
     }
 

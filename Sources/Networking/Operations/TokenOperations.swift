@@ -74,28 +74,28 @@ private extension TokenLogInOperation {
             body = StandardBody(method: "oidc",
                                 scope: "openid offline_access",
                                 idToken: token.asString,
-                                linkToID: self.configuration.appUserID)
+                                linkToID: nil)
         case .google(let token):
             body = StandardBody(method: "google",
                                 scope: "openid offline_access",
                                 idToken: token.asString,
-                                linkToID: self.configuration.appUserID)
+                                linkToID: nil)
         case .siwa(let token):
             body = StandardBody(method: "apple",
                                 scope: "openid offline_access",
                                 idToken: token.asString,
-                                linkToID: self.configuration.appUserID)
+                                linkToID: nil)
         case .facebook(let token, let email):
             body = FacebookBody(method: "facebook",
                                 scope: "openid offline_access",
                                 idToken: token.asString,
                                 email: email,
-                                linkToID: self.configuration.appUserID)
+                                linkToID: nil)
         case .firebase(let token):
             body = StandardBody(method: "firebase",
                                 scope: "openid offline_access",
                                 idToken: token.asString,
-                                linkToID: self.configuration.appUserID)
+                                linkToID: nil)
         }
 
         let request = HTTPRequest(method: .post(body), path: .tokenLogin)
@@ -211,7 +211,7 @@ extension TokenLogInOperation {
         // because the CodingKeys are also used for request signing via `contentForSignature`.
         // swiftlint:disable:next nesting
         private enum CodingKeys: String, CodingKey {
-            case method = "app_user_id"
+            case method = "method"
             case scope = "scope"
             case idToken = "id_token"
             case linkToID = "link_to_id"
@@ -237,7 +237,7 @@ extension TokenLogInOperation {
 
         // swiftlint:disable:next nesting
         private enum CodingKeys: String, CodingKey {
-            case method = "app_user_id"
+            case method = "method"
             case scope = "scope"
             case idToken = "id_token"
             case email = "email"

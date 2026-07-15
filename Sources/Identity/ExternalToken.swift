@@ -20,8 +20,8 @@ public final class ExternalToken: NSObject {
         ExternalToken(token: .google(token))
     }
 
-    @objc public static func signInWithApple(_ token: Data) -> ExternalToken {
-        ExternalToken(token: .siwa(token))
+    @objc public static func signInWithApple(_ identityToken: Data) -> ExternalToken {
+        ExternalToken(token: .siwa(identityToken))
     }
 
     @objc public static func facebook(_ idToken: Data) -> ExternalToken {
