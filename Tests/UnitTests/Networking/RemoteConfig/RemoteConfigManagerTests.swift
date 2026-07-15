@@ -106,6 +106,22 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .identityChange
     }
 
+    func testRefreshKeepsForcingAppStartUntilARefreshSucceeds() {
+        // A failed first refresh must not consume the forced `.appStart`, so the next attempt is forced too.
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+        self.remoteConfigAPI.complete(with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1)))))
+        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
+
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+
+        // Once a refresh succeeds, the forcing stops and later refreshes report their own context.
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .identityChange
+    }
+
     func testIsDisabledDefaultsToFalse() {
         expect(self.manager.isDisabled) == false
     }
