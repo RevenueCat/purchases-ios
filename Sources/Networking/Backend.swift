@@ -58,7 +58,8 @@ class Backend {
             httpClient: .dedicatedRemoteConfig(systemInfo: systemInfo,
                                                eTagManager: eTagManager,
                                                diagnosticsTracker: diagnosticsTracker,
-                                               requestTimeout: httpClientTimeout),
+                                               requestTimeout: httpClientTimeout,
+                                               apiSourceProvider: apiSourceProvider),
             operationDispatcher: operationDispatcher,
             operationQueue: QueueProvider.createRemoteConfigQueue(),
             diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
@@ -297,14 +298,16 @@ private extension HTTPClient {
         systemInfo: SystemInfo,
         eTagManager: ETagManager,
         diagnosticsTracker: DiagnosticsTrackerType?,
-        requestTimeout: TimeInterval
+        requestTimeout: TimeInterval,
+        apiSourceProvider: RemoteConfigSourceProviderType?
     ) -> HTTPClient {
         HTTPClient(systemInfo: systemInfo,
                    eTagManager: eTagManager,
                    signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
                    diagnosticsTracker: diagnosticsTracker,
                    requestTimeout: requestTimeout,
-                   operationDispatcher: OperationDispatcher.default)
+                   operationDispatcher: OperationDispatcher.default,
+                   apiSourceProvider: apiSourceProvider)
     }
 
 }
