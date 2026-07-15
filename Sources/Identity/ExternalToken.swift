@@ -16,6 +16,26 @@ public final class ExternalToken: NSObject {
         ExternalToken(token: .oidc(token))
     }
 
+    @objc public static func google(_ token: Data) -> ExternalToken {
+        ExternalToken(token: .google(token))
+    }
+
+    @objc public static func signInWithApple(_ token: Data) -> ExternalToken {
+        ExternalToken(token: .siwa(token))
+    }
+
+    @objc public static func facebook(_ idToken: Data) -> ExternalToken {
+        ExternalToken(token: .facebook(idToken, nil))
+    }
+
+    @objc public static func facebook(idToken: Data, email: String) -> ExternalToken {
+        ExternalToken(token: .facebook(idToken, email))
+    }
+
+    @objc public static func firebase(_ token: Data) -> ExternalToken {
+        ExternalToken(token: .firebase(token))
+    }
+
     internal let authToken: ExternalAuthToken
 
     private init(token: ExternalAuthToken) {
@@ -27,16 +47,28 @@ public final class ExternalToken: NSObject {
 
 internal enum ExternalAuthToken: Hashable {
     case oidc(Data)
+    case google(Data)
+    case siwa(Data)
+    case facebook(Data, String?)
+    case firebase(Data)
 
     internal var cacheIdentifier: String {
         switch self {
         case .oidc(let data): return "oidc-\(data.hashString)"
+        case .google(let data): return "google-\(data.hashString)"
+        case .siwa(let data): return "siwa-\(data.hashString)"
+        case .facebook(let data, _): return "fb-\(data.hashString)"
+        case .firebase(let data): return "firebase-\(data.hashString)"
         }
     }
 
-    internal var tokenData: Data {
+    internal func validate() -> Bool {
         switch self {
-        case .oidc(let data): return data
+        case .oidc(let data): return data.isEmpty == false
+        case .google(let data): return data.isEmpty == false
+        case .siwa(let data): return data.isEmpty == false
+        case .facebook(let data, _): return data.isEmpty == false
+        case .firebase(let data): return data.isEmpty == false
         }
     }
 }

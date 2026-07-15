@@ -92,7 +92,7 @@ class HTTPClient {
                                     authHeaders: self.authHeaders,
                                     defaultHeaders: self.defaultHeaders,
                                     verificationMode: verificationMode ?? self.systemInfo.responseVerificationMode,
-                                    preferIAMPath: self.tokenManager.enabled,
+                                    preferIAMPath: self.tokenManager.hasCurrentAccessToken,
                                     internalSettings: self.systemInfo.dangerousSettings.internalSettings,
                                     completionHandler: completionHandler))
     }
@@ -786,7 +786,7 @@ extension HTTPClient {
                                     authHeaders: self.authHeaders,
                                     defaultHeaders: self.defaultHeaders,
                                     verificationMode: self.systemInfo.responseVerificationMode,
-                                    preferIAMPath: self.tokenManager.enabled,
+                                    preferIAMPath: self.tokenManager.hasCurrentAccessToken,
                                     internalSettings: self.systemInfo.dangerousSettings.internalSettings,
                                     completionHandler: { (result: VerifiedHTTPResponse<TokenResponse>.Result) in
 

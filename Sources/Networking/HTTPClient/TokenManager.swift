@@ -35,6 +35,8 @@ class TokenManager {
         self.storage = storage
     }
 
+    var hasCurrentAccessToken: Bool { currentAccessToken != nil }
+
     var currentRefreshToken: String? {
         get {
             guard enabled == true else { return nil }

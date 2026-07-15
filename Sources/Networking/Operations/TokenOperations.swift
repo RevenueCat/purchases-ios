@@ -58,8 +58,9 @@ extension TokenLogInOperation: @unchecked Sendable {}
 private extension TokenLogInOperation {
 
     func logIn(completion: @escaping () -> Void) {
-        guard self.token.tokenData.isEmpty == false else {
+        guard self.token.validate() else {
             self.tokenCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
+                #warning("DAVE: this could use a better failure reason")
                 callback.completion(.failure(.missingAppUserID()))
             }
             completion()
@@ -67,13 +68,34 @@ private extension TokenLogInOperation {
             return
         }
 
-        let body: Body
+        let body: any HTTPRequestBody
         switch token {
         case .oidc(let token):
-            body = Body(method: "oidc",
-                        scope: "openid offline_access",
-                        idToken: token.asString,
-                        linkToID: self.configuration.appUserID)
+            body = StandardBody(method: "oidc",
+                                scope: "openid offline_access",
+                                idToken: token.asString,
+                                linkToID: self.configuration.appUserID)
+        case .google(let token):
+            body = StandardBody(method: "google",
+                                scope: "openid offline_access",
+                                idToken: token.asString,
+                                linkToID: self.configuration.appUserID)
+        case .siwa(let token):
+            body = StandardBody(method: "apple",
+                                scope: "openid offline_access",
+                                idToken: token.asString,
+                                linkToID: self.configuration.appUserID)
+        case .facebook(let token, let email):
+            body = FacebookBody(method: "facebook",
+                                scope: "openid offline_access",
+                                idToken: token.asString,
+                                email: email,
+                                linkToID: self.configuration.appUserID)
+        case .firebase(let token):
+            body = StandardBody(method: "firebase",
+                                scope: "openid offline_access",
+                                idToken: token.asString,
+                                linkToID: self.configuration.appUserID)
         }
 
         let request = HTTPRequest(method: .post(body), path: .tokenLogin)
@@ -183,12 +205,12 @@ final class TokenRevocationOperation: CacheableNetworkOperation, @unchecked Send
 
 extension TokenLogInOperation {
 
-    struct Body: Encodable {
+    struct StandardBody: Encodable, HTTPRequestBody {
 
         // Note: These keys need to be explicitly declared using snake_case
         // because the CodingKeys are also used for request signing via `contentForSignature`.
         // swiftlint:disable:next nesting
-        fileprivate enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case method = "app_user_id"
             case scope = "scope"
             case idToken = "id_token"
@@ -197,22 +219,47 @@ extension TokenLogInOperation {
 
         let method: String
         let scope: String
-        let idToken: String?
+        let idToken: String
         let linkToID: String?
+
+        var contentForSignature: [(key: String, value: String?)] {
+            return [
+                (Self.CodingKeys.method.stringValue, self.method),
+                (Self.CodingKeys.scope.stringValue, self.scope),
+                (Self.CodingKeys.idToken.stringValue, self.idToken),
+                (Self.CodingKeys.linkToID.stringValue, self.linkToID)
+            ]
+        }
 
     }
 
-}
+    struct FacebookBody: Encodable, HTTPRequestBody {
 
-extension TokenLogInOperation.Body: HTTPRequestBody {
+        // swiftlint:disable:next nesting
+        private enum CodingKeys: String, CodingKey {
+            case method = "app_user_id"
+            case scope = "scope"
+            case idToken = "id_token"
+            case email = "email"
+            case linkToID = "link_to_id"
+        }
 
-    var contentForSignature: [(key: String, value: String?)] {
-        return [
-            (Self.CodingKeys.method.stringValue, self.method),
-            (Self.CodingKeys.scope.stringValue, self.scope),
-            (Self.CodingKeys.idToken.stringValue, self.idToken),
-            (Self.CodingKeys.linkToID.stringValue, self.linkToID)
-        ]
+        let method: String
+        let scope: String
+        let idToken: String
+        let email: String?
+        let linkToID: String?
+
+        var contentForSignature: [(key: String, value: String?)] {
+            return [
+                (Self.CodingKeys.method.stringValue, self.method),
+                (Self.CodingKeys.scope.stringValue, self.scope),
+                (Self.CodingKeys.idToken.stringValue, self.idToken),
+                (Self.CodingKeys.email.stringValue, self.email),
+                (Self.CodingKeys.linkToID.stringValue, self.linkToID)
+            ]
+        }
+
     }
 
 }
