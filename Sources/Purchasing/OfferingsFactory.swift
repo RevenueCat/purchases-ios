@@ -78,7 +78,8 @@ class OfferingsFactory {
             return nil
         }
 
-        let hasPaywallComponents = uiConfig != nil && offering.paywallComponents != nil
+        let hasPaywallComponents = offering.hasPaywallComponents == true
+            || (uiConfig != nil && offering.paywallComponents != nil)
         let paywallComponents: Offering.PaywallComponents? = {
             if shouldCreatePaywallComponents, let uiConfig, let paywallComponents = offering.paywallComponents {
                 return .init(
@@ -170,6 +171,9 @@ private extension Offerings.Contents {
     func removingPaywallComponents() -> Self {
         let prunedOfferings = self.response.offerings.map { offering in
             var offering = offering
+            offering.hasPaywallComponents = offering.hasPaywallComponents ?? (
+                self.response.uiConfig != nil && offering.paywallComponents != nil
+            )
             offering.paywallComponents = nil
             offering.draftPaywallComponents = nil
             return offering
