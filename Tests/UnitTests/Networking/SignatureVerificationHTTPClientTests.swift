@@ -1302,7 +1302,7 @@ private extension BaseSignatureVerificationHTTPClientTests {
 
     static var remoteConfigRequest: HTTPRequest {
         return .init(
-            method: .post(RemoteConfigRequest(appUserID: "app-user-id")),
+            method: .post(RemoteConfigRequest(fetchContext: .appStart, appUserID: "app-user-id")),
             path: HTTPRequest.Path.remoteConfig(domain: "app")
         )
     }
