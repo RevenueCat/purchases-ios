@@ -95,6 +95,20 @@ class OfferingsManager {
                 return
             }
 
+            guard !self.shouldRefreshOfferingsWithPrunedComponents(memoryCachedOfferings) else {
+                self.fetchFromNetwork(appUserID: appUserID,
+                                      fetchPolicy: fetchPolicy) { [weak self] result in
+                    self?.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
+                                                          startTime: startTime,
+                                                          cacheStatus: .stale,
+                                                          error: result.error,
+                                                          requestedProductIds: result.value?.requestedProductIds,
+                                                          notFoundProductIds: result.value?.notFoundProductIds)
+                    completion?(result.map(\.offerings))
+                }
+                return
+            }
+
             let cacheStatus = self.deviceCache.offeringsCacheStatus(isAppBackgrounded: isAppBackgrounded)
             Logger.debug(Strings.offering.vending_offerings_cache_from_memory)
             if cacheStatus == .stale {
@@ -301,7 +315,8 @@ private extension OfferingsManager {
             if let createdOfferings = self.offeringsFactory.createOfferings(
                 from: productsByID,
                 contents: contents,
-                loadedFromDiskCache: loadedFromDiskCache
+                loadedFromDiskCache: loadedFromDiskCache,
+                shouldCreatePaywallComponents: self.shouldCreatePaywallComponents
             ) {
                 completion(.success(OfferingsResultData(offerings: createdOfferings,
                                                         requestedProductIds: productIdentifiers,
@@ -413,6 +428,23 @@ private extension OfferingsManager {
             await workflowsConfigProvider.warmPrefetchedWorkflows()
         } else {
             _ = await remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
+        }
+    }
+
+    /// Keep the offerings-provided components path when remote config is not active. When it is active,
+    /// workflows resolve paywall components from `/v1/config`, so retaining the offerings copy duplicates memory.
+    var shouldCreatePaywallComponents: Bool {
+        return self.remoteConfigManager?.isDisabled ?? true
+    }
+
+    /// If remote config was disabled after a workflows-enabled offerings fetch, the in-memory offering
+    /// can still carry only the lightweight paywall marker, not the renderable components payload.
+    /// Refetch so the legacy offerings paywall fallback is restored for the disabled-RC path.
+    func shouldRefreshOfferingsWithPrunedComponents(_ offerings: Offerings) -> Bool {
+        guard self.remoteConfigManager?.isDisabled == true else { return false }
+
+        return offerings.all.values.contains { offering in
+            offering.hasPaywallComponents && offering.paywallComponents == nil
         }
     }
 

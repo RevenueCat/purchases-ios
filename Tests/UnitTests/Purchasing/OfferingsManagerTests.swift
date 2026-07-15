@@ -972,15 +972,18 @@ private extension OfferingsManagerTests {
         static let sampleOfferings: Offerings = MockData.makeSampleOfferings()
 
         /// A fresh `Offerings` instance per call, for tests that need two distinguishable snapshots.
-        static func makeSampleOfferings() -> Offerings {
+        static func makeSampleOfferings(hasPaywallComponents: Bool = false) -> Offerings {
             return .init(
-            offerings: MockData.anyBackendOfferingsContents.response.offerings
-                .map { offering in
-                    Offering(
-                        identifier: offering.identifier,
-                        serverDescription: offering.description,
-                        metadata: offering.metadata,
-                        availablePackages: offering.packages.map { package in
+                offerings: MockData.anyBackendOfferingsContents.response.offerings
+                    .map { offering in
+                        Offering(
+                            identifier: offering.identifier,
+                            serverDescription: offering.description,
+                            metadata: offering.metadata,
+                            paywallComponents: nil,
+                            hasPaywallComponents: hasPaywallComponents,
+                            draftPaywallComponents: nil,
+                            availablePackages: offering.packages.map { package in
                                 .init(
                                     identifier: package.identifier,
                                     packageType: Package.packageType(from: package.identifier),
@@ -990,16 +993,16 @@ private extension OfferingsManagerTests {
                                     offeringIdentifier: offering.identifier,
                                     webCheckoutUrl: nil
                                 )
-                        },
-                        webCheckoutUrl: nil
-                    )
-                }
-                .dictionaryWithKeys(\.identifier),
-            currentOfferingID: MockData.anyBackendOfferingsContents.response.currentOfferingId,
-            placements: nil,
-            targeting: nil,
-            contents: MockData.anyBackendOfferingsContents,
-            loadedFromDiskCache: false
+                            },
+                            webCheckoutUrl: nil
+                        )
+                    }
+                    .dictionaryWithKeys(\.identifier),
+                currentOfferingID: MockData.anyBackendOfferingsContents.response.currentOfferingId,
+                placements: nil,
+                targeting: nil,
+                contents: MockData.anyBackendOfferingsContents,
+                loadedFromDiskCache: false
             )
         }
     }
@@ -1020,6 +1023,85 @@ extension OfferingsManagerTests {
         }
 
         expect(result).to(beSuccess())
+    }
+
+    func testGetOfferingsKeepsPaywallComponentsWhenRemoteConfigManagerIsNil() {
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(self.mockOfferingsFactory.invokedCreateOfferingsShouldCreatePaywallComponents) == true
+    }
+
+    func testGetOfferingsSkipsPaywallComponentsWhenRemoteConfigManagerIsEnabled() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.isDisabled = false
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let result = waitUntilValue { completed in
+            manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(self.mockOfferingsFactory.invokedCreateOfferingsShouldCreatePaywallComponents) == false
+    }
+
+    func testGetOfferingsKeepsPaywallComponentsWhenRemoteConfigManagerIsDisabled() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.isDisabled = true
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
+
+        let result = waitUntilValue { completed in
+            manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(self.mockOfferingsFactory.invokedCreateOfferingsShouldCreatePaywallComponents) == true
+    }
+
+    func testGetOfferingsUsesPrunedMemoryCacheWhenRemoteConfigManagerIsEnabled() {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.isDisabled = false
+        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
+        let cachedOfferings = MockData.makeSampleOfferings(hasPaywallComponents: true)
+        self.mockDeviceCache.stubbedOfferings = cachedOfferings
+        self.mockDeviceCache.stubbedOfferingCacheStatus = .valid
+
+        let result = waitUntilValue { completed in
+            manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(result?.value).to(beIdenticalTo(cachedOfferings))
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == false
+    }
+
+    func testGetOfferingsRefetchesPrunedMemoryCacheWhenRemoteConfigManagerIsDisabled() throws {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.isDisabled = true
+        let manager = self.makeOfferingsManager(
+            remoteConfigManager: mockRemoteConfigManager,
+            offeringsFactory: OfferingsFactory(systemInfo: self.mockSystemInfo)
+        )
+        self.mockDeviceCache.stubbedOfferings = MockData.makeSampleOfferings(hasPaywallComponents: true)
+        self.mockDeviceCache.stubbedOfferingCacheStatus = .valid
+        let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
+            Offerings.Contents(response: offeringResp, httpResponseOriginalSource: .mainServer)
+        )
+
+        let result = waitUntilValue { completed in
+            manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == true
+        expect(result?.value?.offering(identifier: "paywall_components")?.paywallComponents).toNot(beNil())
     }
 
     func testGetOfferingsDoesNotDeliverUntilConfigReady() {
@@ -1302,12 +1384,15 @@ extension OfferingsManagerTests {
         expect(mockRemoteConfigManager.invokedTopicCount) > 0
     }
 
-    private func makeOfferingsManager(remoteConfigManager: RemoteConfigManagerType?) -> OfferingsManager {
+    private func makeOfferingsManager(
+        remoteConfigManager: RemoteConfigManagerType?,
+        offeringsFactory: OfferingsFactory? = nil
+    ) -> OfferingsManager {
         return OfferingsManager(deviceCache: self.mockDeviceCache,
                                 operationDispatcher: self.mockOperationDispatcher,
                                 systemInfo: self.mockSystemInfo,
                                 backend: self.mockBackend,
-                                offeringsFactory: self.mockOfferingsFactory,
+                                offeringsFactory: offeringsFactory ?? self.mockOfferingsFactory,
                                 productsManager: self.mockProductsManager,
                                 diagnosticsTracker: self.mockDiagnosticsTracker,
                                 remoteConfigManager: remoteConfigManager)
