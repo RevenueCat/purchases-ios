@@ -180,8 +180,12 @@ struct ImageComponentView: View {
                         }
                     }
                     .onSizeChange { newSize in
-                        let effectiveCurrentSize = self.size ?? self.viewModel.cachedMeasuredSize
-                        guard effectiveCurrentSize != newSize else {
+                        // Compare against local @State only. Looping carousels mount multiple
+                        // copies of a page that share one ImageComponentViewModel (and thus one
+                        // cachedMeasuredSize). If we fell back to the shared cache here, the first
+                        // copy to measure would poison later copies: their local size would stay
+                        // nil and they'd remain stuck in the "size unknown" render path.
+                        guard Self.shouldAcceptMeasuredSize(localSize: self.size, newSize: newSize) else {
                             return
                         }
 
@@ -191,6 +195,15 @@ struct ImageComponentView: View {
                 }
             }
         }
+    }
+
+    /// Whether a newly measured size should be written into this view's local `@State`.
+    ///
+    /// Intentionally ignores any shared `cachedMeasuredSize`: duplicate carousel page copies
+    /// share one view model, so comparing against the cache would let the first copy to measure
+    /// prevent every other copy from ever applying the size to its own state.
+    static func shouldAcceptMeasuredSize(localSize: CGSize?, newSize: CGSize) -> Bool {
+        localSize != newSize
     }
 
     static func renderPlan(

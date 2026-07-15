@@ -29,6 +29,7 @@ class BaseProductionRemoteConfigIntegrationTests: BaseBackendIntegrationTests {
         return try await withCheckedThrowingContinuation { continuation in
             self.remoteConfigAPI.getRemoteConfig(
                 request: .init(
+                    fetchContext: .appStart,
                     appUserID: self.appUserID,
                     domain: Self.domain,
                     manifest: manifest,

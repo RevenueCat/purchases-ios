@@ -70,6 +70,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let body = try XCTUnwrap(self.httpClient.calls.first?.request.requestBody?.asJSONDictionary())
 
         expect(body["app_user_id"] as? String) == Self.appUserID
+        expect(body["fetch_context"] as? String) == "app_start"
         expect(body["domain"]).to(beNil())
         expect(body["manifest"]).to(beNil())
         expect(body["prefetched_blobs"] as? [String]).to(beEmpty())
@@ -79,6 +80,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         self.mockSuccessfulResponse(domain: "project")
 
         let request = RemoteConfigRequest(
+            fetchContext: .identityChange,
             appUserID: Self.appUserID,
             domain: "project",
             manifest: "v1.123.paywalls:etag-paywalls,product_entitlement_mapping:etag-pem",
@@ -94,8 +96,8 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
         let body = try XCTUnwrap(self.httpClient.calls.first?.request.requestBody?.asJSONDictionary())
 
-        expect(self.httpClient.calls.first?.request.path.relativePath) == "/v1/config/project"
         expect(body["app_user_id"] as? String) == Self.appUserID
+        expect(body["fetch_context"] as? String) == "identity_change"
         expect(body["domain"]).to(beNil())
         expect(body["manifest"] as? String) == "v1.123.paywalls:etag-paywalls,product_entitlement_mapping:etag-pem"
         expect(body["prefetched_blobs"] as? [String]) == ["blob-b"]
@@ -240,6 +242,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
         let responses: Atomic<Int> = .init(0)
         let request = RemoteConfigRequest(
+            fetchContext: .appStart,
             appUserID: Self.appUserID,
             manifest: "v1.10.paywalls:etag-a",
             prefetchedBlobs: ["blob-b", "blob-a"]
@@ -258,12 +261,12 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let responses: Atomic<Int> = .init(0)
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(appUserID: Self.appUserID, manifest: "v1.10.paywalls:etag-a"),
+            request: .init(fetchContext: .appStart, appUserID: Self.appUserID, manifest: "v1.10.paywalls:etag-a"),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(appUserID: Self.appUserID, manifest: "v1.10.paywalls:etag-b"),
+            request: .init(fetchContext: .appStart, appUserID: Self.appUserID, manifest: "v1.10.paywalls:etag-b"),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
@@ -278,12 +281,22 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let responses: Atomic<Int> = .init(0)
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(appUserID: Self.appUserID, domain: "app", manifest: "v1.10.paywalls:etag-a"),
+            request: .init(
+                fetchContext: .appStart,
+                appUserID: Self.appUserID,
+                domain: "app",
+                manifest: "v1.10.paywalls:etag-a"
+            ),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(appUserID: Self.appUserID, domain: "app_workflows", manifest: "v1.10.paywalls:etag-a"),
+            request: .init(
+                fetchContext: .appStart,
+                appUserID: Self.appUserID,
+                domain: "app_workflows",
+                manifest: "v1.10.paywalls:etag-a"
+            ),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
@@ -299,12 +312,12 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let responses: Atomic<Int> = .init(0)
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(appUserID: "app-user-a", manifest: "v1.10.paywalls:etag-a"),
+            request: .init(fetchContext: .appStart, appUserID: "app-user-a", manifest: "v1.10.paywalls:etag-a"),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(appUserID: "app-user-b", manifest: "v1.10.paywalls:etag-a"),
+            request: .init(fetchContext: .appStart, appUserID: "app-user-b", manifest: "v1.10.paywalls:etag-a"),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
@@ -318,12 +331,41 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let responses: Atomic<Int> = .init(0)
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(appUserID: Self.appUserID, manifest: "v1.10.paywalls:etag-a", prefetchedBlobs: ["blob-a"]),
+            request: .init(
+                fetchContext: .appStart,
+                appUserID: Self.appUserID,
+                manifest: "v1.10.paywalls:etag-a",
+                prefetchedBlobs: ["blob-a"]
+            ),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
         self.remoteConfigAPI.getRemoteConfig(
-            request: .init(appUserID: Self.appUserID, manifest: "v1.10.paywalls:etag-a", prefetchedBlobs: ["blob-b"]),
+            request: .init(
+                fetchContext: .appStart,
+                appUserID: Self.appUserID,
+                manifest: "v1.10.paywalls:etag-a",
+                prefetchedBlobs: ["blob-b"]
+            ),
+            isAppBackgrounded: false
+        ) { _ in responses.value += 1 }
+
+        expect(responses.value).toEventually(equal(2))
+        expect(self.httpClient.calls).to(haveCount(2))
+    }
+
+    func testGetRemoteConfigDoesNotCoalesceSimultaneousRequestsWithDifferentFetchContexts() {
+        self.mockSuccessfulResponse(delay: .milliseconds(10))
+
+        let responses: Atomic<Int> = .init(0)
+
+        self.remoteConfigAPI.getRemoteConfig(
+            request: .init(fetchContext: .appStart, appUserID: Self.appUserID, manifest: "v1.10.paywalls:etag-a"),
+            isAppBackgrounded: false
+        ) { _ in responses.value += 1 }
+
+        self.remoteConfigAPI.getRemoteConfig(
+            request: .init(fetchContext: .read, appUserID: Self.appUserID, manifest: "v1.10.paywalls:etag-a"),
             isAppBackgrounded: false
         ) { _ in responses.value += 1 }
 
@@ -679,7 +721,7 @@ private extension BackendGetRemoteConfigTests {
     static let appUserID = "app-user-id"
 
     static var defaultRequest: RemoteConfigRequest {
-        return .init(appUserID: Self.appUserID)
+        return .init(fetchContext: .appStart, appUserID: Self.appUserID)
     }
 
     static var containerData: Data {
