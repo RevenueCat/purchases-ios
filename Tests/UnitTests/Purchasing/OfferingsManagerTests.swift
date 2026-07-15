@@ -1090,7 +1090,15 @@ extension OfferingsManagerTests {
         )
         self.mockDeviceCache.stubbedOfferings = MockData.makeSampleOfferings(hasPaywallComponents: true)
         self.mockDeviceCache.stubbedOfferingCacheStatus = .valid
-        let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let response: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let uiConfig: UIConfig = try BaseHTTPResponseTest.decodeFixture("UIConfig")
+        let offeringResp = OfferingsResponse(
+            currentOfferingId: response.currentOfferingId,
+            offerings: response.offerings,
+            placements: response.placements,
+            targeting: response.targeting,
+            uiConfig: uiConfig
+        )
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
             Offerings.Contents(response: offeringResp, httpResponseOriginalSource: .mainServer)
         )
