@@ -27,7 +27,10 @@ struct RcMaestroApp: App {
                                 return request.fallbackUrlIndex == nil
                             }
                         }
-                    )
+                    ),
+                    // Workflows (multipage paywalls) read through remote config; this internal flag
+                    // is the runtime gate (no compile flag needed for the Maestro app).
+                    useWorkflows: true
                 ))
                 .build()
         )
@@ -59,7 +62,8 @@ struct RcMaestroApp: App {
 enum E2ETestFlow: String {
     case subscribeFromV1Paywall = "subscribe_from_v1_paywall"
     case subscribeFromV2Paywall = "subscribe_from_v2_paywall"
-    
+    case openWorkflow = "open_workflow"
+
     @ViewBuilder
     var view: some View {
         switch self {
@@ -67,6 +71,8 @@ enum E2ETestFlow: String {
             E2ETestFlowView.SubscribeFromV1Paywall()
         case .subscribeFromV2Paywall:
             E2ETestFlowView.SubscribeFromV2Paywall()
+        case .openWorkflow:
+            E2ETestFlowView.OpenWorkflow()
         }
     }
 }

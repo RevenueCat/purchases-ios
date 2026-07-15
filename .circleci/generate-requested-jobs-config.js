@@ -32,6 +32,7 @@ const JOBS = {
   "integration-tests-all": ["slack-secrets"],
   "lint": ["slack-secrets"],
   "pod-lib-lint": ["slack-secrets"],
+  "remote-config-production-tests": ["config-endpoint-tests", "slack-secrets"],
   "revenuecat-admob-tests": ["slack-secrets"],
   "run-all-maestro-e2e-tests": ["e2e-tests", "slack-secrets"],
   "run-revenuecat-ui-ios-18-and-17": ["slack-secrets"],
