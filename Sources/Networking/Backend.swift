@@ -56,10 +56,27 @@ class Backend {
                                           systemInfo: systemInfo,
                                           offlineCustomerInfoCreator: offlineCustomerInfoCreator,
                                           dateProvider: dateProvider)
-        self.init(backendConfig: config, attributionFetcher: attributionFetcher)
+        let remoteConfigConfig = BackendConfiguration(
+            httpClient: .dedicatedRemoteConfig(systemInfo: systemInfo,
+                                               eTagManager: eTagManager,
+                                               diagnosticsTracker: diagnosticsTracker,
+                                               networkTimeout: httpClientTimeout,
+                                               apiSourceProvider: apiSourceProvider,
+                                               timeoutManager: timeoutManager),
+            operationDispatcher: operationDispatcher,
+            operationQueue: QueueProvider.createRemoteConfigQueue(),
+            diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
+            systemInfo: systemInfo,
+            offlineCustomerInfoCreator: offlineCustomerInfoCreator,
+            dateProvider: dateProvider)
+        self.init(backendConfig: config,
+                  remoteConfigBackendConfig: remoteConfigConfig,
+                  attributionFetcher: attributionFetcher)
     }
 
-    convenience init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
+    convenience init(backendConfig: BackendConfiguration,
+                     remoteConfigBackendConfig: BackendConfiguration? = nil,
+                     attributionFetcher: AttributionFetcher) {
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let identity = IdentityAPI(backendConfig: backendConfig)
         let offerings = OfferingsAPI(backendConfig: backendConfig)
@@ -70,7 +87,7 @@ class Backend {
         let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
         let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
         let adsAPI = AdsAPI(backendConfig: backendConfig)
-        let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
+        let remoteConfigAPI = RemoteConfigAPI(backendConfig: remoteConfigBackendConfig ?? backendConfig)
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
@@ -267,6 +284,35 @@ extension Backend {
             return operationQueue
         }
 
+        static func createRemoteConfigQueue() -> OperationQueue {
+            let operationQueue = OperationQueue()
+            operationQueue.name = "RC Remote Config Queue"
+            operationQueue.maxConcurrentOperationCount = 1
+            return operationQueue
+        }
+
+    }
+
+}
+
+private extension HTTPClient {
+
+    static func dedicatedRemoteConfig(
+        systemInfo: SystemInfo,
+        eTagManager: ETagManager,
+        diagnosticsTracker: DiagnosticsTrackerType?,
+        networkTimeout: NetworkTimeout,
+        apiSourceProvider: RemoteConfigSourceProviderType?,
+        timeoutManager: HTTPRequestTimeoutManagerType?
+    ) -> HTTPClient {
+        HTTPClient(systemInfo: systemInfo,
+                   eTagManager: eTagManager,
+                   signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
+                   diagnosticsTracker: diagnosticsTracker,
+                   networkTimeout: networkTimeout,
+                   operationDispatcher: OperationDispatcher.default,
+                   apiSourceProvider: apiSourceProvider,
+                   timeoutManager: timeoutManager)
     }
 
 }

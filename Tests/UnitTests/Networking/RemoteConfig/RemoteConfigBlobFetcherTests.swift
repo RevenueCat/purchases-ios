@@ -7,6 +7,8 @@
 
 import Foundation
 import Nimble
+import OHHTTPStubs
+import OHHTTPStubsSwift
 @testable import RevenueCat
 import XCTest
 
@@ -31,6 +33,7 @@ final class RemoteConfigBlobFetcherTests: TestCase {
     }
 
     override func tearDownWithError() throws {
+        HTTPStubs.removeAllStubs()
         self.downloader.cancelAll()
         self.fetcher = nil
         self.sourceProvider = nil
@@ -214,6 +217,41 @@ final class RemoteConfigBlobFetcherTests: TestCase {
             Self.templateURL.replacingOccurrences(of: Self.placeholder, with: ref),
             Self.backupTemplateURL.replacingOccurrences(of: Self.placeholder, with: ref)
         ]
+        expect(self.blobStore.invokedWriteParameters?.data) == payload
+    }
+
+    func testRealDownloaderUsesFiveSecondTimeoutAndRetriesNextSourceAfterTimeout() async {
+        let payload = "timeout fallback payload".asData
+        let ref = Self.ref(for: payload)
+        let primaryURL = Self.templateURL.replacingOccurrences(of: Self.placeholder, with: ref)
+        let backupURL = Self.backupTemplateURL.replacingOccurrences(of: Self.placeholder, with: ref)
+
+        stub(condition: isAbsoluteURLString(primaryURL)) { _ in
+            return HTTPStubsResponse(error: URLError(.timedOut))
+        }
+        stub(condition: isAbsoluteURLString(backupURL)) { _ in
+            return HTTPStubsResponse(
+                data: payload,
+                statusCode: Int32(HTTPStatusCode.success.rawValue),
+                headers: nil
+            )
+        }
+
+        self.sourceProvider = Self.sourceProvider(urls: [
+            Self.templateURL,
+            Self.backupTemplateURL
+        ])
+        self.fetcher = RemoteConfigBlobFetcher(
+            blobStore: self.blobStore,
+            sourceProvider: self.sourceProvider,
+            downloader: URLSessionRemoteConfigBlobDownloader(
+                timeoutManager: MockHTTPRequestTimeoutManager(defaultTimeout: 15)
+            )
+        )
+
+        let result = await self.fetcher.ensureDownloaded(ref: ref)
+
+        expect(result) == true
         expect(self.blobStore.invokedWriteParameters?.data) == payload
     }
 

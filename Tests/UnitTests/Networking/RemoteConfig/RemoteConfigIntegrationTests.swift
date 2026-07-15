@@ -280,6 +280,44 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(requestedURLs) == [Self.url(source, ref: externalRef)]
     }
 
+    func testMultipleExternalPrefetchBlobsAllDownloadStoreAndReadThroughFacade() async throws {
+        // Production shape: many prefetch-flagged workflow items, each backed by a distinct external
+        // blob. The concurrent prefetch fan-out must download and store every one through the real
+        // store. Count is above the scheduler's concurrency cap (4) so the queue drain past the
+        // first batch is exercised, which a single-blob test can never reach.
+        let count = 5
+        let source = Self.blobSource("primary")
+        let blobs = (0..<count).map { "external-blob-\($0)".asData }
+        let refs = blobs.map { RCContainerTestData.blobRef(for: $0) }
+
+        var items: RemoteConfiguration.ConfigTopic = [:]
+        for index in 0..<count {
+            items["wf-\(index)"] = .init(blobRef: refs[index], prefetch: true)
+            await self.downloader.setResponse(.success(blobs[index]), for: source, ref: refs[index])
+        }
+        let container = try Self.containerData(topics: Self.topics(
+            sources: Self.sourcesTopic(blobSources: [source]),
+            workflows: Self.workflowTopic(items: items)
+        ))
+
+        await self.refresh(with: container)
+        // The gate's exact call: blocks until every prefetch blob has settled.
+        _ = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows)
+
+        let requestedURLs = await self.downloader.requestedURLStrings()
+        let expectedURLs = refs.map { Self.url(source, ref: $0) }
+
+        // Every distinct external blob was fetched exactly once, stored, and readable via its item.
+        expect(Set(requestedURLs)) == Set(expectedURLs)
+        expect(requestedURLs).to(haveCount(count))
+        for index in 0..<count {
+            expect(self.blobStore.read(ref: refs[index])) == blobs[index]
+            let maybeItemData = await self.manager.blobData(for: .workflows, itemKey: "wf-\(index)")
+            let itemData = try XCTUnwrap(maybeItemData)
+            expect(itemData) == blobs[index]
+        }
+    }
+
     func testInlineBlobWriteFailureFallsBackToExternalBlobDownload() async throws {
         let blob = #"{"workflow":"inline-write-failed"}"#.asData
         let ref = RCContainerTestData.blobRef(for: blob)
@@ -414,7 +452,7 @@ final class RemoteConfigIntegrationTests: TestCase {
             code: .success
         ))
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
 
         expect(self.diskCache.read()).to(beNil())
@@ -495,7 +533,7 @@ final class RemoteConfigIntegrationTests: TestCase {
     func testEndpointDisabledPreventsReadTriggeredNetworkWork() async throws {
         self.mockRemoteConfigError(Self.disablingNetworkError)
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
 
         let topic = await self.manager.topic(.workflows)
@@ -513,7 +551,7 @@ final class RemoteConfigIntegrationTests: TestCase {
     func testMalformedRawContainerResponseDoesNotPersistConfigOrBlobs() async throws {
         self.mockRemoteConfigResponse(body: #"{"not":"an rc container"}"#.asData)
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
 
         expect(self.diskCache.read()).to(beNil())
@@ -553,7 +591,7 @@ private extension RemoteConfigIntegrationTests {
     ) async {
         self.mockRemoteConfigResponse(body: body, verificationResult: verificationResult)
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
         await self.waitForPersistedManifest(Self.manifest)
     }
@@ -568,7 +606,7 @@ private extension RemoteConfigIntegrationTests {
         ))
         self.mockRemoteConfigFallbackResponse(body: body, verificationResult: verificationResult)
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
         await self.waitForRemoteConfigFallbackRequestCount(1)
         await self.waitForPersistedManifest(Self.manifest)

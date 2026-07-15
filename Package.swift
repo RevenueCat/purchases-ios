@@ -5,9 +5,8 @@ import class Foundation.ProcessInfo
 import struct Foundation.URL
 import PackageDescription
 
-/// This looks for a file named `Local.xcconfig` in the root of the purchases-ios[-spm] repo, and reads any compiler
-/// flags defined in it. It does nothing if this file does not exist in this exact folder. This file does not exist on
-/// a clean checkout. It has to be created manually by a developer.
+/// This reads extra Swift compiler conditions from `CI.xcconfig`, `Local.xcconfig`, and
+/// `TUIST_SWIFT_CONDITIONS`.
 var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
     let ciConfig = try? String(
         contentsOf: URL(fileURLWithPath: #filePath)
@@ -21,19 +20,28 @@ var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
             .appendingPathComponent("Local.xcconfig")
     )
 
-    guard let config = ciConfig ?? localConfig else {
-        return []
-    }
-
     // We split the capture group by space and remove any special flags, such as $(inherited).
-    return config
+    let configFlags = (ciConfig ?? localConfig)?
         .firstMatch(of: #/^SWIFT_ACTIVE_COMPILATION_CONDITIONS *= *(.*)$/#.anchorsMatchLineEndings())?
         .output
         .1
         .split(whereSeparator: \.isWhitespace)
         .filter { !$0.isEmpty && !$0.hasPrefix("$") }
-        .map { .define(String($0)) }
         ?? []
+
+    let environmentFlags = ProcessInfo.processInfo.environment["TUIST_SWIFT_CONDITIONS"]?
+        .split(whereSeparator: \.isWhitespace)
+        .filter { !$0.isEmpty }
+        ?? []
+
+    var flags: [String] = []
+    for flag in configFlags + environmentFlags {
+        let flag = String(flag)
+        guard !flags.contains(flag) else { continue }
+        flags.append(flag)
+    }
+
+    return flags.map { .define($0) }
 }()
 
 var ciCompilerFlags: [PackageDescription.SwiftSetting] = [

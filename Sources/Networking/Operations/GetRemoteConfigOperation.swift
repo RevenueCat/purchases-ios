@@ -47,23 +47,27 @@ final class GetRemoteConfigOperation: CacheableNetworkOperation {
 
 struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
 
+    let fetchContext: RemoteConfigFetchContext
     let appUserID: String
     let domain: String
     let manifest: String?
     let prefetchedBlobs: [String]
 
     private enum CodingKeys: String, CodingKey {
+        case fetchContext
         case appUserID = "appUserId"
         case manifest
         case prefetchedBlobs
     }
 
     init(
+        fetchContext: RemoteConfigFetchContext,
         appUserID: String,
         domain: String = RemoteConfiguration.defaultDomain,
         manifest: String? = nil,
         prefetchedBlobs: [String] = []
     ) {
+        self.fetchContext = fetchContext
         self.appUserID = appUserID
         self.domain = domain
         self.manifest = manifest
@@ -72,6 +76,7 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
 
     var cacheKey: String {
         [
+            "fetch_context=\(self.fetchContext.rawValue)",
             "app_user_id=\(self.appUserID)",
             "domain=\(self.domain)",
             "manifest=\(self.manifest ?? "")",
@@ -81,6 +86,7 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.fetchContext, forKey: .fetchContext)
         try container.encode(self.appUserID, forKey: .appUserID)
         try container.encodeIfPresent(self.manifest, forKey: .manifest)
         try container.encode(self.prefetchedBlobs, forKey: .prefetchedBlobs)
@@ -89,6 +95,7 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
+        self.fetchContext = try container.decode(RemoteConfigFetchContext.self, forKey: .fetchContext)
         self.appUserID = try container.decode(String.self, forKey: .appUserID)
         self.domain = RemoteConfiguration.defaultDomain
         self.manifest = try container.decodeIfPresent(String.self, forKey: .manifest)
