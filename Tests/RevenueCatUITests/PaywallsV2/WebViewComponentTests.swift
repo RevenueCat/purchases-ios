@@ -5,6 +5,7 @@
 @_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
 import XCTest
+// swiftlint:disable force_try
 
 #if !os(tvOS)
 

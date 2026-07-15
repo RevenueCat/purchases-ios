@@ -27,7 +27,9 @@ struct WebViewComponentView: View {
                     componentID: componentID,
                     messageHandler: messageHandler
                 )
-                .id("\(viewModel.urlString)-\(componentID)-\(viewModel.size.width == .fit)-\(viewModel.size.height == .fit)")
+                .id(
+                    "\(viewModel.urlString)-\(componentID)-\(viewModel.size.width == .fit)-\(viewModel.size.height == .fit)"
+                )
             } else {
                 RenderOnlyWebViewComponentView(viewModel: viewModel, url: url)
                     .id("\(viewModel.urlString)-render-only")
