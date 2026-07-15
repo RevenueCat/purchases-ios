@@ -17,7 +17,7 @@ import XCTest
 #endif
 
 @MainActor
-final class ProductionWorkflowsPaywallComponentsIntegrationTests: BaseStoreKitIntegrationTests {
+final class WorkflowComponentsIntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit2 }
     override class var useWorkflows: Bool { true }
@@ -76,22 +76,30 @@ private final class RemoteConfigKillSwitchFake: @unchecked Sendable {
         }
 
         if self.disableRemoteConfig {
-            return (
-                HTTPURLResponse(url: request.httpRequest.path.url!,
-                                statusCode: 400,
-                                httpVersion: nil,
-                                headerFields: nil)!,
-                Data(#"{"code":7000,"message":"remote config disabled for test"}"#.utf8)
+            return self.response(
+                statusCode: 400,
+                data: Data(#"{"code":7000,"message":"remote config disabled for test"}"#.utf8),
+                request: request
             )
         } else {
-            return (
-                HTTPURLResponse(url: request.httpRequest.path.url!,
-                                statusCode: 204,
-                                httpVersion: nil,
-                                headerFields: nil)!,
-                Data()
-            )
+            return self.response(statusCode: 204, data: Data(), request: request)
         }
+    }
+
+    private func response(
+        statusCode: Int,
+        data: Data,
+        request: HTTPClient.Request
+    ) -> (HTTPURLResponse, Data)? {
+        guard let url = request.httpRequest.path.url,
+              let response = HTTPURLResponse(url: url,
+                                             statusCode: statusCode,
+                                             httpVersion: nil,
+                                             headerFields: nil) else {
+            return nil
+        }
+
+        return (response, data)
     }
 
 }
