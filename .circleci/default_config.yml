@@ -1402,6 +1402,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
+      - slack-notify-on-fail
 
   backend-integration-tests-SK1:
     executor:
