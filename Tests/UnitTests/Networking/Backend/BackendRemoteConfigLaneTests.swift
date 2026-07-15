@@ -47,7 +47,7 @@ final class BackendRemoteConfigLaneTests: BaseBackendTests {
 
         waitUntil { completed in
             backend.remoteConfigAPI.getRemoteConfig(
-                request: .init(appUserID: Self.userID),
+                request: .init(fetchContext: .appStart, appUserID: Self.userID),
                 isAppBackgrounded: false
             ) { _ in completed() }
         }
@@ -72,7 +72,7 @@ final class BackendRemoteConfigLaneTests: BaseBackendTests {
 
         waitUntil { completed in
             backend.remoteConfigAPI.getRemoteConfig(
-                request: .init(appUserID: Self.userID),
+                request: .init(fetchContext: .appStart, appUserID: Self.userID),
                 isAppBackgrounded: false
             ) { _ in completed() }
         }
@@ -171,7 +171,7 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
             timeout: .seconds(5)
         ) { completed in
             backend.remoteConfigAPI.getRemoteConfig(
-                request: .init(appUserID: Self.userID),
+                request: .init(fetchContext: .appStart, appUserID: Self.userID),
                 isAppBackgrounded: false,
                 completion: completed
             )
