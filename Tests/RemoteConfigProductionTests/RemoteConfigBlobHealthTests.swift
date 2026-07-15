@@ -9,9 +9,9 @@
 //
 //  RemoteConfigBlobHealthTests.swift
 //
-//  Real-backend health check for the remote config CDN blob path. Runs against a live project
-//  that serves CDN blobs and verifies they actually download and validate, so we find out when
-//  production (the backend, the CDN, or the offload flag) is broken, which mocked tests cannot.
+//  Real-backend health check for the remote config blob path. Runs against two live projects with
+//  fixed serving modes so we find out when production (the backend, the CDN, or the offload flag)
+//  is broken, which mocked tests cannot: one project forces blobs onto the CDN, one serves inline.
 
 import Foundation
 import Nimble
@@ -20,25 +20,88 @@ import XCTest
 
 final class RemoteConfigBlobHealthTests: TestCase {
 
-    // Substituted at CI time. Must be a project that serves CDN blobs (the prepared stress-test
-    // project with the CDN-offload flag on); otherwise there is nothing to download to check.
-    private static let apiKey = "REVENUECAT_REMOTE_CONFIG_API_KEY"
+    // Two projects with fixed serving modes. Substituted at CI time; each test skips until its key
+    // is provided. `cdnApiKey` must be a project with the CDN-offload flag on; `inlineApiKey` off.
+    private static let cdnApiKey = "REVENUECAT_REMOTE_CONFIG_CDN_API_KEY"
+    private static let inlineApiKey = "REVENUECAT_REMOTE_CONFIG_INLINE_API_KEY"
 
     private var rootURL: URL!
-    private var recorder: RecordingBlobDownloader!
-    private var blobStore: RemoteConfigBlobStore!
-    private var manager: RemoteConfigManager!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-
-        try XCTSkipIf(
-            Self.apiKey == "REVENUECAT_REMOTE_CONFIG_API_KEY",
-            "No live API key substituted; skipping the real-backend blob health check."
-        )
-
         self.rootURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("RemoteConfigProductionTests-\(UUID().uuidString)", isDirectory: true)
+    }
+
+    override func tearDownWithError() throws {
+        if let rootURL = self.rootURL {
+            try? FileManager.default.removeItem(at: rootURL)
+        }
+        self.rootURL = nil
+        try super.tearDownWithError()
+    }
+
+    // The CDN-forced project: every referenced blob must be downloaded from the CDN, once, one host.
+    func testCDNProjectDownloadsEveryReferencedBlobFromOneHost() async throws {
+        try XCTSkipIf(
+            Self.cdnApiKey == "REVENUECAT_REMOTE_CONFIG_CDN_API_KEY",
+            "No CDN-project key substituted; skipping."
+        )
+
+        let (blobRefs, recorder) = try await self.resolveWorkflowBlobs(apiKey: Self.cdnApiKey)
+
+        // Every workflows blob was served from the CDN, none failed, all from a single host.
+        expect(blobRefs.allSatisfy { recorder.didDownload(ref: $0) })
+            .to(beTrue(), description: "Not every workflows blob was downloaded from the CDN.")
+        expect(recorder.failureCount) == 0
+        expect(recorder.distinctHostCount) == 1
+    }
+
+    // The inline project: blobs arrive inside the config response, so nothing hits the CDN.
+    func testInlineProjectServesEveryBlobWithoutHittingTheCDN() async throws {
+        try XCTSkipIf(
+            Self.inlineApiKey == "REVENUECAT_REMOTE_CONFIG_INLINE_API_KEY",
+            "No inline-project key substituted; skipping."
+        )
+
+        let (blobRefs, recorder) = try await self.resolveWorkflowBlobs(apiKey: Self.inlineApiKey)
+
+        // No workflows blob was fetched from the CDN (they arrive inline), and nothing failed trying.
+        expect(blobRefs.contains { recorder.didDownload(ref: $0) })
+            .to(beFalse(), description: "A workflows blob was unexpectedly downloaded from the CDN.")
+        expect(recorder.failureCount) == 0
+    }
+
+    /// Builds a real manager for `apiKey`, resolves the workflows topic's blobs through the real
+    /// backend, asserts every referenced blob is present and non-empty (shared by both modes), and
+    /// returns the distinct blob refs plus the recorder for the caller's transport assertions.
+    private func resolveWorkflowBlobs(
+        apiKey: String
+    ) async throws -> (blobRefs: Set<String>, recorder: RecordingBlobDownloader) {
+        let recorder = RecordingBlobDownloader()
+        let manager = try self.makeManager(apiKey: apiKey, recorder: recorder)
+        defer { manager.close() }
+
+        let maybeTopic = await manager.awaitTopicAndPrefetchBlobsReady(.workflows)
+        let topic = try XCTUnwrap(maybeTopic, "No workflows topic returned from the live backend.")
+
+        let blobRefs = Set(topic.values.compactMap(\.blobRef))
+        let blobItemKeys = topic.compactMap { key, item in item.blobRef == nil ? nil : key }
+
+        // The project must actually reference blobs, or there is nothing to monitor.
+        expect(blobRefs).toNot(beEmpty())
+
+        // Every referenced blob resolves to non-empty content (a bad checksum stores nothing -> nil).
+        for key in blobItemKeys {
+            let data = await manager.blobData(for: .workflows, itemKey: key)
+            let blob = try XCTUnwrap(data, "Blob for item \(key) did not resolve.")
+            expect(blob.isEmpty).to(beFalse(), description: "Blob for item \(key) was empty.")
+        }
+
+        return (blobRefs, recorder)
+    }
+
+    private func makeManager(apiKey: String, recorder: RecordingBlobDownloader) throws -> RemoteConfigManager {
         let directoryType = DirectoryHelper.DirectoryType.applicationSupport(overrideURL: self.rootURL)
         let cacheBasePath = "\(RemoteConfigDiskCache.basePath)-\(UUID().uuidString)"
         let synchronizedCache = SynchronizedLargeItemCache(
@@ -50,23 +113,16 @@ final class RemoteConfigBlobHealthTests: TestCase {
             .appendingPathComponent(cacheBasePath, isDirectory: true)
 
         let diskCache = RemoteConfigDiskCache(cache: synchronizedCache)
-        self.blobStore = RemoteConfigBlobStore(
+        let blobStore = RemoteConfigBlobStore(
             fileManager: .default,
             directoryURL: cacheDirectoryURL.appendingPathComponent("blobs", isDirectory: true)
         )
         let sourceProvider = RemoteConfigSourceProvider(topicStore: diskCache)
-        self.recorder = RecordingBlobDownloader()
-        self.manager = self.makeManager(diskCache: diskCache, sourceProvider: sourceProvider)
-    }
 
-    private func makeManager(
-        diskCache: RemoteConfigDiskCache,
-        sourceProvider: RemoteConfigSourceProvider
-    ) -> RemoteConfigManager {
         let systemInfo = SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            apiKey: Self.apiKey,
+            apiKey: apiKey,
             preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: nil)
         )
         let backend = Backend(
@@ -83,48 +139,14 @@ final class RemoteConfigBlobHealthTests: TestCase {
         return RemoteConfigManager(
             remoteConfigAPI: backend.remoteConfigAPI,
             diskCache: diskCache,
-            blobStore: self.blobStore,
+            blobStore: blobStore,
             blobFetcher: RemoteConfigBlobFetcher(
-                blobStore: self.blobStore,
+                blobStore: blobStore,
                 sourceProvider: sourceProvider,
-                downloader: self.recorder
+                downloader: recorder
             ),
             currentUserProvider: ProductionTestUserProvider()
         )
-    }
-
-    override func tearDownWithError() throws {
-        self.manager?.close()
-        if let rootURL = self.rootURL {
-            try? FileManager.default.removeItem(at: rootURL)
-        }
-        self.manager = nil
-        self.blobStore = nil
-        self.recorder = nil
-        self.rootURL = nil
-        try super.tearDownWithError()
-    }
-
-    func testProductionWorkflowBlobsDownloadAndValidateHealthily() async throws {
-        // Fetch config from the live backend and download the workflows topic's prefetch blobs
-        // through the real CDN path.
-        let maybeTopic = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows)
-        let topic = try XCTUnwrap(maybeTopic, "No workflows topic returned from the live backend.")
-
-        let blobItemKeys = topic.compactMap { key, item in item.blobRef == nil ? nil : key }
-
-        // Every blob-backed item must read back. A download or checksum failure returns nil,
-        // so this covers checksum-failures == 0 and "all referenced blobs present".
-        for key in blobItemKeys {
-            let data = await self.manager.blobData(for: .workflows, itemKey: key)
-            expect(data).toNot(beNil(), description: "Blob for item \(key) did not resolve.")
-        }
-
-        // Transport-health invariants (recorded by RecordingBlobDownloader):
-        expect(self.recorder.successCount) > 0        // blobs_downloaded > 0
-        expect(self.recorder.failureCount) == 0       // error_count / failed_requests == 0
-        expect(self.recorder.distinctHostCount) <= 1  // fallback_host_requests == 0 (no second host)
-        expect(self.recorder.totalBytes) > 0          // blob bytes
     }
 
 }
