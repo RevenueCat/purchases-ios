@@ -38,6 +38,17 @@ final class RecordingBlobDownloader: RemoteConfigBlobDownloaderType {
         self.lock.withLock { self._failedURLs.contains { $0.absoluteString.contains(ref) } }
     }
 
+    /// Distinct hosts among successful downloads for the given refs (should be 1: no fallback host).
+    func distinctDownloadHosts(matchingAnyOf refs: Set<String>) -> Int {
+        self.lock.withLock {
+            Set(
+                self._downloadedURLs
+                    .filter { url in refs.contains { url.absoluteString.contains($0) } }
+                    .compactMap(\.host)
+            ).count
+        }
+    }
+
     func data(from url: URL) async throws -> Data {
         do {
             let data = try await self.wrapped.data(from: url)

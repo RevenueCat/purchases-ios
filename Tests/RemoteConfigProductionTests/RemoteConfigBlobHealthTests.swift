@@ -57,6 +57,7 @@ final class RemoteConfigBlobHealthTests: TestCase {
             .to(beTrue(), description: "Not every workflows blob was downloaded from the CDN.")
         expect(blobRefs.contains { recorder.didFail(ref: $0) })
             .to(beFalse(), description: "A workflows blob download failed or fell back to another source.")
+        expect(recorder.distinctDownloadHosts(matchingAnyOf: blobRefs)) == 1
     }
 
     // The inline project: blobs arrive inside the config response, so nothing hits the CDN.
