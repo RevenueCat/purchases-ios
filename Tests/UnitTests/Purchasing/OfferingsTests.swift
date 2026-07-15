@@ -865,6 +865,86 @@ class OfferingsTests: TestCase {
         expect(offering.hasPaywall) == true
     }
 
+    func testCreateOfferingWithPaywallComponentsSkipsPayloadWhenPaywallComponentsDisabled() throws {
+        let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.revenuecat.monthly_4.99.1_week_intro")
+        let products = [
+            "com.revenuecat.monthly_4.99.1_week_intro": StoreProduct(sk1Product: monthlyProduct)
+        ]
+
+        let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let offeringResponse0 = try XCTUnwrap(offeringResp.offerings[safe: 0])
+
+        expect(offeringResponse0.identifier) == "paywall_components"
+        expect(offeringResponse0.paywallComponents).toNot(beNil())
+
+        let uiConfig: UIConfig = try XCTUnwrap(BaseHTTPResponseTest.decodeFixture("UIConfig"))
+
+        let offering = try XCTUnwrap(
+            self.offeringsFactory.createOffering(from: products,
+                                                 offering: offeringResponse0,
+                                                 uiConfig: uiConfig,
+                                                 shouldCreatePaywallComponents: false)
+            )
+
+        expect(offering.paywall).to(beNil())
+        expect(offering.paywallComponents).to(beNil())
+        expect(offering.draftPaywallComponents).to(beNil())
+        expect(offering.hasPaywall) == true
+    }
+
+    func testCreateOfferingWithDraftPaywallComponentsSkipsPayloadWhenPaywallComponentsDisabled() throws {
+        let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.revenuecat.monthly_4.99.1_week_intro")
+        let products = [
+            "com.revenuecat.monthly_4.99.1_week_intro": StoreProduct(sk1Product: monthlyProduct)
+        ]
+
+        let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let offeringResponse0 = try XCTUnwrap(offeringResp.offerings[safe: 1])
+
+        expect(offeringResponse0.identifier) == "paywall_components_with_draft"
+        expect(offeringResponse0.paywallComponents).toNot(beNil())
+        expect(offeringResponse0.draftPaywallComponents).toNot(beNil())
+
+        let uiConfig: UIConfig = try XCTUnwrap(BaseHTTPResponseTest.decodeFixture("UIConfig"))
+
+        let offering = try XCTUnwrap(
+            self.offeringsFactory.createOffering(from: products,
+                                                 offering: offeringResponse0,
+                                                 uiConfig: uiConfig,
+                                                 shouldCreatePaywallComponents: false)
+        )
+
+        expect(offering.paywall).to(beNil())
+        expect(offering.paywallComponents).to(beNil())
+        expect(offering.draftPaywallComponents).to(beNil())
+        expect(offering.hasPaywall) == true
+    }
+
+    func testCreateOfferingsWithPaywallComponentsSkipsPayloadInRetainedContentsWhenPaywallComponentsDisabled() throws {
+        let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.revenuecat.monthly_4.99.1_week_intro")
+        let products = [
+            "com.revenuecat.monthly_4.99.1_week_intro": StoreProduct(sk1Product: monthlyProduct)
+        ]
+
+        let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let contents = Offerings.Contents(response: offeringResp, httpResponseOriginalSource: .mainServer)
+
+        let offerings = try XCTUnwrap(
+            self.offeringsFactory.createOfferings(from: products,
+                                                  contents: contents,
+                                                  loadedFromDiskCache: false,
+                                                  shouldCreatePaywallComponents: false)
+        )
+        let offering = try XCTUnwrap(offerings.offering(identifier: "paywall_components"))
+
+        expect(offering.paywall).to(beNil())
+        expect(offering.paywallComponents).to(beNil())
+        expect(offering.draftPaywallComponents).to(beNil())
+        expect(offering.hasPaywall) == true
+        expect(offerings.response.offerings.first?.paywallComponents).to(beNil())
+        expect(offerings.response.offerings[safe: 1]?.draftPaywallComponents).to(beNil())
+    }
+
     func testCreateOfferingWithPaywallComponentsAndDraftPaywallComponents() throws {
         let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.revenuecat.monthly_4.99.1_week_intro")
         let products = [
