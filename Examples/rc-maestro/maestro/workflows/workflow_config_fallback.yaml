@@ -2,7 +2,6 @@
 # endpoint (its session kill-switch). The SDK should fall back to the classic single-page
 # paywall (the workflow's last page) instead of the multipage workflow, and never crash.
 # The force_server_error_strategy launch argument is read by the Maestro app's Constants.
-# Local-only for now (not under e2e_tests/, so the CI lane does not run it).
 #
 # Run locally against the test store:
 #   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_config_fallback.yaml
