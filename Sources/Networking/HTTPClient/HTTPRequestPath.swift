@@ -304,7 +304,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var supportsSignatureVerification: Bool {
         switch self {
-        case .getCustomerInfo,
+        case
                 .logIn,
                 .postReceiptData,
                 .health,
@@ -315,19 +315,20 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
-                .rewardVerificationStatus,
-                .tokenLogin,
-                .tokenRefresh,
-                .tokenLogOut:
+                .rewardVerificationStatus:
             return true
-        case .getIntroEligibility,
+        case .getCustomerInfo,
+                .getIntroEligibility,
                 .postSubscriberAttributes,
                 .postAttributionData,
                 .postAdServicesToken,
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
                 .getCustomerCenterConfig,
-                .postCreateTicket:
+                .postCreateTicket,
+                .tokenLogin,
+                .tokenRefresh,
+                .tokenLogOut:
             return false
         }
     }
@@ -457,73 +458,50 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var iamPathComponent: String {
         switch self {
-        case .getCustomerInfo:
-            return "subscribers"
+        case let .getCustomerInfo:
+            return "customer"
 
-        case .getOfferings:
-            return "subscribers/offerings"
+        case let .getOfferings:
+            return "customer/offerings"
 
-        case .getIntroEligibility:
-            return "subscribers/intro_eligibility"
+        case let .getIntroEligibility:
+            return "customer/intro_eligibility"
 
-        case .appHealthReport:
-            return "subscribers/health_report"
+        case let .appHealthReport:
+            return "customer/health_report"
 
-        case .appHealthReportAvailability:
-            return "subscribers/health_report_availability"
+        case let .appHealthReportAvailability:
+            return "customer/health_report_availability"
 
-        case .logIn:
-            return "subscribers/identify"
+        case let .postAttributionData:
+            return "customer/attribution"
 
-        case .postAttributionData:
-            return "subscribers/attribution"
+        case let .postAdServicesToken:
+            return "customer/adservices_attribution"
 
-        case .postAdServicesToken:
-            return "subscribers/adservices_attribution"
+        case let .postSubscriberAttributes:
+            return "customer/attributes"
 
-        case .postOfferForSigning:
-            return "offers"
+        case let .getCustomerCenterConfig:
+            return "customer/customercenter"
 
-        case .postReceiptData:
-            return "receipts"
-
-        case .postSubscriberAttributes:
-            return "subscribers/attributes"
-
-        case .health:
-            return "health"
-
-        case .getProductEntitlementMapping:
-            return "product_entitlement_mapping"
-
-        case .getCustomerCenterConfig:
-            return "customercenter"
-
-        case .postRedeemWebPurchase:
-            return "subscribers/redeem_purchase"
-
-        case .getVirtualCurrencies:
-            return "subscribers/virtual_currencies"
+        case let .getVirtualCurrencies:
+            return "customer/virtual_currencies"
 
         case .postCreateTicket:
             return "customercenter/support/create-ticket"
-        case .isPurchaseAllowedByRestoreBehavior:
-            return "subscribers/restore/eligibility"
+
+        case let .isPurchaseAllowedByRestoreBehavior:
+            return "customer/restore/eligibility"
 
         case let .rewardVerificationStatus(_, clientTransactionID):
-            return "subscribers/ads/reward_verifications/\(Self.escape(clientTransactionID))"
+            return "customer/ads/reward_verifications/\(Self.escape(clientTransactionID))"
 
         case let .remoteConfig(domain):
             return "config/\(Self.escape(domain))"
 
-        case .tokenLogin:
-            return "/auth/login"
-
-        case .tokenRefresh:
-            return "/auth/token"
-
-        case .tokenLogOut:
-            return "/auth/revoke"
+        default:
+            return self.relativePath
         }
     }
 

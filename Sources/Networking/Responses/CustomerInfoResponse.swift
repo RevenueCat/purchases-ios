@@ -43,6 +43,7 @@ extension CustomerInfoResponse {
         @DefaultDecodable.EmptyDictionary
         var entitlements: [String: Entitlement]
 
+        var subscriberAttributes: SubscriberAttributes?
     }
 
     struct Subscription {
@@ -106,6 +107,10 @@ extension CustomerInfoResponse {
 
     }
 
+    struct SubscriberAttributes {
+        var attributes: [SubscriberAttribute]
+    }
+
 }
 
 // MARK: - Codable
@@ -128,6 +133,43 @@ extension CustomerInfoResponse.Entitlement: Decodable {
         self.purchaseDate = try container.decodeIfPresent(Date.self, forKey: .purchaseDate)
 
         self.rawData = decoder.decodeRawData()
+    }
+
+}
+
+extension CustomerInfoResponse.SubscriberAttributes: Codable, Hashable, CustomStringConvertible {
+
+    var description: String {
+        attributes.description
+    }
+
+    init(from decoder: any Decoder) throws {
+        var container = try decoder.container(keyedBy: AnyCodingKey.self)
+
+        var attributes = Array<SubscriberAttribute>()
+        for key in container.allKeys {
+            var child = try container.nestedContainer(keyedBy: AnyCodingKey.self, forKey: key)
+            let time = try child.decode(Double.self, forKey: "updatedAtMs")
+            let attribute = SubscriberAttribute(withKey: key.stringValue,
+                                                value: try child.decodeIfPresent(String.self, forKey: "value"),
+                                                isSynced: true,
+                                                setTime: Date(timeIntervalSince1970: time / 1000))
+
+            attributes.append(attribute)
+        }
+
+        self.init(attributes: attributes)
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: AnyCodingKey.self)
+
+        for attribute in self.attributes {
+            let key = AnyCodingKey(stringValue: attribute.key)
+            var nested = container.nestedContainer(keyedBy: AnyCodingKey.self, forKey: key)
+            try nested.encode(attribute.value, forKey: "value")
+            try nested.encode(attribute.setTime.timeIntervalSince1970 * 1000, forKey: "updatedAtMs")
+        }
     }
 
 }

@@ -156,19 +156,28 @@ public typealias ProductIdentifier = String
 
         let subscriptionsDescription = self.subscriptionsByProductIdentifier.mapValues { $0.description }
 
+        var parts = [
+            "originalApplicationVersion=\(self.originalApplicationVersion ?? "")",
+            "latestExpirationDate=\(String(describing: self.latestExpirationDate))",
+            "activeEntitlements=\(activeEntitlementsDescription)",
+            "activeSubscriptions=\(activeSubsDescription)",
+            "nonSubscriptions=\(self.nonSubscriptions)",
+            "subscriptions=\(subscriptionsDescription)",
+            "requestDate=\(String(describing: self.requestDate))",
+            "firstSeen=\(String(describing: self.firstSeen))",
+            "originalAppUserId=\(self.originalAppUserId)",
+            "entitlements=\(allEntitlementsDescription)",
+            "verification=\(verificationResult)",
+        ]
+        if let attributes = self.data.response.subscriber.subscriberAttributes {
+            parts.append("attributes=\(attributes)")
+        }
+
+        let contents = parts.map { "  " + $0 }.joined(separator: ",\n")
+
         return """
             <\(String(describing: CustomerInfo.self)):
-            originalApplicationVersion=\(self.originalApplicationVersion ?? ""),
-            latestExpirationDate=\(String(describing: self.latestExpirationDate)),
-            activeEntitlements=\(activeEntitlementsDescription),
-            activeSubscriptions=\(activeSubsDescription),
-            nonSubscriptions=\(self.nonSubscriptions),
-            subscriptions=\(subscriptionsDescription),
-            requestDate=\(String(describing: self.requestDate)),
-            firstSeen=\(String(describing: self.firstSeen)),
-            originalAppUserId=\(self.originalAppUserId),
-            entitlements=\(allEntitlementsDescription)
-            verification=\(verificationResult)
+            \(contents)
             >
             """
     }
