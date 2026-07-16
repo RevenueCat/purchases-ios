@@ -365,7 +365,6 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         return WebViewOrigin.origin(of: currentURL) == self.expectedOrigin
     }
 
-
     private func logRejected(_ reason: String) {
         Logger.debug(Strings.paywall_web_view_message_rejected(reason: reason))
     }
