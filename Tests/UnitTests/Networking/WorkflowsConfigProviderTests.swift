@@ -340,6 +340,10 @@ class WorkflowsConfigProviderTests: TestCase {
     }
 
     func testWarmPrefetchedWorkflowsWarmsAssetsForPrefetchTrueBodies() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("warmUpWorkflowCaches requires iOS 15+")
+        }
+
         let paywallCache = MockPaywallCacheWarming()
         let operationDispatcher = MockOperationDispatcher()
         self.provider = WorkflowsConfigProvider(
