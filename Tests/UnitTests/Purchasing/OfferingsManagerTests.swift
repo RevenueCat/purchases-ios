@@ -1112,6 +1112,43 @@ extension OfferingsManagerTests {
         expect(result?.value?.offering(identifier: "paywall_components")?.paywallComponents).toNot(beNil())
     }
 
+    func testGetOfferingsRefetchesIfRemoteConfigDisablesBeforeReadinessDelivery() throws {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.isDisabled = false
+        mockRemoteConfigManager.shouldStoreTopicCompletion = true
+        let manager = self.makeOfferingsManager(
+            remoteConfigManager: mockRemoteConfigManager,
+            offeringsFactory: OfferingsFactory(systemInfo: self.mockSystemInfo)
+        )
+        let response: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let uiConfig: UIConfig = try BaseHTTPResponseTest.decodeFixture("UIConfig")
+        let offeringResp = OfferingsResponse(
+            currentOfferingId: response.currentOfferingId,
+            offerings: response.offerings,
+            placements: response.placements,
+            targeting: response.targeting,
+            uiConfig: uiConfig
+        )
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
+            Offerings.Contents(response: offeringResp, httpResponseOriginalSource: .mainServer)
+        )
+
+        let deliveredResult: Atomic<Result<Offerings, OfferingsManager.Error>?> = nil
+        manager.offerings(appUserID: MockData.anyAppUserID) { deliveredResult.value = $0 }
+
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount).toEventually(equal(1))
+        expect(mockRemoteConfigManager.invokedTopicCount).toEventually(beGreaterThan(0))
+        expect(deliveredResult.value).to(beNil())
+
+        mockRemoteConfigManager.isDisabled = true
+        mockRemoteConfigManager.completeStoredTopic()
+
+        expect(deliveredResult.value).toEventually(beSuccess())
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount) == 2
+        let deliveredOffering = deliveredResult.value?.value?.offering(identifier: "paywall_components")
+        expect(deliveredOffering?.paywallComponents).toNot(beNil())
+    }
+
     func testGetOfferingsCachesFullPaywallComponentsToDiskWhenRemoteConfigManagerIsEnabled() throws {
         let mockRemoteConfigManager = MockRemoteConfigManager()
         mockRemoteConfigManager.isDisabled = false

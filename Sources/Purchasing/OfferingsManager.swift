@@ -109,17 +109,12 @@ class OfferingsManager {
             // delivery (a no-op once config has synced). A stale snapshot may be returned
             // even if the background refresh finished first; that matches the stale-cache
             // model, and the refresh still updates the cache for the next call.
-            self.deliverWhenConfigReady {
-                // Tracked inside the gate so the recorded latency includes the readiness
-                // wait this delivery now pays, not just the cache lookup.
-                self.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
-                                                     startTime: startTime,
-                                                     cacheStatus: cacheStatus,
-                                                     error: nil,
-                                                     requestedProductIds: nil,
-                                                     notFoundProductIds: nil)
-                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(memoryCachedOfferings))
-            }
+            self.deliverCachedOfferingsWhenConfigReady(appUserID: appUserID,
+                                                       offerings: memoryCachedOfferings,
+                                                       fetchPolicy: fetchPolicy,
+                                                       trackingContext: trackingContext,
+                                                       cacheStatus: cacheStatus,
+                                                       completion: completion)
         }
     }
 
@@ -155,9 +150,17 @@ class OfferingsManager {
                         // Deliver via the config-ready gate too, so an offerings backend failure that
                         // falls back to disk still waits for remote config's first sync instead of
                         // leaving workflow resolution unresolved.
-                        self.deliverWhenConfigReady {
-                            self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offerings))
-                        }
+                        self.deliverWhenConfigReady(
+                            offerings: offerings.offerings,
+                            refreshIfNeeded: {
+                                self.fetchFromNetwork(appUserID: appUserID,
+                                                      fetchPolicy: fetchPolicy,
+                                                      completion: completion)
+                            },
+                            deliver: {
+                                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offerings))
+                            }
+                        )
                     } else {
                         self.handleOfferingsUpdateError(.backendError(backendError),
                                                         completion: completion)
@@ -357,9 +360,18 @@ private extension OfferingsManager {
                 guard let completion else { return }
                 // Delivers offerings only once remote config has synced at least once, so the
                 // `workflows` topic is available for resolving a workflow right after this call.
-                self.deliverWhenConfigReady {
-                    self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offeringsResultData))
-                }
+                self.deliverWhenConfigReady(
+                    offerings: offeringsResultData.offerings,
+                    refreshIfNeeded: {
+                        self.fetchFromNetwork(appUserID: appUserID,
+                                              fetchPolicy: fetchPolicy,
+                                              completion: completion)
+                    },
+                    deliver: {
+                        self.dispatchCompletionOnMainThreadIfPossible(completion,
+                                                                      value: .success(offeringsResultData))
+                    }
+                )
 
             case let .failure(error):
                 self.handleOfferingsUpdateError(error, completion: completion)
@@ -416,7 +428,11 @@ private extension OfferingsManager {
     /// the `workflows` topic (with its prefetch-flagged blobs) and the `ui_config` body,
     /// resolved concurrently. Both are best-effort (nil on failure, never throwing), so
     /// delivery can never be stranded; when no manager is wired, `deliver` runs immediately.
-    private func deliverWhenConfigReady(deliver: @escaping () -> Void) {
+    private func deliverWhenConfigReady(
+        offerings: Offerings,
+        refreshIfNeeded: @escaping () -> Void,
+        deliver: @escaping () -> Void
+    ) {
         guard let remoteConfigManager = self.remoteConfigManager else {
             deliver()
             return
@@ -426,8 +442,44 @@ private extension OfferingsManager {
             async let workflowsReady: Void = self.warmWorkflowConfigIfNeeded(remoteConfigManager: remoteConfigManager)
             async let uiConfigReady = uiConfigProvider.getUiConfig()
             _ = await (workflowsReady, uiConfigReady)
-            deliver()
+
+            if self.shouldRefreshOfferingsWithPrunedComponents(offerings) {
+                refreshIfNeeded()
+            } else {
+                deliver()
+            }
         }
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    private func deliverCachedOfferingsWhenConfigReady(
+        appUserID: String,
+        offerings: Offerings,
+        fetchPolicy: FetchPolicy,
+        trackingContext: OfferingsTrackingContext,
+        cacheStatus: CacheStatus,
+        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
+    ) {
+        self.deliverWhenConfigReady(
+            offerings: offerings,
+            refreshIfNeeded: {
+                self.fetchFromNetworkAndTrackResult(appUserID: appUserID,
+                                                    fetchPolicy: fetchPolicy,
+                                                    trackingContext: trackingContext,
+                                                    cacheStatus: .stale,
+                                                    completion: completion)
+            },
+            deliver: {
+                // Track inside the gate so the recorded latency includes the readiness wait.
+                self.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackingContext.trackDiagnostics,
+                                                     startTime: trackingContext.startTime,
+                                                     cacheStatus: cacheStatus,
+                                                     error: nil,
+                                                     requestedProductIds: nil,
+                                                     notFoundProductIds: nil)
+                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offerings))
+            }
+        )
     }
 
     private func warmWorkflowConfigIfNeeded(remoteConfigManager: RemoteConfigManagerType) async {
