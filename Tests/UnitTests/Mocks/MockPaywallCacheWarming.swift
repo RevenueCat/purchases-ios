@@ -112,12 +112,17 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
     // MARK: -
 
     private let _invokedWarmUpWorkflowCaches: Atomic<Bool> = false
+    private let _invokedWarmUpWorkflowCachesCount: Atomic<Int> = .init(0)
     private let _invokedWarmUpWorkflowCachesWorkflow: Atomic<PublishedWorkflow?> = nil
     private let _invokedWarmUpWorkflowCachesUiConfig: Atomic<UIConfig?> = nil
 
     var invokedWarmUpWorkflowCaches: Bool {
         get { return self._invokedWarmUpWorkflowCaches.value }
         set { self._invokedWarmUpWorkflowCaches.value = newValue }
+    }
+    var invokedWarmUpWorkflowCachesCount: Int {
+        get { return self._invokedWarmUpWorkflowCachesCount.value }
+        set { self._invokedWarmUpWorkflowCachesCount.value = newValue }
     }
     var invokedWarmUpWorkflowCachesWorkflow: PublishedWorkflow? {
         get { return self._invokedWarmUpWorkflowCachesWorkflow.value }
@@ -130,6 +135,7 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
 
     func warmUpWorkflowCaches(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
         self.invokedWarmUpWorkflowCaches = true
+        self._invokedWarmUpWorkflowCachesCount.modify { $0 += 1 }
         self.invokedWarmUpWorkflowCachesWorkflow = workflow
         self.invokedWarmUpWorkflowCachesUiConfig = uiConfig
     }

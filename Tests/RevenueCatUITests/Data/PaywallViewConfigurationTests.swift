@@ -19,8 +19,8 @@ import XCTest
 final class PaywallViewConfigurationTests: TestCase {
 
 #if !os(tvOS)
-    func testCachedInitialOfferingReturnsNilForAllContentWhenRemoteConfigEnabled() {
-        let cachedOffering = TestData.offeringWithNoIntroOffer
+    func testCachedInitialOfferingReturnsNilForWorkflowContentWhenRemoteConfigEnabledWithoutCachedWorkflow() {
+        let cachedOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)
 
@@ -136,6 +136,35 @@ final class PaywallViewConfigurationTests: TestCase {
         expect(packageContext.placementIdentifier) == "placement_offering_a"
         expect(packageContext.targetingContext?.revision) == 7
         expect(packageContext.targetingContext?.ruleId) == "targeting_rule_offering_a"
+    }
+
+    func testCachedInitialPaywallViewDataReturnsWorkflowContextForCachedWorkflow() throws {
+        let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
+            .withPresentedOfferingContext(Self.createPresentedOfferingContext(offeringIdentifier: "offering_a"))
+        let workflowOffering = Self.createOffering(identifier: "offering_b")
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        let cachedWorkflow = try Self.createWorkflowDataResult(offeringIdentifier: workflowOffering.identifier)
+
+        purchases.cachedOfferings = Self.createOfferings([initialOffering, workflowOffering])
+        purchases.cachedWorkflowBlock = { offeringIdentifier in
+            expect(offeringIdentifier) == initialOffering.identifier
+            return cachedWorkflow
+        }
+        purchases.workflowBlock = { _ in
+            XCTFail("Cached initial data must not use the async workflow path")
+            throw ErrorCode.configurationError
+        }
+
+        let result = handler.cachedInitialPaywallViewData(
+            for: .offering(initialOffering),
+            remoteConfigEnabled: true
+        )
+
+        expect(result?.offering.identifier) == workflowOffering.identifier
+        expect(result?.offering.paywallComponents).toNot(beNil())
+        expect(result?.workflowContext?.initialOffering.identifier) == workflowOffering.identifier
+        expect(result?.workflowContext?.presentedOfferingContext?.offeringIdentifier) == initialOffering.identifier
     }
 
     func testResolvePaywallViewDataReturnsWorkflowContextForWorkflowDefaultOffering() async throws {

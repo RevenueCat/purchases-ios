@@ -39,4 +39,18 @@ final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked
         return .failure(.notFound)
     }
 
+    private(set) var invokedWarmPrefetchedWorkflowsCount = 0
+
+    func warmPrefetchedWorkflows() async {
+        self.invokedWarmPrefetchedWorkflowsCount += 1
+    }
+
+    var stubbedCachedWorkflowResult: [String: WorkflowDataResult] = [:]
+    private(set) var invokedCachedWorkflowParameters: [String] = []
+
+    func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
+        self.invokedCachedWorkflowParameters.append(offeringId)
+        return self.stubbedCachedWorkflowResult[offeringId]
+    }
+
 }
