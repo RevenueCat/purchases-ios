@@ -233,10 +233,11 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     /// Tracks the single config refresh whose completion read APIs may await.
     private var isRefreshing = false
 
-    /// Forces refreshes to report `.appStart` until the first one succeeds, regardless of the caller's context, so
-    /// the backend always sees `app_start` on a fresh app open. Set under `lock` when a refresh succeeds; a failed
-    /// attempt keeps forcing `.appStart` so a later attempt can still deliver it.
-    private var hasSucceededInitialRefresh = false
+    /// Forces refreshes to report `.appStart` until the session's first config is committed, regardless of the
+    /// caller's context, so the backend always sees `app_start` on a fresh app open. Set under `lock` only once config
+    /// is durably committed (persisted from a 200 or the fallback) or confirmed current (204); a failed refresh or an
+    /// undecodable/unpersistable 200 keeps forcing `.appStart` until a later attempt actually commits config.
+    private var hasCommittedInitialConfig = false
 
     /// Session-scoped kill switch set by disabling client errors. This is intentionally not reset by cache clears.
     private var isDisabledInternal = false
@@ -382,10 +383,10 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
 private extension RemoteConfigManager {
 
-    /// Overrides a refresh's context to `.appStart` until the first refresh succeeds, so the backend always sees
-    /// `app_start` first on a fresh app open. Must be called within `lock`.
+    /// Overrides a refresh's context to `.appStart` until the session's first config is committed, so the backend
+    /// always sees `app_start` first on a fresh app open. Must be called within `lock`.
     func fetchContextForRefresh(_ requested: RemoteConfigFetchContext) -> RemoteConfigFetchContext {
-        return self.hasSucceededInitialRefresh ? requested : .appStart
+        return self.hasCommittedInitialConfig ? requested : .appStart
     }
 
     func prepareRefreshIfNeeded(
@@ -514,8 +515,6 @@ private extension RemoteConfigManager {
     ) {
         guard self.isCurrent(requestEpoch) else { return }
         defer { self.releaseGuardIfOwned(requestEpoch: requestEpoch) }
-
-        self.markInitialRefreshSucceededIfCurrent(requestEpoch)
 
         guard let container = fetchResult.container else {
             Logger.debug(Strings.remoteConfig.notModified)
@@ -675,16 +674,10 @@ private extension RemoteConfigManager {
         }
     }
 
-    /// Records that a refresh succeeded so later refreshes stop being forced to `.appStart`.
-    func markInitialRefreshSucceededIfCurrent(_ requestEpoch: Int) {
-        self.lock.perform {
-            guard self.epoch == requestEpoch else { return }
-
-            self.hasSucceededInitialRefresh = true
-        }
-    }
-
+    /// Records a landed refresh: stamps the refresh time and marks the session's initial config as committed, so
+    /// later refreshes stop being forced to `.appStart`. Must be called within `lock`.
     func markRefreshed() {
+        self.hasCommittedInitialConfig = true
         self.lastRefreshedAt = self.dateProvider.now()
     }
 

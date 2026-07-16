@@ -122,6 +122,60 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .identityChange
     }
 
+    func testForcingStopsOnceA200ConfigIsPersisted() throws {
+        self.diskCache.stubbedRead = nil
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": [],
+          "topics": {}
+        }
+        """
+
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+        self.remoteConfigAPI.complete(with: .success(.test(container: try Self.container(config: response))))
+
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .identityChange
+    }
+
+    func testA200ThatFailsToParseKeepsForcingAppStart() throws {
+        self.diskCache.stubbedRead = nil
+
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+        // A 200 whose body fails to parse commits nothing, so the initial config is still not committed.
+        self.remoteConfigAPI.complete(with: .success(.test(container: try Self.container(config: "{ not valid json"))))
+
+        // The next refresh must still be forced to `.appStart`, since no config landed yet.
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+    }
+
+    func testForcingStopsOnceTheFallbackCommitsItsConfig() {
+        self.diskCache.stubbedRead = nil
+        let configuration = RemoteConfiguration(
+            domain: "app",
+            manifest: "v1.1710000100.sources:etag",
+            activeTopics: [],
+            prefetchBlobs: [],
+            topics: .init(entries: [:])
+        )
+
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+
+        // The main request fails on a cold cache, routing to the fallback, which commits its config.
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        self.remoteConfigAPI.completeFallback(with: .success(.test(configuration: configuration)))
+
+        // The fallback commit counts as the initial config, so later refreshes report their own context.
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .identityChange
+    }
+
     func testIsDisabledDefaultsToFalse() {
         expect(self.manager.isDisabled) == false
     }
