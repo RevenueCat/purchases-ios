@@ -950,6 +950,7 @@
 		A1B2C3D42FE2000000000002 /* RemoteConfigDiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE2000000000001 /* RemoteConfigDiskCache.swift */; };
 		A1B2C3D42FE2000000000004 /* RemoteConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE2000000000003 /* RemoteConfigManager.swift */; };
 		A1B2C3D42FE3000000000002 /* RemoteConfigFetchContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE3000000000001 /* RemoteConfigFetchContext.swift */; };
+		A1B2C3D42FE9000000000002 /* GenerationGuardedCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE9000000000001 /* GenerationGuardedCache.swift */; };
 		B8EF700CBF25815EC2BF1253 /* UiConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB021C52E3CCC5EB17FFF795 /* UiConfigProvider.swift */; };
 		49B8016629C29C4691C0774A /* WorkflowsConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C390BBAC430231B23B4B5F8 /* WorkflowsConfigProvider.swift */; };
 		A1B2C3D42FE200000000000D /* RemoteConfigBlobStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE200000000000C /* RemoteConfigBlobStore.swift */; };
@@ -964,6 +965,7 @@
 		A1B2C3D42FE6000000000008 /* RemoteConfigBlobFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE6000000000007 /* RemoteConfigBlobFetcherTests.swift */; };
 		A1B2C3D42FE600000000000A /* RemoteConfigBlobDownloaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE6000000000009 /* RemoteConfigBlobDownloaderTests.swift */; };
 		A1B2C3D42FE8000000000002 /* RemoteConfigIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE8000000000001 /* RemoteConfigIntegrationTests.swift */; };
+		A1B2C3D42FE9000000000004 /* GenerationGuardedCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42FE9000000000003 /* GenerationGuardedCacheTests.swift */; };
 		7648885717DC2DB5009DD01B /* MinMaxOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = C812AE8BAE0546D2F4ACEF35 /* MinMaxOperators.swift */; };
 		7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */; };
 		7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */; };
@@ -2919,6 +2921,7 @@
 		A1B2C3D42FE2000000000001 /* RemoteConfigDiskCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigDiskCache.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE2000000000003 /* RemoteConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigManager.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE3000000000001 /* RemoteConfigFetchContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigFetchContext.swift; sourceTree = "<group>"; };
+		A1B2C3D42FE9000000000001 /* GenerationGuardedCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerationGuardedCache.swift; sourceTree = "<group>"; };
 		DB021C52E3CCC5EB17FFF795 /* UiConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UiConfigProvider.swift; sourceTree = "<group>"; };
 		4C390BBAC430231B23B4B5F8 /* WorkflowsConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowsConfigProvider.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE200000000000C /* RemoteConfigBlobStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobStore.swift; sourceTree = "<group>"; };
@@ -2930,6 +2933,7 @@
 		A1B2C3D42FE2000000000008 /* RemoteConfigDiskCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigDiskCacheTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE200000000000A /* RemoteConfigManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigManagerTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE200000000000E /* RemoteConfigBlobStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobStoreTests.swift; sourceTree = "<group>"; };
+		A1B2C3D42FE9000000000003 /* GenerationGuardedCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerationGuardedCacheTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE6000000000007 /* RemoteConfigBlobFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobFetcherTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE6000000000009 /* RemoteConfigBlobDownloaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobDownloaderTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE8000000000001 /* RemoteConfigIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigIntegrationTests.swift; sourceTree = "<group>"; };
@@ -4592,6 +4596,7 @@
 				A1B2C3D42FE2000000000001 /* RemoteConfigDiskCache.swift */,
 				A1B2C3D42FE2000000000003 /* RemoteConfigManager.swift */,
 				A1B2C3D42FE3000000000001 /* RemoteConfigFetchContext.swift */,
+				A1B2C3D42FE9000000000001 /* GenerationGuardedCache.swift */,
 				DB021C52E3CCC5EB17FFF795 /* UiConfigProvider.swift */,
 				4C390BBAC430231B23B4B5F8 /* WorkflowsConfigProvider.swift */,
 				A1B2C3D42FE7000000000001 /* RemoteConfigTopic.swift */,
@@ -4620,6 +4625,7 @@
 				A1B2C3D42FE2000000000007 /* RemoteConfig */,
 				5733B1A327FF9F8300EC2045 /* NetworkErrorTests.swift */,
 				5733B1A727FFBCC800EC2045 /* BackendErrorTests.swift */,
+				A1B2C3D42FE9000000000003 /* GenerationGuardedCacheTests.swift */,
 				371E0615EDF883698273BC59 /* UiConfigProviderTests.swift */,
 				FFB683A085B695768EAB9AA5 /* WorkflowsConfigProviderTests.swift */,
 				5733B1A927FFBCF900EC2045 /* BaseErrorTests.swift */,
@@ -7251,6 +7257,7 @@
 				A1B2C3D42FE2000000000002 /* RemoteConfigDiskCache.swift in Sources */,
 				A1B2C3D42FE2000000000004 /* RemoteConfigManager.swift in Sources */,
 				A1B2C3D42FE3000000000002 /* RemoteConfigFetchContext.swift in Sources */,
+				A1B2C3D42FE9000000000002 /* GenerationGuardedCache.swift in Sources */,
 				B8EF700CBF25815EC2BF1253 /* UiConfigProvider.swift in Sources */,
 				49B8016629C29C4691C0774A /* WorkflowsConfigProvider.swift in Sources */,
 				A1B2C3D42FE2000000000006 /* RemoteConfigStrings.swift in Sources */,
@@ -7853,6 +7860,7 @@
 				5796A3C027D7D64500653165 /* ResultExtensionsTests.swift in Sources */,
 				351B51A726D450D400BD2BD7 /* SystemInfoTests.swift in Sources */,
 				5733B1A827FFBCC800EC2045 /* BackendErrorTests.swift in Sources */,
+				A1B2C3D42FE9000000000004 /* GenerationGuardedCacheTests.swift in Sources */,
 				AD787D4FC44F9C3638DCDEF9 /* UiConfigProviderTests.swift in Sources */,
 				E48EFFFF5FF27ECC25F4E308 /* WorkflowsConfigProviderTests.swift in Sources */,
 				03A98D362D244329009BCA61 /* UIConfigDecodingTests.swift in Sources */,
