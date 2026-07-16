@@ -348,6 +348,7 @@ private extension OfferingsManager {
                 Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
 
                 self.deviceCache.cache(offerings: offeringsResultData.offerings,
+                                       diskContents: contents,
                                        preferredLocales: preferredLocales,
                                        appUserID: appUserID)
 
