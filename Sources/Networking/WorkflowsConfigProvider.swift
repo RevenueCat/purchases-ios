@@ -11,7 +11,7 @@ protocol WorkflowsConfigProviderType {
 
     func workflowId(forOfferingId offeringId: String) async -> String?
     func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError>
-    func warmPrefetchedWorkflows() async
+    func warmPrefetchedWorkflows(currentOfferingId: String?) async
     func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult?
 
 }
@@ -38,12 +38,10 @@ enum WorkflowResolutionError: Error, Equatable {
 final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
 
     typealias WorkflowDecoder = (Data) throws -> PublishedWorkflow
-    typealias CurrentOfferingIdProvider = @Sendable () -> String?
 
     private let manager: RemoteConfigManagerType
     private let uiConfigProvider: UiConfigProvider
     private let workflowDecoder: WorkflowDecoder
-    private let currentOfferingIdProvider: CurrentOfferingIdProvider
 
     /// The offeringId → workflowId map built from the last topic snapshot seen, keyed by that snapshot
     /// so a repeat call with an unchanged topic reuses it instead of rescanning every item's content.
@@ -57,12 +55,10 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     init(
         manager: RemoteConfigManagerType,
         uiConfigProvider: UiConfigProvider? = nil,
-        currentOfferingIdProvider: @escaping CurrentOfferingIdProvider = { nil },
         workflowDecoder: @escaping WorkflowDecoder = WorkflowsConfigProvider.decodeWorkflow
     ) {
         self.manager = manager
         self.uiConfigProvider = uiConfigProvider ?? UiConfigProvider(manager: manager)
-        self.currentOfferingIdProvider = currentOfferingIdProvider
         self.workflowDecoder = workflowDecoder
     }
 
@@ -135,13 +131,13 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         }
     }
 
-    func warmPrefetchedWorkflows() async {
+    func warmPrefetchedWorkflows(currentOfferingId: String?) async {
         await Task.detached(priority: .utility) {
-            await self.warmPrefetchedWorkflowsOnBackgroundExecutor()
+            await self.warmPrefetchedWorkflowsOnBackgroundExecutor(currentOfferingId: currentOfferingId)
         }.value
     }
 
-    private func warmPrefetchedWorkflowsOnBackgroundExecutor() async {
+    private func warmPrefetchedWorkflowsOnBackgroundExecutor(currentOfferingId: String?) async {
         guard self.currentWorkflowCache() == nil else { return }
         guard let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows) else { return }
         guard self.currentWorkflowCache() == nil else { return }
@@ -154,7 +150,11 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         // synchronously on first access, so warming doesn't build every workflow's component graph.
         let offeringIdMap = self.buildOfferingIdMap(from: topic)
         let workflows = await self.loadWorkflows(
-            self.workflowIdsToWarm(from: topic, offeringIdMap: offeringIdMap)
+            self.workflowIdsToWarm(
+                from: topic,
+                offeringIdMap: offeringIdMap,
+                currentOfferingId: currentOfferingId
+            )
         )
 
         guard await self.manager.isCurrent(snapshot, for: .workflows) else {
@@ -244,13 +244,14 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
 
     private func workflowIdsToWarm(
         from topic: RemoteConfiguration.ConfigTopic,
-        offeringIdMap: [String: String]
+        offeringIdMap: [String: String],
+        currentOfferingId: String?
     ) -> [String] {
         var workflowIds = Set(topic.compactMap { workflowId, item in
             item.prefetch ? workflowId : nil
         })
 
-        if let currentOfferingId = self.currentOfferingIdProvider(),
+        if let currentOfferingId,
            let currentWorkflowId = offeringIdMap[currentOfferingId] {
             workflowIds.insert(currentWorkflowId)
         }

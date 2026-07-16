@@ -279,11 +279,6 @@ class WorkflowsConfigProviderTests: TestCase {
         let prefetchedWorkflow = try Self.workflowJSON(id: "wf-prefetch")
         let currentWorkflow = try Self.workflowJSON(id: "wf-current")
         let otherWorkflow = try Self.workflowJSON(id: "wf-other")
-        self.provider = WorkflowsConfigProvider(
-            manager: self.manager,
-            uiConfigProvider: self.uiConfigProvider,
-            currentOfferingIdProvider: { "basic" }
-        )
         self.commit(
             workflows: [
                 "wf-prefetch": .init(
@@ -310,7 +305,7 @@ class WorkflowsConfigProviderTests: TestCase {
             ]) { current, _ in current }
         )
 
-        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows()
+        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows(currentOfferingId: "basic")
         async let uiConfigWarm = self.uiConfigProvider.getUiConfig()
         _ = await (workflowsWarm, uiConfigWarm)
 
@@ -345,7 +340,7 @@ class WorkflowsConfigProviderTests: TestCase {
             ]) { current, _ in current }
         )
 
-        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows()
+        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows(currentOfferingId: nil)
         async let uiConfigWarm = self.uiConfigProvider.getUiConfig()
         _ = await (workflowsWarm, uiConfigWarm)
 
@@ -373,7 +368,7 @@ class WorkflowsConfigProviderTests: TestCase {
             ]) { current, _ in current }
         )
 
-        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows()
+        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows(currentOfferingId: nil)
         async let uiConfigWarm = self.uiConfigProvider.getUiConfig()
         _ = await (workflowsWarm, uiConfigWarm)
 
@@ -404,12 +399,12 @@ class WorkflowsConfigProviderTests: TestCase {
             ]) { current, _ in current }
         )
 
-        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows()
+        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows(currentOfferingId: nil)
         async let uiConfigWarm = self.uiConfigProvider.getUiConfig()
         _ = await (workflowsWarm, uiConfigWarm)
         let ensureAllDownloadedCountAfterFirstWarm = self.blobFetcher.invokedEnsureAllDownloadedRefs.count
 
-        await self.provider.warmPrefetchedWorkflows()
+        await self.provider.warmPrefetchedWorkflows(currentOfferingId: nil)
 
         expect(self.provider.cachedWorkflow(forOfferingId: "premium")?.workflow.id) == "wf-prefetch"
         expect(self.blobFetcher.invokedEnsureAllDownloadedRefs.count) == ensureAllDownloadedCountAfterFirstWarm
@@ -429,7 +424,7 @@ class WorkflowsConfigProviderTests: TestCase {
                 "wf-prefetch-ref": try Self.workflowJSON(id: "wf-prefetch")
             ]) { current, _ in current }
         )
-        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows()
+        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows(currentOfferingId: nil)
         async let uiConfigWarm = self.uiConfigProvider.getUiConfig()
         _ = await (workflowsWarm, uiConfigWarm)
         expect(self.provider.cachedWorkflow(forOfferingId: "premium")).toNot(beNil())
@@ -458,7 +453,7 @@ class WorkflowsConfigProviderTests: TestCase {
         mockManager.stubbedBlobData[.uiConfig] = Self.uiConfigBlobsByItemKey
         mockManager.shouldStoreTopicCompletion = true
 
-        async let workflowsWarm: Void = provider.warmPrefetchedWorkflows()
+        async let workflowsWarm: Void = provider.warmPrefetchedWorkflows(currentOfferingId: nil)
         await self.waitUntilTopicRequested(on: mockManager)
         mockManager.configGeneration += 1
         mockManager.completeStoredTopic(with: workflowsTopic)

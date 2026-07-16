@@ -439,7 +439,10 @@ private extension OfferingsManager {
         }
         Task {
             let uiConfigProvider = self.uiConfigProvider ?? UiConfigProvider(manager: remoteConfigManager)
-            async let workflowsReady: Void = self.warmWorkflowConfigIfNeeded(remoteConfigManager: remoteConfigManager)
+            async let workflowsReady: Void = self.warmWorkflowConfigIfNeeded(
+                remoteConfigManager: remoteConfigManager,
+                currentOfferingId: offerings.current?.identifier
+            )
             async let uiConfigReady = uiConfigProvider.getUiConfig()
             _ = await (workflowsReady, uiConfigReady)
 
@@ -482,9 +485,12 @@ private extension OfferingsManager {
         )
     }
 
-    private func warmWorkflowConfigIfNeeded(remoteConfigManager: RemoteConfigManagerType) async {
+    private func warmWorkflowConfigIfNeeded(
+        remoteConfigManager: RemoteConfigManagerType,
+        currentOfferingId: String?
+    ) async {
         if let workflowsConfigProvider = self.workflowsConfigProvider {
-            await workflowsConfigProvider.warmPrefetchedWorkflows()
+            await workflowsConfigProvider.warmPrefetchedWorkflows(currentOfferingId: currentOfferingId)
         } else {
             _ = await remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
         }
