@@ -302,6 +302,85 @@ final class PaywallViewConfigurationTests: TestCase {
         }
     }
 
+    func testResolvePaywallViewDataFallsBackToDefaultPaywallWhenOfferingHasNoWorkflow() async throws {
+        // An offering with neither a legacy paywall nor components, whose workflow lookup reports the
+        // offering simply has no workflow attached, must fall back to the default paywall (matching
+        // the legacy offerings path) instead of surfacing an error.
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.offeringsBlock = {
+            Self.createOfferings([offering], currentOfferingID: offering.identifier)
+        }
+        purchases.workflowBlock = { _ in
+            throw BackendError.offeringHasNoWorkflow(offeringId: "offering_a")
+        }
+
+        let result = try await handler.resolvePaywallViewData(
+            for: .offering(offering),
+            remoteConfigEnabled: true
+        )
+
+        expect(result.workflowContext).to(beNil())
+        expect(result.offering.identifier) == offering.identifier
+    }
+
+    func testResolvePaywallViewDataThrowsWhenMappedWorkflowUnresolvableWithNoFallback() async throws {
+        // A mapped workflow whose item or blob failed to resolve surfaces as `workflowNotFound`. With
+        // no components to fall back to it must still throw, so a broken rollout is not silently masked
+        // by the default paywall. Only the distinct "offering has no workflow" case degrades.
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.offeringsBlock = {
+            Self.createOfferings([offering], currentOfferingID: offering.identifier)
+        }
+        purchases.workflowBlock = { _ in
+            throw BackendError.workflowNotFound(workflowId: "wf_test")
+        }
+
+        do {
+            _ = try await handler.resolvePaywallViewData(
+                for: .offering(offering),
+                remoteConfigEnabled: true
+            )
+            XCTFail("Expected resolvePaywallViewData to throw")
+        } catch {
+            expect(error.isOfferingWithoutWorkflowError) == false
+        }
+    }
+
+    func testResolvePaywallViewDataThrowsWhenWorkflowDecodingFailsWithNoFallback() async throws {
+        // A malformed workflow (decoding failure) with no fallback must still surface, so a broken
+        // rollout is not silently masked by the default paywall. Only the explicit no-workflow case
+        // degrades to the default paywall.
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.offeringsBlock = {
+            Self.createOfferings([offering], currentOfferingID: offering.identifier)
+        }
+        purchases.workflowBlock = { _ in
+            throw BackendError.workflowDecodingFailed(
+                workflowId: "offering_a",
+                error: NSError(domain: "test", code: 1)
+            )
+        }
+
+        do {
+            _ = try await handler.resolvePaywallViewData(
+                for: .offering(offering),
+                remoteConfigEnabled: true
+            )
+            XCTFail("Expected resolvePaywallViewData to throw")
+        } catch {
+            expect(error.isOfferingWithoutWorkflowError) == false
+        }
+    }
+
     func testResolvePaywallViewDataThrowsWithScreenOfferingIdWhenScreenOfferingMissing() async throws {
         // The workflow screen resolves to "offering_b", but the offerings snapshot only contains the
         // trigger offering "offering_a". The error must report the screen's offering id that was

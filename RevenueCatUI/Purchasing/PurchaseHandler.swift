@@ -446,7 +446,9 @@ extension PurchaseHandler {
     /// `offering.paywall == nil` is the durable marker of a non-legacy paywall: a v1 paywall always
     /// carries `paywall`, so a legacy offering renders directly without a workflow fetch. If the
     /// workflow fetch fails, falls back to `paywallComponents` (the offerings-provided paywall) when
-    /// available and the failure is fetch-eligible; otherwise the failure propagates.
+    /// available; when the offering simply has no workflow attached, it falls back to the default
+    /// paywall even without components (matching the legacy path). Other failures with no components
+    /// (e.g. network, malformed workflow) propagate, as do non-fetch-eligible failures.
     private func resolvePaywallViewData(
         for offering: Offering,
         offerings: Offerings?,
@@ -465,7 +467,12 @@ extension PurchaseHandler {
 
             return .init(offering: context.initialOffering, workflowContext: context)
         } catch {
-            guard offering.paywallComponents != nil, error.isWorkflowFetchFallbackEligible else {
+            // Fall back to rendering the offering when there are components to show, or when the
+            // offering simply has no workflow attached (render the default paywall, matching the
+            // legacy path). Other failures with no components — including a mapped workflow whose item
+            // or blob failed to resolve — still propagate so a broken rollout surfaces.
+            guard error.isWorkflowFetchFallbackEligible,
+                  offering.paywallComponents != nil || error.isOfferingWithoutWorkflowError else {
                 throw error
             }
 
