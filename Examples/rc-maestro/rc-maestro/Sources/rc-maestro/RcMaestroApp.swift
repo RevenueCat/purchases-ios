@@ -86,6 +86,7 @@ enum E2ETestFlow: String {
     case subscribeFromV2Paywall = "subscribe_from_v2_paywall"
     case openWorkflow = "open_workflow"
     case openNoPaywall = "open_no_paywall"
+    case openWorkflowPresented = "open_workflow_presented"
 
     @ViewBuilder
     var view: some View {
@@ -98,6 +99,8 @@ enum E2ETestFlow: String {
             E2ETestFlowView.OpenWorkflow()
         case .openNoPaywall:
             E2ETestFlowView.OpenNoPaywall()
+        case .openWorkflowPresented:
+            E2ETestFlowView.OpenWorkflowPresented()
         }
     }
 }
