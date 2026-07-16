@@ -15,7 +15,7 @@ struct JWT {
 
     let header: [String: Any]
     let payload: [String: Any]
-    let signature: String
+    let signature: Data
 
     var issuer: String? { payload["iss"] as? String }
     var appUserID: String? { payload["rc.app_user_id"] as? String }
@@ -27,13 +27,10 @@ struct JWT {
         self.header = try decode(slices[0])
         self.payload = try decode(slices[1])
 
-        guard let signatureData = Data(base64Encoded: String(slices[2])) else {
+        guard let signatureData = Data(base64URLEncoded: String(slices[2])) else {
             throw Error.invalidJWT
         }
-        guard let signature = String(bytes: signatureData, encoding: .utf8) else {
-            throw Error.invalidJWT
-        }
-        self.signature = signature
+        self.signature = signatureData
 
         /*
          NOTE:
@@ -47,7 +44,7 @@ struct JWT {
 }
 
 private func decode(_ slice: String.SubSequence) throws -> [String: Any] {
-    guard let data = Data(base64Encoded: String(slice)) else {
+    guard let data = Data(base64URLEncoded: String(slice)) else {
         throw JWT.Error.invalidJWT
     }
 

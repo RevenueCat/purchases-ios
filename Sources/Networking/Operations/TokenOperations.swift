@@ -73,28 +73,28 @@ private extension TokenLogInOperation {
         case .oidc(let token):
             body = StandardBody(method: "oidc",
                                 scope: "openid offline_access",
-                                idToken: token.asString,
+                                idToken: String(decoding: token, as: UTF8.self),
                                 linkToID: nil)
         case .google(let token):
             body = StandardBody(method: "google",
                                 scope: "openid offline_access",
-                                idToken: token.asString,
+                                idToken: String(decoding: token, as: UTF8.self),
                                 linkToID: nil)
         case .siwa(let token):
             body = StandardBody(method: "apple",
                                 scope: "openid offline_access",
-                                idToken: token.asString,
+                                idToken: String(decoding: token, as: UTF8.self),
                                 linkToID: nil)
         case .facebook(let token, let email):
             body = FacebookBody(method: "facebook",
                                 scope: "openid offline_access",
-                                idToken: token.asString,
+                                idToken: String(decoding: token, as: UTF8.self),
                                 email: email,
                                 linkToID: nil)
         case .firebase(let token):
             body = StandardBody(method: "firebase",
                                 scope: "openid offline_access",
-                                idToken: token.asString,
+                                idToken: String(decoding: token, as: UTF8.self),
                                 linkToID: nil)
         }
 
