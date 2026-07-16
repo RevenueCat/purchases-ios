@@ -191,8 +191,19 @@ private extension IdentityManager {
 
         self.backend.token.logIn(currentAppUserID: oldAppUserID, token: token) { result in
             switch result {
-            case .success(let (_, userID)):
-                self.logIn(appUserID: userID, completion: completion)
+            case .success(let (_, newAppUserID)):
+                self.remoteConfigManager?.clearCache(forAppUserID: newAppUserID)
+                self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newAppUserID)
+                self.copySubscriberAttributesToNewUserIfOldIsAnonymous(oldAppUserID: oldAppUserID,
+                                                                       newAppUserID: newAppUserID)
+
+                self.customerInfoManager.customerInfo(appUserID: newAppUserID,
+                                                      fetchPolicy: .fetchCurrent,
+                                                      completion: { result in
+
+                    let mapped = result.map { (info: $0, created: false) }
+                    completion(mapped)
+                })
             case .failure(let error):
                 completion(.failure(error))
             }

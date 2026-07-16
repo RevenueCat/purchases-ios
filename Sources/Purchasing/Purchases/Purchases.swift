@@ -1113,16 +1113,16 @@ public extension Purchases {
 
     @_spi(Experimental)
     @objc(logInUsingToken:completion:)
-    func logIn(using token: ExternalToken, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
+    func logIn(using token: ExternalToken, completion: @escaping (CustomerInfo?, PublicError?) -> Void) {
         guard self.backend.token.enabled else {
             let error = NewErrorUtils.unsupportedError(message: "Token login requires .with(iamEnabled: true)")
-            completion(nil, false, error.asPublicError)
+            completion(nil, error.asPublicError)
             return
         }
 
         self.identityManager.logIn(externalToken: token) { result in
             self.operationDispatcher.dispatchOnMainThread {
-                completion(result.value?.info, result.value?.created ?? false, result.error?.asPublicError)
+                completion(result.value?.info, result.error?.asPublicError)
             }
 
             guard case .success = result else {
@@ -1140,7 +1140,7 @@ public extension Purchases {
     }
 
     @_spi(Experimental)
-    func logIn(using token: ExternalToken) async throws -> (customerInfo: CustomerInfo, created: Bool) {
+    func logIn(using token: ExternalToken) async throws -> CustomerInfo {
         return try await self.logInAsync(token)
     }
 
