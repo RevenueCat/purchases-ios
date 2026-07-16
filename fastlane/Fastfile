@@ -13,6 +13,7 @@
 require_relative 'api_diff_helper'
 require 'rexml/document'
 require 'json'
+require 'net/http'
 
 default_platform(:ios)
 
@@ -1334,12 +1335,12 @@ platform :ios do
 
   desc "Release to CocoaPods"
   lane :push_revenuecat_pod do |options|
-    pod_push_with_error_handling(path: "RevenueCat.podspec", synchronous: true)
+    push_pod_if_not_published(path: "RevenueCat.podspec", pod_name: "RevenueCat")
   end
 
   desc "Release to CocoaPods"
   lane :push_revenuecatui_pod do |options|
-    pod_push_with_error_handling(path: "RevenueCatUI.podspec", synchronous: true)
+    push_pod_if_not_published(path: "RevenueCatUI.podspec", pod_name: "RevenueCatUI")
   end
 
   desc "Tag current branch with current version number"
@@ -2696,6 +2697,36 @@ end
 def check_no_github_release_exists(version_number)
   found_release_number = get_github_release(url: "revenuecat/purchases-ios", version: version_number)
   raise "Release with version #{version_number} already exists!" unless found_release_number.nil?
+end
+
+# Pushes a podspec to CocoaPods trunk, tolerating the case where the current
+# version has already been published. `pod trunk push` reports "Unable to accept
+# duplicate entry" only in the command's stdout, not in the raised error message,
+# so the plugin's built-in duplicate detection can't catch it. Guarding here makes
+# re-running a release job idempotent: after a partial release failure, retrying
+# won't fail just because the pod is already on trunk.
+def push_pod_if_not_published(path:, pod_name:)
+  version_number = current_version_number
+  if pod_version_published?(pod_name: pod_name, version_number: version_number)
+    UI.important("✅ #{pod_name} #{version_number} is already published to CocoaPods trunk. Skipping push.")
+    return
+  end
+  pod_push_with_error_handling(path: path, synchronous: true)
+end
+
+# Returns true if the given version of the pod is already available on CocoaPods
+# trunk. Returns false on any lookup error so the caller falls back to attempting
+# the push rather than silently skipping a release.
+def pod_version_published?(pod_name:, version_number:)
+  uri = URI("https://trunk.cocoapods.org/api/v1/pods/#{pod_name}")
+  response = Net::HTTP.get_response(uri)
+  return false unless response.is_a?(Net::HTTPSuccess)
+
+  versions = JSON.parse(response.body).fetch("versions", [])
+  versions.any? { |version| version["name"] == version_number }
+rescue StandardError => e
+  UI.important("⚠️ Could not verify whether #{pod_name} #{version_number} is already published: #{e.message}")
+  false
 end
 
 lane :check_pods do
