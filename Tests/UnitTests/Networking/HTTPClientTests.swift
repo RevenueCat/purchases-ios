@@ -119,12 +119,35 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     func testUsesAPISourceHostFromProviderWhenSet() throws {
         let apiSourceHost = "custom-api.rc-test.com"
         let client = self.createClient(
-            self.systemInfo,
+            self.systemInfoUsingAPISources(),
             apiSourceProvider: Self.apiSourceProvider(host: apiSourceHost)
         )
 
         let hostCorrect: Atomic<Bool> = false
         stub(condition: isHost(apiSourceHost)) { _ in
+            hostCorrect.value = true
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        waitUntil { completion in
+            client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(hostCorrect.value) == true
+    }
+
+    func testDoesNotUseAPISourceHostWhenSettingDisabled() throws {
+        // `usesRemoteConfigAPISources` is disabled by default (`self.systemInfo`), so an injected provider
+        // must be ignored and requests target `serverHostURL`.
+        let client = self.createClient(
+            self.systemInfo,
+            apiSourceProvider: Self.apiSourceProvider(host: "custom-api.rc-test.com")
+        )
+
+        let hostCorrect: Atomic<Bool> = false
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
+        stub(condition: isHost(host)) { _ in
             hostCorrect.value = true
             return .emptySuccessResponse()
         }
@@ -160,7 +183,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         defer { SystemInfo.proxyURL = nil }
 
         let client = self.createClient(
-            self.systemInfo,
+            self.systemInfoUsingAPISources(),
             apiSourceProvider: Self.apiSourceProvider(host: "custom-api.rc-test.com")
         )
 
@@ -184,7 +207,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         defer { SystemInfo.apiBaseURL = SystemInfo.defaultApiBaseURL }
 
         let client = self.createClient(
-            self.systemInfo,
+            self.systemInfoUsingAPISources(),
             apiSourceProvider: Self.apiSourceProvider(host: "custom-api.rc-test.com")
         )
 
@@ -205,7 +228,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     func testETagRetryTargetsTheSameAPISourceHost() throws {
         let apiSourceHost = "custom-api.rc-test.com"
         let client = self.createClient(
-            self.systemInfo,
+            self.systemInfoUsingAPISources(),
             apiSourceProvider: Self.apiSourceProvider(host: apiSourceHost)
         )
 
@@ -4153,6 +4176,19 @@ extension HTTPClientTests {
     /// base host is unambiguously provider-driven rather than the default `serverHostURL`.
     fileprivate static func apiSourceProvider(host: String) -> RemoteConfigSourceProvider {
         return RemoteConfigSourceProvider(topicStore: SingleAPISourceTopicStore(url: "https://\(host)/"))
+    }
+
+    /// A `MockSystemInfo` with the `usesRemoteConfigAPISources` dangerous setting enabled, so API source
+    /// host resolution is active. The setting is disabled by default, which would otherwise pin requests
+    /// to `serverHostURL` regardless of the injected provider.
+    fileprivate func systemInfoUsingAPISources() -> MockSystemInfo {
+        return MockSystemInfo(
+            finishTransactions: true,
+            dangerousSettings: DangerousSettings(
+                autoSyncPurchases: true,
+                internalSettings: DangerousSettings.Internal(usesRemoteConfigAPISources: true)
+            )
+        )
     }
 
 }
