@@ -1377,6 +1377,33 @@ jobs:
           no_output_timeout: 30m
       - slack-notify-on-fail
 
+  remote-config-production-tests:
+    executor:
+      name: macos-executor
+    steps:
+      - checkout
+      - install-dependencies
+      - update-spm-installation-commit
+      - tuist-generate-workspace:
+          include_test_dependencies: true
+      - run:
+          name: Export blob-monitor API keys into the simulator test process
+          command: |
+            echo 'export SIMCTL_CHILD_REVENUECAT_REMOTE_CONFIG_CDN_API_KEY="${RC_REMOTE_CONFIG_CDN_API_KEY}"' >> "$BASH_ENV"
+            echo 'export SIMCTL_CHILD_REVENUECAT_REMOTE_CONFIG_INLINE_API_KEY="${RC_REMOTE_CONFIG_INLINE_API_KEY}"' >> "$BASH_ENV"
+      - run:
+          name: Run RemoteConfig production blob health monitor
+          command: bundle exec fastlane remote_config_production_tests
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 16 (18.5)
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+      - slack-notify-on-fail
+
   backend-integration-tests-SK1:
     executor:
       name: macos-executor
@@ -2593,6 +2620,17 @@ workflows:
         - equal: ["release-train", << pipeline.schedule.name >>]
     jobs:
       - release-train
+
+  remote-config-blob-monitor:
+    when:
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ["remote_config_blob_monitor", << pipeline.schedule.name >>]
+    jobs:
+      - remote-config-production-tests:
+          context:
+            - config-endpoint-tests
+            - slack-secrets
 
   daily-loadshedder-integration-tests:
     when:
