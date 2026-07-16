@@ -465,7 +465,7 @@ extension PurchaseHandler {
 
             return .init(offering: context.initialOffering, workflowContext: context)
         } catch {
-            guard offering.paywallComponents != nil, error.isWorkflowFetchFallbackEligible else {
+            guard offering.internalPaywallComponents != nil, error.isWorkflowFetchFallbackEligible else {
                 throw error
             }
 

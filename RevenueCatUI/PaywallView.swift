@@ -352,7 +352,10 @@ public struct PaywallView: View {
         purchaseHandler: PurchaseHandler
     ) -> some View {
 
-        if let paywallComponents = useDraftPaywall ? offering.draftPaywallComponents : offering.paywallComponents {
+        let selectedPaywallComponents = useDraftPaywall
+            ? offering.draftPaywallComponents
+            : offering.internalPaywallComponents
+        if let paywallComponents = selectedPaywallComponents {
             // For V2 paywalls, prefer zeroDecimalPlaceCountries from paywallComponents
             let zeroDecimalPlaceCountries = paywallComponents.data.zeroDecimalPlaceCountries
             let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
