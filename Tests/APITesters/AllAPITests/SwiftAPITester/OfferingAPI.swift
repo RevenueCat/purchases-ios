@@ -15,6 +15,7 @@ import Foundation
 import RevenueCat
 
 var off: Offering!
+@available(*, deprecated) // Ignore deprecation warnings
 func checkOfferingAPI() {
     struct Data: Decodable {}
 
