@@ -44,7 +44,7 @@ class OfferingsFactory {
             return nil
         }
 
-        let retainedContents = shouldCreatePaywallComponents
+        let storedContents = shouldCreatePaywallComponents
             ? contents
             : contents.removingPaywallComponents()
 
@@ -52,7 +52,7 @@ class OfferingsFactory {
                          currentOfferingID: data.currentOfferingId,
                          placements: createPlacement(with: data.placements),
                          targeting: data.targeting.flatMap { .init(revision: $0.revision, ruleId: $0.ruleId) },
-                         contents: retainedContents,
+                         contents: storedContents,
                          loadedFromDiskCache: loadedFromDiskCache)
     }
 
