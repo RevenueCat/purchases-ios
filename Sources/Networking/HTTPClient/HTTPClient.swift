@@ -681,11 +681,13 @@ private extension HTTPClient {
 
     /// The API base source URL to use for `request`, or `nil` to fall back to the path's `serverHostURL`.
     ///
-    /// API sources apply only when: no proxy is configured (a proxy pins every request to itself), the
-    /// request is not already targeting an endpoint fallback host, the path opts in via `usesAPISources`,
-    /// and `SystemInfo.apiBaseURL` still holds its default (an override pins the host, e.g. in tests).
+    /// API sources apply only when: the `usesRemoteConfigAPISources` dangerous setting is enabled, no proxy
+    /// is configured (a proxy pins every request to itself), the request is not already targeting an endpoint
+    /// fallback host, the path opts in via `usesAPISources`, and `SystemInfo.apiBaseURL` still holds its
+    /// default (an override pins the host, e.g. in tests).
     private func apiSourceURL(for request: Request) -> URL? {
-        guard SystemInfo.proxyURL == nil,
+        guard self.systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources,
+              SystemInfo.proxyURL == nil,
               !request.isFallbackURLRequest,
               request.httpRequest.path.usesAPISources,
               SystemInfo.apiBaseURL == SystemInfo.defaultApiBaseURL,

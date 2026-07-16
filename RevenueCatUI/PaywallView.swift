@@ -123,6 +123,20 @@ public struct PaywallView: View {
 
     // swiftlint:disable:next missing_docs
     @_spi(Internal) public init(
+        offeringIdentifier: String,
+        displayCloseButton: Bool = false
+    ) {
+        self.init(
+            configuration: .init(
+                content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: nil),
+                displayCloseButton: displayCloseButton,
+                purchaseHandler: .default()
+            )
+        )
+    }
+
+    // swiftlint:disable:next missing_docs
+    @_spi(Internal) public init(
         offering: Offering,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
