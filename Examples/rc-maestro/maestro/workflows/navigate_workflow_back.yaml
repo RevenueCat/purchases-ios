@@ -1,0 +1,47 @@
+# Opens a workflow paywall (offering `default_workflows`), advances to screen 2,
+# taps the back button, and asserts screen 1 is shown again.
+# Local-only for now (not under e2e_tests/, so the CI lane does not run it).
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/navigate_workflow_back.yaml
+
+appId: com.revenuecat.maestro.ios
+name: Navigate a workflow paywall back to the first screen
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow
+- assertVisible: "entitlement (pro): nil"
+# Wait for offerings to load before the button appears.
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
+- tapOn:
+    text: "Present Paywall"
+
+# Screen 1
+- extendedWaitUntil:
+    visible: "Start Your Free Week And Reclaim 30+ Minutes Daily"
+    timeout: 15000
+- tapOn:
+    text: "Continue"
+
+# Screen 2
+- extendedWaitUntil:
+    visible: "Most People Feel Calmer After Just 3 Sessions"
+    timeout: 15000
+- takeScreenshot: "navigate_workflow_back - screen 2"
+- tapOn:
+    text: "Back"
+
+# Back on screen 1
+- extendedWaitUntil:
+    visible: "Start Your Free Week And Reclaim 30+ Minutes Daily"
+    timeout: 15000
+- takeScreenshot: "navigate_workflow_back - back on screen 1"
