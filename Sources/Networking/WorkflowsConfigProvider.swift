@@ -180,7 +180,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
         return self.manager.withCurrentConfigGeneration { generation in
             guard let cache = self.currentWorkflowCache(currentGeneration: generation) else { return nil }
-            let workflowId = cache.offeringIdMap[offeringId] ?? offeringId
+            let workflowId = self.resolvedWorkflowId(forOfferingId: offeringId, in: cache)
             guard let workflow = cache.workflows[workflowId],
                   let uiConfig = self.uiConfigProvider.cachedUiConfig(currentGeneration: generation) else {
                 return nil
@@ -188,6 +188,11 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
 
             return WorkflowDataResult(workflow: workflow, uiConfig: uiConfig, enrolledVariants: nil)
         }
+    }
+
+    private func resolvedWorkflowId(forOfferingId offeringId: String, in cache: PrefetchedWorkflowCache) -> String {
+        // Fall back to treating the input as a workflow id, matching the async resolution path.
+        return cache.offeringIdMap[offeringId] ?? offeringId
     }
 
     private func fetchWorkflow(workflowId: String) async -> Result<PublishedWorkflow, WorkflowResolutionError> {
@@ -230,9 +235,6 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         from topic: RemoteConfiguration.ConfigTopic
     ) async -> [String: PublishedWorkflow] {
         await withTaskGroup(of: (String, PublishedWorkflow?).self) { group in
-            // swiftlint:disable:next todo
-            // TODO: Measure warmup performance with large remote configs and cap this fan-out into batches
-            // if decoding many prefetched workflows at once creates CPU or memory pressure.
             for workflowId in topic.keys.sorted() {
                 guard topic[workflowId]?.prefetch == true else { continue }
                 group.addTask {

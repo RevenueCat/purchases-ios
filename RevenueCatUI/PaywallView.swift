@@ -212,7 +212,6 @@ public struct PaywallView: View {
         self._offering = .init(
             initialValue: seededWorkflowContext?.initialOffering
                 ?? cachedPaywallViewData?.offering
-                ?? configuration.purchaseHandler.cachedInitialOffering(for: configuration.content)
         )
         self._customerInfo = .init(
             initialValue: configuration.customerInfo ?? Self.loadCachedCustomerInfoIfPossible()

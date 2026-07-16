@@ -581,7 +581,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let workflowsConfigProvider = WorkflowsConfigProvider(
             manager: remoteConfigManager,
             uiConfigProvider: uiConfigProvider,
-            paywallCache: paywallCache
+            paywallCache: paywallCache,
+            operationDispatcher: operationDispatcher
         )
 
         let workflowManager = WorkflowManager(
