@@ -79,6 +79,7 @@ import Foundation
 
      Use ``hasPaywall`` to check if the offering has a paywall.
      */
+    @available(*, deprecated, message: "Use hasPaywall to check whether the Offering has a paywall.")
     public let paywallComponents: PaywallComponents?
 
     /**
