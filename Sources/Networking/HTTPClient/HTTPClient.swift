@@ -709,7 +709,7 @@ private extension HTTPClient {
             // because it's how the API key is sent up
             // if the TokenManager produces a new authorization header, it will override
             // any existing authorization header present
-            let authorization = self.tokenManager.authorizationHeaders(for: urlRequest)
+            let authorization = self.tokenManager.authorizationHeaders(for: request)
             headers = headers.merging(authorization)
         }
 

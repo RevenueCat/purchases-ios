@@ -88,9 +88,11 @@ class TokenManager {
         storage.setString(nil, for: .id(userID))
     }
 
-    func authorizationHeaders(for urlRequest: URLRequest) -> [String: String] {
+    func authorizationHeaders(for urlRequest: HTTPClient.Request) -> [String: String] {
         guard enabled else { return [:] }
         guard let currentAccessToken else { return [:] }
+
+        if urlRequest.path == HTTPRequest.Path.tokenLogOut.iamPathComponent { return [:] }
 
         return [
             HTTPClient.RequestHeader.authorization.rawValue: "Bearer \(currentAccessToken)"
