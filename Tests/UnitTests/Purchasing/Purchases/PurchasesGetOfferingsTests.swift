@@ -119,6 +119,7 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
     }
 
     func testRemoteConfigDisabledInvalidatesAndRefetchesOfferings() {
+        self.systemInfo.stubbedRemoteConfigEnabled = true
         self.setupPurchases()
 
         self.mockOfferingsManager.invokedInvalidateAndReFetchCachedOfferingsIfAppropiate = false
