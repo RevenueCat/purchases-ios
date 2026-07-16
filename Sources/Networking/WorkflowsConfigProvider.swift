@@ -152,7 +152,10 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     }
 
     private func warmPrefetchedWorkflowsOnBackgroundExecutor() async {
+        guard self.currentWorkflowCache() == nil else { return }
         guard let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows) else { return }
+        guard self.currentWorkflowCache() == nil else { return }
+
         let snapshot = GenerationGuardedCacheSnapshot(
             generation: self.manager.configGeneration,
             key: topic
