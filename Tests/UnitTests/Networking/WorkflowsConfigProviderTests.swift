@@ -313,6 +313,32 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(self.blobFetcher.invokedEnsureDownloadedRefs).toNot(contain("wf-on-demand-ref"))
     }
 
+    func testWarmPrefetchedWorkflowsReturnsEarlyWhenCacheAlreadyWarmForGeneration() async throws {
+        self.commit(
+            workflows: [
+                "wf-prefetch": .init(
+                    blobRef: "wf-prefetch-ref",
+                    prefetch: true,
+                    content: ["offeringIdentifier": "premium"]
+                )
+            ],
+            uiConfig: Self.uiConfigTopic,
+            blobs: Self.uiConfigBlobs.merging([
+                "wf-prefetch-ref": try Self.workflowJSON(id: "wf-prefetch")
+            ]) { current, _ in current }
+        )
+
+        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows()
+        async let uiConfigWarm = self.uiConfigProvider.getUiConfig()
+        _ = await (workflowsWarm, uiConfigWarm)
+        let ensureAllDownloadedCountAfterFirstWarm = self.blobFetcher.invokedEnsureAllDownloadedRefs.count
+
+        await self.provider.warmPrefetchedWorkflows()
+
+        expect(self.provider.cachedWorkflow(forOfferingId: "premium")?.workflow.id) == "wf-prefetch"
+        expect(self.blobFetcher.invokedEnsureAllDownloadedRefs.count) == ensureAllDownloadedCountAfterFirstWarm
+    }
+
     func testWarmPrefetchedWorkflowsWarmsAssetsForPrefetchTrueBodies() async throws {
         let paywallCache = MockPaywallCacheWarming()
         let operationDispatcher = MockOperationDispatcher()
@@ -677,10 +703,17 @@ private final class FakeRemoteConfigBlobFetcher: RemoteConfigBlobFetcherType {
     private let lock = Lock()
     private let blobStore: FakeRemoteConfigBlobStore
     private var _invokedEnsureDownloadedRefs: [String] = []
+    private var _invokedEnsureAllDownloadedRefs: [[String]] = []
 
     var invokedEnsureDownloadedRefs: [String] {
         return self.lock.perform {
             self._invokedEnsureDownloadedRefs
+        }
+    }
+
+    var invokedEnsureAllDownloadedRefs: [[String]] {
+        return self.lock.perform {
+            self._invokedEnsureAllDownloadedRefs
         }
     }
 
@@ -697,6 +730,9 @@ private final class FakeRemoteConfigBlobFetcher: RemoteConfigBlobFetcherType {
     }
 
     func ensureAllDownloaded(refs: [String]) async -> Bool {
+        self.lock.perform {
+            self._invokedEnsureAllDownloadedRefs.append(refs)
+        }
         return refs.allSatisfy { self.blobStore.contains(ref: $0) }
     }
 
