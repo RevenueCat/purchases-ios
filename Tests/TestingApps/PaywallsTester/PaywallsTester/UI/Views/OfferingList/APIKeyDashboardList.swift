@@ -7,9 +7,9 @@
 
 @_spi(Internal) import RevenueCat
 #if DEBUG
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 #else
-import RevenueCatUI
+@_spi(Internal) import RevenueCatUI
 #endif
 import SwiftUI
 #if canImport(UIKit)
@@ -371,11 +371,7 @@ struct APIKeyDashboardList: View {
 
     @ViewBuilder
     private func workflowPaywallView(for offering: Offering) -> some View {
-        PaywallView(configuration: .init(
-            content: .offeringIdentifier(offering.identifier, presentedOfferingContext: nil),
-            displayCloseButton: true,
-            purchaseHandler: .default()
-        ))
+        PaywallView(offeringIdentifier: offering.identifier, displayCloseButton: true)
         #if DEBUG
         .environment(\.workflowExitOfferOfferingBinding, self.$workflowExitOfferOffering)
         #endif
