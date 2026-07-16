@@ -92,19 +92,26 @@ private extension WorkflowManager {
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension WorkflowManager: @unchecked Sendable {}
 
-extension Error {
+extension BackendError {
 
     /// Whether this error signals that an offering has no workflow attached (as opposed to a mapped
-    /// workflow that failed to resolve, or a config outage, which must surface). Exposed via SPI so
-    /// RevenueCatUI's paywall fallback can render the default paywall for this case only, without
-    /// seeing the internal `BackendError` type.
-    @_spi(Internal) public var isOfferingWithoutWorkflowError: Bool {
-        guard let backendError = self as? BackendError,
-              case let .unexpectedBackendResponse(response, _, _) = backendError,
+    /// workflow that failed to resolve, or a config outage, which must surface).
+    var isOfferingWithoutWorkflow: Bool {
+        guard case let .unexpectedBackendResponse(response, _, _) = self,
               case .offeringHasNoWorkflow = response else {
             return false
         }
         return true
+    }
+
+}
+
+extension Error {
+
+    /// SPI bridge so RevenueCatUI's paywall fallback can detect the no-workflow case without seeing the
+    /// internal `BackendError` type. Forwards to ``BackendError/isOfferingWithoutWorkflow``.
+    @_spi(Internal) public var isOfferingWithoutWorkflowError: Bool {
+        (self as? BackendError)?.isOfferingWithoutWorkflow ?? false
     }
 
 }
