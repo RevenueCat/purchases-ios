@@ -2256,20 +2256,19 @@ jobs:
 
 workflows:
 
-  # One-off recovery workflow: finishes a release whose CocoaPods push job
-  # failed after RevenueCat had already been published to trunk, leaving the
+  # One-off recovery workflow: finishes a release whose CocoaPods push jobs
+  # failed after both pods had already been published to trunk, leaving the
   # rest of the deploy-tag chain blocked. Trigger via the pipeline/run API with
   # finish_release=true, checking out this recovery branch (its shipped code is
   # identical to the release tag). Runs only the remaining release jobs;
-  # push-revenuecat-pod and already-completed jobs (deploy-to-spm, docs-deploy,
+  # both pod-push jobs and already-completed jobs (deploy-to-spm, docs-deploy,
   # admob) are intentionally omitted, as is merge-release-pr (merge manually).
+  # RevenueCat and RevenueCatUI 5.81.0 are already on trunk, so make-release is
+  # the entry point.
   finish-release:
     when: << pipeline.parameters.finish_release >>
     jobs:
-      - push-revenuecatui-pod
-      - make-release:
-          requires:
-            - push-revenuecatui-pod
+      - make-release
       - deploy-purchase-tester:
           dry_run: false
           requires:
