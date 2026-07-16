@@ -39,6 +39,12 @@ struct RcMaestroApp: App {
                                 case .never, .remoteConfigNotFound:
                                     return false
                                 case .primaryBackendDown:
+                                    // Remote config uses a separate request path whose primary URL is already
+                                    // the fallback backend, so it does not have a fallbackUrlIndex.
+                                    if let fallbackPath = request.httpRequest.path as? HTTPRequest.FallbackPath,
+                                       case .remoteConfig = fallbackPath {
+                                        return false
+                                    }
                                     return request.fallbackUrlIndex == nil
                                 }
                             }
