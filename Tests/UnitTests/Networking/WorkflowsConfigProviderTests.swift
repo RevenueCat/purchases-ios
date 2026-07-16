@@ -339,6 +339,41 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(self.blobFetcher.invokedEnsureAllDownloadedRefs.count) == ensureAllDownloadedCountAfterFirstWarm
     }
 
+    func testWarmPrefetchedWorkflowsRetriesIncompleteCache() async throws {
+        self.commit(
+            workflows: [
+                "wf-first": .init(
+                    blobRef: "wf-first-ref",
+                    prefetch: true,
+                    content: ["offeringIdentifier": "first"]
+                ),
+                "wf-second": .init(
+                    blobRef: "wf-second-ref",
+                    prefetch: true,
+                    content: ["offeringIdentifier": "second"]
+                )
+            ],
+            uiConfig: Self.uiConfigTopic,
+            blobs: Self.uiConfigBlobs.merging([
+                "wf-first-ref": try Self.workflowJSON(id: "wf-first"),
+                "wf-second-ref": Data("invalid".utf8)
+            ]) { current, _ in current }
+        )
+
+        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows()
+        async let uiConfigWarm = self.uiConfigProvider.getUiConfig()
+        _ = await (workflowsWarm, uiConfigWarm)
+
+        expect(self.provider.cachedWorkflow(forOfferingId: "first")?.workflow.id) == "wf-first"
+        expect(self.provider.cachedWorkflow(forOfferingId: "second")).to(beNil())
+
+        self.blobStore.stubbedData["wf-second-ref"] = try Self.workflowJSON(id: "wf-second")
+        await self.provider.warmPrefetchedWorkflows()
+
+        expect(self.provider.cachedWorkflow(forOfferingId: "first")?.workflow.id) == "wf-first"
+        expect(self.provider.cachedWorkflow(forOfferingId: "second")?.workflow.id) == "wf-second"
+    }
+
     func testWarmPrefetchedWorkflowsWarmsAssetsForPrefetchTrueBodies() async throws {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
             throw XCTSkip("warmUpWorkflowCaches requires iOS 15+")

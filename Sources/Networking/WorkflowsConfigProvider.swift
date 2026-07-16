@@ -152,17 +152,22 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     }
 
     private func warmPrefetchedWorkflowsOnBackgroundExecutor() async {
-        guard self.currentWorkflowCache() == nil else { return }
+        guard self.currentWorkflowCache()?.isComplete != true else { return }
         guard let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows) else { return }
-        guard self.currentWorkflowCache() == nil else { return }
 
         let snapshot = GenerationGuardedCacheSnapshot(
             generation: self.manager.configGeneration,
             key: topic
         )
+        let cachedWorkflows = self.prefetchedWorkflowsCache.value(for: snapshot)?.workflows ?? [:]
+        let expectedWorkflowIds = Set(topic.compactMap { workflowId, item in
+            item.prefetch ? workflowId : nil
+        })
+        guard !expectedWorkflowIds.isSubset(of: cachedWorkflows.keys) else { return }
 
         let offeringIdMap = self.buildOfferingIdMap(from: topic)
-        let workflows = await self.decodePrefetchedWorkflows(from: topic)
+        let decodedWorkflows = await self.decodePrefetchedWorkflows(from: topic)
+        let workflows = cachedWorkflows.merging(decodedWorkflows) { _, decoded in decoded }
 
         guard await self.manager.isCurrent(snapshot, for: .workflows) else {
             self.prefetchedWorkflowsCache.clearIfStale(currentGeneration: self.manager.configGeneration)
@@ -170,11 +175,15 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         }
 
         self.prefetchedWorkflowsCache.store(
-            .init(offeringIdMap: offeringIdMap, workflows: workflows),
+            .init(
+                offeringIdMap: offeringIdMap,
+                workflows: workflows,
+                isComplete: expectedWorkflowIds.isSubset(of: workflows.keys)
+            ),
             for: snapshot
         )
 
-        self.warmPrefetchedWorkflowAssetsInBackground(workflows)
+        self.warmPrefetchedWorkflowAssetsInBackground(decodedWorkflows)
     }
 
     func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
@@ -290,4 +299,5 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
 private struct PrefetchedWorkflowCache {
     let offeringIdMap: [String: String]
     let workflows: [String: PublishedWorkflow]
+    let isComplete: Bool
 }
