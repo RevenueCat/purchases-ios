@@ -21,6 +21,11 @@ parameters:
   generate_swiftinterface:
     type: boolean
     default: false
+  # One-off recovery switch to finish a partially-completed release via the
+  # finish-release workflow below. Not set by normal runs.
+  finish_release:
+    type: boolean
+    default: false
   bump_with_fallback_pr_lookup:
     type: boolean
     default: false
@@ -2251,6 +2256,38 @@ jobs:
 
 workflows:
 
+  # One-off recovery workflow: finishes a release whose CocoaPods push job
+  # failed after RevenueCat had already been published to trunk, leaving the
+  # rest of the deploy-tag chain blocked. Trigger via the pipeline/run API with
+  # finish_release=true, checking out the release tag's branch. Runs only the
+  # remaining release jobs; push-revenuecat-pod and already-completed jobs
+  # (deploy-to-spm, docs-deploy, admob) are intentionally omitted.
+  finish-release:
+    when: << pipeline.parameters.finish_release >>
+    jobs:
+      - push-revenuecatui-pod
+      - make-release:
+          requires:
+            - push-revenuecatui-pod
+      - deploy-purchase-tester:
+          dry_run: false
+          requires:
+            - make-release
+      - deploy-rct-tester:
+          dry_run: false
+          requires:
+            - make-release
+      - bump-sdk-in-rc-mobile-app:
+          requires:
+            - make-release
+      - revenuecat/merge-release-pr:
+          repo_name: purchases-ios
+          requires:
+            - make-release
+            - deploy-purchase-tester
+            - deploy-rct-tester
+            - bump-sdk-in-rc-mobile-app
+
   generate-swiftinterface:
     when: << pipeline.parameters.generate_swiftinterface >>
     jobs:
@@ -2296,6 +2333,7 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
         - not: << pipeline.parameters.generate_swiftinterface >>
+        - not: << pipeline.parameters.finish_release >>
         - not:
             matches:
               pattern: "^(main|release/.*)$"
