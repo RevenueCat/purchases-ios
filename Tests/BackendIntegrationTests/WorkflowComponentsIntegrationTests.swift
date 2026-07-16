@@ -1,5 +1,5 @@
 //
-//  ProductionWorkflowsPaywallComponentsIntegrationTests.swift
+//  WorkflowComponentsIntegrationTests.swift
 //  BackendIntegrationTests
 //
 //  Created by Rick van der Linden on 7/15/26.
@@ -17,7 +17,7 @@ import XCTest
 #endif
 
 @MainActor
-final class ProductionWorkflowsPaywallComponentsIntegrationTests: BaseStoreKitIntegrationTests {
+final class WorkflowComponentsIntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit2 }
     override class var useWorkflows: Bool { true }
