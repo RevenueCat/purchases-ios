@@ -534,7 +534,7 @@ extension PurchaseHandler {
             // legacy path). Other failures with no components — including a mapped workflow whose item
             // or blob failed to resolve — still propagate so a broken rollout surfaces.
             guard error.isWorkflowFetchFallbackEligible,
-                  offering.paywallComponents != nil || error.isOfferingWithoutWorkflowError else {
+                  offering.internalPaywallComponents != nil || error.isOfferingWithoutWorkflowError else {
                 throw error
             }
 
