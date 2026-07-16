@@ -58,14 +58,17 @@ class WorkflowManager {
         return await self.workflowsConfigProvider.workflowId(forOfferingId: offeringId)
     }
 
-    /// Resolves `offeringId` to its workflow, combining `workflowId(forOfferingId:)` and
-    /// `getWorkflow(workflowId:)` into the single call `Purchases.workflow(forOfferingIdentifier:)`
-    /// needs, instead of it having to orchestrate both individually.
+    /// Resolves `offeringId` to its workflow for `Purchases.workflow(forOfferingIdentifier:)`. Fails
+    /// fast when the offering has no mapped workflow: the config path has no lazy offering→workflow
+    /// conversion, so a missing mapping means the offering simply has no workflow attached. It surfaces
+    /// a distinct `offeringHasNoWorkflow` error (instead of a guaranteed-miss fetch by offering id) so
+    /// the paywall can fall back to the offering's own paywall / the default paywall. A mapped workflow
+    /// that fails to resolve still throws `workflowNotFound` and surfaces. Mirrors purchases-android's
+    /// `presentWorkflow` (#3760).
     func getWorkflow(forOfferingId offeringId: String) async throws -> WorkflowDataResult {
-        // Prefer the workflowId resolved from remote config (offeringId → workflowId), falling back
-        // to the offering identifier itself, which is also accepted as a workflow key. The mapping is
-        // nil until remote config has synced, so the fallback preserves the original behavior.
-        let workflowId = await self.workflowId(forOfferingId: offeringId) ?? offeringId
+        guard let workflowId = await self.workflowId(forOfferingId: offeringId) else {
+            throw BackendError.offeringHasNoWorkflow(offeringId: offeringId)
+        }
         return try await self.getWorkflow(workflowId: workflowId)
     }
 
@@ -88,3 +91,27 @@ private extension WorkflowManager {
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension WorkflowManager: @unchecked Sendable {}
+
+extension BackendError {
+
+    /// Whether this error signals that an offering has no workflow attached (as opposed to a mapped
+    /// workflow that failed to resolve, or a config outage, which must surface).
+    var isOfferingWithoutWorkflow: Bool {
+        guard case let .unexpectedBackendResponse(response, _, _) = self,
+              case .offeringHasNoWorkflow = response else {
+            return false
+        }
+        return true
+    }
+
+}
+
+extension Error {
+
+    /// SPI bridge so RevenueCatUI's paywall fallback can detect the no-workflow case without seeing the
+    /// internal `BackendError` type. Forwards to ``BackendError/isOfferingWithoutWorkflow``.
+    @_spi(Internal) public var isOfferingWithoutWorkflowError: Bool {
+        (self as? BackendError)?.isOfferingWithoutWorkflow ?? false
+    }
+
+}
