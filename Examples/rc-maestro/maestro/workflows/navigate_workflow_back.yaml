@@ -1,6 +1,5 @@
 # Opens a workflow paywall (offering `default_workflows`), advances to screen 2,
 # taps the back button, and asserts screen 1 is shown again.
-# Local-only for now (not under e2e_tests/, so the CI lane does not run it).
 #
 # Run locally against the test store:
 #   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/navigate_workflow_back.yaml
