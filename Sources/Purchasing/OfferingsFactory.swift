@@ -186,9 +186,14 @@ private extension Offerings.Contents {
             uiConfig: self.response.uiConfig
         )
 
-        var contents = self
-        contents.response = response
-        return contents
+        return self.replacingResponse(with: response)
+    }
+
+    /// Returns a copy that preserves all SDK-generated metadata while replacing only the backend response.
+    func replacingResponse(with response: OfferingsResponse) -> Self {
+        var copy = self
+        copy.response = response
+        return copy
     }
 
 }

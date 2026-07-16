@@ -17,7 +17,7 @@ import XCTest
 #endif
 
 @MainActor
-final class WorkflowComponentsIntegrationTests: BaseStoreKitIntegrationTests {
+final class ProductionWorkflowsPaywallComponentsIntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit2 }
     override class var useWorkflows: Bool { true }
