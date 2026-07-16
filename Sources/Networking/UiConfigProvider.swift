@@ -47,7 +47,13 @@ final class UiConfigProvider {
     /// Returns the in-memory config without awaiting remote-config state. This is used only to seed
     /// first-frame workflow rendering after the offerings readiness gate has already warmed config.
     func cachedUiConfig() -> UIConfig? {
-        return self.cache.value(currentGeneration: self.manager.configGeneration)
+        return self.manager.withCurrentConfigGeneration { generation in
+            self.cachedUiConfig(currentGeneration: generation)
+        }
+    }
+
+    func cachedUiConfig(currentGeneration: Int) -> UIConfig? {
+        return self.cache.value(currentGeneration: currentGeneration)
     }
 
     private func assembleUiConfig() async -> UIConfig? {
@@ -98,7 +104,13 @@ final class UiConfigProvider {
     }
 
     func cachedUiConfig() -> UIConfig? {
-        return self.cache.value(currentGeneration: self.manager.configGeneration)
+        return self.manager.withCurrentConfigGeneration { generation in
+            self.cachedUiConfig(currentGeneration: generation)
+        }
+    }
+
+    func cachedUiConfig(currentGeneration: Int) -> UIConfig? {
+        return self.cache.value(currentGeneration: currentGeneration)
     }
 #endif
 

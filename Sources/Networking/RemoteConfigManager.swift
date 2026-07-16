@@ -75,6 +75,16 @@ protocol RemoteConfigManagerType: AnyObject {
 
 extension RemoteConfigManagerType {
 
+    func withCurrentConfigGeneration<T>(_ operation: (Int) -> T?) -> T? {
+        let generation = self.configGeneration
+        guard let value = operation(generation),
+              self.configGeneration == generation else {
+            return nil
+        }
+
+        return value
+    }
+
     func topicCacheSnapshot(_ topic: RemoteConfigTopic) async
     -> GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>? {
         guard let configTopic = await self.topic(topic) else { return nil }

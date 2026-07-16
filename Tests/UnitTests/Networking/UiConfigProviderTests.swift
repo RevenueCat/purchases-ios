@@ -209,6 +209,29 @@ class UiConfigProviderTests: TestCase {
         expect(self.provider.cachedUiConfig()).to(beNil())
     }
 
+    func testCachedUiConfigReturnsNilWhenGenerationChangesBetweenGenerationReadAndCacheLookup() async throws {
+        self.stub(
+            app: #"{"colors": {}, "fonts": {}}"#,
+            localizations: #"{"en_US": {"day": "Day"}}"#,
+            variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+            customVariables: #"{}"#
+        )
+        _ = await self.provider.getUiConfig()
+
+        var didAdvanceGeneration = false
+        let mockManager = try XCTUnwrap(self.mockManager)
+        self.mockManager.onConfigGenerationRead = { [mockManager] in
+            guard !didAdvanceGeneration else { return }
+
+            didAdvanceGeneration = true
+            mockManager.onConfigGenerationRead = nil
+            mockManager.configGeneration += 1
+        }
+
+        expect(self.provider.cachedUiConfig()).to(beNil())
+        expect(didAdvanceGeneration) == true
+    }
+
     func testReDecodesWhenUiConfigTopicChanges() async throws {
         self.stub(
             app: #"{"colors": {}, "fonts": {}}"#,

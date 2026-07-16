@@ -680,7 +680,17 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     }
 
     var isDisabled = false
-    var configGeneration = 0
+    var onConfigGenerationRead: (() -> Void)?
+    var configGeneration: Int {
+        get {
+            defer { self.onConfigGenerationRead?() }
+            return self.configGenerationStorage
+        }
+        set {
+            self.configGenerationStorage = newValue
+        }
+    }
+    private var configGenerationStorage = 0
 
     private(set) var invokedRefreshRemoteConfigCount = 0
     private(set) var invokedRefreshRemoteConfigIfStaleCount = 0

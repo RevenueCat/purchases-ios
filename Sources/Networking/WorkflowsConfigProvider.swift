@@ -175,14 +175,16 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     }
 
     func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
-        guard let cache = self.currentWorkflowCache() else { return nil }
-        let workflowId = cache.offeringIdMap[offeringId] ?? offeringId
-        guard let workflow = cache.workflows[workflowId],
-              let uiConfig = self.uiConfigProvider.cachedUiConfig() else {
-            return nil
-        }
+        return self.manager.withCurrentConfigGeneration { generation in
+            guard let cache = self.currentWorkflowCache(currentGeneration: generation) else { return nil }
+            let workflowId = cache.offeringIdMap[offeringId] ?? offeringId
+            guard let workflow = cache.workflows[workflowId],
+                  let uiConfig = self.uiConfigProvider.cachedUiConfig(currentGeneration: generation) else {
+                return nil
+            }
 
-        return WorkflowDataResult(workflow: workflow, uiConfig: uiConfig, enrolledVariants: nil)
+            return WorkflowDataResult(workflow: workflow, uiConfig: uiConfig, enrolledVariants: nil)
+        }
     }
 
     private func fetchWorkflow(workflowId: String) async -> Result<PublishedWorkflow, WorkflowResolutionError> {
@@ -200,17 +202,25 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     }
 
     private func cachedWorkflow(workflowId: String) -> WorkflowDataResult? {
-        guard let cache = self.currentWorkflowCache(),
-              let workflow = cache.workflows[workflowId],
-              let uiConfig = self.uiConfigProvider.cachedUiConfig() else {
-            return nil
-        }
+        return self.manager.withCurrentConfigGeneration { generation in
+            guard let cache = self.currentWorkflowCache(currentGeneration: generation),
+                  let workflow = cache.workflows[workflowId],
+                  let uiConfig = self.uiConfigProvider.cachedUiConfig(currentGeneration: generation) else {
+                return nil
+            }
 
-        return WorkflowDataResult(workflow: workflow, uiConfig: uiConfig, enrolledVariants: nil)
+            return WorkflowDataResult(workflow: workflow, uiConfig: uiConfig, enrolledVariants: nil)
+        }
     }
 
     private func currentWorkflowCache() -> PrefetchedWorkflowCache? {
-        return self.prefetchedWorkflowsCache.value(currentGeneration: self.manager.configGeneration)
+        return self.manager.withCurrentConfigGeneration { generation in
+            self.currentWorkflowCache(currentGeneration: generation)
+        }
+    }
+
+    private func currentWorkflowCache(currentGeneration: Int) -> PrefetchedWorkflowCache? {
+        return self.prefetchedWorkflowsCache.value(currentGeneration: currentGeneration)
     }
 
     private func decodePrefetchedWorkflows(
