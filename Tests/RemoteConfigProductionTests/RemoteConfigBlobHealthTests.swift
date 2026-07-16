@@ -20,10 +20,11 @@ import XCTest
 
 final class RemoteConfigBlobHealthTests: TestCase {
 
-    // Two projects with fixed serving modes. Substituted at CI time; each test skips until its key
-    // is provided. `cdnApiKey` must be a project with the CDN-offload flag on; `inlineApiKey` off.
-    private static let cdnApiKey = "REVENUECAT_REMOTE_CONFIG_CDN_API_KEY"
-    private static let inlineApiKey = "REVENUECAT_REMOTE_CONFIG_INLINE_API_KEY"
+    // Keys come from the environment (CI sets them from provisioned secrets), so no key ever lives in
+    // source and each test skips when its var is unset. The CDN project has the CDN-offload flag on;
+    // the inline project has it off. To run locally, set these in the scheme's Test env vars.
+    private static let cdnApiKey = ProcessInfo.processInfo.environment["REVENUECAT_REMOTE_CONFIG_CDN_API_KEY"]
+    private static let inlineApiKey = ProcessInfo.processInfo.environment["REVENUECAT_REMOTE_CONFIG_INLINE_API_KEY"]
 
     private var rootURL: URL!
 
@@ -43,12 +44,8 @@ final class RemoteConfigBlobHealthTests: TestCase {
 
     // The CDN-forced project: every referenced blob must be downloaded from the CDN, once, one host.
     func testCDNProjectDownloadsEveryReferencedBlobFromOneHost() async throws {
-        try XCTSkipIf(
-            Self.cdnApiKey == "REVENUECAT_REMOTE_CONFIG_CDN_API_KEY",
-            "No CDN-project key substituted; skipping."
-        )
-
-        let (blobRefs, recorder) = try await self.resolveWorkflowBlobs(apiKey: Self.cdnApiKey)
+        let apiKey = try self.requireKey(Self.cdnApiKey, "REVENUECAT_REMOTE_CONFIG_CDN_API_KEY")
+        let (blobRefs, recorder) = try await self.resolveWorkflowBlobs(apiKey: apiKey)
 
         // resolveWorkflowBlobs guarantees blobRefs is non-empty (and every blob read back), so these
         // checks are not vacuous. Every workflows blob was served from the CDN, and none failed. No
@@ -62,12 +59,8 @@ final class RemoteConfigBlobHealthTests: TestCase {
 
     // The inline project: blobs arrive inside the config response, so nothing hits the CDN.
     func testInlineProjectServesEveryBlobWithoutHittingTheCDN() async throws {
-        try XCTSkipIf(
-            Self.inlineApiKey == "REVENUECAT_REMOTE_CONFIG_INLINE_API_KEY",
-            "No inline-project key substituted; skipping."
-        )
-
-        let (blobRefs, recorder) = try await self.resolveWorkflowBlobs(apiKey: Self.inlineApiKey)
+        let apiKey = try self.requireKey(Self.inlineApiKey, "REVENUECAT_REMOTE_CONFIG_INLINE_API_KEY")
+        let (blobRefs, recorder) = try await self.resolveWorkflowBlobs(apiKey: apiKey)
 
         // resolveWorkflowBlobs guarantees blobRefs is non-empty (and every blob read back), so these
         // checks are not vacuous. No workflows blob touched the CDN: none downloaded, none failed.
@@ -75,6 +68,14 @@ final class RemoteConfigBlobHealthTests: TestCase {
             .to(beFalse(), description: "A workflows blob was unexpectedly downloaded from the CDN.")
         expect(blobRefs.contains { recorder.didFail(ref: $0) })
             .to(beFalse(), description: "A workflows blob download failed.")
+    }
+
+    /// Returns the key, or skips the test if the environment variable is unset (local/normal runs).
+    private func requireKey(_ key: String?, _ variable: String) throws -> String {
+        guard let key, !key.isEmpty else {
+            throw XCTSkip("\(variable) not set; skipping the real-backend blob health check.")
+        }
+        return key
     }
 
     /// Builds a real manager for `apiKey`, resolves the workflows topic's blobs through the real
