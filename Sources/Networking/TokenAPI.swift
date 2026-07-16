@@ -59,13 +59,13 @@ class TokenAPI {
                                                                  appUserID: appUserID,
                                                                  callbackCache: self.revokeCallbacksCache)
 
-            let revokeCallback = TokenCallback(cacheKey: factory.cacheKey) { result in
-                // regardless of whether the server request was successful or not,
-                // we should still delete the tokens from the client, because the client
-                // was explicitly asked to log out
-                completion(result.error)
+            let revokeCallback = TokenRevokeCallback(cacheKey: factory.cacheKey) { error in
+                if error == nil {
+                    self.tokenManager.deleteTokens(for: appUserID)
+                }
+                completion(error)
             }
-            let cacheStatus = self.tokenCallbacksCache.add(revokeCallback)
+            let cacheStatus = self.revokeCallbacksCache.add(revokeCallback)
 
             self.backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
         } else {
