@@ -38,10 +38,12 @@ enum WorkflowResolutionError: Error, Equatable {
 final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
 
     typealias WorkflowDecoder = (Data) throws -> PublishedWorkflow
+    typealias CurrentOfferingIdProvider = @Sendable () -> String?
 
     private let manager: RemoteConfigManagerType
     private let uiConfigProvider: UiConfigProvider
     private let workflowDecoder: WorkflowDecoder
+    private let currentOfferingIdProvider: CurrentOfferingIdProvider
 
     /// The offeringId → workflowId map built from the last topic snapshot seen, keyed by that snapshot
     /// so a repeat call with an unchanged topic reuses it instead of rescanning every item's content.
@@ -55,10 +57,12 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     init(
         manager: RemoteConfigManagerType,
         uiConfigProvider: UiConfigProvider? = nil,
+        currentOfferingIdProvider: @escaping CurrentOfferingIdProvider = { nil },
         workflowDecoder: @escaping WorkflowDecoder = WorkflowsConfigProvider.decodeWorkflow
     ) {
         self.manager = manager
         self.uiConfigProvider = uiConfigProvider ?? UiConfigProvider(manager: manager)
+        self.currentOfferingIdProvider = currentOfferingIdProvider
         self.workflowDecoder = workflowDecoder
     }
 
@@ -149,7 +153,9 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         // Keep only body bytes in memory here. `LazyPublishedWorkflow` performs and retains the decode
         // synchronously on first access, so warming doesn't build every workflow's component graph.
         let offeringIdMap = self.buildOfferingIdMap(from: topic)
-        let workflows = await self.loadPrefetchedWorkflows(from: topic)
+        let workflows = await self.loadWorkflows(
+            self.workflowIdsToWarm(from: topic, offeringIdMap: offeringIdMap)
+        )
 
         guard await self.manager.isCurrent(snapshot, for: .workflows) else {
             self.prefetchedWorkflowsCache.clearIfStale(currentGeneration: self.manager.configGeneration)
@@ -236,12 +242,25 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         return self.prefetchedWorkflowsCache.value(currentGeneration: currentGeneration)
     }
 
-    private func loadPrefetchedWorkflows(
-        from topic: RemoteConfiguration.ConfigTopic
-    ) async -> [String: LazyPublishedWorkflow] {
+    private func workflowIdsToWarm(
+        from topic: RemoteConfiguration.ConfigTopic,
+        offeringIdMap: [String: String]
+    ) -> [String] {
+        var workflowIds = Set(topic.compactMap { workflowId, item in
+            item.prefetch ? workflowId : nil
+        })
+
+        if let currentOfferingId = self.currentOfferingIdProvider(),
+           let currentWorkflowId = offeringIdMap[currentOfferingId] {
+            workflowIds.insert(currentWorkflowId)
+        }
+
+        return workflowIds.sorted()
+    }
+
+    private func loadWorkflows(_ workflowIds: [String]) async -> [String: LazyPublishedWorkflow] {
         await withTaskGroup(of: (String, Data?).self) { group in
-            for workflowId in topic.keys.sorted() {
-                guard topic[workflowId]?.prefetch == true else { continue }
+            for workflowId in workflowIds {
                 group.addTask {
                     return (workflowId, await self.manager.blobData(for: .workflows, itemKey: workflowId))
                 }

@@ -582,7 +582,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let uiConfigProvider = UiConfigProvider(manager: remoteConfigManager)
         let workflowsConfigProvider = WorkflowsConfigProvider(
             manager: remoteConfigManager,
-            uiConfigProvider: uiConfigProvider
+            uiConfigProvider: uiConfigProvider,
+            currentOfferingIdProvider: { deviceCache.cachedOfferings?.current?.identifier }
         )
 
         let workflowManager = WorkflowManager(
