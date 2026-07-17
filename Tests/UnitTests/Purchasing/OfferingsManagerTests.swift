@@ -1042,6 +1042,8 @@ extension OfferingsManagerTests {
     func testGetOfferingsDoesNotDeliverUntilUiConfigResolved() {
         let mockRemoteConfigManager = MockRemoteConfigManager()
         // The workflows topic resolves immediately; ui_config's blob reads are held.
+        mockRemoteConfigManager.stubbedTopics[.uiConfig] = Self.uiConfigTopic
+        mockRemoteConfigManager.stubbedBlobData[.uiConfig] = Self.uiConfigBlobs
         mockRemoteConfigManager.shouldStoreBlobDataCompletion = true
         let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
@@ -1108,7 +1110,10 @@ extension OfferingsManagerTests {
     func testGetOfferingsAwaitsWorkflowsAndUiConfigConcurrently() {
         let mockRemoteConfigManager = MockRemoteConfigManager()
         // Hold BOTH readiness steps: each must have started before either completes.
+        mockRemoteConfigManager.stubbedTopics[.uiConfig] = Self.uiConfigTopic
+        mockRemoteConfigManager.stubbedBlobData[.uiConfig] = Self.uiConfigBlobs
         mockRemoteConfigManager.shouldStoreTopicCompletion = true
+        mockRemoteConfigManager.storedTopicCompletionTopics = [.workflows]
         mockRemoteConfigManager.shouldStoreBlobDataCompletion = true
         let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
@@ -1307,5 +1312,21 @@ extension OfferingsManagerTests {
                                 diagnosticsTracker: self.mockDiagnosticsTracker,
                                 remoteConfigManager: remoteConfigManager)
     }
+
+    private static let uiConfigTopic: [String: RemoteConfiguration.ConfigItem] = [
+        "app": .init(blobRef: "app-ref", content: [:]),
+        "localizations": .init(blobRef: "localizations-ref", content: [:]),
+        "variable_config": .init(blobRef: "variable-config-ref", content: [:]),
+        "custom_variables": .init(blobRef: "custom-variables-ref", content: [:])
+    ]
+
+    private static let uiConfigBlobs: [String: Data] = [
+        "app": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
+        "localizations": Data(#"{}"#.utf8),
+        "variable_config": Data(
+            #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.utf8
+        ),
+        "custom_variables": Data(#"{}"#.utf8)
+    ]
 
 }

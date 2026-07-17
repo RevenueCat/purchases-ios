@@ -61,4 +61,15 @@ final class DangerousSettingsTests: TestCase {
         expect(lhs.hashValue) == rhs.hashValue
     }
 
+    // MARK: - Internal settings
+
+    func testUsesRemoteConfigAPISourcesIsDisabledByDefault() {
+        expect(DangerousSettings.Internal.default.usesRemoteConfigAPISources) == false
+    }
+
+    func testUsesRemoteConfigAPISourcesCanBeEnabled() {
+        let internalSettings = DangerousSettings.Internal(usesRemoteConfigAPISources: true)
+        expect(internalSettings.usesRemoteConfigAPISources) == true
+    }
+
 }
