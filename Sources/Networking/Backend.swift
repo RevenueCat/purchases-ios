@@ -39,6 +39,7 @@ class Backend {
         attributionFetcher: AttributionFetcher,
         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
         diagnosticsTracker: DiagnosticsTrackerType?,
+        apiSourceProvider: RemoteConfigSourceProviderType?,
         dateProvider: DateProvider = DateProvider()
     ) {
         let httpClient = HTTPClient(systemInfo: systemInfo,
@@ -47,7 +48,8 @@ class Backend {
                                     signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
                                     diagnosticsTracker: diagnosticsTracker,
                                     requestTimeout: httpClientTimeout,
-                                    operationDispatcher: OperationDispatcher.default)
+                                    operationDispatcher: OperationDispatcher.default,
+                                    apiSourceProvider: apiSourceProvider)
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
@@ -60,7 +62,8 @@ class Backend {
                                                eTagManager: eTagManager,
                                                tokenManager: tokenManager,
                                                diagnosticsTracker: diagnosticsTracker,
-                                               requestTimeout: httpClientTimeout),
+                                               requestTimeout: httpClientTimeout,
+                                               apiSourceProvider: apiSourceProvider),
             operationDispatcher: operationDispatcher,
             operationQueue: QueueProvider.createRemoteConfigQueue(),
             diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
@@ -304,7 +307,8 @@ private extension HTTPClient {
         eTagManager: ETagManager,
         tokenManager: TokenManager,
         diagnosticsTracker: DiagnosticsTrackerType?,
-        requestTimeout: TimeInterval
+        requestTimeout: TimeInterval,
+        apiSourceProvider: RemoteConfigSourceProviderType?
     ) -> HTTPClient {
         HTTPClient(systemInfo: systemInfo,
                    eTagManager: eTagManager,
@@ -312,7 +316,8 @@ private extension HTTPClient {
                    signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
                    diagnosticsTracker: diagnosticsTracker,
                    requestTimeout: requestTimeout,
-                   operationDispatcher: OperationDispatcher.default)
+                   operationDispatcher: OperationDispatcher.default,
+                   apiSourceProvider: apiSourceProvider)
     }
 
 }

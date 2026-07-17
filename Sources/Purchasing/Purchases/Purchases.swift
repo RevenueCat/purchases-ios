@@ -406,6 +406,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             ? SimulatedStoreTransactionFetcher()
             : StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
 
+        let remoteConfigDiskCache = systemInfo.remoteConfigEnabled ? RemoteConfigDiskCache() : nil
+        let apiSourceProvider = RemoteConfigSourceProvider(topicStore: remoteConfigDiskCache)
+
         let backend = Backend(
             systemInfo: systemInfo,
             httpClientTimeout: networkTimeout,
@@ -420,7 +423,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 observerMode: observerMode,
                 customEntitlementComputation: systemInfo.dangerousSettings.customEntitlementComputation
             ),
-            diagnosticsTracker: diagnosticsTracker
+            diagnosticsTracker: diagnosticsTracker,
+            apiSourceProvider: apiSourceProvider
         )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
@@ -503,19 +507,17 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               appUserID: appUserID
         )
         let remoteConfigManager: RemoteConfigManagerType = {
-            guard systemInfo.remoteConfigEnabled else { return NoOpRemoteConfigManager() }
+            guard let remoteConfigDiskCache else { return NoOpRemoteConfigManager() }
 
-            let diskCache = RemoteConfigDiskCache()
             let blobStore = RemoteConfigBlobStore()
-            let sourceProvider = RemoteConfigSourceProvider(topicStore: diskCache)
             let blobFetcher = RemoteConfigBlobFetcher(
                 blobStore: blobStore,
-                sourceProvider: sourceProvider
+                sourceProvider: apiSourceProvider
             )
 
             return RemoteConfigManager(
                 remoteConfigAPI: backend.remoteConfigAPI,
-                diskCache: diskCache,
+                diskCache: remoteConfigDiskCache,
                 blobStore: blobStore,
                 blobFetcher: blobFetcher,
                 currentUserProvider: identityManager,
@@ -583,9 +585,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let uiConfigProvider = UiConfigProvider(manager: remoteConfigManager)
         let workflowsConfigProvider = WorkflowsConfigProvider(
             manager: remoteConfigManager,
-            uiConfigProvider: uiConfigProvider,
-            paywallCache: paywallCache,
-            operationDispatcher: operationDispatcher
+            uiConfigProvider: uiConfigProvider
         )
 
         let workflowManager = WorkflowManager(
@@ -607,8 +607,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 uiConfigProvider: systemInfo.remoteConfigEnabled
                                                 ? uiConfigProvider
                                                 : nil,
-                                                workflowsConfigProvider: systemInfo.remoteConfigEnabled
-                                                ? workflowsConfigProvider
+                                                workflowAssetPrewarmer: systemInfo.remoteConfigEnabled
+                                                ? workflowManager
                                                 : nil)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
@@ -872,6 +872,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         super.init()
 
         self.identityManager.remoteConfigManager = self.remoteConfigManager
+        self.remoteConfigManager.onRemoteConfigDisabled = { [weak self] in
+            guard let self else { return }
+            self.offeringsManager.invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: self.appUserID)
+        }
 
         Logger.verbose(Strings.configure.purchases_init(self, paymentQueueWrapper))
 
@@ -2465,11 +2469,11 @@ extension Purchases {
         return self.systemInfo.preferredLocaleOverride
     }
 
-    // Exposes the single workflows + remote config gate to RevenueCatUI, which can't see the
-    // ENABLE_REMOTE_CONFIG compile flag directly.
+    // Exposes whether workflows and remote config are currently available to RevenueCatUI, which
+    // can't see either the ENABLE_REMOTE_CONFIG compile flag or the remote config manager's kill switch.
     // swiftlint:disable missing_docs
     @_spi(Internal) public var remoteConfigEnabled: Bool {
-        return self.systemInfo.remoteConfigEnabled
+        return self.systemInfo.remoteConfigEnabled && !self.remoteConfigManager.isDisabled
     }
 
     // swiftlint:disable missing_docs

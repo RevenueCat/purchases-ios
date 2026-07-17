@@ -49,6 +49,10 @@ protocol HTTPRequestPath {
     /// The fallback relative path for this endpoint, if any.
     var fallbackRelativePath: String? { get }
 
+    /// Whether this path resolves its base host from the API source provider (the main-API host
+    /// list with failover) rather than the static `serverHostURL`.
+    var usesAPISources: Bool { get }
+
     /// Additional headers specific to this endpoint.
     var additionalHeaders: HTTPRequest.Headers { get }
 
@@ -105,6 +109,10 @@ extension HTTPRequestPath {
         return self.relativePath
     }
 
+    var usesAPISources: Bool {
+        return false
+    }
+
     var additionalHeaders: HTTPRequest.Headers {
         return [:]
     }
@@ -117,18 +125,23 @@ extension HTTPRequestPath {
         return false
     }
 
-    func url(proxyURL: URL? = nil, fallbackUrlIndex: Int? = nil, preferIAMPath: Bool) -> URL? {
+    func url(proxyURL: URL? = nil,
+             apiSourceURL: URL? = nil,
+             fallbackUrlIndex: Int? = nil,
+             preferIAMPath: Bool) -> URL? {
         let baseURL: URL
         if let proxyURL {
-            // When a Proxy URL is set, we don't support fallback URLs
-            guard fallbackUrlIndex == nil else {
+            // When a Proxy URL is set, we don't support API sources or fallback URLs
+            guard fallbackUrlIndex == nil, apiSourceURL == nil else {
                 // This is to safe guard against a potential infinite loop if the caller mistakenly
-                // passes both a proxyURL and a fallbackUrlIndex.
+                // passes a proxyURL together with an apiSourceURL or a fallbackUrlIndex.
                 return nil
             }
             baseURL = proxyURL
         } else if let fallbackUrlIndex {
             return self.fallbackUrls[safe: fallbackUrlIndex]
+        } else if let apiSourceURL {
+            baseURL = apiSourceURL
         } else {
             baseURL = Self.serverHostURL
         }
@@ -207,6 +220,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     static var serverHostURL: URL {
         SystemInfo.apiBaseURL
+    }
+
+    var usesAPISources: Bool {
+        return true
     }
 
     private static let fallbackServerHostURLs = [
