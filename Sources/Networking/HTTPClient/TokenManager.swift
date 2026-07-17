@@ -76,6 +76,12 @@ class TokenManager {
         }
     }
 
+    var currentAMR: String? {
+        guard let currentAccessToken else { return nil }
+        guard let jwt = try? JWT(from: currentAccessToken) else { return nil }
+        return jwt.amr?.first
+    }
+
     func saveTokens(refreshToken: String?, accessToken: String, idToken: String?, for userID: String) {
         storage.setString(refreshToken, for: .refresh(userID))
         storage.setString(accessToken, for: .access(userID))
