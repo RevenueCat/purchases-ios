@@ -177,6 +177,10 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
     }
 
+    /// Pre-downloads every screen's images and low-resolution videos plus downloadable `ui_config` fonts.
+    ///
+    /// The workflow ID is recorded before downloads start so the presentation and background body-data paths cannot
+    /// enqueue duplicate work. Individual downloads are best-effort and do not fail workflow delivery.
     func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
         guard !self.workflowIDsWithAssetPrewarmingStarted.contains(workflow.id) else { return }
         self.workflowIDsWithAssetPrewarmingStarted.insert(workflow.id)

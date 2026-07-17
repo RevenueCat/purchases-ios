@@ -39,6 +39,10 @@ enum WorkflowResolutionError: Error, Equatable {
 /// topic instead of a dedicated `/v1/workflows` list+detail fetch. It knows only the `workflows` topic
 /// name, that an item's offering id lives in its inline content under `offeringIdentifier`, and how to
 /// parse a ``PublishedWorkflow``. Everything else is delegated to `RemoteConfigManager`.
+///
+/// Eligible workflows—items marked `prefetch` plus the current offering's workflow—are cached as raw body `Data`.
+/// Normal reads decode and retain their result lazily. Asset prewarming instead uses a transient decode so it can
+/// discover referenced assets without keeping every eligible workflow's component graph in memory.
 final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
 
     typealias WorkflowDecoder = (Data) throws -> PublishedWorkflow
@@ -150,6 +154,11 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         }
     }
 
+    /// Ensures raw body data is cached for workflows marked `prefetch` and for the current offering's workflow.
+    ///
+    /// This method never decodes a workflow. It returns only workflow IDs whose body data is available in the
+    /// current config generation, allowing `WorkflowManager` to schedule transient decoding and asset prewarming.
+    /// Missing bodies are omitted so one failed download does not prevent the remaining workflows from proceeding.
     @discardableResult
     func cacheEligibleWorkflowBodyData(currentOfferingId: String?) async -> Set<String> {
         return await Task.detached(priority: .utility) {

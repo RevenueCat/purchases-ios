@@ -13,6 +13,9 @@
 
 import Foundation
 
+/// Starts asset prewarming for workflows selected by remote config without making offerings delivery wait for
+/// workflow decoding or asset downloads. Implementations may await the workflow body data needed to enqueue that
+/// work, but the asset-prewarming work itself is fire-and-forget.
 protocol WorkflowAssetPrewarmingType: Sendable {
 
     func scheduleAssetPrewarmingForEligibleWorkflows(currentOfferingId: String?) async
@@ -28,6 +31,17 @@ protocol WorkflowAssetPrewarmingType: Sendable {
 /// no stale-while-revalidate, no disk fallback, and no synchronous cache seed here anymore — a
 /// workflow body is a shared, content-addressed blob resolved (and downloaded on demand, deduped) by
 /// `RemoteConfigManager`.
+///
+/// Workflow asset prewarming has two entry paths that converge on `handleResolvedWorkflow(_:)`:
+///
+/// - **Read path:** `getWorkflow` and `cachedWorkflow` already have a decoded workflow. They schedule its asset
+///   prewarming while returning that same decoded value to the caller.
+/// - **Body-data path:** ``scheduleAssetPrewarmingForEligibleWorkflows(currentOfferingId:)`` first caches raw body
+///   data for workflows marked `prefetch` plus the current offering's workflow. It then transiently decodes those
+///   workflows on a background worker solely to discover their assets. That decode is never retained in
+///   `LazyPublishedWorkflow`; the graph is released after the asset-prewarming task finishes.
+///
+/// Both paths use the same `PaywallCacheWarming` entry point, which deduplicates asset prewarming by workflow ID.
 class WorkflowManager: WorkflowAssetPrewarmingType {
 
     private let workflowsConfigProvider: WorkflowsConfigProviderType
@@ -86,8 +100,14 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
     }
 
     /// Caches the prefetched and current-offering workflow body data before scheduling its decode and asset
-    /// prewarming in the background. Only body-data readiness is awaited; decoding and downloads never delay
-    /// offerings.
+    /// prewarming in the background.
+    ///
+    /// The returned body IDs belong to the current config generation and are decoded transiently: the decoded
+    /// graphs are passed to the shared asset-prewarming path without replacing their cached raw body data. A later
+    /// presentation therefore performs the normal retained decode. Individual failures are ignored so one malformed
+    /// workflow cannot prevent sibling workflows from prewarming or delay offerings delivery.
+    ///
+    /// Only body-data readiness is awaited; decoding and downloads never delay offerings.
     func scheduleAssetPrewarmingForEligibleWorkflows(currentOfferingId: String?) async {
         let workflowIDsWithCachedBodyData = await self.workflowsConfigProvider.cacheEligibleWorkflowBodyData(
             currentOfferingId: currentOfferingId
