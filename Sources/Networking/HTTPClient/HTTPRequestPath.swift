@@ -457,51 +457,57 @@ extension HTTPRequest.Path: HTTPRequestPath {
     }
 
     var iamPathComponent: String {
+        // NOTE: cases below that "return self.pathComponent" are indicating
+        // that the corresponding server paths have not yet been migrated to
+        // support access token authorization
         switch self {
         case let .getCustomerInfo:
             return "customer"
-
-        case let .getOfferings:
+        case .getOfferings:
             return "customer/offerings"
-
-        case let .getIntroEligibility:
+        case .getIntroEligibility:
             return "customer/intro_eligibility"
-
-        case let .appHealthReport:
-            return "customer/health_report"
-
-        case let .appHealthReportAvailability:
-            return "customer/health_report_availability"
-
-        case let .postAttributionData:
+        case .logIn:
+            // SHOULD NOT BE USED
+            return self.pathComponent
+        case .postAttributionData:
             return "customer/attribution"
-
-        case let .postAdServicesToken:
-            return "customer/adservices_attribution"
-
-        case let .postSubscriberAttributes:
+        case .postOfferForSigning:
+            return "offers"
+        case .postReceiptData:
+            return "receipts"
+        case .postSubscriberAttributes:
             return "customer/attributes"
-
-        case let .getCustomerCenterConfig:
+        case .postAdServicesToken:
+            return "customer/adservices_attribution"
+        case .health:
+            return self.pathComponent
+        case .appHealthReport:
+            return "customer/health_report"
+        case .appHealthReportAvailability:
+            return self.pathComponent
+        case .getProductEntitlementMapping:
+            return "product_entitlement_mapping"
+        case .getCustomerCenterConfig:
             return "customer/customercenter"
-
-        case let .getVirtualCurrencies:
+        case .getVirtualCurrencies:
             return "customer/virtual_currencies"
-
+        case .postRedeemWebPurchase:
+            return self.pathComponent
         case .postCreateTicket:
-            return "customercenter/support/create-ticket"
-
-        case let .isPurchaseAllowedByRestoreBehavior:
+            return self.pathComponent
+        case .isPurchaseAllowedByRestoreBehavior:
             return "customer/restore/eligibility"
-
-        case let .rewardVerificationStatus(_, clientTransactionID):
-            return "customer/ads/reward_verifications/\(Self.escape(clientTransactionID))"
-
-        case let .remoteConfig(domain):
-            return "config/\(Self.escape(domain))"
-
-        default:
-            return self.relativePath
+        case .rewardVerificationStatus:
+            return self.pathComponent
+        case .remoteConfig:
+            return self.pathComponent
+        case .tokenLogin:
+            return "/auth/login"
+        case .tokenRefresh:
+            return "/auth/token"
+        case .tokenLogOut:
+            return "/auth/revoke"
         }
     }
 

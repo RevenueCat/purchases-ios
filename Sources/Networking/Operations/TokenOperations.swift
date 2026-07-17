@@ -70,6 +70,10 @@ private extension TokenLogInOperation {
 
         let body: any HTTPRequestBody
         switch token {
+        case .anonymous:
+            body = AnonymousBody(method: "anonymous",
+                                 scope: "openid offline_access",
+                                 reference: nil)
         case .oidc(let token):
             body = StandardBody(method: "oidc",
                                 scope: "openid offline_access",
@@ -204,6 +208,31 @@ final class TokenRevocationOperation: CacheableNetworkOperation, @unchecked Send
 // MARK: - Request Bodies
 
 extension TokenLogInOperation {
+
+    struct AnonymousBody: Encodable, HTTPRequestBody {
+
+        // Note: These keys need to be explicitly declared using snake_case
+        // because the CodingKeys are also used for request signing via `contentForSignature`.
+        // swiftlint:disable:next nesting
+        private enum CodingKeys: String, CodingKey {
+            case method = "method"
+            case scope = "scope"
+            case reference = "reference"
+        }
+
+        let method: String
+        let scope: String
+        let reference: String?
+
+        var contentForSignature: [(key: String, value: String?)] {
+            return [
+                (Self.CodingKeys.method.stringValue, self.method),
+                (Self.CodingKeys.scope.stringValue, self.scope),
+                (Self.CodingKeys.reference.stringValue, self.reference)
+            ]
+        }
+
+    }
 
     struct StandardBody: Encodable, HTTPRequestBody {
 

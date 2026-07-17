@@ -12,6 +12,10 @@ import Foundation
 @objc(RCExternalToken)
 public final class ExternalToken: NSObject {
 
+    @objc internal static func anonymous(appUserID: String?) -> ExternalToken {
+        ExternalToken(token: .anonymous(appUserID))
+    }
+
     @objc public static func oidc(_ token: Data) -> ExternalToken {
         ExternalToken(token: .oidc(token))
     }
@@ -46,6 +50,7 @@ public final class ExternalToken: NSObject {
 }
 
 internal enum ExternalAuthToken: Hashable {
+    case anonymous(String?)
     case oidc(Data)
     case google(Data)
     case siwa(Data)
@@ -54,6 +59,7 @@ internal enum ExternalAuthToken: Hashable {
 
     internal var cacheIdentifier: String {
         switch self {
+        case .anonymous(let id): return "anon-\(id ?? "NULL")"
         case .oidc(let data): return "oidc-\(data.hashString)"
         case .google(let data): return "google-\(data.hashString)"
         case .siwa(let data): return "siwa-\(data.hashString)"
@@ -64,6 +70,7 @@ internal enum ExternalAuthToken: Hashable {
 
     internal func validate() -> Bool {
         switch self {
+        case .anonymous: return true
         case .oidc(let data): return data.isEmpty == false
         case .google(let data): return data.isEmpty == false
         case .siwa(let data): return data.isEmpty == false
