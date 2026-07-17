@@ -40,9 +40,11 @@ final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked
     }
 
     private(set) var invokedWarmPrefetchedWorkflowsCount = 0
+    private(set) var invokedWarmPrefetchedWorkflowsParameters: [String?] = []
 
-    func warmPrefetchedWorkflows() async {
+    func warmPrefetchedWorkflows(currentOfferingId: String?) async {
         self.invokedWarmPrefetchedWorkflowsCount += 1
+        self.invokedWarmPrefetchedWorkflowsParameters.append(currentOfferingId)
     }
 
     var stubbedCachedWorkflowResult: [String: WorkflowDataResult] = [:]

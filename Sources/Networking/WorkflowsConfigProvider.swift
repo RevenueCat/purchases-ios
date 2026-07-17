@@ -11,7 +11,7 @@ protocol WorkflowsConfigProviderType {
 
     func workflowId(forOfferingId offeringId: String) async -> String?
     func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError>
-    func warmPrefetchedWorkflows() async
+    func warmPrefetchedWorkflows(currentOfferingId: String?) async
     func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult?
 
 }
@@ -37,10 +37,11 @@ enum WorkflowResolutionError: Error, Equatable {
 /// parse a ``PublishedWorkflow``. Everything else is delegated to `RemoteConfigManager`.
 final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
 
+    typealias WorkflowDecoder = (Data) throws -> PublishedWorkflow
+
     private let manager: RemoteConfigManagerType
     private let uiConfigProvider: UiConfigProvider
-    private let paywallCache: PaywallCacheWarmingType?
-    private let operationDispatcher: OperationDispatcher
+    private let workflowDecoder: WorkflowDecoder
 
     /// The offeringId → workflowId map built from the last topic snapshot seen, keyed by that snapshot
     /// so a repeat call with an unchanged topic reuses it instead of rescanning every item's content.
@@ -54,13 +55,11 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     init(
         manager: RemoteConfigManagerType,
         uiConfigProvider: UiConfigProvider? = nil,
-        paywallCache: PaywallCacheWarmingType? = nil,
-        operationDispatcher: OperationDispatcher = .default
+        workflowDecoder: @escaping WorkflowDecoder = WorkflowsConfigProvider.decodeWorkflow
     ) {
         self.manager = manager
         self.uiConfigProvider = uiConfigProvider ?? UiConfigProvider(manager: manager)
-        self.paywallCache = paywallCache
-        self.operationDispatcher = operationDispatcher
+        self.workflowDecoder = workflowDecoder
     }
 
     /// Resolves `offeringId` to its workflow id via an offeringId → workflowId map built from the
@@ -114,8 +113,12 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     /// Cache misses validate the workflow topic's generation after `ui_config` resolves, so an in-flight
     /// config change fails the resolution instead of returning a mixed-generation workflow/config pair.
     func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
-        if let cached = self.cachedWorkflow(workflowId: workflowId) {
-            return .success(cached)
+        // Deliberately sequential, not `async let`: a miss or malformed body returns without paying for
+        // `ui_config`. A warm-cache hit decodes synchronously from in-memory bytes on the caller's thread.
+        if let cached = self.cachedWorkflowResult(workflowId: workflowId) {
+            return await self.makeWorkflowResult(cached.result) {
+                self.manager.configGeneration == cached.generation
+            }
         }
 
         guard let snapshot = await self.manager.topicCacheSnapshot(.workflows),
@@ -123,75 +126,69 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
             return .failure(.notFound)
         }
 
-        // Deliberately sequential, not `async let`: an `async let` for `ui_config` started alongside the
-        // workflow-body read would still be implicitly awaited (Swift cancels but does not fast-fail an
-        // unconsumed `async let` when its scope exits) if the body turns out missing or malformed, so a
-        // miss would pay for `ui_config`'s network reads anyway instead of returning immediately.
-        let workflow: PublishedWorkflow
-        switch await self.fetchWorkflow(workflowId: workflowId) {
-        case let .success(fetched):
-            workflow = fetched
-        case let .failure(error):
-            return .failure(error)
+        return await self.makeWorkflowResult(await self.fetchWorkflow(workflowId: workflowId)) {
+            await self.manager.isCurrent(snapshot, for: .workflows)
         }
-
-        guard let uiConfig = await self.uiConfigProvider.getUiConfig() else {
-            return .failure(.uiConfigUnavailable)
-        }
-        guard await self.manager.isCurrent(snapshot, for: .workflows) else {
-            return .failure(.notFound)
-        }
-
-        return .success(WorkflowDataResult(workflow: workflow, uiConfig: uiConfig, enrolledVariants: nil))
     }
 
-    func warmPrefetchedWorkflows() async {
+    func warmPrefetchedWorkflows(currentOfferingId: String?) async {
         await Task.detached(priority: .utility) {
-            await self.warmPrefetchedWorkflowsOnBackgroundExecutor()
+            await self.warmPrefetchedWorkflowsOnBackgroundExecutor(currentOfferingId: currentOfferingId)
         }.value
     }
 
-    private func warmPrefetchedWorkflowsOnBackgroundExecutor() async {
-        guard self.currentWorkflowCache()?.isComplete != true else { return }
+    private func warmPrefetchedWorkflowsOnBackgroundExecutor(currentOfferingId: String?) async {
+        if let cache = self.currentWorkflowCache(), cache.isWarm(currentOfferingId: currentOfferingId) {
+            return
+        }
         guard let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows) else { return }
 
         let snapshot = GenerationGuardedCacheSnapshot(
             generation: self.manager.configGeneration,
             key: topic
         )
-        let cachedWorkflows = self.prefetchedWorkflowsCache.value(for: snapshot)?.workflows ?? [:]
-        let expectedWorkflowIds = Set(topic.compactMap { workflowId, item in
+        let offeringIdMap = self.buildOfferingIdMap(from: topic)
+        let prefetchedWorkflowIds = Set(topic.compactMap { workflowId, item in
             item.prefetch ? workflowId : nil
         })
+        let expectedWorkflowIds = workflowIdsToWarm(
+            prefetchedWorkflowIds: prefetchedWorkflowIds,
+            offeringIdMap: offeringIdMap,
+            currentOfferingId: currentOfferingId
+        )
+        let cachedWorkflows = self.prefetchedWorkflowsCache.value(for: snapshot)?.workflows ?? [:]
         guard !expectedWorkflowIds.isSubset(of: cachedWorkflows.keys) else { return }
 
-        let offeringIdMap = self.buildOfferingIdMap(from: topic)
-        let decodedWorkflows = await self.decodePrefetchedWorkflows(from: topic)
-        let workflows = cachedWorkflows.merging(decodedWorkflows) { _, decoded in decoded }
+        // Keep only body bytes in memory here. `LazyPublishedWorkflow` performs and retains the decode
+        // synchronously on first access, so warming doesn't build every workflow's component graph.
+        let missingWorkflowIds = expectedWorkflowIds.subtracting(cachedWorkflows.keys)
+        let loadedWorkflows = await self.loadWorkflows(missingWorkflowIds)
 
         guard await self.manager.isCurrent(snapshot, for: .workflows) else {
             self.prefetchedWorkflowsCache.clearIfStale(currentGeneration: self.manager.configGeneration)
             return
         }
 
+        // Another concurrent warm may have populated more entries while the missing bodies loaded.
+        // Preserve those entries (and any retained lazy decode results) when merging this warm.
+        let latestWorkflows = self.prefetchedWorkflowsCache.value(for: snapshot)?.workflows ?? cachedWorkflows
+        let workflows = latestWorkflows.merging(loadedWorkflows) { cached, _ in cached }
         self.prefetchedWorkflowsCache.store(
             .init(
                 offeringIdMap: offeringIdMap,
-                workflows: workflows,
-                isComplete: expectedWorkflowIds.isSubset(of: workflows.keys)
+                prefetchedWorkflowIds: prefetchedWorkflowIds,
+                workflows: workflows
             ),
             for: snapshot
         )
-
-        self.warmPrefetchedWorkflowAssetsInBackground(decodedWorkflows)
     }
 
     func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
         return self.manager.withCurrentConfigGeneration { generation in
             guard let cache = self.currentWorkflowCache(currentGeneration: generation) else { return nil }
             let workflowId = self.resolvedWorkflowId(forOfferingId: offeringId, in: cache)
-            guard let workflow = cache.workflows[workflowId],
-                  let uiConfig = self.uiConfigProvider.cachedUiConfig(currentGeneration: generation) else {
+            guard let uiConfig = self.uiConfigProvider.cachedUiConfig(currentGeneration: generation),
+                  case let .success(workflow)? = cache.workflows[workflowId]?.value() else {
                 return nil
             }
 
@@ -218,15 +215,35 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         }
     }
 
-    private func cachedWorkflow(workflowId: String) -> WorkflowDataResult? {
+    private func makeWorkflowResult(
+        _ workflowResult: Result<PublishedWorkflow, WorkflowResolutionError>,
+        isCurrent: () async -> Bool
+    ) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
+        let workflow: PublishedWorkflow
+        switch workflowResult {
+        case let .success(value):
+            workflow = value
+        case let .failure(error):
+            return .failure(error)
+        }
+
+        guard let uiConfig = await self.uiConfigProvider.getUiConfig() else {
+            return .failure(.uiConfigUnavailable)
+        }
+        guard await isCurrent() else { return .failure(.notFound) }
+
+        return .success(WorkflowDataResult(workflow: workflow, uiConfig: uiConfig, enrolledVariants: nil))
+    }
+
+    private func cachedWorkflowResult(
+        workflowId: String
+    ) -> (result: Result<PublishedWorkflow, WorkflowResolutionError>, generation: Int)? {
         return self.manager.withCurrentConfigGeneration { generation in
             guard let cache = self.currentWorkflowCache(currentGeneration: generation),
-                  let workflow = cache.workflows[workflowId],
-                  let uiConfig = self.uiConfigProvider.cachedUiConfig(currentGeneration: generation) else {
+                  let workflow = cache.workflows[workflowId] else {
                 return nil
             }
-
-            return WorkflowDataResult(workflow: workflow, uiConfig: uiConfig, enrolledVariants: nil)
+            return (result: workflow.value(), generation: generation)
         }
     }
 
@@ -240,64 +257,104 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         return self.prefetchedWorkflowsCache.value(currentGeneration: currentGeneration)
     }
 
-    private func decodePrefetchedWorkflows(
-        from topic: RemoteConfiguration.ConfigTopic
-    ) async -> [String: PublishedWorkflow] {
-        await withTaskGroup(of: (String, PublishedWorkflow?).self) { group in
-            for workflowId in topic.keys.sorted() {
-                guard topic[workflowId]?.prefetch == true else { continue }
+    private func loadWorkflows(_ workflowIds: Set<String>) async -> [String: LazyPublishedWorkflow] {
+        await withTaskGroup(of: (String, Data?).self) { group in
+            for workflowId in workflowIds {
                 group.addTask {
-                    do {
-                        return (
-                            workflowId,
-                            try await self.manager.blobData(
-                                for: .workflows,
-                                itemKey: workflowId,
-                                as: PublishedWorkflow.self
-                            )
-                        )
-                    } catch {
-                        Logger.error(Strings.codable.decoding_error(error, PublishedWorkflow.self))
-                        return (workflowId, nil)
-                    }
+                    return (workflowId, await self.manager.blobData(for: .workflows, itemKey: workflowId))
                 }
             }
 
-            var workflows: [String: PublishedWorkflow] = [:]
-            for await (workflowId, workflow) in group {
-                if let workflow {
-                    workflows[workflowId] = workflow
+            var workflows: [String: LazyPublishedWorkflow] = [:]
+            for await (workflowId, data) in group {
+                if let data {
+                    workflows[workflowId] = LazyPublishedWorkflow(
+                        data: data,
+                        decoder: self.workflowDecoder
+                    )
                 }
             }
             return workflows
         }
     }
 
-    private func warmPrefetchedWorkflowAssetsInBackground(_ workflows: [String: PublishedWorkflow]) {
-        self.operationDispatcher.dispatchOnWorkerThread {
-            await self.warmPrefetchedWorkflowAssets(workflows)
-        }
-    }
-
-    private func warmPrefetchedWorkflowAssets(_ workflows: [String: PublishedWorkflow]) async {
-        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
-              let paywallCache,
-              let uiConfig = await self.uiConfigProvider.getUiConfig() else {
-            return
-        }
-
-        for workflowId in workflows.keys.sorted() {
-            guard let workflow = workflows[workflowId] else { continue }
-            await paywallCache.warmUpWorkflowCaches(workflow: workflow, uiConfig: uiConfig)
-        }
+    private static func decodeWorkflow(data: Data) throws -> PublishedWorkflow {
+        return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
     }
 
     private static let offeringIdentifierKey = "offeringIdentifier"
 
 }
 
+private func workflowIdsToWarm(
+    prefetchedWorkflowIds: Set<String>,
+    offeringIdMap: [String: String],
+    currentOfferingId: String?
+) -> Set<String> {
+    var workflowIds = prefetchedWorkflowIds
+
+    if let currentOfferingId,
+       let currentWorkflowId = offeringIdMap[currentOfferingId] {
+        workflowIds.insert(currentWorkflowId)
+    }
+
+    return workflowIds
+}
+
 private struct PrefetchedWorkflowCache {
     let offeringIdMap: [String: String]
-    let workflows: [String: PublishedWorkflow]
-    let isComplete: Bool
+    let prefetchedWorkflowIds: Set<String>
+    let workflows: [String: LazyPublishedWorkflow]
+
+    func isWarm(currentOfferingId: String?) -> Bool {
+        let expectedWorkflowIds = workflowIdsToWarm(
+            prefetchedWorkflowIds: self.prefetchedWorkflowIds,
+            offeringIdMap: self.offeringIdMap,
+            currentOfferingId: currentOfferingId
+        )
+        return expectedWorkflowIds.isSubset(of: self.workflows.keys)
+    }
 }
+
+/// Retains raw workflow bytes until first use, then atomically retains either the decoded workflow or
+/// its decoding failure. This keeps warm-cache reads synchronous without eagerly building every workflow graph.
+private final class LazyPublishedWorkflow {
+
+    private enum State {
+        case data(Data)
+        case decoded(Result<PublishedWorkflow, WorkflowResolutionError>)
+    }
+
+    private let decoder: WorkflowsConfigProvider.WorkflowDecoder
+    private let state: Atomic<State>
+
+    init(data: Data, decoder: @escaping WorkflowsConfigProvider.WorkflowDecoder) {
+        self.decoder = decoder
+        self.state = .init(.data(data))
+    }
+
+    func value() -> Result<PublishedWorkflow, WorkflowResolutionError> {
+        return self.state.modify { state in
+            switch state {
+            case let .decoded(result):
+                return result
+            case let .data(data):
+                let result = self.decode(data)
+                state = .decoded(result)
+                return result
+            }
+        }
+    }
+
+    private func decode(_ data: Data) -> Result<PublishedWorkflow, WorkflowResolutionError> {
+        do {
+            return .success(try self.decoder(data))
+        } catch {
+            Logger.error(Strings.codable.decoding_error(error, PublishedWorkflow.self))
+            return .failure(.decodingFailed(error as NSError))
+        }
+    }
+
+}
+
+extension LazyPublishedWorkflow: @unchecked Sendable {}

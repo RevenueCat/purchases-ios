@@ -107,6 +107,24 @@ class WorkflowManagerTests: TestCase {
         }
     }
 
+    // MARK: - cachedWorkflow(forOfferingId:)
+
+    func testCachedWorkflowWarmsUpAssetsOnSuccess() throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("warmUpWorkflowCaches requires iOS 15+")
+        }
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockProvider.stubbedCachedWorkflowResult = ["default": expected]
+
+        let result = self.manager.cachedWorkflow(forOfferingId: "default")
+
+        expect(result) == expected
+        expect(self.mockProvider.invokedCachedWorkflowParameters) == ["default"]
+        expect(self.mockPaywallCache.invokedWarmUpWorkflowCaches) == true
+        expect(self.mockPaywallCache.invokedWarmUpWorkflowCachesWorkflow?.id) == "wf_1"
+        expect(self.mockPaywallCache.invokedWarmUpWorkflowCachesUiConfig) == expected.uiConfig
+    }
+
     // MARK: - workflowId(forOfferingId:)
 
     func testWorkflowIdForOfferingIdDelegatesToProvider() async {

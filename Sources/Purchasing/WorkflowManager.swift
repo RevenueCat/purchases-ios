@@ -59,7 +59,12 @@ class WorkflowManager {
     }
 
     func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
-        return self.workflowsConfigProvider.cachedWorkflow(forOfferingId: offeringId)
+        guard let result = self.workflowsConfigProvider.cachedWorkflow(forOfferingId: offeringId) else {
+            return nil
+        }
+
+        self.warmUpAssets(for: result)
+        return result
     }
 
     /// Resolves `offeringId` to its workflow for `Purchases.workflow(forOfferingIdentifier:)`. Fails
