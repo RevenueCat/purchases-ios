@@ -59,13 +59,6 @@ protocol PaywallFontManagerType: Sendable {
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 actor PaywallCacheWarming: PaywallCacheWarmingType {
 
-    private struct WorkflowFontAsset: Hashable {
-        let name: String
-        let fontFamily: String?
-        let url: URL
-        let hash: String
-    }
-
     private let introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType
     private let fontsManager: PaywallFontManagerType
     private let fileRepository: FileRepositoryType
@@ -74,7 +67,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private var hasLoadedImages = false
     private var hasLoadedVideos = false
     private var workflowIDsWithAssetPrewarmingStarted: Set<String> = []
-    private var workflowFontAssetsWithPrewarmingAttempted: Set<WorkflowFontAsset> = []
+    private var workflowFontAssetsWithPrewarmingAttempted: Set<DownloadableFont> = []
     private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
 
     init(
@@ -212,12 +205,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         let fonts = uiConfig.app.allDownloadableFonts.filter {
             // Background prewarming is best-effort once per shared font asset. Presentation-time font loading
             // bypasses this set, so a failed prewarm can still be retried when the font is actually needed.
-            self.workflowFontAssetsWithPrewarmingAttempted.insert(.init(
-                name: $0.name,
-                fontFamily: $0.fontFamily,
-                url: $0.url,
-                hash: $0.hash
-            )).inserted
+            self.workflowFontAssetsWithPrewarmingAttempted.insert($0).inserted
         }
         #endif
 
@@ -442,7 +430,7 @@ private extension PaywallData.Configuration.Images {
 }
 
 /// Business logic object to easily manage the download of fonts.
-struct DownloadableFont: Sendable {
+struct DownloadableFont: Sendable, Hashable {
 
     /// The font name.
     let name: String
