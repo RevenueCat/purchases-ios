@@ -171,9 +171,8 @@ private extension Offerings.Contents {
     func removingPaywallComponents() -> Self {
         let prunedOfferings = self.response.offerings.map { offering in
             var offering = offering
-            offering.hasPaywallComponents = offering.hasPaywallComponents ?? (
-                self.response.uiConfig != nil && offering.paywallComponents != nil
-            )
+            let canCreatePaywallComponents = self.response.uiConfig != nil && offering.paywallComponents != nil
+            offering.hasPaywallComponents = offering.hasPaywallComponents ?? canCreatePaywallComponents
             offering.paywallComponents = nil
             offering.draftPaywallComponents = nil
             return offering
