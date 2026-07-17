@@ -30,6 +30,19 @@ final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked
 
     func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
         self.invokedGetWorkflowParameters.append(workflowId)
+        return self.workflowResult(workflowId: workflowId)
+    }
+
+    private(set) var invokedDecodeCachedWorkflowForAssetPrewarmingParameters: [String] = []
+
+    func decodeCachedWorkflowForAssetPrewarming(
+        workflowId: String
+    ) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
+        self.invokedDecodeCachedWorkflowForAssetPrewarmingParameters.append(workflowId)
+        return self.workflowResult(workflowId: workflowId)
+    }
+
+    private func workflowResult(workflowId: String) -> Result<WorkflowDataResult, WorkflowResolutionError> {
         if let error = self.stubbedGetWorkflowError[workflowId] {
             return .failure(error)
         }
@@ -39,12 +52,14 @@ final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked
         return .failure(.notFound)
     }
 
-    private(set) var invokedWarmPrefetchedWorkflowsCount = 0
-    private(set) var invokedWarmPrefetchedWorkflowsParameters: [String?] = []
+    private(set) var invokedCachePrefetchedWorkflowBodyDataCount = 0
+    private(set) var invokedCachePrefetchedWorkflowBodyDataParameters: [String?] = []
+    var stubbedWorkflowIDsWithCachedBodyData: [String] = []
 
-    func warmPrefetchedWorkflows(currentOfferingId: String?) async {
-        self.invokedWarmPrefetchedWorkflowsCount += 1
-        self.invokedWarmPrefetchedWorkflowsParameters.append(currentOfferingId)
+    func cachePrefetchedWorkflowBodyData(includingOfferingId: String?) async -> [String] {
+        self.invokedCachePrefetchedWorkflowBodyDataCount += 1
+        self.invokedCachePrefetchedWorkflowBodyDataParameters.append(includingOfferingId)
+        return self.stubbedWorkflowIDsWithCachedBodyData
     }
 
     var stubbedCachedWorkflowResult: [String: WorkflowDataResult] = [:]
@@ -53,6 +68,16 @@ final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked
     func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
         self.invokedCachedWorkflowParameters.append(offeringId)
         return self.stubbedCachedWorkflowResult[offeringId]
+    }
+
+}
+
+final class MockWorkflowAssetPrewarmer: WorkflowAssetPrewarmingType, @unchecked Sendable {
+
+    private(set) var invokedPrefetchedAssetPrewarmingParameters: [String?] = []
+
+    func scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: String?) async {
+        self.invokedPrefetchedAssetPrewarmingParameters.append(includingOfferingId)
     }
 
 }
