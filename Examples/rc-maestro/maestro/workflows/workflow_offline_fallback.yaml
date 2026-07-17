@@ -1,18 +1,18 @@
 # Opens a workflow offering (`default_workflows`) while the /v1/config endpoint is unreachable
-# (a transport failure, simulating no network), on a cold cache (`clearState`). Unlike the 4xx
-# case (workflow_config_fallback.yaml, a session kill-switch), a connection-level failure has no
-# HTTP status, so the SDK takes the "fall back to cache" path; with nothing cached it degrades to
-# the classic single-page paywall (the workflow's last page) and never crashes.
+# (a transport failure, simulating no network) on a cold cache (`clearState`). The workflow lives in
+# /v1/config, and this offering has no classic paywall of its own, so with nothing cached the SDK
+# renders its built-in default paywall (the generic fallback) instead of the workflow, and never
+# crashes. This is bug-bash case #15 (#11 in the doc): "no network, nothing cached -> default paywall".
 #
-# The `remote_config_network_error` strategy routes config requests to an unreachable host, so the
-# app receives a real URLError. Offerings are not blocked, so the offering still resolves and a
-# paywall is presentable. The force_server_error_strategy launch argument is read by Constants.
+# The `remote_config_network_error` strategy routes config requests to an unreachable host, so the app
+# receives a real URLError. Offerings are not blocked, so the offering still resolves and a paywall is
+# presentable. The force_server_error_strategy launch argument is read by Constants.
 #
 # Run locally against the test store:
 #   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_offline_fallback.yaml
 
 appId: com.revenuecat.maestro.ios
-name: Workflow offering falls back to the classic paywall when config is offline
+name: Workflow offering renders the default paywall when config is offline with nothing cached
 env:
   MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
 
@@ -32,10 +32,11 @@ env:
 - tapOn:
     text: "Present Paywall"
 
-# With /v1/config unreachable and nothing cached, the classic single-page paywall is shown.
+# With /v1/config unreachable and nothing cached, there is no workflow and no configured paywall for
+# this offering, so the SDK's default paywall is shown ("No Paywall configured" is its DEBUG warning).
 - extendedWaitUntil:
-    visible: "People Who Meditate Daily Sleep 40% Better"
+    visible: "No Paywall configured"
     timeout: 15000
-# The multipage workflow entry screen is never rendered in the offline fallback path.
+# The multipage workflow entry screen is never rendered.
 - assertNotVisible: "Start Your Free Week And Reclaim 30+ Minutes Daily"
-- takeScreenshot: "workflow_offline_fallback - classic paywall"
+- takeScreenshot: "workflow_offline_fallback - default paywall"
