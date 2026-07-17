@@ -5,6 +5,8 @@
 //  Created by RevenueCat.
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 protocol WorkflowsConfigProviderType {
