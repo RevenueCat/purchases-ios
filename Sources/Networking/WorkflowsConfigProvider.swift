@@ -117,7 +117,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         // `ui_config`. A warm-cache hit decodes synchronously from in-memory bytes on the caller's thread.
         if let cached = self.cachedWorkflowResult(workflowId: workflowId) {
             return await self.makeWorkflowResult(cached.result) {
-                self.manager.withCurrentConfigGeneration({ $0 == cached.generation }) == true
+                self.manager.configGeneration == cached.generation
             }
         }
 
@@ -162,7 +162,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         // Keep only body bytes in memory here. `LazyPublishedWorkflow` performs and retains the decode
         // synchronously on first access, so warming doesn't build every workflow's component graph.
         let missingWorkflowIds = expectedWorkflowIds.subtracting(cachedWorkflows.keys)
-        let loadedWorkflows = await self.loadWorkflows(missingWorkflowIds.sorted())
+        let loadedWorkflows = await self.loadWorkflows(missingWorkflowIds)
 
         guard await self.manager.isCurrent(snapshot, for: .workflows) else {
             self.prefetchedWorkflowsCache.clearIfStale(currentGeneration: self.manager.configGeneration)
@@ -257,7 +257,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         return self.prefetchedWorkflowsCache.value(currentGeneration: currentGeneration)
     }
 
-    private func loadWorkflows(_ workflowIds: [String]) async -> [String: LazyPublishedWorkflow] {
+    private func loadWorkflows(_ workflowIds: Set<String>) async -> [String: LazyPublishedWorkflow] {
         await withTaskGroup(of: (String, Data?).self) { group in
             for workflowId in workflowIds {
                 group.addTask {
