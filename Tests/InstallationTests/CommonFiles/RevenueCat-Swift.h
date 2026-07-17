@@ -1123,6 +1123,9 @@ SWIFT_CLASS_NAMED("Builder")
 /// With this option disabled you can still collect device identifiers
 /// by calling <code>Purchases/collectDeviceIdentifiers()</code>
 - (RCConfigurationBuilder * _Nonnull)withAutomaticDeviceIdentifierCollectionEnabled:(BOOL)automaticDeviceIdentifierCollectionEnabled SWIFT_WARN_UNUSED_RESULT;
+/// Set <code>iamEnabled</code>. This is <em>disabled</em> by default.
+/// Enabling tells the SDK to prefer using token-based user sessions for communicating with the server.
+- (RCConfigurationBuilder * _Nonnull)withIAMEnabled:(BOOL)iamEnabled SWIFT_WARN_UNUSED_RESULT;
 /// Generate a <code>Configuration</code> object given the values configured by this builder.
 - (RCConfiguration * _Nonnull)build SWIFT_WARN_UNUSED_RESULT;
 /// Overrides the preferred locale for RevenueCatUI components.
@@ -1135,11 +1138,11 @@ SWIFT_CLASS_NAMED("Builder")
 @end
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
+- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
 @end
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
+- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
 @end
 
 /// Specifies the behavior for a caching API.
@@ -1699,6 +1702,10 @@ SWIFT_CLASS("_TtC10RevenueCat21GetOfferingsOperation")
 
 SWIFT_CLASS("_TtC10RevenueCat37GetProductEntitlementMappingOperation")
 @interface GetProductEntitlementMappingOperation : CacheableNetworkOperation
+@end
+
+SWIFT_CLASS("_TtC10RevenueCat32GetRemoteConfigFallbackOperation")
+@interface GetRemoteConfigFallbackOperation : CacheableNetworkOperation
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat24GetRemoteConfigOperation")

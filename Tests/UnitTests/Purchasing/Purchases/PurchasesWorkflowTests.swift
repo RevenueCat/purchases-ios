@@ -20,39 +20,62 @@ import XCTest
 /// off `RemoteConfigManager` now, not a dedicated `WorkflowsAPI` backend call.
 class PurchasesWorkflowTests: BasePurchasesTests {
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-
+    func testRemoteConfigEnabledReturnsFalseWhenDisabledByKillSwitch() {
+        self.systemInfo.stubbedRemoteConfigEnabled = true
         self.setupPurchases()
+
+        expect(self.purchases.remoteConfigEnabled) == true
+
+        self.mockRemoteConfigManager.isDisabled = true
+
+        expect(self.purchases.remoteConfigEnabled) == false
     }
 
-    func testWorkflowForOfferingIdentifierFallsBackToOfferingIdAsWorkflowId() async throws {
-        // The `workflows` topic has synced, but its "default" item has no `offeringIdentifier` match,
-        // so the offeringId → workflowId scan misses and the offering identifier itself is used as the
-        // workflow lookup key, preserving the prior behavior. (A real `RemoteConfigManager` can't return
-        // blob data for an item absent from the topic or without a `blobRef`, so the topic item must be
-        // stubbed with one too, not just the blob bytes.)
+    func testWorkflowForOfferingIdentifierThrowsWhenOfferingHasNoWorkflow() async throws {
+        self.setupPurchases()
+
+        // The `workflows` topic has synced, but no item maps to the "default" offering (its item carries
+        // no matching `offeringIdentifier`). With no mapping, resolution fails fast with a distinct
+        // `offeringHasNoWorkflow` and does NOT attempt a fetch by offering id — the prior lazy
+        // offering-id-as-workflow-key behavior was dropped to match purchases-android #3760.
         self.mockRemoteConfigManager.stubbedTopics[.workflows] = ["default": .init(blobRef: "default", content: [:])]
         self.mockRemoteConfigManager.stubbedBlobData[.workflows] = ["default": try Self.workflowJSON(id: "default")]
-        self.mockRemoteConfigManager.stubbedBlobData[.uiConfig] = [
-            "app": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
-            "localizations": Data(#"{}"#.utf8),
-            "variable_config": Data(
-                #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.utf8
-            ),
-            "custom_variables": Data(#"{}"#.utf8)
-        ]
 
-        let result = try await self.purchases.workflow(forOfferingIdentifier: "default")
+        do {
+            _ = try await self.purchases.workflow(forOfferingIdentifier: "default")
+            fail("Expected workflow(forOfferingIdentifier:) to throw")
+        } catch {
+            expect(error as? BackendError) == .unexpectedBackendResponse(
+                .offeringHasNoWorkflow(offeringId: "default"),
+                extraContext: nil,
+                .init(file: "", function: "", line: 0)
+            )
+        }
 
-        expect(result.workflow.id) == "default"
+        // Failed fast on the missing mapping: no workflow blob was fetched.
         let requestedWorkflowKeys = self.mockRemoteConfigManager.invokedBlobDataParameters
             .filter { $0.topic == .workflows }
             .map(\.itemKey)
-        expect(requestedWorkflowKeys) == ["default"]
+        expect(requestedWorkflowKeys).to(beEmpty())
     }
 
     // MARK: - Helpers
+
+    private static let uiConfigTopic: [String: RemoteConfiguration.ConfigItem] = [
+        "app": .init(blobRef: "app-ref", content: [:]),
+        "localizations": .init(blobRef: "localizations-ref", content: [:]),
+        "variable_config": .init(blobRef: "variable-config-ref", content: [:]),
+        "custom_variables": .init(blobRef: "custom-variables-ref", content: [:])
+    ]
+
+    private static let uiConfigBlobs: [String: Data] = [
+        "app": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
+        "localizations": Data(#"{}"#.utf8),
+        "variable_config": Data(
+            #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.utf8
+        ),
+        "custom_variables": Data(#"{}"#.utf8)
+    ]
 
     private static func workflowJSON(id: String) throws -> Data {
         let json = """
