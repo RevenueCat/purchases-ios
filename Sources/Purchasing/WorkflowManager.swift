@@ -13,9 +13,9 @@
 
 import Foundation
 
-protocol WorkflowPrewarmingType: Sendable {
+protocol WorkflowAssetPrewarmingType: Sendable {
 
-    func prewarmWorkflows(currentOfferingId: String?) async
+    func scheduleAssetPrewarmingForEligibleWorkflows(currentOfferingId: String?) async
 
 }
 
@@ -28,7 +28,7 @@ protocol WorkflowPrewarmingType: Sendable {
 /// no stale-while-revalidate, no disk fallback, and no synchronous cache seed here anymore — a
 /// workflow body is a shared, content-addressed blob resolved (and downloaded on demand, deduped) by
 /// `RemoteConfigManager`.
-class WorkflowManager: WorkflowPrewarmingType {
+class WorkflowManager: WorkflowAssetPrewarmingType {
 
     private let workflowsConfigProvider: WorkflowsConfigProviderType
     private let paywallCache: PaywallCacheWarmingType?
@@ -85,19 +85,21 @@ class WorkflowManager: WorkflowPrewarmingType {
         return try await self.getWorkflow(workflowId: workflowId)
     }
 
-    /// Loads the prefetched and current-offering workflow bodies before scheduling their decode and asset
-    /// warming in the background. Only body readiness is awaited; decoding and downloads never delay offerings.
-    func prewarmWorkflows(currentOfferingId: String?) async {
-        let workflowIds = await self.workflowsConfigProvider.warmPrefetchedWorkflows(
+    /// Caches the prefetched and current-offering workflow body data before scheduling its decode and asset
+    /// prewarming in the background. Only body-data readiness is awaited; decoding and downloads never delay
+    /// offerings.
+    func scheduleAssetPrewarmingForEligibleWorkflows(currentOfferingId: String?) async {
+        let workflowIDsWithCachedBodyData = await self.workflowsConfigProvider.cacheEligibleWorkflowBodyData(
             currentOfferingId: currentOfferingId
         )
-        guard !workflowIds.isEmpty else { return }
+        guard !workflowIDsWithCachedBodyData.isEmpty else { return }
 
         self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
             guard let self else { return }
 
-            for workflowId in workflowIds {
-                guard case let .success(result) = await self.workflowsConfigProvider.getWorkflowForPrewarming(
+            for workflowId in workflowIDsWithCachedBodyData {
+                guard case let .success(result) = await self.workflowsConfigProvider
+                    .decodeCachedWorkflowForAssetPrewarming(
                     workflowId: workflowId
                 ) else { continue }
 
@@ -111,17 +113,17 @@ class WorkflowManager: WorkflowPrewarmingType {
 private extension WorkflowManager {
 
     func handleResolvedWorkflow(_ result: WorkflowDataResult) -> WorkflowDataResult {
-        self.warmUpAssets(for: result)
+        self.scheduleAssetPrewarming(for: result)
         return result
     }
 
     /// Fire-and-forget pre-download of a resolved workflow's images/videos/fonts. Remote config's own
     /// blob prefetch only covers the workflow's JSON body, not the assets it references.
-    func warmUpAssets(for result: WorkflowDataResult) {
+    func scheduleAssetPrewarming(for result: WorkflowDataResult) {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *), let paywallCache else { return }
 
         self.operationDispatcher.dispatchOnWorkerThread {
-            await paywallCache.warmUpWorkflowCaches(workflow: result.workflow, uiConfig: result.uiConfig)
+            await paywallCache.prewarmWorkflowAssets(workflow: result.workflow, uiConfig: result.uiConfig)
         }
     }
 

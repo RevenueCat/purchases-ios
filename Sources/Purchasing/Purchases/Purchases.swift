@@ -604,7 +604,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 uiConfigProvider: systemInfo.remoteConfigEnabled
                                                 ? uiConfigProvider
                                                 : nil,
-                                                workflowPrewarmer: systemInfo.remoteConfigEnabled
+                                                workflowAssetPrewarmer: systemInfo.remoteConfigEnabled
                                                 ? workflowManager
                                                 : nil)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,

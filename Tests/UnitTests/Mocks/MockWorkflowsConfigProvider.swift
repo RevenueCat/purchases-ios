@@ -33,12 +33,12 @@ final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked
         return self.workflowResult(workflowId: workflowId)
     }
 
-    private(set) var invokedGetWorkflowForPrewarmingParameters: [String] = []
+    private(set) var invokedDecodeCachedWorkflowForAssetPrewarmingParameters: [String] = []
 
-    func getWorkflowForPrewarming(
+    func decodeCachedWorkflowForAssetPrewarming(
         workflowId: String
     ) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
-        self.invokedGetWorkflowForPrewarmingParameters.append(workflowId)
+        self.invokedDecodeCachedWorkflowForAssetPrewarmingParameters.append(workflowId)
         return self.workflowResult(workflowId: workflowId)
     }
 
@@ -52,14 +52,14 @@ final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked
         return .failure(.notFound)
     }
 
-    private(set) var invokedWarmPrefetchedWorkflowsCount = 0
-    private(set) var invokedWarmPrefetchedWorkflowsParameters: [String?] = []
-    var stubbedWarmPrefetchedWorkflowIds: Set<String> = []
+    private(set) var invokedCacheEligibleWorkflowBodyDataCount = 0
+    private(set) var invokedCacheEligibleWorkflowBodyDataParameters: [String?] = []
+    var stubbedWorkflowIDsWithCachedBodyData: Set<String> = []
 
-    func warmPrefetchedWorkflows(currentOfferingId: String?) async -> Set<String> {
-        self.invokedWarmPrefetchedWorkflowsCount += 1
-        self.invokedWarmPrefetchedWorkflowsParameters.append(currentOfferingId)
-        return self.stubbedWarmPrefetchedWorkflowIds
+    func cacheEligibleWorkflowBodyData(currentOfferingId: String?) async -> Set<String> {
+        self.invokedCacheEligibleWorkflowBodyDataCount += 1
+        self.invokedCacheEligibleWorkflowBodyDataParameters.append(currentOfferingId)
+        return self.stubbedWorkflowIDsWithCachedBodyData
     }
 
     var stubbedCachedWorkflowResult: [String: WorkflowDataResult] = [:]
@@ -72,12 +72,12 @@ final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked
 
 }
 
-final class MockWorkflowPrewarmer: WorkflowPrewarmingType, @unchecked Sendable {
+final class MockWorkflowAssetPrewarmer: WorkflowAssetPrewarmingType, @unchecked Sendable {
 
-    private(set) var invokedPrewarmWorkflowsParameters: [String?] = []
+    private(set) var invokedScheduleAssetPrewarmingForEligibleWorkflowsParameters: [String?] = []
 
-    func prewarmWorkflows(currentOfferingId: String?) async {
-        self.invokedPrewarmWorkflowsParameters.append(currentOfferingId)
+    func scheduleAssetPrewarmingForEligibleWorkflows(currentOfferingId: String?) async {
+        self.invokedScheduleAssetPrewarmingForEligibleWorkflowsParameters.append(currentOfferingId)
     }
 
 }

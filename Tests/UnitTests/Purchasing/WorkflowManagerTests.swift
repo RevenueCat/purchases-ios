@@ -49,20 +49,20 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockProvider.invokedGetWorkflowParameters) == ["wf_1"]
     }
 
-    func testGetWorkflowWarmsUpAssetsOnSuccess() async throws {
+    func testGetWorkflowSchedulesAssetPrewarmingOnSuccess() async throws {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
-            throw XCTSkip("warmUpWorkflowCaches requires iOS 15+")
+            throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
         }
         let expected = try Self.workflowDataResult(id: "wf_1")
         self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
 
         // MockOperationDispatcher's async dispatchOnWorkerThread blocks until the block finishes, so
-        // warm-up has already run by the time this returns.
+        // asset prewarming has already run by the time this returns.
         _ = try await self.manager.getWorkflow(workflowId: "wf_1")
 
-        expect(self.mockPaywallCache.invokedWarmUpWorkflowCaches) == true
-        expect(self.mockPaywallCache.invokedWarmUpWorkflowCachesWorkflow?.id) == "wf_1"
-        expect(self.mockPaywallCache.invokedWarmUpWorkflowCachesUiConfig) == expected.uiConfig
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssets) == true
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsWorkflow?.id) == "wf_1"
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsUiConfig) == expected.uiConfig
     }
 
     func testGetWorkflowFailsWithWorkflowNotFoundWhenProviderReportsNotFound() async {
@@ -109,9 +109,9 @@ class WorkflowManagerTests: TestCase {
 
     // MARK: - cachedWorkflow(forOfferingId:)
 
-    func testCachedWorkflowWarmsUpAssetsOnSuccess() throws {
+    func testCachedWorkflowSchedulesAssetPrewarmingOnSuccess() throws {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
-            throw XCTSkip("warmUpWorkflowCaches requires iOS 15+")
+            throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
         }
         let expected = try Self.workflowDataResult(id: "wf_1")
         self.mockProvider.stubbedCachedWorkflowResult = ["default": expected]
@@ -120,53 +120,53 @@ class WorkflowManagerTests: TestCase {
 
         expect(result) == expected
         expect(self.mockProvider.invokedCachedWorkflowParameters) == ["default"]
-        expect(self.mockPaywallCache.invokedWarmUpWorkflowCaches) == true
-        expect(self.mockPaywallCache.invokedWarmUpWorkflowCachesWorkflow?.id) == "wf_1"
-        expect(self.mockPaywallCache.invokedWarmUpWorkflowCachesUiConfig) == expected.uiConfig
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssets) == true
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsWorkflow?.id) == "wf_1"
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsUiConfig) == expected.uiConfig
     }
 
-    // MARK: - prewarmWorkflows
+    // MARK: - scheduleAssetPrewarmingForEligibleWorkflows
 
-    func testPrewarmWorkflowsResolvesEveryWarmedBodyAndWarmsAssets() async throws {
+    func testScheduleAssetPrewarmingDecodesEveryCachedBodyAndPrewarmsAssets() async throws {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
-            throw XCTSkip("warmUpWorkflowCaches requires iOS 15+")
+            throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
         }
         let first = try Self.workflowDataResult(id: "wf_1")
         let second = try Self.workflowDataResult(id: "wf_2")
-        self.mockProvider.stubbedWarmPrefetchedWorkflowIds = ["wf_1", "wf_2"]
+        self.mockProvider.stubbedWorkflowIDsWithCachedBodyData = ["wf_1", "wf_2"]
         self.mockProvider.stubbedGetWorkflowResult = ["wf_1": first, "wf_2": second]
 
-        await self.manager.prewarmWorkflows(currentOfferingId: "current")
+        await self.manager.scheduleAssetPrewarmingForEligibleWorkflows(currentOfferingId: "current")
 
-        expect(self.mockProvider.invokedWarmPrefetchedWorkflowsParameters) == ["current"]
-        expect(Set(self.mockProvider.invokedGetWorkflowForPrewarmingParameters)) == ["wf_1", "wf_2"]
+        expect(self.mockProvider.invokedCacheEligibleWorkflowBodyDataParameters) == ["current"]
+        expect(Set(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters)) == ["wf_1", "wf_2"]
         expect(self.mockProvider.invokedGetWorkflowParameters).to(beEmpty())
-        expect(self.mockPaywallCache.invokedWarmUpWorkflowCachesCount) == 2
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsCount) == 2
     }
 
-    func testPrewarmWorkflowsDoesNotRunResolutionInline() async {
-        self.mockProvider.stubbedWarmPrefetchedWorkflowIds = ["wf_1"]
+    func testScheduleAssetPrewarmingDoesNotDecodeInline() async {
+        self.mockProvider.stubbedWorkflowIDsWithCachedBodyData = ["wf_1"]
         self.mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = false
 
-        await self.manager.prewarmWorkflows(currentOfferingId: "current")
+        await self.manager.scheduleAssetPrewarmingForEligibleWorkflows(currentOfferingId: "current")
 
         expect(self.mockOperationDispatcher.invokedDispatchAsyncOnWorkerThread) == true
-        expect(self.mockProvider.invokedGetWorkflowForPrewarmingParameters).to(beEmpty())
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters).to(beEmpty())
     }
 
-    func testPrewarmWorkflowsContinuesAfterAResolutionFailure() async throws {
+    func testScheduleAssetPrewarmingContinuesAfterADecodingFailure() async throws {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
-            throw XCTSkip("warmUpWorkflowCaches requires iOS 15+")
+            throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
         }
-        self.mockProvider.stubbedWarmPrefetchedWorkflowIds = ["broken", "working"]
+        self.mockProvider.stubbedWorkflowIDsWithCachedBodyData = ["broken", "working"]
         self.mockProvider.stubbedGetWorkflowError = ["broken": .notFound]
         self.mockProvider.stubbedGetWorkflowResult = ["working": try Self.workflowDataResult(id: "working")]
 
-        await self.manager.prewarmWorkflows(currentOfferingId: nil)
+        await self.manager.scheduleAssetPrewarmingForEligibleWorkflows(currentOfferingId: nil)
 
-        expect(Set(self.mockProvider.invokedGetWorkflowForPrewarmingParameters)) == ["broken", "working"]
-        expect(self.mockPaywallCache.invokedWarmUpWorkflowCachesCount) == 1
-        expect(self.mockPaywallCache.invokedWarmUpWorkflowCachesWorkflow?.id) == "working"
+        expect(Set(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters)) == ["broken", "working"]
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsCount) == 1
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsWorkflow?.id) == "working"
     }
 
     // MARK: - workflowId(forOfferingId:)

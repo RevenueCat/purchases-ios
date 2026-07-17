@@ -34,7 +34,7 @@ protocol PaywallCacheWarmingType: Sendable {
     func warmUpPaywallFontsCache(offerings: Offerings) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func warmUpWorkflowCaches(workflow: PublishedWorkflow, uiConfig: UIConfig) async
+    func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async
 
 #if !os(tvOS) // For Paywalls
 
@@ -63,7 +63,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private var warmedEligibilityProductIdentifiers: Set<String> = []
     private var hasLoadedImages = false
     private var hasLoadedVideos = false
-    private var warmedWorkflowIDs: Set<String> = []
+    private var workflowIDsWithAssetPrewarmingStarted: Set<String> = []
     private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
 
     init(
@@ -177,9 +177,9 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
     }
 
-    func warmUpWorkflowCaches(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
-        guard !self.warmedWorkflowIDs.contains(workflow.id) else { return }
-        self.warmedWorkflowIDs.insert(workflow.id)
+    func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
+        guard !self.workflowIDsWithAssetPrewarmingStarted.contains(workflow.id) else { return }
+        self.workflowIDsWithAssetPrewarmingStarted.insert(workflow.id)
 
         // Intentionally prewarming all screens, not just those reachable from
         // `initialStepId`. This trades off potentially downloading assets for
