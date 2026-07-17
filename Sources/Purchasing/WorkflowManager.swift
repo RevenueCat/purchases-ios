@@ -13,6 +13,12 @@
 
 import Foundation
 
+protocol WorkflowPrewarmingType: Sendable {
+
+    func prewarmWorkflows(currentOfferingId: String?) async
+
+}
+
 /// The consumer-facing entry point for reading workflows. It stays as the seam the SDK calls (so
 /// `Purchases` and its public API are unchanged), but it is now a thin adapter that reads from the
 /// `/v1/config` layer through ``WorkflowsConfigProvider`` instead of calling a dedicated
@@ -22,7 +28,7 @@ import Foundation
 /// no stale-while-revalidate, no disk fallback, and no synchronous cache seed here anymore — a
 /// workflow body is a shared, content-addressed blob resolved (and downloaded on demand, deduped) by
 /// `RemoteConfigManager`.
-class WorkflowManager {
+class WorkflowManager: WorkflowPrewarmingType {
 
     private let workflowsConfigProvider: WorkflowsConfigProviderType
     private let paywallCache: PaywallCacheWarmingType?
@@ -43,8 +49,7 @@ class WorkflowManager {
     func getWorkflow(workflowId: String) async throws -> WorkflowDataResult {
         switch await self.workflowsConfigProvider.getWorkflow(workflowId: workflowId) {
         case let .success(result):
-            self.warmUpAssets(for: result)
-            return result
+            return self.handleResolvedWorkflow(result)
         case .failure(.notFound):
             throw BackendError.workflowNotFound(workflowId: workflowId)
         case let .failure(.decodingFailed(error)):
@@ -63,8 +68,7 @@ class WorkflowManager {
             return nil
         }
 
-        self.warmUpAssets(for: result)
-        return result
+        return self.handleResolvedWorkflow(result)
     }
 
     /// Resolves `offeringId` to its workflow for `Purchases.workflow(forOfferingIdentifier:)`. Fails
@@ -81,9 +85,35 @@ class WorkflowManager {
         return try await self.getWorkflow(workflowId: workflowId)
     }
 
+    /// Loads the prefetched and current-offering workflow bodies before scheduling their decode and asset
+    /// warming in the background. Only body readiness is awaited; decoding and downloads never delay offerings.
+    func prewarmWorkflows(currentOfferingId: String?) async {
+        let workflowIds = await self.workflowsConfigProvider.warmPrefetchedWorkflows(
+            currentOfferingId: currentOfferingId
+        )
+        guard !workflowIds.isEmpty else { return }
+
+        self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
+            guard let self else { return }
+
+            for workflowId in workflowIds {
+                guard case let .success(result) = await self.workflowsConfigProvider.getWorkflowForPrewarming(
+                    workflowId: workflowId
+                ) else { continue }
+
+                _ = self.handleResolvedWorkflow(result)
+            }
+        }
+    }
+
 }
 
 private extension WorkflowManager {
+
+    func handleResolvedWorkflow(_ result: WorkflowDataResult) -> WorkflowDataResult {
+        self.warmUpAssets(for: result)
+        return result
+    }
 
     /// Fire-and-forget pre-download of a resolved workflow's images/videos/fonts. Remote config's own
     /// blob prefetch only covers the workflow's JSON body, not the assets it references.

@@ -29,7 +29,7 @@ class OfferingsManager {
     // Nil when remote config is disabled, in which case offerings delivery is unchanged.
     private let remoteConfigManager: RemoteConfigManagerType?
     private let uiConfigProvider: UiConfigProvider?
-    private let workflowsConfigProvider: WorkflowsConfigProviderType?
+    private let workflowPrewarmer: WorkflowPrewarmingType?
 
     init(deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
@@ -41,7 +41,7 @@ class OfferingsManager {
          dateProvider: DateProvider = DateProvider(),
          remoteConfigManager: RemoteConfigManagerType? = nil,
          uiConfigProvider: UiConfigProvider? = nil,
-         workflowsConfigProvider: WorkflowsConfigProviderType? = nil) {
+         workflowPrewarmer: WorkflowPrewarmingType? = nil) {
         self.deviceCache = deviceCache
         self.operationDispatcher = operationDispatcher
         self.systemInfo = systemInfo
@@ -52,7 +52,7 @@ class OfferingsManager {
         self.dateProvider = dateProvider
         self.remoteConfigManager = remoteConfigManager
         self.uiConfigProvider = uiConfigProvider
-        self.workflowsConfigProvider = workflowsConfigProvider
+        self.workflowPrewarmer = workflowPrewarmer
     }
 
     func offerings(
@@ -489,8 +489,8 @@ private extension OfferingsManager {
         remoteConfigManager: RemoteConfigManagerType,
         currentOfferingId: String?
     ) async {
-        if let workflowsConfigProvider = self.workflowsConfigProvider {
-            await workflowsConfigProvider.warmPrefetchedWorkflows(currentOfferingId: currentOfferingId)
+        if let workflowPrewarmer = self.workflowPrewarmer {
+            await workflowPrewarmer.prewarmWorkflows(currentOfferingId: currentOfferingId)
         } else {
             _ = await remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
         }

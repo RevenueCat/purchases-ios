@@ -30,6 +30,19 @@ final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked
 
     func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
         self.invokedGetWorkflowParameters.append(workflowId)
+        return self.workflowResult(workflowId: workflowId)
+    }
+
+    private(set) var invokedGetWorkflowForPrewarmingParameters: [String] = []
+
+    func getWorkflowForPrewarming(
+        workflowId: String
+    ) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
+        self.invokedGetWorkflowForPrewarmingParameters.append(workflowId)
+        return self.workflowResult(workflowId: workflowId)
+    }
+
+    private func workflowResult(workflowId: String) -> Result<WorkflowDataResult, WorkflowResolutionError> {
         if let error = self.stubbedGetWorkflowError[workflowId] {
             return .failure(error)
         }
@@ -41,10 +54,12 @@ final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked
 
     private(set) var invokedWarmPrefetchedWorkflowsCount = 0
     private(set) var invokedWarmPrefetchedWorkflowsParameters: [String?] = []
+    var stubbedWarmPrefetchedWorkflowIds: Set<String> = []
 
-    func warmPrefetchedWorkflows(currentOfferingId: String?) async {
+    func warmPrefetchedWorkflows(currentOfferingId: String?) async -> Set<String> {
         self.invokedWarmPrefetchedWorkflowsCount += 1
         self.invokedWarmPrefetchedWorkflowsParameters.append(currentOfferingId)
+        return self.stubbedWarmPrefetchedWorkflowIds
     }
 
     var stubbedCachedWorkflowResult: [String: WorkflowDataResult] = [:]
@@ -53,6 +68,16 @@ final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked
     func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
         self.invokedCachedWorkflowParameters.append(offeringId)
         return self.stubbedCachedWorkflowResult[offeringId]
+    }
+
+}
+
+final class MockWorkflowPrewarmer: WorkflowPrewarmingType, @unchecked Sendable {
+
+    private(set) var invokedPrewarmWorkflowsParameters: [String?] = []
+
+    func prewarmWorkflows(currentOfferingId: String?) async {
+        self.invokedPrewarmWorkflowsParameters.append(currentOfferingId)
     }
 
 }

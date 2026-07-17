@@ -1015,10 +1015,10 @@ extension OfferingsManagerTests {
 
     func testGetOfferingsWarmsWorkflowForCurrentOffering() {
         let mockRemoteConfigManager = MockRemoteConfigManager()
-        let mockWorkflowsConfigProvider = MockWorkflowsConfigProvider()
+        let mockWorkflowPrewarmer = MockWorkflowPrewarmer()
         let manager = self.makeOfferingsManager(
             remoteConfigManager: mockRemoteConfigManager,
-            workflowsConfigProvider: mockWorkflowsConfigProvider
+            workflowPrewarmer: mockWorkflowPrewarmer
         )
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
@@ -1027,7 +1027,7 @@ extension OfferingsManagerTests {
         }
 
         expect(result).to(beSuccess())
-        expect(mockWorkflowsConfigProvider.invokedWarmPrefetchedWorkflowsParameters) == ["base"]
+        expect(mockWorkflowPrewarmer.invokedPrewarmWorkflowsParameters) == ["base"]
     }
 
     func testGetOfferingsDeliversImmediatelyWhenRemoteConfigManagerIsNil() {
@@ -1479,7 +1479,7 @@ extension OfferingsManagerTests {
     private func makeOfferingsManager(
         remoteConfigManager: RemoteConfigManagerType?,
         offeringsFactory: OfferingsFactory? = nil,
-        workflowsConfigProvider: WorkflowsConfigProviderType? = nil
+        workflowPrewarmer: WorkflowPrewarmingType? = nil
     ) -> OfferingsManager {
         return OfferingsManager(deviceCache: self.mockDeviceCache,
                                 operationDispatcher: self.mockOperationDispatcher,
@@ -1489,7 +1489,7 @@ extension OfferingsManagerTests {
                                 productsManager: self.mockProductsManager,
                                 diagnosticsTracker: self.mockDiagnosticsTracker,
                                 remoteConfigManager: remoteConfigManager,
-                                workflowsConfigProvider: workflowsConfigProvider)
+                                workflowPrewarmer: workflowPrewarmer)
     }
 
     private static let uiConfigTopic: [String: RemoteConfiguration.ConfigItem] = [
