@@ -336,7 +336,7 @@ private extension Offerings {
                 .all
                 .values
                 .lazy
-                .compactMap(\.paywallComponents)
+                .compactMap(\.internalPaywallComponents)
                 .flatMap(\.data.allLowResVideoUrls)
         )
     }
@@ -393,7 +393,7 @@ private extension Offerings {
                 .all
                 .values
                 .lazy
-                .compactMap(\.paywallComponents)
+                .compactMap(\.internalPaywallComponents)
                 .flatMap(\.data.allImageURLs)
         )
     }

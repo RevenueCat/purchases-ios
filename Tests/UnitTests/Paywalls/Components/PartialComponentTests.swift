@@ -54,7 +54,7 @@ final class PartialComponentTests: TestCase {
             baseUrl: "",
             iconName: "",
             formats: .init(svg: "", png: "", heic: "", webp: ""),
-            size: .init(width: .fit, height: .fit),
+            size: .init(width: .fit(nil), height: .fit(nil)),
             padding: .zero,
             margin: .zero,
             color: .init(light: .hex("#000000")),
