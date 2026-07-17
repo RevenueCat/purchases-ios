@@ -12,9 +12,6 @@ struct WebViewComponentView: View {
 
     let viewModel: WebViewComponentViewModel
 
-    @Environment(\.paywallWebViewMessageAction)
-    private var messageHandler
-
     var body: some View {
         #if os(watchOS) || !canImport(WebKit)
         EmptyView()
@@ -24,12 +21,11 @@ struct WebViewComponentView: View {
                 BridgedWebViewComponentView(
                     viewModel: viewModel,
                     url: url,
-                    componentID: componentID,
-                    messageHandler: messageHandler
+                    componentID: componentID
                 )
                 .id(
                     "\(viewModel.urlString)-\(componentID)-" +
-                    "\(viewModel.size.width == .fit)-\(viewModel.size.height == .fit)"
+                    "\(viewModel.size.width.isFit)-\(viewModel.size.height.isFit)"
                 )
             } else {
                 RenderOnlyWebViewComponentView(viewModel: viewModel, url: url)
@@ -44,6 +40,31 @@ struct WebViewComponentView: View {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+enum WebViewSizing {
+
+    static func resolvedDimension(
+        measured: CGFloat?,
+        defaultSize: UInt?,
+        fallback: CGFloat
+    ) -> CGFloat {
+        measured ?? defaultSize.map { CGFloat($0) } ?? fallback
+    }
+
+}
+
+private extension PaywallComponent.SizeConstraint {
+
+    var isFit: Bool {
+        if case .fit = self {
+            return true
+        }
+
+        return false
+    }
+
+}
+
 #if canImport(WebKit) && !os(watchOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -52,7 +73,6 @@ private struct BridgedWebViewComponentView: View {
     let viewModel: WebViewComponentViewModel
     let url: URL
     let componentID: String
-    let messageHandler: PaywallWebViewMessageAction?
 
     @StateObject
     private var session: WebViewSession
@@ -69,13 +89,11 @@ private struct BridgedWebViewComponentView: View {
     init(
         viewModel: WebViewComponentViewModel,
         url: URL,
-        componentID: String,
-        messageHandler: PaywallWebViewMessageAction?
+        componentID: String
     ) {
         self.viewModel = viewModel
         self.url = url
         self.componentID = componentID
-        self.messageHandler = messageHandler
 
         let origin = WebViewOrigin.origin(of: url) ?? ""
         self._session = StateObject(
@@ -85,23 +103,21 @@ private struct BridgedWebViewComponentView: View {
                 expectedOrigin: origin,
                 localeIdentifier: viewModel.locale.identifier,
                 fitAxes: (
-                    width: viewModel.size.width == .fit,
-                    height: viewModel.size.height == .fit
+                    width: viewModel.size.width.isFit,
+                    height: viewModel.size.height.isFit
                 )
             )
         )
     }
 
     var body: some View {
-        // The handler and resize sink are (re)assigned inside the representable's make/update
-        // (not `.onAppear`) so a handler swapped into the environment after first appearance —
-        // or a connect arriving before `.onAppear` fires — always sees the current values.
+        // The resize sink is (re)assigned inside the representable's make/update (not `.onAppear`)
+        // so a connect arriving before `.onAppear` fires always sees the current values.
         if !processTerminated {
             WebViewRepresentable(
                 url: url,
                 expectedOrigin: session.expectedOrigin,
                 session: session,
-                messageHandler: messageHandler,
                 onContentResize: { width, height in
                     if let width {
                         self.measuredWidth = width
@@ -167,7 +183,6 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     let url: URL
     let expectedOrigin: String
     weak var session: WebViewSession?
-    var messageHandler: PaywallWebViewMessageAction?
     var onContentResize: (@MainActor (CGFloat?, CGFloat?) -> Void)?
     var onDocumentReset: (@MainActor () -> Void)?
     var onProcessTerminated: (@MainActor () -> Void)?
@@ -258,7 +273,6 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     }
 
     private func configureSession(for webView: PlatformWebView) {
-        self.session?.messageHandler = self.messageHandler
         self.session?.onContentResize = self.onContentResize
         self.session?.onDocumentReset = self.onDocumentReset
         self.session?.evaluateJavaScript = { [weak webView] script in
@@ -358,8 +372,14 @@ private extension View {
         measuredWidth: CGFloat?
     ) -> some View {
         switch constraint {
-        case .fit:
-            self.frame(width: measuredWidth ?? WebViewEnvelope.fallbackFitWidth)
+        case .fit(let defaultSize):
+            self.frame(
+                width: WebViewSizing.resolvedDimension(
+                    measured: measuredWidth,
+                    defaultSize: defaultSize,
+                    fallback: WebViewEnvelope.fallbackFitWidth
+                )
+            )
         case .fill:
             self.frame(maxWidth: .infinity)
         case .fixed(let value):
@@ -375,8 +395,14 @@ private extension View {
         measuredHeight: CGFloat?
     ) -> some View {
         switch constraint {
-        case .fit:
-            self.frame(height: measuredHeight ?? WebViewEnvelope.fallbackFitHeight)
+        case .fit(let defaultSize):
+            self.frame(
+                height: WebViewSizing.resolvedDimension(
+                    measured: measuredHeight,
+                    defaultSize: defaultSize,
+                    fallback: WebViewEnvelope.fallbackFitHeight
+                )
+            )
         case .fill:
             self.frame(maxHeight: .infinity)
         case .fixed(let value):

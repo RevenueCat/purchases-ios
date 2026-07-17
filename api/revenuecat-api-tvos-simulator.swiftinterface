@@ -1814,7 +1814,10 @@ extension RevenueCat.NonSubscriptionTransaction : Swift.Sendable {
     @objc get
   }
   final public let paywall: RevenueCat.PaywallData?
-  final public let paywallComponents: RevenueCat.Offering.PaywallComponents?
+  @available(*, deprecated, message: "Use hasPaywall to check whether the Offering has a paywall.")
+  final public var paywallComponents: RevenueCat.Offering.PaywallComponents? {
+    get
+  }
   final public var hasPaywall: Swift.Bool {
     get
   }

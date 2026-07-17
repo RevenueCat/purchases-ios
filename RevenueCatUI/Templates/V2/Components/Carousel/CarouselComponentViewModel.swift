@@ -197,7 +197,7 @@ struct CarouselComponentStyle {
         colorScheme: ColorScheme
     ) {
         self.visible = visible
-        self.size = size ?? .init(width: .fit, height: .fit)
+        self.size = size ?? .init(width: .fit(nil), height: .fit(nil))
         self.padding = (padding ?? .zero).edgeInsets
         self.margin = (margin ?? .zero).edgeInsets
         self.backgroundStyle = background?.asDisplayable(uiConfigProvider: uiConfigProvider)

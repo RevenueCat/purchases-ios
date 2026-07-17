@@ -18,6 +18,10 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
     // swiftlint:disable:next force_unwrapping
     static let serverHostURL = URL(string: "https://api.revenuecat.com")!
 
+    var usesAPISources: Bool {
+        return true
+    }
+
     var authenticated: Bool {
         switch self {
         case .getWebOfferingProducts,

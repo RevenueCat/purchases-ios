@@ -52,6 +52,9 @@ protocol RemoteConfigSourceProviderType: AnyObject {
     /// The current healthy source for `purpose`, or `nil` once all of its sources are reported unhealthy.
     func getCurrent(for purpose: RemoteConfigSourceHandle.Purpose) -> RemoteConfigSourceHandle?
 
+    /// The current healthy API base source, or `nil` once every API source has been reported unhealthy.
+    func currentAPISource() -> RemoteConfigSourceHandle?
+
     /// Falls back to the next source for the handle's purpose. No-op if `handle` is no longer current.
     func reportUnhealthy(_ handle: RemoteConfigSourceHandle)
 
@@ -61,6 +64,14 @@ protocol RemoteConfigSourceProviderType: AnyObject {
     /// Rewinds the given purpose only if every known source for it has already been exhausted.
     @discardableResult
     func restartIfExhausted(for purpose: RemoteConfigSourceHandle.Purpose) -> Bool
+
+}
+
+extension RemoteConfigSourceProviderType {
+
+    func currentAPISource() -> RemoteConfigSourceHandle? {
+        return self.getCurrent(for: .api)
+    }
 
 }
 
@@ -94,7 +105,7 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
         RemoteConfigSource(url: "https://api.rc-backup.com/", priority: 100_001, weight: 1)
     ]
 
-    private let topicStore: RemoteConfigTopicStoreType
+    private let topicStore: RemoteConfigTopicStoreType?
     private let randomizer: WeightedSourceRandomizer?
     private let lock = Lock()
 
@@ -105,7 +116,7 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     private var blob: SourceFailover
 
     init(
-        topicStore: RemoteConfigTopicStoreType,
+        topicStore: RemoteConfigTopicStoreType?,
         randomizer: WeightedSourceRandomizer? = nil
     ) {
         self.topicStore = topicStore
@@ -173,7 +184,7 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     /// rebuild happened. Callers must hold `lock`.
     @discardableResult
     private func rebuildIfNeeded() -> Bool {
-        let topic = self.topicStore.topic(.sources)
+        let topic = self.topicStore?.topic(.sources)
         guard topic != self.sourcesTopic else { return false }
 
         // Seed the new generation past any token the previous one could have handed out, so reports

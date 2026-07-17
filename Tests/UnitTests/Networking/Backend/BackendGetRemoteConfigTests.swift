@@ -354,7 +354,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(self.httpClient.calls).to(haveCount(2))
     }
 
-    func testGetRemoteConfigDoesNotCoalesceSimultaneousRequestsWithDifferentFetchContexts() {
+    func testGetRemoteConfigCoalescesSimultaneousRequestsWithDifferentFetchContexts() {
         self.mockSuccessfulResponse(delay: .milliseconds(10))
 
         let responses: Atomic<Int> = .init(0)
@@ -370,7 +370,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         ) { _ in responses.value += 1 }
 
         expect(responses.value).toEventually(equal(2))
-        expect(self.httpClient.calls).to(haveCount(2))
+        expect(self.httpClient.calls).to(haveCount(1))
     }
 
     func testCoalescedRequestsLogDebugMessage() {
