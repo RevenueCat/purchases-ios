@@ -503,7 +503,7 @@ private extension OfferingsManager {
         guard self.remoteConfigManager?.isDisabled == true else { return false }
 
         return offerings.all.values.contains { offering in
-            offering.hasPaywallComponents && offering.paywallComponents == nil
+            offering.hasPaywallComponents && offering.internalPaywallComponents == nil
         }
     }
 
