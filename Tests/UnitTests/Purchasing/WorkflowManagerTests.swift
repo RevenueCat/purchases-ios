@@ -185,6 +185,13 @@ class WorkflowManagerTests: TestCase {
         expect(Set(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters)) == ["broken", "working"]
         expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsCount) == 1
         expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsWorkflow?.id) == "working"
+        self.logger.verifyMessageWasLogged(
+            Strings.paywalls.workflow_resolution_for_asset_prewarming_failed(
+                workflowId: "broken",
+                error: .notFound
+            ),
+            level: .debug
+        )
     }
 
     // MARK: - workflowId(forOfferingId:)

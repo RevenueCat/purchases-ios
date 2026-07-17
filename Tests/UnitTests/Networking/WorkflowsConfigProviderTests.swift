@@ -436,7 +436,7 @@ class WorkflowsConfigProviderTests: TestCase {
         _ = await (cachedWorkflowIDs, uiConfigReady)
         let ensureAllDownloadedCountAfterFirstCache = self.blobFetcher.invokedEnsureAllDownloadedRefs.count
 
-        await self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: nil)
+        _ = await self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: nil)
 
         expect(self.provider.cachedWorkflow(forOfferingId: "premium")?.workflow.id) == "wf-prefetch"
         expect(self.blobFetcher.invokedEnsureAllDownloadedRefs.count) == ensureAllDownloadedCountAfterFirstCache
@@ -465,13 +465,13 @@ class WorkflowsConfigProviderTests: TestCase {
             ]) { current, _ in current }
         )
 
-        await self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: "first")
+        _ = await self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: "first")
         _ = await self.uiConfigProvider.getUiConfig()
         expect(self.provider.cachedWorkflow(forOfferingId: "first")?.workflow.id) == "wf-first"
         expect(decodeCount.value) == 1
         expect(self.provider.cachedWorkflow(forOfferingId: "second")).to(beNil())
 
-        await self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: "second")
+        _ = await self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: "second")
 
         expect(self.provider.cachedWorkflow(forOfferingId: "first")?.workflow.id) == "wf-first"
         expect(self.provider.cachedWorkflow(forOfferingId: "second")?.workflow.id) == "wf-second"

@@ -122,12 +122,18 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
             guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *), let paywallCache else { return }
 
             for workflowId in workflowIDsWithCachedBodyData {
-                guard case let .success(result) = await self.workflowsConfigProvider
-                    .decodeCachedWorkflowForAssetPrewarming(
+                let resolution = await self.workflowsConfigProvider.decodeCachedWorkflowForAssetPrewarming(
                     workflowId: workflowId
-                ) else { continue }
-
-                await paywallCache.prewarmWorkflowAssets(workflow: result.workflow, uiConfig: result.uiConfig)
+                )
+                switch resolution {
+                case let .success(result):
+                    await paywallCache.prewarmWorkflowAssets(workflow: result.workflow, uiConfig: result.uiConfig)
+                case let .failure(error):
+                    Logger.debug(Strings.paywalls.workflow_resolution_for_asset_prewarming_failed(
+                        workflowId: workflowId,
+                        error: error
+                    ))
+                }
             }
         }
     }

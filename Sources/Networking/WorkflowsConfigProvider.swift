@@ -163,18 +163,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     /// current config generation, with the included offering's workflow first so `WorkflowManager` can prioritize
     /// its assets. Missing bodies are omitted so one failed download does not prevent the remaining workflows from
     /// proceeding.
-    @discardableResult
     func cachePrefetchedWorkflowBodyData(includingOfferingId: String?) async -> [String] {
-        return await Task.detached(priority: .utility) {
-            await self.cachePrefetchedWorkflowBodyDataOnBackgroundExecutor(
-                includingOfferingId: includingOfferingId
-            )
-        }.value
-    }
-
-    private func cachePrefetchedWorkflowBodyDataOnBackgroundExecutor(
-        includingOfferingId: String?
-    ) async -> [String] {
         if let cache = self.currentWorkflowCache(),
            cache.containsPrefetchedWorkflowBodyData(includingOfferingId: includingOfferingId) {
             return cache.workflowIDsWhoseBodiesShouldBeCached(includingOfferingId: includingOfferingId)
@@ -363,8 +352,9 @@ private struct PrefetchedWorkflowCache {
     }
 }
 
-/// Retains raw workflow bytes until first use, then atomically retains either the decoded workflow or
-/// its decoding failure. This keeps cached-body reads synchronous without eagerly building every workflow graph.
+/// Retains raw workflow bytes until first use. ``value()`` then atomically retains either the decoded
+/// workflow or its decoding failure; ``transientValue()`` decodes without retaining, for asset prewarming.
+/// This keeps cached-body reads synchronous without eagerly building every workflow graph.
 private final class LazyPublishedWorkflow {
 
     private enum State {
