@@ -37,7 +37,7 @@ import Foundation
             visible: Bool? = nil,
             protocolVersion: Int = 1,
             url: String,
-            size: Size = .init(width: .fill, height: .fit)
+            size: Size = .init(width: .fill, height: .fit(nil))
         ) {
             self.type = .webView
             self.id = id
@@ -67,7 +67,7 @@ import Foundation
             self.protocolVersion = try container.decodeIfPresent(Int.self, forKey: .protocolVersion) ?? 1
             self.url = try container.decode(String.self, forKey: .url)
             self.size = try container.decodeIfPresent(Size.self, forKey: .size)
-                ?? .init(width: .fill, height: .fit)
+                ?? .init(width: .fill, height: .fit(nil))
         }
 
         public func encode(to encoder: Encoder) throws {

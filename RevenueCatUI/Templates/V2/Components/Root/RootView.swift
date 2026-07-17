@@ -297,7 +297,7 @@ private enum RootViewPreviewData {
                     ))
                 ],
                 dimension: .vertical(.center, .start),
-                size: .init(width: .fill, height: .fit),
+                size: .init(width: .fill, height: .fit(nil)),
                 spacing: 12,
                 backgroundColor: .init(light: .hex("#FFFFFF")),
                 padding: .init(top: 28, bottom: 28, leading: 24, trailing: 24),
@@ -413,7 +413,7 @@ private enum RootViewPreviewData {
             ))
         ],
         dimension: .vertical(.center, .start),
-        size: .init(width: .fill, height: .fit),
+        size: .init(width: .fill, height: .fit(nil)),
         spacing: 0
     )
 

@@ -107,6 +107,24 @@ class WorkflowManagerTests: TestCase {
         }
     }
 
+    // MARK: - cachedWorkflow(forOfferingId:)
+
+    func testCachedWorkflowWarmsUpAssetsOnSuccess() throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("warmUpWorkflowCaches requires iOS 15+")
+        }
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockProvider.stubbedCachedWorkflowResult = ["default": expected]
+
+        let result = self.manager.cachedWorkflow(forOfferingId: "default")
+
+        expect(result) == expected
+        expect(self.mockProvider.invokedCachedWorkflowParameters) == ["default"]
+        expect(self.mockPaywallCache.invokedWarmUpWorkflowCaches) == true
+        expect(self.mockPaywallCache.invokedWarmUpWorkflowCachesWorkflow?.id) == "wf_1"
+        expect(self.mockPaywallCache.invokedWarmUpWorkflowCachesUiConfig) == expected.uiConfig
+    }
+
     // MARK: - workflowId(forOfferingId:)
 
     func testWorkflowIdForOfferingIdDelegatesToProvider() async {
@@ -138,15 +156,40 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockProvider.invokedGetWorkflowParameters) == ["wf_1"]
     }
 
-    func testGetWorkflowForOfferingIdFallsBackToOfferingIdAsWorkflowId() async throws {
-        // No entry in stubbedWorkflowIdForOfferingId, so the mapping is unresolved.
-        let expected = try Self.workflowDataResult(id: "default")
-        self.mockProvider.stubbedGetWorkflowResult = ["default": expected]
+    func testGetWorkflowForOfferingIdThrowsOfferingHasNoWorkflowWithoutFetchingWhenUnmapped() async {
+        // No offeringId → workflowId mapping: the offering has no workflow attached. This fails fast
+        // with a distinct error (so the paywall falls back to the default paywall) and must NOT attempt
+        // a guaranteed-miss fetch by offering id. Mirrors purchases-android's presentWorkflow (#3760).
+        do {
+            _ = try await self.manager.getWorkflow(forOfferingId: "default")
+            fail("Expected getWorkflow(forOfferingId:) to throw")
+        } catch {
+            expect(error as? BackendError) == .unexpectedBackendResponse(
+                .offeringHasNoWorkflow(offeringId: "default"),
+                extraContext: nil,
+                .init(file: "", function: "", line: 0)
+            )
+        }
+        expect(self.mockProvider.invokedGetWorkflowParameters).to(beEmpty())
+    }
 
-        let result = try await self.manager.getWorkflow(forOfferingId: "default")
+    func testGetWorkflowForOfferingIdSurfacesWorkflowNotFoundWhenMappedWorkflowUnresolvable() async {
+        // The offering maps to a workflow, but that workflow can't be resolved (a broken rollout, not
+        // an unmapped offering). It must surface as `workflowNotFound` — which does NOT trigger the
+        // default-paywall fallback — never `offeringHasNoWorkflow`.
+        self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
+        self.mockProvider.stubbedGetWorkflowError = ["wf_1": .notFound]
 
-        expect(result) == expected
-        expect(self.mockProvider.invokedGetWorkflowParameters) == ["default"]
+        do {
+            _ = try await self.manager.getWorkflow(forOfferingId: "default")
+            fail("Expected getWorkflow(forOfferingId:) to throw")
+        } catch {
+            expect(error as? BackendError) == .unexpectedBackendResponse(
+                .workflowNotFound(workflowId: "wf_1"),
+                extraContext: nil,
+                .init(file: "", function: "", line: 0)
+            )
+        }
     }
 
     // MARK: - Helpers
