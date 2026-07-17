@@ -225,7 +225,7 @@ final class RemoteConfigManagerTests: TestCase {
         self.remoteConfigAPI.complete(with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1)))))
         self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
 
-        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .read, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
     }
