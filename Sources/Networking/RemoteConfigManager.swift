@@ -244,6 +244,7 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
 final class RemoteConfigManager: RemoteConfigManagerType {
 
     private static let defaultDomain = "app"
+    private static let refreshAttemptCooldownInSeconds: TimeInterval = 60
 
     private let remoteConfigAPI: RemoteConfigAPIType
     private let diskCache: RemoteConfigDiskCacheType
@@ -299,6 +300,9 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
     /// In-memory staleness marker. Only successful `200` and `204` responses mark the config fresh.
     private var lastRefreshedAt: Date?
+
+    /// In-memory attempt marker used to avoid hammering the endpoint when a stale refresh keeps failing.
+    private var lastRefreshAttemptAt: Date?
 
     /// Read callers waiting for the current refresh to finish before rereading committed config state.
     ///
@@ -411,6 +415,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
             self.identityBoundAppUserID = appUserID
             self.isRefreshing = false
             self.lastRefreshedAt = nil
+            self.lastRefreshAttemptAt = nil
             self.diskCache.clear()
             self.blobStore.clear()
             return self.drainRefreshContinuations()
@@ -468,16 +473,22 @@ private extension RemoteConfigManager {
             guard !self.isRefreshing,
                   !self.isDisabledInternal,
                   !self.isClosed else { return nil }
+            let now = self.dateProvider.now()
             if let expectedEpoch {
                 guard self.epoch == expectedEpoch || self.identityBoundAppUserID != nil else { return nil }
             }
             if let lastRefreshedAt = self.lastRefreshedAt {
-                guard self.dateProvider.now().timeIntervalSince(lastRefreshedAt)
+                guard now.timeIntervalSince(lastRefreshedAt)
                     > self.cacheDurationInSeconds(isAppBackgrounded) else { return nil }
+            }
+            if let lastRefreshAttemptAt = self.lastRefreshAttemptAt {
+                guard now.timeIntervalSince(lastRefreshAttemptAt)
+                    > Self.refreshAttemptCooldownInSeconds else { return nil }
             }
 
             let requestAppUserID = self.identityBoundAppUserID ?? appUserID
             self.isRefreshing = true
+            self.lastRefreshAttemptAt = now
             return .init(
                 epoch: self.epoch,
                 requestAppUserID: requestAppUserID,
