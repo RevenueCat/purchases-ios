@@ -12,9 +12,6 @@ struct WebViewComponentView: View {
 
     let viewModel: WebViewComponentViewModel
 
-    @Environment(\.paywallWebViewMessageAction)
-    private var messageHandler
-
     var body: some View {
         #if os(watchOS) || !canImport(WebKit)
         EmptyView()
@@ -24,8 +21,7 @@ struct WebViewComponentView: View {
                 BridgedWebViewComponentView(
                     viewModel: viewModel,
                     url: url,
-                    componentID: componentID,
-                    messageHandler: messageHandler
+                    componentID: componentID
                 )
                 .id(
                     "\(viewModel.urlString)-\(componentID)-" +
@@ -77,7 +73,6 @@ private struct BridgedWebViewComponentView: View {
     let viewModel: WebViewComponentViewModel
     let url: URL
     let componentID: String
-    let messageHandler: PaywallWebViewMessageAction?
 
     @StateObject
     private var session: WebViewSession
@@ -94,13 +89,11 @@ private struct BridgedWebViewComponentView: View {
     init(
         viewModel: WebViewComponentViewModel,
         url: URL,
-        componentID: String,
-        messageHandler: PaywallWebViewMessageAction?
+        componentID: String
     ) {
         self.viewModel = viewModel
         self.url = url
         self.componentID = componentID
-        self.messageHandler = messageHandler
 
         let origin = WebViewOrigin.origin(of: url) ?? ""
         self._session = StateObject(
@@ -118,15 +111,13 @@ private struct BridgedWebViewComponentView: View {
     }
 
     var body: some View {
-        // The handler and resize sink are (re)assigned inside the representable's make/update
-        // (not `.onAppear`) so a handler swapped into the environment after first appearance —
-        // or a connect arriving before `.onAppear` fires — always sees the current values.
+        // The resize sink is (re)assigned inside the representable's make/update (not `.onAppear`)
+        // so a connect arriving before `.onAppear` fires always sees the current values.
         if !processTerminated {
             WebViewRepresentable(
                 url: url,
                 expectedOrigin: session.expectedOrigin,
                 session: session,
-                messageHandler: messageHandler,
                 onContentResize: { width, height in
                     if let width {
                         self.measuredWidth = width
@@ -192,7 +183,6 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     let url: URL
     let expectedOrigin: String
     weak var session: WebViewSession?
-    var messageHandler: PaywallWebViewMessageAction?
     var onContentResize: (@MainActor (CGFloat?, CGFloat?) -> Void)?
     var onDocumentReset: (@MainActor () -> Void)?
     var onProcessTerminated: (@MainActor () -> Void)?
@@ -283,7 +273,6 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     }
 
     private func configureSession(for webView: PlatformWebView) {
-        self.session?.messageHandler = self.messageHandler
         self.session?.onContentResize = self.onContentResize
         self.session?.onDocumentReset = self.onDocumentReset
         self.session?.evaluateJavaScript = { [weak webView] script in

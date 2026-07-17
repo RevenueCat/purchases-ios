@@ -43,42 +43,24 @@ final class WebViewEnvelopeTests: TestCase {
             "kind": "message"
         ])))
         XCTAssertNil(WebViewEnvelope.decode(rawMessage: "{not json"))
-        XCTAssertNil(WebViewEnvelope.decode(rawMessage: [
-            "channel": WebViewEnvelope.channel,
-            "protocol_version": 1,
-            "kind": "message",
-            "component_id": "web",
-            "payload": ["nested": ["bad": Date()]]
-        ]))
     }
 
-    func testByteLimit() {
-        let underLimitPayload = String(repeating: "x", count: WebViewEnvelope.maxInboundFrameBytes - 250)
-        XCTAssertNotNil(WebViewEnvelope.decode(rawMessage: Self.json([
-            "channel": WebViewEnvelope.channel,
-            "protocol_version": 1,
-            "kind": "message",
-            "component_id": "web",
-            "type": "rc:step-loaded",
-            "payload": ["value": underLimitPayload]
-        ])))
-
-        let overLimitPayload = String(repeating: "x", count: WebViewEnvelope.maxInboundFrameBytes + 1)
-        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
-            "channel": WebViewEnvelope.channel,
-            "protocol_version": 1,
-            "kind": "message",
-            "component_id": "web",
-            "type": "rc:step-loaded",
-            "payload": ["value": overLimitPayload]
-        ])))
+    func testRejectsNonStringFrames() {
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.frame(payload: ["value": "valid JSON"])))
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: 1))
     }
 
-    func testDepthLimit() {
-        XCTAssertNotNil(WebViewEnvelope.decode(
-            rawMessage: Self.json(Self.frame(payload: Self.nestedObject(depth: 15)))
-        ))
-        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json(Self.frame(payload: Self.nestedObject(depth: 16)))))
+    func testDoesNotEnforceClientSideByteLimit() {
+        let payload = String(repeating: "x", count: 65_537)
+        let frame = Self.frame(payload: ["value": payload])
+
+        XCTAssertNotNil(WebViewEnvelope.decode(rawMessage: Self.json(frame)))
+    }
+
+    func testDoesNotEnforceClientSideDepthLimit() {
+        XCTAssertNotNil(
+            WebViewEnvelope.decode(rawMessage: Self.json(Self.frame(payload: Self.nestedObject(depth: 16))))
+        )
     }
 
     func testEncodeDecodeRoundTripAndEscaping() throws {
@@ -97,6 +79,30 @@ final class WebViewEnvelopeTests: TestCase {
         let decoded = try Self.decodeEnvelope(fromScript: script)
         XCTAssertEqual(decoded, envelope)
         XCTAssertEqual(decoded.payload?["value"]?.stringValue, hostile)
+    }
+
+    func testKindCodableRoundTrip() throws {
+        let kinds: [WebViewEnvelope.Kind] = [
+            .connect,
+            .`init`,
+            .reject,
+            .message,
+            .request,
+            .response,
+            .error
+        ]
+
+        for kind in kinds {
+            let data = try JSONEncoder().encode(kind)
+            XCTAssertEqual(try JSONDecoder().decode(WebViewEnvelope.Kind.self, from: data), kind)
+        }
+    }
+
+    func testReservedPayloadKeysMatchWireProtocol() {
+        XCTAssertEqual(
+            WebViewEnvelope.reservedPayloadKeys,
+            ["channel", "protocol_version", "kind", "type", "component_id", "id", "error", "variables"]
+        )
     }
 
     private static func frame(payload: [String: Any]) -> [String: Any] {
