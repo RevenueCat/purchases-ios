@@ -137,6 +137,34 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(hostCorrect.value) == true
     }
 
+    func testFallsBackToNextAPISourceWhenCurrentSourceFails() {
+        let firstHost = "first-api.rc-test.com"
+        let secondHost = "second-api.rc-test.com"
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: Self.apiSourceProvider(hosts: [firstHost, secondHost])
+        )
+        let firstSourceRequests: Atomic<Int> = .init(0)
+        let secondSourceRequests: Atomic<Int> = .init(0)
+
+        stub(condition: isHost(firstHost)) { _ in
+            firstSourceRequests.value += 1
+            return .serverDownResponse()
+        }
+        stub(condition: isHost(secondHost)) { _ in
+            secondSourceRequests.value += 1
+            return .emptySuccessResponse()
+        }
+
+        let result: EmptyResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPath)) { completion($0) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(firstSourceRequests.value) == 1
+        expect(secondSourceRequests.value) == 1
+    }
+
     func testDoesNotUseAPISourceHostWhenSettingDisabled() throws {
         // `usesRemoteConfigAPISources` is disabled by default (`self.systemInfo`), so an injected provider
         // must be ignored and requests target `serverHostURL`.
@@ -4175,7 +4203,13 @@ extension HTTPClientTests {
     /// A real `RemoteConfigSourceProvider` whose only API source is `https://<host>/`, so the resolved
     /// base host is unambiguously provider-driven rather than the default `serverHostURL`.
     fileprivate static func apiSourceProvider(host: String) -> RemoteConfigSourceProvider {
-        return RemoteConfigSourceProvider(topicStore: SingleAPISourceTopicStore(url: "https://\(host)/"))
+        return self.apiSourceProvider(hosts: [host])
+    }
+
+    fileprivate static func apiSourceProvider(hosts: [String]) -> RemoteConfigSourceProvider {
+        return RemoteConfigSourceProvider(
+            topicStore: APISourceTopicStore(urls: hosts.map { "https://\($0)/" })
+        )
     }
 
     /// A `MockSystemInfo` with the `usesRemoteConfigAPISources` dangerous setting enabled, so API source
@@ -4193,25 +4227,25 @@ extension HTTPClientTests {
 
 }
 
-/// A minimal `sources` topic store exposing a single API source, matching the backend topic shape.
-private final class SingleAPISourceTopicStore: RemoteConfigTopicStoreType {
+/// A minimal `sources` topic store exposing API sources, matching the backend topic shape.
+private final class APISourceTopicStore: RemoteConfigTopicStoreType {
 
-    private let url: String
+    private let urls: [String]
 
-    init(url: String) {
-        self.url = url
+    init(urls: [String]) {
+        self.urls = urls
     }
 
     func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic? {
         guard topic == .sources else { return nil }
         return ["api": RemoteConfiguration.ConfigItem(content: [
-            "sources": .array([
+            "sources": .array(self.urls.enumerated().map { priority, url in
                 .object([
-                    "url": .string(self.url),
-                    "priority": .int(0),
+                    "url": .string(url),
+                    "priority": .int(priority),
                     "weight": .int(1)
                 ])
-            ])
+            })
         ])]
     }
 
