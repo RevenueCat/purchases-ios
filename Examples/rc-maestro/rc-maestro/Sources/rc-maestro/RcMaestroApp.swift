@@ -39,6 +39,12 @@ struct RcMaestroApp: App {
                                 case .never, .remoteConfigNotFound:
                                     return false
                                 case .primaryBackendDown:
+                                    // Remote config uses a separate request path whose primary URL is already
+                                    // the fallback backend, so it does not have a fallbackUrlIndex.
+                                    if let fallbackPath = request.httpRequest.path as? HTTPRequest.FallbackPath,
+                                       case .remoteConfig = fallbackPath {
+                                        return false
+                                    }
                                     return request.fallbackUrlIndex == nil
                                 }
                             }
@@ -79,6 +85,8 @@ enum E2ETestFlow: String {
     case subscribeFromV1Paywall = "subscribe_from_v1_paywall"
     case subscribeFromV2Paywall = "subscribe_from_v2_paywall"
     case openWorkflow = "open_workflow"
+    case openNoPaywall = "open_no_paywall"
+    case openWorkflowPresented = "open_workflow_presented"
 
     @ViewBuilder
     var view: some View {
@@ -89,6 +97,10 @@ enum E2ETestFlow: String {
             E2ETestFlowView.SubscribeFromV2Paywall()
         case .openWorkflow:
             E2ETestFlowView.OpenWorkflow()
+        case .openNoPaywall:
+            E2ETestFlowView.OpenNoPaywall()
+        case .openWorkflowPresented:
+            E2ETestFlowView.OpenWorkflowPresented()
         }
     }
 }
