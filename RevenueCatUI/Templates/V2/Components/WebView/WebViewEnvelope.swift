@@ -1,5 +1,4 @@
 import Foundation
-// swiftlint:disable nesting
 
 #if !os(tvOS) // For Paywalls V2
 
@@ -24,6 +23,7 @@ enum WebViewEnvelope {
     static let fallbackFitHeight: CGFloat = 100
     static let fallbackFitWidth: CGFloat = 300
 
+    // swiftlint:disable nesting
     enum Kind: String, Codable {
         case connect
         case `init`
@@ -74,21 +74,12 @@ enum WebViewEnvelope {
             case error
         }
     }
+    // swiftlint:enable nesting
 
     static func decode(rawMessage: Any) -> Envelope? {
-        let data: Data
-        if let string = rawMessage as? String {
-            guard let stringData = string.data(using: .utf8) else {
-                return nil
-            }
-            data = stringData
-        } else if let dictionary = rawMessage as? [String: Any] {
-            guard JSONSerialization.isValidJSONObject(dictionary),
-                  let serialized = try? JSONSerialization.data(withJSONObject: dictionary) else {
-                return nil
-            }
-            data = serialized
-        } else {
+        // `workflow-web-components-sdk` sends frames with `postMessage(JSON.stringify(frame))`.
+        guard let string = rawMessage as? String,
+              let data = string.data(using: .utf8) else {
             return nil
         }
 
