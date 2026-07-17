@@ -52,11 +52,12 @@ final class WebViewSessionTests: TestCase {
         harness.handle(.init(kind: .connect, componentID: ""))
         XCTAssertEqual(try harness.outboundEnvelopes().filter { $0.kind == .`init` }.count, 1)
 
+        harness.capturedScripts.removeAll()
         harness.handle(
-            .init(kind: .message, componentID: "web", type: WebViewEnvelope.messageTypeStepLoaded),
+            .init(kind: .message, componentID: "web", type: WebViewEnvelope.messageTypeRequestVariables),
             isMainFrame: false
         )
-        XCTAssertTrue(harness.messages.isEmpty)
+        XCTAssertTrue(harness.capturedScripts.isEmpty)
     }
 
     func testFitMessageDeclaresExactlyTheFitAxes() throws {
@@ -87,12 +88,11 @@ final class WebViewSessionTests: TestCase {
             harness.handle(.init(
                 kind: kind,
                 componentID: "web",
-                type: WebViewEnvelope.messageTypeStepLoaded,
+                type: WebViewEnvelope.messageTypeRequestVariables,
                 id: "id-1"
             ))
         }
 
-        XCTAssertTrue(harness.messages.isEmpty)
         XCTAssertTrue(harness.capturedScripts.isEmpty)
     }
 
@@ -103,11 +103,10 @@ final class WebViewSessionTests: TestCase {
         harness.handle(.init(kind: .request, componentID: "web", type: WebViewEnvelope.messageTypeStepLoaded))
         harness.handle(.init(kind: .request, componentID: "web", type: WebViewEnvelope.messageTypeRequestVariables))
 
-        XCTAssertTrue(harness.messages.isEmpty)
         XCTAssertTrue(harness.capturedScripts.isEmpty)
     }
 
-    func testStepLoadedStepCompleteAndErrorReachHandler() {
+    func testStepLoadedStepCompleteAndErrorAreAcceptedWithoutReply() {
         let harness = Harness()
         harness.connect()
 
@@ -125,37 +124,10 @@ final class WebViewSessionTests: TestCase {
             payload: ["error": .string("boom")]
         ))
 
-        XCTAssertEqual(harness.messages.map(\.type), [
-            WebViewEnvelope.messageTypeStepLoaded,
-            WebViewEnvelope.messageTypeStepComplete,
-            WebViewEnvelope.messageTypeError
-        ])
-        XCTAssertEqual(harness.messages[1].responses?["choice"]?.stringValue, "annual")
-        XCTAssertEqual(harness.messages[2].error, "boom")
+        XCTAssertTrue(harness.capturedScripts.isEmpty)
     }
 
-    func testStepCompleteFlatPayloadAndReservedKeyPolicy() {
-        let harness = Harness()
-        harness.connect()
-
-        harness.handle(.init(
-            kind: .message,
-            componentID: "web",
-            type: WebViewEnvelope.messageTypeStepComplete,
-            payload: ["choice": .string("annual")]
-        ))
-        harness.handle(.init(
-            kind: .message,
-            componentID: "web",
-            type: WebViewEnvelope.messageTypeStepComplete,
-            payload: ["variables": .object([:])]
-        ))
-
-        XCTAssertEqual(harness.messages.count, 1)
-        XCTAssertEqual(harness.messages[0].responses?["choice"]?.stringValue, "annual")
-    }
-
-    func testRequestVariablesAutoRepliesAndForwards() throws {
+    func testRequestVariablesRequestAutoReplies() throws {
         let localeIdentifier = "zh_Hans_CN"
         let harness = Harness(localeIdentifier: localeIdentifier)
         harness.connect()
@@ -178,12 +150,10 @@ final class WebViewSessionTests: TestCase {
             WebViewSession.bcp47Tag(fromLocaleIdentifier: localeIdentifier)
         )
         XCTAssertNil(response.payload?["variables"])
-        XCTAssertEqual(harness.messages.last?.type, WebViewEnvelope.messageTypeRequestVariables)
     }
 
-    func testRequestVariablesMessageAutoRepliesWithNoHandler() throws {
+    func testRequestVariablesMessageAutoReplies() throws {
         let harness = Harness()
-        harness.session.messageHandler = nil
         harness.connect()
         harness.capturedScripts.removeAll()
 
@@ -197,35 +167,30 @@ final class WebViewSessionTests: TestCase {
         XCTAssertEqual(response.kind, .message)
         XCTAssertEqual(response.type, WebViewEnvelope.messageTypeVariables)
         XCTAssertEqual(response.payload?["locale"]?.stringValue, "en-US")
-        XCTAssertTrue(harness.messages.isEmpty)
     }
 
-    func testOutboundGatingOriginAndLocaleSanitizing() throws {
+    func testOutboundGatingByOrigin() throws {
         let harness = Harness()
-        harness.session.postVariables(componentID: "web", variables: ["x": .bool(true)])
-        XCTAssertTrue(harness.capturedScripts.isEmpty)
-
         harness.connect()
         harness.capturedScripts.removeAll()
-        harness.session.postVariables(componentID: "web", variables: [
-            "locale": .string("app"),
-            "segment": .string("pro")
-        ])
 
-        var outbound = try XCTUnwrap(harness.outboundEnvelopes().first)
-        XCTAssertEqual(outbound.type, WebViewEnvelope.messageTypeVariables)
-        XCTAssertNil(outbound.payload?["locale"])
-        XCTAssertEqual(outbound.payload?["segment"]?.stringValue, "pro")
-
-        harness.capturedScripts.removeAll()
         harness.currentURL = URL(string: "https://evil.example/path")!
-        harness.session.post(componentID: "web", type: "custom", variables: ["ok": .bool(true)])
+        harness.handle(.init(
+            kind: .message,
+            componentID: "web",
+            type: WebViewEnvelope.messageTypeRequestVariables
+        ))
         XCTAssertTrue(harness.capturedScripts.isEmpty)
 
         harness.currentURL = URL(string: "https://EXAMPLE.com:443/next")!
-        harness.session.post(componentID: "web", type: "custom", variables: ["ok": .bool(true)])
-        outbound = try XCTUnwrap(harness.outboundEnvelopes().first)
-        XCTAssertEqual(outbound.payload?["ok"]?.boolValue, true)
+        harness.handle(.init(
+            kind: .message,
+            componentID: "web",
+            type: WebViewEnvelope.messageTypeRequestVariables
+        ))
+        let outbound = try XCTUnwrap(harness.outboundEnvelopes().first)
+        XCTAssertEqual(outbound.type, WebViewEnvelope.messageTypeVariables)
+        XCTAssertEqual(outbound.payload?["locale"]?.stringValue, "en-US")
     }
 
     func testResizeAppliesOnlyFitAxesAndThreshold() {
@@ -259,7 +224,6 @@ final class WebViewSessionTests: TestCase {
         XCTAssertEqual(resizes[0].1, 10_000)
         XCTAssertEqual(resizes[1].0, 201)
         XCTAssertNil(resizes[1].1)
-        XCTAssertTrue(harness.messages.isEmpty)
     }
 
     func testResizeIgnoresWidthWhenWidthIsNotFit() {
@@ -288,10 +252,10 @@ final class WebViewSessionTests: TestCase {
         harness.session.resetForNewDocument()
         XCTAssertFalse(harness.session.channelOpen)
 
-        harness.handle(.init(kind: .message, componentID: "web", type: WebViewEnvelope.messageTypeStepLoaded))
-        XCTAssertTrue(harness.messages.isEmpty)
-
         harness.capturedScripts.removeAll()
+        harness.handle(.init(kind: .message, componentID: "web", type: WebViewEnvelope.messageTypeRequestVariables))
+        XCTAssertTrue(harness.capturedScripts.isEmpty)
+
         harness.handle(.init(kind: .connect, componentID: ""))
         XCTAssertTrue(harness.session.channelOpen)
         XCTAssertEqual(try harness.outboundEnvelopes().filter { $0.kind == .`init` }.count, 1)
@@ -339,14 +303,12 @@ final class WebViewSessionTests: TestCase {
 
     func testRoundTripThroughRealWebView() throws {
         let expectedURL = URL(string: "https://example.com/index.html")!
-        var received: [PaywallWebViewMessage] = []
         let session = WebViewSession(
             componentID: "web",
             protocolVersion: 1,
             expectedOrigin: "https://example.com",
             localeIdentifier: "en_US",
-            fitAxes: (width: false, height: false),
-            messageHandler: PaywallWebViewMessageAction { message, _ in received.append(message) }
+            fitAxes: (width: false, height: false)
         )
 
         let configuration = WKWebViewConfiguration()
@@ -372,27 +334,22 @@ final class WebViewSessionTests: TestCase {
             """
             window.webkit.messageHandlers.\(WebViewEnvelope.messageHandlerName).postMessage(
             '{"channel":"rc-web-components","protocol_version":1,"kind":"connect","component_id":""}'
-            );
-            window.webkit.messageHandlers.\(WebViewEnvelope.messageHandlerName).postMessage(
-            '{"channel":"rc-web-components","protocol_version":1,"kind":"message",\
-            "component_id":"web","type":"rc:step-loaded"}'
             ); true
             """
         )
 
-        let delivered = self.expectation(description: "message delivered to the app handler")
+        let connected = self.expectation(description: "handshake completed through the real web view")
         func poll() {
-            if received.contains(where: { $0.type == WebViewEnvelope.messageTypeStepLoaded }) {
-                delivered.fulfill()
+            if session.channelOpen {
+                connected.fulfill()
             } else {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { poll() }
             }
         }
         poll()
-        self.wait(for: [delivered], timeout: 10)
+        self.wait(for: [connected], timeout: 10)
 
         XCTAssertTrue(session.channelOpen)
-        XCTAssertEqual(received.last?.type, WebViewEnvelope.messageTypeStepLoaded)
         withExtendedLifetime(delegate) {}
         configuration.userContentController.removeScriptMessageHandler(
             forName: WebViewEnvelope.messageHandlerName
@@ -470,25 +427,19 @@ private final class Harness {
 
     let session: WebViewSession
     var capturedScripts: [String] = []
-    var messages: [PaywallWebViewMessage] = []
     var currentURL = URL(string: "https://example.com/path")!
 
     init(
         size: (width: Bool, height: Bool) = (false, false),
-        localeIdentifier: String = "en_US",
-        messageHandler: PaywallWebViewMessageAction? = nil
+        localeIdentifier: String = "en_US"
     ) {
         self.session = WebViewSession(
             componentID: "web",
             protocolVersion: 99,
             expectedOrigin: "https://example.com",
             localeIdentifier: localeIdentifier,
-            fitAxes: size,
-            messageHandler: nil
+            fitAxes: size
         )
-        self.session.messageHandler = messageHandler ?? PaywallWebViewMessageAction { [weak self] message, _ in
-            self?.messages.append(message)
-        }
         self.session.evaluateJavaScript = { [weak self] script in
             self?.capturedScripts.append(script)
         }

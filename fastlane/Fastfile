@@ -1143,6 +1143,8 @@ platform :ios do
     backend_environment = options[:backend_environment] || "production"
     store = options[:store] || "app_store"
     output_dir = options[:output_dir] || "test_output/maestro"
+    # Which subdirectory of Examples/rc-maestro/maestro to run flows from (e.g. "e2e_tests", "workflows").
+    flow_subdir = options[:flow_subdir] || "e2e_tests"
     skip_slack_notification = options.fetch(:skip_slack_notification, true)
     base_path = "#{Dir.pwd}/.."
 
@@ -1237,7 +1239,7 @@ platform :ios do
 
     success = false
     begin
-      flow_dir = "#{base_path}/Examples/rc-maestro/maestro/e2e_tests"
+      flow_dir = "#{base_path}/Examples/rc-maestro/maestro/#{flow_subdir}"
 
       UI.message("Using flow directory: #{flow_dir}")
 

@@ -28,6 +28,8 @@ class OfferingsManager {
     private let dateProvider: DateProvider
     // Nil when remote config is disabled, in which case offerings delivery is unchanged.
     private let remoteConfigManager: RemoteConfigManagerType?
+    private let uiConfigProvider: UiConfigProvider?
+    private let workflowsConfigProvider: WorkflowsConfigProviderType?
 
     init(deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
@@ -37,7 +39,9 @@ class OfferingsManager {
          productsManager: ProductsManagerType,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dateProvider: DateProvider = DateProvider(),
-         remoteConfigManager: RemoteConfigManagerType? = nil) {
+         remoteConfigManager: RemoteConfigManagerType? = nil,
+         uiConfigProvider: UiConfigProvider? = nil,
+         workflowsConfigProvider: WorkflowsConfigProviderType? = nil) {
         self.deviceCache = deviceCache
         self.operationDispatcher = operationDispatcher
         self.systemInfo = systemInfo
@@ -47,6 +51,8 @@ class OfferingsManager {
         self.diagnosticsTracker = diagnosticsTracker
         self.dateProvider = dateProvider
         self.remoteConfigManager = remoteConfigManager
+        self.uiConfigProvider = uiConfigProvider
+        self.workflowsConfigProvider = workflowsConfigProvider
     }
 
     func offerings(
@@ -394,10 +400,19 @@ private extension OfferingsManager {
             return
         }
         Task {
-            async let workflowsReady = remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
-            async let uiConfigReady = UiConfigProvider(manager: remoteConfigManager).getUiConfig()
+            let uiConfigProvider = self.uiConfigProvider ?? UiConfigProvider(manager: remoteConfigManager)
+            async let workflowsReady: Void = self.warmWorkflowConfigIfNeeded(remoteConfigManager: remoteConfigManager)
+            async let uiConfigReady = uiConfigProvider.getUiConfig()
             _ = await (workflowsReady, uiConfigReady)
             deliver()
+        }
+    }
+
+    private func warmWorkflowConfigIfNeeded(remoteConfigManager: RemoteConfigManagerType) async {
+        if let workflowsConfigProvider = self.workflowsConfigProvider {
+            await workflowsConfigProvider.warmPrefetchedWorkflows()
+        } else {
+            _ = await remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
         }
     }
 
