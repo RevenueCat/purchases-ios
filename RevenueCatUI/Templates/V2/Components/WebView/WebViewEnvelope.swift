@@ -19,11 +19,6 @@ enum WebViewEnvelope {
     static let messageTypeResize = "resize"
     static let messageTypeFit = "fit"
 
-    static let maxInboundFrameBytes = 65_536
-    static let maxJSONDepth = 16
-    /// Structural depth budget for a whole inbound frame: the envelope object itself (1 level)
-    /// plus a payload tree of at most `maxJSONDepth` levels.
-    static let maxFrameDepth = maxJSONDepth + 1
     static let maxResizePoints: CGFloat = 10_000
     static let resizeThreshold: CGFloat = 1
     static let fallbackFitHeight: CGFloat = 100
@@ -83,26 +78,17 @@ enum WebViewEnvelope {
     static func decode(rawMessage: Any) -> Envelope? {
         let data: Data
         if let string = rawMessage as? String {
-            guard string.utf8.count <= Self.maxInboundFrameBytes,
-                  let stringData = string.data(using: .utf8) else {
+            guard let stringData = string.data(using: .utf8) else {
                 return nil
             }
             data = stringData
         } else if let dictionary = rawMessage as? [String: Any] {
             guard JSONSerialization.isValidJSONObject(dictionary),
-                  let serialized = try? JSONSerialization.data(withJSONObject: dictionary),
-                  serialized.count <= Self.maxInboundFrameBytes else {
+                  let serialized = try? JSONSerialization.data(withJSONObject: dictionary) else {
                 return nil
             }
             data = serialized
         } else {
-            return nil
-        }
-
-        // Enforce the nesting limit BEFORE decoding: `PaywallWebViewValue.init(from:)` recurses
-        // per nesting level, so a hostile deeply-nested frame (tens of thousands of levels fit in
-        // 64 KiB) could otherwise overflow the stack before any post-decode check runs.
-        guard !Self.exceedsMaxDepth(data) else {
             return nil
         }
 
@@ -112,43 +98,6 @@ enum WebViewEnvelope {
         }
 
         return envelope
-    }
-
-    /// Non-recursive scan of the raw JSON bytes, tracking `{`/`[` nesting outside string
-    /// literals (honoring `\` escapes). Returns `true` when the depth exceeds ``maxFrameDepth``.
-    static func exceedsMaxDepth(_ data: Data) -> Bool {
-        var depth = 0
-        var inString = false
-        var escaped = false
-
-        for byte in data {
-            if inString {
-                if escaped {
-                    escaped = false
-                } else if byte == UInt8(ascii: "\\") {
-                    escaped = true
-                } else if byte == UInt8(ascii: "\"") {
-                    inString = false
-                }
-                continue
-            }
-
-            switch byte {
-            case UInt8(ascii: "\""):
-                inString = true
-            case UInt8(ascii: "{"), UInt8(ascii: "["):
-                depth += 1
-                if depth > Self.maxFrameDepth {
-                    return true
-                }
-            case UInt8(ascii: "}"), UInt8(ascii: "]"):
-                depth -= 1
-            default:
-                break
-            }
-        }
-
-        return false
     }
 
     static func receiveScript(for envelope: Envelope) -> String? {
