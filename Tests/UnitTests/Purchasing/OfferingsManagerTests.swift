@@ -1027,7 +1027,7 @@ extension OfferingsManagerTests {
         }
 
         expect(result).to(beSuccess())
-        expect(mockWorkflowAssetPrewarmer.invokedScheduleAssetPrewarmingForEligibleWorkflowsParameters) == ["base"]
+        expect(mockWorkflowAssetPrewarmer.invokedPrefetchedAssetPrewarmingParameters) == ["base"]
     }
 
     func testGetOfferingsDeliversImmediatelyWhenRemoteConfigManagerIsNil() {

@@ -441,7 +441,7 @@ private extension OfferingsManager {
             let uiConfigProvider = self.uiConfigProvider ?? UiConfigProvider(manager: remoteConfigManager)
             async let workflowBodyDataReady: Void = self.cacheWorkflowBodyDataAndScheduleAssetPrewarmingIfNeeded(
                 remoteConfigManager: remoteConfigManager,
-                currentOfferingId: offerings.current?.identifier
+                includingOfferingId: offerings.current?.identifier
             )
             async let uiConfigReady = uiConfigProvider.getUiConfig()
             _ = await (workflowBodyDataReady, uiConfigReady)
@@ -487,11 +487,11 @@ private extension OfferingsManager {
 
     private func cacheWorkflowBodyDataAndScheduleAssetPrewarmingIfNeeded(
         remoteConfigManager: RemoteConfigManagerType,
-        currentOfferingId: String?
+        includingOfferingId: String?
     ) async {
         if let workflowAssetPrewarmer = self.workflowAssetPrewarmer {
-            await workflowAssetPrewarmer.scheduleAssetPrewarmingForEligibleWorkflows(
-                currentOfferingId: currentOfferingId
+            await workflowAssetPrewarmer.scheduleAssetPrewarmingForPrefetchedWorkflows(
+                includingOfferingId: includingOfferingId
             )
         } else {
             _ = await remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)

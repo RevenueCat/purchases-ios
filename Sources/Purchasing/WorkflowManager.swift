@@ -18,7 +18,7 @@ import Foundation
 /// work, but the asset-prewarming work itself is fire-and-forget.
 protocol WorkflowAssetPrewarmingType: Sendable {
 
-    func scheduleAssetPrewarmingForEligibleWorkflows(currentOfferingId: String?) async
+    func scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: String?) async
 
 }
 
@@ -32,11 +32,11 @@ protocol WorkflowAssetPrewarmingType: Sendable {
 /// workflow body is a shared, content-addressed blob resolved (and downloaded on demand, deduped) by
 /// `RemoteConfigManager`.
 ///
-/// Workflow asset prewarming has two entry paths that converge on `handleResolvedWorkflow(_:)`:
+/// Workflow asset prewarming has two entry paths:
 ///
 /// - **Read path:** `getWorkflow` and `cachedWorkflow` already have a decoded workflow. They schedule its asset
 ///   prewarming while returning that same decoded value to the caller.
-/// - **Body-data path:** ``scheduleAssetPrewarmingForEligibleWorkflows(currentOfferingId:)`` first caches raw body
+/// - **Body-data path:** ``scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId:)`` first caches raw body
 ///   data for workflows marked `prefetch` plus the current offering's workflow. It then transiently decodes those
 ///   workflows on a background worker solely to discover their assets. That decode is never retained in
 ///   `LazyPublishedWorkflow`; the graph is released after the asset-prewarming task finishes.
@@ -63,7 +63,8 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
     func getWorkflow(workflowId: String) async throws -> WorkflowDataResult {
         switch await self.workflowsConfigProvider.getWorkflow(workflowId: workflowId) {
         case let .success(result):
-            return self.handleResolvedWorkflow(result)
+            self.scheduleAssetPrewarming(for: result)
+            return result
         case .failure(.notFound):
             throw BackendError.workflowNotFound(workflowId: workflowId)
         case let .failure(.decodingFailed(error)):
@@ -82,7 +83,8 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
             return nil
         }
 
-        return self.handleResolvedWorkflow(result)
+        self.scheduleAssetPrewarming(for: result)
+        return result
     }
 
     /// Resolves `offeringId` to its workflow for `Purchases.workflow(forOfferingIdentifier:)`. Fails
@@ -108,9 +110,9 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
     /// workflow cannot prevent sibling workflows from prewarming or delay offerings delivery.
     ///
     /// Only body-data readiness is awaited; decoding and downloads never delay offerings.
-    func scheduleAssetPrewarmingForEligibleWorkflows(currentOfferingId: String?) async {
-        let workflowIDsWithCachedBodyData = await self.workflowsConfigProvider.cacheEligibleWorkflowBodyData(
-            currentOfferingId: currentOfferingId
+    func scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: String?) async {
+        let workflowIDsWithCachedBodyData = await self.workflowsConfigProvider.cachePrefetchedWorkflowBodyData(
+            includingOfferingId: includingOfferingId
         )
         guard !workflowIDsWithCachedBodyData.isEmpty else { return }
 
@@ -123,7 +125,7 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
                     workflowId: workflowId
                 ) else { continue }
 
-                _ = self.handleResolvedWorkflow(result)
+                self.scheduleAssetPrewarming(for: result)
             }
         }
     }
@@ -131,11 +133,6 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
 }
 
 private extension WorkflowManager {
-
-    func handleResolvedWorkflow(_ result: WorkflowDataResult) -> WorkflowDataResult {
-        self.scheduleAssetPrewarming(for: result)
-        return result
-    }
 
     /// Fire-and-forget pre-download of a resolved workflow's images/videos/fonts. Remote config's own
     /// blob prefetch only covers the workflow's JSON body, not the assets it references.

@@ -52,13 +52,13 @@ final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked
         return .failure(.notFound)
     }
 
-    private(set) var invokedCacheEligibleWorkflowBodyDataCount = 0
-    private(set) var invokedCacheEligibleWorkflowBodyDataParameters: [String?] = []
+    private(set) var invokedCachePrefetchedWorkflowBodyDataCount = 0
+    private(set) var invokedCachePrefetchedWorkflowBodyDataParameters: [String?] = []
     var stubbedWorkflowIDsWithCachedBodyData: Set<String> = []
 
-    func cacheEligibleWorkflowBodyData(currentOfferingId: String?) async -> Set<String> {
-        self.invokedCacheEligibleWorkflowBodyDataCount += 1
-        self.invokedCacheEligibleWorkflowBodyDataParameters.append(currentOfferingId)
+    func cachePrefetchedWorkflowBodyData(includingOfferingId: String?) async -> Set<String> {
+        self.invokedCachePrefetchedWorkflowBodyDataCount += 1
+        self.invokedCachePrefetchedWorkflowBodyDataParameters.append(includingOfferingId)
         return self.stubbedWorkflowIDsWithCachedBodyData
     }
 
@@ -74,10 +74,10 @@ final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked
 
 final class MockWorkflowAssetPrewarmer: WorkflowAssetPrewarmingType, @unchecked Sendable {
 
-    private(set) var invokedScheduleAssetPrewarmingForEligibleWorkflowsParameters: [String?] = []
+    private(set) var invokedPrefetchedAssetPrewarmingParameters: [String?] = []
 
-    func scheduleAssetPrewarmingForEligibleWorkflows(currentOfferingId: String?) async {
-        self.invokedScheduleAssetPrewarmingForEligibleWorkflowsParameters.append(currentOfferingId)
+    func scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: String?) async {
+        self.invokedPrefetchedAssetPrewarmingParameters.append(includingOfferingId)
     }
 
 }
