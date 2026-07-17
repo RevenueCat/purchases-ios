@@ -138,32 +138,47 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     }
 
     private func warmPrefetchedWorkflowsOnBackgroundExecutor(currentOfferingId: String?) async {
-        guard self.currentWorkflowCache() == nil else { return }
+        if let cache = self.currentWorkflowCache(), cache.isWarm(currentOfferingId: currentOfferingId) {
+            return
+        }
         guard let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows) else { return }
-        guard self.currentWorkflowCache() == nil else { return }
 
         let snapshot = GenerationGuardedCacheSnapshot(
             generation: self.manager.configGeneration,
             key: topic
         )
+        let offeringIdMap = self.buildOfferingIdMap(from: topic)
+        let prefetchedWorkflowIds = Set(topic.compactMap { workflowId, item in
+            item.prefetch ? workflowId : nil
+        })
+        let expectedWorkflowIds = workflowIdsToWarm(
+            prefetchedWorkflowIds: prefetchedWorkflowIds,
+            offeringIdMap: offeringIdMap,
+            currentOfferingId: currentOfferingId
+        )
+        let cachedWorkflows = self.prefetchedWorkflowsCache.value(for: snapshot)?.workflows ?? [:]
+        guard !expectedWorkflowIds.isSubset(of: cachedWorkflows.keys) else { return }
+
         // Keep only body bytes in memory here. `LazyPublishedWorkflow` performs and retains the decode
         // synchronously on first access, so warming doesn't build every workflow's component graph.
-        let offeringIdMap = self.buildOfferingIdMap(from: topic)
-        let workflows = await self.loadWorkflows(
-            self.workflowIdsToWarm(
-                from: topic,
-                offeringIdMap: offeringIdMap,
-                currentOfferingId: currentOfferingId
-            )
-        )
+        let missingWorkflowIds = expectedWorkflowIds.subtracting(cachedWorkflows.keys)
+        let loadedWorkflows = await self.loadWorkflows(missingWorkflowIds.sorted())
 
         guard await self.manager.isCurrent(snapshot, for: .workflows) else {
             self.prefetchedWorkflowsCache.clearIfStale(currentGeneration: self.manager.configGeneration)
             return
         }
 
+        // Another concurrent warm may have populated more entries while the missing bodies loaded.
+        // Preserve those entries (and any retained lazy decode results) when merging this warm.
+        let latestWorkflows = self.prefetchedWorkflowsCache.value(for: snapshot)?.workflows ?? cachedWorkflows
+        let workflows = latestWorkflows.merging(loadedWorkflows) { cached, _ in cached }
         self.prefetchedWorkflowsCache.store(
-            .init(offeringIdMap: offeringIdMap, workflows: workflows),
+            .init(
+                offeringIdMap: offeringIdMap,
+                prefetchedWorkflowIds: prefetchedWorkflowIds,
+                workflows: workflows
+            ),
             for: snapshot
         )
     }
@@ -242,23 +257,6 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         return self.prefetchedWorkflowsCache.value(currentGeneration: currentGeneration)
     }
 
-    private func workflowIdsToWarm(
-        from topic: RemoteConfiguration.ConfigTopic,
-        offeringIdMap: [String: String],
-        currentOfferingId: String?
-    ) -> [String] {
-        var workflowIds = Set(topic.compactMap { workflowId, item in
-            item.prefetch ? workflowId : nil
-        })
-
-        if let currentOfferingId,
-           let currentWorkflowId = offeringIdMap[currentOfferingId] {
-            workflowIds.insert(currentWorkflowId)
-        }
-
-        return workflowIds.sorted()
-    }
-
     private func loadWorkflows(_ workflowIds: [String]) async -> [String: LazyPublishedWorkflow] {
         await withTaskGroup(of: (String, Data?).self) { group in
             for workflowId in workflowIds {
@@ -288,9 +286,34 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
 
 }
 
+private func workflowIdsToWarm(
+    prefetchedWorkflowIds: Set<String>,
+    offeringIdMap: [String: String],
+    currentOfferingId: String?
+) -> Set<String> {
+    var workflowIds = prefetchedWorkflowIds
+
+    if let currentOfferingId,
+       let currentWorkflowId = offeringIdMap[currentOfferingId] {
+        workflowIds.insert(currentWorkflowId)
+    }
+
+    return workflowIds
+}
+
 private struct PrefetchedWorkflowCache {
     let offeringIdMap: [String: String]
+    let prefetchedWorkflowIds: Set<String>
     let workflows: [String: LazyPublishedWorkflow]
+
+    func isWarm(currentOfferingId: String?) -> Bool {
+        let expectedWorkflowIds = workflowIdsToWarm(
+            prefetchedWorkflowIds: self.prefetchedWorkflowIds,
+            offeringIdMap: self.offeringIdMap,
+            currentOfferingId: currentOfferingId
+        )
+        return expectedWorkflowIds.isSubset(of: self.workflows.keys)
+    }
 }
 
 /// Retains raw workflow bytes until first use, then atomically retains either the decoded workflow or

@@ -410,6 +410,66 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(self.blobFetcher.invokedEnsureAllDownloadedRefs.count) == ensureAllDownloadedCountAfterFirstWarm
     }
 
+    func testWarmPrefetchedWorkflowsWarmsNewCurrentOfferingAndRetainsExistingWorkflow() async throws {
+        let decodeCount: Atomic<Int> = .init(0)
+        self.provider = self.makeProvider(decodeCount: decodeCount)
+        self.commit(
+            workflows: [
+                "wf-first": .init(
+                    blobRef: "wf-first-ref",
+                    prefetch: false,
+                    content: ["offeringIdentifier": "first"]
+                ),
+                "wf-second": .init(
+                    blobRef: "wf-second-ref",
+                    prefetch: false,
+                    content: ["offeringIdentifier": "second"]
+                )
+            ],
+            uiConfig: Self.uiConfigTopic,
+            blobs: Self.uiConfigBlobs.merging([
+                "wf-first-ref": try Self.workflowJSON(id: "wf-first"),
+                "wf-second-ref": try Self.workflowJSON(id: "wf-second")
+            ]) { current, _ in current }
+        )
+
+        await self.provider.warmPrefetchedWorkflows(currentOfferingId: "first")
+        _ = await self.uiConfigProvider.getUiConfig()
+        expect(self.provider.cachedWorkflow(forOfferingId: "first")?.workflow.id) == "wf-first"
+        expect(decodeCount.value) == 1
+        expect(self.provider.cachedWorkflow(forOfferingId: "second")).to(beNil())
+
+        await self.provider.warmPrefetchedWorkflows(currentOfferingId: "second")
+
+        expect(self.provider.cachedWorkflow(forOfferingId: "first")?.workflow.id) == "wf-first"
+        expect(self.provider.cachedWorkflow(forOfferingId: "second")?.workflow.id) == "wf-second"
+        expect(decodeCount.value) == 2
+    }
+
+    func testWarmPrefetchedWorkflowsRetriesMissingCurrentOfferingBody() async throws {
+        self.commit(
+            workflows: [
+                "wf-current": .init(
+                    blobRef: "wf-current-ref",
+                    prefetch: false,
+                    content: ["offeringIdentifier": "current"]
+                )
+            ],
+            uiConfig: Self.uiConfigTopic,
+            blobs: Self.uiConfigBlobs
+        )
+
+        await self.provider.warmPrefetchedWorkflows(currentOfferingId: "current")
+        _ = await self.uiConfigProvider.getUiConfig()
+        expect(self.provider.cachedWorkflow(forOfferingId: "current")).to(beNil())
+
+        self.blobStore.stubbedData["wf-current-ref"] = try Self.workflowJSON(id: "wf-current")
+        await self.provider.warmPrefetchedWorkflows(currentOfferingId: "current")
+
+        expect(self.provider.cachedWorkflow(forOfferingId: "current")?.workflow.id) == "wf-current"
+        expect(self.blobFetcher.invokedEnsureDownloadedRefs.filter { $0 == "wf-current-ref" }.count) == 2
+    }
+
     func testCachedPrefetchedWorkflowMissesAfterGenerationInvalidates() async throws {
         self.commit(
             workflows: [
