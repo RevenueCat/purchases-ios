@@ -36,6 +36,9 @@ protocol PaywallCacheWarmingType: Sendable {
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async
 
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func hasStartedWorkflowAssetPrewarming(for workflowID: String) async -> Bool
+
 #if !os(tvOS) // For Paywalls
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -226,6 +229,10 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
             }
             #endif
         }
+    }
+
+    func hasStartedWorkflowAssetPrewarming(for workflowID: String) async -> Bool {
+        return self.workflowIDsWithAssetPrewarmingStarted.contains(workflowID)
     }
 
 #if !os(tvOS)

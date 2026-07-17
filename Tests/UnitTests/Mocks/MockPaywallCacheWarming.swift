@@ -145,6 +145,10 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
         self.invokedPrewarmWorkflowAssetsUiConfig = uiConfig
     }
 
+    func hasStartedWorkflowAssetPrewarming(for workflowID: String) async -> Bool {
+        return self.invokedPrewarmWorkflowAssetIDs.contains(workflowID)
+    }
+
 #if !os(tvOS)
 
     private let _invokedTriggerFontDownloadIfNeeded: Atomic<Bool> = false

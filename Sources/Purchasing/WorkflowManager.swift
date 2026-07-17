@@ -122,6 +122,11 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
             guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *), let paywallCache else { return }
 
             for workflowId in workflowIDsWithCachedBodyData {
+                let hasStartedAssetPrewarming = await paywallCache.hasStartedWorkflowAssetPrewarming(
+                    for: workflowId
+                )
+                guard !hasStartedAssetPrewarming else { continue }
+
                 let resolution = await self.workflowsConfigProvider.decodeCachedWorkflowForAssetPrewarming(
                     workflowId: workflowId
                 )
