@@ -107,7 +107,8 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
     /// The returned body IDs belong to the current config generation and are decoded transiently: the decoded
     /// graphs are passed to the shared asset-prewarming path without replacing their cached raw body data. A later
     /// presentation therefore performs the normal retained decode. Individual failures are ignored so one malformed
-    /// workflow cannot prevent sibling workflows from prewarming or delay offerings delivery.
+    /// workflow cannot prevent sibling workflows from prewarming or delay offerings delivery. The included
+    /// offering's workflow is warmed first, then the remaining prefetched workflows are warmed sequentially.
     ///
     /// Only body-data readiness is awaited; decoding and downloads never delay offerings.
     func scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: String?) async {
@@ -118,6 +119,7 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
 
         self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
             guard let self else { return }
+            guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *), let paywallCache else { return }
 
             for workflowId in workflowIDsWithCachedBodyData {
                 guard case let .success(result) = await self.workflowsConfigProvider
@@ -125,7 +127,7 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
                     workflowId: workflowId
                 ) else { continue }
 
-                self.scheduleAssetPrewarming(for: result)
+                await paywallCache.prewarmWorkflowAssets(workflow: result.workflow, uiConfig: result.uiConfig)
             }
         }
     }

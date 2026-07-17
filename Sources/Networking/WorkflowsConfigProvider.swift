@@ -17,7 +17,7 @@ protocol WorkflowsConfigProviderType {
         workflowId: String
     ) async -> Result<WorkflowDataResult, WorkflowResolutionError>
     @discardableResult
-    func cachePrefetchedWorkflowBodyData(includingOfferingId: String?) async -> Set<String>
+    func cachePrefetchedWorkflowBodyData(includingOfferingId: String?) async -> [String]
     func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult?
 
 }
@@ -160,10 +160,11 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     /// Ensures raw body data is cached for workflows marked `prefetch` and for the current offering's workflow.
     ///
     /// This method never decodes a workflow. It returns only workflow IDs whose body data is available in the
-    /// current config generation, allowing `WorkflowManager` to schedule transient decoding and asset prewarming.
-    /// Missing bodies are omitted so one failed download does not prevent the remaining workflows from proceeding.
+    /// current config generation, with the included offering's workflow first so `WorkflowManager` can prioritize
+    /// its assets. Missing bodies are omitted so one failed download does not prevent the remaining workflows from
+    /// proceeding.
     @discardableResult
-    func cachePrefetchedWorkflowBodyData(includingOfferingId: String?) async -> Set<String> {
+    func cachePrefetchedWorkflowBodyData(includingOfferingId: String?) async -> [String] {
         return await Task.detached(priority: .utility) {
             await self.cachePrefetchedWorkflowBodyDataOnBackgroundExecutor(
                 includingOfferingId: includingOfferingId
@@ -173,7 +174,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
 
     private func cachePrefetchedWorkflowBodyDataOnBackgroundExecutor(
         includingOfferingId: String?
-    ) async -> Set<String> {
+    ) async -> [String] {
         if let cache = self.currentWorkflowCache(),
            cache.containsPrefetchedWorkflowBodyData(includingOfferingId: includingOfferingId) {
             return cache.workflowIDsWhoseBodiesShouldBeCached(includingOfferingId: includingOfferingId)
@@ -185,17 +186,18 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
             key: topic
         )
         let offeringIdMap = self.buildOfferingIdMap(from: topic)
-        let prefetchedWorkflowIds = Set(topic.compactMap { workflowId, item in
+        let prefetchedWorkflowIds = topic.compactMap { workflowId, item in
             item.prefetch ? workflowId : nil
-        })
-        let workflowIDsWhoseBodiesShouldBeCached = workflowIDsToPrefetch(
+        }
+        let orderedWorkflowIDsToPrefetch = workflowIDsToPrefetch(
             prefetchedWorkflowIds: prefetchedWorkflowIds,
             offeringIdMap: offeringIdMap,
             includingOfferingId: includingOfferingId
         )
+        let workflowIDsWhoseBodiesShouldBeCached = Set(orderedWorkflowIDsToPrefetch)
         let cachedWorkflows = self.prefetchedWorkflowsCache.value(for: snapshot)?.workflows ?? [:]
         guard !workflowIDsWhoseBodiesShouldBeCached.isSubset(of: cachedWorkflows.keys) else {
-            return workflowIDsWhoseBodiesShouldBeCached
+            return orderedWorkflowIDsToPrefetch
         }
 
         // Keep only body bytes in memory here. `LazyPublishedWorkflow` performs and retains the decode
@@ -221,7 +223,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
             for: snapshot
         )
 
-        return workflowIDsWhoseBodiesShouldBeCached.intersection(workflows.keys)
+        return orderedWorkflowIDsToPrefetch.filter { workflows[$0] != nil }
     }
 
     func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
@@ -330,31 +332,29 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
 }
 
 private func workflowIDsToPrefetch(
-    prefetchedWorkflowIds: Set<String>,
+    prefetchedWorkflowIds: [String],
     offeringIdMap: [String: String],
     includingOfferingId: String?
-) -> Set<String> {
-    var workflowIds = prefetchedWorkflowIds
-
-    if let includingOfferingId,
-       let includedWorkflowId = offeringIdMap[includingOfferingId] {
-        workflowIds.insert(includedWorkflowId)
+) -> [String] {
+    guard let includingOfferingId,
+          let includedWorkflowId = offeringIdMap[includingOfferingId] else {
+        return prefetchedWorkflowIds
     }
 
-    return workflowIds
+    return [includedWorkflowId] + prefetchedWorkflowIds.filter { $0 != includedWorkflowId }
 }
 
 private struct PrefetchedWorkflowCache {
     let offeringIdMap: [String: String]
-    let prefetchedWorkflowIds: Set<String>
+    let prefetchedWorkflowIds: [String]
     let workflows: [String: LazyPublishedWorkflow]
 
     func containsPrefetchedWorkflowBodyData(includingOfferingId: String?) -> Bool {
-        return self.workflowIDsWhoseBodiesShouldBeCached(includingOfferingId: includingOfferingId)
+        return Set(self.workflowIDsWhoseBodiesShouldBeCached(includingOfferingId: includingOfferingId))
             .isSubset(of: self.workflows.keys)
     }
 
-    func workflowIDsWhoseBodiesShouldBeCached(includingOfferingId: String?) -> Set<String> {
+    func workflowIDsWhoseBodiesShouldBeCached(includingOfferingId: String?) -> [String] {
         return workflowIDsToPrefetch(
             prefetchedWorkflowIds: self.prefetchedWorkflowIds,
             offeringIdMap: self.offeringIdMap,

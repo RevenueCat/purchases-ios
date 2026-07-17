@@ -113,6 +113,7 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
 
     private let _invokedPrewarmWorkflowAssets: Atomic<Bool> = false
     private let _invokedPrewarmWorkflowAssetsCount: Atomic<Int> = .init(0)
+    private let _invokedPrewarmWorkflowAssetIDs: Atomic<[String]> = .init([])
     private let _invokedPrewarmWorkflowAssetsWorkflow: Atomic<PublishedWorkflow?> = nil
     private let _invokedPrewarmWorkflowAssetsUiConfig: Atomic<UIConfig?> = nil
 
@@ -123,6 +124,9 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
     var invokedPrewarmWorkflowAssetsCount: Int {
         get { return self._invokedPrewarmWorkflowAssetsCount.value }
         set { self._invokedPrewarmWorkflowAssetsCount.value = newValue }
+    }
+    var invokedPrewarmWorkflowAssetIDs: [String] {
+        return self._invokedPrewarmWorkflowAssetIDs.value
     }
     var invokedPrewarmWorkflowAssetsWorkflow: PublishedWorkflow? {
         get { return self._invokedPrewarmWorkflowAssetsWorkflow.value }
@@ -136,6 +140,7 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
     func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
         self.invokedPrewarmWorkflowAssets = true
         self._invokedPrewarmWorkflowAssetsCount.modify { $0 += 1 }
+        self._invokedPrewarmWorkflowAssetIDs.modify { $0.append(workflow.id) }
         self.invokedPrewarmWorkflowAssetsWorkflow = workflow
         self.invokedPrewarmWorkflowAssetsUiConfig = uiConfig
     }

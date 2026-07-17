@@ -318,7 +318,7 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(cachedCurrent?.workflow.id) == "wf-current"
         expect(cachedOther).to(beNil())
         expect(mappedOther) == "wf-other"
-        expect(workflowIDsWithCachedBodyData) == ["wf-prefetch", "wf-current"]
+        expect(workflowIDsWithCachedBodyData) == ["wf-current", "wf-prefetch"]
         expect(self.blobFetcher.invokedEnsureDownloadedRefs).to(contain("wf-prefetch-ref"))
         expect(self.blobFetcher.invokedEnsureDownloadedRefs).to(contain("wf-current-ref"))
         expect(self.blobFetcher.invokedEnsureDownloadedRefs).toNot(contain("wf-other-ref"))

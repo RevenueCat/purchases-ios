@@ -54,9 +54,9 @@ final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked
 
     private(set) var invokedCachePrefetchedWorkflowBodyDataCount = 0
     private(set) var invokedCachePrefetchedWorkflowBodyDataParameters: [String?] = []
-    var stubbedWorkflowIDsWithCachedBodyData: Set<String> = []
+    var stubbedWorkflowIDsWithCachedBodyData: [String] = []
 
-    func cachePrefetchedWorkflowBodyData(includingOfferingId: String?) async -> Set<String> {
+    func cachePrefetchedWorkflowBodyData(includingOfferingId: String?) async -> [String] {
         self.invokedCachePrefetchedWorkflowBodyDataCount += 1
         self.invokedCachePrefetchedWorkflowBodyDataParameters.append(includingOfferingId)
         return self.stubbedWorkflowIDsWithCachedBodyData
