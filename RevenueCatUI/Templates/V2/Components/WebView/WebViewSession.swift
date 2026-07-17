@@ -14,7 +14,6 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
     let componentID: String
     let protocolVersion: Int
     let expectedOrigin: String
-    var messageHandler: PaywallWebViewMessageAction?
     var onContentResize: (@MainActor (CGFloat?, CGFloat?) -> Void)?
     /// Invoked from ``resetForNewDocument()`` so the SwiftUI host can clear measured fit sizes.
     var onDocumentReset: (@MainActor () -> Void)?
@@ -35,7 +34,6 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         expectedOrigin: String,
         localeIdentifier: String,
         fitAxes: (width: Bool, height: Bool),
-        messageHandler: PaywallWebViewMessageAction? = nil,
         evaluateJavaScript: @escaping (String) -> Void = { _ in },
         currentURL: @escaping () -> URL? = { nil }
     ) {
@@ -44,7 +42,6 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         self.expectedOrigin = expectedOrigin
         self.localeIdentifier = localeIdentifier
         self.fitAxes = fitAxes
-        self.messageHandler = messageHandler
         self.evaluateJavaScript = evaluateJavaScript
         self.currentURL = currentURL
     }
@@ -94,10 +91,10 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
 
         switch type {
         case WebViewEnvelope.messageTypeResize:
-            // SDK-internal, regardless of kind; never forwarded to the app handler.
             self.handleResize(envelope.payload)
         case WebViewEnvelope.messageTypeStepLoaded:
-            self.deliver(type: type)
+            // Recognized protocol frame; the SDK takes no action on it.
+            break
         case WebViewEnvelope.messageTypeStepComplete:
             self.handleStepComplete(envelope)
         case WebViewEnvelope.messageTypeRequestVariables:
@@ -120,7 +117,7 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
             return nil
         }
         // App frames ride only `message`/`request`; other kinds (init/reject/response/error)
-        // are host-to-content or reply framing and must never reach the app handler.
+        // are host-to-content or reply framing and must be dropped.
         guard envelope.kind == .message || envelope.kind == .request else {
             self.logRejected("unsupported-kind")
             return nil
@@ -144,32 +141,6 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         return type
     }
 
-    func postVariables(componentID: String, variables: [String: PaywallWebViewValue]) {
-        self.post(
-            componentID: componentID,
-            type: WebViewEnvelope.messageTypeVariables,
-            variables: Self.sanitizeAppProvidedVariables(variables)
-        )
-    }
-
-    func post(componentID: String, type: String, variables: [String: PaywallWebViewValue]) {
-        self.send(
-            .init(kind: .message, componentID: componentID, type: type, payload: variables),
-            allowBeforeNavigation: false
-        )
-    }
-
-    static func sanitizeAppProvidedVariables(
-        _ variables: [String: PaywallWebViewValue]
-    ) -> [String: PaywallWebViewValue] {
-        guard variables.keys.contains("locale") else {
-            return variables
-        }
-
-        Logger.debug(Strings.paywall_web_view_reserved_locale_stripped)
-        return variables.filter { $0.key != "locale" }
-    }
-
     private func handleConnect(_ envelope: WebViewEnvelope.Envelope, currentURL: URL?) {
         guard self.originMatches(currentURL: currentURL, allowBeforeNavigation: true) else {
             self.logRejected("origin-mismatch")
@@ -189,25 +160,20 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         }
     }
 
+    /// Validates the frame shape so malformed frames are still logged and rejected;
+    /// the SDK takes no further action on well-formed step-complete frames.
     private func handleStepComplete(_ envelope: WebViewEnvelope.Envelope) {
-        let responses: [String: PaywallWebViewValue]
         if let value = envelope.payload?["responses"] {
-            guard let object = value.objectValue else {
+            guard value.objectValue != nil else {
                 self.logRejected("malformed-responses")
                 return
             }
-            responses = object
         } else if let payload = envelope.payload {
             guard WebViewEnvelope.reservedPayloadKeys.isDisjoint(with: payload.keys) else {
                 self.logRejected("reserved-response-key")
                 return
             }
-            responses = payload
-        } else {
-            responses = [:]
         }
-
-        self.deliver(type: WebViewEnvelope.messageTypeStepComplete, responses: responses)
     }
 
     private func handleRequestVariables(_ envelope: WebViewEnvelope.Envelope) {
@@ -239,19 +205,16 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
             )
         default:
             self.logRejected("unsupported-request-variables-kind")
-            return
         }
-
-        self.deliver(type: WebViewEnvelope.messageTypeRequestVariables)
     }
 
+    /// Validates the frame shape so malformed frames are still logged and rejected;
+    /// the SDK takes no further action on well-formed error frames.
     private func handleError(_ envelope: WebViewEnvelope.Envelope) {
         let error = envelope.payload?["error"]?.stringValue ?? envelope.error
-        guard let error else {
+        if error == nil {
             self.logRejected("missing-error")
-            return
         }
-        self.deliver(type: WebViewEnvelope.messageTypeError, error: error)
     }
 
     private func handleResize(_ payload: [String: PaywallWebViewValue]?) {
@@ -288,22 +251,6 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
                 payload: payload
             ),
             allowBeforeNavigation: true
-        )
-    }
-
-    private func deliver(
-        type: String,
-        responses: [String: PaywallWebViewValue]? = nil,
-        error: String? = nil
-    ) {
-        self.messageHandler?(
-            PaywallWebViewMessage(
-                componentID: self.componentID,
-                type: type,
-                responses: responses,
-                error: error
-            ),
-            PaywallWebViewController(session: self)
         )
     }
 
