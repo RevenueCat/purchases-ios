@@ -70,10 +70,10 @@ private extension TokenLogInOperation {
 
         let body: any HTTPRequestBody
         switch token {
-        case .anonymous:
+        case .anonymous(let appUserID):
             body = AnonymousBody(method: "anonymous",
                                  scope: "openid offline_access",
-                                 reference: nil)
+                                 reference: appUserID)
         case .oidc(let token):
             body = StandardBody(method: "oidc",
                                 scope: "openid offline_access",

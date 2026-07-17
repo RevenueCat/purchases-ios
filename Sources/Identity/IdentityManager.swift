@@ -220,7 +220,7 @@ private extension IdentityManager {
         }
     }
 
-    func performLogOut(completion: (PurchasesError?) -> Void) {
+    func performLogOut(completion: @escaping (PurchasesError?) -> Void) {
         Logger.info(Strings.identity.log_out_called_for_user)
 
         if self.currentUserIsAnonymous {
@@ -228,9 +228,18 @@ private extension IdentityManager {
             return
         }
 
-        self.resetCacheAndSave(newUserID: Self.generateRandomID())
+        let newUserID = Self.generateRandomID()
+        self.resetCacheAndSave(newUserID: newUserID)
         Logger.info(Strings.identity.log_out_success)
-        completion(nil)
+
+        if self.backend.token.enabled {
+            // immediately get tokens for the new user id
+            self.performLogIn(token: .anonymous(appUserID: newUserID), completion: { result in
+                completion(result.error?.asPurchasesError)
+            })
+        } else {
+            completion(nil)
+        }
     }
 }
 

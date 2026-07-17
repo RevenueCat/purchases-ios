@@ -277,6 +277,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let deviceCache: DeviceCache
     private let paywallCache: PaywallCacheWarmingType?
     private let identityManager: IdentityManager
+    private let tokenManager: TokenManager
     private let userDefaults: UserDefaults
     private let notificationCenter: NotificationCenter
     private let offeringsFactory: OfferingsFactory
@@ -529,6 +530,22 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         identityManager.remoteConfigManager = remoteConfigManager
         tokenManager.currentUserProvider = identityManager
 
+        #warning("DAVE: This is a bit of a hack")
+        // PROBLEM: this only runs once at initialization time
+        // what if the device is in airplane mode when the app is launched? how will subsequent
+        // requests know they have to authorize first?
+        //
+        // PROBLEM: this also only checks if the current user is anonymous; it doesn't check if
+        // the current user is a custom name (ie, previous used with the logIn(_:) method to be
+        // an app-specified id for the user). (This is the "migration" problem)
+        if tokenManager.enabled &&
+            identityManager.currentUserIsAnonymous &&
+            tokenManager.hasCurrentAccessToken == false {
+            // immediately attempt to retrieve access tokens for the anonymous user
+            identityManager.logIn(externalToken: .anonymous(appUserID: identityManager.currentAppUserID),
+                                  completion: { _ in })
+        }
+
         let eventsManager: EventsManagerType?
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
            let featureEventStore = FeatureEventStore.createDefault(
@@ -759,6 +776,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   deviceCache: deviceCache,
                   paywallCache: paywallCache,
                   identityManager: identityManager,
+                  tokenManager: tokenManager,
                   subscriberAttributes: subscriberAttributes,
                   operationDispatcher: operationDispatcher,
                   customerInfoManager: customerInfoManager,
@@ -795,6 +813,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          deviceCache: DeviceCache,
          paywallCache: PaywallCacheWarmingType?,
          identityManager: IdentityManager,
+         tokenManager: TokenManager,
          subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,
          customerInfoManager: CustomerInfoManager,
@@ -847,6 +866,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.deviceCache = deviceCache
         self.paywallCache = paywallCache
         self.identityManager = identityManager
+        self.tokenManager = tokenManager
         self.userDefaults = userDefaults
         self.notificationCenter = notificationCenter
         self.systemInfo = systemInfo
@@ -1014,6 +1034,9 @@ public extension Purchases {
     @objc var isAnonymous: Bool { self.identityManager.currentUserIsAnonymous }
 
     @objc var isSandbox: Bool { return self.systemInfo.isSandbox }
+
+    @_spi(Experimental)
+    var isAuthenticated: Bool { self.tokenManager.hasCurrentAccessToken }
 
     @objc func getOfferings(completion: @escaping (Offerings?, PublicError?) -> Void) {
         self.getOfferings(fetchPolicy: .default, completion: completion)
