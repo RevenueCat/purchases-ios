@@ -20,13 +20,20 @@ import XCTest
 /// off `RemoteConfigManager` now, not a dedicated `WorkflowsAPI` backend call.
 class PurchasesWorkflowTests: BasePurchasesTests {
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-
+    func testRemoteConfigEnabledReturnsFalseWhenDisabledByKillSwitch() {
+        self.systemInfo.stubbedRemoteConfigEnabled = true
         self.setupPurchases()
+
+        expect(self.purchases.remoteConfigEnabled) == true
+
+        self.mockRemoteConfigManager.isDisabled = true
+
+        expect(self.purchases.remoteConfigEnabled) == false
     }
 
     func testWorkflowForOfferingIdentifierThrowsWhenOfferingHasNoWorkflow() async throws {
+        self.setupPurchases()
+
         // The `workflows` topic has synced, but no item maps to the "default" offering (its item carries
         // no matching `offeringIdentifier`). With no mapping, resolution fails fast with a distinct
         // `offeringHasNoWorkflow` and does NOT attempt a fetch by offering id — the prior lazy
@@ -53,6 +60,22 @@ class PurchasesWorkflowTests: BasePurchasesTests {
     }
 
     // MARK: - Helpers
+
+    private static let uiConfigTopic: [String: RemoteConfiguration.ConfigItem] = [
+        "app": .init(blobRef: "app-ref", content: [:]),
+        "localizations": .init(blobRef: "localizations-ref", content: [:]),
+        "variable_config": .init(blobRef: "variable-config-ref", content: [:]),
+        "custom_variables": .init(blobRef: "custom-variables-ref", content: [:])
+    ]
+
+    private static let uiConfigBlobs: [String: Data] = [
+        "app": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
+        "localizations": Data(#"{}"#.utf8),
+        "variable_config": Data(
+            #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.utf8
+        ),
+        "custom_variables": Data(#"{}"#.utf8)
+    ]
 
     private static func workflowJSON(id: String) throws -> Data {
         let json = """
