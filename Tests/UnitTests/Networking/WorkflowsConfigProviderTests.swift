@@ -26,6 +26,7 @@ class WorkflowsConfigProviderTests: TestCase {
     private var blobStore: FakeRemoteConfigBlobStore!
     private var blobFetcher: FakeRemoteConfigBlobFetcher!
     private var manager: RemoteConfigManager!
+    private var uiConfigProvider: UiConfigProvider!
     private var provider: WorkflowsConfigProvider!
 
     override func setUpWithError() throws {
@@ -41,7 +42,11 @@ class WorkflowsConfigProviderTests: TestCase {
             blobFetcher: self.blobFetcher,
             currentUserProvider: FakeCurrentUserProvider()
         )
-        self.provider = WorkflowsConfigProvider(manager: self.manager)
+        self.uiConfigProvider = UiConfigProvider(manager: self.manager)
+        self.provider = WorkflowsConfigProvider(
+            manager: self.manager,
+            uiConfigProvider: self.uiConfigProvider
+        )
     }
 
     func testResolvesAWorkflowAlreadyCommittedToTheWorkflowsTopic() async throws {
@@ -270,6 +275,233 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(secondWorkflowId) == "wf-2"
     }
 
+    func testWarmPrefetchedWorkflowsCachesOnlyPrefetchTrueBodiesAndAllOfferingMappings() async throws {
+        let prefetchedWorkflow = try Self.workflowJSON(id: "wf-prefetch")
+        let onDemandWorkflow = try Self.workflowJSON(id: "wf-on-demand")
+        self.commit(
+            workflows: [
+                "wf-prefetch": .init(
+                    blobRef: "wf-prefetch-ref",
+                    prefetch: true,
+                    content: ["offeringIdentifier": "premium"]
+                ),
+                "wf-on-demand": .init(
+                    blobRef: "wf-on-demand-ref",
+                    prefetch: false,
+                    content: ["offeringIdentifier": "basic"]
+                )
+            ],
+            uiConfig: Self.uiConfigTopic,
+            blobs: Self.uiConfigBlobs.merging([
+                "wf-prefetch-ref": prefetchedWorkflow,
+                "wf-on-demand-ref": onDemandWorkflow
+            ]) { current, _ in current }
+        )
+
+        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows()
+        async let uiConfigWarm = self.uiConfigProvider.getUiConfig()
+        _ = await (workflowsWarm, uiConfigWarm)
+
+        let cachedPrefetched = self.provider.cachedWorkflow(forOfferingId: "premium")
+        let cachedOnDemand = self.provider.cachedWorkflow(forOfferingId: "basic")
+        let mappedOnDemand = await self.provider.workflowId(forOfferingId: "basic")
+
+        expect(cachedPrefetched?.workflow.id) == "wf-prefetch"
+        expect(cachedOnDemand).to(beNil())
+        expect(mappedOnDemand) == "wf-on-demand"
+        expect(self.blobFetcher.invokedEnsureDownloadedRefs).to(contain("wf-prefetch-ref"))
+        expect(self.blobFetcher.invokedEnsureDownloadedRefs).toNot(contain("wf-on-demand-ref"))
+    }
+
+    func testWarmPrefetchedWorkflowsReturnsEarlyWhenCacheAlreadyWarmForGeneration() async throws {
+        self.commit(
+            workflows: [
+                "wf-prefetch": .init(
+                    blobRef: "wf-prefetch-ref",
+                    prefetch: true,
+                    content: ["offeringIdentifier": "premium"]
+                )
+            ],
+            uiConfig: Self.uiConfigTopic,
+            blobs: Self.uiConfigBlobs.merging([
+                "wf-prefetch-ref": try Self.workflowJSON(id: "wf-prefetch")
+            ]) { current, _ in current }
+        )
+
+        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows()
+        async let uiConfigWarm = self.uiConfigProvider.getUiConfig()
+        _ = await (workflowsWarm, uiConfigWarm)
+        let ensureAllDownloadedCountAfterFirstWarm = self.blobFetcher.invokedEnsureAllDownloadedRefs.count
+
+        await self.provider.warmPrefetchedWorkflows()
+
+        expect(self.provider.cachedWorkflow(forOfferingId: "premium")?.workflow.id) == "wf-prefetch"
+        expect(self.blobFetcher.invokedEnsureAllDownloadedRefs.count) == ensureAllDownloadedCountAfterFirstWarm
+    }
+
+    func testWarmPrefetchedWorkflowsRetriesIncompleteCache() async throws {
+        self.commit(
+            workflows: [
+                "wf-first": .init(
+                    blobRef: "wf-first-ref",
+                    prefetch: true,
+                    content: ["offeringIdentifier": "first"]
+                ),
+                "wf-second": .init(
+                    blobRef: "wf-second-ref",
+                    prefetch: true,
+                    content: ["offeringIdentifier": "second"]
+                )
+            ],
+            uiConfig: Self.uiConfigTopic,
+            blobs: Self.uiConfigBlobs.merging([
+                "wf-first-ref": try Self.workflowJSON(id: "wf-first"),
+                "wf-second-ref": Data("invalid".utf8)
+            ]) { current, _ in current }
+        )
+
+        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows()
+        async let uiConfigWarm = self.uiConfigProvider.getUiConfig()
+        _ = await (workflowsWarm, uiConfigWarm)
+
+        expect(self.provider.cachedWorkflow(forOfferingId: "first")?.workflow.id) == "wf-first"
+        expect(self.provider.cachedWorkflow(forOfferingId: "second")).to(beNil())
+
+        self.blobStore.stubbedData["wf-second-ref"] = try Self.workflowJSON(id: "wf-second")
+        await self.provider.warmPrefetchedWorkflows()
+
+        expect(self.provider.cachedWorkflow(forOfferingId: "first")?.workflow.id) == "wf-first"
+        expect(self.provider.cachedWorkflow(forOfferingId: "second")?.workflow.id) == "wf-second"
+    }
+
+    func testWarmPrefetchedWorkflowsWarmsAssetsForPrefetchTrueBodies() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("warmUpWorkflowCaches requires iOS 15+")
+        }
+
+        let paywallCache = MockPaywallCacheWarming()
+        let operationDispatcher = MockOperationDispatcher()
+        self.provider = WorkflowsConfigProvider(
+            manager: self.manager,
+            uiConfigProvider: self.uiConfigProvider,
+            paywallCache: paywallCache,
+            operationDispatcher: operationDispatcher
+        )
+        self.commit(
+            workflows: [
+                "wf-prefetch": .init(
+                    blobRef: "wf-prefetch-ref",
+                    prefetch: true,
+                    content: ["offeringIdentifier": "premium"]
+                ),
+                "wf-on-demand": .init(
+                    blobRef: "wf-on-demand-ref",
+                    prefetch: false,
+                    content: ["offeringIdentifier": "basic"]
+                )
+            ],
+            uiConfig: Self.uiConfigTopic,
+            blobs: Self.uiConfigBlobs.merging([
+                "wf-prefetch-ref": try Self.workflowJSON(id: "wf-prefetch"),
+                "wf-on-demand-ref": try Self.workflowJSON(id: "wf-on-demand")
+            ]) { current, _ in current }
+        )
+
+        await self.provider.warmPrefetchedWorkflows()
+
+        expect(operationDispatcher.invokedDispatchAsyncOnWorkerThread) == true
+        expect(paywallCache.invokedWarmUpWorkflowCachesCount) == 1
+        expect(paywallCache.invokedWarmUpWorkflowCachesWorkflow?.id) == "wf-prefetch"
+        expect(paywallCache.invokedWarmUpWorkflowCachesUiConfig) == self.uiConfigProvider.cachedUiConfig()
+    }
+
+    func testWarmPrefetchedWorkflowsDoesNotWaitForAssetWarming() async throws {
+        let paywallCache = MockPaywallCacheWarming()
+        let operationDispatcher = MockOperationDispatcher()
+        operationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = false
+        self.provider = WorkflowsConfigProvider(
+            manager: self.manager,
+            uiConfigProvider: self.uiConfigProvider,
+            paywallCache: paywallCache,
+            operationDispatcher: operationDispatcher
+        )
+        self.commit(
+            workflows: [
+                "wf-prefetch": .init(
+                    blobRef: "wf-prefetch-ref",
+                    prefetch: true,
+                    content: ["offeringIdentifier": "premium"]
+                )
+            ],
+            uiConfig: Self.uiConfigTopic,
+            blobs: Self.uiConfigBlobs.merging([
+                "wf-prefetch-ref": try Self.workflowJSON(id: "wf-prefetch")
+            ]) { current, _ in current }
+        )
+
+        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows()
+        async let uiConfigWarm = self.uiConfigProvider.getUiConfig()
+        _ = await (workflowsWarm, uiConfigWarm)
+
+        expect(operationDispatcher.invokedDispatchAsyncOnWorkerThread) == true
+        expect(paywallCache.invokedWarmUpWorkflowCachesCount) == 0
+        expect(self.provider.cachedWorkflow(forOfferingId: "premium")?.workflow.id) == "wf-prefetch"
+    }
+
+    func testCachedPrefetchedWorkflowMissesAfterGenerationInvalidates() async throws {
+        self.commit(
+            workflows: [
+                "wf-prefetch": .init(
+                    blobRef: "wf-prefetch-ref",
+                    prefetch: true,
+                    content: ["offeringIdentifier": "premium"]
+                )
+            ],
+            uiConfig: Self.uiConfigTopic,
+            blobs: Self.uiConfigBlobs.merging([
+                "wf-prefetch-ref": try Self.workflowJSON(id: "wf-prefetch")
+            ]) { current, _ in current }
+        )
+        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows()
+        async let uiConfigWarm = self.uiConfigProvider.getUiConfig()
+        _ = await (workflowsWarm, uiConfigWarm)
+        expect(self.provider.cachedWorkflow(forOfferingId: "premium")).toNot(beNil())
+
+        self.manager.clearCache()
+
+        expect(self.provider.cachedWorkflow(forOfferingId: "premium")).to(beNil())
+    }
+
+    func testWarmPrefetchedWorkflowsStoresCacheWhenGenerationChangesDuringInitialTopicRead() async throws {
+        let mockManager = MockRemoteConfigManager()
+        let uiConfigProvider = UiConfigProvider(manager: mockManager)
+        let provider = WorkflowsConfigProvider(manager: mockManager, uiConfigProvider: uiConfigProvider)
+        let workflowsTopic: RemoteConfiguration.ConfigTopic = [
+            "wf-prefetch": .init(
+                blobRef: "wf-prefetch-ref",
+                prefetch: true,
+                content: ["offeringIdentifier": "premium"]
+            )
+        ]
+        mockManager.stubbedTopics[.workflows] = workflowsTopic
+        mockManager.stubbedBlobData[.workflows] = [
+            "wf-prefetch": try Self.workflowJSON(id: "wf-prefetch")
+        ]
+        mockManager.stubbedTopics[.uiConfig] = Self.uiConfigTopic
+        mockManager.stubbedBlobData[.uiConfig] = Self.uiConfigBlobsByItemKey
+        mockManager.shouldStoreTopicCompletion = true
+
+        async let workflowsWarm: Void = provider.warmPrefetchedWorkflows()
+        await self.waitUntilTopicRequested(on: mockManager)
+        mockManager.configGeneration += 1
+        mockManager.completeStoredTopic(with: workflowsTopic)
+
+        await workflowsWarm
+        _ = await uiConfigProvider.getUiConfig()
+
+        expect(provider.cachedWorkflow(forOfferingId: "premium")?.workflow.id) == "wf-prefetch"
+    }
+
     // MARK: - Helpers
 
     private func commit(
@@ -327,6 +559,37 @@ class WorkflowsConfigProviderTests: TestCase {
         }
         """
         return try XCTUnwrap(json.data(using: .utf8))
+    }
+
+    private static let uiConfigTopic: [String: RemoteConfiguration.ConfigItem] = [
+        "app": .init(blobRef: "app-ref", content: [:]),
+        "localizations": .init(blobRef: "loc-ref", content: [:]),
+        "variable_config": .init(blobRef: "variable-config-ref", content: [:]),
+        "custom_variables": .init(blobRef: "custom-variables-ref", content: [:])
+    ]
+
+    private static let uiConfigBlobs: [String: Data] = [
+        "app-ref": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
+        "loc-ref": Data(#"{}"#.utf8),
+        "variable-config-ref": Data(
+            #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.utf8
+        ),
+        "custom-variables-ref": Data(#"{}"#.utf8)
+    ]
+
+    private static let uiConfigBlobsByItemKey: [String: Data] = [
+        "app": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
+        "localizations": Data(#"{}"#.utf8),
+        "variable_config": Data(
+            #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.utf8
+        ),
+        "custom_variables": Data(#"{}"#.utf8)
+    ]
+
+    private func waitUntilTopicRequested(on manager: MockRemoteConfigManager) async {
+        while manager.invokedTopicCount == 0 {
+            await Task.yield()
+        }
     }
 
 }
@@ -479,10 +742,17 @@ private final class FakeRemoteConfigBlobFetcher: RemoteConfigBlobFetcherType {
     private let lock = Lock()
     private let blobStore: FakeRemoteConfigBlobStore
     private var _invokedEnsureDownloadedRefs: [String] = []
+    private var _invokedEnsureAllDownloadedRefs: [[String]] = []
 
     var invokedEnsureDownloadedRefs: [String] {
         return self.lock.perform {
             self._invokedEnsureDownloadedRefs
+        }
+    }
+
+    var invokedEnsureAllDownloadedRefs: [[String]] {
+        return self.lock.perform {
+            self._invokedEnsureAllDownloadedRefs
         }
     }
 
@@ -499,6 +769,9 @@ private final class FakeRemoteConfigBlobFetcher: RemoteConfigBlobFetcherType {
     }
 
     func ensureAllDownloaded(refs: [String]) async -> Bool {
+        self.lock.perform {
+            self._invokedEnsureAllDownloadedRefs.append(refs)
+        }
         return refs.allSatisfy { self.blobStore.contains(ref: $0) }
     }
 
