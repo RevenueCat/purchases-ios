@@ -79,13 +79,19 @@ import Foundation
 
      Use ``hasPaywall`` to check if the offering has a paywall.
      */
-    public let paywallComponents: PaywallComponents?
+    @available(*, deprecated, message: "Use hasPaywall to check whether the Offering has a paywall.")
+    public var paywallComponents: PaywallComponents? { self.internalPaywallComponents }
+
+    /**
+     Paywall components configuration defined in RevenueCat dashboard, used internally by the SDK.
+     */
+    @_spi(Internal) public let internalPaywallComponents: PaywallComponents?
 
     /**
      Whether the offering contains a paywall.
      */
     public var hasPaywall: Bool {
-        return paywall != nil || paywallComponents != nil
+        return paywall != nil || internalPaywallComponents != nil
     }
 
     /**
@@ -244,7 +250,7 @@ import Foundation
         self.availablePackages = availablePackages
         self._metadata = Metadata(data: metadata)
         self.paywall = paywall
-        self.paywallComponents = paywallComponents
+        self.internalPaywallComponents = paywallComponents
         self.draftPaywallComponents = draftPaywallComponents
         self.webCheckoutUrl = webCheckoutUrl
 
@@ -315,7 +321,7 @@ public extension Offering {
             serverDescription: serverDescription,
             metadata: metadata,
             paywall: paywall,
-            paywallComponents: paywallComponents,
+            paywallComponents: internalPaywallComponents,
             draftPaywallComponents: draftPaywallComponents,
             availablePackages: availablePackages.map { $0.withPresentedOfferingContext(presentedOfferingContext) },
             webCheckoutUrl: webCheckoutUrl

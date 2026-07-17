@@ -427,20 +427,20 @@ struct ImageComponentView_Previews: PreviewProvider {
         ScrollView {
             VStack {
                 imageView(url: bigImageUrl,
-                          size: .init(width: .fit, height: .fixed(fixedHeight)),
+                          size: .init(width: .fit(nil), height: .fixed(fixedHeight)),
                           fitMode: .fit, width: 1080, height: 599)
                 imageView(url: bigImageUrl,
                           size: .init(width: .fill, height: .fixed(fixedHeight)),
                           fitMode: .fit, width: 1080, height: 599)
                 imageView(url: bigImageUrl,
-                          size: .init(width: .fit, height: .fixed(fixedHeight)),
+                          size: .init(width: .fit(nil), height: .fixed(fixedHeight)),
                           fitMode: .fill, width: 1080, height: 599)
                 imageView(url: bigImageUrl,
                           size: .init(width: .fill, height: .fixed(fixedHeight)),
                           fitMode: .fill, width: 1080, height: 599)
 
                 imageView(url: smallImage,
-                          size: .init(width: .fit, height: .fixed(fixedHeight)),
+                          size: .init(width: .fit(nil), height: .fixed(fixedHeight)),
                           fitMode: .fit, width: 22, height: 21)
                 imageView(url: smallImage,
                           size: .init(width: .fill, height: .fixed(fixedHeight)),
@@ -449,7 +449,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                           size: .init(width: .fill, height: .fixed(fixedHeight)),
                           fitMode: .fill, width: 22, height: 21)
                 imageView(url: smallImage,
-                          size: .init(width: .fit, height: .fixed(fixedHeight)),
+                          size: .init(width: .fit(nil), height: .fixed(fixedHeight)),
                           fitMode: .fill, width: 22, height: 21)
             }.background(.blue)
         }
@@ -461,13 +461,13 @@ struct ImageComponentView_Previews: PreviewProvider {
             VStack {
                 VStack {
                     imageView(url: smallImage,
-                              size: .init(width: .fixed(32), height: .fit),
+                              size: .init(width: .fixed(32), height: .fit(nil)),
                               fitMode: .fill, width: 22, height: 21)
                 }.frame(width: 300, height: 300).border(.green)
 
                 VStack {
                     imageView(url: smallImage,
-                              size: .init(width: .fixed(32), height: .fit),
+                              size: .init(width: .fixed(32), height: .fit(nil)),
                               fitMode: .fit, width: 22, height: 21)
                 }.frame(width: 300, height: 300).border(.green)
 

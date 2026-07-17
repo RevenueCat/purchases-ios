@@ -405,6 +405,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             ? SimulatedStoreTransactionFetcher()
             : StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
 
+        let remoteConfigDiskCache = systemInfo.remoteConfigEnabled ? RemoteConfigDiskCache() : nil
+        let apiSourceProvider = RemoteConfigSourceProvider(topicStore: remoteConfigDiskCache)
+
         let backend = Backend(
             systemInfo: systemInfo,
             httpClientTimeout: networkTimeout,
@@ -418,7 +421,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 observerMode: observerMode,
                 customEntitlementComputation: systemInfo.dangerousSettings.customEntitlementComputation
             ),
-            diagnosticsTracker: diagnosticsTracker
+            diagnosticsTracker: diagnosticsTracker,
+            apiSourceProvider: apiSourceProvider
         )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
@@ -501,19 +505,17 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               appUserID: appUserID
         )
         let remoteConfigManager: RemoteConfigManagerType = {
-            guard systemInfo.remoteConfigEnabled else { return NoOpRemoteConfigManager() }
+            guard let remoteConfigDiskCache else { return NoOpRemoteConfigManager() }
 
-            let diskCache = RemoteConfigDiskCache()
             let blobStore = RemoteConfigBlobStore()
-            let sourceProvider = RemoteConfigSourceProvider(topicStore: diskCache)
             let blobFetcher = RemoteConfigBlobFetcher(
                 blobStore: blobStore,
-                sourceProvider: sourceProvider
+                sourceProvider: apiSourceProvider
             )
 
             return RemoteConfigManager(
                 remoteConfigAPI: backend.remoteConfigAPI,
-                diskCache: diskCache,
+                diskCache: remoteConfigDiskCache,
                 blobStore: blobStore,
                 blobFetcher: blobFetcher,
                 currentUserProvider: identityManager,
@@ -577,8 +579,16 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             paywallCache = nil
         }
 
+        let uiConfigProvider = UiConfigProvider(manager: remoteConfigManager)
+        let workflowsConfigProvider = WorkflowsConfigProvider(
+            manager: remoteConfigManager,
+            uiConfigProvider: uiConfigProvider,
+            paywallCache: paywallCache,
+            operationDispatcher: operationDispatcher
+        )
+
         let workflowManager = WorkflowManager(
-            workflowsConfigProvider: WorkflowsConfigProvider(manager: remoteConfigManager),
+            workflowsConfigProvider: workflowsConfigProvider,
             paywallCache: paywallCache,
             operationDispatcher: operationDispatcher
         )
@@ -592,6 +602,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 diagnosticsTracker: diagnosticsTracker,
                                                 remoteConfigManager: systemInfo.remoteConfigEnabled
                                                 ? remoteConfigManager
+                                                : nil,
+                                                uiConfigProvider: systemInfo.remoteConfigEnabled
+                                                ? uiConfigProvider
+                                                : nil,
+                                                workflowsConfigProvider: systemInfo.remoteConfigEnabled
+                                                ? workflowsConfigProvider
                                                 : nil)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
@@ -1025,6 +1041,11 @@ public extension Purchases {
     @_spi(Internal)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
         return try await self.workflowManager.getWorkflow(forOfferingId: offeringID)
+    }
+
+    @_spi(Internal)
+    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
+        return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
